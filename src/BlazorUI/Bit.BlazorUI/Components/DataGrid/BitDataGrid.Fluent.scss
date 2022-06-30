@@ -1,0 +1,263 @@
+/*
+    TODO: Don't actually used scoped CSS for BitDataGrid.razor, because it's so perf-critical we don't even want to
+    add the extra attributes on all the tr/td elements. We can hook everything onto the table.bitdatagrid class,
+    remembering to be specific about matching closest tr/td only, not any child tables.
+*/
+
+.bitdatagrid {
+
+    th {
+        position: relative; /* So that col-options appears next to it */
+    }
+
+    .col-header-content {
+        /* We want the th elements to be display:flex, but they also have to be display:table-cell to avoid breaking the layout.
+       So .col-header-content is an immediate child with display:flex. */
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+    /* Deep to make it easy for people adding a sort-indicator element in a custom HeaderTemplate */
+    th ::deep .sort-indicator {
+        /* Preset width so the column width doen't change as the sort indicator appears/disappears */
+        width: 1rem;
+        height: 1rem;
+        align-self: center;
+        text-align: center;
+    }
+
+    .col-sort-asc ::deep .sort-indicator, .col-sort-desc ::deep .sort-indicator {
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M 2 3.25 L 12 20.75 L 22 3.25 L 12 10 z" /></svg>');
+    }
+
+    .col-sort-desc ::deep .sort-indicator {
+        transform: scaleY(-1);
+    }
+    /* Deep to make it easy for people adding a col-options-button element in a custom HeaderTemplate */
+    th ::deep .col-options-button {
+        border: none;
+        padding: 0; /* So that even if the text on the button is wide, it gets properly centered */
+        width: 1rem;
+        align-self: stretch;
+        background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="1.5 0 21 24" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16" /></svg>') center center / 1rem no-repeat;
+    }
+
+    .col-options {
+        position: absolute;
+        background: white;
+        border: 1px solid silver;
+        left: 0;
+        padding: 1rem;
+        z-index: 1;
+    }
+
+    .col-justify-end .col-options {
+        left: unset;
+        right: 0;
+    }
+
+    .col-width-draghandle {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        right: 0rem;
+        cursor: ew-resize;
+    }
+
+    .col-width-draghandle:after {
+        content: ' ';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        border-left: 1px solid black;
+    }
+
+    td.col-justify-center {
+        text-align: center;
+    }
+
+    td.col-justify-end {
+        text-align: right;
+    }
+    /* Unfortunately we can't use the :dir pseudoselector due to lack of browser support. Instead we have to rely on
+    the developer setting <html dir="rtl"> to detect if we're in RTL mode. */
+    //html[dir=rtl] td.col-justify-end {
+    //    text-align: left;
+    //}
+    //html[dir=rtl] .col-options {
+    //    left: unset;
+    //    right: 0;
+    //}
+    //html[dir=rtl] .col-justify-end .col-options {
+    //    right: unset;
+    //    left: 0;
+    //}
+    /*==================================================================*/
+    /*BitDataGridColumnBase*/
+    /*==================================================================*/
+    /* Contains the title text and sort indicator, and expands to fill as much of the col width as it can */
+    .col-title {
+        display: flex; /* So that we can make col-title-text expand as much as possible, and still hide overflow with ellipsis */
+        min-width: 0px;
+        flex-grow: 1;
+        padding: 0;
+    }
+    /* If the column is sortable, its title is rendered as a button element for accessibility and to support navigation by tab */
+    button.col-title {
+        border: none;
+        background: none;
+        position: relative;
+        cursor: pointer;
+    }
+
+    .col-justify-center .col-title {
+        justify-content: center;
+    }
+
+    .col-justify-end .col-title {
+        flex-direction: row-reverse; /* For end-justified cols, the sort indicator should appear before the title text */
+    }
+    /* We put the column title text in its own element primarily so that it can use text-overflow: ellipsis */
+    .col-title-text {
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+    /*========================================================*/
+    /*BitDataGridPaginator*/
+    /*========================================================*/
+    .paginator {
+        display: flex;
+        border-top: 1px solid #ccc;
+        margin-top: 0.5rem;
+        padding: 0.25rem 0;
+        align-items: center;
+    }
+
+    .pagination-text {
+        margin: 0 0.5rem;
+    }
+
+    nav {
+        display: flex;
+        margin-left: auto;
+        gap: 0.5rem;
+        align-items: center;
+    }
+
+    nav button {
+        border: 0;
+        background: none center center / 1rem no-repeat;
+        width: 2rem;
+        height: 2rem;
+    }
+
+    nav button[disabled] {
+        opacity: 0.4;
+    }
+
+    nav button:not([disabled]):hover {
+        background-color: #eee;
+    }
+
+    nav button:not([disabled]):active {
+        background-color: #aaa;
+    }
+
+    .go-first, .go-last {
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g transform="rotate(90) scale(0.8)" transform-origin="12 12"><path d="m 2,1.5 l 10,17.5 l 10,-17.5 l -10,7.75 l -10,-7.75 z"/><rect height="2" width="20" y="20.5" x="2"/></g></svg>');
+    }
+
+    .go-previous, .go-next {
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g transform="rotate(90)" transform-origin="12 12"><path d="M 2 3.25 L 12 20.75 L 22 3.25 L 12 11 z" /></g></svg>');
+    }
+
+    .go-next, .go-last {
+        transform: scaleX(-1);
+    }
+    /*========================================================*/
+    /*default theme*/
+    /*========================================================*/
+    --col-gap: 1rem;
+
+    .col-header-content {
+        padding-right: var(--col-gap);
+    }
+
+    > thead > tr > th {
+        font-weight: normal;
+    }
+
+    &.loading > tbody {
+        opacity: 0.25;
+        transition: opacity linear 100ms;
+        transition-delay: 25ms; /* Don't want flicker if the queries are resolving almost immediately */
+    }
+
+    .col-title {
+        padding: 0.1rem 0.4rem;
+    }
+
+    > tbody > tr > td {
+        padding: 0.1rem calc(0.4rem + var(--col-gap)) 0.1rem 0.4rem;
+    }
+
+    .col-title {
+        gap: 0.4rem; /* Separate the sort indicator from title text */
+        font-weight: bold;
+    }
+
+    .sort-indicator {
+        opacity: 0.5;
+    }
+
+    .col-options-button {
+        width: 1.5rem;
+    }
+
+    button.col-title:hover,
+    .col-options-button:hover {
+        background-color: rgba(128, 128, 128, 0.2);
+    }
+
+    button.col-title:active,
+    .col-options-button:active {
+        background-color: rgba(128, 128, 128, 0.5);
+    }
+
+    > thead .col-width-draghandle {
+        width: 1rem;
+        right: calc(var(--col-gap)/2 - 0.5rem);
+    }
+
+    > thead .col-width-draghandle:hover {
+        background: rgba(128, 128, 128, 0.2);
+    }
+
+    > thead .col-width-draghandle:active {
+        background: rgba(128, 128, 128, 0.4);
+    }
+
+    > thead .col-width-draghandle:hover:after,
+    > thead .col-width-draghandle:active:after {
+        border-color: black;
+    }
+
+    > thead .col-width-draghandle:after {
+        border-color: #ccc;
+        left: 0.5rem;
+        top: 5px;
+        bottom: 5px;
+    }
+
+    .col-options {
+        box-shadow: 0 3px 8px 1px #aaa;
+        border-color: #ddd;
+        border-radius: 0.3rem;
+    }
+
+    > tbody > tr > td.grid-cell-placeholder:after {
+        content: '\2026';
+        opacity: 0.75;
+    }
+}
