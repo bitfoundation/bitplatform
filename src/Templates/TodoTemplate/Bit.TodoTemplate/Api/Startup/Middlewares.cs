@@ -38,6 +38,8 @@ public class Middlewares
         {
             OnPrepareResponse = ctx =>
             {
+                // https://bitplatform.dev/project-templates/todo-template/getting-started#cache-mechanism
+
                 ctx.Context.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue()
                 {
 #if PWA
@@ -53,7 +55,7 @@ public class Middlewares
         app.UseHttpResponseExceptionHandler();
         app.UseRouting();
 
-        app.UseCors(options => options.WithOrigins("https://localhost:4001", "https://0.0.0.0").AllowAnyHeader().AllowAnyMethod().AllowCredentials());
+        app.UseCors(options => options.WithOrigins("https://localhost:4001", "https://0.0.0.0" /* ysm: 0.0.0.0 stands for Android, iOS, Windows clients*/).AllowAnyHeader().AllowAnyMethod().AllowCredentials());
 
         app.UseResponseCaching();
         app.UseAuthentication();

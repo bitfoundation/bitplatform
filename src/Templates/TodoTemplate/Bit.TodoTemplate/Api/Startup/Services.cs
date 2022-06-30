@@ -22,6 +22,8 @@ public static class Services
         services.AddTransient<IAuthTokenProvider, ServerSideAuthTokenProvider>();
         services.AddTodoTemplateAppServices();
 
+        // ysm: Dar halat e pre-rendering, http client i ke sakhte mishavad, az access_token e ersali dar cookie tavasote client estefade mikonad ta mohtavaye pre render shode, motanaseb ba karbar e jari bashand.
+
         services.AddHttpClient("WebAssemblyPreRenderingHttpClient")
             .ConfigurePrimaryHttpMessageHandler<TodoTemplateHttpClientHandler>()
             .ConfigureHttpClient((sp, httpClient) =>

@@ -45,7 +45,7 @@ public class EmailSettings
 {
     public string Host { get; set; } = default!;
     /// <summary>
-    /// ysm: if true, email ha be jaye ersal tavasot e mail server, dar folder e Api/bin/Debug/net6.0/sent-emails zakhire zakhire mishavand ta developer rahat tar anha ra estefade konad.
+    /// If true, app stores emails in bin\sent-emails folder (Recommended for testing purposes only) instead of sending them using smtp server.
     /// </summary>
     public bool UseLocalFolderInsteadOfMailServer => Host is "LocalFolder";
     public int Port { get; set; }
