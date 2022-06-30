@@ -65,14 +65,14 @@ public partial class NavMenu
 
     [Parameter] public EventCallback<bool> IsMenuOpenChanged { get; set; }
 
-    [AutoInject] private HttpClient HttpClient { get; set; } = default!;
+    [AutoInject] private HttpClient HttpClient = default!;
 
-    [AutoInject] private IStateService StateService { get; set; } = default!;
+    [AutoInject] private IStateService StateService = default!;
 
-    [AutoInject] private IAuthTokenProvider AuthTokenProvider { get; set; } = default!;
+    [AutoInject] private IAuthTokenProvider AuthTokenProvider = default!;
 
 #if BlazorServer || BlazorHybrid
-    [AutoInject] private IConfiguration Configuration { get; set; } = default!;
+    [AutoInject] private IConfiguration Configuration = default!;
 #endif
 
     private void CloseMenu()

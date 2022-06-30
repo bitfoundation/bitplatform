@@ -4,9 +4,9 @@ namespace TodoTemplate.App.Pages;
 
 public partial class Todo
 {
-    [AutoInject] private HttpClient HttpClient { get; set; } = default!;
+    [AutoInject] private HttpClient HttpClient = default!;
 
-    [AutoInject] private IStateService StateService { get; set; } = default!;
+    [AutoInject] private IStateService StateService = default!;
 
     public bool IsLoading { get; set; }
     public string SelectedPivotName { get; set; } = "All";

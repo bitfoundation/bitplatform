@@ -12,11 +12,11 @@ public partial class SignIn
 
     public string? SignInMessage { get; set; }
 
-    [AutoInject] private NavigationManager NavigationManager { get; set; } = default!;
+    [AutoInject] private NavigationManager NavigationManager = default!;
 
-    [AutoInject] private ITodoTemplateAuthenticationService TodoTemplateAuthenticationService { get; set; } = default!;
+    [AutoInject] private ITodoTemplateAuthenticationService TodoTemplateAuthenticationService = default!;
 
-    [AutoInject] private TodoTemplateAuthenticationStateProvider TodoTemplateAuthenticationStateProvider { get; set; } = default!;
+    [AutoInject] private TodoTemplateAuthenticationStateProvider TodoTemplateAuthenticationStateProvider = default!;
 
     [Parameter]
     [SupplyParameterFromQuery]

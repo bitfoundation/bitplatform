@@ -18,14 +18,14 @@ public partial class EditProfile
     public BitMessageBarType EditProfileMessageType { get; set; }
     public string? EditProfileMessage { get; set; }
 
-    [AutoInject] private IAuthTokenProvider AuthTokenProvider { get; set; } = default!;
+    [AutoInject] private IAuthTokenProvider AuthTokenProvider = default!;
 
-    [AutoInject] private HttpClient HttpClient { get; set; } = default!;
+    [AutoInject] private HttpClient HttpClient = default!;
 
-    [AutoInject] private IStateService StateService { get; set; } = default!;
+    [AutoInject] private IStateService StateService = default!;
 
 #if BlazorServer || BlazorHybrid
-    [AutoInject] private IConfiguration Configuration { get; set; } = default!;
+    [AutoInject] private IConfiguration Configuration = default!;
 #endif
 
     protected override async Task OnInitAsync()

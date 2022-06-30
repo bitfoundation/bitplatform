@@ -12,7 +12,7 @@ public partial class ForgotPassword
 
     public string? ForgotPasswordMessage { get; set; }
 
-    [AutoInject] private HttpClient HttpClient { get; set; } = default!;
+    [AutoInject] private HttpClient HttpClient = default!;
 
     private bool IsSubmitButtonEnabled =>
         ForgotPasswordModel.Email.HasValue()

@@ -20,13 +20,13 @@ public partial class ResetPassword
 
     public string? ResetPasswordMessage { get; set; }
 
-    [AutoInject] private HttpClient HttpClient { get; set; } = default!;
+    [AutoInject] private HttpClient HttpClient = default!;
 
-    [AutoInject] private NavigationManager NavigationManager { get; set; } = default!;
+    [AutoInject] private NavigationManager NavigationManager = default!;
 
-    [AutoInject] private ITodoTemplateAuthenticationService TodoTemplateAuthenticationService { get; set; } = default!;
+    [AutoInject] private ITodoTemplateAuthenticationService TodoTemplateAuthenticationService = default!;
 
-    [AutoInject] private TodoTemplateAuthenticationStateProvider TodoTemplateAuthenticationStateProvider { get; set; } = default!;
+    [AutoInject] private TodoTemplateAuthenticationStateProvider TodoTemplateAuthenticationStateProvider = default!;
 
     private bool IsSubmitButtonEnabled =>
         ResetPasswordModel.Password.HasValue()

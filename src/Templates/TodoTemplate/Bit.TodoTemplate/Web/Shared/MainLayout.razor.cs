@@ -9,11 +9,11 @@ public partial class MainLayout : IAsyncDisposable
     public bool IsUserAuthenticated { get; set; }
     public bool IsMenuOpen { get; set; } = false;
 
-    [AutoInject] private IStateService StateService { get; set; } = default!;
+    [AutoInject] private IStateService StateService = default!;
 
-    [AutoInject] private IExceptionHandler ExceptionHandler { get; set; } = default!;
+    [AutoInject] private IExceptionHandler ExceptionHandler = default!;
 
-    [AutoInject] private TodoTemplateAuthenticationStateProvider TodoTemplateAuthenticationStateProvider { get; set; } = default!;
+    [AutoInject] private TodoTemplateAuthenticationStateProvider TodoTemplateAuthenticationStateProvider = default!;
 
     protected override void OnParametersSet()
     {

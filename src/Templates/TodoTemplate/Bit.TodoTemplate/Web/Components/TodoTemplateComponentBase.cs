@@ -2,7 +2,7 @@
 
 public class TodoTemplateComponentBase : ComponentBase
 {
-    [AutoInject] IExceptionHandler ExceptionHandler { get; set; } = default!;
+    [AutoInject] IExceptionHandler ExceptionHandler = default!;
 
     protected async sealed override Task OnInitializedAsync()
     {
