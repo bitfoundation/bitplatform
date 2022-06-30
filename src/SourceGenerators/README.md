@@ -1,3 +1,3 @@
 # Bit Source Generators
 
-Set i az source generator ha baraya behbood e performance, ...
+A set of source generators to improve code quality and application performance
