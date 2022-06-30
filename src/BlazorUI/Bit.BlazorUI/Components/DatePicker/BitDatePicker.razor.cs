@@ -711,12 +711,19 @@ public partial class BitDatePicker
 
     private bool CheckDayForMaxAndMinDate(int dayIndex, int weekIndex)
     {
-        var currentDay = currentMonthCalendar[weekIndex, dayIndex];
+        var day = currentMonthCalendar[weekIndex, dayIndex];
+        var month = GetCorrectTargetMonth(weekIndex, dayIndex);
 
-        if (MaxDate.HasValue && MaxDate.Value.Year == displayYear && MaxDate.Value.Month == currentMonth && MaxDate.Value.Day < currentDay)
+        if (MaxDate.HasValue &&
+           (displayYear > MaxDate.Value.Year ||
+           (displayYear == MaxDate.Value.Year && month > MaxDate.Value.Month) ||
+           (displayYear == MaxDate.Value.Year && month == MaxDate.Value.Month && day > MaxDate.Value.Day)))
             return true;
 
-        if (MinDate.HasValue && MinDate.Value.Year == displayYear && MinDate.Value.Month == currentMonth && MinDate.Value.Day > currentDay)
+        if (MinDate.HasValue &&
+           (displayYear < MinDate.Value.Year ||
+           (displayYear == MinDate.Value.Year && month < MinDate.Value.Month) ||
+           (displayYear == MinDate.Value.Year && month == MinDate.Value.Month && day < MinDate.Value.Day)))
             return true;
 
         return false;
@@ -724,10 +731,14 @@ public partial class BitDatePicker
 
     private bool CheckMonthForMaxAndMinDate(int month)
     {
-        if (MaxDate.HasValue && MaxDate.Value.Year == displayYear && MaxDate.Value.Month < month)
+        if (MaxDate.HasValue &&
+           (displayYear > MaxDate.Value.Year ||
+           (displayYear == MaxDate.Value.Year && month > MaxDate.Value.Month)))
             return true;
 
-        if (MinDate.HasValue && MinDate.Value.Year == displayYear && MinDate.Value.Month > month)
+        if (MinDate.HasValue &&
+           (displayYear < MinDate.Value.Year ||
+           (displayYear == MinDate.Value.Year && month < MinDate.Value.Month)))
             return true;
 
         return false;
@@ -735,10 +746,10 @@ public partial class BitDatePicker
 
     private bool CheckYearForMaxAndMinDate(int year)
     {
-        if (MaxDate.HasValue && MaxDate.Value.Year < year)
+        if (MaxDate.HasValue && year > MaxDate.Value.Year)
             return true;
 
-        if (MinDate.HasValue && MinDate.Value.Year > year)
+        if (MinDate.HasValue && year < MinDate.Value.Year)
             return true;
 
         return false;
