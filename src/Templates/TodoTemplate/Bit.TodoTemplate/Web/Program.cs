@@ -14,10 +14,10 @@ public class Program
     {
 #if !BlazorWebAssembly && !BlazorServer
         throw new InvalidOperationException("Please switch to either blazor web assembly or server as described in readme.md");
-#endif
-
+#else
         await CreateHostBuilder(args)
             .RunAsync();
+#endif
     }
 
 #if BlazorWebAssembly

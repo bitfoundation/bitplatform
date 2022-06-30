@@ -44,6 +44,10 @@ public class JwtSettings
 public class EmailSettings
 {
     public string Host { get; set; } = default!;
+    /// <summary>
+    /// ysm: if true, email ha be jaye ersal tavasot e mail server, dar folder e Api/bin/Debug/net6.0/sent-emails zakhire zakhire mishavand ta developer rahat tar anha ra estefade konad.
+    /// </summary>
+    public bool UseLocalFolderInsteadOfMailServer => Host is "LocalFolder";
     public int Port { get; set; }
     public string UserName { get; set; } = default!;
     public string Password { get; set; } = default!;

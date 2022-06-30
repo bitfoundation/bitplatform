@@ -15,6 +15,7 @@
 
 	<ItemGroup>
         <!--/-:msbuild-conditional:noEmit -->
+        <!-- ysm: Dar halat e blazor web assembly, khode projeye api, web ro ham bala miyare, ehtiyaji be boodan e in file ha dar in halat nist -->
 		<Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Remove="appsettings.json" />
 		<Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Remove="Pages\_Host.cshtml" />
         <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Remove="Pages\_Layout.cshtml" />

@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Reflection;
 
 namespace TodoTemplate.Api.Middlewares;
@@ -14,7 +14,7 @@ public class HttpResponseExceptionHandlerMiddleware
 
     public async Task Invoke(HttpContext context, IHostEnvironment webHostEnvironment)
     {
-        context.Response.Headers.Add("Request-ID", context.TraceIdentifier);
+        context.Response.Headers.Add("Request-ID", context.TraceIdentifier); // agar dar samt e client, khatayi bebinim ke be server rabt darad, mitavanim ba Request-Id an ra dar logha peyda konim
 
         try
         {
@@ -26,27 +26,20 @@ public class HttpResponseExceptionHandlerMiddleware
             var isKnownException = exception is KnownException;
             var statusCode = (int)(exception is RestException restExp ? restExp.StatusCode : HttpStatusCode.InternalServerError);
 
-            var restExceptionPayload = CreateRestExceptionPayload(webHostEnvironment, isKnownException, exception);
+            RestExceptionPayload restExceptionPayload = new RestExceptionPayload
+            {
+                Message = isKnownException || webHostEnvironment.IsDevelopment() ? exception.Message : nameof(UnknownException), // ysm: dar halat e development, jozyiyat e khataha bar migarde, vali too baghiye mohit ha mesle production, agar khata known bashe, jozyiyatesg bar migarde.
+                ExceptionType = isKnownException ? exception.GetType().FullName : typeof(UnknownException).FullName
+            };
+
+            if (exception is ResourceValidationException validationException)
+            {
+                restExceptionPayload.Details = validationException.Details;
+            }
 
             context.Response.StatusCode = statusCode;
             await context.Response.WriteAsJsonAsync(restExceptionPayload);
         }
-    }
-
-    private RestExceptionPayload CreateRestExceptionPayload(IHostEnvironment webHostEnvironment, bool isKnownException, Exception exception)
-    {
-        RestExceptionPayload restExceptionPayload = new RestExceptionPayload
-        {
-            Message = isKnownException || webHostEnvironment.IsDevelopment() ? exception.Message : nameof(UnknownException),
-            ExceptionType = isKnownException ? exception.GetType().FullName : typeof(UnknownException).FullName
-        };
-
-        if (exception is ResourceValidationException validationException)
-        {
-            restExceptionPayload.Details = validationException.Details;
-        }
-
-        return restExceptionPayload;
     }
 
     private Exception UnWrapException(Exception exp)

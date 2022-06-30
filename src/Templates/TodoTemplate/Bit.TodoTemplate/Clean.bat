@@ -1,3 +1,4 @@
+:: ysm: Ba ejraye in file dar halati ke IDE (Visual Studio,...) baste ast, mitavanid proje ra be soorat e kamel az file haye ezafe pak konid (Faghat rooye Windows poshtibani mishavad)
 FOR /F "tokens=*" %%G IN ('DIR /B /AD /S bin') DO RMDIR /S /Q "%%G"
 FOR /F "tokens=*" %%G IN ('DIR /B /AD /S obj') DO RMDIR /S /Q "%%G"
 FOR /F "tokens=*" %%G IN ('DIR /B /AD /S node_modules') DO RMDIR /S /Q "%%G"
@@ -7,5 +8,3 @@ FOR /F "tokens=*" %%G IN ('DIR /B /AD /S TestResults') DO RMDIR /S /Q "%%G"
 FOR /F "tokens=*" %%G IN ('DIR /B /AD /S AppPackages') DO RMDIR /S /Q "%%G"
 DEL /Q /F /S "Resource.designer.cs"
 DEL /Q /F /S "*.csproj.user"
-DEL /Q /F /S "*.Model.Context.d.ts"
-DEL /Q /F /S "*.Model.Context.js"

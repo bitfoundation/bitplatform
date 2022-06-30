@@ -31,6 +31,7 @@ public static class IServiceCollectionExtensions
 
     public static void AddTodoTemplateJwt(this IServiceCollection services, IConfiguration configuration)
     {
+        // https://github.com/dotnet/aspnetcore/issues/4660
         JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
         JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
         JwtSecurityTokenHandler.DefaultOutboundClaimTypeMap.Clear();
@@ -76,6 +77,8 @@ public static class IServiceCollectionExtensions
             {
                 OnMessageReceived = context =>
                 {
+                    // ysm: Ma access_token ro ham dar authorization header, ham dar cookie va ham dar request url query string ghabool mikonim.
+
                     var access_token = context.Request.Cookies["access_token"];
 
                     if (string.IsNullOrEmpty(access_token))
@@ -149,7 +152,7 @@ public static class IServiceCollectionExtensions
 
         var emailSettings = appsettings.EmailSettings;
 
-        if (emailSettings.Host is not "LocalFolder")
+        if (!emailSettings.UseLocalFolderInsteadOfMailServer)
         {
             healthChecksBuilder
                 .AddSmtpHealthCheck(options =>

@@ -11,11 +11,13 @@
 
     <ItemGroup>
         <!--/-:msbuild-conditional:noEmit -->
+        <!-- ysm: Dar blazor web assembly, projeye api khodash project web for host mikone. -->
         <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\Web\Pages\_Host.cshtml" Link="Pages\_Host.cshtml" />
         <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\Web\Pages\_Layout.cshtml" Link="Pages\_Layout.cshtml" />
         <Compile Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\Web\Services\Implementations\ServerSideAuthTokenProvider.cs" Link="Services\Implementations\ServerSideAuthTokenProvider.cs" />
+        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="6.0.6" />
+        <ProjectReference Include="..\Web\TodoTemplate.Web.csproj"  />
         <!--/+:msbuild-conditional:noEmit -->
-
 
         <EmbeddedResource Include="Resources\*.cshtml" />
         <PackageReference Include="AutoMapper" Version="11.0.1" />
@@ -26,10 +28,8 @@
         <PackageReference Include="FluentEmail.Smtp" Version="3.0.2" />
 
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.6" />
-        <!--/-:msbuild-conditional:noEmit -->
-        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="6.0.6" />
-        <!--/+:msbuild-conditional:noEmit -->
-        
+
+
         <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.6" />
         <PackageReference Include="Microsoft.AspNetCore.OData" Version="8.0.10" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.6">
@@ -71,12 +71,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Shared\TodoTemplate.Shared.csproj" />
-    </ItemGroup>
-
-    <!--/-:msbuild-conditional:noEmit -->
-    <ItemGroup Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' ">
-    <!--/+:msbuild-conditional:noEmit -->
-        <ProjectReference Include="..\Web\TodoTemplate.Web.csproj"  />
     </ItemGroup>
 
     <ItemGroup>
