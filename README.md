@@ -18,8 +18,7 @@ In template ha, powered hastan by bit components. Bit components ham sari va ham
 Site haye zir, tamaman ba bit platform toseye peyda kardan va tamaman dar mode e blazor web assembly publish shodan. Dar nazar dashte bashid agar site e shoma faghat dar halat e blazor server sari bashad (ke be tosiyeye ma faghat monaseb debugging hast, na publish baraye moshtari) va dar mode e web assembly kond bashad, Android, iOS, Windows app e haman barname dar halat e blazor hybrid ham kond khahand bood.
 
 
-Pas hamishe mogheye didan har demo yi, in ro az khodetoon beporsid, in demo by blazor web assembly hast ya server?
-
+Pas hamishe mogheye didan har demo yi az abzari mobtani bar blazor, in ro az khodetoon beporsid, in demo by blazor web assembly hast ya server?
 
 * [Bit Components home page](https://components.bitplatform.dev/)
 * [Bit Platform home page](https://bitplatform.dev/)
