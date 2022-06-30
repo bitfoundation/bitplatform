@@ -39,6 +39,7 @@ public class Program
         var builder = WebApplication.CreateBuilder(args);
 
 #if DEBUG
+        // ysm: Hataman IDE (Visual Studio) ro dar halat e Run as Admin ejra konid va ba komak e khat e zir, emaulator ha va device ha ye Android, iOS be server az tarigh e IP dastresi khahand dasht.
         builder.WebHost.UseUrls("https://*:4001", "http://*:4000");
 #endif
 

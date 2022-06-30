@@ -1,6 +1,9 @@
 ﻿//-:cnd:noEmit
 namespace TodoTemplate.Shared.Infra;
 
+/// <summary>
+/// https://bitplatform.dev/project-templates/todo-template/getting-started#blazor-modes
+/// </summary>
 public class WebAppDeploymentTypeDetector
 {
     public static WebAppDeploymentTypeDetector Current { get; set; } = new WebAppDeploymentTypeDetector();
