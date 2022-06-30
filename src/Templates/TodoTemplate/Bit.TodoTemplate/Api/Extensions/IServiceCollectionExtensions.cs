@@ -77,7 +77,7 @@ public static class IServiceCollectionExtensions
             {
                 OnMessageReceived = context =>
                 {
-                    // ysm: Ma access_token ro ham dar authorization header, ham dar cookie va ham dar request url query string ghabool mikonim.
+                    // The server accepts the access_token from either the authorization header, the cookie, or the request URL query string
 
                     var access_token = context.Request.Cookies["access_token"];
 
