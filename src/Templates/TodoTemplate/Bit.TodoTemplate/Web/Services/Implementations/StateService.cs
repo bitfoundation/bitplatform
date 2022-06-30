@@ -3,6 +3,8 @@ using System.Runtime.InteropServices;
 
 namespace TodoTemplate.App.Services.Implementations;
 
+// ysm: We're trying to make https://docs.microsoft.com/en-us/aspnet/core/blazor/components/prerendering-and-integration#persist-prerendered-state instructions simple in our template project.
+
 #if (BlazorWebAssembly || BlazorServer) && SSR
 public class StateService : IStateService, IAsyncDisposable
 {
