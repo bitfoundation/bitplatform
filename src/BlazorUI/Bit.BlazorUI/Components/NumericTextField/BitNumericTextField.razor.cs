@@ -19,8 +19,6 @@ public partial class BitNumericTextField<TValue>
     private TValue? step;
     private TValue? min;
     private TValue? max;
-    private TValue? ariaValueMin;
-    private TValue? ariaValueMax;
     private double internalStep;
     private double? internalMin;
     private double? internalMax;
@@ -261,26 +259,16 @@ public partial class BitNumericTextField<TValue>
         {
             SetDisplayValue();
         }
-            if (Min is not null && Max is not null && GetDoubleValueOrDefault(Min) > GetDoubleValueOrDefault(Max))
-            {
-                ariaValueMin = Max;
-                ariaValueMax = Min;
-            }
-            else
-            {
-                ariaValueMin = Min;
-                ariaValueMax = Max;
-            }
 
-            precision = Precision is not null ? Precision.Value : CalculatePrecision(Step);
-            if (ValueHasBeenSet is false)
-            {
-                SetValue(GetDoubleValueOrDefault(DefaultValue) ?? Math.Min(0, internalMin.Value));
-            }
-            else
-            {
-                SetDisplayValue();
-            }
+        precision = Precision is not null ? Precision.Value : CalculatePrecision(Step);
+        if (ValueHasBeenSet is false)
+        {
+            SetValue(GetDoubleValueOrDefault(DefaultValue) ?? Math.Min(0, internalMin.Value));
+        }
+        else
+        {
+            SetDisplayValue();
+        }
 
         if (ChangeHandler.HasDelegate is false)
         {
