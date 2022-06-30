@@ -260,16 +260,6 @@ public partial class BitNumericTextField<TValue>
             SetDisplayValue();
         }
 
-        precision = Precision is not null ? Precision.Value : CalculatePrecision(Step);
-        if (ValueHasBeenSet is false)
-        {
-            SetValue(GetDoubleValueOrDefault(DefaultValue) ?? Math.Min(0, internalMin.Value));
-        }
-        else
-        {
-            SetDisplayValue();
-        }
-
         if (ChangeHandler.HasDelegate is false)
         {
             ChangeHandler = EventCallback.Factory.Create(this, async (BitNumericTextFieldAction action) =>
