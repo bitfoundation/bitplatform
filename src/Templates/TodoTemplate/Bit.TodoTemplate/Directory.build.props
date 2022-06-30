@@ -1,5 +1,6 @@
 <Project>
-
+    
+    <!--/-:msbuild-conditional:noEmit -->
     <PropertyGroup>
         <BlazorMode>BlazorServer</BlazorMode>
         <!-- You can use either BlazorServer or BlazorWebAssembly or BlazorHybrid -->
@@ -20,7 +21,8 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
     </PropertyGroup>
-
+    <!--/+:msbuild-conditional:noEmit -->
+    
     <ItemGroup>
         <Using Include="Microsoft.Extensions.DependencyInjection" />
         <Using Include="System.Net.Http" />
