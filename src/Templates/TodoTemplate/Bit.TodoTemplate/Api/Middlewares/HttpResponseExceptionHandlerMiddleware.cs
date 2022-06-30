@@ -29,7 +29,8 @@ public class HttpResponseExceptionHandlerMiddleware
 
             RestExceptionPayload restExceptionPayload = new RestExceptionPayload
             {
-                Message = isKnownException || webHostEnvironment.IsDevelopment() ? exception.Message : nameof(UnknownException), // ysm: dar halat e development, jozyiyat e khataha bar migarde, vali too baghiye mohit ha mesle production, agar khata known bashe, jozyiyatesg bar migarde.
+                // The details of all of the exceptions are returned only in dev mode. in any other modes like production, only the details of the known exceptions are returned.
+                Message = isKnownException || webHostEnvironment.IsDevelopment() ? exception.Message : nameof(UnknownException), 
                 ExceptionType = isKnownException ? exception.GetType().FullName : typeof(UnknownException).FullName
             };
 
