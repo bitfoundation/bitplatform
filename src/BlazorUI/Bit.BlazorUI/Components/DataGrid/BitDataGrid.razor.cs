@@ -89,7 +89,7 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
     [Parameter] public BitDataGridPaginationState? Pagination { get; set; }
 
     [Inject] private IServiceProvider Services { get; set; } = default!;
-    [Inject] private IJSRuntime JS { get; set; } = default!;
+    [Inject] private IJSRuntime JsRuntime { get; set; } = default!;
 
     private ElementReference _tableReference;
     private Virtualize<(int, TGridItem)>? _virtualizeComponent;
@@ -113,7 +113,7 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
     private bool _checkColumnOptionsPosition;
 
     // The associated ES6 module, which uses document-level event listeners
-    private IJSObjectReference? _jsModule;
+    //private IJSObjectReference? _jsModule;
     private IJSObjectReference? _jsEventDisposable;
 
     // Caches of method->delegate conversions
@@ -183,14 +183,14 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
     {
         if (firstRender)
         {
-            _jsModule = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/Microsoft.AspNetCore.Components.BitDataGrid/BitDataGrid.razor.js");
-            _jsEventDisposable = await _jsModule.InvokeAsync<IJSObjectReference>("init", _tableReference);
+            //_jsModule = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/Microsoft.AspNetCore.Components.QuickGrid/QuickGrid.razor.js");
+            _jsEventDisposable = await JsRuntime.InvokeAsync<IJSObjectReference>("BitDataGrid.init", _tableReference);
         }
 
         if (_checkColumnOptionsPosition && _displayOptionsForColumn is not null)
         {
             _checkColumnOptionsPosition = false;
-            _ = _jsModule?.InvokeVoidAsync("checkColumnOptionsPosition", _tableReference);
+            _ = JsRuntime.InvokeVoidAsync("BitDataGrid.checkColumnOptionsPosition", _tableReference);
         }
     }
 
@@ -364,11 +364,11 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
                 result = result.Take(request.Count.Value);
             }
             var resultArray = _asyncQueryExecutor is null ? result.ToArray() : await _asyncQueryExecutor.ToArrayAsync(result);
-            return GridItemsProviderResult.From(resultArray, totalItemCount);
+            return BitDataGridItemsProviderResult.From(resultArray, totalItemCount);
         }
         else
         {
-            return GridItemsProviderResult.From(Array.Empty<TGridItem>(), 0);
+            return BitDataGridItemsProviderResult.From(Array.Empty<TGridItem>(), 0);
         }
     }
 
@@ -405,10 +405,10 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
                 await _jsEventDisposable.DisposeAsync();
             }
 
-            if (_jsModule is not null)
-            {
-                await _jsModule.DisposeAsync();
-            }
+            //if (_jsModule is not null)
+            //{
+            //    await _jsModule.DisposeAsync();
+            //}
         }
         catch (JSDisconnectedException)
         {

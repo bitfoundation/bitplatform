@@ -6,7 +6,7 @@
     @ChildContent
     <Defer>
         @{ FinishCollectingColumns(); }
-        <ColumnsCollectedNotifier TGridItem="TGridItem" />
+        <BitDataGridColumnsCollectedNotifier TGridItem="TGridItem" />
 
         <table class="@GridClass()" theme="@Theme" aria-rowcount="@(_ariaBodyRowCount + 1)" @ref="_tableReference" @onclosecolumnoptions="CloseColumnOptions">
             <thead>
