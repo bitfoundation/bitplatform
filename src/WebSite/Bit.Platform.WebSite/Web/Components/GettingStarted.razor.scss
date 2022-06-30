@@ -30,19 +30,16 @@
 
     .card-container {
         padding: 0 rem(20px);
+
+        .margin-20{
+            margin:20px;
+        }
     }
 
     .description {
         color: $Gray1;
         @include Body2;
     }
-
-    .code-header {
-        color: $Gray1;
-        @include Subtitle3;
-        padding: rem(20px) 0;
-    }
-
     .code {
         padding: rem(12px);
         border-left: rem(4px) solid $B6Color;
