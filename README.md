@@ -21,10 +21,7 @@ In practice, everyone can have the above outputs with just one codebase.
 These templates are powered by Bit Blazor components. Bit components are fast(performant) and lightweight (less than 200KB). These components are the best tool to develop most apps, even public websites like e-commerce.
 
 
-The following websites are developed by Bit Platform and published in Blazor Web Assembly. Keep in mind that if a web app is only fast in the Blazor Server mode but slow in Blazor Web Assembly mode, it will also be slow in Blazor Hybrid mode (Android, iOS, and Windows apps).
-
-
-Pas hamishe mogheye didan har demo yi az abzari mobtani bar blazor, in ro az khodetoon beporsid, in demo by blazor web assembly hast ya server?
+The following websites are developed by Bit Platform and published in Blazor Web Assembly:
 
 * [Bit Components home page](https://components.bitplatform.dev/)
 * [Bit Platform home page](https://bitplatform.dev/)
@@ -33,6 +30,10 @@ Pas hamishe mogheye didan har demo yi az abzari mobtani bar blazor, in ro az kho
 * Todo app Google Play link (Comming soon...)
 * Todo app Apple Store link (Comming soon...)
 * Todo app Microsoft Store link (Comming soon...)
+
+Keep in mind that if a web app is only fast in the Blazor Server mode but slow in Blazor Web Assembly mode, it will also be slow in Blazor Hybrid mode (Android, iOS, and Windows apps).
+
+Pas hamishe mogheye didan har demo yi az abzari mobtani bar blazor, in ro az khodetoon beporsid, in demo by blazor web assembly hast ya server?
 
 ## **Contribute**
 
