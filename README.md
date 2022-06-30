@@ -2,11 +2,11 @@
 
 ysm: Bit platform is home for .NET developers! Bit be shoma template hayi chon todo template va admin panel template mide.
 Dar in project template ha, emkanat e motadavel manand e sign-up, sign-in, ... be soorat e built-in hast va ba estefade az C# / HTML / CSS ke kheyli az shoma .NET developer ha oonha ro baladid, mitoonid barname haye zir ro faghat ba yek bar code nevisi dashte bashid:
-    Android app with full access to platform features
-    iOS app with full access to platform features
-    Windows app with full access to platform features
-    PWA (You can develop offline capable web apps!)
-    SPA with or without Pre Rendering (SEO friendly)
+* Android app with full access to platform features
+* iOS app with full access to platform features
+* Windows app with full access to platform features
+* PWA (You can develop offline capable web apps!)
+* SPA with or without Pre Rendering (SEO friendly)
 
 
 Dar template ha, shoma be asani mitoonid beyn e blazor server (monaseb baryae toseye sari va debugging) va blazor web assembly (monaseb e publish SPA-PWA baraya estefadeye moshtari) va blazor hybrid (ke be shoma emkan gereftan e khoroojiye Android, iOS, Windows apps midahad) switch konid va ba yek bar code nevisi, hameye khoroojihaye lazem ro begirid.
