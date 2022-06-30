@@ -8,21 +8,26 @@ Dar in project template ha, emkanat e motadavel manand e sign-up, sign-in, ... b
     PWA (You can develop offline capable web apps!)
     SPA with or without Pre Rendering (SEO friendly)
 
+
 Dar template ha, shoma be asani mitoonid beyn e blazor server (monaseb baryae toseye sari va debugging) va blazor web assembly (monaseb e publish SPA-PWA baraya estefadeye moshtari) va blazor hybrid (ke be shoma emkan gereftan e khoroojiye Android, iOS, Windows apps midahad) switch konid va ba yek bar code nevisi, hameye khoroojihaye lazem ro begirid.
+
 
 In template ha, powered hastan by bit components. Bit components ham sari va ham kam hajm hastan. in component ha tanha va behtarin abzari hastan ke ba oonha mitoonid hata web site haye public mesl e ecommerece tosee bedid.
 
+
 Site haye zir, tamaman ba bit platform toseye peyda kardan va tamaman dar mode e blazor web assembly publish shodan. Dar nazar dashte bashid agar site e shoma faghat dar halat e blazor server sari bashad (ke be tosiyeye ma faghat monaseb debugging hast) va dar mode e web assembly kond bashad, Android, iOS, Windows app e haman barname dar halat e blazor hybrid ham kond khahand bood.
+
 
 Pas hamishe mogheye didan har demo yi, in ro az khodetoon beporsid, in demo by blazor web assembly hast ya server?
 
-[Bit Components home page](https://components.bitplatform.dev/)
-[Bit Platform home page](https://bitplatform.dev/)
-[Todo app with pre rendering](https://todo.bitplatform.dev/)
-[Todo app PWA](https://todo-app.bitplatform.dev/)
-Todo app Google Play link (Comming soon...)
-Todo app Apple Store link (Comming soon...)
-Todo app Microsoft Store link (Comming soon...)
+
+* [Bit Components home page](https://components.bitplatform.dev/)
+* [Bit Platform home page](https://bitplatform.dev/)
+* [Todo app with pre rendering](https://todo.bitplatform.dev/)
+* [Todo app PWA](https://todo-app.bitplatform.dev/)
+* Todo app Google Play link (Comming soon...)
+* Todo app Apple Store link (Comming soon...)
+* Todo app Microsoft Store link (Comming soon...)
 
 ## **Contribute**
 
