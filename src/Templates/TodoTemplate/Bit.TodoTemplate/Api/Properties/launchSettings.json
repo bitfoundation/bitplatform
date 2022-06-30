@@ -10,7 +10,7 @@
                 "ASPNETCORE_ENVIRONMENT": "Development"
             }
         },
-        // ysm: In halat, emkan e debug e blazor web assembly ro mide.
+        // This configuration allows debugging the Blazor Web Assembly
         "TodoTemplate.Api-BlazorWebAssembly": {
             "commandName": "Project",
             "dotnetRunMessages": true,
