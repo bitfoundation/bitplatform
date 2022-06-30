@@ -1,15 +1,21 @@
 # Introduction
 
 Bit platform is a home for .NET developers. 
-Bit provides dotnet source templates such as TodoTemplate and AdminPanel template. In these project templates, common features such as Sign-up & Sign-in, are available using C#, HTML, and CSS, which most of the .NET developers are familiar. The following apps are available out of the box with simple configurations:
+Bit provides dotnet source templates such as TodoTemplate and AdminPanel template. In these project templates, common features such as Sign-up & Sign-in, are available using C#, HTML, and CSS, with which most of the .NET developers are familiar.
+
+The following apps are available out of the box with simple configurations:
 * Android app with full access to platform features
 * iOS app with full access to platform features
 * Windows app with full access to platform features
 * PWA (You can develop offline-capable web apps)
 * SPA with/without Pre-Rendering (SEO friendly)
 
+Using these templates, one can easily switch between Blazor Server, Blazor Web Assembly, and Blazor Hybrid:
+* Blazor Server: best for fast development and debugging
+* Blazor Web Assembly: best for SPA & PWA for customers
+* Blazor Hybrid: provides apps for Android, iOS, and Windows
 
-Dar template ha, shoma be asani mitoonid beyn e blazor server (monaseb baryae toseye sari va debugging) va blazor web assembly (monaseb e publish SPA-PWA baraya estefadeye moshtari) va blazor hybrid (ke be shoma emkan gereftan e khoroojiye Android, iOS, Windows apps midahad) switch konid va ba yek bar code nevisi, hameye khoroojihaye lazem ro begirid.
+In practice, everyone can have the above outputs with just one codebase.
 
 
 In template ha, powered hastan by bit components. Bit components ham sari va ham kam hajm (less than 200KB!) hastan. in component ha tanha va behtarin abzari hastan ke ba oonha mitoonid hata web site haye public mesl e ecommerece tosee bedid.
