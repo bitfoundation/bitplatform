@@ -1,14 +1,14 @@
 ﻿
 <section class="page-section getting-started-step-section">
 
-    <div class="step-body-card">
+    <div id="getting-started" class="step-body-card">
         <h4> Getting started</h4>
         <div class="card-container">
             <div class="description">This document aimed to create and run a Bit-Platform (Bit) project in a short period. It is assumed that you, as the developer, are familiar with the development prerequisites that follow.</div>
         </div>
     </div>
 
-    <div class="step-body-card">
+    <div id="development-prerequisites" class="step-body-card">
         <h4> Development prerequisites</h4>
         <div class="card-container">
             <ul class="first-step-ul">
@@ -22,7 +22,7 @@
         </div>
     </div>
 
-    <div class="step-body-card">
+    <div id="environments" class="step-body-card">
         <h4> Environment setup</h4>
         <div class="card-container">
             <ul class="first-step-ul">
@@ -39,7 +39,7 @@
         </div>
     </div>
 
-    <div class="step-body-card">
+    <div id="create-project" class="step-body-card">
         <h4> Create project</h4>
         <div class="card-container">
             <ol class="first-step-ul">
@@ -49,7 +49,7 @@
                 </li>
                 <li>
                     Create a new project using the Template installed
-                    <pre class="code"><code>dotnet new bit-todo</code></pre>
+                    <pre class="code"><code>dotnet new Bit.TodoTemplate</code></pre>
                 </li>
                 <li>
                     Make sure the first line in the <span class="high-light">TodoTemplate.Web.csproj</span> file contains the following value.
@@ -61,7 +61,7 @@
         </div>
     </div>
 
-    <div class="step-body-card">
+    <div id="prepare-project" class="step-body-card">
         <h4> Prepare The Project</h4>
         <div class="card-container">
             <h3>Database</h3>
@@ -91,7 +91,7 @@
         </div>
     </div>
 
-    <div class="step-body-card">
+    <div id="run" class="step-body-card">
         <h4> Run</h4>
         <div class="card-container">
             <div class="description">After you've done the configuration, you can run the application. Set Api project as startup and run, you can see the swagger dashboard in the first view</div>
@@ -110,7 +110,7 @@
         </div>
     </div>
 
-    <div class="step-body-card">
+    <div id="blazor-modes" class="step-body-card">
         <h4> Blazor Mode (hosting models)</h4>
         <div class="card-container">
             <div class="description">
@@ -188,7 +188,7 @@
         </div>
     </div>
 
-    <div class="step-body-card">
+    <div id="deployment-types" class="step-body-card">
         <h4> WebApp Deployment Type</h4>
         <div class="card-container">
             <div class="description">
@@ -227,7 +227,7 @@
         </div>
     </div>
 
-    <div class="step-body-card">
+    <div id="settings" class="step-body-card">
         <div class="card-container">
             <h4> Settings</h4>
             <h3>Authentication policies</h3>
@@ -305,7 +305,7 @@
         </div>
     </div>
 
-    <div class="step-body-card">
+    <div id="project-structure" class="step-body-card">
         <h4> TodoTemplate Project structure</h4>
         <div class="card-container">
             <div class="description">
@@ -336,7 +336,7 @@
         </div>
     </div>
 
-    <div class="step-body-card">
+    <div id="exception-handling" class="step-body-card">
         <h4> Exception handling</h4>
         <div class="card-container">
             <div class="description">
@@ -365,7 +365,23 @@
         </div>
     </div>
 
-    <div class="step-body-card">
+    <div id="cache-mechanism" class="step-body-card">
+        <h4> Cache mechanism</h4>
+        <div class="card-container">
+            <div class="description">
+                In <strong>PWA</strong>, a manifest is generated and all files will be downloaded by PWA with the help of this manifest. In this case, the PWA app can work in offline mode, and for example, we can leverage ef-core and SqlLite in the browser, which will work offline, and after going online, it can synchronize the generated data with the server if necessary.
+                If a file is changed (such as font, photo, etc.), the latest changes will be automatically downloaded.
+            </div>
+            <div class="description">
+                <strong>Note</strong>: that if you do not need a file, be sure to delete it so that it is no longer downloaded by PWA.
+            </div>
+            <div class="description">
+                In <strong>SPA</strong> if the .js, .css, and .dll files are changed, the new version will be automatically downloaded (by the asp-append-version in _Layout. cshtml). But for other file types such as font, image, etc, the file name must also be changed to ensure that the client is updated.
+            </div>
+        </div>
+    </div>
+
+    <div id="contribute" class="step-body-card">
         <h4> Contribute</h4>
         <div class="card-container">
             <div class="description">
