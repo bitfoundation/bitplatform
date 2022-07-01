@@ -20,7 +20,7 @@
     }
 }
 
-.footer-section .reverse {
+.reverse {
     flex-flow: row wrap-reverse;
 }
 
@@ -121,6 +121,10 @@
     @include lt-lg {
         width: rem(24px);
         height: rem(24px);
+    }
+
+    @include sm{
+        margin-top:rem(12px);
     }
 }
 
