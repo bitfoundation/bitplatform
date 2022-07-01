@@ -5,7 +5,6 @@ namespace TodoTemplate.App.Components;
 
 public partial class NavMenu
 {
-    private bool IsMenuOpenHasBeenSet;
     private bool isMenuOpen;
 
     public List<BitNavLinkItem> NavLinks { get; set; }
@@ -77,8 +76,6 @@ public partial class NavMenu
 
     private void CloseMenu()
     {
-        if (IsMenuOpenHasBeenSet && IsMenuOpenChanged.HasDelegate is false) return;
-
         IsMenuOpen = false;
     }
 
