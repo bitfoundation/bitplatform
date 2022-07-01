@@ -51,7 +51,7 @@ public partial class SignUp
         catch (KnownException e)
         {
             SignUpMessageType = BitMessageBarType.Error;
-            SignUpMessage = ErrorStrings.ResourceManager.Translate(e.Message);
+            SignUpMessage = ErrorStrings.ResourceManager.Translate(e.Message, SignUpModel.UserName);
         }
         finally
         {

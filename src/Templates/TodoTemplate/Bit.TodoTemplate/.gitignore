@@ -222,26 +222,27 @@ profile.arm.json
 # TodoTemplate
 *.map
 *Resource.designer.cs
+/**/*.css
+custom.aprof
 
 /App/Components
 /App/Extensions
 /App/Pages
 /App/Services
 /App/Shared
+/App/Styles
+/App/Scripts
 /App/wwwroot/fonts
 /App/wwwroot/images
-/App/wwwroot/scripts
+/App/wwwroot/**/*.js
 /App/wwwroot/styles
-/**/*.css
 /App/compilerconfig.*
 /App/_Imports.razor
 /App/Main.razor
 /App/appsettings.json
 /App/Components
-/App/Shared
+
 /Api/Attachments/**/*.*
-/Web/wwwroot/scripts/todoTemplate*.js
-/Web/wwwroot/service-worker.published*.js
-/App/wwwroot/service-worker*.js
-/App/Styles
-custom.aprof
+
+/Web/wwwroot/scripts/app*.js
+/Web/wwwroot/service-worker.published.min.js

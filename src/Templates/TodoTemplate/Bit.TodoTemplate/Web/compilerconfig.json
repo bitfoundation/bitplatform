@@ -72,11 +72,11 @@
         "inputFile": "Shared/MessageBox.razor.scss"
     },
     {
-        "outputFile": "wwwroot/scripts/todoTemplate.es5.js",
-        "inputFile": "wwwroot/scripts/todoTemplate.js"
+        "outputFile": "wwwroot/scripts/app.min.js",
+        "inputFile": "wwwroot/scripts/app.js"
     },
     {
-        "outputFile": "wwwroot/service-worker.published.js",
-        "inputFile": "wwwroot/service-worker.js"
+        "outputFile": "wwwroot/service-worker.published.min.js",
+        "inputFile": "wwwroot/service-worker.published.js"
     }
 ]
