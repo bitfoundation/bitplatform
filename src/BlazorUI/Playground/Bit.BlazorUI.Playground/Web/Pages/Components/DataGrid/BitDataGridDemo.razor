@@ -1,0 +1,28 @@
+﻿@page "/components/data-grid"
+
+<ComponentDemo ComponentName="DataGrid"
+               ComponentDescription="BitDataGrid is a robust way to display an information-rich collection of items, and allow people to sort, group, and filter the content. Use a data-grid when information density is critical."
+               ComponentParameters="componentParameters"
+               EnumParameters="enumParameters">
+    <ComponentExampleBox Title="BitDataGrid" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
+        <ExamplePreview>
+            <div class="grid">
+                <BitDataGrid Items="@FilteredItems" ResizableColumns="true" Pagination="@pagination">
+                    @*<BitDataGridTemplateColumn Title="Rank" SortBy="@rankSort" Align="BitDataGridAlign.Center" IsDefaultSort="BitDataGridSortDirection.Ascending">
+                    <img class="flag" src="flags/@(context.Code).svg" />
+                    </BitDataGridTemplateColumn>*@
+                    <BitDataGridPropertyColumn Property="@(c => c.Name)" Sortable="true" Class="column1">
+                        <ColumnOptions>
+                            <input type="search" autofocus @bind="nameFilter" @bind:event="oninput" />
+                        </ColumnOptions>
+                    </BitDataGridPropertyColumn>
+                    <BitDataGridPropertyColumn Property="@(c => c.Medals.Gold)" Sortable="true" Align="BitDataGridAlign.Right" />
+                    <BitDataGridPropertyColumn Property="@(c => c.Medals.Silver)" Sortable="true" Align="BitDataGridAlign.Right" />
+                    <BitDataGridPropertyColumn Property="@(c => c.Medals.Bronze)" Sortable="true" Align="BitDataGridAlign.Right" />
+                    <BitDataGridPropertyColumn Property="@(c => c.Medals.Total)" Sortable="true" Align="BitDataGridAlign.Right" />
+                </BitDataGrid>
+                <BitDataGridPaginator Value="@pagination" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+</ComponentDemo>

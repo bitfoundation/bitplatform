@@ -77,8 +77,6 @@ public partial class NavMenu
 
     private void CloseMenu()
     {
-        if (IsMenuOpenHasBeenSet && IsMenuOpenChanged.HasDelegate is false) return;
-
         IsMenuOpen = false;
     }
 

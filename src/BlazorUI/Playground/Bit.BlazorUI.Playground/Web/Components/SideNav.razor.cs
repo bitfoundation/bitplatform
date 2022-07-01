@@ -57,6 +57,7 @@ public partial class SideNav
             Links = new List<BitNavLinkItem>
             {
                 new BitNavLinkItem { Name = "BasicList", Key = "BasicList", Url="/components/basic-list" },
+                new BitNavLinkItem { Name = "DataGrid", Key = "DataGrid", Url="/components/data-grid" },
                 new BitNavLinkItem { Name= "Carousel", Key = "Carousel", Url = "/components/carousel" },
                 new BitNavLinkItem { Name = "RadioButtonList", Key = "RadioButtonList", Url="/components/radio-button-list" },
                 new BitNavLinkItem { Name = "Persona", Key = "Persona", Url="/components/persona" }
