@@ -3,7 +3,6 @@
 public partial class SignOutConfirmModal
 {
     private bool isOpen;
-    private bool IsOpenHasBeenSet;
 
     [Parameter]
     public bool IsOpen
@@ -24,8 +23,6 @@ public partial class SignOutConfirmModal
 
     private void CloseModal()
     {
-        if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
-
         IsOpen = false;
     }
 
