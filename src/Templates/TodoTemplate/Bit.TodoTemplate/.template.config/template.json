@@ -51,7 +51,7 @@
         {
             "modifiers": [
                 {
-                    "copyOnly": [ "Directory.build.props",".gitignore", "**/*.md", "**/*.scss", "**/*.svg", "**/*.png" ],
+                    "copyOnly": [".gitignore", "**/*.md", "**/*.scss", "**/*.svg", "**/*.png" ],
                     "exclude": [
                         ".vs/**",
                         "**/[Bb]in/**",
