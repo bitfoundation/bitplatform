@@ -240,6 +240,7 @@ custom.aprof
 /App/_Imports.razor
 /App/Main.razor
 /App/appsettings.json
+/App/tsconfig.json
 /App/Components
 
 /Api/Attachments/**/*.*
