@@ -56,6 +56,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="Bit.SourceGenerators" Version="12.0.0-pre-10" />
         <PackageReference Include="BuildWebCompiler2022" Version="1.14.8">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
