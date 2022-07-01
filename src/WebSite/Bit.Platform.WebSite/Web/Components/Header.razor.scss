@@ -76,9 +76,6 @@
         height: rem(32px);
         background-size: rem(32px);
     }
-
-    @include sm {
-    }
 }
 
 @mixin TransparentHeaderSection {

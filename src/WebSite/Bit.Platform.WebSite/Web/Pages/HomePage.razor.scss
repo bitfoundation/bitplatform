@@ -319,7 +319,7 @@
     @include md {
         width: rem(160px);
         height: rem(160px);
-        top: 25px;
+        top: rem(25px);
     }
 
     .download-icon {
