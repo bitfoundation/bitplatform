@@ -18,14 +18,14 @@ public partial class EditProfile
     public BitMessageBarType EditProfileMessageType { get; set; }
     public string? EditProfileMessage { get; set; }
 
-    [AutoInject] private IAuthTokenProvider AuthTokenProvider = default!;
+    [AutoInject] private IAuthTokenProvider authTokenProvider = default!;
 
-    [AutoInject] private HttpClient HttpClient = default!;
+    [AutoInject] private HttpClient httpClient = default!;
 
-    [AutoInject] private IStateService StateService = default!;
+    [AutoInject] private IStateService stateService = default!;
 
 #if BlazorServer || BlazorHybrid
-    [AutoInject] private IConfiguration Configuration = default!;
+    [AutoInject] private IConfiguration configuration = default!;
 #endif
 
     protected override async Task OnInitAsync()
@@ -36,14 +36,14 @@ public partial class EditProfile
         {
             await LoadEditProfileData();
 
-            var access_token = await StateService.GetValue($"{nameof(EditProfile)}-access_token", async () =>
-                await AuthTokenProvider.GetAcccessToken());
+            var access_token = await stateService.GetValue($"{nameof(EditProfile)}-access_token", async () =>
+                await authTokenProvider.GetAcccessToken());
 
             ProfileImageUploadUrl = $"api/Attachment/UploadProfileImage?access_token={access_token}";
             ProfileImageUrl = $"api/Attachment/GetProfileImage?access_token={access_token}";
 
 #if BlazorServer || BlazorHybrid
-            var serverUrl = Configuration.GetValue<string>("ApiServerAddress");
+            var serverUrl = configuration.GetValue<string>("ApiServerAddress");
             ProfileImageUploadUrl = $"{serverUrl}{ProfileImageUploadUrl}";
             ProfileImageUrl = $"{serverUrl}{ProfileImageUrl}";
 #endif
@@ -59,8 +59,8 @@ public partial class EditProfile
 
     private async Task LoadEditProfileData()
     {
-        User = (await StateService.GetValue($"{nameof(EditProfile)}-{nameof(User)}", async () =>
-            await HttpClient.GetFromJsonAsync("User/GetCurrentUser", TodoTemplateJsonContext.Default.UserDto))) ?? new();
+        User = (await stateService.GetValue($"{nameof(EditProfile)}-{nameof(User)}", async () =>
+            await httpClient.GetFromJsonAsync("User/GetCurrentUser", TodoTemplateJsonContext.Default.UserDto))) ?? new();
 
         UserToEdit.FullName = User.FullName;
         UserToEdit.BirthDate = User.BirthDate;
@@ -89,7 +89,7 @@ public partial class EditProfile
             User.BirthDate = UserToEdit.BirthDate;
             User.Gender = UserToEdit.Gender;
 
-            await HttpClient.PutAsJsonAsync("User", User, TodoTemplateJsonContext.Default.EditUserDto);
+            await httpClient.PutAsJsonAsync("User", User, TodoTemplateJsonContext.Default.EditUserDto);
 
             EditProfileMessageType = BitMessageBarType.Success;
 

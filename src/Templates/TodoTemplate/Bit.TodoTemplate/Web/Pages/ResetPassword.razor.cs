@@ -20,13 +20,13 @@ public partial class ResetPassword
 
     public string? ResetPasswordMessage { get; set; }
 
-    [AutoInject] private HttpClient HttpClient = default!;
+    [AutoInject] private HttpClient httpClient = default!;
 
-    [AutoInject] private NavigationManager NavigationManager = default!;
+    [AutoInject] private NavigationManager navigationManager = default!;
 
-    [AutoInject] private ITodoTemplateAuthenticationService TodoTemplateAuthenticationService = default!;
+    [AutoInject] private ITodoTemplateAuthenticationService todoTemplateAuthenticationService = default!;
 
-    [AutoInject] private TodoTemplateAuthenticationStateProvider TodoTemplateAuthenticationStateProvider = default!;
+    [AutoInject] private TodoTemplateAuthenticationStateProvider todoTemplateAuthenticationStateProvider = default!;
 
     private bool IsSubmitButtonEnabled =>
         ResetPasswordModel.Password.HasValue()
@@ -48,19 +48,19 @@ public partial class ResetPassword
             ResetPasswordModel.Email = Email;
             ResetPasswordModel.Token = Token;
 
-            await HttpClient.PostAsJsonAsync("Auth/ResetPassword", ResetPasswordModel, TodoTemplateJsonContext.Default.ResetPasswordRequestDto);
+            await httpClient.PostAsJsonAsync("Auth/ResetPassword", ResetPasswordModel, TodoTemplateJsonContext.Default.ResetPasswordRequestDto);
 
             ResetPasswordMessageType = BitMessageBarType.Success;
 
             ResetPasswordMessage = "Your password changed successfully.";
 
-            await TodoTemplateAuthenticationService.SignIn(new SignInRequestDto
+            await todoTemplateAuthenticationService.SignIn(new SignInRequestDto
             {
                 UserName = Email,
                 Password = ResetPasswordModel.Password
             });
 
-            NavigationManager.NavigateTo("/");
+            navigationManager.NavigateTo("/");
         }
         catch (KnownException e)
         {
@@ -78,9 +78,9 @@ public partial class ResetPassword
     {
         if (firstRender)
         {
-            if (await TodoTemplateAuthenticationStateProvider.IsUserAuthenticated())
+            if (await todoTemplateAuthenticationStateProvider.IsUserAuthenticated())
             {
-                NavigationManager.NavigateTo("/");
+                navigationManager.NavigateTo("/");
             }
         }
 

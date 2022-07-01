@@ -12,11 +12,11 @@ public partial class SignIn
 
     public string? SignInMessage { get; set; }
 
-    [AutoInject] private NavigationManager NavigationManager = default!;
+    [AutoInject] private NavigationManager navigationManager = default!;
 
-    [AutoInject] private ITodoTemplateAuthenticationService TodoTemplateAuthenticationService = default!;
+    [AutoInject] private ITodoTemplateAuthenticationService todoTemplateAuthenticationService = default!;
 
-    [AutoInject] private TodoTemplateAuthenticationStateProvider TodoTemplateAuthenticationStateProvider = default!;
+    [AutoInject] private TodoTemplateAuthenticationStateProvider todoTemplateAuthenticationStateProvider = default!;
 
     [Parameter]
     [SupplyParameterFromQuery]
@@ -34,9 +34,9 @@ public partial class SignIn
 
         try
         {
-            await TodoTemplateAuthenticationService.SignIn(SignInModel);
+            await todoTemplateAuthenticationService.SignIn(SignInModel);
 
-            NavigationManager.NavigateTo(RedirectUrl ?? "/");
+            navigationManager.NavigateTo(RedirectUrl ?? "/");
         }
         catch (KnownException e)
         {
@@ -59,8 +59,8 @@ public partial class SignIn
     {
         if (firstRender)
         {
-            if (await TodoTemplateAuthenticationStateProvider.IsUserAuthenticated())
-                NavigationManager.NavigateTo("/");
+            if (await todoTemplateAuthenticationStateProvider.IsUserAuthenticated())
+                navigationManager.NavigateTo("/");
         }
 
         await base.OnAfterRenderAsync(firstRender);

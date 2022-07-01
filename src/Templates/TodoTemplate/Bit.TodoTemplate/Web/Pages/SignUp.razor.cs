@@ -12,11 +12,11 @@ public partial class SignUp
     public BitMessageBarType SignUpMessageType { get; set; }
     public string? SignUpMessage { get; set; }
 
-    [AutoInject] private HttpClient HttpClient = default!;
+    [AutoInject] private HttpClient httpClient = default!;
 
-    [AutoInject] private NavigationManager NavigationManager = default!;
+    [AutoInject] private NavigationManager navigationManager = default!;
 
-    [AutoInject] private TodoTemplateAuthenticationStateProvider TodoTemplateAuthenticationStateProvider = default!;
+    [AutoInject] private TodoTemplateAuthenticationStateProvider todoTemplateAuthenticationStateProvider = default!;
 
     private bool IsSubmitButtonEnabled =>
         SignUpModel.UserName.HasValue()
@@ -38,7 +38,7 @@ public partial class SignUp
         {
             SignUpModel.Email = SignUpModel.UserName;
 
-            await HttpClient.PostAsJsonAsync("Auth/SignUp", SignUpModel, TodoTemplateJsonContext.Default.SignUpRequestDto);
+            await httpClient.PostAsJsonAsync("Auth/SignUp", SignUpModel, TodoTemplateJsonContext.Default.SignUpRequestDto);
 
             IsSignedUp = true;
         }
@@ -71,7 +71,7 @@ public partial class SignUp
 
         try
         {
-            await HttpClient.PostAsJsonAsync("Auth/SendConfirmationEmail", new()
+            await httpClient.PostAsJsonAsync("Auth/SendConfirmationEmail", new()
             {
                 Email = SignUpModel.Email
             }, TodoTemplateJsonContext.Default.SendConfirmationEmailRequestDto);
@@ -96,9 +96,9 @@ public partial class SignUp
 
         if (firstRender)
         {
-            if (await TodoTemplateAuthenticationStateProvider.IsUserAuthenticated())
+            if (await todoTemplateAuthenticationStateProvider.IsUserAuthenticated())
             {
-                NavigationManager.NavigateTo("/");
+                navigationManager.NavigateTo("/");
             }
         }
     }

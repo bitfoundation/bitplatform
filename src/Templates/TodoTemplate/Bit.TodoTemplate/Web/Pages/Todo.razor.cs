@@ -4,9 +4,9 @@ namespace TodoTemplate.App.Pages;
 
 public partial class Todo
 {
-    [AutoInject] private HttpClient HttpClient = default!;
+    [AutoInject] private HttpClient httpClient = default!;
 
-    [AutoInject] private IStateService StateService = default!;
+    [AutoInject] private IStateService stateService = default!;
 
     public bool IsLoading { get; set; }
     public string SelectedPivotName { get; set; } = "All";
@@ -42,7 +42,7 @@ public partial class Todo
         IsLoading = true;
         try
         {
-            AllTodoItemList = await StateService.GetValue($"{nameof(Todo)}-{nameof(AllTodoItemList)}", async () => await HttpClient.GetFromJsonAsync("TodoItem", TodoTemplateJsonContext.Default.ListTodoItemDto));
+            AllTodoItemList = await stateService.GetValue($"{nameof(Todo)}-{nameof(AllTodoItemList)}", async () => await httpClient.GetFromJsonAsync("TodoItem", TodoTemplateJsonContext.Default.ListTodoItemDto));
             GenarateViewTodoItemList();
         }
         finally
@@ -153,7 +153,7 @@ public partial class Todo
                 Date = DateTimeOffset.Now,
             };
 
-            await HttpClient.PostAsJsonAsync("TodoItem", newTodoItem, TodoTemplateJsonContext.Default.TodoItemDto);
+            await httpClient.PostAsJsonAsync("TodoItem", newTodoItem, TodoTemplateJsonContext.Default.TodoItemDto);
 
             await LoadTodoItems();
 
@@ -167,7 +167,7 @@ public partial class Todo
 
     private async Task DeleteTodoItem(TodoItemDto todoItem)
     {
-        await HttpClient.DeleteAsync($"TodoItem/{todoItem.Id}");
+        await httpClient.DeleteAsync($"TodoItem/{todoItem.Id}");
         AllTodoItemList?.Remove(todoItem);
         GenarateViewTodoItemList();
     }
@@ -179,7 +179,7 @@ public partial class Todo
 
         todoItem.IsInEditMode = false;
 
-        await HttpClient.PutAsJsonAsync("TodoItem", todoItem, TodoTemplateJsonContext.Default.TodoItemDto);
+        await httpClient.PutAsJsonAsync("TodoItem", todoItem, TodoTemplateJsonContext.Default.TodoItemDto);
         GenarateViewTodoItemList();
     }
 }
