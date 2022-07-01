@@ -1,4 +1,6 @@
-:: ysm: Ba ejraye in file dar halati ke IDE (Visual Studio,...) baste ast, mitavanid proje ra be soorat e kamel az file haye ezafe pak konid (Faghat rooye Windows poshtibani mishavad)
+:: This batch file can completely clean the source code and remove the extra files (even better than the Clean command of the Visual Studio).
+:: Close the IDE (Visual Studio, and ...) before running it.
+:: These commands work only on Windows.
 FOR /F "tokens=*" %%G IN ('DIR /B /AD /S bin') DO RMDIR /S /Q "%%G"
 FOR /F "tokens=*" %%G IN ('DIR /B /AD /S obj') DO RMDIR /S /Q "%%G"
 FOR /F "tokens=*" %%G IN ('DIR /B /AD /S node_modules') DO RMDIR /S /Q "%%G"
