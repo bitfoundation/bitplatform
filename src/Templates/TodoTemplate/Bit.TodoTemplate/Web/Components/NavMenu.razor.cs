@@ -5,6 +5,16 @@ namespace TodoTemplate.App.Components;
 
 public partial class NavMenu
 {
+    [AutoInject] private HttpClient httpClient = default!;
+
+    [AutoInject] private IStateService stateService = default!;
+
+    [AutoInject] private IAuthTokenProvider authTokenProvider = default!;
+
+#if BlazorServer || BlazorHybrid
+    [AutoInject] private IConfiguration configuration = default!;
+#endif
+
     private bool IsMenuOpenHasBeenSet;
     private bool isMenuOpen;
 
@@ -59,25 +69,15 @@ public partial class NavMenu
         {
             if (value == isMenuOpen) return;
             isMenuOpen = value;
-            _ = isMenuOpenChanged.InvokeAsync(value);
+            _ = IsMenuOpenChanged.InvokeAsync(value);
         }
     }
 
-    [Parameter] public EventCallback<bool> isMenuOpenChanged { get; set; }
-
-    [AutoInject] private HttpClient httpClient = default!;
-
-    [AutoInject] private IStateService stateService = default!;
-
-    [AutoInject] private IAuthTokenProvider authTokenProvider = default!;
-
-#if BlazorServer || BlazorHybrid
-    [AutoInject] private IConfiguration configuration = default!;
-#endif
+    [Parameter] public EventCallback<bool> IsMenuOpenChanged { get; set; }
 
     private void CloseMenu()
     {
-        if (IsMenuOpenHasBeenSet && isMenuOpenChanged.HasDelegate is false) return;
+        if (IsMenuOpenHasBeenSet && IsMenuOpenChanged.HasDelegate is false) return;
 
         IsMenuOpen = false;
     }

@@ -4,6 +4,14 @@ namespace TodoTemplate.App.Pages;
 
 public partial class ResetPassword
 {
+    [AutoInject] private HttpClient httpClient = default!;
+
+    [AutoInject] private NavigationManager navigationManager = default!;
+
+    [AutoInject] private ITodoTemplateAuthenticationService todoTemplateAuthenticationService = default!;
+
+    [AutoInject] private TodoTemplateAuthenticationStateProvider todoTemplateAuthenticationStateProvider = default!;
+
     [Parameter]
     [SupplyParameterFromQuery]
     public string? Email { get; set; }
@@ -19,14 +27,6 @@ public partial class ResetPassword
     public BitMessageBarType ResetPasswordMessageType { get; set; }
 
     public string? ResetPasswordMessage { get; set; }
-
-    [AutoInject] private HttpClient httpClient = default!;
-
-    [AutoInject] private NavigationManager navigationManager = default!;
-
-    [AutoInject] private ITodoTemplateAuthenticationService todoTemplateAuthenticationService = default!;
-
-    [AutoInject] private TodoTemplateAuthenticationStateProvider todoTemplateAuthenticationStateProvider = default!;
 
     private bool IsSubmitButtonEnabled =>
         ResetPasswordModel.Password.HasValue()

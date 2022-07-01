@@ -4,6 +4,12 @@ namespace TodoTemplate.App.Pages;
 
 public partial class SignIn
 {
+    [AutoInject] private NavigationManager navigationManager = default!;
+
+    [AutoInject] private ITodoTemplateAuthenticationService todoTemplateAuthenticationService = default!;
+
+    [AutoInject] private TodoTemplateAuthenticationStateProvider todoTemplateAuthenticationStateProvider = default!;
+
     public SignInRequestDto SignInModel { get; set; } = new();
 
     public bool IsLoading { get; set; }
@@ -11,12 +17,6 @@ public partial class SignIn
     public BitMessageBarType SignInMessageType { get; set; }
 
     public string? SignInMessage { get; set; }
-
-    [AutoInject] private NavigationManager navigationManager = default!;
-
-    [AutoInject] private ITodoTemplateAuthenticationService todoTemplateAuthenticationService = default!;
-
-    [AutoInject] private TodoTemplateAuthenticationStateProvider todoTemplateAuthenticationStateProvider = default!;
 
     [Parameter]
     [SupplyParameterFromQuery]

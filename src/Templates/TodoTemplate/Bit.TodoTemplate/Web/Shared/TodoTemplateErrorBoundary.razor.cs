@@ -3,12 +3,11 @@ namespace TodoTemplate.App.Shared;
 
 public partial class TodoTemplateErrorBoundary
 {
-    private bool ShowException { get; set; }
-
     [AutoInject] private IExceptionHandler exceptionHandler = default!;
 
     [AutoInject] private NavigationManager navigationManager = default!;
 
+    private bool ShowException { get; set; }
 
 #if DEBUG
     protected override void OnInitialized()

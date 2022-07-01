@@ -4,16 +4,16 @@ namespace TodoTemplate.App.Shared;
 
 public partial class MainLayout : IAsyncDisposable
 {
-    private ErrorBoundary ErrorBoundaryRef = default!;
-
-    public bool IsUserAuthenticated { get; set; }
-    public bool IsMenuOpen { get; set; } = false;
-
     [AutoInject] private IStateService stateService = default!;
 
     [AutoInject] private IExceptionHandler exceptionHandler = default!;
 
     [AutoInject] private TodoTemplateAuthenticationStateProvider todoTemplateAuthenticationStateProvider = default!;
+
+    private ErrorBoundary ErrorBoundaryRef = default!;
+
+    public bool IsUserAuthenticated { get; set; }
+    public bool IsMenuOpen { get; set; } = false;
 
     protected override void OnParametersSet()
     {

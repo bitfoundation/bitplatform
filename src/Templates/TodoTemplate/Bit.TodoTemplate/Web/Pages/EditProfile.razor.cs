@@ -5,6 +5,16 @@ namespace TodoTemplate.App.Pages;
 
 public partial class EditProfile
 {
+    [AutoInject] private IAuthTokenProvider authTokenProvider = default!;
+
+    [AutoInject] private HttpClient httpClient = default!;
+
+    [AutoInject] private IStateService stateService = default!;
+
+#if BlazorServer || BlazorHybrid
+    [AutoInject] private IConfiguration configuration = default!;
+#endif
+
     public UserDto User { get; set; } = new();
     public UserDto UserToEdit { get; set; } = new();
 
@@ -17,16 +27,6 @@ public partial class EditProfile
 
     public BitMessageBarType EditProfileMessageType { get; set; }
     public string? EditProfileMessage { get; set; }
-
-    [AutoInject] private IAuthTokenProvider authTokenProvider = default!;
-
-    [AutoInject] private HttpClient httpClient = default!;
-
-    [AutoInject] private IStateService stateService = default!;
-
-#if BlazorServer || BlazorHybrid
-    [AutoInject] private IConfiguration configuration = default!;
-#endif
 
     protected override async Task OnInitAsync()
     {

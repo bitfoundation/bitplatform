@@ -2,6 +2,10 @@
 
 public partial class EmailConfirmation
 {
+    [AutoInject] private HttpClient httpClient = default!;
+
+    [AutoInject] private NavigationManager navigationManager = default!;
+
     [Parameter]
     [SupplyParameterFromQuery]
     public string? Email { get; set; }
@@ -14,10 +18,6 @@ public partial class EmailConfirmation
 
     public BitMessageBarType EmailConfirmationMessageType { get; set; }
     public string? EmailConfirmationMessage { get; set; }
-
-    [AutoInject] private HttpClient httpClient = default!;
-
-    [AutoInject] private NavigationManager navigationManager = default!;
 
     private void RedirectToSignIn()
     {

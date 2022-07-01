@@ -4,6 +4,12 @@ namespace TodoTemplate.App.Pages;
 
 public partial class SignUp
 {
+    [AutoInject] private HttpClient httpClient = default!;
+
+    [AutoInject] private NavigationManager navigationManager = default!;
+
+    [AutoInject] private TodoTemplateAuthenticationStateProvider todoTemplateAuthenticationStateProvider = default!;
+
     public SignUpRequestDto SignUpModel { get; set; } = new();
 
     public bool IsSignedUp { get; set; }
@@ -11,12 +17,6 @@ public partial class SignUp
 
     public BitMessageBarType SignUpMessageType { get; set; }
     public string? SignUpMessage { get; set; }
-
-    [AutoInject] private HttpClient httpClient = default!;
-
-    [AutoInject] private NavigationManager navigationManager = default!;
-
-    [AutoInject] private TodoTemplateAuthenticationStateProvider todoTemplateAuthenticationStateProvider = default!;
 
     private bool IsSubmitButtonEnabled =>
         SignUpModel.UserName.HasValue()
