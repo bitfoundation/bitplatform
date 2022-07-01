@@ -2,7 +2,7 @@
 
 public class TodoTemplateComponentBase : ComponentBase
 {
-    [AutoInject] IExceptionHandler ExceptionHandler { get; set; } = default!;
+    [AutoInject] IExceptionHandler exceptionHandler = default!;
 
     protected async sealed override Task OnInitializedAsync()
     {
@@ -13,7 +13,7 @@ public class TodoTemplateComponentBase : ComponentBase
         }
         catch (Exception exp)
         {
-            ExceptionHandler.Handle(exp);
+            exceptionHandler.Handle(exp);
         }
     }
 
@@ -26,20 +26,29 @@ public class TodoTemplateComponentBase : ComponentBase
         }
         catch (Exception exp)
         {
-            ExceptionHandler.Handle(exp);
+            exceptionHandler.Handle(exp);
         }
     }
 
+    /// <summary>
+    /// Replacement for <see cref="OnInitializedAsync"/> which catches all possible exceptions in order to prevent app crash.
+    /// </summary>
     protected virtual Task OnInitAsync()
     {
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Replacement for <see cref="OnParametersSetAsync"/> which catches all possible exceptions in order to prevent app crash.
+    /// </summary>
     protected virtual Task OnParamsSetAsync()
     {
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Executes passed action while catching all possible exceptions to prevent app crash.
+    /// </summary>
     public virtual Action WrapHandled(Action action)
     {
         return () =>
@@ -50,11 +59,14 @@ public class TodoTemplateComponentBase : ComponentBase
             }
             catch (Exception exp)
             {
-                ExceptionHandler.Handle(exp);
+                exceptionHandler.Handle(exp);
             }
         };
     }
 
+    /// <summary>
+    /// Executes passed action while catching all possible exceptions to prevent app crash.
+    /// </summary>
     public virtual Action<T> WrapHandled<T>(Action<T> func)
     {
         return (e) =>
@@ -65,11 +77,14 @@ public class TodoTemplateComponentBase : ComponentBase
             }
             catch (Exception exp)
             {
-                ExceptionHandler.Handle(exp);
+                exceptionHandler.Handle(exp);
             }
         };
     }
 
+    /// <summary>
+    /// Executes passed function while catching all possible exceptions to prevent app crash.
+    /// </summary>
     public virtual Func<Task> WrapHandled(Func<Task> func)
     {
         return async () =>
@@ -80,11 +95,14 @@ public class TodoTemplateComponentBase : ComponentBase
             }
             catch (Exception exp)
             {
-                ExceptionHandler.Handle(exp);
+                exceptionHandler.Handle(exp);
             }
         };
     }
 
+    /// <summary>
+    /// Executes passed function while catching all possible exceptions to prevent app crash.
+    /// </summary>
     public virtual Func<T, Task> WrapHandled<T>(Func<T, Task> func)
     {
         return async (e) =>
@@ -95,7 +113,7 @@ public class TodoTemplateComponentBase : ComponentBase
             }
             catch (Exception exp)
             {
-                ExceptionHandler.Handle(exp);
+                exceptionHandler.Handle(exp);
             }
         };
     }

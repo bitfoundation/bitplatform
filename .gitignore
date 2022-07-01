@@ -259,3 +259,4 @@ _book
 /src/BlazorUI/Playground/Bit.BlazorUI.Playground/App/tsconfig.json
 /src/WebSite/Bit.Platform.WebSite/Web/**/**/*.css
 /src/WebSite/Bit.Platform.WebSite/Web/wwwroot/**/*.js
+custom.aprof

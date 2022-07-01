@@ -4,6 +4,12 @@ namespace TodoTemplate.App.Pages;
 
 public partial class SignIn
 {
+    [AutoInject] private NavigationManager navigationManager = default!;
+
+    [AutoInject] private ITodoTemplateAuthenticationService todoTemplateAuthenticationService = default!;
+
+    [AutoInject] private TodoTemplateAuthenticationStateProvider todoTemplateAuthenticationStateProvider = default!;
+
     public SignInRequestDto SignInModel { get; set; } = new();
 
     public bool IsLoading { get; set; }
@@ -11,12 +17,6 @@ public partial class SignIn
     public BitMessageBarType SignInMessageType { get; set; }
 
     public string? SignInMessage { get; set; }
-
-    [AutoInject]  private NavigationManager NavigationManager { get; set; } = default!;
-
-    [AutoInject]  private ITodoTemplateAuthenticationService TodoTemplateAuthenticationService { get; set; } = default!;
-
-    [AutoInject] private TodoTemplateAuthenticationStateProvider TodoTemplateAuthenticationStateProvider { get; set; } = default!;
 
     [Parameter]
     [SupplyParameterFromQuery]
@@ -31,12 +31,12 @@ public partial class SignIn
 
         IsLoading = true;
         SignInMessage = null;
-        
+
         try
         {
-            await TodoTemplateAuthenticationService.SignIn(SignInModel);
+            await todoTemplateAuthenticationService.SignIn(SignInModel);
 
-            NavigationManager.NavigateTo(RedirectUrl ?? "/");
+            navigationManager.NavigateTo(RedirectUrl ?? "/");
         }
         catch (KnownException e)
         {
@@ -51,16 +51,16 @@ public partial class SignIn
     }
 
     private bool IsSubmitButtonEnabled =>
-        SignInModel.UserName.HasValue() 
-        && SignInModel.Password.HasValue() 
+        SignInModel.UserName.HasValue()
+        && SignInModel.Password.HasValue()
         && IsLoading is false;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            if (await TodoTemplateAuthenticationStateProvider.IsUserAuthenticated())
-                NavigationManager.NavigateTo("/");
+            if (await todoTemplateAuthenticationStateProvider.IsUserAuthenticated())
+                navigationManager.NavigateTo("/");
         }
 
         await base.OnAfterRenderAsync(firstRender);

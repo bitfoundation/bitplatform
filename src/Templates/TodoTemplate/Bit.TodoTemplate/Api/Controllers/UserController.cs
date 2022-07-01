@@ -7,9 +7,9 @@ namespace TodoTemplate.Api.Controllers;
 [ApiController]
 public partial class UserController : ControllerBase
 {
-    [AutoInject] private readonly UserManager<User> _userManager;
+    [AutoInject] private UserManager<User> _userManager;
 
-    [AutoInject] private readonly IMapper _mapper;
+    [AutoInject] private IMapper _mapper;
 
     [HttpGet("[action]")]
     public async Task<UserDto> GetCurrentUser(CancellationToken cancellationToken)
@@ -28,6 +28,9 @@ public partial class UserController : ControllerBase
     public async Task Update(EditUserDto userDto, CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
+
+        if (userId != User.GetUserId())
+            throw new UnauthorizedException();
 
         var user = await _userManager.Users.FirstOrDefaultAsync(user => user.Id == userId, cancellationToken);
 

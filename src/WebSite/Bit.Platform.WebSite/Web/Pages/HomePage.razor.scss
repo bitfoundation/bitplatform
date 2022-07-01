@@ -32,6 +32,8 @@
     }
 }
 
+/*----------------hero section---------------*/
+
 .hero-section {
     display: flex;
     flex-flow: column nowrap;
@@ -67,7 +69,11 @@
         }
 
         div {
-            @include Subtitle3
+            @include Subtitle3;
+
+            @include sm {
+                @include Body3;
+            }
         }
     }
 
@@ -120,7 +126,7 @@
             font-size: rem(16px);
             font-weight: 600;
             line-height: rem(32px);
-            margin-top: rem(32px);
+            margin-top: rem(20px);
         }
 
         .github-icon {
@@ -134,14 +140,19 @@
             background-color: $B2Color;
             cursor: pointer;
             margin-right: rem(10px);
+            background-size: rem(40px);
+
 
             @include lt-lg {
                 width: rem(24px);
                 height: rem(24px);
+                background-size: rem(24px);
             }
         }
     }
 }
+
+/*----------------project template section---------------*/
 
 .project-template-section {
     display: flex;
@@ -186,7 +197,6 @@
         div {
             color: $Gray1;
             @include Body3;
-            margin-bottom: rem(24px);
         }
 
         a {
@@ -217,6 +227,8 @@
         }
     }
 }
+
+/*----------------services box section---------------*/
 
 .services-section {
     display: flex;
@@ -256,16 +268,11 @@
         h4 {
             color: $Black1;
             margin-bottom: rem(20px);
-
-            @include lt-lg {
-                margin-bottom: rem(30px);
-            }
         }
 
         div {
             color: $Gray1;
             @include Body3;
-            margin-bottom: rem(24px);
         }
 
         a {
@@ -279,6 +286,15 @@
     }
 }
 
+.no-download-box {
+    width: 50%;
+    margin-right: 0;
+
+    @include lt-lg {
+        width: 100%;
+    }
+}
+/*----------------services download box section---------------*/
 .download-box {
     position: absolute;
     top: rem(51px);
@@ -297,25 +313,50 @@
     @include Subtitle4;
 
     @include sm {
-        top: rem(-32px);
-        right: rem(16px);
-        width: rem(116px);
-        height: rem(116px);
+        display: none;
+    }
+
+    @include md {
+        width: rem(160px);
+        height: rem(160px);
+        top: rem(25px);
+    }
+
+    .download-icon {
+        width: rem(53px);
+        height: rem(53px);
+        background-image: url('/images/home/download-icon.svg');
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: rem(53px);
     }
 }
 
-.download-icon {
-    width: rem(53px);
-    height: rem(53px);
-    background-image: url('/images/home/download-icon.svg');
-    background-position: center;
-    background-repeat: no-repeat;
+.download-row {
+    display: none;
 
     @include sm {
-        width: rem(33px);
-        height: rem(33px);
+        display: flex;
+        flex-flow: row nowrap;
+        align-items: center;
+
+        h5 {
+            margin: 0 rem(10px);
+            font-weight: 600;
+        }
+    }
+
+    .download-icon {
+        width: rem(25px);
+        height: rem(25px);
+        background-image: url('/images/home/download-blue-icon.svg');
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: rem(25px);
     }
 }
+
+/*----------------background section---------------*/
 
 .background-section {
 

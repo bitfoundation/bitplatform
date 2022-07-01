@@ -10,6 +10,7 @@
                 "ASPNETCORE_ENVIRONMENT": "Development"
             }
         },
+        // This configuration allows debugging the Blazor Web Assembly
         "TodoTemplate.Api-BlazorWebAssembly": {
             "commandName": "Project",
             "dotnetRunMessages": true,

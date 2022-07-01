@@ -1,8 +1,7 @@
-﻿namespace Bit.BlazorUI
+﻿namespace Bit.BlazorUI;
+
+public enum BitNavRenderType
 {
-    public enum BitNavRenderType
-    {
-        Normal, 
-        Grouped
-    }
+    Normal,
+    Grouped
 }

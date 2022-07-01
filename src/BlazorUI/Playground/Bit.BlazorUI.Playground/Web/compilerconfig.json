@@ -138,5 +138,9 @@
     {
         "outputFile": "Pages/Components/Persona/BitPersonaDemo.razor.css",
         "inputFile": "Pages/Components/Persona/BitPersonaDemo.razor.scss"
+    },
+    {
+        "outputFile": "Pages/Components/DataGrid/BitDataGridDemo.razor.css",
+        "inputFile": "Pages/Components/DataGrid/BitDataGridDemo.razor.scss"
     }
 ]

@@ -1,6 +1,5 @@
-﻿namespace Bit.Platform.WebSite.Web.Components
+﻿namespace Bit.Platform.WebSite.Web.Components;
+
+public partial class Footer
 {
-    public partial class Footer
-    {
-    }
 }

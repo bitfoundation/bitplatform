@@ -38,6 +38,7 @@
 
     <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
         <AndroidAotProfile Condition="Exists('custom.aprof')" Include="custom.aprof" />
+        <!-- Run the following commands to create custom.aprof file which improves the Android app performance -->
         <!-- dotnet add package Mono.AotProfiler.Android -->
         <!-- dotnet build -t:BuildAndStartAotProfiling -f net6.0-android /p:UseInterpreter=false -->
         <!-- dotnet build -t:FinishAotProfiling -f net6.0-android -->
@@ -60,7 +61,7 @@
 
         <Using Include="Microsoft.AspNetCore.Components.Authorization" />
         <Using Include="TodoTemplate.App.Components" />
-        <Using Include="Bit.Client.Web.BlazorUI" />
+        <Using Include="Bit.BlazorUI" />
 
     </ItemGroup>
 
@@ -81,9 +82,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.Client.Web.BlazorUI" Version="12.0.0-pre-08" />
-        <PackageReference Include="Bit.Tooling.CodeAnalyzer" Version="12.0.0-pre-08" />
-        <PackageReference Include="Bit.Tooling.SourceGenerators" Version="12.0.0-pre-08" />
+        <PackageReference Include="Bit.BlazorUI" Version="12.0.0-pre-11" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="12.0.0-pre-11" />
+        <PackageReference Include="Bit.SourceGenerators" Version="12.0.0-pre-11" />
         <PackageReference Include="BuildWebCompiler2022" Version="1.14.8">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

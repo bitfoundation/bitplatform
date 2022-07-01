@@ -1,74 +1,73 @@
 ﻿using System;
 using System.Globalization;
 
-namespace Bit.BlazorUI
+namespace Bit.BlazorUI;
+
+public static class ObjectExtensions
 {
-    public static class ObjectExtensions
+    public static object? GetValueAsObjectFromProperty(this object? obj, string propertyName)
     {
-        public static object? GetValueAsObjectFromProperty(this object? obj, string propertyName)
+        return obj?.GetType().GetProperty(propertyName)?.GetValue(obj);
+    }
+
+    public static BitIconName? GetBitIconNameFromProperty(this object? obj, string propertyName)
+    {
+        var value = obj?.GetType().GetProperty(propertyName)?.GetValue(obj);
+
+        if (value is null) return null;
+
+        if (value is BitIconName bitIconName)
+            return bitIconName;
+
+        return null;
+    }
+
+    public static T? GetValueFromProperty<T>(this object? obj, string propertyName)
+    {
+        var value = obj?.GetType().GetProperty(propertyName)?.GetValue(obj);
+
+        if (value is null)
         {
-            return obj?.GetType().GetProperty(propertyName)?.GetValue(obj);
+            return default;
         }
 
-        public static BitIconName? GetBitIconNameFromProperty(this object? obj, string propertyName)
+        Type targetType = typeof(T);
+        targetType = Nullable.GetUnderlyingType(targetType) ?? targetType;
+
+        return (T)Convert.ChangeType(value, targetType, CultureInfo.InvariantCulture);
+    }
+
+    public static T? GetValueFromProperty<T>(this object? obj, string propertyName, T? defaultValue)
+    {
+        var value = obj?.GetType().GetProperty(propertyName)?.GetValue(obj);
+
+        if (value is null)
         {
-            var value = obj?.GetType().GetProperty(propertyName)?.GetValue(obj);
-
-            if (value is null) return null;
-
-            if (value is BitIconName bitIconName)
-                return bitIconName;
-
-            return null;
+            return defaultValue;
         }
 
-        public static T? GetValueFromProperty<T>(this object? obj, string propertyName)
+        Type targetType = typeof(T);
+        targetType = Nullable.GetUnderlyingType(targetType) ?? targetType;
+
+        return (T)Convert.ChangeType(value, targetType, CultureInfo.InvariantCulture);
+    }
+
+    public static T? ConvertTo<T>(this object? obj)
+    {
+        if (obj is null) return default;
+
+        if (typeof(T).IsEnum)
         {
-            var value = obj?.GetType().GetProperty(propertyName)?.GetValue(obj);
+            if (obj.ToString().HasNoValue()) return default;
 
-            if (value is null)
-            {
-                return default;
-            }
-
+            return (T)Enum.Parse(typeof(T), obj.ToString()!, true);
+        }
+        else
+        {
             Type targetType = typeof(T);
             targetType = Nullable.GetUnderlyingType(targetType) ?? targetType;
 
-            return (T)Convert.ChangeType(value, targetType, CultureInfo.InvariantCulture);
-        }
-
-        public static T? GetValueFromProperty<T>(this object? obj, string propertyName, T? defaultValue)
-        {
-            var value = obj?.GetType().GetProperty(propertyName)?.GetValue(obj);
-
-            if (value is null)
-            {
-                return defaultValue;
-            }
-
-            Type targetType = typeof(T);
-            targetType = Nullable.GetUnderlyingType(targetType) ?? targetType;
-
-            return (T)Convert.ChangeType(value, targetType, CultureInfo.InvariantCulture);
-        }
-
-        public static T? ConvertTo<T>(this object? obj)
-        {
-            if (obj is null) return default;
-
-            if (typeof(T).IsEnum)
-            {
-                if (obj.ToString().HasNoValue()) return default;
-
-                return (T)Enum.Parse(typeof(T), obj.ToString()!, true);
-            }
-            else
-            {
-                Type targetType = typeof(T);
-                targetType = Nullable.GetUnderlyingType(targetType) ?? targetType;
-
-                return (T)Convert.ChangeType(obj, targetType, CultureInfo.InvariantCulture);
-            }
+            return (T)Convert.ChangeType(obj, targetType, CultureInfo.InvariantCulture);
         }
     }
 }

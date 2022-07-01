@@ -1,11 +1,10 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace Bit.BlazorUI.Playground.Web.Pages.Components.DatePicker
+namespace Bit.BlazorUI.Playground.Web.Pages.Components.DatePicker;
+
+public class FormValidationDatePickerModel
 {
-    public class FormValidationDatePickerModel
-    {
-        [Required]
-        public DateTimeOffset? Date { get; set; }
-    }
+    [Required]
+    public DateTimeOffset? Date { get; set; }
 }

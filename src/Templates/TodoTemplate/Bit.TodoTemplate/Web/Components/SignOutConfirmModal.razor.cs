@@ -1,38 +1,33 @@
-﻿namespace TodoTemplate.App.Components
+﻿namespace TodoTemplate.App.Components;
+
+public partial class SignOutConfirmModal
 {
-    public partial class SignOutConfirmModal
+    [AutoInject] public ITodoTemplateAuthenticationService todoTemplateAuthenticationService = default!;
+
+    private bool isOpen;
+
+    [Parameter]
+    public bool IsOpen
     {
-        private bool isOpen;
-        private bool IsOpenHasBeenSet;
-
-        [Parameter]
-        public bool IsOpen
+        get => isOpen;
+        set
         {
-            get => isOpen;
-            set
-            {
-                if (value == isOpen) return;
-                isOpen = value;
-                _ = IsOpenChanged.InvokeAsync(value);
-            }
+            if (value == isOpen) return;
+            isOpen = value;
+            _ = IsOpenChanged.InvokeAsync(value);
         }
+    }
 
-        [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
+    [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
 
-        [Inject]
-        public ITodoTemplateAuthenticationService TodoTemplateAuthenticationService { get; set; } = default!;
+    private void CloseModal()
+    {
+        IsOpen = false;
+    }
 
-        private void CloseModal()
-        {
-            if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
-
-            IsOpen = false;
-        }
-
-        private async Task SignOut()
-        {
-            await TodoTemplateAuthenticationService.SignOut();
-            CloseModal();
-        }
+    private async Task SignOut()
+    {
+        await todoTemplateAuthenticationService.SignOut();
+        CloseModal();
     }
 }

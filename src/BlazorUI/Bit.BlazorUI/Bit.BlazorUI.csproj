@@ -6,6 +6,7 @@
         <TargetFramework>net6.0</TargetFramework>
         <IncludeContentInPack>false</IncludeContentInPack>
         <IsTrimmable>true</IsTrimmable>
+        <ImplicitUsings>enable</ImplicitUsings>
     </PropertyGroup>
 
     <ItemGroup>
@@ -39,6 +40,14 @@
             <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
             <CopyToPublishDirectory>Never</CopyToPublishDirectory>
         </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="Microsoft.AspNetCore.Components" />
+        <Using Include="Microsoft.AspNetCore.Components.Web" />
+        <Using Include="Microsoft.AspNetCore.Components.Rendering" />
+        <Using Include="Microsoft.AspNetCore.Components.Web.Virtualization" />
+        <Using Include="Microsoft.JSInterop" />
     </ItemGroup>
 
 </Project>

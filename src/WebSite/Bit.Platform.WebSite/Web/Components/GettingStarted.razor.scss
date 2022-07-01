@@ -21,7 +21,6 @@
 .getting-started-step-section {
     display: flex;
     flex-flow: column nowrap;
-    margin: rem(64px) 0;
 }
 
 .step-body-card {
@@ -29,19 +28,25 @@
     padding: rem(32px) rem(24px);
     margin: rem(32px) 0;
 
+    @include sm {
+        padding: rem(8px) rem(16px);
+    }
+
     .card-container {
         padding: 0 rem(20px);
+
+        @include sm {
+            padding: 0;
+        }
+
+        .margin-20 {
+            margin: rem(20px);
+        }
     }
 
     .description {
         color: $Gray1;
         @include Body2;
-    }
-
-    .code-header {
-        color: $Gray1;
-        @include Subtitle3;
-        padding: rem(20px) 0;
     }
 
     .code {
@@ -75,7 +80,7 @@
     }
 
     li {
-        @include Subtitle3;
+        @include Body2;
         color: $Gray1;
     }
 
@@ -92,5 +97,11 @@
     .image {
         width: 100%;
         margin: rem(25px) 0;
+    }
+
+    .image-responsive {
+        margin: rem(25px) auto;
+        display: block;
+        max-width: 100%;
     }
 }

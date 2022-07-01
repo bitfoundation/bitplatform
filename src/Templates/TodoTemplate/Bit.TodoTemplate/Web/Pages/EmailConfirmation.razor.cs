@@ -2,6 +2,10 @@
 
 public partial class EmailConfirmation
 {
+    [AutoInject] private HttpClient httpClient = default!;
+
+    [AutoInject] private NavigationManager navigationManager = default!;
+
     [Parameter]
     [SupplyParameterFromQuery]
     public string? Email { get; set; }
@@ -15,13 +19,9 @@ public partial class EmailConfirmation
     public BitMessageBarType EmailConfirmationMessageType { get; set; }
     public string? EmailConfirmationMessage { get; set; }
 
-    [AutoInject] private HttpClient HttpClient { get; set; } = default!;
-
-    [AutoInject] private NavigationManager NavigationManager { get; set; } = default!;
-
     private void RedirectToSignIn()
     {
-        NavigationManager.NavigateTo("/sign-in");
+        navigationManager.NavigateTo("/sign-in");
     }
 
     private async Task ResendLink()
@@ -36,7 +36,7 @@ public partial class EmailConfirmation
 
         try
         {
-            await HttpClient.PostAsJsonAsync("Auth/SendConfirmationEmail", new()
+            await httpClient.PostAsJsonAsync("Auth/SendConfirmationEmail", new()
             {
                 Email = Email
             }, TodoTemplateJsonContext.Default.SendConfirmationEmailRequestDto);

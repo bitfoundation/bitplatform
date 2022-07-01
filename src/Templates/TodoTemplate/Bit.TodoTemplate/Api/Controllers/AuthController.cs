@@ -1,11 +1,11 @@
 ﻿//-:cnd:noEmit
-using TodoTemplate.Api.Models.Account;
-using TodoTemplate.Shared.Dtos.Account;
+using System.Web;
+using Microsoft.AspNetCore.Hosting.Server;
 using FluentEmail.Core;
 using TodoTemplate.Api.Resources;
+using TodoTemplate.Api.Models.Account;
+using TodoTemplate.Shared.Dtos.Account;
 using TodoTemplate.Api.Models.Emailing;
-using Microsoft.AspNetCore.Hosting.Server;
-using System.Web;
 
 namespace TodoTemplate.Api.Controllers;
 
@@ -13,19 +13,17 @@ namespace TodoTemplate.Api.Controllers;
 [ApiController, AllowAnonymous]
 public partial class AuthController : ControllerBase
 {
-    [AutoInject] private readonly UserManager<User> _userManager;
+    [AutoInject] private UserManager<User> _userManager;
 
-    [AutoInject] private readonly IJwtService _jwtService;
+    [AutoInject] private IJwtService _jwtService;
 
-    [AutoInject] private readonly IMapper _mapper;
+    [AutoInject] private IMapper _mapper;
 
-    [AutoInject] private readonly SignInManager<User> _signInManager;
+    [AutoInject] private SignInManager<User> _signInManager;
 
-    [AutoInject] private readonly IOptionsSnapshot<AppSettings> _appSettings;
+    [AutoInject] private IOptionsSnapshot<AppSettings> _appSettings;
 
-    [AutoInject] private readonly IFluentEmail _fluentEmail;
-
-    [AutoInject] private readonly IServer _server;
+    [AutoInject] private IFluentEmail _fluentEmail;
 
     [HttpPost("[action]")]
     public async Task SignUp(SignUpRequestDto signUpRequest, CancellationToken cancellationToken)

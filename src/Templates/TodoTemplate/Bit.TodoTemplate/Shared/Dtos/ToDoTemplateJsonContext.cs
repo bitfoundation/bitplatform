@@ -3,6 +3,9 @@ using TodoTemplate.Shared.Dtos.TodoItem;
 
 namespace TodoTemplate.Shared.Dtos;
 
+/// <summary>
+/// https://devblogs.microsoft.com/dotnet/try-the-new-system-text-json-source-generator/
+/// </summary>
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
 [JsonSerializable(typeof(TodoItemDto))]
 [JsonSerializable(typeof(List<TodoItemDto>))]
@@ -17,7 +20,6 @@ namespace TodoTemplate.Shared.Dtos;
 [JsonSerializable(typeof(SendConfirmationEmailRequestDto))]
 [JsonSerializable(typeof(SendResetPasswordEmailRequestDto))]
 [JsonSerializable(typeof(ResetPasswordRequestDto))]
-
 public partial class TodoTemplateJsonContext : JsonSerializerContext
 {
 }

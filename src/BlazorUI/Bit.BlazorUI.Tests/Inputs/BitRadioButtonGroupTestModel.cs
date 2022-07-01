@@ -1,10 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Bit.BlazorUI.Tests.Inputs
+namespace Bit.BlazorUI.Tests.Inputs;
+
+public class BitRadioButtonGroupTestModel
 {
-    public class BitRadioButtonGroupTestModel
-    {
-        [Required]
-        public string Value { get; set; }
-    }
+    [Required]
+    public string Value { get; set; }
 }

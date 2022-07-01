@@ -1,14 +1,13 @@
 ﻿using System;
 
-namespace Bit.BlazorUI.Playground.Web.Services
-{
-    public class NavManuService
-    {
-        public event Action OnToggleMenu;
+namespace Bit.BlazorUI.Playground.Web.Services;
 
-        public void ToggleMenu()
-        {
-            OnToggleMenu.Invoke();
-        }
+public class NavManuService
+{
+    public event Action OnToggleMenu;
+
+    public void ToggleMenu()
+    {
+        OnToggleMenu.Invoke();
     }
 }

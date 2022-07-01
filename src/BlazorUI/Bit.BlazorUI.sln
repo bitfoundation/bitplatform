@@ -5,9 +5,11 @@ VisualStudioVersion = 17.0.31808.319
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".Solution Items", ".Solution Items", "{7B24BEC3-93BA-4789-B009-71A778ADA56F}"
 	ProjectSection(SolutionItems) = preProject
-		.editorconfig = .editorconfig
+		..\.editorconfig = ..\.editorconfig
 		..\..\.gitignore = ..\..\.gitignore
-		Bit.Build.props = Bit.Build.props
+		..\Bit.Build.props = ..\Bit.Build.props
+		..\global.json = ..\global.json
+		README.md = README.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Playground", "Playground", "{23426B1A-CC46-4D11-B233-208A57B2BCA2}"
@@ -32,7 +34,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.BlazorUI.SourceGenerato
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{04FCC31B-45F7-4DBF-B9B3-2DCC8168759E}"
 	ProjectSection(SolutionItems) = preProject
-		..\..\.github\workflows\Bit.BlazorUI.ci.yml = ..\..\.github\workflows\Bit.BlazorUI.ci.yml
 		..\..\.github\workflows\nuget.org.yml = ..\..\.github\workflows\nuget.org.yml
 		..\..\.github\workflows\Prerelease.nuget.org.yml = ..\..\.github\workflows\Prerelease.nuget.org.yml
 	EndProjectSection

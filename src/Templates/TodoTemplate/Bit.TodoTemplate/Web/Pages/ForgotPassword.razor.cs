@@ -4,6 +4,8 @@ namespace TodoTemplate.App.Pages;
 
 public partial class ForgotPassword
 {
+    [AutoInject] private HttpClient httpClient = default!;
+
     public SendResetPasswordEmailRequestDto ForgotPasswordModel { get; set; } = new();
 
     public bool IsLoading { get; set; }
@@ -12,10 +14,8 @@ public partial class ForgotPassword
 
     public string? ForgotPasswordMessage { get; set; }
 
-    [AutoInject] private HttpClient HttpClient { get; set; } = default!;
-
     private bool IsSubmitButtonEnabled =>
-        ForgotPasswordModel.Email.HasValue() 
+        ForgotPasswordModel.Email.HasValue()
         && IsLoading is false;
 
     private async Task Submit()
@@ -30,7 +30,7 @@ public partial class ForgotPassword
 
         try
         {
-            await HttpClient.PostAsJsonAsync("Auth/SendResetPasswordEmail", ForgotPasswordModel, TodoTemplateJsonContext.Default.SendResetPasswordEmailRequestDto);
+            await httpClient.PostAsJsonAsync("Auth/SendResetPasswordEmail", ForgotPasswordModel, TodoTemplateJsonContext.Default.SendResetPasswordEmailRequestDto);
 
             ForgotPasswordMessageType = BitMessageBarType.Success;
 

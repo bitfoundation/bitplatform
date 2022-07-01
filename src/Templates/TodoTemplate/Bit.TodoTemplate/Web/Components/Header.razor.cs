@@ -2,21 +2,21 @@
 
 public partial class Header : IAsyncDisposable
 {
+    [AutoInject] private IStateService stateService = default!;
+
+    [AutoInject] private TodoTemplateAuthenticationStateProvider todoTemplateAuthenticationStateProvider = default!;
+
+    [AutoInject] private IExceptionHandler exceptionHandler = default!;
+
     [Parameter] public EventCallback OnToggleMenu { get; set; }
-
-    [AutoInject] private IStateService StateService { get; set; } = default!;
-
-    [AutoInject] private TodoTemplateAuthenticationStateProvider TodoTemplateAuthenticationStateProvider { get; set; } = default!;
-
-    [AutoInject] private IExceptionHandler ExceptionHandler { get; set; } = default!;
 
     public bool IsUserAuthenticated { get; set; }
 
     protected async override Task OnInitAsync()
     {
-        TodoTemplateAuthenticationStateProvider.AuthenticationStateChanged += VerifyUserIsAuthenticatedOrNot;
+        todoTemplateAuthenticationStateProvider.AuthenticationStateChanged += VerifyUserIsAuthenticatedOrNot;
 
-        IsUserAuthenticated = await StateService.GetValue($"{nameof(Header)}-{nameof(IsUserAuthenticated)}", async () => await TodoTemplateAuthenticationStateProvider.IsUserAuthenticated());
+        IsUserAuthenticated = await stateService.GetValue($"{nameof(Header)}-{nameof(IsUserAuthenticated)}", async () => await todoTemplateAuthenticationStateProvider.IsUserAuthenticated());
 
         await base.OnInitAsync();
     }
@@ -25,11 +25,11 @@ public partial class Header : IAsyncDisposable
     {
         try
         {
-            IsUserAuthenticated = await TodoTemplateAuthenticationStateProvider.IsUserAuthenticated();
+            IsUserAuthenticated = await todoTemplateAuthenticationStateProvider.IsUserAuthenticated();
         }
         catch (Exception ex)
         {
-            ExceptionHandler.Handle(ex);
+            exceptionHandler.Handle(ex);
         }
         finally
         {
@@ -44,6 +44,6 @@ public partial class Header : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        TodoTemplateAuthenticationStateProvider.AuthenticationStateChanged -= VerifyUserIsAuthenticatedOrNot;
+        todoTemplateAuthenticationStateProvider.AuthenticationStateChanged -= VerifyUserIsAuthenticatedOrNot;
     }
 }
