@@ -2,7 +2,7 @@
 
 public class TodoTemplateComponentBase : ComponentBase
 {
-    [AutoInject] IExceptionHandler ExceptionHandler { get; set; } = default!;
+    [AutoInject] IExceptionHandler exceptionHandler = default!;
 
     protected async sealed override Task OnInitializedAsync()
     {
@@ -13,7 +13,7 @@ public class TodoTemplateComponentBase : ComponentBase
         }
         catch (Exception exp)
         {
-            ExceptionHandler.Handle(exp);
+            exceptionHandler.Handle(exp);
         }
     }
 
@@ -26,7 +26,7 @@ public class TodoTemplateComponentBase : ComponentBase
         }
         catch (Exception exp)
         {
-            ExceptionHandler.Handle(exp);
+            exceptionHandler.Handle(exp);
         }
     }
 
@@ -59,7 +59,7 @@ public class TodoTemplateComponentBase : ComponentBase
             }
             catch (Exception exp)
             {
-                ExceptionHandler.Handle(exp);
+                exceptionHandler.Handle(exp);
             }
         };
     }
@@ -77,7 +77,7 @@ public class TodoTemplateComponentBase : ComponentBase
             }
             catch (Exception exp)
             {
-                ExceptionHandler.Handle(exp);
+                exceptionHandler.Handle(exp);
             }
         };
     }
@@ -95,7 +95,7 @@ public class TodoTemplateComponentBase : ComponentBase
             }
             catch (Exception exp)
             {
-                ExceptionHandler.Handle(exp);
+                exceptionHandler.Handle(exp);
             }
         };
     }
@@ -113,7 +113,7 @@ public class TodoTemplateComponentBase : ComponentBase
             }
             catch (Exception exp)
             {
-                ExceptionHandler.Handle(exp);
+                exceptionHandler.Handle(exp);
             }
         };
     }

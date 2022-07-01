@@ -4,6 +4,14 @@ namespace TodoTemplate.App.Pages;
 
 public partial class ResetPassword
 {
+    [AutoInject] private HttpClient httpClient = default!;
+
+    [AutoInject] private NavigationManager navigationManager = default!;
+
+    [AutoInject] private ITodoTemplateAuthenticationService todoTemplateAuthenticationService = default!;
+
+    [AutoInject] private TodoTemplateAuthenticationStateProvider todoTemplateAuthenticationStateProvider = default!;
+
     [Parameter]
     [SupplyParameterFromQuery]
     public string? Email { get; set; }
@@ -19,14 +27,6 @@ public partial class ResetPassword
     public BitMessageBarType ResetPasswordMessageType { get; set; }
 
     public string? ResetPasswordMessage { get; set; }
-
-    [AutoInject] private HttpClient HttpClient { get; set; } = default!;
-
-    [AutoInject] private NavigationManager NavigationManager { get; set; } = default!;
-
-    [AutoInject] private ITodoTemplateAuthenticationService TodoTemplateAuthenticationService { get; set; } = default!;
-
-    [AutoInject] private TodoTemplateAuthenticationStateProvider TodoTemplateAuthenticationStateProvider { get; set; } = default!;
 
     private bool IsSubmitButtonEnabled =>
         ResetPasswordModel.Password.HasValue()
@@ -48,19 +48,19 @@ public partial class ResetPassword
             ResetPasswordModel.Email = Email;
             ResetPasswordModel.Token = Token;
 
-            await HttpClient.PostAsJsonAsync("Auth/ResetPassword", ResetPasswordModel, TodoTemplateJsonContext.Default.ResetPasswordRequestDto);
+            await httpClient.PostAsJsonAsync("Auth/ResetPassword", ResetPasswordModel, TodoTemplateJsonContext.Default.ResetPasswordRequestDto);
 
             ResetPasswordMessageType = BitMessageBarType.Success;
 
             ResetPasswordMessage = "Your password changed successfully.";
 
-            await TodoTemplateAuthenticationService.SignIn(new SignInRequestDto
+            await todoTemplateAuthenticationService.SignIn(new SignInRequestDto
             {
                 UserName = Email,
                 Password = ResetPasswordModel.Password
             });
 
-            NavigationManager.NavigateTo("/");
+            navigationManager.NavigateTo("/");
         }
         catch (KnownException e)
         {
@@ -78,9 +78,9 @@ public partial class ResetPassword
     {
         if (firstRender)
         {
-            if (await TodoTemplateAuthenticationStateProvider.IsUserAuthenticated())
+            if (await todoTemplateAuthenticationStateProvider.IsUserAuthenticated())
             {
-                NavigationManager.NavigateTo("/");
+                navigationManager.NavigateTo("/");
             }
         }
 

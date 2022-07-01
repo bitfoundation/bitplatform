@@ -5,6 +5,16 @@ namespace TodoTemplate.App.Components;
 
 public partial class NavMenu
 {
+    [AutoInject] private HttpClient httpClient = default!;
+
+    [AutoInject] private IStateService stateService = default!;
+
+    [AutoInject] private IAuthTokenProvider authTokenProvider = default!;
+
+#if BlazorServer || BlazorHybrid
+    [AutoInject] private IConfiguration configuration = default!;
+#endif
+
     private bool isMenuOpen;
 
     public List<BitNavLinkItem> NavLinks { get; set; }
@@ -64,16 +74,6 @@ public partial class NavMenu
 
     [Parameter] public EventCallback<bool> IsMenuOpenChanged { get; set; }
 
-    [AutoInject] private HttpClient HttpClient { get; set; } = default!;
-
-    [AutoInject] private IStateService StateService { get; set; } = default!;
-
-    [AutoInject] private IAuthTokenProvider AuthTokenProvider { get; set; } = default!;
-
-#if BlazorServer || BlazorHybrid
-    [AutoInject] private IConfiguration Configuration { get; set; } = default!;
-#endif
-
     private void CloseMenu()
     {
         IsMenuOpen = false;
@@ -81,16 +81,16 @@ public partial class NavMenu
 
     protected override async Task OnInitAsync()
     {
-        User = await StateService.GetValue($"{nameof(NavMenu)}-{nameof(User)}", async () =>
-            await HttpClient.GetFromJsonAsync("User/GetCurrentUser", TodoTemplateJsonContext.Default.UserDto));
+        User = await stateService.GetValue($"{nameof(NavMenu)}-{nameof(User)}", async () =>
+            await httpClient.GetFromJsonAsync("User/GetCurrentUser", TodoTemplateJsonContext.Default.UserDto));
 
-        var access_token = await StateService.GetValue($"{nameof(NavMenu)}-access_token", async () =>
-            await AuthTokenProvider.GetAcccessToken());
+        var access_token = await stateService.GetValue($"{nameof(NavMenu)}-access_token", async () =>
+            await authTokenProvider.GetAcccessToken());
 
         ProfileImageUrl = $"api/Attachment/GetProfileImage?access_token={access_token}";
 
 #if BlazorServer || BlazorHybrid
-        var serverUrl = Configuration.GetValue<string>("ApiServerAddress");
+        var serverUrl = configuration.GetValue<string>("ApiServerAddress");
         ProfileImageUrl = $"{serverUrl}{ProfileImageUrl}";
 #endif
 

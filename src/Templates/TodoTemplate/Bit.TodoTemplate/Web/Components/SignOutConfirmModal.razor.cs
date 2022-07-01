@@ -2,6 +2,8 @@
 
 public partial class SignOutConfirmModal
 {
+    [AutoInject] public ITodoTemplateAuthenticationService todoTemplateAuthenticationService = default!;
+
     private bool isOpen;
 
     [Parameter]
@@ -18,9 +20,6 @@ public partial class SignOutConfirmModal
 
     [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
 
-    [Inject]
-    public ITodoTemplateAuthenticationService TodoTemplateAuthenticationService { get; set; } = default!;
-
     private void CloseModal()
     {
         IsOpen = false;
@@ -28,7 +27,7 @@ public partial class SignOutConfirmModal
 
     private async Task SignOut()
     {
-        await TodoTemplateAuthenticationService.SignOut();
+        await todoTemplateAuthenticationService.SignOut();
         CloseModal();
     }
 }

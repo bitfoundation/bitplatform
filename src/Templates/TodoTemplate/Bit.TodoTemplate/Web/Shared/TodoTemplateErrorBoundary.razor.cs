@@ -3,12 +3,11 @@ namespace TodoTemplate.App.Shared;
 
 public partial class TodoTemplateErrorBoundary
 {
+    [AutoInject] private IExceptionHandler exceptionHandler = default!;
+
+    [AutoInject] private NavigationManager navigationManager = default!;
+
     private bool ShowException { get; set; }
-
-    [AutoInject] private IExceptionHandler ExceptionHandler { get; set; } = default!;
-
-    [AutoInject] private NavigationManager NavigationManager { get; set; } = default!;
-
 
 #if DEBUG
     protected override void OnInitialized()
@@ -19,18 +18,18 @@ public partial class TodoTemplateErrorBoundary
 
     protected override Task OnErrorAsync(Exception exception)
     {
-        ExceptionHandler.Handle(exception);
+        exceptionHandler.Handle(exception);
 
         return Task.CompletedTask;
     }
 
     private void Refresh()
     {
-        NavigationManager.NavigateTo(NavigationManager.Uri, true);
+        navigationManager.NavigateTo(navigationManager.Uri, true);
     }
 
     private void GoHome()
     {
-        NavigationManager.NavigateTo("/", true);
+        navigationManager.NavigateTo("/", true);
     }
 }
