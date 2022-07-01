@@ -1,13 +1,12 @@
 ﻿<header class="main-header">
-    <div class="header-cover @(CurrentUrl == Urls.GettingStarted ? "light-blue-header-cover" : "")"></div>
-    <div class="header-container" @ref=HeaderElement>
-        <div class="header-section @(CurrentUrl == Urls.GettingStarted ? "light-blue-header-section" : "")">
+    <div class="@(CurrentUrl == Urls.GettingStarted ? "light-blue-header-cover" : "transparent-header-cover")"></div>
+    <div class="@(CurrentUrl == Urls.GettingStarted ? "light-blue-header-container" : "transparent-header-container")" @ref=HeaderElement>
+        <div class="header-section">
             <a class="header-logo" href="@Urls.HomePage"></a>
             <div class="row">
-                <a class="header-link @(CurrentUrl == Urls.HomePage ? "header-link-active" : "")" href="@Urls.HomePage">Home</a>
-                <a class="header-link @(CurrentUrl != Urls.HomePage ? "header-link-active" : "")" href="@Urls.GettingStarted">Getting started</a>
+                <a class="header-link home-link @(CurrentUrl == Urls.HomePage ? "header-link-active" : "")" href="@Urls.HomePage">Home</a>
+                <a class="header-link @(CurrentUrl != Urls.HomePage ? "header-link-active" : "")" href="@Urls.GettingStarted">Projects</a>
                 <a class="github-btn" target="_blank" href="@Urls.Github"></a>
-                <BitIconButton Class="header-menu-btn" IconName=BitIconName.CollapseMenu />
             </div>
         </div>
     </div>

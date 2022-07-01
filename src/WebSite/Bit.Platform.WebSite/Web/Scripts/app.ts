@@ -49,10 +49,10 @@ function highlightSnippet() {
 function RegisterOnScrollToChangeHeaderStyle(element: any) {
     window.onscroll = function (event) {
         if (document.documentElement.scrollTop >= 100) {
-            element.classList.add("blue-header");
+            element.classList.add("blue-header-container");
         }
         else {
-            element.classList.remove("blue-header");
+            element.classList.remove("blue-header-container");
         }
     };
 }
