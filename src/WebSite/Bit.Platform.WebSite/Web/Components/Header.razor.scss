@@ -20,7 +20,7 @@
     }
 }
 
-.header-cover {
+@mixin HeaderCover {
     position: absolute;
     background-color: $White;
     width: 100%;
@@ -28,17 +28,7 @@
     height: 100%;
 }
 
-.light-blue-header-cover {
-    background-color: $B7Color;
-}
-
-.header-container {
-    @include PageContainer;
-    height: 100%;
-    position: absolute;
-}
-
-.header-section {
+@mixin HeaderSection {
     @include PageSection;
     background-color: unset;
     flex-flow: row nowrap;
@@ -48,9 +38,14 @@
 
     .header-link {
         @include Body3;
-        color: $B6Color;
         margin-right: rem(72px);
 
+        @include sm {
+            margin-right: rem(23px);
+        }
+    }
+
+    .home-link {
         @include sm {
             display: none;
         }
@@ -58,11 +53,64 @@
 
     .header-link-active {
         @include Subtitle4;
+    }
+}
+
+@mixin GithubBtn {
+    width: rem(48px);
+    height: rem(48px);
+    border-radius: 50%;
+    background-image: url('/images/github-icon.svg');
+    background-position: center bottom;
+    background-repeat: no-repeat;
+    background-size: rem(48px);
+    background-color: $B2Color;
+    cursor: pointer;
+
+    &:hover {
+        background-color: $B3Color;
+    }
+
+    @include lt-lg {
+        width: rem(32px);
+        height: rem(32px);
+        background-size: rem(32px);
+    }
+}
+
+@mixin TransparentHeaderSection {
+    @include HeaderSection;
+
+    .header-link {
+        color: $B6Color;
+
+        @include sm {
+            color: $White;
+        }
+    }
+
+    .header-link-active {
         color: $B5Color;
+
+        @include sm {
+            color: $White;
+        }
+    }
+
+    .github-btn {
+        @include GithubBtn;
+
+        @include sm {
+            @include GithubBtn;
+            background-image: url('/images/github-blue-icon.svg');
+            background-color: $White;
+        }
     }
 }
 
-.light-blue-header-section {
+@mixin LightBlueHeaderSection {
+    @include HeaderSection;
+
     .header-link {
         color: $White;
     }
@@ -70,20 +118,49 @@
     .header-link-active {
         color: $White;
     }
+
+    .github-btn {
+        @include GithubBtn;
+        background-image: url('/images/github-blue-icon.svg');
+        background-color: $White;
+    }
 }
 
-.blue-header {
-    background-color: $B8Color;
+.transparent-header-cover {
+    @include HeaderCover;
+}
+
+.light-blue-header-cover {
+    @include HeaderCover;
+    background-color: $B7Color;
+}
+
+.transparent-header-container {
+    @include PageContainer;
+    height: 100%;
+    position: absolute;
+
+    .header-section {
+        @include TransparentHeaderSection;
+    }
+}
+
+.light-blue-header-container {
+    @include PageContainer;
+    height: 100%;
+    position: absolute;
+
+    .header-section {
+        @include LightBlueHeaderSection;
+    }
+}
+
+.blue-header-container {
+    background-color: $B7Color;
     opacity: 1;
-}
 
-.blue-header .header-section {
-    .header-link {
-        color: $White;
-    }
-
-    .header-link-active {
-        color: $White;
+    .header-section {
+        @include LightBlueHeaderSection;
     }
 }
 
@@ -110,31 +187,5 @@
     @include sm {
         width: rem(24px);
         height: rem(16px);
-    }
-}
-
-.github-btn {
-    width: rem(48px);
-    height: rem(48px);
-    border-radius: 50%;
-    background-image: url('/images/github-icon.svg');
-    background-position: center bottom;
-    background-repeat: no-repeat;
-    background-size: rem(48px);
-    background-color: $B2Color;
-    cursor: pointer;
-
-    &:hover {
-        background-color: $B3Color;
-    }
-
-    @include md {
-        width: rem(32px);
-        height: rem(32px);
-        background-size: rem(32px);
-    }
-
-    @include sm {
-        display: none;
     }
 }

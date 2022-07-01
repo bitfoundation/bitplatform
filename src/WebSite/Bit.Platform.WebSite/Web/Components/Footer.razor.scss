@@ -20,6 +20,10 @@
     }
 }
 
+.footer-section .reverse {
+    flex-flow: row wrap-reverse;
+}
+
 .divider {
     padding-bottom: rem(60px);
     border-right: unset;
@@ -47,6 +51,12 @@
     .line {
         @include Body2;
         color: $Gray1;
+
+        @include lt-lg {
+            font-weight: 400;
+            font-size: rem(12px);
+            line-height: rem(24px);
+        }
     }
 }
 
@@ -90,6 +100,11 @@
 
 .copy-right-column {
     @include Body3;
+    text-align: center;
+
+    @include sm {
+        margin-top: rem(15px);
+    }
 }
 
 @mixin SocialMediaLink {
@@ -106,7 +121,6 @@
     @include lt-lg {
         width: rem(24px);
         height: rem(24px);
-        margin: 0 rem(8px);
     }
 }
 
@@ -128,12 +142,12 @@
     }
 }
 
-.facebook-link {
+.youtube-link {
     @include SocialMediaLink;
-    background-image: url('/images/footer/facebook-icon.svg');
+    background-image: url('/images/footer/youtube-icon.svg');
 
     &:hover {
-        background-color: $FacebookColor;
+        background-color: $YouTubeColor;
     }
 }
 
