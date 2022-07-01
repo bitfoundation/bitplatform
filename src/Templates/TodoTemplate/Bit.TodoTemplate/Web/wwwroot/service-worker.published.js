@@ -13,7 +13,7 @@ self.assetsExclude = [
     /bit\.blazorui\.fluent\.css$/,
     /bit\.blazorui\.material\.min\.css$/,
     /bit\.blazorui\.material\.css$/,
-    /todoTemplate\.min\.js/,
+    /app\.min\.js/,
     /app\.css/
 ];
 
