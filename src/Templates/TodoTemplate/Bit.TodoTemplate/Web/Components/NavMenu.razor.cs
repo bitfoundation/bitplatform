@@ -15,7 +15,6 @@ public partial class NavMenu
     [AutoInject] private IConfiguration configuration = default!;
 #endif
 
-    private bool IsMenuOpenHasBeenSet;
     private bool isMenuOpen;
 
     public List<BitNavLinkItem> NavLinks { get; set; }
