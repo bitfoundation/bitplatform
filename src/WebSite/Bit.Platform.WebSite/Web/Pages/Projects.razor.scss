@@ -94,14 +94,14 @@
         }
 
         @include lt-lg {
-            width: rem(70px);
-            height: rem(70px);
+            width: rem(60px);
+            height: rem(60px);
             margin: 0 rem(3px);
 
             span {
-                width: rem(35px);
-                height: rem(35px);
-                background-size: rem(35px);
+                width: rem(30px);
+                height: rem(30px);
+                background-size: rem(30px);
             }
         }
     }

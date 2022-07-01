@@ -57,6 +57,10 @@
         color: $B3Color;
         margin: rem(25px) 0;
         overflow: auto;
+
+        code {
+            font-family: "Consolas";
+        }
     }
 
     h4 {
