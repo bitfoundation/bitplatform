@@ -17,6 +17,6 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore src/Bit-CI.sln
     - name: MSBuild
-      run: dotnet msbuild src/Bit-CI.sln -m:1
+      run: dotnet msbuild src/Bit-CI.sln
     - name: Test
       run: dotnet test --no-build --verbosity normal src/BlazorUI/Bit.BlazorUI.Tests/Bit.BlazorUI.Tests.csproj
