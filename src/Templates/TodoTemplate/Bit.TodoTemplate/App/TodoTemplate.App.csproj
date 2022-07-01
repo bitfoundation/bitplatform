@@ -38,7 +38,7 @@
 
     <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
         <AndroidAotProfile Condition="Exists('custom.aprof')" Include="custom.aprof" />
-        <!-- ysm: baraye sakht e custom.aprof ke performance e barnameye publish shode dar android ro behbood mide, dastoorat e zir ro bezanid -->
+        <!-- Run the following commands to create custom.aprof file which improves the Android app performance -->
         <!-- dotnet add package Mono.AotProfiler.Android -->
         <!-- dotnet build -t:BuildAndStartAotProfiling -f net6.0-android /p:UseInterpreter=false -->
         <!-- dotnet build -t:FinishAotProfiling -f net6.0-android -->

@@ -31,7 +31,7 @@ public class TodoTemplateComponentBase : ComponentBase
     }
 
     /// <summary>
-    /// ysm: Replacement for <see cref="OnInitializedAsync"/> which catches all possible exceptions in order to prevent app crash.
+    /// Replacement for <see cref="OnInitializedAsync"/> which catches all possible exceptions in order to prevent app crash.
     /// </summary>
     protected virtual Task OnInitAsync()
     {
@@ -39,7 +39,7 @@ public class TodoTemplateComponentBase : ComponentBase
     }
 
     /// <summary>
-    /// ysm: Replacement for <see cref="OnParametersSetAsync"/> which catches all possible exceptions in order to prevent app crash.
+    /// Replacement for <see cref="OnParametersSetAsync"/> which catches all possible exceptions in order to prevent app crash.
     /// </summary>
     protected virtual Task OnParamsSetAsync()
     {
@@ -47,7 +47,7 @@ public class TodoTemplateComponentBase : ComponentBase
     }
 
     /// <summary>
-    /// Executes passed action while catching all possible exceptions in order to prevent app crash.
+    /// Executes passed action while catching all possible exceptions to prevent app crash.
     /// </summary>
     public virtual Action WrapHandled(Action action)
     {
@@ -65,7 +65,7 @@ public class TodoTemplateComponentBase : ComponentBase
     }
 
     /// <summary>
-    /// Executes passed action while catching all possible exceptions in order to prevent app crash.
+    /// Executes passed action while catching all possible exceptions to prevent app crash.
     /// </summary>
     public virtual Action<T> WrapHandled<T>(Action<T> func)
     {
@@ -83,7 +83,7 @@ public class TodoTemplateComponentBase : ComponentBase
     }
 
     /// <summary>
-    /// Executes passed function  while catching all possible exceptions in order to prevent app crash.
+    /// Executes passed function while catching all possible exceptions to prevent app crash.
     /// </summary>
     public virtual Func<Task> WrapHandled(Func<Task> func)
     {
@@ -101,7 +101,7 @@ public class TodoTemplateComponentBase : ComponentBase
     }
 
     /// <summary>
-    /// Executes passed function while catching all possible exceptions in order to prevent app crash.
+    /// Executes passed function while catching all possible exceptions to prevent app crash.
     /// </summary>
     public virtual Func<T, Task> WrapHandled<T>(Func<T, Task> func)
     {
