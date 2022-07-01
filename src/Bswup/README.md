@@ -1,6 +1,6 @@
-## Bit Blazor Serviceworker Update Progress (BitBswup)
+## Bit Blazor Service Worker Update Progress (Bit Bswup)
 
-to use BitBswup, please follow these steps:
+To use BitBswup, please follow these steps:
 
 1. Install the `Bit.Bswup` nuget package
 2. Disable static file caching.You can follow below code in `Startup.cs` file
@@ -12,8 +12,7 @@ app.UseStaticFiles(new StaticFileOptions
     {
         ctx.Context.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue()
         {
-            NoCache = true,
-            NoStore = true
+            NoCache = true
         };
     }
 });
@@ -74,13 +73,13 @@ function bitBswupHandler(type, data) {
 ```
 7. Configure additional settings in the service worker file (based on the sample shown in the `service-worker.js` file of the demo project)
 
-**Service Worker**
+## <a id="service-worker" />**Service Worker**
 - `self.assetsInclude`: The list of files or regex of files to be cached.
 - `self.assetsExclude`: The list of files or regex of files that should not be cached.
-- `self.defaultUrl`: The default page url.When use `_Host.cshtml` set `/`
+- `self.defaultUrl`: The default page url. Use `/` for `_Host.cshtml`
 - `self.prohibitedUrls`: The list of files or regex of files that should not be accessed.
 - `self.assetsUrl`: The url address of service worker assets.
-- `self.externalAssets`: The list of external assets.If don't use `index.html` for default url you should add this `{ "url": "/" }` item.
+- `self.externalAssets`: The list of external assets. If you're not using `index.html` for default url, then you should add this `{ "url": "/" }` item.
 - `self.caseInsensitiveUrl`: If set true you can check case insensitive url in the cache process.
-- `self.serverHandledUrls`: The list of urls or regex that do not enter the service worker process. ex. `api`
+- `self.serverHandledUrls`: The list of urls or regex that do not enter the service worker process. ex. `api, swagger, ...`
 - `self.serverRenderedUrls`: The list of urls or regex that should be cached by the server after rendering. ex. `about.html`

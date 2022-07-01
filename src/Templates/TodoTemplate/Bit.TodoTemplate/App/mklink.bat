@@ -28,11 +28,9 @@ cd wwwroot
 
 rd images /S /Q
 rd scripts /S /Q
-rd styles /S /Q
 
 mklink /j "images" "../../Web/wwwroot/images"
 mklink /j "scripts" "../../Web/wwwroot/scripts"
-mklink /j "styles" "../../Web/wwwroot/styles"
 
 del service-worker.js
 mklink /h "service-worker.js" "../../Web/wwwroot/service-worker.js"

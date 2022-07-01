@@ -14,10 +14,10 @@ public class Program
     {
 #if !BlazorWebAssembly && !BlazorServer
         throw new InvalidOperationException("Please switch to either blazor web assembly or server as described in readme.md");
-#endif
-
+#else
         await CreateHostBuilder(args)
             .RunAsync();
+#endif
     }
 
 #if BlazorWebAssembly
@@ -39,6 +39,7 @@ public class Program
         var builder = WebApplication.CreateBuilder(args);
 
 #if DEBUG
+        // The following line (using the * in the URL), allows the emulators and mobile devices to access the app using the host IP address.
         builder.WebHost.UseUrls("https://*:4001", "http://*:4000");
 #endif
 

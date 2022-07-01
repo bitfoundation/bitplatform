@@ -244,3 +244,4 @@ profile.arm.json
 /Web/wwwroot/service-worker.published*.js
 /App/wwwroot/service-worker*.js
 /App/Styles
+custom.aprof

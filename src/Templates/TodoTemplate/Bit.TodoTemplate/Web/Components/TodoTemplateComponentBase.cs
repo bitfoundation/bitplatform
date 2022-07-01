@@ -30,16 +30,25 @@ public class TodoTemplateComponentBase : ComponentBase
         }
     }
 
+    /// <summary>
+    /// Replacement for <see cref="OnInitializedAsync"/> which catches all possible exceptions in order to prevent app crash.
+    /// </summary>
     protected virtual Task OnInitAsync()
     {
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Replacement for <see cref="OnParametersSetAsync"/> which catches all possible exceptions in order to prevent app crash.
+    /// </summary>
     protected virtual Task OnParamsSetAsync()
     {
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Executes passed action while catching all possible exceptions to prevent app crash.
+    /// </summary>
     public virtual Action WrapHandled(Action action)
     {
         return () =>
@@ -55,6 +64,9 @@ public class TodoTemplateComponentBase : ComponentBase
         };
     }
 
+    /// <summary>
+    /// Executes passed action while catching all possible exceptions to prevent app crash.
+    /// </summary>
     public virtual Action<T> WrapHandled<T>(Action<T> func)
     {
         return (e) =>
@@ -70,6 +82,9 @@ public class TodoTemplateComponentBase : ComponentBase
         };
     }
 
+    /// <summary>
+    /// Executes passed function while catching all possible exceptions to prevent app crash.
+    /// </summary>
     public virtual Func<Task> WrapHandled(Func<Task> func)
     {
         return async () =>
@@ -85,6 +100,9 @@ public class TodoTemplateComponentBase : ComponentBase
         };
     }
 
+    /// <summary>
+    /// Executes passed function while catching all possible exceptions to prevent app crash.
+    /// </summary>
     public virtual Func<T, Task> WrapHandled<T>(Func<T, Task> func)
     {
         return async (e) =>

@@ -1,19 +1,22 @@
 ﻿
-<section class="page-section description-section">
-    <div>This document aimed to create and run a Bit-Platform (Bit) project in a short period. It is assumed that you, as the developer, are familiar with the development prerequisites that follow.</div>
-</section>
-
 <section class="page-section getting-started-step-section">
+
+    <div class="step-body-card">
+        <h4> Getting started</h4>
+        <div class="card-container">
+            <div class="description">This document aimed to create and run a Bit-Platform (Bit) project in a short period. It is assumed that you, as the developer, are familiar with the development prerequisites that follow.</div>
+        </div>
+    </div>
 
     <div class="step-body-card">
         <h4> Development prerequisites</h4>
         <div class="card-container">
             <ul class="first-step-ul">
                 <li>C# as the main development language.</li>
-                <li><a href="https://docs.microsoft.com/en-us/aspnet/core/blazor/?view=aspnetcore-6.0" rel="nofollow">Asp.net core blazor</a> as main development Back-End and Front-End framework</li>
+                <li><a href="https://docs.microsoft.com/en-us/aspnet/core/blazor/?view=aspnetcore-6.0" rel="nofollow">ASP.NET core blazor</a> as main development Back-End and Front-End framework</li>
                 <li><a href="https://www.google.com/url?sa=t&amp;rct=j&amp;q=&amp;esrc=s&amp;source=web&amp;cd=&amp;cad=rja&amp;uact=8&amp;ved=2ahUKEwji-KOu0pj4AhWwm_0HHeZQDzoQFnoECAgQAQ&amp;url=https%3A%2F%2Fwww.w3schools.com%2Fcss%2F&amp;usg=AOvVaw0Xtbw_GBAChsgvZNkPLVGb" rel="nofollow">CSS </a>&amp; <a href="https://www.google.com/url?sa=t&amp;rct=j&amp;q=&amp;esrc=s&amp;source=web&amp;cd=&amp;cad=rja&amp;uact=8&amp;ved=2ahUKEwjvgoO60pj4AhUCi_0HHVmXBMkQFnoECAgQAQ&amp;url=https%3A%2F%2Fsass-lang.com%2F&amp;usg=AOvVaw0p_IRgLEbIPRGWtlW7Wph8" rel="nofollow">Sass </a>as stylesheet</li>
                 <li><a href="https://docs.microsoft.com/en-us/ef/core/" rel="nofollow">Entity Framework Core</a> as ORM to communicate with the database</li>
-                <li><a href="https://docs.microsoft.com/en-us/aspnet/identity/overview/getting-started/introduction-to-aspnet-identity" rel="nofollow">Asp.Net Identity</a> with <a href="https://www.c-sharpcorner.com/article/jwt-authentication-and-authorization-in-net-6-0-with-identity-framework/" rel="nofollow">JWT </a>supporting for handling Authentication</li>
+                <li><a href="https://docs.microsoft.com/en-us/aspnet/identity/overview/getting-started/introduction-to-aspnet-identity" rel="nofollow">ASP.NET Identity</a> with <a href="https://www.c-sharpcorner.com/article/jwt-authentication-and-authorization-in-net-6-0-with-identity-framework/" rel="nofollow">JWT </a>supporting for handling Authentication</li>
                 <li>Swagger as OpenId for APi Documentation</li>
             </ul>
         </div>
@@ -26,7 +29,7 @@
                 <li>
                     Microsoft Visual Studio 2022 - Preview Version 17.3.0 Preview or higher with the following workloads and extention
                     <ul dir="auto">
-                        <li>Asp.net and web development</li>
+                        <li>ASP.NET and web development</li>
                         <li>Net Multi-Platform App UI development</li>
                     </ul>
                 </li>
@@ -39,16 +42,22 @@
     <div class="step-body-card">
         <h4> Create project</h4>
         <div class="card-container">
-            <div class="code-header">
-                1. Install the TodoTemplate Template from the NuGet package manager
-            </div>
-            <pre class="code"><code>dotnet new --install Bit.TodoTemplate</code></pre>
-            <div class="code-header">
-                2. Create a new project using the Template installed
-            </div>
-            <pre class="code"><code>dotnet new Bit.TodoTemplate</code></pre>
+            <ol class="first-step-ul">
+                <li>
+                    Install the TodoTemplate Template from the NuGet package manager
+                    <pre class="code"><code>dotnet new --install Bit.TodoTemplate</code></pre>
+                </li>
+                <li>
+                    Create a new project using the Template installed
+                    <pre class="code"><code>dotnet new bit-todo</code></pre>
+                </li>
+                <li>
+                    Make sure the first line in the <span class="high-light">TodoTemplate.Web.csproj</span> file contains the following value.
+                    <pre class="code"><code>@("<Project Sdk=\"Microsoft.NET.Sdk.Web\">")</code></pre>
+                </li>
+            </ol>
             <div class="description"><strong>Note</strong>: By default, the current folder name will be considered as the solution name. If you want to choose another name, use the switch -n as below.</div>
-            <pre class="code"><code>dotnet new Bit.TodoTemplate -n [YourSolutionName]</code></pre>
+            <div class="margin-20"><pre class="code"><code>dotnet new Bit.TodoTemplate -n [YourSolutionName]</code></pre></div>
         </div>
     </div>
 
@@ -194,7 +203,7 @@
                 A Blazor WebAssembly app built as a <a href="https://en.wikipedia.org/wiki/Progressive_web_application" title="PWA" rel="nofollow">Progressive Web App</a> (PWA) uses modern browser APIs to enable many of the capabilities of a native client app, such as working offline, running in its own app window, launching from the host's operating system, receiving push notifications, and automatically updating in the background.
             </div>
             <div class="description">
-                <strong>Note</strong>: Asp.net blazor supports  <strong>PWA</strong> by default, but its update mechanism is unreliable due PWA nature,  <strong>Bit</strong> allows you to handle it When a new version wants to be updated.
+                <strong>Note</strong>: ASP.NET blazor supports  <strong>PWA</strong> by default, but its update mechanism is unreliable due PWA nature,  <strong>Bit</strong> allows you to handle it When a new version wants to be updated.
             </div>
             <h3>SSR</h3>
             <div class="description">
@@ -219,12 +228,13 @@
     </div>
 
     <div class="step-body-card">
-        <h4> Settings</h4>
-        <h3>Authentication policies</h3>
-        <div class="description">
-            Bit provides authentication with and implements the SignUp and SignIn user interfaces. You can change the default settings of the Identity Settings according to your needs; These settings are in the <span class="high-light">appsettings.json</span> file in the Api project.
-        </div>
-        <pre class="code">
+        <div class="card-container">
+            <h4> Settings</h4>
+            <h3>Authentication policies</h3>
+            <div class="description">
+                Bit provides authentication with and implements the SignUp and SignIn user interfaces. You can change the default settings of the Identity Settings according to your needs; These settings are in the <span class="high-light">appsettings.json</span> file in the Api project.
+            </div>
+            <pre class="code">
 <code>"IdentitySettings": {
             "PasswordRequireDigit": "false",
             "PasswordRequiredLength": "6",
@@ -236,11 +246,11 @@
             "ResetPasswordEmailResendDelay": "0.00:02:00" //Format: D.HH:mm:nn
         }</code>
         </pre>
-        <h3>JWT settings</h3>
-        <div class="description">
-            Bit used JWT to provide token based authentication and you can either change Jwt settings, you can find these settings in the <span class="high-light">appsettings.json</span> file in the Api project.
-        </div>
-        <pre class="code">
+            <h3>JWT settings</h3>
+            <div class="description">
+                Bit used JWT to provide token based authentication and you can either change Jwt settings, you can find these settings in the <span class="high-light">appsettings.json</span> file in the Api project.
+            </div>
+            <pre class="code">
 <code>"JwtSettings": {
             "IdentityCertificatePassword": "P@ssw0rdP@ssw0rd",
             "Issuer": "TodoTemplate",
@@ -249,19 +259,19 @@
             "ExpirationMinutes": "1440"
         }</code>
         </pre>
-        <div class="description">
-            <strong>Note</strong>: IdentityCertificatePassword referring to the password of the <span class="high-light">IdentityCertificate.pfx</span> file in the Api project that used as certificate file for store the public key and etc for validating incoming JWT tokens. to create PFX file run following commands in PowerShell with desired password and file path for your pfx file
-        </div>
-        <pre class="code">
+            <div class="description">
+                <strong>Note</strong>: IdentityCertificatePassword referring to the password of the <span class="high-light">IdentityCertificate.pfx</span> file in the Api project that used as certificate file for store the public key and etc for validating incoming JWT tokens. to create PFX file run following commands in PowerShell with desired password and file path for your pfx file
+            </div>
+            <pre class="code">
 <code>> $cert = New-SelfSignedCertificate -CertStoreLocation Cert:\LocalMachine\My -Subject "IdentityServerCN" -Provider "Microsoft Strong Cryptographic Provider" -HashAlgorithm "SHA512" -NotAfter (Get-Date).AddYears(5)
 > Export-PfxCertificate -cert ('Cert:\LocalMachine\My\' + $cert.thumbprint) -FilePath PATH_TO_YOUR_IdentityServerCertificate.pfx -Password (ConvertTo-SecureString -String "YOUR_PASSWORD" -Force -AsPlainText)</code>
         </pre>
-        <h3>Email Settings</h3>
-        <div class="description">
-            Bit used <a href="https://github.com/lukencode/FluentEmail">FluentEmail</a> to send emails whenever needs.
-            for example in SignUp, you can either change the SMTP provide settings as you need, you can find these settings in the <span class="high-light">appsettings.json</span> file in the Api project.
-        </div>
-        <pre class="code">
+            <h3>Email Settings</h3>
+            <div class="description">
+                Bit used <a href="https://github.com/lukencode/FluentEmail">FluentEmail</a> to send emails whenever needs.
+                for example in SignUp, you can either change the SMTP provide settings as you need, you can find these settings in the <span class="high-light">appsettings.json</span> file in the Api project.
+            </div>
+            <pre class="code">
 <code>"EmailSettings": {
             "Host": "LocalFolder", // Local folder means storing emails in bin\sent-emails folder. (Recommended for testing purposes only)
             "Port": "25",
@@ -271,96 +281,103 @@
             "Password": null
         }</code>
         </pre>
-        <div class="description">
-            <strong>Note</strong>: You can find email templates used for email confirmation and reset password in the <span class="high-light">Resources</span> directory of the Api project
-        </div>
+            <div class="description">
+                <strong>Note</strong>: You can find email templates used for email confirmation and reset password in the <span class="high-light">Resources</span> directory of the Api project
+            </div>
 
-        <h3>User Profile image setting</h3>
-        <div class="description">
-            Bit save user profile image in <span class="high-light">Attachments\Profiles</span> directory of the Api project as default, you can change this path as you need from the <span class="high-light">appsettings.json</span> file in the Api project.
-        </div>
-        <pre class="code"><code>"UserProfileImagePath": "./Attachments/Profiles/"</code></pre>
-        <h3>Health Check Settings</h3>
-        <div class="description">
-            Bit support Health Checks for reporting the health of app infrastructure components. Health checks are exposed by an app as HTTP endpoints. If you need to enable or disable this functionality you can find these settings in the <span class="high-light">appsettings.json</span> file in the Api project.
-        </div>
-        <pre class="code">
+            <h3>User Profile image setting</h3>
+            <div class="description">
+                Bit save user profile image in <span class="high-light">Attachments\Profiles</span> directory of the Api project as default, you can change this path as you need from the <span class="high-light">appsettings.json</span> file in the Api project.
+            </div>
+            <pre class="code"><code>"UserProfileImagePath": "./Attachments/Profiles/"</code></pre>
+            <h3>Health Check Settings</h3>
+            <div class="description">
+                Bit support Health Checks for reporting the health of app infrastructure components. Health checks are exposed by an app as HTTP endpoints. If you need to enable or disable this functionality you can find these settings in the <span class="high-light">appsettings.json</span> file in the Api project.
+            </div>
+            <pre class="code">
 <code>"HealCheckSettings": {
             "EnableHealthChecks": true
         }</code>
         </pre>
-        <div class="description">
-            <strong>Note</strong>: You can find Health Checks dashboard from route <span class="high-light">https://localhost:5001/healthchecks-ui</span> as default.
+            <div class="description">
+                <strong>Note</strong>: You can find Health Checks dashboard from route <span class="high-light">https://localhost:5001/healthchecks-ui</span> as default.
+            </div>
         </div>
     </div>
 
     <div class="step-body-card">
         <h4> TodoTemplate Project structure</h4>
-        <div class="description">
-            The <strong>TodoTemplate</strong> solution prepared with Bit has 5 Projects.
+        <div class="card-container">
+            <div class="description">
+                The <strong>TodoTemplate</strong> solution prepared with Bit has 5 Projects.
+            </div>
+            <img class="image-responsive" src="/images/projects/todoTemplate-solution.png" />
+            <ul class="first-step-ul">
+                <li>
+                    <strong>TodoTemplate.Api</strong>:
+                    This project contains server-side codes including Controllers, Data access layer (EntityFramework ORM), Identity, etc.
+                </li>
+                <li>
+                    <strong>TodoTemplate.App</strong>:
+                    This project contains code related to building an app, although much of the code is common to the web project and refers to it.
+                </li>
+                <li>
+                    <strong>TodoTemplate.Iac</strong>:
+                    Infrastructure as Code (IaC) is the managing and provisioning of infrastructure through code instead of through manual processes. This project contains the necessary code to provide this feature.
+                    You don't have to use either Pulumi or even Azure, Host it wherever you want.
+                </li>
+                <li>
+                    <strong>TodoTemplate.Shared</strong>: This project is shared on both the server (Api project) and client(Web, App projects) sides, and can share code. The bit puts the code it wants to reuse; Like resources, Dtos, shared contracts, services, etc.
+                </li>
+                <li>
+                    <strong>TodoTemplate.Web</strong>: This project contains the necessary code to build the project UI, whether it is a web output or an application. And includes components and pages made with the help of Razor and Style sheet
+                </li>
+            </ul>
         </div>
-        <img class="image-responsive" src="/images/projects/todoTemplate-solution.png" />
-        <ul class="first-step-ul">
-            <li>
-                <strong>TodoTemplate.Api</strong>:
-                This project contains server-side codes including Controllers, Data access layer (EntityFramework ORM), Identity, etc.
-            </li>
-            <li>
-                <strong>TodoTemplate.App</strong>:
-                This project contains code related to building an app, although much of the code is common to the web project and refers to it.
-            </li>
-            <li>
-                <strong>TodoTemplate.Iac</strong>:
-                Infrastructure as Code (IaC) is the managing and provisioning of infrastructure through code instead of through manual processes. This project contains the necessary code to provide this feature.
-                You don't have to use either Pulumi or even Azure, Host it wherever you want.
-            </li>
-            <li>
-                <strong>TodoTemplate.Shared</strong>: This project is shared on both the server (Api project) and client(Web, App projects) sides, and can share code. The bit puts the code it wants to reuse; Like resources, Dtos, shared contracts, services, etc.
-            </li>
-            <li>
-                <strong>TodoTemplate.Web</strong>: This project contains the necessary code to build the project UI, whether it is a web output or an application. And includes components and pages made with the help of Razor and Style sheet
-            </li>
-        </ul>
-
     </div>
 
     <div class="step-body-card">
         <h4> Exception handling</h4>
-        <div class="description">
-            Bit performs some features to manage exceptions that occurred in runtime.
-        </div>
-        <h3>Server-Side exception handling</h3>
-        <ul class="first-step-ul">
-            <li>
-                <strong>known and unknown exception</strong>: In development When an error occurred if this error is known or unknown, details of the error returned, but in test and production for unknown error details of the error not returned from server.
-                <ul dir="auto">
-                    <li>known exception inhrites <span class="high-light">KnownException</span> class</li>
-                    <li>Unknown exception inhrites <span class="high-light">UnknownException</span> class</li>
-                </ul>
-            </li>
-            <li><strong>RestException</strong>: It's a class that has an HTTP Response <span class="high-light">StatusCode</span> that you to perform a response with status code.</li>
-        </ul>
+        <div class="card-container">
+            <div class="description">
+                Bit performs some features to manage exceptions that occurred in runtime.
+            </div>
+            <h3>Server-Side exception handling</h3>
+            <ul class="first-step-ul">
+                <li>
+                    <strong>known and unknown exception</strong>: In development When an error occurred if this error is known or unknown, details of the error returned, but in test and production for unknown error details of the error not returned from server.
+                    <ul dir="auto">
+                        <li>known exception inhrites <span class="high-light">KnownException</span> class</li>
+                        <li>Unknown exception inhrites <span class="high-light">UnknownException</span> class</li>
+                    </ul>
+                </li>
+                <li><strong>RestException</strong>: It's a class that has an HTTP Response <span class="high-light">StatusCode</span> that you to perform a response with status code.</li>
+            </ul>
 
-        <h3>Client-Side exception handling</h3>
-        <div class="description">When an error is raised in App(android, IOS) maybe cause crash app. for avoiding app crash; Bit provides some mechanism for error handling.</div>
-        <ul class="first-step-ul">
-            <li>inheriting <span class="high-light">TodoTemplateComponentBase</span> in razor pages.</li>
-            <li>Instead of initializing your components in the <span class="high-light">OnInitializedAsync</span> method, override the <span class="high-light">OnInitAsync</span> method of the <span class="high-light">TodoTemplateComponentBase</span> class.</li>
-            <li>Use <span class="high-light">WrapHandle</span> method instead of direct calling events such as <span class="high-light">OnClick</span> in the Razor components.</li>
-            <li>Use <span class="high-light">try-catch</span> block in <span class="high-light">asyn-avoid</span> method and call <span class="high-light">StatehasChanged</span> method to handle unexpected errors.</li>
-        </ul>
+            <h3>Client-Side exception handling</h3>
+            <div class="description">When an error is raised in App(android, IOS) maybe cause crash app. for avoiding app crash; Bit provides some mechanism for error handling.</div>
+            <ul class="first-step-ul">
+                <li>inheriting <span class="high-light">TodoTemplateComponentBase</span> in razor pages.</li>
+                <li>Instead of initializing your components in the <span class="high-light">OnInitializedAsync</span> method, override the <span class="high-light">OnInitAsync</span> method of the <span class="high-light">TodoTemplateComponentBase</span> class.</li>
+                <li>Use <span class="high-light">WrapHandle</span> method instead of direct calling events such as <span class="high-light">OnClick</span> in the Razor components.</li>
+                <li>Use <span class="high-light">try-catch</span> block in <span class="high-light">asyn-avoid</span> method and call <span class="high-light">StatehasChanged</span> method to handle unexpected errors.</li>
+            </ul>
+        </div>
     </div>
 
     <div class="step-body-card">
-        <h4> Community</h4>
-        <div class="description">
-            This is an open source project and open to contributions from the community.
-        </div>
+        <h4> Contribute</h4>
+        <div class="card-container">
+            <div class="description">
+                There are many ways to contribute
+            </div>
 
-        <ul class="first-step-ul">
-            <li>Use the <a target="_blank" href="https://github.com/bitfoundation/bitplatform">GitHub</a> repository to access the latest source code, create issues and send pull requests.</li>
-            <li>Use bitplatform tag on <a target="_blank" href="https://stackoverflow.com/questions/tagged/bitplatform">Stackoverflow</a> to ask questions about the usage.</li>
-            <li>Give us a try and use our <a target="_blank" href="https://www.nuget.org/profiles/bit-foundation">Nuget packages</a> in your apps!</li>
-        </ul>
+            <ul class="first-step-ul">
+                <li>Give us a try and use bit platform nuget packages in your apps!</li>
+                <li><a target="_blank" href="https://github.com/bitfoundation/bitplatform/pulls">Code review</a></li>
+                <li>Fork / Star this project! (":</li>
+                <li>Engage with other developers on <a target="_blank" href="https://stackoverflow.com/questions/tagged/bitplatform">Stack Overflow</a></li>
+            </ul>
+        </div>
     </div>
 </section>

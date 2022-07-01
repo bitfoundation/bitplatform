@@ -75,7 +75,7 @@
     position: relative;
     top: rem(-40px);
 
-    div {
+    a {
         @include Card;
         width: rem(80px);
         height: rem(80px);
@@ -90,6 +90,7 @@
             height: rem(40px);
             background-position: center;
             background-repeat: no-repeat;
+            background-size: rem(40px);
         }
 
         @include lt-lg {
@@ -100,6 +101,7 @@
             span {
                 width: rem(35px);
                 height: rem(35px);
+                background-size: rem(35px);
             }
         }
     }
@@ -122,11 +124,19 @@
 }
 
 .spa {
-    background-image: url('/images/projects/figma.svg');
+    background-image: url('/images/projects/spa.svg');
 }
 
 .pwa {
-    background-image: url('/images/projects/figma.svg');
+    background-image: url('/images/projects/pwa.svg');
+}
+
+.nuget {
+    background-image: url('/images/projects/nuget.svg');
+}
+
+.app-center {
+    background-image: url('/images/projects/app-center.svg');
 }
 
 //-----------------------background-----------------//

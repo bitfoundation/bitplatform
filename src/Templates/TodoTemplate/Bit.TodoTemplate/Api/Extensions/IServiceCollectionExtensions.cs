@@ -31,6 +31,7 @@ public static class IServiceCollectionExtensions
 
     public static void AddTodoTemplateJwt(this IServiceCollection services, IConfiguration configuration)
     {
+        // https://github.com/dotnet/aspnetcore/issues/4660
         JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
         JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
         JwtSecurityTokenHandler.DefaultOutboundClaimTypeMap.Clear();
@@ -76,6 +77,8 @@ public static class IServiceCollectionExtensions
             {
                 OnMessageReceived = context =>
                 {
+                    // The server accepts the access_token from either the authorization header, the cookie, or the request URL query string
+
                     var access_token = context.Request.Cookies["access_token"];
 
                     if (string.IsNullOrEmpty(access_token))
@@ -149,7 +152,7 @@ public static class IServiceCollectionExtensions
 
         var emailSettings = appsettings.EmailSettings;
 
-        if (emailSettings.Host is not "LocalFolder")
+        if (emailSettings.UseLocalFolderForEmails is false)
         {
             healthChecksBuilder
                 .AddSmtpHealthCheck(options =>

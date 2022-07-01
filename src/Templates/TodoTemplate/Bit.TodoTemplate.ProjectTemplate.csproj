@@ -18,7 +18,6 @@
         <PackageDescription>A template for creating a Todo app base on the Bit-Platform</PackageDescription>
         <PackageTags>Bit;c#;asp.net;core;template;web;blazor</PackageTags>
         <PackageCopyright>Copyright © Bit Platform 2022</PackageCopyright>
-        <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageIcon>bit-icon-512.png</PackageIcon>
         
     </PropertyGroup>
@@ -29,10 +28,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Include="Bit.TodoTemplate\README.md">
-            <Pack>True</Pack>
-            <PackagePath>\</PackagePath>
-        </None>
         <None Include="Bit.TodoTemplate\Web\wwwroot\images\icons\bit-icon-512.png">
             <Pack>True</Pack>
             <PackagePath>\</PackagePath>

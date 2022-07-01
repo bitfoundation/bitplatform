@@ -8,7 +8,7 @@
     },
     "identity": "Bit.TodoTemplate",
     "name": "Bit Todo Template",
-    "shortName": "Bit.TodoTemplate",
+    "shortName": "bit-todo",
     "sourceName": "TodoTemplate",
     "preferNameDirectory": true,
     "symbols": {
