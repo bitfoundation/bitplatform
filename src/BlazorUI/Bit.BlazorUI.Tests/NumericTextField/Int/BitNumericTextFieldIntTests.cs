@@ -170,7 +170,7 @@ public class BitNumericTextFieldIntTests : BunitTestContext
         Assert.AreEqual(!isEnabled, button.HasAttribute("disabled"));
         Assert.AreEqual(!isEnabled, button.HasAttribute("aria-disabled"));
 
-        if (iconAriaLabel is not null)
+        if (string.IsNullOrEmpty(iconAriaLabel) is false)
         {
             Assert.AreEqual(iconAriaLabel, button.GetAttribute("aria-label"));
         }
