@@ -42,6 +42,22 @@ public class BitNumericTextFieldUIntTests : BunitTestContext
     }
 
     [DataTestMethod]
+    public void BitNumericTextFieldShouldNotRenderArrowsWhenArrowsDisabled()
+    {
+        var component = RenderComponent<BitNumericTextField<byte>>(parameters =>
+        {
+            parameters.Add(p => p.Arrows, false);
+        });
+
+        var arrowButtonHolder = component.FindAll(".bit-ntf-arrows");
+        Assert.AreEqual(0, arrowButtonHolder.Count);
+
+        var arrowButtons = component.FindAll(".bit-ntf-arrows button");
+
+        Assert.AreEqual(0, arrowButtons.Count);
+    }
+
+    [DataTestMethod]
     public void BitNumericTextFieldShouldRenderArrowsWithEnableArrows()
     {
         var component = RenderComponent<BitNumericTextField<uint>>(parameters =>
