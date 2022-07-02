@@ -1,19 +1,39 @@
 ﻿@page "/components/data-grid"
 
+<style scoped>
+::deep .bitdatagrid[theme=corporate] {
+    font-family: 'Comic Sans MS', 'Times New Roman', serif;
+    color: red;
+}
+
+    ::deep .bitdatagrid[theme=corporate] .col-title {
+        gap: 0.4rem; /* Separate the sort indicator from title text */
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+
+    ::deep .bitdatagrid[theme=corporate] .sort-indicator {
+        color: blue;
+    }
+
+</style>
+
+<div class="salam">salam</div>
+
 <ComponentDemo ComponentName="DataGrid"
                ComponentDescription="BitDataGrid is a robust way to display an information-rich collection of items, and allow people to sort, group, and filter the content. Use a data-grid when information density is critical."
                ComponentParameters="componentParameters"
                EnumParameters="enumParameters">
-    <ComponentExampleBox Title="BitDataGrid" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
+    <ComponentExampleBox Title="Typical usage, Columns, Sorting, Filtring, Paging" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
             <div class="grid">
                 <BitDataGrid Items="@FilteredItems" ResizableColumns="true" Pagination="@pagination">
-                    @*<BitDataGridTemplateColumn Title="Rank" SortBy="@rankSort" Align="BitDataGridAlign.Center" IsDefaultSort="BitDataGridSortDirection.Ascending">
+                   @* <BitDataGridTemplateColumn Title="Rank" SortBy="@rankSort" Align="BitDataGridAlign.Center" IsDefaultSort="BitDataGridSortDirection.Ascending">
                     <img class="flag" src="flags/@(context.Code).svg" />
                     </BitDataGridTemplateColumn>*@
                     <BitDataGridPropertyColumn Property="@(c => c.Name)" Sortable="true" Class="column1">
                         <ColumnOptions>
-                            <input type="search" autofocus @bind="nameFilter" @bind:event="oninput" />
+                            <BitSearchBox Placeholder="Search" Width="250px" @bind-Value="nameFilter1" ></BitSearchBox>
                         </ColumnOptions>
                     </BitDataGridPropertyColumn>
                     <BitDataGridPropertyColumn Property="@(c => c.Medals.Gold)" Sortable="true" Align="BitDataGridAlign.Right" />
@@ -25,4 +45,46 @@
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
+
+
+     <ComponentExampleBox Title="Virtualizing" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example2">
+        <ExamplePreview>
+            <div class="grid grid--fix-height">
+                <BitDataGrid Items="@VirtualFilteredItems" ResizableColumns="true" Virtualize="true">
+                    <BitDataGridPropertyColumn Property="@(c => c.Name)" Sortable="true" Class="column1">
+                    </BitDataGridPropertyColumn>
+                    <BitDataGridPropertyColumn Property="@(c => c.Medals.Gold)" Sortable="true" Align="BitDataGridAlign.Right" />
+                    <BitDataGridPropertyColumn Property="@(c => c.Medals.Silver)" Sortable="true" Align="BitDataGridAlign.Right" />
+                    <BitDataGridPropertyColumn Property="@(c => c.Medals.Bronze)" Sortable="true" Align="BitDataGridAlign.Right" />
+                    <BitDataGridPropertyColumn Property="@(c => c.Medals.Total)" Sortable="true" Align="BitDataGridAlign.Right" />
+                </BitDataGrid>
+            </div>
+            <div class="search-panel">
+                <div class="inline-block">
+                    <BitSearchBox Placeholder="Search" Width="250px" @bind-Value="nameFilter2" ></BitSearchBox>
+                </div>
+                <div class="inline-block">
+                    Total: <strong>@VirtualFilteredItems?.Count()</strong>
+                </div>
+                
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+     <ComponentExampleBox Title="Styling" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example3">
+        <ExamplePreview>
+            <div class="grid grid--fix-height">
+                <BitDataGrid Items="@data"  Theme="corporate">
+                    <BitDataGridPropertyColumn Property="@(c => c.Name)" Sortable="true" Class="column1">
+                    </BitDataGridPropertyColumn>
+                    <BitDataGridPropertyColumn Property="@(c => c.Medals.Gold)" Sortable="true" Align="BitDataGridAlign.Right" />
+                    <BitDataGridPropertyColumn Property="@(c => c.Medals.Silver)" Sortable="true" Align="BitDataGridAlign.Right" />
+                    <BitDataGridPropertyColumn Property="@(c => c.Medals.Bronze)" Sortable="true" Align="BitDataGridAlign.Right" />
+                    <BitDataGridPropertyColumn Property="@(c => c.Medals.Total)" Sortable="true" Align="BitDataGridAlign.Right" />
+                </BitDataGrid>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+
 </ComponentDemo>

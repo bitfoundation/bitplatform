@@ -12,19 +12,247 @@ public partial class BitDataGridDemo
 {
     private readonly List<ComponentParameter> componentParameters = new();
     private readonly List<EnumParameter> enumParameters = new();
-    private readonly string example1HTMLCode = @"";
-    private readonly string example1CSharpCode = @"";
+    private readonly string example1HTMLCode = @"
+<style scoped>
+.grid {
+  display: inline-flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.grid ::deep table {
+  min-width: 100%;
+}
+
+.grid ::deep tr {
+  height: 1.8rem;
+}
+
+.grid ::deep th:nth-child(1) {
+  width: 15rem;
+}
+
+.grid ::deep th:nth-child(1) .col-options-button {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns=""http://www.w3.org/2000/svg"" class=""h-6 w-6"" fill=""none"" viewBox=""0 0 24 24"" stroke=""currentColor"" stroke-width=""2""> <path stroke-linecap=""round"" stroke-linejoin=""round"" d=""M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"" /> </svg>');
+}
+</style>
+
+<div class=""grid"">
+    <BitDataGrid Items = ""@FilteredItems"" ResizableColumns=""true"" Pagination=""@pagination"">
+        <BitDataGridPropertyColumn Property = ""@(c => c.Name)"" Sortable=""true"" Class=""column1"">
+            <ColumnOptions>
+                <input type = ""search"" autofocus @bind = ""nameFilter"" @bind:event=""oninput"" />
+            </ColumnOptions>
+        </BitDataGridPropertyColumn>
+        <BitDataGridPropertyColumn Property=""@(c => c.Medals.Gold)"" Sortable=""true"" Align=""BitDataGridAlign.Right"" />
+        <BitDataGridPropertyColumn Property=""@(c => c.Medals.Silver)"" Sortable=""true"" Align=""BitDataGridAlign.Right"" />
+        <BitDataGridPropertyColumn Property=""@(c => c.Medals.Bronze)"" Sortable=""true"" Align=""BitDataGridAlign.Right"" />
+        <BitDataGridPropertyColumn Property=""@(c => c.Medals.Total)"" Sortable=""true"" Align=""BitDataGridAlign.Right"" />
+        </BitDataGrid>
+        <BitDataGridPaginator Value=""@pagination"" />
+</div>";
+    private readonly string example1CSharpCode = @"
+BitDataGridPaginationState pagination = new() { ItemsPerPage = 15 };
+IQueryable<Country> items;
+string nameFilter = string.Empty;
+BitDataGridSort<Country> rankSort = BitDataGridSort<Country>.ByDescending(x => x.Medals.Gold).ThenDescending(x => x.Medals.Silver).ThenDescending(x => x.Medals.Bronze);
+
+IQueryable<Country> FilteredItems => items?.Where(x => x.Name.Contains(nameFilter, StringComparison.CurrentCultureIgnoreCase));
+
+protected override async Task OnInitializedAsync()
+{
+    items = (await GetCountriesAsync(0, null, null, true, CancellationToken.None)).Items.AsQueryable();
+}
+private async Task<BitDataGridItemsProviderResult<Country>> GetCountriesAsync(int startIndex, int? count, string sortBy, bool sortAscending, CancellationToken cancellationToken)
+{
+    var ordered = (sortBy, sortAscending) switch
+    {
+        (nameof(Country.Name), true) => _countries.OrderBy(c => c.Name),
+        (nameof(Country.Name), false) => _countries.OrderByDescending(c => c.Name),
+        (nameof(Country.Code), true) => _countries.OrderBy(c => c.Code),
+        (nameof(Country.Code), false) => _countries.OrderByDescending(c => c.Code),
+        (""Medals.Gold"", true) => _countries.OrderBy(c => c.Medals.Gold),
+        (""Medals.Gold"", false) => _countries.OrderByDescending(c => c.Medals.Gold),
+        _ => _countries.OrderByDescending(c => c.Medals.Gold),
+    };
+
+    var result = ordered.Skip(startIndex);
+
+    if (count.HasValue)
+    {
+       result = result.Take(count.Value);
+    }
+
+    return BitDataGridItemsProviderResult.From(result.ToArray(), ordered.Count());
+}
+private readonly static Country[] _countries = new[]
+{
+    new Country { Code = ""AR"", Name=""Argentina"", Medals = new Medals { Gold = 0, Silver = 1, Bronze = 2 } },
+    new Country { Code = ""AM"", Name=""Armenia"", Medals = new Medals { Gold = 0, Silver = 2, Bronze = 2 } },
+    new Country { Code = ""AU"", Name = ""Australia"", Medals = new Medals { Gold = 17, Silver = 7, Bronze = 22 } },
+    new Country { Code = ""AT"", Name = ""Austria"", Medals = new Medals { Gold = 1, Silver = 1, Bronze = 5 } },
+    new Country { Code = ""AZ"", Name = ""Azerbaijan"", Medals = new Medals { Gold = 0, Silver = 3, Bronze = 4 } },
+    new Country { Code = ""BS"", Name = ""Bahamas"", Medals = new Medals { Gold = 2, Silver = 0, Bronze = 0 } },
+    new Country { Code = ""BH"", Name = ""Bahrain"", Medals = new Medals { Gold = 0, Silver = 1, Bronze = 0 } },
+    ...
+};
+
+public class Country
+{
+    public string Code { get; set; }
+    public string Name { get; set; }
+    public Medals Medals { get; set; }
+}
+
+public class Medals
+{
+    public int Gold { get; set; }
+    public int Silver { get; set; }
+    public int Bronze { get; set; }
+
+    public int Total => Gold + Silver + Bronze;
+}
+";
+    private readonly string example2HTMLCode = @"
+<style scoped>
+.grid {
+  display: inline-flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.grid ::deep table {
+  min-width: 100%;
+}
+
+.grid ::deep tr {
+  height: 1.8rem;
+}
+
+.grid ::deep th:nth-child(1) {
+  width: 15rem;
+}
+
+.grid ::deep th:nth-child(1) .col-options-button {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns=""http://www.w3.org/2000/svg"" class=""h-6 w-6"" fill=""none"" viewBox=""0 0 24 24"" stroke=""currentColor"" stroke-width=""2""> <path stroke-linecap=""round"" stroke-linejoin=""round"" d=""M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"" /> </svg>');
+}
+
+.grid--fix-height {
+  height: 15rem;
+  overflow-y: auto;
+}
+
+.search-panel {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  border-top: 1px solid black;
+  padding-top: 5px;
+}
+
+.inline-block {
+  display: inline-block;
+}
+</style>
+<div class=""grid grid--fix-height"">
+     <BitDataGrid Items = ""@FilteredItems"" ResizableColumns=""true"" Virtualize=""true"">
+        <BitDataGridPropertyColumn Property = ""@(c => c.Name)"" Sortable=""true"" Class=""column1"">
+        </BitDataGridPropertyColumn>
+        <BitDataGridPropertyColumn Property = ""@(c => c.Medals.Gold)"" Sortable=""true"" Align=""BitDataGridAlign.Right"" />
+        <BitDataGridPropertyColumn Property = ""@(c => c.Medals.Silver)"" Sortable=""true"" Align=""BitDataGridAlign.Right"" />
+        <BitDataGridPropertyColumn Property = ""@(c => c.Medals.Bronze)"" Sortable=""true"" Align=""BitDataGridAlign.Right"" />
+        <BitDataGridPropertyColumn Property = ""@(c => c.Medals.Total)"" Sortable=""true"" Align=""BitDataGridAlign.Right"" />
+     </BitDataGrid>
+</div>
+<div class=""search-panel"">
+     <div class=""inline-block"">
+        <BitSearchBox Placeholder = ""Search"" Width=""250px"" @bind-Value=""nameFilter"" ></BitSearchBox>
+     </div>
+     <div class=""inline-block"">
+        Total: <strong>@FilteredItems?.Count()</strong>
+    </div>
+</div>
+";
+    private readonly string example2CSharpCode = @"
+IQueryable<Country> items;
+string nameFilter = string.Empty;
+BitDataGridSort<Country> rankSort = BitDataGridSort<Country>.ByDescending(x => x.Medals.Gold).ThenDescending(x => x.Medals.Silver).ThenDescending(x => x.Medals.Bronze);
+
+IQueryable<Country> FilteredItems => items?.Where(x => x.Name.Contains(nameFilter, StringComparison.CurrentCultureIgnoreCase));
+
+protected override async Task OnInitializedAsync()
+{
+    items = (await GetCountriesAsync(0, null, null, true, CancellationToken.None)).Items.AsQueryable();
+}
+private async Task<BitDataGridItemsProviderResult<Country>> GetCountriesAsync(int startIndex, int? count, string sortBy, bool sortAscending, CancellationToken cancellationToken)
+{
+    var ordered = (sortBy, sortAscending) switch
+    {
+        (nameof(Country.Name), true) => _countries.OrderBy(c => c.Name),
+        (nameof(Country.Name), false) => _countries.OrderByDescending(c => c.Name),
+        (nameof(Country.Code), true) => _countries.OrderBy(c => c.Code),
+        (nameof(Country.Code), false) => _countries.OrderByDescending(c => c.Code),
+        (""Medals.Gold"", true) => _countries.OrderBy(c => c.Medals.Gold),
+        (""Medals.Gold"", false) => _countries.OrderByDescending(c => c.Medals.Gold),
+        _ => _countries.OrderByDescending(c => c.Medals.Gold),
+    };
+
+    var result = ordered.Skip(startIndex);
+
+    if (count.HasValue)
+    {
+       result = result.Take(count.Value);
+    }
+
+    return BitDataGridItemsProviderResult.From(result.ToArray(), ordered.Count());
+}
+private readonly static Country[] _countries = new[]
+{
+    new Country { Code = ""AR"", Name=""Argentina"", Medals = new Medals { Gold = 0, Silver = 1, Bronze = 2 } },
+    new Country { Code = ""AM"", Name=""Armenia"", Medals = new Medals { Gold = 0, Silver = 2, Bronze = 2 } },
+    new Country { Code = ""AU"", Name = ""Australia"", Medals = new Medals { Gold = 17, Silver = 7, Bronze = 22 } },
+    new Country { Code = ""AT"", Name = ""Austria"", Medals = new Medals { Gold = 1, Silver = 1, Bronze = 5 } },
+    new Country { Code = ""AZ"", Name = ""Azerbaijan"", Medals = new Medals { Gold = 0, Silver = 3, Bronze = 4 } },
+    new Country { Code = ""BS"", Name = ""Bahamas"", Medals = new Medals { Gold = 2, Silver = 0, Bronze = 0 } },
+    new Country { Code = ""BH"", Name = ""Bahrain"", Medals = new Medals { Gold = 0, Silver = 1, Bronze = 0 } },
+    ...
+};
+
+public class Country
+{
+    public string Code { get; set; }
+    public string Name { get; set; }
+    public Medals Medals { get; set; }
+}
+
+public class Medals
+{
+    public int Gold { get; set; }
+    public int Silver { get; set; }
+    public int Bronze { get; set; }
+
+    public int Total => Gold + Silver + Bronze;
+}
+";
+    private readonly string example3HTMLCode = @"
+";
+    private readonly string example3CSharpCode = @"
+";
 
     BitDataGridPaginationState pagination = new() { ItemsPerPage = 15 };
     IQueryable<Country> items;
-    string nameFilter = string.Empty;
+    IQueryable<Country> data;
+    string nameFilter1 = string.Empty;
+    string nameFilter2 = string.Empty;
     BitDataGridSort<Country> rankSort = BitDataGridSort<Country>.ByDescending(x => x.Medals.Gold).ThenDescending(x => x.Medals.Silver).ThenDescending(x => x.Medals.Bronze);
 
-    IQueryable<Country> FilteredItems => items?.Where(x => x.Name.Contains(nameFilter, StringComparison.CurrentCultureIgnoreCase));
+    IQueryable<Country> FilteredItems => items?.Where(x => x.Name.Contains(nameFilter1, StringComparison.CurrentCultureIgnoreCase));
+    IQueryable<Country> VirtualFilteredItems => items?.Where(x => x.Name.Contains(nameFilter2, StringComparison.CurrentCultureIgnoreCase));
 
     protected override async Task OnInitializedAsync()
     {
         items = (await GetCountriesAsync(0, null, null, true, CancellationToken.None)).Items.AsQueryable();
+        data= (await Get10CountriesAsync()).Items.AsQueryable();
+
     }
 
     private async Task<BitDataGridItemsProviderResult<Country>> GetCountriesAsync(int startIndex, int? count, string sortBy, bool sortAscending, CancellationToken cancellationToken)
@@ -50,6 +278,15 @@ public partial class BitDataGridDemo
         }
 
         return BitDataGridItemsProviderResult.From(result.ToArray(), ordered.Count());
+    }
+  
+
+    private async Task<BitDataGridItemsProviderResult<Country>> Get10CountriesAsync()
+    {
+        await Task.Delay(1000);
+
+        var Countries = _countries.Take(10).AsQueryable();
+        return BitDataGridItemsProviderResult.From(Countries.ToArray(), Countries.Count());
     }
 
     private readonly static Country[] _countries = new[]
