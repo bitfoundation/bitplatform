@@ -1,6 +1,7 @@
 ﻿//-:cnd:noEmit
 using System.IO.Compression;
 using System.Net.Mail;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.OData;
 using Microsoft.AspNetCore.ResponseCompression;
 #if BlazorWebAssembly
@@ -49,6 +50,11 @@ public static class Services
             .AddOData(options => options.EnableQueryFeatures(maxTopValue: 20))
             .AddJsonOptions(options => options.JsonSerializerOptions.AddContext<TodoTemplateJsonContext>());
 
+        services.Configure<ForwardedHeadersOptions>(options =>
+        {
+            options.ForwardedHeaders = ForwardedHeaders.All;
+        });
+        
         services.AddResponseCaching();
 
         services.AddHttpContextAccessor();

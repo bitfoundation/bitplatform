@@ -200,4 +200,20 @@ public partial class AuthController : ControllerBase
 
         return await _jwtService.GenerateToken(user);
     }
+
+    [HttpGet("[action]")]
+    public IActionResult Test()
+    {
+        var controller = RouteData.Values["controller"]!.ToString();
+
+        var confirmationLink = Url.Action(nameof(ConfirmEmail), controller,
+            new { Email = "karimifard.milad@gmail.com", token = Guid.NewGuid().ToString() },
+            HttpContext.Request.Scheme);
+        
+        return Ok(new
+        {
+            Headers = HttpContext.Request.Headers.ToList(),
+            GeneratedLink = confirmationLink
+        });
+    }
 }
