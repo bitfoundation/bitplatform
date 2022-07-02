@@ -74,6 +74,7 @@
 .store-links-section {
     position: relative;
     top: rem(-40px);
+    z-index: 1;
 
     a {
         @include Card;
@@ -84,6 +85,7 @@
         justify-content: center;
         margin: 0 rem(6px);
         box-shadow: none;
+        cursor: pointer;
 
         span {
             width: rem(40px);
