@@ -286,10 +286,10 @@ public class BitNumericTextFieldFloatTests : BunitTestContext
 
     [DataTestMethod,
      DataRow(null, null),
-     DataRow(5.0f, null),
-     DataRow(null, 100.0f),
-     DataRow(0.0f, 100.0f),
-     DataRow(50.0f, 1.0f)
+     DataRow(5.3f, null),
+     DataRow(null, 100.5f),
+     DataRow(0.0f, 100.78f),
+     DataRow(50.56f, 1.12f)
     ]
     public void BitNumericTextFieldShouldHaveCorrectMaxMin(float? min, float? max)
     {
@@ -393,8 +393,8 @@ public class BitNumericTextFieldFloatTests : BunitTestContext
     }
 
     [DataTestMethod,
-     DataRow(4),
-     DataRow(12)
+     DataRow(4.56f),
+     DataRow(12.22f)
     ]
     public void BitNumericTextFieldOnChangeTest(float inputValue)
     {
@@ -426,8 +426,8 @@ public class BitNumericTextFieldFloatTests : BunitTestContext
     }
 
     [DataTestMethod,
-     DataRow(3.0f, null),
-     DataRow(3.0f, " cm"),
+     DataRow(3.12f, null),
+     DataRow(3.68f, " cm"),
      DataRow(null, null)
     ]
     public void BitNumericTextFieldInputShouldHaveCorrectAriaValueNow(float? ariaValueNow, string suffix)
@@ -455,6 +455,7 @@ public class BitNumericTextFieldFloatTests : BunitTestContext
 
     [DataTestMethod,
      DataRow("3", null, 0),
+     DataRow("3.25", null, 2),
      DataRow(null, " cm", 0),
      DataRow(null, null, 0)
     ]
@@ -475,11 +476,11 @@ public class BitNumericTextFieldFloatTests : BunitTestContext
     }
 
     [DataTestMethod,
-     DataRow(3, 1, 12),
-     DataRow(8, 2, 10),
-     DataRow(8, 1, 8),
-     DataRow(8, 2, 9),
-     DataRow(8, 5, 9)
+     DataRow(3.2216f, 1.1322f, 12.36f),
+     DataRow(8.2216f, 2.1322f, 10.36f),
+     DataRow(8.2216f, 1.1322f, 8.369f),
+     DataRow(8.2216f, 2.1322f, 9.369f),
+     DataRow(8.2216f, 5.1322f, 9.369f)
     ]
     public void BitNumericTextFieldIncrementButtonClickTest(float defaultValue, float step, float max)
     {
@@ -501,11 +502,11 @@ public class BitNumericTextFieldFloatTests : BunitTestContext
     }
 
     [DataTestMethod,
-     DataRow(3, 1, 12),
-     DataRow(8, 2, 10),
-     DataRow(8, 1, 8),
-     DataRow(8, 2, 9),
-     DataRow(8, 5, 9)
+     DataRow(3.2216f, 1.1322f, 12.36f),
+     DataRow(8.2216f, 2.1322f, 10.36f),
+     DataRow(8.2216f, 1.1322f, 8.369f),
+     DataRow(8.2216f, 2.1322f, 9.369f),
+     DataRow(8.2216f, 5.1322f, 9.369f)
     ]
     public void BitNumericTextFieldArrowUpKeyDownTest(float defaultValue, float step, float max)
     {
@@ -527,9 +528,9 @@ public class BitNumericTextFieldFloatTests : BunitTestContext
     }
 
     [DataTestMethod,
-     DataRow(3, 1, 0),
-     DataRow(2, 2, 0),
-     DataRow(3, 4, 0),
+     DataRow(3.369f, 1f, 0f),
+     DataRow(2.369f, 2f, 0f),
+     DataRow(3.369f, 4f, 0f),
      DataRow(0, 1, 0)
     ]
     public void BitNumericTextFieldDecrementButtonClickTest(float defaultValue, float step, float min)
@@ -552,9 +553,9 @@ public class BitNumericTextFieldFloatTests : BunitTestContext
     }
 
     [DataTestMethod,
-     DataRow(3, 1, 0),
-     DataRow(2, 2, 0),
-     DataRow(3, 4, 0),
+     DataRow(3.369f, 1f, 0f),
+     DataRow(2.369f, 2f, 0f),
+     DataRow(3.369f, 4f, 0f),
      DataRow(0, 1, 0)
     ]
     public void BitNumericTextFieldArrowDownKeyDownTest(float defaultValue, float step, float min)
@@ -577,9 +578,9 @@ public class BitNumericTextFieldFloatTests : BunitTestContext
     }
 
     [DataTestMethod,
-     DataRow(5, 0, 100, "25"),
-     DataRow(5, 0, 100, "112"),
-     DataRow(5, 0, 100, "-5"),
+     DataRow(5.36f, 0, 100, "25.25"),
+     DataRow(5.36f, 0, 100, "112.369"),
+     DataRow(5.36f, 0, 100, "-5.36"),
      DataRow(5, 0, 100, "text123")
     ]
     public void BitNumericTextFieldEnterKeyDownTest(float defaultValue, float min, float max, string userInput)
@@ -616,9 +617,9 @@ public class BitNumericTextFieldFloatTests : BunitTestContext
     }
 
     [DataTestMethod,
-     DataRow(5, 0, 100, "25"),
-     DataRow(5, 0, 100, "112"),
-     DataRow(5, 0, 100, "-5"),
+     DataRow(5.36f, 0, 100, "25.25"),
+     DataRow(5.36f, 0, 100, "112.369"),
+     DataRow(5.36f, 0, 100, "-5.36"),
      DataRow(5, 0, 100, "text123")
     ]
     public void BitNumericTextFieldOnBlurTest(float defaultValue, float min, float max, string userInput)
@@ -653,12 +654,12 @@ public class BitNumericTextFieldFloatTests : BunitTestContext
     }
 
     [DataTestMethod,
-     DataRow(0f, 100f, 1f, "25"),
-     DataRow(0f, 100f, 0.1f, "25.68"),
-     DataRow(0f, 100f, 0.25f, "12.6"),
-     DataRow(0f, 10f, 0.25f, "12.6"),
-     DataRow(13f, 100f, 0.25f, "12.6")
-    ]
+      DataRow(0, 100f, 1, "25"),
+      DataRow(0.65f, 100, 0.1f, "25.68"),
+      DataRow(0, 100.89f, 0.25f, "12.6"),
+      DataRow(0, 10, 0.25f, "12.6"),
+      DataRow(13, 100, 0.25f, "12.6")
+     ]
     public void BitNumericTextFieldPrecisionTest(float min, float max, float step, string userInput)
     {
         var component = RenderComponent<BitNumericTextField<float>>(parameters =>
@@ -683,8 +684,8 @@ public class BitNumericTextFieldFloatTests : BunitTestContext
     }
 
     [DataTestMethod,
-     DataRow(5, 2, 4),
-     DataRow(1, 15, 1)
+     DataRow(5.25f, 2, 4),
+     DataRow(1.36f, 15, 1)
     ]
     public void BitNumericTextFieldTwoWayBoundWithCustomHandlerShouldWorkCurrect(float value, int countOfIncrements,
         float step)
@@ -781,7 +782,7 @@ public class BitNumericTextFieldFloatTests : BunitTestContext
      DataRow(10),
      DataRow(0),
      DataRow(-1),
-     DataRow(6),
+     DataRow(6.25f),
      DataRow(18),
     ]
     public void BitNumericTextFieldValidationFormTest(float value)
@@ -823,7 +824,7 @@ public class BitNumericTextFieldFloatTests : BunitTestContext
      DataRow(10),
      DataRow(0),
      DataRow(-1),
-     DataRow(6),
+     DataRow(6.25f),
      DataRow(18),
     ]
     public void BitNumericTextFieldValidationInvalidHtmlAttributeTest(float value)
