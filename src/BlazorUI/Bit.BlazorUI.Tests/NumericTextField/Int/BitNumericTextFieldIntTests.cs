@@ -30,7 +30,7 @@ public class BitNumericTextFieldIntTests : BunitTestContext
             parameters.Add(p => p.Label, label);
         });
 
-        if (label is null)
+        if (string.IsNullOrEmpty(label))
         {
             Assert.ThrowsException<ElementNotFoundException>(() => component.Find("label"));
         }
