@@ -76,7 +76,7 @@ public class BitNumericTextFieldULongTests : BunitTestContext
             var icon = component.FindAll(".bit-icon")[0];
             Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconName.GetName()}"));
 
-            if (iconAriaLabel is not null)
+            if (string.IsNullOrEmpty(iconAriaLabel) is false)
             {
                 Assert.AreEqual(iconAriaLabel, icon.GetAttribute("aria-label"));
             }
