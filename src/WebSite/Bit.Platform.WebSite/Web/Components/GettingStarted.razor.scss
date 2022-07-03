@@ -66,6 +66,33 @@
     h4 {
         color: $Black1;
         margin-bottom: rem(16px);
+
+        &:hover a.anchor .anchor-icon {
+            visibility: visible;
+            text-decoration: none;
+        }
+
+        a.anchor {
+            float: left;
+            padding-right: 4px;
+            margin-left: -20px;
+            line-height: 1;
+            text-decoration: none;
+
+            &:link {
+                text-decoration: none;
+            }
+
+            &:visited {
+                text-decoration: none;
+            }
+
+            .anchor-icon {
+                vertical-align: -moz-middle-with-baseline;
+                vertical-align: -webkit-baseline-middle;
+                visibility: hidden;
+            }
+        }
     }
 
     h3 {
