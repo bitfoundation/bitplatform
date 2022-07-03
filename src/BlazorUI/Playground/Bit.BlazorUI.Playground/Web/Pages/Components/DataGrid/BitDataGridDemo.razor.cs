@@ -481,65 +481,37 @@ public class Medals
 </div>
 ";
     private readonly string example2CSharpCode = @"
-IQueryable<Country> items;
-string nameFilter = string.Empty;
-BitDataGridSort<Country> rankSort = BitDataGridSort<Country>.ByDescending(x => x.Medals.Gold).ThenDescending(x => x.Medals.Silver).ThenDescending(x => x.Medals.Bronze);
-
-IQueryable<Country> FilteredItems => items?.Where(x => x.Name.Contains(nameFilter, StringComparison.CurrentCultureIgnoreCase));
-
+string virtualSampleNameFilter = string.Empty;
+IQueryable<FoodRecall> foodRecallData;
 protected override async Task OnInitializedAsync()
 {
-    items = (await GetCountriesAsync(0, null, null, true, CancellationToken.None)).Items.AsQueryable();
+     foodRecallData= (await GetfoodRecallAsync(0, null, null, true,virtualSampleNameFilter, CancellationToken.None)).Items.AsQueryable();
 }
-private async Task<BitDataGridItemsProviderResult<Country>> GetCountriesAsync(int startIndex, int? count, string sortBy, bool sortAscending, CancellationToken cancellationToken)
+
+private async Task<BitDataGridItemsProviderResult<FoodRecall>> GetfoodRecallAsync(int startIndex, int? count, string sortBy, bool sortAscending,string search, CancellationToken cancellationToken)
 {
-    var ordered = (sortBy, sortAscending) switch
-    {
-        (nameof(Country.Name), true) => _countries.OrderBy(c => c.Name),
-        (nameof(Country.Name), false) => _countries.OrderByDescending(c => c.Name),
-        (nameof(Country.Code), true) => _countries.OrderBy(c => c.Code),
-        (nameof(Country.Code), false) => _countries.OrderByDescending(c => c.Code),
-        (""Medals.Gold"", true) => _countries.OrderBy(c => c.Medals.Gold),
-        (""Medals.Gold"", false) => _countries.OrderByDescending(c => c.Medals.Gold),
-        _ => _countries.OrderByDescending(c => c.Medals.Gold),
-    };
+    var url = NavManager.GetUriWithQueryParameters(""https://api.fda.gov/food/enforcement.json"", new Dictionary<string, object?>
+        {
+            { ""skip"", startIndex},
+            { ""limit"", count },
+            { ""search"", search },
+        });
 
-    var result = ordered.Skip(startIndex);
+using var httpResponse = await Http.GetAsync(url, cancellationToken);
 
-    if (count.HasValue)
-    {
-       result = result.Take(count.Value);
+if (!httpResponse.IsSuccessStatusCode)
+{
+    return new BitDataGridItemsProviderResult<FoodRecall>() { Items = new List<FoodRecall>() { }, TotalItemCount = 0 };
+}
+
+var response = await httpResponse.Content.ReadFromJsonAsync<FoodRecallQueryResult>();
+
+return BitDataGridItemsProviderResult.From(
+    items: response!.Results,
+    totalItemCount: response!.Meta.Results.Total);
     }
 
-    return BitDataGridItemsProviderResult.From(result.ToArray(), ordered.Count());
-}
-private readonly static Country[] _countries = new[]
-{
-    new Country { Code = ""AR"", Name=""Argentina"", Medals = new Medals { Gold = 0, Silver = 1, Bronze = 2 } },
-    new Country { Code = ""AM"", Name=""Armenia"", Medals = new Medals { Gold = 0, Silver = 2, Bronze = 2 } },
-    new Country { Code = ""AU"", Name = ""Australia"", Medals = new Medals { Gold = 17, Silver = 7, Bronze = 22 } },
-    new Country { Code = ""AT"", Name = ""Austria"", Medals = new Medals { Gold = 1, Silver = 1, Bronze = 5 } },
-    new Country { Code = ""AZ"", Name = ""Azerbaijan"", Medals = new Medals { Gold = 0, Silver = 3, Bronze = 4 } },
-    new Country { Code = ""BS"", Name = ""Bahamas"", Medals = new Medals { Gold = 2, Silver = 0, Bronze = 0 } },
-    new Country { Code = ""BH"", Name = ""Bahrain"", Medals = new Medals { Gold = 0, Silver = 1, Bronze = 0 } },
-    ...
-};
 
-public class Country
-{
-    public string Code { get; set; }
-    public string Name { get; set; }
-    public Medals Medals { get; set; }
-}
-
-public class Medals
-{
-    public int Gold { get; set; }
-    public int Silver { get; set; }
-    public int Bronze { get; set; }
-
-    public int Total => Gold + Silver + Bronze;
-}
 ";
     private readonly string example3HTMLCode = @"
 <style scoped>
