@@ -8,9 +8,9 @@ public partial class ResetPassword
 
     [AutoInject] private NavigationManager navigationManager = default!;
 
-    [AutoInject] private ITodoTemplateAuthenticationService todoTemplateAuthenticationService = default!;
+    [AutoInject] private IAuthenticationService authService = default!;
 
-    [AutoInject] private TodoTemplateAuthenticationStateProvider todoTemplateAuthenticationStateProvider = default!;
+    [AutoInject] private AppAuthenticationStateProvider authStateProvider = default!;
 
     [Parameter]
     [SupplyParameterFromQuery]
@@ -48,13 +48,13 @@ public partial class ResetPassword
             ResetPasswordModel.Email = Email;
             ResetPasswordModel.Token = Token;
 
-            await httpClient.PostAsJsonAsync("Auth/ResetPassword", ResetPasswordModel, TodoTemplateJsonContext.Default.ResetPasswordRequestDto);
+            await httpClient.PostAsJsonAsync("Auth/ResetPassword", ResetPasswordModel, AppJsonContext.Default.ResetPasswordRequestDto);
 
             ResetPasswordMessageType = BitMessageBarType.Success;
 
             ResetPasswordMessage = "Your password changed successfully.";
 
-            await todoTemplateAuthenticationService.SignIn(new SignInRequestDto
+            await authService.SignIn(new SignInRequestDto
             {
                 UserName = Email,
                 Password = ResetPasswordModel.Password
@@ -78,7 +78,7 @@ public partial class ResetPassword
     {
         if (firstRender)
         {
-            if (await todoTemplateAuthenticationStateProvider.IsUserAuthenticated())
+            if (await authStateProvider.IsUserAuthenticated())
             {
                 navigationManager.NavigateTo("/");
             }

@@ -9,9 +9,9 @@
 
 <div class="main @(IsUserAuthenticated ? "main--authenticated" : null)">
     <div class="main-content">
-        <TodoTemplateErrorBoundary>
+        <AppErrorBoundary>
             @Body
-        </TodoTemplateErrorBoundary>
+        </AppErrorBoundary>
     </div>
     <Footer />
 </div>

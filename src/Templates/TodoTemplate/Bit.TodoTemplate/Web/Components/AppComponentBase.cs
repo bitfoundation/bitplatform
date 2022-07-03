@@ -1,8 +1,8 @@
 ﻿namespace TodoTemplate.App.Components;
 
-public partial class TodoTemplateComponentBase : ComponentBase
+public partial class AppComponentBase : ComponentBase
 {
-    [AutoInject] IExceptionHandler exceptionHandler = default!;
+    [AutoInject] private IExceptionHandler exceptionHandler = default!;
 
     protected async sealed override Task OnInitializedAsync()
     {

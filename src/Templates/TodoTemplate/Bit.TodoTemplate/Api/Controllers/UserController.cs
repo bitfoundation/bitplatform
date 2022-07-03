@@ -7,9 +7,9 @@ namespace TodoTemplate.Api.Controllers;
 [ApiController]
 public partial class UserController : ControllerBase
 {
-    [AutoInject] private UserManager<User> _userManager;
+    [AutoInject] private UserManager<User> _userManager = default!;
 
-    [AutoInject] private IMapper _mapper;
+    [AutoInject] private IMapper _mapper = default!;
 
     [HttpGet("[action]")]
     public async Task<UserDto> GetCurrentUser(CancellationToken cancellationToken)

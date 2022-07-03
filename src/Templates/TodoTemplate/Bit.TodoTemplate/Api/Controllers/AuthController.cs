@@ -13,17 +13,17 @@ namespace TodoTemplate.Api.Controllers;
 [ApiController, AllowAnonymous]
 public partial class AuthController : ControllerBase
 {
-    [AutoInject] private UserManager<User> _userManager;
+    [AutoInject] private UserManager<User> _userManager = default!;
 
-    [AutoInject] private IJwtService _jwtService;
+    [AutoInject] private IJwtService _jwtService = default!;
 
-    [AutoInject] private IMapper _mapper;
+    [AutoInject] private IMapper _mapper = default!;
 
-    [AutoInject] private SignInManager<User> _signInManager;
+    [AutoInject] private SignInManager<User> _signInManager = default!;
 
-    [AutoInject] private IOptionsSnapshot<AppSettings> _appSettings;
+    [AutoInject] private IOptionsSnapshot<AppSettings> _appSettings = default!;
 
-    [AutoInject] private IFluentEmail _fluentEmail;
+    [AutoInject] private IFluentEmail _fluentEmail = default!;
 
     [HttpPost("[action]")]
     public async Task SignUp(SignUpRequestDto signUpRequest, CancellationToken cancellationToken)

@@ -27,8 +27,8 @@ public static class MauiProgram
 #endif
 
         services.AddTransient<IAuthTokenProvider, ClientSideAuthTokenProvider>();
-        services.AddTodoTemplateSharedServices();
-        services.AddTodoTemplateAppServices();
+        services.AddSharedServices();
+        services.AddAppServices();
 
         return builder;
     }

@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static class IServiceCollectionExtensions
 {
-    public static void AddTodoTemplateIdentity(this IServiceCollection services, IConfiguration configuration)
+    public static void AddIdentity(this IServiceCollection services, IConfiguration configuration)
     {
         var appsettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
         var settings = appsettings.IdentitySettings;
@@ -26,10 +26,10 @@ public static class IServiceCollectionExtensions
             options.Password.RequireUppercase = settings.PasswordRequireUppercase;
             options.Password.RequireNonAlphanumeric = settings.PasswordRequireNonAlphanumeric;
             options.Password.RequiredLength = settings.PasswordRequiredLength;
-        }).AddEntityFrameworkStores<TodoTemplateDbContext>().AddDefaultTokenProviders();
+        }).AddEntityFrameworkStores<AppDbContext>().AddDefaultTokenProviders();
     }
 
-    public static void AddTodoTemplateJwt(this IServiceCollection services, IConfiguration configuration)
+    public static void AddJwt(this IServiceCollection services, IConfiguration configuration)
     {
         // https://github.com/dotnet/aspnetcore/issues/4660
         JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
@@ -99,7 +99,7 @@ public static class IServiceCollectionExtensions
         services.AddAuthorization();
     }
 
-    public static void AddTodoTemplateSwaggerGen(this IServiceCollection services)
+    public static void AddSwaggerGen(this IServiceCollection services)
     {
         services.AddSwaggerGen(options =>
         {
@@ -148,7 +148,7 @@ public static class IServiceCollectionExtensions
             .AddProcessAllocatedMemoryHealthCheck(maximumMegabytesAllocated: 6 * 1024)
             .AddDiskStorageHealthCheck(opt =>
                 opt.AddDrive(Path.GetPathRoot(Directory.GetCurrentDirectory()), minimumFreeMegabytes: 5 * 1024))
-            .AddDbContextCheck<TodoTemplateDbContext>();
+            .AddDbContextCheck<AppDbContext>();
 
         var emailSettings = appsettings.EmailSettings;
 

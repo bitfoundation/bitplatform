@@ -4,7 +4,7 @@ using TodoTemplate.App.Shared;
 
 namespace TodoTemplate.App.Services.Implementations;
 
-public class TodoTemplateExceptionHandler : IExceptionHandler
+public class ExceptionHandler : IExceptionHandler
 {
     public void Handle(Exception exception, IDictionary<string, object?>? parameters = null)
     {

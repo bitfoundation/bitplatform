@@ -10,8 +10,8 @@ using TodoTemplate.Api.Data;
 
 namespace TodoTemplate.Api.Migrations
 {
-    [DbContext(typeof(TodoTemplateDbContext))]
-    partial class TodoTemplateDbContextModelSnapshot : ModelSnapshot
+    [DbContext(typeof(AppDbContext))]
+    partial class AppDbContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
         {

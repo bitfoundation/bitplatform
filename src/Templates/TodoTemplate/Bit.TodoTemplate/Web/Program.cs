@@ -25,11 +25,11 @@ public class Program
     {
         var builder = WebAssemblyHostBuilder.CreateDefault();
 
-        builder.Services.AddSingleton(sp => new HttpClient(sp.GetRequiredService<TodoTemplateHttpClientHandler>()) { BaseAddress = new Uri($"{builder.HostEnvironment.BaseAddress}api/") });
+        builder.Services.AddSingleton(sp => new HttpClient(sp.GetRequiredService<AppHttpClientHandler>()) { BaseAddress = new Uri($"{builder.HostEnvironment.BaseAddress}api/") });
         builder.Services.AddTransient<IAuthTokenProvider, ClientSideAuthTokenProvider>();
 
-        builder.Services.AddTodoTemplateSharedServices();
-        builder.Services.AddTodoTemplateAppServices();
+        builder.Services.AddSharedServices();
+        builder.Services.AddAppServices();
 
         return builder.Build();
     }
