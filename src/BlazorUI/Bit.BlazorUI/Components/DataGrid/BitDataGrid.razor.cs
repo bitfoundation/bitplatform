@@ -183,7 +183,6 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
     {
         if (firstRender)
         {
-            //_jsModule = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/Microsoft.AspNetCore.Components.QuickGrid/QuickGrid.razor.js");
             _jsEventDisposable = await JsRuntime.InvokeAsync<IJSObjectReference>("BitDataGrid.init", _tableReference);
         }
 
