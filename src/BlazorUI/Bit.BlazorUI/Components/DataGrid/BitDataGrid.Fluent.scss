@@ -25,8 +25,15 @@
         align-self: center;
         text-align: center;
     }
-    .col-sort-asc .sort-indicator, .col-sort-desc .sort-indicator {
-        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M 2 3.25 L 12 20.75 L 22 3.25 L 12 10 z" /></svg>');
+
+    .col-sort-asc .sort-indicator:before,
+    .col-sort-desc .sort-indicator:before {
+        //background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M 2 3.25 L 12 20.75 L 22 3.25 L 12 10 z" /></svg>');
+        display: inline-block;
+        font-family: 'Fabric MDL2 Assets';
+        font-style: normal;
+        font-weight: normal;
+        content: "\E96E";
     }
 
     .col-sort-desc .sort-indicator {
