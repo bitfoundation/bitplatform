@@ -14,7 +14,7 @@ namespace Bit.SourceGenerators;
 public class AutoInjectSourceGenerator : ISourceGenerator
 {
     private static readonly DiagnosticDescriptor NonPartialClassError = new DiagnosticDescriptor(id: "BITGEN001",
-                                                                                              title: "The class use AutoInject must be partial",
+                                                                                              title: "The class needs to be partial",
                                                                                               messageFormat: "{0} is not partial. The AutoInject attribute needs to be used only in partial classes.",
                                                                                               category: "Bit.SourceGenerators",
                                                                                               DiagnosticSeverity.Error,
