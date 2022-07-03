@@ -15,7 +15,7 @@ public class AutoInjectSourceGenerator : ISourceGenerator
 {
     private static readonly DiagnosticDescriptor NonPartialClassError = new DiagnosticDescriptor(id: "BITGEN001",
                                                                                               title: "The class use AutoInject must be partial",
-                                                                                              messageFormat: "The class use AutoInject must be partial. '{0}'.",
+                                                                                              messageFormat: "{0} is not partial. The AutoInject attribute needs to be used only in partial classes.",
                                                                                               category: "Bit.SourceGenerators",
                                                                                               DiagnosticSeverity.Error,
                                                                                               isEnabledByDefault: true);
@@ -47,6 +47,9 @@ public class AutoInjectSourceGenerator : ISourceGenerator
         foreach (var @class in receiver.EligibleClassesWithBaseClassUsedAutoInject)
         {
             GenerateErrorWhenClassNonPartial(context, @class);
+
+            var baseClass = @class.BaseType!;
+            GenerateErrorWhenClassNonPartial(context, baseClass);
 
             string? partialClassSource = GenerateSource(attributeSymbol, @class, new List<ISymbol>());
 
