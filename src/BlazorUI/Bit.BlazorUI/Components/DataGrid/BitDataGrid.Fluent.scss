@@ -18,23 +18,22 @@
         align-items: center;
     }
     /* Deep to make it easy for people adding a sort-indicator element in a custom HeaderTemplate */
-    th ::deep .sort-indicator {
+    th .sort-indicator {
         /* Preset width so the column width doen't change as the sort indicator appears/disappears */
         width: 1rem;
         height: 1rem;
         align-self: center;
         text-align: center;
     }
-
-    .col-sort-asc ::deep .sort-indicator, .col-sort-desc ::deep .sort-indicator {
+    .col-sort-asc .sort-indicator, .col-sort-desc .sort-indicator {
         background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M 2 3.25 L 12 20.75 L 22 3.25 L 12 10 z" /></svg>');
     }
 
-    .col-sort-desc ::deep .sort-indicator {
+    .col-sort-desc .sort-indicator {
         transform: scaleY(-1);
     }
     /* Deep to make it easy for people adding a col-options-button element in a custom HeaderTemplate */
-    th ::deep .col-options-button {
+    th .col-options-button {
         border: none;
         padding: 0; /* So that even if the text on the button is wide, it gets properly centered */
         width: 1rem;
