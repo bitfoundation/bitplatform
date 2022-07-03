@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using Microsoft.CodeAnalysis;
 
 namespace Bit.SourceGenerators;
@@ -96,5 +97,19 @@ public static class AutoInjectHelper
     {
         Version version = Assembly.GetExecutingAssembly().GetName().Version;
         return version.ToString();
+    }
+
+    public static string GenerateClassName(INamedTypeSymbol classSymbol)
+    {
+        if (classSymbol is null)
+            throw new ArgumentException("The classSymbol can't be null");
+
+        if (classSymbol.IsGenericType)
+        {
+            var arguments = string.Join(", ", classSymbol.TypeParameters.Select(x => x.Name));
+            return $"{classSymbol.Name}<{arguments}>";
+        }
+
+        return classSymbol.Name;
     }
 }

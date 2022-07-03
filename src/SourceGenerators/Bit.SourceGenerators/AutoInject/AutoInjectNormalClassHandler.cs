@@ -33,35 +33,12 @@ namespace {classNamespace}
     [global::System.CodeDom.Compiler.GeneratedCode(""Bit.SourceGenerators"",""{AutoInjectHelper.GetPackageVersion()}"")]
     [global::System.Diagnostics.DebuggerNonUserCode]
     [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class {GenerateClassName(classSymbol)}
+    public partial class {AutoInjectHelper.GenerateClassName(classSymbol)}
     {{
         {GenerateConstructor(classSymbol, sortedMembers, baseEligibleMembers)}
     }}
 }}";
         return source;
-    }
-
-    private static string GenerateClassName(INamedTypeSymbol classSymbol)
-    {
-        var genericTypesName = string.Empty;
-
-        if (classSymbol.IsGenericType)
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.Append("<");
-
-            foreach (var item in classSymbol.TypeParameters)
-            {
-                sb.Append($"{item.Name},");
-            }
-
-            sb.Length--;
-            sb.Append(">");
-
-            genericTypesName = sb.ToString();
-        }
-
-        return $"{classSymbol.Name}{genericTypesName}";
     }
 
     private static string GenerateConstructor(
