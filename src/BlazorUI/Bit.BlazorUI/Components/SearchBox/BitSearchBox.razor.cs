@@ -193,7 +193,7 @@ public partial class BitSearchBox
         if (eventArgs.Code == "Escape")
         {
             CurrentValueAsString = string.Empty;
-            await InputRef.FocusAsync();
+            //await InputRef.FocusAsync(); // is it required when the keydown event is captured on the input itself?
             await OnEscape.InvokeAsync();
             await OnClear.InvokeAsync();
         }

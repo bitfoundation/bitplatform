@@ -13,7 +13,10 @@
                     </BitDataGridTemplateColumn>*@
                     <BitDataGridPropertyColumn Property="@(c => c.Name)" Sortable="true" Class="column1">
                         <ColumnOptions>
-                            <input type="search" autofocus @bind="nameFilter" @bind:event="oninput" />
+                            @*<input type="search" autofocus @bind="nameFilter" @bind:event="oninput" />*@
+                            <BitSearchBox @bind-Value="nameFilter"
+                                          Placeholder="Search on Name"
+                                          InputHtmlAttributes="@(new Dictionary<string, object> {{"autofocus", true}})" />
                         </ColumnOptions>
                     </BitDataGridPropertyColumn>
                     <BitDataGridPropertyColumn Property="@(c => c.Medals.Gold)" Sortable="true" Align="BitDataGridAlign.Right" />
