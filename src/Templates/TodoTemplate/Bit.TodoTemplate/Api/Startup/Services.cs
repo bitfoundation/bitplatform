@@ -53,6 +53,7 @@ public static class Services
         services.Configure<ForwardedHeadersOptions>(options =>
         {
             options.ForwardedHeaders = ForwardedHeaders.All;
+            options.ForwardedHostHeaderName = "X-Host";
         });
         
         services.AddResponseCaching();
