@@ -40,3 +40,20 @@
 .inline-block{
     display:inline-block;
 }
+
+::deep .bitdatagrid[theme=redskin] {
+    font-style :italic;
+    color: red;
+}
+
+::deep .bitdatagrid[theme=redskin] .col-title {
+    gap: 0.4rem; 
+    font-weight: bold;
+    text-transform: uppercase;
+    background-color:red;
+    color:white;
+}
+
+::deep .bitdatagrid[theme=redskin] .sort-indicator {
+    color: white;
+}
