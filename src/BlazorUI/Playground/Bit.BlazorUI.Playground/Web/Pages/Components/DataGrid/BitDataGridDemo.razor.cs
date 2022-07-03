@@ -1,15 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http.Json;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Bit.BlazorUI.Playground.Web.Models;
 using Bit.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
+using Microsoft.AspNetCore.Components;
 
 namespace Bit.BlazorUI.Playground.Web.Pages.Components.DataGrid;
 
 public partial class BitDataGridDemo
 {
+    public BitDataGridDemo()
+    {
+        ServicePointManager.ServerCertificateValidationCallback = delegate (object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
+        {
+            return true;
+        };
+    }
     private readonly List<ComponentParameter> componentParameters = new()
     {
 
@@ -306,7 +319,16 @@ public partial class BitDataGridDemo
 }
 
 .grid ::deep th:nth-child(1) .col-options-button {
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns=""http://www.w3.org/2000/svg"" class=""h-6 w-6"" fill=""none"" viewBox=""0 0 24 24"" stroke=""currentColor"" stroke-width=""2""> <path stroke-linecap=""round"" stroke-linejoin=""round"" d=""M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"" /> </svg>');
+    background-image: none;
+    cursor: pointer;
+
+    &:before {
+        display: inline-block;
+        font-family: 'Fabric MDL2 Assets';
+        font-style: normal;
+        font-weight: normal;
+        content: ""\E721"";
+    }
 }
 </style>
 
@@ -314,7 +336,9 @@ public partial class BitDataGridDemo
     <BitDataGrid Items = ""@FilteredItems"" ResizableColumns=""true"" Pagination=""@pagination"">
         <BitDataGridPropertyColumn Property = ""@(c => c.Name)"" Sortable=""true"" Class=""column1"">
             <ColumnOptions>
-                <input type = ""search"" autofocus @bind = ""nameFilter"" @bind:event=""oninput"" />
+                <BitSearchBox @bind-Value=""typicalSampleNameFilter""
+                                          Placeholder=""Search on Name""
+                                          InputHtmlAttributes=""@(new Dictionary<string, object> {{""autofocus"", true}})"" />
             </ColumnOptions>
         </BitDataGridPropertyColumn>
         <BitDataGridPropertyColumn Property=""@(c => c.Medals.Gold)"" Sortable=""true"" Align=""BitDataGridAlign.Right"" />
@@ -407,7 +431,16 @@ public class Medals
 }
 
 .grid ::deep th:nth-child(1) .col-options-button {
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns=""http://www.w3.org/2000/svg"" class=""h-6 w-6"" fill=""none"" viewBox=""0 0 24 24"" stroke=""currentColor"" stroke-width=""2""> <path stroke-linecap=""round"" stroke-linejoin=""round"" d=""M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"" /> </svg>');
+    background-image: none;
+    cursor: pointer;
+
+    &:before {
+        display: inline-block;
+        font-family: 'Fabric MDL2 Assets';
+        font-style: normal;
+        font-weight: normal;
+        content: ""\E721"";
+    }
 }
 
 .grid--fix-height {
@@ -438,7 +471,9 @@ public class Medals
 </div>
 <div class=""search-panel"">
      <div class=""inline-block"">
-        <BitSearchBox Placeholder = ""Search"" Width=""250px"" @bind-Value=""nameFilter"" ></BitSearchBox>
+        <BitSearchBox @bind-Value=""virtualSampleNameFilter"" Width=""250px""
+                                          Placeholder=""Search on Name""
+                                          InputHtmlAttributes=""@(new Dictionary<string, object> {{""autofocus"", true}})"" />
      </div>
      <div class=""inline-block"">
         Total: <strong>@FilteredItems?.Count()</strong>
@@ -564,18 +599,41 @@ private readonly static Country[] _countries = new[]
     BitDataGridPaginationState pagination = new() { ItemsPerPage = 15 };
     IQueryable<Country> items;
     IQueryable<Country> data;
-    string nameFilter1 = string.Empty;
-    string nameFilter2 = string.Empty;
+    IQueryable<FoodRecall> foodRecallData;
+    string typicalSampleNameFilter = string.Empty;
+    string virtualSampleNameFilter = string.Empty;
     BitDataGridSort<Country> rankSort = BitDataGridSort<Country>.ByDescending(x => x.Medals.Gold).ThenDescending(x => x.Medals.Silver).ThenDescending(x => x.Medals.Bronze);
 
-    IQueryable<Country> FilteredItems => items?.Where(x => x.Name.Contains(nameFilter1, StringComparison.CurrentCultureIgnoreCase));
-    IQueryable<Country> VirtualFilteredItems => items?.Where(x => x.Name.Contains(nameFilter2, StringComparison.CurrentCultureIgnoreCase));
-
+    IQueryable<Country> FilteredItems => items?.Where(x => x.Name.Contains(typicalSampleNameFilter, StringComparison.CurrentCultureIgnoreCase));
+    
     protected override async Task OnInitializedAsync()
     {
         items = (await GetCountriesAsync(0, null, null, true, CancellationToken.None)).Items.AsQueryable();
         data = (await Get7CountriesAsync()).Items.AsQueryable();
+        foodRecallData= (await GetfoodRecallAsync(0, null, null, true,virtualSampleNameFilter, CancellationToken.None)).Items.AsQueryable();
+    }
 
+    private async Task<BitDataGridItemsProviderResult<FoodRecall>> GetfoodRecallAsync(int startIndex, int? count, string sortBy, bool sortAscending,string search, CancellationToken cancellationToken)
+    {
+        var url = NavManager.GetUriWithQueryParameters("http://api.fda.gov/food/enforcement.json", new Dictionary<string, object?>
+            {
+                { "skip", startIndex },
+                { "limit", count },
+                { "search", search },
+            });
+
+        using var httpResponse = await Http.GetAsync(url, cancellationToken);       
+
+        if (!httpResponse.IsSuccessStatusCode)
+        {
+            return new BitDataGridItemsProviderResult<FoodRecall>() { Items=new List<FoodRecall>() { } , TotalItemCount=0 };
+        }
+
+        var response = await httpResponse.Content.ReadFromJsonAsync<FoodRecallQueryResult>();
+
+        return BitDataGridItemsProviderResult.From(
+            items: response!.Results,
+            totalItemCount: response!.Meta.Results.Total);
     }
 
     private async Task<BitDataGridItemsProviderResult<Country>> GetCountriesAsync(int startIndex, int? count, string sortBy, bool sortAscending, CancellationToken cancellationToken)
@@ -724,3 +782,134 @@ public class Medals
 
     public int Total => Gold + Silver + Bronze;
 }
+
+
+//*********
+// Root myDeserializedClass = JsonSerializer.Deserialize<Root>(myJsonResponse);
+public class Meta
+{
+    [JsonPropertyName("disclaimer")]
+    public string Disclaimer { get; set; }
+
+    [JsonPropertyName("terms")]
+    public string Terms { get; set; }
+
+    [JsonPropertyName("license")]
+    public string License { get; set; }
+
+    [JsonPropertyName("last_updated")]
+    public string LastUpdated { get; set; }
+
+    [JsonPropertyName("results")]
+    public Results Results { get; set; }
+}
+
+public class Results
+{
+    [JsonPropertyName("skip")]
+    public int Skip { get; set; }
+
+    [JsonPropertyName("limit")]
+    public int Limit { get; set; }
+
+    [JsonPropertyName("Total")]
+    public int Total { get; set; }
+}
+public class Openfda
+{
+}
+
+public class FoodRecall
+{
+    [JsonPropertyName("country")]
+    public string Country { get; set; }
+
+    [JsonPropertyName("city")]
+    public string City { get; set; }
+
+    [JsonPropertyName("address_1")]
+    public string Address1 { get; set; }
+
+    [JsonPropertyName("reason_for_recall")]
+    public string ReasonForRecall { get; set; }
+
+    [JsonPropertyName("address_2")]
+    public string Address2 { get; set; }
+
+    [JsonPropertyName("product_quantity")]
+    public string ProductQuantity { get; set; }
+
+    [JsonPropertyName("code_info")]
+    public string CodeInfo { get; set; }
+
+    [JsonPropertyName("center_classification_date")]
+    public string CenterClassificationDate { get; set; }
+
+    [JsonPropertyName("distribution_pattern")]
+    public string DistributionPattern { get; set; }
+
+    [JsonPropertyName("state")]
+    public string State { get; set; }
+
+    [JsonPropertyName("product_description")]
+    public string ProductDescription { get; set; }
+
+    [JsonPropertyName("report_date")]
+    public string ReportDate { get; set; }
+
+    [JsonPropertyName("classification")]
+    public string Classification { get; set; }
+
+    [JsonPropertyName("openfda")]
+    public Openfda Openfda { get; set; }
+
+    [JsonPropertyName("recalling_firm")]
+    public string RecallingFirm { get; set; }
+
+    [JsonPropertyName("recall_number")]
+    public string RecallNumber { get; set; }
+
+    [JsonPropertyName("initial_firm_notification")]
+    public string InitialFirmNotification { get; set; }
+
+    [JsonPropertyName("product_type")]
+    public string ProductType { get; set; }
+
+    [JsonPropertyName("event_id")]
+    public string EventId { get; set; }
+
+    [JsonPropertyName("more_code_info")]
+    public string MoreCodeInfo { get; set; }
+
+    [JsonPropertyName("recall_initiation_date")]
+    public string RecallInitiationDate { get; set; }
+
+    [JsonPropertyName("postal_code")]
+    public string PostalCode { get; set; }
+
+    [JsonPropertyName("voluntary_mandated")]
+    public string VoluntaryMandated { get; set; }
+
+    [JsonPropertyName("status")]
+    public string Status { get; set; }
+
+    [JsonPropertyName("skip")]
+    public int Skip { get; set; }
+
+    [JsonPropertyName("limit")]
+    public int Limit { get; set; }
+
+    [JsonPropertyName("total")]
+    public int Total { get; set; }
+}
+
+public class FoodRecallQueryResult
+{
+    [JsonPropertyName("meta")]
+    public Meta Meta { get; set; }
+
+    [JsonPropertyName("results")]
+    public List<FoodRecall> Results { get; set; }
+}
+
+
