@@ -2,7 +2,7 @@
 
 namespace TodoTemplate.App.Services.Contracts;
 
-public interface ITodoTemplateAuthenticationService
+public interface IAuthenticationService
 {
     Task SignIn(SignInRequestDto dto);
 

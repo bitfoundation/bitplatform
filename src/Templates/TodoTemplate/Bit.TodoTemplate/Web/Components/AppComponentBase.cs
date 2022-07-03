@@ -1,6 +1,6 @@
 ﻿namespace TodoTemplate.App.Components;
 
-public partial class TodoTemplateComponentBase : ComponentBase
+public partial class AppComponentBase : ComponentBase
 {
     [AutoInject] IExceptionHandler exceptionHandler = default!;
 

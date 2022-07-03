@@ -1,7 +1,7 @@
 ﻿//-:cnd:noEmit
 namespace TodoTemplate.App.Shared;
 
-public partial class TodoTemplateErrorBoundary
+public partial class AppErrorBoundary
 {
     [AutoInject] private IExceptionHandler exceptionHandler = default!;
 

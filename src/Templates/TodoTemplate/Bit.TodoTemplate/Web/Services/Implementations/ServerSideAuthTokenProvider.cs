@@ -26,7 +26,7 @@ public class ServerSideAuthTokenProvider : IAuthTokenProvider
 
         if (isInitialized)
         {
-            return await _jsRuntime.InvokeAsync<string>("todoTemplate.getCookie", "access_token");
+            return await _jsRuntime.InvokeAsync<string>("App.getCookie", "access_token");
         }
 
         return _httpContextAccessor.HttpContext?.Request.Cookies["access_token"];

@@ -12,7 +12,7 @@
         <ApplicationTitle>TodoTemplate</ApplicationTitle>
 
         <!-- App Identifier -->
-        <ApplicationId>com.bitplatform.TodoTemplate</ApplicationId>
+        <ApplicationId>com.bitplatform.Todo.Template</ApplicationId>
         <ApplicationIdGuid>AC87AA5B-4B37-4E52-8468-2D5DF24AF257</ApplicationIdGuid>
 
         <!-- Versions -->

@@ -3,11 +3,11 @@ using System.Runtime.InteropServices;
 
 namespace TodoTemplate.App.Services.Implementations;
 
-public class TodoTemplateHttpClientHandler : HttpClientHandler
+public class AppHttpClientHandler : HttpClientHandler
 {
     private readonly IAuthTokenProvider _tokenProvider;
 
-    public TodoTemplateHttpClientHandler(IAuthTokenProvider tokenProvider)
+    public AppHttpClientHandler(IAuthTokenProvider tokenProvider)
     {
         _tokenProvider = tokenProvider;
     }
@@ -29,7 +29,7 @@ public class TodoTemplateHttpClientHandler : HttpClientHandler
         {
             if (response.Headers.TryGetValues("Request-ID", out IEnumerable<string>? values) && values is not null && values.Any())
             {
-                RestExceptionPayload restError = await response.Content.ReadFromJsonAsync(TodoTemplateJsonContext.Default.RestExceptionPayload);
+                RestExceptionPayload restError = await response.Content.ReadFromJsonAsync(AppJsonContext.Default.RestExceptionPayload);
 
                 Type exceptionType = typeof(RestExceptionPayload).Assembly.GetType(restError.ExceptionType) ?? typeof(UnknownException);
 

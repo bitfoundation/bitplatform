@@ -3,9 +3,9 @@ using TodoTemplate.Api.Models.TodoItem;
 
 namespace TodoTemplate.Api.Data;
 
-public class TodoTemplateDbContext : IdentityDbContext<User, Role, int>
+public class AppDbContext : IdentityDbContext<User, Role, int>
 {
-    public TodoTemplateDbContext(DbContextOptions<TodoTemplateDbContext> options)
+    public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options)
     {
     }
@@ -14,7 +14,7 @@ public class TodoTemplateDbContext : IdentityDbContext<User, Role, int>
     {
         base.OnModelCreating(builder);
 
-        builder.ApplyConfigurationsFromAssembly(typeof(TodoTemplateDbContext).Assembly);
+        builder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
 
         ConfigIdentityTables(builder);
     }

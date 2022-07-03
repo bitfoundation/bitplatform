@@ -1,10 +1,10 @@
 ﻿namespace TodoTemplate.App.Services.Implementations;
 
-public class TodoTemplateAuthenticationStateProvider : AuthenticationStateProvider
+public class AppAuthenticationStateProvider : AuthenticationStateProvider
 {
     private readonly IAuthTokenProvider _tokenProvider;
 
-    public TodoTemplateAuthenticationStateProvider(IAuthTokenProvider tokenProvider)
+    public AppAuthenticationStateProvider(IAuthTokenProvider tokenProvider)
     {
         _tokenProvider = tokenProvider;
     }

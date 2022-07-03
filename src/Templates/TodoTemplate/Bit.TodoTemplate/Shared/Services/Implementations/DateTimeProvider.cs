@@ -1,6 +1,6 @@
 ﻿namespace TodoTemplate.Shared.Services.Implementations;
 
-public class TodoTemplateDateTimeProvider : IDateTimeProvider
+public class DateTimeProvider : IDateTimeProvider
 {
     public DateTimeOffset GetCurrentDateTime()
     {

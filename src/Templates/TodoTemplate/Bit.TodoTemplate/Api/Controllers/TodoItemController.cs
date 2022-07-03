@@ -7,7 +7,7 @@ namespace TodoTemplate.Api.Controllers;
 [ApiController]
 public partial class TodoItemController : ControllerBase
 {
-    [AutoInject] private TodoTemplateDbContext _dbContext;
+    [AutoInject] private AppDbContext _dbContext;
 
     [AutoInject] private IMapper _mapper;
 
