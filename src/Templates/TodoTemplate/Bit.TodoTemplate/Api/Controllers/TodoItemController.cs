@@ -7,9 +7,9 @@ namespace TodoTemplate.Api.Controllers;
 [ApiController]
 public partial class TodoItemController : ControllerBase
 {
-    [AutoInject] private AppDbContext _dbContext;
+    [AutoInject] private AppDbContext _dbContext = default!;
 
-    [AutoInject] private IMapper _mapper;
+    [AutoInject] private IMapper _mapper = default!;
 
     [HttpGet, EnableQuery]
     public IQueryable<TodoItemDto> Get(CancellationToken cancellationToken)

@@ -4,19 +4,11 @@ namespace TodoTemplate.App.Services.Implementations;
 
 public class AuthenticationService : IAuthenticationService
 {
-    private readonly HttpClient _httpClient;
+    [AutoInject] private HttpClient _httpClient = default!;
 
-    private readonly IJSRuntime _jsRuntime;
+    [AutoInject] private IJSRuntime _jsRuntime = default!;
 
-    private readonly AppAuthenticationStateProvider _authenticationStateProvider;
-
-    public AuthenticationService(HttpClient httpClient, IJSRuntime jsRuntime,
-        AppAuthenticationStateProvider authenticationStateProvider)
-    {
-        _httpClient = httpClient;
-        _jsRuntime = jsRuntime;
-        _authenticationStateProvider = authenticationStateProvider;
-    }
+    [AutoInject] private AppAuthenticationStateProvider _authenticationStateProvider = default!;
 
     public async Task SignIn(SignInRequestDto dto)
     {

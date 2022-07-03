@@ -2,7 +2,7 @@
 
 public partial class SignOutConfirmModal
 {
-    [AutoInject] public IAuthenticationService authService = default!;
+    [AutoInject] private IAuthenticationService authService = default!;
 
     private bool isOpen;
 
