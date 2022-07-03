@@ -44,7 +44,9 @@
             </div>
             <div class="search-panel">
                 <div class="inline-block">
-                    <BitSearchBox Placeholder="Search" Width="250px" @bind-Value="nameFilter2" ></BitSearchBox>
+                    <BitSearchBox @bind-Value="nameFilter2" Width="250px"
+                                          Placeholder="Search on Name"
+                                          InputHtmlAttributes="@(new Dictionary<string, object> {{"autofocus", true}})" />
                 </div>
                 <div class="inline-block">
                     Total: <strong>@VirtualFilteredItems?.Count()</strong>
