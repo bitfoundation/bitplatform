@@ -37,7 +37,7 @@
     }
 
     .col-sort-desc .sort-indicator {
-        transform: scaleY(-1);
+        transform: scaleY(-1) translateY(2px);
     }
     /* Deep to make it easy for people adding a col-options-button element in a custom HeaderTemplate */
     th .col-options-button {
