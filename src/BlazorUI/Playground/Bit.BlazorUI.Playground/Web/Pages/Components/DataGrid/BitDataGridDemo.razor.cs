@@ -506,26 +506,25 @@ protected override async Task OnInitializedAsync()
             return BitDataGridItemsProviderResult.From(new FoodRecall[] { }, 0);
         };
         
-        var data = JsonSerializer.Deserialize(await response.Content.ReadAsStreamAsync(), MyJsonContext.Default.FoodRecallQueryResult);
+        var data = JsonSerializer.Deserialize(await response.Content.ReadAsStreamAsync(), AppJsonContext.Default.FoodRecallQueryResult);
 
         return BitDataGridItemsProviderResult.From(
             items: data!.Results,
             totalItemCount: data!.Meta.Results.Total);
             };
         // Display the number of results just for information. This is completely separate from the grid.
-        virtualNumResults = (await Http.GetFromJsonAsync<FoodRecallQueryResult>(""https://api.fda.gov/food/enforcement.json"", MyJsonContext.Default.FoodRecallQueryResult))!.Meta.Results.Total; ;
+        virtualNumResults = (await Http.GetFromJsonAsync<FoodRecallQueryResult>(""https://api.fda.gov/food/enforcement.json"", AppJsonContext.Default.FoodRecallQueryResult))!.Meta.Results.Total; ;
 }
 
 //https://devblogs.microsoft.com/dotnet/try-the-new-system-text-json-source-generator/
-public partial class MyJsonContext : JsonSerializerContext
+[JsonSerializable(typeof(FoodRecallQueryResult))]
+[JsonSerializable(typeof(Meta))]
+[JsonSerializable(typeof(FoodRecall))]
+[JsonSerializable(typeof(Results))]
+[JsonSerializable(typeof(Openfda))]
+public partial class AppJsonContext : JsonSerializerContext
 {
-    public static MyJsonContext Default { get; }
-
-    public JsonTypeInfo<FoodRecallQueryResult> FoodRecallQueryResult { get; }
-
-    public MyJsonContext(JsonSerializerOptions options) { }
-
-    public override JsonTypeInfo GetTypeInfo(Type type) => ...;
+  
 }
 
 public class FoodRecallQueryResult
@@ -704,7 +703,6 @@ private readonly static Country[] _countries = new[]
     BitDataGridItemsProvider<FoodRecall> foodRecallProvider;
 
     string typicalSampleNameFilter = string.Empty;
-    bool virtualSampleHaseError = false;
     int virtualNumResults;
     string _virtualSampleNameFilter = string.Empty;
     string VirtualSampleNameFilter
@@ -723,45 +721,33 @@ private readonly static Country[] _countries = new[]
 
     protected override async Task OnInitializedAsync()
     {
-        items = (await GetCountriesAsync(0, null, null, true, CancellationToken.None)).Items.AsQueryable();
+        items = (await GetCountriesAsync(0, null, null, true, default)).Items.AsQueryable();
         data = (await Get7CountriesAsync()).Items.AsQueryable();
 
-        try
+        foodRecallProvider = async req =>
         {
-            foodRecallProvider = async req =>
+            try
             {
                 var url = NavManager.GetUriWithQueryParameters("https://api.fda.gov/food/enforcement.json", new Dictionary<string, object?>
-                        {
-                            { "search",$"recalling_firm:\"{_virtualSampleNameFilter}\"" },
-                            { "skip",req.StartIndex },
-                            { "limit", req.Count },
-                        });
-
-                //This is cause error if Api call response.StatusCode != SuccessStatusCode (Unhandled exception in circuit)
-                /*var data = await Http.GetFromJsonAsync(url, PlaygroundJsonContext.Default.FoodRecallQueryResult, req.CancellationToken);*/
-
-                var response = await Http.GetAsync(url,req.CancellationToken);
-
-                if (!response.IsSuccessStatusCode)
                 {
-                    return BitDataGridItemsProviderResult.From(new FoodRecall[] { }, 0);
-                };
+                    { "search",$"recalling_firm:\"{_virtualSampleNameFilter}\"" },
+                    { "skip", req.StartIndex },
+                    { "limit", req.Count }
+                });
 
-                var data = JsonSerializer.Deserialize(await response.Content.ReadAsStreamAsync(), PlaygroundJsonContext.Default.FoodRecallQueryResult);
+                var data = await Http.GetFromJsonAsync(url, AppJsonContext.Default.FoodRecallQueryResult, req.CancellationToken);
+
+                virtualNumResults = data!.Meta.Results.Total;
 
                 return BitDataGridItemsProviderResult.From(
                     items: data!.Results,
                     totalItemCount: data!.Meta.Results.Total);
-            };
-            // Display the number of results just for information. This is completely separate from the grid.
-            virtualNumResults = (await Http.GetFromJsonAsync<FoodRecallQueryResult>("https://api.fda.gov/food/enforcement.json", PlaygroundJsonContext.Default.FoodRecallQueryResult))!.Meta.Results.Total; ;
-        }
-        catch
-        {
-            //If the ItemsProvider parameter of the DataGrid is assigned a null value, it will cause Blazor to disconnect and cause the application to hang (this is the DataGrid bug).
-            foodRecallProvider = async req => { await Task.Delay(1); virtualNumResults = 0; return BitDataGridItemsProviderResult.From(new FoodRecall[] { }, 0); };
-            virtualSampleHaseError = true;
-        }
+            }
+            finally
+            {
+                StateHasChanged();
+            }
+        };
     }
 
     private async Task<BitDataGridItemsProviderResult<Country>> GetCountriesAsync(int startIndex, int? count, string sortBy, bool sortAscending, CancellationToken cancellationToken)
