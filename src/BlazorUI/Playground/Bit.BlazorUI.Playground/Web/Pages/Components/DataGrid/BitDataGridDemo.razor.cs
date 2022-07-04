@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http.Json;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Bit.BlazorUI.Playground.Shared.Dtos;
@@ -465,7 +464,7 @@ public class Medals
 <div class=""search-panel"">
      <div class=""inline-block"">
         <BitSearchBox @bind-Value=""virtualSampleNameFilter"" Width=""250px""
-                                          Placeholder=""Search on Name""
+                                          Placeholder=""Search on Company""
                                           InputHtmlAttributes=""@(new Dictionary<string, object> {{""autofocus"", true}})"" />
      </div>
      <div class=""inline-block"">
@@ -490,32 +489,37 @@ string VirtualSampleNameFilter
 
 protected override async Task OnInitializedAsync()
 {
-     foodRecallProvider = async req =>
-     {
-        var url = NavManager.GetUriWithQueryParameters(""https://api.fda.gov/food/enforcement.json"", new Dictionary<string, object?>
-                {
-                    { ""search"",$""recalling_firm:\""{_virtualSampleNameFilter}\"""" },
-                    { ""skip"",req.StartIndex},
-                    { ""limit"", req.Count },
-                });
-
-        var response = await Http.GetAsync(url, req.CancellationToken);
-
-        if (!response.IsSuccessStatusCode)
+    foodRecallProvider = async req =>
+    {
+        try
         {
-            return BitDataGridItemsProviderResult.From(new FoodRecall[] { }, 0);
+            var url = NavManager.GetUriWithQueryParameters(""https://api.fda.gov/food/enforcement.json"", new Dictionary<string, object?>
+            {
+                { ""search"",$""recalling_firm:\""{_virtualSampleNameFilter}\"" },
+                { ""skip"", req.StartIndex },
+                { ""limit"", req.Count }
+            });
+
+            var data = await Http.GetFromJsonAsync(url, AppJsonContext.Default.FoodRecallQueryResult, req.CancellationToken);
+
+            virtualNumResults = data!.Meta.Results.Total;
+
+            return BitDataGridItemsProviderResult.From(
+                                            items: data!.Results,
+                                            totalItemCount: data!.Meta.Results.Total);
+            }
+            catch
+            {
+                virtualNumResults = 0;
+                return BitDataGridItemsProviderResult.From<FoodRecall>(new List<FoodRecall> { }, 0);
+            }
+            finally
+            {
+                StateHasChanged();
+            }
         };
-        
-        var data = JsonSerializer.Deserialize(await response.Content.ReadAsStreamAsync(), AppJsonContext.Default.FoodRecallQueryResult);
-
-        return BitDataGridItemsProviderResult.From(
-            items: data!.Results,
-            totalItemCount: data!.Meta.Results.Total);
-            };
-        // Display the number of results just for information. This is completely separate from the grid.
-        virtualNumResults = (await Http.GetFromJsonAsync<FoodRecallQueryResult>(""https://api.fda.gov/food/enforcement.json"", AppJsonContext.Default.FoodRecallQueryResult))!.Meta.Results.Total; ;
+    }
 }
-
 //https://devblogs.microsoft.com/dotnet/try-the-new-system-text-json-source-generator/
 [JsonSerializable(typeof(FoodRecallQueryResult))]
 [JsonSerializable(typeof(Meta))]
@@ -742,6 +746,11 @@ private readonly static Country[] _countries = new[]
                 return BitDataGridItemsProviderResult.From(
                     items: data!.Results,
                     totalItemCount: data!.Meta.Results.Total);
+            }
+            catch
+            {
+                virtualNumResults = 0;
+                return BitDataGridItemsProviderResult.From<FoodRecall>(new List<FoodRecall>{},0 );
             }
             finally
             {
