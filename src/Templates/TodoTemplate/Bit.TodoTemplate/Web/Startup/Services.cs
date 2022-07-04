@@ -23,8 +23,8 @@ public static class Services
             .Configure<GzipCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest);
         services.AddTransient<IAuthTokenProvider, ServerSideAuthTokenProvider>();
 
-        services.AddTodoTemplateSharedServices();
-        services.AddTodoTemplateAppServices();
+        services.AddSharedServices();
+        services.AddAppServices();
     }
 }
 #endif

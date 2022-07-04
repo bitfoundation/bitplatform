@@ -6,9 +6,9 @@ public partial class SignIn
 {
     [AutoInject] private NavigationManager navigationManager = default!;
 
-    [AutoInject] private ITodoTemplateAuthenticationService todoTemplateAuthenticationService = default!;
+    [AutoInject] private IAuthenticationService authService = default!;
 
-    [AutoInject] private TodoTemplateAuthenticationStateProvider todoTemplateAuthenticationStateProvider = default!;
+    [AutoInject] private AppAuthenticationStateProvider authStateProvider = default!;
 
     public SignInRequestDto SignInModel { get; set; } = new();
 
@@ -34,7 +34,7 @@ public partial class SignIn
 
         try
         {
-            await todoTemplateAuthenticationService.SignIn(SignInModel);
+            await authService.SignIn(SignInModel);
 
             navigationManager.NavigateTo(RedirectUrl ?? "/");
         }
@@ -59,7 +59,7 @@ public partial class SignIn
     {
         if (firstRender)
         {
-            if (await todoTemplateAuthenticationStateProvider.IsUserAuthenticated())
+            if (await authStateProvider.IsUserAuthenticated())
                 navigationManager.NavigateTo("/");
         }
 

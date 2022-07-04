@@ -2,7 +2,8 @@
 
 	<PropertyGroup>
 		<TargetFramework>net6.0</TargetFramework>
-		<BlazorEnableTimeZoneSupport>false</BlazorEnableTimeZoneSupport>
+        <!--If you don't need to use the time zone and your app is in WASM format, you can reduce the output size of the app by disabling the time zone.-->
+        <BlazorEnableTimeZoneSupport>true</BlazorEnableTimeZoneSupport>
 		<BlazorWebAssemblyPreserveCollationData>false</BlazorWebAssemblyPreserveCollationData>
 		<InvariantGlobalization>true</InvariantGlobalization>
 		<RootNamespace>TodoTemplate.App</RootNamespace>
@@ -26,10 +27,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Bit.BlazorUI" Version="12.0.0-pre-12" />
-		<PackageReference Include="Bit.Bswup" Version="12.0.0-pre-12" />
-		<PackageReference Include="Bit.CodeAnalyzers" Version="12.0.0-pre-12" />
-		<PackageReference Include="Bit.SourceGenerators" Version="12.0.0-pre-12" />
+		<PackageReference Include="Bit.BlazorUI" Version="1.0.2" />
+		<PackageReference Include="Bit.Bswup" Version="1.0.2" />
+		<PackageReference Include="Bit.CodeAnalyzers" Version="1.0.2" />
+		<PackageReference Include="Bit.SourceGenerators" Version="1.0.2" />
 		<PackageReference Include="jose-jwt" Version="4.0.0" />
 		<PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.6" />
         <!--/-:msbuild-conditional:noEmit -->

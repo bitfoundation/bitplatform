@@ -34,7 +34,7 @@ namespace {classNamespace}
     [global::System.CodeDom.Compiler.GeneratedCode(""Bit.SourceGenerators"",""{AutoInjectHelper.GetPackageVersion()}"")]
     [global::System.Diagnostics.DebuggerNonUserCode]
     [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class {classSymbol.Name}
+    public partial class {AutoInjectHelper.GenerateClassName(classSymbol)}
     {{
         {GenerateInjectableProperties(sortedMembers)}
     }}

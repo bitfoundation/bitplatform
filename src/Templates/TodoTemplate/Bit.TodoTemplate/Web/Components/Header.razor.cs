@@ -4,7 +4,7 @@ public partial class Header : IAsyncDisposable
 {
     [AutoInject] private IStateService stateService = default!;
 
-    [AutoInject] private TodoTemplateAuthenticationStateProvider todoTemplateAuthenticationStateProvider = default!;
+    [AutoInject] private AppAuthenticationStateProvider authStateProvider = default!;
 
     [AutoInject] private IExceptionHandler exceptionHandler = default!;
 
@@ -14,9 +14,9 @@ public partial class Header : IAsyncDisposable
 
     protected async override Task OnInitAsync()
     {
-        todoTemplateAuthenticationStateProvider.AuthenticationStateChanged += VerifyUserIsAuthenticatedOrNot;
+        authStateProvider.AuthenticationStateChanged += VerifyUserIsAuthenticatedOrNot;
 
-        IsUserAuthenticated = await stateService.GetValue($"{nameof(Header)}-{nameof(IsUserAuthenticated)}", async () => await todoTemplateAuthenticationStateProvider.IsUserAuthenticated());
+        IsUserAuthenticated = await stateService.GetValue($"{nameof(Header)}-{nameof(IsUserAuthenticated)}", authStateProvider.IsUserAuthenticated);
 
         await base.OnInitAsync();
     }
@@ -25,7 +25,7 @@ public partial class Header : IAsyncDisposable
     {
         try
         {
-            IsUserAuthenticated = await todoTemplateAuthenticationStateProvider.IsUserAuthenticated();
+            IsUserAuthenticated = await authStateProvider.IsUserAuthenticated();
         }
         catch (Exception ex)
         {
@@ -44,6 +44,6 @@ public partial class Header : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        todoTemplateAuthenticationStateProvider.AuthenticationStateChanged -= VerifyUserIsAuthenticatedOrNot;
+        authStateProvider.AuthenticationStateChanged -= VerifyUserIsAuthenticatedOrNot;
     }
 }
