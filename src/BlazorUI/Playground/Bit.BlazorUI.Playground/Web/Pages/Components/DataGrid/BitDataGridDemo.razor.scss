@@ -6,6 +6,11 @@
 .grid {
     display: inline-flex;
     flex-direction: column;
+    width:100%
+}
+
+.grid ::deep table {
+    min-width: 100%;
 }
 
 .grid ::deep tr {
@@ -28,4 +33,37 @@
         font-weight: normal;
         content: "\E721";
     }
+}
+
+.grid--fix-height {
+    height: 15rem;
+    overflow-y: auto;
+}
+
+.search-panel {
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    border-top: 1px solid black;
+    padding-top: 5px;
+}
+
+.inline-block{
+    display:inline-block;
+}
+
+::deep .bitdatagrid[theme=redskin] {
+    font-style :italic;
+    color: red;
+}
+
+::deep .bitdatagrid[theme=redskin] .col-title {
+    gap: 0.4rem; 
+    font-weight: bold;
+    text-transform: uppercase;
+    background-color:red;
+    color:white;
+}
+
+::deep .bitdatagrid[theme=redskin] .sort-indicator {
+    color: white;
 }
