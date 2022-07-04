@@ -28,9 +28,6 @@ public class AutoInjectSyntaxReceiver : ISyntaxContextReceiver
         if (classSymbol == null)
             return;
 
-        if (classDeclarationSyntax.Modifiers.Any(k => k.IsKind(SyntaxKind.PartialKeyword)) is false)
-            return;
-
         if (classSymbol.BaseType == null)
             return;
 
@@ -67,9 +64,6 @@ public class AutoInjectSyntaxReceiver : ISyntaxContextReceiver
         if (classDeclarationSyntax is null)
             return;
 
-        if (!classDeclarationSyntax.Modifiers.Any(k => k.IsKind(SyntaxKind.PartialKeyword)))
-            return;
-
         foreach (VariableDeclaratorSyntax variable in fieldDeclarationSyntax.Declaration.Variables)
         {
             var fieldSymbol = ModelExtensions.GetDeclaredSymbol(context.SemanticModel, variable) as IFieldSymbol;
@@ -91,8 +85,6 @@ public class AutoInjectSyntaxReceiver : ISyntaxContextReceiver
         var classDeclarationSyntax = (ClassDeclarationSyntax?)propertyDeclarationSyntax.Parent;
 
         if (classDeclarationSyntax is null) return;
-
-        if (classDeclarationSyntax.Modifiers.Any(k => k.IsKind(SyntaxKind.PartialKeyword)) is false) return;
 
         var propertySymbol = context.SemanticModel.GetDeclaredSymbol(propertyDeclarationSyntax);
 
