@@ -35,17 +35,19 @@
 
     <ComponentExampleBox Title="Virtualizing" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example2">
         <ExamplePreview>
+           @if(virtualSampleHaseError){
+            <BitMessageBar MessageBarType="@BitMessageBarType.Error"  IsMultiline="false"  >
+                Oops! some network errors occurred in receiving data from the OpenFda.
+            </BitMessageBar>
+            }
             <div class="grid grid--fix-height">
-
-                <BitDataGrid Items="@foodRecallData">
+               <BitDataGrid   ItemsProvider="@foodRecallProvider" TGridItem="FoodRecall">
                     <BitDataGridPropertyColumn Property="@(c=>c.EventId)" />
                     <BitDataGridPropertyColumn Property="@(c => c.State)" />
                     <BitDataGridPropertyColumn Property="@(c => c.City)" />
                     <BitDataGridPropertyColumn Title="Company" Property="@(c => c.RecallingFirm)" />
                     <BitDataGridPropertyColumn Property="@(c => c.Status)" />
                 </BitDataGrid>
-
-
             </div>
             <div class="search-panel">
                 <div class="inline-block">
@@ -54,7 +56,7 @@
                                   InputHtmlAttributes="@(new Dictionary<string, object> {{"autofocus", true}})" />
                 </div>
                 <div class="inline-block">
-                    Total: <strong>@foodRecallData?.Count()</strong>
+                    Total: <strong>@virtualNumResults</strong>
                 </div>
             </div>
         </ExamplePreview>
