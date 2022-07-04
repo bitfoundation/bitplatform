@@ -217,6 +217,17 @@ public partial class BitDatePicker
     protected override Task OnParametersSetAsync()
     {
         var dateTime = CurrentValue.GetValueOrDefault(DateTimeOffset.Now).DateTime;
+
+        if (MinDate.HasValue && MinDate > new DateTimeOffset(dateTime))
+        {
+            dateTime = MinDate.GetValueOrDefault(DateTimeOffset.Now).DateTime;
+        }
+
+        if (MaxDate.HasValue && MaxDate < new DateTimeOffset(dateTime))
+        {
+            dateTime = MaxDate.GetValueOrDefault(DateTimeOffset.Now).DateTime;
+        }
+
         CreateMonthCalendar(dateTime);
 
         return base.OnParametersSetAsync();
@@ -715,7 +726,7 @@ public partial class BitDatePicker
         var month = GetCorrectTargetMonth(weekIndex, dayIndex);
 
         if (MaxDate.HasValue &&
-           (displayYear > MaxDate.Value.Year ||
+           (displayYear > MaxDate.Value.Year  ||
            (displayYear == MaxDate.Value.Year && month > MaxDate.Value.Month) ||
            (displayYear == MaxDate.Value.Year && month == MaxDate.Value.Month && day > MaxDate.Value.Day)))
             return true;
