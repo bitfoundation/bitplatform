@@ -1,7 +1,8 @@
 ﻿@page "/components/data-grid"
-
 @inject HttpClient Http
 @inject NavigationManager NavManager
+
+@using Playground.Shared.Dtos.DataGridDemo;
 
 <ComponentDemo ComponentName="DataGrid"
                ComponentDescription="BitDataGrid is a robust way to display an information-rich collection of items, and allow people to sort, group, and filter the content. Use a data-grid when information density is critical."
@@ -41,7 +42,7 @@
             </BitMessageBar>
             }
             <div class="grid grid--fix-height">
-               <BitDataGrid   ItemsProvider="@foodRecallProvider" TGridItem="FoodRecall">
+               <BitDataGrid   ItemsProvider="@foodRecallProvider" TGridItem="FoodRecall" Virtualize="true" @ref="dataGrid">
                     <BitDataGridPropertyColumn Property="@(c=>c.EventId)" />
                     <BitDataGridPropertyColumn Property="@(c => c.State)" />
                     <BitDataGridPropertyColumn Property="@(c => c.City)" />
@@ -51,7 +52,7 @@
             </div>
             <div class="search-panel">
                 <div class="inline-block">
-                    <BitSearchBox @bind-Value="virtualSampleNameFilter" Width="250px"
+                    <BitSearchBox @bind-Value="VirtualSampleNameFilter" Width="250px"
                                   Placeholder="Search on Name"
                                   InputHtmlAttributes="@(new Dictionary<string, object> {{"autofocus", true}})" />
                 </div>
@@ -76,6 +77,5 @@
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
-
 
 </ComponentDemo>
