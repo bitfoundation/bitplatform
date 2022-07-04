@@ -1,20 +1,49 @@
 # Introduction
 
-Bit is a platform to build high performance yet maintainable api / mobile / web / desktop applications using C# .NET and Blazor
-It's a combination of best practices and facilities to implement those best practices. Bit can help you develop high quality apps in less time.
+Bit platform is the home for .NET developers. 
+Bit provides dotnet source templates such as TodoTemplate and AdminPanel template. In these project templates, common features such as Sign-up & Sign-in, are available using C#, HTML, and CSS, with which most of the .NET developers are familiar.
 
-Our primary focus is developing high performance native blazor components which is being done in **src/Bit.Client.Web.BlazorUI.sln**
+The following apps are available out of the box with simple configurations:
+* Android app with full access to platform features
+* iOS app with full access to platform features
+* Windows app with full access to platform features
+* PWA (for offline-capable web apps)
+* SPA with/without Pre-Rendering (SEO friendly)
+
+Using these templates, one can easily switch between Blazor Server, Blazor Web Assembly, and Blazor Hybrid:
+* Blazor Server: best for fast development and debugging
+* Blazor Web Assembly: best for SPA & PWA (for production)
+* Blazor Hybrid: provides apps for Android, iOS, and Windows
+
+In practice, everyone can have the above outputs with just one codebase.
+
+
+These templates are powered by Bit Blazor components. Bit components are fast(performant) and lightweight (less than 200KB). These components are the best tool to develop most apps, even public websites like e-commerce.
+
+
+The following websites are developed by Bit Platform and published in Blazor Web Assembly:
+
+* [Bit Components home page](https://components.bitplatform.dev/)
+* [Bit Platform home page](https://bitplatform.dev/)
+* [Todo app with pre rendering](https://todo.bitplatform.dev/)
+* [Todo app PWA](https://todo-app.bitplatform.dev/)
+* [Todo app in App Center](https://install.appcenter.ms/orgs/bitfoundation/apps/todo/distribution_groups/testers)
+* Todo app in Google Play (Coming soon...)
+* Todo app in Apple Store (Coming soon...)
+* Todo app in Microsoft Store (Coming soon...)
+
+Keep in mind that if a web app is only fast in the Blazor Server mode but slow in Blazor Web Assembly mode, it will also be slow in Blazor Hybrid mode (Android, iOS, and Windows apps).
 
 ## **Contribute**
 
 There are many ways to contribute
 
-* Give us a try and use our nuget packages in your apps!
-* [Submit issues](https://github.com/bitfoundation/bitplatform/issues/new?template=bug_report.md)
+* Give us a try and use bit platform nuget packages in your apps!
+* [Code review](https://github.com/bitfoundation/bitplatform/pulls)
 * Fork / Star this project! (":
-* Code review
-* Engage with other developers on [stackoverflow](http://stackoverflow.com/questions/tagged/bitplatform)
+* Submit [bugs](https://github.com/bitfoundation/bitplatform/issues/new?template=bug_report.yml) & [feature requests](https://github.com/bitfoundation/bitplatform/issues/new?template=feature_request.yml)
+* Engage with other developers on [stackoverflow](https://stackoverflow.com/questions/tagged/bitplatform)
 
 ## **Contributions**
 
-![Alt](https://repobeats.axiom.co/api/embed/115c6953ca07a17b42b892b19671d1166e9af701.svg "Bit Open Source Contributions Report")
+![Alt](https://repobeats.axiom.co/api/embed/66dc1fc04ed967094b98ac118e8f18fa38b19f6a.svg "Bit Open Source Contributions Report")

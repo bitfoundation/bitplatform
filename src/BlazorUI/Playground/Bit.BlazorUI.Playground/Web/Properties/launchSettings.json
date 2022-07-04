@@ -1,0 +1,12 @@
+{
+    "profiles": {
+        "Bit.BlazorUI.Playground.Web": {
+            "commandName": "Project",
+            "launchBrowser": true,
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "applicationUrl": "https://localhost:4001;http://localhost:4000"
+        }
+    }
+}

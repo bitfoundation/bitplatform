@@ -1,0 +1,47 @@
+﻿@inherits AppComponentBase;
+
+@if (IsMenuOpen)
+{
+    <div class="menu-shadow" @onclick=CloseMenu></div>
+}
+
+<section class="main-container @(IsMenuOpen ? null : "main-container--closed")">
+    <div class="top-container">
+        <div class="user-img-container">
+            @if (User?.ProfileImageName != null)
+            {
+                <img src="@ProfileImageUrl" class="user-img" />
+            }
+            else if (string.IsNullOrEmpty(User?.FullName) is false && User?.FullName.Length >= 2)
+            {
+                @User?.FullName?.ToUpper()[..2]
+            }
+            else
+            {
+                @User?.UserName?.ToUpper()[..2]
+            }
+        </div>
+        <div class="user-name">
+            @if(string.IsNullOrEmpty(User?.FullName) is false)
+            {
+                @User?.FullName
+            }
+            else
+            {
+                @User?.UserName
+            }
+        </div>
+        <BitActionButton IconName="BitIconName.Edit"
+                         Href="/edit-profile"
+                         OnClick=CloseMenu>
+            Edit profile
+        </BitActionButton>
+    </div>
+    <BitNav NavLinkItems="NavLinks"
+            AriaLabel="NavMenu"
+            SelectedKey="Home"
+            OnLinkClick=CloseMenu>
+    </BitNav>
+</section>
+
+<SignOutConfirmModal @bind-IsOpen=IsSignOutModalOpen></SignOutConfirmModal>

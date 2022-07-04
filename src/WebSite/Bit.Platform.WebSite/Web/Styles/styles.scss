@@ -1,0 +1,205 @@
+﻿@import '_shared.scss';
+
+* {
+    font-family: "OpenSans";
+}
+
+body {
+    width: 100%;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+a {
+    text-decoration: none;
+}
+
+::-webkit-scrollbar {
+    width: rem(6px);
+}
+
+::-webkit-scrollbar-track {
+    margin-top: rem(80px);
+
+    @include lg {
+        margin-top: rem(72px);
+    }
+
+    @include md {
+        margin-top: rem(56px);
+    }
+
+    @include sm {
+        margin-top: rem(40px);
+    }
+}
+
+::-webkit-scrollbar-thumb {
+    background: $B10Color;
+    border-radius: rem(8px);
+    border: rem(5px) solid $B10Color;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: $B11Color;
+    border-radius: rem(8px);
+    border: rem(4px) solid $B11Color;
+}
+
+::-webkit-scrollbar-button {
+    display: none;
+}
+
+::-webkit-scrollbar:horizontal {
+    height: rem(3px);
+}
+
+h1 {
+    font-weight: 700;
+    font-size: rem(50px);
+    line-height: rem(78px);
+    margin-block-end: 0;
+    margin-block-start: 0;
+
+    @include lg {
+        font-weight: 700;
+        font-size: rem(40px);
+        line-height: rem(64px);
+    }
+
+    @include md {
+        font-weight: 600;
+        font-size: rem(26px);
+        line-height: rem(40px);
+    }
+
+
+    @include sm {
+        font-weight: 600;
+        font-size: rem(26px);
+        line-height: rem(40px);
+    }
+}
+
+h2 {
+    font-weight: 700;
+    font-size: rem(40px);
+    line-height: rem(56px);
+    margin-block-end: 0;
+    margin-block-start: 0;
+
+    @include lg {
+        font-weight: 700;
+        font-size: rem(36px);
+        line-height: rem(56px);
+    }
+
+    @include md {
+        font-weight: 700;
+        font-size: rem(24px);
+        line-height: rem(40px);
+    }
+
+
+    @include sm {
+        font-weight: 700;
+        font-size: rem(20px);
+        line-height: rem(32px);
+    }
+}
+
+h3 {
+    font-weight: 600;
+    font-size: rem(34px);
+    line-height: rem(48px);
+    margin-block-end: 0;
+    margin-block-start: 0;
+
+    @include lg {
+        font-weight: 600;
+        font-size: rem(32px);
+        line-height: rem(48px);
+    }
+
+    @include md {
+        font-weight: 600;
+        font-size: rem(20px);
+        line-height: rem(32px);
+    }
+
+
+    @include sm {
+        font-weight: 600;
+        font-size: rem(20px);
+        line-height: rem(32px);
+    }
+}
+
+h4 {
+    font-weight: 700;
+    font-size: rem(30px);
+    line-height: rem(40px);
+    margin-block-end: 0;
+    margin-block-start: 0;
+
+    @include lg {
+        font-weight: 700;
+        font-size: rem(26px);
+        line-height: rem(40px);
+    }
+
+    @include md {
+        font-weight: 600;
+        font-size: rem(16px);
+        line-height: rem(32px);
+    }
+
+    @include sm {
+        font-weight: 600;
+        font-size: rem(16px);
+        line-height: rem(32px);
+    }
+}
+
+h5 {
+    font-weight: 500;
+    font-size: rem(25px);
+    line-height: rem(32px);
+    margin-block-end: 0;
+    margin-block-start: 0;
+
+    @include lg {
+        font-size: rem(24px);
+    }
+
+    @include md {
+        font-size: rem(16px);
+    }
+
+    @include sm {
+        font-size: rem(16px);
+    }
+}
+/* --------------- header ------------- */
+
+.header-menu-btn {
+    min-width: rem(24px);
+    min-height: rem(24px);
+    max-width: rem(24px);
+    max-height: rem(24px);
+    display: none;
+
+    .bit-icon {
+        font-size: rem(12px);
+        color: $White;
+    }
+
+    &:hover {
+        background-color: none;
+    }
+
+    @include sm {
+        display: inline-block;
+    }
+}

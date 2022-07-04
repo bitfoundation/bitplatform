@@ -1,0 +1,17 @@
+﻿@inherits AppComponentBase;
+@inject NavigationManager navigationManager
+
+@code {
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var redirectUrl = navigationManager.ToBaseRelativePath(navigationManager.Uri);
+
+            navigationManager.NavigateTo($"/sign-in?redirectUrl={redirectUrl}");
+        }
+
+        base.OnAfterRender(firstRender);
+    }
+}

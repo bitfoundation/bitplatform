@@ -1,0 +1,88 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitInputBase<double>
+
+<div @ref="RootElement"
+     @attributes="HtmlAttributes"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value">
+    @if (IconName.HasValue || Label.HasValue() || LabelFragment != null)
+    {
+    <div class="bit-spb-lbl-wrapper">
+        @if (IconName.HasValue)
+        {
+            <i class="bit-icon bit-icon--@IconName.GetName() bit-icon--l"
+               aria-hidden="true"
+               role="@GetIconRole"
+               aria-label="@IconAriaLabel"></i>
+        }
+
+        @if (LabelFragment != null)
+        {
+            <label id="@GetLabelId" for="@InputId">@LabelFragment</label>
+        }
+        else if (Label.HasValue())
+        {
+            <label id="@GetLabelId" for="@InputId">@Label</label>
+        }
+
+    </div>
+    }
+
+    <div class="bit-spb-wrapper"
+         title="@Title"
+         aria-label="@AriaLabel"
+         aria-setsize="@AriaSetSize"
+         aria-posinset="@AriaPositionInSet">
+        <input @ref="@inputRef"
+               value="@intermediateValue"
+               id="@InputId"
+               type="text"
+               autocomplete="off"
+               role="spinbutton"
+               aria-labelledby="@GetLabelId"
+               aria-valuenow="@GetAriaValueNow"
+               aria-valuetext="@GetAriaValueText"
+               aria-valuemin="@min"
+               aria-valuemax="@max"
+               aria-describedby="@AriaDescription"
+               aria-disabled="@(IsEnabled is false)"
+               disabled="@(IsEnabled is false || (ValueHasBeenSet && ValueChanged.HasDelegate is false))"
+               @onfocus="e => HandleFocus(e)"
+               @onblur="e => HandleBlur(e)"
+               @oninput="e => HandleChange(e)"
+               @onchange="e => HandleChange(e)"
+               @onkeydown="e => HandleKeyDown(e)"
+               @attributes="@InputHtmlAttributes" />
+        <span>
+            <button @ref="buttonIncrement"
+                    type="button"
+                    disabled="@(IsEnabled is false)"
+                    aria-disabled="@(IsEnabled is false)"
+                    date-is-focusable="false"
+                    tabindex="-1"
+                    aria-label="@IncrementButtonAriaLabel"
+                    @onmousedown="e => HandleMouseDown(BitSpinButtonAction.Increment, e)"
+                    @onmouseout="HandleMouseUpOrOut"
+                    @onmouseup="HandleMouseUpOrOut">
+                <span>
+                    <i class="bit-icon bit-icon--@IncrementButtonIconName.GetName() bit-icon--s"></i>
+                </span>
+            </button>
+
+            <button @ref="buttonDecrement"
+                    type="button"
+                    disabled="@(IsEnabled is false)"
+                    aria-disabled="@(IsEnabled is false)"
+                    date-is-focusable="false"
+                    tabindex="-1"
+                    aria-label="@DecrementButtonAriaLabel"
+                    @onmousedown="e => HandleMouseDown(BitSpinButtonAction.Decrement, e)"
+                    @onmouseout="HandleMouseUpOrOut"
+                    @onmouseup="HandleMouseUpOrOut">
+                <span>
+                    <i class="bit-icon bit-icon--@DecrementButtonIconName.GetName() bit-icon--s"></i>
+                </span>
+            </button>
+        </span>
+    </div>
+</div>

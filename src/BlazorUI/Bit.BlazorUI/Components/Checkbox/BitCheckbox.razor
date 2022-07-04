@@ -1,0 +1,35 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitInputBase<bool>
+
+<div @ref="RootElement"
+     @attributes="HtmlAttributes"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value">
+    <input @ref="CheckboxElement"
+           @attributes="InputHtmlAttributes"
+           id="@InputId"
+           type="checkbox"
+           checked="@CurrentValueAsString"
+           value="@CurrentValueAsString"
+           disabled="@(IsEnabled is false)"
+           aria-disabled="@(IsEnabled ? null : "true")"
+           aria-label="@AriaLabel"
+           aria-describedby="@AriaDescription"
+           aria-labelledby="@AriaLabelledby"
+           aria-setsize="@AriaSetSize"
+           aria-posinset="@AriaPositionInSet"
+           name="@Name"
+           title="@Title"
+           hidden />
+    <label class="bit-chb-lbl" for="@InputId" @onclick="@HandleCheckboxClick">
+        <div class="bit-chb-checkbox">
+            <i class=@($"{RootElementClass}-checkmark bit-icon bit-icon--{CheckmarkIconName.GetName()}")
+               aria-hidden="true"
+               aria-label="@CheckmarkIconAriaLabel"></i>
+        </div>
+
+        <span class="bit-chb-txt no-text-select">
+            @(ChildContent)
+        </span>
+    </label>
+</div>

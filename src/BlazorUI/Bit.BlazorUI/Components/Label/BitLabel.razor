@@ -1,0 +1,10 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+<label @ref="RootElement"
+       @attributes="HtmlAttributes"
+       style="@StyleBuilder.Value"
+       class="@ClassBuilder.Value"
+       for="@For">
+    @ChildContent
+</label>

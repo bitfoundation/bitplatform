@@ -1,0 +1,470 @@
+﻿@import '../Styles/_shared.scss';
+
+.page-container {
+    @include PageContainer;
+    background-color: transparent;
+    position: relative;
+}
+
+.page-section {
+    @include PageSection;
+
+    h2 {
+        color: $B3Color;
+        margin-top: rem(80px);
+
+        @include lg {
+            margin-top: rem(80px);
+        }
+
+        @include md {
+            margin-top: rem(32px);
+        }
+
+        @include sm {
+            margin-top: rem(32px);
+        }
+    }
+
+    .subtitle {
+        @include Body3;
+        color: $Gray1;
+    }
+}
+
+/*----------------hero section---------------*/
+
+.hero-section {
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+    width: 100%;
+    height: rem(880px);
+    background-image: url('/images/home/hero-banner.png');
+    background-position: center;
+    background-repeat: no-repeat;
+    color: $Gray4;
+
+    @include lg {
+        height: rem(660px);
+    }
+
+    @include md {
+        height: rem(768px);
+    }
+
+    @include sm {
+        background-image: none;
+        background-color: $B5Color;
+        height: rem(432px);
+    }
+
+    .hero-section-container {
+        max-width: rem(504px);
+
+        h1 {
+            color: $White;
+            margin-top: rem(40px);
+            margin-bottom: rem(16px);
+        }
+
+        div {
+            @include Subtitle3;
+
+            @include sm {
+                @include Body3;
+            }
+        }
+    }
+
+    .page-section {
+        height: inherit;
+        align-items: center;
+    }
+
+    .github-btn {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: rem(4px);
+        background-color: $White;
+        box-sizing: border-box;
+        width: rem(213px);
+        height: rem(56px);
+        font-size: rem(22px);
+        font-weight: 600;
+        line-height: rem(40px);
+        color: $B6Color;
+        cursor: pointer;
+        margin-top: rem(112px);
+
+        &:hover {
+            color: $B3Color;
+        }
+
+        @include lg {
+            width: rem(213px);
+            height: rem(56px);
+            font-size: rem(20px);
+            font-weight: 600;
+            line-height: rem(32px);
+            margin-top: rem(64px);
+        }
+
+        @include md {
+            width: rem(143px);
+            height: rem(48px);
+            font-size: rem(16px);
+            font-weight: 600;
+            line-height: rem(32px);
+            margin-top: rem(32px);
+        }
+
+        @include sm {
+            width: rem(143px);
+            height: rem(48px);
+            font-size: rem(16px);
+            font-weight: 600;
+            line-height: rem(32px);
+            margin-top: rem(20px);
+        }
+
+        .github-icon {
+            width: rem(40px);
+            height: rem(40px);
+            border-radius: 50%;
+            background-image: url('/images/github-icon.svg');
+            background-position: center bottom;
+            background-repeat: no-repeat;
+            background-size: rem(40px);
+            background-color: $B2Color;
+            cursor: pointer;
+            margin-right: rem(10px);
+            background-size: rem(40px);
+
+
+            @include lt-lg {
+                width: rem(24px);
+                height: rem(24px);
+                background-size: rem(24px);
+            }
+        }
+    }
+}
+
+/*----------------project template section---------------*/
+
+.project-template-section {
+    display: flex;
+    flex-flow: column nowrap;
+}
+
+.projetc-template-card {
+    @include Card;
+    padding: rem(24px) rem(40px) rem(24px) rem(100px);
+    margin-top: rem(40px);
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+
+    @include lg {
+        padding: rem(24px) rem(40px) rem(24px) rem(100px);
+    }
+
+    @include md {
+        padding: rem(40px) rem(32px);
+    }
+
+    @include sm {
+        padding: rem(24px) rem(16px) rem(32px) rem(16px);
+    }
+
+    .content {
+        width: 50%;
+        display: flex;
+        flex-flow: column;
+        justify-content: center;
+
+        h4 {
+            color: $Black1;
+            margin-bottom: rem(32px);
+
+            @include lt-lg {
+                margin-bottom: rem(8px);
+            }
+        }
+
+        div {
+            color: $Gray1;
+            @include Body3;
+        }
+
+        a {
+            color: $B6Color;
+            @include Subtitle4;
+            display: flex;
+            align-items: center;
+
+            span {
+                margin-left: rem(8px);
+                width: rem(20px);
+                height: rem(20px);
+                box-sizing: border-box;
+                background-image: url('/images/arrow-right.svg');
+            }
+        }
+
+        @include sm {
+            width: 100%;
+        }
+    }
+
+    .banner {
+        width: 50%;
+
+        @include sm {
+            display: none;
+        }
+    }
+}
+
+/*----------------services box section---------------*/
+
+.services-section {
+    display: flex;
+    flex-flow: column nowrap;
+
+    .services-card-container {
+        display: flex;
+        flex-flow: row wrap;
+    }
+}
+
+.services-card {
+    @include Card;
+    padding: rem(46px) rem(40px);
+    margin-top: rem(40px);
+    width: calc(50% - 55px);
+    margin-right: rem(55Px);
+    position: relative;
+
+    @include md {
+        padding: rem(30px) rem(24px);
+        margin-top: rem(12px);
+        width: calc(100% - 55px);
+        margin-right: rem(55Px);
+    }
+
+    @include sm {
+        padding: rem(24px);
+        margin-top: rem(56px);
+        width: 100%;
+        margin-right: 0;
+    }
+
+    .content {
+        width: 72%;
+
+        h4 {
+            color: $Black1;
+            margin-bottom: rem(20px);
+        }
+
+        div {
+            color: $Gray1;
+            @include Body3;
+        }
+
+        a {
+            color: $B6Color;
+            @include Subtitle4;
+        }
+
+        @include sm {
+            width: 100%;
+        }
+    }
+}
+
+.no-download-box {
+    width: 50%;
+    margin-right: 0;
+
+    @include lt-lg {
+        width: 100%;
+    }
+}
+/*----------------services download box section---------------*/
+.download-box {
+    position: absolute;
+    top: rem(51px);
+    right: rem(-36px);
+    box-sizing: border-box;
+    background: linear-gradient(225.14deg, #004EBA -11.79%, #0164EC 95.46%);
+    box-shadow: 0 rem(4px) rem(20px) rgba(0, 101, 239, 0.3);
+    border-radius: rem(20px);
+    width: rem(192px);
+    height: rem(192px);
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+    color: $Gray4;
+    justify-content: center;
+    @include Subtitle4;
+
+    @include sm {
+        display: none;
+    }
+
+    @include md {
+        width: rem(160px);
+        height: rem(160px);
+        top: rem(25px);
+    }
+
+    .download-icon {
+        width: rem(53px);
+        height: rem(53px);
+        background-image: url('/images/home/download-icon.svg');
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: rem(53px);
+    }
+}
+
+.download-row {
+    display: none;
+
+    @include sm {
+        display: flex;
+        flex-flow: row nowrap;
+        align-items: center;
+
+        h5 {
+            margin: 0 rem(10px);
+            font-weight: 600;
+        }
+    }
+
+    .download-icon {
+        width: rem(25px);
+        height: rem(25px);
+        background-image: url('/images/home/download-blue-icon.svg');
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: rem(25px);
+    }
+}
+
+/*----------------background section---------------*/
+
+.background-section {
+
+    .circle1 {
+        position: absolute;
+        width: rem(300px);
+        height: rem(300px);
+        border-radius: 50%;
+        border: rem(3px) solid rgba(255, 255, 255, 0.2);
+        top: rem(140px);
+        right: rem(-150px);
+
+        @include sm {
+            border: none;
+            background: rgba(255, 255, 255, 0.2);
+            top: rem(320px);
+            right: rem(-56px);
+        }
+    }
+
+    .circle2 {
+        position: absolute;
+        width: rem(250px);
+        height: rem(250px);
+        border-radius: 0 0 100% 0;
+        background: rgba(255, 255, 255, 0.13);
+        top: 0;
+        left: 0;
+
+        @include sm {
+            width: rem(150px);
+            height: rem(150px);
+            border-radius: 50%;
+            top: rem(-50px);
+            left: rem(-40px);
+        }
+    }
+
+    .circle3 {
+        position: absolute;
+        width: rem(350px);
+        height: rem(350px);
+        border-radius: 50%;
+        border: rem(2px) solid rgba(255, 255, 255, 0.15);
+        top: rem(37px);
+        left: rem(-175px);
+
+        @include sm {
+            width: rem(100px);
+            height: rem(100px);
+            top: rem(60px);
+            left: rem(-50px);
+        }
+    }
+    //1913
+    .circle4 {
+        position: absolute;
+        border-radius: 50%;
+        z-index: -1;
+        width: rem(502px);
+        height: rem(502px);
+        right: rem(-250px);
+        top: rem(903px);
+        background: rgba(255, 255, 255, 0.2);
+    }
+    //1911
+    .circle5 {
+        position: absolute;
+        border-radius: 50%;
+        z-index: -1;
+        width: rem(568px);
+        height: rem(568px);
+        left: rem(-200px);
+        top: rem(1513px);
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    .circle6 {
+        position: absolute;
+        border-radius: 50%;
+        z-index: -1;
+        width: rem(802px);
+        height: rem(802px);
+        background: $Background2Color;
+        filter: blur(rem(274px));
+        left: rem(-37px);
+        top: rem(1239px);
+    }
+
+    .circle7 {
+        position: absolute;
+        border-radius: 50%;
+        z-index: -1;
+        width: rem(1154px);
+        height: rem(1154px);
+        right: rem(-40px);
+        top: rem(814px);
+        background: $Background1Color;
+        filter: blur(rem(274px));
+    }
+
+    .background-color {
+        position: absolute;
+        background-color: $BackgroundColor;
+        width: 100%;
+        height: 100%;
+        z-index: -2;
+        top: 0;
+        left: 0;
+    }
+}

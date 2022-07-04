@@ -1,0 +1,24 @@
+﻿@inherits AppComponentBase;
+
+<header class="header @(IsUserAuthenticated ? "header--authenticated" : null)">
+    <div class="header-top-row">
+        <div class="header-contact">
+            @if (IsUserAuthenticated)
+            {
+                <BitIconButton Class="header-menu" IconName=BitIconName.CollapseMenu OnClick=ToggleMenu />
+            }
+            <a class="logo-lnk" href="/"></a>
+        </div>
+        <div class="header-contact">
+            <BitLink Class="header-item--privacy" Href="/privacy" Target="_self">Privacy</BitLink>
+            @if (!IsUserAuthenticated)
+            {
+                <BitActionButton Class="header-item" IconName="BitIconName.AddFriend" Href="/sign-up" Target="_self">Sign up</BitActionButton>
+                <BitActionButton Class="header-item" IconName="BitIconName.Signin" Href="/sign-in" Target="_self">Sign in</BitActionButton>
+            }
+        </div>
+    </div>
+    <div class="header-bottom-row">
+        <BitLink Href="/privacy" Target="_self">Privacy</BitLink>
+    </div>
+</header>
