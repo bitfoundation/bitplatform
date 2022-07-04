@@ -2,7 +2,7 @@
 
 namespace TodoTemplate.App.Services.Implementations;
 
-public class AuthenticationService : IAuthenticationService
+public partial class AuthenticationService : IAuthenticationService
 {
     [AutoInject] private HttpClient _httpClient = default!;
 
