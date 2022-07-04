@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Net.Http.Json;
-using System.Net.Security;
-using System.Security.Cryptography.X509Certificates;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,13 +13,6 @@ namespace Bit.BlazorUI.Playground.Web.Pages.Components.DataGrid;
 
 public partial class BitDataGridDemo
 {
-    public BitDataGridDemo()
-    {
-        ServicePointManager.ServerCertificateValidationCallback = delegate (object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
-        {
-            return true;
-        };
-    }
     private readonly List<ComponentParameter> componentParameters = new()
     {
 
@@ -713,17 +703,13 @@ private readonly static Country[] _countries = new[]
                 { "limit", req.Count },
                 { "search", virtualSampleNameFilter },
             });
-
                 var response = await Http.GetFromJsonAsync<FoodRecallQueryResult>(url, req.CancellationToken);
-
                 return BitDataGridItemsProviderResult.From(
                     items: response!.Results,
                     totalItemCount: response!.Meta.Results.Total);
             };
-
             // Display the number of results just for information. This is completely separate from the grid.
             virtualNumResults = (await Http.GetFromJsonAsync<FoodRecallQueryResult>("https://api.fda.gov/food/enforcement.json"))!.Meta.Results.Total;
-
         }
         catch 
         {
