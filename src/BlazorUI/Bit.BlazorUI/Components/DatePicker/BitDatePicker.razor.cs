@@ -726,7 +726,7 @@ public partial class BitDatePicker
         var month = GetCorrectTargetMonth(weekIndex, dayIndex);
 
         if (MaxDate.HasValue &&
-           (displayYear > MaxDate.Value.Year  ||
+           (displayYear > MaxDate.Value.Year ||
            (displayYear == MaxDate.Value.Year && month > MaxDate.Value.Month) ||
            (displayYear == MaxDate.Value.Year && month == MaxDate.Value.Month && day > MaxDate.Value.Day)))
             return true;
