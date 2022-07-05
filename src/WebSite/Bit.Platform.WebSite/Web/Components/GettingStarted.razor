@@ -91,7 +91,7 @@
                 For Other Entityframework supported databases, you need to configure the context that provides your preferred database. with change <span class="high-light">UseSqlServer</span> method on <span class="high-light">Api\Startup\Services.cs</span> file
             </div>
             <pre class="code">
-<code>services.AddDbContext@("<TodoTemplateDbContext>")(options =>
+<code>services.AddDbContext@("<AppDbContext>")(options =>
 {
     options.UseSqlServer(configuration.GetConnectionString("SqlServerConnectionString"), sqlOpt =>
     {
@@ -102,7 +102,7 @@
         </pre>
             <h3>Migration</h3>
             <div class="description">To create and migrate the database to the latest version. You can use Entity Framework's built-in tools for migrations. Open <strong>Package Manager Console</strong> in Visual Studio set <strong>TodoTemplate.Api</strong> as the Default Project and run the Update-Database command as shown below:</div>
-            <pre class="code"><code>Update-Database -Context TodoTemplateDbContext</code></pre>
+            <pre class="code"><code>Update-Database -Context AppDbContext</code></pre>
         </div>
     </div>
 
