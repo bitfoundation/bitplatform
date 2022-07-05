@@ -1,0 +1,3 @@
+﻿name: AdminPanelTemplate.Iac
+runtime: dotnet
+description: AdminPanelTemplate infrastructure as a code
