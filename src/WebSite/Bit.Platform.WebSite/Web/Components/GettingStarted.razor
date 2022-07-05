@@ -390,8 +390,8 @@
             <h3>Client-Side exception handling</h3>
             <div class="description">When an error is raised in App(android, IOS) maybe cause crash app. for avoiding app crash; Bit provides some mechanism for error handling.</div>
             <ul class="first-step-ul">
-                <li>inheriting <span class="high-light">TodoTemplateComponentBase</span> in razor pages.</li>
-                <li>Instead of initializing your components in the <span class="high-light">OnInitializedAsync</span> method, override the <span class="high-light">OnInitAsync</span> method of the <span class="high-light">TodoTemplateComponentBase</span> class.</li>
+                <li>inheriting <span class="high-light">AppComponentBase</span> in razor pages.</li>
+                <li>Instead of initializing your components in the <span class="high-light">OnInitializedAsync</span> method, override the <span class="high-light">OnInitAsync</span> method of the <span class="high-light">AppComponentBase</span> class.</li>
                 <li>Use <span class="high-light">WrapHandle</span> method instead of direct calling events such as <span class="high-light">OnClick</span> in the Razor components.</li>
                 <li>Use <span class="high-light">try-catch</span> block in <span class="high-light">asyn-avoid</span> method and call <span class="high-light">StatehasChanged</span> method to handle unexpected errors.</li>
             </ul>
