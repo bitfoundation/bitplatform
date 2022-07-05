@@ -1,6 +1,22 @@
 ﻿
 <section class="page-section getting-started-step-section">
 
+    <section class="getting-started-side-rail-section" @ref="GettingStartedElement">
+        <a class="side-rail-item @(CurrentUrl == "#getting-started"? "selected-side-rail-item" : "" )" href="@Urls.TodoTemplate#getting-started" target="_parent">getting strted</a>
+        <a class="side-rail-item @(CurrentUrl == "#environments"? "selected-side-rail-item" : "" )" href="@Urls.TodoTemplate#environments" target="_parent">Environment setup</a>
+        <a class="side-rail-item @(CurrentUrl == "#create-project"? "selected-side-rail-item" : "" )" href="@Urls.TodoTemplate#create-project" target="_parent">Create project</a>
+        <a class="side-rail-item @(CurrentUrl == "#prepare-project"? "selected-side-rail-item" : "" )" href="@Urls.TodoTemplate#prepare-project" target="_parent">Prepare The Project</a>
+        <a class="side-rail-item @(CurrentUrl == "#run"? "selected-side-rail-item" : "" )" href="@Urls.TodoTemplate#run" target="_parent">Run</a>
+        <a class="side-rail-item @(CurrentUrl == "#blazor-modes"? "selected-side-rail-item" : "" )" href="@Urls.TodoTemplate#blazor-modes" target="_parent">Blazor Mode (hosting models)</a>
+        <a class="side-rail-item @(CurrentUrl == "#deployment-types"? "selected-side-rail-item" : "" )" href="@Urls.TodoTemplate#deployment-types" target="_parent">WebApp Deployment Type</a>
+        <a class="side-rail-item @(CurrentUrl == "#settings"? "selected-side-rail-item" : "" )" href="@Urls.TodoTemplate#settings" target="_parent">Settings</a>
+        <a class="side-rail-item @(CurrentUrl == "#project-structure"? "selected-side-rail-item" : "" )" href="@Urls.TodoTemplate#project-structure" target="_parent">TodoTemplate Project </a>
+        <a class="side-rail-item @(CurrentUrl == "#exception-handling"? "selected-side-rail-item" : "" )" href="@Urls.TodoTemplate#exception-handling" target="_parent">Exception handling</a>
+        <a class="side-rail-item @(CurrentUrl == "#cache-mechanism"? "selected-side-rail-item" : "" )" href="@Urls.TodoTemplate#cache-mechanism" target="_parent">Cache mechanism</a>
+        <a class="side-rail-item @(CurrentUrl == "#contribute"? "selected-side-rail-item" : "" )" href="@Urls.TodoTemplate#contribute" target="_parent">Contribute</a>
+
+    </section>
+
     <div class="step-body-card">
         <h4 id="getting-started">
             <a class="anchor" href="@Urls.TodoTemplate#getting-started" target="_parent"><i class="anchor-icon bit-icon bit-icon--Link12"> </i></a>
@@ -417,8 +433,8 @@
         </div>
     </div>
 
-    <div id="contribute" class="step-body-card">
-        <h4>
+    <div class="step-body-card">
+        <h4 id="contribute">
             <a class="anchor" href="@Urls.TodoTemplate#contribute" target="_parent"><i class="anchor-icon bit-icon bit-icon--Link12"> </i></a>
             Contribute
         </h4>
