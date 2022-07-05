@@ -128,13 +128,13 @@
         background-color: $B4Color;
         cursor: pointer;
         margin: rem(8px);
-        background-size: 21px;
+        background-size: rem(21px);
 
         @include lt-lg {
             width: rem(24px);
             height: rem(24px);
             margin: rem(4px);
-            background-size: 8px;
+            background-size: rem(8px);
         }
     }
 
