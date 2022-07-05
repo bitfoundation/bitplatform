@@ -89,7 +89,7 @@
         flex-flow: row nowrap;
 
         @include lt-lg {
-            top:rem(-35px);
+            top: rem(-35px);
         }
     }
 
@@ -105,7 +105,7 @@
         transform: translateY(-50%);
     }
 
-    .contact-link-container-home {
+    .contact-link-container--home {
         @media all and (min-width: #{em(1335px)}) {
             @include LeftContactLinkContainer;
         }
@@ -126,15 +126,15 @@
         background-position: center;
         background-repeat: no-repeat;
         background-color: $B4Color;
-        background-size: rem(26px);
         cursor: pointer;
         margin: rem(8px);
+        background-size: 21px;
 
         @include lt-lg {
             width: rem(24px);
             height: rem(24px);
             margin: rem(4px);
-            background-size: rem(18px);
+            background-size: 8px;
         }
     }
 
@@ -168,11 +168,6 @@
     .linkedin-link {
         @include FooterLink;
         background-image: url('/images/linkedin-icon.svg');
-        background-size: rem(24px);
-
-        @include lt-lg {
-            background-size: rem(16px);
-        }
 
         &:hover {
             background-color: #0A66C2;
