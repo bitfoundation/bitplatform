@@ -16,7 +16,7 @@ public partial class GettingStarted
 
     protected override void OnInitialized()
     {
-        CurrentUrl = NavigationManager.Uri.Replace(GetCurrentUrl(), "", StringComparison.Ordinal);
+        CurrentUrl = GetCurrentUrl();
 
         NavigationManager.LocationChanged += OnLocationChanged;
 
@@ -36,7 +36,8 @@ public partial class GettingStarted
 
     private void OnLocationChanged(object sender, LocationChangedEventArgs args)
     {
-        CurrentUrl = NavigationManager.Uri.Replace(GetCurrentUrl(), "", StringComparison.Ordinal);
+        CurrentUrl = GetCurrentUrl();
+
         StateHasChanged();
     }
 
@@ -47,6 +48,6 @@ public partial class GettingStarted
 
     private string GetCurrentUrl()
     {
-        return NavigationManager.BaseUri + "project-templates/todo-template/getting-started";
+        return NavigationManager.Uri.Replace(NavigationManager.BaseUri + "project-templates/todo-template/getting-started", "", StringComparison.Ordinal);
     }
 }
