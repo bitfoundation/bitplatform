@@ -125,14 +125,14 @@
         padding: 0 rem(5px) rem(2px) rem(5px);
     }
 
-    .image {
-        width: 100%;
-        margin: rem(25px) 0;
+    .image-container {
+        display: flex;
+        justify-content: center;
     }
 
-    .image-responsive {
-        margin: rem(25px) auto;
-        display: block;
-        max-width: 100%;
+    .image {
+        width: 85%;
+        height: 85%;
+        margin: rem(25px) 0;
     }
 }
