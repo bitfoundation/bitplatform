@@ -14,13 +14,9 @@ public partial class GettingStarted
     public string CurrentUrl { get; set; }
     public ElementReference GettingStartedElement { get; set; }
 
-    private string _baseUrl;
-
     protected override void OnInitialized()
     {
-        _baseUrl = NavigationManager.BaseUri + "project-templates/todo-template/getting-started";
-
-        CurrentUrl = NavigationManager.Uri.Replace(_baseUrl, "", StringComparison.Ordinal);
+        CurrentUrl = NavigationManager.Uri.Replace(GetCurrentUrl(), "", StringComparison.Ordinal);
 
         NavigationManager.LocationChanged += OnLocationChanged;
 
@@ -40,12 +36,17 @@ public partial class GettingStarted
 
     private void OnLocationChanged(object sender, LocationChangedEventArgs args)
     {
-        CurrentUrl = NavigationManager.Uri.Replace(_baseUrl, "", StringComparison.Ordinal);
+        CurrentUrl = NavigationManager.Uri.Replace(GetCurrentUrl(), "", StringComparison.Ordinal);
         StateHasChanged();
     }
 
     public void Dispose()
     {
         NavigationManager.LocationChanged -= OnLocationChanged;
+    }
+
+    private string GetCurrentUrl()
+    {
+        return NavigationManager.BaseUri + "project-templates/todo-template/getting-started";
     }
 }
