@@ -14,9 +14,14 @@ public partial class GettingStarted
     public string CurrentUrl { get; set; }
     public ElementReference GettingStartedElement { get; set; }
 
+    private string _baseUrl;
+
     protected override void OnInitialized()
     {
-        CurrentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri + "project-templates/todo-template/getting-started", "", StringComparison.Ordinal);
+        _baseUrl = NavigationManager.BaseUri + "project-templates/todo-template/getting-started";
+
+        CurrentUrl = NavigationManager.Uri.Replace(_baseUrl, "", StringComparison.Ordinal);
+
         NavigationManager.LocationChanged += OnLocationChanged;
 
         base.OnInitialized();
@@ -26,7 +31,7 @@ public partial class GettingStarted
     {
         if (firstRender)
         {
-            await JSRuntime.ScrollToGettingStartedChangeSideRailStyle(GettingStartedElement);
+            await JSRuntime.RegisterOnScrollToChangeGettingStartedSideRailStyle(GettingStartedElement);
         }
 
         await base.OnAfterRenderAsync(firstRender);
@@ -35,7 +40,7 @@ public partial class GettingStarted
 
     private void OnLocationChanged(object sender, LocationChangedEventArgs args)
     {
-        CurrentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri + "project-templates/todo-template/getting-started", "", StringComparison.Ordinal);
+        CurrentUrl = NavigationManager.Uri.Replace(_baseUrl, "", StringComparison.Ordinal);
         StateHasChanged();
     }
 

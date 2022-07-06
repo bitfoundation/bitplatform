@@ -57,7 +57,7 @@ function RegisterOnScrollToChangeHeaderStyle(element: any) {
     });
 }
 
-function ScrollToGettingStartedChangeSideRailStyle(element: any) {
+function RegisterOnScrollToChangeGettingStartedSideRailStyle(element: any) {
     window.addEventListener('scroll', (event) => {
         if (document.documentElement.scrollTop >= 500) {
             element.classList.add("fixed-getting-started-side-rail-section");

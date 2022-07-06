@@ -25,8 +25,8 @@ public static class WebSiteJsRuntimeExtension
         await jsRuntime.InvokeVoidAsync("RegisterOnScrollToChangeHeaderStyle", element);
     }
 
-    public static async Task ScrollToGettingStartedChangeSideRailStyle(this IJSRuntime jsRuntime, ElementReference element)
+    public static async Task RegisterOnScrollToChangeGettingStartedSideRailStyle(this IJSRuntime jsRuntime, ElementReference element)
     {
-        await jsRuntime.InvokeVoidAsync("ScrollToGettingStartedChangeSideRailStyle", element);
+        await jsRuntime.InvokeVoidAsync("RegisterOnScrollToChangeGettingStartedSideRailStyle", element);
     }
 }
