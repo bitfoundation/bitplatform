@@ -11,7 +11,7 @@ public class ExceptionHandler : IExceptionHandler
 #if DEBUG
         MessageBox.Show(exception.ToString(), "Error");
         Console.WriteLine(exception.ToString());
-        Debugger.Break();
+        //Debugger.Break();
 #else
         if (exception is KnownException)
         {

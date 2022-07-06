@@ -4,6 +4,14 @@
         "inputFile": "Styles/app.scss"
     },
     {
+        "outputFile": "Pages/CategoriesPage.razor.css",
+        "inputFile": "Pages/CategoriesPage.razor.scss"
+    },
+    {
+        "outputFile": "Pages/ProductsPage.razor.css",
+        "inputFile": "Pages/ProductsPage.razor.scss"
+    },
+    {
         "outputFile": "Pages/Home.razor.css",
         "inputFile": "Pages/Home.razor.scss"
     },

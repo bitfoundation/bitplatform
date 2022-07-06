@@ -1,4 +1,5 @@
-﻿using AdminPanelTemplate.Api.Models.Products;
+﻿using AdminPanelTemplate.Api.Extensions;
+using AdminPanelTemplate.Api.Models.Products;
 using AdminPanelTemplate.Shared.Dtos.Products;
 
 namespace AdminPanelTemplate.Api.Controllers;
@@ -27,6 +28,30 @@ public partial class ProductController : ControllerBase
             throw new ResourceNotFoundException(nameof(ErrorStrings.ProductCouldNotBeFound));
 
         return product;
+    }
+
+    [HttpPost("GetProducts")]
+    public async Task<PagedResultDto<ProductDto>> GetProductsAsync(PagedInputDto input, CancellationToken cancellationToken)
+    {
+        var query = Get(cancellationToken);
+
+        var total = query.Count();
+
+        var filteredQuery = query
+                            .WhereIf(!string.IsNullOrWhiteSpace(input.Filter), _ => _.Name!.Contains(input.Filter));
+
+        var orderedQuery = (input.SortBy, input.SortAscending) switch
+        {
+            (nameof(Product.Name), true) => query.OrderBy(c => c.Name),
+            (nameof(Product.Name), false) => query.OrderByDescending(c => c.Name),
+            _ => query.OrderBy(c => c.Id)
+        };
+
+        var pageResult = await orderedQuery
+                         .PageBy(input.Skip, input.MaxResultCount)
+                         .ToListAsync();
+
+        return new PagedResultDto<ProductDto>(pageResult, total);
     }
 
     [HttpPost]

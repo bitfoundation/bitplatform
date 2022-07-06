@@ -1,12 +1,13 @@
 {
   "profiles": {
     "AdminPanelTemplate.Api": {
-        "commandName": "Project",
-        "launchBrowser": true,
-        "environmentVariables": {
-            "ASPNETCORE_ENVIRONMENT": "Development"
-        },
-        "applicationUrl": "https://localhost:5001/swagger/index.html;http://localhost:5000/swagger/index.html"
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:5001/swagger/index.html;http://localhost:5000/swagger/index.html",
+      "nativeDebugging": true
     }
   }
 }

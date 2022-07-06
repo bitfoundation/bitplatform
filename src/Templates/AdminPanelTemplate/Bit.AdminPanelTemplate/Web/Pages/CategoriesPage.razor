@@ -1,0 +1,31 @@
+﻿@page "/categories"
+@using AdminPanelTemplate.Shared.Dtos.Categories
+@attribute [Authorize]
+
+@inherits AppComponentBase;
+
+
+<PageTitle>Categories</PageTitle>
+
+<div class="page-container">
+    <div class="page-content--white">
+        <h1 class="main-title">Category</h1>
+        <div class="content">
+            <div class="grid">
+                <BitDataGrid ItemsProvider="@categoriesProvider" TGridItem="@CategoryDto" ResizableColumns="true" Pagination="@pagination">
+                    <BitDataGridPropertyColumn Property="@(c => c.Name)" Sortable="true" Class="column1">
+                        <ColumnOptions>
+                            <BitSearchBox @bind-Value="CategoryNameFilter"
+                                          Placeholder="Search on Name"
+                                          InputHtmlAttributes="@(new Dictionary<string, object> {{"autofocus", true}})" />
+                        </ColumnOptions>
+                    </BitDataGridPropertyColumn>
+                    <BitDataGridPropertyColumn Property="@(c => c.Color)" Sortable="true" Align="BitDataGridAlign.Right" />
+                    
+                </BitDataGrid>
+                <BitDataGridPaginator Value="@pagination" />
+            </div>
+
+        </div>
+    </div>
+</div>

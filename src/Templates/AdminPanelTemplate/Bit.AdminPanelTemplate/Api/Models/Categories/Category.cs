@@ -12,8 +12,7 @@ public class Category
     [MaxLength(64)]
     public string? Name { get; set; }
 
-    [MaxLength(512)]
-    public string? Desc { get; set; }
+    public string? Color { get; set; }
 
     public IList<Product>? Products { get; set; }
 

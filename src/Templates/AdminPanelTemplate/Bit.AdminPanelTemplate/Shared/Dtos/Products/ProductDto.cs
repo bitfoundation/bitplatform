@@ -7,14 +7,11 @@ public class ProductDto
     [MaxLength(64)]
     public string? Name { get; set; }
 
-    [MaxLength(128)]
-    public string? QuantityPerUnit { get; set; }
-    
-    public decimal UnitPrice { get; set; }
+    public decimal Price { get; set; }
 
     [MaxLength(512)]
     public string? Desc { get; set; }
 
-    public int? CateggoryId { get; set; }
+    public int? CategoryId { get; set; }
 
 }

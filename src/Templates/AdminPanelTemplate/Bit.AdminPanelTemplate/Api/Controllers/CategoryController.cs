@@ -1,5 +1,6 @@
 ﻿using AdminPanelTemplate.Api.Models.Categories;
 using AdminPanelTemplate.Shared.Dtos.Categories;
+using AdminPanelTemplate.Api.Extensions;
 
 namespace AdminPanelTemplate.Api.Controllers;
 
@@ -18,25 +19,6 @@ public partial class CategoryController : ControllerBase
             .ProjectTo<CategoryDto>(_mapper.ConfigurationProvider, cancellationToken);
     }
 
-    [HttpPost("GetPaged")]
-    public  async Task<PagedResultDto<CategoryDto>> GetPagedAsync(PagedInputDto input)
-    {
-        var query = Get(input.CancellationToken);
-
-        var total = query.Count();
-
-        var orderedQuery = (input.SortBy,input.SortAscending) switch
-        {
-            (nameof(Category.Name), true) => query.OrderBy(c => c.Name),
-            _ => query.OrderBy(c => c.Id)
-        };
-
-        var pageResult =await orderedQuery.Skip(input.Skip).Take(input.Limit).ProjectTo<CategoryDto>(_mapper.ConfigurationProvider, input.CancellationToken).ToListAsync();
-
-        return new PagedResultDto<CategoryDto>(pageResult,total);
-
-    }
-
     [HttpGet("{id:int}")]
     public async Task<CategoryDto> Get(int id, CancellationToken cancellationToken)
     {
@@ -46,6 +28,30 @@ public partial class CategoryController : ControllerBase
             throw new ResourceNotFoundException(nameof(ErrorStrings.CategoryCouldNotBeFound));
 
         return category;
+    }
+
+    [HttpPost("GetCategories")]
+    public async Task<PagedResultDto<CategoryDto>> GetCategoriesAsync(PagedInputDto input, CancellationToken cancellationToken)
+    {
+        var query = Get(cancellationToken);
+
+        var total = query.Count();
+
+        var filteredQuery = query
+                            .WhereIf(!string.IsNullOrWhiteSpace(input.Filter), _ => _.Name!.Contains(input.Filter));
+
+        var orderedQuery = (input.SortBy, input.SortAscending) switch
+        {
+            (nameof(Category.Name), true) => query.OrderBy(c => c.Name),
+            (nameof(Category.Name), false) => query.OrderByDescending(c => c.Name),
+            _ => query.OrderBy(c => c.Id)
+        };
+
+        var pageResult = await orderedQuery
+                         .PageBy(input.Skip, input.MaxResultCount)
+                         .ToListAsync();
+
+        return new PagedResultDto<CategoryDto>(pageResult, total);
     }
 
     [HttpPost]

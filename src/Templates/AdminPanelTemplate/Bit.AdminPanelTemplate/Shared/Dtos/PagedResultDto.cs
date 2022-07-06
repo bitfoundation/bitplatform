@@ -9,8 +9,8 @@ namespace AdminPanelTemplate.Shared.Dtos;
 [Serializable]
 public class PagedResultDto<T> where T : class
 {
-    private IReadOnlyList<T> _items;
-    public IReadOnlyList<T> Items
+    private IList<T> _items;
+    public IList<T> Items
     {
         get { return _items ??= new List<T>(); }
         set { _items = value; }
@@ -20,7 +20,7 @@ public class PagedResultDto<T> where T : class
     public int Total { get; set; }
 
 
-    public PagedResultDto(IReadOnlyList<T> items, int total)
+    public PagedResultDto(IList<T> items, int total)
     {
         Items = items;
         Total = total;

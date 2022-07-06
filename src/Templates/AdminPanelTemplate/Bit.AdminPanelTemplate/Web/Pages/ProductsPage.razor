@@ -1,0 +1,32 @@
+﻿@page "/products"
+@using AdminPanelTemplate.Shared.Dtos.Products
+@attribute [Authorize]
+
+@inherits AppComponentBase;
+
+
+<PageTitle>Products</PageTitle>
+
+<div class="page-container">
+    <div class="page-content--white">
+        <h1 class="main-title">Product</h1>
+        <div class="content">
+            <div class="grid">
+                <BitDataGrid ItemsProvider="@productsProvider" TGridItem="@ProductDto" ResizableColumns="true" Pagination="@pagination">
+                    <BitDataGridPropertyColumn Property="@(c => c.Name)" Sortable="true" Class="column1">
+                        <ColumnOptions>
+                            <BitSearchBox @bind-Value="ProductNameFilter"
+                                          Placeholder="Search on Name"
+                                          InputHtmlAttributes="@(new Dictionary<string, object> {{"autofocus", true}})" />
+                        </ColumnOptions>
+                    </BitDataGridPropertyColumn>
+                    <BitDataGridPropertyColumn Property="@(c => c.Price)" Sortable="true" Align="BitDataGridAlign.Right" />
+                    <BitDataGridPropertyColumn Property="@(c => c.Desc)" Sortable="true" Align="BitDataGridAlign.Right" />
+
+                </BitDataGrid>
+                <BitDataGridPaginator Value="@pagination" />
+            </div>
+
+        </div>
+    </div>
+</div>
