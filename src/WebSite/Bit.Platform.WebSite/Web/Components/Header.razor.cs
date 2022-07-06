@@ -10,7 +10,7 @@ public partial class Header : IDisposable
 {
     private string CurrentUrl = string.Empty;
 
-    public ElementReference HeaderElement { get; internal set; }
+    public ElementReference HeaderElement { get; set; }
 
     [Inject] public NavigationManager NavigationManager { get; set; }
     [Inject] public IJSRuntime JSRuntime { get; set; }
