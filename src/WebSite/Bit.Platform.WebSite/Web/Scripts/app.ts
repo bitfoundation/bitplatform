@@ -47,12 +47,23 @@
 //}
 
 function RegisterOnScrollToChangeHeaderStyle(element: any) {
-    window.onscroll = function (event) {
+    window.addEventListener('scroll', (event) => {
         if (document.documentElement.scrollTop >= 100) {
             element.classList.add("blue-header-container");
         }
         else {
             element.classList.remove("blue-header-container");
         }
-    };
+    });
+}
+
+function RegisterOnScrollToChangeGettingStartedSideRailStyle(element: any) {
+    window.addEventListener('scroll', (event) => {
+        if (document.documentElement.scrollTop >= 500) {
+            element.classList.add("fixed-getting-started-side-rail-section");
+        }
+        else {
+            element.classList.remove("fixed-getting-started-side-rail-section");
+        }
+    });
 }
