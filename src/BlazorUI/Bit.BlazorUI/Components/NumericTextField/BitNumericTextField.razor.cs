@@ -245,9 +245,8 @@ public partial class BitNumericTextField<TValue>
 
         if (internalMin > internalMax)
         {
-            internalMin += internalMax;
-            internalMax = internalMin - internalMax;
-            internalMin -= internalMax;
+            internalMin = minGenericValue;
+            internalMax = maxGenericValue;
         }
 
         precision = Precision is not null ? Precision.Value : CalculatePrecision(Step);
