@@ -419,6 +419,13 @@ public partial class BitDropDownDemo
             DefaultValue = "BitComponentVisibility.Visible",
             Description = "Whether the component is Visible,Hidden,Collapsed.",
         },
+        new ComponentParameter()
+        {
+            Name = "IsResponsiveModeEnabled",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the drop down items get rendered in a side panel in small screen sizes or not ",
+        }
     };
 
     private readonly List<EnumParameter> enumParameters = new()
