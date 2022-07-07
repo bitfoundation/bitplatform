@@ -24,6 +24,7 @@
         <!--/+:msbuild-conditional:noEmit -->
 		<Content Remove="compilerconfig.json" />
 		<None Include="compilerconfig.json" />
+		<None Include="Pages\Categories\CategoriesPage.razor" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -61,6 +62,10 @@
         <Using Include="Microsoft.AspNetCore.Components.Authorization" />
         <Using Include="AdminPanelTemplate.App.Components" />
         <Using Include="Bit.BlazorUI" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Pages\Dashboard\" />
 	</ItemGroup>
 
 </Project>

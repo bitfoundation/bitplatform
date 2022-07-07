@@ -2,7 +2,7 @@
 using System.Text.Json;
 using AdminPanelTemplate.Shared.Dtos.Products;
 
-namespace AdminPanelTemplate.App.Pages;
+namespace AdminPanelTemplate.App.Pages.Products;
 public partial class ProductsPage
 {
     [AutoInject] private HttpClient httpClient = default!;

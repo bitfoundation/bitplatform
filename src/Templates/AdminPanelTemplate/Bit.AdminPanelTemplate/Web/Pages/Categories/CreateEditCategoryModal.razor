@@ -1,0 +1,33 @@
+﻿@inherits AppComponentBase;
+
+<BitModal @bind-IsOpen="IsOpen">
+    <div class="main">
+        <div class="header">
+            <span class="title">Create/Edit Category</span>
+            <BitIconButton IconName="BitIconName.ChromeClose" OnClick="OnCloseClick" />
+        </div>
+        <EditForm Model="Category" OnValidSubmit="Save" class="form--white">
+            <div class="body">
+
+
+
+                <DataAnnotationsValidator />
+
+                <div class="form-input-container">
+                    <BitTextField Label="@(nameof(Category.Name))" @bind-Value="Category.Name" />
+                    <ValidationMessage For="() => Category.Name" />
+                </div>
+
+                <div class="formin">
+                    <BitColorPicker ShowPreview=false @bind-Color="Category!.Color" >Default ColorPicker</BitColorPicker>
+                    <ValidationMessage For="() => Category.Color" />
+                </div>
+            </div>
+            <div class="footer">
+                <BitButton ButtonType="BitButtonType.Submit" >
+                    Save
+                </BitButton>
+            </div>
+        </EditForm>
+    </div>
+</BitModal>

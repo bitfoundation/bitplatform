@@ -42,9 +42,9 @@ public partial class CategoryController : ControllerBase
 
         var orderedQuery = (input.SortBy, input.SortAscending) switch
         {
-            (nameof(Category.Name), true) => query.OrderBy(c => c.Name),
-            (nameof(Category.Name), false) => query.OrderByDescending(c => c.Name),
-            _ => query.OrderBy(c => c.Id)
+            (nameof(Category.Name), true) => filteredQuery.OrderBy(c => c.Name),
+            (nameof(Category.Name), false) => filteredQuery.OrderByDescending(c => c.Name),
+            _ => filteredQuery.OrderBy(c => c.Id)
         };
 
         var pageResult = await orderedQuery

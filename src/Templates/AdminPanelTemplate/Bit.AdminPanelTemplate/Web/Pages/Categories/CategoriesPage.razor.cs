@@ -1,8 +1,9 @@
 ﻿//-:cnd:noEmit
 using System.Text.Json;
+using AdminPanelTemplate.App.Shared;
 using AdminPanelTemplate.Shared.Dtos.Categories;
 
-namespace AdminPanelTemplate.App.Pages;
+namespace AdminPanelTemplate.App.Pages.Categories;
 public partial class CategoriesPage
 {
     [AutoInject] private HttpClient httpClient = default!;
@@ -10,10 +11,14 @@ public partial class CategoriesPage
     [AutoInject] private IStateService stateService = default!;
 
     public bool IsLoading { get; set; }
+    public bool CreateEditModalIsOpen { get; set; } = false;
+
+    CreateEditCategoryModal? modal;
 
     BitDataGridPaginationState pagination = new() { ItemsPerPage = 10 };
     BitDataGrid<CategoryDto>? dataGrid;
-    BitDataGridItemsProvider<CategoryDto> categoriesProvider;
+    BitDataGridItemsProvider<CategoryDto>? categoriesProvider;
+
 
     int NumResults;
     string _categoryNameFilter = string.Empty;
@@ -23,11 +28,9 @@ public partial class CategoriesPage
         set
         {
             _categoryNameFilter = value;
-            _ = dataGrid.RefreshDataAsync();
+            _ =RefreshData();
         }
     }
-
-
 
     protected override async Task OnInitAsync()
     {
@@ -35,7 +38,7 @@ public partial class CategoriesPage
         await base.OnInitAsync();
     }
 
-    private async Task PrepareGridDataProvider()
+    private Task PrepareGridDataProvider()
     {
         categoriesProvider = async req =>
         {
@@ -44,7 +47,7 @@ public partial class CategoriesPage
                 var input = new PagedInputDto()
                 {
                     Skip = req.StartIndex,
-                    MaxResultCount = (req.Count.HasValue) ? req.Count.Value : 10,
+                    MaxResultCount = req.Count.HasValue ? req.Count.Value : 10,
                     Filter = _categoryNameFilter,
                     SortBy = req.SortByColumn?.Title,
                     SortAscending = req.SortByAscending
@@ -60,7 +63,7 @@ public partial class CategoriesPage
             }
             catch(Exception ex)
             {
-                return BitDataGridItemsProviderResult.From<CategoryDto>(new List<CategoryDto> { }, 0);
+                return BitDataGridItemsProviderResult.From(new List<CategoryDto> { }, 0);
             }   
             finally
             {
@@ -68,7 +71,23 @@ public partial class CategoriesPage
             }
 
         };
+        return Task.CompletedTask;
+    }
 
+    private async Task RefreshData()
+    {
+       await dataGrid!.RefreshDataAsync();
+    }
+    private void Create()
+    {
+        modal!.ShowModal(new CategoryDto());
+    }
+
+    protected async void ModalSave()
+    {
+        MessageBox.Show("Succesfully saved", "category");
+
+        await RefreshData();
     }
 }
 

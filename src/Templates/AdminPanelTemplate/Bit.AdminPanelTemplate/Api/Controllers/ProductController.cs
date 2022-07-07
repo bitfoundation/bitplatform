@@ -42,9 +42,9 @@ public partial class ProductController : ControllerBase
 
         var orderedQuery = (input.SortBy, input.SortAscending) switch
         {
-            (nameof(Product.Name), true) => query.OrderBy(c => c.Name),
-            (nameof(Product.Name), false) => query.OrderByDescending(c => c.Name),
-            _ => query.OrderBy(c => c.Id)
+            (nameof(Product.Name), true) => filteredQuery.OrderBy(c => c.Name),
+            (nameof(Product.Name), false) => filteredQuery.OrderByDescending(c => c.Name),
+            _ => filteredQuery.OrderBy(c => c.Id)
         };
 
         var pageResult = await orderedQuery

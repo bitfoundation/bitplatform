@@ -1,27 +1,28 @@
-﻿@page "/categories"
-@using AdminPanelTemplate.Shared.Dtos.Categories
+﻿@page "/products"
+@using AdminPanelTemplate.Shared.Dtos.Products
 @attribute [Authorize]
 
 @inherits AppComponentBase;
 
 
-<PageTitle>Categories</PageTitle>
+<PageTitle>Products</PageTitle>
 
 <div class="page-container">
     <div class="page-content--white">
-        <h1 class="main-title">Category</h1>
+        <h1 class="main-title">Product</h1>
         <div class="content">
             <div class="grid">
-                <BitDataGrid ItemsProvider="@categoriesProvider" TGridItem="@CategoryDto" ResizableColumns="true" Pagination="@pagination">
+                <BitDataGrid ItemsProvider="@productsProvider" TGridItem="@ProductDto" ResizableColumns="true" Pagination="@pagination" @ref="dataGrid">
                     <BitDataGridPropertyColumn Property="@(c => c.Name)" Sortable="true" Class="column1">
                         <ColumnOptions>
-                            <BitSearchBox @bind-Value="CategoryNameFilter"
+                            <BitSearchBox @bind-Value="ProductNameFilter"
                                           Placeholder="Search on Name"
                                           InputHtmlAttributes="@(new Dictionary<string, object> {{"autofocus", true}})" />
                         </ColumnOptions>
                     </BitDataGridPropertyColumn>
-                    <BitDataGridPropertyColumn Property="@(c => c.Color)" Sortable="true" Align="BitDataGridAlign.Right" />
-                    
+                    <BitDataGridPropertyColumn Property="@(c => c.Price)" Sortable="true" Align="BitDataGridAlign.Right" />
+                    <BitDataGridPropertyColumn Property="@(c => c.Desc)" Sortable="true" Align="BitDataGridAlign.Right" />
+
                 </BitDataGrid>
                 <BitDataGridPaginator Value="@pagination" />
             </div>

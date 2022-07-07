@@ -1,6 +1,6 @@
-﻿@import '../Styles/abstracts/_functions.scss';
-@import '../Styles/abstracts/_colors.scss';
-@import '../Styles/abstracts/_media-queries.scss';
+﻿@import '../../Styles/abstracts/_functions.scss';
+@import '../../Styles/abstracts/_colors.scss';
+@import '../../Styles/abstracts/_media-queries.scss';
 
 .page-container {
     display: flex;
@@ -153,4 +153,20 @@
         font-weight: normal;
         content: "\E721";
     }
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    font-size: rem(24px);
+    font-weight: 600;
+    border-top: rem(4px) solid #0054C6;
+    justify-content: space-between;
+    padding: rem(12px) rem(12px) rem(14px) rem(24px);
+}
+
+.modal-body {
+    padding: 0 rem(24px) rem(24px);
+    overflow-y: hidden;
+    line-height: rem(20px);
 }

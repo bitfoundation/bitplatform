@@ -4,12 +4,17 @@
         "inputFile": "Styles/app.scss"
     },
     {
-        "outputFile": "Pages/CategoriesPage.razor.css",
-        "inputFile": "Pages/CategoriesPage.razor.scss"
+        "outputFile": "Pages/Categories/CategoriesPage.razor.css",
+        "inputFile": "Pages/Categories/CategoriesPage.razor.scss"
     },
     {
-        "outputFile": "Pages/ProductsPage.razor.css",
-        "inputFile": "Pages/ProductsPage.razor.scss"
+        "outputFile": "Pages/Categories/CreateEditCategoryModal.razor.css",
+        "inputFile": "Pages/Categories/CreateEditCategoryModal.razor.scss"
+    },
+
+    {
+        "outputFile": "Pages/Products/ProductsPage.razor.css",
+        "inputFile": "Pages/Products/ProductsPage.razor.scss"
     },
     {
         "outputFile": "Pages/Home.razor.css",
