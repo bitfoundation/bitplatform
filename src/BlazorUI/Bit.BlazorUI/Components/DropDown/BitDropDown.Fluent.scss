@@ -192,6 +192,41 @@
     }
 }
 
+.bit-drp-responsive-fluent {
+    @media only screen and (max-width: #{em(639px)}) {
+        .bit-drp-items-wrapper {
+            position: fixed;
+            z-index: 10000;
+            height: 100%;
+            max-height: unset;
+            width: rem(272px);
+            padding: em(24px) em(20px);
+            box-shadow: rgb(0 0 0 / 22%) 0 25.6px 57.6px 0, rgb(0 0 0 / 18%) 0 4.8px 14.4px 0;
+            animation-name: opacity, trans-x;
+            animation-duration: 0.367s;
+            animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
+            animation-fill-mode: both;
+        }
+
+        .bit-drp-close-btn-contianer {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .bit-drp-overlay {
+            background: rgba(255, 255, 255, 0.4);
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 100%;
+            z-index: 10000;
+            pointer-events: auto;
+            cursor: pointer;
+        }
+    }
+}
+
 .bit-drp-items-wrapper {
     display: none;
     position: fixed;
@@ -459,39 +494,6 @@
 
     button {
         color: $Grey130;
-    }
-}
-
-@media only screen and (max-width: rem(639px)) {
-    .bit-drp-items-wrapper {
-        position: fixed;
-        z-index: 10000;
-        height: 100%;
-        max-height: unset;
-        width: rem(272px);
-        padding: em(24px) em(20px);
-        box-shadow: rgb(0 0 0 / 22%) 0 25.6px 57.6px 0, rgb(0 0 0 / 18%) 0 4.8px 14.4px 0;
-        animation-name: opacity, trans-x;
-        animation-duration: 0.367s;
-        animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
-        animation-fill-mode: both;
-    }
-
-    .bit-drp-close-btn-contianer {
-        display: flex;
-        justify-content: flex-end;
-    }
-
-    .bit-drp-overlay {
-        background: rgba(255, 255, 255, 0.4);
-        position: fixed;
-        top: 0;
-        left: 0;
-        height: 100%;
-        width: 100%;
-        z-index: 10000;
-        pointer-events: auto;
-        cursor: pointer;
     }
 }
 

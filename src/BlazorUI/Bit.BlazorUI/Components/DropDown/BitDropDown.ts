@@ -4,7 +4,8 @@
         dropDownId: string,
         dropDownCalloutId: string,
         dropDownOverlayId: string,
-        isOpen: boolean) {
+        isOpen: boolean,
+        isResponsiveModeEnabled: boolean) {
 
         const dropDownWrapper = document.getElementById(dropDownWrapperId);
         if (dropDownWrapper == null)
@@ -29,6 +30,7 @@
             Bit.currentDropDownCalloutId = "";
         } else {
             Bit.currentDropDownCalloutId = dropDownCalloutId;
+            Bit.currentDropDownCalloutResponsiveModeIsEnabled = isResponsiveModeEnabled;
             Bit.closeCurrentCalloutIfExists(dropDownCalloutId, dropDownOverlayId, dotnetObjReference);
             dropDownCallout.style.display = "block";
             dropDownOverlay.style.display = "block";
@@ -47,7 +49,7 @@
             const dropDownWrapperRight = window.innerWidth - (dropDownWrapperWidth + dropDownWrapperX);
             const minimumWidthForDropDownNormalOpen = 640;
 
-            if (window.innerWidth < minimumWidthForDropDownNormalOpen) {
+            if (window.innerWidth < minimumWidthForDropDownNormalOpen && isResponsiveModeEnabled) {
                 dropDownCallout.style.top = "0";
                 dropDownCallout.style.left = "unset";
                 dropDownCallout.style.right = "0";
