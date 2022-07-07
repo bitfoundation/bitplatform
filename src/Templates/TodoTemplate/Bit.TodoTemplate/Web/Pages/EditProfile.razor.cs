@@ -93,7 +93,7 @@ public partial class EditProfile
 
             EditProfileMessageType = BitMessageBarType.Success;
 
-            EditProfileMessage = "Edit successfully";
+            EditProfileMessage = "Profile updated successfully";
         }
         catch (KnownException e)
         {
