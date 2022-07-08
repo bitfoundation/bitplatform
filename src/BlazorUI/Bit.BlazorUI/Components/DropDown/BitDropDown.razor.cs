@@ -14,6 +14,7 @@ namespace Bit.BlazorUI;
 public partial class BitDropDown
 {
     private bool isOpen;
+    private bool isResponsiveModeEnabled;
     private bool isMultiSelect;
     private bool isRequired;
     private List<string> values = new();
@@ -47,6 +48,20 @@ public partial class BitDropDown
         set
         {
             isOpen = value;
+            ClassBuilder.Reset();
+        }
+    }
+
+    /// <summary>
+    /// Whether the drop down items get rendered in a side panel in small screen sizes or not 
+    /// </summary>
+    [Parameter]
+    public bool IsResponsiveModeEnabled
+    {
+        get => isResponsiveModeEnabled;
+        set
+        {
+            isResponsiveModeEnabled = value;
             ClassBuilder.Reset();
         }
     }
@@ -203,6 +218,10 @@ public partial class BitDropDown
             ? string.Empty
             : $"{RootElementClass}-{"opened"}-{VisualClassRegistrar()}");
 
+        ClassBuilder.Register(() => IsResponsiveModeEnabled is false
+            ? string.Empty
+            : $"{RootElementClass}-{"responsive"}-{VisualClassRegistrar()}");
+
         ClassBuilder.Register(() => IsMultiSelect is false
             ? string.Empty
             : $"{RootElementClass}-{"multi"}-{VisualClassRegistrar()}");
@@ -237,7 +256,7 @@ public partial class BitDropDown
     private async Task CloseCallout()
     {
         var obj = DotNetObjectReference.Create(this);
-        await JSRuntime.InvokeVoidAsync("BitDropDown.toggleDropDownCallout", obj, UniqueId, DropDownId, DropDownCalloutId, DropDownOverlayId, isOpen);
+        await JSRuntime.InvokeVoidAsync("BitDropDown.toggleDropDownCallout", obj, UniqueId, DropDownId, DropDownCalloutId, DropDownOverlayId, isOpen, isResponsiveModeEnabled);
         IsOpen = false;
         StateHasChanged();
     }
@@ -247,7 +266,7 @@ public partial class BitDropDown
         if (IsEnabled is false) return;
 
         var obj = DotNetObjectReference.Create(this);
-        await JSRuntime.InvokeVoidAsync("BitDropDown.toggleDropDownCallout", obj, UniqueId, DropDownId, DropDownCalloutId, DropDownOverlayId, isOpen);
+        await JSRuntime.InvokeVoidAsync("BitDropDown.toggleDropDownCallout", obj, UniqueId, DropDownId, DropDownCalloutId, DropDownOverlayId, isOpen, isResponsiveModeEnabled);
         isOpen = !isOpen;
         await OnClick.InvokeAsync(e);
     }
@@ -307,7 +326,7 @@ public partial class BitDropDown
             Text = selectedItem.Text;
             CurrentValueAsString = selectedItem.Value;
             var obj = DotNetObjectReference.Create(this);
-            await JSRuntime.InvokeVoidAsync("BitDropDown.toggleDropDownCallout", obj, UniqueId, DropDownId, DropDownCalloutId, DropDownOverlayId, isOpen);
+            await JSRuntime.InvokeVoidAsync("BitDropDown.toggleDropDownCallout", obj, UniqueId, DropDownId, DropDownCalloutId, DropDownOverlayId, isOpen, isResponsiveModeEnabled);
             isOpen = false;
 
             if (isSameItemSelected && !NotifyOnReselect) return;

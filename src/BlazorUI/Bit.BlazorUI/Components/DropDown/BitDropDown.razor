@@ -75,6 +75,11 @@
          tabindex="0"
          role="listbox"
          aria-labelledby="@DropdownLabelId">
+        <div class="bit-drp-close-btn-contianer">
+            <BitIconButton IconName="BitIconName.ChromeClose"
+                           Title="Close"
+                           OnClick=CloseCallout />
+        </div>
         @foreach ((BitDropDownItem item, int index) in Items.Select((item, index) => (item, index)))
         {
             if (item.ItemType == BitDropDownItemType.Header)
@@ -88,12 +93,12 @@
                 @if (IsMultiSelect)
                 {
                     <div style="@(item.IsHidden ? "display: none" : string.Empty)"
-                         class="@GetCssClassForItem(item)">
+             class="@GetCssClassForItem(item)">
                         <label class="bit-drp-chb-lbl" for="@($"{DropDownId}-list{index}")" @onclick="@((e) => HandleItemClick(item))">
                             <div class="bit-drp-chb-checkbox">
                                 <i class=@($"bit-drp-chb-checkmark bit-icon bit-icon--{BitIconName.Accept.GetName()}")
-                                   aria-hidden="true"
-                                   aria-label="@item.Text"></i>
+                       aria-hidden="true"
+                       aria-label="@item.Text"></i>
                             </div>
 
                             <span class="bit-drp-chb-txt no-text-select">
@@ -111,22 +116,22 @@
                 }
                 else
                 {
-                    <button class="@(item.IsSelected ? $"{RootElementClass}-slc-{VisualClassRegistrar()}" : string.Empty)"
-                        style="@(item.IsHidden ? "display: none" : string.Empty)"
-                        id="@($"{DropDownId}-list{index}")"
-                        type="button"
-                        role="option"
-                        data-is-focusable="@(item.IsEnabled ? "true" : "false")"
-                        disabled=@(!item.IsEnabled)
-                        data-index="@index"
-                        aria-disabled="@(!item.IsEnabled)"
-                        aria-selected="@(item.IsSelected ? "true" : "false")"
-                        aria-setsize="@NormalDropDownItems.Count"
-                        aria-posinset="@GetItemPosInSet(item)"
-                        tabindex="@(item.IsEnabled ? 0 : -1)"
-                        title="@item.Title"
-                        aria-label="@item.AriaLabel"
-                        @onclick="()=> HandleItemClick(item)">
+                    <button class="bit-drp-item @(item.IsSelected ? $"{RootElementClass}-slc-{VisualClassRegistrar()}" : string.Empty)"
+                style="@(item.IsHidden ? "display: none" : string.Empty)"
+                id="@($"{DropDownId}-list{index}")"
+                type="button"
+                role="option"
+                data-is-focusable="@(item.IsEnabled ? "true" : "false")"
+                disabled=@(!item.IsEnabled)
+                data-index="@index"
+                aria-disabled="@(!item.IsEnabled)"
+                aria-selected="@(item.IsSelected ? "true" : "false")"
+                aria-setsize="@NormalDropDownItems.Count"
+                aria-posinset="@GetItemPosInSet(item)"
+                tabindex="@(item.IsEnabled ? 0 : -1)"
+                title="@item.Title"
+                aria-label="@item.AriaLabel"
+                @onclick="()=> HandleItemClick(item)">
                         @if (ItemTemplate is not null)
                         {
                             @ItemTemplate(item)
