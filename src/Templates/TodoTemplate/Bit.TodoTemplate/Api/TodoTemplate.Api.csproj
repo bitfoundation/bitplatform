@@ -22,8 +22,8 @@
         <EmbeddedResource Include="Resources\*.cshtml" />
         <PackageReference Include="AutoMapper" Version="11.0.1" />
         <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="11.0.0" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="1.0.2" />
-        <PackageReference Include="Bit.SourceGenerators" Version="1.0.2" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="2.0.0-pre-01" />
+        <PackageReference Include="Bit.SourceGenerators" Version="2.0.0-pre-01" />
         <PackageReference Include="FluentEmail.Razor" Version="3.0.2" />
         <PackageReference Include="FluentEmail.Smtp" Version="3.0.2" />
 
