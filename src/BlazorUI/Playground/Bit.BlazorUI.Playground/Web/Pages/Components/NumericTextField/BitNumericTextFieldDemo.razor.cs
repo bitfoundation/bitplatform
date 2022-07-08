@@ -461,4 +461,12 @@ else
         @SuccessMessage
     </BitMessageBar>
 }";
+
+
+    #region Example Code 9
+
+    private readonly string example9HTMLCode = @"
+<BitTextField Label=""With Placeholder"" Placeholder=""0""></BitTextField>";
+
+    #endregion
 }
