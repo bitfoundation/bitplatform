@@ -4,13 +4,14 @@ using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using Bit.Platform.WebSite.Web.Shared;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Bit.Platform.WebSite.Web.Components;
 
 public partial class GettingStarted
 {
-    [Inject] public NavigationManager NavigationManager { get; set; }
-    [Inject] public IJSRuntime JSRuntime { get; set; }
+    [AutoInject] public NavigationManager NavigationManager { get; set; }
+    [AutoInject] public IJSRuntime JSRuntime { get; set; }
     public string CurrentUrl { get; set; }
     public ElementReference GettingStartedElement { get; set; }
 

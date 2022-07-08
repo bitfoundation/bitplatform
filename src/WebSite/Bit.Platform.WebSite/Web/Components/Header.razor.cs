@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 
 namespace Bit.Platform.WebSite.Web.Components;
@@ -12,8 +13,8 @@ public partial class Header : IDisposable
 
     public ElementReference HeaderElement { get; set; }
 
-    [Inject] public NavigationManager NavigationManager { get; set; }
-    [Inject] public IJSRuntime JSRuntime { get; set; }
+    [AutoInject] public NavigationManager NavigationManager { get; set; }
+    [AutoInject] public IJSRuntime JSRuntime { get; set; }
 
     protected override void OnInitialized()
     {
