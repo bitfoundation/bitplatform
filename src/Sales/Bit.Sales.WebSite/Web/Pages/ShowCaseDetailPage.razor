@@ -1,0 +1,108 @@
+﻿@inherits AppComponentBase;
+@page "/case-detail/{CaseKey}"
+
+<section class="page">
+    <section class="page-top-container" style="background-image: url(@($"/images/cases/{ShowCase.Key}-header-bg.svg"));">
+        <div class="page-title">Our Cases</div>
+        <div class="page-subtitle-container">
+            <span class="page-subtitle">Home</span>
+            <span class="page-subtitle-arrow"></span>
+            <span class="page-subtitle">Cases</span>
+            <span class="page-subtitle-arrow"></span>
+            <span class="page-subtitle">@ShowCase.Name</span>
+        </div>
+    </section>
+
+    <section class="case-summary-section">
+        <div class="summary-container">
+            <div class="summary-title">About Project</div>
+            <div class="summary-desc">@ShowCase.AboutProject</div>
+            <div class="service-card-container">
+                @foreach (var srv in ShowCase.Services)
+                {
+                    <div class="service-card @($"{ServiceMap[srv]}-card")">@srv</div>
+                }
+            </div>
+        </div>
+        <div class="case-photo" style="background-image: url('/images/cases/computer-photo.svg')"></div>
+    </section>
+
+    <section class="page-info-section">
+        <div class="info-box-group">
+            <div class="info-box">
+                <div class="info-value member-count-item">@ShowCase.TeamMemberCount</div>
+                <div class="info-title">Team Members</div>
+            </div>
+            <div class="info-box desktop-box">
+                <div class="info-value mvp-delivery-item">@ShowCase.MvpDeliveryTime</div>
+                <div class="info-title">MVP Delivery Time</div>
+            </div>
+            <div class="info-box delivery-box">
+                <div class="info-value delivery-item">@ShowCase.DeliveryTime</div>
+                <div class="info-title">Delivery Time</div>
+            </div>
+            <div class="info-box mobile-box">
+                <div class="info-value mvp-delivery-item">@ShowCase.MvpDeliveryTime</div>
+                <div class="info-title">MVP Delivery Time</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="page-tech-section">
+        <div class="section-title">Technologies</div>
+        <div class="card-container">
+            <div class="tech-card @("react-card")">React</div>
+            <div class="tech-card @("react-card")">React</div>
+            <div class="tech-card @("react-card")">React</div>
+            <div class="tech-card @("react-card")">React</div>
+            <div class="tech-card @("react-card")">React</div>
+            <div class="tech-card @("react-card")">React</div>
+            <div class="tech-card @("react-card")">React</div>
+        </div>
+    </section>
+
+    <section class="page-service-section">
+        <div class="section-title">Services Provided</div>
+        <div class="card-container">
+            @foreach (var srv in ShowCase.Services)
+            {
+                <div class="service-card @($"{ServiceMap[srv]}-card")">@srv</div>
+            }
+        </div>
+    </section>
+
+    <section class="page-feature-section">
+        <div class="section-title">Features</div>
+        @foreach (var feature in ShowCase.Features)
+        {
+            <div class="feature-container">
+                <div class="feature-info-container">
+                    <div class="feature-title">@feature.Title</div>
+                    <div class="feature-desc">@feature.Description</div>
+                </div>
+                <div class="feature-photo" style="background-image: url(@($"{feature.PhotoAddress}"))"></div>
+            </div>
+        }
+    </section>
+
+    <section class="page-csr-row">
+        <div class="csr-box c-box">
+            <div class="csr-icon"></div>
+            <div class="csr-title"><span class="orange-txt">1. </span>Challenges</div>
+            <div class="csr-desc">@ShowCase.Challenges</div>
+            <div class="csr-bg"></div>
+        </div>
+        <div class="csr-box s-box">
+            <div class="csr-icon"></div>
+            <div class="csr-title"><span class="orange-txt">2. </span>Solutions</div>
+            <div class="csr-desc">@ShowCase.Solutions</div>
+            <div class="csr-bg"></div>
+        </div>
+        <div class="csr-box r-box">
+            <div class="csr-icon"></div>
+            <div class="csr-title"><span class="orange-txt">3. </span>Result</div>
+            <div class="csr-desc">@ShowCase.Result</div>
+            <div class="csr-bg"></div>
+        </div>
+    </section>
+</section>

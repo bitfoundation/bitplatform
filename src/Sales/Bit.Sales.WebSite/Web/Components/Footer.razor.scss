@@ -1,0 +1,46 @@
+﻿@import '../wwwroot/styles/abstracts/_colors.scss';
+@import '../wwwroot/styles/abstracts/_media-queries.scss';
+@import '../wwwroot/styles/abstracts/_functions.scss';
+
+.footer {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    height: rem(70px);
+    padding: 0 rem(120px);
+    box-sizing: border-box;
+    background-color: #50576A;
+    color: $White;
+    font-size: rem(12px);
+    line-height: rem(16px);
+
+    @include md {
+        padding: 0 rem(60px);
+    }
+
+    @include sm {
+        padding: 0 rem(24px);
+    }
+
+    .footer-linkedin {
+        display: flex;
+        align-items: center;
+        height: rem(20px);
+        margin-left: rem(8px);
+        background-image: url('/images/shared/linkedin-icon.svg');
+        background-position: center right;
+        background-repeat: no-repeat;
+        background-size: rem(20px);
+        padding-right: rem(34px);
+    }
+
+    .footer-linkedin-txt {
+        color: $White;
+
+        @include sm {
+            display: none;
+        }
+    }
+}
