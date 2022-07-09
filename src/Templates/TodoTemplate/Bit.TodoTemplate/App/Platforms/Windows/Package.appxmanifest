@@ -7,9 +7,9 @@
   IgnorableNamespaces="uap rescap">
 
 	<Identity
-	  Name="35439F60-AA79-4C76-9FB4-7E146111D2CF"
+	  Name="maui-package-name-placeholder"
 	  Publisher="CN=User Name"
-	  Version="1.0.0.0" />
+	  Version="0.0.0.0" />
 
 	<Properties>
 		<DisplayName>$placeholder$</DisplayName>
