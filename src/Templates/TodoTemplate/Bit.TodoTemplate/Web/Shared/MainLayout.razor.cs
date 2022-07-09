@@ -8,7 +8,7 @@ public partial class MainLayout : IAsyncDisposable
 
     [AutoInject] private IExceptionHandler exceptionHandler = default!;
 
-    [AutoInject] private TodoTemplateAuthenticationStateProvider todoTemplateAuthenticationStateProvider = default!;
+    [AutoInject] private AppAuthenticationStateProvider authStateProvider = default!;
 
     private ErrorBoundary ErrorBoundaryRef = default!;
 
@@ -28,9 +28,9 @@ public partial class MainLayout : IAsyncDisposable
     {
         try
         {
-            todoTemplateAuthenticationStateProvider.AuthenticationStateChanged += VerifyUserIsAuthenticatedOrNot;
+            authStateProvider.AuthenticationStateChanged += VerifyUserIsAuthenticatedOrNot;
 
-            IsUserAuthenticated = await stateService.GetValue($"{nameof(MainLayout)}-{nameof(IsUserAuthenticated)}", async () => await todoTemplateAuthenticationStateProvider.IsUserAuthenticated());
+            IsUserAuthenticated = await stateService.GetValue($"{nameof(MainLayout)}-{nameof(IsUserAuthenticated)}", authStateProvider.IsUserAuthenticated);
 
             await base.OnInitializedAsync();
         }
@@ -44,7 +44,7 @@ public partial class MainLayout : IAsyncDisposable
     {
         try
         {
-            IsUserAuthenticated = await todoTemplateAuthenticationStateProvider.IsUserAuthenticated();
+            IsUserAuthenticated = await authStateProvider.IsUserAuthenticated();
         }
         catch (Exception ex)
         {
@@ -63,6 +63,6 @@ public partial class MainLayout : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        todoTemplateAuthenticationStateProvider.AuthenticationStateChanged -= VerifyUserIsAuthenticatedOrNot;
+        authStateProvider.AuthenticationStateChanged -= VerifyUserIsAuthenticatedOrNot;
     }
 }

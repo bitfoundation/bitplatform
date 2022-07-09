@@ -218,6 +218,11 @@ public partial class BitNumericTextField<TValue>
     /// </summary>
     [Parameter] public bool Arrows { get; set; }
 
+    /// <summary>
+    /// Input placeholder text
+    /// </summary>
+    [Parameter] public string? Placeholder { get; set; }
+
     protected override string RootElementClass => "bit-ntf";
 
     protected override void RegisterComponentClasses()
@@ -245,9 +250,8 @@ public partial class BitNumericTextField<TValue>
 
         if (internalMin > internalMax)
         {
-            internalMin += internalMax;
-            internalMax = internalMin - internalMax;
-            internalMin -= internalMax;
+            internalMin = minGenericValue;
+            internalMax = maxGenericValue;
         }
 
         precision = Precision is not null ? Precision.Value : CalculatePrecision(Step);

@@ -61,7 +61,7 @@ namespace TodoTemplate.Api.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Bit.TodoTemplate - Confirm your email address.
+        ///   Looks up a localized string similar to TodoTemplate - Confirm your email address.
         /// </summary>
         public static string ConfirmationEmailSubject {
             get {
@@ -70,7 +70,7 @@ namespace TodoTemplate.Api.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Bit.TodoTemplate - Reset your password.
+        ///   Looks up a localized string similar to TodoTemplate - Reset your password.
         /// </summary>
         public static string ResetPasswordEmailSubject {
             get {

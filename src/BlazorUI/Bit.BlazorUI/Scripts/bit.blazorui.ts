@@ -26,6 +26,7 @@ class CalloutComponent {
 class Bit {
     static currentCallout: CalloutComponent = new CalloutComponent();
     static currentDropDownCalloutId: string = "";
+    static currentDropDownCalloutResponsiveModeIsEnabled: boolean = false;
 
     static setProperty(element: Record<string, any>, property: string, value: any): void {
         element[property] = value;
@@ -72,7 +73,7 @@ class Bit {
 
 window.addEventListener('scroll', (e: any) => {
     const minimumWidthForDropDownNormalOpen = 640;
-    if ((Bit.currentDropDownCalloutId && window.innerWidth < minimumWidthForDropDownNormalOpen) ||
+    if ((Bit.currentDropDownCalloutId && window.innerWidth < minimumWidthForDropDownNormalOpen && Bit.currentDropDownCalloutResponsiveModeIsEnabled) ||
         (e.target.id && Bit.currentDropDownCalloutId === e.target.id)) return;
 
     Bit.closeCurrentCalloutIfExists("", "", null);

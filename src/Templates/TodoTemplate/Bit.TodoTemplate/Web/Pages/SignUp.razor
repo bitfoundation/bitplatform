@@ -1,6 +1,6 @@
 ﻿@page "/sign-up"
 
-@inherits TodoTemplateComponentBase;
+@inherits AppComponentBase;
 
 <PageTitle>Sign up</PageTitle>
 
@@ -72,7 +72,7 @@
 
             <div class="form-input-container form-input-container--no-margin">
                 <BitCheckbox Class="form-checkbox" @bind-Value="SignUpModel.IsAcceptPrivacy">
-                    I agree to the <BitLink Href="/privacy" Target="_blank">Bit Privacy Policy</BitLink>
+                    I agree to the <BitLink Href="/privacy" Target="_blank">Privacy Policy</BitLink>
                 </BitCheckbox>
             </div>
 
@@ -93,7 +93,7 @@
             </BitButton>
 
             <div>
-                Already on Bit? <BitLink Href="/sign-in">Sign in</BitLink>
+                Already have an account? <BitLink Href="/sign-in">Sign in</BitLink>
             </div>
         }
 

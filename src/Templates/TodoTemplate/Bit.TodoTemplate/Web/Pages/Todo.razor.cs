@@ -42,7 +42,7 @@ public partial class Todo
         IsLoading = true;
         try
         {
-            AllTodoItemList = await stateService.GetValue($"{nameof(Todo)}-{nameof(AllTodoItemList)}", async () => await httpClient.GetFromJsonAsync("TodoItem", TodoTemplateJsonContext.Default.ListTodoItemDto));
+            AllTodoItemList = await stateService.GetValue($"{nameof(Todo)}-{nameof(AllTodoItemList)}", async () => await httpClient.GetFromJsonAsync("TodoItem", AppJsonContext.Default.ListTodoItemDto));
             GenarateViewTodoItemList();
         }
         finally
@@ -153,7 +153,7 @@ public partial class Todo
                 Date = DateTimeOffset.Now,
             };
 
-            await httpClient.PostAsJsonAsync("TodoItem", newTodoItem, TodoTemplateJsonContext.Default.TodoItemDto);
+            await httpClient.PostAsJsonAsync("TodoItem", newTodoItem, AppJsonContext.Default.TodoItemDto);
 
             await LoadTodoItems();
 
@@ -179,7 +179,7 @@ public partial class Todo
 
         todoItem.IsInEditMode = false;
 
-        await httpClient.PutAsJsonAsync("TodoItem", todoItem, TodoTemplateJsonContext.Default.TodoItemDto);
+        await httpClient.PutAsJsonAsync("TodoItem", todoItem, AppJsonContext.Default.TodoItemDto);
         GenarateViewTodoItemList();
     }
 }

@@ -2,7 +2,7 @@
 
 public partial class SignOutConfirmModal
 {
-    [AutoInject] public ITodoTemplateAuthenticationService todoTemplateAuthenticationService = default!;
+    [AutoInject] private IAuthenticationService authService = default!;
 
     private bool isOpen;
 
@@ -27,7 +27,7 @@ public partial class SignOutConfirmModal
 
     private async Task SignOut()
     {
-        await todoTemplateAuthenticationService.SignOut();
+        await authService.SignOut();
         CloseModal();
     }
 }

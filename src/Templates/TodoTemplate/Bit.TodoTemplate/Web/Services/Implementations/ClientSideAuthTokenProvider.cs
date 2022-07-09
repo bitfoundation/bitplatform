@@ -11,6 +11,6 @@ public class ClientSideAuthTokenProvider : IAuthTokenProvider
 
     public async Task<string?> GetAcccessToken()
     {
-        return await _jsRuntime.InvokeAsync<string>("todoTemplate.getCookie", "access_token");
+        return await _jsRuntime.InvokeAsync<string>("App.getCookie", "access_token");
     }
 }

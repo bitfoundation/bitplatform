@@ -8,7 +8,7 @@ public partial class SignUp
 
     [AutoInject] private NavigationManager navigationManager = default!;
 
-    [AutoInject] private TodoTemplateAuthenticationStateProvider todoTemplateAuthenticationStateProvider = default!;
+    [AutoInject] private AppAuthenticationStateProvider authStateProvider = default!;
 
     public SignUpRequestDto SignUpModel { get; set; } = new();
 
@@ -38,7 +38,7 @@ public partial class SignUp
         {
             SignUpModel.Email = SignUpModel.UserName;
 
-            await httpClient.PostAsJsonAsync("Auth/SignUp", SignUpModel, TodoTemplateJsonContext.Default.SignUpRequestDto);
+            await httpClient.PostAsJsonAsync("Auth/SignUp", SignUpModel, AppJsonContext.Default.SignUpRequestDto);
 
             IsSignedUp = true;
         }
@@ -51,7 +51,7 @@ public partial class SignUp
         catch (KnownException e)
         {
             SignUpMessageType = BitMessageBarType.Error;
-            SignUpMessage = ErrorStrings.ResourceManager.Translate(e.Message);
+            SignUpMessage = ErrorStrings.ResourceManager.Translate(e.Message, SignUpModel.UserName);
         }
         finally
         {
@@ -74,7 +74,7 @@ public partial class SignUp
             await httpClient.PostAsJsonAsync("Auth/SendConfirmationEmail", new()
             {
                 Email = SignUpModel.Email
-            }, TodoTemplateJsonContext.Default.SendConfirmationEmailRequestDto);
+            }, AppJsonContext.Default.SendConfirmationEmailRequestDto);
 
             SignUpMessageType = BitMessageBarType.Success;
             SignUpMessage = "The confirmation link has been re-sent.";
@@ -96,7 +96,7 @@ public partial class SignUp
 
         if (firstRender)
         {
-            if (await todoTemplateAuthenticationStateProvider.IsUserAuthenticated())
+            if (await authStateProvider.IsUserAuthenticated())
             {
                 navigationManager.NavigateTo("/");
             }

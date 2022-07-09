@@ -11,7 +11,7 @@ using TodoTemplate.Api.Data;
 
 namespace TodoTemplate.Api.Migrations
 {
-    [DbContext(typeof(TodoTemplateDbContext))]
+    [DbContext(typeof(AppDbContext))]
     [Migration("20220417210006_InitialSchema")]
     partial class InitialSchema
     {

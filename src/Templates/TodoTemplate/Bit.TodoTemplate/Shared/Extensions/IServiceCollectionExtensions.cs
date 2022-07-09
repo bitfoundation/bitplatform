@@ -4,8 +4,8 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static class IServiceCollectionExtensions
 {
-    public static void AddTodoTemplateSharedServices(this IServiceCollection services)
+    public static void AddSharedServices(this IServiceCollection services)
     {
-        services.AddSingleton<IDateTimeProvider, TodoTemplateDateTimeProvider>();
+        services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
     }
 }

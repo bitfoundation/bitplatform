@@ -6,6 +6,11 @@
 .grid {
     display: inline-flex;
     flex-direction: column;
+    width:100%
+}
+
+.grid ::deep table {
+    min-width: 100%;
 }
 
 .grid ::deep tr {
@@ -17,5 +22,48 @@
 }
 
 .grid ::deep th:nth-child(1) .col-options-button {
-    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"> <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /> </svg>');
+    //background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"> <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /> </svg>');
+    background-image: none;
+    cursor: pointer;
+
+    &:before {
+        display: inline-block;
+        font-family: 'Fabric MDL2 Assets';
+        font-style: normal;
+        font-weight: normal;
+        content: "\E721";
+    }
+}
+
+.grid--fix-height {
+    height: 15rem;
+    overflow-y: auto;
+}
+
+.search-panel {
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    border-top: 1px solid black;
+    padding-top: 5px;
+}
+
+.inline-block{
+    display:inline-block;
+}
+
+::deep .bitdatagrid[theme=redskin] {
+    font-style :italic;
+    color: red;
+}
+
+::deep .bitdatagrid[theme=redskin] .col-title {
+    gap: 0.4rem; 
+    font-weight: bold;
+    text-transform: uppercase;
+    background-color:red;
+    color:white;
+}
+
+::deep .bitdatagrid[theme=redskin] .sort-indicator {
+    color: white;
 }

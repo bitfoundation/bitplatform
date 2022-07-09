@@ -1,15 +1,37 @@
 ﻿
 <section class="page-section getting-started-step-section">
 
-    <div id="getting-started" class="step-body-card">
-        <h4> Getting started</h4>
+    <section class="getting-started-side-rail-section" @ref="GettingStartedElement">
+        <a class="side-rail-item @(CurrentUrl == "#getting-started"? "selected-side-rail-item" : "" )" href="@Urls.TodoTemplate#getting-started" target="_parent">getting strted</a>
+        <a class="side-rail-item @(CurrentUrl == "#environments"? "selected-side-rail-item" : "" )" href="@Urls.TodoTemplate#environments" target="_parent">Environment setup</a>
+        <a class="side-rail-item @(CurrentUrl == "#create-project"? "selected-side-rail-item" : "" )" href="@Urls.TodoTemplate#create-project" target="_parent">Create project</a>
+        <a class="side-rail-item @(CurrentUrl == "#prepare-project"? "selected-side-rail-item" : "" )" href="@Urls.TodoTemplate#prepare-project" target="_parent">Prepare The Project</a>
+        <a class="side-rail-item @(CurrentUrl == "#run"? "selected-side-rail-item" : "" )" href="@Urls.TodoTemplate#run" target="_parent">Run</a>
+        <a class="side-rail-item @(CurrentUrl == "#blazor-modes"? "selected-side-rail-item" : "" )" href="@Urls.TodoTemplate#blazor-modes" target="_parent">Blazor Mode (hosting models)</a>
+        <a class="side-rail-item @(CurrentUrl == "#deployment-types"? "selected-side-rail-item" : "" )" href="@Urls.TodoTemplate#deployment-types" target="_parent">WebApp Deployment Type</a>
+        <a class="side-rail-item @(CurrentUrl == "#settings"? "selected-side-rail-item" : "" )" href="@Urls.TodoTemplate#settings" target="_parent">Settings</a>
+        <a class="side-rail-item @(CurrentUrl == "#project-structure"? "selected-side-rail-item" : "" )" href="@Urls.TodoTemplate#project-structure" target="_parent">TodoTemplate Project </a>
+        <a class="side-rail-item @(CurrentUrl == "#exception-handling"? "selected-side-rail-item" : "" )" href="@Urls.TodoTemplate#exception-handling" target="_parent">Exception handling</a>
+        <a class="side-rail-item @(CurrentUrl == "#cache-mechanism"? "selected-side-rail-item" : "" )" href="@Urls.TodoTemplate#cache-mechanism" target="_parent">Cache mechanism</a>
+        <a class="side-rail-item @(CurrentUrl == "#contribute"? "selected-side-rail-item" : "" )" href="@Urls.TodoTemplate#contribute" target="_parent">Contribute</a>
+
+    </section>
+
+    <div class="step-body-card">
+        <h4 id="getting-started">
+            <a class="anchor" href="@Urls.TodoTemplate#getting-started" target="_parent"><i class="anchor-icon bit-icon bit-icon--Link12"> </i></a>
+            Getting started
+        </h4>
         <div class="card-container">
             <div class="description">This document aimed to create and run a Bit-Platform (Bit) project in a short period. It is assumed that you, as the developer, are familiar with the development prerequisites that follow.</div>
         </div>
     </div>
 
-    <div id="development-prerequisites" class="step-body-card">
-        <h4> Development prerequisites</h4>
+    <div class="step-body-card">
+        <h4 id="development-prerequisites">
+            <a class="anchor" href="@Urls.TodoTemplate#development-prerequisites" target="_parent"><i class="anchor-icon bit-icon bit-icon--Link12"> </i></a>
+            Development prerequisites
+        </h4>
         <div class="card-container">
             <ul class="first-step-ul">
                 <li>C# as the main development language.</li>
@@ -22,8 +44,11 @@
         </div>
     </div>
 
-    <div id="environments" class="step-body-card">
-        <h4> Environment setup</h4>
+    <div class="step-body-card">
+        <h4 id="environments">
+            <a class="anchor" href="@Urls.TodoTemplate#environments" target="_parent"><i class="anchor-icon bit-icon bit-icon--Link12"> </i></a>
+            Environment setup
+        </h4>
         <div class="card-container">
             <ul class="first-step-ul">
                 <li>
@@ -39,8 +64,11 @@
         </div>
     </div>
 
-    <div id="create-project" class="step-body-card">
-        <h4> Create project</h4>
+    <div class="step-body-card">
+        <h4 id="create-project">
+            <a class="anchor" href="@Urls.TodoTemplate#create-project" target="_parent"><i class="anchor-icon bit-icon bit-icon--Link12"> </i></a>
+            Create project
+        </h4>
         <div class="card-container">
             <ol class="first-step-ul">
                 <li>
@@ -50,6 +78,10 @@
                 <li>
                     Create a new project using the Template installed
                     <pre class="code"><code>dotnet new bit-todo</code></pre>
+                    Or create a new project with the Visual Studio
+                    <div class="image-container">
+                        <img class="image" alt="Create new project" width="1010" height="673" src="/images/projects/create-project.webp" />
+                    </div>
                 </li>
                 <li>
                     Make sure the first line in the <span class="high-light">TodoTemplate.Web.csproj</span> file contains the following value.
@@ -61,8 +93,11 @@
         </div>
     </div>
 
-    <div id="prepare-project" class="step-body-card">
-        <h4> Prepare The Project</h4>
+    <div class="step-body-card">
+        <h4 id="prepare-project">
+            <a class="anchor" href="@Urls.TodoTemplate#prepare-project" target="_parent"><i class="anchor-icon bit-icon bit-icon--Link12"> </i></a>
+            Prepare The Project
+        </h4>
         <div class="card-container">
             <h3>Database</h3>
             <h5>Connection String</h5>
@@ -76,7 +111,7 @@
                 For Other Entityframework supported databases, you need to configure the context that provides your preferred database. with change <span class="high-light">UseSqlServer</span> method on <span class="high-light">Api\Startup\Services.cs</span> file
             </div>
             <pre class="code">
-<code>services.AddDbContext@("<TodoTemplateDbContext>")(options =>
+<code>services.AddDbContext@("<AppDbContext>")(options =>
 {
     options.UseSqlServer(configuration.GetConnectionString("SqlServerConnectionString"), sqlOpt =>
     {
@@ -87,34 +122,48 @@
         </pre>
             <h3>Migration</h3>
             <div class="description">To create and migrate the database to the latest version. You can use Entity Framework's built-in tools for migrations. Open <strong>Package Manager Console</strong> in Visual Studio set <strong>TodoTemplate.Api</strong> as the Default Project and run the Update-Database command as shown below:</div>
-            <pre class="code"><code>Update-Database -Context TodoTemplateDbContext</code></pre>
+            <pre class="code"><code>Update-Database -Context AppDbContext</code></pre>
         </div>
     </div>
 
-    <div id="run" class="step-body-card">
-        <h4> Run</h4>
+    <div class="step-body-card">
+        <h4 id="run">
+            <a class="anchor" href="@Urls.TodoTemplate#run" target="_parent"><i class="anchor-icon bit-icon bit-icon--Link12"> </i></a>
+            Run
+        </h4>
         <div class="card-container">
             <div class="description">After you've done the configuration, you can run the application. Set Api project as startup and run, you can see the swagger dashboard in the first view</div>
-            <img class="image" src="/images/projects/swagger.png" />
+            <div class="image-container">
+                <img class="image" alt="Swagger dashboard" width="887" height="886" src="/images/projects/swagger.webp" />
+            </div>
             <h3>SignUp</h3>
             <div class="description">
                 With the help of <strong>Swagger</strong>, you can call the <strong>SignUp</strong> API and Start the registration process, navigate to <span class="high-light">Auth/SignUp</span> API and press the <span class="high-light">Try it Out</span> button, in the <span class="high-light">Request body</span> Enter SignUp data, and press Execute button.
             </div>
-            <img class="image" src="/images/projects/swagger-signUp.png" />
+            <div class="image-container">
+                <img class="image" alt="Swagger Sign Up" width="916" height="907" src="/images/projects/swagger-signUp.webp" />
+            </div>
             <div class="description">
                 In <strong>SignUp</strong> Process after call API, a confirmation email send to your email, In the development, Bit saves sent emails as a .eml file in the <span class="high-light">./TodoTemplate/Api/bin/Debug/net6.0/sent-emails</span> path, and developers can easily handle them.
             </div>
-            <img class="image" src="/images/projects/confirm-email.png" />
+            <div class="image-container">
+                <img class="image" alt="Confirm email" width="907" height="926" src="/images/projects/confirm-email.webp" />
+            </div>
             <div class="description">By pressing the <span class="high-light">Confirm email</span> button, the ConfirmEmail Api calls and registration process complete. After it, you can login with the swagger login form on the top of the page, and call other APIs that need Authentication.</div>
-            <img class="image-responsive" src="/images/projects/swagger-login.png" />
+            <div class="image-container">
+                <img class="image" alt="Swagger Sign In" width="757" height="207" src="/images/projects/swagger-login.webp" />
+            </div>
         </div>
     </div>
 
-    <div id="blazor-modes" class="step-body-card">
-        <h4> Blazor Mode (hosting models)</h4>
+    <div class="step-body-card">
+        <h4 id="blazor-modes">
+            <a class="anchor" href="@Urls.TodoTemplate#blazor-modes" target="_parent"><i class="anchor-icon bit-icon bit-icon--Link12"> </i></a>
+            Blazor Mode (hosting models)
+        </h4>
         <div class="card-container">
             <div class="description">
-                Bit use Blazor for building UI, Blazor is a web framework for building web UI components (<a href="https://docs.microsoft.com/en-us/aspnet/core/blazor/components/?view=aspnetcore-6.0" title="aaa" rel="nofollow">Razor components</a>) that can be hosted in different ways. Razor components can run server-side in ASP.NET Core (Blazor Server) versus client-side in the browser on a <a href="https://webassembly.org/" rel="nofollow">WebAssembly</a>-based .NET runtime (Blazor WebAssembly, Blazor WASM). You can also host Razor components in native mobile and desktop apps that render to an embedded Web View control (Blazor Hybrid). Regardless of the hosting model, the way you build Razor components is the same. The same Razor components can be used with any of the hosting models unchanged (<a href="https://docs.microsoft.com/en-us/aspnet/core/blazor/hosting-models?view=aspnetcore-6.0" rel="nofollow">Read more About ASP.NET Core Blazor hosting models</a>).
+                Bit use Blazor for building UI, Blazor is a web framework for building web UI components (<a href="https://docs.microsoft.com/en-us/aspnet/core/blazor/components/?view=aspnetcore-6.0" title="ASP.NET Core Razor components" rel="nofollow">Razor components</a>) that can be hosted in different ways. Razor components can run server-side in ASP.NET Core (Blazor Server) versus client-side in the browser on a <a href="https://webassembly.org/" rel="nofollow">WebAssembly</a>-based .NET runtime (Blazor WebAssembly, Blazor WASM). You can also host Razor components in native mobile and desktop apps that render to an embedded Web View control (Blazor Hybrid). Regardless of the hosting model, the way you build Razor components is the same. The same Razor components can be used with any of the hosting models unchanged (<a href="https://docs.microsoft.com/en-us/aspnet/core/blazor/hosting-models?view=aspnetcore-6.0" rel="nofollow">Read more About ASP.NET Core Blazor hosting models</a>).
             </div>
             <div class="description">
                 <strong>Note</strong>: Bit supports all three modes. It follows
@@ -133,7 +182,9 @@
                 </li>
                 <li>
                     Set solution on Multi-startup project, by right click on solution name and selecting properties from right-click menu (change the action of the Api, Web projects to start)
-                    <img class="image" src="/images/projects/multi-startup.png" />
+                    <div class="image-container">
+                        <img class="image" alt="Multi-startup solution" width="696" height="241" src="/images/projects/multi-startup.webp" />
+                    </div>
                 </li>
                 <li>
                     Make sure the first line in the <span class="high-light">TodoTemplate.Web.csproj</span> file contains the following value.
@@ -179,7 +230,9 @@
                 </li>
                 <li>
                     Set <strong>App</strong> as the startup project, choose either Android, IOS, or Windows, then select your Physical device or Emulator as Debug-Target.
-                    <img class="image" src="/images/projects/debug-target.png" />
+                    <div class="image-container">
+                        <img class="image" alt="Debug target" width="1014" height="350" src="/images/projects/debug-target.webp" />
+                    </div>
                 </li>
                 <li>
                     Set solution on Multi-startup project, by right click on solution name and selecting properties from right-click menu (change the action of the Api, App projects to start)
@@ -188,8 +241,11 @@
         </div>
     </div>
 
-    <div id="deployment-types" class="step-body-card">
-        <h4> WebApp Deployment Type</h4>
+    <div class="step-body-card">
+        <h4 id="deployment-types">
+            <a class="anchor" href="@Urls.TodoTemplate#deployment-types" target="_parent"><i class="anchor-icon bit-icon bit-icon--Link12"> </i></a>
+            WebApp Deployment Type
+        </h4>
         <div class="card-container">
             <div class="description">
                 Supported deployment type are:
@@ -227,9 +283,12 @@
         </div>
     </div>
 
-    <div id="settings" class="step-body-card">
-        <h4> Settings</h4>
+    <div class="step-body-card">
         <div class="card-container">
+            <h4 id="settings">
+                <a class="anchor" href="@Urls.TodoTemplate#settings" target="_parent"><i class="anchor-icon bit-icon bit-icon--Link12"> </i></a>
+                Settings
+            </h4>
             <h3>Authentication policies</h3>
             <div class="description">
                 Bit provides authentication with and implements the SignUp and SignIn user interfaces. You can change the default settings of the Identity Settings according to your needs; These settings are in the <span class="high-light">appsettings.json</span> file in the Api project.
@@ -305,13 +364,18 @@
         </div>
     </div>
 
-    <div id="project-structure" class="step-body-card">
-        <h4> TodoTemplate Project structure</h4>
+    <div class="step-body-card">
+        <h4 id="project-structure">
+            <a class="anchor" href="@Urls.TodoTemplate#project-structure" target="_parent"><i class="anchor-icon bit-icon bit-icon--Link12"> </i></a>
+            TodoTemplate Project structure
+        </h4>
         <div class="card-container">
             <div class="description">
                 The <strong>TodoTemplate</strong> solution prepared with Bit has 5 Projects.
             </div>
-            <img class="image-responsive" src="/images/projects/todoTemplate-solution.png" />
+            <div class="image-container">
+                <img class="image" alt="TodoTemplate solution" width="398" height="317" src="/images/projects/todo-template-solution.webp" />
+            </div>
             <ul class="first-step-ul">
                 <li>
                     <strong>TodoTemplate.Api</strong>:
@@ -336,8 +400,11 @@
         </div>
     </div>
 
-    <div id="exception-handling" class="step-body-card">
-        <h4> Exception handling</h4>
+    <div class="step-body-card">
+        <h4 id="exception-handling">
+            <a class="anchor" href="@Urls.TodoTemplate#exception-handling" target="_parent"><i class="anchor-icon bit-icon bit-icon--Link12"> </i></a>
+            Exception handling
+        </h4>
         <div class="card-container">
             <div class="description">
                 Bit performs some features to manage exceptions that occurred in runtime.
@@ -357,16 +424,19 @@
             <h3>Client-Side exception handling</h3>
             <div class="description">When an error is raised in App(android, IOS) maybe cause crash app. for avoiding app crash; Bit provides some mechanism for error handling.</div>
             <ul class="first-step-ul">
-                <li>inheriting <span class="high-light">TodoTemplateComponentBase</span> in razor pages.</li>
-                <li>Instead of initializing your components in the <span class="high-light">OnInitializedAsync</span> method, override the <span class="high-light">OnInitAsync</span> method of the <span class="high-light">TodoTemplateComponentBase</span> class.</li>
+                <li>inheriting <span class="high-light">AppComponentBase</span> in razor pages.</li>
+                <li>Instead of initializing your components in the <span class="high-light">OnInitializedAsync</span> method, override the <span class="high-light">OnInitAsync</span> method of the <span class="high-light">AppComponentBase</span> class.</li>
                 <li>Use <span class="high-light">WrapHandle</span> method instead of direct calling events such as <span class="high-light">OnClick</span> in the Razor components.</li>
                 <li>Use <span class="high-light">try-catch</span> block in <span class="high-light">asyn-avoid</span> method and call <span class="high-light">StatehasChanged</span> method to handle unexpected errors.</li>
             </ul>
         </div>
     </div>
 
-    <div id="cache-mechanism" class="step-body-card">
-        <h4> Cache mechanism</h4>
+    <div class="step-body-card">
+        <h4 id="cache-mechanism">
+            <a class="anchor" href="@Urls.TodoTemplate#cache-mechanism" target="_parent"><i class="anchor-icon bit-icon bit-icon--Link12"> </i></a>
+            Cache mechanism
+        </h4>
         <div class="card-container">
             <div class="description">
                 In <strong>PWA</strong>, a manifest is generated and all files will be downloaded by PWA with the help of this manifest. In this case, the PWA app can work in offline mode, and for example, we can leverage ef-core and SqlLite in the browser, which will work offline, and after going online, it can synchronize the generated data with the server if necessary.
@@ -381,8 +451,11 @@
         </div>
     </div>
 
-    <div id="contribute" class="step-body-card">
-        <h4> Contribute</h4>
+    <div class="step-body-card">
+        <h4 id="contribute">
+            <a class="anchor" href="@Urls.TodoTemplate#contribute" target="_parent"><i class="anchor-icon bit-icon bit-icon--Link12"> </i></a>
+            Contribute
+        </h4>
         <div class="card-container">
             <div class="description">
                 There are many ways to contribute
@@ -392,6 +465,7 @@
                 <li>Give us a try and use bit platform nuget packages in your apps!</li>
                 <li><a target="_blank" href="https://github.com/bitfoundation/bitplatform/pulls">Code review</a></li>
                 <li>Fork / Star this project! (":</li>
+                <li>Submit <a href="https://github.com/bitfoundation/bitplatform/issues/new?template=bug_report.yml">bugs</a> &amp; <a href="https://github.com/bitfoundation/bitplatform/issues/new?template=feature_request.yml">feature requests</a></li>
                 <li>Engage with other developers on <a target="_blank" href="https://stackoverflow.com/questions/tagged/bitplatform">Stack Overflow</a></li>
             </ul>
         </div>

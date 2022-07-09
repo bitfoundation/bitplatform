@@ -8,11 +8,11 @@ namespace TodoTemplate.Api.Controllers;
 [ApiController]
 public partial class AttachmentController : ControllerBase
 {
-    [AutoInject] private IOptionsSnapshot<AppSettings> _appSettings;
+    [AutoInject] private IOptionsSnapshot<AppSettings> _appSettings = default!;
 
-    [AutoInject] private UserManager<User> _userManager;
+    [AutoInject] private UserManager<User> _userManager = default!;
 
-    [AutoInject] private IWebHostEnvironment _webHostEnvironment;
+    [AutoInject] private IWebHostEnvironment _webHostEnvironment = default!;
 
     [RequestFormLimits(ValueLengthLimit = int.MaxValue, MultipartBodyLengthLimit = int.MaxValue)]
     [DisableRequestSizeLimit]

@@ -1,4 +1,5 @@
 ﻿@import '_shared.scss';
+@import '_fonts.scss';
 
 * {
     font-family: "OpenSans";
@@ -19,16 +20,32 @@ a {
     width: rem(6px);
 }
 
+::-webkit-scrollbar-track {
+    margin-top: rem(80px);
+
+    @include lg {
+        margin-top: rem(72px);
+    }
+
+    @include md {
+        margin-top: rem(56px);
+    }
+
+    @include sm {
+        margin-top: rem(40px);
+    }
+}
+
 ::-webkit-scrollbar-thumb {
-    background: $B5Color;
+    background: $B10Color;
     border-radius: rem(8px);
-    border: rem(5px) solid $B5Color;
+    border: rem(5px) solid $B10Color;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: $B3Color;
+    background: $B11Color;
     border-radius: rem(8px);
-    border: rem(4px) solid $B3Color;
+    border: rem(4px) solid $B11Color;
 }
 
 ::-webkit-scrollbar-button {
@@ -36,7 +53,7 @@ a {
 }
 
 ::-webkit-scrollbar:horizontal {
-    height: rem(6px);
+    height: rem(3px);
 }
 
 h1 {
@@ -165,8 +182,6 @@ h5 {
         font-size: rem(16px);
     }
 }
-
-
 /* --------------- header ------------- */
 
 .header-menu-btn {

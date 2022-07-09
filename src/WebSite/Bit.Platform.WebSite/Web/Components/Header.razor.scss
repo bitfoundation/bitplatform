@@ -64,12 +64,7 @@
     background-position: center bottom;
     background-repeat: no-repeat;
     background-size: rem(48px);
-    background-color: $B2Color;
     cursor: pointer;
-
-    &:hover {
-        background-color: $B3Color;
-    }
 
     @include lt-lg {
         width: rem(32px);
@@ -99,6 +94,7 @@
 
     .github-btn {
         @include GithubBtn;
+        background-color: $B2Color;
 
         @include sm {
             @include GithubBtn;

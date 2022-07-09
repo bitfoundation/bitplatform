@@ -39,7 +39,7 @@ public partial class EmailConfirmation
             await httpClient.PostAsJsonAsync("Auth/SendConfirmationEmail", new()
             {
                 Email = Email
-            }, TodoTemplateJsonContext.Default.SendConfirmationEmailRequestDto);
+            }, AppJsonContext.Default.SendConfirmationEmailRequestDto);
 
             EmailConfirmationMessageType = BitMessageBarType.Success;
 

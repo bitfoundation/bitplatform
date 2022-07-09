@@ -56,27 +56,27 @@
         "inputFile": "Components/SignOutConfirmModal.razor.scss"
     },
     {
-        "outputFile": "Components/TodoTemplateNotFound.razor.css",
-        "inputFile": "Components/TodoTemplateNotFound.razor.scss"
+        "outputFile": "Components/PageNotFound.razor.css",
+        "inputFile": "Components/PageNotFound.razor.scss"
     },
     {
         "outputFile": "Shared/MainLayout.razor.css",
         "inputFile": "Shared/MainLayout.razor.scss"
     },
     {
-        "outputFile": "Shared/TodoTemplateErrorBoundary.razor.css",
-        "inputFile": "Shared/TodoTemplateErrorBoundary.razor.scss"
+        "outputFile": "Shared/AppErrorBoundary.razor.css",
+        "inputFile": "Shared/AppErrorBoundary.razor.scss"
     },
     {
         "outputFile": "Shared/MessageBox.razor.css",
         "inputFile": "Shared/MessageBox.razor.scss"
     },
     {
-        "outputFile": "wwwroot/scripts/todoTemplate.es5.js",
-        "inputFile": "wwwroot/scripts/todoTemplate.js"
+        "outputFile": "wwwroot/scripts/app.min.js",
+        "inputFile": "wwwroot/scripts/app.js"
     },
     {
-        "outputFile": "wwwroot/service-worker.published.js",
-        "inputFile": "wwwroot/service-worker.js"
+        "outputFile": "wwwroot/service-worker.published.min.js",
+        "inputFile": "wwwroot/service-worker.published.js"
     }
 ]

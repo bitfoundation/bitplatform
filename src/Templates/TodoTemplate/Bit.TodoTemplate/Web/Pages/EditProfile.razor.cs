@@ -60,7 +60,7 @@ public partial class EditProfile
     private async Task LoadEditProfileData()
     {
         User = (await stateService.GetValue($"{nameof(EditProfile)}-{nameof(User)}", async () =>
-            await httpClient.GetFromJsonAsync("User/GetCurrentUser", TodoTemplateJsonContext.Default.UserDto))) ?? new();
+            await httpClient.GetFromJsonAsync("User/GetCurrentUser", AppJsonContext.Default.UserDto))) ?? new();
 
         UserToEdit.FullName = User.FullName;
         UserToEdit.BirthDate = User.BirthDate;
@@ -89,11 +89,11 @@ public partial class EditProfile
             User.BirthDate = UserToEdit.BirthDate;
             User.Gender = UserToEdit.Gender;
 
-            await httpClient.PutAsJsonAsync("User", User, TodoTemplateJsonContext.Default.EditUserDto);
+            await httpClient.PutAsJsonAsync("User", User, AppJsonContext.Default.EditUserDto);
 
             EditProfileMessageType = BitMessageBarType.Success;
 
-            EditProfileMessage = "Edit successfully";
+            EditProfileMessage = "Profile updated successfully";
         }
         catch (KnownException e)
         {

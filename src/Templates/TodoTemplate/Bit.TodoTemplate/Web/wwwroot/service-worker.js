@@ -1,5 +1,7 @@
 // https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup#service-worker
 
+// Make sure to apply all changes you make here to the service-worker.published.js file too (if required).
+
 self.assetsInclude = [
     /\.svg$/,
     /FabExMDL*/
@@ -13,7 +15,7 @@ self.assetsExclude = [
     /bit\.blazorui\.fluent\.css$/,
     /bit\.blazorui\.material\.min\.css$/,
     /bit\.blazorui\.material\.css$/,
-    /todoTemplate\.es5\.js/,
+    /app\.js/,
     /app\.css/
 ];
 

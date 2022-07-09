@@ -5,15 +5,15 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static class IServiceCollectionExtensions
 {
-    public static IServiceCollection AddTodoTemplateAppServices(this IServiceCollection services)
+    public static IServiceCollection AddAppServices(this IServiceCollection services)
     {
         services.AddScoped<IStateService, StateService>();
-        services.AddScoped<IExceptionHandler, TodoTemplateExceptionHandler>();
+        services.AddScoped<IExceptionHandler, ExceptionHandler>();
 
 #if BlazorServer || BlazorHybrid
         services.AddScoped(sp =>
         {
-            HttpClient httpClient = new(sp.GetRequiredService<TodoTemplateHttpClientHandler>())
+            HttpClient httpClient = new(sp.GetRequiredService<AppHttpClientHandler>())
             {
                 BaseAddress = new Uri($"{sp.GetRequiredService<IConfiguration>()["ApiServerAddress"]}api/")
             };
@@ -22,12 +22,12 @@ public static class IServiceCollectionExtensions
         });
 #endif
 
-        services.AddTransient<TodoTemplateHttpClientHandler>();
+        services.AddTransient<AppHttpClientHandler>();
 
         services.AddAuthorizationCore();
-        services.AddScoped<AuthenticationStateProvider, TodoTemplateAuthenticationStateProvider>();
-        services.AddScoped<ITodoTemplateAuthenticationService, TodoTemplateAuthenticationService>();
-        services.AddScoped(sp => (TodoTemplateAuthenticationStateProvider)sp.GetRequiredService<AuthenticationStateProvider>());
+        services.AddScoped<AuthenticationStateProvider, AppAuthenticationStateProvider>();
+        services.AddScoped<IAuthenticationService, AuthenticationService>();
+        services.AddScoped(sp => (AppAuthenticationStateProvider)sp.GetRequiredService<AuthenticationStateProvider>());
 
         return services;
     }

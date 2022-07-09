@@ -1,6 +1,7 @@
 ﻿//-:cnd:noEmit
 using System.IO.Compression;
 using System.Net.Mail;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.OData;
 using Microsoft.AspNetCore.ResponseCompression;
 #if BlazorWebAssembly
@@ -16,15 +17,15 @@ public static class Services
     {
         var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
 
-        services.AddTodoTemplateSharedServices();
+        services.AddSharedServices();
 
 #if BlazorWebAssembly
         services.AddTransient<IAuthTokenProvider, ServerSideAuthTokenProvider>();
-        services.AddTodoTemplateAppServices();
+        services.AddAppServices();
 
         // In the Pre-Rendering mode, the configured HttpClient will use the access_token provided by the cookie in the request, so the pre-rendered content would be fitting for the current user.
         services.AddHttpClient("WebAssemblyPreRenderingHttpClient")
-            .ConfigurePrimaryHttpMessageHandler<TodoTemplateHttpClientHandler>()
+            .ConfigurePrimaryHttpMessageHandler<AppHttpClientHandler>()
             .ConfigureHttpClient((sp, httpClient) =>
             {
                 NavigationManager navManager = sp.GetRequiredService<IHttpContextAccessor>().HttpContext!.RequestServices.GetRequiredService<NavigationManager>();
@@ -47,8 +48,14 @@ public static class Services
         services
             .AddControllers()
             .AddOData(options => options.EnableQueryFeatures(maxTopValue: 20))
-            .AddJsonOptions(options => options.JsonSerializerOptions.AddContext<TodoTemplateJsonContext>());
+            .AddJsonOptions(options => options.JsonSerializerOptions.AddContext<AppJsonContext>());
 
+        services.Configure<ForwardedHeadersOptions>(options =>
+        {
+            options.ForwardedHeaders = ForwardedHeaders.All;
+            options.ForwardedHostHeaderName = "X-Host";
+        });
+        
         services.AddResponseCaching();
 
         services.AddHttpContextAccessor();
@@ -63,7 +70,7 @@ public static class Services
             .Configure<BrotliCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest)
             .Configure<GzipCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest);
 
-        services.AddDbContext<TodoTemplateDbContext>(options =>
+        services.AddDbContext<AppDbContext>(options =>
         {
             options
             .UseSqlServer(configuration.GetConnectionString("SqlServerConnectionString"), sqlOpt =>
@@ -78,11 +85,11 @@ public static class Services
 
         services.AddAutoMapper(typeof(Program).Assembly);
 
-        services.AddTodoTemplateSwaggerGen();
+        services.AddSwaggerGen();
 
-        services.AddTodoTemplateIdentity(configuration);
+        services.AddIdentity(configuration);
 
-        services.AddTodoTemplateJwt(configuration);
+        services.AddJwt(configuration);
 
         services.AddHealthChecks(env, configuration);
 

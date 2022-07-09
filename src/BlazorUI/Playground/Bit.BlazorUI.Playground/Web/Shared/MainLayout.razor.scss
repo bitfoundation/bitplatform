@@ -46,10 +46,6 @@
     }
 }
 
-.page-content {
-
-}
-
 .footer {
     position: absolute;
     bottom: 0;
@@ -81,7 +77,7 @@
         }
     }
 
-    .contact-link-container {
+    @mixin BottomContactLinkContainer {
         position: absolute;
         top: rem(-50px);
         z-index: 1;
@@ -89,16 +85,41 @@
         right: 0;
         left: 0;
         display: flex;
-        justify-content: space-between;
+        justify-content: center;
         flex-flow: row nowrap;
-        width: rem(180px);
 
-        @include lt-xl {
-            top: rem(-38px);
+        @include lt-lg {
+            top: rem(-35px);
         }
     }
 
-    .footer-link {
+    @mixin LeftContactLinkContainer {
+        position: fixed;
+        top: 50%;
+        left: rem(50px);
+        z-index: 1;
+        right: unset;
+        display: flex;
+        justify-content: center;
+        flex-flow: column nowrap;
+        transform: translateY(-50%);
+    }
+
+    .contact-link-container--home {
+        @media all and (min-width: #{em(1335px)}) {
+            @include LeftContactLinkContainer;
+        }
+
+        @media all and (max-width: #{em(1334px)}) {
+            @include BottomContactLinkContainer;
+        }
+    }
+
+    .contact-link-container {
+        @include BottomContactLinkContainer;
+    }
+
+    @mixin FooterLink {
         width: rem(40px);
         height: rem(40px);
         border-radius: 50%;
@@ -106,52 +127,20 @@
         background-repeat: no-repeat;
         background-color: $B4Color;
         cursor: pointer;
-        margin: 0 rem(8px);
+        margin: rem(8px);
+        background-size: rem(21px);
 
-        @include lg {
-            width: rem(28px);
-            height: rem(28px);
-            margin: 0 rem(4px);
-        }
-
-        @include lt-xl {
+        @include lt-lg {
             width: rem(24px);
             height: rem(24px);
-            margin: 0 rem(8px);
-        }
-    }
-
-    .contact-link-container--home {
-        @include xl {
-            left: rem(160px);
-        }
-
-        @media all and (min-width: #{em(1335px)}) {
-            position: fixed;
-            left: rem(50px);
-            top: 50%;
-            right: unset;
-            transform: translateY(-50%);
-            justify-content: center;
-            flex-flow: column nowrap;
-        }
-
-        .footer-link {
-            margin: rem(8px) 0;
-
-            @include lg {
-                margin: rem(4px) 0;
-            }
+            margin: rem(4px);
+            background-size: rem(8px);
         }
     }
 
     .twitter-link {
+        @include FooterLink;
         background-image: url('/images/twitter-icon.svg');
-        background-size: rem(28px);
-
-        @include lt-xl {
-            background-size: rem(14px);
-        }
 
         &:hover {
             background-color: #1DA1F2;
@@ -159,12 +148,8 @@
     }
 
     .github-link {
+        @include FooterLink;
         background-image: url('/images/github-icon.svg');
-        background-size: rem(24px);
-
-        @include lt-xl {
-            background-size: rem(12px);
-        }
 
         &:hover {
             background-color: #171515;
@@ -172,12 +157,8 @@
     }
 
     .youtube-link {
+        @include FooterLink;
         background-image: url('/images/youtube-icon.svg');
-        background-size: rem(31px);
-
-        @include lt-xl {
-            background-size: rem(17px);
-        }
 
         &:hover {
             background-color: #FF0000;
@@ -185,12 +166,8 @@
     }
 
     .linkedin-link {
+        @include FooterLink;
         background-image: url('/images/linkedin-icon.svg');
-        background-size: rem(20px);
-
-        @include lt-xl {
-            background-size: rem(10px);
-        }
 
         &:hover {
             background-color: #0A66C2;

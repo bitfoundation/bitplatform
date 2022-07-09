@@ -217,6 +217,17 @@ public partial class BitDatePicker
     protected override Task OnParametersSetAsync()
     {
         var dateTime = CurrentValue.GetValueOrDefault(DateTimeOffset.Now).DateTime;
+
+        if (MinDate.HasValue && MinDate > new DateTimeOffset(dateTime))
+        {
+            dateTime = MinDate.GetValueOrDefault(DateTimeOffset.Now).DateTime;
+        }
+
+        if (MaxDate.HasValue && MaxDate < new DateTimeOffset(dateTime))
+        {
+            dateTime = MaxDate.GetValueOrDefault(DateTimeOffset.Now).DateTime;
+        }
+
         CreateMonthCalendar(dateTime);
 
         return base.OnParametersSetAsync();

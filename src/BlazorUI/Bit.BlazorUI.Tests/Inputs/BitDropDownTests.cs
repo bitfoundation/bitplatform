@@ -40,6 +40,36 @@ public class BitDropDownTests : BunitTestContext
     }
 
     [DataTestMethod,
+      DataRow(Visual.Fluent, true),
+      DataRow(Visual.Fluent, false),
+
+      DataRow(Visual.Cupertino, true),
+      DataRow(Visual.Cupertino, false),
+
+      DataRow(Visual.Material, true),
+      DataRow(Visual.Material, false)
+    ]
+    public void ResponsiveDropDownShouldTakeCorrectClassName(Visual visual, bool isResponsiveModeEnabled)
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropDownTest>(parameters =>
+        {
+            parameters.Add(p => p.Visual, visual);
+            parameters.Add(p => p.IsResponsiveModeEnabled, isResponsiveModeEnabled);
+        });
+
+        var bitDrp = component.Find(".bit-drp");
+
+        if(isResponsiveModeEnabled)
+        {
+            var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
+
+            Assert.IsTrue(bitDrp.ClassList.Contains($"bit-drp-responsive-{visualClass}"));
+        }
+    }
+
+    [DataTestMethod,
       DataRow(true),
       DataRow(false)
     ]
@@ -130,7 +160,7 @@ public class BitDropDownTests : BunitTestContext
         }
         else
         {
-            Assert.AreEqual(items.FindAll(i => i.ItemType == BitDropDownItemType.Normal).Count, component.FindAll("button").Count);
+            Assert.AreEqual(items.FindAll(i => i.ItemType == BitDropDownItemType.Normal).Count, component.FindAll(".bit-drp-item").Count);
         }
     }
 
@@ -485,7 +515,7 @@ public class BitDropDownTests : BunitTestContext
         }
         else
         {
-            var drpItems = component.FindAll("button");
+            var drpItems = component.FindAll(".bit-drp-item");
             drpItems[0].Click();
             var expectedResult = itemIsEnabled ? 1 : 0;
             Assert.AreEqual(expectedResult, component.Instance.SelectItemCounter);
@@ -512,7 +542,7 @@ public class BitDropDownTests : BunitTestContext
             parameters.Add(p => p.ValueChanged, HandleValueChanged);
         });
 
-        var drpItems = component.FindAll("button");
+        var drpItems = component.FindAll(".bit-drp-item");
         drpItems[3].Click();
 
         var expectedValue = items[3].Value;
@@ -589,7 +619,7 @@ public class BitDropDownTests : BunitTestContext
             drp.Click();
 
             // select item
-            var drpItems = component.FindAll(".bit-drp-items-wrapper button");
+            var drpItems = component.FindAll(".bit-drp-item");
             drpItems.First().Click();
 
             form.Submit();
@@ -634,11 +664,11 @@ public class BitDropDownTests : BunitTestContext
             drp.Click();
 
             // select items
-            var drpItemFirst = component.Find(".bit-drp-chb:first-child");
-            drpItemFirst.Children[0].Click();
+            //var drpItemFirst = component.Find(".bit-drp-chb:first-child");
+            //drpItemFirst.Children[0].Click();
 
-            var drpItemLast = component.Find(".bit-drp-chb:last-child");
-            drpItemLast.Children[0].Click();
+            //var drpItemLast = component.Find(".bit-drp-chb:last-child");
+            //drpItemLast.Children[0].Click();
 
             form.Submit();
 
@@ -687,7 +717,7 @@ public class BitDropDownTests : BunitTestContext
             drp.Click();
 
             // select item
-            var drpItems = component.FindAll(".bit-drp-items-wrapper button");
+            var drpItems = component.FindAll(".bit-drp-item");
             drpItems.First().Click();
 
             Assert.IsFalse(selectTag.HasAttribute("aria-invalid"));
@@ -734,11 +764,11 @@ public class BitDropDownTests : BunitTestContext
             drp.Click();
 
             // select items
-            var drpItemFirst = component.Find(".bit-drp-chb:first-child");
-            drpItemFirst.Children[0].Click();
+            //var drpItemFirst = component.Find(".bit-drp-chb:first-child");
+            //drpItemFirst.Children[0].Click();
 
-            var drpItemLast = component.Find(".bit-drp-chb:last-child");
-            drpItemLast.Children[0].Click();
+            //var drpItemLast = component.Find(".bit-drp-chb:last-child");
+            //drpItemLast.Children[0].Click();
 
             form.Submit();
 
@@ -787,7 +817,7 @@ public class BitDropDownTests : BunitTestContext
             drp.Click();
 
             // select item
-            var drpItems = component.FindAll(".bit-drp-items-wrapper button");
+            var drpItems = component.FindAll(".bit-drp-item");
             drpItems.First().Click();
         }
 
