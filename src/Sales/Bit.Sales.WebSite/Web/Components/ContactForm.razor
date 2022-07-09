@@ -1,0 +1,40 @@
+﻿@inherits AppComponentBase
+
+<section class="section-container" id="contactus">
+    <div class="secondary-title">START</div>
+    <div class="title-container--primary">
+        <div class="title--primary">Work with us<span class="title-border--primary"></span></div>
+    </div>
+    <EditForm class="form" Model="ContactUs" OnValidSubmit="WrapHandled(DoSubmit)">
+        <DataAnnotationsValidator />
+        <div class="input-row">
+            <div class="input-container">
+                <BitTextField Label="Name *" @bind-Value="ContactUs.Name" Class="text-input" />
+                <ValidationMessage For="() => ContactUs.Name" style="color: red;" />
+            </div>
+            <div class="input-container">
+                <BitTextField Label="Email *" @bind-Value="ContactUs.Email" Class="text-input" />
+                <ValidationMessage For="() => ContactUs.Email" style="color: red;" />
+            </div>
+        </div>
+        <div class="text-area-container">
+            <BitTextField Label="Tell Us About Your Project" @bind-Value="ContactUs.Information" IsMultiline="true" Rows="3" Class="info-input"></BitTextField>
+            <ValidationMessage For="() => ContactUs.Information" />
+        </div>
+        <BitButton Class="submit-btn--primary"
+                   ButtonStyle="BitButtonStyle.Primary"
+                   IsEnabled="IsSubmitButtonEnabled"
+                   Title="Send"
+                   AriaLabel="Send"
+                   ButtonType="BitButtonType.Submit">
+            @if (IsLoading)
+            {
+                <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
+            }
+            else
+            {
+                <span>Send</span>
+            }
+        </BitButton>
+    </EditForm>
+</section>

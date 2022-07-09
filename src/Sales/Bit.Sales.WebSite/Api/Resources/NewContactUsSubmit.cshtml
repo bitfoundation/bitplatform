@@ -1,0 +1,57 @@
+﻿@using Bit.Sales.WebSite.Api.Models.Emailing
+@using System
+@model NewContactUsSubmitModel
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Content-TypeEntity" content="text/html; charset=UTF-8" />
+    <title>Email Confirmation</title>
+</head>
+<body style="width:100%; height:100%; margin:0; padding:0; background-color:#FCFCFC; font-family:Arial,sans-serif;">
+    <main style="padding: 6% 4%;">
+        <table class="content-table" border="0" cellpadding="0" cellspacing="0" width="100%" height="100%"
+               style="border:1px solid #EDEBE9; border-radius:2px; padding:50px; text-align:center;">
+            <tr>
+                <td style="color:#0D2960; font-weight:600; font-size:24px; line-height:150%; padding-bottom:20px;">
+                    New Contact Us Submit !
+                </td>
+            </tr>
+            <tr>
+                <td style="font-weight:400; font-size:18px; line-height:155%; padding-bottom:50px;">
+                    This submit from "@Model.ContactUsInfo.Name" (`@Model.ContactUsInfo.Email`)
+                </td>
+            </tr>
+            @if(string.IsNullOrEmpty(Model.ContactUsInfo.Information) is false)
+            {
+                <tr>
+                    <td style="font-weight:400; font-size:18px; line-height:155%; padding-bottom:50px;">
+                        Information:
+                    </td>
+                </tr>
+                <tr>
+                    <td style="font-weight:400; font-size:18px; line-height:155%; padding-bottom:50px;">
+                        @Model.ContactUsInfo.Information
+                    </td>
+                </tr>
+            }
+        </table>
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" height="100%"
+               style="padding:20px; text-align:center;">
+            <tr>
+                <td style="padding-bottom: 10px;">
+                    <img alt="Company Logo" src="@(new Uri(Model.HostUri!, "Resources/icon.png"))" width="30" height="20" />
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <a style="text-decoration:none; color:#0065EF; font-weight:400; font-size:12px; line-height:150%;" href="@Model.HostUri">
+                        Bit Platform
+                    </a>
+                </td>
+            </tr>
+        </table>
+    </main>
+</body>
+</html>

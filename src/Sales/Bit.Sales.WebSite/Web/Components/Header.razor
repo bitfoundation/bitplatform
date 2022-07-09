@@ -1,0 +1,29 @@
+﻿@inherits AppComponentBase;
+
+<header class="header" id="mainHeader">
+    <a class="bit-logo" href="/"></a>
+    <div class="header-content">
+        <a class="header-lnk @(CurrentUrl == "/cases" ? "header-lnk--active" : "")" href="/cases">Cases<span class="@(CurrentUrl == "/cases" ? "header-lnk-border" : "")"></span></a>
+        <a class="header-lnk @(CurrentUrl == "/services" ? "header-lnk--active" : "")" href="/services">Services<span class="@(CurrentUrl == "/services" ? "header-lnk-border" : "")"></span></a>
+        <a class="header-lnk @(CurrentUrl == "/about" ? "header-lnk--active" : "")" href="/about">About<span class="@(CurrentUrl == "/about" ? "header-lnk-border" : "")"></span></a>
+        <a class="header-lnk @(CurrentUrl == "/process" ? "header-lnk--active" : "")" href="/process">Process<span class="@(CurrentUrl == "/process" ? "header-lnk-border" : "")"></span></a>
+        <a class="header-btn" href="@($"{CurrentUrl}#contactus")">Contact Us</a>
+    </div>
+    <div class="header-menu-btn" id="headerMenuBtn" @onclick="@OpenMenu"></div>
+</header>
+
+<section class="menu-shadow" id="menuShadow" @onclick="CloseMenu" style="@MenuShadowStyles">
+    <div class="menu" id="menu" @onclick:stopPropagation="true">
+        <div class="menu-top-bar">
+            <div class="close-btn" id="menuCloseBtn" @onclick="CloseMenu"></div>
+        </div>
+        <div class="menu-content">
+            <a class="menu-lnk @(CurrentUrl== "/" ? "menu-lnk--active" : "")" href="/">Home<span class="@(CurrentUrl== "/" ? "menu-link-border" : "")"></span></a>
+            <a class="menu-lnk @(CurrentUrl== "/cases" ? "menu-lnk--active" : "")" href="/cases">Cases<span class="@(CurrentUrl== "/cases" ? "menu-link-border" : "")"></span></a>
+            <a class="menu-lnk @(CurrentUrl== "/services" ? "menu-lnk--active" : "")" href="/services">Services<span class="@(CurrentUrl== "/services" ? "menu-link-border" : "")"></span></a>
+            <a class="menu-lnk @(CurrentUrl== "/about" ? "menu-lnk--active" : "")" href="/about">About<span class="@(CurrentUrl== "/about" ? "menu-link-border" : "")"></span></a>
+            <a class="menu-lnk @(CurrentUrl== "/process" ? "menu-lnk--active" : "")" href="/process">Process<span class="@(CurrentUrl== "/process" ? "menu-link-border" : "")"></span></a>
+            <a class="menu-btn" href="@($"{CurrentUrl}#contactus")" id="contactUsBtn" @onclick="CloseMenu">Contact Us</a>
+        </div>
+    </div>
+</section>

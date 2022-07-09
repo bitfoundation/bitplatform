@@ -1,0 +1,60 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+        <!--If you don't need to use the time zone and your app is in WASM format, you can reduce the output size of the app by disabling the time zone.-->
+        <BlazorEnableTimeZoneSupport>true</BlazorEnableTimeZoneSupport>
+		<BlazorWebAssemblyPreserveCollationData>false</BlazorWebAssemblyPreserveCollationData>
+		<InvariantGlobalization>true</InvariantGlobalization>
+		<RootNamespace>Bit.Sales.WebSite.App</RootNamespace>
+		<AssemblyName>Bit.Sales.WebSite.App</AssemblyName>            
+    </PropertyGroup>
+
+	<ItemGroup>
+                <!-- In the Blazor Web Assembly mode, the API project will host the web client app itself -->
+		<Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Remove="appsettings.json" />
+		<Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Remove="Pages\_Host.cshtml" />
+        <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Remove="Pages\_Layout.cshtml" />
+        <Content Remove="compilerconfig.json" />
+		<None Include="compilerconfig.json" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Bit.BlazorUI" Version="1.0.2" />
+		<PackageReference Include="Bit.Bswup" Version="1.0.2" />
+		<PackageReference Include="Bit.CodeAnalyzers" Version="1.0.2" />
+		<PackageReference Include="Bit.SourceGenerators" Version="1.0.2" />
+		<PackageReference Include="Blazored.Toast" Version="3.2.2" />
+		<PackageReference Include="jose-jwt" Version="4.0.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.6" />
+        		<PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.6" />
+		<PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.6" PrivateAssets="all" />
+        	</ItemGroup>
+
+	<ItemGroup>
+        <PackageReference Include="BuildWebCompiler2022" Version="1.14.8">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+		<PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.7.4">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<ProjectReference Include="..\Shared\Bit.Sales.WebSite.Shared.csproj" />
+		
+		<Using Include="Microsoft.AspNetCore.Components" />
+		<Using Include="Bit.Sales.WebSite.App.Services.Contracts" />
+		<Using Include="Bit.Sales.WebSite.App.Services.Implementations" />
+		<Using Include="Microsoft.Extensions.Configuration" />
+		<Using Include="Microsoft.JSInterop" />
+        <Using Include="System.Net.Http.Json" />
+        <Using Include="System.Collections.Concurrent" />
+        <Using Include="Microsoft.AspNetCore.Components.Authorization" />
+        <Using Include="Bit.Sales.WebSite.App.Components" />
+        <Using Include="Bit.BlazorUI" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Include="Data\Cases.json" />
+	</ItemGroup>
+</Project>
