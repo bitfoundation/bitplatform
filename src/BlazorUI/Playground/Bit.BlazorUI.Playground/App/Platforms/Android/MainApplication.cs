@@ -6,7 +6,11 @@ using System;
 
 namespace Bit.BlazorUI.Playground.Web
 {
-    [Application]
+    [Application(
+#if DEBUG
+    UsesCleartextTraffic = true
+#endif
+    )]
     public class MainApplication : MauiApplication
     {
         public MainApplication(IntPtr handle, JniHandleOwnership ownership)
@@ -14,6 +18,8 @@ namespace Bit.BlazorUI.Playground.Web
         {
         }
 
-        protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
+        protected override MauiApp CreateMauiApp() => MauiProgram
+            .CreateMauiAppBuilder()
+            .Build();
     }
 }

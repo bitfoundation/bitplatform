@@ -35,7 +35,7 @@ public partial class AttachmentController : ControllerBase
 
         Directory.CreateDirectory(_appSettings.Value.UserProfileImagePath);
 
-        var path = Path.Combine($"{_appSettings.Value.UserProfileImagePath}\\{profileImageName}{Path.GetExtension(file.FileName)}");
+        var path = Path.Combine(_appSettings.Value.UserProfileImagePath, $"{profileImageName}{Path.GetExtension(file.FileName)}");
 
         await using var targetStream = SystemFile.Create(path);
 
