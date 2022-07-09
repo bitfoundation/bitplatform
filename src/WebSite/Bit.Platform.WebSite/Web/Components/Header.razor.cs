@@ -13,20 +13,20 @@ public partial class Header : IDisposable
 
     public ElementReference HeaderElement { get; set; }
 
-    [AutoInject] public NavigationManager NavigationManager { get; set; }
-    [AutoInject] public IJSRuntime JSRuntime { get; set; }
+    [AutoInject] private NavigationManager _navigationManager = default!;
+    [AutoInject] private IJSRuntime _jsRuntime = default!;
 
     protected override void OnInitialized()
     {
-        CurrentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
-        NavigationManager.LocationChanged += OnLocationChanged;
+        CurrentUrl = _navigationManager.Uri.Replace(_navigationManager.BaseUri, "/", StringComparison.Ordinal);
+        _navigationManager.LocationChanged += OnLocationChanged;
 
         base.OnInitialized();
     }
 
     private void OnLocationChanged(object sender, LocationChangedEventArgs args)
     {
-        CurrentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
+        CurrentUrl = _navigationManager.Uri.Replace(_navigationManager.BaseUri, "/", StringComparison.Ordinal);
         StateHasChanged();
     }
 
@@ -34,7 +34,7 @@ public partial class Header : IDisposable
     {
         if (firstRender)
         {
-            await JSRuntime.RegisterOnScrollToChangeHeaderStyle(HeaderElement);
+            await _jsRuntime.RegisterOnScrollToChangeHeaderStyle(HeaderElement);
         }
 
         await base.OnAfterRenderAsync(firstRender);
@@ -42,6 +42,6 @@ public partial class Header : IDisposable
 
     public void Dispose()
     {
-        NavigationManager.LocationChanged -= OnLocationChanged;
+        _navigationManager.LocationChanged -= OnLocationChanged;
     }
 }
