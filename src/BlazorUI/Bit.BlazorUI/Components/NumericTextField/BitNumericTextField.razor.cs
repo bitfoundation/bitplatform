@@ -218,6 +218,11 @@ public partial class BitNumericTextField<TValue>
     /// </summary>
     [Parameter] public bool Arrows { get; set; }
 
+    /// <summary>
+    /// Input placeholder text
+    /// </summary>
+    [Parameter] public string? Placeholder { get; set; }
+
     protected override string RootElementClass => "bit-ntf";
 
     protected override void RegisterComponentClasses()
