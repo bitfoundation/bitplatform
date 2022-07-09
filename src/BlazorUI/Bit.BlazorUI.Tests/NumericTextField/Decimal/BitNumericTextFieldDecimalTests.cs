@@ -393,12 +393,15 @@ public class BitNumericTextFieldDecimalTests : BunitTestContext
     }
 
     [DataTestMethod,
-     DataRow(4.56),
-     DataRow(12.22)
+     DataRow(4.56, 2),
+     DataRow(12.22, 2)
     ]
-    public void BitNumericTextFieldOnChangeTest(double inputValue)
+    public void BitNumericTextFieldOnChangeTest(double inputValue, int precision)
     {
-        var component = RenderComponent<BitNumericTextFieldDecimalTest>();
+        var component = RenderComponent<BitNumericTextFieldDecimalTest>(parameters =>
+        {
+            parameters.Add(p => p.Precision, precision);
+        });
 
         var value = (decimal)inputValue;
 
@@ -408,7 +411,8 @@ public class BitNumericTextFieldDecimalTests : BunitTestContext
         input.Change(changeArgs);
         input.Blur();
 
-        Assert.AreEqual(value, component.Instance.OnChangeEventValue);
+        var normalizeValue = Normalize(value, precision);
+        Assert.AreEqual(normalizeValue, component.Instance.OnChangeEventValue);
     }
 
     [DataTestMethod,
@@ -530,18 +534,19 @@ public class BitNumericTextFieldDecimalTests : BunitTestContext
     }
 
     [DataTestMethod,
-     DataRow(3.369, 1, 0),
-     DataRow(2.369, 2, 0),
-     DataRow(3.369, 4, 0),
-     DataRow(0, 1, 0)
+     DataRow(3.369, 1, 0, 3),
+     DataRow(2.369, 2, 0, 3),
+     DataRow(3.369, 4, 0, 3),
+     DataRow(0, 1, 0, 0)
     ]
-    public void BitNumericTextFieldDecrementButtonClickTest(double defaultValue, double step, double min)
+    public void BitNumericTextFieldDecrementButtonClickTest(double defaultValue, double step, double min, int precision)
     {
         var component = RenderComponent<BitNumericTextField<decimal>>(parameters =>
         {
             parameters.Add(p => p.Step, (decimal)step);
             parameters.Add(p => p.Min, (decimal)min);
             parameters.Add(p => p.DefaultValue, (decimal)defaultValue);
+            parameters.Add(p => p.Precision, precision);
             parameters.Add(p => p.Arrows, true);
         });
 
@@ -551,22 +556,24 @@ public class BitNumericTextFieldDecimalTests : BunitTestContext
         var inputValue = input.GetAttribute("value");
         var expectedResult = defaultValue - step >= min ? defaultValue - step : defaultValue;
 
-        Assert.AreEqual(expectedResult.ToString(), inputValue);
+        var normalizeResult = Normalize((decimal)expectedResult, precision);
+        Assert.AreEqual(normalizeResult.ToString(), inputValue);
     }
 
     [DataTestMethod,
-     DataRow(3.369, 1, 0),
-     DataRow(2.369, 2, 0),
-     DataRow(3.369, 4, 0),
-     DataRow(0, 1, 0)
+     DataRow(3.369, 1, 0, 3),
+     DataRow(2.369, 2, 0, 3),
+     DataRow(3.369, 4, 0, 3),
+     DataRow(0, 1, 0, 0)
     ]
-    public void BitNumericTextFieldArrowDownKeyDownTest(double defaultValue, double step, double min)
+    public void BitNumericTextFieldArrowDownKeyDownTest(double defaultValue, double step, double min, int precision)
     {
         var component = RenderComponent<BitNumericTextField<decimal>>(parameters =>
         {
             parameters.Add(p => p.Step, (decimal)step);
             parameters.Add(p => p.Min, (decimal)min);
             parameters.Add(p => p.DefaultValue, (decimal)defaultValue);
+            parameters.Add(p => p.Precision, precision);
         });
 
         var input = component.Find("input");
@@ -576,22 +583,24 @@ public class BitNumericTextFieldDecimalTests : BunitTestContext
         var inputValue = input.GetAttribute("value");
         var expectedResult = defaultValue - step >= min ? defaultValue - step : defaultValue;
 
-        Assert.AreEqual(expectedResult.ToString(), inputValue);
+        var normalizeResult = Normalize((decimal)expectedResult, precision); 
+        Assert.AreEqual(normalizeResult.ToString(), inputValue);
     }
 
     [DataTestMethod,
-     DataRow(5.36, 0, 100, "25.25"),
-     DataRow(5.36, 0, 100, "112.369"),
-     DataRow(5.36, 0, 100, "-5.36"),
-     DataRow(5, 0, 100, "text123")
+     DataRow(5.36, 0, 100, "25.25", 2),
+     DataRow(5.36, 0, 100, "112.369", 2),
+     DataRow(5.36, 0, 100, "-5.36", 2),
+     DataRow(5, 0, 100, "text123", 2)
     ]
-    public void BitNumericTextFieldEnterKeyDownTest(double defaultValue, double min, double max, string userInput)
+    public void BitNumericTextFieldEnterKeyDownTest(double defaultValue, double min, double max, string userInput, int precision)
     {
         var component = RenderComponent<BitNumericTextField<decimal>>(parameters =>
         {
             parameters.Add(p => p.DefaultValue, (decimal)defaultValue);
             parameters.Add(p => p.Max, (decimal)max);
             parameters.Add(p => p.Min, (decimal)min);
+            parameters.Add(p => p.Precision, precision);
         });
 
         var input = component.Find("input");
@@ -606,7 +615,7 @@ public class BitNumericTextFieldDecimalTests : BunitTestContext
         var isNumber = decimal.TryParse(userInput, out var numericValue);
         if (isNumber)
         {
-            expectedResult = Normalize(numericValue, 1);
+            expectedResult = Normalize(numericValue, precision);
             if (expectedResult > (decimal)max) expectedResult = (decimal)max;
             if (expectedResult < (decimal)min) expectedResult = (decimal)min;
         }
@@ -619,18 +628,19 @@ public class BitNumericTextFieldDecimalTests : BunitTestContext
     }
 
     [DataTestMethod,
-     DataRow(5.36, 0, 100, "25.25"),
-     DataRow(5.36, 0, 100, "112.369"),
-     DataRow(5.36, 0, 100, "-5.36"),
-     DataRow(5, 0, 100, "text123")
+     DataRow(5.36, 0, 100, "25.25", 2),
+     DataRow(5.36, 0, 100, "112.369", 2),
+     DataRow(5.36, 0, 100, "-5.36", 2),
+     DataRow(5, 0, 100, "text123", 0)
     ]
-    public void BitNumericTextFieldOnBlurTest(double defaultValue, double min, double max, string userInput)
+    public void BitNumericTextFieldOnBlurTest(double defaultValue, double min, double max, string userInput, int precision)
     {
         var component = RenderComponent<BitNumericTextField<decimal>>(parameters =>
         {
             parameters.Add(p => p.DefaultValue, (decimal)defaultValue);
             parameters.Add(p => p.Max, (decimal)max);
             parameters.Add(p => p.Min, (decimal)min);
+            parameters.Add(p => p.Precision, precision);
         });
 
         var input = component.Find("input");
@@ -643,7 +653,7 @@ public class BitNumericTextFieldDecimalTests : BunitTestContext
         var isNumber = decimal.TryParse(userInput, out var numericValue);
         if (isNumber)
         {
-            expectedResult = Normalize(numericValue, 1);
+            expectedResult = Normalize(numericValue, precision);
             if (expectedResult > (decimal)max) expectedResult = (decimal)max;
             if (expectedResult < (decimal)min) expectedResult = (decimal)min;
         }
@@ -686,11 +696,11 @@ public class BitNumericTextFieldDecimalTests : BunitTestContext
     }
 
     [DataTestMethod,
-     DataRow(5.25, 2, 4),
-     DataRow(1.36, 15, 1)
+     DataRow(5.25, 2, 4, 2),
+     DataRow(1.36, 15, 1, 2)
     ]
     public void BitNumericTextFieldTwoWayBoundWithCustomHandlerShouldWorkCorrect(double value, int countOfIncrements,
-        double step)
+        double step, int precision)
     {
         BitNumericTextFieldTwoWayBoundValue = (decimal)value;
 
@@ -699,6 +709,7 @@ public class BitNumericTextFieldDecimalTests : BunitTestContext
             parameters.Add(p => p.Step, (decimal)step);
             parameters.Add(p => p.Value, BitNumericTextFieldTwoWayBoundValue);
             parameters.Add(p => p.ValueChanged, HandleValueChanged);
+            parameters.Add(p => p.Precision, precision);
             parameters.Add(p => p.Arrows, true);
         });
 
@@ -709,8 +720,9 @@ public class BitNumericTextFieldDecimalTests : BunitTestContext
         }
 
         var expectedValue = value + (step * countOfIncrements);
-
-        Assert.AreEqual((decimal)expectedValue, BitNumericTextFieldTwoWayBoundValue);
+        var normalizeValue = Normalize((decimal)expectedValue, precision);
+        
+        Assert.AreEqual(normalizeValue, BitNumericTextFieldTwoWayBoundValue);
     }
 
     [DataTestMethod,
