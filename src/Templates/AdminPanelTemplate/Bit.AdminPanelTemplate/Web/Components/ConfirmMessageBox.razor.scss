@@ -1,4 +1,4 @@
-﻿@import '../../Styles/abstracts/_functions.scss';
+﻿@import '../Styles/abstracts/_functions.scss';
 
 .main {
     flex-grow: 1;
@@ -16,10 +16,10 @@
 }
 
 .body {
-    display: flex;
+    display: inline-table;
     flex-grow: 1;
     margin: rem(10px) 0;
-    white-space: pre;
+    text-align:center;
 }
 
 .footer {

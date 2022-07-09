@@ -1,5 +1,6 @@
 ﻿//-:cnd:noEmit
 using System.Text.Json;
+using AdminPanelTemplate.App.Shared;
 using AdminPanelTemplate.Shared.Dtos.Products;
 
 namespace AdminPanelTemplate.App.Pages.Products;
@@ -10,6 +11,8 @@ public partial class ProductsPage
     [AutoInject] private IStateService stateService = default!;
 
     public bool IsLoading { get; set; }
+
+    CreateEditProductModal? modal;
 
     BitDataGridPaginationState pagination = new() { ItemsPerPage = 10 };
     BitDataGrid<ProductDto>? dataGrid;
@@ -58,10 +61,10 @@ public partial class ProductsPage
 
                 return BitDataGridItemsProviderResult.From(data!.Items, data!.Total);
             }
-            catch(Exception ex)
+            catch
             {
                 return BitDataGridItemsProviderResult.From<ProductDto>(new List<ProductDto> { }, 0);
-            }   
+            }
             finally
             {
                 StateHasChanged();
@@ -69,6 +72,44 @@ public partial class ProductsPage
 
         };
 
+    }
+
+    private async Task RefreshData()
+    {
+        await dataGrid!.RefreshDataAsync();
+    }
+
+    private void CreateProduct()
+    {
+        modal!.ShowModal(new ProductDto());
+    }
+
+
+    private async Task EditProduct(ProductDto product)
+    {
+        modal!.ShowModal(product);
+    }
+
+    private async Task DeleteProduct(ProductDto product)
+    {
+        ConfirmMessageBox.Show("Are you sure delete?", product.Name, "Delete", async (confirmed) =>
+        {
+            if (confirmed)
+            {
+                await httpClient.DeleteAsync($"Product/{product.Id}");
+                await RefreshData();
+            }
+        });
+
+
+    }
+
+
+    protected async void ModalSave()
+    {
+        MessageBox.Show("Succesfully Added", "product");
+
+        await RefreshData();
     }
 }
 

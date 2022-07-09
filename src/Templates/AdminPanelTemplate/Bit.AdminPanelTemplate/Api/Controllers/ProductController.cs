@@ -67,14 +67,14 @@ public partial class ProductController : ControllerBase
     [HttpPut]
     public async Task Put(ProductDto dto, CancellationToken cancellationToken)
     {
-        var productToUpdate = await _dbContext.Categories.FirstOrDefaultAsync(t => t.Id == dto.Id, cancellationToken);
+        var productToUpdate = await _dbContext.Products.FirstOrDefaultAsync(t => t.Id == dto.Id, cancellationToken);
 
         if (productToUpdate is null)
             throw new ResourceNotFoundException(nameof(ErrorStrings.ProductCouldNotBeFound));
 
         var updatedTodoItem = _mapper.Map(dto, productToUpdate);
 
-        _dbContext.Categories.Update(productToUpdate);
+        _dbContext.Products.Update(productToUpdate);
 
         await _dbContext.SaveChangesAsync(cancellationToken);
     }

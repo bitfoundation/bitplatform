@@ -13,8 +13,6 @@ public partial class CategoriesPage
     public bool IsLoading { get; set; }
     public bool CreateEditModalIsOpen { get; set; } = false;
 
-    CreateEditCategoryModal? modal;
-
     BitDataGridPaginationState pagination = new() { ItemsPerPage = 10 };
     BitDataGrid<CategoryDto>? dataGrid;
     BitDataGridItemsProvider<CategoryDto>? categoriesProvider;
@@ -77,17 +75,6 @@ public partial class CategoriesPage
     private async Task RefreshData()
     {
        await dataGrid!.RefreshDataAsync();
-    }
-    private void Create()
-    {
-        modal!.ShowModal(new CategoryDto());
-    }
-
-    protected async void ModalSave()
-    {
-        MessageBox.Show("Succesfully saved", "category");
-
-        await RefreshData();
     }
 }
 

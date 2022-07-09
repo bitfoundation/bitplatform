@@ -10,6 +10,7 @@
 <div class="page-container">
     <div class="page-content--white">
         <h1 class="main-title">Product</h1>
+        <BitButton OnClick=CreateProduct>Create</BitButton>
         <div class="content">
             <div class="grid">
                 <BitDataGrid ItemsProvider="@productsProvider" TGridItem="@ProductDto" ResizableColumns="true" Pagination="@pagination" @ref="dataGrid">
@@ -22,6 +23,10 @@
                     </BitDataGridPropertyColumn>
                     <BitDataGridPropertyColumn Property="@(c => c.Price)" Sortable="true" Align="BitDataGridAlign.Right" />
                     <BitDataGridPropertyColumn Property="@(c => c.Desc)" Sortable="true" Align="BitDataGridAlign.Right" />
+                    <BitDataGridTemplateColumn Title="Action">
+                        <BitIconButton IconName="BitIconName.Edit" OnClick=@(() => EditProduct(context)) />
+                        <BitIconButton IconName="BitIconName.Delete" OnClick="WrapHandled(() => DeleteProduct(context))" />
+                    </BitDataGridTemplateColumn>
 
                 </BitDataGrid>
                 <BitDataGridPaginator Value="@pagination" />
@@ -30,3 +35,7 @@
         </div>
     </div>
 </div>
+
+<CreateEditProductModal OnProductSave="@ModalSave" @ref="modal" />
+
+<ConfirmMessageBox />

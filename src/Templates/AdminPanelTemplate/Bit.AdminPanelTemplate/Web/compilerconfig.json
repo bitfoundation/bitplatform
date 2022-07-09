@@ -8,13 +8,16 @@
         "inputFile": "Pages/Categories/CategoriesPage.razor.scss"
     },
     {
-        "outputFile": "Pages/Categories/CreateEditCategoryModal.razor.css",
-        "inputFile": "Pages/Categories/CreateEditCategoryModal.razor.scss"
+        "outputFile": "Pages/Categories/CreateEditCategory.razor.css",
+        "inputFile": "Pages/Categories/CreateEditCategory.razor.scss"
     },
-
     {
         "outputFile": "Pages/Products/ProductsPage.razor.css",
         "inputFile": "Pages/Products/ProductsPage.razor.scss"
+    },
+    {
+        "outputFile": "Pages/Products/CreateEditProductModal.razor.css",
+        "inputFile": "Pages/Products/CreateEditProductModal.razor.scss"
     },
     {
         "outputFile": "Pages/Home.razor.css",
@@ -83,6 +86,10 @@
     {
         "outputFile": "Shared/MessageBox.razor.css",
         "inputFile": "Shared/MessageBox.razor.scss"
+    },
+    {
+        "outputFile": "Components/ConfirmMessageBox.razor.css",
+        "inputFile": "Components/ConfirmMessageBox.razor.scss"
     },
     {
         "outputFile": "wwwroot/scripts/app.min.js",

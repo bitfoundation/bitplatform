@@ -1,0 +1,18 @@
+﻿@inherits AppComponentBase;
+
+<BitModal @bind-IsOpen="IsOpen">
+    <div class="main">
+        <div class="header">
+            <span class="title">@Title</span>
+            <BitIconButton IconName="BitIconName.ChromeClose" OnClick="@(()=>Confirmation(false))" />
+        </div>
+        <div class="body">
+           <p>@Message</p>  
+           <p><strong>@Context</strong></p>
+        </div>
+        <div >
+            <BitButton ButtonStyle="BitButtonStyle.Primary" Style="float:left" OnClick="@(()=>Confirmation(true))">Yes</BitButton>
+            <BitButton ButtonStyle="BitButtonStyle.Standard" Style="float:right" OnClick="@(()=>Confirmation(false))">No</BitButton>
+        </div>
+    </div>
+</BitModal>
