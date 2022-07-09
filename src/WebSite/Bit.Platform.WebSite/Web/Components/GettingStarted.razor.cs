@@ -4,13 +4,14 @@ using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using Bit.Platform.WebSite.Web.Shared;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Bit.Platform.WebSite.Web.Components;
 
 public partial class GettingStarted
 {
-    [Inject] public NavigationManager NavigationManager { get; set; }
-    [Inject] public IJSRuntime JSRuntime { get; set; }
+    [AutoInject] private NavigationManager _navigationManager = default!;
+    [AutoInject] private IJSRuntime _jsRuntime = default!;
     public string CurrentUrl { get; set; }
     public ElementReference GettingStartedElement { get; set; }
 
@@ -18,7 +19,7 @@ public partial class GettingStarted
     {
         CurrentUrl = GetCurrentUrl();
 
-        NavigationManager.LocationChanged += OnLocationChanged;
+        _navigationManager.LocationChanged += OnLocationChanged;
 
         base.OnInitialized();
     }
@@ -27,7 +28,7 @@ public partial class GettingStarted
     {
         if (firstRender)
         {
-            await JSRuntime.RegisterOnScrollToChangeGettingStartedSideRailStyle(GettingStartedElement);
+            await _jsRuntime.RegisterOnScrollToChangeGettingStartedSideRailStyle(GettingStartedElement);
         }
 
         await base.OnAfterRenderAsync(firstRender);
@@ -43,11 +44,11 @@ public partial class GettingStarted
 
     public void Dispose()
     {
-        NavigationManager.LocationChanged -= OnLocationChanged;
+        _navigationManager.LocationChanged -= OnLocationChanged;
     }
 
     private string GetCurrentUrl()
     {
-        return NavigationManager.Uri.Replace(NavigationManager.BaseUri + "project-templates/todo-template/getting-started", "", StringComparison.Ordinal);
+        return _navigationManager.Uri.Replace(_navigationManager.BaseUri + "project-templates/todo-template/getting-started", "", StringComparison.Ordinal);
     }
 }
