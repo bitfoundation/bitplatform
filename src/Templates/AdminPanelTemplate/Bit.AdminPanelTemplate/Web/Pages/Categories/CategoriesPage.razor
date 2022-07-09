@@ -1,4 +1,5 @@
 ﻿@page "/categories"
+
 @using AdminPanelTemplate.Shared.Dtos.Categories
 @attribute [Authorize]
 
@@ -9,6 +10,7 @@
 <div class="page-container">
     <div class="page-content--white">
         <h1 class="main-title">Category</h1>
+           <BitButton OnClick="CreateCategory">Create</BitButton>
         <div class="content">
             <div class="grid">
                 <BitDataGrid ItemsProvider="@categoriesProvider" TGridItem="@CategoryDto" ResizableColumns="true" Pagination="@pagination" @ref="dataGrid">
@@ -20,7 +22,10 @@
                         </ColumnOptions>
                     </BitDataGridPropertyColumn>
                     <BitDataGridPropertyColumn Property="@(c => c.Color)" Sortable="true" Align="BitDataGridAlign.Right" />
-
+                    <BitDataGridTemplateColumn Title="Action">
+                        <BitIconButton IconName="BitIconName.Edit" OnClick="() => EditCategory(context)" />
+                        <BitIconButton IconName="BitIconName.Delete" OnClick="WrapHandled(() => DeleteCategory(context))" />
+                    </BitDataGridTemplateColumn>
                 </BitDataGrid>
                 <BitDataGridPaginator Value="@pagination" />
             </div>
@@ -28,4 +33,3 @@
         </div>
     </div>
 </div>
-

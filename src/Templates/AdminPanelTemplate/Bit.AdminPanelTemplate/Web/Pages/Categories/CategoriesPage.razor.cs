@@ -8,6 +8,8 @@ public partial class CategoriesPage
 {
     [AutoInject] private HttpClient httpClient = default!;
 
+    [AutoInject] private NavigationManager navigationManager = default!;
+
     [AutoInject] private IStateService stateService = default!;
 
     public bool IsLoading { get; set; }
@@ -53,7 +55,7 @@ public partial class CategoriesPage
 
                 var response = await httpClient.PostAsJsonAsync("Category/GetCategories", input, AppJsonContext.Default.PagedInputDto);
 
-                var data = JsonSerializer.Deserialize(response.Content.ReadAsStream(), AppJsonContext.Default.PagedResultDtoCategoryDto);
+                var data = await response.Content.ReadFromJsonAsync(AppJsonContext.Default.PagedResultDtoCategoryDto);
 
                 NumResults = data!.Total;
 
@@ -76,6 +78,33 @@ public partial class CategoriesPage
     {
        await dataGrid!.RefreshDataAsync();
     }
+
+
+    private void CreateCategory()
+    {
+        navigationManager.NavigateTo("create-edit-category");
+    }
+
+
+    private async Task EditCategory(CategoryDto Category)
+    {
+        navigationManager.NavigateTo($"create-edit-category/{Category!.Id}");
+    }
+
+    private async Task DeleteCategory(CategoryDto Category)
+    {
+        ConfirmMessageBox.Show("Are you sure delete?", Category.Name, "Delete", async (confirmed) =>
+        {
+            if (confirmed)
+            {
+                await httpClient.DeleteAsync($"Category/{Category.Id}");
+                await RefreshData();
+            }
+        });
+
+
+    }
+
 }
 
 

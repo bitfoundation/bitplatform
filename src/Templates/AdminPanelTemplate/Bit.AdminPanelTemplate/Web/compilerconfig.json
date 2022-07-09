@@ -8,8 +8,8 @@
         "inputFile": "Pages/Categories/CategoriesPage.razor.scss"
     },
     {
-        "outputFile": "Pages/Categories/CreateEditCategory.razor.css",
-        "inputFile": "Pages/Categories/CreateEditCategory.razor.scss"
+        "outputFile": "Pages/Categories/CreateEditCategoryPage.razor.css",
+        "inputFile": "Pages/Categories/CreateEditCategoryPage.razor.scss"
     },
     {
         "outputFile": "Pages/Products/ProductsPage.razor.css",

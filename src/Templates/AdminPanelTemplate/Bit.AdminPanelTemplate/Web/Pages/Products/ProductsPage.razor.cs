@@ -55,7 +55,7 @@ public partial class ProductsPage
 
                 var response = await httpClient.PostAsJsonAsync("Product/GetProducts", input, AppJsonContext.Default.PagedInputDto);
 
-                var data = JsonSerializer.Deserialize(response.Content.ReadAsStream(), AppJsonContext.Default.PagedResultDtoProductDto);
+                var data= await response.Content.ReadFromJsonAsync(AppJsonContext.Default.PagedResultDtoProductDto);
 
                 NumResults = data!.Total;
 
