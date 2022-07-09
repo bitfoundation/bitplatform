@@ -6,7 +6,11 @@ using Android.Runtime;
 
 namespace TodoTemplate.App.Platforms.Android;
 
-[Application]
+[Application(
+#if DEBUG
+    UsesCleartextTraffic = true
+#endif
+)]
 public class MainApplication : MauiApplication
 {
     public MainApplication(IntPtr handle, JniHandleOwnership ownership)
