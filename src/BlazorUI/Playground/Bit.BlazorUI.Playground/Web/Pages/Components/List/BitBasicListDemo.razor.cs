@@ -104,7 +104,9 @@ public partial class BitBasicListDemo
         base.OnInitialized();
     }
 
-    private readonly string example1HTMLCode = @"<BitBasicList Items=""People[0]"" Virtualize=""true"" Style=""border: 1px #a19f9d solid; border-radius: 3px; "">
+    #region Example1
+    private readonly string example1HTMLCode = @"
+<BitBasicList Items=""People"" Virtualize=""true"" Style=""border: 1px #a19f9d solid; border-radius: 3px; "">
     <RowTemplate Context=""person"">
         <div style=""border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;"">
             <img src=""https://picsum.photos/100/100?random=@(person.Id)"">
@@ -116,15 +118,12 @@ public partial class BitBasicListDemo
         </div>
     </RowTemplate>
 </BitBasicList>";
-
     private readonly string example1CSharpCode = @"
+List<Person> People = new();
 protected override void OnInitialized()
 {
     Person person = new();
-
-    People[0] = person.GetPeople(8000);
-    People[1] = person.GetPeople(100);
-
+    People = person.GetPeople(100);    
     base.OnInitialized();
 }
 
@@ -153,8 +152,11 @@ public class Person
         return people;
     }
 }";
+    #endregion
 
-    private readonly string example2HTMLCode = @"<BitBasicList Items=""People[1]"" Virtualize=""false"" Style=""border: 1px #a19f9d solid; border-radius: 3px; "">
+    #region Example2
+    private readonly string example2HTMLCode = @"
+<BitBasicList Items=""People"" Virtualize=""false"" Style=""border: 1px #a19f9d solid; border-radius: 3px; "">
     <RowTemplate Context=""person"">
         <div style=""border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;"">
             <p>Id: <strong>@person.Id</strong></p>
@@ -163,8 +165,79 @@ public class Person
         </div>
     </RowTemplate>
 </BitBasicList>";
+    private readonly string exampl2CSharpCode = @"
+List<Person> People = new();
+protected override void OnInitialized()
+{
+    Person person = new();
+    People = person.GetPeople(100);    
+    base.OnInitialized();
+}
 
-    private readonly string example3HTMLCode = @"<BitBasicList Items=""People[0]"" Virtualize=""true"" Role=""list"" Style=""border: 1px #a19f9d solid; border-radius: 3px;"">
+public class Person
+{
+    public int Id { get; set; }
+    public string FirstName { get; set; }
+    public string LastName { get; set; }
+    public string Job { get; set; }
+
+    public List<Person> GetPeople(int itemCount)
+    {
+        List<Person> people = new();
+
+        for (int i = 0; i < itemCount; i++)
+        {
+            people.Add(new Person
+            {
+                Id = i + 1,
+                FirstName = $""Person {i + 1}"",
+                LastName = $""Person Family {i + 1}"",
+                Job = $""Programmer {i + 1}""
+            });
+        }
+
+        return people;
+    }
+}";
+    #endregion
+
+    #region Example3
+    private readonly string example3CSharpCode = @"
+List<Person> People = new();
+protected override void OnInitialized()
+{
+    Person person = new();
+    People = person.GetPeople(8000);    
+    base.OnInitialized();
+}
+
+public class Person
+{
+    public int Id { get; set; }
+    public string FirstName { get; set; }
+    public string LastName { get; set; }
+    public string Job { get; set; }
+
+    public List<Person> GetPeople(int itemCount)
+    {
+        List<Person> people = new();
+
+        for (int i = 0; i < itemCount; i++)
+        {
+            people.Add(new Person
+            {
+                Id = i + 1,
+                FirstName = $""Person {i + 1}"",
+                LastName = $""Person Family {i + 1}"",
+                Job = $""Programmer {i + 1}""
+            });
+        }
+
+        return people;
+    }
+}";
+    private readonly string example3HTMLCode = @"
+<BitBasicList Items=""People"" Virtualize=""true"" Role=""list"" Style=""border: 1px #a19f9d solid; border-radius: 3px;"">
     <RowTemplate Context=""person"">
         <div class=""lst3-list-item"">
             <span>Id: <strong>@person.Id</strong></span>
@@ -172,9 +245,24 @@ public class Person
             <span>Job: <strong>@person.Job</strong></span>
         </div>
     </RowTemplate>
-</BitBasicList>";
+</BitBasicList>
+<style>
+    .lst3-list-item {
+    padding: 16px 20px;
+    background-color: #f2f2f2;
+    margin: 10px 10px;
+    width: 20%;
+    height: 143px;
+    display: inline-grid;
+    justify-content: center;
+    align-items: center;
+    }
+</style>
+";
+    #endregion
 
-    private readonly string example4HTMLCode = @"<BitBasicList Items=""People[0]"" Virtualize=""true"" OverscanCount=""5"" ItemSize=""300"" Style=""border: 1px #a19f9d solid; border-radius: 3px; "">
+    #region Example4
+    private readonly string example4HTMLCode = @"<BitBasicList Items=""People"" Virtualize=""true"" OverscanCount=""5"" ItemSize=""300"" Style=""border: 1px #a19f9d solid; border-radius: 3px; "">
     <RowTemplate Context=""person"">
         <div style=""border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;"">
             <p>Id: <strong>@person.Id</strong></p>
@@ -183,6 +271,41 @@ public class Person
         </div>
     </RowTemplate>
 </BitBasicList>";
+    private readonly string example4CSharpCode = @"
+List<Person> People = new();
+protected override void OnInitialized()
+{
+    Person person = new();
+    People = person.GetPeople(8000);    
+    base.OnInitialized();
+}
+
+public class Person
+{
+    public int Id { get; set; }
+    public string FirstName { get; set; }
+    public string LastName { get; set; }
+    public string Job { get; set; }
+
+    public List<Person> GetPeople(int itemCount)
+    {
+        List<Person> people = new();
+
+        for (int i = 0; i < itemCount; i++)
+        {
+            people.Add(new Person
+            {
+                Id = i + 1,
+                FirstName = $""Person {i + 1}"",
+                LastName = $""Person Family {i + 1}"",
+                Job = $""Programmer {i + 1}""
+            });
+        }
+
+        return people;
+    }
+}"; 
+    #endregion
 }
 
 public class Person
