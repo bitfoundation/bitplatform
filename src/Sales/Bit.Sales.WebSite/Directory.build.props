@@ -1,6 +1,6 @@
 <Project>
-    
-        <PropertyGroup>
+
+    <PropertyGroup>
         <BlazorMode>BlazorServer</BlazorMode>
         <!-- You can use either BlazorServer or BlazorWebAssembly or BlazorHybrid -->
         <WebAppDeploymentType>DefaultDeploymentType</WebAppDeploymentType>
@@ -15,7 +15,7 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
     </PropertyGroup>
-        
+
     <ItemGroup>
         <Using Include="Microsoft.Extensions.DependencyInjection" />
         <Using Include="System.Net.Http" />

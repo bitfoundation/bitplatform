@@ -1,14 +1,13 @@
-﻿namespace Bit.Sales.WebSite.Shared.Dtos.ContactUs
+﻿namespace Bit.Sales.WebSite.Shared.Dtos.ContactUs;
+
+public class ContactUsDto
 {
-    public class ContactUsDto
-    {
-        [Required]
-        [EmailAddress]
-        public string? Email { get; set; }
+    [Required]
+    [EmailAddress]
+    public string? Email { get; set; }
 
-        [Required]
-        public string? Name { get; set; }
+    [Required]
+    public string? Name { get; set; }
 
-        public string? Information { get; set; }
-    }
+    public string? Information { get; set; }
 }
