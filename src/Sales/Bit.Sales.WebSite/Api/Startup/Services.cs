@@ -1,7 +1,6 @@
 ﻿using System.IO.Compression;
 using System.Net.Mail;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.AspNetCore.OData;
 using Microsoft.AspNetCore.ResponseCompression;
 #if BlazorWebAssembly
 using Microsoft.AspNetCore.Components;
@@ -45,7 +44,6 @@ public static class Services
 
         services
             .AddControllers()
-            .AddOData(options => options.EnableQueryFeatures(maxTopValue: 20))
             .AddJsonOptions(options => options.JsonSerializerOptions.AddContext<AppJsonContext>());
 
         services.Configure<ForwardedHeadersOptions>(options =>

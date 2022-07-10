@@ -1,4 +1,5 @@
 ﻿using Bit.Sales.WebSite.App.Services.Implementations;
+using Blazored.Toast;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -8,6 +9,7 @@ public static class IServiceCollectionExtensions
     {
         services.AddScoped<IStateService, StateService>();
         services.AddScoped<IExceptionHandler, ExceptionHandler>();
+        services.AddBlazoredToast();
 
 #if BlazorServer
         services.AddScoped(sp =>

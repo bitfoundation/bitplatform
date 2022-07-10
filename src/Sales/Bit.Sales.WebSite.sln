@@ -8,7 +8,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Sales.WebSite.Shared", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".SolutionItems", ".SolutionItems", "{5CF43F76-BB71-4B5B-B4DF-1C753E042A8F}"
 	ProjectSection(SolutionItems) = preProject
-		Bit.Sales.WebSite\.gitignore = Bit.Sales.WebSite\.gitignore
 		Bit.Sales.WebSite\Directory.build.props = Bit.Sales.WebSite\Directory.build.props
 	EndProjectSection
 EndProject

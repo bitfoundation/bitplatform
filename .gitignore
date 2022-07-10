@@ -227,9 +227,11 @@ _book
 /BitTools/BitCLIV1Task/buildtask/ps_modules/VstsTaskSdk/
 *Resource.designer.cs
 *.tsbuildinfo
+
 /src/BlazorUI/Bit.BlazorUI/**/*.css
 /src/BlazorUI/Bit.BlazorUI/wwwroot/**/*.js
 /src/BlazorUI/Bit.BlazorUI/wwwroot/**/*.css.gz
+
 /src/Bswup/Bit.Bswup/wwwroot/**/*.js
 /src/Butil/Bit.Butil/wwwroot/**/*.js
 
@@ -257,6 +259,11 @@ _book
 /src/BlazorUI/Playground/Bit.BlazorUI.Playground/Api/Properties/PublishProfiles/bitcomponents - Web Deploy.pubxml
 /src/BlazorUI/Playground/Bit.BlazorUI.Playground/Api/Properties/ServiceDependencies/bitcomponents - Web Deploy/profile.arm.json
 /src/BlazorUI/Playground/Bit.BlazorUI.Playground/App/tsconfig.json
-/src/WebSite/Bit.Platform.WebSite/Web/**/**/*.css
-/src/WebSite/Bit.Platform.WebSite/Web/wwwroot/**/*.js
+
 custom.aprof
+
+/src/WebSite/Bit.Platform.WebSite/Web/**/*.css
+/src/WebSite/Bit.Platform.WebSite/Web/wwwroot/**/*.js
+
+/src/Sales/Bit.Sales.WebSite/Web/**/*.css
+/src/Sales/Bit.Sales.WebSite/Web/**/*.js

@@ -1,9 +1,8 @@
-﻿namespace Bit.Sales.WebSite.App.Models
+﻿namespace Bit.Sales.WebSite.App.Models;
+
+public class CaseFeature
 {
-    public class CaseFeature
-    {
-        public string Title { get; set; }
-        public string Description { get; set; }
-        public string PhotoAddress { get; set; }
-    }
+    public string Title { get; set; }
+    public string Description { get; set; }
+    public string PhotoAddress { get; set; }
 }
