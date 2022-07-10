@@ -73,7 +73,7 @@
                                   Items="ViewTodoItemList"
                                   Virtualize="true">
                                 <RowTemplate>
-                                    <div class="todo-item">
+                                    <div class="todo-item" role="listitem">
                                         @if (context.IsInEditMode)
                                 {
                                     <BitTextField Class="todo-input" @bind-Value="context.Title" />

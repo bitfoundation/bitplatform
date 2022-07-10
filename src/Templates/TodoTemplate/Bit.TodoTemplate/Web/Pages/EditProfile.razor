@@ -30,7 +30,7 @@
                 <div class="form-profile-img">
                     @if (User.ProfileImageName != null)
                     {
-                        <img src="@ProfileImageUrl" class="profile-img" />
+                        <img src="@ProfileImageUrl" class="profile-img" alt="user profile image"/>
                     }
                     else if (string.IsNullOrEmpty(User.FullName) is false && User.FullName.Length >= 2)
                     {
