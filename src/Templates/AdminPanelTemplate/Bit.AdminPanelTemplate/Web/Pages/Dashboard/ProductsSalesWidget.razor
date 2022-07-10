@@ -1,0 +1,22 @@
+﻿@using LiveChartsCore
+@using LiveChartsCore.SkiaSharpView
+@using LiveChartsCore.SkiaSharpView.Blazor
+
+
+@inherits AppComponentBase;
+
+
+<div class="card">
+    <div class="card-header">
+        Product sales
+    </div>
+    <div class="card-body">
+        <CartesianChart Series="Series" LegendOrientation="LiveChartsCore.Measure.LegendOrientation.Auto"
+                        XAxes="XAxis"
+                        ZoomMode="LiveChartsCore.Measure.ZoomAndPanMode.X"
+                        LegendPosition="LiveChartsCore.Measure.LegendPosition.Hidden">
+        </CartesianChart>
+    </div>
+</div>
+
+

@@ -10,25 +10,26 @@
 
 <div class="page-container">
 
-<OverallStatsWidget/>
+    <OverallStatsWidget />
 
-<div class="row">
-    <div class="col">
-            <PproductsCountPerCategotyWidget />
-    </div>
-
-    <div class="col">
-        <div class="card">
-                <div class="card-header">
-                    Products
-                </div>
-               
+    <div class="row">
+        <div class="col">
+            <ProductsCountPerCategotyWidget />
         </div>
-        
+
+        <div class="col">
+            <ProductsPercentageWidget/>
+        </div>
+
     </div>
 
-</div>
 
+    <div class="row">
+        <div class="col">
+            <ProductsSalesWidget />
+
+        </div>
+    </div>
 </div>
 
 @code {

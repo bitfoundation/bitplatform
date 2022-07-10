@@ -7,7 +7,7 @@ using SkiaSharp;
 
 namespace AdminPanelTemplate.App.Pages.Dashboard;
 
-public partial class PproductsCountPerCategotyWidget
+public partial class ProductsSalesWidget
 {
     [AutoInject] private HttpClient httpClient = default!;
 
@@ -26,24 +26,22 @@ public partial class PproductsCountPerCategotyWidget
     {
         try
         {
-            var Data = await httpClient.GetFromJsonAsync($"Dashboard/GetPproductsCountPerCategotyStats", AppJsonContext.Default.ListProductsCountPerCategoryDto);
+            var Data = await httpClient.GetFromJsonAsync($"Dashboard/GetProductsSalesStats", AppJsonContext.Default.ListProductSaleStatDto);
 
 
             Series = new ISeries[] {
-                new ColumnSeries<int>()
+                new ColumnSeries<decimal>()
                 {
                     Name = "",
-                    Values = Data.Select(d => d.ProductCount).ToArray()
+                    Values = Data.Select(d => d.SaleAmount).ToArray()
                 }
             };
 
             XAxis = new Axis[]{
                 new Axis
                 {
-                    Labels = Data.Select(d=>d.CategoryName).ToArray(),
-                    NameTextSize=11,           
-                    TextSize=11,
-                    LabelsRotation = -90
+                    Labels = Data.Select(d=>d.ProductName).ToArray(),
+                    Labeler = Labelers.Currency
                 }
             };
 

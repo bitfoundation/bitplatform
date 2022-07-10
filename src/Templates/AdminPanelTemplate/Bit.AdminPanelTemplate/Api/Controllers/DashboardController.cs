@@ -28,8 +28,8 @@ public partial class DashboardController : ControllerBase
     }
 
 
-    [HttpGet("GetPproductsCountPerCategotyStats")]
-    public async Task<List<ProductsCountPerCategoryDto>> GetPproductsCountPerCategotyStats()
+    [HttpGet("GetProductsCountPerCategotyStats")]
+    public async Task<List<ProductsCountPerCategoryDto>> GetProductsCountPerCategotyStats()
     {
         return await _dbContext.Categories
             .Select(c => new ProductsCountPerCategoryDto()

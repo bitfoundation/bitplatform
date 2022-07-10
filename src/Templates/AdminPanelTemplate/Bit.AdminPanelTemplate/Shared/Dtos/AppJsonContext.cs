@@ -16,6 +16,7 @@ namespace AdminPanelTemplate.Shared.Dtos;
 [JsonSerializable(typeof(OverallAnalyticsStatsDataDto))]
 [JsonSerializable(typeof(List<ProductsCountPerCategoryDto>))]
 [JsonSerializable(typeof(List<ProductSaleStatDto>))]
+[JsonSerializable(typeof(List<ProductPercentagePerCategoryDto>))]
 [JsonSerializable(typeof(List<UserDto>))]
 [JsonSerializable(typeof(ProductDto))]
 [JsonSerializable(typeof(List<ProductDto>))]
