@@ -1,0 +1,78 @@
+﻿@page "/analytics"
+
+@using AdminPanelTemplate.Shared.Dtos.Products
+@using LiveChartsCore
+@using LiveChartsCore.SkiaSharpView
+@using LiveChartsCore.SkiaSharpView.Blazor
+@attribute [Authorize]
+
+@inherits AppComponentBase;
+
+<div class="page-container">
+
+
+<div class="row">
+    <div class="col">
+            <div class="widget-stats stats-red">
+                <div class="num">
+                    73
+                </div>
+                <h3>Products</h3>
+            </div>
+    </div>
+        <div class="col">
+            <div class="widget-stats stats-green">
+                <div class="num">
+                    31
+                </div>
+                <h3>Category</h3>
+            </div>
+        </div>
+        <div class="col">
+            <div class="widget-stats stats-blue">
+                <div class="num">
+                    13
+                </div>
+                <h3>Users</h3>
+            </div>
+        </div>
+</div>
+
+<div class="row">
+    <div class="col">
+        <div class="card">
+            <div class="card-header">
+                Products
+            </div>
+                <CartesianChart Series="_series" LegendPosition="LiveChartsCore.Measure.LegendPosition.Hidden">
+                </CartesianChart>
+        </div>
+        
+    </div>
+
+    <div class="col">
+        <div class="card">
+                <div class="card-header">
+                    Products
+                </div>
+                <CartesianChart Series="_series" LegendPosition="LiveChartsCore.Measure.LegendPosition.Hidden">
+                </CartesianChart>
+        </div>
+        
+    </div>
+
+</div>
+
+</div>
+
+@code {
+    private ISeries[] _series =
+        new ISeries[]
+        {
+            new LineSeries<double>
+            {
+                Values = new double[] { 2, 1, 3, 5, 3, 4, 6 },
+                Fill = null
+            }
+        };
+}

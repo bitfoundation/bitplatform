@@ -4,6 +4,10 @@
         "inputFile": "Styles/app.scss"
     },
     {
+        "outputFile": "Pages/Dashboard/AnalyticsPage.razor.css",
+        "inputFile": "Pages/Dashboard/AnalyticsPage.razor.scss"
+    },
+    {
         "outputFile": "Pages/Categories/CategoriesPage.razor.css",
         "inputFile": "Pages/Categories/CategoriesPage.razor.scss"
     },

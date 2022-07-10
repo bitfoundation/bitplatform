@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
 	<PropertyGroup>
 		<TargetFramework>net6.0</TargetFramework>
@@ -33,6 +33,7 @@
 		<PackageReference Include="Bit.CodeAnalyzers" Version="1.0.2" />
 		<PackageReference Include="Bit.SourceGenerators" Version="1.0.2" />
 		<PackageReference Include="jose-jwt" Version="4.0.0" />
+		<PackageReference Include="LiveChartsCore.SkiaSharpView.Blazor" Version="2.0.0-beta.300" />
 		<PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.6" />
         <!--/-:msbuild-conditional:noEmit -->
 		<PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.6" />
@@ -62,10 +63,6 @@
         <Using Include="Microsoft.AspNetCore.Components.Authorization" />
         <Using Include="AdminPanelTemplate.App.Components" />
         <Using Include="Bit.BlazorUI" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Pages\Dashboard\" />
 	</ItemGroup>
 
 </Project>
