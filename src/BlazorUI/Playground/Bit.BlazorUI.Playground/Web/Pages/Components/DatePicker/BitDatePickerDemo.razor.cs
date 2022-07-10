@@ -207,75 +207,85 @@ public partial class BitDatePickerDemo
         }
     };
 
-    private readonly string example1HTMLCode = @"
-<BitDatePicker Style=""width: 300px""
-               ShowMonthPickerAsOverlay=""true"">
-</BitDatePicker>";
+    private readonly string example1HTMLCode = """
+<BitDatePicker Style="width: 300px"
+               ShowMonthPickerAsOverlay="true">
+</BitDatePicker>
+""";
 
-    private readonly string example2HTMLCode = @"
-<BitDatePicker Style=""width: 300px""
-               ShowWeekNumbers=""true"">
-</BitDatePicker>";
+    private readonly string example2HTMLCode = """
+<BitDatePicker Style="width: 300px"
+               ShowWeekNumbers="true">
+</BitDatePicker>
+""";
 
-    private readonly string example3HTMLCode = @"
-<BitDatePicker FormatDate=""yyyy/MM/dd hh:mm tt"" 
-               Culture=""CultureInfoHelper.GetFaIrCultureByFarsiNames()""
-               GoToToday=""برو به امروز""
-               Style=""width: 300px"">
-</BitDatePicker>";
+    private readonly string example3HTMLCode = """
+<BitDatePicker FormatDate="yyyy/MM/dd hh:mm tt"
+               Culture="CultureInfoHelper.GetFaIrCultureByFarsiNames()"
+               GoToToday="برو به امروز"
+               Style="width: 300px">
+</BitDatePicker>
+""";
 
-    private readonly string example4HTMLCode = @"
-<BitDatePicker FormatDate=""yyyy/MM/dd hh:mm tt"" 
-               Culture=""CultureInfoHelper.GetFaIrCultureByFingilishNames()""
-               GoToToday=""Boro be emrouz""
-               Style=""width: 300px"">
-</BitDatePicker>";
+    private readonly string example4HTMLCode = """
+<BitDatePicker FormatDate="yyyy/MM/dd hh:mm tt"
+               Culture="CultureInfoHelper.GetFaIrCultureByFingilishNames()"
+               GoToToday="Boro be emrouz"
+               Style="width: 300px">
+</BitDatePicker>
+""";
 
-    private readonly string example5HTMLCode = @"
-<BitDatePicker @bind-Value=""@selectedDate"" Style=""width: 300px""></BitDatePicker>
-<BitLabel>this is selected date: @selectedDate.ToString()</BitLabel>";
+    private readonly string example5HTMLCode = """
+<BitDatePicker @bind-Value="@selectedDate" Style="width: 300px"></BitDatePicker>
+<BitLabel>this is selected date: @selectedDate.ToString()</BitLabel>
+""";
 
-    private readonly string example5CSharpCode = @"
-private DateTimeOffset? selectedDate = new DateTimeOffset(new DateTime(2020, 1, 17), DateTimeOffset.Now.Offset);";
+    private readonly string example5CSharpCode = """
+private DateTimeOffset? selectedDate = new DateTimeOffset(new DateTime(2020, 1, 17), DateTimeOffset.Now.Offset);
+""";
 
-    private readonly string example6HTMLCode = @"<BitDatePicker FormatDate=""d"" Style=""width: 300px""></BitDatePicker>";
+    private readonly string example6HTMLCode = """
+<BitDatePicker FormatDate="d" Style="width: 300px"></BitDatePicker>
+""";
 
-    private readonly string example7HTMLCode = @"
-<BitDatePicker Style=""width: 300px""
-               MaxDate=""DateTimeOffset.Now.AddYears(1)"" 
-               MinDate=""DateTimeOffset.Now.AddYears(-5)"">
-</BitDatePicker>";
+    private readonly string example7HTMLCode = """
+<BitDatePicker Style="width: 300px"
+               MaxDate="DateTimeOffset.Now.AddYears(1)" 
+               MinDate="DateTimeOffset.Now.AddYears(-5)">
+</BitDatePicker>
+""";
 
-    private readonly string example8HTMLCode = @"
+    private readonly string example8HTMLCode = """
 @if (string.IsNullOrEmpty(SuccessMessage))
 {
-    <EditForm Model=""formValidationDatePickerModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
+    <EditForm Model="formValidationDatePickerModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
         <DataAnnotationsValidator />
 
-        <div class=""validation-summary"">
+        <div class="validation-summary">
             <ValidationSummary />
         </div>
 
         <div>
-            <BitDatePicker Style=""width: 300px"" @bind-Value=""formValidationDatePickerModel.Date"" 
-            <ValidationMessage For=""@(() => formValidationDatePickerModel.Date)"" />
+            <BitDatePicker Style="width: 300px" @bind-Value="formValidationDatePickerModel.Date" 
+            <ValidationMessage For="@(() => formValidationDatePickerModel.Date)" />
         </div>
 
         <br />
 
-        <BitButton ButtonType=""BitButtonType.Submit"">
+        <BitButton ButtonType="BitButtonType.Submit">
             Submit
         </BitButton>
     </EditForm>
 }
 else
 {
-    <BitMessageBar MessageBarType=""BitMessageBarType.Success"" IsMultiline=""false"">
+    <BitMessageBar MessageBarType="BitMessageBarType.Success" IsMultiline="false">
         @SuccessMessage
     </BitMessageBar>
-}";
+}
+""";
 
-    private readonly string example8CSharpCode = @"
+    private readonly string example8CSharpCode = """
 public class FormValidationDatePickerModel
 {
     [Required]
@@ -287,7 +297,7 @@ private string SuccessMessage = string.Empty;
 
 private async void HandleValidSubmit()
 {
-    SuccessMessage = ""Form Submitted Successfully!"";
+    SuccessMessage = "Form Submitted Successfully!";
     await Task.Delay(3000);
     SuccessMessage = string.Empty;
     StateHasChanged();
@@ -296,5 +306,6 @@ private async void HandleValidSubmit()
 private void HandleInvalidSubmit()
 {
     SuccessMessage = string.Empty;
-}";
+}
+""";
 }
