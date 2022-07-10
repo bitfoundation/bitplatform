@@ -1,0 +1,28 @@
+﻿@inherits AppComponentBase;
+
+<div class="row">
+    <div class="col">
+        <div class="widget-stats stats-red">
+            <div class="num">
+                @Data.SeasonProductCount
+            </div>
+            <h3>Season product count</h3>
+        </div>
+    </div>
+    <div class="col">
+        <div class="widget-stats stats-green">
+            <div class="num">
+                @Data.TotalProducts
+            </div>
+            <h3>Total products</h3>
+        </div>
+    </div>
+    <div class="col">
+        <div class="widget-stats stats-blue">
+            <div class="num">
+                @Data.TotalCategories
+            </div>
+            <h3>Total categories</h3>
+        </div>
+    </div>
+</div>

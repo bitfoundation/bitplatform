@@ -1,4 +1,7 @@
-﻿namespace AdminPanelTemplate.App.Pages.Dashboard;
+﻿using AdminPanelTemplate.Shared.Dtos.Dashboard;
+using Microsoft.AspNetCore.Components;
+
+namespace AdminPanelTemplate.App.Pages.Dashboard;
 
 public partial class AnalyticsPage
 {
@@ -8,13 +11,6 @@ public partial class AnalyticsPage
 
     public bool IsLoading { get; set; }
 
-
-    protected override async Task OnInitAsync()
-    {
-        await base.OnInitAsync();
-    }
-
-
-
+   
 
 }

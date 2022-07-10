@@ -11,10 +11,11 @@ public partial class DashboardController : ControllerBase
 
     [AutoInject] private IMapper _mapper = default!;
 
-    [HttpGet("GetAnalyticsStatsData")]
-    public async Task<AnalyticsStatsDataDto> GetAnalyticsStatsData()
+    [HttpGet("GetOverallAnalyticsStatsData")]
+    public async Task<OverallAnalyticsStatsDataDto> GetOverallAnalyticsStatsData()
     {
-        var result = new AnalyticsStatsDataDto();
+        //Thread.Sleep(5000);
+        var result = new OverallAnalyticsStatsDataDto();
 
         int curQuarter = (DateTime.Now.Month - 1) / 3 + 1;
 
@@ -79,7 +80,7 @@ public partial class DashboardController : ControllerBase
             .Select(c => new ProductPercentagePerCategoryDto()
             {
                 CategoryName = c!.Name,
-                CategoryColor = c!.Color,
+                CategoryColor = c.Color,
                 ProductPercentage =(float)decimal.Divide(c.Products!.Count(), ProductToal) * 100
             }).ToListAsync();
 

@@ -1,5 +1,6 @@
 ﻿using AdminPanelTemplate.Shared.Dtos.Account;
 using AdminPanelTemplate.Shared.Dtos.Categories;
+using AdminPanelTemplate.Shared.Dtos.Dashboard;
 using AdminPanelTemplate.Shared.Dtos.Products;
 using AdminPanelTemplate.Shared.Dtos.TodoItem;
 
@@ -12,6 +13,9 @@ namespace AdminPanelTemplate.Shared.Dtos;
 [JsonSerializable(typeof(TodoItemDto))]
 [JsonSerializable(typeof(List<TodoItemDto>))]
 [JsonSerializable(typeof(UserDto))]
+[JsonSerializable(typeof(OverallAnalyticsStatsDataDto))]
+[JsonSerializable(typeof(List<ProductsCountPerCategoryDto>))]
+[JsonSerializable(typeof(List<ProductSaleStatDto>))]
 [JsonSerializable(typeof(List<UserDto>))]
 [JsonSerializable(typeof(ProductDto))]
 [JsonSerializable(typeof(List<ProductDto>))]

@@ -10,44 +10,11 @@
 
 <div class="page-container">
 
+<OverallStatsWidget/>
 
 <div class="row">
     <div class="col">
-            <div class="widget-stats stats-red">
-                <div class="num">
-                    73
-                </div>
-                <h3>Products</h3>
-            </div>
-    </div>
-        <div class="col">
-            <div class="widget-stats stats-green">
-                <div class="num">
-                    31
-                </div>
-                <h3>Category</h3>
-            </div>
-        </div>
-        <div class="col">
-            <div class="widget-stats stats-blue">
-                <div class="num">
-                    13
-                </div>
-                <h3>Users</h3>
-            </div>
-        </div>
-</div>
-
-<div class="row">
-    <div class="col">
-        <div class="card">
-            <div class="card-header">
-                Products
-            </div>
-                <CartesianChart Series="_series" LegendPosition="LiveChartsCore.Measure.LegendPosition.Hidden">
-                </CartesianChart>
-        </div>
-        
+            <PproductsCountPerCategotyWidget />
     </div>
 
     <div class="col">
@@ -55,8 +22,7 @@
                 <div class="card-header">
                     Products
                 </div>
-                <CartesianChart Series="_series" LegendPosition="LiveChartsCore.Measure.LegendPosition.Hidden">
-                </CartesianChart>
+               
         </div>
         
     </div>

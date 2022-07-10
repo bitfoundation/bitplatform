@@ -8,6 +8,14 @@
         "inputFile": "Pages/Dashboard/AnalyticsPage.razor.scss"
     },
     {
+        "outputFile": "Pages/Dashboard/OverallStatsWidget.razor.css",
+        "inputFile": "Pages/Dashboard/OverallStatsWidget.razor.scss"
+    },
+    {
+        "outputFile": "Pages/Dashboard/PproductsCountPerCategotyWidget.razor.css",
+        "inputFile": "Pages/Dashboard/PproductsCountPerCategotyWidget.razor.scss"
+    },
+    {
         "outputFile": "Pages/Categories/CategoriesPage.razor.css",
         "inputFile": "Pages/Categories/CategoriesPage.razor.scss"
     },

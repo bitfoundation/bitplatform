@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace AdminPanelTemplate.Shared.Dtos.Dashboard;
 
-public class AnalyticsStatsDataDto
+public class OverallAnalyticsStatsDataDto
 {
     public int SeasonProductCount { get; set; }
 

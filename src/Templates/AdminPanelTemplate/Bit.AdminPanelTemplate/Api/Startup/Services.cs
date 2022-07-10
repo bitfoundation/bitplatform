@@ -4,6 +4,8 @@ using System.Net.Mail;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.OData;
 using Microsoft.AspNetCore.ResponseCompression;
+using LiveChartsCore;
+using LiveChartsCore.SkiaSharpView;
 #if BlazorWebAssembly
 using Microsoft.AspNetCore.Components;
 using AdminPanelTemplate.App.Services.Implementations;
@@ -41,6 +43,7 @@ public static class Services
         });
         services.AddRazorPages();
         services.AddMvcCore();
+
 #endif
 
         services.AddCors();
@@ -55,7 +58,7 @@ public static class Services
             options.ForwardedHeaders = ForwardedHeaders.All;
             options.ForwardedHostHeaderName = "X-Host";
         });
-        
+
         services.AddResponseCaching();
 
         services.AddHttpContextAccessor();
