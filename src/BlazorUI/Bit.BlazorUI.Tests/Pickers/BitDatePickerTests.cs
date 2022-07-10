@@ -114,12 +114,12 @@ public class BitDatePickerTests : BunitTestContext
     public void BitDatePickerCalendarWithCustomCultureInfo()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
-        var component = RenderComponent(
-           (Action<ComponentParameterCollectionBuilder<BitDatePickerTest>>)(           parameters =>
+        var component = RenderComponent<BitDatePickerTest>(
+           parameters =>
            {
                parameters.Add(p => p.IsOpen, true);
                parameters.Add(p => p.Culture, CultureInfoHelper.GetFaIrCultureByFingilishNames());
-           }));
+           });
 
         var monthButtons = component.FindAll(".month-picker-wrapper .grid-container .btn-row button");
 
