@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 #elif BlazorWebAssembly
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+//using Microsoft.AspNetCore.Components.WebAssembly.Services;
 #endif
 
 namespace AdminPanelTemplate.App;
@@ -25,6 +26,7 @@ public class Program
     {
         var builder = WebAssemblyHostBuilder.CreateDefault();
 
+        //builder.Services.AddScoped<LazyAssemblyLoader>();
         builder.Services.AddSingleton(sp => new HttpClient(sp.GetRequiredService<AppHttpClientHandler>()) { BaseAddress = new Uri($"{builder.HostEnvironment.BaseAddress}api/") });
         builder.Services.AddTransient<IAuthTokenProvider, ClientSideAuthTokenProvider>();
 

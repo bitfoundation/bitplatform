@@ -2,7 +2,6 @@
 using AdminPanelTemplate.Api.Models.Account;
 using AdminPanelTemplate.Api.Models.Categories;
 using AdminPanelTemplate.Api.Models.Products;
-using AdminPanelTemplate.Api.Models.TodoItem;
 
 namespace AdminPanelTemplate.Api.Data;
 
@@ -13,7 +12,6 @@ public class AppDbContext : IdentityDbContext<User, Role, int>
     {
     }
 
-    public DbSet<TodoItem> TodoItems { get; set; }
     public DbSet<Category> Categories { get; set; }
     public DbSet<Product> Products { get; set; }
 

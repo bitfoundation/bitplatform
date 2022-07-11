@@ -1,6 +1,12 @@
-﻿<CascadingAuthenticationState>
+﻿@using System.Reflection
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.WebAssembly.Services
+@using Microsoft.Extensions.Logging
+@inject LazyAssemblyLoader AssemblyLoader
+
+<CascadingAuthenticationState>
     <PageTitle>Admin panel</PageTitle>
-    <Router AppAssembly="@GetType().Assembly">
+    <Router AppAssembly="@typeof(Program).Assembly" >
         <Found Context="routeData">
             <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
                 <NotAuthorized>
@@ -20,3 +26,29 @@
         </NotFound>
     </Router>
 </CascadingAuthenticationState>
+
+
+@*
+        AdditionalAssemblies="@lazyLoadedAssemblies"
+            OnNavigateAsync="@OnNavigateAsync"
+
+@code {
+    private List<Assembly> lazyLoadedAssemblies = new();
+
+    private async Task OnNavigateAsync(NavigationContext args)
+    {
+        try
+        {
+            if (args.Path == "analytics")
+            {
+                var assemblies = await AssemblyLoader.LoadAssembliesAsync(
+                    new[] { "LiveChartsCore.dll", "LiveChartsCore.SkiaSharpView.Blazor.dll" });
+                lazyLoadedAssemblies.AddRange(assemblies);
+            }
+        }
+        catch (Exception ex)
+        {
+            throw ex;
+        }
+    }
+}*@

@@ -61,13 +61,6 @@ public partial class NavMenu
             },
             new BitNavLinkItem
             {
-                Name = "Todo",
-                Url = "/todo",
-                IconName = BitIconName.ToDoLogoOutline,
-                Key = "Todo"
-            },
-            new BitNavLinkItem
-            {
                 Name = "Sign out",
                 OnClick = (item) =>
                 {

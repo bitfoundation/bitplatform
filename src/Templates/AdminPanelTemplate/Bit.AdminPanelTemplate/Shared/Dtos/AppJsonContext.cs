@@ -2,7 +2,6 @@
 using AdminPanelTemplate.Shared.Dtos.Categories;
 using AdminPanelTemplate.Shared.Dtos.Dashboard;
 using AdminPanelTemplate.Shared.Dtos.Products;
-using AdminPanelTemplate.Shared.Dtos.TodoItem;
 
 namespace AdminPanelTemplate.Shared.Dtos;
 
@@ -10,8 +9,6 @@ namespace AdminPanelTemplate.Shared.Dtos;
 /// https://devblogs.microsoft.com/dotnet/try-the-new-system-text-json-source-generator/
 /// </summary>
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
-[JsonSerializable(typeof(TodoItemDto))]
-[JsonSerializable(typeof(List<TodoItemDto>))]
 [JsonSerializable(typeof(UserDto))]
 [JsonSerializable(typeof(List<UserDto>))]
 [JsonSerializable(typeof(PagedInputDto))]
