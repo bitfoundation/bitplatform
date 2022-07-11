@@ -35,7 +35,8 @@ public class AutoInjectSourceGenerator : ISourceGenerator
         foreach (IGrouping<INamedTypeSymbol, ISymbol> group in receiver.EligibleMembers
                      .GroupBy<ISymbol, INamedTypeSymbol>(f => f.ContainingType, SymbolEqualityComparer.Default))
         {
-            GenerateErrorWhenClassNonPartial(context, group.Key);
+            if (IsClassIsPartial(context, group.Key) is false)
+                return;
 
             string? partialClassSource = GenerateSource(attributeSymbol, group.Key, group.ToList());
 
@@ -46,10 +47,11 @@ public class AutoInjectSourceGenerator : ISourceGenerator
 
         foreach (var @class in receiver.EligibleClassesWithBaseClassUsedAutoInject)
         {
-            GenerateErrorWhenClassNonPartial(context, @class);
+            if (IsClassIsPartial(context, @class) is false)
+                return;
 
-            var baseClass = @class.BaseType!;
-            GenerateErrorWhenClassNonPartial(context, baseClass);
+            if (IsClassIsPartial(context, @class.BaseType!) is false)
+                return;
 
             string? partialClassSource = GenerateSource(attributeSymbol, @class, new List<ISymbol>());
 
@@ -59,7 +61,7 @@ public class AutoInjectSourceGenerator : ISourceGenerator
         }
     }
 
-    private static void GenerateErrorWhenClassNonPartial(GeneratorExecutionContext context, INamedTypeSymbol @class)
+    private static bool IsClassIsPartial(GeneratorExecutionContext context, INamedTypeSymbol @class)
     {
         var syntaxReferences = @class.DeclaringSyntaxReferences;
         foreach (var refrence in syntaxReferences)
@@ -69,8 +71,11 @@ public class AutoInjectSourceGenerator : ISourceGenerator
             if (classHasPartial is false)
             {
                 context.ReportDiagnostic(Diagnostic.Create(NonPartialClassError, classDeclarationSyntax.GetLocation(), @class.Name));
+                return false;
             }
         }
+
+        return true;
     }
 
     private static string? GenerateSource(
