@@ -12,8 +12,12 @@ namespace Bit.BlazorUI.Playground.Web
 {
     public static class MauiProgram
     {
-        public static MauiApp CreateMauiApp()
+        public static MauiAppBuilder CreateMauiAppBuilder()
         {
+#if !BlazorHybrid
+        throw new InvalidOperationException("Please switch to blazor hybrid as described in readme.md");
+#endif
+
             var builder = MauiApp.CreateBuilder();
 
             var assembly = typeof(MauiProgram).GetTypeInfo().Assembly;
@@ -30,9 +34,8 @@ namespace Bit.BlazorUI.Playground.Web
 #endif
 
             services.AddPlaygroundServices();
-            services.AddSingleton(scope => new HttpClient { BaseAddress = new Uri(scope.GetService<IConfiguration>().GetValue<string>("ApiServerAddress")) });
 
-            return builder.Build();
+            return builder;
         }
     }
 }

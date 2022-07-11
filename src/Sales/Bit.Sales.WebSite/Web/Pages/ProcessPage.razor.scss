@@ -1,0 +1,466 @@
+﻿@import '../wwwroot/styles/abstracts/_colors.scss';
+@import '../wwwroot/styles/abstracts/_media-queries.scss';
+@import '../wwwroot/styles/abstracts/_functions.scss';
+
+.page-top-section {
+    position: relative;
+    width: 100%;
+    height: rem(654px);
+    background-image: url('/images/process/header-bg.png');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+
+    @include sm {
+        height: rem(520px);
+    }
+
+    .section-content {
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 1;
+        display: flex;
+        flex-flow: column nowrap;
+        justify-content: flex-start;
+        align-items: flex-start;
+        width: 100%;
+        height: 100%;
+        padding: rem(250px) 0 0 rem(130px);
+        box-sizing: border-box;
+        background-color: rgba(0, 0, 0, 0.65);
+
+        @include lg {
+            padding: rem(250px) 0 0 rem(84px);
+        }
+
+        @include md {
+            padding: rem(250px) 0 0 rem(61px);
+        }
+
+        @include sm {
+            padding: rem(192px) rem(30px) 0 rem(30px);
+        }
+    }
+
+    .section-title {
+        margin-bottom: rem(6px);
+        font-weight: bold;
+        font-size: rem(40px);
+        line-height: rem(66px);
+        color: $White;
+
+        @include sm {
+            font-size: rem(24px);
+            line-height: rem(34px);
+        }
+    }
+
+    .section-desc {
+        max-width: rem(666px);
+        font-size: rem(22px);
+        line-height: rem(35px);
+        color: $White;
+
+        @include md {
+            max-width: rem(518px);
+        }
+
+        @include sm {
+            max-width: 100%;
+            font-size: rem(18px);
+            line-height: rem(29px);
+        }
+    }
+}
+
+.page-top-content {
+    position: relative;
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+    padding: rem(60px) rem(130px) rem(30px);
+    box-sizing: border-box;
+
+    @include lg {
+        padding: rem(79px) rem(84px) rem(30px);
+    }
+
+    @include md {
+        padding: rem(79px) rem(61px) rem(30px);
+    }
+
+    @include sm {
+        padding: rem(34px) rem(30px) rem(30px);
+    }
+}
+
+.paragraph-container {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: flex-start;
+    width: 100%;
+    //max-width: rem(1022px);
+    margin-bottom: rem(25px);
+    padding-right: rem(300px);
+    box-sizing: border-box;
+
+    @include lt-lg {
+        max-width: 100%;
+        padding-right: 0;
+    }
+
+    @include sm {
+        margin-bottom: rem(38px);
+    }
+
+    .paragraph-title-green {
+        width: rem(155px);
+        margin-bottom: rem(14px);
+        padding-bottom: rem(6px);
+        border-bottom: rem(1px) solid #707070;
+        font-weight: bold;
+        font-size: rem(30px);
+        line-height: rem(49px);
+        color: #24D07D;
+    }
+
+    .paragraph-title {
+        width: 100%;
+        font-weight: bold;
+        font-size: rem(30px);
+        line-height: rem(49px);
+        color: $Black;
+        margin-bottom: rem(6px);
+    }
+
+    .paragraph-text {
+        width: 100%;
+        text-align: left;
+        font-size: rem(18px);
+        line-height: rem(29px);
+        color: $Black;
+
+        @include sm {
+            font-weight: bold;
+            font-size: rem(18px);
+            line-height: rem(30px);
+        }
+    }
+}
+
+.paragraph-container--first {
+    margin-bottom: rem(40px);
+    padding-right: 0;
+
+    @include md {
+        margin-bottom: rem(12px);
+    }
+
+    @include sm {
+        margin-bottom: rem(400x);
+    }
+
+    .paragraph-title {
+        font-size: rem(40px);
+        line-height: rem(66px);
+        margin-bottom: rem(7px);
+
+        @include md {
+            font-size: rem(34px);
+            line-height: rem(56px);
+            margin-bottom: 0;
+        }
+
+        @include md {
+            font-size: rem(30px);
+            line-height: rem(40px);
+        }
+    }
+
+    .paragraph-text {
+        font-weight: 500;
+        font-size: rem(22px);
+        line-height: rem(35px);
+
+        @include sm {
+            font-size: rem(18px);
+            line-height: rem(29px);
+        }
+    }
+}
+
+.process-divider {
+    position: absolute;
+    right: 0;
+    top: rem(425px);
+    width: rem(395px);
+    height: rem(386px);
+    background-image: url('/images/process/process-bg.svg');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+
+    @include lt-lg {
+        display: none;
+    }
+
+    @include sm {
+        display: block;
+        width: rem(315px);
+        height: rem(305px);
+        top: rem(260px);
+    }
+}
+
+.people-section {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+    margin: rem(20px) 0 rem(80px);
+
+    @include lg {
+        margin: rem(40px) 0 rem(40px);
+    }
+
+    @include md {
+        margin: rem(65px) 0 rem(80px);
+    }
+
+    @include sm {
+        margin: rem(13px) 0 rem(42px);
+    }
+
+    .people-box-group {
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: center;
+        align-items: flex-start;
+        width: 100%;
+        margin-top: rem(51px);
+    }
+
+    .people-box {
+        display: flex;
+        flex-flow: column nowrap;
+        justify-content: flex-start;
+        align-items: center;
+        width: rem(366px);
+        height: rem(474px);
+        border: rem(1px) solid #E7E7E7;
+        border-radius: rem(20px);
+        padding: rem(212px) rem(16px) 0;
+        margin: 0 rem(23px) rem(48px);
+        box-sizing: border-box;
+        text-align: center;
+        background-repeat: no-repeat;
+
+        @include lg {
+            margin: 0 rem(23px) rem(40px);
+        }
+
+        @include md {
+            margin-bottom: rem(32px);
+        }
+
+        @include sm {
+            width: 100%;
+            max-width: rem(366px);
+            min-height: rem(474px);
+            height: auto;
+            margin: 0 0 rem(32px) 0;
+        }
+
+        .people-box-title {
+            font-weight: bold;
+            font-size: rem(24px);
+            line-height: rem(39px);
+            color: $Black;
+            margin-bottom: rem(12px);
+        }
+
+        .people-box-desc {
+            font-size: rem(16px);
+            line-height: rem(25px);
+            text-align: center;
+            color: $Black;
+            margin-bottom: rem(30px);
+        }
+    }
+
+    .developer-box {
+        background-image: url('/images/process/developer-bg.svg');
+        background-position: top rem(69px) center;
+        background-size: rem(248px) rem(121px);
+    }
+
+    .pm-box {
+        background-image: url('/images/process/project-manager-bg.svg');
+        background-position: top rem(51px) center;
+        background-size: rem(245px) rem(132px);
+    }
+
+    .qa-box {
+        background-image: url('/images/process/qa-tester-bg.svg');
+        background-position: top rem(51px) center;
+        background-size: rem(225px) rem(132px);
+    }
+
+    .sm-box {
+        background-image: url('/images/process/scrum-master-bg.svg');
+        background-position: top rem(32px) center;
+        background-size: rem(253px) rem(143px);
+    }
+
+    .designer-box {
+        background-image: url('/images/process/desiner-bg.svg');
+        background-position: top rem(32pxpx) center;
+        background-size: rem(237px) rem(142px);
+    }
+}
+
+.benefit-section {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+
+    .benefit-box {
+        display: flex;
+        flex-flow: column nowrap;
+        justify-content: center;
+        align-items: flex-start;
+        width: 100%;
+        max-width: rem(882px);
+        min-height: rem(208px);
+        padding: 0 rem(20px) 0 rem(193px);
+        border: rem(1px) solid #E7E7E7;
+        border-radius: rem(20px);
+        margin-bottom: rem(33px);
+        box-sizing: border-box;
+        background-repeat: no-repeat;
+
+        @include lg {
+            max-width: rem(830px);
+            padding: 0 rem(20px) 0 rem(181px);
+        }
+
+        @include md {
+            justify-content: flex-start;
+            max-width: rem(383px);
+            margin-bottom: rem(40px);
+            padding: rem(157px) rem(30px) rem(30px);
+        }
+
+        @include sm {
+            justify-content: flex-start;
+            max-width: rem(383px);
+            margin-bottom: rem(29px);
+            padding: rem(157px) rem(22px) rem(22px);
+        }
+
+        .benefit-box-title {
+            width: 100%;
+            font-weight: bold;
+            font-size: rem(22px);
+            line-height: rem(36px);
+            color: $Black;
+            margin-bottom: rem(6px);
+
+            @include lt-lg {
+                text-align: center;
+                margin-bottom: rem(15px);
+            }
+        }
+
+        .benefit-box-desc {
+            width: 100%;
+            font-size: rem(16px);
+            line-height: rem(25px);
+            color: $Black;
+
+            @include lt-lg {
+                text-align: center;
+                margin-bottom: rem(30px);
+            }
+        }
+    }
+
+    .benefit-box-1 {
+        margin-top: rem(50px);
+        background-image: url('/images/process/handshake-icon.svg');
+        background-position: center left rem(48px);
+        background-size: rem(111px) rem(73px);
+
+        @include lg {
+            background-position: center left rem(45px);
+            background-size: rem(104px) rem(73px);
+        }
+
+        @include lt-lg {
+            background-position: top rem(51px) center;
+            background-size: rem(104px) rem(73px);
+        }
+
+        @include md {
+            margin-top: rem(60px);
+        }
+    }
+
+    .benefit-box-2 {
+        background-image: url('/images/process/transparency-icon.svg');
+        background-position: center left rem(51px);
+        background-size: rem(99px) rem(99px);
+
+        @include lg {
+            background-position: center left rem(48px);
+            background-size: rem(93px) rem(99px);
+        }
+
+        @include lt-lg {
+            background-position: top rem(48px) center;
+            background-size: rem(93px) rem(99px);
+        }
+    }
+
+    .benefit-box-3 {
+        background-image: url('/images/process/invoice-icon.svg');
+        background-position: center left rem(65px);
+        background-size: rem(82px) rem(95px);
+
+        @include lg {
+            background-position: center left rem(61px);
+            background-size: rem(77px) rem(95px);
+        }
+
+        @include lt-lg {
+            background-position: top rem(51px) center;
+            background-size: rem(77px) rem(95px);
+        }
+    }
+}
+
+//Minor-Media-Queries===========================================================
+@media all and (max-width: em(660px)) {
+    .process-divider {
+        top: rem(300px);
+    }
+}
+
+@media all and (max-width: em(480px)) {
+    .process-divider {
+        top: rem(400px);
+    }
+}
+
+@media all and (max-width: em(410px)) {
+    .process-divider {
+        top: rem(480px);
+    }
+}

@@ -1,0 +1,22 @@
+﻿@page "/cases"
+
+<section class="page">
+    <div class="page-top-container">
+        <div class="page-title">Our Cases</div>
+        <div class="page-subtitle-container">
+            <span class="page-subtitle">Home</span>
+            <span class="page-subtitle-arrow"></span>
+            <span class="page-subtitle">Cases</span>
+        </div>
+    </div>
+
+    <div class="case-list">
+        @foreach (var showCase in Cases)
+        {
+            <div class="case-container">
+                <div class="curly-divider"></div>
+                <Case ShowCase="showCase"/>
+            </div>
+        }
+    </div>
+</section>

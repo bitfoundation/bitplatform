@@ -6,16 +6,16 @@
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
   IgnorableNamespaces="uap rescap">
 
-  <Identity
-    Name="BED44E21-F6D8-477E-9B14-C4C9C3FFBE6C"
-    Publisher="CN=User Name"
-    Version="1.0.0.0" />
+	<Identity
+	  Name="maui-package-name-placeholder"
+	  Publisher="CN=User Name"
+	  Version="0.0.0.0" />
 
-  <Properties>
-    <DisplayName>Bit.BlazorUI.Playground.App</DisplayName>
-    <PublisherDisplayName>Microsoft</PublisherDisplayName>
-    <Logo>appiconStoreLogo.png</Logo>
-  </Properties>
+	<Properties>
+		<DisplayName>$placeholder$</DisplayName>
+		<PublisherDisplayName>User Name</PublisherDisplayName>
+		<Logo>$placeholder$.png</Logo>
+	</Properties>
 
   <Dependencies>
     <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.17763.0" MaxVersionTested="10.0.19041.0" />
@@ -26,30 +26,19 @@
     <Resource Language="x-generate"/>
   </Resources>
 
-  <Applications>
-    <Application Id="App"
-      Executable="$targetnametoken$.exe"
-      EntryPoint="$targetentrypoint$">
-      <uap:VisualElements
-        DisplayName="Bit.BlazorUI.Playground.App"
-        Description="Bit.BlazorUI.Playground.App"
-        BackgroundColor="transparent"
-        Square150x150Logo="appiconMediumTile.png"
-        Square44x44Logo="appiconLogo.png">
-        <uap:DefaultTile
-          Wide310x150Logo="appiconWideTile.png"
-          Square71x71Logo="appiconSmallTile.png"
-          Square310x310Logo="appiconLargeTile.png"
-          ShortName="Bit.BlazorUI.Playground.App">
-          <uap:ShowNameOnTiles>
-            <uap:ShowOn Tile="square150x150Logo"/>
-            <uap:ShowOn Tile="wide310x150Logo"/>
-          </uap:ShowNameOnTiles>
-        </uap:DefaultTile >
-        <uap:SplashScreen Image="appiconfgSplashScreen.png" />
-      </uap:VisualElements>
-    </Application>
-  </Applications>
+	<Applications>
+		<Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="$targetentrypoint$">
+			<uap:VisualElements
+			  DisplayName="$placeholder$"
+			  Description="$placeholder$"
+			  Square150x150Logo="$placeholder$.png"
+			  Square44x44Logo="$placeholder$.png"
+			  BackgroundColor="transparent">
+				<uap:DefaultTile Square71x71Logo="$placeholder$.png" Wide310x150Logo="$placeholder$.png" Square310x310Logo="$placeholder$.png" />
+				<uap:SplashScreen Image="$placeholder$.png" />
+			</uap:VisualElements>
+		</Application>
+	</Applications>
 
   <Capabilities>
     <rescap:Capability Name="runFullTrust" />

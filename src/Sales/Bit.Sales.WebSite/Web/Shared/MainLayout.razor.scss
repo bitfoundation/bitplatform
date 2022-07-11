@@ -1,0 +1,20 @@
+﻿@import '../wwwroot/styles/abstracts/_colors.scss';
+@import '../wwwroot/styles/abstracts/_media-queries.scss';
+@import '../wwwroot/styles/abstracts/_functions.scss';
+
+.main-container {
+    width: 100%;
+    padding-top: rem(158px);
+
+    @include lt-lg {
+        padding-top: rem(100px);
+    }
+}
+
+.no-pad {
+    padding: 0;
+}
+
+.small-pad {
+    padding-top: rem(100px);
+}

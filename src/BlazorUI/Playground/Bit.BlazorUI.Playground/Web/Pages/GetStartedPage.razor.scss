@@ -190,6 +190,7 @@
     background-color: $B6Color;
     overflow: auto;
     white-space: nowrap;
+    font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
 
     @include lg {
         min-height: rem(40px);

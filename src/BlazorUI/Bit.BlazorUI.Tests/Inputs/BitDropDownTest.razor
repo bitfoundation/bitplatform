@@ -1,5 +1,6 @@
 ﻿<CascadingValue Value="Visual">
     <BitDropDown IsEnabled="IsEnabled"
+                 IsResponsiveModeEnabled="IsResponsiveModeEnabled"
                  OnClick="HandleClick"
                  IsMultiSelect="IsMultiSelect"
                  IsOpen="IsOpen"
@@ -24,6 +25,7 @@
     [Parameter] public Visual Visual { get; set; }
     [Parameter] public bool IsMultiSelect { get; set; }
     [Parameter] public bool IsEnabled { get; set; }
+    [Parameter] public bool IsResponsiveModeEnabled { get; set; }
     [Parameter] public bool IsRequired { get; set; }
     [Parameter] public bool IsOpen { get; set; }
     [Parameter] public List<BitDropDownItem> Items { get; set; } = new List<BitDropDownItem>();

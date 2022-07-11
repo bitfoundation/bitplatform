@@ -1,0 +1,248 @@
+﻿@import '../wwwroot/styles/abstracts/_colors.scss';
+@import '../wwwroot/styles/abstracts/_media-queries.scss';
+@import '../wwwroot/styles/abstracts/_functions.scss';
+@import '../wwwroot/styles/abstracts/_mixins.scss';
+
+.section-container {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+    padding: rem(160px) rem(16px) rem(150px);
+    box-sizing: border-box;
+    background-color: $GrayLightXXX;
+
+    @include lg {
+        padding: rem(125px) rem(16px) rem(105px);
+    }
+
+    @include md {
+        padding: rem(75px) rem(60px);
+    }
+
+    @include sm {
+        padding: rem(74px) rem(30px) rem(60px);
+    }
+}
+
+.secondary-title {
+    font-weight: 500;
+    font-size: rem(30px);
+    line-height: rem(48px);
+    color: $Primary;
+    //@include lt-lg {
+    //    font-weight: 500;
+    //}
+
+    @include lg {
+        font-size: rem(25px);
+        line-height: rem(40px);
+    }
+
+    @include md {
+        font-size: rem(17px);
+        line-height: rem(25px);
+    }
+
+    @include sm {
+        font-weight: bold;
+        font-size: rem(17px);
+        line-height: rem(28px);
+        margin-bottom: rem(2px);
+    }
+}
+
+.form {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+    margin-top: rem(88px);
+
+    @include lg {
+        margin-top: rem(34px);
+    }
+
+    @include lt-lg {
+        margin-top: rem(20px);
+    }
+}
+
+.input-row {
+    width: 100%;
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: center;
+    align-items: center;
+
+    @include lt-lg {
+        flex-flow: column nowrap;
+        justify-content: flex-start;
+        align-items: center;
+    }
+}
+
+.input-container {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: flex-start;
+    width: 100%;
+    max-width: rem(424px);
+    margin-bottom: rem(47px);
+
+    &:first-child {
+        margin-right: rem(56px);
+
+        @include lg {
+            margin-right: rem(42px);
+        }
+
+        @include lt-lg {
+            margin-right: 0;
+        }
+    }
+
+    &:last-child {
+        margin-left: rem(56px);
+
+        @include lg {
+            margin-left: rem(42px);
+        }
+
+        @include lt-lg {
+            margin-left: 0;
+        }
+    }
+
+    @include lg {
+        max-width: rem(384px);
+        margin-bottom: rem(41px);
+    }
+
+    @include md {
+        max-width: rem(605px);
+    }
+
+    @include sm {
+        max-width: rem(300px);
+    }
+
+    @include lt-lg {
+        margin-bottom: rem(30px);
+    }
+}
+
+.label {
+    color: $Gray;
+    font-size: rem(22px);
+    line-height: rem(35px);
+    margin-bottom: rem(12px);
+
+    @include lg {
+        font-size: rem(20px);
+        line-height: rem(32px);
+    }
+
+    @include lt-lg {
+        font-size: rem(13px);
+        line-height: rem(21px);
+    }
+
+    @include sm {
+        font-weight: bold;
+    }
+}
+
+.text-field {
+    display: flex;
+    justify-content: flex-start;
+    width: 100%;
+    border-radius: rem(3px);
+    border: rem(1px) solid transparent;
+    outline: none;
+    box-sizing: border-box;
+    font-weight: 500;
+    font-size: rem(22px);
+    line-height: rem(35px);
+    color: $Black;
+    text-align: left;
+    font-family: Axiforma;
+    background-color: $White;
+
+    &:focus {
+        border: rem(1px) solid $GrayLightX;
+    }
+    //&:invalid {
+    //    border: rem(1px) solid $Red;
+    //}
+
+    @include lg {
+        height: rem(60px);
+        font-size: rem(20px);
+        line-height: rem(32px);
+    }
+
+    @include lt-lg {
+        height: rem(49px);
+        font-size: rem(13px);
+        line-height: rem(21px);
+    }
+
+    @include sm {
+        font-weight: bold;
+    }
+}
+
+.text-area {
+    align-items: flex-start;
+    height: rem(151px);
+    padding: rem(13px) rem(20px);
+}
+
+.input {
+    align-items: center;
+    height: rem(62px);
+    padding: rem(5px) rem(20px);
+
+    @include lg {
+        height: rem(60px);
+    }
+
+    @include lt-lg {
+        height: rem(49px);
+    }
+}
+
+.text-area-container {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: flex-start;
+    width: 100%;
+    max-width: rem(959px);
+    margin-bottom: rem(80px);
+
+    @include lg {
+        max-width: rem(853px);
+        margin-bottom: rem(68px);
+    }
+
+    @include md {
+        max-width: rem(605px);
+    }
+
+    @include sm {
+        max-width: rem(300px);
+    }
+
+    @include lt-lg {
+        margin-bottom: rem(40px);
+    }
+}
+
+.submit-btn--primary {
+    @include PrimaryButton($IsInNavbar: false);
+}

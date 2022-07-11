@@ -394,7 +394,7 @@ public partial class BitDropDownDemo
             Name = "Values",
             Type = "List<string>",
             DefaultValue = "",
-            Description = "Keys of the selected items for multiSelect scenarios. If you provide this, you must maintain selection state by observing onChange events and passing a new value in when changed",
+            Description = "Keys of the selected items for multiSelect scenarios. If you provide this, you must maintain selection state by observing onChange events and passing a new value in when changed.",
         },
         new ComponentParameter()
         {
@@ -419,6 +419,13 @@ public partial class BitDropDownDemo
             DefaultValue = "BitComponentVisibility.Visible",
             Description = "Whether the component is Visible,Hidden,Collapsed.",
         },
+        new ComponentParameter()
+        {
+            Name = "IsResponsiveModeEnabled",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the drop down items get rendered in a side panel in small screen sizes or not.",
+        }
     };
 
     private readonly List<EnumParameter> enumParameters = new()
@@ -929,6 +936,71 @@ private List<BitDropDownItem> GetCategoryDropdownItems()
 }
 
 private List<BitDropDownItem> GetProductDropdownItems()
+{
+    List<BitDropDownItem> items = new();
+
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Header,
+        Text = ""Fruits""
+    });
+
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Normal,
+        Text = ""Apple"",
+        Value = ""f-app""
+    });
+
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Normal,
+        Text = ""Orange"",
+        Value = ""f-ora"",
+        IsEnabled = false
+    });
+
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Normal,
+        Text = ""Banana"",
+        Value = ""f-ban"",
+    });
+
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Divider,
+    });
+
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Header,
+        Text = ""Vegetables""
+    });
+
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Normal,
+        Text = ""Broccoli"",
+        Value = ""v-bro"",
+    });
+
+    return items;
+}";
+
+    #endregion
+
+    #region Example Code 6
+
+    private readonly string example6HTMLCode = @"<BitDropDown Label=""Responsive DropDown""
+             Items=""GetDropdownItems()""
+             Placeholder=""Select an option""
+             IsResponsiveModeEnabled=true
+             Style=""width: 290px; margin: 20px 0 20px 0"">
+</BitDropDown>";
+
+    private readonly string example6CSharpCode = @"
+private List<BitDropDownItem> GetDropdownItems()
 {
     List<BitDropDownItem> items = new();
 
