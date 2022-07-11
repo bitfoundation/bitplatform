@@ -17,6 +17,8 @@ public partial class CreateEditProductModal
 
     private bool IsOpen { get; set; }
     public bool IsLoading { get; private set; }
+    public bool IsSaveLoading { get; private set; }
+
     public List<BitDropDownItem>? AllCategoryList { get; set; } = new();
 
     public string SelectedCategoyId { get => Product!.CategoryId!.ToString(); set { Product.CategoryId = int.Parse(value); } }
@@ -73,6 +75,7 @@ public partial class CreateEditProductModal
         
         try
         {
+            IsSaveLoading = true;
             if (Product.Id == 0)
             {
                 await httpClient.PostAsJsonAsync("Product", Product, AppJsonContext.Default.ProductDto);
@@ -87,7 +90,7 @@ public partial class CreateEditProductModal
         }
         finally
         {
-            
+            IsSaveLoading = false;
         }
 
 

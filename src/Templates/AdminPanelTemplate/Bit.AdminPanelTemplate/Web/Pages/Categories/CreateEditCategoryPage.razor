@@ -28,7 +28,7 @@
 
         <div class="form-input-container">
             <label for="head">Color</label>
-            <input type="color" @bind="Category.Color" />
+            <input name="catColorInput" type="color" @bind="Category.Color" />
         </div>
 
 
@@ -36,7 +36,16 @@
                    ButtonStyle="BitButtonStyle.Primary"
                    ButtonType="BitButtonType.Submit"
                    AriaLabel="Category">
-            Save
+
+            @if (IsSaveLoading)
+            {
+                <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
+            }
+            else
+            {
+                <span>Save</span>
+            }
+
         </BitButton>
 
 

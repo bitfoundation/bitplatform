@@ -6,48 +6,53 @@
             <span class="title">Create/Edit Category</span>
             <BitIconButton IconName="BitIconName.ChromeClose" OnClick="OnCloseClick" />
         </div>
-        <EditForm Model="Product" OnValidSubmit="WrapHandled(()=> Save())" >
-            
-
-                <DataAnnotationsValidator />
-                
-                <div class="form-input-container">
-                    <BitDropDown Label="Select category"
-                                 Items="AllCategoryList"
-                                 IsMultiSelect="false"
-                                 @bind-Value="SelectedCategoyId"
-                                 Placeholder="Select a category"/>
-                    <ValidationMessage For="@(() => Product.CategoryId)" />
-                </div>
+        <EditForm Model="Product" OnValidSubmit="WrapHandled(Save)">
 
 
-                <div class="form-input-container">
-                    <BitTextField Label="@(nameof(Product.Name))" @bind-Value="Product.Name" />
-                    <ValidationMessage For="() => Product.Name" />
-                </div>
+            <DataAnnotationsValidator />
 
-                <div class="form-input-container">
-                    <BitNumericTextField Precision="2" Label="@(nameof(Product.Price))" 
-                    @bind-Value="Product.Price" 
-                     Suffix="$"
-                    LabelPosition="@BitNumericTextFieldLabelPosition.Top"
-                    />
-                    <ValidationMessage For="() => Product.Price" />
-                </div>
+            <div class="form-input-container">
+                <BitDropDown Label="Select category"
+                             Items="AllCategoryList"
+                             IsMultiSelect="false"
+                             @bind-Value="SelectedCategoyId"
+                             Placeholder="Select a category" />
+                <ValidationMessage For="@(() => Product.CategoryId)" />
+            </div>
 
-                 <div class="form-input-container">
-                    <BitTextField 
-                     Label="@(nameof(Product.Desc))" 
-                     IsMultiline="true" 
-                     Rows="3"
-                    @bind-Value="Product.Desc" />
-                    <ValidationMessage For="() => Product.Desc" />
-                </div>
-               
-            
+
+            <div class="form-input-container">
+                <BitTextField Label="@(nameof(Product.Name))" @bind-Value="Product.Name" />
+                <ValidationMessage For="() => Product.Name" />
+            </div>
+
+            <div class="form-input-container">
+                <BitNumericTextField Precision="2" Label="@(nameof(Product.Price))"
+                                     @bind-Value="Product.Price"
+                                     Suffix="$"
+                                     LabelPosition="@BitNumericTextFieldLabelPosition.Top" />
+                <ValidationMessage For="() => Product.Price" />
+            </div>
+
+            <div class="form-input-container">
+                <BitTextField Label="@(nameof(Product.Desc))"
+                              IsMultiline="true"
+                              Rows="3"
+                              @bind-Value="Product.Desc" />
+                <ValidationMessage For="() => Product.Desc" />
+            </div>
+
+
             <div class="footer">
                 <BitButton ButtonType="BitButtonType.Submit">
-                    Save
+                    @if (IsSaveLoading)
+                    {
+                        <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
+                    }
+                    else
+                    {
+                        <span>Save</span>
+                    }
                 </BitButton>
             </div>
         </EditForm>

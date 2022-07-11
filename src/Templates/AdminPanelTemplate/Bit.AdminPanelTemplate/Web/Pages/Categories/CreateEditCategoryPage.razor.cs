@@ -10,13 +10,12 @@ public partial class CreateEditCategoryPage
 
     [AutoInject] private IStateService stateService = default!;
 
-
-
     [Parameter]
     public int? Id { get; set; }
 
     public CategoryDto? Category { get; set; } = new();
     public bool IsLoading { get; private set; }
+    public bool IsSaveLoading { get; private set; }
 
     protected override async Task OnInitAsync()
     {
@@ -47,14 +46,15 @@ public partial class CreateEditCategoryPage
 
     private async Task Save()
     {
-        if (IsLoading)
+        if (IsSaveLoading)
         {
             return;
         }
 
-
         try
         {
+            IsSaveLoading = true;
+
             if (Category!.Id == 0)
             {
                 await httpClient.PostAsJsonAsync("Category", Category, AppJsonContext.Default.CategoryDto);
@@ -68,7 +68,7 @@ public partial class CreateEditCategoryPage
         }
         finally
         {
-
+            IsSaveLoading = false;
         }
 
     }

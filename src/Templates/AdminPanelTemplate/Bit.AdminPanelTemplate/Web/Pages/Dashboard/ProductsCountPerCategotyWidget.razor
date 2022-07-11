@@ -9,14 +9,17 @@
         Products count per category chart
     </div>
     <div class="card-body">
-       @if (IsLoading)
+        @if (IsLoading)
         {
             <div class="spinner">
                 <BitSpinner></BitSpinner>
             </div>
         }
-        <CartesianChart Series="Series" LegendOrientation="LiveChartsCore.Measure.LegendOrientation.Auto"
+        <CartesianChart Series="Series" 
                         XAxes="XAxis"
+                        ZoomMode="LiveChartsCore.Measure.ZoomAndPanMode.X"
+                        ZoomingSpeed="0"
+                        TooltipPosition="LiveChartsCore.Measure.TooltipPosition.Hidden"
                         LegendPosition="LiveChartsCore.Measure.LegendPosition.Hidden">
         </CartesianChart>
     </div>

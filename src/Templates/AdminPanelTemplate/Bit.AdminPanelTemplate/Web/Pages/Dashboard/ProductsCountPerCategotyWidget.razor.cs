@@ -42,9 +42,6 @@ public partial class ProductsCountPerCategotyWidget
                 new Axis
                 {
                     Labels = Data.Select(d=>d.CategoryName).ToArray(),
-                    NameTextSize=11,           
-                    TextSize=11,
-                    LabelsRotation = -90
                 }
             };
 

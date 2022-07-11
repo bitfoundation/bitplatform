@@ -68,10 +68,6 @@
         "inputFile": "Pages/ResetPassword.razor.scss"
     },
     {
-        "outputFile": "Pages/Todo.razor.css",
-        "inputFile": "Pages/Todo.razor.scss"
-    },
-    {
         "outputFile": "Pages/EditProfile.razor.css",
         "inputFile": "Pages/EditProfile.razor.scss"
     },

@@ -40,7 +40,8 @@ public partial class ProductsSalesWidget
             XAxis = new Axis[]{
                 new Axis
                 {
-                    Labels = Data.Select(d=>d.ProductName[0..Math.Min(d.ProductName.Length, 5)]).ToArray(),
+                    Labels = Data.Select(d=>d.ProductName).ToArray(),
+                    //Labels = Data.Select(d=>d.ProductName[0..Math.Min(d.ProductName.Length, 5)]).ToArray(),
                     //Labeler = Labelers.Currency,
                     Position=AxisPosition.Start,
                     MaxLimit=20,
