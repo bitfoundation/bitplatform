@@ -41,36 +41,30 @@ public class BitNumericTextFieldDecimalTests : BunitTestContext
         }
     }
 
-    [DataTestMethod]
-    public void BitNumericTextFieldShouldNotRenderArrowsWhenArrowsDisabled()
-    {
-        var component = RenderComponent<BitNumericTextField<byte>>(parameters =>
-        {
-            parameters.Add(p => p.Arrows, false);
-        });
-
-        var arrowButtonHolder = component.FindAll(".bit-ntf-arrows");
-        Assert.AreEqual(0, arrowButtonHolder.Count);
-
-        var arrowButtons = component.FindAll(".bit-ntf-arrows button");
-
-        Assert.AreEqual(0, arrowButtons.Count);
-    }
-
-    [DataTestMethod]
-    public void BitNumericTextFieldShouldRenderArrowsWithEnableArrows()
+    [DataTestMethod,
+     DataRow(true),
+     DataRow(false)
+    ]
+    public void BitNumericTextFieldShouldRenderCorrectlyWithArrows(bool arrows)
     {
         var component = RenderComponent<BitNumericTextField<decimal>>(parameters =>
         {
-            parameters.Add(p => p.Arrows, true);
+            parameters.Add(p => p.Arrows, arrows);
         });
 
         var arrowButtonHolder = component.FindAll(".bit-ntf-arrows");
-        Assert.AreEqual(1, arrowButtonHolder.Count);
-
         var arrowButtons = component.FindAll(".bit-ntf-arrows button");
 
-        Assert.AreEqual(2, arrowButtons.Count);
+        if (arrows)
+        {
+            Assert.AreEqual(1, arrowButtonHolder.Count);
+            Assert.AreEqual(2, arrowButtons.Count);
+        }
+        else
+        {
+            Assert.AreEqual(0, arrowButtonHolder.Count);
+            Assert.AreEqual(0, arrowButtons.Count);
+        }
     }
 
     [DataTestMethod,
