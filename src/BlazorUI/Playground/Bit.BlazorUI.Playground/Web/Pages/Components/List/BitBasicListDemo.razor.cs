@@ -6,7 +6,8 @@ namespace Bit.BlazorUI.Playground.Web.Pages.Components.List;
 
 public partial class BitBasicListDemo
 {
-    private readonly List<Person>[] People = new List<Person>[2];
+    private List<Person> People1 = new();
+    private List<Person> People2 = new();
 
     private readonly List<ComponentParameter> componentParameters = new()
     {
@@ -96,15 +97,30 @@ public partial class BitBasicListDemo
 
     protected override void OnInitialized()
     {
-        Person person = new();
-
-        People[0] = person.GetPeople(8000);
-        People[1] = person.GetPeople(100);
+        People1 = GetPeople(8000);
+        People2 = GetPeople(100);
 
         base.OnInitialized();
     }
 
-    #region Example1
+    private List<Person> GetPeople(int itemCount)
+    {
+        List<Person> people = new();
+
+        for (int i = 0; i < itemCount; i++)
+        {
+            people.Add(new Person
+            {
+                Id = i + 1,
+                FirstName = $"Person {i + 1}",
+                LastName = $"Person Family {i + 1}",
+                Job = $"Programmer {i + 1}"
+            });
+        }
+
+        return people;
+    }
+
     private readonly string example1HTMLCode = @"
 <BitBasicList Items=""People"" Virtualize=""true"" Style=""border: 1px #a19f9d solid; border-radius: 3px; "">
     <RowTemplate Context=""person"">
@@ -122,9 +138,26 @@ public partial class BitBasicListDemo
 List<Person> People = new();
 protected override void OnInitialized()
 {
-    Person person = new();
-    People = person.GetPeople(100);    
+    People = GetPeople(100);    
     base.OnInitialized();
+}
+
+private List<Person> GetPeople(int itemCount)
+{
+    List<Person> people = new();
+
+    for (int i = 0; i < itemCount; i++)
+    {
+        people.Add(new Person
+        {
+            Id = i + 1,
+            FirstName = $""Person {i + 1}"",
+            LastName = $""Person Family {i + 1}"",
+            Job = $""Programmer {i + 1}""
+        });
+    }
+
+    return people;
 }
 
 public class Person
@@ -133,28 +166,8 @@ public class Person
     public string FirstName { get; set; }
     public string LastName { get; set; }
     public string Job { get; set; }
-
-    public List<Person> GetPeople(int itemCount)
-    {
-        List<Person> people = new();
-
-        for (int i = 0; i < itemCount; i++)
-        {
-            people.Add(new Person
-            {
-                Id = i + 1,
-                FirstName = $""Person {i + 1}"",
-                LastName = $""Person Family {i + 1}"",
-                Job = $""Programmer {i + 1}""
-            });
-        }
-
-        return people;
-    }
 }";
-    #endregion
 
-    #region Example2
     private readonly string example2HTMLCode = @"
 <BitBasicList Items=""People"" Virtualize=""false"" Style=""border: 1px #a19f9d solid; border-radius: 3px; "">
     <RowTemplate Context=""person"">
@@ -169,9 +182,26 @@ public class Person
 List<Person> People = new();
 protected override void OnInitialized()
 {
-    Person person = new();
-    People = person.GetPeople(100);    
+    People = GetPeople(100);    
     base.OnInitialized();
+}
+
+private List<Person> GetPeople(int itemCount)
+{
+    List<Person> people = new();
+
+    for (int i = 0; i < itemCount; i++)
+    {
+        people.Add(new Person
+        {
+            Id = i + 1,
+            FirstName = $""Person {i + 1}"",
+            LastName = $""Person Family {i + 1}"",
+            Job = $""Programmer {i + 1}""
+        });
+    }
+
+    return people;
 }
 
 public class Person
@@ -180,35 +210,32 @@ public class Person
     public string FirstName { get; set; }
     public string LastName { get; set; }
     public string Job { get; set; }
-
-    public List<Person> GetPeople(int itemCount)
-    {
-        List<Person> people = new();
-
-        for (int i = 0; i < itemCount; i++)
-        {
-            people.Add(new Person
-            {
-                Id = i + 1,
-                FirstName = $""Person {i + 1}"",
-                LastName = $""Person Family {i + 1}"",
-                Job = $""Programmer {i + 1}""
-            });
-        }
-
-        return people;
-    }
 }";
-    #endregion
 
-    #region Example3
     private readonly string example3CSharpCode = @"
 List<Person> People = new();
 protected override void OnInitialized()
 {
-    Person person = new();
-    People = person.GetPeople(8000);    
+    People = GetPeople(8000);    
     base.OnInitialized();
+}
+
+public List<Person> GetPeople(int itemCount)
+{
+    List<Person> people = new();
+
+    for (int i = 0; i < itemCount; i++)
+    {
+        people.Add(new Person
+        {
+            Id = i + 1,
+            FirstName = $""Person {i + 1}"",
+            LastName = $""Person Family {i + 1}"",
+            Job = $""Programmer {i + 1}""
+        });
+    }
+
+    return people;
 }
 
 public class Person
@@ -217,24 +244,6 @@ public class Person
     public string FirstName { get; set; }
     public string LastName { get; set; }
     public string Job { get; set; }
-
-    public List<Person> GetPeople(int itemCount)
-    {
-        List<Person> people = new();
-
-        for (int i = 0; i < itemCount; i++)
-        {
-            people.Add(new Person
-            {
-                Id = i + 1,
-                FirstName = $""Person {i + 1}"",
-                LastName = $""Person Family {i + 1}"",
-                Job = $""Programmer {i + 1}""
-            });
-        }
-
-        return people;
-    }
 }";
     private readonly string example3HTMLCode = @"
 <BitBasicList Items=""People"" Virtualize=""true"" Role=""list"" Style=""border: 1px #a19f9d solid; border-radius: 3px;"">
@@ -259,9 +268,7 @@ public class Person
     }
 </style>
 ";
-    #endregion
 
-    #region Example4
     private readonly string example4HTMLCode = @"<BitBasicList Items=""People"" Virtualize=""true"" OverscanCount=""5"" ItemSize=""300"" Style=""border: 1px #a19f9d solid; border-radius: 3px; "">
     <RowTemplate Context=""person"">
         <div style=""border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;"">
@@ -275,37 +282,26 @@ public class Person
 List<Person> People = new();
 protected override void OnInitialized()
 {
-    Person person = new();
-    People = person.GetPeople(8000);    
+    People = GetPeople(8000);    
     base.OnInitialized();
 }
 
-public class Person
+public List<Person> GetPeople(int itemCount)
 {
-    public int Id { get; set; }
-    public string FirstName { get; set; }
-    public string LastName { get; set; }
-    public string Job { get; set; }
+    List<Person> people = new();
 
-    public List<Person> GetPeople(int itemCount)
+    for (int i = 0; i < itemCount; i++)
     {
-        List<Person> people = new();
-
-        for (int i = 0; i < itemCount; i++)
+        people.Add(new Person
         {
-            people.Add(new Person
-            {
-                Id = i + 1,
-                FirstName = $""Person {i + 1}"",
-                LastName = $""Person Family {i + 1}"",
-                Job = $""Programmer {i + 1}""
-            });
-        }
-
-        return people;
+            Id = i + 1,
+            FirstName = $""Person {i + 1}"",
+            LastName = $""Person Family {i + 1}"",
+            Job = $""Programmer {i + 1}""
+        });
     }
-}"; 
-    #endregion
+
+    return people;
 }
 
 public class Person
@@ -314,22 +310,5 @@ public class Person
     public string FirstName { get; set; }
     public string LastName { get; set; }
     public string Job { get; set; }
-
-    public List<Person> GetPeople(int itemCount)
-    {
-        List<Person> people = new();
-
-        for (int i = 0; i < itemCount; i++)
-        {
-            people.Add(new Person
-            {
-                Id = i + 1,
-                FirstName = $"Person {i + 1}",
-                LastName = $"Person Family {i + 1}",
-                Job = $"Programmer {i + 1}"
-            });
-        }
-
-        return people;
-    }
+}";
 }
