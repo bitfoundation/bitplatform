@@ -6,7 +6,9 @@
 
 <CascadingAuthenticationState>
     <PageTitle>Admin panel</PageTitle>
-    <Router AppAssembly="@typeof(Program).Assembly" >
+    <Router AppAssembly="@typeof(Program).Assembly"
+            AdditionalAssemblies="@lazyLoadedAssemblies"
+            OnNavigateAsync="@OnNavigateAsync">
         <Found Context="routeData">
             <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
                 <NotAuthorized>
@@ -26,11 +28,7 @@
         </NotFound>
     </Router>
 </CascadingAuthenticationState>
-
-
-@*
-        AdditionalAssemblies="@lazyLoadedAssemblies"
-            OnNavigateAsync="@OnNavigateAsync"
+     
 
 @code {
     private List<Assembly> lazyLoadedAssemblies = new();
@@ -39,16 +37,16 @@
     {
         try
         {
-            if (args.Path == "analytics")
+            //if (args.Path=="analytics")
             {
                 var assemblies = await AssemblyLoader.LoadAssembliesAsync(
-                    new[] { "LiveChartsCore.dll", "LiveChartsCore.SkiaSharpView.Blazor.dll" });
+                new[] { "LiveChartsCore.SkiaSharpView.Blazor.dll", "LiveChartsCore.dll" });
                 lazyLoadedAssemblies.AddRange(assemblies);
             }
         }
-        catch (Exception ex)
+        catch
         {
-            throw ex;
+            
         }
     }
-}*@
+}
