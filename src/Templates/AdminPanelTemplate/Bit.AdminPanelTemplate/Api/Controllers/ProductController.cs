@@ -30,8 +30,8 @@ public partial class ProductController : ControllerBase
         return product;
     }
 
-    [HttpPost("GetProducts")]
-    public async Task<PagedResultDto<ProductDto>> GetProductsAsync(PagedInputDto input, CancellationToken cancellationToken)
+    [HttpPost("GetPagedProducts")]
+    public async Task<PagedResultDto<ProductDto>> GetPagedProductsAsync(PagedInputDto input, CancellationToken cancellationToken)
     {
         var query = Get(cancellationToken);
 
@@ -44,6 +44,8 @@ public partial class ProductController : ControllerBase
         {
             (nameof(Product.Name), true) => filteredQuery.OrderBy(c => c.Name),
             (nameof(Product.Name), false) => filteredQuery.OrderByDescending(c => c.Name),
+            (nameof(Product.Price), true) => filteredQuery.OrderBy(c => c.Price),
+            (nameof(Product.Price), false) => filteredQuery.OrderByDescending(c => c.Price),
             _ => filteredQuery.OrderBy(c => c.Id)
         };
 

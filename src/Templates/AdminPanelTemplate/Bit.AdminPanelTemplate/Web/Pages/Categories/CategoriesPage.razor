@@ -1,16 +1,25 @@
-﻿@page "/categories"
+﻿@using AdminPanelTemplate.Shared.Dtos.Categories
 
-@using AdminPanelTemplate.Shared.Dtos.Categories
+@page "/categories"
 @attribute [Authorize]
 
 @inherits AppComponentBase;
 
 
+
 <PageTitle>Categories</PageTitle>
 <div class="page-container">
     <div class="page-content--white">
-        <h1 class="main-title">Category</h1>
-           <BitButton OnClick="CreateCategory">Create</BitButton>
+        @if (IsLoading)
+        {
+            <div class="spinner">
+                <BitSpinner></BitSpinner>
+            </div>
+        }
+        <div class="page-header">
+            <h3>Category</h3>
+            <BitButton OnClick="CreateCategory">Create</BitButton>
+        </div>
         <div class="content">
             <div class="grid">
                 <BitDataGrid ItemsProvider="@categoriesProvider" TGridItem="@CategoryDto" ResizableColumns="true" Pagination="@pagination" @ref="dataGrid">
@@ -21,8 +30,8 @@
                                           InputHtmlAttributes="@(new Dictionary<string, object> {{"autofocus", true}})" />
                         </ColumnOptions>
                     </BitDataGridPropertyColumn>
-                    <BitDataGridPropertyColumn Property="@(c => c.Color)" Sortable="true" Align="BitDataGridAlign.Right" />
-                    <BitDataGridTemplateColumn Title="Action">
+                    <BitDataGridPropertyColumn Property="@(c => c.Color)"  Align="BitDataGridAlign.Left" />
+                    <BitDataGridTemplateColumn Title="Action" Align="BitDataGridAlign.Left">
                         <BitIconButton IconName="BitIconName.Edit" OnClick="() => EditCategory(context)" />
                         <BitIconButton IconName="BitIconName.Delete" OnClick="WrapHandled(() => DeleteCategory(context))" />
                     </BitDataGridTemplateColumn>

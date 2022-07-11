@@ -79,6 +79,15 @@ namespace AdminPanelTemplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to This category contain some products, so you can&apos;t delete it.
+        /// </summary>
+        public static string CategoryNotEmpty {
+            get {
+                return ResourceManager.GetString("CategoryNotEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Optimistic concurrency failure, object has been modified..
         /// </summary>
         public static string ConcurrencyFailure {

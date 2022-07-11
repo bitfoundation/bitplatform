@@ -264,4 +264,7 @@
   <data name="ProductCouldNotBeFound" xml:space="preserve">
     <value>Product entity could not be found</value>
   </data>
+  <data name="CategoryNotEmpty" xml:space="preserve">
+    <value>This category contain some products, so you can't delete it</value>
+  </data>
 </root>

@@ -13,12 +13,10 @@ public partial class CategoriesPage
     [AutoInject] private IStateService stateService = default!;
 
     public bool IsLoading { get; set; }
-    public bool CreateEditModalIsOpen { get; set; } = false;
 
     BitDataGridPaginationState pagination = new() { ItemsPerPage = 10 };
     BitDataGrid<CategoryDto>? dataGrid;
     BitDataGridItemsProvider<CategoryDto>? categoriesProvider;
-
 
     int NumResults;
     string _categoryNameFilter = string.Empty;
@@ -44,6 +42,7 @@ public partial class CategoriesPage
         {
             try
             {
+                IsLoading = true;
                 var input = new PagedInputDto()
                 {
                     Skip = req.StartIndex,
@@ -53,7 +52,7 @@ public partial class CategoriesPage
                     SortAscending = req.SortByAscending
                 };
 
-                var response = await httpClient.PostAsJsonAsync("Category/GetCategories", input, AppJsonContext.Default.PagedInputDto);
+                var response = await httpClient.PostAsJsonAsync("Category/GetPagedCategories", input, AppJsonContext.Default.PagedInputDto);
 
                 var data = await response.Content.ReadFromJsonAsync(AppJsonContext.Default.PagedResultDtoCategoryDto);
 
@@ -61,12 +60,13 @@ public partial class CategoriesPage
 
                 return BitDataGridItemsProviderResult.From(data!.Items, data!.Total);
             }
-            catch(Exception ex)
+            catch
             {
                 return BitDataGridItemsProviderResult.From(new List<CategoryDto> { }, 0);
             }   
             finally
             {
+                IsLoading = false;
                 StateHasChanged();
             }
 
@@ -86,12 +86,13 @@ public partial class CategoriesPage
     }
 
 
-    private async Task EditCategory(CategoryDto Category)
+    private Task EditCategory(CategoryDto Category)
     {
         navigationManager.NavigateTo($"create-edit-category/{Category!.Id}");
+        return Task.CompletedTask;
     }
 
-    private async Task DeleteCategory(CategoryDto Category)
+    private Task DeleteCategory(CategoryDto Category)
     {
         ConfirmMessageBox.Show("Are you sure delete?", Category.Name, "Delete", async (confirmed) =>
         {
@@ -101,10 +102,8 @@ public partial class CategoriesPage
                 await RefreshData();
             }
         });
-
-
+        return Task.CompletedTask;
     }
-
 }
 
 

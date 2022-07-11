@@ -30,8 +30,8 @@ public partial class CategoryController : ControllerBase
         return category;
     }
 
-    [HttpPost("GetCategories")]
-    public async Task<PagedResultDto<CategoryDto>> GetCategoriesAsync(PagedInputDto input, CancellationToken cancellationToken)
+    [HttpPost("GetPagedCategories")]
+    public async Task<PagedResultDto<CategoryDto>> GetPagedCategoriesAsync(PagedInputDto input, CancellationToken cancellationToken)
     {
         var query = Get(cancellationToken);
 
@@ -82,6 +82,12 @@ public partial class CategoryController : ControllerBase
     [HttpDelete("{id:int}")]
     public async Task Delete(int id, CancellationToken cancellationToken)
     {
+        if(_dbContext.Products.Any(p => p.CategoryId == id))
+        {
+            throw new BadRequestException(nameof(ErrorStrings.CategoryNotEmpty));
+        }
+        
+
         _dbContext.Remove(new Category { Id = id });
 
         var affectedRows = await _dbContext.SaveChangesAsync(cancellationToken);

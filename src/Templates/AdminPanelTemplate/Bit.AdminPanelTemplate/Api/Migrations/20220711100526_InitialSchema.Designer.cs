@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AdminPanelTemplate.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20220710094410_ProductCreateDate")]
-    partial class ProductCreateDate
+    [Migration("20220711100526_InitialSchema")]
+    partial class InitialSchema
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -158,6 +158,38 @@ namespace AdminPanelTemplate.Api.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Categories");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Color = "#ff0000",
+                            Name = "Ford"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Color = "#0300ff",
+                            Name = "Nissan"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Color = "#00f800",
+                            Name = "Benz"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Color = "#fefe00",
+                            Name = "BMW"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Color = "#fe04fe",
+                            Name = "Tesla"
+                        });
                 });
 
             modelBuilder.Entity("AdminPanelTemplate.Api.Models.Products.Product", b =>
@@ -168,7 +200,7 @@ namespace AdminPanelTemplate.Api.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<int?>("CategoryId")
+                    b.Property<int>("CategoryId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("CreateDate")
@@ -179,10 +211,11 @@ namespace AdminPanelTemplate.Api.Migrations
                         .HasColumnType("nvarchar(512)");
 
                     b.Property<string>("Name")
+                        .IsRequired()
                         .HasMaxLength(64)
                         .HasColumnType("nvarchar(64)");
 
-                    b.Property<decimal?>("Price")
+                    b.Property<decimal>("Price")
                         .HasColumnType("money");
 
                     b.HasKey("Id");
@@ -190,6 +223,215 @@ namespace AdminPanelTemplate.Api.Migrations
                     b.HasIndex("CategoryId");
 
                     b.ToTable("Products");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CategoryId = 1,
+                            CreateDate = new DateTime(2021, 5, 17, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Desc = "The Ford Mustang is ranked #1 in Sports Cars",
+                            Name = "Mustang",
+                            Price = 27155m
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CategoryId = 1,
+                            CreateDate = new DateTime(2021, 5, 7, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Desc = "The Ford GT is a mid-engine two-seater sports car manufactured and marketed by American automobile manufacturer",
+                            Name = "GT",
+                            Price = 500000m
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CategoryId = 1,
+                            CreateDate = new DateTime(2021, 7, 16, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Desc = "Ford Ranger is a nameplate that has been used on multiple model lines of pickup trucks sold by Ford worldwide.",
+                            Name = "Ranger",
+                            Price = 25000m
+                        },
+                        new
+                        {
+                            Id = 4,
+                            CategoryId = 1,
+                            CreateDate = new DateTime(2022, 2, 23, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Desc = "Raptor is a SCORE off-road trophy truck living in a asphalt world",
+                            Name = "Raptor",
+                            Price = 53205m
+                        },
+                        new
+                        {
+                            Id = 5,
+                            CategoryId = 1,
+                            CreateDate = new DateTime(2021, 5, 27, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Desc = "The Ford Maverick is a compact pickup truck produced by Ford Motor Company.",
+                            Name = "Maverick",
+                            Price = 22470m
+                        },
+                        new
+                        {
+                            Id = 6,
+                            CategoryId = 2,
+                            CreateDate = new DateTime(2022, 1, 27, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Desc = "A powerful convertible sports car",
+                            Name = "Roadster",
+                            Price = 42800m
+                        },
+                        new
+                        {
+                            Id = 7,
+                            CategoryId = 2,
+                            CreateDate = new DateTime(2021, 2, 26, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Desc = "A perfectly adequate family sedan with sharp looks",
+                            Name = "Altima",
+                            Price = 24550m
+                        },
+                        new
+                        {
+                            Id = 8,
+                            CategoryId = 2,
+                            CreateDate = new DateTime(2022, 3, 24, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Desc = "Legendary supercar with AWD, 4 seats, a powerful V6 engine and the latest tech",
+                            Name = "GT-R",
+                            Price = 113540m
+                        },
+                        new
+                        {
+                            Id = 9,
+                            CategoryId = 2,
+                            CreateDate = new DateTime(2022, 2, 10, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Desc = "A new smart SUV",
+                            Name = "Juke",
+                            Price = 28100m
+                        },
+                        new
+                        {
+                            Id = 10,
+                            CategoryId = 3,
+                            CreateDate = new DateTime(2021, 7, 22, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Desc = "",
+                            Name = "H247",
+                            Price = 54950m
+                        },
+                        new
+                        {
+                            Id = 11,
+                            CategoryId = 3,
+                            CreateDate = new DateTime(2022, 4, 18, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Desc = "",
+                            Name = "V297",
+                            Price = 103360m
+                        },
+                        new
+                        {
+                            Id = 12,
+                            CategoryId = 3,
+                            CreateDate = new DateTime(2021, 6, 9, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Desc = "",
+                            Name = "R50",
+                            Price = 2000000m
+                        },
+                        new
+                        {
+                            Id = 13,
+                            CategoryId = 4,
+                            CreateDate = new DateTime(2022, 3, 14, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Desc = "",
+                            Name = "M550i",
+                            Price = 77790m
+                        },
+                        new
+                        {
+                            Id = 14,
+                            CategoryId = 4,
+                            CreateDate = new DateTime(2022, 2, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Desc = "",
+                            Name = "540i",
+                            Price = 60945m
+                        },
+                        new
+                        {
+                            Id = 15,
+                            CategoryId = 4,
+                            CreateDate = new DateTime(2021, 5, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Desc = "",
+                            Name = "530e",
+                            Price = 56545m
+                        },
+                        new
+                        {
+                            Id = 16,
+                            CategoryId = 4,
+                            CreateDate = new DateTime(2022, 2, 2, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Desc = "",
+                            Name = "530i",
+                            Price = 55195m
+                        },
+                        new
+                        {
+                            Id = 17,
+                            CategoryId = 4,
+                            CreateDate = new DateTime(2021, 9, 29, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Desc = "",
+                            Name = "M850i",
+                            Price = 100045m
+                        },
+                        new
+                        {
+                            Id = 18,
+                            CategoryId = 4,
+                            CreateDate = new DateTime(2022, 3, 9, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Desc = "",
+                            Name = "X7",
+                            Price = 77980m
+                        },
+                        new
+                        {
+                            Id = 19,
+                            CategoryId = 4,
+                            CreateDate = new DateTime(2021, 3, 18, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Desc = "",
+                            Name = "IX",
+                            Price = 87000m
+                        },
+                        new
+                        {
+                            Id = 20,
+                            CategoryId = 5,
+                            CreateDate = new DateTime(2022, 1, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Desc = "rapid acceleration and dynamic handling",
+                            Name = "Model 3",
+                            Price = 61990m
+                        },
+                        new
+                        {
+                            Id = 21,
+                            CategoryId = 5,
+                            CreateDate = new DateTime(2021, 5, 23, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Desc = "finishes near the top of our luxury electric car rankings.",
+                            Name = "Model S",
+                            Price = 135000m
+                        },
+                        new
+                        {
+                            Id = 22,
+                            CategoryId = 5,
+                            CreateDate = new DateTime(2022, 4, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Desc = "Heart-pumping acceleration, long drive range",
+                            Name = "Model X",
+                            Price = 138890m
+                        },
+                        new
+                        {
+                            Id = 23,
+                            CategoryId = 5,
+                            CreateDate = new DateTime(2021, 3, 13, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Desc = "extensive driving range, lots of standard safety features",
+                            Name = "Model Y",
+                            Price = 67790m
+                        });
                 });
 
             modelBuilder.Entity("AdminPanelTemplate.Api.Models.TodoItem.TodoItem", b =>
@@ -326,7 +568,9 @@ namespace AdminPanelTemplate.Api.Migrations
                 {
                     b.HasOne("AdminPanelTemplate.Api.Models.Categories.Category", "Category")
                         .WithMany("Products")
-                        .HasForeignKey("CategoryId");
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Category");
                 });

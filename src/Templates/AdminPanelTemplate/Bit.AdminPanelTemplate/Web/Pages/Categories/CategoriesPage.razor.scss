@@ -29,7 +29,6 @@
     position: relative;
     display: flex;
     flex-flow: column nowrap;
-    align-items: center;
     width: 100%;
     max-width: rem(860px);
     border-radius: rem(4px);
@@ -45,6 +44,27 @@
 
     @media all and (max-width: #{em(390px)}) {
         max-width: 100%;
+    }
+
+    .page-header {
+        display: -webkit-box;
+        display: -ms-flexbox;
+        display: flex;
+        -webkit-box-align: start;
+        -ms-flex-align: start;
+        align-items: flex-start;
+        -webkit-box-pack: justify;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        padding: 1rem;
+        border-bottom: 1px solid #e9ecef;
+        border-top-left-radius: .3rem;
+        border-top-right-radius: .3rem;
+    }
+
+    .page-header-title {
+        margin-bottom: 0;
+        line-height: 1.5;
     }
 }
 
@@ -122,6 +142,19 @@
         font-size: rem(16px);
         line-height: rem(24px);
     }
+}
+
+
+.spinner {
+    background-color: $Gray1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    opacity: .5;
+    z-index: 10;
+    position: absolute;
 }
 
 .grid {

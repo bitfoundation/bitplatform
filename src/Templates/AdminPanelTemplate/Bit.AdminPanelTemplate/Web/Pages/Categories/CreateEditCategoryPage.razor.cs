@@ -33,14 +33,14 @@ public partial class CreateEditCategoryPage
 
         try
         {
+            IsLoading = true;
             Category = await httpClient.GetFromJsonAsync($"Category/{Id}", AppJsonContext.Default.CategoryDto);
             Category!.Color = "#FFFFFF";
             
         }
-        catch(Exception ex)
+        finally
         {
-            navigationManager.NavigateTo("zelaton");
-
+            IsLoading = false;
         }
         
     }

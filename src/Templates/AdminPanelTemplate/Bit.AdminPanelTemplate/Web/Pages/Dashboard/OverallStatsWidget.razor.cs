@@ -9,6 +9,7 @@ public partial class OverallStatsWidget
 
     [AutoInject] private IStateService stateService = default!;
 
+    public bool IsLoading { get; set; }
     public OverallAnalyticsStatsDataDto Data { get; set; } = new OverallAnalyticsStatsDataDto();
 
     protected override async Task OnInitAsync()
@@ -21,13 +22,12 @@ public partial class OverallStatsWidget
     {
         try
         {
-            Data = await httpClient.GetFromJsonAsync($"Dashboard/GetOverallAnalyticsStatsData", AppJsonContext.Default.OverallAnalyticsStatsDataDto);
-            
+            IsLoading = true;
+            Data= await stateService.GetValue($"{nameof(AnalyticsPage)}-{nameof(OverallStatsWidget)}", async () => await httpClient.GetFromJsonAsync($"Dashboard/GetOverallAnalyticsStatsData", AppJsonContext.Default.OverallAnalyticsStatsDataDto));
         }
-        catch
+        finally
         {
-            
-
+            IsLoading = false;
         }
 
     }

@@ -1,16 +1,24 @@
-﻿@page "/products"
-@using AdminPanelTemplate.Shared.Dtos.Products
+﻿@using AdminPanelTemplate.Shared.Dtos.Products
+
+@page "/products"
 @attribute [Authorize]
 
 @inherits AppComponentBase;
-
 
 <PageTitle>Products</PageTitle>
 
 <div class="page-container">
     <div class="page-content--white">
-        <h1 class="main-title">Product</h1>
-        <BitButton OnClick=CreateProduct>Create</BitButton>
+         @if (IsLoading)
+                {
+                    <div class="spinner">
+                        <BitSpinner></BitSpinner>
+                    </div>
+                }
+        <div class="page-header">
+            <h3>Product</h3>
+            <BitButton OnClick=CreateProduct>Create</BitButton>
+        </div>
         <div class="content">
             <div class="grid">
                 <BitDataGrid ItemsProvider="@productsProvider" TGridItem="@ProductDto" ResizableColumns="true" Pagination="@pagination" @ref="dataGrid">
@@ -21,9 +29,9 @@
                                           InputHtmlAttributes="@(new Dictionary<string, object> {{"autofocus", true}})" />
                         </ColumnOptions>
                     </BitDataGridPropertyColumn>
-                    <BitDataGridPropertyColumn Property="@(c => c.Price)" Sortable="true" Align="BitDataGridAlign.Right" />
-                    <BitDataGridPropertyColumn Property="@(c => c.Desc)" Sortable="true" Align="BitDataGridAlign.Right" />
-                    <BitDataGridTemplateColumn Title="Action">
+                    <BitDataGridPropertyColumn Property="@(c => c.Price)" Sortable="true" Align="BitDataGridAlign.Left" />
+                    @*<BitDataGridPropertyColumn Property="@(c => c.Desc)" Sortable="true" Align="BitDataGridAlign.Left" />*@
+                    <BitDataGridTemplateColumn Title="Action" Align="BitDataGridAlign.Left">
                         <BitIconButton IconName="BitIconName.Edit" OnClick=@(() => EditProduct(context)) />
                         <BitIconButton IconName="BitIconName.Delete" OnClick="WrapHandled(() => DeleteProduct(context))" />
                     </BitDataGridTemplateColumn>

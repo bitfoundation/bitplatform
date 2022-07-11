@@ -10,6 +10,20 @@ namespace AdminPanelTemplate.Api.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "Categories",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: true),
+                    Color = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Categories", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Roles",
                 columns: table => new
                 {
@@ -54,6 +68,29 @@ namespace AdminPanelTemplate.Api.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Users", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Products",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false),
+                    Price = table.Column<decimal>(type: "money", nullable: false),
+                    Desc = table.Column<string>(type: "nvarchar(512)", maxLength: 512, nullable: true),
+                    CreateDate = table.Column<DateTime>(type: "Date", nullable: false),
+                    CategoryId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Products", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Products_Categories_CategoryId",
+                        column: x => x.CategoryId,
+                        principalTable: "Categories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -184,6 +221,53 @@ namespace AdminPanelTemplate.Api.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.InsertData(
+                table: "Categories",
+                columns: new[] { "Id", "Color", "Name" },
+                values: new object[,]
+                {
+                    { 1, "#ff0000", "Ford" },
+                    { 2, "#0300ff", "Nissan" },
+                    { 3, "#00f800", "Benz" },
+                    { 4, "#fefe00", "BMW" },
+                    { 5, "#fe04fe", "Tesla" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Products",
+                columns: new[] { "Id", "CategoryId", "CreateDate", "Desc", "Name", "Price" },
+                values: new object[,]
+                {
+                    { 1, 1, new DateTime(2021, 5, 17, 0, 0, 0, 0, DateTimeKind.Unspecified), "The Ford Mustang is ranked #1 in Sports Cars", "Mustang", 27155m },
+                    { 2, 1, new DateTime(2021, 5, 7, 0, 0, 0, 0, DateTimeKind.Unspecified), "The Ford GT is a mid-engine two-seater sports car manufactured and marketed by American automobile manufacturer", "GT", 500000m },
+                    { 3, 1, new DateTime(2021, 7, 16, 0, 0, 0, 0, DateTimeKind.Unspecified), "Ford Ranger is a nameplate that has been used on multiple model lines of pickup trucks sold by Ford worldwide.", "Ranger", 25000m },
+                    { 4, 1, new DateTime(2022, 2, 23, 0, 0, 0, 0, DateTimeKind.Unspecified), "Raptor is a SCORE off-road trophy truck living in a asphalt world", "Raptor", 53205m },
+                    { 5, 1, new DateTime(2021, 5, 27, 0, 0, 0, 0, DateTimeKind.Unspecified), "The Ford Maverick is a compact pickup truck produced by Ford Motor Company.", "Maverick", 22470m },
+                    { 6, 2, new DateTime(2022, 1, 27, 0, 0, 0, 0, DateTimeKind.Unspecified), "A powerful convertible sports car", "Roadster", 42800m },
+                    { 7, 2, new DateTime(2021, 2, 26, 0, 0, 0, 0, DateTimeKind.Unspecified), "A perfectly adequate family sedan with sharp looks", "Altima", 24550m },
+                    { 8, 2, new DateTime(2022, 3, 24, 0, 0, 0, 0, DateTimeKind.Unspecified), "Legendary supercar with AWD, 4 seats, a powerful V6 engine and the latest tech", "GT-R", 113540m },
+                    { 9, 2, new DateTime(2022, 2, 10, 0, 0, 0, 0, DateTimeKind.Unspecified), "A new smart SUV", "Juke", 28100m },
+                    { 10, 3, new DateTime(2021, 7, 22, 0, 0, 0, 0, DateTimeKind.Unspecified), "", "H247", 54950m },
+                    { 11, 3, new DateTime(2022, 4, 18, 0, 0, 0, 0, DateTimeKind.Unspecified), "", "V297", 103360m },
+                    { 12, 3, new DateTime(2021, 6, 9, 0, 0, 0, 0, DateTimeKind.Unspecified), "", "R50", 2000000m },
+                    { 13, 4, new DateTime(2022, 3, 14, 0, 0, 0, 0, DateTimeKind.Unspecified), "", "M550i", 77790m },
+                    { 14, 4, new DateTime(2022, 2, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "", "540i", 60945m },
+                    { 15, 4, new DateTime(2021, 5, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), "", "530e", 56545m },
+                    { 16, 4, new DateTime(2022, 2, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), "", "530i", 55195m },
+                    { 17, 4, new DateTime(2021, 9, 29, 0, 0, 0, 0, DateTimeKind.Unspecified), "", "M850i", 100045m },
+                    { 18, 4, new DateTime(2022, 3, 9, 0, 0, 0, 0, DateTimeKind.Unspecified), "", "X7", 77980m },
+                    { 19, 4, new DateTime(2021, 3, 18, 0, 0, 0, 0, DateTimeKind.Unspecified), "", "IX", 87000m },
+                    { 20, 5, new DateTime(2022, 1, 15, 0, 0, 0, 0, DateTimeKind.Unspecified), "rapid acceleration and dynamic handling", "Model 3", 61990m },
+                    { 21, 5, new DateTime(2021, 5, 23, 0, 0, 0, 0, DateTimeKind.Unspecified), "finishes near the top of our luxury electric car rankings.", "Model S", 135000m },
+                    { 22, 5, new DateTime(2022, 4, 15, 0, 0, 0, 0, DateTimeKind.Unspecified), "Heart-pumping acceleration, long drive range", "Model X", 138890m },
+                    { 23, 5, new DateTime(2021, 3, 13, 0, 0, 0, 0, DateTimeKind.Unspecified), "extensive driving range, lots of standard safety features", "Model Y", 67790m }
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Products_CategoryId",
+                table: "Products",
+                column: "CategoryId");
+
             migrationBuilder.CreateIndex(
                 name: "IX_RoleClaims_RoleId",
                 table: "RoleClaims",
@@ -232,6 +316,9 @@ namespace AdminPanelTemplate.Api.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "Products");
+
+            migrationBuilder.DropTable(
                 name: "RoleClaims");
 
             migrationBuilder.DropTable(
@@ -248,6 +335,9 @@ namespace AdminPanelTemplate.Api.Migrations
 
             migrationBuilder.DropTable(
                 name: "UserTokens");
+
+            migrationBuilder.DropTable(
+                name: "Categories");
 
             migrationBuilder.DropTable(
                 name: "Roles");

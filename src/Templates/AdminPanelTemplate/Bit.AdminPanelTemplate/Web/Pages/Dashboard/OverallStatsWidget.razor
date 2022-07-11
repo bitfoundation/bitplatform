@@ -3,6 +3,12 @@
 <div class="row">
     <div class="col">
         <div class="widget-stats stats-red">
+            @if (IsLoading)
+            {
+                <div class="spinner">
+                    <BitSpinner></BitSpinner>
+                </div>
+            }
             <div class="num">
                 @Data.SeasonProductCount
             </div>
@@ -11,6 +17,12 @@
     </div>
     <div class="col">
         <div class="widget-stats stats-green">
+           @if (IsLoading)
+            {
+                <div class="spinner">
+                    <BitSpinner></BitSpinner>
+                </div>
+            }
             <div class="num">
                 @Data.TotalProducts
             </div>
@@ -19,6 +31,12 @@
     </div>
     <div class="col">
         <div class="widget-stats stats-blue">
+           @if (IsLoading)
+            {
+                <div class="spinner">
+                    <BitSpinner></BitSpinner>
+                </div>
+            }
             <div class="num">
                 @Data.TotalCategories
             </div>

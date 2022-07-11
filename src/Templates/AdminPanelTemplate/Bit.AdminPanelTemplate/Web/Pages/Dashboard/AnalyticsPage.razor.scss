@@ -53,6 +53,7 @@
     box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
     transition: 0.3s;
     border-radius: 5px;
+    height: 100%;
 }
 
 
@@ -66,17 +67,32 @@
 .card-body {
     padding: 1rem 1rem;
 
-    h1{
-        display:none;
+    .spinner {
+        background-color: $Gray1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 100%;
+        opacity: .3;
+        z-index: 10;
+        position: absolute;
+        margin: -1rem;
+    }
+
+    > h1 {
+        display: none;
     }
 }
+
 
 .widget-stats {
     position: relative;
     display: block;
-    padding: 20px;
+    padding: 1rem;
     margin-bottom: 10px;
     overflow: hidden;
+    height: 100%;
 
     .num {
         position: relative;
@@ -95,8 +111,21 @@
         padding: 0;
     }
 
-    
+    .spinner {
+        background-color: $Gray1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 100%;
+        opacity: .3;
+        z-index: 10;
+        position: absolute;
+        margin: -1rem;
+    }
 }
+
+
 
 .stats-blue {
     background-color: $Blue

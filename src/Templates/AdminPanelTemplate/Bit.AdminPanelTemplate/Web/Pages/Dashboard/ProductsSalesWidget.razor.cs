@@ -1,5 +1,4 @@
-﻿using AdminPanelTemplate.Shared.Dtos.Dashboard;
-using LiveChartsCore;
+﻿using LiveChartsCore;
 using LiveChartsCore.Measure;
 using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Painting;
@@ -13,6 +12,7 @@ public partial class ProductsSalesWidget
 
     [AutoInject] private IStateService stateService = default!;
 
+    public bool IsLoading { get; set; }
     public ISeries[] Series { get; set; } = { };
     public Axis[] XAxis { get; set; } = { };
 
@@ -26,13 +26,13 @@ public partial class ProductsSalesWidget
     {
         try
         {
-            var Data = await httpClient.GetFromJsonAsync($"Dashboard/GetProductsSalesStats", AppJsonContext.Default.ListProductSaleStatDto);
-
-
+            IsLoading = true;
+            var Data = await stateService.GetValue($"{nameof(AnalyticsPage)}-{nameof(ProductsSalesWidget)}", async () => await httpClient.GetFromJsonAsync($"Dashboard/GetProductsSalesStats", AppJsonContext.Default.ListProductSaleStatDto));
             Series = new ISeries[] {
                 new ColumnSeries<decimal>()
                 {
                     Name = "",
+                    DataLabelsSize=20,
                     Values = Data.Select(d => d.SaleAmount).ToArray()
                 }
             };
@@ -40,19 +40,25 @@ public partial class ProductsSalesWidget
             XAxis = new Axis[]{
                 new Axis
                 {
-                    Labels = Data.Select(d=>d.ProductName).ToArray(),
-                    Labeler = Labelers.Currency
+                    Labels = Data.Select(d=>d.ProductName[0..Math.Min(d.ProductName.Length, 5)]).ToArray(),
+                    //Labeler = Labelers.Currency,
+                    Position=AxisPosition.Start,
+                    MaxLimit=20,
+                    MinLimit=10,
+                    MinStep = 0,
+                    //LabelsRotation=-90,
+                    LabelsPaint = new SolidColorPaint(SKColors.Black),
+                    TextSize = 10,
                 }
             };
-
-
         }
-        catch
+        finally
         {
-
-
+            IsLoading = false;
         }
 
     }
+
+
 
 }

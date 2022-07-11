@@ -13,6 +13,8 @@ public partial class ProductsCountPerCategotyWidget
 
     [AutoInject] private IStateService stateService = default!;
 
+    public bool IsLoading { get; set; }
+
     public ISeries[] Series { get; set; } = { };
     public Axis[] XAxis { get; set; } = { };
 
@@ -26,8 +28,8 @@ public partial class ProductsCountPerCategotyWidget
     {
         try
         {
-            var Data = await httpClient.GetFromJsonAsync($"Dashboard/GetProductsCountPerCategotyStats", AppJsonContext.Default.ListProductsCountPerCategoryDto);
-
+            IsLoading = true;
+            var Data = await stateService.GetValue($"{nameof(AnalyticsPage)}-{nameof(ProductsCountPerCategotyWidget)}", async () => await httpClient.GetFromJsonAsync($"Dashboard/GetProductsCountPerCategotyStats", AppJsonContext.Default.ListProductsCountPerCategoryDto));
             Series = new ISeries[] {
                 new ColumnSeries<int>()
                 {
@@ -48,10 +50,9 @@ public partial class ProductsCountPerCategotyWidget
 
 
         }
-        catch
+        finally
         {
-
-
+            IsLoading = false;
         }
 
     }

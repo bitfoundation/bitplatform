@@ -10,7 +10,7 @@ public partial class ProductsPage
 
     [AutoInject] private IStateService stateService = default!;
 
-    public bool IsLoading { get; set; }
+    public bool IsLoading { get; set; } 
 
     CreateEditProductModal? modal;
 
@@ -44,6 +44,7 @@ public partial class ProductsPage
         {
             try
             {
+                IsLoading = true;
                 var input = new PagedInputDto()
                 {
                     Skip = req.StartIndex,
@@ -53,7 +54,7 @@ public partial class ProductsPage
                     SortAscending = req.SortByAscending
                 };
 
-                var response = await httpClient.PostAsJsonAsync("Product/GetProducts", input, AppJsonContext.Default.PagedInputDto);
+                var response = await httpClient.PostAsJsonAsync("Product/GetPagedProducts", input, AppJsonContext.Default.PagedInputDto);
 
                 var data= await response.Content.ReadFromJsonAsync(AppJsonContext.Default.PagedResultDtoProductDto);
 
@@ -67,6 +68,7 @@ public partial class ProductsPage
             }
             finally
             {
+                IsLoading=false;    
                 StateHasChanged();
             }
 

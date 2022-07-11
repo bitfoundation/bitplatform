@@ -12,6 +12,7 @@ public partial class ProductsPercentageWidget
     [AutoInject] private HttpClient httpClient = default!;
 
     [AutoInject] private IStateService stateService = default!;
+    public bool IsLoading { get; set; }
 
     public ISeries[] Series { get; set; } = { };
 
@@ -25,16 +26,14 @@ public partial class ProductsPercentageWidget
     {
         try
         {
-            var Data = await httpClient.GetFromJsonAsync($"Dashboard/GetProductsPercentagePerCategoryStats", AppJsonContext.Default.ListProductPercentagePerCategoryDto);
-
+            IsLoading = true;
+            var Data = await stateService.GetValue($"{nameof(AnalyticsPage)}-{nameof(ProductsPercentageWidget)}", async () => await httpClient.GetFromJsonAsync($"Dashboard/GetProductsPercentagePerCategoryStats", AppJsonContext.Default.ListProductPercentagePerCategoryDto));
             Series = Data.Select(d => 
                     new PieSeries<double> { Values = new double[] { d.ProductPercentage }, Name = d.CategoryName }).ToArray();
-            
-
         }
-        catch
+        finally
         {
-
+            IsLoading = false;
 
         }
 

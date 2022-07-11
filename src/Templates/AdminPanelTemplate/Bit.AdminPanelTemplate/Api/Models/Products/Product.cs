@@ -13,10 +13,8 @@ public class Product
 
     public int Id { get; set; }
 
-    [NotNull]
     [MaxLength(64)]
-    public string? Name { get; set; }
-
+    public string Name { get; set; }
 
     [Column(TypeName = "money")]
     [Range(0, Double.MaxValue)]
@@ -29,11 +27,10 @@ public class Product
     [Column(TypeName ="Date")]
     public DateTime CreateDate { get; set; }
 
-
     [ForeignKey(nameof(CategoryId))]
-    public Category? Category { get; set; }
+    public Category Category { get; set; }
 
-    public int? CategoryId { get; set; }
+    public int CategoryId { get; set; }
 
 
 }

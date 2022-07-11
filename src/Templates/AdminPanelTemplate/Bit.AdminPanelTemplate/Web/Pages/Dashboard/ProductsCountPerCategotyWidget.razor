@@ -2,15 +2,19 @@
 @using LiveChartsCore.SkiaSharpView
 @using LiveChartsCore.SkiaSharpView.Blazor
 
-
 @inherits AppComponentBase;
-
 
 <div class="card">
     <div class="card-header">
         Products count per category chart
     </div>
     <div class="card-body">
+       @if (IsLoading)
+        {
+            <div class="spinner">
+                <BitSpinner></BitSpinner>
+            </div>
+        }
         <CartesianChart Series="Series" LegendOrientation="LiveChartsCore.Measure.LegendOrientation.Auto"
                         XAxes="XAxis"
                         LegendPosition="LiveChartsCore.Measure.LegendPosition.Hidden">
