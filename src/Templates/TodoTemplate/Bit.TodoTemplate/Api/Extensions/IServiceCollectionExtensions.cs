@@ -4,6 +4,7 @@ using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.SwaggerGen;
 using TodoTemplate.Api;
 using TodoTemplate.Api.Models.Account;
 using TodoTemplate.Api.Services.Implementations;
@@ -103,6 +104,8 @@ public static class IServiceCollectionExtensions
     {
         services.AddSwaggerGen(options =>
         {
+            options.OperationFilter<ODataOperationFilter>();
+
             options.AddSecurityDefinition("bearerAuth", new OpenApiSecurityScheme
             {
                 Name = "Authorization",
