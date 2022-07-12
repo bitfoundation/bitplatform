@@ -1,5 +1,4 @@
-﻿using AdminPanel.Api.Extensions;
-using AdminPanel.Api.Models.Products;
+﻿using AdminPanel.Api.Models.Products;
 using AdminPanel.Shared.Dtos.Products;
 
 namespace AdminPanel.Api.Controllers;
@@ -30,30 +29,20 @@ public partial class ProductController : ControllerBase
         return product;
     }
 
-    [HttpPost("GetPagedProducts")]
-    public async Task<PagedResultDto<ProductDto>> GetPagedProductsAsync(PagedInputDto input, CancellationToken cancellationToken)
+    [HttpGet("[action]")]
+    public async Task<PagedResult<ProductDto>> GetProducts(ODataQueryOptions<ProductDto> odataQuery, CancellationToken cancellationToken)
     {
-        var query = Get(cancellationToken);
+        var query = (IQueryable<ProductDto>)odataQuery.ApplyTo(Get(cancellationToken), ignoreQueryOptions: AllowedQueryOptions.Top | AllowedQueryOptions.Skip);
 
-        var total = query.Count();
+        var totalCount = await query.LongCountAsync(cancellationToken);
 
-        var filteredQuery = query
-                            .WhereIf(!string.IsNullOrWhiteSpace(input.Filter), _ => _.Name!.Contains(input.Filter));
+        if (odataQuery.Skip is not null)
+            query = query.Skip(odataQuery.Skip.Value);
 
-        var orderedQuery = (input.SortBy, input.SortAscending) switch
-        {
-            (nameof(Product.Name), true) => filteredQuery.OrderBy(c => c.Name),
-            (nameof(Product.Name), false) => filteredQuery.OrderByDescending(c => c.Name),
-            (nameof(Product.Price), true) => filteredQuery.OrderBy(c => c.Price),
-            (nameof(Product.Price), false) => filteredQuery.OrderByDescending(c => c.Price),
-            _ => filteredQuery.OrderBy(c => c.Id)
-        };
+        if (odataQuery.Top is not null)
+            query = query.Take(odataQuery.Top.Value);
 
-        var pageResult = await orderedQuery
-                         .PageBy(input.Skip, input.MaxResultCount)
-                         .ToListAsync();
-
-        return new PagedResultDto<ProductDto>(pageResult, total);
+        return new PagedResult<ProductDto>(await query.ToListAsync(cancellationToken), totalCount);
     }
 
     [HttpPost]
@@ -74,7 +63,7 @@ public partial class ProductController : ControllerBase
         if (productToUpdate is null)
             throw new ResourceNotFoundException(nameof(ErrorStrings.ProductCouldNotBeFound));
 
-        var updatedTodoItem = _mapper.Map(dto, productToUpdate);
+        var updatedProduct = _mapper.Map(dto, productToUpdate);
 
         _dbContext.Products.Update(productToUpdate);
 

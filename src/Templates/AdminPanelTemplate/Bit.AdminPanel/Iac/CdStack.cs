@@ -14,19 +14,19 @@ public class CdStack
     {
         Config pulumiConfig = new();
 
-        ResourceGroup resourceGroup = new("td-cd", new ResourceGroupArgs
+        ResourceGroup resourceGroup = new("ad-cd", new ResourceGroupArgs
         {
-            ResourceGroupName = "td-cd"
-        }, options: new() { ImportId = $"/subscriptions/{GetClientConfig.InvokeAsync().GetAwaiter().GetResult().SubscriptionId}/resourceGroups/td-cd" });
+            ResourceGroupName = "ad-cd"
+        }, options: new() { ImportId = $"/subscriptions/{GetClientConfig.InvokeAsync().GetAwaiter().GetResult().SubscriptionId}/resourceGroups/ad-cd" });
 
-        var azureDevOpsVMAdminUserName = pulumiConfig.Require($"dev-ops-vm-td-admin-user-name");
-        var azureDevOpsVMAdminUserPassword = pulumiConfig.RequireSecret($"dev-ops-vm-td-admin-user-password");
+        var azureDevOpsVMAdminUserName = pulumiConfig.Require($"dev-ops-vm-ad-admin-user-name");
+        var azureDevOpsVMAdminUserPassword = pulumiConfig.RequireSecret($"dev-ops-vm-ad-admin-user-password");
 
-        NetworkSecurityGroup azureDevOpsAgentVMNetSecurityGroup = new($"dev-ops-net-sec-group-td", new()
+        NetworkSecurityGroup azureDevOpsAgentVMNetSecurityGroup = new($"dev-ops-net-sec-group-ad", new()
         {
             ResourceGroupName = resourceGroup.Name,
             Location = resourceGroup.Location,
-            NetworkSecurityGroupName = $"dev-ops-net-sec-group-td",
+            NetworkSecurityGroupName = $"dev-ops-net-sec-group-ad",
             SecurityRules = new List<Pulumi.AzureNative.Network.Inputs.SecurityRuleArgs>
             {
                 /*new Pulumi.AzureNative.Network.Inputs.SecurityRuleArgs
@@ -44,32 +44,32 @@ public class CdStack
             }
         });
 
-        VirtualNetwork network = new($"dev-ops-net-td", new()
+        VirtualNetwork network = new($"dev-ops-net-ad", new()
         {
             ResourceGroupName = resourceGroup.Name,
             Location = resourceGroup.Location,
-            VirtualNetworkName = $"dev-ops-net-td",
+            VirtualNetworkName = $"dev-ops-net-ad",
             AddressSpace = new AddressSpaceArgs { AddressPrefixes = new List<string> { "10.0.0.0/16" } }
         });
 
-        PublicIPAddress ipAddress = new($"dev-ops-ip-td", new()
+        PublicIPAddress ipAddress = new($"dev-ops-ip-ad", new()
         {
             ResourceGroupName = resourceGroup.Name,
             Location = resourceGroup.Location,
-            PublicIpAddressName = $"dev-ops-ip-td",
+            PublicIpAddressName = $"dev-ops-ip-ad",
             PublicIPAllocationMethod = IPAllocationMethod.Static,
             Sku = new PublicIPAddressSkuArgs { Name = Pulumi.AzureNative.Network.PublicIPAddressSkuName.Standard },
             DnsSettings = new PublicIPAddressDnsSettingsArgs
             {
-                DomainNameLabel = $"dev-ops-vm-td" // dev-ops-vm-td.eastus.cloudapp.azure.com
+                DomainNameLabel = $"dev-ops-vm-ad" // dev-ops-vm-ad.eastus.cloudapp.azure.com
             }
         });
 
-        Subnet subnet = new Subnet($"dev-ops-subnet-td", new()
+        Subnet subnet = new Subnet($"dev-ops-subnet-ad", new()
         {
             ResourceGroupName = resourceGroup.Name,
-            Name = $"dev-ops-subnet-td",
-            SubnetName = $"dev-ops-subnet-td",
+            Name = $"dev-ops-subnet-ad",
+            SubnetName = $"dev-ops-subnet-ad",
             VirtualNetworkName = network.Name,
             AddressPrefix = "10.0.2.0/24"
         });
@@ -82,13 +82,13 @@ public class CdStack
             // EnableAcceleratedNetworking = true, // Depends on your vm size
             DnsSettings = new NetworkInterfaceDnsSettingsArgs
             {
-                InternalDnsNameLabel = $"dev-ops-vm-td" // dev-ops-vm-td.internal.cloudapp.net
+                InternalDnsNameLabel = $"dev-ops-vm-ad" // dev-ops-vm-ad.internal.cloudapp.net
             },
             IpConfigurations = new List<NetworkInterfaceIPConfigurationArgs>
             {
                 new NetworkInterfaceIPConfigurationArgs
                 {
-                    Name = $"dev-ops-vm-ip-td",
+                    Name = $"dev-ops-vm-ip-ad",
                     PrivateIPAddress = "10.0.0.4",
                     PrivateIPAllocationMethod = IPAllocationMethod.Dynamic,
                     PublicIPAddress = new Pulumi.AzureNative.Network.Inputs.PublicIPAddressArgs
@@ -107,16 +107,16 @@ public class CdStack
             }
         });
 
-        VirtualMachine vm = new($"dev-ops-vm-td", new()
+        VirtualMachine vm = new($"dev-ops-vm-ad", new()
         {
             ResourceGroupName = resourceGroup.Name,
             Location = resourceGroup.Location,
-            VmName = $"dev-ops-vm-td",
+            VmName = $"dev-ops-vm-ad",
             OsProfile = new Pulumi.AzureNative.Compute.Inputs.OSProfileArgs
             {
                 AdminUsername = azureDevOpsVMAdminUserName,
                 AdminPassword = azureDevOpsVMAdminUserPassword,
-                ComputerName = $"dev-ops-vm-td",
+                ComputerName = $"dev-ops-vm-ad",
                 WindowsConfiguration = new Pulumi.AzureNative.Compute.Inputs.WindowsConfigurationArgs { ProvisionVMAgent = true, EnableAutomaticUpdates = true }
             },
             HardwareProfile = new Pulumi.AzureNative.Compute.Inputs.HardwareProfileArgs
@@ -130,7 +130,7 @@ public class CdStack
                 {
                     ManagedDisk = new Pulumi.AzureNative.Compute.Inputs.ManagedDiskParametersArgs { StorageAccountType = StorageAccountTypes.Standard_LRS },
                     OsType = OperatingSystemTypes.Windows,
-                    Name = $"dev-ops-vm-disk-td",
+                    Name = $"dev-ops-vm-disk-ad",
                     CreateOption = DiskCreateOptionTypes.FromImage,
                     Caching = CachingTypes.ReadWrite,
                     DiskSizeGB = 127

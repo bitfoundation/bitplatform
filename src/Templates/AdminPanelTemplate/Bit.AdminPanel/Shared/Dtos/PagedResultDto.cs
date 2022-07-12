@@ -1,34 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace AdminPanel.Shared.Dtos;
 
-namespace AdminPanel.Shared.Dtos;
-
-[Serializable]
-public class PagedResultDto<T> where T : class
+public class PagedResult<T>
 {
-    private IList<T> _items;
-    public IList<T> Items
-    {
-        get { return _items ??= new List<T>(); }
-        set { _items = value; }
-    }
+    public IList<T> Items { get; set; }
 
+    public long TotalCount { get; set; }
 
-    public int Total { get; set; }
-
-
-    public PagedResultDto(IList<T> items, int total)
+    public PagedResult(IList<T> items, long totalCount)
     {
         Items = items;
-        Total = total;
+        TotalCount = totalCount;
     }
 
-    public PagedResultDto()
+    public PagedResult()
     {
 
     }
-
 }

@@ -331,15 +331,6 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to To Do item could not be found.
-        /// </summary>
-        public static string ToDoItemCouldNotBeFound {
-            get {
-                return ResourceManager.GetString("ToDoItemCouldNotBeFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Your request lacks valid authentication credentials.
         /// </summary>
         public static string UnauthorizedException {

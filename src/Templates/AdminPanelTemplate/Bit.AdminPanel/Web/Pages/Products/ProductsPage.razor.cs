@@ -1,7 +1,7 @@
 ﻿//-:cnd:noEmit
-using System.Text.Json;
 using AdminPanel.App.Shared;
 using AdminPanel.Shared.Dtos.Products;
+using Microsoft.AspNetCore.Components;
 
 namespace AdminPanel.App.Pages.Products;
 public partial class ProductsPage
@@ -10,7 +10,9 @@ public partial class ProductsPage
 
     [AutoInject] private IStateService stateService = default!;
 
-    public bool IsLoading { get; set; } 
+    [AutoInject] private NavigationManager navigationManager = default!;
+
+    public bool IsLoading { get; set; }
 
     CreateEditProductModal? modal;
 
@@ -18,7 +20,7 @@ public partial class ProductsPage
     BitDataGrid<ProductDto>? dataGrid;
     BitDataGridItemsProvider<ProductDto> productsProvider;
 
-    int NumResults;
+    long TotalCount;
     string _productNameFilter = string.Empty;
     string ProductNameFilter
     {
@@ -29,8 +31,6 @@ public partial class ProductsPage
             _ = dataGrid.RefreshDataAsync();
         }
     }
-
-
 
     protected override async Task OnInitAsync()
     {
@@ -44,23 +44,31 @@ public partial class ProductsPage
         {
             try
             {
-                IsLoading = true;
-                var input = new PagedInputDto()
+                // https://docs.microsoft.com/en-us/odata/concepts/queryoptions-overview
+
+                var query = new Dictionary<string, object>()
                 {
-                    Skip = req.StartIndex,
-                    MaxResultCount = (req.Count.HasValue) ? req.Count.Value : 10,
-                    Filter = _productNameFilter,
-                    SortBy = req.SortByColumn?.Title,
-                    SortAscending = req.SortByAscending
+                    { "$top", req.Count.HasValue ? req.Count.Value : 10 },
+                    { "$skip", req.StartIndex }
                 };
 
-                var response = await httpClient.PostAsJsonAsync("Product/GetPagedProducts", input, AppJsonContext.Default.PagedInputDto);
+                if (string.IsNullOrEmpty(_productNameFilter) is false)
+                {
+                    query.Add("$filter", $"contains(Name,{_productNameFilter}");
+                }
 
-                var data= await response.Content.ReadFromJsonAsync(AppJsonContext.Default.PagedResultDtoProductDto);
+                if (req.SortByColumn is not null)
+                {
+                    query.Add("$orderby", $"{req.SortByColumn.Title} {(req.SortByAscending ? "asc" : "desc")}");
+                }
 
-                NumResults = data!.Total;
+                var url = navigationManager.GetUriWithQueryParameters("Product/GetProducts", query);
 
-                return BitDataGridItemsProviderResult.From(data!.Items, data!.Total);
+                var data = await httpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto);
+
+                TotalCount = data!.TotalCount;
+
+                return BitDataGridItemsProviderResult.From(data!.Items, (int)data!.TotalCount);
             }
             catch
             {
@@ -68,12 +76,10 @@ public partial class ProductsPage
             }
             finally
             {
-                IsLoading=false;    
+                IsLoading = false;
                 StateHasChanged();
             }
-
         };
-
     }
 
     private async Task RefreshData()
@@ -86,12 +92,10 @@ public partial class ProductsPage
         modal!.ShowModal(new ProductDto());
     }
 
-
     private async Task EditProduct(ProductDto product)
     {
         modal!.ShowModal(product);
     }
-
     private async Task DeleteProduct(ProductDto product)
     {
         ConfirmMessageBox.Show("Are you sure delete?", product.Name, "Delete", async (confirmed) =>
@@ -102,14 +106,11 @@ public partial class ProductsPage
                 await RefreshData();
             }
         });
-
-
     }
 
-
-    protected async void ModalSave()
+    protected async void OnSuccessfulProductSave()
     {
-        MessageBox.Show("Succesfully Added", "product");
+        MessageBox.Show("Succesfully saved", "product");
 
         await RefreshData();
     }

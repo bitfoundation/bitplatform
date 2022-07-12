@@ -1,6 +1,4 @@
-﻿using UIKit;
-
-namespace AdminPanel.App.Platforms.MacCatalyst;
+﻿namespace AdminPanel.App.Platforms.MacCatalyst;
 
 public class Program
 {

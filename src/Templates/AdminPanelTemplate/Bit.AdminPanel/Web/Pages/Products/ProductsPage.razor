@@ -9,12 +9,12 @@
 
 <div class="page-container">
     <div class="page-content--white">
-         @if (IsLoading)
-                {
-                    <div class="spinner">
-                        <BitSpinner></BitSpinner>
-                    </div>
-                }
+        @if (IsLoading)
+        {
+            <div class="spinner">
+                <BitSpinner></BitSpinner>
+            </div>
+        }
         <div class="page-header">
             <h3>Product</h3>
             <BitButton OnClick=CreateProduct>Create</BitButton>
@@ -30,7 +30,6 @@
                         </ColumnOptions>
                     </BitDataGridPropertyColumn>
                     <BitDataGridPropertyColumn Property="@(c => c.Price)" Sortable="true" Align="BitDataGridAlign.Left" />
-                    @*<BitDataGridPropertyColumn Property="@(c => c.Desc)" Sortable="true" Align="BitDataGridAlign.Left" />*@
                     <BitDataGridTemplateColumn Title="Action" Align="BitDataGridAlign.Left">
                         <BitIconButton IconName="BitIconName.Edit" OnClick=@(() => EditProduct(context)) />
                         <BitIconButton IconName="BitIconName.Delete" OnClick="WrapHandled(() => DeleteProduct(context))" />
@@ -44,6 +43,6 @@
     </div>
 </div>
 
-<CreateEditProductModal OnProductSave="@ModalSave" @ref="modal" />
+<CreateEditProductModal OnProductSave="@OnSuccessfulProductSave" @ref="modal" />
 
 <ConfirmMessageBox />

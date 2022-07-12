@@ -1,5 +1,4 @@
-﻿using AdminPanel.Api.Models;
-using AdminPanel.Api.Models.Account;
+﻿using AdminPanel.Api.Models.Account;
 using AdminPanel.Api.Models.Categories;
 using AdminPanel.Api.Models.Products;
 
@@ -14,7 +13,6 @@ public class AppDbContext : IdentityDbContext<User, Role, int>
 
     public DbSet<Category> Categories { get; set; }
     public DbSet<Product> Products { get; set; }
-
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

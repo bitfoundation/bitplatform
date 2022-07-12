@@ -1,5 +1,4 @@
-﻿using AdminPanel.Shared.Dtos.Dashboard;
-using LiveChartsCore;
+﻿using LiveChartsCore;
 using LiveChartsCore.Measure;
 using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Painting;
@@ -27,24 +26,23 @@ public partial class ProductsPercentageWidget
         try
         {
             IsLoading = true;
+
             var Data = await stateService.GetValue($"{nameof(AnalyticsPage)}-{nameof(ProductsPercentageWidget)}", async () => await httpClient.GetFromJsonAsync($"Dashboard/GetProductsPercentagePerCategoryStats", AppJsonContext.Default.ListProductPercentagePerCategoryDto));
+
             Series = Data!.Select(d =>
-                    new PieSeries<float> { 
+                    new PieSeries<float>
+                    {
                         Values = new float[] { d.ProductPercentage },
                         Name = d.CategoryName,
                         Fill = new SolidColorPaint(SKColor.Parse(d.CategoryColor)),
                         DataLabelsPosition = PolarLabelsPosition.Start,
                         DataLabelsFormatter = point => point.PrimaryValue.ToString("N1"),
                         DataLabelsPaint = new SolidColorPaint(SKColors.Black)
-                       
                     }).ToArray();
         }
         finally
         {
             IsLoading = false;
-
         }
-
     }
-
 }

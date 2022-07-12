@@ -1,6 +1,5 @@
 ﻿//-:cnd:noEmit
-using System.Text.Json;
-using AdminPanel.App.Shared;
+using System.Collections.Generic;
 using AdminPanel.Shared.Dtos.Categories;
 
 namespace AdminPanel.App.Pages.Categories;
@@ -10,15 +9,12 @@ public partial class CategoriesPage
 
     [AutoInject] private NavigationManager navigationManager = default!;
 
-    [AutoInject] private IStateService stateService = default!;
-
     public bool IsLoading { get; set; }
 
     BitDataGridPaginationState pagination = new() { ItemsPerPage = 10 };
     BitDataGrid<CategoryDto>? dataGrid;
     BitDataGridItemsProvider<CategoryDto>? categoriesProvider;
 
-    int NumResults;
     string _categoryNameFilter = string.Empty;
     string CategoryNameFilter
     {
@@ -26,7 +22,7 @@ public partial class CategoriesPage
         set
         {
             _categoryNameFilter = value;
-            _ =RefreshData();
+            _ = RefreshData();
         }
     }
 
@@ -36,55 +32,59 @@ public partial class CategoriesPage
         await base.OnInitAsync();
     }
 
-    private Task PrepareGridDataProvider()
+    private async Task PrepareGridDataProvider()
     {
         categoriesProvider = async req =>
         {
             try
             {
                 IsLoading = true;
-                var input = new PagedInputDto()
+
+                // https://docs.microsoft.com/en-us/odata/concepts/queryoptions-overview
+
+                var query = new Dictionary<string, object>()
                 {
-                    Skip = req.StartIndex,
-                    MaxResultCount = req.Count.HasValue ? req.Count.Value : 10,
-                    Filter = _categoryNameFilter,
-                    SortBy = req.SortByColumn?.Title,
-                    SortAscending = req.SortByAscending
+                    { "$top", req.Count.HasValue ? req.Count.Value : 10 },
+                    { "$skip", req.StartIndex }
                 };
 
-                var response = await httpClient.PostAsJsonAsync("Category/GetPagedCategories", input, AppJsonContext.Default.PagedInputDto);
+                if (string.IsNullOrEmpty(_categoryNameFilter) is false)
+                {
+                    query.Add("$filter", $"contains(Name,{_categoryNameFilter}");
+                }
 
-                var data = await response.Content.ReadFromJsonAsync(AppJsonContext.Default.PagedResultDtoCategoryDto);
+                if (req.SortByColumn is not null)
+                {
+                    query.Add("$orderby", $"{req.SortByColumn.Title} {(req.SortByAscending ? "asc" : "desc")}");
+                }
 
-                NumResults = data!.Total;
+                var url = navigationManager.GetUriWithQueryParameters("Category/GetCategories", query);
 
-                return BitDataGridItemsProviderResult.From(data!.Items, data!.Total);
+                var data = await httpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultCategoryDto);
+
+                return BitDataGridItemsProviderResult.From(data!.Items, (int)data!.TotalCount);
             }
             catch
             {
                 return BitDataGridItemsProviderResult.From(new List<CategoryDto> { }, 0);
-            }   
+            }
             finally
             {
                 IsLoading = false;
                 StateHasChanged();
             }
-
         };
-        return Task.CompletedTask;
     }
 
     private async Task RefreshData()
     {
-       await dataGrid!.RefreshDataAsync();
+        await dataGrid!.RefreshDataAsync();
     }
-
 
     private void CreateCategory()
     {
         navigationManager.NavigateTo("create-edit-category");
     }
-
 
     private Task EditCategory(CategoryDto Category)
     {
@@ -92,9 +92,9 @@ public partial class CategoriesPage
         return Task.CompletedTask;
     }
 
-    private Task DeleteCategory(CategoryDto Category)
+    private void DeleteCategory(CategoryDto Category)
     {
-        ConfirmMessageBox.Show("Are you sure delete?", Category.Name, "Delete", async (confirmed) =>
+        ConfirmMessageBox.Show("Are you sure delete?", Category.Name!, "Delete", async (confirmed) =>
         {
             if (confirmed)
             {
@@ -102,7 +102,6 @@ public partial class CategoriesPage
                 await RefreshData();
             }
         });
-        return Task.CompletedTask;
     }
 }
 

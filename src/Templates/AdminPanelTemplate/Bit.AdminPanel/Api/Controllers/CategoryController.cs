@@ -1,6 +1,5 @@
 ﻿using AdminPanel.Api.Models.Categories;
 using AdminPanel.Shared.Dtos.Categories;
-using AdminPanel.Api.Extensions;
 
 namespace AdminPanel.Api.Controllers;
 
@@ -30,28 +29,20 @@ public partial class CategoryController : ControllerBase
         return category;
     }
 
-    [HttpPost("GetPagedCategories")]
-    public async Task<PagedResultDto<CategoryDto>> GetPagedCategoriesAsync(PagedInputDto input, CancellationToken cancellationToken)
+    [HttpGet("[action]")]
+    public async Task<PagedResult<CategoryDto>> GetCategories(ODataQueryOptions<CategoryDto> odataQuery, CancellationToken cancellationToken)
     {
-        var query = Get(cancellationToken);
+        var query = (IQueryable<CategoryDto>)odataQuery.ApplyTo(Get(cancellationToken), ignoreQueryOptions: AllowedQueryOptions.Top | AllowedQueryOptions.Skip);
 
-        var total = query.Count();
+        var totalCount = await query.LongCountAsync(cancellationToken);
 
-        var filteredQuery = query
-                            .WhereIf(!string.IsNullOrWhiteSpace(input.Filter), _ => _.Name!.Contains(input.Filter));
+        if (odataQuery.Skip is not null)
+            query = query.Skip(odataQuery.Skip.Value);
 
-        var orderedQuery = (input.SortBy, input.SortAscending) switch
-        {
-            (nameof(Category.Name), true) => filteredQuery.OrderBy(c => c.Name),
-            (nameof(Category.Name), false) => filteredQuery.OrderByDescending(c => c.Name),
-            _ => filteredQuery.OrderBy(c => c.Id)
-        };
+        if (odataQuery.Top is not null)
+            query = query.Take(odataQuery.Top.Value);
 
-        var pageResult = await orderedQuery
-                         .PageBy(input.Skip, input.MaxResultCount)
-                         .ToListAsync();
-
-        return new PagedResultDto<CategoryDto>(pageResult, total);
+        return new PagedResult<CategoryDto>(await query.ToListAsync(cancellationToken), totalCount);
     }
 
     [HttpPost]
@@ -72,7 +63,7 @@ public partial class CategoryController : ControllerBase
         if (categoryToUpdate is null)
             throw new ResourceNotFoundException(nameof(ErrorStrings.CategoryCouldNotBeFound));
 
-        var updatedTodoItem = _mapper.Map(dto, categoryToUpdate);
+        var updatedCategory = _mapper.Map(dto, categoryToUpdate);
 
         _dbContext.Categories.Update(categoryToUpdate);
 
@@ -82,11 +73,10 @@ public partial class CategoryController : ControllerBase
     [HttpDelete("{id:int}")]
     public async Task Delete(int id, CancellationToken cancellationToken)
     {
-        if(_dbContext.Products.Any(p => p.CategoryId == id))
+        if (_dbContext.Products.Any(p => p.CategoryId == id))
         {
             throw new BadRequestException(nameof(ErrorStrings.CategoryNotEmpty));
         }
-        
 
         _dbContext.Remove(new Category { Id = id });
 

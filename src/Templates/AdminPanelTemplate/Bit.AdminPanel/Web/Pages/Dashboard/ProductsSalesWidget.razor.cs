@@ -27,8 +27,11 @@ public partial class ProductsSalesWidget
         try
         {
             IsLoading = true;
+
             var Data = await stateService.GetValue($"{nameof(AnalyticsPage)}-{nameof(ProductsSalesWidget)}", async () => await httpClient.GetFromJsonAsync($"Dashboard/GetProductsSalesStats", AppJsonContext.Default.ListProductSaleStatDto));
-            Series = new ISeries[] {
+
+            Series = new[]
+            {
                 new ColumnSeries<decimal>()
                 {
                     Name = "",
@@ -37,17 +40,15 @@ public partial class ProductsSalesWidget
                 }
             };
 
-            XAxis = new Axis[]{
+            XAxis = new[]
+            {
                 new Axis
                 {
                     Labels = Data.Select(d=>d.ProductName).ToArray(),
-                    //Labels = Data.Select(d=>d.ProductName[0..Math.Min(d.ProductName.Length, 5)]).ToArray(),
-                    //Labeler = Labelers.Currency,
                     Position=AxisPosition.Start,
                     MaxLimit=20,
                     MinLimit=10,
                     MinStep = 0,
-                    //LabelsRotation=-90,
                     LabelsPaint = new SolidColorPaint(SKColors.Black),
                     TextSize = 10,
                 }
@@ -57,9 +58,5 @@ public partial class ProductsSalesWidget
         {
             IsLoading = false;
         }
-
     }
-
-
-
 }

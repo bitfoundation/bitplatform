@@ -13,7 +13,7 @@ public class ProductDto
     public decimal Price { get; set; }
 
     [MaxLength(512)]
-    public string? Desc { get; set; }
+    public string? Description { get; set; }
 
     [Required(ErrorMessage = "Category can't be empty.")]
     public int? CategoryId { get; set; }

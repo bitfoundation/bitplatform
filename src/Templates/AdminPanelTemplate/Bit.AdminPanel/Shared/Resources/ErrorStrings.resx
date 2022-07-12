@@ -138,9 +138,6 @@
   <data name="RestException" xml:space="preserve">
     <value>An error occurred while communicating with server</value>
   </data>
-  <data name="ToDoItemCouldNotBeFound" xml:space="preserve">
-    <value>To Do item could not be found</value>
-  </data>
   <data name="UnauthorizedException" xml:space="preserve">
     <value>Your request lacks valid authentication credentials</value>
   </data>

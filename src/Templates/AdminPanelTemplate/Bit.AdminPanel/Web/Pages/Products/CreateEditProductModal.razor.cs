@@ -1,5 +1,4 @@
-﻿using AdminPanel.Shared.Dtos.Categories;
-using AdminPanel.Shared.Dtos.Products;
+﻿using AdminPanel.Shared.Dtos.Products;
 
 namespace AdminPanel.App.Pages.Products;
 
@@ -25,7 +24,7 @@ public partial class CreateEditProductModal
 
     protected override async void OnInitialized()
     {
-        AllCategoryList =await GetCategoryDropdownItemsAsync();
+        AllCategoryList = await GetCategoryDropdownItemsAsync();
         base.OnInitialized();
     }
 
@@ -44,6 +43,7 @@ public partial class CreateEditProductModal
     private async Task<List<BitDropDownItem>> GetCategoryDropdownItemsAsync()
     {
         IsLoading = true;
+
         try
         {
             var categoryList = await stateService.GetValue($"{nameof(ProductsPage)}-{nameof(AllCategoryList)}", async () => await httpClient.GetFromJsonAsync("Category", AppJsonContext.Default.ListCategoryDto));
@@ -54,16 +54,12 @@ public partial class CreateEditProductModal
                 Text = c.Name!,
                 Value = c.Id!.ToString()
             }).ToList();
-          
         }
         finally
         {
             IsLoading = false;
         }
-
-
     }
-
 
     private async Task Save()
     {
@@ -72,40 +68,31 @@ public partial class CreateEditProductModal
             return;
         }
 
-        
         try
         {
             IsSaveLoading = true;
+
             if (Product.Id == 0)
             {
                 await httpClient.PostAsJsonAsync("Product", Product, AppJsonContext.Default.ProductDto);
             }
             else
             {
-                 await httpClient.PutAsJsonAsync("Product", Product, AppJsonContext.Default.ProductDto);
+                await httpClient.PutAsJsonAsync("Product", Product, AppJsonContext.Default.ProductDto);
             }
 
             IsOpen = false;
+
             await OnProductSave.InvokeAsync();
         }
         finally
         {
             IsSaveLoading = false;
         }
-
-
-        
     }
-
-
 
     private void OnCloseClick()
     {
         IsOpen = false;
     }
-
-
-
-
-
 }

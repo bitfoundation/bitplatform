@@ -12,11 +12,11 @@
 		<type fullname="System.Linq.EnumerableRewriter*" />
 	</assembly>
 
-	<assembly fullname="TodoTemplate.App">
+	<assembly fullname="AdminPanel.App">
 		<type fullname="*" />
 	</assembly>
         
-    <assembly fullname="TodoTemplate.Shared">
+    <assembly fullname="AdminPanel.Shared">
 		<type fullname="*" />
 	</assembly>
 

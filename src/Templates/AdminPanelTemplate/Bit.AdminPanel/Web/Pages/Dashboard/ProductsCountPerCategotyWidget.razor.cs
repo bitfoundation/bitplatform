@@ -1,9 +1,5 @@
-﻿using AdminPanel.Shared.Dtos.Dashboard;
-using LiveChartsCore;
-using LiveChartsCore.Measure;
+﻿using LiveChartsCore;
 using LiveChartsCore.SkiaSharpView;
-using LiveChartsCore.SkiaSharpView.Painting;
-using SkiaSharp;
 
 namespace AdminPanel.App.Pages.Dashboard;
 
@@ -29,29 +25,28 @@ public partial class ProductsCountPerCategotyWidget
         try
         {
             IsLoading = true;
-            var Data = await stateService.GetValue($"{nameof(AnalyticsPage)}-{nameof(ProductsCountPerCategotyWidget)}", async () => await httpClient.GetFromJsonAsync($"Dashboard/GetProductsCountPerCategotyStats", AppJsonContext.Default.ListProductsCountPerCategoryDto));
-            Series = new ISeries[] {
+
+            var data = await stateService.GetValue($"{nameof(AnalyticsPage)}-{nameof(ProductsCountPerCategotyWidget)}", async () => await httpClient.GetFromJsonAsync($"Dashboard/GetProductsCountPerCategotyStats", AppJsonContext.Default.ListProductsCountPerCategoryDto));
+
+            Series = new[] {
                 new ColumnSeries<int>()
                 {
                     Name = "",
-                    Values = Data.Select(d => d.ProductCount).ToArray()
+                    Values = data.Select(d => d.ProductCount).ToArray()
                 }
             };
 
-            XAxis = new Axis[]{
+            XAxis = new[]{
                 new Axis
                 {
-                    Labels = Data.Select(d=>d.CategoryName).ToArray(),
+                    Labels = data.Select(d => d.CategoryName).ToArray(),
                 }
             };
-
-
         }
         finally
         {
             IsLoading = false;
         }
-
     }
 
 }

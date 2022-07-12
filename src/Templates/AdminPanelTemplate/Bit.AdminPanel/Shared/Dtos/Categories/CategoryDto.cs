@@ -6,5 +6,6 @@ public class CategoryDto
     [Required(ErrorMessage ="Category name can't be empty")]
     [MaxLength(64)]
     public string? Name { get; set; }
+
     public string? Color { get; set; } = "#FFFFFF";
 }

@@ -1,5 +1,4 @@
 ﻿//-:cnd:noEmit
-using AdminPanel.App.Services.Implementations;
 
 namespace Microsoft.Extensions.DependencyInjection;
 

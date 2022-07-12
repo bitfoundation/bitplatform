@@ -1,6 +1,4 @@
-﻿using Foundation;
-
-namespace AdminPanel.App.Platforms.iOS;
+﻿namespace AdminPanel.App.Platforms.iOS;
 
 [Register(nameof(AppDelegate))]
 public class AppDelegate : MauiUIApplicationDelegate

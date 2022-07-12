@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc.Controllers;
+﻿using System.Reflection;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.OpenApi.Models;
 
 namespace Swashbuckle.AspNetCore.SwaggerGen;
@@ -14,7 +16,9 @@ public class ODataOperationFilter : IOperationFilter
 
         var descriptor = context.ApiDescription.ActionDescriptor as ControllerActionDescriptor;
 
-        if (descriptor != null && descriptor.FilterDescriptors.Any(filter => filter.Filter is EnableQueryAttribute))
+        var odataQueryOptionsParameter = descriptor.Parameters.SingleOrDefault(p => typeof(ODataQueryOptions).IsAssignableFrom(p.ParameterType));
+
+        if (descriptor != null && descriptor.FilterDescriptors.Any(filter => filter.Filter is EnableQueryAttribute) || odataQueryOptionsParameter is not null)
         {
             operation.Parameters.Add(new OpenApiParameter()
             {
@@ -99,6 +103,11 @@ public class ODataOperationFilter : IOperationFilter
                 Description = "Define the order by one or more fields (ex. LastModified)",
                 Required = false
             });
+        }
+
+        if (odataQueryOptionsParameter is not null)
+        {
+            operation.Parameters.Remove(operation.Parameters.Single(p => p.Name == odataQueryOptionsParameter.Name));
         }
     }
 }

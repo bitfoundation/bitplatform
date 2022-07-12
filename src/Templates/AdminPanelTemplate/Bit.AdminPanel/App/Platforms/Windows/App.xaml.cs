@@ -1,6 +1,4 @@
-﻿using Microsoft.UI.Xaml;
-
-namespace AdminPanel.App.Platforms.Windows;
+﻿namespace AdminPanel.App.Platforms.Windows;
 
 public partial class App
 {

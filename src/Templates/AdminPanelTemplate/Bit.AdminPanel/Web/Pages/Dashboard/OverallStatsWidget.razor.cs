@@ -1,5 +1,4 @@
 ﻿using AdminPanel.Shared.Dtos.Dashboard;
-using Microsoft.AspNetCore.Components;
 
 namespace AdminPanel.App.Pages.Dashboard;
 
@@ -23,12 +22,11 @@ public partial class OverallStatsWidget
         try
         {
             IsLoading = true;
-            Data= await stateService.GetValue($"{nameof(AnalyticsPage)}-{nameof(OverallStatsWidget)}", async () => await httpClient.GetFromJsonAsync($"Dashboard/GetOverallAnalyticsStatsData", AppJsonContext.Default.OverallAnalyticsStatsDataDto));
+            Data = await stateService.GetValue($"{nameof(AnalyticsPage)}-{nameof(OverallStatsWidget)}", async () => await httpClient.GetFromJsonAsync($"Dashboard/GetOverallAnalyticsStatsData", AppJsonContext.Default.OverallAnalyticsStatsDataDto));
         }
         finally
         {
             IsLoading = false;
         }
-
     }
 }

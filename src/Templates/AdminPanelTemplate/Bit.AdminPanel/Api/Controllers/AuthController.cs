@@ -1,6 +1,5 @@
 ﻿//-:cnd:noEmit
 using System.Web;
-using Microsoft.AspNetCore.Hosting.Server;
 using FluentEmail.Core;
 using AdminPanel.Api.Resources;
 using AdminPanel.Api.Models.Account;

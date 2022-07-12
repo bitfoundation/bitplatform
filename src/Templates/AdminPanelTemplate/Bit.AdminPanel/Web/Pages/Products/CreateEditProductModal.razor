@@ -8,7 +8,6 @@
         </div>
         <EditForm Model="Product" OnValidSubmit="WrapHandled(Save)">
 
-
             <DataAnnotationsValidator />
 
             <div class="form-input-container">
@@ -35,11 +34,11 @@
             </div>
 
             <div class="form-input-container">
-                <BitTextField Label="@(nameof(Product.Desc))"
+                <BitTextField Label="@(nameof(Product.Description))"
                               IsMultiline="true"
                               Rows="3"
-                              @bind-Value="Product.Desc" />
-                <ValidationMessage For="() => Product.Desc" />
+                              @bind-Value="Product.Description" />
+                <ValidationMessage For="() => Product.Description" />
             </div>
 
 

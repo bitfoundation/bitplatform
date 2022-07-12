@@ -150,6 +150,7 @@ namespace AdminPanel.Api.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
+                        .IsRequired()
                         .HasMaxLength(64)
                         .HasColumnType("nvarchar(64)");
 
@@ -201,10 +202,10 @@ namespace AdminPanel.Api.Migrations
                     b.Property<int>("CategoryId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("CreateDate")
-                        .HasColumnType("Date");
+                    b.Property<DateTimeOffset>("CreatedOn")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<string>("Desc")
+                    b.Property<string>("Description")
                         .HasMaxLength(512)
                         .HasColumnType("nvarchar(512)");
 
@@ -227,8 +228,8 @@ namespace AdminPanel.Api.Migrations
                         {
                             Id = 1,
                             CategoryId = 1,
-                            CreateDate = new DateTime(2021, 5, 17, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Desc = "The Ford Mustang is ranked #1 in Sports Cars",
+                            CreatedOn = new DateTimeOffset(new DateTime(2021, 5, 17, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 4, 30, 0, 0)),
+                            Description = "The Ford Mustang is ranked #1 in Sports Cars",
                             Name = "Mustang",
                             Price = 27155m
                         },
@@ -236,8 +237,8 @@ namespace AdminPanel.Api.Migrations
                         {
                             Id = 2,
                             CategoryId = 1,
-                            CreateDate = new DateTime(2021, 5, 7, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Desc = "The Ford GT is a mid-engine two-seater sports car manufactured and marketed by American automobile manufacturer",
+                            CreatedOn = new DateTimeOffset(new DateTime(2021, 5, 7, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 4, 30, 0, 0)),
+                            Description = "The Ford GT is a mid-engine two-seater sports car manufactured and marketed by American automobile manufacturer",
                             Name = "GT",
                             Price = 500000m
                         },
@@ -245,8 +246,8 @@ namespace AdminPanel.Api.Migrations
                         {
                             Id = 3,
                             CategoryId = 1,
-                            CreateDate = new DateTime(2021, 7, 16, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Desc = "Ford Ranger is a nameplate that has been used on multiple model lines of pickup trucks sold by Ford worldwide.",
+                            CreatedOn = new DateTimeOffset(new DateTime(2021, 7, 16, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 4, 30, 0, 0)),
+                            Description = "Ford Ranger is a nameplate that has been used on multiple model lines of pickup trucks sold by Ford worldwide.",
                             Name = "Ranger",
                             Price = 25000m
                         },
@@ -254,8 +255,8 @@ namespace AdminPanel.Api.Migrations
                         {
                             Id = 4,
                             CategoryId = 1,
-                            CreateDate = new DateTime(2022, 2, 23, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Desc = "Raptor is a SCORE off-road trophy truck living in a asphalt world",
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 2, 23, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 3, 30, 0, 0)),
+                            Description = "Raptor is a SCORE off-road trophy truck living in a asphalt world",
                             Name = "Raptor",
                             Price = 53205m
                         },
@@ -263,8 +264,8 @@ namespace AdminPanel.Api.Migrations
                         {
                             Id = 5,
                             CategoryId = 1,
-                            CreateDate = new DateTime(2021, 5, 27, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Desc = "The Ford Maverick is a compact pickup truck produced by Ford Motor Company.",
+                            CreatedOn = new DateTimeOffset(new DateTime(2021, 5, 27, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 4, 30, 0, 0)),
+                            Description = "The Ford Maverick is a compact pickup truck produced by Ford Motor Company.",
                             Name = "Maverick",
                             Price = 22470m
                         },
@@ -272,8 +273,8 @@ namespace AdminPanel.Api.Migrations
                         {
                             Id = 6,
                             CategoryId = 2,
-                            CreateDate = new DateTime(2022, 1, 27, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Desc = "A powerful convertible sports car",
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 1, 27, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 3, 30, 0, 0)),
+                            Description = "A powerful convertible sports car",
                             Name = "Roadster",
                             Price = 42800m
                         },
@@ -281,8 +282,8 @@ namespace AdminPanel.Api.Migrations
                         {
                             Id = 7,
                             CategoryId = 2,
-                            CreateDate = new DateTime(2021, 2, 26, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Desc = "A perfectly adequate family sedan with sharp looks",
+                            CreatedOn = new DateTimeOffset(new DateTime(2021, 2, 26, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 3, 30, 0, 0)),
+                            Description = "A perfectly adequate family sedan with sharp looks",
                             Name = "Altima",
                             Price = 24550m
                         },
@@ -290,8 +291,8 @@ namespace AdminPanel.Api.Migrations
                         {
                             Id = 8,
                             CategoryId = 2,
-                            CreateDate = new DateTime(2022, 3, 24, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Desc = "Legendary supercar with AWD, 4 seats, a powerful V6 engine and the latest tech",
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 3, 24, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 4, 30, 0, 0)),
+                            Description = "Legendary supercar with AWD, 4 seats, a powerful V6 engine and the latest tech",
                             Name = "GT-R",
                             Price = 113540m
                         },
@@ -299,8 +300,8 @@ namespace AdminPanel.Api.Migrations
                         {
                             Id = 9,
                             CategoryId = 2,
-                            CreateDate = new DateTime(2022, 2, 10, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Desc = "A new smart SUV",
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 2, 10, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 3, 30, 0, 0)),
+                            Description = "A new smart SUV",
                             Name = "Juke",
                             Price = 28100m
                         },
@@ -308,8 +309,8 @@ namespace AdminPanel.Api.Migrations
                         {
                             Id = 10,
                             CategoryId = 3,
-                            CreateDate = new DateTime(2021, 7, 22, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Desc = "",
+                            CreatedOn = new DateTimeOffset(new DateTime(2021, 7, 22, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 4, 30, 0, 0)),
+                            Description = "",
                             Name = "H247",
                             Price = 54950m
                         },
@@ -317,8 +318,8 @@ namespace AdminPanel.Api.Migrations
                         {
                             Id = 11,
                             CategoryId = 3,
-                            CreateDate = new DateTime(2022, 4, 18, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Desc = "",
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 4, 18, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 4, 30, 0, 0)),
+                            Description = "",
                             Name = "V297",
                             Price = 103360m
                         },
@@ -326,8 +327,8 @@ namespace AdminPanel.Api.Migrations
                         {
                             Id = 12,
                             CategoryId = 3,
-                            CreateDate = new DateTime(2021, 6, 9, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Desc = "",
+                            CreatedOn = new DateTimeOffset(new DateTime(2021, 6, 9, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 4, 30, 0, 0)),
+                            Description = "",
                             Name = "R50",
                             Price = 2000000m
                         },
@@ -335,8 +336,8 @@ namespace AdminPanel.Api.Migrations
                         {
                             Id = 13,
                             CategoryId = 4,
-                            CreateDate = new DateTime(2022, 3, 14, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Desc = "",
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 3, 14, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 3, 30, 0, 0)),
+                            Description = "",
                             Name = "M550i",
                             Price = 77790m
                         },
@@ -344,8 +345,8 @@ namespace AdminPanel.Api.Migrations
                         {
                             Id = 14,
                             CategoryId = 4,
-                            CreateDate = new DateTime(2022, 2, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Desc = "",
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 2, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 3, 30, 0, 0)),
+                            Description = "",
                             Name = "540i",
                             Price = 60945m
                         },
@@ -353,8 +354,8 @@ namespace AdminPanel.Api.Migrations
                         {
                             Id = 15,
                             CategoryId = 4,
-                            CreateDate = new DateTime(2021, 5, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Desc = "",
+                            CreatedOn = new DateTimeOffset(new DateTime(2021, 5, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 4, 30, 0, 0)),
+                            Description = "",
                             Name = "530e",
                             Price = 56545m
                         },
@@ -362,8 +363,8 @@ namespace AdminPanel.Api.Migrations
                         {
                             Id = 16,
                             CategoryId = 4,
-                            CreateDate = new DateTime(2022, 2, 2, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Desc = "",
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 2, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 3, 30, 0, 0)),
+                            Description = "",
                             Name = "530i",
                             Price = 55195m
                         },
@@ -371,8 +372,8 @@ namespace AdminPanel.Api.Migrations
                         {
                             Id = 17,
                             CategoryId = 4,
-                            CreateDate = new DateTime(2021, 9, 29, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Desc = "",
+                            CreatedOn = new DateTimeOffset(new DateTime(2021, 9, 29, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 3, 30, 0, 0)),
+                            Description = "",
                             Name = "M850i",
                             Price = 100045m
                         },
@@ -380,8 +381,8 @@ namespace AdminPanel.Api.Migrations
                         {
                             Id = 18,
                             CategoryId = 4,
-                            CreateDate = new DateTime(2022, 3, 9, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Desc = "",
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 3, 9, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 3, 30, 0, 0)),
+                            Description = "",
                             Name = "X7",
                             Price = 77980m
                         },
@@ -389,8 +390,8 @@ namespace AdminPanel.Api.Migrations
                         {
                             Id = 19,
                             CategoryId = 4,
-                            CreateDate = new DateTime(2021, 3, 18, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Desc = "",
+                            CreatedOn = new DateTimeOffset(new DateTime(2021, 3, 18, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 3, 30, 0, 0)),
+                            Description = "",
                             Name = "IX",
                             Price = 87000m
                         },
@@ -398,8 +399,8 @@ namespace AdminPanel.Api.Migrations
                         {
                             Id = 20,
                             CategoryId = 5,
-                            CreateDate = new DateTime(2022, 1, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Desc = "rapid acceleration and dynamic handling",
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 1, 15, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 3, 30, 0, 0)),
+                            Description = "rapid acceleration and dynamic handling",
                             Name = "Model 3",
                             Price = 61990m
                         },
@@ -407,8 +408,8 @@ namespace AdminPanel.Api.Migrations
                         {
                             Id = 21,
                             CategoryId = 5,
-                            CreateDate = new DateTime(2021, 5, 23, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Desc = "finishes near the top of our luxury electric car rankings.",
+                            CreatedOn = new DateTimeOffset(new DateTime(2021, 5, 23, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 4, 30, 0, 0)),
+                            Description = "finishes near the top of our luxury electric car rankings.",
                             Name = "Model S",
                             Price = 135000m
                         },
@@ -416,8 +417,8 @@ namespace AdminPanel.Api.Migrations
                         {
                             Id = 22,
                             CategoryId = 5,
-                            CreateDate = new DateTime(2022, 4, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Desc = "Heart-pumping acceleration, long drive range",
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 4, 15, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 4, 30, 0, 0)),
+                            Description = "Heart-pumping acceleration, long drive range",
                             Name = "Model X",
                             Price = 138890m
                         },
@@ -425,8 +426,8 @@ namespace AdminPanel.Api.Migrations
                         {
                             Id = 23,
                             CategoryId = 5,
-                            CreateDate = new DateTime(2021, 3, 13, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Desc = "extensive driving range, lots of standard safety features",
+                            CreatedOn = new DateTimeOffset(new DateTime(2021, 3, 13, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 3, 30, 0, 0)),
+                            Description = "extensive driving range, lots of standard safety features",
                             Name = "Model Y",
                             Price = 67790m
                         });

@@ -34,11 +34,11 @@ public class AdStack
 
         Config pulumiConfig = new();
 
-        var sqlDatabaseDbAdminId = pulumiConfig.Require("sql-server-td-db-admin-id");
-        var sqlDatabaseDbAdminPassword = pulumiConfig.RequireSecret("sql-server-td-db-admin-password");
+        var sqlDatabaseDbAdminId = pulumiConfig.Require("sql-server-ad-db-admin-id");
+        var sqlDatabaseDbAdminPassword = pulumiConfig.RequireSecret("sql-server-ad-db-admin-password");
 
-        var sqlDatabaseDbUserId = pulumiConfig.Require("sql-server-td-db-user-id");
-        var sqlDatabaseDbUserPassword = pulumiConfig.RequireSecret("sql-server-td-db-user-password");
+        var sqlDatabaseDbUserId = pulumiConfig.Require("sql-server-ad-db-user-id");
+        var sqlDatabaseDbUserPassword = pulumiConfig.RequireSecret("sql-server-ad-db-user-password");
 
         var defaultEmailFrom = pulumiConfig.Require("default-email-from");
         var emailServerHost = pulumiConfig.Require("email-server-host");
@@ -50,22 +50,22 @@ public class AdStack
 
         var azureDevOpsAgentVMIPAddress = pulumiConfig.Require("azure-dev-ops-agent-vm-ip");
 
-        ResourceGroup resourceGroup = new($"td-{stackName}", new ResourceGroupArgs
+        ResourceGroup resourceGroup = new($"ad-{stackName}", new ResourceGroupArgs
         {
-            ResourceGroupName = $"td-{stackName}"
-        }, options: new() { ImportId = $"/subscriptions/{GetClientConfig.InvokeAsync().GetAwaiter().GetResult().SubscriptionId}/resourceGroups/td-test" });
+            ResourceGroupName = $"ad-{stackName}"
+        }, options: new() { ImportId = $"/subscriptions/{GetClientConfig.InvokeAsync().GetAwaiter().GetResult().SubscriptionId}/resourceGroups/ad-test" });
 
-        Workspace appInsightsWorkspace = new($"insights-wkspc-td-{stackName}", new()
+        Workspace appInsightsWorkspace = new($"insights-wkspc-ad-{stackName}", new()
         {
-            WorkspaceName = $"insights-wkspc-td-{stackName}",
+            WorkspaceName = $"insights-wkspc-ad-{stackName}",
             ResourceGroupName = resourceGroup.Name,
             Location = resourceGroup.Location,
             RetentionInDays = 30
         });
 
-        AppInsights appInsights = new($"app-insights-td-{stackName}", new()
+        AppInsights appInsights = new($"app-insights-ad-{stackName}", new()
         {
-            ResourceName = $"app-insights-td-{stackName}",
+            ResourceName = $"app-insights-ad-{stackName}",
             ResourceGroupName = resourceGroup.Name,
             Location = resourceGroup.Location,
             ApplicationType = AppInsightsWebApplicationType.Web,
@@ -79,18 +79,18 @@ public class AdStack
             }).Apply(workspace => workspace.Id)
         });
 
-        SqlServer sqlServer = new($"sql-server-td-{stackName}", new()
+        SqlServer sqlServer = new($"sql-server-ad-{stackName}", new()
         {
-            ServerName = $"sql-server-td-{stackName}",
+            ServerName = $"sql-server-ad-{stackName}",
             ResourceGroupName = resourceGroup.Name,
             Location = resourceGroup.Location,
             AdministratorLogin = sqlDatabaseDbAdminId,
             AdministratorLoginPassword = sqlDatabaseDbAdminPassword
         });
 
-        SqlDatabase sqlDatabase = new($"sql-database-td-{stackName}", new()
+        SqlDatabase sqlDatabase = new($"sql-database-ad-{stackName}", new()
         {
-            DatabaseName = $"sql-database-td-{stackName}",
+            DatabaseName = $"sql-database-ad-{stackName}",
             ResourceGroupName = resourceGroup.Name,
             Location = resourceGroup.Location,
             ServerName = sqlServer.Name,
@@ -102,9 +102,9 @@ public class AdStack
             }
         });
 
-        AppServicePlan appServicePlan = new($"app-plan-td-{stackName}", new()
+        AppServicePlan appServicePlan = new($"app-plan-ad-{stackName}", new()
         {
-            Name = $"app-plan-td-{stackName}",
+            Name = $"app-plan-ad-{stackName}",
             ResourceGroupName = resourceGroup.Name,
             Location = resourceGroup.Location,
             Kind = "Linux",
@@ -119,15 +119,15 @@ public class AdStack
             }
         });
 
-        string vaultName = $"vault-td-{stackName}";
+        string vaultName = $"vault-ad-{stackName}";
         string sqlDatabaseConnectionStringSecretName = $"sql-connection-secret";
         string blobStorageConnectionStringSecretName = $"blob-connection-secret";
         string emailServerPasswordSecretName = "email-server-password-secret";
         string jwtSecretKeySecretName = "jwt-secret-key-secret";
 
-        WebApp webApp = new($"app-service-td-{stackName}", new()
+        WebApp webApp = new($"app-service-ad-{stackName}", new()
         {
-            Name = $"app-service-td-{stackName}",
+            Name = $"app-service-ad-{stackName}",
             ResourceGroupName = resourceGroup.Name,
             Location = resourceGroup.Location,
             ServerFarmId = appServicePlan.Id,
@@ -191,9 +191,9 @@ public class AdStack
             }
         });
 
-        StorageAccount blobStorageAccount = new($"storageacctd{stackName}", new()
+        StorageAccount blobStorageAccount = new($"storageaccad{stackName}", new()
         {
-            AccountName = $"storageacctd{stackName}",
+            AccountName = $"storageaccad{stackName}",
             ResourceGroupName = resourceGroup.Name,
             Location = resourceGroup.Location,
             AccessTier = AccessTier.Hot,
@@ -250,7 +250,7 @@ public class AdStack
             return string.Empty;
         });
 
-        Vault vault = new Vault($"vault-td-{stackName}", new()
+        Vault vault = new Vault($"vault-ad-{stackName}", new()
         {
             ResourceGroupName = resourceGroup.Name,
             Location = resourceGroup.Location,

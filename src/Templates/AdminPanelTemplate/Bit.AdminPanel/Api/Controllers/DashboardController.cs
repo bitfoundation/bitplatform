@@ -1,34 +1,28 @@
 ﻿using AdminPanel.Shared.Dtos.Dashboard;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 
 namespace AdminPanel.Api.Controllers;
+
 [Route("api/[controller]")]
 [ApiController]
 public partial class DashboardController : ControllerBase
 {
     [AutoInject] private AppDbContext _dbContext = default!;
 
-    [AutoInject] private IMapper _mapper = default!;
-
-    [HttpGet("GetOverallAnalyticsStatsData")]
+    [HttpGet("[action]")]
     public async Task<OverallAnalyticsStatsDataDto> GetOverallAnalyticsStatsData()
     {
-        //Thread.Sleep(5000);
         var result = new OverallAnalyticsStatsDataDto();
 
-        int curQuarter = (DateTime.Now.Month - 1) / 3 + 1;
+        var last30DaysDate = DateTimeOffset.UtcNow.AddDays(-30);
 
         result.TotalProducts = await _dbContext.Products.CountAsync();
-        result.SeasonProductCount = await _dbContext.Products.CountAsync(p => (p.CreateDate.Month - 1) / 3 + 1 == curQuarter);
+        result.Last30DaysProductCount = await _dbContext.Products.CountAsync(p => p.CreatedOn > last30DaysDate);
         result.TotalCategories = await _dbContext.Categories.CountAsync();
 
         return result;
-
     }
 
-
-    [HttpGet("GetProductsCountPerCategotyStats")]
+    [HttpGet("[action]")]
     public async Task<List<ProductsCountPerCategoryDto>> GetProductsCountPerCategotyStats()
     {
         return await _dbContext.Categories
@@ -36,11 +30,9 @@ public partial class DashboardController : ControllerBase
             {
                 CategoryName = c.Name,
                 CategoryColor = c.Color,
-                ProductCount = c.Products.Count()
+                ProductCount = c.Products!.Count()
             }).ToListAsync();
-
     }
-
 
     [HttpGet("GetProductsSalesStats")]
     public async Task<List<ProductSaleStatDto>> GetProductsSalesStats()
@@ -54,38 +46,25 @@ public partial class DashboardController : ControllerBase
             ProductName = p.Name,
             SaleAmount = rand.Next(1, 10) * p.Price
         }).ToList();
-
     }
 
 
-    [HttpGet("GetProductsPercentagePerCategoryStats")]
+    [HttpGet("[action]")]
     public async Task<List<ProductPercentagePerCategoryDto>> GetProductsPercentagePerCategoryStats()
     {
-        var ProductToal= await _dbContext.Products.CountAsync();
+        var productsTotalCount = await _dbContext.Products.CountAsync();
 
-        if(ProductToal==0)
+        if (productsTotalCount == 0)
         {
             return new List<ProductPercentagePerCategoryDto>();
         }
 
-        //return await _dbContext.Categories
-        //    .Select(c => new ProductPercentagePerCategoryDto()
-        //    {
-        //        CategoryName = c.Name,
-        //        CategoryColor = c.Color,
-        //        ProductPercentage = ((c.Products.Count())/ProductToal)*100 
-        //    }).ToListAsync();
-
-       return await _dbContext.Categories
-            .Select(c => new ProductPercentagePerCategoryDto()
-            {
-                CategoryName = c!.Name,
-                CategoryColor = c.Color,
-                ProductPercentage =(float)decimal.Divide(c.Products!.Count(), ProductToal) * 100
-            }).ToListAsync();
-
-       
-
+        return await _dbContext.Categories
+             .Select(c => new ProductPercentagePerCategoryDto()
+             {
+                 CategoryName = c!.Name,
+                 CategoryColor = c.Color,
+                 ProductPercentage = (float)decimal.Divide(c.Products!.Count(), productsTotalCount) * 100
+             }).ToListAsync();
     }
-
 }

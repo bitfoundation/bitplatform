@@ -3,8 +3,7 @@
 
 @inherits AppComponentBase;
 
-<PageTitle>Create/Edit category</PageTitle>
-
+<PageTitle>Create/Edit category (@Category?.Name)</PageTitle>
 
 <div class="page-container">
     <EditForm Model="Category" OnValidSubmit="WrapHandled(Save)" class="form--white">
@@ -23,15 +22,9 @@
 
         <div class="form-input-container">
             <label for="catColorInput">Color</label>
-            <BitColorPicker id="catColorInput" ShowPreview="true" @bind-Color="Category!.Color">Default ColorPicker</BitColorPicker>
+            <BitColorPicker id="catColorInput" ShowPreview="true" @bind-Color="Category!.Color">Default Color Picker</BitColorPicker>
             <ValidationMessage For="() => Category.Color" />
         </div>
-
-        @* <div class="form-input-container">
-        <label for="catColorInput">Color</label>
-        <input name="catColorInput" type="color" @bind="Category.Color" />
-        </div>*@
-
 
         <BitButton Class="form-submit-button"
                    ButtonStyle="BitButtonStyle.Primary"
@@ -49,8 +42,6 @@
 
         </BitButton>
 
-
     </EditForm>
-
 </div>
 

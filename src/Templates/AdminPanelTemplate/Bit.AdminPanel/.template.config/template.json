@@ -23,7 +23,7 @@
         "ApplicationIdGuid": {
             "type": "generated",
             "generator": "guid",
-            "replaces": "AC87AA5B-4B37-4E52-8468-2D5DF24AF257",
+            "replaces": "AC87AA5B-4B37-4E52-8468-2D5DF24AF256",
             "parameters": {
                 "defaultFormat": "D" //Guid format 
             },
