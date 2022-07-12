@@ -14,7 +14,8 @@ public partial class IconPage
     {
         allIcons = Enum.GetValues(typeof(BitIconName))
             .Cast<BitIconName>()
-            .Select(v => v.GetName())
+            .Select(i => i.GetName())
+            .Where(n => n is not null)
             .ToList();
         HandleClear();
         base.OnInitialized();

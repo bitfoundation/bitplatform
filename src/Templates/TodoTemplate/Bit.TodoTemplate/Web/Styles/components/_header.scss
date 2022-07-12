@@ -20,15 +20,3 @@
         display: block;
     }
 }
-
-@media all and (max-width: #{em(370px)}) {
-    .header-item--privacy {
-        display: none;
-    }
-
-    .header--authenticated {
-        .header-item--privacy {
-            display: block;
-        }
-    }
-}

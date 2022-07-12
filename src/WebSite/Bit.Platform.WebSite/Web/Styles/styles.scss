@@ -37,19 +37,15 @@ a {
 }
 
 ::-webkit-scrollbar-thumb {
-    background: $B10Color;
+    background: $Gray3;
     border-radius: rem(8px);
-    border: rem(5px) solid $B10Color;
+    border: rem(5px) solid $Gray3;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: $B11Color;
+    background: $B5Color;
     border-radius: rem(8px);
-    border: rem(4px) solid $B11Color;
-}
-
-::-webkit-scrollbar-button {
-    display: none;
+    border: rem(5px) solid $B5Color;
 }
 
 ::-webkit-scrollbar:horizontal {
