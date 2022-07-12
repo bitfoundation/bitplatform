@@ -105,18 +105,18 @@ public static class CultureInfoHelper
 
         cultureInfo.DateTimeFormat.AbbreviatedDayNames = new[]
         {
-            "Y",
-            "D",
-            "S",
-            "C",
-            "P",
-            "J",
-            "S"
+            "Yek",
+            "Do",
+            "Se",
+            "Ch",
+            "Pj",
+            "Jom",
+            "Shn"
         };
 
         cultureInfo.DateTimeFormat.ShortestDayNames = new[]
         {
-           "Y",
+            "Y",
             "D",
             "S",
             "C",
