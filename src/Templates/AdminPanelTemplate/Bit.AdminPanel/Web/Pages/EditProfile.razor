@@ -1,0 +1,94 @@
+﻿@page "/edit-profile"
+@attribute [Authorize]
+@inherits AppComponentBase;
+
+<PageTitle>Edit profile</PageTitle>
+
+<div class="page-container">
+    <div class="content-container--white">
+        @if (string.IsNullOrEmpty(EditProfileMessage) is false)
+        {
+            <BitMessageBar Class="form-message-bar"
+                       MessageBarType="@EditProfileMessageType"
+                       OnDismiss="() => EditProfileMessage = null">
+                @EditProfileMessage
+            </BitMessageBar>
+        }
+
+        <h1 class="page-title">
+            Edit profile
+        </h1>
+        @if (IsLoadingData)
+        {
+            <div class="loading-container">
+                <BitSpinner Size="BitSpinnerSize.Large"></BitSpinner>
+            </div>
+        }
+        else
+        {
+            <div class="form-profile-container">
+                <div class="form-profile-img">
+                    @if (User.ProfileImageName != null)
+                    {
+                        <img src="@ProfileImageUrl" class="profile-img" alt="User profile image"/>
+                    }
+                    else if (string.IsNullOrEmpty(User.FullName) is false && User.FullName.Length >= 2)
+                    {
+                        @User.FullName?.ToUpper()[..2]
+                    }
+                    else
+                    {
+                        @User.UserName?.ToUpper()[..2]
+                    }
+                </div>
+                <div class="form-profile-email">
+                    @User.UserName
+                </div>
+            </div>
+            <div class="form-input-container">
+                <BitLabel>Profile image</BitLabel>
+                <BitFileUpload Label="Upload a new profile image"
+                           AutoUploadEnabled="true"
+                           UploadUrl="@ProfileImageUploadUrl"
+                           OnUploadComplete="WrapHandled(LoadEditProfileData)"
+                           OnUploadFailed="() => ProfileImageError = ErrorStrings.FileUploadFailed"
+                           @onfocus="() => ProfileImageError = null" />
+                <div class="form-input-error">@ProfileImageError</div>
+            </div>
+            <EditForm Model="UserToEdit" OnSubmit="WrapHandled(Save)" class="edit-profile-form">
+                <div class="form-input-container">
+                    <BitTextField Label="Full name"
+                              @bind-Value="UserToEdit.FullName"
+                              Placeholder="Full name" />
+                </div>
+                <div class="form-input-container">
+                    <BitDatePicker Label="Birthday"
+                               Class="edit-profile-dtp"
+                               @bind-Value="UserToEdit.BirthDate"
+                               Placeholder="Select your birth date" />
+                </div>
+                <div class="form-choice-container">
+                    <BitRadioButtonGroup Label="Gender" @bind-Value="UserToEdit.GenderAsString">
+                        <BitRadioButtonOption Value="@Gender.Male.ToString()" Text="Male" AriaLabel="Male"></BitRadioButtonOption>
+                        <BitRadioButtonOption Value="@Gender.Female.ToString()" Text="Famale" AriaLabel="Famale"></BitRadioButtonOption>
+                        <BitRadioButtonOption Value="@Gender.Custom.ToString()" Text="Custom" AriaLabel="Custom"></BitRadioButtonOption>
+                    </BitRadioButtonGroup>
+                </div>
+                <BitButton ButtonStyle="BitButtonStyle.Primary"
+                       AriaLabel="Save"
+                       Title="Save"
+                       IsEnabled="IsSubmitButtonEnabled"
+                       ButtonType="BitButtonType.Submit">
+                    @if (IsSavingData)
+                    {
+                        <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
+                    }
+                    else
+                    {
+                        <span>Save</span>
+                    }
+                </BitButton>
+            </EditForm>
+        }
+    </div>
+</div>
