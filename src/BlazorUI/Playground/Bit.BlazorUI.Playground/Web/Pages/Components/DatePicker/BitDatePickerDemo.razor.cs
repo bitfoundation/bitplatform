@@ -238,7 +238,7 @@ public partial class BitDatePickerDemo
     private readonly string example5CSharpCode = @"
 private DateTimeOffset? selectedDate = new DateTimeOffset(new DateTime(2020, 1, 17), DateTimeOffset.Now.Offset);";
 
-    private readonly string example6HTMLCode = @"<BitDatePicker FormatDate=""d"" Style=""width: 300px""></BitDatePicker>";
+    private readonly string example6HTMLCode = @"<BitDatePicker FormatDate=""MMM=dd(ddd)=yy"" Style=""width: 300px""></BitDatePicker>";
 
     private readonly string example7HTMLCode = @"
 <BitDatePicker Style=""width: 300px""
