@@ -693,8 +693,7 @@ public class BitNumericTextFieldDoubleTests : BunitTestContext
      DataRow(5.25, 2, 4, 2),
      DataRow(1.36, 15, 1, 2)
     ]
-    public void BitNumericTextFieldTwoWayBoundWithCustomHandlerShouldWorkCorrect(double value, int countOfIncrements,
-        double step, int precision)
+    public void BitNumericTextFieldTwoWayBoundWithCustomHandlerShouldWorkCorrect(double value, int countOfIncrements, double step, int precision)
     {
         BitNumericTextFieldTwoWayBoundValue = value;
 

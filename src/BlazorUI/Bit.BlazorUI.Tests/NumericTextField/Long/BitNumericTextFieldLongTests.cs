@@ -680,8 +680,7 @@ public class BitNumericTextFieldLongTests : BunitTestContext
      DataRow(5, 2, 4),
      DataRow(1, 15, 1)
     ]
-    public void BitNumericTextFieldTwoWayBoundWithCustomHandlerShouldWorkCurrect(long value, int countOfIncrements,
-        long step)
+    public void BitNumericTextFieldTwoWayBoundWithCustomHandlerShouldWorkCorrect(long value, int countOfIncrements, long step)
     {
         BitNumericTextFieldTwoWayBoundValue = value;
 
