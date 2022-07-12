@@ -15,12 +15,12 @@ public static class CultureInfoHelper
 
         cultureInfo.DateTimeFormat.MonthNames = new[]
         {
-            "فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند", ""
+            "فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"
         };
 
         cultureInfo.DateTimeFormat.AbbreviatedMonthNames = new[]
         {
-            "فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند", ""
+            "فرور", "ارد", "خرد", "تیر", "مرد", "شهر", "مهر", "آبا", "آذر", "دی", "بهم", "اسف"
         };
 
         cultureInfo.DateTimeFormat.MonthGenitiveNames = cultureInfo.DateTimeFormat.MonthNames;
@@ -94,13 +94,13 @@ public static class CultureInfoHelper
         cultureInfo.DateTimeFormat.AbbreviatedMonthGenitiveNames = cultureInfo.DateTimeFormat.AbbreviatedMonthNames;
         cultureInfo.DateTimeFormat.DayNames = new[]
         {
-            "Yek",
-            "Do",
-            "Se",
-            "Ch",
-            "Pj",
-            "Jom",
-            "Shn"
+            "YekShanbe",
+            "DoShanbe",
+            "SeShanbe",
+            "ChaharShanbe",
+            "PanjShanbe",
+            "Jome",
+            "Shanbe"
         };
 
         cultureInfo.DateTimeFormat.AbbreviatedDayNames = new[]
@@ -125,8 +125,8 @@ public static class CultureInfoHelper
             "S"
         };
 
-        cultureInfo.DateTimeFormat.AMDesignator = "ق.ظ";
-        cultureInfo.DateTimeFormat.PMDesignator = "ب.ظ";
+        cultureInfo.DateTimeFormat.AMDesignator = "GH.Z";
+        cultureInfo.DateTimeFormat.PMDesignator = "B.Z";
         cultureInfo.DateTimeFormat.ShortDatePattern = "yyyy/MM/dd";
         cultureInfo.DateTimeFormat.FirstDayOfWeek = DayOfWeek.Saturday;
 
