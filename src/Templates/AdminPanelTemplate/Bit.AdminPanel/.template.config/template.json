@@ -32,8 +32,16 @@
                     "after": "<ApplicationIdGuid>"
                 }
             ]
+        },
 
-        }
+        "SeedDataProductCreatedOn": {
+            "type": "generated",
+            "generator": "now",
+            "replaces":"2022-07-12",
+            "parameters": {
+            "format": "yyyy-MM-dd"
+            }          
+          }
 
     },
     "postActions": [
