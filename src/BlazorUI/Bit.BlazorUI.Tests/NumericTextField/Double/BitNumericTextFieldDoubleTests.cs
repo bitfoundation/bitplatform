@@ -133,8 +133,7 @@ public class BitNumericTextFieldDoubleTests : BunitTestContext
      DataRow(BitIconName.IncreaseIndentLegacy, "BitNumericTextFieldButtonIcon", true),
      DataRow(BitIconName.IncreaseIndentLegacy, "BitNumericTextFieldButtonIcon", false)
     ]
-    public void BitNumericTextFieldShouldRenderCorrectIncrementButton(BitIconName iconName, string iconAriaLabel,
-        bool isEnabled)
+    public void BitNumericTextFieldShouldRenderCorrectIncrementButton(BitIconName iconName, string iconAriaLabel, bool isEnabled)
     {
         var component = RenderComponent<BitNumericTextFieldDoubleTest>(parameters =>
         {
@@ -163,8 +162,7 @@ public class BitNumericTextFieldDoubleTests : BunitTestContext
      DataRow(BitIconName.IncreaseIndentLegacy, "BitNumericTextFieldButtonIcon", true),
      DataRow(BitIconName.IncreaseIndentLegacy, "BitNumericTextFieldButtonIcon", false)
     ]
-    public void BitNumericTextFieldShouldRenderCorrectDecrementButton(BitIconName iconName, string iconAriaLabel,
-        bool isEnabled)
+    public void BitNumericTextFieldShouldRenderCorrectDecrementButton(BitIconName iconName, string iconAriaLabel, bool isEnabled)
     {
         var component = RenderComponent<BitNumericTextFieldDoubleTest>(parameters =>
         {
@@ -211,8 +209,7 @@ public class BitNumericTextFieldDoubleTests : BunitTestContext
      DataRow(Visual.Material, BitNumericTextFieldLabelPosition.Left),
      DataRow(Visual.Material, BitNumericTextFieldLabelPosition.Top),
     ]
-    public void BitNumericTextFieldShouldHaveLabelPositionClassName(Visual visual,
-        BitNumericTextFieldLabelPosition labelPosition)
+    public void BitNumericTextFieldShouldHaveLabelPositionClassName(Visual visual, BitNumericTextFieldLabelPosition labelPosition)
     {
         var component = RenderComponent<BitNumericTextFieldDoubleTest>(parameters =>
         {
@@ -249,8 +246,7 @@ public class BitNumericTextFieldDoubleTests : BunitTestContext
      DataRow("NtfWrapper", "NftAriaLabel", 5, 3),
      DataRow(null, null, 5, 3)
     ]
-    public void BitNumericTextFieldWrapperShouldHaveCorrectAttributes(string title, string ariaLabel, int? ariaSetSize,
-        int? ariaPositionInSet)
+    public void BitNumericTextFieldWrapperShouldHaveCorrectAttributes(string title, string ariaLabel, int? ariaSetSize, int? ariaPositionInSet)
     {
         var component = RenderComponent<BitNumericTextFieldDoubleTest>(parameters =>
         {
@@ -459,8 +455,7 @@ public class BitNumericTextFieldDoubleTests : BunitTestContext
      DataRow(null, " cm", 0),
      DataRow(null, null, 0)
     ]
-    public void BitNumericTextFieldInputShouldHaveCorrectAriaValueText(string ariaValueText, string suffix,
-        int precision)
+    public void BitNumericTextFieldInputShouldHaveCorrectAriaValueText(string ariaValueText, string suffix, int precision)
     {
         var component = RenderComponent<BitNumericTextFieldDoubleTest>(parameters =>
         {
@@ -736,8 +731,7 @@ public class BitNumericTextFieldDoubleTests : BunitTestContext
      DataRow(3, 1, 100, 475),
      DataRow(3, 1, 100, 550)
     ]
-    public void BitNumericTextFieldContinuousIncrementOnMouseDownTest(double defaultValue, double step, double max,
-        int timeout)
+    public void BitNumericTextFieldContinuousIncrementOnMouseDownTest(double defaultValue, double step, double max, int timeout)
     {
         var component = RenderComponent<BitNumericTextField<double>>(parameters =>
         {
@@ -762,8 +756,7 @@ public class BitNumericTextFieldDoubleTests : BunitTestContext
      DataRow(50, 1, 0, 475),
      DataRow(50, 1, 0, 550)
     ]
-    public void BitNumericTextFieldContinuousDecrementOnMouseDownTest(double defaultValue, double step, double min,
-        int timeout)
+    public void BitNumericTextFieldContinuousDecrementOnMouseDownTest(double defaultValue, double step, double min, int timeout)
     {
         var component = RenderComponent<BitNumericTextField<double>>(parameters =>
         {

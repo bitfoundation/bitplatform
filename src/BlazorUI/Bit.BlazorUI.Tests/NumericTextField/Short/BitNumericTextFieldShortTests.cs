@@ -132,8 +132,7 @@ public class BitNumericTextFieldShortTests : BunitTestContext
      DataRow(BitIconName.IncreaseIndentLegacy, "BitNumericTextFieldButtonIcon", true),
      DataRow(BitIconName.IncreaseIndentLegacy, "BitNumericTextFieldButtonIcon", false)
     ]
-    public void BitNumericTextFieldShouldRenderCorrectIncrementButton(BitIconName iconName, string iconAriaLabel,
-        bool isEnabled)
+    public void BitNumericTextFieldShouldRenderCorrectIncrementButton(BitIconName iconName, string iconAriaLabel, bool isEnabled)
     {
         var component = RenderComponent<BitNumericTextFieldShortTest>(parameters =>
         {
@@ -162,8 +161,7 @@ public class BitNumericTextFieldShortTests : BunitTestContext
      DataRow(BitIconName.IncreaseIndentLegacy, "BitNumericTextFieldButtonIcon", true),
      DataRow(BitIconName.IncreaseIndentLegacy, "BitNumericTextFieldButtonIcon", false)
     ]
-    public void BitNumericTextFieldShouldRenderCorrectDecrementButton(BitIconName iconName, string iconAriaLabel,
-        bool isEnabled)
+    public void BitNumericTextFieldShouldRenderCorrectDecrementButton(BitIconName iconName, string iconAriaLabel, bool isEnabled)
     {
         var component = RenderComponent<BitNumericTextFieldShortTest>(parameters =>
         {
@@ -210,8 +208,7 @@ public class BitNumericTextFieldShortTests : BunitTestContext
      DataRow(Visual.Material, BitNumericTextFieldLabelPosition.Left),
      DataRow(Visual.Material, BitNumericTextFieldLabelPosition.Top),
     ]
-    public void BitNumericTextFieldShouldHaveLabelPositionClassName(Visual visual,
-        BitNumericTextFieldLabelPosition labelPosition)
+    public void BitNumericTextFieldShouldHaveLabelPositionClassName(Visual visual, BitNumericTextFieldLabelPosition labelPosition)
     {
         var component = RenderComponent<BitNumericTextFieldShortTest>(parameters =>
         {
@@ -407,7 +404,7 @@ public class BitNumericTextFieldShortTests : BunitTestContext
      DataRow(null),
      DataRow("AriaDescription")
     ]
-    public void BitNumericTextFieldShouldHaveCorrectAriaDecription(string ariaDescription)
+    public void BitNumericTextFieldShouldHaveCorrectAriaDescription(string ariaDescription)
     {
         var component = RenderComponent<BitNumericTextFieldShortTest>(parameters =>
         {
@@ -452,8 +449,7 @@ public class BitNumericTextFieldShortTests : BunitTestContext
      DataRow(null, " cm", 0),
      DataRow(null, null, 0)
     ]
-    public void BitNumericTextFieldInputShouldHaveCorrectAriaValueText(string ariaValueText, string suffix,
-        int precision)
+    public void BitNumericTextFieldInputShouldHaveCorrectAriaValueText(string ariaValueText, string suffix, int precision)
     {
         var component = RenderComponent<BitNumericTextFieldShortTest>(parameters =>
         {
