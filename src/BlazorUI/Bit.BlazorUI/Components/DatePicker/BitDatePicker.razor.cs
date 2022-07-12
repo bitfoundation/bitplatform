@@ -84,7 +84,7 @@ public partial class BitDatePicker
     /// <summary>
     /// FormatDate for the DatePicker
     /// </summary>
-    [Parameter] public string FormatDate { get; set; } = "yyyy-MM-dd";
+    [Parameter] public string? FormatDate { get; set; }
 
     /// <summary>
     /// Callback for when clicking on DatePicker input
@@ -776,7 +776,7 @@ public partial class BitDatePicker
             return true;
         }
 
-        if (DateTime.TryParseExact(value, FormatDate, Culture, DateTimeStyles.None, out DateTime parsedValue))
+        if (DateTime.TryParseExact(value, FormatDate ?? Culture.DateTimeFormat.ShortDatePattern, Culture, DateTimeStyles.None, out DateTime parsedValue))
         {
             result = new DateTimeOffset(parsedValue, DateTimeOffset.Now.Offset);
             validationErrorMessage = null;
@@ -792,7 +792,7 @@ public partial class BitDatePicker
     {
         if (value.HasValue)
         {
-            return value.Value.ToString(FormatDate, Culture);
+            return value.Value.ToString(FormatDate ?? Culture.DateTimeFormat.ShortDatePattern, Culture);
         }
         else
         {
