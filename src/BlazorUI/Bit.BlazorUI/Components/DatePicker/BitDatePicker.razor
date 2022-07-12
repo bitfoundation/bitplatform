@@ -110,8 +110,8 @@
 
                                     @for (var index = 0; index < 7; index++)
                                     {
-                                        <th class="week-day-label" scope="col" title="@Culture?.DateTimeFormat.GetShortestDayName(GetDayOfWeek(index))">
-                                            @Culture?.DateTimeFormat.GetShortestDayName(GetDayOfWeek(index))[0]
+                                        <th class="week-day-label" scope="col" title="@Culture.DateTimeFormat.GetShortestDayName(GetDayOfWeek(index))">
+                                            @Culture.DateTimeFormat.GetShortestDayName(GetDayOfWeek(index))[0]
                                         </th>
                                     }
                                 </tr>
@@ -216,7 +216,7 @@
                                         @for (var cellIndex = 1; cellIndex <= 4; cellIndex++)
                                         {
                                             var monthIndex = (rowIndex * 4) + cellIndex;
-                                            var monthName = Culture?.DateTimeFormat.GetMonthName(monthIndex);
+                                            var monthName = Culture.DateTimeFormat.GetMonthName(monthIndex);
                                             <button role="gridcell"
                                                     aria-selected="@(IsMonthSelected(monthIndex) ? "true" : "false")"
                                                     aria-readonly="true"
@@ -227,7 +227,7 @@
                                                     aria-label="@monthName"
                                                     title="@monthName"
                                                     @onclick="() => SelectMonth(monthIndex)">
-                                                <span aria-hidden="true">@Culture?.DateTimeFormat.GetAbbreviatedMonthName(monthIndex)</span>
+                                                <span aria-hidden="true">@Culture.DateTimeFormat.GetAbbreviatedMonthName(monthIndex)</span>
                                             </button>
                                         }
                                     </div>
