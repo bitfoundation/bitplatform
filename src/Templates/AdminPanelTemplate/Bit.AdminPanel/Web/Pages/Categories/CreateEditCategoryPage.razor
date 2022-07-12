@@ -21,15 +21,16 @@
             <ValidationMessage For="() => Category.Name" />
         </div>
 
-        @* <div class="form-input-container">
-        <BitColorPicker ShowPreview=false @bind-Color="Category!.Color">Default ColorPicker</BitColorPicker>
-        <ValidationMessage For="() => Category.Color" />
-        </div>*@
-
         <div class="form-input-container">
-            <label for="head">Color</label>
-            <input name="catColorInput" type="color" @bind="Category.Color" />
+            <label for="catColorInput">Color</label>
+            <BitColorPicker id="catColorInput" ShowPreview="true" @bind-Color="Category!.Color">Default ColorPicker</BitColorPicker>
+            <ValidationMessage For="() => Category.Color" />
         </div>
+
+        @* <div class="form-input-container">
+        <label for="catColorInput">Color</label>
+        <input name="catColorInput" type="color" @bind="Category.Color" />
+        </div>*@
 
 
         <BitButton Class="form-submit-button"
