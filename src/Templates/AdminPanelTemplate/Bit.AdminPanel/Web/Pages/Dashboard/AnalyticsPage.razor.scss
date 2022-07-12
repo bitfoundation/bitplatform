@@ -79,12 +79,7 @@
         position: absolute;
         margin: -1rem;
     }
-
-    > h1 {
-        display: none;
-    }
 }
-
 
 .widget-stats {
     position: relative;
@@ -100,9 +95,10 @@
         z-index: 5;
         margin: 0;
         padding: 0;
+        font-size: 1.5rem;
     }
 
-    h3 {
+    h5 {
         position: relative;
         color: #fff;
         z-index: 5;

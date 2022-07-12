@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AdminPanel.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20220712151926_InitialSchemaAndData")]
+    [Migration("20220712170906_InitialSchemaAndData")]
     partial class InitialSchemaAndData
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -230,7 +230,7 @@ namespace AdminPanel.Api.Migrations
                         {
                             Id = 1,
                             CategoryId = 1,
-                            CreatedOn = new DateTimeOffset(new DateTime(2021, 5, 17, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 4, 30, 0, 0)),
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 7, 2, 21, 39, 6, 9, DateTimeKind.Unspecified).AddTicks(922), new TimeSpan(0, 4, 30, 0, 0)),
                             Description = "The Ford Mustang is ranked #1 in Sports Cars",
                             Name = "Mustang",
                             Price = 27155m
@@ -239,7 +239,7 @@ namespace AdminPanel.Api.Migrations
                         {
                             Id = 2,
                             CategoryId = 1,
-                            CreatedOn = new DateTimeOffset(new DateTime(2021, 5, 7, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 4, 30, 0, 0)),
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 27, 21, 39, 6, 9, DateTimeKind.Unspecified).AddTicks(993), new TimeSpan(0, 4, 30, 0, 0)),
                             Description = "The Ford GT is a mid-engine two-seater sports car manufactured and marketed by American automobile manufacturer",
                             Name = "GT",
                             Price = 500000m
@@ -248,7 +248,7 @@ namespace AdminPanel.Api.Migrations
                         {
                             Id = 3,
                             CategoryId = 1,
-                            CreatedOn = new DateTimeOffset(new DateTime(2021, 7, 16, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 4, 30, 0, 0)),
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 12, 21, 39, 6, 9, DateTimeKind.Unspecified).AddTicks(1001), new TimeSpan(0, 4, 30, 0, 0)),
                             Description = "Ford Ranger is a nameplate that has been used on multiple model lines of pickup trucks sold by Ford worldwide.",
                             Name = "Ranger",
                             Price = 25000m
@@ -257,7 +257,7 @@ namespace AdminPanel.Api.Migrations
                         {
                             Id = 4,
                             CategoryId = 1,
-                            CreatedOn = new DateTimeOffset(new DateTime(2022, 2, 23, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 3, 30, 0, 0)),
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 5, 28, 21, 39, 6, 9, DateTimeKind.Unspecified).AddTicks(1007), new TimeSpan(0, 4, 30, 0, 0)),
                             Description = "Raptor is a SCORE off-road trophy truck living in a asphalt world",
                             Name = "Raptor",
                             Price = 53205m
@@ -266,7 +266,7 @@ namespace AdminPanel.Api.Migrations
                         {
                             Id = 5,
                             CategoryId = 1,
-                            CreatedOn = new DateTimeOffset(new DateTime(2021, 5, 27, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 4, 30, 0, 0)),
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 5, 13, 21, 39, 6, 9, DateTimeKind.Unspecified).AddTicks(1071), new TimeSpan(0, 4, 30, 0, 0)),
                             Description = "The Ford Maverick is a compact pickup truck produced by Ford Motor Company.",
                             Name = "Maverick",
                             Price = 22470m
