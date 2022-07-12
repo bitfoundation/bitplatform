@@ -151,7 +151,7 @@ public class BitNumericTextFieldDoubleTests : BunitTestContext
         Assert.AreEqual(!isEnabled, button.HasAttribute("disabled"));
         Assert.AreEqual(!isEnabled, button.HasAttribute("aria-disabled"));
 
-        if (iconAriaLabel is not null)
+        if (string.IsNullOrEmpty(iconAriaLabel) is false)
         {
             Assert.AreEqual(iconAriaLabel, button.GetAttribute("aria-label"));
         }
@@ -262,12 +262,12 @@ public class BitNumericTextFieldDoubleTests : BunitTestContext
 
         var ntfWrapper = component.Find(".bit-ntf-wrapper");
 
-        if (title is not null)
+        if (string.IsNullOrEmpty(title) is false)
         {
             Assert.AreEqual(title, ntfWrapper.GetAttribute("title"));
         }
 
-        if (ariaLabel is not null)
+        if (string.IsNullOrEmpty(ariaLabel) is false)
         {
             Assert.AreEqual(ariaLabel, ntfWrapper.GetAttribute("aria-label"));
         }
@@ -470,8 +470,8 @@ public class BitNumericTextFieldDoubleTests : BunitTestContext
         });
 
         var input = component.Find("input");
-        var expectedResult = ariaValueText.HasValue() ? ariaValueText :
-            suffix.HasValue() ? $"{Normalize(component.Instance.Value, precision)}{suffix}" : null;
+        var expectedResult = string.IsNullOrEmpty(ariaValueText) is false ? ariaValueText :
+            string.IsNullOrEmpty(suffix) is false ? $"{Normalize(component.Instance.Value, precision)}{suffix}" : null;
         Assert.AreEqual(expectedResult, input.GetAttribute("aria-valuetext"));
     }
 
