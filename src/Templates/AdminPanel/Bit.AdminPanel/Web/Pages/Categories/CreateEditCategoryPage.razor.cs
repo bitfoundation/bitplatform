@@ -34,8 +34,6 @@ public partial class CreateEditCategoryPage
         {
             IsLoading = true;
             Category = await httpClient.GetFromJsonAsync($"Category/{Id}", AppJsonContext.Default.CategoryDto);
-            Category!.Color = "#FFFFFF";
-            
         }
         finally
         {
