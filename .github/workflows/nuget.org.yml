@@ -68,6 +68,9 @@ jobs:
 
     - name: dotnet pack TodoTemplate
       run: dotnet pack src/Templates/TodoTemplate/Bit.TodoTemplate.ProjectTemplate.csproj --output . --configuration Release
+
+    - name: dotnet pack AdminPanel
+      run: dotnet pack src/Templates/AdminPanel/Bit.AdminPanel.ProjectTemplate.csproj --output . --configuration Release
     
     - name: dotnet nuget push
       run: dotnet nuget push *.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{secrets.NUGET_ORG_API_KEY}}
