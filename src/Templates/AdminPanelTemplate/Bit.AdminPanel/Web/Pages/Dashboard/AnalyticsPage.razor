@@ -1,0 +1,31 @@
+﻿@using AdminPanel.Shared.Dtos.Products
+@using LiveChartsCore
+@using LiveChartsCore.SkiaSharpView
+@using LiveChartsCore.SkiaSharpView.Blazor
+
+@page "/analytics"
+@attribute [Authorize]
+
+@inherits AppComponentBase;
+
+<div class="page-container">
+
+    <OverallStatsWidget />
+
+    <div class="row">
+        <div class="col">
+            <ProductsCountPerCategotyWidget />
+        </div>
+
+        <div class="col">
+            <ProductsPercentageWidget/>
+        </div>
+
+    </div>
+
+    <div class="row">
+        <div class="col">
+            <ProductsSalesWidget />
+        </div>
+    </div>
+</div>

@@ -1,0 +1,33 @@
+﻿@import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_media-queries.scss';
+
+.page-container {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    padding: rem(56px) rem(16px);
+    box-sizing: border-box;
+
+    @include lg {
+        padding: rem(48px) rem(16px);
+    }
+
+    @include sm {
+        padding: rem(40px) rem(16px);
+    }
+}
+
+.form-forgot-password {
+    margin-bottom: rem(20px);
+    font-size: rem(14px);
+    line-height: rem(24px);
+    color: $PrimaryColor;
+
+    @include lt-xl {
+        margin-bottom: rem(16px);
+    }
+}

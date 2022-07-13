@@ -1,0 +1,120 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <PropertyGroup>
+        <TargetFrameworks>net6.0-android;net6.0-ios;net6.0-maccatalyst</TargetFrameworks>
+        <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows')) and '$(MSBuildRuntimeType)' == 'Full'">$(TargetFrameworks);net6.0-windows10.0.19041</TargetFrameworks>
+        <!-- Uncomment to also build the tizen app. You will need to install tizen by following this: https://github.com/Samsung/Tizen.NET -->
+        <!-- <TargetFrameworks>$(TargetFrameworks);net6.0-tizen</TargetFrameworks> -->
+        <OutputType>Exe</OutputType>
+        <UseMaui>true</UseMaui>
+        <SingleProject>true</SingleProject>
+        <EnableDefaultCssItems>false</EnableDefaultCssItems>
+
+        <!-- Display name -->
+        <ApplicationTitle>AdminPanel</ApplicationTitle>
+
+        <!-- App Identifier -->
+        <ApplicationId>com.bitplatform.AdminPanel.Template</ApplicationId>
+        <ApplicationIdGuid>AC87AA5B-4B37-4E52-8468-2D5DF24AF256</ApplicationIdGuid>
+
+        <!-- Versions -->
+        <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+        <ApplicationVersion>1</ApplicationVersion>
+
+        <!-- Required for C# Hot Reload -->
+        <UseInterpreter Condition="'$(Configuration)' == 'Debug'">True</UseInterpreter>
+
+        <SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-ios'">14.2</SupportedOSPlatformVersion>
+        <SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-maccatalyst'">14.0</SupportedOSPlatformVersion>
+        <SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-android'">23.0</SupportedOSPlatformVersion>
+        <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</SupportedOSPlatformVersion>
+        <TargetPlatformMinVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</TargetPlatformMinVersion>
+        <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="$(TargetFramework.Contains('-android')) and '$(Configuration)' == 'Release'">
+        <EnableLLVM>true</EnableLLVM>
+        <AndroidPackageFormat>apk</AndroidPackageFormat>
+        <RuntimeIdentifiers>android-arm</RuntimeIdentifiers>
+        <MauiUseDefaultAotProfile Condition="Exists('custom.aprof')">false</MauiUseDefaultAotProfile>
+    </PropertyGroup>
+
+    <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
+        <LinkDescription Include="Platforms\Android\Linker.xml" />
+        <AndroidAotProfile Condition="Exists('custom.aprof')" Include="custom.aprof" />
+        <!-- Run the following commands to create custom.aprof file which improves the Android app performance -->
+        <!-- dotnet add package Mono.AotProfiler.Android -->
+        <!-- dotnet build -t:BuildAndStartAotProfiling -f net6.0-android /p:UseInterpreter=false -->
+        <!-- dotnet build -t:FinishAotProfiling -f net6.0-android -->
+        <!-- dotnet remove package Mono.AotProfiler.Android -->
+    </ItemGroup>
+
+    <ItemGroup>
+
+        <Using Include="Microsoft.AspNetCore.Components.WebView.Maui" />
+        <Using Include="Microsoft.Maui" />
+        <Using Include="Microsoft.Maui.Controls.Hosting" />
+
+        <Using Include="Microsoft.AspNetCore.Components" />
+        <Using Include="AdminPanel.App.Services.Contracts" />
+        <Using Include="AdminPanel.App.Services.Implementations" />
+        <Using Include="Microsoft.Extensions.Configuration" />
+        <Using Include="Microsoft.JSInterop" />
+        <Using Include="System.Net.Http.Json" />
+        <Using Include="System.Collections.Concurrent" />
+
+        <Using Include="Microsoft.AspNetCore.Components.Authorization" />
+        <Using Include="AdminPanel.App.Components" />
+        <Using Include="Bit.BlazorUI" />
+
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- App Icon -->
+        <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#0D2960" />
+
+        <!-- Splash Screen -->
+        <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#0D2960" BaseSize="128,128" />
+
+        <!-- Images -->
+        <MauiImage Include="Resources\Images\*" />
+
+        <MauiFont Include="Resources\Fonts\*" />
+
+        <!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
+        <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Bit.BlazorUI" Version="2.0.0-pre-01" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="2.0.0-pre-01" />
+        <PackageReference Include="Bit.SourceGenerators" Version="2.0.0-pre-01" />
+        <PackageReference Include="BuildWebCompiler2022" Version="1.14.8">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="jose-jwt" Version="4.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.6" />
+        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.7.4">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <Content Remove="appsettings.json" />
+        <EmbeddedResource Include="appsettings.json" />
+        <Content Remove="Pages\_Host.cshtml" />
+        <Content Remove="Pages\_Layout.cshtml" />
+        <Compile Remove="Services\Implementations\ServerSideAuthTokenProvider.cs" />
+        <Content Remove="Properties\launchSettings.json" />
+        <Content Remove="compilerconfig.json" />
+        <None Include="compilerconfig.json" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Shared\AdminPanel.Shared.csproj" />
+    </ItemGroup>
+
+    <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+        <Exec Command="call $(ProjectDir)mklink.bat" />
+    </Target>
+
+</Project>

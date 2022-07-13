@@ -1,0 +1,46 @@
+﻿@inherits AppComponentBase;
+
+<div class="row">
+    <div class="col">
+        <div class="widget-stats stats-red">
+            @if (IsLoading)
+            {
+                <div class="spinner">
+                    <BitSpinner></BitSpinner>
+                </div>
+            }
+            <div class="num">
+                @Data.Last30DaysProductCount
+            </div>
+            <h5>Last 30 days product count</h5>
+        </div>
+    </div>
+    <div class="col">
+        <div class="widget-stats stats-green">
+           @if (IsLoading)
+            {
+                <div class="spinner">
+                    <BitSpinner></BitSpinner>
+                </div>
+            }
+            <div class="num">
+                @Data.TotalProducts
+            </div>
+            <h5>Total products</h5>
+        </div>
+    </div>
+    <div class="col">
+        <div class="widget-stats stats-blue">
+           @if (IsLoading)
+            {
+                <div class="spinner">
+                    <BitSpinner></BitSpinner>
+                </div>
+            }
+            <div class="num">
+                @Data.TotalCategories
+            </div>
+            <h5>Total categories</h5>
+        </div>
+    </div>
+</div>
