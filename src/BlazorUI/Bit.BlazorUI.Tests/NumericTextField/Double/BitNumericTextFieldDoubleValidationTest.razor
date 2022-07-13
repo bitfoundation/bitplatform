@@ -1,0 +1,112 @@
+﻿<EditForm Model="@TestModel" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit">
+    <DataAnnotationsValidator />
+
+    <CascadingValue Value="Visual">
+        <BitNumericTextField 
+                       Min="@Min"
+                       Max="@Max"
+                       Step="@Step"
+                       @bind-Value="@TestModel.Value"
+                       IsEnabled="@IsEnabled"
+                       AriaDescription="@AriaDescription"
+                       AriaPositionInSet="@AriaPositionInSet"
+                       AriaSetSize="@AriaSetSize"
+                       AriaValueNow="@AriaValueNow"
+                       AriaValueText="@AriaValueText"
+                       AriaLabel="@AriaLabel"
+                       Suffix="@Suffix"
+                       LabelPosition="@LabelPosition"
+                       IconName="@IconName"
+                       IconAriaLabel="@IconAriaLabel"
+                       DecrementButtonIconName="@DecrementButtonIconName"
+                       IncrementButtonIconName="@IncrementButtonIconName"
+                       DecrementButtonAriaLabel="@DecrementButtonAriaLabel"
+                       IncrementButtonAriaLabel="@IncrementButtonAriaLabel"
+                       Label="@Label"
+                       InputHtmlAttributes="@InputHtmlAttributes"
+                       Title="@Title"
+                       Precision="@Precision"
+                       DefaultValue="@DefaultValue"
+                       OnChange="(double? value) => OnChangeEventValue = value"
+                       OnBlur="@HandleBlur"
+                       OnFocus="@HandleFocus">
+            <LabelFragment>
+                @LabelFragment
+            </LabelFragment>
+        </BitNumericTextField>
+    </CascadingValue>
+
+</EditForm>
+
+@code {
+    [Parameter] public Visual Visual { get; set; }
+    [Parameter] public BitNumericTextFieldLabelPosition LabelPosition { get; set; } = BitNumericTextFieldLabelPosition.Left;
+    [Parameter] public string AriaDescription { get; set; }
+    [Parameter] public int? AriaPositionInSet { get; set; }
+    [Parameter] public int? AriaSetSize { get; set; }
+    [Parameter] public int? AriaValueNow { get; set; }
+    [Parameter] public string AriaValueText { get; set; }
+    [Parameter] public string AriaLabel { get; set; }
+    [Parameter]public double? Step { get; set; } = 1;
+    [Parameter] public double? Min { get; set; }
+    [Parameter] public double? Max { get; set; }
+    [Parameter] public BitNumericTextFieldDoubleTestModel TestModel { get; set; }
+    [Parameter] public EventCallback<double> ValueChanged { get; set; }
+    [Parameter] public string Suffix { get; set; } = string.Empty;
+    [Parameter] public BitIconName? IconName { get; set; }
+    [Parameter] public string Label { get; set; } = string.Empty;
+    [Parameter] public Dictionary<string, object> InputHtmlAttributes { get; set; } = null;
+    [Parameter] public string Title { get; set; }
+    [Parameter] public int? Precision { get; set; }
+    [Parameter] public BitIconName DecrementButtonIconName { get; set; }
+    [Parameter] public BitIconName IncrementButtonIconName { get; set; }
+    [Parameter] public double DefaultValue { get; set; }
+    [Parameter] public string IconAriaLabel { get; set; } = string.Empty;
+    [Parameter] public string DecrementButtonAriaLabel { get; set; }
+    [Parameter] public string IncrementButtonAriaLabel { get; set; }
+    [Parameter] public bool IsEnabled { get; set; } = true;
+    [Parameter] public RenderFragment LabelFragment { get; set; }
+
+    public double OnIncrementEventCounter { get; set; }
+    public double OnBlurEventCounter { get; set; }
+    public double OnFocusEventCounter { get; set; }
+    public double OnDecrementEventCounter { get; set; } = 20;
+    public double? OnChangeEventValue { get; set; }
+    public double ValidCount { get; set; }
+    public double InvalidCount { get; set; }
+
+    private void HandleChange(double? value)
+    {
+        OnChangeEventValue = value;
+    }
+
+    private void HandleBlur(FocusEventArgs args)
+    {
+        OnBlurEventCounter++;
+    }
+
+    private void HandleFocus(FocusEventArgs args)
+    {
+        OnFocusEventCounter++;
+    }
+
+    private void HandleDecrement(BitNumericTextFieldChangeValue<double?> args)
+    {
+        OnDecrementEventCounter--;
+    }
+
+    private void HandleIncrement(BitNumericTextFieldChangeValue<double?> args)
+    {
+        OnIncrementEventCounter++;
+    }
+
+    private void HandleValidSubmit()
+    {
+        ValidCount++;
+    }
+
+    private void HandleInvalidSubmit()
+    {
+        InvalidCount++;
+    }
+}
