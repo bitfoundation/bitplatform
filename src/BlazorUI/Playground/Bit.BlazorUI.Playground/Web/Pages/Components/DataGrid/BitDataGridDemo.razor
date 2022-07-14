@@ -2,7 +2,7 @@
 @inject HttpClient Http
 @inject NavigationManager NavManager
 
-@using Playground.Shared.Dtos.DataGridDemo;
+@using Playground.Shared.Dtos.DataGridDemo
 
 <ComponentDemo ComponentName="DataGrid"
                ComponentDescription="BitDataGrid is a robust way to display an information-rich collection of items, and allow people to sort, group, and filter the content. Use a data-grid when information density is critical."
@@ -11,14 +11,10 @@
                EnumParameters="enumParameters">
     <ComponentExampleBox Title="Typical usage, Columns, Sorting, Filtring, Paging" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
-            <div class="grid">
+            <div class="grid1">
                 <BitDataGrid Items="@FilteredItems" ResizableColumns="true" Pagination="@pagination">
-                    @* <BitDataGridTemplateColumn Title="Rank" SortBy="@rankSort" Align="BitDataGridAlign.Center" IsDefaultSort="BitDataGridSortDirection.Ascending">
-                    <img class="flag" src="flags/@(context.Code).svg" />
-                    </BitDataGridTemplateColumn>*@
-                    <BitDataGridPropertyColumn Property="@(c => c.Name)" Sortable="true" Class="column1">
+                    <BitDataGridPropertyColumn Property="@(c => c.Name)" Sortable="true">
                         <ColumnOptions>
-                            @*<input type="search" autofocus @bind="nameFilter" @bind:event="oninput" />*@
                             <BitSearchBox @bind-Value="typicalSampleNameFilter"
                                           Placeholder="Search on Name"
                                           InputHtmlAttributes="@(new Dictionary<string, object> {{"autofocus", true}})" />
@@ -36,12 +32,12 @@
 
     <ComponentExampleBox Title="Virtualizing" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example2">
         <ExamplePreview>
-            <div class="grid grid--fix-height">
-               <BitDataGrid   ItemsProvider="@foodRecallProvider" TGridItem="FoodRecall" Virtualize="true" @ref="dataGrid">
+            <div class="grid2">
+                <BitDataGrid ItemsProvider="@foodRecallProvider" TGridItem="FoodRecall" Virtualize="true" @ref="dataGrid">
                     <BitDataGridPropertyColumn Property="@(c=>c.EventId)" />
                     <BitDataGridPropertyColumn Property="@(c => c.State)" />
                     <BitDataGridPropertyColumn Property="@(c => c.City)" />
-                    <BitDataGridPropertyColumn Title="Company" Property="@(c => c.RecallingFirm)" />
+                    <BitDataGridPropertyColumn Property="@(c => c.RecallingFirm)" Title="Company" />
                     <BitDataGridPropertyColumn Property="@(c => c.Status)" />
                 </BitDataGrid>
             </div>
@@ -60,10 +56,9 @@
 
     <ComponentExampleBox Title="Styling" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example3">
         <ExamplePreview>
-            <div class="grid">
-                <BitDataGrid Items="@data" Theme="redskin">
-                    <BitDataGridPropertyColumn Property="@(c => c.Name)" Sortable="true" Class="column1">
-                    </BitDataGridPropertyColumn>
+            <div class="grid3">
+                <BitDataGrid Items="@sevenCountries" Theme="redskin">
+                    <BitDataGridPropertyColumn Property="@(c => c.Name)" Sortable="true" />
                     <BitDataGridPropertyColumn Property="@(c => c.Medals.Gold)" Sortable="true" Align="BitDataGridAlign.Right" />
                     <BitDataGridPropertyColumn Property="@(c => c.Medals.Silver)" Sortable="true" Align="BitDataGridAlign.Right" />
                     <BitDataGridPropertyColumn Property="@(c => c.Medals.Bronze)" Sortable="true" Align="BitDataGridAlign.Right" />
@@ -74,3 +69,92 @@
     </ComponentExampleBox>
 
 </ComponentDemo>
+
+@code {
+    IQueryable<Country> allCountries;
+    BitDataGrid<FoodRecall>? dataGrid;
+    IQueryable<Country> sevenCountries;
+    BitDataGridItemsProvider<FoodRecall> foodRecallProvider;
+    BitDataGridPaginationState pagination = new() { ItemsPerPage = 15 };
+    IQueryable<Country> FilteredItems => allCountries?.Where(x => x.Name.Contains(typicalSampleNameFilter, StringComparison.CurrentCultureIgnoreCase));
+
+    int virtualNumResults;
+    string typicalSampleNameFilter = string.Empty;
+    string _virtualSampleNameFilter = string.Empty;
+
+    string VirtualSampleNameFilter
+    {
+        get => _virtualSampleNameFilter;
+        set
+        {
+            _virtualSampleNameFilter = value;
+            _ = dataGrid.RefreshDataAsync();
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        allCountries = (await GetCountriesAsync(0, null, null, true)).Items.AsQueryable();
+        sevenCountries = (await Get7CountriesAsync()).Items.AsQueryable();
+
+        foodRecallProvider = async req =>
+        {
+            try
+            {
+                var url = NavManager.GetUriWithQueryParameters("https://api.fda.gov/food/enforcement.json", new Dictionary<string, object?>
+                        {
+                    { "search",$"recalling_firm:\"{_virtualSampleNameFilter}\"" },
+                    { "skip", req.StartIndex },
+                    { "limit", req.Count }
+                        });
+
+                var data = await Http.GetFromJsonAsync(url, AppJsonContext.Default.FoodRecallQueryResult, req.CancellationToken);
+
+                return BitDataGridItemsProviderResult.From(data!.Results, data!.Meta.Results.Total);
+            }
+            catch
+            {
+                return BitDataGridItemsProviderResult.From<FoodRecall>(new List<FoodRecall> { }, 0);
+            }
+            finally
+            {
+                StateHasChanged();
+            }
+        };
+
+        virtualNumResults = (await Http.GetFromJsonAsync("https://api.fda.gov/food/enforcement.json", AppJsonContext.Default.FoodRecallQueryResult))!.Meta.Results.Total;
+    }
+
+    private async Task<BitDataGridItemsProviderResult<Country>> GetCountriesAsync(int startIndex, int? count, string sortBy, bool sortAscending)
+    {
+        await Task.Delay(500);
+
+        var ordered = (sortBy, sortAscending) switch
+        {
+            (nameof(Country.Name), true) => _countries.OrderBy(c => c.Name),
+            (nameof(Country.Name), false) => _countries.OrderByDescending(c => c.Name),
+            (nameof(Country.Code), true) => _countries.OrderBy(c => c.Code),
+            (nameof(Country.Code), false) => _countries.OrderByDescending(c => c.Code),
+            ("Medals.Gold", true) => _countries.OrderBy(c => c.Medals.Gold),
+            ("Medals.Gold", false) => _countries.OrderByDescending(c => c.Medals.Gold),
+            _ => _countries.OrderByDescending(c => c.Medals.Gold),
+        };
+
+        var result = ordered.Skip(startIndex);
+
+        if (count.HasValue)
+        {
+            result = result.Take(count.Value);
+        }
+
+        return BitDataGridItemsProviderResult.From(result.ToArray(), ordered.Count());
+    }
+
+    private async Task<BitDataGridItemsProviderResult<Country>> Get7CountriesAsync()
+    {
+        await Task.Delay(100);
+
+        var countries = _countries.Take(7).AsQueryable();
+        return BitDataGridItemsProviderResult.From(countries.ToArray(), countries.Count());
+    }
+}
