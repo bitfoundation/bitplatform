@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
+using Bit.BlazorUI;
 using Bit.BlazorUI.Playground.Web.Models;
 using Bit.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
@@ -340,32 +342,7 @@ IQueryable<Country> FilteredItems => items?.Where(x => x.Name.Contains(typicalSa
 
 protected override async Task OnInitializedAsync()
 {
-    allCountries = (await GetCountriesAsync(0, null, null, true)).Items.AsQueryable();
-}
-
-private async Task<BitDataGridItemsProviderResult<Country>> GetCountriesAsync(int startIndex, int? count, string sortBy, bool sortAscending)
-{
-    await Task.Delay(500);
-
-    var ordered = (sortBy, sortAscending) switch
-    {
-        (nameof(Country.Name), true) => _countries.OrderBy(c => c.Name),
-        (nameof(Country.Name), false) => _countries.OrderByDescending(c => c.Name),
-        (nameof(Country.Code), true) => _countries.OrderBy(c => c.Code),
-        (nameof(Country.Code), false) => _countries.OrderByDescending(c => c.Code),
-        (""Medals.Gold"", true) => _countries.OrderBy(c => c.Medals.Gold),
-        (""Medals.Gold"", false) => _countries.OrderByDescending(c => c.Medals.Gold),
-        _ => _countries.OrderByDescending(c => c.Medals.Gold),
-    };
-
-    var result = ordered.Skip(startIndex);
-
-    if (count.HasValue)
-    {
-       result = result.Take(count.Value);
-    }
-
-    return BitDataGridItemsProviderResult.From(result.ToArray(), ordered.Count());
+    allCountries = _countries.AsQueryable();
 }
 
 private readonly static Country[] _countries = new[]
@@ -438,6 +415,7 @@ public class Medals
         <BitDataGridPropertyColumn Property=""@(c => c.City)"" />
         <BitDataGridPropertyColumn Property=""@(c => c.RecallingFirm)"" Title=""Company"" />
         <BitDataGridPropertyColumn Property=""@(c => c.Status)"" />
+        <BitDataGridPropertyColumn Sortable=""true"" Property=""@(c => c.ReportDate)"" Title=""Report Date"" />
     </BitDataGrid>
 </div>
 <div class=""search-panel"">
@@ -446,13 +424,9 @@ public class Medals
                                     Placeholder=""Search on Company""
                                     InputHtmlAttributes=""@(new Dictionary<string, object> {{""autofocus"", true}})"" />
      </div>
-     <div class=""inline-block"">
-        Total: <strong>@virtualNumResults</strong>
-    </div>
 </div>
 ";
     private readonly string example2CSharpCode = @"
-int virtualNumResults;
 BitDataGrid<FoodRecall>? dataGrid;
 string _virtualSampleNameFilter = string.Empty;
 BitDataGridItemsProvider<FoodRecall> foodRecallProvider;
@@ -473,32 +447,39 @@ protected override async Task OnInitializedAsync()
     {
         try
         {
-            var url = NavManager.GetUriWithQueryParameters(""https://api.fda.gov/food/enforcement.json"", new Dictionary<string, object?>
+            var query = new Dictionary<string, object?>
             {
                 { ""search"",$""recalling_firm:\""{_virtualSampleNameFilter}\"" },
                 { ""skip"", req.StartIndex },
                 { ""limit"", req.Count }
-            });
+            };
+
+            var sort = req.GetSortByProperties().SingleOrDefault();
+
+            if (sort != default)
+            {
+                var sortByColumnName = sort.PropertyName switch
+                {
+                    nameof(FoodRecall.ReportDate) => ""report_date"",
+                    _ => throw new InvalidOperationException()
+                };
+
+                query.Add(""sort"", $""{sortByColumnName}:{(sort.Direction == BitDataGridSortDirection.Ascending ? ""asc"" : ""desc"")}"");
+            }
+
+            var url = NavManager.GetUriWithQueryParameters(""https://api.fda.gov/food/enforcement.json"", query);
 
             var data = await Http.GetFromJsonAsync(url, AppJsonContext.Default.FoodRecallQueryResult, req.CancellationToken);
-
-            virtualNumResults = data!.Meta.Results.Total;
 
             return BitDataGridItemsProviderResult.From(
                                             items: data!.Results,
                                             totalItemCount: data!.Meta.Results.Total);
-            }
-            catch
-            {
-                virtualNumResults = 0;
-                return BitDataGridItemsProviderResult.From<FoodRecall>(new List<FoodRecall> { }, 0);
-            }
-            finally
-            {
-                StateHasChanged();
-            }
-        };
-    }
+        }
+        catch
+        {
+            return BitDataGridItemsProviderResult.From<FoodRecall>(new List<FoodRecall> { }, 0);
+        }
+    };
 }
 
 //https://devblogs.microsoft.com/dotnet/try-the-new-system-text-json-source-generator/
@@ -666,15 +647,7 @@ IQueryable<Country> sevenCountries;
 
 protected override async Task OnInitializedAsync()
 {
-    sevenCountries = (await Get7CountriesAsync()).Items.AsQueryable();
-}
-
-private async Task<BitDataGridItemsProviderResult<Country>> Get7CountriesAsync()
-{
-    await Task.Delay(100);
-
-    var Countries = _countries.Take(7).AsQueryable();
-    return BitDataGridItemsProviderResult.From(Countries.ToArray(), Countries.Count());
+    sevenCountries = _countries.Take(7).AsQueryable();
 }
 
 private readonly static Country[] _countries = new[]
