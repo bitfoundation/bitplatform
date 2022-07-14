@@ -15,12 +15,12 @@ public static class CultureInfoHelper
 
         cultureInfo.DateTimeFormat.MonthNames = new[]
         {
-            "فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"
+            "فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند", ""
         };
 
         cultureInfo.DateTimeFormat.AbbreviatedMonthNames = new[]
         {
-            "فرور", "ارد", "خرد", "تیر", "مرد", "شهر", "مهر", "آبا", "آذر", "دی", "بهم", "اسف"
+            "فرور", "ارد", "خرد", "تیر", "مرد", "شهر", "مهر", "آبا", "آذر", "دی", "بهم", "اسف", ""
         };
 
         cultureInfo.DateTimeFormat.MonthGenitiveNames = cultureInfo.DateTimeFormat.MonthNames;
@@ -48,6 +48,11 @@ public static class CultureInfoHelper
         var cultureData = _cultureDataField.GetValue(cultureInfo.TextInfo);
 
         _iReadingLayoutField.SetValue(cultureData, 1 /*rtl*/); // this affects cultureInfo.TextInfo.IsRightToLeft
+
+        if (cultureInfo.DateTimeFormat.Calendar is not PersianCalendar)
+        {
+            cultureInfo.DateTimeFormat.Calendar = new PersianCalendar();
+        }
 
         return cultureInfo;
     }
@@ -125,7 +130,7 @@ public static class CultureInfoHelper
             "S"
         };
 
-        cultureInfo.DateTimeFormat.AMDesignator = "GH.Z";
+        cultureInfo.DateTimeFormat.AMDesignator = "G.Z";
         cultureInfo.DateTimeFormat.PMDesignator = "B.Z";
         cultureInfo.DateTimeFormat.ShortDatePattern = "yyyy/MM/dd";
         cultureInfo.DateTimeFormat.FirstDayOfWeek = DayOfWeek.Saturday;
@@ -133,6 +138,11 @@ public static class CultureInfoHelper
         var cultureData = _cultureDataField.GetValue(cultureInfo.TextInfo);
 
         _iReadingLayoutField.SetValue(cultureData, 1 /*rtl*/); // this affects cultureInfo.TextInfo.IsRightToLeft
+
+        if (cultureInfo.DateTimeFormat.Calendar is not PersianCalendar)
+        {
+            cultureInfo.DateTimeFormat.Calendar = new PersianCalendar();
+        }
 
         return cultureInfo;
     }
