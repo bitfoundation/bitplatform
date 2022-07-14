@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
 	<PropertyGroup>
 		<TargetFramework>net6.0</TargetFramework>
@@ -32,10 +32,10 @@
 		<PackageReference Include="Bit.CodeAnalyzers" Version="2.0.0-pre-03" />
 		<PackageReference Include="Bit.SourceGenerators" Version="2.0.0-pre-03" />
 		<PackageReference Include="jose-jwt" Version="4.0.0" />
-		<PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.6" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.7" />
         <!--/-:msbuild-conditional:noEmit -->
-		<PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.6" />
-		<PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.6" PrivateAssets="all" />
+		<PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.7" />
+		<PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.7" PrivateAssets="all" />
         <!--/+:msbuild-conditional:noEmit -->
 	</ItemGroup>
 

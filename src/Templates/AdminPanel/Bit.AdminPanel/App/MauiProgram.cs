@@ -1,5 +1,8 @@
 ﻿//-:cnd:noEmit
 
+using System.Reflection;
+using Microsoft.Extensions.FileProviders;
+
 namespace AdminPanel.App;
 
 public static class MauiProgram

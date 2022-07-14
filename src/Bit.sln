@@ -105,6 +105,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.BlazorUI.SourceGenerators", "BlazorUI\Bit.BlazorUI.SourceGenerators\Bit.BlazorUI.SourceGenerators.csproj", "{EA97D8FA-4EC5-4651-B4E4-D908988D8D1A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sales", "Sales", "{EAC901B4-498D-4128-8A7C-B8430C5AB724}"
+	ProjectSection(SolutionItems) = preProject
+		WebSite\Directory.build.props = WebSite\Directory.build.props
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Sales.WebSite.Api", "Sales\Bit.Sales.WebSite\Api\Bit.Sales.WebSite.Api.csproj", "{829F9151-802E-4A4C-826C-8976195FABFB}"
 EndProject
@@ -113,6 +116,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Sales.WebSite.Web", "Sales\Bit.Sales.WebSite\Web\Bit.Sales.WebSite.Web.csproj", "{B4D9C972-379F-4D23-9DFA-4FF933B7BA09}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AdminPanel", "AdminPanel", "{5CDE0A2E-FB17-47F0-AEDC-A74A6C10B1BD}"
+	ProjectSection(SolutionItems) = preProject
+		Templates\AdminPanel\Bit.AdminPanel\.gitignore = Templates\AdminPanel\Bit.AdminPanel\.gitignore
+		Templates\AdminPanel\Bit.AdminPanel\Directory.build.props = Templates\AdminPanel\Bit.AdminPanel\Directory.build.props
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.AdminPanel.ProjectTemplate", "Templates\AdminPanel\Bit.AdminPanel.ProjectTemplate.csproj", "{86731B01-337F-44B8-954C-644D36BFDA96}"
 EndProject

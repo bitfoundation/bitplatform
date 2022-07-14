@@ -1,4 +1,6 @@
-﻿namespace AdminPanel.App.Platforms.iOS;
+﻿using UIKit;
+
+namespace AdminPanel.App.Platforms.iOS;
 
 public class Program
 {
