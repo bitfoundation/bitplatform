@@ -1,4 +1,7 @@
-﻿[assembly: UsesPermission(Android.Manifest.Permission.Internet)]
+﻿using Android.App;
+using Android.Runtime;
+
+[assembly: UsesPermission(Android.Manifest.Permission.Internet)]
 [assembly: UsesPermission(Android.Manifest.Permission.AccessNetworkState)]
 
 namespace AdminPanel.App.Platforms.Android;

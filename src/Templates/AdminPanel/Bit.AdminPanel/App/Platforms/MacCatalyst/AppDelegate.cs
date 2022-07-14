@@ -1,4 +1,6 @@
-﻿namespace AdminPanel.App.Platforms.MacCatalyst;
+﻿using Foundation;
+
+namespace AdminPanel.App.Platforms.MacCatalyst;
 
 [Register(nameof(AppDelegate))]
 public class AppDelegate : MauiUIApplicationDelegate

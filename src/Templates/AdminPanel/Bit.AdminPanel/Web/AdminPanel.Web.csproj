@@ -34,10 +34,10 @@
         <PackageReference Include="jose-jwt" Version="4.0.0" />
         <PackageReference Include="LiveChartsCore.SkiaSharpView.Blazor" Version="2.0.0-beta.300" />
         <PackageReference Include="SkiaSharp.Views.Blazor" Version="2.88.1-preview.79" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.6" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.7" />
         <!--/-:msbuild-conditional:noEmit -->
-        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.6" />
-        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.6" PrivateAssets="all" />
+        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.7" />
+        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.7" PrivateAssets="all" />
         <!--/+:msbuild-conditional:noEmit -->
     </ItemGroup>
 
