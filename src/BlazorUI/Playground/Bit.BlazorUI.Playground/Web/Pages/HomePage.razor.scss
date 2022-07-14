@@ -989,6 +989,29 @@
     }
 }
 
+.components-label {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-width: rem(40px);
+    height: rem(16px);
+    border-radius: rem(20px);
+    margin-left: rem(10px);
+    padding: 0 rem(5px);
+    font-size: rem(8px);
+    font-weight: 500;
+
+    &.blue {
+        background-color: $B2Color;
+        color: $White;
+    }
+
+    &.yellow {
+        background-color: $Y1Color;
+        color: $B2Color;
+    }
+}
+
 .bottom-section {
     position: relative;
     flex-flow: column nowrap;

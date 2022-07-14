@@ -75,6 +75,8 @@ a {
     cursor: pointer;
 
     a {
+        display: flex;
+        align-items: center;
         color: inherit;
         font-family: inherit;
 
