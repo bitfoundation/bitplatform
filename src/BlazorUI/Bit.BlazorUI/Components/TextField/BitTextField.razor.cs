@@ -286,7 +286,7 @@ public partial class BitTextField
 
     protected override Task OnInitializedAsync()
     {
-        if (DefaultValue.HasValue())
+        if (CurrentValueAsString.HasNoValue() && DefaultValue.HasValue())
         {
             CurrentValueAsString = DefaultValue;
         }
