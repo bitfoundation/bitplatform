@@ -23,7 +23,7 @@ public partial class BitChart
     /// Gets or sets the configuration of the chart.
     /// </summary>
     [Parameter]
-    public ConfigBase Config { get; set; }
+    public BitChartConfigBase Config { get; set; }
 
     /// <summary>
     /// Gets or sets the width of the canvas HTML element.
@@ -32,7 +32,7 @@ public partial class BitChart
     public int? Width { get; set; }
 
     /// <summary>
-    /// Gets or sets the height of the canvas HTML element. Use <see langword="null"/> when using <see cref="BaseConfigOptions.AspectRatio"/>.
+    /// Gets or sets the height of the canvas HTML element. Use <see langword="null"/> when using <see cref="BitChartBaseConfigOptions.AspectRatio"/>.
     /// </summary>
     [Parameter]
     public int? Height { get; set; }

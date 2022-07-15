@@ -3,9 +3,9 @@ using Newtonsoft.Json;
 
 namespace Bit.BlazorUI;
 
-internal class JsonObjectEnumConverter : JsonConverter<ObjectEnum>
+internal class JsonObjectEnumConverter : JsonConverter<BitChartObjectEnum>
 {
-    public override ObjectEnum ReadJson(JsonReader reader, Type objectType, [AllowNull] ObjectEnum existingValue, bool hasExistingValue, JsonSerializer serializer)
+    public override BitChartObjectEnum ReadJson(JsonReader reader, Type objectType, [AllowNull] BitChartObjectEnum existingValue, bool hasExistingValue, JsonSerializer serializer)
     {
         if (reader.TokenType == JsonToken.Null ||
             reader.TokenType == JsonToken.Undefined)
@@ -70,21 +70,21 @@ internal class JsonObjectEnumConverter : JsonConverter<ObjectEnum>
             }
             else
             {
-                throw new NotSupportedException($"Deserialization {nameof(ObjectEnum)} '{objectType.FullName}' from '{readerValueType.Name}' isn't supported.");
+                throw new NotSupportedException($"Deserialization {nameof(BitChartObjectEnum)} '{objectType.FullName}' from '{readerValueType.Name}' isn't supported.");
             }
         }
 
         return factory.Create(value, readerValueType);
     }
 
-    public override void WriteJson(JsonWriter writer, ObjectEnum wrapper, JsonSerializer serializer)
+    public override void WriteJson(JsonWriter writer, BitChartObjectEnum wrapper, JsonSerializer serializer)
     {
         // Note: wrapper won't be null (json.net wouldn't call this method if it were null)
         Type wrappedType = wrapper.Value.GetType();
-        if (!ObjectEnum.IsSupportedSerializationType(wrappedType))
+        if (!BitChartObjectEnum.IsSupportedSerializationType(wrappedType))
         {
             throw new NotSupportedException($"The type '{wrappedType.FullName}' isn't supported for serialization " +
-                                            $"within an instance of any {nameof(ObjectEnum)}-type.");
+                                            $"within an instance of any {nameof(BitChartObjectEnum)}-type.");
         }
 
         // The types we support can always be written in a single Token.

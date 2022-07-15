@@ -8,7 +8,7 @@
 	string[] cartesianAxesNames = new[] { "CategoryAxis", "LinearCartesianAxis", "LogarithmicAxis", "TimeAxis" };
 	foreach (string baseName in cartesianAxesNames)
 	{
-		string className = "Bar" + baseName;
+		string className = "BitChartBar" + baseName;
 #>
 
 namespace Bit.BlazorUI

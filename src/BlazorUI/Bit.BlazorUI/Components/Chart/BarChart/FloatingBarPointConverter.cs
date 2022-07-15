@@ -2,9 +2,9 @@
 
 namespace Bit.BlazorUI;
 
-internal class FloatingBarPointConverter : JsonConverter<FloatingBarPoint>
+internal class FloatingBarPointConverter : JsonConverter<BitChartFloatingBarPoint>
 {
-    public override FloatingBarPoint ReadJson(JsonReader reader, Type objectType, FloatingBarPoint existingValue, bool hasExistingValue, JsonSerializer serializer)
+    public override BitChartFloatingBarPoint ReadJson(JsonReader reader, Type objectType, BitChartFloatingBarPoint existingValue, bool hasExistingValue, JsonSerializer serializer)
     {
         if (reader.TokenType != JsonToken.StartArray)
             throw new JsonReaderException();
@@ -13,10 +13,10 @@ internal class FloatingBarPointConverter : JsonConverter<FloatingBarPoint>
         if (arr.Length != 2)
             throw new JsonReaderException();
 
-        return new FloatingBarPoint(arr[0], arr[1]);
+        return new BitChartFloatingBarPoint(arr[0], arr[1]);
     }
 
-    public override void WriteJson(JsonWriter writer, FloatingBarPoint value, JsonSerializer serializer)
+    public override void WriteJson(JsonWriter writer, BitChartFloatingBarPoint value, JsonSerializer serializer)
     {
         writer.WriteStartArray();
         writer.WriteValue(value.Start);

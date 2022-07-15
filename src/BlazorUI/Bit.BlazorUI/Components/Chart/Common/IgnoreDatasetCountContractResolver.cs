@@ -11,7 +11,7 @@ internal class IgnoreDatasetCountContractResolver : DefaultContractResolver
     {
         IList<JsonProperty> baseProps = base.CreateProperties(type, memberSerialization);
 
-        if (typeof(IDataset).IsAssignableFrom(type))
+        if (typeof(IBitChartDataset).IsAssignableFrom(type))
         {
             string countName = nameof(ICollection.Count);
             if (NamingStrategy != null)

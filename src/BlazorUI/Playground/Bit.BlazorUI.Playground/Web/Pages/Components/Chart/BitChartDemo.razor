@@ -10,17 +10,17 @@
 
 @code {
     private const int InitalCount = 5;
-    private PieConfig _config;
+    private BitChartPieConfig _config;
     private BitChart _chart;
 
     protected override void OnInitialized()
     {
-        _config = new PieConfig
+        _config = new BitChartPieConfig
         {
-            Options = new PieOptions
+            Options = new BitChartPieOptions
             {
                 Responsive = true,
-                Title = new OptionsTitle
+                Title = new BitChartOptionsTitle
                 {
                     Display = true,
                     Text = "BitChart Pie Chart"
@@ -28,9 +28,9 @@
             }
         };
 
-        PieDataset<int> dataset = new PieDataset<int>(ChartUtils.RandomScalingFactor(InitalCount))
+        BitChartPieDataset<int> dataset = new BitChartPieDataset<int>(BitChartDemoUtils.RandomScalingFactor(InitalCount))
         {
-            BackgroundColor = ChartColors.All.Take(InitalCount).Select(ColorUtil.FromDrawingColor).ToArray()
+            BackgroundColor = BitChartDemoColors.All.Take(InitalCount).Select(BitChartColorUtil.FromDrawingColor).ToArray()
         };
 
         _config.Data.Datasets.Add(dataset);
@@ -43,7 +43,7 @@
         {
             int count = dataset.Count;
             dataset.Clear();
-            dataset.AddRange(ChartUtils.RandomScalingFactor(count));
+            dataset.AddRange(BitChartDemoUtils.RandomScalingFactor(count));
         }
 
         _chart.Update();
@@ -52,9 +52,9 @@
     private void AddDataset()
     {
         int count = _config.Data.Labels.Count;
-        PieDataset<int> dataset = new PieDataset<int>(ChartUtils.RandomScalingFactor(count))
+        BitChartPieDataset<int> dataset = new BitChartPieDataset<int>(BitChartDemoUtils.RandomScalingFactor(count))
         {
-            BackgroundColor = ChartColors.All.Take(count).Select(ColorUtil.FromDrawingColor).ToArray()
+            BackgroundColor = BitChartDemoColors.All.Take(count).Select(BitChartColorUtil.FromDrawingColor).ToArray()
         };
 
         _config.Data.Datasets.Add(dataset);
@@ -63,7 +63,7 @@
 
     private void RemoveDataset()
     {
-        IList<IDataset> datasets = _config.Data.Datasets;
+        IList<IBitChartDataset> datasets = _config.Data.Datasets;
         if (datasets.Count == 0)
             return;
 
