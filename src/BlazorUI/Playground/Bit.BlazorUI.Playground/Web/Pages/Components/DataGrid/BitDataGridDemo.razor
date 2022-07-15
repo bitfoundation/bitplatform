@@ -133,11 +133,11 @@
             try
             {
                 var query = new Dictionary<string, object?>
-                                    {
+                {
                     { "search",$"recalling_firm:\"{_virtualSampleNameFilter}\"" },
                     { "skip", req.StartIndex },
                     { "limit", req.Count }
-                                    };
+                };
 
                 var sort = req.GetSortByProperties().SingleOrDefault();
 
