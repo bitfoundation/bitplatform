@@ -1,5 +1,7 @@
 ﻿using System.IO.Compression;
 using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.AspNetCore.OData;
+using Bit.BlazorUI.Playground.Shared.Dtos;
 
 #if BlazorWebAssembly
 using Microsoft.AspNetCore.Components;
@@ -23,11 +25,17 @@ public static class Services
         services.AddRazorPages();
         services.AddPlaygroundServices();
 #endif
-        services.AddSwaggerGen();
+        services.AddSwaggerGen(options =>
+        {
+            options.OperationFilter<ODataOperationFilter>();
+        });
 
         services.AddCors();
-        services.AddControllers();
-        //services.AddMvcCore(); 
+
+        services.AddControllers()
+            .AddOData()
+            .AddJsonOptions(options => options.JsonSerializerOptions.AddContext<AppJsonContext>());
+        
         services.AddResponseCompression(opts =>
         {
             opts.EnableForHttps = true;
