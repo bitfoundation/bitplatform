@@ -13,8 +13,7 @@ public class FileUploadController : ControllerBase
         BasePath = Configuration["UploadPath"];
     }
 
-    [RequestFormLimits(ValueLengthLimit = int.MaxValue, MultipartBodyLengthLimit = int.MaxValue)]
-    [DisableRequestSizeLimit]
+    [RequestSizeLimit(11 * 1024 * 1024 /*11 MB*/)]
     [HttpPost]
     public async Task<IActionResult> UploadStreamedFile(IFormFile file, CancellationToken cancellationToken)
     {
@@ -24,10 +23,7 @@ public class FileUploadController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        using var fileStream = file.OpenReadStream();
-        using var memoryStream = new MemoryStream();
-        await fileStream.CopyToAsync(memoryStream, cancellationToken);
-        memoryStream.Seek(0, SeekOrigin.Begin);
+        using var requestStream = file.OpenReadStream();
 
         if (Directory.Exists(BasePath) is false)
         {
@@ -35,17 +31,18 @@ public class FileUploadController : ControllerBase
         }
 
         var path = Path.Combine(BasePath, file.FileName);
+
         if (System.IO.File.Exists(path) is false)
         {
             using var targetStream = System.IO.File.Create(path);
             if (cancellationToken.IsCancellationRequested is false)
-                await memoryStream.CopyToAsync(targetStream);
+                await requestStream.CopyToAsync(targetStream, cancellationToken);
         }
         else
         {
             using var targetStream = System.IO.File.Open(path, FileMode.Append);
             if (cancellationToken.IsCancellationRequested is false)
-                await memoryStream.CopyToAsync(targetStream);
+                await requestStream.CopyToAsync(targetStream, cancellationToken);
         }
 
         return Ok();
