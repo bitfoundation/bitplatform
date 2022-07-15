@@ -1,5 +1,5 @@
 // Type definitions for Chart.js 2.9
-// Modified for use in ChartJs.Blazor (removed currently unsupported moment.js references)
+// Modified for use in Bit.BlazorUI.BitChart (removed currently unsupported moment.js references)
 // Project: https://github.com/nnnick/Chart.js, https://www.chartjs.org
 // Definitions by: Alberto Nuti <https://github.com/anuti>
 //                 Fabien Lavocat <https://github.com/FabienLavocat>

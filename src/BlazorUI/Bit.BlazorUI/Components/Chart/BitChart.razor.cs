@@ -42,6 +42,7 @@ public partial class BitChart
     {
         if (firstRender)
         {
+            await JsRuntime.InitChartJs();
             await JsRuntime.SetupChart(Config);
             await SetupCompletedCallback.InvokeAsync(this);
         }

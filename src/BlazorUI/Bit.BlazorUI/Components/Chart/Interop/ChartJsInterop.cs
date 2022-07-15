@@ -25,6 +25,11 @@ internal static class ChartJsInterop
         }
     };
 
+    public static async Task InitChartJs(this IJSRuntime jsRuntime)
+    {
+        var result = await jsRuntime.InvokeAsync<string>($"{ChartJsInteropName}.initChartJs");
+    }
+
     /// <summary>
     /// Set up a new chart. Call only once.
     /// </summary>

@@ -1,5 +1,3 @@
-/// <reference path="types/Chartjs.d.ts" />   
-
 interface ChartConfiguration extends Chart.ChartConfiguration {
     canvasId: string;
 }
@@ -24,6 +22,24 @@ interface DelegateHandler extends IMethodHandler {
 
 class ChartJsInterop {
     BlazorCharts = new Map<string, Chart>();
+
+    public initChartJs() {
+        return new Promise((resolve: any, reject: any) => {
+            try {
+                if (window.Chart) {
+                    resolve();
+                } else {
+                    const script = document.createElement('script');
+                    script.src = 'https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js';
+                    script.onload = e => resolve();
+                    script.onerror = err => reject(err);
+                    document.body.appendChild(script);
+                }
+            } catch (e: any) {
+                reject(e);
+            }
+        });
+    }
 
     public setupChart(config: ChartConfiguration): boolean {
         if (!this.BlazorCharts.has(config.canvasId)) {
@@ -353,4 +369,5 @@ class ChartJsInterop {
     }
 }
 
-(window as any)[ChartJsInterop.name] = new ChartJsInterop();
+//(window as any)[ChartJsInterop.name] = new ChartJsInterop();
+(window as any)["ChartJsInterop"] = new ChartJsInterop();

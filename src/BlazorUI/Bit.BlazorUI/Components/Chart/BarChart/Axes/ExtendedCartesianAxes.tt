@@ -10,10 +10,8 @@
 	{
 		string className = "Bar" + baseName;
 #>
-using ChartJs.Blazor.Common;
-using ChartJs.Blazor.Common.Axes;
 
-namespace ChartJs.Blazor.BarChart.Axes
+namespace Bit.BlazorUI
 {
     /// <summary>
     /// Extended version of <see cref="<#= baseName #>"/> for use in a bar chart.
