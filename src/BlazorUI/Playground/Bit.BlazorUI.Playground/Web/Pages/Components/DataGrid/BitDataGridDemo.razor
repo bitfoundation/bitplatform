@@ -1,5 +1,5 @@
 ﻿@page "/components/data-grid"
-@inject HttpClient Http
+@inject HttpClient HttpClient
 @inject NavigationManager NavManager
 
 @using Playground.Shared.Dtos.DataGridDemo
@@ -52,7 +52,26 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Styling" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example3">
+    <ComponentExampleBox Title="OData" ExampleId="example3" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode">
+        <ExamplePreview>
+            <div class="grid2">
+                <BitDataGrid ItemKey="(p => p.Id)" ItemsProvider="@productsItemsProvider" TGridItem="ProductDto" Virtualize="true" @ref="productsDataGrid">
+                    <BitDataGridPropertyColumn Property="@(p => p.Id)" Sortable="true" IsDefaultSort="BitDataGridSortDirection.Ascending" />
+                    <BitDataGridPropertyColumn Property="@(p => p.Name)" Sortable="true" />
+                    <BitDataGridPropertyColumn Property="@(p => p.Price)" Sortable="true" />
+                </BitDataGrid>
+            </div>
+            <div class="search-panel">
+                <div class="inline-block">
+                    <BitSearchBox @bind-Value="ODataSampleNameFilter" Width="250px"
+                                  Placeholder="Search on Name"
+                                  InputHtmlAttributes="@(new Dictionary<string, object> {{"autofocus", true}})" />
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Styling" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
         <ExamplePreview>
             <div class="grid3">
                 <BitDataGrid Items="@sevenCountries" Theme="redskin">
@@ -69,10 +88,13 @@
 </ComponentDemo>
 
 @code {
+
     IQueryable<Country> allCountries;
-    BitDataGrid<FoodRecall>? dataGrid;
+    BitDataGrid<FoodRecall> dataGrid;
+    BitDataGrid<ProductDto> productsDataGrid;
     IQueryable<Country> sevenCountries;
     BitDataGridItemsProvider<FoodRecall> foodRecallProvider;
+    BitDataGridItemsProvider<ProductDto> productsItemsProvider;
     BitDataGridPaginationState pagination = new() { ItemsPerPage = 15 };
     IQueryable<Country> FilteredItems => allCountries?.Where(x => x.Name.Contains(typicalSampleNameFilter, StringComparison.CurrentCultureIgnoreCase));
 
@@ -89,6 +111,18 @@
         }
     }
 
+    string _odataSampleNameFilter = string.Empty;
+
+    string ODataSampleNameFilter
+    {
+        get => _odataSampleNameFilter;
+        set
+        {
+            _odataSampleNameFilter = value;
+            _ = productsDataGrid.RefreshDataAsync();
+        }
+    }
+
     protected override async Task OnInitializedAsync()
     {
         allCountries = _countries.AsQueryable();
@@ -99,11 +133,11 @@
             try
             {
                 var query = new Dictionary<string, object?>
-                {
+                                    {
                     { "search",$"recalling_firm:\"{_virtualSampleNameFilter}\"" },
                     { "skip", req.StartIndex },
                     { "limit", req.Count }
-                };
+                                    };
 
                 var sort = req.GetSortByProperties().SingleOrDefault();
 
@@ -120,13 +154,47 @@
 
                 var url = NavManager.GetUriWithQueryParameters("https://api.fda.gov/food/enforcement.json", query);
 
-                var data = await Http.GetFromJsonAsync(url, AppJsonContext.Default.FoodRecallQueryResult, req.CancellationToken);
+                var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.FoodRecallQueryResult, req.CancellationToken);
 
                 return BitDataGridItemsProviderResult.From(data!.Results, data!.Meta.Results.Total);
             }
             catch
             {
                 return BitDataGridItemsProviderResult.From<FoodRecall>(new List<FoodRecall> { }, 0);
+            }
+        };
+
+        productsItemsProvider = async req =>
+        {
+            try
+            {
+                // https://docs.microsoft.com/en-us/odata/concepts/queryoptions-overview
+
+                var query = new Dictionary<string, object>()
+                {
+                    { "$top", req.Count ?? 50 },
+                    { "$skip", req.StartIndex }
+                };
+
+                if (string.IsNullOrEmpty(_odataSampleNameFilter) is false)
+                {
+                    query.Add("$filter", $"contains(Name,'{_odataSampleNameFilter}')");
+                }
+
+                if (req.GetSortByProperties().Any())
+                {
+                    query.Add("$orderby", string.Join(", ", req.GetSortByProperties().Select(p => $"{p.PropertyName} {(p.Direction == BitDataGridSortDirection.Ascending ? "asc" : "desc")}")));
+                }
+
+                var url = NavManager.GetUriWithQueryParameters("Products/GetProducts", query);
+
+                var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto);
+
+                return BitDataGridItemsProviderResult.From(data!.Items, (int)data!.TotalCount);
+            }
+            catch
+            {
+                return BitDataGridItemsProviderResult.From<ProductDto>(new List<ProductDto> { }, 0);
             }
         };
     }

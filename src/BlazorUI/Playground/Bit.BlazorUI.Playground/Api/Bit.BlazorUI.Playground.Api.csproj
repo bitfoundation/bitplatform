@@ -11,6 +11,7 @@
         <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="6.0.7" />
         <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="6.3.2" />
         <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="6.3.2" />
+        <PackageReference Include="Microsoft.AspNetCore.OData" Version="8.0.10" />
     </ItemGroup>
 
     <ItemGroup>
