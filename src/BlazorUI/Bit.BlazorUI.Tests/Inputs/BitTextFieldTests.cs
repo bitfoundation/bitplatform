@@ -296,27 +296,32 @@ public class BitTextFieldTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow(true, "hello world"),
-        DataRow(false, "hello world")
+        DataRow(true, null, "hello world"),
+        DataRow(false, null, "hello world"),
+        DataRow(true, "hello bit", "hello world"),
+        DataRow(false, "hello bit", "hello world"),
     ]
-    public void BitTextFieldShouldTakeDefaultValue(bool isMultiline, string defaultValue)
+    public void BitTextFieldShouldTakeDefaultValue(bool isMultiline, string value, string defaultValue)
     {
         var component = RenderComponent<BitTextFieldTest>(
             parameters =>
             {
+                parameters.Add(p => p.Value, value);
                 parameters.Add(p => p.DefaultValue, defaultValue);
                 parameters.Add(p => p.IsMultiline, isMultiline);
             });
 
         var bitTextField = component.Find(".txt-field");
 
+        var actualValue = string.IsNullOrEmpty(value) ? defaultValue : value;
+
         if (isMultiline)
         {
-            Assert.AreEqual(bitTextField.TextContent, defaultValue);
+            Assert.AreEqual(bitTextField.TextContent, actualValue);
         }
         else
         {
-            Assert.AreEqual(bitTextField.GetAttribute("value"), defaultValue);
+            Assert.AreEqual(bitTextField.GetAttribute("value"), actualValue);
         }
     }
 
