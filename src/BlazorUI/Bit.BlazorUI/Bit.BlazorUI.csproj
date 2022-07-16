@@ -7,7 +7,6 @@
         <IncludeContentInPack>false</IncludeContentInPack>
         <IsTrimmable>true</IsTrimmable>
         <ImplicitUsings>enable</ImplicitUsings>
-        <RootNamespace>Bit.BlazorUI</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
