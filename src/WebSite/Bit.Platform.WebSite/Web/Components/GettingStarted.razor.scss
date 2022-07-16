@@ -66,6 +66,19 @@
     h4 {
         color: $Black1;
         margin-bottom: rem(16px);
+        scroll-margin-top: rem(122px);
+
+        @include lg {
+            scroll-margin-top: rem(114px);
+        }
+
+        @include md {
+            scroll-margin-top: rem(98px);
+        }
+
+        @include sm {
+            scroll-margin-top: rem(58px);
+        }
 
         &:hover a.anchor .anchor-icon {
             visibility: visible;
