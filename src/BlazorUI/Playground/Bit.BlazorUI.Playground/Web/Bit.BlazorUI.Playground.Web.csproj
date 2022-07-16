@@ -35,4 +35,8 @@
         <ProjectReference Include="..\Shared\Bit.BlazorUI.Playground.Shared.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <BlazorWebAssemblyLazyLoad Include="Newtonsoft.Json.dll" />
+        <!--<BlazorWebAssemblyLazyLoad Include="Bit.BlazorUI.Charts.dll" />-->
+    </ItemGroup>
 </Project>
