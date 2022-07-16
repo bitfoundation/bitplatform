@@ -31,9 +31,6 @@ using System.ComponentModel;
 
 namespace {classNamespace}
 {{
-    [global::System.CodeDom.Compiler.GeneratedCode(""Bit.SourceGenerators"",""{AutoInjectHelper.GetPackageVersion()}"")]
-    [global::System.Diagnostics.DebuggerNonUserCode]
-    [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     public partial class {AutoInjectHelper.GenerateClassName(classSymbol)}
     {{
         {GenerateInjectableProperties(sortedMembers)}
@@ -61,6 +58,9 @@ namespace {classNamespace}
     private static string GenerateProperty(ITypeSymbol @type, string name)
     {
         return $@"
+        [global::System.CodeDom.Compiler.GeneratedCode(""Bit.SourceGenerators"",""{BitSourceGeneratorUtil.GetPackageVersion()}"")]
+        [global::System.Diagnostics.DebuggerNonUserCode]
+        [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 {"\t\t"}[Inject]
 {"\t\t"}[EditorBrowsable(EditorBrowsableState.Never)]
 {"\t\t"}private {@type} ____{AutoInjectHelper.FormatMemberName(name)} {{ get => {name}; set => {name} = value; }}";
