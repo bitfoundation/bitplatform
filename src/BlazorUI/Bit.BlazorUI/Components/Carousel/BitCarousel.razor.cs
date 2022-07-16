@@ -89,24 +89,12 @@ public partial class BitCarousel
     private void SelectItemByIndex(int index)
     {
         if (index < 0)
-            if (!IsSlideShow)
-            {
-                index = AllCarouselItems.Count - 1;
-            }
-            else
-            {
-                index = 0;
-            }
+        {
+            index = IsSlideShow ? AllCarouselItems.Count - 1 : 0;
+        }
         else if (index >= AllCarouselItems.Count)
         {
-            if (!IsSlideShow)
-            {
-                index = 0;
-            }
-            else
-            {
-                index = AllCarouselItems.Count - 1;
-            }
+            index = IsSlideShow ? 0 : AllCarouselItems.Count - 1;
         }
 
         var newItem = AllCarouselItems.ElementAt(index);
