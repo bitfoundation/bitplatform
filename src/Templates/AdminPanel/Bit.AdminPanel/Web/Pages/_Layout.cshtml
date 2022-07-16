@@ -5,6 +5,8 @@
 @using AdminPanel.Shared.Infra;
 @using Microsoft.AspNetCore.Components.Web
 
+@inject IHttpContextAccessor ContextAccessor
+
 @{
     var isBlazorServer = BlazorModeDetector.Current.IsBlazorServer();
     var isDefaultDeploymentType = WebAppDeploymentTypeDetector.Current.IsDefault();
@@ -21,6 +23,16 @@
                             : isDefaultDeploymentType || isPwa
                             ? RenderMode.WebAssembly
                             : RenderMode.WebAssemblyPrerendered;
+
+    if (renderMode is RenderMode.ServerPrerendered or RenderMode.WebAssemblyPrerendered)
+    {
+        var isSearchEngineBot = ContextAccessor?.HttpContext?.Request.IsSearchEngineBot();
+
+        if (isSearchEngineBot is not null && isSearchEngineBot.Value)
+        {
+            renderMode = RenderMode.Static;
+        }
+    }
 }
 
 <!DOCTYPE html>

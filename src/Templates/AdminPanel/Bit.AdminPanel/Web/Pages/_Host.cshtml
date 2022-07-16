@@ -22,6 +22,14 @@
                             : isDefaultDeploymentType || isPwa
                             ? RenderMode.WebAssembly
                             : RenderMode.WebAssemblyPrerendered;
+
+    if (renderMode is RenderMode.ServerPrerendered or RenderMode.WebAssemblyPrerendered)
+    {
+        if (Request.IsSearchEngineBot())
+        {
+            renderMode = RenderMode.Static;
+        }
+    }
 }
 
 <component type="typeof(App)"
