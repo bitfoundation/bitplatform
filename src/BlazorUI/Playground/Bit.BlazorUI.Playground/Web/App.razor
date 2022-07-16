@@ -1,7 +1,4 @@
-﻿@using Microsoft.AspNetCore.Components.WebAssembly.Services
-@inject LazyAssemblyLoader AssemblyLoader
-
-<PageTitle>Bit's Native Blazor UI Components</PageTitle>
+﻿<PageTitle>Bit's Native Blazor UI Components</PageTitle>
 <CascadingValue Value="Visual.Fluent" IsFixed="true">
     <CascadingValue Value="Theme.Light" IsFixed="true">
         <Router AppAssembly="@typeof(MainLayout).Assembly"
@@ -16,23 +13,3 @@
         </Router>
     </CascadingValue>
 </CascadingValue>
-
-@code {
-    private List<Assembly> lazyLoadedAssemblies = new(); // new List<Assembly> { Assembly.Load("Bit.BlazorUI") };
-
-    private async Task OnNavigateAsync(NavigationContext args)
-    {
-        try
-        {
-            if (args.Path.Contains("chart"))
-            {
-                var assemblies = await AssemblyLoader.LoadAssembliesAsync(new[] { "Newtonsoft.Json.dll" });
-                lazyLoadedAssemblies.AddRange(assemblies);
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine("Error: {Message}", ex.Message);
-        }
-    }
-}

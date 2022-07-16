@@ -2,8 +2,8 @@
 #if BlazorWebAssembly
 using System;
 using System.Net.Http;
-using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 #elif BlazorServer
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -16,11 +16,9 @@ public class Program
     public static async Task Main(string[] args)
     {
 #if BlazorWebAssembly || BlazorServer
-        await CreateHostBuilder(args)
-            .RunAsync();
+        await CreateHostBuilder(args).RunAsync();
 #else
         System.Console.WriteLine("You're in blazor hybrid mode, please run app project instead of web project.");
-
 #endif
     }
 
