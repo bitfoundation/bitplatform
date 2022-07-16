@@ -45,6 +45,8 @@ namespace {namespaceName}
 {{
     public partial class {GetClassName(classSymbol)}
     {{
+        [global::System.Diagnostics.DebuggerNonUserCode]
+        [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public override Task SetParametersAsync(ParameterView parameters)
         {{
 ");
