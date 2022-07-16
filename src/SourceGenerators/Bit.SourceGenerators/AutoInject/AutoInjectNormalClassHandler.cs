@@ -30,9 +30,6 @@ public static class AutoInjectNormalClassHandler
         string source = $@"
 namespace {classNamespace}
 {{
-    [global::System.CodeDom.Compiler.GeneratedCode(""Bit.SourceGenerators"",""{AutoInjectHelper.GetPackageVersion()}"")]
-    [global::System.Diagnostics.DebuggerNonUserCode]
-    [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     public partial class {AutoInjectHelper.GenerateClassName(classSymbol)}
     {{
         {GenerateConstructor(classSymbol, sortedMembers, baseEligibleMembers)}
@@ -47,6 +44,9 @@ namespace {classNamespace}
         IReadOnlyCollection<ISymbol> baseEligibleMembers)
     {
         string generateConstructor = $@"
+        [global::System.CodeDom.Compiler.GeneratedCode(""Bit.SourceGenerators"",""{BitSourceGeneratorUtil.GetPackageVersion()}"")]
+        [global::System.Diagnostics.DebuggerNonUserCode]
+        [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 {"\t\t"}public {classSymbol.Name}({GenerateConstructorParameters(eligibleMembers, baseEligibleMembers)}){PassParametersToBaseClass(baseEligibleMembers)}
 {"\t\t"}{{
     {"\t\t"}{AssignedInjectedParametersToMembers(eligibleMembers)}

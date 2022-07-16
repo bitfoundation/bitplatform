@@ -93,12 +93,6 @@ public static class AutoInjectHelper
         return @class.ContainingSymbol.Equals(@class.ContainingNamespace, SymbolEqualityComparer.Default);
     }
 
-    public static string GetPackageVersion()
-    {
-        Version version = Assembly.GetExecutingAssembly().GetName().Version;
-        return version.ToString();
-    }
-
     public static string GenerateClassName(INamedTypeSymbol classSymbol)
     {
         if (classSymbol is null)
