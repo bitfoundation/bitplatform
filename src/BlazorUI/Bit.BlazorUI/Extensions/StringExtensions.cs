@@ -1,15 +1,15 @@
 ﻿namespace Bit.BlazorUI;
 
-public static class StringExtensions
+internal static class StringExtensions
 {
-    public static bool HasValue(this string? value, bool ignoreWhiteSpace = true)
+    internal static bool HasValue(this string? value, bool ignoreWhiteSpace = true)
     {
         return ignoreWhiteSpace
             ? string.IsNullOrWhiteSpace(value) is false
             : string.IsNullOrEmpty(value) is false;
     }
 
-    public static bool HasNoValue(this string? value, bool ignoreWhiteSpace = true)
+    internal static bool HasNoValue(this string? value, bool ignoreWhiteSpace = true)
     {
         return ignoreWhiteSpace
             ? string.IsNullOrWhiteSpace(value)

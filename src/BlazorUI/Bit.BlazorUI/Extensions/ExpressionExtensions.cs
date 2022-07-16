@@ -3,9 +3,9 @@ using System.Linq.Expressions;
 
 namespace Bit.BlazorUI;
 
-public static class ExpressionExtensions
+internal static class ExpressionExtensions
 {
-    public static string GetName<TSource, TResult>(this Expression<Func<TSource, TResult>> action)
+    internal static string GetName<TSource, TResult>(this Expression<Func<TSource, TResult>> action)
     {
         if (action is null)
             throw new ArgumentNullException(nameof(action));
