@@ -14,10 +14,13 @@ public class BlazorParameterPropertySyntaxReceiver : ISyntaxContextReceiver
     {
         if (context.Node is not PropertyDeclarationSyntax propertyDeclarationSyntax || !propertyDeclarationSyntax.AttributeLists.Any()) return;
 
-        var classDeclarationSyntax = (ClassDeclarationSyntax?)propertyDeclarationSyntax.Parent;
+        var parent = propertyDeclarationSyntax.Parent;
 
-        if (classDeclarationSyntax?.Modifiers.Any(k => k.IsKind(SyntaxKind.PartialKeyword)) is false)
-            return;
+        if (parent is null || parent.IsKind(SyntaxKind.ClassDeclaration) is false) return;
+
+        var classDeclarationSyntax = (ClassDeclarationSyntax?)parent;
+
+        if (classDeclarationSyntax?.Modifiers.Any(k => k.IsKind(SyntaxKind.PartialKeyword)) is false) return;
 
         var propertySymbol = context.SemanticModel.GetDeclaredSymbol(propertyDeclarationSyntax);
 
