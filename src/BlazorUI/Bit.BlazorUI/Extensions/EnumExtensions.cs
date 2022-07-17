@@ -4,7 +4,9 @@ using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
+[assembly: InternalsVisibleTo("Bit.BlazorUI.Playground.Web")]
 namespace Bit.BlazorUI;
 
 internal static class EnumExtensions

@@ -1,4 +1,7 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("Bit.BlazorUI.Playground.Web")]
+namespace Bit.BlazorUI;
 
 internal static class StringExtensions
 {
