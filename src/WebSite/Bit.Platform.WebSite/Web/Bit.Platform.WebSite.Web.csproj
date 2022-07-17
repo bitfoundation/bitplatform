@@ -11,6 +11,7 @@
         <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Remove="appsettings.json" />
         <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Remove="Pages\_Host.cshtml" />
         <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Remove="Pages\_Layout.cshtml" />
+        <Compile Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Remove="Extensions\HttpRequestExtensions.cs" />
         <Content Remove="compilerconfig.json" />
         <None Include="compilerconfig.json" />
     </ItemGroup>
