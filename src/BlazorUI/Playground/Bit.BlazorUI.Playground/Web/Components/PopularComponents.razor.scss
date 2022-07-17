@@ -111,11 +111,6 @@
             width: rem(40px);
             height: rem(40px);
         }
-
-        path {
-            fill: $White;
-            stroke: $White;
-        }
     }
 
     .selected-component-name {
@@ -181,11 +176,6 @@
                 width: rem(40px);
                 height: rem(40px);
             }
-
-            path {
-                fill: $B2Color;
-                stroke: $B2Color;
-            }
         }
 
         .component-row-name {
@@ -208,11 +198,6 @@
         &:hover {
             .component-row-icon {
                 background-color: $B2Color;
-
-                path {
-                    fill: $White;
-                    stroke: $White;
-                }
             }
 
             .component-row-name {
