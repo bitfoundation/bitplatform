@@ -134,7 +134,8 @@ public partial class AuthController : ControllerBase
                                     new ResetPasswordModel
                                     {
                                         DisplayName = user.DisplayName,
-                                        ResetPasswordLink = resetPasswordLink
+                                        ResetPasswordLink = resetPasswordLink,
+                                        HostUri = new Uri($"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}{HttpContext.Request.PathBase}")
                                     },
                                     assembly)
             .SendAsync(cancellationToken);

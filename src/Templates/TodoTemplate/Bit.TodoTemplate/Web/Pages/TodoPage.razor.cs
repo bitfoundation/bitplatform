@@ -2,7 +2,7 @@
 
 namespace TodoTemplate.App.Pages;
 
-public partial class Todo
+public partial class TodoPage
 {
     [AutoInject] private HttpClient httpClient = default!;
 
@@ -42,7 +42,7 @@ public partial class Todo
         IsLoading = true;
         try
         {
-            AllTodoItemList = await stateService.GetValue($"{nameof(Todo)}-{nameof(AllTodoItemList)}", async () => await httpClient.GetFromJsonAsync("TodoItem", AppJsonContext.Default.ListTodoItemDto));
+            AllTodoItemList = await stateService.GetValue($"{nameof(TodoPage)}-{nameof(AllTodoItemList)}", async () => await httpClient.GetFromJsonAsync("TodoItem", AppJsonContext.Default.ListTodoItemDto));
             GenarateViewTodoItemList();
         }
         finally

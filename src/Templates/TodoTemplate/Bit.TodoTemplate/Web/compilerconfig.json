@@ -4,40 +4,40 @@
         "inputFile": "Styles/app.scss"
     },
     {
-        "outputFile": "Pages/Home.razor.css",
-        "inputFile": "Pages/Home.razor.scss"
+        "outputFile": "Pages/HomePage.razor.css",
+        "inputFile": "Pages/HomePage.razor.scss"
     },
     {
-        "outputFile": "Pages/Privacy.razor.css",
-        "inputFile": "Pages/Privacy.razor.scss"
+        "outputFile": "Pages/PrivacyPage.razor.css",
+        "inputFile": "Pages/PrivacyPage.razor.scss"
     },
     {
-        "outputFile": "Pages/SignUp.razor.css",
-        "inputFile": "Pages/SignUp.razor.scss"
+        "outputFile": "Pages/SignUpPage.razor.css",
+        "inputFile": "Pages/SignUpPage.razor.scss"
     },
     {
-        "outputFile": "Pages/SignIn.razor.css",
-        "inputFile": "Pages/SignIn.razor.scss"
+        "outputFile": "Pages/SignInPage.razor.css",
+        "inputFile": "Pages/SignInPage.razor.scss"
     },
     {
-        "outputFile": "Pages/EmailConfirmation.razor.css",
-        "inputFile": "Pages/EmailConfirmation.razor.scss"
+        "outputFile": "Pages/EmailConfirmationPage.razor.css",
+        "inputFile": "Pages/EmailConfirmationPage.razor.scss"
     },
     {
-        "outputFile": "Pages/ForgotPassword.razor.css",
-        "inputFile": "Pages/ForgotPassword.razor.scss"
+        "outputFile": "Pages/ForgotPasswordPage.razor.css",
+        "inputFile": "Pages/ForgotPasswordPage.razor.scss"
     },
     {
-        "outputFile": "Pages/ResetPassword.razor.css",
-        "inputFile": "Pages/ResetPassword.razor.scss"
+        "outputFile": "Pages/ResetPasswordPage.razor.css",
+        "inputFile": "Pages/ResetPasswordPage.razor.scss"
     },
     {
-        "outputFile": "Pages/Todo.razor.css",
-        "inputFile": "Pages/Todo.razor.scss"
+        "outputFile": "Pages/TodoPage.razor.css",
+        "inputFile": "Pages/TodoPage.razor.scss"
     },
     {
-        "outputFile": "Pages/EditProfile.razor.css",
-        "inputFile": "Pages/EditProfile.razor.scss"
+        "outputFile": "Pages/EditProfilePage.razor.css",
+        "inputFile": "Pages/EditProfilePage.razor.scss"
     },
     {
         "outputFile": "Components/Header.razor.css",
