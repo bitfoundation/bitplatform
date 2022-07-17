@@ -15,6 +15,7 @@
         <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\Web\Pages\_Host.cshtml" Link="Pages\_Host.cshtml" />
         <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\Web\Pages\_Layout.cshtml" Link="Pages\_Layout.cshtml" />
         <Compile Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\Web\Services\Implementations\ServerSideAuthTokenProvider.cs" Link="Services\Implementations\ServerSideAuthTokenProvider.cs" />
+        <Compile Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\Web\Extensions\HttpRequestExtensions.cs" Link="Extensions\HttpRequestExtensions.cs" />
         <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="6.0.7" />
         <ProjectReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\Web\AdminPanel.Web.csproj" />
         <!--/+:msbuild-conditional:noEmit -->
