@@ -15,7 +15,11 @@ public abstract class BunitTestContext : IDisposable
     public TestServiceProvider Services => Context?.Services ?? throw new InvalidOperationException("MSTest has not started executing tests yet");
 
     [TestInitialize]
-    public void Setup() => Context = new Bunit.TestContext();
+    public void Setup()
+    {
+        Context = new Bunit.TestContext();
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+    }
 
     [TestCleanup]
     public void TearDown() => Dispose();
