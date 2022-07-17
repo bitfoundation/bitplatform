@@ -2,7 +2,6 @@
 using Bunit;
 using Bunit.Rendering;
 using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests;
@@ -21,7 +20,6 @@ public abstract class BunitTestContext : IDisposable
         Context = new Bunit.TestContext();
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
     }
-
 
     [TestCleanup]
     public void TearDown() => Dispose();
