@@ -71,15 +71,3 @@ internal static class JsRuntimeExtension
         await jsRuntime.InvokeVoidAsync("Bit.selectText", element);
     }
 }
-
-internal class BoundingClientRect
-{
-    internal double Bottom { get; set; }
-    internal double Height { get; set; }
-    internal double Left { get; set; }
-    internal double Right { get; set; }
-    internal double Top { get; set; }
-    internal double Width { get; set; }
-    internal double X { get; set; }
-    internal double Y { get; set; }
-}
