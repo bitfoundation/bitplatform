@@ -1,6 +1,6 @@
 ﻿namespace TodoTemplate.App.Pages;
 
-public partial class Home
+public partial class HomePage
 {
 }
 

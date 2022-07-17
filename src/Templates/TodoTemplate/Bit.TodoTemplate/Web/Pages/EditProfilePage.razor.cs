@@ -3,7 +3,7 @@ using TodoTemplate.Shared.Dtos.Account;
 
 namespace TodoTemplate.App.Pages;
 
-public partial class EditProfile
+public partial class EditProfilePage
 {
     [AutoInject] private IAuthTokenProvider authTokenProvider = default!;
 
