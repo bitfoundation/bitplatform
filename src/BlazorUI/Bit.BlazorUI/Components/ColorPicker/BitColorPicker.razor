@@ -9,7 +9,7 @@
      aria-label="@GetRootElAriaLabel()">
     <div class="bit-clr-pkr-panel">
         <div @ref="SaturationPickerRef"
-             @onmousedown="OnSaturationPickerMouseDown"
+             @onpointerdown="OnSaturationPickerMouseDown"
              class="bit-clr-pkr-rectangle"
              style=@($"background-color: {saturationPickerBackgroundRgbCss}")
              role="slider"
