@@ -14,6 +14,7 @@ public class Services
 {
     public static void Add(IServiceCollection services, IConfiguration configuration)
     {
+        services.AddHttpContextAccessor();
         services.AddPlaygroundServices();
         services.AddRazorPages();
         services.AddServerSideBlazor();

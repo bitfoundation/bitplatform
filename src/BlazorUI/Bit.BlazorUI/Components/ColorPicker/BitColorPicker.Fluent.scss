@@ -1,5 +1,9 @@
 ﻿@import "../../Styles/Fluent/colors.fluent.scss", "../../Styles/functions.scss";
 
+.bit-clr-pkr {
+    touch-action: none;
+}
+
 .bit-clr-pkr-fluent {
     position: relative;
     max-width: rem(352px);

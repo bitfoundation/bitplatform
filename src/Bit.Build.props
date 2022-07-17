@@ -31,7 +31,7 @@
 		<PackageVersion>$(ReleaseVersion)-pre-05</PackageVersion>
 
 		<!-- Version -->
-		<Version>$(ReleaseVersion).$([System.DateTime]::Now.ToString(HHmm))</Version>
+		<Version Condition=" '$(Configuration)' == 'Release' ">$(ReleaseVersion).$([System.DateTime]::Now.ToString(HHmm))</Version>
 
 		<!-- Compile -->
 		<NeutralLanguage>en</NeutralLanguage>
