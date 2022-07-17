@@ -70,6 +70,7 @@
     <ItemGroup>
         <Content Remove="Pages\_Host.cshtml" />
         <Content Remove="Pages\_Layout.cshtml" />
+        <Compile Remove="Extensions\HttpRequestExtensions.cs" />
         <Content Remove="Properties\launchSettings.json" />
         <Content Remove="compilerconfig.json" />
         <None Include="compilerconfig.json" />
@@ -85,6 +86,7 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
+        <ProjectReference Include="..\..\..\Bit.BlazorUI.Charts\Bit.BlazorUI.Charts.csproj" />
         <ProjectReference Include="..\..\..\Bit.BlazorUI\Bit.BlazorUI.csproj" />
         <ProjectReference Include="..\Shared\Bit.BlazorUI.Playground.Shared.csproj" />
     </ItemGroup>
