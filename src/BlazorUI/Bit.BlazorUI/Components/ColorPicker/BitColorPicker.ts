@@ -25,7 +25,7 @@
         const listenerOptions = new BitEventListenerOptions();
         listenerOptions.signal = controller.abortController.signal;
 
-        document.addEventListener('pointermove', (e) => {
+        document.addEventListener('pointermove', e => {
 
             const eventArgs = BitColorPicker.toMouseEventArgsMapper(e);
 
