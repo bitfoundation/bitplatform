@@ -5,7 +5,7 @@
 <PageTitle>Sign up</PageTitle>
 
 <div class="page-container">
-    <EditForm Model="SignUpModel" OnValidSubmit="WrapHandled(DoSignUp)" class="form--white">
+    <EditForm EditContext="FormContext" OnValidSubmit="WrapHandled(DoSignUp)" class="form--white">
 
         <DataAnnotationsValidator />
 

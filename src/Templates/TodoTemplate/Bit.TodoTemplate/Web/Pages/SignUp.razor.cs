@@ -1,4 +1,5 @@
-﻿using TodoTemplate.Shared.Dtos.Account;
+﻿using Microsoft.AspNetCore.Components.Forms;
+using TodoTemplate.Shared.Dtos.Account;
 
 namespace TodoTemplate.App.Pages;
 
@@ -18,8 +19,12 @@ public partial class SignUp
     public BitMessageBarType SignUpMessageType { get; set; }
     public string? SignUpMessage { get; set; }
 
+    private EditContext? FormContext;
+
     private bool IsSubmitButtonEnabled =>
-        SignUpModel.UserName.HasValue()
+        FormContext is not null 
+        && FormContext.Validate()
+        && SignUpModel.UserName.HasValue()
         && SignUpModel.Password.HasValue()
         && SignUpModel.IsAcceptPrivacy
         && IsLoading is false;
@@ -88,6 +93,13 @@ public partial class SignUp
         {
             IsLoading = false;
         }
+    }
+
+    protected override void OnInitialized()
+    {
+        FormContext = new EditContext(SignUpModel);
+
+        base.OnInitialized();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
