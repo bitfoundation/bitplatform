@@ -45,9 +45,6 @@ public partial class ResetPasswordPage
 
         try
         {
-            ResetPasswordModel.Email = Email;
-            ResetPasswordModel.Token = Token;
-
             await httpClient.PostAsJsonAsync("Auth/ResetPassword", ResetPasswordModel, AppJsonContext.Default.ResetPasswordRequestDto);
 
             ResetPasswordMessageType = BitMessageBarType.Success;
@@ -72,6 +69,14 @@ public partial class ResetPasswordPage
         {
             IsLoading = false;
         }
+    }
+
+    protected override void OnInitialized()
+    {
+        ResetPasswordModel.Email = Email;
+        ResetPasswordModel.Token = Token;
+
+        base.OnInitialized();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
