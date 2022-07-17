@@ -2,6 +2,8 @@
 
 @namespace TodoTemplate.Pages
 
+@inject IHttpContextAccessor ContextAccessor
+
 @using TodoTemplate.Shared.Infra;
 @using Microsoft.AspNetCore.Components.Web
 
@@ -21,6 +23,17 @@
                             : isDefaultDeploymentType || isPwa
                             ? RenderMode.WebAssembly
                             : RenderMode.WebAssemblyPrerendered;
+
+
+    if (renderMode is RenderMode.ServerPrerendered or RenderMode.WebAssemblyPrerendered)
+    {
+        var shouldRenderStaticMode = ContextAccessor?.HttpContext?.Request.ShouldRenderStaticMode();
+
+        if (shouldRenderStaticMode is not null && shouldRenderStaticMode.Value)
+        {
+            renderMode = RenderMode.Static;
+        }
+    }
 }
 
 <!DOCTYPE html>

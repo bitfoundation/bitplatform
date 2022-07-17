@@ -1,0 +1,34 @@
+﻿[
+    {
+        "outputFile": "wwwroot/styles/bit.blazorui.charts.min.css",
+        "inputFile": "Styles/bit.blazorui.charts.scss",
+        "options": {
+            "relativeUrls": false
+        }
+    },
+    {
+        "outputFile": "wwwroot/styles/bit.blazorui.charts.cupertino.css",
+        "inputFile": "Styles/Cupertino/bit.blazorui.charts.cupertino.scss",
+        "options": {
+            "relativeUrls": false
+        }
+    },
+    {
+        "outputFile": "wwwroot/styles/bit.blazorui.charts.fluent.css",
+        "inputFile": "Styles/Fluent/bit.blazorui.charts.fluent.scss",
+        "options": {
+            "relativeUrls": false
+        }
+    },
+    {
+        "outputFile": "wwwroot/styles/bit.blazorui.charts.material.css",
+        "inputFile": "Styles/Material/bit.blazorui.charts.material.scss",
+        "options": {
+            "relativeUrls": false
+        }
+    },
+    {
+        "outputFile": "wwwroot/scripts/bit.blazorui.charts.min.js",
+        "inputFile": "wwwroot/scripts/bit.blazorui.charts.js"
+    }
+]

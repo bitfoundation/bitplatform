@@ -38,6 +38,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{04FC
 		..\..\.github\workflows\Prerelease.nuget.org.yml = ..\..\.github\workflows\Prerelease.nuget.org.yml
 	EndProjectSection
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.BlazorUI.Charts", "Bit.BlazorUI.Charts\Bit.BlazorUI.Charts.csproj", "{422177A3-DE29-4726-8DF2-3CFD2798B7D7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -202,6 +204,26 @@ Global
 		{050CE6DE-ECAF-4C7E-A7C8-DB8D977C98C8}.Release|x64.Build.0 = Release|Any CPU
 		{050CE6DE-ECAF-4C7E-A7C8-DB8D977C98C8}.Release|x86.ActiveCfg = Release|Any CPU
 		{050CE6DE-ECAF-4C7E-A7C8-DB8D977C98C8}.Release|x86.Build.0 = Release|Any CPU
+		{422177A3-DE29-4726-8DF2-3CFD2798B7D7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{422177A3-DE29-4726-8DF2-3CFD2798B7D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{422177A3-DE29-4726-8DF2-3CFD2798B7D7}.Debug|iPhone.ActiveCfg = Debug|Any CPU
+		{422177A3-DE29-4726-8DF2-3CFD2798B7D7}.Debug|iPhone.Build.0 = Debug|Any CPU
+		{422177A3-DE29-4726-8DF2-3CFD2798B7D7}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
+		{422177A3-DE29-4726-8DF2-3CFD2798B7D7}.Debug|iPhoneSimulator.Build.0 = Debug|Any CPU
+		{422177A3-DE29-4726-8DF2-3CFD2798B7D7}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{422177A3-DE29-4726-8DF2-3CFD2798B7D7}.Debug|x64.Build.0 = Debug|Any CPU
+		{422177A3-DE29-4726-8DF2-3CFD2798B7D7}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{422177A3-DE29-4726-8DF2-3CFD2798B7D7}.Debug|x86.Build.0 = Debug|Any CPU
+		{422177A3-DE29-4726-8DF2-3CFD2798B7D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{422177A3-DE29-4726-8DF2-3CFD2798B7D7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{422177A3-DE29-4726-8DF2-3CFD2798B7D7}.Release|iPhone.ActiveCfg = Release|Any CPU
+		{422177A3-DE29-4726-8DF2-3CFD2798B7D7}.Release|iPhone.Build.0 = Release|Any CPU
+		{422177A3-DE29-4726-8DF2-3CFD2798B7D7}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
+		{422177A3-DE29-4726-8DF2-3CFD2798B7D7}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
+		{422177A3-DE29-4726-8DF2-3CFD2798B7D7}.Release|x64.ActiveCfg = Release|Any CPU
+		{422177A3-DE29-4726-8DF2-3CFD2798B7D7}.Release|x64.Build.0 = Release|Any CPU
+		{422177A3-DE29-4726-8DF2-3CFD2798B7D7}.Release|x86.ActiveCfg = Release|Any CPU
+		{422177A3-DE29-4726-8DF2-3CFD2798B7D7}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

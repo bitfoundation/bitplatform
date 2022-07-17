@@ -3,7 +3,7 @@ using TodoTemplate.Shared.Dtos.Account;
 
 namespace TodoTemplate.App.Pages;
 
-public partial class ForgotPassword
+public partial class ForgotPasswordPage
 {
     [AutoInject] private HttpClient httpClient = default!;
 
