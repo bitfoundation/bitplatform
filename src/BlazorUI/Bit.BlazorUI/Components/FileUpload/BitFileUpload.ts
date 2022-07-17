@@ -4,7 +4,7 @@ class BitFileUploader {
     static bitFileUploads: BitFileUpload[];
     static headers: Record<string, string>;
 
-    static initDropZone(dropZoneElement: HTMLInputElement, inputFile: HTMLInputElement) {
+    static initDropZone(dropZoneElement: HTMLElement, inputFile: HTMLInputElement) {
 
         function onDragHover(e: DragEvent) {
             e.preventDefault();

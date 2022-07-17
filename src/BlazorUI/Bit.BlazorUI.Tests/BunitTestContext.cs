@@ -2,6 +2,7 @@
 using Bunit;
 using Bunit.Rendering;
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests;
@@ -15,7 +16,12 @@ public abstract class BunitTestContext : IDisposable
     public TestServiceProvider Services => Context?.Services ?? throw new InvalidOperationException("MSTest has not started executing tests yet");
 
     [TestInitialize]
-    public void Setup() => Context = new Bunit.TestContext();
+    public void Setup()
+    {
+        Context = new Bunit.TestContext();
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+    }
+
 
     [TestCleanup]
     public void TearDown() => Dispose();
