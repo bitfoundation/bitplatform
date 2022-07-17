@@ -63,7 +63,6 @@
         <Using Include="Microsoft.AspNetCore.Identity" />
         <Using Include="Microsoft.EntityFrameworkCore.Migrations" />
         <Using Include="Microsoft.Extensions.Options" />
-        <Using Include="TodoTemplate.Api.Data" />
         <Using Include="TodoTemplate.Shared.Enums" />
         <Using Include="TodoTemplate.Api.Services.Contracts" />
         <Using Include="Microsoft.AspNetCore.Authorization" />
