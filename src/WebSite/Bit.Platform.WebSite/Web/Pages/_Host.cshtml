@@ -4,13 +4,23 @@
 
 @using Bit.Platform.WebSite.Web
 @using Bit.Platform.WebSite.Shared;
+@using Microsoft.AspNetCore.Http
 
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 
 @{
     Layout = "_Layout";
     var isBlazorServer = BlazorModeDetector.Current.IsBlazorServer();
+    RenderMode renderMode = isBlazorServer ? RenderMode.ServerPrerendered : RenderMode.WebAssemblyPrerendered;
+
+    if (renderMode is RenderMode.ServerPrerendered or RenderMode.WebAssemblyPrerendered)
+    {
+        if (Request.ShouldRenderStaticMode())
+        {
+            renderMode = RenderMode.Static;
+        }
+    }
 }
 
 <component type="typeof(App)"
-            render-mode="@(isBlazorServer ? RenderMode.ServerPrerendered : RenderMode.WebAssemblyPrerendered)" />
+           render-mode="@renderMode" />
