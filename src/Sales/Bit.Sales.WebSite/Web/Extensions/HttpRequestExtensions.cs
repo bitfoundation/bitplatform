@@ -4,49 +4,29 @@ namespace Microsoft.AspNetCore.Http;
 
 public static class HttpRequestExtensions
 {
-    public static bool IsSearchEngineBot(this HttpRequest request)
+    public static bool ShouldRenderStaticMode(this HttpRequest request)
     {
-        var agent = GetUserAgent(request);
+        var agent = GetLoweredUserAgent(request);
 
-        var isGoogleBot = IsGoogleBot(agent);
-        var isBingBot = IsBingBot(agent);
-        var isLightHouse = IsLightHouse(agent);
+        if (agent.Contains("google"))
+            return true;
 
-        return isGoogleBot || isBingBot || isLightHouse;
+        if (agent.Contains("bing"))
+            return true;
+
+        if (agent.Contains("lighthouse"))
+            return true;
+
+        return false;
     }
 
-    private static bool IsGoogleBot(string agent)
-    {
-        if (string.IsNullOrEmpty(agent))
-            return false;
-
-        return agent.Contains("google");
-    }
-
-    private static bool IsBingBot(string agent)
-    {
-        if (string.IsNullOrEmpty(agent))
-            return false;
-
-        return agent.Contains("bing");
-    }
-
-    private static bool IsLightHouse(string agent)
-    {
-        if (string.IsNullOrEmpty(agent))
-            return false;
-
-        return agent.Contains("lighthouse");
-    }
-
-    private static string GetUserAgent(HttpRequest request)
+    private static string GetLoweredUserAgent(HttpRequest request)
     {
         var userAgent = request.Headers[HeaderNames.UserAgent].ToString();
 
         if (string.IsNullOrEmpty(userAgent))
             return string.Empty;
 
-        var formattedUserAgent = userAgent.ToLower();
-        return formattedUserAgent;
+        return userAgent.ToLower();
     }
 }

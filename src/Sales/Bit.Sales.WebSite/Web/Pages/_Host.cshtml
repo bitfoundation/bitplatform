@@ -24,7 +24,7 @@
 
     if (renderMode is RenderMode.ServerPrerendered or RenderMode.WebAssemblyPrerendered)
     {
-        if (Request.IsSearchEngineBot())
+        if (Request.ShouldRenderStaticMode())
         {
             renderMode = RenderMode.Static;
         }

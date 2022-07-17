@@ -25,9 +25,9 @@
 
     if (renderMode is RenderMode.ServerPrerendered or RenderMode.WebAssemblyPrerendered)
     {
-        var isSearchEngineBot = ContextAccessor?.HttpContext?.Request.IsSearchEngineBot();
+        var shouldRenderStaticMode = ContextAccessor?.HttpContext?.Request.ShouldRenderStaticMode();
 
-        if (isSearchEngineBot is not null && isSearchEngineBot.Value)
+        if (shouldRenderStaticMode is not null && shouldRenderStaticMode.Value)
         {
             renderMode = RenderMode.Static;
         }
