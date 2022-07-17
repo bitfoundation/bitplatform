@@ -36,7 +36,7 @@ public partial class EditProfilePage
         {
             await LoadEditProfileData();
 
-            var access_token = await stateService.GetValue($"{nameof(EditProfile)}-access_token", async () =>
+            var access_token = await stateService.GetValue($"{nameof(EditProfilePage)}-access_token", async () =>
                 await authTokenProvider.GetAcccessToken());
 
             ProfileImageUploadUrl = $"api/Attachment/UploadProfileImage?access_token={access_token}";
@@ -59,7 +59,7 @@ public partial class EditProfilePage
 
     private async Task LoadEditProfileData()
     {
-        User = (await stateService.GetValue($"{nameof(EditProfile)}-{nameof(User)}", async () =>
+        User = (await stateService.GetValue($"{nameof(EditProfilePage)}-{nameof(User)}", async () =>
             await httpClient.GetFromJsonAsync("User/GetCurrentUser", AppJsonContext.Default.UserDto))) ?? new();
 
         UserToEdit.FullName = User.FullName;
