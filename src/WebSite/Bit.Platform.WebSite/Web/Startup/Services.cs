@@ -16,6 +16,8 @@ public class Services
     {
         services.AddPlaygroundServices();
 
+        services.AddHttpContextAccessor();
+
         services.AddHttpClient("ApiHttpClient", (serviceProvider, httpClient) =>
         {
             httpClient.BaseAddress = new Uri(serviceProvider.GetRequiredService<IConfiguration>()["ApiServerAddress"]);
