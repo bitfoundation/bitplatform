@@ -24,9 +24,7 @@
     private async Task OnNavigateAsync(NavigationContext args)
     {
 #if BlazorWebAssembly
-    var loadAssembly = lazyLoadedAssemblies.Any(asm => asm.FullName.Contains("Newtonsoft.Json")) is false;
-
-    if (args.Path.Contains("chart") && loadAssembly)
+    if (args.Path.Contains("chart"))
     {
         var assemblies = await AssemblyLoader.LoadAssembliesAsync(new[] { "Newtonsoft.Json.dll", "System.Private.Xml.dll", "System.Data.Common.dll" });
         lazyLoadedAssemblies.AddRange(assemblies);
