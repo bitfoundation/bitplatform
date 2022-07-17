@@ -7,6 +7,7 @@
         <IncludeContentInPack>false</IncludeContentInPack>
         <IsTrimmable>true</IsTrimmable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <RootNamespace>Bit.BlazorUI</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
@@ -23,6 +24,7 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     </ItemGroup>
 
     <ItemGroup>

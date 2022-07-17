@@ -1,7 +1,9 @@
 ﻿<PageTitle>Bit's Native Blazor UI Components</PageTitle>
 <CascadingValue Value="Visual.Fluent" IsFixed="true">
     <CascadingValue Value="Theme.Light" IsFixed="true">
-        <Router AppAssembly="@typeof(MainLayout).Assembly" AdditionalAssemblies="@(new [] { Assembly.Load("Bit.BlazorUI") })">
+        <Router AppAssembly="@typeof(MainLayout).Assembly"
+                AdditionalAssemblies="@lazyLoadedAssemblies"
+                OnNavigateAsync="@OnNavigateAsync">
             <Found Context="routeData">
                 <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
             </Found>
