@@ -4,6 +4,47 @@ class BitFileUploader {
     static bitFileUploads: BitFileUpload[];
     static headers: Record<string, string>;
 
+    static initDropZone(dropZoneElement: HTMLInputElement, inputFile: HTMLInputElement) {
+
+        function onDragHover(e: DragEvent) {
+            e.preventDefault();
+        }
+
+        function onDragLeave(e: DragEvent) {
+            e.preventDefault();
+        }
+        
+        function onDrop(e: DragEvent) {
+            e.preventDefault();
+            inputFile.files = e.dataTransfer!.files;
+            const event = new Event('change', { bubbles: true });
+            inputFile.dispatchEvent(event);
+        }
+
+        function onPaste(e: ClipboardEvent) {
+            inputFile.files = e.clipboardData!.files;
+            const event = new Event('change', { bubbles: true });
+            inputFile.dispatchEvent(event);
+        }
+
+        dropZoneElement.addEventListener("dragenter", onDragHover);
+        dropZoneElement.addEventListener("dragover", onDragHover);
+        dropZoneElement.addEventListener("dragleave", onDragLeave);
+        dropZoneElement.addEventListener("drop", onDrop);
+        dropZoneElement.addEventListener('paste', onPaste);
+
+        return {
+            dispose: () => {
+                dropZoneElement.removeEventListener('dragenter', onDragHover);
+                dropZoneElement.removeEventListener('dragover', onDragHover);
+                dropZoneElement.removeEventListener('dragleave', onDragLeave);
+                dropZoneElement.removeEventListener("drop", onDrop);
+                dropZoneElement.removeEventListener('paste', onPaste);
+            }
+        }
+
+    }
+
     static init(inputElement: HTMLInputElement,
         dotnetReference: DotNetObject,
         uploadEndpointUrl: string,

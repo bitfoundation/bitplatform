@@ -21,7 +21,10 @@ internal static class JsRuntimeExtension
     {
         return await jsRuntime.InvokeAsync<int>("Bit.getClientHeight", element);
     }
-
+    public static async Task<IJSObjectReference?> InitUploaderDropZone(this IJSRuntime jsRuntime, ElementReference dragDropZoneElement, ElementReference inputFileElement)
+    {
+        return await jsRuntime.InvokeAsync<IJSObjectReference?>("BitFileUploader.initDropZone", dragDropZoneElement, inputFileElement);
+    }
     public static async Task<BitFileInfo[]?> InitUploader(this IJSRuntime jsRuntime, ElementReference element, DotNetObjectReference<BitFileUpload>? dotnetObjectReference, string uploadAddress, IReadOnlyDictionary<string, string> uploadRequestHttpHeaders)
     {
         if (uploadAddress.HasNoValue() || dotnetObjectReference is null) return null;
