@@ -1,4 +1,5 @@
-﻿using TodoTemplate.Shared.Dtos.Account;
+﻿using Microsoft.AspNetCore.Components.Forms;
+using TodoTemplate.Shared.Dtos.Account;
 
 namespace TodoTemplate.App.Pages;
 
@@ -28,8 +29,12 @@ public partial class ResetPassword
 
     public string? ResetPasswordMessage { get; set; }
 
+    private EditContext? FormContext;
+
     private bool IsSubmitButtonEnabled =>
-        ResetPasswordModel.Password.HasValue()
+        FormContext is not null
+        && FormContext.Validate()
+        && ResetPasswordModel.Password.HasValue()
         && ResetPasswordModel.ConfirmPassword.HasValue()
         && IsLoading is false;
 
@@ -72,6 +77,13 @@ public partial class ResetPassword
         {
             IsLoading = false;
         }
+    }
+
+    protected override void OnInitialized()
+    {
+        FormContext = new EditContext(ResetPasswordModel);
+
+        base.OnInitialized();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
