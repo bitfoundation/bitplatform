@@ -37,7 +37,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <BlazorWebAssemblyLazyLoad Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' "  Include="Newtonsoft.Json.dll" />
-        <!--<BlazorWebAssemblyLazyLoad Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' "  Include="Bit.BlazorUI.Charts.dll" />-->
+        <BlazorWebAssemblyLazyLoad Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Newtonsoft.Json.dll" />
+        <BlazorWebAssemblyLazyLoad Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="System.Private.Xml.dll" />
+        <BlazorWebAssemblyLazyLoad Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="System.Data.Common.dll" />
     </ItemGroup>
 </Project>

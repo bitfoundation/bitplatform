@@ -35,7 +35,7 @@ public partial class SideNav
                 new BitNavLinkItem { Name= "Rating", Key = "Rating", Url = "/components/rating" },
                 new BitNavLinkItem { Name= "SearchBox", Key = "SearchBox", Url = "/components/search-box" },
                 new BitNavLinkItem { Name= "Slider", Key = "Slider", Url = "/components/slider" },
-                new BitNavLinkItem { Name= "SpinButton (NumericTextField)", Key = "SpinButton", Url = "/components/spin-button"},
+                new BitNavLinkItem { Name= "SpinButton", Key = "SpinButton", Url = "/components/spin-button"},
                 new BitNavLinkItem { Name= "TextField", Key = "TextField", Url = "/components/text-field" },
                 new BitNavLinkItem { Name= "NumericTextField", Key = "NumericTextField", Url = "/components/numeric-text-field" },
                 new BitNavLinkItem { Name= "Toggle (Switch)", Key = "Toggle", Url = "/components/toggle" }
