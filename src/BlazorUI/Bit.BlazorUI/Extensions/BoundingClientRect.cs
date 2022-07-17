@@ -1,6 +1,6 @@
 ﻿namespace Microsoft.JSInterop;
 
-public class BoundingClientRect
+internal class BoundingClientRect
 {
     public double Bottom { get; set; }
     public double Height { get; set; }
