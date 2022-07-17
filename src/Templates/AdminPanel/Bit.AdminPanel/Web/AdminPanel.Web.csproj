@@ -21,6 +21,7 @@
         <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Remove="Pages\_Host.cshtml" />
         <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Remove="Pages\_Layout.cshtml" />
         <Compile Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Remove="Services\Implementations\ServerSideAuthTokenProvider.cs" />
+        <Compile Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Remove="Extensions\HttpRequestExtensions.cs" />
         <!--/+:msbuild-conditional:noEmit -->
         <Content Remove="compilerconfig.json" />
         <None Include="compilerconfig.json" />

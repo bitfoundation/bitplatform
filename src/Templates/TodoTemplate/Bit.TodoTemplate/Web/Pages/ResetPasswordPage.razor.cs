@@ -2,7 +2,7 @@
 
 namespace TodoTemplate.App.Pages;
 
-public partial class ResetPassword
+public partial class ResetPasswordPage
 {
     [AutoInject] private HttpClient httpClient = default!;
 

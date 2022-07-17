@@ -5,9 +5,23 @@
 @using Bit.BlazorUI.Playground.Web
 @using Bit.BlazorUI.Playground.Shared;
 @using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Http
+
+@inject IHttpContextAccessor ContextAccessor
 
 @{
     var isBlazorServer = BlazorModeDetector.Current.IsBlazorServer();
+    RenderMode renderMode = isBlazorServer ? RenderMode.ServerPrerendered : RenderMode.WebAssemblyPrerendered;
+
+    if (renderMode is RenderMode.ServerPrerendered or RenderMode.WebAssemblyPrerendered)
+    {
+        var shouldRenderStaticMode = ContextAccessor?.HttpContext?.Request.ShouldRenderStaticMode();
+
+        if (shouldRenderStaticMode is not null && shouldRenderStaticMode.Value)
+        {
+            renderMode = RenderMode.Static;
+        }
+    }
 }
 
 @*
@@ -27,7 +41,7 @@
     <link rel="stylesheet" href="Bit.BlazorUI.Playground.Web.styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/styles/styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/styles/default.min.css">
-    <component type="typeof(HeadOutlet)" render-mode="@(isBlazorServer ? RenderMode.ServerPrerendered : RenderMode.WebAssemblyPrerendered)" />
+    <component type="typeof(HeadOutlet)" render-mode="@renderMode" />
 </head>
 <body>
 
@@ -37,6 +51,7 @@
     <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/languages/csharp.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/languages/xml.min.js"></script>
     <script src="_content/Bit.BlazorUI/scripts/bit.blazorui.min.js" asp-append-version="true"></script>
+    <script src="_content/Bit.BlazorUI.Charts/scripts/bit.blazorui.charts.min.js" asp-append-version="true"></script>
     <script src="~/scripts/app.js" asp-append-version="true"></script>
 
     @if (isBlazorServer)

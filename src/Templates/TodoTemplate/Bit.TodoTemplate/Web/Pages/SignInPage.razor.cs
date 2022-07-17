@@ -2,7 +2,7 @@
 
 namespace TodoTemplate.App.Pages;
 
-public partial class SignIn
+public partial class SignInPage
 {
     [AutoInject] private NavigationManager navigationManager = default!;
 

@@ -1,0 +1,1 @@
+﻿### BitChart is a fairly high performance wrapper around Chart.js for Blazor

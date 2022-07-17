@@ -3,7 +3,7 @@ using TodoTemplate.Shared.Dtos.Account;
 
 namespace TodoTemplate.App.Pages;
 
-public partial class SignUp
+public partial class SignUpPage
 {
     [AutoInject] private HttpClient httpClient = default!;
 
