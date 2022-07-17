@@ -1,4 +1,5 @@
-﻿using TodoTemplate.Shared.Dtos.Account;
+﻿using Microsoft.AspNetCore.Components.Forms;
+using TodoTemplate.Shared.Dtos.Account;
 
 namespace TodoTemplate.App.Pages;
 
@@ -14,8 +15,12 @@ public partial class ForgotPassword
 
     public string? ForgotPasswordMessage { get; set; }
 
+    private EditContext? FormContext;
+
     private bool IsSubmitButtonEnabled =>
-        ForgotPasswordModel.Email.HasValue()
+        FormContext is not null 
+        && FormContext.Validate()
+        && ForgotPasswordModel.Email.HasValue()
         && IsLoading is false;
 
     private async Task Submit()
@@ -46,5 +51,12 @@ public partial class ForgotPassword
         {
             IsLoading = false;
         }
+    }
+
+    protected override void OnInitialized()
+    {
+        FormContext = new EditContext(ForgotPasswordModel);
+
+        base.OnInitialized();
     }
 }
