@@ -1,6 +1,6 @@
 ﻿namespace TodoTemplate.App.Pages;
 
-public partial class EmailConfirmation
+public partial class EmailConfirmationPage
 {
     [AutoInject] private HttpClient httpClient = default!;
 
