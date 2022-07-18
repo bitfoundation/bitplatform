@@ -2,7 +2,7 @@
 
 @inherits AppComponentBase;
 
-<PageTitle>Email Confirmation</PageTitle>
+<PageTitle>@TodoStrings.ResourceManager.Translate(TodoStrings.EmailConfirmationTitle)</PageTitle>
 
 <div class="page-container">
     <div class="form--white">
@@ -17,29 +17,29 @@
         @if (EmailConfirmed)
         {
             <h1 class="form-title">
-                Email Confirmed Successfully!
+                @TodoStrings.ResourceManager.Translate(TodoStrings.EmailConfirmedSuccessfullyMessage)
             </h1>
             <BitButton Class="form-submit-button"
                    ButtonStyle="BitButtonStyle.Primary"
-                   Title="Sign in"
-                   AriaLabel="Sign in"
+                   Title="@TodoStrings.ResourceManager.Translate(TodoStrings.SignIn)"
+                   AriaLabel="@TodoStrings.ResourceManager.Translate(TodoStrings.SignIn)"
                    OnClick="WrapHandled(RedirectToSignIn)">
-                <span>Sign in</span>
+                <span>@TodoStrings.ResourceManager.Translate(TodoStrings.SignIn)</span>
             </BitButton>
         }
         else
         {
             <h1 class="form-title">
-                Email Confirmation Failed!
+                @TodoStrings.ResourceManager.Translate(TodoStrings.EmailConfirmationFailedMessage)
             </h1>
             <div class="form-description">
-                Looks like the confirmation link either is invalid or has expired.
+                @TodoStrings.ResourceManager.Translate(TodoStrings.InvalidConfirmationLinkMessage)
             </div>
             <BitButton Class="form-submit-button"
                    ButtonStyle="BitButtonStyle.Primary"
                    IsEnabled="@(IsLoading is false)"
-                   Title="Resend email"
-                   AriaLabel="Resend email"
+                   Title="@TodoStrings.ResourceManager.Translate(TodoStrings.ResendEmail)"
+                   AriaLabel="@TodoStrings.ResourceManager.Translate(TodoStrings.ResendEmail)"
                    OnClick="WrapHandled(ResendLink)">
                 @if (IsLoading)
                 {
@@ -47,7 +47,7 @@
                 }
                 else
                 {
-                    <span>Resend email</span>
+                    <span>@TodoStrings.ResourceManager.Translate(TodoStrings.ResendEmail)</span>
                 }
             </BitButton>
         }

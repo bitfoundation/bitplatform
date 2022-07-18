@@ -2,7 +2,7 @@
 
 @inherits AppComponentBase;
 
-<PageTitle>Sign in</PageTitle>
+<PageTitle>@TodoStrings.ResourceManager.Translate(TodoStrings.SignInTitle)</PageTitle>
 
 <div class="page-container">
     <EditForm Model="SignInModel" OnValidSubmit="WrapHandled(DoSignIn)" class="form--white">
@@ -17,27 +17,27 @@
                 @SignInMessage
             </BitMessageBar>
         }
-        <h1 class="form-title">Sign in</h1>
+        <h1 class="form-title">@TodoStrings.ResourceManager.Translate(TodoStrings.SignInTitle)</h1>
         <div class="form-input-container">
-            <BitTextField Label="Email"
-                          Placeholder="Email"
+            <BitTextField Label="@TodoStrings.ResourceManager.Translate(TodoStrings.Email)"
+                          Placeholder="@TodoStrings.ResourceManager.Translate(TodoStrings.Email)"
                           Type="BitTextFieldType.Email"
                           @bind-Value="SignInModel.UserName" />
             <ValidationMessage For="@(() => SignInModel.UserName)" />
         </div>
         <div class="form-input-container">
-            <BitTextField Label="Password"
+            <BitTextField Label="@TodoStrings.ResourceManager.Translate(TodoStrings.Password)"
                           @bind-Value="SignInModel.Password"
                           Type="BitTextFieldType.Password"
                           CanRevealPassword="true"
-                          Placeholder="Password" />
+                          Placeholder="@TodoStrings.ResourceManager.Translate(TodoStrings.Password)" />
             <ValidationMessage For="@(() => SignInModel.Password)" />
         </div>
         <BitButton Class="form-submit-button"
                    ButtonStyle="BitButtonStyle.Primary"
                    IsEnabled="IsSubmitButtonEnabled"
-                   Title="Sign in"
-                   AriaLabel="Sign in"
+                   Title="@TodoStrings.ResourceManager.Translate(TodoStrings.SignIn)"
+                   AriaLabel="@TodoStrings.ResourceManager.Translate(TodoStrings.SignIn)"
                    ButtonType="BitButtonType.Submit">
             @if (IsLoading)
             {
@@ -45,14 +45,14 @@
             }
             else
             {
-                <span>Sign in</span>
+                <span>@TodoStrings.ResourceManager.Translate(TodoStrings.SignIn)</span>
             }
         </BitButton>
         <div class="form-forgot-password">
-            <BitLink Href="/forgot-password">Forgot password?</BitLink>
+            <BitLink Href="/forgot-password">@TodoStrings.ResourceManager.Translate(TodoStrings.ForgotPasswordLink)</BitLink>
         </div>
         <div>
-            Don’t have an account? <BitLink Href="/sign-up">Sign up</BitLink>
+            @TodoStrings.ResourceManager.Translate(TodoStrings.DontHaveAccountMessage) <BitLink Href="/sign-up">@TodoStrings.ResourceManager.Translate(TodoStrings.SignUp)</BitLink>
         </div>
     </EditForm>
 </div>

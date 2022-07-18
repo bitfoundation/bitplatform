@@ -93,7 +93,7 @@ public partial class EditProfilePage
 
             EditProfileMessageType = BitMessageBarType.Success;
 
-            EditProfileMessage = "Profile updated successfully";
+            EditProfileMessage = TodoStrings.ResourceManager.Translate(TodoStrings.ProfileUpdatedSuccessfullyMessage);
         }
         catch (KnownException e)
         {

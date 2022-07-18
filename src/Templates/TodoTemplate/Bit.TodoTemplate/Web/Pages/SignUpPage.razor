@@ -2,7 +2,7 @@
 
 @inherits AppComponentBase;
 
-<PageTitle>Sign up</PageTitle>
+<PageTitle>@TodoStrings.ResourceManager.Translate(TodoStrings.SingUpTitle)</PageTitle>
 
 <div class="page-container">
     <EditForm Model="SignUpModel" OnValidSubmit="WrapHandled(DoSignUp)" class="form--white">
@@ -20,24 +20,23 @@
         @if (IsSignedUp)
         {
             <h1 class="form-title">
-                Confirm Your Email Address
+                @TodoStrings.ResourceManager.Translate(TodoStrings.ConfirmEmailTitle)
             </h1>
             <div class="form-description">
-                We have sent a confirmation link to your email address.
-                Please confirm your email by clicking on the link.
+                @TodoStrings.ResourceManager.Translate(TodoStrings.ConfirmEmailMessage)
             </div>
             <div class="form-link">
-                Haven’t you received the confirmation email?
+                @TodoStrings.ResourceManager.Translate(TodoStrings.NotReceivedConfirmationEmailMessage)
             </div>
             <div class="form-note">
-                Check your Spam/Junk, if you could not find it in the Inbox.
-                <br/>
-                - OR -
+                @TodoStrings.ResourceManager.Translate(TodoStrings.CheckSpamMailMessage)
+                <br />
+                - @TodoStrings.ResourceManager.Translate(TodoStrings.Or) -
             </div>
             <BitButton Class="form-submit-button"
                    ButtonStyle="BitButtonStyle.Primary"
-                   Title="Resend email"
-                   AriaLabel="Resend email"
+                   Title="@TodoStrings.ResourceManager.Translate(TodoStrings.ResendEmail)"
+                   AriaLabel="@TodoStrings.ResourceManager.Translate(TodoStrings.ResendEmail)"
                    OnClick="WrapHandled(ResendLink)">
                 @if (IsLoading)
                 {
@@ -45,42 +44,42 @@
                 }
                 else
                 {
-                    <span>Resend email</span>
+                    <span>@TodoStrings.ResourceManager.Translate(TodoStrings.ResendEmail)</span>
                 }
             </BitButton>
         }
         else
         {
             <h1 class="form-title">
-                Sign up
+                @TodoStrings.ResourceManager.Translate(TodoStrings.SignUp)
             </h1>
             <div class="form-input-container">
-                <BitTextField Label="Email" 
-                              Placeholder="Email" 
-                              Type="BitTextFieldType.Email"
-                              @bind-Value="SignUpModel.UserName" />
+                <BitTextField Label="@TodoStrings.ResourceManager.Translate(TodoStrings.Email)"
+                          Placeholder="@TodoStrings.ResourceManager.Translate(TodoStrings.Email)"
+                          Type="BitTextFieldType.Email"
+                          @bind-Value="SignUpModel.UserName" />
                 <ValidationMessage For="@(() => SignUpModel.UserName)" />
             </div>
             <div class="form-input-container">
-                <BitTextField Label="Password"
+                <BitTextField Label="@TodoStrings.ResourceManager.Translate(TodoStrings.Password)"
                           @bind-Value="SignUpModel.Password"
                           Type="BitTextFieldType.Password"
                           CanRevealPassword="true"
-                          Placeholder="Password" />
+                          Placeholder="@TodoStrings.ResourceManager.Translate(TodoStrings.Password)" />
                 <ValidationMessage For="@(() => SignUpModel.Password)" />
             </div>
 
             <div class="form-input-container form-input-container--no-margin">
                 <BitCheckbox Class="form-checkbox" @bind-Value="SignUpModel.IsAcceptPrivacy">
-                    I agree to the <BitLink Href="/privacy" Target="_blank">Privacy Policy</BitLink>
+                    @TodoStrings.ResourceManager.Translate(TodoStrings.PrivacyPolicyAgreementMessage) <BitLink Href="/privacy" Target="_blank">@TodoStrings.ResourceManager.Translate(TodoStrings.PrivacyPolicyTitle)</BitLink>
                 </BitCheckbox>
             </div>
 
             <BitButton Class="form-submit-button"
                    ButtonStyle="BitButtonStyle.Primary"
                    IsEnabled="IsSubmitButtonEnabled"
-                   Title="Sign up"
-                   AriaLabel="Sign up"
+                   Title="@TodoStrings.ResourceManager.Translate(TodoStrings.SignUp)"
+                   AriaLabel="@TodoStrings.ResourceManager.Translate(TodoStrings.SignUp)"
                    ButtonType="BitButtonType.Submit">
                 @if (IsLoading)
                 {
@@ -88,12 +87,12 @@
                 }
                 else
                 {
-                    <span>Sign up</span>
+                    <span>@TodoStrings.ResourceManager.Translate(TodoStrings.SignUp)</span>
                 }
             </BitButton>
 
             <div>
-                Already have an account? <BitLink Href="/sign-in">Sign in</BitLink>
+                @TodoStrings.ResourceManager.Translate(TodoStrings.AlreadyHaveAccountMessage) <BitLink Href="/sign-in">@TodoStrings.ResourceManager.Translate(TodoStrings.SignIn)</BitLink>
             </div>
         }
 

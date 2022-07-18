@@ -3,7 +3,7 @@
 
 @inherits AppComponentBase;
 
-<PageTitle>Todo</PageTitle>
+<PageTitle>@TodoStrings.ResourceManager.Translate(TodoStrings.TodoTitle)</PageTitle>
 
 <div class="page-container">
     <div class="page-content--white">
@@ -11,18 +11,18 @@
             <BitSearchBox OnChange="TodoItemSearch"
                           OnClear="@(()=>TodoItemSearch(""))"
                           Style="width: 300px"
-                          Placeholder="Search some todo..." />
+                          Placeholder="@TodoStrings.ResourceManager.Translate(TodoStrings.TodoSearchPlaceholder)" />
         </div>
         <div class="todo-content">
-            <h1 class="main-title">Todo</h1>
+            <h1 class="main-title">@TodoStrings.ResourceManager.Translate(TodoStrings.TodoTitle)</h1>
             <div class="add-todo-container">
                 <BitTextField @bind-Value="NewTodoItemTitle"
-                              Placeholder="Add a todo"
+                              Placeholder="@TodoStrings.ResourceManager.Translate(TodoStrings.TodoAddPlaceholder)"
                               Class="add-todo-input" />
                 <BitButton OnClick="WrapHandled(AddTodoItem)"
                            Class="add-todo-button"
-                           Title="Add"
-                           AriaLabel="Add"
+                           Title="@TodoStrings.ResourceManager.Translate(TodoStrings.Add)"
+                           AriaLabel="@TodoStrings.ResourceManager.Translate(TodoStrings.Add)"
                            IsEnabled="(string.IsNullOrEmpty(NewTodoItemTitle) is false)">
                     @if (IsAddLoading)
                     {
@@ -30,23 +30,23 @@
                     }
                     else
                     {
-                        <span>Add</span>
+                        <span>@TodoStrings.ResourceManager.Translate(TodoStrings.Add)</span>
                     }
                 </BitButton>
             </div>
             <div class="todo-list-container">
                 <div class="filter-container">
                     <BitPivot Class="filter-pivot" OnLinkClick="NavigatePivotItem">
-                        <BitPivotItem Class="todo-pivot-tab" HeaderText="All" AriaLabel="All" />
-                        <BitPivotItem Class="todo-pivot-tab" HeaderText="Active" AriaLabel="Active" />
-                        <BitPivotItem Class="todo-pivot-tab" HeaderText="Completed" AriaLabel="Completed" />
+                        <BitPivotItem Class="todo-pivot-tab" HeaderText="@TodoStrings.ResourceManager.Translate(TodoStrings.All)" AriaLabel="@TodoStrings.ResourceManager.Translate(TodoStrings.All)" />
+                        <BitPivotItem Class="todo-pivot-tab" HeaderText="@TodoStrings.ResourceManager.Translate(TodoStrings.Active)" AriaLabel="@TodoStrings.ResourceManager.Translate(TodoStrings.Active)" />
+                        <BitPivotItem Class="todo-pivot-tab" HeaderText="@TodoStrings.ResourceManager.Translate(TodoStrings.Completed)" AriaLabel="@TodoStrings.ResourceManager.Translate(TodoStrings.Completed)" />
                     </BitPivot>
                     <div class="sort-drp-container">
                         <BitDropDown OnSelectItem="TodoItemSort"
                                      Class="sort-todo-drp"
                                      Items="SortItemList">
                             <CaretDownFragment>
-                                <BitActionButton IconName="BitIconName.Sort">Sort by @SelectedSortTodoItemName</BitActionButton>
+                                <BitActionButton IconName="BitIconName.Sort">@TodoStrings.ResourceManager.Translate(TodoStrings.SortBy) @SelectedSortTodoItemName</BitActionButton>
                             </CaretDownFragment>
                         </BitDropDown>
                     </div>
@@ -64,7 +64,7 @@
                         {
                             <div class="todo-list--empty-state">
                                 <img src="/images/backgrounds/empty-todo-list-bg.svg">
-                                <BitLabel>No todos yet</BitLabel>
+                                <BitLabel>@TodoStrings.ResourceManager.Translate(TodoStrings.NoTodos)No todos yet</BitLabel>
                             </div>
                         }
                         else
@@ -78,14 +78,14 @@
                                 {
                                     <BitTextField Class="todo-input" @bind-Value="context.Title" />
                                     <div class="todo-item-btn-group--edit-mode">
-                                        <BitButton Title="Edit"
-                                               AriaLabel="Edit"
-                                               OnClick="WrapHandled(() => EditTodoItem(context))">Edit</BitButton>
+                                                <BitButton Title="@TodoStrings.ResourceManager.Translate(TodoStrings.Edit)"
+                                               AriaLabel="@TodoStrings.ResourceManager.Translate(TodoStrings.Edit)"
+                                               OnClick="WrapHandled(() => EditTodoItem(context))">@TodoStrings.ResourceManager.Translate(TodoStrings.Edit)</BitButton>
                                         <BitButton ButtonStyle="BitButtonStyle.Standard"
                                                Class="todo-button"
-                                               Title="Cancel"
-                                               AriaLabel="Cancel"
-                                               OnClick="WrapHandled(() => CancelEditMode(context))">Cancel</BitButton>
+                                               Title="@TodoStrings.ResourceManager.Translate(TodoStrings.Cancel)"
+                                               AriaLabel="@TodoStrings.ResourceManager.Translate(TodoStrings.Cancel)"
+                                               OnClick="WrapHandled(() => CancelEditMode(context))">@TodoStrings.ResourceManager.Translate(TodoStrings.Cancel)</BitButton>
                                     </div>
                                 }
                                 else
@@ -102,13 +102,13 @@
                                     </div>
                                     <div class="todo-btn-group">
                                         <BitIconButton IconName="BitIconName.Edit"
-                                                   Title="Edit"
-                                                   AriaLabel="Edit"
+                                                   Title="@TodoStrings.ResourceManager.Translate(TodoStrings.Edit)"
+                                                   AriaLabel="@TodoStrings.ResourceManager.Translate(TodoStrings.Edit)"
                                                    OnClick="WrapHandled(() => ToggleToEditMode(context))" />
 
                                         <BitIconButton IconName="BitIconName.Delete"
-                                                   Title="Remove"
-                                                   AriaLabel="Remove"
+                                                   Title="@TodoStrings.ResourceManager.Translate(TodoStrings.Remove)"
+                                                   AriaLabel="@TodoStrings.ResourceManager.Translate(TodoStrings.Remove)"
                                                    OnClick="WrapHandled(() => DeleteTodoItem(context))" />
                                     </div>
                                 }

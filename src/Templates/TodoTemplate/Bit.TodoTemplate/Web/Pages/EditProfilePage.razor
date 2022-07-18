@@ -2,7 +2,7 @@
 @attribute [Authorize]
 @inherits AppComponentBase;
 
-<PageTitle>Edit profile</PageTitle>
+<PageTitle>@TodoStrings.ResourceManager.Translate(TodoStrings.EditProfileTitle)</PageTitle>
 
 <div class="page-container">
     <div class="content-container--white">
@@ -16,7 +16,7 @@
         }
 
         <h1 class="page-title">
-            Edit profile
+            @TodoStrings.ResourceManager.Translate(TodoStrings.EditProfileTitle)
         </h1>
         @if (IsLoadingData)
         {
@@ -59,24 +59,24 @@
                 <div class="form-input-container">
                     <BitTextField Label="Full name"
                               @bind-Value="UserToEdit.FullName"
-                              Placeholder="Full name" />
+                              Placeholder="@TodoStrings.ResourceManager.Translate(TodoStrings.FullName)" />
                 </div>
                 <div class="form-input-container">
                     <BitDatePicker Label="Birthday"
                                Class="edit-profile-dtp"
                                @bind-Value="UserToEdit.BirthDate"
-                               Placeholder="Select your birth date" />
+                               Placeholder="@TodoStrings.ResourceManager.Translate(TodoStrings.SelectBirthDate)" />
                 </div>
                 <div class="form-choice-container">
                     <BitRadioButtonGroup Label="Gender" @bind-Value="UserToEdit.GenderAsString">
-                        <BitRadioButtonOption Value="@Gender.Male.ToString()" Text="Male" AriaLabel="Male"></BitRadioButtonOption>
-                        <BitRadioButtonOption Value="@Gender.Female.ToString()" Text="Famale" AriaLabel="Famale"></BitRadioButtonOption>
-                        <BitRadioButtonOption Value="@Gender.Custom.ToString()" Text="Custom" AriaLabel="Custom"></BitRadioButtonOption>
+                        <BitRadioButtonOption Value="@Gender.Male.ToString()" Text="Male" AriaLabel="@TodoStrings.ResourceManager.Translate(TodoStrings.GenderMale)"></BitRadioButtonOption>
+                        <BitRadioButtonOption Value="@Gender.Female.ToString()" Text="Famale" AriaLabel="@TodoStrings.ResourceManager.Translate(TodoStrings.GenderFemale)"></BitRadioButtonOption>
+                        <BitRadioButtonOption Value="@Gender.Custom.ToString()" Text="Custom" AriaLabel="@TodoStrings.ResourceManager.Translate(TodoStrings.GenderCustom)"></BitRadioButtonOption>
                     </BitRadioButtonGroup>
                 </div>
                 <BitButton ButtonStyle="BitButtonStyle.Primary"
-                       AriaLabel="Save"
-                       Title="Save"
+                       AriaLabel="@TodoStrings.ResourceManager.Translate(TodoStrings.Save)"
+                       Title="@TodoStrings.ResourceManager.Translate(TodoStrings.Save)"
                        IsEnabled="IsSubmitButtonEnabled"
                        ButtonType="BitButtonType.Submit">
                     @if (IsSavingData)
@@ -85,7 +85,7 @@
                     }
                     else
                     {
-                        <span>Save</span>
+                        <span>@TodoStrings.ResourceManager.Translate(TodoStrings.Save)</span>
                     }
                 </BitButton>
             </EditForm>

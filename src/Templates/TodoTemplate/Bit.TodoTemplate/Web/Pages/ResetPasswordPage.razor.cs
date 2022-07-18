@@ -1,4 +1,5 @@
-﻿using TodoTemplate.Shared.Dtos.Account;
+﻿using System.Threading.Channels;
+using TodoTemplate.Shared.Dtos.Account;
 
 namespace TodoTemplate.App.Pages;
 
@@ -49,7 +50,7 @@ public partial class ResetPasswordPage
 
             ResetPasswordMessageType = BitMessageBarType.Success;
 
-            ResetPasswordMessage = "Your password changed successfully.";
+            ResetPasswordMessage = TodoStrings.ResourceManager.Translate(TodoStrings.PasswordChangedSuccessfullyMessage);
 
             await authService.SignIn(new SignInRequestDto
             {

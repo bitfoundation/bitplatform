@@ -9,7 +9,7 @@ public partial class TodoPage
     [AutoInject] private IStateService stateService = default!;
 
     public bool IsLoading { get; set; }
-    public string SelectedPivotName { get; set; } = "All";
+    public string SelectedPivotName { get; set; } = TodoStrings.ResourceManager.Translate(TodoStrings.All);
     public string? EditModeTodoItemText { get; set; }
     public bool IsAddLoading { get; set; }
     public string? SelectedSortTodoItemName { get; set; }
@@ -22,11 +22,11 @@ public partial class TodoPage
     {
         new BitDropDownItem
         {
-            Text = "Alphabetical",
+            Text = TodoStrings.ResourceManager.Translate(TodoStrings.Alphabetical),
         },
         new BitDropDownItem
         {
-            Text = "Date",
+            Text = TodoStrings.ResourceManager.Translate(TodoStrings.Date),
         }
     };
 
@@ -73,15 +73,15 @@ public partial class TodoPage
 
     private void FilterTodoItemList()
     {
-        if (SelectedPivotName == "All")
+        if (SelectedPivotName == TodoStrings.ResourceManager.Translate(TodoStrings.All))
         {
             ViewTodoItemList = AllTodoItemList?.ToList();
         }
-        if (SelectedPivotName == "Active")
+        if (SelectedPivotName == TodoStrings.ResourceManager.Translate(TodoStrings.Active))
         {
             ViewTodoItemList = AllTodoItemList?.Where(c => c.IsDone == false).ToList();
         }
-        if (SelectedPivotName == "Completed")
+        if (SelectedPivotName == TodoStrings.ResourceManager.Translate(TodoStrings.Completed))
         {
             ViewTodoItemList = AllTodoItemList?.Where(c => c.IsDone == true).ToList();
         }
@@ -108,7 +108,7 @@ public partial class TodoPage
 
     private void HandlerTodoItemSort()
     {
-        if (SelectedSortTodoItemName == "Alphabetical")
+        if (SelectedSortTodoItemName == TodoStrings.ResourceManager.Translate(TodoStrings.Alphabetical))
         {
             ViewTodoItemList = ViewTodoItemList?.OrderBy(td => td.Title).ToList();
         }

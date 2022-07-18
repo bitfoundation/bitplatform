@@ -2,20 +2,19 @@
 
 @inherits AppComponentBase;
 
-<PageTitle>TodoTemplate Home</PageTitle>
+<PageTitle>@TodoStrings.ResourceManager.Translate(TodoStrings.TodoTemplateHomeTitle)</PageTitle>
 
 <div class="page-container">
     <section class="page-section hero-section">
-        <h1 class="hero-section-title">TodoTemplate Home</h1>
+        <h1 class="hero-section-title">@TodoStrings.ResourceManager.Translate(TodoStrings.TodoTemplateHomeTitle)</h1>
         <div class="hero-section-desc">
-            Create your multi-mode (WASM, Server, Hybrid, pre-rendering) Blazor
-            app easily in the shortest time ever!
+            @TodoStrings.ResourceManager.Translate(TodoStrings.TodoTemplateHomeMessage)
         </div>
         <BitButton Class="hero-section-cta"
                    Href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Templates/TodoTemplate/Bit.TodoTemplate"
                    Target="_blank"
-                   Title="GitHub Repo"
-                   AriaLabel="GitHub Repo"
-                   ButtonStyle="BitButtonStyle.Standard">GitHub Repo</BitButton>
+                   Title="@TodoStrings.ResourceManager.Translate(TodoStrings.GitHubRepo)"
+                   AriaLabel="@TodoStrings.ResourceManager.Translate(TodoStrings.GitHubRepo)"
+                   ButtonStyle="BitButtonStyle.Standard">@TodoStrings.ResourceManager.Translate(TodoStrings.GitHubRepo)</BitButton>
     </section>
 </div>

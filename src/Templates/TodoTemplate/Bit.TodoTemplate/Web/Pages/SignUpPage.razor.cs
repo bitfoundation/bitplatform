@@ -77,7 +77,7 @@ public partial class SignUpPage
             }, AppJsonContext.Default.SendConfirmationEmailRequestDto);
 
             SignUpMessageType = BitMessageBarType.Success;
-            SignUpMessage = "The confirmation link has been re-sent.";
+            SignUpMessage = TodoStrings.ResourceManager.Translate(TodoStrings.ResendConfirmationLinkMessage);
         }
         catch (KnownException e)
         {
