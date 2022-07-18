@@ -632,6 +632,33 @@ code {
 .bit-icon--icongraphy {
     font-size: 2.25rem !important;
 }
+
+/* Popular Components =================================================================================== */
+
+.selected-component-icon {
+    path {
+        fill: $White;
+        stroke: $White;
+    }
+}
+
+.component-row-icon {
+    path {
+        fill: $B2Color;
+        stroke: $B2Color;
+    }
+}
+
+.component-row {
+    &:hover {
+        .component-row-icon {
+            path {
+                fill: $White;
+                stroke: $White;
+            }
+        }
+    }
+}
 /* Demo Page =================================================================================== */
 .example-desc {
     margin-bottom: rem(8px);
