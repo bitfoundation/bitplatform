@@ -10,6 +10,11 @@
             <NotFound>
                 <NotFoundComponent />
             </NotFound>
+            <Navigating>
+                <LayoutView Layout="@typeof(MainLayout)">
+                    <NavigatingComponent />
+                </LayoutView>
+            </Navigating>
         </Router>
     </CascadingValue>
 </CascadingValue>
@@ -24,11 +29,11 @@
     private async Task OnNavigateAsync(NavigationContext args)
     {
 #if BlazorWebAssembly
-    if (args.Path.Contains("chart"))
-    {
-        var assemblies = await AssemblyLoader.LoadAssembliesAsync(new[] { "Newtonsoft.Json.dll", "System.Private.Xml.dll", "System.Data.Common.dll" });
-        lazyLoadedAssemblies.AddRange(assemblies);
-    }
+        if (args.Path.Contains("chart"))
+        {
+            var assemblies = await AssemblyLoader.LoadAssembliesAsync(new[] { "Newtonsoft.Json.dll", "System.Private.Xml.dll", "System.Data.Common.dll" });
+            lazyLoadedAssemblies.AddRange(assemblies);
+        }
 #endif
     }
 }
