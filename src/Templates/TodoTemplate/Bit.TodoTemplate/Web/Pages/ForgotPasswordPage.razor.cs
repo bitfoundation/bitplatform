@@ -34,7 +34,7 @@ public partial class ForgotPasswordPage
 
             ForgotPasswordMessageType = BitMessageBarType.Success;
 
-            ForgotPasswordMessage = TodoStrings.ResourceManager.Translate(TodoStrings.ResetPasswordLinkSentMessage);
+            ForgotPasswordMessage = AuthStrings.ResetPasswordLinkSentMessage;
         }
         catch (KnownException e)
         {

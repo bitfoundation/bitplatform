@@ -43,7 +43,7 @@ public partial class EmailConfirmationPage
 
             EmailConfirmationMessageType = BitMessageBarType.Success;
 
-            EmailConfirmationMessage = TodoStrings.ResourceManager.Translate(TodoStrings.ResendConfirmationLinkMessage);
+            EmailConfirmationMessage = AuthStrings.ResendConfirmationLinkMessage;
         }
         catch (KnownException e)
         {

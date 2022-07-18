@@ -22,14 +22,14 @@ namespace TodoTemplate.Shared.Resources {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    public class TodoStrings {
+    public class AuthStrings {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
         private static global::System.Globalization.CultureInfo resourceCulture;
         
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        internal TodoStrings() {
+        internal AuthStrings() {
         }
         
         /// <summary>
@@ -39,7 +39,7 @@ namespace TodoTemplate.Shared.Resources {
         public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("TodoTemplate.Shared.Resources.TodoStrings", typeof(TodoStrings).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("TodoTemplate.Shared.Resources.AuthStrings", typeof(AuthStrings).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -61,42 +61,6 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Active.
-        /// </summary>
-        public static string Active {
-            get {
-                return ResourceManager.GetString("Active", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Add.
-        /// </summary>
-        public static string Add {
-            get {
-                return ResourceManager.GetString("Add", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to All.
-        /// </summary>
-        public static string All {
-            get {
-                return ResourceManager.GetString("All", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Alphabetical.
-        /// </summary>
-        public static string Alphabetical {
-            get {
-                return ResourceManager.GetString("Alphabetical", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Already have an account?.
         /// </summary>
         public static string AlreadyHaveAccountMessage {
@@ -106,29 +70,11 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cancel.
-        /// </summary>
-        public static string Cancel {
-            get {
-                return ResourceManager.GetString("Cancel", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Check your Spam/Junk, if you could not find it in the Inbox..
         /// </summary>
         public static string CheckSpamMailMessage {
             get {
                 return ResourceManager.GetString("CheckSpamMailMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Completed.
-        /// </summary>
-        public static string Completed {
-            get {
-                return ResourceManager.GetString("Completed", resourceCulture);
             }
         }
         
@@ -161,38 +107,11 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Date.
-        /// </summary>
-        public static string Date {
-            get {
-                return ResourceManager.GetString("Date", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Don’t have an account?.
         /// </summary>
         public static string DontHaveAccountMessage {
             get {
                 return ResourceManager.GetString("DontHaveAccountMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Edit.
-        /// </summary>
-        public static string Edit {
-            get {
-                return ResourceManager.GetString("Edit", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Edit profile.
-        /// </summary>
-        public static string EditProfileTitle {
-            get {
-                return ResourceManager.GetString("EditProfileTitle", resourceCulture);
             }
         }
         
@@ -251,51 +170,6 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Full Name.
-        /// </summary>
-        public static string FullName {
-            get {
-                return ResourceManager.GetString("FullName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Custom.
-        /// </summary>
-        public static string GenderCustom {
-            get {
-                return ResourceManager.GetString("GenderCustom", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Female.
-        /// </summary>
-        public static string GenderFemale {
-            get {
-                return ResourceManager.GetString("GenderFemale", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Male.
-        /// </summary>
-        public static string GenderMale {
-            get {
-                return ResourceManager.GetString("GenderMale", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to GitHub Repo.
-        /// </summary>
-        public static string GitHubRepo {
-            get {
-                return ResourceManager.GetString("GitHubRepo", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Looks like the confirmation link either is invalid or has expired..
         /// </summary>
         public static string InvalidConfirmationLinkMessage {
@@ -310,15 +184,6 @@ namespace TodoTemplate.Shared.Resources {
         public static string NewPassword {
             get {
                 return ResourceManager.GetString("NewPassword", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to No todos yet.
-        /// </summary>
-        public static string NoTodos {
-            get {
-                return ResourceManager.GetString("NoTodos", resourceCulture);
             }
         }
         
@@ -355,60 +220,6 @@ namespace TodoTemplate.Shared.Resources {
         public static string PasswordChangedSuccessfullyMessage {
             get {
                 return ResourceManager.GetString("PasswordChangedSuccessfullyMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to I agree to the.
-        /// </summary>
-        public static string PrivacyPolicyAgreementMessage {
-            get {
-                return ResourceManager.GetString("PrivacyPolicyAgreementMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Use this page to detail your site&apos;s privacy policy..
-        /// </summary>
-        public static string PrivacyPolicyPageMessage {
-            get {
-                return ResourceManager.GetString("PrivacyPolicyPageMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Use this section to detail your site&apos;s privacy policy..
-        /// </summary>
-        public static string PrivacyPolicySectionMessage {
-            get {
-                return ResourceManager.GetString("PrivacyPolicySectionMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Privacy Policy.
-        /// </summary>
-        public static string PrivacyPolicyTitle {
-            get {
-                return ResourceManager.GetString("PrivacyPolicyTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Profile updated successfully..
-        /// </summary>
-        public static string ProfileUpdatedSuccessfullyMessage {
-            get {
-                return ResourceManager.GetString("ProfileUpdatedSuccessfullyMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Remove.
-        /// </summary>
-        public static string Remove {
-            get {
-                return ResourceManager.GetString("Remove", resourceCulture);
             }
         }
         
@@ -458,24 +269,6 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Save.
-        /// </summary>
-        public static string Save {
-            get {
-                return ResourceManager.GetString("Save", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Select your birth date.
-        /// </summary>
-        public static string SelectBirthDate {
-            get {
-                return ResourceManager.GetString("SelectBirthDate", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Sign in.
         /// </summary>
         public static string SignIn {
@@ -521,65 +314,11 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Sort by.
-        /// </summary>
-        public static string SortBy {
-            get {
-                return ResourceManager.GetString("SortBy", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Submit.
         /// </summary>
         public static string Submit {
             get {
                 return ResourceManager.GetString("Submit", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Add a todo.
-        /// </summary>
-        public static string TodoAddPlaceholder {
-            get {
-                return ResourceManager.GetString("TodoAddPlaceholder", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Search some todo....
-        /// </summary>
-        public static string TodoSearchPlaceholder {
-            get {
-                return ResourceManager.GetString("TodoSearchPlaceholder", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Create your multi-mode (WASM, Server, Hybrid, pre-rendering) Blazor app easily in the shortest time ever!.
-        /// </summary>
-        public static string TodoTemplateHomeMessage {
-            get {
-                return ResourceManager.GetString("TodoTemplateHomeMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to TodoTemplate Home.
-        /// </summary>
-        public static string TodoTemplateHomeTitle {
-            get {
-                return ResourceManager.GetString("TodoTemplateHomeTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Todo.
-        /// </summary>
-        public static string TodoTitle {
-            get {
-                return ResourceManager.GetString("TodoTitle", resourceCulture);
             }
         }
     }

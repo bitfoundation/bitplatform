@@ -2,19 +2,19 @@
 
 @inherits AppComponentBase;
 
-<PageTitle>@TodoStrings.ResourceManager.Translate(TodoStrings.TodoTemplateHomeTitle)</PageTitle>
+<PageTitle>@AppStrings.TodoTemplateHomeTitle</PageTitle>
 
 <div class="page-container">
     <section class="page-section hero-section">
-        <h1 class="hero-section-title">@TodoStrings.ResourceManager.Translate(TodoStrings.TodoTemplateHomeTitle)</h1>
+        <h1 class="hero-section-title">@AppStrings.TodoTemplateHomeTitle</h1>
         <div class="hero-section-desc">
-            @TodoStrings.ResourceManager.Translate(TodoStrings.TodoTemplateHomeMessage)
+            @AppStrings.TodoTemplateHomeMessage
         </div>
         <BitButton Class="hero-section-cta"
                    Href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Templates/TodoTemplate/Bit.TodoTemplate"
                    Target="_blank"
-                   Title="@TodoStrings.ResourceManager.Translate(TodoStrings.GitHubRepo)"
-                   AriaLabel="@TodoStrings.ResourceManager.Translate(TodoStrings.GitHubRepo)"
-                   ButtonStyle="BitButtonStyle.Standard">@TodoStrings.ResourceManager.Translate(TodoStrings.GitHubRepo)</BitButton>
+                   Title="@AppStrings.GitHubRepo"
+                   AriaLabel="@AppStrings.GitHubRepo"
+                   ButtonStyle="BitButtonStyle.Standard">@AppStrings.GitHubRepo</BitButton>
     </section>
 </div>

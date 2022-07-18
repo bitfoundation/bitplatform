@@ -117,29 +117,11 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Active" xml:space="preserve">
-    <value>Active</value>
-  </data>
-  <data name="Add" xml:space="preserve">
-    <value>Add</value>
-  </data>
-  <data name="All" xml:space="preserve">
-    <value>All</value>
-  </data>
-  <data name="Alphabetical" xml:space="preserve">
-    <value>Alphabetical</value>
-  </data>
   <data name="AlreadyHaveAccountMessage" xml:space="preserve">
     <value>Already have an account?</value>
   </data>
-  <data name="Cancel" xml:space="preserve">
-    <value>Cancel</value>
-  </data>
   <data name="CheckSpamMailMessage" xml:space="preserve">
     <value>Check your Spam/Junk, if you could not find it in the Inbox.</value>
-  </data>
-  <data name="Completed" xml:space="preserve">
-    <value>Completed</value>
   </data>
   <data name="ConfirmEmailMessage" xml:space="preserve">
     <value>We have sent a confirmation link to your email address.
@@ -151,17 +133,8 @@ Please confirm your email by clicking on the link.</value>
   <data name="ConfirmNewPassword" xml:space="preserve">
     <value>Confirm New Password</value>
   </data>
-  <data name="Date" xml:space="preserve">
-    <value>Date</value>
-  </data>
   <data name="DontHaveAccountMessage" xml:space="preserve">
     <value>Don’t have an account?</value>
-  </data>
-  <data name="Edit" xml:space="preserve">
-    <value>Edit</value>
-  </data>
-  <data name="EditProfileTitle" xml:space="preserve">
-    <value>Edit profile</value>
   </data>
   <data name="Email" xml:space="preserve">
     <value>Email</value>
@@ -181,29 +154,11 @@ Please confirm your email by clicking on the link.</value>
   <data name="ForgotPasswordLink" xml:space="preserve">
     <value>Forgot password?</value>
   </data>
-  <data name="FullName" xml:space="preserve">
-    <value>Full Name</value>
-  </data>
-  <data name="GenderCustom" xml:space="preserve">
-    <value>Custom</value>
-  </data>
-  <data name="GenderFemale" xml:space="preserve">
-    <value>Female</value>
-  </data>
-  <data name="GenderMale" xml:space="preserve">
-    <value>Male</value>
-  </data>
-  <data name="GitHubRepo" xml:space="preserve">
-    <value>GitHub Repo</value>
-  </data>
   <data name="InvalidConfirmationLinkMessage" xml:space="preserve">
     <value>Looks like the confirmation link either is invalid or has expired.</value>
   </data>
   <data name="NewPassword" xml:space="preserve">
     <value>New Password</value>
-  </data>
-  <data name="NoTodos" xml:space="preserve">
-    <value>No todos yet</value>
   </data>
   <data name="NotReceivedConfirmationEmailMessage" xml:space="preserve">
     <value>Haven’t you received the confirmation email?</value>
@@ -216,24 +171,6 @@ Please confirm your email by clicking on the link.</value>
   </data>
   <data name="PasswordChangedSuccessfullyMessage" xml:space="preserve">
     <value>Your password changed successfully.</value>
-  </data>
-  <data name="PrivacyPolicyAgreementMessage" xml:space="preserve">
-    <value>I agree to the</value>
-  </data>
-  <data name="PrivacyPolicyPageMessage" xml:space="preserve">
-    <value>Use this page to detail your site's privacy policy.</value>
-  </data>
-  <data name="PrivacyPolicySectionMessage" xml:space="preserve">
-    <value>Use this section to detail your site's privacy policy.</value>
-  </data>
-  <data name="PrivacyPolicyTitle" xml:space="preserve">
-    <value>Privacy Policy</value>
-  </data>
-  <data name="ProfileUpdatedSuccessfullyMessage" xml:space="preserve">
-    <value>Profile updated successfully.</value>
-  </data>
-  <data name="Remove" xml:space="preserve">
-    <value>Remove</value>
   </data>
   <data name="ResendConfirmationLinkMessage" xml:space="preserve">
     <value>The confirmation link has been re-sent to your email address.</value>
@@ -250,12 +187,6 @@ Please confirm your email by clicking on the link.</value>
   <data name="ResetPasswordTitle" xml:space="preserve">
     <value>Reset password</value>
   </data>
-  <data name="Save" xml:space="preserve">
-    <value>Save</value>
-  </data>
-  <data name="SelectBirthDate" xml:space="preserve">
-    <value>Select your birth date</value>
-  </data>
   <data name="SignIn" xml:space="preserve">
     <value>Sign in</value>
   </data>
@@ -271,25 +202,7 @@ Please confirm your email by clicking on the link.</value>
   <data name="SingUpTitle" xml:space="preserve">
     <value>Sign up</value>
   </data>
-  <data name="SortBy" xml:space="preserve">
-    <value>Sort by</value>
-  </data>
   <data name="Submit" xml:space="preserve">
     <value>Submit</value>
-  </data>
-  <data name="TodoAddPlaceholder" xml:space="preserve">
-    <value>Add a todo</value>
-  </data>
-  <data name="TodoSearchPlaceholder" xml:space="preserve">
-    <value>Search some todo...</value>
-  </data>
-  <data name="TodoTemplateHomeMessage" xml:space="preserve">
-    <value>Create your multi-mode (WASM, Server, Hybrid, pre-rendering) Blazor app easily in the shortest time ever!</value>
-  </data>
-  <data name="TodoTemplateHomeTitle" xml:space="preserve">
-    <value>TodoTemplate Home</value>
-  </data>
-  <data name="TodoTitle" xml:space="preserve">
-    <value>Todo</value>
   </data>
 </root>

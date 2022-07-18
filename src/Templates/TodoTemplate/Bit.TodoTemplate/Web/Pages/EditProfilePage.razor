@@ -2,7 +2,7 @@
 @attribute [Authorize]
 @inherits AppComponentBase;
 
-<PageTitle>@TodoStrings.ResourceManager.Translate(TodoStrings.EditProfileTitle)</PageTitle>
+<PageTitle>@AppStrings.EditProfileTitle</PageTitle>
 
 <div class="page-container">
     <div class="content-container--white">
@@ -16,7 +16,7 @@
         }
 
         <h1 class="page-title">
-            @TodoStrings.ResourceManager.Translate(TodoStrings.EditProfileTitle)
+            @AppStrings.EditProfileTitle
         </h1>
         @if (IsLoadingData)
         {
@@ -47,7 +47,7 @@
             </div>
             <div class="form-input-container">
                 <BitLabel>Profile image</BitLabel>
-                <BitFileUpload Label="Upload a new profile image"
+                <BitFileUpload Label="@AppStrings.UploadNewProfileImage"
                            AutoUploadEnabled="true"
                            UploadUrl="@ProfileImageUploadUrl"
                            OnUploadComplete="WrapHandled(LoadEditProfileData)"
@@ -57,26 +57,26 @@
             </div>
             <EditForm Model="UserToEdit" OnSubmit="WrapHandled(Save)" class="edit-profile-form">
                 <div class="form-input-container">
-                    <BitTextField Label="Full name"
+                    <BitTextField Label="@AppStrings.FullName"
                               @bind-Value="UserToEdit.FullName"
-                              Placeholder="@TodoStrings.ResourceManager.Translate(TodoStrings.FullName)" />
+                              Placeholder="@AppStrings.FullName" />
                 </div>
                 <div class="form-input-container">
                     <BitDatePicker Label="Birthday"
                                Class="edit-profile-dtp"
                                @bind-Value="UserToEdit.BirthDate"
-                               Placeholder="@TodoStrings.ResourceManager.Translate(TodoStrings.SelectBirthDate)" />
+                               Placeholder="@AppStrings.SelectBirthDate" />
                 </div>
                 <div class="form-choice-container">
                     <BitRadioButtonGroup Label="Gender" @bind-Value="UserToEdit.GenderAsString">
-                        <BitRadioButtonOption Value="@Gender.Male.ToString()" Text="Male" AriaLabel="@TodoStrings.ResourceManager.Translate(TodoStrings.GenderMale)"></BitRadioButtonOption>
-                        <BitRadioButtonOption Value="@Gender.Female.ToString()" Text="Famale" AriaLabel="@TodoStrings.ResourceManager.Translate(TodoStrings.GenderFemale)"></BitRadioButtonOption>
-                        <BitRadioButtonOption Value="@Gender.Custom.ToString()" Text="Custom" AriaLabel="@TodoStrings.ResourceManager.Translate(TodoStrings.GenderCustom)"></BitRadioButtonOption>
+                        <BitRadioButtonOption Value="@Gender.Male.ToString()" Text="Male" AriaLabel="@AppStrings.GenderMale"></BitRadioButtonOption>
+                        <BitRadioButtonOption Value="@Gender.Female.ToString()" Text="Famale" AriaLabel="@AppStrings.GenderFemale"></BitRadioButtonOption>
+                        <BitRadioButtonOption Value="@Gender.Custom.ToString()" Text="Custom" AriaLabel="@AppStrings.GenderCustom"></BitRadioButtonOption>
                     </BitRadioButtonGroup>
                 </div>
                 <BitButton ButtonStyle="BitButtonStyle.Primary"
-                       AriaLabel="@TodoStrings.ResourceManager.Translate(TodoStrings.Save)"
-                       Title="@TodoStrings.ResourceManager.Translate(TodoStrings.Save)"
+                       AriaLabel="@AppStrings.Save"
+                       Title="@AppStrings.Save"
                        IsEnabled="IsSubmitButtonEnabled"
                        ButtonType="BitButtonType.Submit">
                     @if (IsSavingData)
@@ -85,7 +85,7 @@
                     }
                     else
                     {
-                        <span>@TodoStrings.ResourceManager.Translate(TodoStrings.Save)</span>
+                        <span>@AppStrings.Save</span>
                     }
                 </BitButton>
             </EditForm>

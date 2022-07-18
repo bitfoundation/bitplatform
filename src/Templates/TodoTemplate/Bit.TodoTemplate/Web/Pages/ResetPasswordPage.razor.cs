@@ -50,7 +50,7 @@ public partial class ResetPasswordPage
 
             ResetPasswordMessageType = BitMessageBarType.Success;
 
-            ResetPasswordMessage = TodoStrings.ResourceManager.Translate(TodoStrings.PasswordChangedSuccessfullyMessage);
+            ResetPasswordMessage = AuthStrings.PasswordChangedSuccessfullyMessage;
 
             await authService.SignIn(new SignInRequestDto
             {
