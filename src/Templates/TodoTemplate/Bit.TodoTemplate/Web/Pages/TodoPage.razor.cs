@@ -9,7 +9,7 @@ public partial class TodoPage
     [AutoInject] private IStateService stateService = default!;
 
     public bool IsLoading { get; set; }
-    public string SelectedPivotName { get; set; } = "All";
+    public string SelectedPivotName { get; set; } = AppStrings.All;
     public string? EditModeTodoItemText { get; set; }
     public bool IsAddLoading { get; set; }
     public string? SelectedSortTodoItemName { get; set; }
@@ -22,11 +22,11 @@ public partial class TodoPage
     {
         new BitDropDownItem
         {
-            Text = "Alphabetical",
+            Text = AppStrings.Alphabetical,
         },
         new BitDropDownItem
         {
-            Text = "Date",
+            Text = AppStrings.Date,
         }
     };
 
@@ -73,15 +73,15 @@ public partial class TodoPage
 
     private void FilterTodoItemList()
     {
-        if (SelectedPivotName == "All")
+        if (SelectedPivotName == AppStrings.All)
         {
             ViewTodoItemList = AllTodoItemList?.ToList();
         }
-        if (SelectedPivotName == "Active")
+        if (SelectedPivotName == AppStrings.Active)
         {
             ViewTodoItemList = AllTodoItemList?.Where(c => c.IsDone == false).ToList();
         }
-        if (SelectedPivotName == "Completed")
+        if (SelectedPivotName == AppStrings.Completed)
         {
             ViewTodoItemList = AllTodoItemList?.Where(c => c.IsDone == true).ToList();
         }
@@ -108,7 +108,7 @@ public partial class TodoPage
 
     private void HandlerTodoItemSort()
     {
-        if (SelectedSortTodoItemName == "Alphabetical")
+        if (SelectedSortTodoItemName == AppStrings.Alphabetical)
         {
             ViewTodoItemList = ViewTodoItemList?.OrderBy(td => td.Title).ToList();
         }
