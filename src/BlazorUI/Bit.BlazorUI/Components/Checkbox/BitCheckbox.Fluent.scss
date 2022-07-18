@@ -20,6 +20,7 @@
         align-items: center;
         justify-content: center;
         width: rem(20px);
+        min-width: rem(20px);
         height: rem(20px);
         border: rem(1px) solid $Grey160;
         border-radius: rem(2px);
