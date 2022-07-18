@@ -1,6 +1,7 @@
 ﻿@import '../Styles/_shared.scss';
 
 .main-container {
+    display: flex;
     position: relative;
     width: 100%;
     min-height: 100vh;
@@ -44,6 +45,11 @@
         padding-right: rem(16px);
         padding-left: rem(16px);
     }
+}
+
+.page-content {
+    flex-grow: 1;
+    position: relative;
 }
 
 .footer {
