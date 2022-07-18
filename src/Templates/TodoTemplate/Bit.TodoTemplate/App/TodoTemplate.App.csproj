@@ -103,6 +103,7 @@
         <EmbeddedResource Include="appsettings.json" />
         <Content Remove="Pages\_Host.cshtml" />
         <Content Remove="Pages\_Layout.cshtml" />
+        <Compile Remove="Extensions\HttpRequestExtensions.cs" />
         <Compile Remove="Services\Implementations\ServerSideAuthTokenProvider.cs" />
         <Content Remove="Properties\launchSettings.json" />
         <Content Remove="compilerconfig.json" />
