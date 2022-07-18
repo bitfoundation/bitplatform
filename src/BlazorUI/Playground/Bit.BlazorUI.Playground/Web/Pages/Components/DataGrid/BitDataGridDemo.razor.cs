@@ -376,6 +376,7 @@ public class Medals
 
     private readonly string example2HTMLCode = @"
 @using System.Text.Json;
+@inject HttpClient HttpClient
 
 <style scoped>
 .grid {
@@ -469,7 +470,7 @@ protected override async Task OnInitializedAsync()
 
             var url = NavManager.GetUriWithQueryParameters(""https://api.fda.gov/food/enforcement.json"", query);
 
-            var data = await Http.GetFromJsonAsync(url, AppJsonContext.Default.FoodRecallQueryResult, req.CancellationToken);
+            var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.FoodRecallQueryResult, req.CancellationToken);
 
             return BitDataGridItemsProviderResult.From(
                                             items: data!.Results,
@@ -613,6 +614,176 @@ public class Openfda
 ";
 
     private readonly string example3HTMLCode = @"
+@using System.Text.Json;
+@inject HttpClient HttpClient
+@inject NavigationManager NavManager
+
+<style scoped>
+.grid {
+    height: 25rem;
+    overflow-y: auto;
+}
+
+.grid ::deep table {
+    min-width: 100%;
+}
+
+.grid ::deep thead {
+    position: sticky;
+    top: 0;
+    background-color: #d8d8d8;
+    outline: 1px solid gray;
+    z-index: 1;
+}
+
+.grid ::deep tr {
+    height: 30px;
+    border-bottom: 0.5px solid silver;
+}
+
+.grid ::deep tbody td {
+    white-space: nowrap;
+    overflow: hidden;
+    max-width: 0;
+    text-overflow: ellipsis;
+}
+</style>
+
+<div class=""grid"">
+    <BitDataGrid ItemKey=""(p => p.Id)"" ItemsProvider=""@productsItemsProvider"" TGridItem=""ProductDto"" Virtualize=""true"" @ref=""productsDataGrid"">
+        <BitDataGridPropertyColumn Property=""@(p => p.Id)"" Sortable=""true"" IsDefaultSort=""BitDataGridSortDirection.Ascending"" />
+        <BitDataGridPropertyColumn Property=""@(p => p.Name)"" Sortable=""true"" />
+        <BitDataGridPropertyColumn Property=""@(p => p.Price)"" Sortable=""true"" />
+    </BitDataGrid>
+</div>
+<div class=""search-panel"">
+     <div class=""inline-block"">
+        <BitSearchBox @bind-Value=""ODataSampleNameFilter"" Width=""250px""
+                                  Placeholder=""Search on Name""
+                                  InputHtmlAttributes=""@(new Dictionary<string, object> {{""autofocus"", true}})"" />
+     </div>
+</div>
+";
+    private readonly string example3CSharpCode = @"
+
+// To make following aspnetcore controller work, simply change services.AddControllers(); to services.AddControllers().AddOData()
+// Note that this need Microsoft.AspNetCore.OData nuget package to be installed
+
+[ApiController]
+[Route(""[controller]/[action]"")]
+public class ProductsController : ControllerBase
+{
+    private static readonly Random _random = new Random();
+
+    private static readonly ProductDto[] _products = Enumerable.Range(1, 500_000)
+        .Select(i => new ProductDto { Id = i, Name = Guid.NewGuid().ToString(""N""), Price = _random.Next(1, 100) })
+        .ToArray();
+
+    [HttpGet]
+    public async Task<PagedResult<ProductDto>> GetProducts(ODataQueryOptions<ProductDto> odataQuery, CancellationToken cancellationToken)
+    {
+        var query = _products.AsQueryable();
+
+        query = (IQueryable<ProductDto>)odataQuery.ApplyTo(query, ignoreQueryOptions: AllowedQueryOptions.Top | AllowedQueryOptions.Skip);
+
+        var totalCount = query.Count();
+
+        if (odataQuery.Skip is not null)
+            query = query.Skip(odataQuery.Skip.Value);
+
+        query = query.Take(odataQuery.Top?.Value ?? 50);
+
+        return new PagedResult<ProductDto>(query.ToArray(), totalCount);
+    }
+}
+
+BitDataGrid<ProductDto>? productsDataGrid;
+string _odataSampleNameFilter = string.Empty;
+BitDataGridItemsProvider<ProductDto> productsItemsProvider;
+
+string ODataSampleNameFilter
+{
+    get => _odataSampleNameFilter;
+    set
+    {
+        _odataSampleNameFilter = value;
+        _ = productsDataGrid.RefreshDataAsync();
+    }
+}
+
+protected override async Task OnInitializedAsync()
+{
+    productsItemsProvider = async req =>
+    {
+        try
+        {
+            // https://docs.microsoft.com/en-us/odata/concepts/queryoptions-overview
+
+            var query = new Dictionary<string, object>()
+            {
+                { ""$top"", req.Count ?? 50 },
+                { ""$skip"", req.StartIndex }
+            };
+
+            if (string.IsNullOrEmpty(_odataSampleNameFilter) is false)
+            {
+                query.Add(""$filter"", $""contains(Name,'{_odataSampleNameFilter}')"");
+            }
+
+            if (req.GetSortByProperties().Any())
+            {
+                query.Add(""$orderby"", string.Join("", "", req.GetSortByProperties().Select(p => $""{p.PropertyName} {(p.Direction == BitDataGridSortDirection.Ascending ? ""asc"" : ""desc"")}"")));
+            }
+
+            var url = NavManager.GetUriWithQueryParameters(""Products/GetProducts"", query);
+
+            var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto);
+
+            return BitDataGridItemsProviderResult.From(data!.Items, (int)data!.TotalCount);
+        }
+        catch
+        {
+            return BitDataGridItemsProviderResult.From<ProductDto>(new List<ProductDto> { }, 0);
+        }
+    };
+}
+
+//https://devblogs.microsoft.com/dotnet/try-the-new-system-text-json-source-generator/
+[JsonSerializable(typeof(PagedResult<ProductDto>))]
+public partial class AppJsonContext : JsonSerializerContext
+{
+  
+}
+
+public class ProductDto
+{
+    public int Id { get; set; }
+
+    public string Name { get; set; }
+
+    public decimal Price { get; set; }
+}
+
+public class PagedResult<T>
+{
+    public IList<T> Items { get; set; }
+
+    public int TotalCount { get; set; }
+
+    public PagedResult(IList<T> items, int totalCount)
+    {
+        Items = items;
+        TotalCount = totalCount;
+    }
+
+    public PagedResult()
+    {
+
+    }
+}
+";
+
+    private readonly string example4HTMLCode = @"
 <style scoped>
 .grid ::deep .bitdatagrid[theme=redskin] {
     font-style :italic;
@@ -642,7 +813,7 @@ public class Openfda
     </BitDataGrid>
 </div>
 ";
-    private readonly string example3CSharpCode = @"
+    private readonly string example4CSharpCode = @"
 IQueryable<Country> sevenCountries;
 
 protected override async Task OnInitializedAsync()

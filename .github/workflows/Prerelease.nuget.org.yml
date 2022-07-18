@@ -27,6 +27,15 @@ jobs:
     - name: dotnet pack BlazorUI
       run: dotnet pack src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj --output . --configuration Release
       
+    - name: dotnet restore BlazorUI.Charts
+      run: dotnet restore src/BlazorUI/Bit.BlazorUI.Charts/Bit.BlazorUI.Charts.csproj
+    - name: dotnet msbuild BlazorUI.Charts (1)
+      run: dotnet msbuild src/BlazorUI/Bit.BlazorUI.Charts/Bit.BlazorUI.Charts.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false
+    - name: dotnet msbuild BlazorUI.Charts (2)
+      run: dotnet msbuild src/BlazorUI/Bit.BlazorUI.Charts/Bit.BlazorUI.Charts.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false
+    - name: dotnet pack BlazorUI.Charts
+      run: dotnet pack src/BlazorUI/Bit.BlazorUI.Charts/Bit.BlazorUI.Charts.csproj --output . --configuration Release
+      
     - name: dotnet restore Bswup
       run: dotnet restore src/Bswup/Bit.Bswup/Bit.Bswup.csproj
     - name: dotnet msbuild Bswup (1)

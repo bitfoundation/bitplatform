@@ -12,6 +12,7 @@ namespace Bit.BlazorUI.Playground.Shared.Dtos;
 [JsonSerializable(typeof(FoodRecall))]
 [JsonSerializable(typeof(Results))]
 [JsonSerializable(typeof(Openfda))]
+[JsonSerializable(typeof(PagedResult<ProductDto>))]
 public partial class AppJsonContext : JsonSerializerContext
 {
   

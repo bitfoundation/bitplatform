@@ -7,10 +7,8 @@
         const listenerOptions = new BitEventListenerOptions();
         listenerOptions.signal = controller.abortController.signal;
 
-        document.addEventListener('mouseup', (e) => {
-
+        document.addEventListener('pointerup', e => {
             const eventArgs = BitColorPicker.toMouseEventArgsMapper(e);
-
             dotnetHelper.invokeMethodAsync(callback, eventArgs);
         }, listenerOptions);
 
@@ -25,10 +23,8 @@
         const listenerOptions = new BitEventListenerOptions();
         listenerOptions.signal = controller.abortController.signal;
 
-        document.addEventListener('mousemove', (e) => {
-
+        document.addEventListener('pointermove', e => {
             const eventArgs = BitColorPicker.toMouseEventArgsMapper(e);
-
             dotnetHelper.invokeMethodAsync(callback, eventArgs);
         }, listenerOptions);
 

@@ -8,7 +8,9 @@
                 @if (com.Name == SelectedComponent.Name)
                 {
                     <div class="selected-component">
-                        <div class="selected-component-icon @($"{SelectedComponent.CssClassName}-icon")"></div>
+                        <div class="selected-component-icon">
+                            <PopularComponentsIcon ComponentName="@SelectedComponent.Name"></PopularComponentsIcon>
+                        </div>
                         <div class="selected-component-name">@SelectedComponent.Name</div>
                         <div class="selected-component-desc">@SelectedComponent.Description</div>
                         <a class="demo-btn" href="@SelectedComponent.Url">More about @SelectedComponent.Name</a>
@@ -17,7 +19,9 @@
                 else
                 {
                     <div class="component-row" @onclick="@(() => SelectComponent(com))">
-                        <div class="component-row-icon @($"{com.CssClassName}-icon")"></div>
+                        <div class="component-row-icon">
+                            <PopularComponentsIcon ComponentName="@com.Name"></PopularComponentsIcon>
+                        </div>
                         <div class="component-row-name">@com.Name</div>
                     </div>
                 }
@@ -229,7 +233,9 @@ private readonly List&ltBitNavLinkItem> BasicNavLinks = new()
     @foreach (var com in Components)
     {
         <a class="card" href="@com.Url">
-            <div class="card-icon @($"{com.CssClassName}-icon")"></div>
+            <div class="card-icon">
+                <PopularComponentsIcon ComponentName="@com.Name"></PopularComponentsIcon>
+            </div>
             <div class="card-name">@com.Name</div>
         </a>
     }

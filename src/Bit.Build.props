@@ -27,11 +27,11 @@
 
 		<ReleaseVersion>2.0.0</ReleaseVersion>
 
-		<PackageReleaseNotes>https://github.com/bitfoundation/bitplatform/releases/tag/v-$(ReleaseVersion)-pre-04</PackageReleaseNotes>
-		<PackageVersion>$(ReleaseVersion)-pre-04</PackageVersion>
+		<PackageReleaseNotes>https://github.com/bitfoundation/bitplatform/releases/tag/v-$(ReleaseVersion)-pre-05</PackageReleaseNotes>
+		<PackageVersion>$(ReleaseVersion)-pre-05</PackageVersion>
 
 		<!-- Version -->
-		<Version>$(ReleaseVersion).$([System.DateTime]::Now.ToString(HHmm))</Version>
+		<Version Condition=" '$(Configuration)' == 'Release' ">$(ReleaseVersion).$([System.DateTime]::Now.ToString(HHmm))</Version>
 
 		<!-- Compile -->
 		<NeutralLanguage>en</NeutralLanguage>

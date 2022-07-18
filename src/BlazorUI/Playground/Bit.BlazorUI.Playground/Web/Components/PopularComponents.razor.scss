@@ -94,14 +94,14 @@
     }
 
     .selected-component-icon {
+        display: flex;
+        justify-content: center;
+        align-items: center;
         position: absolute;
         top: rem(16px);
         left: rem(32px);
         width: rem(48px);
         height: rem(48px);
-        background-position: center;
-        background-size: rem(20px);
-        background-repeat: no-repeat;
         background-color: $B2Color;
         border-radius: 50%;
 
@@ -111,26 +111,6 @@
             width: rem(40px);
             height: rem(40px);
         }
-    }
-
-    .color-picker-icon {
-        background-image: url('/images/home/color-picker-light-icon.svg');
-    }
-
-    .date-picker-icon {
-        background-image: url('/images/home/date-picker-light-icon.svg');
-    }
-
-    .drop-down-icon {
-        background-image: url('/images/home/drop-down-light-icon.svg');
-    }
-
-    .nav-icon {
-        background-image: url('/images/home/nav-light-icon.svg');
-    }
-
-    .file-upload-icon {
-        background-image: url('/images/home/file-upload-light-icon.svg');
     }
 
     .selected-component-name {
@@ -183,12 +163,12 @@
         cursor: pointer;
 
         .component-row-icon {
+            display: flex;
+            justify-content: center;
+            align-items: center;
             width: rem(48px);
             height: rem(48px);
             border-radius: 50%;
-            background-position: center;
-            background-size: rem(20px);
-            background-repeat: no-repeat;
             margin-left: rem(32px);
             background-color: $B5Color;
 
@@ -196,26 +176,6 @@
                 width: rem(40px);
                 height: rem(40px);
             }
-        }
-
-        .color-picker-icon {
-            background-image: url('/images/home/color-picker-blue-icon.svg');
-        }
-
-        .date-picker-icon {
-            background-image: url('/images/home/date-picker-blue-icon.svg');
-        }
-
-        .drop-down-icon {
-            background-image: url('/images/home/drop-down-blue-icon.svg');
-        }
-
-        .nav-icon {
-            background-image: url('/images/home/nav-blue-icon.svg');
-        }
-
-        .file-upload-icon {
-            background-image: url('/images/home/file-upload-blue-icon.svg');
         }
 
         .component-row-name {
@@ -238,26 +198,6 @@
         &:hover {
             .component-row-icon {
                 background-color: $B2Color;
-            }
-
-            .color-picker-icon {
-                background-image: url('/images/home/color-picker-light-icon.svg');
-            }
-
-            .date-picker-icon {
-                background-image: url('/images/home/date-picker-light-icon.svg');
-            }
-
-            .drop-down-icon {
-                background-image: url('/images/home/drop-down-light-icon.svg');
-            }
-
-            .nav-icon {
-                background-image: url('/images/home/nav-light-icon.svg');
-            }
-
-            .file-upload-icon {
-                background-image: url('/images/home/file-upload-light-icon.svg');
             }
 
             .component-row-name {
@@ -384,39 +324,23 @@
     }
 
     .card-icon {
+        display: flex;
+        justify-content: center;
+        align-items: center;
         width: rem(48px);
         height: rem(48px);
         border-radius: 50%;
         background-color: $B2Color;
-        background-repeat: no-repeat;
-        background-position: center;
-        background-size: rem(20px);
 
         @include sm {
             width: rem(32px);
             height: rem(32px);
-            background-size: rem(18px);
         }
-    }
 
-    .color-picker-icon {
-        background-image: url('/images/home/color-picker-light-icon.svg');
-    }
-
-    .date-picker-icon {
-        background-image: url('/images/home/date-picker-light-icon.svg');
-    }
-
-    .drop-down-icon {
-        background-image: url('/images/home/drop-down-light-icon.svg');
-    }
-
-    .nav-icon {
-        background-image: url('/images/home/nav-light-icon.svg');
-    }
-
-    .file-upload-icon {
-        background-image: url('/images/home/file-upload-light-icon.svg');
+        path {
+            fill: $White;
+            stroke: $White;
+        }
     }
 
     .card-name {

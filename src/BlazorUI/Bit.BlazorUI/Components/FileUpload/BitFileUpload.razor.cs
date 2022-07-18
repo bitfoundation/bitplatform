@@ -13,7 +13,7 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// A component that wraps the HTML file input element and uploads them.
 /// </summary>
-public partial class BitFileUpload : IDisposable
+public partial class BitFileUpload : IAsyncDisposable
 {
     // !!! to prevent the type being removed by the linker !!!
 #pragma warning disable CA1823 // Avoid unused private fields
@@ -24,6 +24,7 @@ public partial class BitFileUpload : IDisposable
     private const int MAX_CHUNK_SIZE = 10 * 1024 * 1024; // 10 mb
     private DotNetObjectReference<BitFileUpload>? dotnetObjectReference;
     private ElementReference inputFileElement;
+    private IJSObjectReference? dropZoneInstance;
 
     [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
 
@@ -190,6 +191,15 @@ public partial class BitFileUpload : IDisposable
     }
 
     protected override string RootElementClass => "bit-file-upload";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            dropZoneInstance = await JSRuntime.InitUploaderDropZone(RootElement, inputFileElement);
+        }
+    }
+
 
     /// <summary>
     /// Select file(s) by browse button or drag and drop.
@@ -672,16 +682,22 @@ public partial class BitFileUpload : IDisposable
         return sb.ToString();
     }
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
-        Dispose(true);
+        await Dispose(true);
         GC.SuppressFinalize(this);
     }
 
-    protected virtual void Dispose(bool disposing)
+    protected async  virtual Task Dispose(bool disposing)
     {
         if (!disposing || dotnetObjectReference is null) return;
+
+        if (dropZoneInstance != null)
+        {
+            await dropZoneInstance.InvokeVoidAsync("dispose");
+            await dropZoneInstance.DisposeAsync();
+        }
         dotnetObjectReference.Dispose();
         dotnetObjectReference = null;
-    }
+    }    
 }

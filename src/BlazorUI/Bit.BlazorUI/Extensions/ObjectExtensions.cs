@@ -3,14 +3,14 @@ using System.Globalization;
 
 namespace Bit.BlazorUI;
 
-public static class ObjectExtensions
+internal static class ObjectExtensions
 {
-    public static object? GetValueAsObjectFromProperty(this object? obj, string propertyName)
+    internal static object? GetValueAsObjectFromProperty(this object? obj, string propertyName)
     {
         return obj?.GetType().GetProperty(propertyName)?.GetValue(obj);
     }
 
-    public static BitIconName? GetBitIconNameFromProperty(this object? obj, string propertyName)
+    internal static BitIconName? GetBitIconNameFromProperty(this object? obj, string propertyName)
     {
         var value = obj?.GetType().GetProperty(propertyName)?.GetValue(obj);
 
@@ -22,7 +22,7 @@ public static class ObjectExtensions
         return null;
     }
 
-    public static T? GetValueFromProperty<T>(this object? obj, string propertyName)
+    internal static T? GetValueFromProperty<T>(this object? obj, string propertyName)
     {
         var value = obj?.GetType().GetProperty(propertyName)?.GetValue(obj);
 
@@ -37,7 +37,7 @@ public static class ObjectExtensions
         return (T)Convert.ChangeType(value, targetType, CultureInfo.InvariantCulture);
     }
 
-    public static T? GetValueFromProperty<T>(this object? obj, string propertyName, T? defaultValue)
+    internal static T? GetValueFromProperty<T>(this object? obj, string propertyName, T? defaultValue)
     {
         var value = obj?.GetType().GetProperty(propertyName)?.GetValue(obj);
 
@@ -52,7 +52,7 @@ public static class ObjectExtensions
         return (T)Convert.ChangeType(value, targetType, CultureInfo.InvariantCulture);
     }
 
-    public static T? ConvertTo<T>(this object? obj)
+    internal static T? ConvertTo<T>(this object? obj)
     {
         if (obj is null) return default;
 

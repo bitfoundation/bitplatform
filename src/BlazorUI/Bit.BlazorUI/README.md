@@ -1,7 +1,7 @@
-﻿### BitComponent is a native high performance components for Blazor
+﻿### Bit BlazorUI is a native high performance components for Blazor
 [![NuGet Version](https://img.shields.io/nuget/v/Bit.Client.Web.BlazorUI.svg?style=flat)](https://www.nuget.org/packages/Bit.BlazorUI/) ![Nuget](https://img.shields.io/nuget/dt/Bit.Client.Web.BlazorUI.svg)
 
-BitComponent is a set of native and high performance Blazor UI controls. This is implemented in C# and this does not depend on or wrap existing JavaScript frameworks or libraries.
+Bit BlazorUI is a set of native and high performance Blazor UI controls. This is implemented in C# and this does not depend on or wrap existing JavaScript frameworks or libraries.
 
 **Why choose Bit Blazor Components?**
 - Bit components are free

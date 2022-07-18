@@ -4,12 +4,14 @@ using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
+[assembly: InternalsVisibleTo("Bit.BlazorUI.Playground.Web")]
 namespace Bit.BlazorUI;
 
-public static class EnumExtensions
+internal static class EnumExtensions
 {
-    public static string? GetDisplayName(this Enum enumValue, bool showNameIfHasNoDisplayName = true, bool toLowerDisplayName = false)
+    internal static string? GetDisplayName(this Enum enumValue, bool showNameIfHasNoDisplayName = true, bool toLowerDisplayName = false)
     {
         if (enumValue is null)
         {
@@ -40,7 +42,7 @@ public static class EnumExtensions
         return displayName;
     }
 
-    public static string? GetName(this BitIconName? bitIconName, bool ignoreDefaultValue = true)
+    internal static string? GetName(this BitIconName? bitIconName, bool ignoreDefaultValue = true)
     {
         if (!bitIconName.HasValue)
         {
@@ -50,7 +52,7 @@ public static class EnumExtensions
         return GetIconName(bitIconName.Value, ignoreDefaultValue);
     }
 
-    public static string? GetName(this BitIconName bitIconName, bool ignoreDefaultValue = true)
+    internal static string? GetName(this BitIconName bitIconName, bool ignoreDefaultValue = true)
     {
         return GetIconName(bitIconName, ignoreDefaultValue);
     }

@@ -1,0 +1,73 @@
+﻿@page "/components/chart"
+
+<div>
+    <BitChart Config="_config" @ref="_chart" />
+</div>
+
+<button @onclick="RandomizeData">Randomize Data</button>
+<button @onclick="AddDataset">Add Dataset</button>
+<button @onclick="RemoveDataset">Remove Dataset</button>
+
+@code {
+    private const int InitalCount = 5;
+    private BitChartPieConfig _config;
+    private BitChart _chart;
+
+    protected override void OnInitialized()
+    {
+        _config = new BitChartPieConfig
+        {
+            Options = new BitChartPieOptions
+            {
+                Responsive = true,
+                Title = new BitChartOptionsTitle
+                {
+                    Display = true,
+                    Text = "BitChart Pie Chart"
+                }
+            }
+        };
+
+        BitChartPieDataset<int> dataset = new BitChartPieDataset<int>(BitChartDemoUtils.RandomScalingFactor(InitalCount))
+        {
+            BackgroundColor = BitChartDemoColors.All.Take(InitalCount).Select(BitChartColorUtil.FromDrawingColor).ToArray()
+        };
+
+        _config.Data.Datasets.Add(dataset);
+        _config.Data.Labels.AddRange(new string[InitalCount] { "Red", "Orange", "Yellow", "Green", "Blue" });
+    }
+
+    private void RandomizeData()
+    {
+        foreach (IDataset<int> dataset in _config.Data.Datasets)
+        {
+            int count = dataset.Count;
+            dataset.Clear();
+            dataset.AddRange(BitChartDemoUtils.RandomScalingFactor(count));
+        }
+
+        _chart.Update();
+    }
+
+    private void AddDataset()
+    {
+        int count = _config.Data.Labels.Count;
+        BitChartPieDataset<int> dataset = new BitChartPieDataset<int>(BitChartDemoUtils.RandomScalingFactor(count))
+        {
+            BackgroundColor = BitChartDemoColors.All.Take(count).Select(BitChartColorUtil.FromDrawingColor).ToArray()
+        };
+
+        _config.Data.Datasets.Add(dataset);
+        _chart.Update();
+    }
+
+    private void RemoveDataset()
+    {
+        IList<IBitChartDataset> datasets = _config.Data.Datasets;
+        if (datasets.Count == 0)
+            return;
+
+        datasets.RemoveAt(0);
+        _chart.Update();
+    }
+}
