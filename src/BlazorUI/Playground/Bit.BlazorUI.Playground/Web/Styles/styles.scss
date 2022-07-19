@@ -139,20 +139,20 @@ a {
 .side-nav-search-box {
     width: 100%;
     height: rem(40px);
-    border-color: $B5Color;
+    border-color: $B2Color;
 
     .bit-icon {
         color: $B3Color;
     }
 
     input::-webkit-input-placeholder {
-        color: $B4Color;
+        color: $B2Color;
         font-size: rem(14px);
         font-weight: 500;
     }
 
     &:hover {
-        border-color: $B5Color;
+        border-color: $B2Color;
 
         .bit-icon {
             color: $B3Color;

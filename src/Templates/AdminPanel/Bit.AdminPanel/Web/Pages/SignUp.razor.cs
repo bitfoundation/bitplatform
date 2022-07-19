@@ -19,10 +19,10 @@ public partial class SignUp
     public string? SignUpMessage { get; set; }
 
     private bool IsSubmitButtonEnabled =>
-        SignUpModel.UserName.HasValue()
-        && SignUpModel.Password.HasValue()
-        && SignUpModel.IsAcceptPrivacy
-        && IsLoading is false;
+        string.IsNullOrWhiteSpace(SignUpModel.UserName) is false &&
+        string.IsNullOrWhiteSpace(SignUpModel.Password) is false &&
+        SignUpModel.IsAcceptPrivacy &&
+        IsLoading is false;
 
     private async Task DoSignUp()
     {
