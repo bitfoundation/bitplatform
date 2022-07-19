@@ -128,6 +128,31 @@ public partial class BitPersona
     /// </summary>
     [Parameter] public bool AllowPhoneInitials { get; set; }
 
+    /// <summary>
+    /// Icon name for the icon button of the custom action.
+    /// </summary>
+    [Parameter] public BitIconName ActionIconName { get; set; } = BitIconName.Edit;
+
+    /// <summary>
+    /// Callback for the persona custom action.
+    /// </summary>
+    [Parameter] public EventCallback<MouseEventArgs> OnActionClick { get; set; }
+
+    /// <summary>
+    /// Optional Custom template for the custom action element.
+    /// </summary>
+    [Parameter] public RenderFragment? ActionFragment { get; set; }
+
+    /// <summary>
+    /// Callback for when the image clicked.
+    /// </summary>
+    [Parameter] public EventCallback<MouseEventArgs> OnImageClick { get; set; }
+
+    /// <summary>
+    /// Optional Custom template for the image overlay.
+    /// </summary>
+    [Parameter] public RenderFragment? ImageOverlayFragment { get; set; }
+
     protected override Task OnParametersSetAsync()
     {
         if (CoinSize != -1)
@@ -152,6 +177,8 @@ public partial class BitPersona
     protected override void RegisterComponentClasses()
     {
         ClassBuilder.Register(() => Size.HasValue() ? $"bit-prs-{Size}" : string.Empty);
+
+        ClassBuilder.Register(() => OnImageClick.HasDelegate ? "bit-prs-img-act" : string.Empty);
 
         ClassBuilder.Register(() => Presence != BitPersonaPresenceStatus.None ? $"bit-prs-{Presence.ToString().ToLower(Thread.CurrentThread.CurrentCulture)}" : string.Empty);
     }
@@ -230,5 +257,15 @@ public partial class BitPersona
         }
 
         return initials.ToString();
+    }
+
+    private async Task HandleActionClick(MouseEventArgs e)
+    {
+        await OnActionClick.InvokeAsync(e);
+    }
+
+    private async Task HandleImageClick(MouseEventArgs e)
+    {
+        await OnImageClick.InvokeAsync(e);
     }
 }
