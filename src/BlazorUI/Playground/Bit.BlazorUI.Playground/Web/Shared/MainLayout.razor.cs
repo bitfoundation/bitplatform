@@ -18,10 +18,8 @@ public partial class MainLayout : IDisposable
 
     protected override void OnInitialized()
     {
-        try
-        {
-            CurrentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
-            NavigationManager.LocationChanged += OnLocationChanged;
+        SetCurrentUrl();
+        NavigationManager.LocationChanged += OnLocationChanged;
 
             base.OnInitialized();
         }
@@ -33,8 +31,13 @@ public partial class MainLayout : IDisposable
 
     private void OnLocationChanged(object sender, LocationChangedEventArgs args)
     {
-        CurrentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
+        SetCurrentUrl();
         StateHasChanged();
+    }
+
+    private void SetCurrentUrl()
+    {
+        CurrentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.InvariantCultureIgnoreCase);
     }
 
     public void Dispose()

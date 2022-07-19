@@ -1,5 +1,5 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
-    <!--<Project Sdk="Microsoft.NET.Sdk.Web">-->
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+    
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
         <!--If you don't need to use the time zone and your app is in WASM format, you can reduce the output size of the app by disabling the time zone.-->
@@ -28,10 +28,10 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.BlazorUI" Version="2.0.0-pre-05" />
-        <PackageReference Include="Bit.Bswup" Version="2.0.0-pre-05" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="2.0.0-pre-05" />
-        <PackageReference Include="Bit.SourceGenerators" Version="2.0.0-pre-05" />
+        <PackageReference Include="Bit.BlazorUI" Version="2.0.0-pre-06" />
+        <PackageReference Include="Bit.Bswup" Version="2.0.0-pre-06" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="2.0.0-pre-06" />
+        <PackageReference Include="Bit.SourceGenerators" Version="2.0.0-pre-06" />
         <PackageReference Include="jose-jwt" Version="4.0.0" />
         <PackageReference Include="LiveChartsCore.SkiaSharpView.Blazor" Version="2.0.0-beta.300" />
         <PackageReference Include="SkiaSharp.Views.Blazor" Version="2.88.1-preview.79" />
@@ -65,5 +65,5 @@
         <Using Include="AdminPanel.App.Components" />
         <Using Include="Bit.BlazorUI" />
     </ItemGroup>
-
+    
 </Project>

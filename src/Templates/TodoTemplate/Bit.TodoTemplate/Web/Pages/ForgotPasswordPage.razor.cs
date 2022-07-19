@@ -34,7 +34,7 @@ public partial class ForgotPasswordPage
 
             ForgotPasswordMessageType = BitMessageBarType.Success;
 
-            ForgotPasswordMessage = "The reset password link has been sent.";
+            ForgotPasswordMessage = AuthStrings.ResetPasswordLinkSentMessage;
         }
         catch (KnownException e)
         {

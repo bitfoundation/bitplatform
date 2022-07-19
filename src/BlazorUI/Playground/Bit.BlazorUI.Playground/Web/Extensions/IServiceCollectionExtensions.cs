@@ -4,9 +4,6 @@ using Bit.BlazorUI.Playground.Web.Services;
 using Bit.BlazorUI.Playground.Web.Services.Contracts;
 using Bit.BlazorUI.Playground.Web.Services.Implementations;
 using Microsoft.Extensions.Configuration;
-#if BlazorWebAssembly
-using Microsoft.AspNetCore.Components.WebAssembly.Services;
-#endif
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -29,10 +26,6 @@ public static class IServiceCollectionExtensions
 #endif
 
         services.AddScoped<NavManuService>();
-
-#if BlazorWebAssembly
-        services.AddScoped<LazyAssemblyLoader>();
-#endif
 
         return services;
     }

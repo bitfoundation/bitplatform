@@ -86,9 +86,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.BlazorUI" Version="2.0.0-pre-05" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="2.0.0-pre-05" />
-        <PackageReference Include="Bit.SourceGenerators" Version="2.0.0-pre-05" />
+        <PackageReference Include="Bit.BlazorUI" Version="2.0.0-pre-06" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="2.0.0-pre-06" />
+        <PackageReference Include="Bit.SourceGenerators" Version="2.0.0-pre-06" />
         <PackageReference Include="BuildWebCompiler2022" Version="1.14.8">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -103,6 +103,7 @@
         <EmbeddedResource Include="appsettings.json" />
         <Content Remove="Pages\_Host.cshtml" />
         <Content Remove="Pages\_Layout.cshtml" />
+        <Compile Remove="Extensions\HttpRequestExtensions.cs" />
         <Compile Remove="Services\Implementations\ServerSideAuthTokenProvider.cs" />
         <Content Remove="Properties\launchSettings.json" />
         <Content Remove="compilerconfig.json" />
