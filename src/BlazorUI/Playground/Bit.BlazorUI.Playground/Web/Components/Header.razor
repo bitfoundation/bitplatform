@@ -3,7 +3,7 @@
         <div class="header-content-container">
             @if (CurrentUrl != "/")
             {
-                <BitIconButton Class="header-menu-btn" IconName=BitIconName.CollapseMenu OnClick=@ToggleMenu />
+                <BitIconButton Class="header-menu-btn" IconName=BitIconName.CollapseMenu OnClick=@ToggleMenu  AriaLabel="Header menu button"/>
             }
             <a class="header-logo" href="/" aria-label="Homepage"></a>
             <a class="header-link @(CurrentUrl == "/" ? "header-link--active" : "")" href="/">Home</a>
