@@ -25,7 +25,20 @@
                     </div>
                 }
 
-                @if (Presence != BitPersonaPresenceStatus.None)
+                @if (OnActionClick.HasDelegate)
+                {
+                    @if (ActionFragment is not null)
+                    {
+                        @ActionFragment
+                    }
+                    else
+                    {
+                        <BitIconButton IconName="@ActionIconName"
+                           Title="Edit image"
+                           OnClick="HandleActionClick" />
+                    }
+                }
+                else if (Presence != BitPersonaPresenceStatus.None)
                 {
                     <div title=@PresenceTitle class="bit-prs-presence">
                         <i class=@($"bit-prs-icon bit-icon--{DetermineIcon(Presence, IsOutOfOffice)}") role="presentation"></i>
@@ -46,9 +59,7 @@
             }
             else
             {
-                <span>
-                    <i class="bit-icon bit-icon--person"></i>
-                </span>
+                <i class="bit-icon bit-icon--person"></i>
             }
         }
     </div>
