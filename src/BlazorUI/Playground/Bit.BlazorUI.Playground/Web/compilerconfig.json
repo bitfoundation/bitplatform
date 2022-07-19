@@ -110,6 +110,8 @@
     {
         "inputFile": "Pages/OverviewPage.razor.scss",
         "outputFile": "Pages/OverviewPage.razor.css"
+    },
+    {
         "outputFile": "Shared/AppErrorBoundary.razor.css",
         "inputFile": "Shared/AppErrorBoundary.razor.scss"
     },
