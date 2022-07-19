@@ -50,6 +50,11 @@
         perspective: rem(1px);
     }
 
+    .bit-prs-img-overlay {
+        position: absolute;
+        opacity: 0;
+    }
+
     .bit-prs-img {
         display: block;
         width: 100%;
@@ -123,6 +128,27 @@
         background-color: $White;
         border-radius: 50%;
         border: rem(1px) solid $Primary;
+    }
+}
+
+.bit-prs-fluent.bit-prs-img-act {
+    .bit-prs-img-container {
+        cursor: pointer;
+    }
+
+    .bit-prs-img-container:hover {
+        .bit-prs-img-overlay {
+            z-index: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            background-color: $DarkAlt;
+            color: $White;
+            opacity: 1;
+            transition: all 0.1s linear;
+        }
     }
 }
 

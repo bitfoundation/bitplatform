@@ -16,7 +16,17 @@
 
                 @if (ImageUrl != null)
                 {
-                    <div class="bit-prs-img-container">
+                    <div class="bit-prs-img-container" @onclick="HandleImageClick">
+                        <div class="bit-prs-img-overlay">
+                            @if (ImageOverlayFragment is not null)
+                            {
+                                @ImageOverlayFragment
+                            }
+                            else
+                            {
+                                <span>Edit image</span>
+                            }
+                        </div>
                         <img src="@ImageUrl"
                      class="bit-prs-img"
                      alt="@ImageAlt"

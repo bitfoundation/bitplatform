@@ -78,7 +78,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Persona with action" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example2">
+    <ComponentExampleBox Title="Persona with custom action" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example2">
         <ExamplePreview>
             <BitPersona ImageUrl="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"
                         Presence=@BitPersonaPresenceStatus.None
@@ -91,6 +91,21 @@
                         TertiaryText="In a meeting"
                         OptionalText="Available at 4:00pm"></BitPersona>
             <p>ActionClickCount: @_actionClickCount</p>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Persona with image action" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example3">
+        <ExamplePreview>
+            <BitPersona ImageUrl="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"
+                        Presence=@BitPersonaPresenceStatus.Online
+                        Size=@BitPersonaSize.Size120
+                        OnImageClick="HandleImageClick"
+                        HidePersonaDetails="!IsHideDetails"
+                        Text="Annie Lindqvist"
+                        SecondaryText="Software Engineer"
+                        TertiaryText="In a meeting"
+                        OptionalText="Available at 4:00pm"></BitPersona>
+            <p>ImageClickCount: @_imageClickCount</p>
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>

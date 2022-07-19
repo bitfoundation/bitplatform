@@ -154,6 +154,20 @@ public partial class BitPersonaDemo
             Type = "RenderFragment?",
             DefaultValue = "",
             Description = "Optional Custom template for the custom action element.",
+        },
+        new ComponentParameter()
+        {
+            Name = "OnImageClick",
+            Type = "EventCallback<MouseEventArgs>",
+            DefaultValue = "",
+            Description = "Callback for when the image clicked.",
+        },
+        new ComponentParameter()
+        {
+            Name = "ImageOverlayFragment",
+            Type = "RenderFragment?",
+            DefaultValue = "",
+            Description = "Optional Custom template for the image overlay.",
         }
     };
 
@@ -408,6 +422,13 @@ public partial class BitPersonaDemo
         _actionClickCount++;
     }
 
+    private int _imageClickCount = 0;
+
+    private void HandleImageClick()
+    {
+        _imageClickCount++;
+    }
+
     private static string example1CSharpCode = @"
 public bool IsHideDetails { get; set; } = true;";
 
@@ -503,4 +524,24 @@ private void HandleActionClick()
             TertiaryText=""In a meeting""
             OptionalText=""Available at 4:00pm""></BitPersona>
 <p>ActionClickCount: @_actionClickCount</p>";
+
+    private static string example3CSharpCode = @"
+private int _imageClickCount = 0;
+
+private void HandleImageClick()
+{
+    _imageClickCount++;
+}";
+
+    private static string example3HTMLCode = @"
+<BitPersona ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png""
+            Presence=@BitPersonaPresenceStatus.Online
+            Size=@BitPersonaSize.Size120
+            OnImageClick=""HandleImageClick""
+            HidePersonaDetails=""!IsHideDetails""
+            Text=""Annie Lindqvist""
+            SecondaryText=""Software Engineer""
+            TertiaryText=""In a meeting""
+            OptionalText=""Available at 4:00pm""></BitPersona>
+<p>ImageClickCount: @_imageClickCount</p>";
 }
