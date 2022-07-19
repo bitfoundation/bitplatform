@@ -2,7 +2,7 @@
     
     <!--/-:msbuild-conditional:noEmit -->
     <PropertyGroup>
-        <BlazorMode>BlazorWebAssembly</BlazorMode>
+        <BlazorMode>BlazorServer</BlazorMode>
         <!-- You can use either BlazorServer or BlazorWebAssembly or BlazorHybrid -->
         <WebAppDeploymentType>DefaultDeploymentType</WebAppDeploymentType>
         <!-- You can choose either Static, DefaultDeploymentType, PWA or SSR -->
