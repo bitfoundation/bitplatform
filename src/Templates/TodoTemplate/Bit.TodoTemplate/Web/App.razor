@@ -1,15 +1,15 @@
 ﻿<CascadingAuthenticationState>
     <PageTitle>To Do app!</PageTitle>
-    <Router AppAssembly="@GetType().Assembly">
+    <Router AppAssembly="@GetType().Assembly"
+            AdditionalAssemblies="@lazyLoadedAssemblies"
+            OnNavigateAsync="@OnNavigateAsync">
         <Found Context="routeData">
             <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
                 <NotAuthorized>
                     <RedirectToSignIn />
                 </NotAuthorized>
                 <Authorizing>
-                    <div class="lds-wrapper">
-                        <div class="lds-grid"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
-                    </div>
+                    <LoadingComponent />
                 </Authorizing>
             </AuthorizeRouteView>
         </Found>
@@ -18,5 +18,36 @@
                 <PageNotFound />
             </LayoutView>
         </NotFound>
+        <Navigating>
+            <LayoutView Layout="@typeof(MainLayout)">
+                <LoadingComponent />
+            </LayoutView>
+        </Navigating>
     </Router>
 </CascadingAuthenticationState>
+
+@code {
+    private List<Assembly> lazyLoadedAssemblies = new();
+
+#if BlazorWebAssembly
+    [Inject] private Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader AssemblyLoader { get; set; }
+#endif
+
+    private async Task OnNavigateAsync(NavigationContext args)
+    {
+        await Task.Delay(1000);
+#if BlazorWebAssembly
+        /* To lazy load an assembly based on the current route, follow this:
+        1- Add the BlazorWebAssemblyLazyLoad tag to the Web project file like:
+        <BlazorWebAssemblyLazyLoad Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Sample.dll" />
+        2- Add the assembly to the lazyLoadedAssemblies as follows:
+        if (args.Path.Contains("sample"))
+        {
+          var assemblies = await AssemblyLoader.LoadAssembliesAsync(new[] { "Sample.dll" });
+          lazyLoadedAssemblies.AddRange(assemblies);
+        }
+        The rest of the work is already taken care of in the template source code.
+        */
+#endif
+    }
+}
