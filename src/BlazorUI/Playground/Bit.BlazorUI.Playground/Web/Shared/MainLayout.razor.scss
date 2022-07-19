@@ -109,6 +109,10 @@
         justify-content: center;
         flex-flow: column nowrap;
         transform: translateY(-50%);
+
+        a {
+            background-color: $B4Color;
+        }
     }
 
     .contact-link-container--home {
@@ -131,7 +135,7 @@
         border-radius: 50%;
         background-position: center;
         background-repeat: no-repeat;
-        background-color: $B4Color;
+        background-color: $B2Color;
         cursor: pointer;
         margin: rem(8px);
         background-size: rem(21px);
