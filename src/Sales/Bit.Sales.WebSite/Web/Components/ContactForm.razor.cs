@@ -13,9 +13,9 @@ public partial class ContactForm
     public bool IsLoading { get; set; }
 
     private bool IsSubmitButtonEnabled =>
-    ContactUs.Name.HasValue()
-    && ContactUs.Email.HasValue()
-    && IsLoading is false;
+        string.IsNullOrWhiteSpace(ContactUs.Name) is false &&
+        string.IsNullOrWhiteSpace(ContactUs.Email) is false &&
+        IsLoading is false;
 
     private async Task DoSubmit()
     {

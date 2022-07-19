@@ -51,9 +51,9 @@ public partial class SignIn
     }
 
     private bool IsSubmitButtonEnabled =>
-        SignInModel.UserName.HasValue()
-        && SignInModel.Password.HasValue()
-        && IsLoading is false;
+        string.IsNullOrWhiteSpace(SignInModel.UserName) is false &&
+        string.IsNullOrWhiteSpace(SignInModel.Password) is false && 
+        IsLoading is false;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
