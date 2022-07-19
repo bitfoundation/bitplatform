@@ -30,9 +30,9 @@ public partial class ResetPasswordPage
     public string? ResetPasswordMessage { get; set; }
 
     private bool IsSubmitButtonEnabled =>
-        ResetPasswordModel.Password.HasValue()
-        && ResetPasswordModel.ConfirmPassword.HasValue()
-        && IsLoading is false;
+        string.IsNullOrWhiteSpace(ResetPasswordModel.Password) is false &&
+        string.IsNullOrWhiteSpace(ResetPasswordModel.ConfirmPassword) is false && 
+        IsLoading is false;
 
     private async Task Submit()
     {
