@@ -15,8 +15,8 @@ public partial class ForgotPasswordPage
     public string? ForgotPasswordMessage { get; set; }
 
     private bool IsSubmitButtonEnabled =>
-        ForgotPasswordModel.Email.HasValue()
-        && IsLoading is false;
+        string.IsNullOrWhiteSpace(ForgotPasswordModel.Email) is false &&
+        IsLoading is false;
 
     private async Task Submit()
     {
