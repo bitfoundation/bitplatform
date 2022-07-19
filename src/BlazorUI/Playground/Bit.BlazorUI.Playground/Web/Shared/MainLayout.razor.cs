@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Bit.BlazorUI.Playground.Web.Services.Contracts;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
@@ -18,8 +19,10 @@ public partial class MainLayout : IDisposable
 
     protected override void OnInitialized()
     {
-        SetCurrentUrl();
-        NavigationManager.LocationChanged += OnLocationChanged;
+        try
+        {
+            SetCurrentUrl();
+            NavigationManager.LocationChanged += OnLocationChanged;
 
             base.OnInitialized();
         }
@@ -43,5 +46,6 @@ public partial class MainLayout : IDisposable
     public void Dispose()
     {
         NavigationManager.LocationChanged -= OnLocationChanged;
+        GC.SuppressFinalize(this);
     }
 }
