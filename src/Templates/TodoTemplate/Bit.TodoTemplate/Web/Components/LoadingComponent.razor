@@ -1,5 +1,19 @@
-﻿<div class="lds-wrapper">
-    <div class="lds-grid">
-        <div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+﻿@namespace TodoTemplate.App.Components
+
+<div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+    <div style="display: inline-block; position: relative; width: 80px; height: 80px;">
+        <div style="position: absolute; width: 16px; height: 16px; border-radius: 50%; animation: lds-grid 1.2s linear infinite; background-color: @Color; top: 8px; left: 8px; animation-delay: 0s;"></div>
+        <div style="position: absolute; width: 16px; height: 16px; border-radius: 50%; animation: lds-grid 1.2s linear infinite; background-color: @Color; top: 8px; left: 32px; animation-delay: -0.4s;"></div>
+        <div style="position: absolute; width: 16px; height: 16px; border-radius: 50%; animation: lds-grid 1.2s linear infinite; background-color: @Color; top: 8px; left: 56px; animation-delay: -0.8s;"></div>
+        <div style="position: absolute; width: 16px; height: 16px; border-radius: 50%; animation: lds-grid 1.2s linear infinite; background-color: @Color; top: 32px; left: 8px; animation-delay: -0.4s;"></div>
+        <div style="position: absolute; width: 16px; height: 16px; border-radius: 50%; animation: lds-grid 1.2s linear infinite; background-color: @Color; top: 32px; left: 32px; animation-delay: -0.8s;"></div>
+        <div style="position: absolute; width: 16px; height: 16px; border-radius: 50%; animation: lds-grid 1.2s linear infinite; background-color: @Color; top: 32px; left: 56px; animation-delay: -1.2s;"></div>
+        <div style="position: absolute; width: 16px; height: 16px; border-radius: 50%; animation: lds-grid 1.2s linear infinite; background-color: @Color; top: 56px; left: 8px; animation-delay: -0.8s;"></div>
+        <div style="position: absolute; width: 16px; height: 16px; border-radius: 50%; animation: lds-grid 1.2s linear infinite; background-color: @Color; top: 56px; left: 32px; animation-delay: -1.2s;"></div>
+        <div style="position: absolute; width: 16px; height: 16px; border-radius: 50%; animation: lds-grid 1.2s linear infinite; background-color: @Color; top: 56px; left: 56px; animation-delay: -1.6s;"></div>
     </div>
 </div>
+
+@code {
+    [Parameter] public string Color { get; set; } = "#123456";
+}

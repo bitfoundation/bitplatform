@@ -1,9 +1,5 @@
-﻿@using System.Reflection
-@using Microsoft.AspNetCore.Components.Routing
-@using Microsoft.Extensions.Logging
-
-<CascadingAuthenticationState>
-    <PageTitle>Admin panel</PageTitle>
+﻿<CascadingAuthenticationState>
+    <PageTitle>AdminPanel</PageTitle>
     <Router AppAssembly="@GetType().Assembly"
             AdditionalAssemblies="@lazyLoadedAssemblies"
             OnNavigateAsync="@OnNavigateAsync">
@@ -13,9 +9,7 @@
                     <RedirectToSignIn />
                 </NotAuthorized>
                 <Authorizing>
-                    <div class="lds-wrapper">
-                        <div class="lds-grid"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
-                    </div>
+                    <LoadingComponent Color="#FFF" />
                 </Authorizing>
             </AuthorizeRouteView>
         </Found>
@@ -26,7 +20,7 @@
         </NotFound>
         <Navigating>
             <LayoutView Layout="@typeof(MainLayout)">
-                <NavigatingComponent />
+                <LoadingComponent Color="#FFF" />
             </LayoutView>
         </Navigating>
     </Router>

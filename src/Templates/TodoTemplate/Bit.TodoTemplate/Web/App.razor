@@ -1,5 +1,5 @@
 ﻿<CascadingAuthenticationState>
-    <PageTitle>To Do app!</PageTitle>
+    <PageTitle>TodoTemplate</PageTitle>
     <Router AppAssembly="@GetType().Assembly"
             AdditionalAssemblies="@lazyLoadedAssemblies"
             OnNavigateAsync="@OnNavigateAsync">
@@ -9,7 +9,7 @@
                     <RedirectToSignIn />
                 </NotAuthorized>
                 <Authorizing>
-                    <LoadingComponent />
+                    <LoadingComponent Color="#FFF" />
                 </Authorizing>
             </AuthorizeRouteView>
         </Found>
@@ -20,7 +20,7 @@
         </NotFound>
         <Navigating>
             <LayoutView Layout="@typeof(MainLayout)">
-                <LoadingComponent />
+                <LoadingComponent Color="#FFF" />
             </LayoutView>
         </Navigating>
     </Router>
@@ -35,7 +35,6 @@
 
     private async Task OnNavigateAsync(NavigationContext args)
     {
-        await Task.Delay(1000);
 #if BlazorWebAssembly
         /* To lazy load an assembly based on the current route, follow this:
         1- Add the BlazorWebAssemblyLazyLoad tag to the Web project file like:
