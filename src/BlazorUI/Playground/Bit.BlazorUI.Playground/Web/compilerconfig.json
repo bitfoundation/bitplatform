@@ -8,10 +8,6 @@
         "outputFile": "Shared/MainLayout.razor.css"
     },
     {
-        "inputFile": "Components/LoadingComponent.razor.scss",
-        "outputFile": "Components/LoadingComponent.razor.css"
-    },
-    {
         "inputFile": "Components/ComponentDemo.razor.scss",
         "outputFile": "Components/ComponentDemo.razor.css"
     },
