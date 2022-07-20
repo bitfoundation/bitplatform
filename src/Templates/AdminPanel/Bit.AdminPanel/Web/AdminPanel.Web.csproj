@@ -18,17 +18,12 @@
         <!--/-:msbuild-conditional:noEmit -->
         <!-- In the Blazor Web Assembly mode, the API project will host the web client app itself -->
         <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Remove="appsettings.json" />
-        <Content Remove="Pages\Dashboard\ProductsCountPerCategotyWidget.razor" />
         <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Remove="Pages\_Host.cshtml" />
         <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Remove="Pages\_Layout.cshtml" />
-        <Compile Remove="Pages\Dashboard\ProductsCountPerCategotyWidget.razor.cs" />
         <Compile Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Remove="Services\Implementations\ServerSideAuthTokenProvider.cs" />
         <Compile Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Remove="Extensions\HttpRequestExtensions.cs" />
         <!--/+:msbuild-conditional:noEmit -->
         <Content Remove="compilerconfig.json" />
-        <None Remove="Pages\Dashboard\ProductsCountPerCategotyWidget.razor.css" />
-        <None Remove="Pages\Dashboard\ProductsCountPerCategotyWidget.razor.min.css" />
-        <None Remove="Pages\Dashboard\ProductsCountPerCategotyWidget.razor.scss" />
         <None Include="compilerconfig.json" />
     </ItemGroup>
 

@@ -37,19 +37,19 @@ public partial class NavMenu
                 Key = "Dashboard",
                 Links=new List<BitNavLinkItem>
                         {
-                            new BitNavLinkItem { Name = "Analytics", Url = "/analytics", Key = "Analytics" },
+                            new BitNavLinkItem { Name = "Analytics", Url = "/analytics",IconName = BitIconName.AnalyticsReport, Key = "Analytics" },
                         }
             },
             new BitNavLinkItem
             {
                 Name = "Product catologue",
                 Url = "/",
-                IconName = BitIconName.ViewDashboard,
+                IconName = BitIconName.ProductCatalog,
                 Key = "ProductCatologue",
                 Links=new List<BitNavLinkItem>
                         {
-                            new BitNavLinkItem { Name = "Products", Url = "/products", Key = "Products" },
-                            new BitNavLinkItem { Name = "Categories", Url = "/categories", Key = "Categories" },
+                            new BitNavLinkItem { Name = "Products", Url = "/products",IconName = BitIconName.Product, Key = "Products" },
+                            new BitNavLinkItem { Name = "Categories", Url = "/categories",IconName = BitIconName.ProductCatalog, Key = "Categories" },
                         }
             },
             new BitNavLinkItem

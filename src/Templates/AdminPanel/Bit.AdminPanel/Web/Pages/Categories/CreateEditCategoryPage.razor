@@ -6,42 +6,48 @@
 <PageTitle>Create/Edit category (@Category?.Name)</PageTitle>
 
 <div class="page-container">
-    <EditForm Model="Category" OnValidSubmit="WrapHandled(Save)" class="form--white">
-        @if (IsLoading)
-        {
-            <div class="spinner">
-                <BitSpinner></BitSpinner>
-            </div>
-        }
-        <DataAnnotationsValidator />
-        <h1 class="form-title">Category</h1>
-        <div class="form-input-container">
-            <BitTextField Label="@(nameof(Category.Name))" @bind-Value="Category!.Name" />
-            <ValidationMessage For="() => Category.Name" />
+    <div class="page-content--white">
+        <div class="page-header">
+            <h3>Create/Edit category</h3>
         </div>
+        <div class="content align-center">
+            <EditForm Model="Category" OnValidSubmit="WrapHandled(Save)">
+                @if (IsLoading)
+                {
+                    <div class="spinner">
+                        <BitSpinner Size="BitSpinnerSize.Large"></BitSpinner>
+                    </div>
+                }
+                <DataAnnotationsValidator />
+                <div class="form-input-container">
+                    <BitTextField Label="@(nameof(Category.Name))" @bind-Value="Category!.Name" />
+                    <ValidationMessage For="() => Category.Name" />
+                </div>
 
-        <div class="form-input-container">
-            <label for="catColorInput">Color</label>
-            <BitColorPicker id="catColorInput" ShowPreview="true" @bind-Color="Category!.Color">Default Color Picker</BitColorPicker>
-            <ValidationMessage For="() => Category.Color" />
+                <div class="form-input-container">
+                    <label for="catColorInput">Color</label>
+                    <BitColorPicker id="catColorInput" ShowPreview="true" @bind-Color="Category!.Color">Default Color Picker</BitColorPicker>
+                    <ValidationMessage For="() => Category.Color" />
+                </div>
+
+                <BitButton Class="form-submit-button"
+                           ButtonStyle="BitButtonStyle.Primary"
+                           ButtonType="BitButtonType.Submit"
+                           AriaLabel="Category">
+
+                    @if (IsSaveLoading)
+                    {
+                        <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
+                    }
+                    else
+                    {
+                        <span>Save</span>
+                    }
+
+                </BitButton>
+
+            </EditForm>
         </div>
-
-        <BitButton Class="form-submit-button"
-                   ButtonStyle="BitButtonStyle.Primary"
-                   ButtonType="BitButtonType.Submit"
-                   AriaLabel="Category">
-
-            @if (IsSaveLoading)
-            {
-                <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
-            }
-            else
-            {
-                <span>Save</span>
-            }
-
-        </BitButton>
-
-    </EditForm>
+    </div>
 </div>
 

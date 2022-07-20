@@ -30,7 +30,9 @@ public partial class ProductsPercentageWidget
         try
         {
             IsLoading = true;
+
             var Data = await stateService.GetValue($"{nameof(AnalyticsPage)}-{nameof(ProductsPercentageWidget)}", async () => await httpClient.GetFromJsonAsync($"Dashboard/GetProductsPercentagePerCategoryStats", AppJsonContext.Default.ListProductPercentagePerCategoryDto));
+
             BitChartPieDataset<float> chartDataSet = new BitChartPieDataset<float>();
             chartDataSet.AddRange(Data!.Select(d => d.ProductPercentage));
             chartDataSet.BackgroundColor = Data.Select(d => d.CategoryColor).ToArray();

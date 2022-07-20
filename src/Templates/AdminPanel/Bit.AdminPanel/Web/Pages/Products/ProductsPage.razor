@@ -12,7 +12,7 @@
         @if (IsLoading)
         {
             <div class="spinner">
-                <BitSpinner></BitSpinner>
+                <BitSpinner Size="BitSpinnerSize.Large"></BitSpinner>
             </div>
         }
         <div class="page-header">
@@ -30,9 +30,9 @@
                         </ColumnOptions>
                     </BitDataGridPropertyColumn>
                     <BitDataGridPropertyColumn Property="@(c => c.Price)" Sortable="true" Align="BitDataGridAlign.Left" />
-                    <BitDataGridTemplateColumn Title="Action" Align="BitDataGridAlign.Left">
+                    <BitDataGridTemplateColumn Title="Action" Align="BitDataGridAlign.Right">
                         <BitIconButton IconName="BitIconName.Edit" OnClick=@(() => EditProduct(context)) />
-                        <BitIconButton IconName="BitIconName.Delete" OnClick="WrapHandled(() => DeleteProduct(context))" />
+                        <BitIconButton Style="color:red;" IconName="BitIconName.Delete" OnClick="WrapHandled(() => DeleteProduct(context))" />
                     </BitDataGridTemplateColumn>
 
                 </BitDataGrid>

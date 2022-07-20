@@ -39,11 +39,12 @@ public partial class DashboardController : ControllerBase
     {
         Random rand = new Random();
 
-        var products = await _dbContext.Products.ToListAsync();
+        var products = await _dbContext.Products.Include(p=>p.Category).ToListAsync();
 
         return products.Select(p => new ProductSaleStatDto()
         {
             ProductName = p.Name,
+            CategoryColor=p.Category!.Color,
             SaleAmount = rand.Next(1, 10) * p.Price
         }).ToList();
     }

@@ -17,6 +17,10 @@ public partial class ProductsSalesWidget
             Options = new BitChartBarOptions
             {
                 Responsive = true,
+                Legend = new BitChartLegend()
+                {
+                    Display = false,                    
+                },                
             }
         };
         await GetData();
@@ -33,33 +37,9 @@ public partial class ProductsSalesWidget
 
             BitChartBarDataset<decimal> chartDataSet = new BitChartBarDataset<decimal>();
             chartDataSet.AddRange(Data!.Select(d => d.SaleAmount));
-            //chartDataSet.BackgroundColor = Data.Select(d => d.CategoryColor).ToArray();
+            chartDataSet.BackgroundColor = Data.Select(d => d.CategoryColor).ToArray();
             _config!.Data.Datasets.Add(chartDataSet);
-            _config.Data.Labels.AddRange(Data.Select(d => d.ProductName));
-
-            //Series = new[]
-            //{
-            //    new ColumnSeries<decimal>()
-            //    {
-            //        Name = "",
-            //        DataLabelsSize=20,
-            //        Values = Data.Select(d => d.SaleAmount).ToArray()
-            //    }
-            //};
-
-            //XAxis = new[]
-            //{
-            //    new Axis
-            //    {
-            //        Labels = Data.Select(d=>d.ProductName).ToArray(),
-            //        Position=AxisPosition.Start,
-            //        MaxLimit=20,
-            //        MinLimit=10,
-            //        MinStep = 0,
-            //        LabelsPaint = new SolidColorPaint(SKColors.Black),
-            //        TextSize = 10,
-            //    }
-            //};
+            _config.Data.Labels.AddRange(Data.Select(d => d.ProductName));            
         }
         finally
         {

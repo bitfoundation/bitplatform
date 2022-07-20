@@ -219,7 +219,7 @@ namespace AdminPanel.Api.Migrations
               values: new object[,]
               {
                     { 1, 1, new DateTimeOffset(baseDate.AddDays(-10)), "The Ford Mustang is ranked #1 in Sports Cars", "Mustang", 27155m },
-                    { 2, 1, new DateTimeOffset(baseDate.AddDays(-15)), "The Ford GT is a mid-engine two-seater sports car manufactured and marketed by American automobile manufacturer", "GT", 500000m },
+                    { 2, 1, new DateTimeOffset(baseDate.AddDays(-15)), "The Ford GT is a mid-engine two-seater sports car manufactured and marketed by American automobile manufacturer", "GT", 150000m },
                     { 3, 1, new DateTimeOffset(baseDate.AddDays(-25)), "Ford Ranger is a nameplate that has been used on multiple model lines of pickup trucks sold by Ford worldwide.", "Ranger", 25000m },
                     { 4, 1, new DateTimeOffset(baseDate.AddDays(-30)), "Raptor is a SCORE off-road trophy truck living in a asphalt world", "Raptor", 53205m },
                     { 5, 1, new DateTimeOffset(baseDate.AddDays(-35)), "The Ford Maverick is a compact pickup truck produced by Ford Motor Company.", "Maverick", 22470m },
@@ -231,7 +231,7 @@ namespace AdminPanel.Api.Migrations
 
                     { 10, 3, new DateTimeOffset(baseDate.AddDays(-10)), "", "H247", 54950m },
                     { 11, 3, new DateTimeOffset(baseDate.AddDays(-15)), "", "V297", 103360m },
-                    { 12, 3, new DateTimeOffset(baseDate.AddDays(-35)), "", "R50", 2000000m },
+                    { 12, 3, new DateTimeOffset(baseDate.AddDays(-35)), "", "R50", 200000m },
 
                     { 13, 4, new DateTimeOffset(baseDate.AddDays(-10)), "", "M550i", 77790m },
                     { 14, 4, new DateTimeOffset(baseDate.AddDays(-15)), "", "540i", 60945m },
