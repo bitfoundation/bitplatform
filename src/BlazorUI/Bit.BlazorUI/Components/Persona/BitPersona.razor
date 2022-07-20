@@ -16,7 +16,17 @@
 
                 @if (ImageUrl != null)
                 {
-                    <div class="bit-prs-img-container">
+                    <div class="bit-prs-img-container" @onclick="HandleImageClick">
+                        <div class="bit-prs-img-overlay">
+                            @if (ImageOverlayFragment is not null)
+                            {
+                                @ImageOverlayFragment
+                            }
+                            else
+                            {
+                                <span>Edit image</span>
+                            }
+                        </div>
                         <img src="@ImageUrl"
                      class="bit-prs-img"
                      alt="@ImageAlt"
@@ -25,7 +35,20 @@
                     </div>
                 }
 
-                @if (Presence != BitPersonaPresenceStatus.None)
+                @if (OnActionClick.HasDelegate)
+                {
+                    @if (ActionFragment is not null)
+                    {
+                        @ActionFragment
+                    }
+                    else
+                    {
+                        <BitIconButton IconName="@ActionIconName"
+                           Title="Edit image"
+                           OnClick="HandleActionClick" />
+                    }
+                }
+                else if (Presence != BitPersonaPresenceStatus.None)
                 {
                     <div title=@PresenceTitle class="bit-prs-presence">
                         <i class=@($"bit-prs-icon bit-icon--{DetermineIcon(Presence, IsOutOfOffice)}") role="presentation"></i>
@@ -46,9 +69,7 @@
             }
             else
             {
-                <span>
-                    <i class="bit-icon bit-icon--person"></i>
-                </span>
+                <i class="bit-icon bit-icon--person"></i>
             }
         }
     </div>

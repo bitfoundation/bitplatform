@@ -26,6 +26,7 @@ public class Program
         var builder = WebAssemblyHostBuilder.CreateDefault();
 
         builder.Services.AddSingleton(sp => new HttpClient(sp.GetRequiredService<AppHttpClientHandler>()) { BaseAddress = new Uri($"{builder.HostEnvironment.BaseAddress}api/") });
+        builder.Services.AddScoped<Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader>();
         builder.Services.AddTransient<IAuthTokenProvider, ClientSideAuthTokenProvider>();
 
         builder.Services.AddSharedServices();
