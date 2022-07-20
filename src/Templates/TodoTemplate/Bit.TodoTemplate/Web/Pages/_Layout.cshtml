@@ -32,6 +32,7 @@
         if (shouldRenderStaticMode is not null && shouldRenderStaticMode.Value)
         {
             renderMode = RenderMode.Static;
+            isStatic = true;
         }
     }
 }
@@ -61,120 +62,16 @@
     @if (isPwa)
     {
     <link rel="manifest" href="manifest.json">
-    <style>
-        #bit-bswup {
-            position: fixed;
-            background: #fff;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            top: 0;
-            padding: 20px;
-            text-align: center;
-            display: none;
-            z-index: 99999;
-        }
-
-        .bit-bswup-container {
-            width: 70%;
-            margin: 0 auto;
-            margin-top: 45px;
-        }
-
-        .bit-bswup-title,
-        #bit-bswup-percent {
-            font-size: 20px;
-        }
-
-        .bit-bswup-description {
-            font-size: 14px;
-            margin-bottom: 20px;
-        }
-
-        .bit-bswup-progress {
-            border: 1px solid #ebebff;
-            background-color: #f9f9f9;
-            border-radius: 4px;
-            width: 100%;
-            height: 21px;
-        }
-
-        #bit-bswup-progress-bar {
-            background-color: #538fc3;
-            border-radius: 2px;
-            height: 19px;
-        }
-
-        #bit-bswup-reload {
-            display: none;
-            margin-bottom: 8px;
-        }
-
-        #bit-bswup-assets {
-            font-size: 10px;
-            overflow: auto;
-            height: 666px;
-            text-align: left;
-        }
-    </style>
     }
 </head>
 <body>
-
-    @if (isPwa)
-    {
-        <div id="bit-bswup">
-            <div class="bit-bswup-container">
-                <p class="bit-bswup-title">New version is available</p>
-                <p class="bit-bswup-description">Downloading updates, please wait...</p>
-                <div class="bit-bswup-progress">
-                    <div id="bit-bswup-progress-bar" style="width: 0%"></div>
-                </div>
-                <p id="bit-bswup-percent">0 %</p>
-            </div>
-        </div>
-    }
-
     <div id="app-container">
         <component type="typeof(App.Components.LoadingComponent)" param-Color="@("#FFF")" render-mode="@RenderMode.Static" />
         @RenderBody()
     </div>
 
-    @if (!isStatic)
+    @if (isStatic is false)
     {
-        @if (isPwa)
-        {
-            <script>
-                var appEl = document.getElementById('app-container');
-                var progressEl = document.getElementById('bit-bswup');
-                var progressBar = document.getElementById('bit-bswup-progress-bar');
-                var percentLabel = document.getElementById('bit-bswup-percent');
-                var reloadButton = document.getElementById('bit-bswup-reload');
-                function bitBswupHandler(type, data) {
-                    switch (type) {
-                        case 'updatefound':
-                            return console.log('new version is downloading...');
-                        case 'statechange':
-                            return console.log('new version state has changed to:', data.currentTarget.state);
-                        case 'installing':
-                            appEl.style.display = 'none';
-                            progressEl.style.display = 'block';
-                            return console.log('installing new version:', data.version);
-                        case 'installed':
-                            console.log('new version installed', data.version);
-                            return setTimeout(data.reload, 100);
-                        case 'progress':
-                            const percent = Math.round(data.percent);
-                            progressBar.style.width = `${percent}%`;
-                            percentLabel.innerHTML = `${percent} %`;
-                            return console.log('asset downloaded:', data);
-                        case 'activate':
-                            return console.log('new version activated:', data.version);
-                    }
-                }
-            </script>
-        }
-
         @if (isBlazorServer)
         {
             <script src="_framework/blazor.server.js" asp-append-version="true"></script>
@@ -185,6 +82,7 @@
             {
                 <script src="_framework/blazor.webassembly.js" autostart=false></script>
                 <script src="_content/Bit.Bswup/bit-bswup.js" scope="/" sw="service-worker.js" handler="bitBswupHandler"></script>
+                <component type="typeof(Bit.Bswup.BswupProgress)" render-mode="@RenderMode.Static" />
             }
             else
             {
