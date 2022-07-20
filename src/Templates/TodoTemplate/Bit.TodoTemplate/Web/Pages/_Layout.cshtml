@@ -58,154 +58,74 @@
             height: 100%;
         }
 
-        .lds-wrapper {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
-
-
-        .lds-grid {
-            display: inline-block;
-            position: relative;
-            width: 80px;
-            height: 80px;
-        }
-
-            .lds-grid div {
-                position: absolute;
-                width: 16px;
-                height: 16px;
-                border-radius: 50%;
-                background: #fff;
-                animation: lds-grid 1.2s linear infinite;
-            }
-
-                .lds-grid div:nth-child(1) {
-                    top: 8px;
-                    left: 8px;
-                    animation-delay: 0s;
-                }
-
-                .lds-grid div:nth-child(2) {
-                    top: 8px;
-                    left: 32px;
-                    animation-delay: -0.4s;
-                }
-
-                .lds-grid div:nth-child(3) {
-                    top: 8px;
-                    left: 56px;
-                    animation-delay: -0.8s;
-                }
-
-                .lds-grid div:nth-child(4) {
-                    top: 32px;
-                    left: 8px;
-                    animation-delay: -0.4s;
-                }
-
-                .lds-grid div:nth-child(5) {
-                    top: 32px;
-                    left: 32px;
-                    animation-delay: -0.8s;
-                }
-
-                .lds-grid div:nth-child(6) {
-                    top: 32px;
-                    left: 56px;
-                    animation-delay: -1.2s;
-                }
-
-                .lds-grid div:nth-child(7) {
-                    top: 56px;
-                    left: 8px;
-                    animation-delay: -0.8s;
-                }
-
-                .lds-grid div:nth-child(8) {
-                    top: 56px;
-                    left: 32px;
-                    animation-delay: -1.2s;
-                }
-
-                .lds-grid div:nth-child(9) {
-                    top: 56px;
-                    left: 56px;
-                    animation-delay: -1.6s;
-                }
-
-
         @@keyframes lds-grid {
-            0%, 100% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: 0.5;
-            }
+          0%, 100% {
+            opacity: 1;
+          }
+          50% {
+            opacity: 0.5;
+          }
         }
     </style>
     @if (isPwa)
     {
-        <link rel="manifest" href="manifest.json">
-        <style>
-            #bit-bswup {
-                position: fixed;
-                background: #fff;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                top: 0;
-                padding: 20px;
-                text-align: center;
-                display: none;
-                z-index: 99999;
-            }
+    <link rel="manifest" href="manifest.json">
+    <style>
+        #bit-bswup {
+            position: fixed;
+            background: #fff;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            top: 0;
+            padding: 20px;
+            text-align: center;
+            display: none;
+            z-index: 99999;
+        }
 
-            .bit-bswup-container {
-                width: 70%;
-                margin: 0 auto;
-                margin-top: 45px;
-            }
+        .bit-bswup-container {
+            width: 70%;
+            margin: 0 auto;
+            margin-top: 45px;
+        }
 
-            .bit-bswup-title,
-            #bit-bswup-percent {
-                font-size: 20px;
-            }
+        .bit-bswup-title,
+        #bit-bswup-percent {
+            font-size: 20px;
+        }
 
-            .bit-bswup-description {
-                font-size: 14px;
-                margin-bottom: 20px;
-            }
+        .bit-bswup-description {
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
 
-            .bit-bswup-progress {
-                border: 1px solid #ebebff;
-                background-color: #f9f9f9;
-                border-radius: 4px;
-                width: 100%;
-                height: 21px;
-            }
+        .bit-bswup-progress {
+            border: 1px solid #ebebff;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+            width: 100%;
+            height: 21px;
+        }
 
-            #bit-bswup-progress-bar {
-                background-color: #538fc3;
-                border-radius: 2px;
-                height: 19px;
-            }
+        #bit-bswup-progress-bar {
+            background-color: #538fc3;
+            border-radius: 2px;
+            height: 19px;
+        }
 
-            #bit-bswup-reload {
-                display: none;
-                margin-bottom: 8px;
-            }
+        #bit-bswup-reload {
+            display: none;
+            margin-bottom: 8px;
+        }
 
-            #bit-bswup-assets {
-                font-size: 10px;
-                overflow: auto;
-                height: 666px;
-                text-align: left;
-            }
-        </style>
+        #bit-bswup-assets {
+            font-size: 10px;
+            overflow: auto;
+            height: 666px;
+            text-align: left;
+        }
+    </style>
     }
 </head>
 <body>
@@ -225,9 +145,7 @@
     }
 
     <div id="app-container">
-        <div class="lds-wrapper">
-            <div class="lds-grid"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
-        </div>
+        <component type="typeof(App.Components.LoadingComponent)" param-Color="@("#FFF")" render-mode="@RenderMode.Static" />
         @RenderBody()
     </div>
 

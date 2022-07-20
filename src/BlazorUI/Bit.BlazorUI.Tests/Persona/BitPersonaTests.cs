@@ -121,8 +121,7 @@ public class BitPersonaTests : BunitTestContext
 
         if (imageurl.HasValue())
         {
-            var personaImageContainerClassName = component.Find(".bit-prs-img-container");
-            var personaImage = personaImageContainerClassName.FirstElementChild;
+            var personaImage = component.Find(".bit-prs-img");
             var imageSrc = personaImage.GetAttribute("src");
 
             Assert.AreEqual(imageurl, imageSrc);

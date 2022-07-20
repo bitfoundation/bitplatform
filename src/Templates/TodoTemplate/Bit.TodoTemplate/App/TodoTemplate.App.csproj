@@ -86,9 +86,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.BlazorUI" Version="2.0.0-pre-07" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="2.0.0-pre-07" />
-        <PackageReference Include="Bit.SourceGenerators" Version="2.0.0-pre-07" />
+        <PackageReference Include="Bit.BlazorUI" Version="2.0.0-pre-08" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="2.0.0-pre-08" />
+        <PackageReference Include="Bit.SourceGenerators" Version="2.0.0-pre-08" />
         <PackageReference Include="BuildWebCompiler2022" Version="1.14.8">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
