@@ -35,32 +35,36 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Using the Bit’s native Blazor UI components that are easy-to-customize and work on all Blazor modes (WASM, Server, Hybrid, pre-rendering), save time and make working enjoyable." />
     <base href="~/" />
     <link rel="icon" href="~/favicon.ico" type="image/x-icon" asp-append-version="true">
-    <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.min.css" asp-append-version="true" />
-    <link rel="stylesheet" href="Bit.BlazorUI.Playground.Web.styles.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/styles/styles.css" asp-append-version="true" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/styles/default.min.css">
+    <link media="all" rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.min.css" asp-append-version="true" />
+    <link media="all" rel="stylesheet" href="Bit.BlazorUI.Playground.Web.styles.css" asp-append-version="true" />
+    <link media="all" rel="stylesheet" href="~/styles/styles.css" asp-append-version="true" />
+    <link media="all" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/styles/default.min.css">
     <component type="typeof(HeadOutlet)" render-mode="@renderMode" />
 </head>
 <body>
 
     @RenderBody()
 
-    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/highlight.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/languages/csharp.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/languages/xml.min.js"></script>
-    <script src="_content/Bit.BlazorUI/scripts/bit.blazorui.min.js" asp-append-version="true"></script>
-    <script src="_content/Bit.BlazorUI.Charts/scripts/bit.blazorui.charts.min.js" asp-append-version="true"></script>
-    <script src="~/scripts/app.js" asp-append-version="true"></script>
+    @if (renderMode is not RenderMode.Static)
+    {
+        <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/highlight.min.js"></script>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/languages/csharp.min.js"></script>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/languages/xml.min.js"></script>
+        <script src="_content/Bit.BlazorUI/scripts/bit.blazorui.min.js" asp-append-version="true"></script>
+        <script src="_content/Bit.BlazorUI.Charts/scripts/bit.blazorui.charts.min.js" asp-append-version="true"></script>
+        <script src="~/scripts/app.js" asp-append-version="true"></script>
 
-    @if (isBlazorServer)
-    {
-        <script src="_framework/blazor.server.js" asp-append-version="true"></script>
-    }
-    else
-    {
-        <script src="_framework/blazor.webassembly.js" asp-append-version="true"></script>
+        @if (isBlazorServer)
+        {
+            <script src="_framework/blazor.server.js" asp-append-version="true"></script>
+        }
+        else
+        {
+            <script src="_framework/blazor.webassembly.js" asp-append-version="true"></script>
+        }
     }
     <persist-component-state />
 </body>

@@ -28,7 +28,9 @@
                                           InputHtmlAttributes="@(new Dictionary<string, object> {{"autofocus", true}})" />
                         </ColumnOptions>
                     </BitDataGridPropertyColumn>
-                    <BitDataGridPropertyColumn Property="@(c => c.Color)"  Align="BitDataGridAlign.Left" />
+                    <BitDataGridTemplateColumn Title="Color" Sortable="true"  Align="BitDataGridAlign.Left" >
+                        <span class="color-box" style="background-color:@(context.Color)" ></span>
+                    </BitDataGridTemplateColumn>
                     <BitDataGridTemplateColumn Title="Action" Align="BitDataGridAlign.Left">
                         <BitIconButton IconName="BitIconName.Edit" OnClick="() => EditCategory(context)" />
                         <BitIconButton IconName="BitIconName.Delete" OnClick="WrapHandled(() => DeleteCategory(context))" />

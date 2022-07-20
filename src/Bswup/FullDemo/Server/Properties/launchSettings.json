@@ -1,6 +1,6 @@
 {
     "profiles": {
-        "Bit.Bswup.Demo": {
+        "Bit.Bswup.Demo.Server": {
             "commandName": "Project",
             "dotnetRunMessages": true,
             "launchBrowser": true,
@@ -8,7 +8,7 @@
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development"
             },
-            "applicationUrl": "https://localhost:4001;http://localhost:4000"
-        },
+            "applicationUrl": "https://localhost:5001;http://localhost:5000"
+        }
     }
 }

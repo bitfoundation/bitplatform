@@ -1,0 +1,35 @@
+﻿@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@namespace Bit.Bswup.Demo.Web.Pages
+
+@using Bit.Bswup.Demo.Web
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Http
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bit Bswup Demo</title>
+    <base href="~/" />
+    <link rel="icon" href="~/favicon.ico" type="image/x-icon" asp-append-version="true">
+</head>
+<body>
+
+    <div id="app">
+        @RenderBody()
+    </div>
+
+    <script src="_framework/blazor.webassembly.js" autostart="false" asp-append-version="true"></script>
+    <script src="_content/Bit.Bswup/bit-bswup.js"
+            scope="/"
+            log="none"
+            sw="service-worker.js"
+            handler="bitBswupHandler"></script>
+
+    <component type="typeof(Bit.Bswup.BswupProgress)" render-mode="@RenderMode.Static"
+                param-AutoReload="false"
+                param-ShowAssets="false"
+                param-ShowLogs="false" />
+</body>
+</html>

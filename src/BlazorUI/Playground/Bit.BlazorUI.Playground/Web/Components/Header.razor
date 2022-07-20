@@ -3,9 +3,9 @@
         <div class="header-content-container">
             @if (CurrentUrl != "/")
             {
-                <BitIconButton Class="header-menu-btn" IconName=BitIconName.CollapseMenu OnClick=@ToggleMenu />
+                <BitIconButton Class="header-menu-btn" IconName=BitIconName.CollapseMenu OnClick=@ToggleMenu  AriaLabel="Header menu button"/>
             }
-            <a class="header-logo" href="/"></a>
+            <a class="header-logo" href="/" aria-label="Homepage"></a>
             <a class="header-link @(CurrentUrl == "/" ? "header-link--active" : "")" href="/">Home</a>
             <a class="header-link @(CurrentUrl == "/components/overview" ? "header-link--active" : "")" href="/components/overview">Demo</a>
             <a class="header-link @(CurrentUrl == "/get-started" ? "header-link--active" : "")" href="/get-started">Get Started</a>
@@ -16,7 +16,7 @@
             {
                 <a class="btn--primary" href="/get-started" id="headerBtn">Try for Free!</a>
             }
-            <a class="github-btn" target="_blank" href="https://github.com/bitfoundation/bitplatform"></a>
+            <a class="github-btn" target="_blank" aria-label="Github repository" href="https://github.com/bitfoundation/bitplatform"></a>
         </div>
     </div>
 
