@@ -9,11 +9,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Content Remove="Pages\_Host.cshtml" />
-        <Content Remove="Pages\_Layout.cshtml" />
-    </ItemGroup>
-
-    <ItemGroup>
         <ProjectReference Include="..\..\Bit.Bswup\Bit.Bswup.csproj" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.7" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.7" PrivateAssets="all" />

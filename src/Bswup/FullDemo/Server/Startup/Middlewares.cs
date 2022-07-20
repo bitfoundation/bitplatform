@@ -22,6 +22,7 @@ public static class Middlewares
                 ctx.Context.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue()
                 {
                     MaxAge = TimeSpan.FromDays(365),
+                    NoCache = true,
                     Public = true
                 };
             }

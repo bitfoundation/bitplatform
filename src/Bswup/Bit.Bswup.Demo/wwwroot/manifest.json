@@ -1,15 +1,15 @@
 {
-  "name": "BitBlazorSWUP.Demo",
-  "short_name": "BitBlazorSWUP.Demo",
-  "start_url": "./",
-  "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#03173d",
-  "icons": [
-    {
-      "src": "icon-512.png",
-      "type": "image/png",
-      "sizes": "512x512"
-    }
-  ]
+    "name": "Bit.Bswup.Demo",
+    "short_name": "Bit.Bswup.Demo",
+    "start_url": "./",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#03173d",
+    "icons": [
+        {
+            "src": "icon-512.png",
+            "type": "image/png",
+            "sizes": "512x512"
+        }
+    ]
 }
