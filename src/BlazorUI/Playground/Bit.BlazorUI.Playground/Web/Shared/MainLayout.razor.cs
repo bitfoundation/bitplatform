@@ -46,6 +46,5 @@ public partial class MainLayout : IDisposable
     public void Dispose()
     {
         NavigationManager.LocationChanged -= OnLocationChanged;
-        GC.SuppressFinalize(this);
     }
 }

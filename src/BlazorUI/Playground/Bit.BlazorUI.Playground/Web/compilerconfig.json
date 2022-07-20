@@ -112,16 +112,16 @@
         "outputFile": "Pages/OverviewPage.razor.css"
     },
     {
-        "outputFile": "Shared/AppErrorBoundary.razor.css",
-        "inputFile": "Shared/AppErrorBoundary.razor.scss"
+        "inputFile": "Shared/AppErrorBoundary.razor.scss",
+        "outputFile": "Shared/AppErrorBoundary.razor.css"
     },
     {
-        "outputFile": "Shared/MessageBox.razor.css",
-        "inputFile": "Shared/MessageBox.razor.scss"
+        "inputFile": "Shared/MessageBox.razor.scss",
+        "outputFile": "Shared/MessageBox.razor.css"
     },
     {
-        "outputFile": "wwwroot/styles/styles.css",
-        "inputFile": "Styles/styles.scss"
+        "inputFile": "Styles/styles.scss",
+        "outputFile": "wwwroot/styles/styles.css"
     },
     {
         "inputFile": "Pages/Components/TextField/BitTextFieldDemo.razor.scss",
