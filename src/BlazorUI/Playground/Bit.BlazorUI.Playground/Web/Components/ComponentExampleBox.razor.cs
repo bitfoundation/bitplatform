@@ -25,7 +25,19 @@ public partial class ComponentExampleBox
 
     private async Task CopyCodeToClipboard()
     {
-        await JSRuntime.CopyToClipboard(HTMLSourceCode + CSharpSourceCode);
+        var code = string.IsNullOrEmpty(CSharpSourceCode) is false
+            ? AppendCodePharaseToCSharpCode(CSharpSourceCode)
+            : "";
+
+        await JSRuntime.CopyToClipboard(HTMLSourceCode + code);
+    }
+
+    private string AppendCodePharaseToCSharpCode(string cSharpSourceCode)
+    {
+        string code = $@"{"\n\n"}@code {{
+{@CSharpSourceCode.Replace("\n", "\n\t")}
+}}";
+        return code;
     }
 
     private async Task CopyLinkToClipboard()
