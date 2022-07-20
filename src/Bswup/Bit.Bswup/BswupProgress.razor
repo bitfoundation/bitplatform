@@ -1,0 +1,69 @@
+﻿<style>
+    #bit-bswup {
+        position: fixed;
+        background: #fff;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        top: 0;
+        padding: 20px;
+        text-align: center;
+        display: none;
+    }
+
+    .bit-bswup-container {
+        width: 70%;
+        margin: 0 auto;
+        margin-top: 45px;
+    }
+
+    .bit-bswup-title,
+    #bit-bswup-percent {
+        font-size: 20px;
+    }
+
+    .bit-bswup-description {
+        font-size: 14px;
+        margin-bottom: 20px;
+    }
+
+    .bit-bswup-progress {
+        border: 1px solid #ebebff;
+        background-color: #f9f9f9;
+        border-radius: 4px;
+        width: 100%;
+        height: 21px;
+    }
+
+    #bit-bswup-progress-bar {
+        background-color: #538fc3;
+        border-radius: 2px;
+        height: 19px;
+    }
+
+    #bit-bswup-reload {
+        display: none;
+        margin-bottom: 8px;
+    }
+
+    #bit-bswup-assets {
+        font-size: 10px;
+        overflow: auto;
+        height: 666px;
+        text-align: left;
+    }
+</style>
+
+<div id="bit-bswup">
+    <div class="bit-bswup-container">
+        <p class="bit-bswup-title">New version is available</p>
+        <p class="bit-bswup-description">Downloading updates, please wait...</p>
+        <div class="bit-bswup-progress">
+            <div id="bit-bswup-progress-bar" style="width: 0%"></div>
+        </div>
+        <p id="bit-bswup-percent">0 %</p>
+        <button id="bit-bswup-reload">Reload</button>
+        <ul id="bit-bswup-assets"></ul>
+    </div>
+    <img style="display: none" src="" onerror="startDefaultProgress()">
+</div>

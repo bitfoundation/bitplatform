@@ -13,10 +13,10 @@ self.assetsUrl = '/service-worker-assets.js';
 // online tool to generate integrity hash: https://www.srihash.org/   or   https://laysent.github.io/sri-hash-generator/
 // using only js to generate hash: https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest
 self.externalAssets = [
-    //{
-    //    "hash": "sha256-lDAEEaul32OkTANWkZgjgs4sFCsMdLsR5NJxrjVcXdo=",
-    //    "url": "css/app.css"
-    //},
+    {
+        "hash": "sha256-lDAEEaul32OkTANWkZgjgs4sFCsMdLsR5NJxrjVcXdo=",
+        "url": "css/app.css"
+    },
     {
         "url": "/"
     },

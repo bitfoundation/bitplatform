@@ -1,0 +1,10 @@
+﻿@page "/"
+@namespace Bit.Bswup.Demo.Web.Pages
+
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+@{
+    Layout = "_Layout";
+}
+
+<component type="typeof(Bit.Bswup.Demo.Web.App)" render-mode="@RenderMode.WebAssemblyPrerendered" />

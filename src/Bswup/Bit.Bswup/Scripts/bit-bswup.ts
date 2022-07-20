@@ -151,6 +151,49 @@
         console.warn(`BitBSWUP:${text}`);
     }
 
+    function startDefaultProgress() {
+        var appEl = document.getElementById('app');
+        var progressEl = document.getElementById('bit-bswup');
+        var progressBar = document.getElementById('bit-bswup-progress-bar');
+        var percentLabel = document.getElementById('bit-bswup-percent');
+        var reloadButton = document.getElementById('bit-bswup-reload');
+        var assetsUl = document.getElementById('bit-bswup-assets');
+        (window as any).bitBswupHandler = bitBswupHandler;
+
+        function bitBswupHandler(type, data) {
+            switch (type) {
+                case 'updatefound':
+                    return console.log('new version is downloading...');
+                case 'statechange':
+                    return console.log('new version state has changed to:', data.currentTarget.state);
+                case 'controllerchange':
+                    return console.log('sw controller changed:', data);
+                case 'installing':
+                    appEl.style.display = 'none';
+                    progressEl.style.display = 'block';
+                    return console.log('installing new version:', data.version);
+                case 'installed':
+                    reloadButton.style.display = 'block';
+                    console.log('new version installed:', data.version)
+                    // data.reload();
+                    reloadButton.onclick = data.reload;
+                    return;
+                case 'progress':
+                    const li = document.createElement('li');
+                    li.innerHTML = `${data.index}: <b>${data.asset.url}</b>: ${data.asset.hash}`
+                    assetsUl.prepend(li);
+                    const percent = Math.round(data.percent);
+                    progressBar.style.width = `${percent}%`;
+                    percentLabel.innerHTML = `${percent} %`;
+                    return console.log('asset downloaded:', data);
+                case 'activate':
+                    return console.log('new version activated:', data.version);
+            }
+        }
+    }
+    (window as any).startDefaultProgress = startDefaultProgress;
+
+
 }());
 
 declare const Blazor: any;
