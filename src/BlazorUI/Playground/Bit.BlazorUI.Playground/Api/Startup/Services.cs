@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Components;
 #endif
 
 namespace Bit.BlazorUI.Playground.Api.Startup;
+
 public static class Services
 {
     public static void Add(IServiceCollection services)
@@ -19,7 +20,8 @@ public static class Services
             // this is for pre rendering of blazor client/wasm
             // Using this registration + registrations provided in Program.cs/Startup.cs of Bit.BlazorUI.Playground.Web project,
             // you can inject HttpClient and call Bit.BlazorUI.Playground.Api api controllers in blazor pages.
-            // for other usages of http client, for example calling 3rd party apis, please use services.AddHttpClient("NamedHttpClient"), then inject IHttpClientFactory and use its CreateClient("NamedHttpClient") method.
+            // for other usages of http client, for example calling 3rd party apis, please use services.AddHttpClient("NamedHttpClient"), 
+            // then inject IHttpClientFactory and use its CreateClient("NamedHttpClient") method.
             return new HttpClient { BaseAddress = new Uri(c.GetRequiredService<NavigationManager>().BaseUri) };
         });
         services.AddScoped<Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader>();

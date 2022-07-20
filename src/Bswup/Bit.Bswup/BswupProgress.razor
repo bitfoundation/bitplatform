@@ -1,14 +1,22 @@
-﻿<style>
+﻿@code {
+    [Parameter] public bool AutoReload { get; set; } = false;
+    [Parameter] public bool ShowAssets { get; set; } = false;
+    [Parameter] public bool ShowLogs { get; set; } = false;
+
+}
+
+<style>
     #bit-bswup {
+        display: none;
         position: fixed;
         background: #fff;
+        top: 0;
         left: 0;
         right: 0;
         bottom: 0;
-        top: 0;
         padding: 20px;
         text-align: center;
-        display: none;
+        font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
     }
 
     .bit-bswup-container {
@@ -17,9 +25,13 @@
         margin-top: 45px;
     }
 
-    .bit-bswup-title,
-    #bit-bswup-percent {
+    .bit-bswup-title {
         font-size: 20px;
+    }
+
+    #bit-bswup-percent {
+        font-size: 18px;
+        margin-top: 15px;
     }
 
     .bit-bswup-description {
@@ -28,17 +40,13 @@
     }
 
     .bit-bswup-progress {
-        border: 1px solid #ebebff;
-        background-color: #f9f9f9;
-        border-radius: 4px;
-        width: 100%;
-        height: 21px;
+        background-color: rgb(237, 235, 233);
     }
 
     #bit-bswup-progress-bar {
-        background-color: #538fc3;
-        border-radius: 2px;
-        height: 19px;
+        background-color: rgb(0, 120, 212);
+        border-radius: 10px;
+        height: 2px;
     }
 
     #bit-bswup-reload {
@@ -49,7 +57,7 @@
     #bit-bswup-assets {
         font-size: 10px;
         overflow: auto;
-        height: 666px;
+        height: 50vh;
         text-align: left;
     }
 </style>
@@ -63,7 +71,8 @@
         </div>
         <p id="bit-bswup-percent">0 %</p>
         <button id="bit-bswup-reload">Reload</button>
-        <ul id="bit-bswup-assets"></ul>
+        <ul id="bit-bswup-assets" style="display: @(ShowAssets ? "block" : "none");"></ul>
     </div>
-    <img style="display: none" src="" onerror="startDefaultProgress()">
+    <img style="display: none" src="" 
+         onerror="startBswupProgress(@(AutoReload ? "true" : "false"), @(ShowLogs ? "true" : "false"), @(ShowAssets ? "true" : "false"))">
 </div>

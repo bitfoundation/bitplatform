@@ -1,6 +1,6 @@
 {
     "profiles": {
-        "Bit.Bswup.Demo.Api": {
+        "Bit.Bswup.Demo.Server": {
             "commandName": "Project",
             "dotnetRunMessages": true,
             "launchBrowser": true,
