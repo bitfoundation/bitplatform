@@ -1,8 +1,4 @@
-﻿@using LiveChartsCore
-@using LiveChartsCore.SkiaSharpView
-@using LiveChartsCore.SkiaSharpView.Blazor
-
-@inherits AppComponentBase;
+﻿@inherits AppComponentBase;
 
 <div class="card">
     <div class="card-header">
@@ -15,11 +11,6 @@
                 <BitSpinner></BitSpinner>
             </div>
         }
-        <PieChart Series="Series"
-                  TooltipPosition="LiveChartsCore.Measure.TooltipPosition.Hidden" 
-                    LegendPosition="LiveChartsCore.Measure.LegendPosition.Right" >
-        </PieChart>
+        <BitChart Config="_config" @ref="_chart" />
     </div>
 </div>
-
-

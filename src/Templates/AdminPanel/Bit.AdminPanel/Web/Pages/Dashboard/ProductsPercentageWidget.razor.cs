@@ -1,10 +1,4 @@
-﻿using LiveChartsCore;
-using LiveChartsCore.Measure;
-using LiveChartsCore.SkiaSharpView;
-using LiveChartsCore.SkiaSharpView.Painting;
-using SkiaSharp;
-
-namespace AdminPanel.App.Pages.Dashboard;
+﻿namespace AdminPanel.App.Pages.Dashboard;
 
 public partial class ProductsPercentageWidget
 {
@@ -13,10 +7,20 @@ public partial class ProductsPercentageWidget
     [AutoInject] private IStateService stateService = default!;
     public bool IsLoading { get; set; }
 
-    public ISeries[] Series { get; set; } = { };
+    private BitChartPieConfig? _config;
+    private BitChart? _chart;
+
 
     protected override async Task OnInitAsync()
     {
+        _config = new BitChartPieConfig
+        {
+            Options = new BitChartPieOptions
+            {
+                Responsive = true,
+            }
+        };
+
         await GetData();
         await base.OnInitAsync();
     }
@@ -26,19 +30,12 @@ public partial class ProductsPercentageWidget
         try
         {
             IsLoading = true;
-
             var Data = await stateService.GetValue($"{nameof(AnalyticsPage)}-{nameof(ProductsPercentageWidget)}", async () => await httpClient.GetFromJsonAsync($"Dashboard/GetProductsPercentagePerCategoryStats", AppJsonContext.Default.ListProductPercentagePerCategoryDto));
-
-            Series = Data!.Select(d =>
-                    new PieSeries<float>
-                    {
-                        Values = new float[] { d.ProductPercentage },
-                        Name = d.CategoryName,
-                        Fill = new SolidColorPaint(SKColor.Parse(d.CategoryColor)),
-                        DataLabelsPosition = PolarLabelsPosition.Start,
-                        DataLabelsFormatter = point => point.PrimaryValue.ToString("N1"),
-                        DataLabelsPaint = new SolidColorPaint(SKColors.Black)
-                    }).ToArray();
+            BitChartPieDataset<float> chartDataSet = new BitChartPieDataset<float>();
+            chartDataSet.AddRange(Data!.Select(d => d.ProductPercentage));
+            chartDataSet.BackgroundColor = Data.Select(d => d.CategoryColor).ToArray();
+            _config!.Data.Datasets.Add(chartDataSet);
+            _config.Data.Labels.AddRange(Data.Select(d => d.CategoryName));
         }
         finally
         {
