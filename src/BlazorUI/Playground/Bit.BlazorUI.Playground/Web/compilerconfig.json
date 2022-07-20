@@ -8,10 +8,6 @@
         "outputFile": "Shared/MainLayout.razor.css"
     },
     {
-        "inputFile": "Components/LoadingComponent.razor.scss",
-        "outputFile": "Components/LoadingComponent.razor.css"
-    },
-    {
         "inputFile": "Components/ComponentDemo.razor.scss",
         "outputFile": "Components/ComponentDemo.razor.css"
     },
@@ -110,6 +106,18 @@
     {
         "inputFile": "Pages/OverviewPage.razor.scss",
         "outputFile": "Pages/OverviewPage.razor.css"
+    },
+    {
+        "inputFile": "Shared/AppErrorBoundary.razor.scss",
+        "outputFile": "Shared/AppErrorBoundary.razor.css"
+    },
+    {
+        "inputFile": "Shared/MessageBox.razor.scss",
+        "outputFile": "Shared/MessageBox.razor.css"
+    },
+    {
+        "inputFile": "Styles/styles.scss",
+        "outputFile": "wwwroot/styles/styles.css"
     },
     {
         "inputFile": "Pages/Components/TextField/BitTextFieldDemo.razor.scss",

@@ -10,13 +10,15 @@
     <div class="page-content">
         @Body
     </div>
-        <footer class="footer">
-            <div class="@(CurrentUrl == "/" ? "contact-link-container--home" : "contact-link-container")">
-                <a class="twitter-link" target="_blank" aria-label="Twitter link" href="https://twitter.com/bitplatformhq"></a>
-                <a class="github-link" target="_blank" aria-label="Github link" href="https://github.com/bitfoundation/bitplatform"></a>
-                <a class="youtube-link" target="_blank" aria-label="Youtube link" href="https://www.youtube.com/channel/UCtk33NQ91f3GOJG0HAdkdog"></a>
-                <a class="linkedin-link" target="_blank" aria-label="Linkedin link" href="https://www.linkedin.com/company/bit-foundation/"></a>
-            </div>
-            <div class="footer-gray-bar">© 2022 Bit team. All rights reserved.</div>
-        </footer>
+
+    <footer class="footer">
+        <div class="@(CurrentUrl == "/" ? "contact-link-container--home" : "contact-link-container")">
+            <a class="twitter-link" target="_blank" href="https://twitter.com/bitplatformhq"></a>
+            <a class="github-link" target="_blank" href="https://github.com/bitfoundation/bitplatform"></a>
+            <a class="youtube-link" target="_blank" href="https://www.youtube.com/channel/UCtk33NQ91f3GOJG0HAdkdog"></a>
+            <a class="linkedin-link" target="_blank" href="https://www.linkedin.com/company/bit-foundation/"></a>
+        </div>
+        <div class="footer-gray-bar">© 2022 Bit team. All rights reserved.</div>
+    </footer>
 </div>
+<MessageBox />
