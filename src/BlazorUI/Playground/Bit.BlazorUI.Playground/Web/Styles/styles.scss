@@ -139,24 +139,10 @@ a {
 .side-nav-search-box {
     width: 100%;
     height: rem(40px);
-    border-color: $B2Color;
-
-    .bit-icon {
-        color: $B3Color;
-    }
 
     input::-webkit-input-placeholder {
-        color: $B2Color;
         font-size: rem(14px);
         font-weight: 500;
-    }
-
-    &:hover {
-        border-color: $B2Color;
-
-        .bit-icon {
-            color: $B3Color;
-        }
     }
 
     @include lg {
@@ -591,25 +577,11 @@ code {
 .icongraphy-search-box {
     width: rem(336px);
     height: rem(40px);
-    border-color: $B4Color;
     margin-bottom: rem(50px) !important;
 
-    .bit-icon {
-        color: $B3Color;
-    }
-
     input::-webkit-input-placeholder {
-        color: $B4Color;
         font-size: rem(14px);
         font-weight: 500;
-    }
-
-    &:hover {
-        border-color: $B5Color;
-
-        .bit-icon {
-            color: $B3Color;
-        }
     }
 
     @include lg {
