@@ -53,9 +53,9 @@ public partial class CategoriesPage
                     query.Add("$filter", $"contains(Name,{_categoryNameFilter}");
                 }
 
-                if (req.SortByColumn is not null)
+                if (req.GetSortByProperties().Any())
                 {
-                    query.Add("$orderby", $"{req.SortByColumn.Title} {(req.SortByAscending ? "asc" : "desc")}");
+                    query.Add("$orderby", string.Join(", ", req.GetSortByProperties().Select(p => $"{p.PropertyName} {(p.Direction == BitDataGridSortDirection.Ascending ? "asc" : "desc")}")));
                 }
 
                 var url = navigationManager.GetUriWithQueryParameters("Category/GetCategories", query);
