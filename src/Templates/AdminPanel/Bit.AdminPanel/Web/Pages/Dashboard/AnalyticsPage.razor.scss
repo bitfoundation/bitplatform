@@ -2,28 +2,6 @@
 @import '../../Styles/abstracts/_colors.scss';
 @import '../../Styles/abstracts/_media-queries.scss';
 
-.page-container {
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    height: 100%;
-    padding: rem(56px) rem(16px);
-    box-sizing: border-box;
-
-    @include lg {
-        padding: rem(48px) rem(16px);
-    }
-
-    @include md {
-        padding: rem(72px) rem(16px);
-    }
-
-    @include sm {
-        padding: rem(24px) rem(16px);
-    }
-}
-
-
 .row {
     display: flex;
     flex-direction: row;

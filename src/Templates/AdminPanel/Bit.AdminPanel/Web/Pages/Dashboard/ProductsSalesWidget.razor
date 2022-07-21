@@ -1,8 +1,4 @@
-﻿@using LiveChartsCore
-@using LiveChartsCore.SkiaSharpView
-@using LiveChartsCore.SkiaSharpView.Blazor
-
-@inherits AppComponentBase;
+﻿@inherits AppComponentBase;
 
 <div class="card">
     <div class="card-header">
@@ -12,17 +8,10 @@
        @if (IsLoading)
         {
             <div class="spinner">
-                <BitSpinner></BitSpinner>
+                <BitSpinner Size="BitSpinnerSize.Large"></BitSpinner>
             </div>
         }
-        <CartesianChart Series="Series"
-                        XAxes="XAxis"
-                        ZoomMode="LiveChartsCore.Measure.ZoomAndPanMode.X"
-                        ZoomingSpeed="0"
-                        TooltipPosition="LiveChartsCore.Measure.TooltipPosition.Hidden"
-                        LegendPosition="LiveChartsCore.Measure.LegendPosition.Hidden">
-
-        </CartesianChart>
+        <BitChart Config="_config" @ref="_chart" />
     </div>
 </div>
 

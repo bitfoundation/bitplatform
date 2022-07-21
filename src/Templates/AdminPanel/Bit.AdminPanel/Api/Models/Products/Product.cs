@@ -21,7 +21,7 @@ public class Product
     public DateTimeOffset CreatedOn { get; set; } = DateTimeOffset.UtcNow;
 
     [ForeignKey(nameof(CategoryId))]
-    public Category? Category { get; set; }
+    public Category Category { get; set; }
 
     public int CategoryId { get; set; }
 }

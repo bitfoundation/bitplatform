@@ -1,7 +1,4 @@
-﻿using LiveChartsCore;
-using LiveChartsCore.SkiaSharpView;
-
-namespace AdminPanel.App.Pages.Dashboard;
+﻿namespace AdminPanel.App.Pages.Dashboard;
 
 public partial class ProductsCountPerCategotyWidget
 {
@@ -11,11 +8,22 @@ public partial class ProductsCountPerCategotyWidget
 
     public bool IsLoading { get; set; }
 
-    public ISeries[] Series { get; set; } = { };
-    public Axis[] XAxis { get; set; } = { };
+    private BitChartBarConfig _config = default!;
+    private BitChart? _chart;
 
     protected override async Task OnInitAsync()
     {
+        _config = new BitChartBarConfig
+        {
+            Options = new BitChartBarOptions
+            {
+                Responsive = true,
+                Legend = new BitChartLegend()
+                {
+                    Display = false,
+                },
+            }
+        };
         await GetData();
         await base.OnInitAsync();
     }
@@ -28,20 +36,11 @@ public partial class ProductsCountPerCategotyWidget
 
             var data = await stateService.GetValue($"{nameof(AnalyticsPage)}-{nameof(ProductsCountPerCategotyWidget)}", async () => await httpClient.GetFromJsonAsync($"Dashboard/GetProductsCountPerCategotyStats", AppJsonContext.Default.ListProductsCountPerCategoryDto));
 
-            Series = new[] {
-                new ColumnSeries<int>()
-                {
-                    Name = "",
-                    Values = data.Select(d => d.ProductCount).ToArray()
-                }
-            };
-
-            XAxis = new[]{
-                new Axis
-                {
-                    Labels = data.Select(d => d.CategoryName).ToArray(),
-                }
-            };
+            BitChartBarDataset<int> chartDataSet = new BitChartBarDataset<int>();
+            chartDataSet.AddRange(data.Select(d => d.ProductCount));
+            chartDataSet.BackgroundColor = data.Select(d => d.CategoryColor).ToArray();
+            _config.Data.Datasets.Add(chartDataSet);
+            _config.Data.Labels.AddRange(data.Select(d => d.CategoryName));
         }
         finally
         {

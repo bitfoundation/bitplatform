@@ -29,12 +29,11 @@
 
     <ItemGroup>
         <PackageReference Include="Bit.BlazorUI" Version="2.0.0-pre-10" />
+		<PackageReference Include="Bit.BlazorUI.Charts" Version="2.0.0-pre-10" />
         <PackageReference Include="Bit.Bswup" Version="2.0.0-pre-10" />
         <PackageReference Include="Bit.CodeAnalyzers" Version="2.0.0-pre-10" />
         <PackageReference Include="Bit.SourceGenerators" Version="2.0.0-pre-10" />
         <PackageReference Include="jose-jwt" Version="4.0.0" />
-        <PackageReference Include="LiveChartsCore.SkiaSharpView.Blazor" Version="2.0.0-beta.300" />
-        <PackageReference Include="SkiaSharp.Views.Blazor" Version="2.88.1-preview.79" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.7" />
         <!--/-:msbuild-conditional:noEmit -->
         <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.7" />
@@ -64,6 +63,12 @@
         <Using Include="Microsoft.AspNetCore.Components.Authorization" />
         <Using Include="AdminPanel.App.Components" />
         <Using Include="Bit.BlazorUI" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <BlazorWebAssemblyLazyLoad Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Newtonsoft.Json.dll" />
+        <BlazorWebAssemblyLazyLoad Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="System.Private.Xml.dll" />
+        <BlazorWebAssemblyLazyLoad Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="System.Data.Common.dll" />
     </ItemGroup>
     
 </Project>

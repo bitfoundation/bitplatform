@@ -83,12 +83,12 @@ public partial class CategoriesPage
 
     private void CreateCategory()
     {
-        navigationManager.NavigateTo("create-edit-category");
+        navigationManager.NavigateTo("add-edit-category");
     }
 
     private Task EditCategory(CategoryDto Category)
     {
-        navigationManager.NavigateTo($"create-edit-category/{Category!.Id}");
+        navigationManager.NavigateTo($"add-edit-category/{Category!.Id}");
         return Task.CompletedTask;
     }
 

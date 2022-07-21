@@ -38,14 +38,13 @@ public partial class DashboardController : ControllerBase
     public async Task<List<ProductSaleStatDto>> GetProductsSalesStats()
     {
         Random rand = new Random();
-
-        var products = await _dbContext.Products.ToListAsync();
-
-        return products.Select(p => new ProductSaleStatDto()
-        {
-            ProductName = p.Name,
-            SaleAmount = rand.Next(1, 10) * p.Price
-        }).ToList();
+        return await _dbContext.Products.Include(p => p.Category)
+             .Select(p => new ProductSaleStatDto()
+             {
+                 ProductName = p.Name,
+                 CategoryColor = p.Category.Color,
+                 SaleAmount = rand.Next(1, 10) * p.Price
+             }).ToListAsync();
     }
 
 
