@@ -64,5 +64,11 @@
         <Using Include="AdminPanel.App.Components" />
         <Using Include="Bit.BlazorUI" />
     </ItemGroup>
+
+    <ItemGroup>
+        <BlazorWebAssemblyLazyLoad Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Newtonsoft.Json.dll" />
+        <BlazorWebAssemblyLazyLoad Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="System.Private.Xml.dll" />
+        <BlazorWebAssemblyLazyLoad Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="System.Data.Common.dll" />
+    </ItemGroup>
     
 </Project>
