@@ -29,7 +29,7 @@
 
     <ItemGroup>
         <PackageReference Include="Bit.BlazorUI" Version="2.0.0-pre-10" />
-		<PackageReference Include="Bit.BlazorUI.Charts" Version="2.0.0-pre-09" />
+		<PackageReference Include="Bit.BlazorUI.Charts" Version="2.0.0-pre-10" />
         <PackageReference Include="Bit.Bswup" Version="2.0.0-pre-10" />
         <PackageReference Include="Bit.CodeAnalyzers" Version="2.0.0-pre-10" />
         <PackageReference Include="Bit.SourceGenerators" Version="2.0.0-pre-10" />
