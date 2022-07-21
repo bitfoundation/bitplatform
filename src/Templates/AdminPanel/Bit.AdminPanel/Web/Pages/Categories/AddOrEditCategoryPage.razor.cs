@@ -2,7 +2,7 @@
 
 namespace AdminPanel.App.Pages.Categories;
 
-public partial class CreateEditCategoryPage
+public partial class AddOrEditCategoryPage
 {
     [AutoInject] private HttpClient httpClient = default!;
 

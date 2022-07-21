@@ -64,8 +64,8 @@
         "outputFile": "Pages/Categories/CategoriesPage.razor.css"
     },
     {
-        "inputFile": "Pages/Categories/CreateEditCategoryPage.razor.scss",
-        "outputFile": "Pages/Categories/CreateEditCategoryPage.razor.css"
+        "inputFile": "Pages/Categories/AddOrEditCategoryPage.razor.scss",
+        "outputFile": "Pages/Categories/AddOrEditCategoryPage.razor.css"
     },
     {
         "inputFile": "Pages/Products/ProductsPage.razor.scss",
