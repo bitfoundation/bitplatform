@@ -16,7 +16,7 @@
 </head>
 <body>
 
-    <div id="app">
+    <div id="app-container">
         @RenderBody()
     </div>
 
@@ -30,6 +30,7 @@
     <component type="typeof(Bit.Bswup.BswupProgress)" render-mode="@RenderMode.Static"
                 param-AutoReload="false"
                 param-ShowAssets="false"
-                param-ShowLogs="false" />
+                param-ShowLogs="false"
+                param-AppContainer="@("#app-container")" />
 </body>
 </html>

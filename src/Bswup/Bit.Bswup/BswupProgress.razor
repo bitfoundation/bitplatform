@@ -2,6 +2,7 @@
     [Parameter] public bool AutoReload { get; set; } = true;
     [Parameter] public bool ShowAssets { get; set; } = false;
     [Parameter] public bool ShowLogs { get; set; } = false;
+    [Parameter] public string AppContainer { get; set; } = "#app";
 
 }
 
@@ -74,5 +75,5 @@
         <ul id="bit-bswup-assets" style="display: @(ShowAssets ? "block" : "none");"></ul>
     </div>
     <img style="display: none" src="" 
-         onerror="startBswupProgress(@(AutoReload ? "true" : "false"), @(ShowLogs ? "true" : "false"), @(ShowAssets ? "true" : "false"))">
+         onerror="startBswupProgress(@(AutoReload ? "true" : "false"), @(ShowLogs ? "true" : "false"), @(ShowAssets ? "true" : "false"), '@(AppContainer)')">
 </div>
