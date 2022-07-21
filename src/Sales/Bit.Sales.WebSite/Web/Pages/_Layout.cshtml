@@ -62,11 +62,11 @@
     {
         @if (isBlazorServer)
         {
-            <script src="_framework/blazor.server.js" asp-append-version="true"></script>
+            <script src="_framework/blazor.server.js" asp-append-version="@shoudAddAspAppendVersion"></script>
         }
         else
         {
-            <script src="_framework/blazor.webassembly.js" asp-append-version="true"></script>   
+            <script src="_framework/blazor.webassembly.js" asp-append-version="@shoudAddAspAppendVersion"></script>   
         }
 
         <script src="_content/Bit.BlazorUI/scripts/bit.blazorui.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
