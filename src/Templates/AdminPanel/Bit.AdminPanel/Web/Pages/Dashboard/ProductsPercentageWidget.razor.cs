@@ -7,7 +7,7 @@ public partial class ProductsPercentageWidget
     [AutoInject] private IStateService stateService = default!;
     public bool IsLoading { get; set; }
 
-    private BitChartPieConfig? _config;
+    private BitChartPieConfig _config;
     private BitChart? _chart;
 
 
@@ -36,7 +36,7 @@ public partial class ProductsPercentageWidget
             BitChartPieDataset<float> chartDataSet = new BitChartPieDataset<float>();
             chartDataSet.AddRange(Data!.Select(d => d.ProductPercentage));
             chartDataSet.BackgroundColor = Data.Select(d => d.CategoryColor).ToArray();
-            _config!.Data.Datasets.Add(chartDataSet);
+            _config.Data.Datasets.Add(chartDataSet);
             _config.Data.Labels.AddRange(Data.Select(d => d.CategoryName));
         }
         finally
