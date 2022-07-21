@@ -7,7 +7,7 @@ public partial class ProductsPercentageWidget
     [AutoInject] private IStateService stateService = default!;
     public bool IsLoading { get; set; }
 
-    private BitChartPieConfig _config;
+    private BitChartPieConfig _config = default!;
     private BitChart? _chart;
 
 

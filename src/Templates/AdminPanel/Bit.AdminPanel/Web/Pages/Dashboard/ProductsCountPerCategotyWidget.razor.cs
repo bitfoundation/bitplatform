@@ -8,7 +8,7 @@ public partial class ProductsCountPerCategotyWidget
 
     public bool IsLoading { get; set; }
 
-    private BitChartBarConfig _config;
+    private BitChartBarConfig _config = default!;
     private BitChart? _chart;
 
     protected override async Task OnInitAsync()
