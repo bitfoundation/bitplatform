@@ -158,8 +158,8 @@
         }
     }
 
-    function startBswupProgress(autoReload: boolean, showLogs: boolean, showAssets: boolean) {
-        var appEl = document.getElementById('app');
+    function startBswupProgress(autoReload: boolean, showLogs: boolean, showAssets: boolean, appContainerSelector: string) {
+        var appEl = document.querySelector(appContainerSelector) as HTMLElement;
         var progressEl = document.getElementById('bit-bswup');
         var progressBar = document.getElementById('bit-bswup-progress-bar');
         var percentLabel = document.getElementById('bit-bswup-percent');
