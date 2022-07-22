@@ -3,7 +3,7 @@ using TodoTemplate.Shared.Dtos.TodoItem;
 
 namespace TodoTemplate.Api.Controllers;
 
-[Route("api/[controller]")]
+[Route("api/[controller]/[action]")]
 [ApiController]
 public partial class TodoItemController : ControllerBase
 {

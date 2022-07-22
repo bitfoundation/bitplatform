@@ -4,7 +4,7 @@ using SystemFile = System.IO.File;
 
 namespace AdminPanel.Api.Controllers;
 
-[Route("api/[controller]")]
+[Route("api/[controller]/[action]")]
 [ApiController]
 public partial class AttachmentController : ControllerBase
 {
@@ -16,7 +16,7 @@ public partial class AttachmentController : ControllerBase
 
     [RequestFormLimits(ValueLengthLimit = int.MaxValue, MultipartBodyLengthLimit = int.MaxValue)]
     [DisableRequestSizeLimit]
-    [HttpPost("[action]")]
+    [HttpPost]
     public async Task UploadProfileImage(IFormFile? file, CancellationToken cancellationToken)
     {
         if (file is null)
@@ -73,7 +73,7 @@ public partial class AttachmentController : ControllerBase
         }
     }
 
-    [HttpDelete("[action]")]
+    [HttpDelete]
     public async Task RemoveProfileImage()
     {
         var userId = User.GetUserId();
@@ -96,7 +96,7 @@ public partial class AttachmentController : ControllerBase
         SystemFile.Delete(filePath);
     }
 
-    [HttpGet("[action]")]
+    [HttpGet]
     [ResponseCache(NoStore = true)]
     public async Task<IActionResult> GetProfileImage(CancellationToken cancellationToken)
     {

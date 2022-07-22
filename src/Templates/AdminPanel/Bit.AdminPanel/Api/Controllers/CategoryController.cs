@@ -3,7 +3,7 @@ using AdminPanel.Shared.Dtos.Categories;
 
 namespace AdminPanel.Api.Controllers;
 
-[Route("api/[controller]")]
+[Route("api/[controller]/[action]")]
 [ApiController]
 public partial class CategoryController : ControllerBase
 {
@@ -29,7 +29,7 @@ public partial class CategoryController : ControllerBase
         return category;
     }
 
-    [HttpGet("[action]")]
+    [HttpGet]
     public async Task<PagedResult<CategoryDto>> GetCategories(ODataQueryOptions<CategoryDto> odataQuery, CancellationToken cancellationToken)
     {
         var query = (IQueryable<CategoryDto>)odataQuery.ApplyTo(Get(cancellationToken), ignoreQueryOptions: AllowedQueryOptions.Top | AllowedQueryOptions.Skip);

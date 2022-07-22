@@ -3,7 +3,7 @@ using AdminPanel.Shared.Dtos.Products;
 
 namespace AdminPanel.Api.Controllers;
 
-[Route("api/[controller]")]
+[Route("api/[controller]/[action]")]
 [ApiController]
 public partial class ProductController : ControllerBase
 {
@@ -29,7 +29,7 @@ public partial class ProductController : ControllerBase
         return product;
     }
 
-    [HttpGet("[action]")]
+    [HttpGet]
     public async Task<PagedResult<ProductDto>> GetProducts(ODataQueryOptions<ProductDto> odataQuery, CancellationToken cancellationToken)
     {
         var query = (IQueryable<ProductDto>)odataQuery.ApplyTo(Get(cancellationToken), ignoreQueryOptions: AllowedQueryOptions.Top | AllowedQueryOptions.Skip);
