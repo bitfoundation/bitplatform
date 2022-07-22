@@ -77,7 +77,7 @@ public partial class BitFileUploadDemo
         },
         new ComponentParameter
         {
-            Name = "MaxSize",
+            Name = "MaxSize (byte)",
             Type = "long",
             DefaultValue = "0",
             Description = "Specifies the maximum size of the file (0 for unlimited)."

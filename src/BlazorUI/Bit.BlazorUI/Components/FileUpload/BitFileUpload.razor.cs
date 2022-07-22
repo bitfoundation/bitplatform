@@ -67,7 +67,7 @@ public partial class BitFileUpload : IAsyncDisposable
     [Parameter] public RenderFragment? LabelFragment { get; set; }
 
     /// <summary>
-    /// Specifies the maximum size of the file (0 for unlimited).
+    /// Specifies the maximum size (byte) of the file (0 for unlimited).
     /// </summary>
     [Parameter] public long MaxSize { get; set; }
 
