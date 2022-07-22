@@ -23,6 +23,7 @@
                        DecrementButtonAriaLabel="@DecrementButtonAriaLabel"
                        IncrementButtonAriaLabel="@IncrementButtonAriaLabel"
                        Label="@Label"
+                       Placeholder="@Placeholder"
                        InputHtmlAttributes="@InputHtmlAttributes"
                        Title="@Title"
                        Precision="@Precision"
@@ -55,6 +56,7 @@
     [Parameter] public string Suffix { get; set; } = string.Empty;
     [Parameter] public BitIconName? IconName { get; set; }
     [Parameter] public string Label { get; set; } = string.Empty;
+    [Parameter] public string Placeholder { get; set; }
     [Parameter] public Dictionary<string, object> InputHtmlAttributes { get; set; } = null;
     [Parameter] public string Title { get; set; }
     [Parameter] public int? Precision { get; set; }

@@ -20,6 +20,21 @@ public class BitNumericTextFieldUIntTests : BunitTestContext
     }
 
     [DataTestMethod,
+     DataRow("The placeholder")]
+    public void BitNumericTextFieldShouldHaveCorrectPlaceholder(string placeholder)
+    {
+        var component = RenderComponent<BitNumericTextField<byte>>(parameters =>
+        {
+            parameters.Add(p => p.Placeholder, placeholder);
+        });
+
+        var numericTextFieldPlaceholder = component.Find(".bit-ntf-input");
+
+        Assert.IsTrue(numericTextFieldPlaceholder.HasAttribute("placeholder"));
+        Assert.AreEqual(numericTextFieldPlaceholder.GetAttribute("placeholder"), placeholder);
+    }
+
+    [DataTestMethod,
      DataRow(null),
      DataRow("The Label")
     ]
