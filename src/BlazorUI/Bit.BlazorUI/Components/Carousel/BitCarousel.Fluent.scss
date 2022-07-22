@@ -1,64 +1,77 @@
 ﻿@import "../../Styles/Fluent/colors.fluent.scss";
 @import "../../Styles/functions.scss";
 
-.bit-crsl-fluent {
-    max-width: 90%;
-    min-height: rem(50px);
+.bit-crsl {
     position: relative;
-    margin: auto;
-}
 
-.bit-crsl-buttons {
-
-
-    & .bit-crsl-next-btn, .bit-crsl-previuse-btn {
-        cursor: pointer;
-        position: absolute;
-        top: 45%;
-        width: auto;
-        margin-top: rem(-22px);
-        padding: rem(4px) 0;
-        color: $White;
-        font-weight: bold;
-        font-size: rem(10px);
-        transition: 0.6s ease;
-        border-radius: 60%;
-        user-select: none;
+    &.bit-crsl-fluent {
     }
 
-    & .bit-crsl-next-btn {
+    .bit-crsl-items {
+        position: relative;
+        width: 100%;
+        overflow: hidden;
+    }
+
+    .bit-crsl-next-btn, .bit-crsl-prev-btn {
+        font-size: 1.5rem;
+        cursor: pointer;
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 10%;
+        padding: 0;
+        color: #fff;
+        text-align: center;
+        background: 0 0;
+        border: 0;
+        opacity: .5;
+        transition: opacity .15s ease;
+    }
+
+    .bit-crsl-next-btn {
         right: 0;
     }
 
-    & .bit-crsl-next-btn:hover, .bit-crsl-previuse-btn:hover {
-        background-color: rgba(255, 255, 255,0.4);
-        margin: 0 rem(10px);
-        margin-top: rem(-22px);
+    .bit-crsl-prev-btn {
+        left: 0;
     }
-}
 
-.bit-crsl-dots {
-    text-align: center;
-    margin-top: rem(10px);
+    .bit-crsl-next-btn:hover,
+    .bit-crsl-prev-btn:hover {
+        color: #fff;
+        text-decoration: none;
+        outline: 0;
+        opacity: .9;
+    }
+    
+    .bit-crsl-dots {
+        text-align: center;
+        margin-top: rem(10px);
 
-    & > div {
-        cursor: pointer;
-        height: rem(8px);
-        width: rem(8px);
-        margin: 0 rem(4px);
-        background-color: $Grey120;
-        border-radius: 50%;
-        display: inline-block;
-        transition: background-color 0.6s ease;
+        > div {
+            cursor: pointer;
+            height: rem(10px);
+            width: rem(10px);
+            margin: 0 rem(4px);
+            background-color: $Grey120;
+            border-radius: 50%;
+            display: inline-block;
+            transition: background-color 0.6s ease;
 
-        &:hover, &.bit-crsl-dot-current {
-            background-color: $Primary;
+            &:hover, &.bit-crsl-dot-current {
+                background-color: $Primary;
+            }
         }
     }
-}
 
-.bit-crslitm {
-    img {
-        border-radius: rem(5px);
+    .bit-crslitm {
+        img {
+            border-radius: rem(5px);
+        }
     }
 }
