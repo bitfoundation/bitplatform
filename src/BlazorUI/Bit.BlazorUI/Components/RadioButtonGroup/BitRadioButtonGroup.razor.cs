@@ -10,6 +10,7 @@ namespace Bit.BlazorUI;
 
 public partial class BitRadioButtonGroup
 {
+    private bool firstRender;
     private bool isRequired;
     private BitRadioButtonOption? SelectedOption;
     private List<BitRadioButtonOption> AllOptions = new();
@@ -80,9 +81,28 @@ public partial class BitRadioButtonGroup
     {
         CurrentValue ??= DefaultValue;
         LabelId = $"RadioButtonGroupLabel{UniqueId}";
+        OnValueChanging += HandleOnValueChanging;
         OnCurrentValueChanged += HandleOnCurrentValueChanged;
 
         await base.OnInitializedAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            this.firstRender = false;
+            if (AllOptions.Any(option => option.Value == Value) is false)
+            {
+                ResetValue();
+                if (ValueHasBeenSet && ValueChanged.HasDelegate)
+                {
+                    await ValueChanged.InvokeAsync(Value);
+                }
+            }
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
     }
 
     internal async Task SelectOption(BitRadioButtonOption option)
@@ -134,6 +154,38 @@ public partial class BitRadioButtonGroup
 
     private string GetAriaLabelledBy() => Label.HasValue() || LabelFragment is not null ? LabelId : AriaLabelledBy;
 
+    private void HandleOnValueChanging(object? sender, ValueChangingEventArgs<string?> args)
+    {
+        if (firstRender) return;
+
+        var option = AllOptions.FirstOrDefault(i => i.Value == args.Value);
+        if (option is not null)
+        {
+            SelectedOption?.SetState(false);
+            option.SetState(true);
+            SelectedOption = option;
+
+            if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+
+            _ = OnValueChange.InvokeAsync(args.Value);
+        }
+        else
+        {
+            args.ShouldChange = false;
+
+            if (Value.HasNoValue())
+            {
+                SelectedOption?.SetState(false);
+                SelectedOption = null;
+            }
+
+            if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+            if (Value == args.Value) return;
+
+            _ = ValueChanged.InvokeAsync(Value);
+        }
+    }
+
     private void HandleOnCurrentValueChanged(object? sender, EventArgs args)
     {
         SelectOptionByKey(CurrentValue);
@@ -143,6 +195,7 @@ public partial class BitRadioButtonGroup
     {
         if (disposing)
         {
+            OnValueChanging -= HandleOnValueChanging;
             OnCurrentValueChanged -= HandleOnCurrentValueChanged;
         }
 

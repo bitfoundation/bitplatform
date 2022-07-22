@@ -1,16 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 
 namespace Bit.BlazorUI;
 
 public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
 {
+    private TValue? _value;
     private bool? _valueInvalid;
     private Type? _nullableUnderlyingType;
     private bool _hasInitializedParameters;
@@ -19,6 +15,8 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
     private readonly EventHandler<ValidationStateChangedEventArgs> _validationStateChangedHandler;
 
     protected event EventHandler OnCurrentValueChanged = default!;
+
+    internal event EventHandler<ValueChangingEventArgs<TValue>> OnValueChanging = default!;
 
     [CascadingParameter] private EditContext? CascadedEditContext { get; set; }
 
@@ -33,7 +31,30 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
     /// <example>
     /// @bind-Value="model.PropertyName"
     /// </example>
-    [Parameter] public TValue? Value { get; set; }
+    [Parameter]
+    public TValue? Value
+    {
+        get => _value;
+        set
+        {
+            if (OnValueChanging is not null)
+            {
+                var valueChangingEventArgs = new ValueChangingEventArgs<TValue>
+                {
+                    Value = value
+                };
+
+                OnValueChanging(this, valueChangingEventArgs);
+
+                if (valueChangingEventArgs.ShouldChange is false)
+                {
+                    return;
+                }
+            }
+
+            _value = value;
+        }
+    }
 
     /// <summary>
     /// Gets or sets a callback that updates the bound value.
@@ -66,14 +87,14 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
 
     protected TValue? CurrentValue
     {
-        get => Value;
+        get => _value;
         set
         {
-            var hasChanged = !EqualityComparer<TValue>.Default.Equals(value, Value);
+            var hasChanged = !EqualityComparer<TValue>.Default.Equals(value, _value);
             if (hasChanged)
             {
-                Value = value;
-                _ = ValueChanged.InvokeAsync(Value);
+                _value = value;
+                _ = ValueChanged.InvokeAsync(_value);
                 EditContext?.NotifyFieldChanged(FieldIdentifier);
 
                 if (OnCurrentValueChanged is not null)
@@ -157,6 +178,11 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
     protected virtual void RegisterFieldIdentifier()
     {
         RegisterFieldIdentifier(ValueExpression, typeof(TValue));
+    }
+
+    protected void ResetValue()
+    {
+        _value = default;
     }
 
     public override Task SetParametersAsync(ParameterView parameters)
