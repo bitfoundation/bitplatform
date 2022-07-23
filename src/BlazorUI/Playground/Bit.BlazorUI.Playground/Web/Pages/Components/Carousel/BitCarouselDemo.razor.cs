@@ -200,4 +200,93 @@ public partial class BitCarouselDemo
         <div class=""text-description"">This is a Road Among The Mountains and it's amazing</div>
     </BitCarouselItem>
 </BitCarousel>";
+
+    private readonly string example4HTMLCode = @"
+<style>
+    .text-title {
+        position: absolute;
+        bottom: 3.4375rem;
+        width: 100%;
+        font-size: 0.9375rem;
+        text-align: center;
+        color: #FFFFFF;
+    }
+
+    .text-description {
+        position: absolute;
+        bottom: 1.875rem;
+        width: 100%;
+        font-size: 0.6875rem;
+        text-align: center;
+        color: #FFFFFF;
+    }
+
+    .buttons-container {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .goto-container {
+        display: flex;
+        justify-content: space-around;
+    }
+
+    ::deep .goto-button {
+        margin-right: rem(10px);
+    }
+</style>
+
+<div>
+    <BitCarousel IsSlideShow=""true"" @ref=""carousel"">
+        <BitCarouselItem>
+            <img src=""/images/carousel/img1.jpg"" style=""width:100%"" />
+            <div class=""text-title"">Aurora</div>
+            <div class=""text-description"">This is Aurora and it's fantastic</div>
+        </BitCarouselItem>
+        <BitCarouselItem>
+            <img src=""/images/carousel/img2.jpg"" style=""width:100%"" />
+            <div class=""text-title"">Beautiful Mountain</div>
+            <div class=""text-description"">This is a Beautiful Mountain and it's gorgeous</div>
+        </BitCarouselItem>
+        <BitCarouselItem>
+            <img src=""/images/carousel/img3.jpg"" style=""width:100%"" />
+            <div class=""text-title"">Forest In The Valley</div>
+            <div class=""text-description"">This is a Forest In The Valley and it's beautiful</div>
+        </BitCarouselItem>
+        <BitCarouselItem>
+            <img src=""/images/carousel/img4.jpg"" style=""width:100%"" />
+            <div class=""text-title"">Road Among The Mountains</div>
+            <div class=""text-description"">This is a Road Among The Mountains and it's amazing</div>
+        </BitCarouselItem>
+    </BitCarousel>
+</div>
+<div class=""buttons-container"">
+    <div>
+        <BitButton OnClick=""GoPrev"">Prev</BitButton>
+        <BitButton OnClick=""GoNext"">Next</BitButton>
+    </div>
+    <div class=""goto-container"">
+        <BitButton Class=""goto-button"" OnClick=""GoTo"">GoTo</BitButton>
+        <BitNumericTextField @bind-Value=""index""></BitNumericTextField>
+    </div>
+</div>";
+
+    private readonly string example4CsCode = @"
+private int index;
+private BitCarousel carousel;
+
+private void GoNext()
+{
+    carousel.GoNext();
+}
+
+private void GoPrev()
+{
+    carousel.GoPrev();
+}
+
+private void GoTo()
+{
+    carousel.GoTo(index);
+}";
 }

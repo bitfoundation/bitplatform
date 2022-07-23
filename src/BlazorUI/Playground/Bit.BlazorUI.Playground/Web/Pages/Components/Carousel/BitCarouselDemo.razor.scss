@@ -25,3 +25,17 @@
     text-align: center;
     color: $White;
 }
+
+.buttons-container {
+    display: flex;
+    justify-content: space-between;
+}
+
+.goto-container {
+    display: flex;
+    justify-content: space-around;
+}
+
+::deep .goto-button {
+    margin-right: rem(10px);
+}
