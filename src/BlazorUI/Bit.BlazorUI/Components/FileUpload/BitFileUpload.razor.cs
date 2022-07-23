@@ -197,6 +197,8 @@ public partial class BitFileUpload : IAsyncDisposable
     /// </summary>
     public string InputId { get; set; } = string.Empty;
 
+    protected override string RootElementClass => "bit-upl";
+
     protected override Task OnInitializedAsync()
     {
         InputId = $"{UniqueId}FileInput";
@@ -204,7 +206,6 @@ public partial class BitFileUpload : IAsyncDisposable
         return base.OnInitializedAsync();
     }
 
-    protected override string RootElementClass => "bit-file-upload";
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -234,10 +235,9 @@ public partial class BitFileUpload : IAsyncDisposable
 
         Files = await JSRuntime.InitFileUpload(inputFileElement, dotnetObjectReference, url, UploadRequestHttpHeaders);
 
-        if (Files is not null)
-        {
-            await OnChange.InvokeAsync(Files.ToArray());
-        }
+        if (Files is null) return;
+
+        await OnChange.InvokeAsync(Files.ToArray());
 
         if (AutoUploadEnabled)
         {

@@ -29,170 +29,172 @@
     }
 }
 
-.bit-file-upload-fluent {
-    display: flex;
-    flex-flow: column nowrap;
-    max-width: rem(350px);
-    font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
-    -webkit-font-smoothing: antialiased;
-}
-
-.file-input {
-    display: none;
-}
-
-.bit-file-upload-lbl {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: rem(35px);
-    padding: rem(16px);
-    border: rem(1px) solid $Grey60;
-    border-radius: rem(4px);
-    outline: 0;
-    font-size: rem(16px);
-    font-weight: 300;
-    color: $Grey160;
-    background-color: $White;
-    cursor: pointer;
-    user-select: none;
-
-    &:hover {
-        border-color: $Grey180;
-    }
-
-    &:active {
-        background-color: $Grey20;
-    }
-
-    i {
-        padding-right: rem(5px);
-    }
-}
-
-.bit-file-list {
-    padding: 0;
-    margin: 0;
-}
-
-.in-progress {
-    @include getLiBaseStyle($class: "in-progress");
-}
-
-.uploaded {
-    @include getLiBaseStyle($class: "uploaded");
-}
-
-.failed {
-    @include getLiBaseStyle($class: "failed");
-}
-
-.paused {
-    @include getLiBaseStyle($class: "paused");
-}
-
-.bit-file-item {
-    display: flex;
-    flex-flow: row nowrap;
-    justify-content: space-between;
-    align-items: center;
-    border-radius: rem(5px);
-    margin-top: rem(3px);
-    font-size: rem(14px);
-    font-weight: 100;
-    overflow: hidden;
-}
-
-.file-info-container {
-    display: flex;
-    flex-flow: column nowrap;
-    justify-content: center;
-    align-items: flex-start;
-    width: calc(100% - #{rem(40px)});
-    height: 100%;
-    padding: rem(8px) rem(16px);
-    box-sizing: border-box;
-    cursor: default;
-
-    .file-name-container {
+.bit-upl {
+    &.bit-upl-fluent {
         display: flex;
-        width: 100%;
-
-        i {
-            padding-top: rem(8px);
-        }
+        flex-flow: column nowrap;
+        max-width: rem(350px);
+        font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+        -webkit-font-smoothing: antialiased;
     }
-}
 
-.file-name {
-    width: calc(100% - #{rem(32px)});
-    height: 100%;
-    padding-top: rem(8px);
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
-
-.file-size-container {
-    display: flex;
-    width: 100%;
-}
-
-.file-siz {
-    padding-top: rem(8px);
-    margin-right: rem(8px);
-}
-
-.upload-percent {
-    padding-top: rem(8px);
-}
-
-.progress-bar-container {
-    width: 100%;
-    height: rem(2px);
-    padding-top: rem(8px);
-    padding-bottom: rem(8px);
-    padding-left: rem(2px);
-    overflow: hidden;
-
-    .progress-bar {
-        height: rem(2px);
-        background-color: $Primary;
-        transition: width 0.15s linear 0s;
+    .file-input {
+        display: none;
     }
-}
 
-.upload-status-icon {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: rem(32px);
-    height: 100%;
-    cursor: pointer;
-
-    &:hover {
-        i {
-            color: $Primary;
-        }
-    }
-}
-
-.bit-file-format {
-    margin-right: rem(5px);
-}
-
-.bit-file-upload-disabled-fluent {
-    .bit-file-upload-lbl {
-        border-color: $Grey60;
-        color: $Grey120;
-        background-color: $Grey20;
+    .bit-upl-lbl {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: rem(35px);
+        padding: rem(16px);
+        border: rem(1px) solid $Grey60;
+        border-radius: rem(4px);
+        outline: 0;
+        font-size: rem(16px);
+        font-weight: 300;
+        color: $Grey160;
+        background-color: $White;
+        cursor: pointer;
+        user-select: none;
 
         &:hover {
-            border-color: $Grey60;
+            border-color: $Grey180;
         }
 
         &:active {
             background-color: $Grey20;
+        }
+
+        i {
+            padding-right: rem(5px);
+        }
+    }
+
+    .bit-file-list {
+        padding: 0;
+        margin: 0;
+    }
+
+    .in-progress {
+        @include getLiBaseStyle($class: "in-progress");
+    }
+
+    .uploaded {
+        @include getLiBaseStyle($class: "uploaded");
+    }
+
+    .failed {
+        @include getLiBaseStyle($class: "failed");
+    }
+
+    .paused {
+        @include getLiBaseStyle($class: "paused");
+    }
+
+    .bit-file-item {
+        display: flex;
+        flex-flow: row nowrap;
+        justify-content: space-between;
+        align-items: center;
+        border-radius: rem(5px);
+        margin-top: rem(3px);
+        font-size: rem(14px);
+        font-weight: 100;
+        overflow: hidden;
+    }
+
+    .file-info-container {
+        display: flex;
+        flex-flow: column nowrap;
+        justify-content: center;
+        align-items: flex-start;
+        width: calc(100% - #{rem(40px)});
+        height: 100%;
+        padding: rem(8px) rem(16px);
+        box-sizing: border-box;
+        cursor: default;
+
+        .file-name-container {
+            display: flex;
+            width: 100%;
+
+            i {
+                padding-top: rem(8px);
+            }
+        }
+    }
+
+    .file-name {
+        width: calc(100% - #{rem(32px)});
+        height: 100%;
+        padding-top: rem(8px);
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    .file-size-container {
+        display: flex;
+        width: 100%;
+    }
+
+    .file-siz {
+        padding-top: rem(8px);
+        margin-right: rem(8px);
+    }
+
+    .upload-percent {
+        padding-top: rem(8px);
+    }
+
+    .progress-bar-container {
+        width: 100%;
+        height: rem(2px);
+        padding-top: rem(8px);
+        padding-bottom: rem(8px);
+        padding-left: rem(2px);
+        overflow: hidden;
+
+        .progress-bar {
+            height: rem(2px);
+            background-color: $Primary;
+            transition: width 0.15s linear 0s;
+        }
+    }
+
+    .upload-status-icon {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: rem(32px);
+        height: 100%;
+        cursor: pointer;
+
+        &:hover {
+            i {
+                color: $Primary;
+            }
+        }
+    }
+
+    .bit-file-format {
+        margin-right: rem(5px);
+    }
+
+    &.bit-upl-disabled-fluent {
+        .bit-upl-lbl {
+            border-color: $Grey60;
+            color: $Grey120;
+            background-color: $Grey20;
+
+            &:hover {
+                border-color: $Grey60;
+            }
+
+            &:active {
+                background-color: $Grey20;
+            }
         }
     }
 }

@@ -58,6 +58,8 @@ public class FileUploadController : ControllerBase
             return BadRequest(ModelState);
         }
 
+        var bitFileId = Request.Headers["BIT_FILE_ID"].ToString();
+
         using var requestStream = file.OpenReadStream();
 
         if (Directory.Exists(UploadPath) is false)
@@ -65,7 +67,7 @@ public class FileUploadController : ControllerBase
             Directory.CreateDirectory(UploadPath);
         }
 
-        var path = Path.Combine(UploadPath, file.FileName);
+        var path = Path.Combine(UploadPath, $"{bitFileId}-{file.FileName}");
 
         if (System.IO.File.Exists(path) is false)
         {
