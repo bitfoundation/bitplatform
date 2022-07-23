@@ -1,35 +1,31 @@
-﻿.bit-crslitm-fluent {
+﻿.bit-crsl-item {
     display: none;
-    -webkit-animation-name: fadeout;
-    -webkit-animation-duration: 1.5s;
-    animation-name: fadeout;
-    animation-duration: 1.5s;
-}
 
-.bit-crslitm-current-fluent {
-    display:block;
-    -webkit-animation-name: fadein;
-    -webkit-animation-duration: 1.5s;
-    animation-name: fadein;
-    animation-duration: 1.5s;
-}
-
-@keyframes fadein {
-    from {
-        opacity: 0
+    &.bit-crsl-item-fluent {
     }
 
-    to {
-        opacity: 1
-    }
-}
-
-@keyframes fadeout {
-    from {
-        opacity: 0
+    &.bit-crsl-item-current {
+        display: block;
+        animation: fadein 0.85s;
     }
 
-    to {
-        opacity: 1
+    @keyframes fadein {
+        from {
+            opacity: 0
+        }
+
+        to {
+            opacity: 1
+        }
+    }
+
+    @keyframes fadeout {
+        from {
+            opacity: 0
+        }
+
+        to {
+            opacity: 1
+        }
     }
 }

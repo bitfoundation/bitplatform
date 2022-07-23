@@ -41,12 +41,12 @@ public partial class BitCarouselItem
         return base.OnInitializedAsync();
     }
 
-    protected override string RootElementClass => "bit-crslitm";
+    protected override string RootElementClass => "bit-crsl-item";
 
     protected override void RegisterComponentClasses()
     {
         ClassBuilder.Register(() => IsCurrent
-                                   ? $"{RootElementClass}-current-{VisualClassRegistrar()}" : string.Empty);
+                                   ? $"{RootElementClass}-current" : string.Empty);
     }
 
     internal void SetState(bool status)

@@ -86,7 +86,7 @@ public partial class BitCarousel
         _ = SelectItem(newItem);
     }
 
-    private void SelectItemByIndex(int index)
+    private void SelectItem(int index)
     {
         if (index < 0)
         {
