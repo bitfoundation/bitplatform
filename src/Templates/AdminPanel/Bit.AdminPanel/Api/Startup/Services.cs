@@ -42,7 +42,6 @@ public static class Services
         });
         services.AddRazorPages();
         services.AddMvcCore();
-
 #endif
 
         services.AddCors();
@@ -57,7 +56,7 @@ public static class Services
             options.ForwardedHeaders = ForwardedHeaders.All;
             options.ForwardedHostHeaderName = "X-Host";
         });
-
+        
         services.AddResponseCaching();
 
         services.AddHttpContextAccessor();

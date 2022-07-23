@@ -3,7 +3,7 @@
 <BitModal @bind-IsOpen="IsOpen">
     <div class="main">
         <div class="header">
-            <span class="title">Create/Edit Category</span>
+            <span class="title">@AppStrings.AddEditProduct</span>
             <BitIconButton IconName="BitIconName.ChromeClose" OnClick="OnCloseClick" />
         </div>
         <EditForm Model="Product" OnValidSubmit="WrapHandled(Save)">
@@ -50,7 +50,7 @@
                     }
                     else
                     {
-                        <span>Save</span>
+                        <span>@AppStrings.Save</span>
                     }
                 </BitButton>
             </div>

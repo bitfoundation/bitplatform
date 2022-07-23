@@ -3,7 +3,7 @@
 
 @inherits AppComponentBase;
 
-<PageTitle>Create/Edit category (@Category?.Name)</PageTitle>
+<PageTitle>@AppStrings.AddEditCategory (@Category?.Name)</PageTitle>
 
 <div class="page-container">
     <div class="page-content--white">
@@ -49,7 +49,7 @@
                     }
                     else
                     {
-                        <span>Save</span>
+                        <span>@AppStrings.Save</span>
                     }
 
                 </BitButton>

@@ -2,7 +2,7 @@
 
 namespace AdminPanel.App.Pages;
 
-public partial class ForgotPassword
+public partial class ForgotPasswordPage
 {
     [AutoInject] private HttpClient httpClient = default!;
 
@@ -15,7 +15,7 @@ public partial class ForgotPassword
     public string? ForgotPasswordMessage { get; set; }
 
     private bool IsSubmitButtonEnabled =>
-        string.IsNullOrWhiteSpace(ForgotPasswordModel.Email) is false && 
+        string.IsNullOrWhiteSpace(ForgotPasswordModel.Email) is false &&
         IsLoading is false;
 
     private async Task Submit()
@@ -34,7 +34,7 @@ public partial class ForgotPassword
 
             ForgotPasswordMessageType = BitMessageBarType.Success;
 
-            ForgotPasswordMessage = "The reset password link has been sent.";
+            ForgotPasswordMessage = AuthStrings.ResetPasswordLinkSentMessage;
         }
         catch (KnownException e)
         {
