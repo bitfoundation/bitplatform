@@ -85,49 +85,77 @@ public partial class BitCarouselDemo
         }
     };
 
-    private readonly string example1HTMLCode = @"<BitCarousel>
+    private readonly string example1HTMLCode = @"
+<style>
+    .number {
+        position: absolute;
+        top: 0.75rem;
+        padding: 0.75rem;
+        font-size: 0.75rem;
+        color: #D7D7D7;
+    }
+</style>
+
+<BitCarousel>
     <BitCarouselItem>
         <div class=""numbertext"">1 / 4</div>
         <img src=""/images/carousel/img1.jpg"" style=""width:100%"">
-        <div class=""text"">Aurora</div>
     </BitCarouselItem>
     <BitCarouselItem>
         <div class=""numbertext"">2 / 4</div>
         <img src=""/images/carousel/img2.jpg"" style=""width:100%"" />
-        <div class=""text"">Beautiful Mountain</div>
     </BitCarouselItem>
     <BitCarouselItem>
         <div class=""numbertext"">3 / 4</div>
         <img src=""/images/carousel/img3.jpg"" style=""width:100%"" />
-        <div class=""text"">Forest In The Valley</div>
     </BitCarouselItem>
     <BitCarouselItem>
         <div class=""numbertext"">4 / 4</div>
         <img src=""/images/carousel/img4.jpg"" style=""width:100%"" />
-        <div class=""text"">Road Among The Mountains</div>
     </BitCarouselItem>
 </BitCarousel>";
 
-    private readonly string example2HTMLCode = @"<BitCarousel IsSlideShow=""true"">
+    private readonly string example2HTMLCode = @"
+<style>
+    .text-title {
+        position: absolute;
+        bottom: 3.4375rem;
+        width: 100%;
+        font-size: 0.9375rem;
+        text-align: center;
+        color: #FFFFFF;
+    }
+
+    .text-description {
+        position: absolute;
+        bottom: 1.875rem;
+        width: 100%;
+        font-size: 0.6875rem;
+        text-align: center;
+        color: #FFFFFF;
+    }
+</style>
+
+<BitCarousel IsSlideShow=""true"">
     <BitCarouselItem>
-        <div class=""numbertext"">1 / 4</div>
         <img src=""/images/carousel/img1.jpg"" style=""width:100%"" />
-        <div class=""text"">Aurora</div>
+        <div class=""text-title"">Aurora</div>
+        <div class=""text-description"">This is Aurora and it's fantastic</div>
     </BitCarouselItem>
     <BitCarouselItem>
-        <div class=""numbertext"">2 / 4</div>
         <img src=""/images/carousel/img2.jpg"" style=""width:100%"" />
-        <div class=""text"">Beautiful Mountain</div>
+        <div class=""text-title"">Beautiful Mountain</div>
+        <div class=""text-description"">This is a Beautiful Mountain and it's gorgeous</div>
     </BitCarouselItem>
     <BitCarouselItem>
-        <div class=""numbertext"">3 / 4</div>
         <img src=""/images/carousel/img3.jpg"" style=""width:100%"" />
-        <div class=""text"">Forest In The Valley</div>
+        <div class=""text-title"">Forest In The Valley</div>
+        <div class=""text-description"">This is a Forest In The Valley and it's beautiful</div>
     </BitCarouselItem>
     <BitCarouselItem>
-        <div class=""numbertext"">4 / 4</div>
         <img src=""/images/carousel/img4.jpg"" style=""width:100%"" />
-        <div class=""text"">Road Among The Mountains</div>
+        <div class=""text-title"">Road Among The Mountains</div>
+        <div class=""text-description"">This is a Road Among The Mountains and it's amazing</div>
     </BitCarouselItem>
 </BitCarousel>";
 }
