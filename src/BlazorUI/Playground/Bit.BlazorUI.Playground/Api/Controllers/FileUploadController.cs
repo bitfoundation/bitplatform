@@ -3,7 +3,7 @@
 namespace Bit.BlazorUI.Playground.Api.Controllers;
 
 [ApiController]
-[Route("[controller]/[action]")]
+[Route("api/[controller]/[action]")]
 public class FileUploadController : ControllerBase
 {
     private readonly string BasePath;

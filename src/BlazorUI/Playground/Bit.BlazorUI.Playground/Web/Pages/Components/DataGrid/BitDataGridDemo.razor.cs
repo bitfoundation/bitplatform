@@ -735,7 +735,7 @@ protected override async Task OnInitializedAsync()
                 query.Add(""$orderby"", string.Join("", "", req.GetSortByProperties().Select(p => $""{p.PropertyName} {(p.Direction == BitDataGridSortDirection.Ascending ? ""asc"" : ""desc"")}"")));
             }
 
-            var url = NavManager.GetUriWithQueryParameters(""Products/GetProducts"", query);
+            var url = NavManager.GetUriWithQueryParameters(""/api/Products/GetProducts"", query);
 
             var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto);
 

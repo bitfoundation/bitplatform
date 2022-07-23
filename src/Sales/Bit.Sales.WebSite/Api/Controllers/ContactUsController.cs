@@ -5,7 +5,7 @@ using FluentEmail.Core;
 
 namespace Bit.Sales.WebSite.Api.Controllers;
 
-[Route("api/[controller]")]
+[Route("api/[controller]/[action]")]
 [ApiController]
 public partial class ContactUsController : ControllerBase
 {

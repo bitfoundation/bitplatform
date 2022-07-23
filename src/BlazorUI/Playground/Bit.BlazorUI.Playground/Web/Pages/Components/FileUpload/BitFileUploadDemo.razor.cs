@@ -10,8 +10,8 @@ public partial class BitFileUploadDemo
 {
     private string onAllUploadsCompleteText = "No File";
 
-    string UploadUrl => $"{GetBaseUrl()}FileUpload/UploadStreamedFile";
-    string RemoveUrl => $"{GetBaseUrl()}FileUpload/RemoveFile";
+    string UploadUrl => $"{GetBaseUrl()}api/FileUpload/UploadStreamedFile";
+    string RemoveUrl => $"{GetBaseUrl()}api/FileUpload/RemoveFile";
 
     [Inject] public IConfiguration Configuration { get; set; }
 

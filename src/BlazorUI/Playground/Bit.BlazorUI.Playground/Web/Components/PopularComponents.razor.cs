@@ -49,8 +49,8 @@ public partial class PopularComponents
     private string ActiveTab = "demo";
     private string ColorRgb = "rgb(255,255,255)";
     private double Alpha = 1;
-    string UploadUrl => $"{GetBaseUrl()}FileUpload/UploadStreamedFile";
-    string RemoveUrl => $"{GetBaseUrl()}FileUpload/RemoveFile";
+    string UploadUrl => $"{GetBaseUrl()}api/FileUpload/UploadStreamedFile";
+    string RemoveUrl => $"{GetBaseUrl()}api/FileUpload/RemoveFile";
 
     string GetBaseUrl()
     {
