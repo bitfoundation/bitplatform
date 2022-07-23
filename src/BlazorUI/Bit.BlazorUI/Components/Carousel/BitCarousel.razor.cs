@@ -33,6 +33,21 @@ public partial class BitCarousel
 
     [Parameter] public bool ShowDots { get; set; } = true;
 
+    public void GoNext()
+    {
+        SelectItem(CurrentIndex + 1);
+    }
+
+    public void GoPrev()
+    {
+        SelectItem(CurrentIndex - 1);
+    }
+
+    public void GoTo(int index)
+    {
+        SelectItem(index);
+    }
+
     protected override string RootElementClass => "bit-crsl";
 
     internal void RegisterItem(BitCarouselItem carouselItem)
