@@ -250,15 +250,6 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No todos yet.
-        /// </summary>
-        public static string NoTodos {
-            get {
-                return ResourceManager.GetString("NoTodos", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Haven’t you received the confirmation email?.
         /// </summary>
         public static string NotReceivedConfirmationEmailMessage {

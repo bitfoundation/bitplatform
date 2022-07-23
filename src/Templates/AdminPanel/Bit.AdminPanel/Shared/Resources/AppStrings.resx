@@ -180,9 +180,6 @@
   <data name="Last30DaysProductCount" xml:space="preserve">
     <value>Last 30 days product count</value>
   </data>
-  <data name="NoTodos" xml:space="preserve">
-    <value>No todos yet</value>
-  </data>
   <data name="NotReceivedConfirmationEmailMessage" xml:space="preserve">
     <value>Haven’t you received the confirmation email?</value>
   </data>
