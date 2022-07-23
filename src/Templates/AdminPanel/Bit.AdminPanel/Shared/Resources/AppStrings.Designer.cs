@@ -79,6 +79,24 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Add/Edit category.
+        /// </summary>
+        public static string AddEditCategory {
+            get {
+                return ResourceManager.GetString("AddEditCategory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Add/Edit product.
+        /// </summary>
+        public static string AddEditProduct {
+            get {
+                return ResourceManager.GetString("AddEditProduct", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Create your multi-mode (WASM, Server, Hybrid, pre-rendering) Blazor app easily in the shortest time ever!.
         /// </summary>
         public static string AdminPanelHomeMessage {
@@ -129,6 +147,15 @@ namespace AdminPanel.Shared.Resources {
         public static string Cancel {
             get {
                 return ResourceManager.GetString("Cancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Categories.
+        /// </summary>
+        public static string CategoriesPageTitle {
+            get {
+                return ResourceManager.GetString("CategoriesPageTitle", resourceCulture);
             }
         }
         
@@ -214,6 +241,15 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Last 30 days product count.
+        /// </summary>
+        public static string Last30DaysProductCount {
+            get {
+                return ResourceManager.GetString("Last30DaysProductCount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No todos yet.
         /// </summary>
         public static string NoTodos {
@@ -268,6 +304,42 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Product sales.
+        /// </summary>
+        public static string ProductSales {
+            get {
+                return ResourceManager.GetString("ProductSales", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Products count per category chart.
+        /// </summary>
+        public static string ProductsCountPerCategoryChart {
+            get {
+                return ResourceManager.GetString("ProductsCountPerCategoryChart", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Products.
+        /// </summary>
+        public static string ProductsPageTitle {
+            get {
+                return ResourceManager.GetString("ProductsPageTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Products percentage per category.
+        /// </summary>
+        public static string ProductsPercentagePerCategory {
+            get {
+                return ResourceManager.GetString("ProductsPercentagePerCategory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Profile updated successfully..
         /// </summary>
         public static string ProfileUpdatedSuccessfullyMessage {
@@ -309,6 +381,24 @@ namespace AdminPanel.Shared.Resources {
         public static string SortBy {
             get {
                 return ResourceManager.GetString("SortBy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Total categories.
+        /// </summary>
+        public static string TotalCategories {
+            get {
+                return ResourceManager.GetString("TotalCategories", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Total products.
+        /// </summary>
+        public static string TotalProducts {
+            get {
+                return ResourceManager.GetString("TotalProducts", resourceCulture);
             }
         }
         

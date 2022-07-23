@@ -123,6 +123,12 @@
   <data name="Add" xml:space="preserve">
     <value>Add</value>
   </data>
+  <data name="AddEditCategory" xml:space="preserve">
+    <value>Add/Edit category</value>
+  </data>
+  <data name="AddEditProduct" xml:space="preserve">
+    <value>Add/Edit product</value>
+  </data>
   <data name="AdminPanelHomeMessage" xml:space="preserve">
     <value>Create your multi-mode (WASM, Server, Hybrid, pre-rendering) Blazor app easily in the shortest time ever!</value>
   </data>
@@ -140,6 +146,9 @@
   </data>
   <data name="Cancel" xml:space="preserve">
     <value>Cancel</value>
+  </data>
+  <data name="CategoriesPageTitle" xml:space="preserve">
+    <value>Categories</value>
   </data>
   <data name="Completed" xml:space="preserve">
     <value>Completed</value>
@@ -168,6 +177,9 @@
   <data name="GitHubRepo" xml:space="preserve">
     <value>GitHub Repo</value>
   </data>
+  <data name="Last30DaysProductCount" xml:space="preserve">
+    <value>Last 30 days product count</value>
+  </data>
   <data name="NoTodos" xml:space="preserve">
     <value>No todos yet</value>
   </data>
@@ -186,6 +198,18 @@
   <data name="PrivacyPolicyTitle" xml:space="preserve">
     <value>Privacy Policy</value>
   </data>
+  <data name="ProductSales" xml:space="preserve">
+    <value>Product sales</value>
+  </data>
+  <data name="ProductsCountPerCategoryChart" xml:space="preserve">
+    <value>Products count per category chart</value>
+  </data>
+  <data name="ProductsPageTitle" xml:space="preserve">
+    <value>Products</value>
+  </data>
+  <data name="ProductsPercentagePerCategory" xml:space="preserve">
+    <value>Products percentage per category</value>
+  </data>
   <data name="ProfileUpdatedSuccessfullyMessage" xml:space="preserve">
     <value>Profile updated successfully.</value>
   </data>
@@ -200,6 +224,12 @@
   </data>
   <data name="SortBy" xml:space="preserve">
     <value>Sort by</value>
+  </data>
+  <data name="TotalCategories" xml:space="preserve">
+    <value>Total categories</value>
+  </data>
+  <data name="TotalProducts" xml:space="preserve">
+    <value>Total products</value>
   </data>
   <data name="UploadNewProfileImage" xml:space="preserve">
     <value>Upload a new profile image</value>

@@ -5,7 +5,7 @@
 
 @inherits AppComponentBase;
 
-<PageTitle>Categories</PageTitle>
+<PageTitle>@AppStrings.CategoriesPageTitle</PageTitle>
 <div class="page-container">
     <div class="page-content--white">
         @if (IsLoading)
@@ -16,7 +16,7 @@
         }
         <div class="page-header">
             <h3>Category</h3>
-            <BitButton OnClick="CreateCategory">Create</BitButton>
+            <BitButton OnClick="CreateCategory">@AppStrings.Add</BitButton>
         </div>
         <div class="content">
             <div class="grid">
