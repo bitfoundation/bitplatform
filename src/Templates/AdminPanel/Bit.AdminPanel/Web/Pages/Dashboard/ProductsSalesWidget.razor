@@ -5,13 +5,16 @@
         @AppStrings.ProductSales
     </div>
     <div class="card-body">
-       @if (IsLoading)
+        @if (IsLoading)
         {
             <div class="spinner">
                 <BitSpinner Size="BitSpinnerSize.Large"></BitSpinner>
             </div>
         }
-        <BitChart Config="_config" @ref="_chart" />
+        else
+        {
+            <BitChart Config="_config" @ref="_chart" />
+        }
     </div>
 </div>
 
