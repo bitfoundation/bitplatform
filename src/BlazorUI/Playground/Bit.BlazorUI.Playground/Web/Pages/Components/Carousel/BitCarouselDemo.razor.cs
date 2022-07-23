@@ -27,21 +27,21 @@ public partial class BitCarouselDemo
             Name = "IsSlideShow",
             Type = "bool",
             DefaultValue = "false",
-            Description = "If set true the carousel item comes after last one and shows as the first item."
+            Description = "If enabled the carousel items will navigate in a loop (first item comes after last item and last item comes before first item)."
         },
         new()
         {
             Name = "ChildContent",
-            Type = "BitCarouselItem",
+            Type = "RenderFragment?",
             DefaultValue = "",
-            Description = "Item in each slide of carousel."
+            Description = "Items of the carousel."
         },
         new()
         {
             Name = "SelectedKey",
             Type = "string",
             DefaultValue = "",
-            Description = "The selected key of carousel item. selected key shows as the first item."
+            Description = "The Key of the current item of the carousel."
         },
         new()
         {
