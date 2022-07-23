@@ -41,9 +41,14 @@ public partial class BitCarousel
     [Parameter] public EventCallback<string?> SelectedKeyChanged { get; set; }
 
     /// <summary>
-    /// Shows the Dots indicator at the bottom of the BitCarousel.
+    /// Shows or hides the Dots indicator at the bottom of the BitCarousel.
     /// </summary>
     [Parameter] public bool ShowDots { get; set; } = true;
+
+    /// <summary>
+    /// Shows or hides the Next/Prev buttons of the BitCarousel.
+    /// </summary>
+    [Parameter] public bool ShowNextPrev { get; set; } = true;
 
     public void GoNext()
     {

@@ -84,4 +84,63 @@
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Carousel Public API" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CsCode" ExampleId="example4">
+        <ExamplePreview>
+            <div>
+                <BitCarousel IsSlideShow="true" @ref="carousel">
+                    <BitCarouselItem>
+                        <img src="/images/carousel/img1.jpg" style="width:100%" />
+                        <div class="text-title">Aurora</div>
+                        <div class="text-description">This is Aurora and it's fantastic</div>
+                    </BitCarouselItem>
+                    <BitCarouselItem>
+                        <img src="/images/carousel/img2.jpg" style="width:100%" />
+                        <div class="text-title">Beautiful Mountain</div>
+                        <div class="text-description">This is a Beautiful Mountain and it's gorgeous</div>
+                    </BitCarouselItem>
+                    <BitCarouselItem>
+                        <img src="/images/carousel/img3.jpg" style="width:100%" />
+                        <div class="text-title">Forest In The Valley</div>
+                        <div class="text-description">This is a Forest In The Valley and it's beautiful</div>
+                    </BitCarouselItem>
+                    <BitCarouselItem>
+                        <img src="/images/carousel/img4.jpg" style="width:100%" />
+                        <div class="text-title">Road Among The Mountains</div>
+                        <div class="text-description">This is a Road Among The Mountains and it's amazing</div>
+                    </BitCarouselItem>
+                </BitCarousel>
+            </div>
+            <div class="buttons-container">
+                <div>
+                    <BitButton OnClick="GoPrev">Prev</BitButton>
+                    <BitButton OnClick="GoNext">Next</BitButton>
+                </div>
+                <div class="goto-container">
+                    <BitButton Class="goto-button" OnClick="GoTo">GoTo</BitButton>
+                    <BitNumericTextField @bind-Value="index"></BitNumericTextField>
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
 </ComponentDemo>
+
+@code {
+    private int index;
+    private BitCarousel carousel;
+
+    private void GoNext()
+    {
+        carousel.GoNext();
+    }
+
+    private void GoPrev()
+    {
+        carousel.GoPrev();
+    }
+
+    private void GoTo()
+    {
+        carousel.GoTo(index);
+    }
+}
