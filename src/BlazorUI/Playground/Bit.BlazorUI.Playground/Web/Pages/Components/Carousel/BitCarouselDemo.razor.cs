@@ -48,7 +48,14 @@ public partial class BitCarouselDemo
             Name = "ShowDots",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Shows the Dots indicator at the bottom of the BitCarousel."
+            Description = "Shows or hides the Dots indicator at the bottom of the BitCarousel."
+        },
+        new()
+        {
+            Name = "ShowNextPrev",
+            Type = "bool",
+            DefaultValue = "true",
+            Description = "Shows or hides the Next/Prev buttons of the BitCarousel."
         }
     };
 
@@ -237,7 +244,7 @@ public partial class BitCarouselDemo
 </style>
 
 <div>
-    <BitCarousel IsSlideShow=""true"" @ref=""carousel"">
+    <BitCarousel IsSlideShow=""true"" ShowNextPrev=""false"" @ref=""carousel"">
         <BitCarouselItem>
             <img src=""/images/carousel/img1.jpg"" style=""width:100%"" />
             <div class=""text-title"">Aurora</div>
@@ -262,8 +269,8 @@ public partial class BitCarouselDemo
 </div>
 <div class=""buttons-container"">
     <div>
-        <BitButton OnClick=""GoPrev"">Prev</BitButton>
-        <BitButton OnClick=""GoNext"">Next</BitButton>
+        <BitButton OnClick=""GoPrev"">&lt; Prev</BitButton>
+        <BitButton OnClick=""GoNext"">Next &gt;</BitButton>
     </div>
     <div class=""goto-container"">
         <BitButton Class=""goto-button"" OnClick=""GoTo"">GoTo</BitButton>
