@@ -17,7 +17,19 @@ public partial class BitFileUpload : IAsyncDisposable
 {
     // !!! to prevent the type being removed by the linker !!!
 #pragma warning disable CA1823 // Avoid unused private fields
-    private static readonly BitFileInfo __dummy_fileInfo__ = new BitFileInfo();
+    private static readonly BitFileInfo __dummy_fileInfo__ = new()
+    {
+        ContentType = "dummy",
+        Size = -1,
+        Name = "dummy",
+        Message = "dummy",
+        RequestToCancel = true,
+        RequestToPause = true,
+        SizeOfLastChunkUploaded = 1,
+        StartTimeUpload = DateTime.UtcNow,
+        Status = BitFileUploadStatus.Paused,
+        TotalSizeOfUploaded = 1
+    };
 #pragma warning restore CA1823 // Avoid unused private fields
 
     private const int MIN_CHUNK_SIZE = 512 * 1024; // 512 kb
@@ -359,9 +371,9 @@ public partial class BitFileUpload : IAsyncDisposable
     }
 
     /// <summary>
-		/// Receive upload progress notification from underlying javascript.
-		/// </summary>
-		[JSInvokable("HandleUploadProgress")]
+    /// Receive upload progress notification from underlying javascript.
+    /// </summary>
+    [JSInvokable("HandleUploadProgress")]
     public async Task HandleUploadProgress(int index, long loaded)
     {
         if (Files is null || Files[index].Status != BitFileUploadStatus.InProgress) return;
@@ -639,7 +651,7 @@ public partial class BitFileUpload : IAsyncDisposable
             uploadedSize = file.TotalSizeOfUploaded + file.SizeOfLastChunkUploaded;
         }
 
-        return uploadedSize.Humanize();
+        return FileSizeHumanizer.Humanize(uploadedSize);
     }
 
     private static string AddQueryString(string uri, string name, string value)
@@ -688,7 +700,7 @@ public partial class BitFileUpload : IAsyncDisposable
         GC.SuppressFinalize(this);
     }
 
-    protected async  virtual Task Dispose(bool disposing)
+    protected async virtual Task Dispose(bool disposing)
     {
         if (!disposing || dotnetObjectReference is null) return;
 
@@ -699,5 +711,5 @@ public partial class BitFileUpload : IAsyncDisposable
         }
         dotnetObjectReference.Dispose();
         dotnetObjectReference = null;
-    }    
+    }
 }
