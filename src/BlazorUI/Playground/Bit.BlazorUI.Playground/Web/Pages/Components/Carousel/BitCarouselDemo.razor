@@ -27,10 +27,39 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Carousel With Slide Show Mode" HTMLSourceCode="@example2HTMLCode" ExampleId="example2">
+    <ComponentExampleBox Title="Carousel with SlideShow enabled" HTMLSourceCode="@example2HTMLCode" ExampleId="example2">
         <ExamplePreview>
             <div>
                 <BitCarousel IsSlideShow="true">
+                    <BitCarouselItem>
+                        <img src="/images/carousel/img1.jpg" style="width:100%" />
+                        <div class="text-title">Aurora</div>
+                        <div class="text-description">This is Aurora and it's fantastic</div>
+                    </BitCarouselItem>
+                    <BitCarouselItem>
+                        <img src="/images/carousel/img2.jpg" style="width:100%" />
+                        <div class="text-title">Beautiful Mountain</div>
+                        <div class="text-description">This is a Beautiful Mountain and it's gorgeous</div>
+                    </BitCarouselItem>
+                    <BitCarouselItem>
+                        <img src="/images/carousel/img3.jpg" style="width:100%" />
+                        <div class="text-title">Forest In The Valley</div>
+                        <div class="text-description">This is a Forest In The Valley and it's beautiful</div>
+                    </BitCarouselItem>
+                    <BitCarouselItem>
+                        <img src="/images/carousel/img4.jpg" style="width:100%" />
+                        <div class="text-title">Road Among The Mountains</div>
+                        <div class="text-description">This is a Road Among The Mountains and it's amazing</div>
+                    </BitCarouselItem>
+                </BitCarousel>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Carousel with hiddent Dots indicator" HTMLSourceCode="@example3HTMLCode" ExampleId="example3">
+        <ExamplePreview>
+            <div>
+                <BitCarousel IsSlideShow="true" ShowDots="false">
                     <BitCarouselItem>
                         <img src="/images/carousel/img1.jpg" style="width:100%" />
                         <div class="text-title">Aurora</div>
