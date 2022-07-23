@@ -5,12 +5,12 @@
     By automatic, it means the files can be automatically uploaded after being selected. It is possible to specify a maximum size for each file if need be.
     Additionally, by specifying file extensions, the files can be restricted to certain types."
                ComponentParameters="componentParameters" EnumParameters="enumParameters">
-    <ComponentExampleBox Title="BitFileUpload" HTMLSourceCode="@example1HtmlCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
+    <ComponentExampleBox Title="Basic FileUpload" HTMLSourceCode="@example1HtmlCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
             <div class="example-desc">Files can be uploaded automatically after selecting them.</div>
             <div>
                 <BitFileUpload Label="Select or drag and drop files"
-                               UploadUrl="@UploadUrl">
+                               UploadUrl="@ChunkedUploadUrl">
                 </BitFileUpload>
             </div>
         </ExamplePreview>
@@ -23,7 +23,7 @@
                 <BitFileUpload IsMultiSelect="true"
                                AutoUploadEnabled="true"
                                Label="Select or drag and drop files"
-                               UploadUrl="@UploadUrl">
+                               UploadUrl="@ChunkedUploadUrl">
                 </BitFileUpload>
             </div>
         </ExamplePreview>
@@ -37,7 +37,7 @@
                                AutoUploadEnabled="true"
                                MaxSize="1024 * 1024 * 100"
                                Label="Select or drag and drop files"
-                               UploadUrl="@UploadUrl">
+                               UploadUrl="@ChunkedUploadUrl">
                 </BitFileUpload>
             </div>
         </ExamplePreview>
@@ -51,7 +51,7 @@
                                AutoUploadEnabled="false"
                                AllowedExtensions="@(new List<string> { ".gif",".jpg",".mp4" })"
                                Label="Select or drag and drop files"
-                               UploadUrl="@UploadUrl">
+                               UploadUrl="@ChunkedUploadUrl">
                 </BitFileUpload>
             </div>
         </ExamplePreview>
@@ -63,7 +63,7 @@
             <div>
                 <BitFileUpload IsMultiSelect="true"
                                Label="Select or drag and drop files"
-                               UploadUrl="@UploadUrl"
+                               UploadUrl="@ChunkedUploadUrl"
                                RemoveUrl="@RemoveUrl"
                                ShowRemoveButton="true">
                 </BitFileUpload>
@@ -79,7 +79,7 @@
                                AutoUploadEnabled="true"
                                OnAllUploadsComplete="@(() => onAllUploadsCompleteText = "All File Uploaded")"
                                Label="Select or drag and drop files"
-                               UploadUrl="@UploadUrl">
+                               UploadUrl="@ChunkedUploadUrl">
                 </BitFileUpload>
             </div>
             <div class="example-desc">@onAllUploadsCompleteText</div>
@@ -92,12 +92,24 @@
             <div>
                 <BitFileUpload IsMultiSelect="true"
                                Label="Select or drag and drop files"
-                               UploadUrl="@UploadUrl"
+                               UploadUrl="@ChunkedUploadUrl"
                                UploadRequestHttpHeaders="@(new Dictionary<string, string>{ {"header1", "value1" } })"
                                UploadRequestQueryStrings="@(new Dictionary<string, string>{ {"qs1", "qsValue1" } })"
                                RemoveUrl="@RemoveUrl"
                                RemoveRequestHttpHeaders="@(new Dictionary<string, string>{ {"header2", "value2" } })"
                                RemoveRequestQueryStrings="@(new Dictionary<string, string>{ {"qs2", "qsValue2" } })">
+                </BitFileUpload>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Non-Chunked FileUpload" HTMLSourceCode="@example8HtmlCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
+        <ExamplePreview>
+            <div class="example-desc">Files can be uploaded automatically after selecting them.</div>
+            <div>
+                <BitFileUpload Label="Select or drag and drop files"
+                               EnableChunkedUpload="false"
+                               UploadUrl="@NonChunkedUploadUrl">
                 </BitFileUpload>
             </div>
         </ExamplePreview>
