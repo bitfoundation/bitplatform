@@ -31,6 +31,8 @@ public partial class BitCarousel
 
     [Parameter] public EventCallback<string?> SelectedKeyChanged { get; set; }
 
+    [Parameter] public bool ShowDots { get; set; } = true;
+
     protected override string RootElementClass => "bit-crsl";
 
     internal void RegisterItem(BitCarouselItem carouselItem)
