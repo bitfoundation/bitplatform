@@ -20,6 +20,8 @@
         </div>
     </div>
 
+    @if (ShowDots)
+    {
     <div class="bit-crsl-dots">
         @for (int i = 0; i < AllCarouselItems.Count; i++)
         {
@@ -27,4 +29,5 @@
             <div class="@(CurrentIndex == index ? "bit-crsl-dot-current" : null)" @onclick="(() => SelectItem(index))"></div>
         }
     </div>
+    }
 </div>
