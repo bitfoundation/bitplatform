@@ -216,3 +216,16 @@
         line-height: rem(16px);
     }
 }
+
+.gitpod-section {
+    display: flex;
+
+    .gitpod-icon {
+        background-image: url('/images/icon/gitpod-icon.png');
+        display: inline-block;
+        background-repeat: no-repeat;
+        background-size: 100%;
+        width: rem(40px);
+        margin-right: rem(12px);
+    }
+}
