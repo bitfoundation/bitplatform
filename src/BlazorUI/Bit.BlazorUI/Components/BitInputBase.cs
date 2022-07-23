@@ -90,7 +90,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
         get => _value;
         set
         {
-            var hasChanged = !EqualityComparer<TValue>.Default.Equals(value, _value);
+            var hasChanged = EqualityComparer<TValue>.Default.Equals(value, _value) is false;
             if (hasChanged)
             {
                 _value = value;
