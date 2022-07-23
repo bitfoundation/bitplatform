@@ -1,6 +1,6 @@
 ﻿namespace AdminPanel.App.Pages;
 
-public partial class EmailConfirmation
+public partial class EmailConfirmationPage
 {
     [AutoInject] private HttpClient httpClient = default!;
 
@@ -43,7 +43,7 @@ public partial class EmailConfirmation
 
             EmailConfirmationMessageType = BitMessageBarType.Success;
 
-            EmailConfirmationMessage = "The confirmation link has been re-sent to your email address.";
+            EmailConfirmationMessage = AuthStrings.ResendConfirmationLinkMessage;
         }
         catch (KnownException e)
         {
