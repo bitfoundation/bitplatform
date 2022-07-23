@@ -43,15 +43,13 @@ public partial class BitCarouselDemo
             DefaultValue = "",
             Description = "The selected key of carousel item. selected key shows as the first item."
         },
-        new ComponentParameter()
+        new()
         {
-            Name = "Visibility",
-            Type = "BitComponentVisibility",
-            LinkType = LinkType.Link,
-            Href = "#component-visibility-enum",
-            DefaultValue = "BitComponentVisibility.Visible",
-            Description = "Whether the component is Visible,Hidden,Collapsed.",
-        },
+            Name = "ShowDots",
+            Type = "bool",
+            DefaultValue = "true",
+            Description = "Shows the Dots indicator at the bottom of the BitCarousel."
+        }
     };
 
     private readonly List<EnumParameter> enumParameters = new()
@@ -137,6 +135,50 @@ public partial class BitCarouselDemo
 </style>
 
 <BitCarousel IsSlideShow=""true"">
+    <BitCarouselItem>
+        <img src=""/images/carousel/img1.jpg"" style=""width:100%"" />
+        <div class=""text-title"">Aurora</div>
+        <div class=""text-description"">This is Aurora and it's fantastic</div>
+    </BitCarouselItem>
+    <BitCarouselItem>
+        <img src=""/images/carousel/img2.jpg"" style=""width:100%"" />
+        <div class=""text-title"">Beautiful Mountain</div>
+        <div class=""text-description"">This is a Beautiful Mountain and it's gorgeous</div>
+    </BitCarouselItem>
+    <BitCarouselItem>
+        <img src=""/images/carousel/img3.jpg"" style=""width:100%"" />
+        <div class=""text-title"">Forest In The Valley</div>
+        <div class=""text-description"">This is a Forest In The Valley and it's beautiful</div>
+    </BitCarouselItem>
+    <BitCarouselItem>
+        <img src=""/images/carousel/img4.jpg"" style=""width:100%"" />
+        <div class=""text-title"">Road Among The Mountains</div>
+        <div class=""text-description"">This is a Road Among The Mountains and it's amazing</div>
+    </BitCarouselItem>
+</BitCarousel>";
+
+    private readonly string example3HTMLCode = @"
+<style>
+    .text-title {
+        position: absolute;
+        bottom: 3.4375rem;
+        width: 100%;
+        font-size: 0.9375rem;
+        text-align: center;
+        color: #FFFFFF;
+    }
+
+    .text-description {
+        position: absolute;
+        bottom: 1.875rem;
+        width: 100%;
+        font-size: 0.6875rem;
+        text-align: center;
+        color: #FFFFFF;
+    }
+</style>
+
+<BitCarousel IsSlideShow=""true"" ShowDots=""false"">
     <BitCarouselItem>
         <img src=""/images/carousel/img1.jpg"" style=""width:100%"" />
         <div class=""text-title"">Aurora</div>
