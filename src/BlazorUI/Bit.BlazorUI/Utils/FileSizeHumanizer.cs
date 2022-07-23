@@ -6,7 +6,7 @@ public static class FileSizeHumanizer
     public const long OneMegaByte = OneKiloByte * 1024;
     public const long OneGigaByte = OneMegaByte * 1024;
 
-    public static string Humanize(this long size)
+    public static string Humanize(long size)
     {
         string suffix;
         if (size > OneGigaByte)
