@@ -304,8 +304,7 @@ private void HandleInvalidSubmit()
 {
     SuccessMessage = string.Empty;
 }";
-
-    #region Example Code 9
+    
     private readonly string example9HtmlCode = @"
 <BitDatePicker Options=""Example9Options"">
             <LabelFragment>
@@ -313,5 +312,4 @@ private void HandleInvalidSubmit()
             </LabelFragment>
 </BitDatePicker>
 ";
-    #endregion
 }
