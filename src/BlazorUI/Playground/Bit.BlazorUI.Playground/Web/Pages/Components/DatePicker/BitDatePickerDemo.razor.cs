@@ -173,7 +173,14 @@ public partial class BitDatePickerDemo
             Type = "bool",
             DefaultValue = "",
             Description = "Show week number in the year.",
-        }
+        },
+        new ComponentParameter
+        {
+            Name = "LabelFragment",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Used to customize the label for the DatePicker."
+        },
     };
 
     private readonly List<EnumParameter> enumParameters = new()
@@ -297,4 +304,12 @@ private void HandleInvalidSubmit()
 {
     SuccessMessage = string.Empty;
 }";
+    
+    private readonly string example9HtmlCode = @"
+<BitDatePicker Options=""Example9Options"">
+            <LabelFragment>
+                Custom label <BitIconButton IconName=""BitIconName.Calendar""></BitIconButton>
+            </LabelFragment>
+</BitDatePicker>
+";
 }

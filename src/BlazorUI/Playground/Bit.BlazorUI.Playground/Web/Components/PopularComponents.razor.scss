@@ -90,7 +90,7 @@
 
     @include lg {
         height: rem(202px);
-        padding: rem(24px) rem(24px) rem(24px) rem(80px);
+        padding: rem(24px) rem(24px) rem(24px) rem(96px);
     }
 
     .selected-component-icon {
@@ -106,8 +106,8 @@
         border-radius: 50%;
 
         @include lg {
-            top: rem(24px);
-            left: rem(24px);
+            top: rem(19px);
+            left: rem(32px);
             width: rem(40px);
             height: rem(40px);
         }
