@@ -7,5 +7,6 @@ public class TodoItemDto
     public DateTimeOffset Date { get; set; }
     public bool IsDone { get; set; }
 
+    [JsonIgnore]
     public bool IsInEditMode { get; set; }
 }
