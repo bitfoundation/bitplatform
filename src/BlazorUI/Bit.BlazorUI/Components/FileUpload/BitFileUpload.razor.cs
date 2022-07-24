@@ -182,6 +182,10 @@ public partial class BitFileUpload : IAsyncDisposable
     [Parameter] public string? UploadUrl { get; set; }
 #pragma warning restore CA1056 // URI-like properties should not be strings
 
+    /// <summary>
+    /// Enables or disables the chunked upload feature.
+    /// </summary>
+    [Parameter] public bool EnableChunkedUpload { get; set; } = true;
 
     /// <summary>
     /// All selected files.
@@ -193,7 +197,7 @@ public partial class BitFileUpload : IAsyncDisposable
     /// </summary>
     public string InputId { get; set; } = string.Empty;
 
-
+    protected override string RootElementClass => "bit-upl";
 
     protected override Task OnInitializedAsync()
     {
@@ -202,13 +206,12 @@ public partial class BitFileUpload : IAsyncDisposable
         return base.OnInitializedAsync();
     }
 
-    protected override string RootElementClass => "bit-file-upload";
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            dropZoneInstance = await JSRuntime.InitUploaderDropZone(RootElement, inputFileElement);
+            dropZoneInstance = await JSRuntime.SetupFileUploadDropzone(RootElement, inputFileElement);
         }
     }
 
@@ -230,12 +233,11 @@ public partial class BitFileUpload : IAsyncDisposable
 
         var url = AddQueryString(UploadUrl, UploadRequestQueryStrings);
 
-        Files = await JSRuntime.InitUploader(inputFileElement, dotnetObjectReference, url, UploadRequestHttpHeaders);
+        Files = await JSRuntime.InitFileUpload(inputFileElement, dotnetObjectReference, url, UploadRequestHttpHeaders);
 
-        if (Files is not null)
-        {
-            await OnChange.InvokeAsync(Files.ToArray());
-        }
+        if (Files is null) return;
+
+        await OnChange.InvokeAsync(Files.ToArray());
 
         if (AutoUploadEnabled)
         {
@@ -271,9 +273,8 @@ public partial class BitFileUpload : IAsyncDisposable
 
     private async Task UploadOneFile(int index)
     {
-        if (Files is null) return;
-
-        if (Files[index].Status == BitFileUploadStatus.NotAllowed) return;
+        if (Files is null ||
+            Files[index].Status == BitFileUploadStatus.NotAllowed) return;
 
         var uploadedSize = Files[index].TotalSizeOfUploaded;
         if (Files[index].Size != 0 && uploadedSize >= Files[index].Size) return;
@@ -302,19 +303,27 @@ public partial class BitFileUpload : IAsyncDisposable
             return;
         }
 
-        long from = Files[index].TotalSizeOfUploaded;
         long to;
-        if (Files[index].Size > ChunkSize)
+        long from = 0;
+        if (EnableChunkedUpload)
         {
-            to = ChunkSize + from;
+            from = Files[index].TotalSizeOfUploaded;
+            if (Files[index].Size > ChunkSize)
+            {
+                to = from + ChunkSize;
+            }
+            else
+            {
+                to = Files[index].Size;
+            }
+
+            Files[index].StartTimeUpload = DateTime.UtcNow;
+            Files[index].SizeOfLastChunkUploaded = 0;
         }
         else
         {
             to = Files[index].Size;
         }
-
-        Files[index].StartTimeUpload = DateTime.UtcNow;
-        Files[index].SizeOfLastChunkUploaded = 0;
 
         await JSRuntime.UploadFile(from, to, index);
     }
@@ -389,14 +398,15 @@ public partial class BitFileUpload : IAsyncDisposable
     [JSInvokable("HandleFileUpload")]
     public async Task HandleFileUpload(int fileIndex, int responseStatus, string responseText)
     {
-        if (Files is null
-            || UploadStatus == BitFileUploadStatus.Paused
-            || Files[fileIndex].Status != BitFileUploadStatus.InProgress)
-            return;
+        if (Files is null ||
+            UploadStatus == BitFileUploadStatus.Paused ||
+            Files[fileIndex].Status != BitFileUploadStatus.InProgress) return;
 
-        Files[fileIndex].TotalSizeOfUploaded += ChunkSize;
+        Files[fileIndex].TotalSizeOfUploaded += EnableChunkedUpload ? ChunkSize : Files[fileIndex].Size;
         Files[fileIndex].SizeOfLastChunkUploaded = 0;
+
         UpdateChunkSize(fileIndex);
+
         if (Files[fileIndex].TotalSizeOfUploaded < Files[fileIndex].Size)
         {
             await Upload(index: fileIndex);

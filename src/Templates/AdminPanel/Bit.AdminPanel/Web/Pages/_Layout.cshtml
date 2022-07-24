@@ -1,11 +1,10 @@
 ﻿@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 
 @namespace AdminPanel.Pages
+@inject IHttpContextAccessor ContextAccessor
 
 @using AdminPanel.Shared.Infra;
 @using Microsoft.AspNetCore.Components.Web
-
-@inject IHttpContextAccessor ContextAccessor
 
 @{
     var isBlazorServer = BlazorModeDetector.Current.IsBlazorServer();
@@ -23,6 +22,7 @@
                             : isDefaultDeploymentType || isPwa
                             ? RenderMode.WebAssembly
                             : RenderMode.WebAssemblyPrerendered;
+
 
     if (renderMode is RenderMode.ServerPrerendered or RenderMode.WebAssemblyPrerendered)
     {
@@ -64,7 +64,6 @@
     }
 </head>
 <body>
-
     <div id="app-container">
         <component type="typeof(App.Components.LoadingComponent)" param-Color="@("#FFF")" render-mode="@RenderMode.Static" />
         @RenderBody()

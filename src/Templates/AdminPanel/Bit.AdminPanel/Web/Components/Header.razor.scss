@@ -6,15 +6,6 @@
     top: 0;
     z-index: 100;
     display: flex;
-    flex-flow: column nowrap;
-    justify-content: flex-start;
-    align-items: center;
-    width: 100%;
-    background-color: $Gray5;
-}
-
-.header-top-row {
-    display: flex;
     flex-flow: row nowrap;
     justify-content: space-between;
     align-items: center;
@@ -22,17 +13,11 @@
     height: rem(48px);
     padding: 0 rem(32px);
     box-sizing: border-box;
-}
+    background-color: $Gray5;
 
-.header-bottom-row {
-    display: none;
-    flex-flow: row nowrap;
-    justify-content: flex-start;
-    align-items: center;
-    width: 100%;
-    height: rem(36px);
-    padding: 0 rem(32px);
-    box-sizing: border-box;
+    @media all and (max-width: #{em(370px)}) {
+        padding: 0 rem(16px);
+    }
 }
 
 .logo-lnk {
@@ -52,29 +37,4 @@
     flex-flow: row nowrap;
     justify-content: flex-start;
     align-items: center;
-}
-
-@media all and (max-width: #{em(370px)}) {
-    .header-bottom-row {
-        display: flex;
-    }
-
-    .header-top-row {
-        padding: 0 rem(16px);
-        border-bottom: rem(1px) solid $White;
-    }
-
-    .header-bottom-row {
-        padding: 0 rem(16px);
-    }
-
-    .header--authenticated {
-        .header-bottom-row {
-            display: none;
-        }
-
-        .header-top-row {
-            border-bottom: 0;
-        }
-    }
 }

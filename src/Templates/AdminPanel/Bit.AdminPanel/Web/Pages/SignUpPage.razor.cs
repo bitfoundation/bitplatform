@@ -2,7 +2,7 @@
 
 namespace AdminPanel.App.Pages;
 
-public partial class SignUp
+public partial class SignUpPage
 {
     [AutoInject] private HttpClient httpClient = default!;
 
@@ -20,8 +20,8 @@ public partial class SignUp
 
     private bool IsSubmitButtonEnabled =>
         string.IsNullOrWhiteSpace(SignUpModel.UserName) is false &&
-        string.IsNullOrWhiteSpace(SignUpModel.Password) is false &&
-        SignUpModel.IsAcceptPrivacy &&
+        string.IsNullOrWhiteSpace(SignUpModel.Password) is false && 
+        SignUpModel.IsAcceptPrivacy && 
         IsLoading is false;
 
     private async Task DoSignUp()
@@ -77,7 +77,7 @@ public partial class SignUp
             }, AppJsonContext.Default.SendConfirmationEmailRequestDto);
 
             SignUpMessageType = BitMessageBarType.Success;
-            SignUpMessage = "The confirmation link has been re-sent.";
+            SignUpMessage = AuthStrings.ResendConfirmationLinkMessage;
         }
         catch (KnownException e)
         {
