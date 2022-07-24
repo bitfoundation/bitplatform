@@ -13,7 +13,6 @@ public class FileUploadController : ControllerBase
         UploadPath = Configuration["UploadPath"];
     }
 
-
     [HttpPost]
     [RequestSizeLimit(2000 * 1024 * 1024 /*~2GB*/)]
     public async Task<IActionResult> UploadNonChunkedFile(IFormFile file, CancellationToken cancellationToken)
@@ -69,18 +68,12 @@ public class FileUploadController : ControllerBase
 
         var path = Path.Combine(UploadPath, $"{bitFileId}-{file.FileName}");
 
-        if (System.IO.File.Exists(path) is false)
-        {
-            using var targetStream = System.IO.File.Create(path);
-            if (cancellationToken.IsCancellationRequested is false)
-                await requestStream.CopyToAsync(targetStream, cancellationToken);
-        }
-        else
-        {
-            using var targetStream = System.IO.File.Open(path, FileMode.Append);
-            if (cancellationToken.IsCancellationRequested is false)
-                await requestStream.CopyToAsync(targetStream, cancellationToken);
-        }
+        using var targetStream = System.IO.File.Exists(path) 
+            ? System.IO.File.Create(path) 
+            : System.IO.File.Open(path, FileMode.Append);
+
+        if (cancellationToken.IsCancellationRequested is false)
+            await requestStream.CopyToAsync(targetStream, cancellationToken);
 
         return Ok();
     }
@@ -90,9 +83,14 @@ public class FileUploadController : ControllerBase
     public IActionResult RemoveFile(string fileName)
     {
         var path = Path.Combine(UploadPath, fileName);
-        if (!System.IO.File.Exists(path)) return NotFound();
+
+        if (!System.IO.File.Exists(path))
+        {
+            return NotFound();
+        }
 
         System.IO.File.Delete(path);
+
         return Ok();
     }
 }

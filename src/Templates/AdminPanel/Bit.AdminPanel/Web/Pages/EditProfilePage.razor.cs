@@ -62,6 +62,7 @@ public partial class EditProfilePage
         User = (await stateService.GetValue($"{nameof(EditProfilePage)}-{nameof(User)}", async () =>
             await httpClient.GetFromJsonAsync("User/GetCurrentUser", AppJsonContext.Default.UserDto))) ?? new();
 
+        UserToEdit.ProfileImageName = User.ProfileImageName;
         UserToEdit.FullName = User.FullName;
         UserToEdit.BirthDate = User.BirthDate;
         UserToEdit.Gender = User.Gender;
