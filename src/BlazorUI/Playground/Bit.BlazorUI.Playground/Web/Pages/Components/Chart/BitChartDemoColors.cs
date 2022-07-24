@@ -6,6 +6,10 @@ namespace Bit.BlazorUI.Playground.Web.Pages.Components.Chart;
 
 public static class BitChartDemoColors
 {
+    public static Color GetRandomColor()
+    {
+        return All[new Random().Next(All.Count)];
+    }
     private static readonly Lazy<IReadOnlyList<Color>> _all = new Lazy<IReadOnlyList<Color>>(() => new Color[7]
     {
                 Red, Orange, Yellow, Green, Blue, Purple, Grey
