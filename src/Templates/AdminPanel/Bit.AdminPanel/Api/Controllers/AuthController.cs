@@ -9,7 +9,7 @@ using AdminPanel.Api.Models.Emailing;
 
 namespace AdminPanel.Api.Controllers;
 
-[Route("api/[controller]")]
+[Route("api/[controller]/[action]")]
 [ApiController, AllowAnonymous]
 public partial class AuthController : ControllerBase
 {
@@ -25,7 +25,7 @@ public partial class AuthController : ControllerBase
 
     [AutoInject] private IFluentEmail _fluentEmail = default!;
 
-    [HttpPost("[action]")]
+    [HttpPost]
     public async Task SignUp(SignUpRequestDto signUpRequest, CancellationToken cancellationToken)
     {
         var existingUser = await _userManager.FindByNameAsync(signUpRequest.UserName);
@@ -55,7 +55,7 @@ public partial class AuthController : ControllerBase
         await SendConfirmationEmail(new() { Email = userToAdd.Email }, userToAdd, cancellationToken);
     }
 
-    [HttpPost("[action]")]
+    [HttpPost]
     public async Task SendConfirmationEmail(SendConfirmationEmailRequestDto sendConfirmationEmailRequest, CancellationToken cancellationToken)
     {
         var user = await _userManager.FindByEmailAsync(sendConfirmationEmailRequest.Email);
@@ -103,7 +103,7 @@ public partial class AuthController : ControllerBase
             throw new ResourceValidationException(result.ErrorMessages.ToArray());
     }
 
-    [HttpPost("[action]")]
+    [HttpPost]
     public async Task SendResetPasswordEmail(SendResetPasswordEmailRequestDto sendResetPasswordEmailRequest
         , CancellationToken cancellationToken)
     {
@@ -148,7 +148,7 @@ public partial class AuthController : ControllerBase
             throw new ResourceValidationException(result.ErrorMessages.ToArray());
     }
 
-    [HttpGet("[action]")]
+    [HttpGet]
     public async Task<ActionResult> ConfirmEmail(string email, string token)
     {
         var user = await _userManager.FindByEmailAsync(email);
@@ -169,7 +169,7 @@ public partial class AuthController : ControllerBase
         return Redirect(url);
     }
 
-    [HttpPost("[action]")]
+    [HttpPost]
     public async Task ResetPassword(ResetPasswordRequestDto resetPasswordRequest)
     {
         var user = await _userManager.FindByEmailAsync(resetPasswordRequest.Email);
@@ -183,7 +183,7 @@ public partial class AuthController : ControllerBase
             throw new ResourceValidationException(result.Errors.Select(e => e.Code).ToArray());
     }
 
-    [HttpPost("[action]")]
+    [HttpPost]
     public async Task<SignInResponseDto> SignIn(SignInRequestDto signInRequest)
     {
         var user = await _userManager.FindByNameAsync(signInRequest.UserName);

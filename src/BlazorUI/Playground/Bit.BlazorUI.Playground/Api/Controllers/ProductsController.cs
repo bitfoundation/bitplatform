@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.OData.Query;
 namespace Bit.BlazorUI.Playground.Api.Controllers;
 
 [ApiController]
-[Route("[controller]/[action]")]
+[Route("api/[controller]/[action]")]
 public class ProductsController : ControllerBase
 {
     private static readonly Random _random = new Random();
