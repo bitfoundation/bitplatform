@@ -1,7 +1,6 @@
 ﻿using System.Linq;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json.Linq;
 
 namespace Bit.BlazorUI.Tests.Rating;
 
