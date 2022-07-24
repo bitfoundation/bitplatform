@@ -46,7 +46,7 @@ public partial class CategoryController : ControllerBase
     }
 
     [HttpPost]
-    public async Task Post(CategoryDto dto, CancellationToken cancellationToken)
+    public async Task Create(CategoryDto dto, CancellationToken cancellationToken)
     {
         var categoryToAdd = _mapper.Map<Category>(dto);
 
@@ -56,7 +56,7 @@ public partial class CategoryController : ControllerBase
     }
 
     [HttpPut]
-    public async Task Put(CategoryDto dto, CancellationToken cancellationToken)
+    public async Task Update(CategoryDto dto, CancellationToken cancellationToken)
     {
         var categoryToUpdate = await _dbContext.Categories.FirstOrDefaultAsync(t => t.Id == dto.Id, cancellationToken);
 

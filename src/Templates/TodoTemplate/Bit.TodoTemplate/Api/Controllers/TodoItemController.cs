@@ -31,7 +31,7 @@ public partial class TodoItemController : ControllerBase
     }
 
     [HttpPost]
-    public async Task Post(TodoItemDto dto, CancellationToken cancellationToken)
+    public async Task Create(TodoItemDto dto, CancellationToken cancellationToken)
     {
         var todoItemToAdd = _mapper.Map<TodoItem>(dto);
 
@@ -43,7 +43,7 @@ public partial class TodoItemController : ControllerBase
     }
 
     [HttpPut]
-    public async Task Put(TodoItemDto dto, CancellationToken cancellationToken)
+    public async Task Update(TodoItemDto dto, CancellationToken cancellationToken)
     {
         var todoItemToUpdate = await _dbContext.TodoItems.FirstOrDefaultAsync(t => t.Id == dto.Id, cancellationToken);
 

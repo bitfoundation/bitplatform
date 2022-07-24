@@ -13,7 +13,7 @@ public partial class ContactUsController : ControllerBase
     [AutoInject] private IOptionsSnapshot<AppSettings> _appSettings;
 
     [HttpPost]
-    public async Task<IActionResult> Post(ContactUsDto contactUsDto, CancellationToken cancellationToken)
+    public async Task<IActionResult> Create(ContactUsDto contactUsDto, CancellationToken cancellationToken)
     {
         var receiverEmail = _appSettings.Value.ReceiverEmailSetting.Email;
         var assembly = typeof(Program).Assembly;

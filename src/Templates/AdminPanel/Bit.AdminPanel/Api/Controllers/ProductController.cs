@@ -46,7 +46,7 @@ public partial class ProductController : ControllerBase
     }
 
     [HttpPost]
-    public async Task Post(ProductDto dto, CancellationToken cancellationToken)
+    public async Task Create(ProductDto dto, CancellationToken cancellationToken)
     {
         var productToAdd = _mapper.Map<Product>(dto);
 
@@ -56,7 +56,7 @@ public partial class ProductController : ControllerBase
     }
 
     [HttpPut]
-    public async Task Put(ProductDto dto, CancellationToken cancellationToken)
+    public async Task Update(ProductDto dto, CancellationToken cancellationToken)
     {
         var productToUpdate = await _dbContext.Products.FirstOrDefaultAsync(t => t.Id == dto.Id, cancellationToken);
 
