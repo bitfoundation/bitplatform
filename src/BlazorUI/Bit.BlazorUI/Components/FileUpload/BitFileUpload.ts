@@ -59,8 +59,9 @@ class BitFileUpload {
         this.bitFileUploaders = [];
         this.headers = headers;
 
-        filesArray.forEach((value, index) => {
-            let uploader: BitFileUploader = new BitFileUploader(dotnetReference, uploadEndpointUrl, inputElement, index, this.headers);
+        filesArray.forEach((_, index) => {
+            const headers = { ...this.headers, ...{ 'BIT_FILE_ID': this.uuidv4() } };
+            let uploader: BitFileUploader = new BitFileUploader(dotnetReference, uploadEndpointUrl, inputElement, index, headers);
             this.bitFileUploaders.push(uploader);
         });
 
@@ -87,6 +88,18 @@ class BitFileUpload {
             const uploader = this.bitFileUploaders.filter(u => u.index === index)[0];
             uploader.pause();
         }
+    }
+
+    // https://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid/#2117523
+    private static guidTemplate = '10000000-1000-4000-8000-100000000000';
+    private static uuidv4(): string {
+        const result = this.guidTemplate.replace(/[018]/g, (c) => {
+            const n = +c;
+            const random = crypto.getRandomValues(new Uint8Array(1));
+            const result = (n ^ random[0] & 15 >> n / 4);
+            return result.toString(16);
+        });
+        return result;
     }
 }
 

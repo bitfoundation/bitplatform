@@ -5,16 +5,16 @@
      @attributes="@HtmlAttributes"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
-    <div class="bit-file-upload-wrapper">
+    <div class="bit-upl-wrapper">
         @if (LabelFragment is not null)
         {
-            <label class="bit-file-upload-lbl" for="@InputId">
+            <label class="bit-upl-lbl" for="@InputId">
                 @LabelFragment
             </label>
         }
         else if (Label.HasValue())
         {
-            <label class="bit-file-upload-lbl" for="@InputId">
+            <label class="bit-upl-lbl" for="@InputId">
                 <i class="bit-icon bit-icon--CloudUpload"></i>
                 @Label
             </label>
