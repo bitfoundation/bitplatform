@@ -102,7 +102,7 @@ public partial class ProductsPage
         {
             if (confirmed)
             {
-                await httpClient.DeleteAsync($"Product/{product.Id}");
+                await httpClient.DeleteAsync($"Product/Delete/{product.Id}");
                 await RefreshData();
             }
         });

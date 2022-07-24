@@ -42,7 +42,7 @@ public partial class TodoPage
         IsLoading = true;
         try
         {
-            AllTodoItemList = await stateService.GetValue($"{nameof(TodoPage)}-{nameof(AllTodoItemList)}", async () => await httpClient.GetFromJsonAsync("TodoItem", AppJsonContext.Default.ListTodoItemDto));
+            AllTodoItemList = await stateService.GetValue($"{nameof(TodoPage)}-{nameof(AllTodoItemList)}", async () => await httpClient.GetFromJsonAsync("TodoItem/Get", AppJsonContext.Default.ListTodoItemDto));
             GenarateViewTodoItemList();
         }
         finally
@@ -153,7 +153,7 @@ public partial class TodoPage
                 Date = DateTimeOffset.Now,
             };
 
-            await httpClient.PostAsJsonAsync("TodoItem", newTodoItem, AppJsonContext.Default.TodoItemDto);
+            await httpClient.PostAsJsonAsync("TodoItem/Create", newTodoItem, AppJsonContext.Default.TodoItemDto);
 
             await LoadTodoItems();
 
@@ -167,7 +167,7 @@ public partial class TodoPage
 
     private async Task DeleteTodoItem(TodoItemDto todoItem)
     {
-        await httpClient.DeleteAsync($"TodoItem/{todoItem.Id}");
+        await httpClient.DeleteAsync($"TodoItem/Delete/{todoItem.Id}");
         AllTodoItemList?.Remove(todoItem);
         GenarateViewTodoItemList();
     }
@@ -179,7 +179,7 @@ public partial class TodoPage
 
         todoItem.IsInEditMode = false;
 
-        await httpClient.PutAsJsonAsync("TodoItem", todoItem, AppJsonContext.Default.TodoItemDto);
+        await httpClient.PutAsJsonAsync("TodoItem/Update", todoItem, AppJsonContext.Default.TodoItemDto);
         GenarateViewTodoItemList();
     }
 }
