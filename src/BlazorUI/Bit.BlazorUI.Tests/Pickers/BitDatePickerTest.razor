@@ -9,6 +9,9 @@
                    IsOpen="IsOpen"
                    OnClick="HandleClick"
                    OnSelectDate="HandleSelectDate">
+        <LabelFragment>
+            @LabelFragment
+        </LabelFragment>
     </BitDatePicker>
 </CascadingValue>
 
@@ -20,6 +23,7 @@
     [Parameter] public string Placeholder { get; set; }
     [Parameter] public string GoToToday { get; set; }
     [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public RenderFragment LabelFragment { get; set; }
 
     public int ClickedValue { get; set; }
     public int SelectedDateValue { get; set; }

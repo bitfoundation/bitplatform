@@ -1,10 +1,10 @@
 ﻿interface IFiles { name: string; size: number, type: string }
 
-class BitFileUploader {
-    static bitFileUploads: BitFileUpload[];
+class BitFileUpload {
+    static bitFileUploaders: BitFileUploader[];
     static headers: Record<string, string>;
 
-    static initDropZone(dropZoneElement: HTMLElement, inputFile: HTMLInputElement) {
+    static setupDropzone(dropZoneElement: HTMLElement, inputFile: HTMLInputElement) {
 
         function onDragHover(e: DragEvent) {
             e.preventDefault();
@@ -13,7 +13,7 @@ class BitFileUploader {
         function onDragLeave(e: DragEvent) {
             e.preventDefault();
         }
-        
+
         function onDrop(e: DragEvent) {
             e.preventDefault();
             inputFile.files = e.dataTransfer!.files;
@@ -56,41 +56,54 @@ class BitFileUploader {
             type: file.type
         }));
 
-        this.bitFileUploads = [];
+        this.bitFileUploaders = [];
         this.headers = headers;
 
-        filesArray.forEach((value, index) => {
-            let uploader: BitFileUpload = new BitFileUpload(dotnetReference, uploadEndpointUrl, inputElement, index, this.headers);
-            this.bitFileUploads.push(uploader);
+        filesArray.forEach((_, index) => {
+            const headers = { ...this.headers, ...{ 'BIT_FILE_ID': this.uuidv4() } };
+            let uploader: BitFileUploader = new BitFileUploader(dotnetReference, uploadEndpointUrl, inputElement, index, headers);
+            this.bitFileUploaders.push(uploader);
         });
 
         return filesArray;
     }
 
-    static upload(index: number, to: number, from: number): void {
+    static upload(from: number, to: number, index: number): void {
         if (index === -1) {
-            this.bitFileUploads.forEach(bitFileUpload => {
-                bitFileUpload.upload(to, from);
+            this.bitFileUploaders.forEach(bitFileUpload => {
+                bitFileUpload.upload(from, to);
             });
         } else {
-            const uploader = this.bitFileUploads.filter(f => f.index === index)[0];
-            uploader.upload(to, from);
+            const uploader = this.bitFileUploaders.filter(f => f.index === index)[0];
+            uploader.upload(from, to);
         }
     }
 
     static pause(index: number): void {
         if (index === -1) {
-            this.bitFileUploads.forEach(bitFileUpload => {
-                bitFileUpload.pause();
+            this.bitFileUploaders.forEach(uploader => {
+                uploader.pause();
             });
         } else {
-            const uploader = this.bitFileUploads.filter(c => c.index === index)[0];
+            const uploader = this.bitFileUploaders.filter(u => u.index === index)[0];
             uploader.pause();
         }
     }
+
+    // https://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid/#2117523
+    private static guidTemplate = '10000000-1000-4000-8000-100000000000';
+    private static uuidv4(): string {
+        const result = this.guidTemplate.replace(/[018]/g, (c) => {
+            const n = +c;
+            const random = crypto.getRandomValues(new Uint8Array(1));
+            const result = (n ^ random[0] & 15 >> n / 4);
+            return result.toString(16);
+        });
+        return result;
+    }
 }
 
-class BitFileUpload {
+class BitFileUploader {
     dotnetReference: DotNetObject;
     uploadEndpointUrl: string;
     inputElement: HTMLInputElement;
@@ -121,13 +134,13 @@ class BitFileUpload {
         };
     }
 
-    upload(to: number, from: number): void {
+    upload(from: number, to: number): void {
         const files = this.inputElement.files;
         if (files === null) return;
 
         const file = files[this.index];
         const data: FormData = new FormData();
-        const chunk = file.slice(to, from);
+        const chunk = file.slice(from, to);
         data.append('file', chunk, file.name);
 
         this.xhr.open('POST', this.uploadEndpointUrl, true);

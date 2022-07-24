@@ -28,7 +28,7 @@ public partial class ContactForm
 
         try
         {
-            await HttpClient.PostAsJsonAsync("api/ContactUs/Create", ContactUs, AppJsonContext.Default.ContactUsDto);
+            await HttpClient.PostAsJsonAsync("ContactUs/Create", ContactUs, AppJsonContext.Default.ContactUsDto);
             ToastService.ShowInfo("Your request submitted successfully");
         }
         catch (KnownException e)

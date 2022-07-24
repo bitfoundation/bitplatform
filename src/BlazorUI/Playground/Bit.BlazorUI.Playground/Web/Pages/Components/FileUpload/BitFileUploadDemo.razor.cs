@@ -10,8 +10,9 @@ public partial class BitFileUploadDemo
 {
     private string onAllUploadsCompleteText = "No File";
 
-    string UploadUrl => $"{GetBaseUrl()}api/FileUpload/UploadStreamedFile";
-    string RemoveUrl => $"{GetBaseUrl()}api/FileUpload/RemoveFile";
+    string ChunkedUploadUrl => $"{GetBaseUrl()}FileUpload/UploadChunkedFile";
+    string NonChunkedUploadUrl => $"{GetBaseUrl()}FileUpload/UploadNonChunkedFile";
+    string RemoveUrl => $"{GetBaseUrl()}FileUpload/RemoveFile";
 
     [Inject] public IConfiguration Configuration { get; set; }
 
@@ -77,7 +78,7 @@ public partial class BitFileUploadDemo
         },
         new ComponentParameter
         {
-            Name = "MaxSize",
+            Name = "MaxSize (byte)",
             Type = "long",
             DefaultValue = "0",
             Description = "Specifies the maximum size of the file (0 for unlimited)."
@@ -208,6 +209,13 @@ public partial class BitFileUploadDemo
             DefaultValue = "",
             Description = "URL of the server endpoint receiving the files."
         },
+        new ComponentParameter
+        {
+            Name = "EnableChunkedUpload",
+            Type = "bool",
+            DefaultValue = "",
+            Description = "Enables or disables the chunked upload feature."
+        }
     };
 
     private readonly List<EnumParameter> enumParameters = new()
@@ -348,4 +356,10 @@ private string RemoveUrl = $""/Remove"";
 </BitFileUpload>
 ";
 
+    private readonly string example8HtmlCode = @"
+<BitFileUpload Label=""Select or drag and drop files""
+               EnableChunkedUpload=""false""
+               UploadUrl=""@UploadUrl"">
+</BitFileUpload>
+";
 }

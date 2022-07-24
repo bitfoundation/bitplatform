@@ -1,6 +1,6 @@
 ﻿namespace AdminPanel.App.Pages;
 
-public partial class Home
+public partial class HomePage
 {
 }
 

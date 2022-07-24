@@ -1,5 +1,6 @@
 ﻿//-:cnd:noEmit
 using System.Web;
+using Microsoft.AspNetCore.Hosting.Server;
 using FluentEmail.Core;
 using AdminPanel.Api.Resources;
 using AdminPanel.Api.Models.Account;
@@ -133,7 +134,8 @@ public partial class AuthController : ControllerBase
                                     new ResetPasswordModel
                                     {
                                         DisplayName = user.DisplayName,
-                                        ResetPasswordLink = resetPasswordLink
+                                        ResetPasswordLink = resetPasswordLink,
+                                        HostUri = new Uri($"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}{HttpContext.Request.PathBase}")
                                     },
                                     assembly)
             .SendAsync(cancellationToken);

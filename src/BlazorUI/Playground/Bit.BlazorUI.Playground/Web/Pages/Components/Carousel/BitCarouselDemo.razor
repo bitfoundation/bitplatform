@@ -7,56 +7,140 @@
             <div>
                 <BitCarousel>
                     <BitCarouselItem>
-                        <div class="numbertext">1 / 4</div>
+                        <div class="number">1 / 4</div>
                         <img src="/images/carousel/img1.jpg" style="width:100%">
-                        <div class="text">Aurora</div>
                     </BitCarouselItem>
                     <BitCarouselItem>
-                        <div class="numbertext">2 / 4</div>
+                        <div class="number">2 / 4</div>
                         <img src="/images/carousel/img2.jpg" style="width:100%" />
-                        <div class="text">Beautiful Mountain</div>
                     </BitCarouselItem>
                     <BitCarouselItem>
-                        <div class="numbertext">3 / 4</div>
+                        <div class="number">3 / 4</div>
                         <img src="/images/carousel/img3.jpg" style="width:100%" />
-                        <div class="text">Forest In The Valley</div>
                     </BitCarouselItem>
                     <BitCarouselItem>
-                        <div class="numbertext">4 / 4</div>
+                        <div class="number">4 / 4</div>
                         <img src="/images/carousel/img4.jpg" style="width:100%" />
-                        <div class="text">Road Among The Mountains</div>
                     </BitCarouselItem>
                 </BitCarousel>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Carousel With Slide Show Mode" HTMLSourceCode="@example2HTMLCode" ExampleId="example2">
+    <ComponentExampleBox Title="Carousel with SlideShow enabled" HTMLSourceCode="@example2HTMLCode" ExampleId="example2">
         <ExamplePreview>
             <div>
                 <BitCarousel IsSlideShow="true">
                     <BitCarouselItem>
-                        <div class="numbertext">1 / 4</div>
                         <img src="/images/carousel/img1.jpg" style="width:100%" />
-                        <div class="text">Aurora</div>
+                        <div class="text-title">Aurora</div>
+                        <div class="text-description">This is Aurora and it's fantastic</div>
                     </BitCarouselItem>
                     <BitCarouselItem>
-                        <div class="numbertext">2 / 4</div>
                         <img src="/images/carousel/img2.jpg" style="width:100%" />
-                        <div class="text">Beautiful Mountain</div>
+                        <div class="text-title">Beautiful Mountain</div>
+                        <div class="text-description">This is a Beautiful Mountain and it's gorgeous</div>
                     </BitCarouselItem>
                     <BitCarouselItem>
-                        <div class="numbertext">3 / 4</div>
                         <img src="/images/carousel/img3.jpg" style="width:100%" />
-                        <div class="text">Forest In The Valley</div>
+                        <div class="text-title">Forest In The Valley</div>
+                        <div class="text-description">This is a Forest In The Valley and it's beautiful</div>
                     </BitCarouselItem>
                     <BitCarouselItem>
-                        <div class="numbertext">4 / 4</div>
                         <img src="/images/carousel/img4.jpg" style="width:100%" />
-                        <div class="text">Road Among The Mountains</div>
+                        <div class="text-title">Road Among The Mountains</div>
+                        <div class="text-description">This is a Road Among The Mountains and it's amazing</div>
                     </BitCarouselItem>
                 </BitCarousel>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Carousel with hiddent Dots indicator" HTMLSourceCode="@example3HTMLCode" ExampleId="example3">
+        <ExamplePreview>
+            <div>
+                <BitCarousel IsSlideShow="true" ShowDots="false">
+                    <BitCarouselItem>
+                        <img src="/images/carousel/img1.jpg" style="width:100%" />
+                        <div class="text-title">Aurora</div>
+                        <div class="text-description">This is Aurora and it's fantastic</div>
+                    </BitCarouselItem>
+                    <BitCarouselItem>
+                        <img src="/images/carousel/img2.jpg" style="width:100%" />
+                        <div class="text-title">Beautiful Mountain</div>
+                        <div class="text-description">This is a Beautiful Mountain and it's gorgeous</div>
+                    </BitCarouselItem>
+                    <BitCarouselItem>
+                        <img src="/images/carousel/img3.jpg" style="width:100%" />
+                        <div class="text-title">Forest In The Valley</div>
+                        <div class="text-description">This is a Forest In The Valley and it's beautiful</div>
+                    </BitCarouselItem>
+                    <BitCarouselItem>
+                        <img src="/images/carousel/img4.jpg" style="width:100%" />
+                        <div class="text-title">Road Among The Mountains</div>
+                        <div class="text-description">This is a Road Among The Mountains and it's amazing</div>
+                    </BitCarouselItem>
+                </BitCarousel>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Carousel Public API" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CsCode" ExampleId="example4">
+        <ExamplePreview>
+            <div>
+                <BitCarousel IsSlideShow="true" ShowNextPrev="false" @ref="carousel">
+                    <BitCarouselItem>
+                        <img src="/images/carousel/img1.jpg" style="width:100%" />
+                        <div class="text-title">Aurora</div>
+                        <div class="text-description">This is Aurora and it's fantastic</div>
+                    </BitCarouselItem>
+                    <BitCarouselItem>
+                        <img src="/images/carousel/img2.jpg" style="width:100%" />
+                        <div class="text-title">Beautiful Mountain</div>
+                        <div class="text-description">This is a Beautiful Mountain and it's gorgeous</div>
+                    </BitCarouselItem>
+                    <BitCarouselItem>
+                        <img src="/images/carousel/img3.jpg" style="width:100%" />
+                        <div class="text-title">Forest In The Valley</div>
+                        <div class="text-description">This is a Forest In The Valley and it's beautiful</div>
+                    </BitCarouselItem>
+                    <BitCarouselItem>
+                        <img src="/images/carousel/img4.jpg" style="width:100%" />
+                        <div class="text-title">Road Among The Mountains</div>
+                        <div class="text-description">This is a Road Among The Mountains and it's amazing</div>
+                    </BitCarouselItem>
+                </BitCarousel>
+            </div>
+            <div class="buttons-container">
+                <div>
+                    <BitButton OnClick="GoPrev">&lt; Prev</BitButton>
+                    <BitButton OnClick="GoNext">Next &gt;</BitButton>
+                </div>
+                <div class="goto-container">
+                    <BitButton Class="goto-button" OnClick="GoTo">GoTo</BitButton>
+                    <BitNumericTextField @bind-Value="index"></BitNumericTextField>
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
 </ComponentDemo>
+
+@code {
+    private int index;
+    private BitCarousel carousel;
+
+    private void GoNext()
+    {
+        carousel.GoNext();
+    }
+
+    private void GoPrev()
+    {
+        carousel.GoPrev();
+    }
+
+    private void GoTo()
+    {
+        carousel.GoTo(index);
+    }
+}

@@ -13,10 +13,19 @@ public partial class BitCarousel
     private string? selectedKey;
     private bool SelectedKeyHasBeenSet;
 
+    /// <summary>
+    /// If enabled the carousel items will navigate in a loop (first item comes after last item and last item comes before first item).
+    /// </summary>
     [Parameter] public bool IsSlideShow { get; set; }
 
+    /// <summary>
+    /// Items of the carousel.
+    /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
+    /// <summary>
+    /// The Key of the current(selected) item of the carousel.
+    /// </summary>
     [Parameter]
     public string? SelectedKey
     {
@@ -30,6 +39,31 @@ public partial class BitCarousel
     }
 
     [Parameter] public EventCallback<string?> SelectedKeyChanged { get; set; }
+
+    /// <summary>
+    /// Shows or hides the Dots indicator at the bottom of the BitCarousel.
+    /// </summary>
+    [Parameter] public bool ShowDots { get; set; } = true;
+
+    /// <summary>
+    /// Shows or hides the Next/Prev buttons of the BitCarousel.
+    /// </summary>
+    [Parameter] public bool ShowNextPrev { get; set; } = true;
+
+    public void GoNext()
+    {
+        SelectItem(CurrentIndex + 1);
+    }
+
+    public void GoPrev()
+    {
+        SelectItem(CurrentIndex - 1);
+    }
+
+    public void GoTo(int index)
+    {
+        SelectItem(index);
+    }
 
     protected override string RootElementClass => "bit-crsl";
 
@@ -86,7 +120,7 @@ public partial class BitCarousel
         _ = SelectItem(newItem);
     }
 
-    private void SelectItemByIndex(int index)
+    private void SelectItem(int index)
     {
         if (index < 0)
         {

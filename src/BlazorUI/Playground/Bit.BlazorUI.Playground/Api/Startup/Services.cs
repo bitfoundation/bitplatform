@@ -1,6 +1,8 @@
 ﻿using System.IO.Compression;
-using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.OData;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.ResponseCompression;
 using Bit.BlazorUI.Playground.Shared.Dtos;
 
 #if BlazorWebAssembly
@@ -48,5 +50,17 @@ public static class Services
         })
             .Configure<BrotliCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest)
             .Configure<GzipCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest);
+
+        services.Configure<KestrelServerOptions>(options =>
+        {
+            options.Limits.MaxRequestBodySize = int.MaxValue; // if don't set default value is: 30 MB
+        });
+
+        services.Configure<FormOptions>(options =>
+        {
+            options.ValueLengthLimit = int.MaxValue;
+            options.MultipartBodyLengthLimit = int.MaxValue; // if don't set default value is: 128 MB
+            options.MultipartHeadersLengthLimit = int.MaxValue;
+        });
     }
 }

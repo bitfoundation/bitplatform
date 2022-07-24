@@ -29,13 +29,13 @@ public partial class ComponentExampleBox
             ? AppendCodePharaseToCSharpCode(CSharpSourceCode)
             : "";
 
-        await JSRuntime.CopyToClipboard(HTMLSourceCode + code);
+        await JSRuntime.CopyToClipboard(HTMLSourceCode.Trim() + code);
     }
 
     private string AppendCodePharaseToCSharpCode(string cSharpSourceCode)
     {
         string code = $@"{"\n\n"}@code {{
-{@CSharpSourceCode.Replace("\n", "\n\t")}
+{@CSharpSourceCode.Trim().Replace("\n", "\n\t")}
 }}";
         return code;
     }
