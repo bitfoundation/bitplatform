@@ -28,11 +28,11 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.BlazorUI" Version="2.0.0-pre-12" />
-		<PackageReference Include="Bit.BlazorUI.Charts" Version="2.0.0-pre-12" />
-        <PackageReference Include="Bit.Bswup" Version="2.0.0-pre-12" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="2.0.0-pre-12" />
-        <PackageReference Include="Bit.SourceGenerators" Version="2.0.0-pre-12" />
+        <PackageReference Include="Bit.BlazorUI" Version="2.0.0-pre-14" />
+		<PackageReference Include="Bit.BlazorUI.Charts" Version="2.0.0-pre-14" />
+        <PackageReference Include="Bit.Bswup" Version="2.0.0-pre-14" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="2.0.0-pre-14" />
+        <PackageReference Include="Bit.SourceGenerators" Version="2.0.0-pre-14" />
         <PackageReference Include="jose-jwt" Version="4.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.7" />
         <!--/-:msbuild-conditional:noEmit -->
