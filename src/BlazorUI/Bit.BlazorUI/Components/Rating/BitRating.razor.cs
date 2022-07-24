@@ -75,7 +75,7 @@ public partial class BitRating
     {
         OnCurrentValueChanged += HandleOnCurrentValueChanged;
 
-        if (DefaultValue.HasValue)
+        if (CurrentValue == default && DefaultValue.HasValue)
         {
             CurrentValue = DefaultValue.Value;
         }
