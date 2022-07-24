@@ -1,9 +1,5 @@
 ﻿[
     {
-        "inputFile": "Styles/app.scss",
-        "outputFile": "wwwroot/styles/app.css"
-    },
-    {
         "inputFile": "Shared/MainLayout.razor.scss",
         "outputFile": "Shared/MainLayout.razor.css"
     },
