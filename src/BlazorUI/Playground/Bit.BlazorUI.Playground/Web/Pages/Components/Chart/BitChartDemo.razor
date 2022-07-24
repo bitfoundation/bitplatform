@@ -1,92 +1,129 @@
 ﻿@page "/components/chart"
 @using System.Drawing
 
-<ComponentDemo ComponentName="BitChart" ComponentDescription="Simple and flexible charting component for blazor developers"
-               ComponentParameters="componentParameters" EnumParameters="enumParameters">
-    <ComponentExampleBox Title="Simple Bar Chart" CSharpSourceCode="@example1CSharpCode" HTMLSourceCode="@example1HTMLCode" ExampleId="Example1">
+<ComponentDemo ComponentName="BitChart" ComponentDescription="Simple and flexible charting component for data visualization, which supports eight chart types: bar, line, area, pie, bubble, radar, polar, and scatter."
+               ComponentParameters="componentParameters">
+    <ComponentExampleBox Title="Bar Chart" CSharpSourceCode="@example1CSharpCode" HTMLSourceCode="@example1HTMLCode" ExampleId="Example1">
         <ExamplePreview>
-            <div>
-                <BitChart Config="_chartConfigExample1" @ref="_chartExample1" />
+            <div class="example-desc">
+                A bar chart provides a way of showing data values represented as vertical bars. It is sometimes used to show trend data, and the comparison of multiple data sets side by side.
             </div>
             <div>
-                <BitButton ButtonStyle="BitButtonStyle.Primary" OnClick="RandomizeData">Randomize Data</BitButton>
-                <BitButton ButtonStyle="BitButtonStyle.Standard" OnClick="AddDataset">Add Dataset</BitButton>
-                <BitButton ButtonStyle="BitButtonStyle.Standard" OnClick="RemoveDataset">Remove Dataset</BitButton>
-                <BitButton ButtonStyle="BitButtonStyle.Standard" OnClick="AddData">Add Data</BitButton>
-                <BitButton ButtonStyle="BitButtonStyle.Standard" OnClick="RemoveData">Remove Data</BitButton>
+                <BitChart Config="_barChartConfigExample" @ref="_barChartExample1" />
+            </div>
+            <div>
+                <BitButton ButtonStyle="BitButtonStyle.Primary" OnClick="RandomizeBarData">Randomize Data</BitButton>
+                <BitButton ButtonStyle="BitButtonStyle.Standard" OnClick="AddBarDataset">Add Dataset</BitButton>
+                <BitButton ButtonStyle="BitButtonStyle.Standard" OnClick="RemoveBarDataset">Remove Dataset</BitButton>
+                <BitButton ButtonStyle="BitButtonStyle.Standard" OnClick="AddBarData">Add Data</BitButton>
+                <BitButton ButtonStyle="BitButtonStyle.Standard" OnClick="RemoveBarData">Remove Data</BitButton>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
 
-    <ComponentExampleBox Title="BitChart" CSharpSourceCode="@example2CSharpCode" HTMLSourceCode="@example2HTMLCode" ExampleId="Example5">
+    <ComponentExampleBox Title="Horizontal Bar Chart" CSharpSourceCode="@example2CSharpCode" HTMLSourceCode="@example2HTMLCode" ExampleId="Example2">
         <ExamplePreview>
+            <div class="example-desc">
+                A horizontal bar chart is a variation on a vertical bar chart. It is sometimes used to show trend data, and the comparison of multiple data sets side by side. To achieve this you will have to set the horizontal param in the BitChartBarConfig constructor to 'true'. The default for this property is 'false' and thus will show vertical bars.
+            </div>
             <div>
-                <BitChart Config="_chartConfigExample2" @ref="_chartExample2" />
+                <BitChart Config="_horizontalBarChartConfigExample" @ref="_horizontalBarChartExample" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
 
-    <ComponentExampleBox Title="BitChart" CSharpSourceCode="@example3CSharpCode" HTMLSourceCode="@example3HTMLCode" ExampleId="Example5">
+    <ComponentExampleBox Title="Stacked Bar Chart" CSharpSourceCode="@example3CSharpCode" HTMLSourceCode="@example3HTMLCode" ExampleId="Example3">
         <ExamplePreview>
+            <div class="example-desc">
+                Bar charts can be configured into stacked bar charts by changing the settings on the X and Y axes to enable stacking. Stacked bar charts can be used to show how one data series is made up of a number of smaller pieces.
+            </div>
             <div>
-                <BitChart Config="_chartConfigExample3" @ref="_chartExample3" />
+                <BitChart Config="_stackedBarChartConfigExample" @ref="_stackedBarChartExample" />
             </div>
 
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BitChart" CSharpSourceCode="@example4CSharpCode" HTMLSourceCode="@example4HTMLCode" ExampleId="Example5">
+    <ComponentExampleBox Title="Linear Line Chart" CSharpSourceCode="@example4CSharpCode" HTMLSourceCode="@example4HTMLCode" ExampleId="Example4">
         <ExamplePreview>
-            <div class="example-desc">To create a link you can use a BitLink component.</div>
+            <div class="example-desc">
+                A line chart is a way of plotting data points on a line. Often, it is used to show trend data, or the comparison of two data sets.
+            </div>
             <div>
+                <BitChart Config="_lineChartConfigExample" @ref="_lineChartExample" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BitChart" CSharpSourceCode="@example4CSharpCode" HTMLSourceCode="@example4HTMLCode" ExampleId="Example5">
+    <ComponentExampleBox Title="Pie Chart" CSharpSourceCode="@example6CSharpCode" HTMLSourceCode="@example6HTMLCode" ExampleId="Example6">
         <ExamplePreview>
-            <div class="example-desc">To create a link you can use a BitLink component.</div>
-            <div>
-                <BitChart Config="_chartConfigExample5" @ref="_chartExample5" />
+            <div class="example-desc">
+                Pie and doughnut charts are probably the most commonly used charts. They are divided into segments, the arc of each segment shows the proportional value of each piece of data.They are excellent at showing the relational proportions between data.
             </div>
             <div>
-
-                <BitButton ButtonStyle="BitButtonStyle.Standard" OnClick="AddDataset">Add data</BitButton>
-                <BitButton ButtonStyle="BitButtonStyle.Standard" OnClick="RemoveDataset">Remove data</BitButton>
+                <BitChart Config="_pieChartConfigExample" @ref="_pieChartExample" />
+            </div>
+            <div>
+                <BitButton ButtonStyle="BitButtonStyle.Primary" OnClick="RandomizePieData">Randomize Data</BitButton>
+                <BitButton ButtonStyle="BitButtonStyle.Standard" OnClick="AddPieDataset">Add Dataset</BitButton>
+                <BitButton ButtonStyle="BitButtonStyle.Standard" OnClick="RemovePieDataset">Remove Dataset</BitButton>
+                <BitButton ButtonStyle="BitButtonStyle.Standard" OnClick="AddPieData">Add Data</BitButton>
+                <BitButton ButtonStyle="BitButtonStyle.Standard" OnClick="RemovePieData">Remove Data</BitButton>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Doughnut Chart" CSharpSourceCode="@example6CSharpCode" HTMLSourceCode="@example6HTMLCode" ExampleId="Example6">
+        <ExamplePreview>
+            <div class="example-desc">
+                The doughnut chart is the same as the Pie chart. To achieve this you will have to set the useDoughnutType param in the BitChartPieConfig constructor to 'true'.
+            </div>
+            <div>
+                <BitChart Config="_doughnutChartConfigExample" @ref="_doughnutChartExample" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+
 </ComponentDemo>
 
 @code {
     private const int InitalCount = 5;
 
-    private BitChartBarConfig _chartConfigExample1;
-    private BitChart _chartExample1;
+    private BitChartBarConfig _barChartConfigExample;
+    private BitChart _barChartExample1;
 
 
-    private BitChartBarConfig _chartConfigExample2;
-    private BitChart _chartExample2;
+    private BitChartBarConfig _horizontalBarChartConfigExample;
+    private BitChart _horizontalBarChartExample;
 
-    private BitChartBarConfig _chartConfigExample3;
-    private BitChart _chartExample3;
+    private BitChartBarConfig _stackedBarChartConfigExample;
+    private BitChart _stackedBarChartExample;
 
-    private BitChartPieConfig _chartConfigExample5;
-    private BitChart _chartExample5;
+    private BitChartLineConfig _lineChartConfigExample;
+    private BitChart _lineChartExample;
+
+    private BitChartPieConfig _pieChartConfigExample;
+    private BitChart _pieChartExample;
+
+    private BitChartPieConfig _doughnutChartConfigExample;
+    private BitChart _doughnutChartExample;
 
     protected override void OnInitialized()
     {
-        InitChartExample1();
-        InitChartExample2();
-        InitChartExample3();
-        InitChartExample5();
+        InitBarChartExample();
+        InitHorizontalBarChartExample();
+        InitStackedBarChartExample();
+        InitlineChartExample();
+        InitPieChartExample();
+        InitDoughnutChartExample();
     }
 
-    private void InitChartExample1()
+    private void InitBarChartExample()
     {
-        _chartConfigExample1 = new BitChartBarConfig
+        _barChartConfigExample = new BitChartBarConfig
             {
                 Options = new BitChartBarOptions()
                 {
@@ -103,13 +140,13 @@
             {
                 BackgroundColor = BitChartDemoColors.All.Take(InitalCount).Select(c => BitChartColorUtil.FromDrawingColor(Color.FromArgb(128, c))).ToArray()
             };
-        _chartConfigExample1.Data.Labels.AddRange(BitChartDemoUtils.Months.Take(InitalCount));
-        _chartConfigExample1.Data.Datasets.Add(dataset);
+        _barChartConfigExample.Data.Labels.AddRange(BitChartDemoUtils.Months.Take(InitalCount));
+        _barChartConfigExample.Data.Datasets.Add(dataset);
     }
 
-    private void InitChartExample2()
+    private void InitHorizontalBarChartExample()
     {
-        _chartConfigExample2 = new BitChartBarConfig(horizontal: true)
+        _horizontalBarChartConfigExample = new BitChartBarConfig(horizontal: true)
             {
                 Options = new BitChartBarOptions
                 {
@@ -142,14 +179,14 @@
                 BorderWidth = 1
             };
 
-        _chartConfigExample2.Data.Labels.AddRange(BitChartDemoUtils.Months.Take(InitalCount));
-        _chartConfigExample2.Data.Datasets.Add(dataset1);
-        _chartConfigExample2.Data.Datasets.Add(dataset2);
+        _horizontalBarChartConfigExample.Data.Labels.AddRange(BitChartDemoUtils.Months.Take(InitalCount));
+        _horizontalBarChartConfigExample.Data.Datasets.Add(dataset1);
+        _horizontalBarChartConfigExample.Data.Datasets.Add(dataset2);
     }
 
-    private void InitChartExample3()
+    private void InitStackedBarChartExample()
     {
-        _chartConfigExample3 = new BitChartBarConfig
+        _stackedBarChartConfigExample = new BitChartBarConfig
             {
                 Options = new BitChartBarOptions()
                 {
@@ -157,7 +194,7 @@
                     Title = new BitChartOptionsTitle
                     {
                         Display = true,
-                        Text = "BitChart bar Chart"
+                        Text = "BitChart stacked bar Chart"
                     },
                     Tooltips = new BitChartTooltips
                     {
@@ -203,15 +240,130 @@
             };
 
 
-        _chartConfigExample3.Data.Datasets.Add(dataset1);
-        _chartConfigExample3.Data.Datasets.Add(dataset2);
-        _chartConfigExample3.Data.Datasets.Add(dataset3);
-        _chartConfigExample3.Data.Labels.AddRange(BitChartDemoUtils.Months.Take(InitalCount));
+        _stackedBarChartConfigExample.Data.Datasets.Add(dataset1);
+        _stackedBarChartConfigExample.Data.Datasets.Add(dataset2);
+        _stackedBarChartConfigExample.Data.Datasets.Add(dataset3);
+        _stackedBarChartConfigExample.Data.Labels.AddRange(BitChartDemoUtils.Months.Take(InitalCount));
     }
 
-    private void RandomizeData()
+    private void InitlineChartExample()
     {
-        foreach (IDataset<int> dataset in _chartConfigExample1.Data.Datasets)
+        _lineChartConfigExample = new BitChartLineConfig
+            {
+                Options = new BitChartLineOptions
+                {
+                    Responsive = true,
+                    Title = new BitChartOptionsTitle
+                    {
+                        Display = true,
+                        Text = "BitChart Line Chart"
+                    },
+                    Tooltips = new BitChartTooltips
+                    {
+                        Mode = BitChartInteractionMode.Nearest,
+                        Intersect = true
+                    },
+                    Hover = new BitChartHover
+                    {
+                        Mode = BitChartInteractionMode.Nearest,
+                        Intersect = true
+                    },
+                    Scales = new BitChartScales
+                    {
+                        XAxes = new List<BitChartCartesianAxis>
+                    {
+                        new BitChartCategoryAxis
+                        {
+                            ScaleLabel = new BitChartScaleLabel
+                            {
+                                LabelString = "Month"
+                            }
+                        }
+                    },
+                        YAxes = new List<BitChartCartesianAxis>
+                    {
+                        new BitChartLinearCartesianAxis
+                        {
+                            ScaleLabel = new BitChartScaleLabel
+                            {
+                                LabelString = "Value"
+                            }
+                        }
+                    }
+                    }
+                }
+            };
+
+        IDataset<int> dataset1 = new BitChartLineDataset<int>(BitChartDemoUtils.RandomScalingFactor(InitalCount))
+            {
+                Label = "My first dataset",
+                BackgroundColor = BitChartColorUtil.FromDrawingColor(BitChartDemoUtils.ChartColors.Red),
+                BorderColor = BitChartColorUtil.FromDrawingColor(BitChartDemoUtils.ChartColors.Red),
+                Fill = BitChartFillingMode.Disabled
+            };
+
+        IDataset<int> dataset2 = new BitChartLineDataset<int>(BitChartDemoUtils.RandomScalingFactor(InitalCount))
+            {
+                Label = "My second dataset",
+                BackgroundColor = BitChartColorUtil.FromDrawingColor(BitChartDemoUtils.ChartColors.Blue),
+                BorderColor = BitChartColorUtil.FromDrawingColor(BitChartDemoUtils.ChartColors.Blue),
+                Fill = BitChartFillingMode.Disabled
+            };
+
+        _lineChartConfigExample.Data.Labels.AddRange(BitChartDemoUtils.Months.Take(InitalCount));
+        _lineChartConfigExample.Data.Datasets.Add(dataset1);
+        _lineChartConfigExample.Data.Datasets.Add(dataset2);
+    }
+
+    private void InitPieChartExample()
+    {
+        _pieChartConfigExample = new BitChartPieConfig
+            {
+                Options = new BitChartPieOptions
+                {
+                    Responsive = true,
+                    Title = new BitChartOptionsTitle
+                    {
+                        Display = true,
+                        Text = "BitChart Pie Chart"
+                    }
+                }
+            };
+
+        BitChartPieDataset<int> dataset = new BitChartPieDataset<int>(BitChartDemoUtils.RandomScalingFactor(InitalCount))
+            {
+                BackgroundColor = BitChartDemoColors.All.Take(InitalCount).Select(c => BitChartColorUtil.FromDrawingColor(Color.FromArgb(220, c))).ToArray()
+            };
+        _pieChartConfigExample.Data.Labels.AddRange(BitChartDemoUtils.Months.Take(InitalCount));
+        _pieChartConfigExample.Data.Datasets.Add(dataset);
+    }
+
+    private void InitDoughnutChartExample()
+    {
+        _doughnutChartConfigExample = new BitChartPieConfig(useDoughnutType:true)
+            {
+                Options = new BitChartPieOptions
+                {
+                    Responsive = true,
+                    Title = new BitChartOptionsTitle
+                    {
+                        Display = true,
+                        Text = "BitChart Doughnut Chart"
+                    }
+                }
+            };
+
+        BitChartPieDataset<int> dataset = new BitChartPieDataset<int>(BitChartDemoUtils.RandomScalingFactor(InitalCount))
+            {
+                BackgroundColor = BitChartDemoColors.All.Take(InitalCount).Select(c => BitChartColorUtil.FromDrawingColor(Color.FromArgb(220, c))).ToArray()
+            };
+        _doughnutChartConfigExample.Data.Labels.AddRange(BitChartDemoUtils.Months.Take(InitalCount));
+        _doughnutChartConfigExample.Data.Datasets.Add(dataset);
+    }
+
+    private void RandomizeBarData()
+    {
+        foreach (IDataset<int> dataset in _barChartConfigExample.Data.Datasets)
         {
             int count = dataset.Count;
             dataset.Clear();
@@ -228,110 +380,143 @@
             }
         }
 
-        _chartExample1.Update();
+        _barChartExample1.Update();
     }
 
-    private void AddDataset()
+    private void AddBarDataset()
     {
-        Color color = BitChartDemoUtils.ChartColors.All[_chartConfigExample1.Data.Datasets.Count % BitChartDemoUtils.ChartColors.All.Count];
-        IDataset<int> dataset = new BitChartBarDataset<int>(BitChartDemoUtils.RandomScalingFactor(_chartConfigExample1.Data.Labels.Count))
+        Color color = BitChartDemoUtils.ChartColors.All[_barChartConfigExample.Data.Datasets.Count % BitChartDemoUtils.ChartColors.All.Count];
+        IDataset<int> dataset = new BitChartBarDataset<int>(BitChartDemoUtils.RandomScalingFactor(_barChartConfigExample.Data.Labels.Count))
             {
-                Label = $"Dataset {_chartConfigExample1.Data.Datasets.Count + 1}",
+                Label = $"Dataset {_barChartConfigExample.Data.Datasets.Count + 1}",
                 BackgroundColor = BitChartColorUtil.FromDrawingColor(Color.FromArgb(128, color)),
                 BorderColor = BitChartColorUtil.FromDrawingColor(color),
                 BorderWidth = 1
             };
 
-        _chartConfigExample1.Data.Datasets.Add(dataset);
-        _chartExample1.Update();
+        _barChartConfigExample.Data.Datasets.Add(dataset);
+        _barChartExample1.Update();
     }
 
-    private void RemoveDataset()
+    private void RemoveBarDataset()
     {
-        IList<IBitChartDataset> datasets = _chartConfigExample1.Data.Datasets;
+        IList<IBitChartDataset> datasets = _barChartConfigExample.Data.Datasets;
         if (datasets.Count == 0)
             return;
 
         datasets.RemoveAt(datasets.Count - 1);
-        _chartExample1.Update();
+        _barChartExample1.Update();
     }
-    private void AddData()
+
+    private void AddBarData()
     {
-        if (_chartConfigExample1.Data.Datasets.Count == 0)
+        if (_barChartConfigExample.Data.Datasets.Count == 0)
             return;
 
-        string month = BitChartDemoUtils.Months[_chartConfigExample1.Data.Labels.Count % BitChartDemoUtils.Months.Count];
-        _chartConfigExample1.Data.Labels.Add(month);
+        string month = BitChartDemoUtils.Months[_barChartConfigExample.Data.Labels.Count % BitChartDemoUtils.Months.Count];
+        _barChartConfigExample.Data.Labels.Add(month);
 
-        foreach (IDataset<int> dataset in _chartConfigExample1.Data.Datasets)
+        foreach (IDataset<int> dataset in _barChartConfigExample.Data.Datasets)
         {
             dataset.Add(BitChartDemoUtils.RandomScalingFactor());
         }
 
-        _chartExample1.Update();
+        _barChartExample1.Update();
     }
 
-    private void RemoveData()
+    private void RemoveBarData()
     {
-        if (_chartConfigExample1.Data.Datasets.Count == 0 ||
-            _chartConfigExample1.Data.Labels.Count == 0)
+        if (_barChartConfigExample.Data.Datasets.Count == 0 ||
+            _barChartConfigExample.Data.Labels.Count == 0)
         {
             return;
         }
 
-        _chartConfigExample1.Data.Labels.RemoveAt(_chartConfigExample1.Data.Labels.Count - 1);
+        _barChartConfigExample.Data.Labels.RemoveAt(_barChartConfigExample.Data.Labels.Count - 1);
 
-        foreach (IDataset<int> dataset in _chartConfigExample1.Data.Datasets)
+        foreach (IDataset<int> dataset in _barChartConfigExample.Data.Datasets)
         {
             dataset.RemoveAt(dataset.Count - 1);
         }
 
-        _chartExample1.Update();
+        _barChartExample1.Update();
     }
 
-    private void InitChartExample5()
+    private void RandomizePieData()
     {
-        _chartConfigExample5 = new BitChartPieConfig
+        foreach (IDataset<int> dataset in _pieChartConfigExample.Data.Datasets)
+        {
+            int count = dataset.Count;
+            dataset.Clear();
+            for (int i = 0; i < count; i++)
             {
-                Options = new BitChartPieOptions
+                if (BitChartDemoUtils._rng.NextDouble() < 0.2)
                 {
-                    Responsive = true,
-                    Title = new BitChartOptionsTitle
-                    {
-                        Display = true,
-                        Text = "BitChart Pie Chart"
-                    }
+                    dataset.Add(0);
                 }
-            };
+                else
+                {
+                    dataset.Add(BitChartDemoUtils.RandomScalingFactor());
+                }
+            }
+        }
 
-        BitChartPieDataset<int> dataset = new BitChartPieDataset<int>(BitChartDemoUtils.RandomScalingFactor(InitalCount, -100, 100))
-            {
-                BackgroundColor = BitChartDemoColors.All.Take(InitalCount).Select(BitChartColorUtil.FromDrawingColor).ToArray()
-            };
-
-        _chartConfigExample5.Data.Datasets.Add(dataset);
-        _chartConfigExample5.Data.Labels.AddRange(new string[InitalCount] { "Red", "Orange", "Yellow", "Green", "Blue" });
+        _pieChartExample.Update();
     }
 
-    private void AddDataset5()
+    private void AddPieDataset()
     {
-        int count = _chartConfigExample5.Data.Labels.Count;
+        int count = _pieChartConfigExample.Data.Labels.Count;
         BitChartPieDataset<int> dataset = new BitChartPieDataset<int>(BitChartDemoUtils.RandomScalingFactor(count, -100, 100))
             {
                 BackgroundColor = BitChartDemoColors.All.Take(count).Select(BitChartColorUtil.FromDrawingColor).ToArray()
             };
 
-        _chartConfigExample5.Data.Datasets.Add(dataset);
-        _chartExample5.Update();
+        _pieChartConfigExample.Data.Datasets.Add(dataset);
+        _pieChartExample.Update();
     }
 
-    private void RemoveDataset5()
+    private void RemovePieDataset()
     {
-        IList<IBitChartDataset> datasets = _chartConfigExample5.Data.Datasets;
+        IList<IBitChartDataset> datasets = _pieChartConfigExample.Data.Datasets;
         if (datasets.Count == 0)
             return;
 
         datasets.RemoveAt(0);
-        _chartExample5.Update();
+        _pieChartExample.Update();
+    }
+
+    private void AddPieData()
+    {
+        if (_pieChartConfigExample.Data.Datasets.Count == 0)
+            return;
+
+        string month = BitChartDemoUtils.Months[_pieChartConfigExample.Data.Labels.Count % BitChartDemoUtils.Months.Count];
+        _pieChartConfigExample.Data.Labels.Add(month);
+
+        foreach (IDataset<int> dataset in _pieChartConfigExample.Data.Datasets)
+        {
+            dataset.Add(BitChartDemoUtils.RandomScalingFactor());
+        }
+
+        _pieChartExample.Update();
+    }
+
+    private void RemovePieData()
+    {
+        if (_pieChartConfigExample.Data.Datasets.Count == 0 ||
+            _pieChartConfigExample.Data.Labels.Count == 0)
+        {
+            return;
+        }
+
+        _pieChartConfigExample.Data.Labels.RemoveAt(_pieChartConfigExample.Data.Labels.Count - 1);
+
+        foreach (IDataset<int> dataset in _pieChartConfigExample.Data.Datasets)
+        {
+            dataset.RemoveAt(dataset.Count - 1);
+        }
+
+        _pieChartExample.Update();
     }
 }
