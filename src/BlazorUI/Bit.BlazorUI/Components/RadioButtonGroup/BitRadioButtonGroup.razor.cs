@@ -10,7 +10,7 @@ namespace Bit.BlazorUI;
 
 public partial class BitRadioButtonGroup
 {
-    private bool firstRender;
+    private bool isComponentRendered;
     private bool isRequired;
     private BitRadioButtonOption? SelectedOption;
     private List<BitRadioButtonOption> AllOptions = new();
@@ -91,7 +91,7 @@ public partial class BitRadioButtonGroup
     {
         if (firstRender)
         {
-            this.firstRender = false;
+            isComponentRendered = true;
             if (AllOptions.Any(option => option.Value == Value) is false)
             {
                 ResetValue();
@@ -156,7 +156,7 @@ public partial class BitRadioButtonGroup
 
     private void HandleOnValueChanging(object? sender, ValueChangingEventArgs<string?> args)
     {
-        if (firstRender) return;
+        if (isComponentRendered is false) return;
 
         var option = AllOptions.FirstOrDefault(i => i.Value == args.Value);
         if (option is not null)
