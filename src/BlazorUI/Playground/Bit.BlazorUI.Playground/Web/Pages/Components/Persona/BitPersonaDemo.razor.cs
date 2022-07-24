@@ -176,7 +176,7 @@ public partial class BitPersonaDemo
         new EnumParameter()
         {
             Id = "precence-status",
-            Title = "BitPersonaPresence enum",
+            Title = "BitPersonaPresenceStatus enum",
             EnumList = new List<EnumItem>()
             {
                 new()
@@ -354,7 +354,7 @@ public partial class BitPersonaDemo
         new EnumParameter()
         {
             Id = "bitpersona-size",
-            Title = "BitPersonaPresence enum",
+            Title = "BitPersonaSize class",
             EnumList = new List<EnumItem>()
             {
                 new()
