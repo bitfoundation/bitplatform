@@ -6,13 +6,13 @@ using Microsoft.AspNetCore.Mvc;
 namespace Bit.BlazorUI.Playground.Api.Controllers;
 
 [ApiController]
-[Route("component-details")]
+[Route("api/[controller]/[action]")]
 public class ComponentDetailsController : ControllerBase
 {
     private static XDocument SummariesXmlDocument = null;
     private static readonly Assembly ComponentsAssembly = Assembly.GetAssembly(typeof(BitButton));
 
-    [HttpGet("properties")]
+    [HttpGet]
     public async Task<ActionResult<List<ComponentPropertyDetailsDto>>> GetProperties(string name)
     {
         if (SummariesXmlDocument == null)

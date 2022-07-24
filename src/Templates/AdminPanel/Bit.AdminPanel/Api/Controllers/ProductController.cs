@@ -3,7 +3,7 @@ using AdminPanel.Shared.Dtos.Products;
 
 namespace AdminPanel.Api.Controllers;
 
-[Route("api/[controller]")]
+[Route("api/[controller]/[action]")]
 [ApiController]
 public partial class ProductController : ControllerBase
 {
@@ -29,7 +29,7 @@ public partial class ProductController : ControllerBase
         return product;
     }
 
-    [HttpGet("[action]")]
+    [HttpGet]
     public async Task<PagedResult<ProductDto>> GetProducts(ODataQueryOptions<ProductDto> odataQuery, CancellationToken cancellationToken)
     {
         var query = (IQueryable<ProductDto>)odataQuery.ApplyTo(Get(cancellationToken), ignoreQueryOptions: AllowedQueryOptions.Top | AllowedQueryOptions.Skip);
@@ -46,7 +46,7 @@ public partial class ProductController : ControllerBase
     }
 
     [HttpPost]
-    public async Task Post(ProductDto dto, CancellationToken cancellationToken)
+    public async Task Create(ProductDto dto, CancellationToken cancellationToken)
     {
         var productToAdd = _mapper.Map<Product>(dto);
 
@@ -56,7 +56,7 @@ public partial class ProductController : ControllerBase
     }
 
     [HttpPut]
-    public async Task Put(ProductDto dto, CancellationToken cancellationToken)
+    public async Task Update(ProductDto dto, CancellationToken cancellationToken)
     {
         var productToUpdate = await _dbContext.Products.FirstOrDefaultAsync(t => t.Id == dto.Id, cancellationToken);
 

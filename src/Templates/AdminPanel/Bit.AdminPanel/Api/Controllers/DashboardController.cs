@@ -2,13 +2,13 @@
 
 namespace AdminPanel.Api.Controllers;
 
-[Route("api/[controller]")]
+[Route("api/[controller]/[action]")]
 [ApiController]
 public partial class DashboardController : ControllerBase
 {
     [AutoInject] private AppDbContext _dbContext = default!;
 
-    [HttpGet("[action]")]
+    [HttpGet]
     public async Task<OverallAnalyticsStatsDataDto> GetOverallAnalyticsStatsData()
     {
         var result = new OverallAnalyticsStatsDataDto();
@@ -22,7 +22,7 @@ public partial class DashboardController : ControllerBase
         return result;
     }
 
-    [HttpGet("[action]")]
+    [HttpGet]
     public async Task<List<ProductsCountPerCategoryDto>> GetProductsCountPerCategotyStats()
     {
         return await _dbContext.Categories
@@ -34,7 +34,7 @@ public partial class DashboardController : ControllerBase
             }).ToListAsync();
     }
 
-    [HttpGet("GetProductsSalesStats")]
+    [HttpGet]
     public async Task<List<ProductSaleStatDto>> GetProductsSalesStats()
     {
         Random rand = new Random();
@@ -48,7 +48,7 @@ public partial class DashboardController : ControllerBase
     }
 
 
-    [HttpGet("[action]")]
+    [HttpGet]
     public async Task<List<ProductPercentagePerCategoryDto>> GetProductsPercentagePerCategoryStats()
     {
         var productsTotalCount = await _dbContext.Products.CountAsync();

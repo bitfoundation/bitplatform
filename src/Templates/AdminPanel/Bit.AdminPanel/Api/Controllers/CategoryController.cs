@@ -3,7 +3,7 @@ using AdminPanel.Shared.Dtos.Categories;
 
 namespace AdminPanel.Api.Controllers;
 
-[Route("api/[controller]")]
+[Route("api/[controller]/[action]")]
 [ApiController]
 public partial class CategoryController : ControllerBase
 {
@@ -29,7 +29,7 @@ public partial class CategoryController : ControllerBase
         return category;
     }
 
-    [HttpGet("[action]")]
+    [HttpGet]
     public async Task<PagedResult<CategoryDto>> GetCategories(ODataQueryOptions<CategoryDto> odataQuery, CancellationToken cancellationToken)
     {
         var query = (IQueryable<CategoryDto>)odataQuery.ApplyTo(Get(cancellationToken), ignoreQueryOptions: AllowedQueryOptions.Top | AllowedQueryOptions.Skip);
@@ -46,7 +46,7 @@ public partial class CategoryController : ControllerBase
     }
 
     [HttpPost]
-    public async Task Post(CategoryDto dto, CancellationToken cancellationToken)
+    public async Task Create(CategoryDto dto, CancellationToken cancellationToken)
     {
         var categoryToAdd = _mapper.Map<Category>(dto);
 
@@ -56,7 +56,7 @@ public partial class CategoryController : ControllerBase
     }
 
     [HttpPut]
-    public async Task Put(CategoryDto dto, CancellationToken cancellationToken)
+    public async Task Update(CategoryDto dto, CancellationToken cancellationToken)
     {
         var categoryToUpdate = await _dbContext.Categories.FirstOrDefaultAsync(t => t.Id == dto.Id, cancellationToken);
 

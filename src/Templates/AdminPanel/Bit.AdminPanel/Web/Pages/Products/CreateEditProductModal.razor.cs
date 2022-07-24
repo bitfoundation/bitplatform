@@ -46,7 +46,7 @@ public partial class CreateEditProductModal
 
         try
         {
-            var categoryList = await stateService.GetValue($"{nameof(ProductsPage)}-{nameof(AllCategoryList)}", async () => await httpClient.GetFromJsonAsync("Category", AppJsonContext.Default.ListCategoryDto));
+            var categoryList = await stateService.GetValue($"{nameof(ProductsPage)}-{nameof(AllCategoryList)}", async () => await httpClient.GetFromJsonAsync("Category/Get", AppJsonContext.Default.ListCategoryDto));
 
             return categoryList!.Select(c => new BitDropDownItem()
             {
@@ -74,11 +74,11 @@ public partial class CreateEditProductModal
 
             if (Product.Id == 0)
             {
-                await httpClient.PostAsJsonAsync("Product", Product, AppJsonContext.Default.ProductDto);
+                await httpClient.PostAsJsonAsync("Product/Create", Product, AppJsonContext.Default.ProductDto);
             }
             else
             {
-                await httpClient.PutAsJsonAsync("Product", Product, AppJsonContext.Default.ProductDto);
+                await httpClient.PutAsJsonAsync("Product/Update", Product, AppJsonContext.Default.ProductDto);
             }
 
             IsOpen = false;
