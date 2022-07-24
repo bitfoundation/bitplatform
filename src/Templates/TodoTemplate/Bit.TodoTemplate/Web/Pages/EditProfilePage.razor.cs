@@ -89,7 +89,7 @@ public partial class EditProfilePage
             User.BirthDate = UserToEdit.BirthDate;
             User.Gender = UserToEdit.Gender;
 
-            await httpClient.PutAsJsonAsync("User", User, AppJsonContext.Default.EditUserDto);
+            await httpClient.PutAsJsonAsync("User/Update", User, AppJsonContext.Default.EditUserDto);
 
             EditProfileMessageType = BitMessageBarType.Success;
 
