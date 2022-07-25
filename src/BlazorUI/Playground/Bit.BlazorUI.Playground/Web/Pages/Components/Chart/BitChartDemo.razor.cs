@@ -42,7 +42,7 @@ public partial class BitChartDemo
         }
     };
 
-    #region BarChart
+    #region Bar Chart
     private readonly string example1HTMLCode = @"
 <div>
     <BitChart Config=""_barChartConfigExample"" @ref=""_barChartExample"" />
@@ -168,7 +168,7 @@ private void RemoveBarData()
 ";
     #endregion
 
-    #region Example 2
+    #region Horizontal Bar Chart
     private readonly string example2HTMLCode = @"
 <div>
     <BitChart Config=""_horizontalBarChartConfigExample"" @ref=""_horizontalBarChartExample"" />
@@ -225,7 +225,7 @@ private void InitHorizontalBarChartExample()
 ";
     #endregion
 
-    #region Example 3
+    #region Stacked Bar Chart
     private readonly string example3HTMLCode = @"
 <div>
     <BitChart Config=""_stackedBarChartConfigExample"" @ref=""_stackedBarChartExample"" />
@@ -305,7 +305,7 @@ private void InitStackedBarChartExample()
 ";
     #endregion
 
-    #region Example 4
+    #region line Chart
 
     private readonly string example4HTMLCode = @"
 <div>
@@ -392,7 +392,7 @@ private void InitlineChartExample()
 ";
     #endregion
 
-    #region Example 5
+    #region Pie Chart
     private readonly string example5HTMLCode = @"
 ";
     private readonly string example5CSharpCode = @"
@@ -507,7 +507,7 @@ private void RemovePieData()
 ";
     #endregion
 
-    #region Example 6
+    #region Doughnut Chart
     private readonly string example6HTMLCode = @"
 <div>
     <BitChart Config=""_doughnutChartConfigExample"" @ref=""_doughnutChartExample"" />
