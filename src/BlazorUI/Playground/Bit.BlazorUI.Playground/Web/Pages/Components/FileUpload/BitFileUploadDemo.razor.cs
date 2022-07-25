@@ -12,7 +12,7 @@ public partial class BitFileUploadDemo
 
     string ChunkedUploadUrl => $"{GetBaseUrl()}FileUpload/UploadChunkedFile";
     string NonChunkedUploadUrl => $"{GetBaseUrl()}FileUpload/UploadNonChunkedFile";
-    string RemoveUrl => $"{GetBaseUrl()}FileUpload/RemoveFile";
+    string RemoveUrl => $"FileUpload/RemoveFile";
 
     [Inject] public IConfiguration Configuration { get; set; }
 

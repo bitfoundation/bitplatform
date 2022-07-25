@@ -50,7 +50,7 @@ public partial class PopularComponents
     private string ColorRgb = "rgb(255,255,255)";
     private double Alpha = 1;
     string UploadUrl => $"{GetBaseUrl()}FileUpload/UploadStreamedFile";
-    string RemoveUrl => $"{GetBaseUrl()}FileUpload/RemoveFile";
+    string RemoveUrl => $"FileUpload/RemoveFile";
 
     string GetBaseUrl()
     {
