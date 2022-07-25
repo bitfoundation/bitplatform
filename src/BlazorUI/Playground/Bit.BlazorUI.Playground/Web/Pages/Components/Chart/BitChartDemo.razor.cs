@@ -80,7 +80,7 @@ private void InitBarChartExample()
         };
     BitChartBarDataset<int> dataset = new BitChartBarDataset<int>(BitChartDemoUtils.RandomScalingFactor(InitalCount))
     {
-        BackgroundColor = BitChartDemoUtils.ChartColors.All.Take(InitalCount).Select(c => BitChartColorUtil.FromDrawingColor(Color.FromArgb(128, c))).ToArray()
+        BackgroundColor = BitChartDemoColors.All.Take(InitalCount).Select(c => BitChartColorUtil.FromDrawingColor(Color.FromArgb(128, c))).ToArray()
     };
     _barChartConfigExample.Data.Labels.AddRange(BitChartDemoUtils.Months.Take(InitalCount));
     _barChartConfigExample.Data.Datasets.Add(dataset);
@@ -420,7 +420,7 @@ private void InitPieChartExample()
 
     BitChartPieDataset<int> dataset = new BitChartPieDataset<int>(BitChartDemoUtils.RandomScalingFactor(InitalCount))
     {
-        BackgroundColor = BitChartDemoUtils.ChartColors.All.Take(InitalCount).Select(c => BitChartColorUtil.FromDrawingColor(Color.FromArgb(220, c))).ToArray()
+        BackgroundColor = BitChartDemoColors.All.Take(InitalCount).Select(c => BitChartColorUtil.FromDrawingColor(Color.FromArgb(220, c))).ToArray()
     };
     _pieChartConfigExample.Data.Labels.AddRange(BitChartDemoUtils.Months.Take(InitalCount));
     _pieChartConfigExample.Data.Datasets.Add(dataset);
@@ -453,7 +453,7 @@ private void AddPieDataset()
     int count = _pieChartConfigExample.Data.Labels.Count;
     BitChartPieDataset<int> dataset = new BitChartPieDataset<int>(BitChartDemoUtils.RandomScalingFactor(count, -100, 100))
         {
-            BackgroundColor = BitChartDemoUtils.ChartColors.All.Take(count).Select(BitChartColorUtil.FromDrawingColor).ToArray()
+            BackgroundColor = BitChartDemoColors.All.Take(count).Select(BitChartColorUtil.FromDrawingColor).ToArray()
         };
 
     _pieChartConfigExample.Data.Datasets.Add(dataset);
@@ -538,7 +538,7 @@ private void InitDoughnutChartExample()
 
     BitChartPieDataset<int> dataset = new BitChartPieDataset<int>(BitChartDemoUtils.RandomScalingFactor(InitalCount))
         {
-            BackgroundColor = BitChartDemoUtils.ChartColors.All.Take(InitalCount).Select(c => BitChartColorUtil.FromDrawingColor(Color.FromArgb(220, c))).ToArray()
+            BackgroundColor = BitChartDemoColors.All.Take(InitalCount).Select(c => BitChartColorUtil.FromDrawingColor(Color.FromArgb(220, c))).ToArray()
         };
     _doughnutChartConfigExample.Data.Labels.AddRange(BitChartDemoUtils.Months.Take(InitalCount));
     _doughnutChartConfigExample.Data.Datasets.Add(dataset);
