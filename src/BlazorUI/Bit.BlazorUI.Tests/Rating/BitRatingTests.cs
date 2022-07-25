@@ -227,16 +227,21 @@ public class BitRatingTests : BunitTestContext
     }
 
     [DataTestMethod,
-         DataRow(5, 2, BitIconName.HeartFill, BitIconName.Heart),
-         DataRow(5, 3, BitIconName.HeartFill, BitIconName.Heart),
-         DataRow(5, 1.25, BitIconName.HeartFill, BitIconName.Heart),
-         DataRow(5, 2.5, BitIconName.HeartFill, BitIconName.Heart)
-   ]
-    public void BitRatingShouldRespectDefaultRatingValue(int max, double defaultValue, BitIconName icon, BitIconName unselectedIcon)
+         DataRow(5, 0, 2, BitIconName.HeartFill, BitIconName.Heart),
+         DataRow(5, 0, 3, BitIconName.HeartFill, BitIconName.Heart),
+         DataRow(5, 0, 1.25, BitIconName.HeartFill, BitIconName.Heart),
+         DataRow(5, 0, 2.5, BitIconName.HeartFill, BitIconName.Heart),
+         DataRow(5, 3, 2, BitIconName.HeartFill, BitIconName.Heart),
+         DataRow(5, 5, 3, BitIconName.HeartFill, BitIconName.Heart),
+         DataRow(5, 2.25, 1.25, BitIconName.HeartFill, BitIconName.Heart),
+         DataRow(5, 1.5, 2.5, BitIconName.HeartFill, BitIconName.Heart)
+    ]
+    public void BitRatingShouldRespectDefaultRatingValue(int max, double value, double defaultValue, BitIconName icon, BitIconName unselectedIcon)
     {
-        var component = RenderComponent<BitRatingTest>(parameters =>
+        var component = RenderComponent<BitRating>(parameters =>
         {
             parameters.Add(p => p.DefaultValue, defaultValue);
+            parameters.Add(p => p.Value, value);
             parameters.Add(p => p.Max, max);
         });
 
@@ -245,8 +250,14 @@ public class BitRatingTests : BunitTestContext
         var filledBitRatingIconCount = buttons.Where(s => s.ClassList.Contains($"bit-icon--{icon.GetName()}")).Count();
         var unselectedBitRatingIconCount = buttons.Where(s => s.ClassList.Contains($"bit-icon--{unselectedIcon.GetName()}")).Count();
 
+        var actualValue = value == default ? defaultValue : value;
+
         //TODO: bypassed - BUnit 2-way bound parameters issue
-        //Assert.AreEqual(filledBitRatingIconCount, defaultValue);
-        //Assert.AreEqual(unselectedBitRatingIconCount, max - defaultValue);
+        //Assert.AreEqual(filledBitRatingIconCount, actualValue);
+        //Assert.AreEqual(unselectedBitRatingIconCount, max - actualValue);
+
+        var input = component.Find(".bit-rating input");
+
+        Assert.AreEqual(input.GetAttribute("value"), actualValue.ToString());
     }
 }
