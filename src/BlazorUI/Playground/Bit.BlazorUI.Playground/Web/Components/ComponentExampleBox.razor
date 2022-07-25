@@ -32,12 +32,12 @@
             </BitIconButton>
 
             <pre class="code">
-            <code class="html">@HTMLSourceCode</code>
+            <code class="html">@HTMLSourceCode.Trim()</code>
 
                 @if (CSharpSourceCode.HasValue())
                 {
                 <code class="csharp">
-&#64code {@CSharpSourceCode.Replace("\n", "\n     ")
+&#64code {@CSharpSourceCode.Trim().Replace("\n", "\n     ")
 }</code>
                 }
              </pre>

@@ -1,5 +1,4 @@
-﻿using Microsoft.Maui.ApplicationModel;
-using Microsoft.Maui.Hosting;
+﻿using Microsoft.Maui.Hosting;
 using Microsoft.UI.Xaml;
 
 namespace Bit.BlazorUI.Playground.Web.WinUI
@@ -11,13 +10,6 @@ namespace Bit.BlazorUI.Playground.Web.WinUI
             InitializeComponent();
         }
 
-        protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
-
-        protected override void OnLaunched(LaunchActivatedEventArgs args)
-        {
-            base.OnLaunched(args);
-
-            Platform.OnLaunched(args);
-        }
+        protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiAppBuilder().Build();
     }
 }

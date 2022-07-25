@@ -25,13 +25,13 @@
 		<PackageProjectUrl>https://github.com/bitfoundation/bitplatform</PackageProjectUrl>
 		<PackageIconUrl>https://avatars.githubusercontent.com/u/22663390</PackageIconUrl>
 
-		<ReleaseVersion>1.0.2</ReleaseVersion>
+		<ReleaseVersion>2.0.0</ReleaseVersion>
 
 		<PackageReleaseNotes>https://github.com/bitfoundation/bitplatform/releases/tag/v-$(ReleaseVersion)</PackageReleaseNotes>
 		<PackageVersion>$(ReleaseVersion)</PackageVersion>
 
 		<!-- Version -->
-		<Version>$(ReleaseVersion).$([System.DateTime]::Now.ToString(HHmm))</Version>
+		<Version Condition=" '$(Configuration)' == 'Release' ">$(ReleaseVersion).$([System.DateTime]::Now.ToString(HHmm))</Version>
 
 		<!-- Compile -->
 		<NeutralLanguage>en</NeutralLanguage>

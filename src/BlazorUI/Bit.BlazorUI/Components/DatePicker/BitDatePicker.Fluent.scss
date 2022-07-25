@@ -22,12 +22,6 @@
     }
 }
 
-.editable-input {
-    input {
-        cursor: default;
-    }
-}
-
 .bit-dtp-fluent {
     position: relative;
     margin: 0;
@@ -84,7 +78,7 @@
     border: rem(1px) solid $Grey130;
     box-sizing: border-box;
     background-color: $White;
-    cursor: text;
+    cursor: pointer;
 
     input {
         width: 100%;
@@ -104,6 +98,13 @@
         text-overflow: ellipsis;
         font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
         -webkit-font-smoothing: antialiased;
+        cursor: pointer;
+    }
+
+    &.editable-input {
+        input {
+            cursor: default;
+        }
     }
 }
 
@@ -507,7 +508,6 @@
             white-space: nowrap;
             text-overflow: ellipsis;
             overflow: hidden;
-            direction: ltr;
             outline: transparent;
             border: none;
             border-radius: rem(2px);

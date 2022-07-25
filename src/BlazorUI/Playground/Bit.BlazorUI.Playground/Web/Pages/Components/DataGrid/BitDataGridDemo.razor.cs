@@ -1,15 +1,8 @@
-﻿using System;
+﻿using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http.Json;
-using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
-using Bit.BlazorUI.Playground.Shared.Dtos;
-using Bit.BlazorUI.Playground.Shared.Dtos.DataGridDemo;
+using Bit.BlazorUI;
 using Bit.BlazorUI.Playground.Web.Models;
 using Bit.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
-using Microsoft.AspNetCore.Components;
 
 namespace Bit.BlazorUI.Playground.Web.Pages.Components.DataGrid;
 
@@ -290,43 +283,44 @@ public partial class BitDataGridDemo
              }
         },
     };
+
     private readonly string example1HTMLCode = @"
 <style scoped>
 .grid {
-  display: inline-flex;
-  flex-direction: column;
-  width: 100%;
+    display: inline-flex;
+    flex-direction: column;
+    width: 100%;
 }
 
 .grid ::deep table {
-  min-width: 100%;
+    min-width: 100%;
 }
 
 .grid ::deep tr {
-  height: 1.8rem;
+    height: 1.8rem;
 }
 
 .grid ::deep th:nth-child(1) {
-  width: 15rem;
+    width: 15rem;
 }
 
 .grid ::deep th:nth-child(1) .col-options-button {
     background-image: none;
     cursor: pointer;
+}
 
-    &:before {
-        display: inline-block;
-        font-family: 'Fabric MDL2 Assets';
-        font-style: normal;
-        font-weight: normal;
-        content: ""\E721"";
-    }
+.grid ::deep th:nth-child(1) .col-options-button:before {
+    display: inline-block;
+    font-family: 'Fabric MDL2 Assets';
+    font-style: normal;
+    font-weight: normal;
+    content: ""\E721"";
 }
 </style>
 
 <div class=""grid"">
-    <BitDataGrid Items = ""@FilteredItems"" ResizableColumns=""true"" Pagination=""@pagination"">
-        <BitDataGridPropertyColumn Property = ""@(c => c.Name)"" Sortable=""true"" Class=""column1"">
+    <BitDataGrid Items=""@FilteredItems"" ResizableColumns=""true"" Pagination=""@pagination"">
+        <BitDataGridPropertyColumn Property=""@(c => c.Name)"" Sortable=""true"">
             <ColumnOptions>
                 <BitSearchBox @bind-Value=""typicalSampleNameFilter""
                                           Placeholder=""Search on Name""
@@ -337,43 +331,20 @@ public partial class BitDataGridDemo
         <BitDataGridPropertyColumn Property=""@(c => c.Medals.Silver)"" Sortable=""true"" Align=""BitDataGridAlign.Right"" />
         <BitDataGridPropertyColumn Property=""@(c => c.Medals.Bronze)"" Sortable=""true"" Align=""BitDataGridAlign.Right"" />
         <BitDataGridPropertyColumn Property=""@(c => c.Medals.Total)"" Sortable=""true"" Align=""BitDataGridAlign.Right"" />
-        </BitDataGrid>
-        <BitDataGridPaginator Value=""@pagination"" />
+    </BitDataGrid>
+    <BitDataGridPaginator Value=""@pagination"" />
 </div>";
     private readonly string example1CSharpCode = @"
-BitDataGridPaginationState pagination = new() { ItemsPerPage = 15 };
-IQueryable<Country> items;
+IQueryable<Country> allCountries;
 string typicalSampleNameFilter = string.Empty;
-BitDataGridSort<Country> rankSort = BitDataGridSort<Country>.ByDescending(x => x.Medals.Gold).ThenDescending(x => x.Medals.Silver).ThenDescending(x => x.Medals.Bronze);
-
+BitDataGridPaginationState pagination = new() { ItemsPerPage = 15 };
 IQueryable<Country> FilteredItems => items?.Where(x => x.Name.Contains(typicalSampleNameFilter, StringComparison.CurrentCultureIgnoreCase));
 
 protected override async Task OnInitializedAsync()
 {
-    items = (await GetCountriesAsync(0, null, null, true, CancellationToken.None)).Items.AsQueryable();
+    allCountries = _countries.AsQueryable();
 }
-private async Task<BitDataGridItemsProviderResult<Country>> GetCountriesAsync(int startIndex, int? count, string sortBy, bool sortAscending, CancellationToken cancellationToken)
-{
-    var ordered = (sortBy, sortAscending) switch
-    {
-        (nameof(Country.Name), true) => _countries.OrderBy(c => c.Name),
-        (nameof(Country.Name), false) => _countries.OrderByDescending(c => c.Name),
-        (nameof(Country.Code), true) => _countries.OrderBy(c => c.Code),
-        (nameof(Country.Code), false) => _countries.OrderByDescending(c => c.Code),
-        (""Medals.Gold"", true) => _countries.OrderBy(c => c.Medals.Gold),
-        (""Medals.Gold"", false) => _countries.OrderByDescending(c => c.Medals.Gold),
-        _ => _countries.OrderByDescending(c => c.Medals.Gold),
-    };
 
-    var result = ordered.Skip(startIndex);
-
-    if (count.HasValue)
-    {
-       result = result.Take(count.Value);
-    }
-
-    return BitDataGridItemsProviderResult.From(result.ToArray(), ordered.Count());
-}
 private readonly static Country[] _countries = new[]
 {
     new Country { Code = ""AR"", Name=""Argentina"", Medals = new Medals { Gold = 0, Silver = 1, Bronze = 2 } },
@@ -383,7 +354,7 @@ private readonly static Country[] _countries = new[]
     new Country { Code = ""AZ"", Name = ""Azerbaijan"", Medals = new Medals { Gold = 0, Silver = 3, Bronze = 4 } },
     new Country { Code = ""BS"", Name = ""Bahamas"", Medals = new Medals { Gold = 2, Silver = 0, Bronze = 0 } },
     new Country { Code = ""BH"", Name = ""Bahrain"", Medals = new Medals { Gold = 0, Silver = 1, Bronze = 0 } },
-    ...
+    // ...
 };
 
 public class Country
@@ -402,118 +373,114 @@ public class Medals
     public int Total => Gold + Silver + Bronze;
 }
 ";
+
     private readonly string example2HTMLCode = @"
 @using System.Text.Json;
+@inject HttpClient HttpClient
 
 <style scoped>
 .grid {
-  display: inline-flex;
-  flex-direction: column;
-  width: 100%;
+    height: 25rem;
+    overflow-y: auto;
 }
 
 .grid ::deep table {
-  min-width: 100%;
+    min-width: 100%;
+}
+
+.grid ::deep thead {
+    position: sticky;
+    top: 0;
+    background-color: #d8d8d8;
+    outline: 1px solid gray;
+    z-index: 1;
 }
 
 .grid ::deep tr {
-  height: 1.8rem;
+    height: 30px;
+    border-bottom: 0.5px solid silver;
 }
 
-.grid ::deep th:nth-child(1) {
-  width: 15rem;
-}
-
-.grid ::deep th:nth-child(1) .col-options-button {
-    background-image: none;
-    cursor: pointer;
-
-    &:before {
-        display: inline-block;
-        font-family: 'Fabric MDL2 Assets';
-        font-style: normal;
-        font-weight: normal;
-        content: ""\E721"";
-    }
-}
-
-.grid--fix-height {
-  height: 15rem;
-  overflow-y: auto;
-}
-
-.search-panel {
-  margin-top: 0.5rem;
-  margin-bottom: 0.5rem;
-  border-top: 1px solid black;
-  padding-top: 5px;
-}
-
-.inline-block {
-  display: inline-block;
+.grid ::deep tbody td {
+    white-space: nowrap;
+    overflow: hidden;
+    max-width: 0;
+    text-overflow: ellipsis;
 }
 </style>
-<div class=""grid grid--fix-height"">
+
+<div class=""grid"">
     <BitDataGrid ItemsProvider=""@foodRecallProvider"" TGridItem=""FoodRecall"" Virtualize=""true"" @ref=""dataGrid"">
-        <BitDataGridPropertyColumn Property = ""@(c=>c.EventId)"" />
-        < BitDataGridPropertyColumn Property=""@(c => c.State)"" />
-        <BitDataGridPropertyColumn Property = ""@(c => c.City)"" />
-        < BitDataGridPropertyColumn Title=""Company"" Property=""@(c => c.RecallingFirm)"" />
-        <BitDataGridPropertyColumn Property = ""@(c => c.Status)"" />
-    </ BitDataGrid >
+        <BitDataGridPropertyColumn Property=""@(c=>c.EventId)"" />
+        <BitDataGridPropertyColumn Property=""@(c => c.State)"" />
+        <BitDataGridPropertyColumn Property=""@(c => c.City)"" />
+        <BitDataGridPropertyColumn Property=""@(c => c.RecallingFirm)"" Title=""Company"" />
+        <BitDataGridPropertyColumn Property=""@(c => c.Status)"" />
+        <BitDataGridPropertyColumn Sortable=""true"" Property=""@(c => c.ReportDate)"" Title=""Report Date"" />
+    </BitDataGrid>
 </div>
 <div class=""search-panel"">
      <div class=""inline-block"">
         <BitSearchBox @bind-Value=""virtualSampleNameFilter"" Width=""250px""
-                                          Placeholder=""Search on Name""
-                                          InputHtmlAttributes=""@(new Dictionary<string, object> {{""autofocus"", true}})"" />
+                                    Placeholder=""Search on Company""
+                                    InputHtmlAttributes=""@(new Dictionary<string, object> {{""autofocus"", true}})"" />
      </div>
-     <div class=""inline-block"">
-        Total: <strong>@virtualNumResults</strong>
-    </div>
 </div>
 ";
     private readonly string example2CSharpCode = @"
 BitDataGrid<FoodRecall>? dataGrid;
-BitDataGridItemsProvider<FoodRecall> foodRecallProvider;
-int virtualNumResults;
 string _virtualSampleNameFilter = string.Empty;
+BitDataGridItemsProvider<FoodRecall> foodRecallProvider;
+
 string VirtualSampleNameFilter
+{
+    get => _virtualSampleNameFilter;
+    set
     {
-        get => _virtualSampleNameFilter;
-        set
-        {
-            _virtualSampleNameFilter = value;
-            _ = dataGrid.RefreshDataAsync();
-        }
+        _virtualSampleNameFilter = value;
+        _ = dataGrid.RefreshDataAsync();
     }
+}
 
 protected override async Task OnInitializedAsync()
 {
-     foodRecallProvider = async req =>
-     {
-        var url = NavManager.GetUriWithQueryParameters(""https://api.fda.gov/food/enforcement.json"", new Dictionary<string, object?>
-                {
-                    { ""search"",$""recalling_firm:\""{_virtualSampleNameFilter}\"""" },
-                    { ""skip"",req.StartIndex},
-                    { ""limit"", req.Count },
-                });
-
-        var response = await Http.GetAsync(url, req.CancellationToken);
-
-        if (!response.IsSuccessStatusCode)
+    foodRecallProvider = async req =>
+    {
+        try
         {
-            return BitDataGridItemsProviderResult.From(new FoodRecall[] { }, 0);
-        };
-        
-        var data = JsonSerializer.Deserialize(await response.Content.ReadAsStreamAsync(), AppJsonContext.Default.FoodRecallQueryResult);
-
-        return BitDataGridItemsProviderResult.From(
-            items: data!.Results,
-            totalItemCount: data!.Meta.Results.Total);
+            var query = new Dictionary<string, object?>
+            {
+                { ""search"",$""recalling_firm:\""{_virtualSampleNameFilter}\"" },
+                { ""skip"", req.StartIndex },
+                { ""limit"", req.Count }
             };
-        // Display the number of results just for information. This is completely separate from the grid.
-        virtualNumResults = (await Http.GetFromJsonAsync<FoodRecallQueryResult>(""https://api.fda.gov/food/enforcement.json"", AppJsonContext.Default.FoodRecallQueryResult))!.Meta.Results.Total; ;
+
+            var sort = req.GetSortByProperties().SingleOrDefault();
+
+            if (sort != default)
+            {
+                var sortByColumnName = sort.PropertyName switch
+                {
+                    nameof(FoodRecall.ReportDate) => ""report_date"",
+                    _ => throw new InvalidOperationException()
+                };
+
+                query.Add(""sort"", $""{sortByColumnName}:{(sort.Direction == BitDataGridSortDirection.Ascending ? ""asc"" : ""desc"")}"");
+            }
+
+            var url = NavManager.GetUriWithQueryParameters(""https://api.fda.gov/food/enforcement.json"", query);
+
+            var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.FoodRecallQueryResult, req.CancellationToken);
+
+            return BitDataGridItemsProviderResult.From(
+                                            items: data!.Results,
+                                            totalItemCount: data!.Meta.Results.Total);
+        }
+        catch
+        {
+            return BitDataGridItemsProviderResult.From<FoodRecall>(new List<FoodRecall> { }, 0);
+        }
+    };
 }
 
 //https://devblogs.microsoft.com/dotnet/try-the-new-system-text-json-source-generator/
@@ -535,6 +502,7 @@ public class FoodRecallQueryResult
     [JsonPropertyName(""results"")]
     public List<FoodRecall> Results { get; set; }
 }
+
 public class Meta
 {
     [JsonPropertyName(""disclaimer"")]
@@ -552,6 +520,7 @@ public class Meta
     [JsonPropertyName(""results"")]
     public Results Results { get; set; }
 }
+
 public class FoodRecall
 {
     [JsonPropertyName(""country"")]
@@ -626,6 +595,7 @@ public class FoodRecall
     [JsonPropertyName(""status"")]
     public string Status { get; set; }
 }
+
 public class Results
 {
     [JsonPropertyName(""skip"")]
@@ -637,19 +607,190 @@ public class Results
     [JsonPropertyName(""total"")]
     public int Total { get; set; }
 }
+
 public class Openfda
 {
 }
-
 ";
+
     private readonly string example3HTMLCode = @"
+@using System.Text.Json;
+@inject HttpClient HttpClient
+@inject NavigationManager NavManager
+
 <style scoped>
-::deep .bitdatagrid[theme=redskin] {
+.grid {
+    height: 25rem;
+    overflow-y: auto;
+}
+
+.grid ::deep table {
+    min-width: 100%;
+}
+
+.grid ::deep thead {
+    position: sticky;
+    top: 0;
+    background-color: #d8d8d8;
+    outline: 1px solid gray;
+    z-index: 1;
+}
+
+.grid ::deep tr {
+    height: 30px;
+    border-bottom: 0.5px solid silver;
+}
+
+.grid ::deep tbody td {
+    white-space: nowrap;
+    overflow: hidden;
+    max-width: 0;
+    text-overflow: ellipsis;
+}
+</style>
+
+<div class=""grid"">
+    <BitDataGrid ItemKey=""(p => p.Id)"" ItemsProvider=""@productsItemsProvider"" TGridItem=""ProductDto"" Virtualize=""true"" @ref=""productsDataGrid"">
+        <BitDataGridPropertyColumn Property=""@(p => p.Id)"" Sortable=""true"" IsDefaultSort=""BitDataGridSortDirection.Ascending"" />
+        <BitDataGridPropertyColumn Property=""@(p => p.Name)"" Sortable=""true"" />
+        <BitDataGridPropertyColumn Property=""@(p => p.Price)"" Sortable=""true"" />
+    </BitDataGrid>
+</div>
+<div class=""search-panel"">
+     <div class=""inline-block"">
+        <BitSearchBox @bind-Value=""ODataSampleNameFilter"" Width=""250px""
+                                  Placeholder=""Search on Name""
+                                  InputHtmlAttributes=""@(new Dictionary<string, object> {{""autofocus"", true}})"" />
+     </div>
+</div>
+";
+    private readonly string example3CSharpCode = @"
+
+// To make following aspnetcore controller work, simply change services.AddControllers(); to services.AddControllers().AddOData()
+// Note that this need Microsoft.AspNetCore.OData nuget package to be installed
+
+[ApiController]
+[Route(""[controller]/[action]"")]
+public class ProductsController : ControllerBase
+{
+    private static readonly Random _random = new Random();
+
+    private static readonly ProductDto[] _products = Enumerable.Range(1, 500_000)
+        .Select(i => new ProductDto { Id = i, Name = Guid.NewGuid().ToString(""N""), Price = _random.Next(1, 100) })
+        .ToArray();
+
+    [HttpGet]
+    public async Task<PagedResult<ProductDto>> GetProducts(ODataQueryOptions<ProductDto> odataQuery, CancellationToken cancellationToken)
+    {
+        var query = _products.AsQueryable();
+
+        query = (IQueryable<ProductDto>)odataQuery.ApplyTo(query, ignoreQueryOptions: AllowedQueryOptions.Top | AllowedQueryOptions.Skip);
+
+        var totalCount = query.Count();
+
+        if (odataQuery.Skip is not null)
+            query = query.Skip(odataQuery.Skip.Value);
+
+        query = query.Take(odataQuery.Top?.Value ?? 50);
+
+        return new PagedResult<ProductDto>(query.ToArray(), totalCount);
+    }
+}
+
+BitDataGrid<ProductDto>? productsDataGrid;
+string _odataSampleNameFilter = string.Empty;
+BitDataGridItemsProvider<ProductDto> productsItemsProvider;
+
+string ODataSampleNameFilter
+{
+    get => _odataSampleNameFilter;
+    set
+    {
+        _odataSampleNameFilter = value;
+        _ = productsDataGrid.RefreshDataAsync();
+    }
+}
+
+protected override async Task OnInitializedAsync()
+{
+    productsItemsProvider = async req =>
+    {
+        try
+        {
+            // https://docs.microsoft.com/en-us/odata/concepts/queryoptions-overview
+
+            var query = new Dictionary<string, object>()
+            {
+                { ""$top"", req.Count ?? 50 },
+                { ""$skip"", req.StartIndex }
+            };
+
+            if (string.IsNullOrEmpty(_odataSampleNameFilter) is false)
+            {
+                query.Add(""$filter"", $""contains(Name,'{_odataSampleNameFilter}')"");
+            }
+
+            if (req.GetSortByProperties().Any())
+            {
+                query.Add(""$orderby"", string.Join("", "", req.GetSortByProperties().Select(p => $""{p.PropertyName} {(p.Direction == BitDataGridSortDirection.Ascending ? ""asc"" : ""desc"")}"")));
+            }
+
+            var url = NavManager.GetUriWithQueryParameters(""Products/GetProducts"", query);
+
+            var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto);
+
+            return BitDataGridItemsProviderResult.From(data!.Items, (int)data!.TotalCount);
+        }
+        catch
+        {
+            return BitDataGridItemsProviderResult.From<ProductDto>(new List<ProductDto> { }, 0);
+        }
+    };
+}
+
+//https://devblogs.microsoft.com/dotnet/try-the-new-system-text-json-source-generator/
+[JsonSerializable(typeof(PagedResult<ProductDto>))]
+public partial class AppJsonContext : JsonSerializerContext
+{
+  
+}
+
+public class ProductDto
+{
+    public int Id { get; set; }
+
+    public string Name { get; set; }
+
+    public decimal Price { get; set; }
+}
+
+public class PagedResult<T>
+{
+    public IList<T> Items { get; set; }
+
+    public int TotalCount { get; set; }
+
+    public PagedResult(IList<T> items, int totalCount)
+    {
+        Items = items;
+        TotalCount = totalCount;
+    }
+
+    public PagedResult()
+    {
+
+    }
+}
+";
+
+    private readonly string example4HTMLCode = @"
+<style scoped>
+.grid ::deep .bitdatagrid[theme=redskin] {
     font-style :italic;
     color: red;
 }
 
-::deep .bitdatagrid[theme=redskin] .col-title {
+.grid ::deep .bitdatagrid[theme=redskin] .col-title {
     gap: 0.4rem; /* Separate the sort indicator from title text */
     font-weight: bold;
     text-transform: uppercase;
@@ -657,33 +798,29 @@ public class Openfda
     color:white;
 }
 
-::deep .bitdatagrid[theme=redskin] .sort-indicator {
+.grid ::deep .bitdatagrid[theme=redskin] .sort-indicator {
     color: white;
 }
 </style>
 
 <div class=""grid"">
-     <BitDataGrid Items = ""@data""  Theme=""redskin"">
-         <BitDataGridPropertyColumn Property = ""@(c => c.Name)"" Sortable=""true"" Class=""column1"">
-         </BitDataGridPropertyColumn>
-         <BitDataGridPropertyColumn Property = ""@(c => c.Medals.Gold)"" Sortable=""true"" Align=""BitDataGridAlign.Right"" />
-         <BitDataGridPropertyColumn Property = ""@(c => c.Medals.Silver)"" Sortable=""true"" Align=""BitDataGridAlign.Right"" />
-         <BitDataGridPropertyColumn Property = ""@(c => c.Medals.Bronze)"" Sortable=""true"" Align=""BitDataGridAlign.Right"" />
-         <BitDataGridPropertyColumn Property = ""@(c => c.Medals.Total)"" Sortable=""true"" Align=""BitDataGridAlign.Right"" />
+     <BitDataGrid Items=""@data"" Theme=""redskin"">
+         <BitDataGridPropertyColumn Property=""@(c => c.Name)"" Sortable=""true"" />
+         <BitDataGridPropertyColumn Property=""@(c => c.Medals.Gold)"" Sortable=""true"" Align=""BitDataGridAlign.Right"" />
+         <BitDataGridPropertyColumn Property=""@(c => c.Medals.Silver)"" Sortable=""true"" Align=""BitDataGridAlign.Right"" />
+         <BitDataGridPropertyColumn Property=""@(c => c.Medals.Bronze)"" Sortable=""true"" Align=""BitDataGridAlign.Right"" />
+         <BitDataGridPropertyColumn Property=""@(c => c.Medals.Total)"" Sortable=""true"" Align=""BitDataGridAlign.Right"" />
     </BitDataGrid>
 </div>
 ";
-    private readonly string example3CSharpCode = @"
-IQueryable<Country> data;
+    private readonly string example4CSharpCode = @"
+IQueryable<Country> sevenCountries;
+
 protected override async Task OnInitializedAsync()
 {
-    data= (await Get7CountriesAsync()).Items.AsQueryable();
+    sevenCountries = _countries.Take(7).AsQueryable();
 }
-private async Task<BitDataGridItemsProviderResult<Country>> Get7CountriesAsync()
-{
-     var Countries = _countries.Take(7).AsQueryable();
-     return BitDataGridItemsProviderResult.From(Countries.ToArray(), Countries.Count());
-}
+
 private readonly static Country[] _countries = new[]
 {
     new Country { Code = ""AR"", Name=""Argentina"", Medals = new Medals { Gold = 0, Silver = 1, Bronze = 2 } },
@@ -693,90 +830,9 @@ private readonly static Country[] _countries = new[]
     new Country { Code = ""AZ"", Name = ""Azerbaijan"", Medals = new Medals { Gold = 0, Silver = 3, Bronze = 4 } },
     new Country { Code = ""BS"", Name = ""Bahamas"", Medals = new Medals { Gold = 2, Silver = 0, Bronze = 0 } },
     new Country { Code = ""BH"", Name = ""Bahrain"", Medals = new Medals { Gold = 0, Silver = 1, Bronze = 0 } },
-    ...
+    // ...
 };
 ";
-
-    BitDataGridPaginationState pagination = new() { ItemsPerPage = 15 };
-    IQueryable<Country> items;
-    IQueryable<Country> data;
-    BitDataGridItemsProvider<FoodRecall> foodRecallProvider;
-
-    string typicalSampleNameFilter = string.Empty;
-    int virtualNumResults;
-    string _virtualSampleNameFilter = string.Empty;
-    string VirtualSampleNameFilter
-    {
-        get => _virtualSampleNameFilter;
-        set
-        {
-            _virtualSampleNameFilter = value;
-            _ = dataGrid.RefreshDataAsync();
-        }
-    }
-
-    BitDataGridSort<Country> rankSort = BitDataGridSort<Country>.ByDescending(x => x.Medals.Gold).ThenDescending(x => x.Medals.Silver).ThenDescending(x => x.Medals.Bronze);
-    IQueryable<Country> FilteredItems => items?.Where(x => x.Name.Contains(typicalSampleNameFilter, StringComparison.CurrentCultureIgnoreCase));
-    BitDataGrid<FoodRecall>? dataGrid;
-
-    protected override async Task OnInitializedAsync()
-    {
-        items = (await GetCountriesAsync(0, null, null, true, default)).Items.AsQueryable();
-        data = (await Get7CountriesAsync()).Items.AsQueryable();
-
-        foodRecallProvider = async req =>
-        {
-            try
-            {
-                var url = NavManager.GetUriWithQueryParameters("https://api.fda.gov/food/enforcement.json", new Dictionary<string, object?>
-                {
-                    { "search",$"recalling_firm:\"{_virtualSampleNameFilter}\"" },
-                    { "skip", req.StartIndex },
-                    { "limit", req.Count }
-                });
-
-                var data = await Http.GetFromJsonAsync(url, AppJsonContext.Default.FoodRecallQueryResult, req.CancellationToken);
-
-                virtualNumResults = data!.Meta.Results.Total;
-
-                return BitDataGridItemsProviderResult.From(
-                    items: data!.Results,
-                    totalItemCount: data!.Meta.Results.Total);
-            }
-            finally
-            {
-                StateHasChanged();
-            }
-        };
-    }
-
-    private async Task<BitDataGridItemsProviderResult<Country>> GetCountriesAsync(int startIndex, int? count, string sortBy, bool sortAscending, CancellationToken cancellationToken)
-    {
-        var ordered = (sortBy, sortAscending) switch
-        {
-            (nameof(Country.Name), true) => _countries.OrderBy(c => c.Name),
-            (nameof(Country.Name), false) => _countries.OrderByDescending(c => c.Name),
-            (nameof(Country.Code), true) => _countries.OrderBy(c => c.Code),
-            (nameof(Country.Code), false) => _countries.OrderByDescending(c => c.Code),
-            ("Medals.Gold", true) => _countries.OrderBy(c => c.Medals.Gold),
-            ("Medals.Gold", false) => _countries.OrderByDescending(c => c.Medals.Gold),
-            _ => _countries.OrderByDescending(c => c.Medals.Gold),
-        };
-
-        var result = ordered.Skip(startIndex);
-
-        if (count.HasValue)
-        {
-            result = result.Take(count.Value);
-        }
-
-        return BitDataGridItemsProviderResult.From(result.ToArray(), ordered.Count());
-    }
-    private async Task<BitDataGridItemsProviderResult<Country>> Get7CountriesAsync()
-    {
-        var Countries = _countries.Take(7).AsQueryable();
-        return BitDataGridItemsProviderResult.From(Countries.ToArray(), Countries.Count());
-    }
 
     private readonly static Country[] _countries = new[]
     {

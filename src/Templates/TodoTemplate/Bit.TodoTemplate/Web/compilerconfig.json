@@ -1,82 +1,78 @@
 ﻿[
     {
-        "outputFile": "wwwroot/styles/app.css",
-        "inputFile": "Styles/app.scss"
+        "inputFile": "Shared/MainLayout.razor.scss",
+        "outputFile": "Shared/MainLayout.razor.css"
     },
     {
-        "outputFile": "Pages/Home.razor.css",
-        "inputFile": "Pages/Home.razor.scss"
+        "inputFile": "Shared/AppErrorBoundary.razor.scss",
+        "outputFile": "Shared/AppErrorBoundary.razor.css"
     },
     {
-        "outputFile": "Pages/Privacy.razor.css",
-        "inputFile": "Pages/Privacy.razor.scss"
+        "inputFile": "Shared/MessageBox.razor.scss",
+        "outputFile": "Shared/MessageBox.razor.css"
     },
     {
-        "outputFile": "Pages/SignUp.razor.css",
-        "inputFile": "Pages/SignUp.razor.scss"
+        "inputFile": "Components/Header.razor.scss",
+        "outputFile": "Components/Header.razor.css"
     },
     {
-        "outputFile": "Pages/SignIn.razor.css",
-        "inputFile": "Pages/SignIn.razor.scss"
+        "inputFile": "Components/Footer.razor.scss",
+        "outputFile": "Components/Footer.razor.css"
     },
     {
-        "outputFile": "Pages/EmailConfirmation.razor.css",
-        "inputFile": "Pages/EmailConfirmation.razor.scss"
+        "inputFile": "Components/NavMenu.razor.scss",
+        "outputFile": "Components/NavMenu.razor.css"
     },
     {
-        "outputFile": "Pages/ForgotPassword.razor.css",
-        "inputFile": "Pages/ForgotPassword.razor.scss"
+        "inputFile": "Components/SignOutConfirmModal.razor.scss",
+        "outputFile": "Components/SignOutConfirmModal.razor.css"
     },
     {
-        "outputFile": "Pages/ResetPassword.razor.css",
-        "inputFile": "Pages/ResetPassword.razor.scss"
+        "inputFile": "Components/PageNotFound.razor.scss",
+        "outputFile": "Components/PageNotFound.razor.css"
     },
     {
-        "outputFile": "Pages/Todo.razor.css",
-        "inputFile": "Pages/Todo.razor.scss"
+        "inputFile": "Pages/HomePage.razor.scss",
+        "outputFile": "Pages/HomePage.razor.css"
     },
     {
-        "outputFile": "Pages/EditProfile.razor.css",
-        "inputFile": "Pages/EditProfile.razor.scss"
+        "inputFile": "Pages/PrivacyPage.razor.scss",
+        "outputFile": "Pages/PrivacyPage.razor.css"
     },
     {
-        "outputFile": "Components/Header.razor.css",
-        "inputFile": "Components/Header.razor.scss"
+        "inputFile": "Pages/SignUpPage.razor.scss",
+        "outputFile": "Pages/SignUpPage.razor.css"
     },
     {
-        "outputFile": "Components/Footer.razor.css",
-        "inputFile": "Components/Footer.razor.scss"
+        "inputFile": "Pages/SignInPage.razor.scss",
+        "outputFile": "Pages/SignInPage.razor.css"
     },
     {
-        "outputFile": "Components/NavMenu.razor.css",
-        "inputFile": "Components/NavMenu.razor.scss"
+        "inputFile": "Pages/EmailConfirmationPage.razor.scss",
+        "outputFile": "Pages/EmailConfirmationPage.razor.css"
     },
     {
-        "outputFile": "Components/SignOutConfirmModal.razor.css",
-        "inputFile": "Components/SignOutConfirmModal.razor.scss"
+        "inputFile": "Pages/ForgotPasswordPage.razor.scss",
+        "outputFile": "Pages/ForgotPasswordPage.razor.css"
     },
     {
-        "outputFile": "Components/PageNotFound.razor.css",
-        "inputFile": "Components/PageNotFound.razor.scss"
+        "inputFile": "Pages/ResetPasswordPage.razor.scss",
+        "outputFile": "Pages/ResetPasswordPage.razor.css"
     },
     {
-        "outputFile": "Shared/MainLayout.razor.css",
-        "inputFile": "Shared/MainLayout.razor.scss"
+        "inputFile": "Pages/TodoPage.razor.scss",
+        "outputFile": "Pages/TodoPage.razor.css"
     },
     {
-        "outputFile": "Shared/AppErrorBoundary.razor.css",
-        "inputFile": "Shared/AppErrorBoundary.razor.scss"
+        "inputFile": "Pages/EditProfilePage.razor.scss",
+        "outputFile": "Pages/EditProfilePage.razor.css"
     },
     {
-        "outputFile": "Shared/MessageBox.razor.css",
-        "inputFile": "Shared/MessageBox.razor.scss"
+        "inputFile": "wwwroot/scripts/app.js",
+        "outputFile": "wwwroot/scripts/app.min.js"
     },
     {
-        "outputFile": "wwwroot/scripts/app.min.js",
-        "inputFile": "wwwroot/scripts/app.js"
-    },
-    {
-        "outputFile": "wwwroot/service-worker.published.min.js",
-        "inputFile": "wwwroot/service-worker.published.js"
+        "inputFile": "wwwroot/service-worker.published.js",
+        "outputFile": "wwwroot/service-worker.published.min.js"
     }
 ]

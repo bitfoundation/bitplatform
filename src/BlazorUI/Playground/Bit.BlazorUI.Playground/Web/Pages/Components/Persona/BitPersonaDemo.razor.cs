@@ -134,6 +134,41 @@ public partial class BitPersonaDemo
             DefaultValue = "",
             Description = "Tertiary text to display, usually the status of the user. The tertiary text will only be shown when using size72 or size100.",
         },
+        new ComponentParameter()
+        {
+            Name = "ActionIconName",
+            Type = "BitIconName",
+            DefaultValue = "BitIconName.Edit",
+            Description = "Icon name for the icon button of the custom action.",
+        },
+        new ComponentParameter()
+        {
+            Name = "OnActionClick",
+            Type = "EventCallback<MouseEventArgs>",
+            DefaultValue = "",
+            Description = "Callback for the persona custom action.",
+        },
+        new ComponentParameter()
+        {
+            Name = "ActionFragment",
+            Type = "RenderFragment?",
+            DefaultValue = "",
+            Description = "Optional Custom template for the custom action element.",
+        },
+        new ComponentParameter()
+        {
+            Name = "OnImageClick",
+            Type = "EventCallback<MouseEventArgs>",
+            DefaultValue = "",
+            Description = "Callback for when the image clicked.",
+        },
+        new ComponentParameter()
+        {
+            Name = "ImageOverlayFragment",
+            Type = "RenderFragment?",
+            DefaultValue = "",
+            Description = "Optional Custom template for the image overlay.",
+        }
     };
 
     private readonly List<EnumParameter> enumParameters = new()
@@ -141,7 +176,7 @@ public partial class BitPersonaDemo
         new EnumParameter()
         {
             Id = "precence-status",
-            Title = "BitPersonaPresence enum",
+            Title = "BitPersonaPresenceStatus enum",
             EnumList = new List<EnumItem>()
             {
                 new()
@@ -319,7 +354,7 @@ public partial class BitPersonaDemo
         new EnumParameter()
         {
             Id = "bitpersona-size",
-            Title = "BitPersonaPresence enum",
+            Title = "BitPersonaSize class",
             EnumList = new List<EnumItem>()
             {
                 new()
@@ -379,6 +414,20 @@ public partial class BitPersonaDemo
             }
         },
     };
+
+    private int _actionClickCount = 0;
+
+    private void HandleActionClick()
+    {
+        _actionClickCount++;
+    }
+
+    private int _imageClickCount = 0;
+
+    private void HandleImageClick()
+    {
+        _imageClickCount++;
+    }
 
     private static string example1CSharpCode = @"
 public bool IsHideDetails { get; set; } = true;";
@@ -454,4 +503,45 @@ public bool IsHideDetails { get; set; } = true;";
             SecondaryText=""Software Engineer""
             TertiaryText=""In a meeting""
             OptionalText=""Available at 4:00pm""></BitPersona>";
+
+    private static string example2CSharpCode = @"
+private int _actionClickCount = 0;
+
+private void HandleActionClick()
+{
+    _actionClickCount++;
+}";
+
+    private static string example2HTMLCode = @"
+<BitPersona ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png""
+            Presence=@BitPersonaPresenceStatus.None
+            Size=@BitPersonaSize.Size120
+            OnActionClick=""HandleActionClick""
+            ActionIconName=""BitIconName.Edit""
+            HidePersonaDetails=""!IsHideDetails""
+            Text=""Annie Lindqvist""
+            SecondaryText=""Software Engineer""
+            TertiaryText=""In a meeting""
+            OptionalText=""Available at 4:00pm""></BitPersona>
+<p>ActionClickCount: @_actionClickCount</p>";
+
+    private static string example3CSharpCode = @"
+private int _imageClickCount = 0;
+
+private void HandleImageClick()
+{
+    _imageClickCount++;
+}";
+
+    private static string example3HTMLCode = @"
+<BitPersona ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png""
+            Presence=@BitPersonaPresenceStatus.Online
+            Size=@BitPersonaSize.Size120
+            OnImageClick=""HandleImageClick""
+            HidePersonaDetails=""!IsHideDetails""
+            Text=""Annie Lindqvist""
+            SecondaryText=""Software Engineer""
+            TertiaryText=""In a meeting""
+            OptionalText=""Available at 4:00pm""></BitPersona>
+<p>ImageClickCount: @_imageClickCount</p>";
 }

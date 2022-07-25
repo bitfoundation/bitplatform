@@ -19,10 +19,10 @@ public class BitFileUploadTests : BunitTestContext
             parameters.Add(p => p.Visual, visual);
         });
 
-        var bitFileUpload = com.Find(".bit-file-upload");
+        var bitFileUpload = com.Find(".bit-upl");
         var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
 
-        Assert.IsTrue(bitFileUpload.ClassList.Contains($"bit-file-upload-{visualClass}") && bitFileUpload.ClassList.Contains($"bit-file-upload"));
+        Assert.IsTrue(bitFileUpload.ClassList.Contains($"bit-upl-{visualClass}") && bitFileUpload.ClassList.Contains($"bit-upl"));
     }
 
     [DataTestMethod,

@@ -5,16 +5,16 @@
      @attributes="@HtmlAttributes"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
-    <div class="bit-file-upload-wrapper">
+    <div class="bit-upl-wrapper">
         @if (LabelFragment is not null)
         {
-            <label class="bit-file-upload-lbl" for="@InputId">
+            <label class="bit-upl-lbl" for="@InputId">
                 @LabelFragment
             </label>
         }
         else if (Label.HasValue())
         {
-            <label class="bit-file-upload-lbl" for="@InputId">
+            <label class="bit-upl-lbl" for="@InputId">
                 <i class="bit-icon bit-icon--CloudUpload"></i>
                 @Label
             </label>
@@ -50,7 +50,7 @@
                                 <div class="file-name">@file.Name</div>
                             </div>
                             <div class="file-size-container">
-                                <span class="file-siz">@($"{GetFileUploadSize(file)}/{file.Size.Humanize()}")</span>
+                                <span class="file-siz">@($"{GetFileUploadSize(file)}/{FileSizeHumanizer.Humanize(file.Size)}")</span>
                                 <span class="upload-percent">@GetFileUploadPercent(file)%</span>
                             </div>
                             @if (file.Status is BitFileUploadStatus.InProgress or BitFileUploadStatus.Paused)

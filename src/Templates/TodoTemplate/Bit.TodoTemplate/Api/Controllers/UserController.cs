@@ -3,7 +3,7 @@ using TodoTemplate.Shared.Dtos.Account;
 
 namespace TodoTemplate.Api.Controllers;
 
-[Route("api/[controller]")]
+[Route("api/[controller]/[action]")]
 [ApiController]
 public partial class UserController : ControllerBase
 {
@@ -11,7 +11,7 @@ public partial class UserController : ControllerBase
 
     [AutoInject] private IMapper _mapper = default!;
 
-    [HttpGet("[action]")]
+    [HttpGet]
     public async Task<UserDto> GetCurrentUser(CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();

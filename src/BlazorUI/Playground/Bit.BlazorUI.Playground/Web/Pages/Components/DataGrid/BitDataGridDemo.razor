@@ -1,8 +1,8 @@
 ﻿@page "/components/data-grid"
-@inject HttpClient Http
+@inject HttpClient HttpClient
 @inject NavigationManager NavManager
 
-@using Playground.Shared.Dtos.DataGridDemo;
+@using Playground.Shared.Dtos.DataGridDemo
 
 <ComponentDemo ComponentName="DataGrid"
                ComponentDescription="BitDataGrid is a robust way to display an information-rich collection of items, and allow people to sort, group, and filter the content. Use a data-grid when information density is critical."
@@ -11,14 +11,10 @@
                EnumParameters="enumParameters">
     <ComponentExampleBox Title="Typical usage, Columns, Sorting, Filtring, Paging" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
-            <div class="grid">
+            <div class="grid1">
                 <BitDataGrid Items="@FilteredItems" ResizableColumns="true" Pagination="@pagination">
-                    @* <BitDataGridTemplateColumn Title="Rank" SortBy="@rankSort" Align="BitDataGridAlign.Center" IsDefaultSort="BitDataGridSortDirection.Ascending">
-                    <img class="flag" src="flags/@(context.Code).svg" />
-                    </BitDataGridTemplateColumn>*@
-                    <BitDataGridPropertyColumn Property="@(c => c.Name)" Sortable="true" Class="column1">
+                    <BitDataGridPropertyColumn Property="@(c => c.Name)" Sortable="true">
                         <ColumnOptions>
-                            @*<input type="search" autofocus @bind="nameFilter" @bind:event="oninput" />*@
                             <BitSearchBox @bind-Value="typicalSampleNameFilter"
                                           Placeholder="Search on Name"
                                           InputHtmlAttributes="@(new Dictionary<string, object> {{"autofocus", true}})" />
@@ -36,34 +32,50 @@
 
     <ComponentExampleBox Title="Virtualizing" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example2">
         <ExamplePreview>
-            <div class="grid grid--fix-height">
-               <BitDataGrid   ItemsProvider="@foodRecallProvider" TGridItem="FoodRecall" Virtualize="true" @ref="dataGrid">
+            <div class="grid2">
+                <BitDataGrid ItemsProvider="@foodRecallProvider" TGridItem="FoodRecall" Virtualize="true" @ref="dataGrid">
                     <BitDataGridPropertyColumn Property="@(c=>c.EventId)" />
                     <BitDataGridPropertyColumn Property="@(c => c.State)" />
                     <BitDataGridPropertyColumn Property="@(c => c.City)" />
-                    <BitDataGridPropertyColumn Title="Company" Property="@(c => c.RecallingFirm)" />
+                    <BitDataGridPropertyColumn Property="@(c => c.RecallingFirm)" Title="Company" />
                     <BitDataGridPropertyColumn Property="@(c => c.Status)" />
+                    <BitDataGridPropertyColumn Sortable="true" Property="@(c => c.ReportDate)" Title="Report Date" />
                 </BitDataGrid>
             </div>
             <div class="search-panel">
                 <div class="inline-block">
                     <BitSearchBox @bind-Value="VirtualSampleNameFilter" Width="250px"
-                                  Placeholder="Search on Name"
+                                  Placeholder="Search on Company"
                                   InputHtmlAttributes="@(new Dictionary<string, object> {{"autofocus", true}})" />
-                </div>
-                <div class="inline-block">
-                    Total: <strong>@virtualNumResults</strong>
                 </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Styling" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example3">
+    <ComponentExampleBox Title="OData" ExampleId="example3" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode">
         <ExamplePreview>
-            <div class="grid">
-                <BitDataGrid Items="@data" Theme="redskin">
-                    <BitDataGridPropertyColumn Property="@(c => c.Name)" Sortable="true" Class="column1">
-                    </BitDataGridPropertyColumn>
+            <div class="grid2">
+                <BitDataGrid ItemKey="(p => p.Id)" ItemsProvider="@productsItemsProvider" TGridItem="ProductDto" Virtualize="true" @ref="productsDataGrid">
+                    <BitDataGridPropertyColumn Property="@(p => p.Id)" Sortable="true" IsDefaultSort="BitDataGridSortDirection.Ascending" />
+                    <BitDataGridPropertyColumn Property="@(p => p.Name)" Sortable="true" />
+                    <BitDataGridPropertyColumn Property="@(p => p.Price)" Sortable="true" />
+                </BitDataGrid>
+            </div>
+            <div class="search-panel">
+                <div class="inline-block">
+                    <BitSearchBox @bind-Value="ODataSampleNameFilter" Width="250px"
+                                  Placeholder="Search on Name"
+                                  InputHtmlAttributes="@(new Dictionary<string, object> {{"autofocus", true}})" />
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Styling" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
+        <ExamplePreview>
+            <div class="grid3">
+                <BitDataGrid Items="@sevenCountries" Theme="redskin">
+                    <BitDataGridPropertyColumn Property="@(c => c.Name)" Sortable="true" />
                     <BitDataGridPropertyColumn Property="@(c => c.Medals.Gold)" Sortable="true" Align="BitDataGridAlign.Right" />
                     <BitDataGridPropertyColumn Property="@(c => c.Medals.Silver)" Sortable="true" Align="BitDataGridAlign.Right" />
                     <BitDataGridPropertyColumn Property="@(c => c.Medals.Bronze)" Sortable="true" Align="BitDataGridAlign.Right" />
@@ -74,3 +86,116 @@
     </ComponentExampleBox>
 
 </ComponentDemo>
+
+@code {
+
+    IQueryable<Country> allCountries;
+    BitDataGrid<FoodRecall> dataGrid;
+    BitDataGrid<ProductDto> productsDataGrid;
+    IQueryable<Country> sevenCountries;
+    BitDataGridItemsProvider<FoodRecall> foodRecallProvider;
+    BitDataGridItemsProvider<ProductDto> productsItemsProvider;
+    BitDataGridPaginationState pagination = new() { ItemsPerPage = 15 };
+    IQueryable<Country> FilteredItems => allCountries?.Where(x => x.Name.Contains(typicalSampleNameFilter, StringComparison.CurrentCultureIgnoreCase));
+
+    string typicalSampleNameFilter = string.Empty;
+    string _virtualSampleNameFilter = string.Empty;
+
+    string VirtualSampleNameFilter
+    {
+        get => _virtualSampleNameFilter;
+        set
+        {
+            _virtualSampleNameFilter = value;
+            _ = dataGrid.RefreshDataAsync();
+        }
+    }
+
+    string _odataSampleNameFilter = string.Empty;
+
+    string ODataSampleNameFilter
+    {
+        get => _odataSampleNameFilter;
+        set
+        {
+            _odataSampleNameFilter = value;
+            _ = productsDataGrid.RefreshDataAsync();
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        allCountries = _countries.AsQueryable();
+        sevenCountries = _countries.Take(7).AsQueryable();
+
+        foodRecallProvider = async req =>
+        {
+            try
+            {
+                var query = new Dictionary<string, object?>
+                {
+                    { "search",$"recalling_firm:\"{_virtualSampleNameFilter}\"" },
+                    { "skip", req.StartIndex },
+                    { "limit", req.Count }
+                };
+
+                var sort = req.GetSortByProperties().SingleOrDefault();
+
+                if (sort != default)
+                {
+                    var sortByColumnName = sort.PropertyName switch
+                    {
+                        nameof(FoodRecall.ReportDate) => "report_date",
+                        _ => throw new InvalidOperationException()
+                    };
+
+                    query.Add("sort", $"{sortByColumnName}:{(sort.Direction == BitDataGridSortDirection.Ascending ? "asc" : "desc")}");
+                }
+
+                var url = NavManager.GetUriWithQueryParameters("https://api.fda.gov/food/enforcement.json", query);
+
+                var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.FoodRecallQueryResult, req.CancellationToken);
+
+                return BitDataGridItemsProviderResult.From(data!.Results, data!.Meta.Results.Total);
+            }
+            catch
+            {
+                return BitDataGridItemsProviderResult.From<FoodRecall>(new List<FoodRecall> { }, 0);
+            }
+        };
+
+        productsItemsProvider = async req =>
+        {
+            try
+            {
+                // https://docs.microsoft.com/en-us/odata/concepts/queryoptions-overview
+
+                var query = new Dictionary<string, object>()
+                {
+                    { "$top", req.Count ?? 50 },
+                    { "$skip", req.StartIndex }
+                };
+
+                if (string.IsNullOrEmpty(_odataSampleNameFilter) is false)
+                {
+                    query.Add("$filter", $"contains(Name,'{_odataSampleNameFilter}')");
+                }
+
+                if (req.GetSortByProperties().Any())
+                {
+                    query.Add("$orderby", string.Join(", ", req.GetSortByProperties().Select(p => $"{p.PropertyName} {(p.Direction == BitDataGridSortDirection.Ascending ? "asc" : "desc")}")));
+                }
+
+                var url = NavManager.GetUriWithQueryParameters("Products/GetProducts", query);
+
+                var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto);
+
+                return BitDataGridItemsProviderResult.From(data!.Items, (int)data!.TotalCount);
+            }
+            catch
+            {
+                return BitDataGridItemsProviderResult.From<ProductDto>(new List<ProductDto> { }, 0);
+            }
+        };
+    }
+}

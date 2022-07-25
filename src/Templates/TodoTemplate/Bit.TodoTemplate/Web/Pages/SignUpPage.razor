@@ -1,0 +1,100 @@
+﻿@page "/sign-up"
+
+@inherits AppComponentBase;
+
+<PageTitle>@AuthStrings.SingUpTitle</PageTitle>
+
+<div class="page-container">
+    <EditForm Model="SignUpModel" OnValidSubmit="WrapHandled(DoSignUp)" class="form--white">
+
+        <DataAnnotationsValidator />
+
+        @if (string.IsNullOrEmpty(SignUpMessage) is false)
+        {
+            <BitMessageBar Class="form-message-bar"
+                       MessageBarType="@SignUpMessageType"
+                       OnDismiss="() => SignUpMessage = null">
+                @SignUpMessage
+            </BitMessageBar>
+        }
+        @if (IsSignedUp)
+        {
+            <h1 class="form-title">
+                @AuthStrings.ConfirmEmailTitle
+            </h1>
+            <div class="form-description">
+                @AuthStrings.ConfirmEmailMessage
+            </div>
+            <div class="form-link">
+                @AuthStrings.NotReceivedConfirmationEmailMessage
+            </div>
+            <div class="form-note">
+                @AuthStrings.CheckSpamMailMessage
+                <br />
+                - @AuthStrings.Or -
+            </div>
+            <BitButton Class="form-submit-button"
+                   ButtonStyle="BitButtonStyle.Primary"
+                   Title="@AuthStrings.ResendEmail"
+                   AriaLabel="@AuthStrings.ResendEmail"
+                   OnClick="WrapHandled(ResendLink)">
+                @if (IsLoading)
+                {
+                    <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
+                }
+                else
+                {
+                    <span>@AuthStrings.ResendEmail</span>
+                }
+            </BitButton>
+        }
+        else
+        {
+            <h1 class="form-title">
+                @AuthStrings.SignUp
+            </h1>
+            <div class="form-input-container">
+                <BitTextField Label="@AuthStrings.Email"
+                          Placeholder="@AuthStrings.Email"
+                          Type="BitTextFieldType.Email"
+                          @bind-Value="SignUpModel.UserName" />
+                <ValidationMessage For="@(() => SignUpModel.UserName)" />
+            </div>
+            <div class="form-input-container">
+                <BitTextField Label="@AuthStrings.Password"
+                          @bind-Value="SignUpModel.Password"
+                          Type="BitTextFieldType.Password"
+                          CanRevealPassword="true"
+                          Placeholder="@AuthStrings.Password" />
+                <ValidationMessage For="@(() => SignUpModel.Password)" />
+            </div>
+
+            <div class="form-input-container form-input-container--no-margin">
+                <BitCheckbox Class="form-checkbox" @bind-Value="SignUpModel.IsAcceptPrivacy">
+                    @AppStrings.PrivacyPolicyAgreementMessage <BitLink Href="/privacy" Target="_blank">@AppStrings.PrivacyPolicyTitle</BitLink>
+                </BitCheckbox>
+            </div>
+
+            <BitButton Class="form-submit-button"
+                   ButtonStyle="BitButtonStyle.Primary"
+                   IsEnabled="IsSubmitButtonEnabled"
+                   Title="@AuthStrings.SignUp"
+                   AriaLabel="@AuthStrings.SignUp"
+                   ButtonType="BitButtonType.Submit">
+                @if (IsLoading)
+                {
+                    <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
+                }
+                else
+                {
+                    <span>@AuthStrings.SignUp</span>
+                }
+            </BitButton>
+
+            <div>
+                @AuthStrings.AlreadyHaveAccountMessage <BitLink Href="/sign-in">@AuthStrings.SignIn</BitLink>
+            </div>
+        }
+
+    </EditForm>
+</div>

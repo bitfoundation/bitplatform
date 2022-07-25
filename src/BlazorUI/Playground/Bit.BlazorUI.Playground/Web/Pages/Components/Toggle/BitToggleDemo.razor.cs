@@ -188,7 +188,7 @@ private bool IsToggleUnChecked = false;";
     private readonly string example2HTMLCode = @"<div>
     <BitToggle @bind-Value=""IsToggleUnChecked"" IsEnabled=""true"" OnText=""On"" OffText=""Off"">
         <LabelFragment>
-            Custom Inline Label
+            Custom Label
         </LabelFragment>
     </BitToggle>
 </div>

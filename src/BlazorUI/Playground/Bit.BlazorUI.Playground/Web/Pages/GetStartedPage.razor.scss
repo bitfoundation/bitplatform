@@ -190,6 +190,7 @@
     background-color: $B6Color;
     overflow: auto;
     white-space: nowrap;
+    font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
 
     @include lg {
         min-height: rem(40px);
@@ -213,5 +214,18 @@
         padding: rem(5px) rem(4px);
         font-size: rem(12px);
         line-height: rem(16px);
+    }
+}
+
+.gitpod-section {
+    display: flex;
+
+    .gitpod-icon {
+        background-image: url('/images/icon/gitpod-icon.webp');
+        display: inline-block;
+        background-repeat: no-repeat;
+        background-size: 100%;
+        width: rem(40px);
+        margin-right: rem(12px);
     }
 }

@@ -144,9 +144,9 @@ public int CompletedPercent { get; set; }
 private async Task StartProgress()
 {
     CompletedPercent = 0;
-    while &#40;CompletedPercent &lt= 100)
+    while (CompletedPercent <= 100)
     {
-        if &#40;CompletedPercent == 100)
+        if (CompletedPercent == 100)
         {
                 description = $""Completed !"";
                 break;

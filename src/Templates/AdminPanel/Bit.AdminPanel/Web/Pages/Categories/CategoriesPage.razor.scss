@@ -1,0 +1,36 @@
+﻿.grid {
+    display: inline-flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.grid ::deep table {
+    min-width: 100%;
+}
+
+.grid ::deep tr {
+    height: 1.8rem;
+}
+
+.grid ::deep th:nth-child(1) {
+    width: 15rem;
+}
+
+.grid ::deep th:nth-child(1) .col-options-button {
+    background-image: none;
+    cursor: pointer;
+
+    &:before {
+        display: inline-block;
+        font-family: 'Fabric MDL2 Assets';
+        font-style: normal;
+        font-weight: normal;
+        content: "\E721";
+    }
+}
+
+.color-box {
+    width: 50px;
+    height: 20px;
+    display: block;
+}

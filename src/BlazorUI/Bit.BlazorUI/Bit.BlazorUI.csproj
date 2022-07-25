@@ -18,7 +18,7 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="6.0.6" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="6.0.7" />
         <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.7.4">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

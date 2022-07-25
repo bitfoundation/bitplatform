@@ -31,6 +31,7 @@ public static class Services
                 NavigationManager navManager = sp.GetRequiredService<IHttpContextAccessor>().HttpContext!.RequestServices.GetRequiredService<NavigationManager>();
                 httpClient.BaseAddress = new Uri($"{navManager.BaseUri}api/");
             });
+        services.AddScoped<Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader>();
 
         services.AddScoped(sp =>
         {

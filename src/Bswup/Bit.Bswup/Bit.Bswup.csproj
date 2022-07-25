@@ -4,15 +4,15 @@
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
-        <IncludeBuildOutput>false</IncludeBuildOutput>
         <IncludeContentInPack>false</IncludeContentInPack>
     </PropertyGroup>
 
     <ItemGroup>
         <SupportedPlatform Include="browser" />
     </ItemGroup>
-    
+
     <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="6.0.7" />
         <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.7.4">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

@@ -1,0 +1,21 @@
+﻿@inherits AppComponentBase;
+
+<div class="card">
+    <div class="card-header">
+        @AppStrings.ProductsCountPerCategoryChart
+    </div>
+    <div class="card-body">
+        @if (IsLoading)
+        {
+            <div class="spinner">
+                    <BitSpinner Size="BitSpinnerSize.Large"></BitSpinner>
+            </div>
+        }
+        else
+        {
+            <BitChart Config="_config" @ref="_chart" />
+        }
+    </div>
+</div>
+
+

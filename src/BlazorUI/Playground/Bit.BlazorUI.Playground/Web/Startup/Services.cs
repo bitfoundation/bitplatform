@@ -14,13 +14,8 @@ public class Services
 {
     public static void Add(IServiceCollection services, IConfiguration configuration)
     {
+        services.AddHttpContextAccessor();
         services.AddPlaygroundServices();
-
-        services.AddHttpClient("ApiHttpClient", (serviceProvider, httpClient) =>
-        {
-            httpClient.BaseAddress = new Uri(serviceProvider.GetRequiredService<IConfiguration>()["ApiServerAddress"]);
-        });
-        services.AddTransient(c => c.GetRequiredService<IHttpClientFactory>().CreateClient("ApiHttpClient"));
         services.AddRazorPages();
         services.AddServerSideBlazor();
         services.AddResponseCompression(opts =>

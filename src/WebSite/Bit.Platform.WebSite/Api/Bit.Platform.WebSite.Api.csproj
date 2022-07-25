@@ -8,11 +8,12 @@
     <ItemGroup>
         <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\Web\Pages\_Host.cshtml" Link="Pages\_Host.cshtml" />
         <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\Web\Pages\_Layout.cshtml" Link="Pages\_Layout.cshtml" />
-        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="6.0.6" />
-        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="6.3.1" />
-        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="6.3.1" />
-        <PackageReference Include="Bit.SourceGenerators" Version="1.0.2" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="1.0.2" />
+        <Compile Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\Web\Extensions\HttpRequestExtensions.cs" Link="Extensions\HttpRequestExtensions.cs" />
+        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="6.0.7" />
+        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="6.3.2" />
+        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="6.3.2" />
+        <PackageReference Include="Bit.SourceGenerators" Version="2.0.0" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="2.0.0" />
     </ItemGroup>
 
     <ItemGroup>

@@ -1,0 +1,21 @@
+﻿$html-font-size: 16px;
+
+/// stripUnit(10px) -> 10
+/// stripUnit(2em) -> 2
+/// stripUnit(3) -> 3
+@function stripUnit($value) {
+    @if type-of($value) == 'number' and not unitless($value) {
+        @return $value / ($value * 0 + 1);
+    }
+    @return $value;
+}
+
+/// Convert px to rem.
+@function rem($pxValue) {
+    @return #{stripUnit($pxValue) / stripUnit($html-font-size)}rem;
+}
+
+/// Convert px to em.
+@function em($size, $base-font-size: 16px) {
+    @return stripUnit($size) / stripUnit($base-font-size) * 1em;
+}

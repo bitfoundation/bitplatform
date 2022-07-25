@@ -212,6 +212,8 @@ public partial class BitBreadcrumbDemo
 </div>";
 
     private readonly string example1CSharpCode = @"
+public string OnClickValue { get; set; } = string.Empty;
+
 private List<BitBreadcrumbItem> GetBreadcrumbItems()
 {
     return new List<BitBreadcrumbItem>()

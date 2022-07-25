@@ -1,6 +1,6 @@
 ﻿@import "../../../Styles/_shared.scss";
 
-.numbertext {
+.number {
     position: absolute;
     top: rem(12px);
     padding: rem(12px);
@@ -8,7 +8,7 @@
     color: $Gray3;
 }
 
-.text {
+.text-title {
     position: absolute;
     bottom: rem(55px);
     width: 100%;
@@ -17,3 +17,25 @@
     color: $White;
 }
 
+.text-description {
+    position: absolute;
+    bottom: rem(30px);
+    width: 100%;
+    font-size: rem(11px);
+    text-align: center;
+    color: $White;
+}
+
+.buttons-container {
+    display: flex;
+    justify-content: space-between;
+}
+
+.goto-container {
+    display: flex;
+    justify-content: space-around;
+}
+
+::deep .goto-button {
+    margin-right: rem(10px);
+}

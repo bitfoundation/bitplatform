@@ -59,13 +59,26 @@
         overflow: auto;
 
         code {
-            font-family: "Consolas";
+            font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
         }
     }
 
     h4 {
         color: $Black1;
         margin-bottom: rem(16px);
+        scroll-margin-top: rem(122px);
+
+        @include lg {
+            scroll-margin-top: rem(114px);
+        }
+
+        @include md {
+            scroll-margin-top: rem(98px);
+        }
+
+        @include sm {
+            scroll-margin-top: rem(58px);
+        }
 
         &:hover a.anchor .anchor-icon {
             visibility: visible;
@@ -74,8 +87,8 @@
 
         a.anchor {
             float: left;
-            padding-right: 4px;
-            margin-left: -20px;
+            padding-right: rem(4px);
+            margin-left: rem(-20px);
             line-height: 1;
             text-decoration: none;
 
@@ -125,14 +138,46 @@
         padding: 0 rem(5px) rem(2px) rem(5px);
     }
 
-    .image {
-        width: 100%;
-        margin: rem(25px) 0;
+    .image-container {
+        display: flex;
+        justify-content: center;
     }
 
-    .image-responsive {
-        margin: rem(25px) auto;
-        display: block;
-        max-width: 100%;
+    .image {
+        width: 85%;
+        height: 85%;
+        margin: rem(25px) 0;
     }
+}
+
+.getting-started-side-rail-section {
+    position: absolute;
+    top: rem(550px);
+    left: rem(20px);
+    display: flex;
+    flex-flow: column;
+
+    @include lt-lg {
+        display: none;
+    }
+
+    .side-rail-item {
+        @include Body3;
+        color: $Gray1;
+        padding: rem(4px) rem(4px) rem(4px) rem(12px);
+        border-left: rem(1px) solid $B10Color;
+    }
+
+    .selected-side-rail-item {
+        color: $B6Color;
+        border-left: rem(4px) solid $B6Color;
+        background-color: $B11Color;
+        margin: rem(-2px);
+    }
+}
+
+.fixed-getting-started-side-rail-section {
+    position: fixed;
+    top: rem(100px);
+    left: rem(20px);
 }

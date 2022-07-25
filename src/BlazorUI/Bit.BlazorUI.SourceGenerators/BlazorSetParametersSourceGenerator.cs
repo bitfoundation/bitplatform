@@ -11,8 +11,7 @@ public class BlazorSetParametersSourceGenerator : ISourceGenerator
 {
     public void Execute(GeneratorExecutionContext context)
     {
-        if (context.SyntaxContextReceiver is not BlazorParameterPropertySyntaxReceiver receiver)
-            return;
+        if (context.SyntaxContextReceiver is not BlazorParameterPropertySyntaxReceiver receiver) return;
 
         foreach (var group in receiver.Properties.GroupBy(symbol => symbol.ContainingType, SymbolEqualityComparer.Default))
         {
@@ -46,6 +45,8 @@ namespace {namespaceName}
 {{
     public partial class {GetClassName(classSymbol)}
     {{
+        [global::System.Diagnostics.DebuggerNonUserCode]
+        [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public override Task SetParametersAsync(ParameterView parameters)
         {{
 ");

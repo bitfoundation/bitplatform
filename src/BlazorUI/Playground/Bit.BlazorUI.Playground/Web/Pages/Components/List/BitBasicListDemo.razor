@@ -4,7 +4,7 @@
                ComponentParameters="componentParameters" EnumParameters="enumParameters">
     <ComponentExampleBox Title="BitBasicList" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
-            <BitBasicList Items="People[0]" Virtualize="true" Style="border: 1px #a19f9d solid; border-radius: 3px; ">
+            <BitBasicList Items="People1" Virtualize="true" Style="border: 1px #a19f9d solid; border-radius: 3px; ">
                 <RowTemplate Context="person">
                     <div style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
                         <img src="https://picsum.photos/100/100?random=@(person.Id)">
@@ -19,9 +19,9 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Basic List without virtualization" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example2">
+    <ComponentExampleBox Title="Basic List without virtualization" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@exampl2CSharpCode" ExampleId="example2">
         <ExamplePreview>
-            <BitBasicList Items="People[1]" Virtualize="false" Style="border: 1px #a19f9d solid; border-radius: 3px; ">
+            <BitBasicList Items="People2" Virtualize="false" Style="border: 1px #a19f9d solid; border-radius: 3px; ">
                 <RowTemplate Context="person">
                     <div style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
                         <p>Id: <strong>@person.Id</strong></p>
@@ -33,9 +33,9 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Basic List with custom role and class" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example3">
+    <ComponentExampleBox Title="Basic List with custom role and class" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example3">
         <ExamplePreview>
-            <BitBasicList Items="People[0]" Virtualize="true" Role="list" Style="border: 1px #a19f9d solid; border-radius: 3px;">
+            <BitBasicList Items="People1" Virtualize="true" Role="list" Style="border: 1px #a19f9d solid; border-radius: 3px;">
                 <RowTemplate Context="person">
                     <div class="lst3-list-item">
                         <span>Id: <strong>@person.Id</strong></span>
@@ -47,9 +47,9 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Basic List with overscan count" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example4">
+    <ComponentExampleBox Title="Basic List with overscan count" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
         <ExamplePreview>
-            <BitBasicList Items="People[0]" Virtualize="true" OverscanCount="5" ItemSize="300" Style="border: 1px #a19f9d solid; border-radius: 3px; ">
+            <BitBasicList Items="People1" Virtualize="true" OverscanCount="5" ItemSize="300" Style="border: 1px #a19f9d solid; border-radius: 3px; ">
                 <RowTemplate Context="person">
                     <div style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
                         <p>Id: <strong>@person.Id</strong></p>

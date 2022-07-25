@@ -27,6 +27,15 @@ jobs:
     - name: dotnet pack BlazorUI
       run: dotnet pack src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj --output . --configuration Release
       
+    - name: dotnet restore BlazorUI.Charts
+      run: dotnet restore src/BlazorUI/Bit.BlazorUI.Charts/Bit.BlazorUI.Charts.csproj
+    - name: dotnet msbuild BlazorUI.Charts (1)
+      run: dotnet msbuild src/BlazorUI/Bit.BlazorUI.Charts/Bit.BlazorUI.Charts.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false
+    - name: dotnet msbuild BlazorUI.Charts (2)
+      run: dotnet msbuild src/BlazorUI/Bit.BlazorUI.Charts/Bit.BlazorUI.Charts.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false
+    - name: dotnet pack BlazorUI.Charts
+      run: dotnet pack src/BlazorUI/Bit.BlazorUI.Charts/Bit.BlazorUI.Charts.csproj --output . --configuration Release
+      
     - name: dotnet restore Bswup
       run: dotnet restore src/Bswup/Bit.Bswup/Bit.Bswup.csproj
     - name: dotnet msbuild Bswup (1)
@@ -35,6 +44,15 @@ jobs:
       run: dotnet msbuild src/Bswup/Bit.Bswup/Bit.Bswup.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false
     - name: dotnet pack Bswup
       run: dotnet pack src/Bswup/Bit.Bswup/Bit.Bswup.csproj --output . --configuration Release
+      
+    - name: dotnet restore Butil
+      run: dotnet restore src/Butil/Bit.Butil/Bit.Butil.csproj
+    - name: dotnet msbuild Butil (1)
+      run: dotnet msbuild src/Butil/Bit.Butil/Bit.Butil.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false
+    - name: dotnet msbuild Butil (2)
+      run: dotnet msbuild src/Butil/Bit.Butil/Bit.Butil.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false
+    - name: dotnet pack Butil
+      run: dotnet pack src/Butil/Bit.Butil/Bit.Butil.csproj --output . --configuration Release
             
     - name: dotnet restore CodeAnalyzers
       run: dotnet restore src/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj
@@ -52,15 +70,9 @@ jobs:
 
     - name: dotnet pack TodoTemplate
       run: dotnet pack src/Templates/TodoTemplate/Bit.TodoTemplate.ProjectTemplate.csproj --output . --configuration Release
-      
-    - name: dotnet restore Butil
-      run: dotnet restore src/Butil/Bit.Butil/Bit.Butil.csproj
-    - name: dotnet msbuild Butil (1)
-      run: dotnet msbuild src/Butil/Bit.Butil/Bit.Butil.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false
-    - name: dotnet msbuild Butil (2)
-      run: dotnet msbuild src/Butil/Bit.Butil/Bit.Butil.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false
-    - name: dotnet pack Butil
-      run: dotnet pack src/Butil/Bit.Butil/Bit.Butil.csproj --output . --configuration Release
+
+    - name: dotnet pack AdminPanel
+      run: dotnet pack src/Templates/AdminPanel/Bit.AdminPanel.ProjectTemplate.csproj --output . --configuration Release
       
     - name: dotnet nuget push
       run: dotnet nuget push *.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{secrets.NUGET_ORG_API_KEY}}

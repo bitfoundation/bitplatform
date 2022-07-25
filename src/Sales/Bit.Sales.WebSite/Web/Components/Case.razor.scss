@@ -1,0 +1,213 @@
+﻿@import '../wwwroot/styles/abstracts/_colors.scss';
+@import '../wwwroot/styles/abstracts/_media-queries.scss';
+@import '../wwwroot/styles/abstracts/_functions.scss';
+@import '../wwwroot/styles/abstracts/_mixins.scss';
+
+.case-container {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: 0 rem(100px) 0 rem(200px);
+    box-sizing: border-box;
+
+    @include lg {
+        padding: 0 rem(47px) 0 rem(63px);
+    }
+
+    @include lt-lg {
+        justify-content: flex-start;
+        padding: 0 rem(70px);
+    }
+
+    @include sm {
+        padding: 0 rem(35px);
+    }
+}
+
+.case-left-container {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: flex-start;
+    width: 100%;
+    max-width: rem(540px);
+    margin-right: rem(116px);
+
+    @include lg {
+        max-width: rem(484px);
+        margin-right: 0;
+    }
+
+    @include lt-lg {
+        margin-right: 0;
+    }
+}
+
+.case-title {
+    font-weight: 800;
+    font-size: rem(40px);
+    line-height: rem(67px);
+    color: #222933;
+    margin-bottom: rem(17px);
+}
+
+.case-desc {
+    width: 100%;
+    //white-space: pre;
+    font-weight: 500;
+    font-size: rem(18px);
+    line-height: rem(29px);
+    color: #62676D;
+    padding-bottom: rem(17px);
+    margin-bottom: rem(31px);
+    border-bottom: rem(1px) solid #8C96AA;
+}
+
+.case-tech-title {
+    font-weight: bold;
+    font-size: rem(18px);
+    line-height: rem(30px);
+    color: #222933;
+    margin-bottom: rem(23px);
+}
+
+.case-tech-container {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    height: rem(63px);
+    margin-bottom: rem(41px);
+}
+
+.case-tech {
+    position: relative;
+    width: rem(43px);
+    height: rem(43px);
+    margin-right: rem(20px);
+    border-radius: 50%;
+    background-color: #FAFAFA;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: rem(20px);
+    transition: all linear 0.2s;
+    cursor: pointer;
+
+    .tooltip {
+        position: absolute;
+        top: rem(-41px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        font-weight: bold;
+        font-size: rem(15px);
+        line-height: rem(25px);
+        text-align: center;
+        color: #434750;
+        border-radius: rem(3px);
+        padding: rem(4px) rem(8px);
+        background-color: $Secondary;
+    }
+
+    &:hover {
+        width: rem(63px);
+        height: rem(63px);
+        background-color: $White;
+        background-size: rem(24px);
+        border: 1px solid #D0D0D0;
+
+        .tooltip {
+            display: flex;
+        }
+    }
+
+    .tooltip-vector {
+        position: absolute;
+        bottom: rem(-6px);
+        width: rem(13px);
+        height: rem(6px);
+        background-image: url('/images/cases/tooltip-vector.svg');
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: cover;
+    }
+}
+
+.python {
+    background-image: url('/images/cases/tech/python-gray-icon.svg');
+
+    &:hover {
+        background-image: url('/images/cases/tech/html5-color-icon.svg');
+    }
+}
+
+.case-btn--primary {
+    @include PrimaryButton($IsInNavbar: false);
+}
+
+.case-right-container {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: center;
+
+    @include lt-lg {
+        display: none;
+    }
+}
+
+.case-photo {
+    width: rem(525px);
+    height: rem(640px);
+    background-image: url('/images/cases/case-photo.svg');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    margin-bottom: rem(63px);
+
+    @include lg {
+        width: rem(475px);
+        height: rem(578px);
+        margin-bottom: rem(94px);
+    }
+}
+
+.case-info-container {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: center;
+    align-items: center;
+}
+
+.case-info-box {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: center;
+    align-items: center;
+    width: rem(130px);
+    height: rem(82px);
+    border: rem(1px) solid #EDEDED;
+    margin-right: rem(16px);
+
+    &:last-child {
+        margin-right: 0;
+    }
+
+    .case-info-value {
+        font-weight: bold;
+        font-size: rem(15px);
+        line-height: rem(25px);
+        text-align: center;
+        color: $BlueDark;
+        margin-bottom: rem(10px);
+    }
+
+    .case-info-title {
+        font-size: rem(12px);
+        line-height: rem(19px);
+        text-align: center;
+        color: #434750;
+    }
+}

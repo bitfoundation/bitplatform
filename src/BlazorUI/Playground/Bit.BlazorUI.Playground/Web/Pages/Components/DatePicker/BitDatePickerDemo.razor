@@ -21,14 +21,14 @@
 
     <ComponentExampleBox Title="Jalali BitDatePicker" HTMLSourceCode="@example3HTMLCode" ExampleId="example3">
         <ExamplePreview>
-            <div class="example-desc">In this sample, you can see the usage of CultureInfoHelper class to specify a particular format for the DatePicker. You can also provide your own class for any custom culture of your interest.</div>            
+            <div class="example-desc">In this sample, you can see the usage of CultureInfoHelper class to specify a particular format for the DatePicker. You can also provide your own class for any custom culture of your interest. for more information you can visit <a href="https://github.com/bitfoundation/bitplatform/blob/develop/src/BlazorUI/Bit.BlazorUI/Utils/CultureInfoHelper.cs">here</a></div>
             <div class="example-desc">Please note to reduce the download size of this page, the sample is not implemented here. In order to use this example, it's required to set InvariantGlobalization to false in the project setting, which causes an extra download size for the website.</div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Jalali BitDatePicker with Finglish names" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
+    <ComponentExampleBox Title="Jalali BitDatePicker with Finglish names" HTMLSourceCode="@example4HTMLCode" ExampleId="example4">
         <ExamplePreview>
-            <div class="example-desc">In this sample, you can see the usage of CultureInfoHelper class to specify a particular format for the DatePicker. You can also provide your own class for any custom culture of your interest.</div>           
+            <div class="example-desc">In this sample, you can see the usage of CultureInfoHelper class to specify a particular format for the DatePicker. You can also provide your own class for any custom culture of your interest. for more information you can visit <a href="https://github.com/bitfoundation/bitplatform/blob/develop/src/BlazorUI/Bit.BlazorUI/Utils/CultureInfoHelper.cs">here</a></div>
             <div class="example-desc">Please note to reduce the download size of this page, the sample is not implemented here. In order to use this example, it's required to set InvariantGlobalization to false in the project setting, which causes an extra download size for the website.</div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -42,7 +42,7 @@
 
     <ComponentExampleBox Title="DatePicker with custom date formatting" HTMLSourceCode="@example6HTMLCode" ExampleId="example6">
         <ExamplePreview>
-            <BitDatePicker FormatDate="d" Style="width: 300px"></BitDatePicker>
+            <BitDatePicker FormatDate="MMM=dd(ddd)=yy" Style="width: 300px"></BitDatePicker>
         </ExamplePreview>
     </ComponentExampleBox>
 
@@ -85,6 +85,16 @@
                     @SuccessMessage
                 </BitMessageBar>
             }
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="BitDatePicker with a custom label" HTMLSourceCode="@example9HtmlCode" ExampleId="example9">
+        <ExamplePreview>
+            <BitDatePicker Options="Example9Options">
+                <LabelFragment>
+                    Custom label <BitIconButton IconName="BitIconName.Calendar"></BitIconButton>
+                </LabelFragment>
+            </BitDatePicker>
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>

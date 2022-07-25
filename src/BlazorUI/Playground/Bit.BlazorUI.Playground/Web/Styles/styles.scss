@@ -1,4 +1,5 @@
 ﻿@import '_shared.scss';
+@import '_fonts.scss';
 
 * {
     font-family: "Axiforma";
@@ -74,6 +75,8 @@ a {
     cursor: pointer;
 
     a {
+        display: flex;
+        align-items: center;
         color: inherit;
         font-family: inherit;
 
@@ -136,24 +139,10 @@ a {
 .side-nav-search-box {
     width: 100%;
     height: rem(40px);
-    border-color: $B5Color;
-
-    .bit-icon {
-        color: $B3Color;
-    }
 
     input::-webkit-input-placeholder {
-        color: $B4Color;
         font-size: rem(14px);
         font-weight: 500;
-    }
-
-    &:hover {
-        border-color: $B5Color;
-
-        .bit-icon {
-            color: $B3Color;
-        }
     }
 
     @include lg {
@@ -588,25 +577,11 @@ code {
 .icongraphy-search-box {
     width: rem(336px);
     height: rem(40px);
-    border-color: $B4Color;
     margin-bottom: rem(50px) !important;
 
-    .bit-icon {
-        color: $B3Color;
-    }
-
     input::-webkit-input-placeholder {
-        color: $B4Color;
         font-size: rem(14px);
         font-weight: 500;
-    }
-
-    &:hover {
-        border-color: $B5Color;
-
-        .bit-icon {
-            color: $B3Color;
-        }
     }
 
     @include lg {
@@ -628,6 +603,33 @@ code {
 
 .bit-icon--icongraphy {
     font-size: 2.25rem !important;
+}
+
+/* Popular Components =================================================================================== */
+
+.selected-component-icon {
+    path {
+        fill: $White;
+        stroke: $White;
+    }
+}
+
+.component-row-icon {
+    path {
+        fill: $B2Color;
+        stroke: $B2Color;
+    }
+}
+
+.component-row {
+    &:hover {
+        .component-row-icon {
+            path {
+                fill: $White;
+                stroke: $White;
+            }
+        }
+    }
 }
 /* Demo Page =================================================================================== */
 .example-desc {
@@ -890,4 +892,24 @@ code {
 
 .bit-ntf {
     margin-bottom: rem(8px);
+}
+
+.status-bar-safe-area {
+    display: none;
+}
+
+@supports (-webkit-touch-callout: none) {
+    .status-bar-safe-area {
+        display: flex;
+        position: sticky;
+        top: 0;
+        height: env(safe-area-inset-top);
+        background-color: #f7f7f7;
+        width: 100%;
+        z-index: 1;
+    }
+
+    .flex-column, .navbar-brand {
+        padding-left: env(safe-area-inset-left);
+    }
 }

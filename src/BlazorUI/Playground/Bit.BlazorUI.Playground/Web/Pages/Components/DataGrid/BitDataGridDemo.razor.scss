@@ -1,43 +1,61 @@
-﻿.flag {
-    width: 2rem;
-    height: 1.5rem;
-}
-
-.grid {
+﻿.grid1 {
     display: inline-flex;
     flex-direction: column;
-    width:100%
-}
+    width: 100%;
 
-.grid ::deep table {
-    min-width: 100%;
-}
+    ::deep {
+        table {
+            min-width: 100%;
+        }
 
-.grid ::deep tr {
-    height: 1.8rem;
-}
+        tr {
+            height: 1.8rem;
+        }
 
-.grid ::deep th:nth-child(1) {
-    width: 15rem;
-}
+        th:nth-child(1) {
+            width: 15rem;
+        }
 
-.grid ::deep th:nth-child(1) .col-options-button {
-    //background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"> <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /> </svg>');
-    background-image: none;
-    cursor: pointer;
+        th:nth-child(1) .col-options-button {
+            background-image: none;
+            cursor: pointer;
 
-    &:before {
-        display: inline-block;
-        font-family: 'Fabric MDL2 Assets';
-        font-style: normal;
-        font-weight: normal;
-        content: "\E721";
+            &:before {
+                display: inline-block;
+                font-family: 'Fabric MDL2 Assets';
+                font-style: normal;
+                font-weight: normal;
+                content: "\E721";
+            }
+        }
     }
 }
 
-.grid--fix-height {
+.grid2 {
     height: 15rem;
     overflow-y: auto;
+
+    ::deep table {
+        min-width: 100%;
+    }
+
+    ::deep thead {
+        position: sticky;
+        top: 0;
+        background-color: #eee;
+        z-index: 1;
+    }
+
+    ::deep tr {
+        height: 30px;
+    }
+
+    ::deep tbody td {
+        white-space: nowrap;
+        overflow: hidden;
+        max-width: 0;
+        text-overflow: ellipsis;
+    }
 }
 
 .search-panel {
@@ -47,23 +65,26 @@
     padding-top: 5px;
 }
 
-.inline-block{
-    display:inline-block;
+.inline-block {
+    display: inline-block;
 }
 
-::deep .bitdatagrid[theme=redskin] {
-    font-style :italic;
-    color: red;
-}
+.grid3 {
 
-::deep .bitdatagrid[theme=redskin] .col-title {
-    gap: 0.4rem; 
-    font-weight: bold;
-    text-transform: uppercase;
-    background-color:red;
-    color:white;
-}
+    ::deep .bitdatagrid[theme=redskin] {
+        font-style: italic;
+        color: red;
+    }
 
-::deep .bitdatagrid[theme=redskin] .sort-indicator {
-    color: white;
+    ::deep .bitdatagrid[theme=redskin] .col-title {
+        gap: 0.4rem;
+        font-weight: bold;
+        text-transform: uppercase;
+        background-color: red;
+        color: white;
+    }
+
+    ::deep .bitdatagrid[theme=redskin] .sort-indicator {
+        color: white;
+    }
 }

@@ -10,7 +10,7 @@ public static class Services
 {
     public static void Add(IServiceCollection services)
     {
-        services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+        services.AddHttpContextAccessor();
 #if BlazorWebAssembly
         services.AddScoped(c =>
         {

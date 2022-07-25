@@ -1,4 +1,5 @@
 ﻿@import '_shared.scss';
+@import '_fonts.scss';
 
 * {
     font-family: "OpenSans";
@@ -36,19 +37,15 @@ a {
 }
 
 ::-webkit-scrollbar-thumb {
-    background: $B10Color;
+    background: $Gray3;
     border-radius: rem(8px);
-    border: rem(5px) solid $B10Color;
+    border: rem(5px) solid $Gray3;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: $B11Color;
+    background: $B5Color;
     border-radius: rem(8px);
-    border: rem(4px) solid $B11Color;
-}
-
-::-webkit-scrollbar-button {
-    display: none;
+    border: rem(5px) solid $B5Color;
 }
 
 ::-webkit-scrollbar:horizontal {
@@ -202,4 +199,67 @@ h5 {
     @include sm {
         display: inline-block;
     }
+}
+
+.customer-feedback-carousel {
+    width: 100%;
+    margin: rem(32px) auto;
+
+    @include lt-lg {
+        margin: rem(16px) auto;
+    }
+
+    .bit-crsl-buttons {
+        .bit-crsl-next-btn,
+        .bit-crsl-previuse-btn {
+            top: 50%;
+            width: rem(35px);
+            height: rem(35px);
+            padding: 0;
+            background-image: url('/images/home/carousel-arrow-icon.webp');
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: rem(27px);
+
+            @include sm {
+                width: rem(25px);
+                height: rem(25px);
+                background-size: rem(20px);
+            }
+
+            &:hover {
+                margin: 0;
+                margin-top: -1.375rem;
+            }
+
+            i {
+                display: none;
+            }
+        }
+    }
+
+    .bit-crsl-buttons {
+        .bit-crsl-next-btn {
+            right: rem(-50px);
+
+            @include sm {
+                right: rem(-30px);
+            }
+        }
+    }
+
+    .bit-crsl-buttons {
+        .bit-crsl-previuse-btn {
+            left: rem(-50px);
+            transform: rotate(180deg);
+
+            @include sm {
+                left: rem(-30px);
+            }
+        }
+    }
+}
+
+.customer-feedback-item {
+    width: 100%;
 }

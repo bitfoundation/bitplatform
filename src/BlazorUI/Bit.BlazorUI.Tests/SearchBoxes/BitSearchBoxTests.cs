@@ -63,17 +63,24 @@ public class BitSearchBoxTests : BunitTestContext
         Assert.IsTrue(bitSearchBox.GetAttribute("aria-label").Equals(ariaLabel));
     }
 
-    [DataTestMethod, DataRow("hello world")]
-    public void BitSearchBoxShouldTakeDefaultValue(string defaultValue)
+    [DataTestMethod,
+        DataRow("hello world", "hello bit"),
+        DataRow(null, "hello bit"),
+        DataRow("hello world", null)
+    ]
+    public void BitSearchBoxShouldTakeDefaultValue(string value, string defaultValue)
     {
         var component = RenderComponent<BitSearchBoxTest>(
             parameters =>
             {
+                parameters.Add(p => p.Value, value);
                 parameters.Add(p => p.DefaultValue, defaultValue);
             });
 
         var input = component.Find(".srch-box-input");
-        Assert.AreEqual(defaultValue, input.GetAttribute("value"));
+        var actualValue = string.IsNullOrEmpty(value) ? defaultValue : value;
+
+        Assert.AreEqual(input.GetAttribute("value"), actualValue);
     }
 
     [DataTestMethod,

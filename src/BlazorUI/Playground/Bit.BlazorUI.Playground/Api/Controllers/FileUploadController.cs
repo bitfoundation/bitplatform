@@ -3,20 +3,19 @@
 namespace Bit.BlazorUI.Playground.Api.Controllers;
 
 [ApiController]
-[Route("[controller]/[action]")]
+[Route("api/[controller]/[action]")]
 public class FileUploadController : ControllerBase
 {
-    private readonly string BasePath;
+    private readonly string UploadPath;
 
     public FileUploadController(IConfiguration Configuration)
     {
-        BasePath = Configuration["UploadPath"];
+        UploadPath = Configuration["UploadPath"];
     }
 
-    [RequestFormLimits(ValueLengthLimit = int.MaxValue, MultipartBodyLengthLimit = int.MaxValue)]
-    [DisableRequestSizeLimit]
     [HttpPost]
-    public async Task<IActionResult> UploadStreamedFile(IFormFile file, CancellationToken cancellationToken)
+    [RequestSizeLimit(2000 * 1024 * 1024 /*~2GB*/)]
+    public async Task<IActionResult> UploadNonChunkedFile(IFormFile file, CancellationToken cancellationToken)
     {
         if (file is null)
         {
@@ -24,40 +23,74 @@ public class FileUploadController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        using var fileStream = file.OpenReadStream();
-        using var memoryStream = new MemoryStream();
-        await fileStream.CopyToAsync(memoryStream, cancellationToken);
-        memoryStream.Seek(0, SeekOrigin.Begin);
+        using var requestStream = file.OpenReadStream();
 
-        if (Directory.Exists(BasePath) is false)
+        if (Directory.Exists(UploadPath) is false)
         {
-            Directory.CreateDirectory(BasePath);
+            Directory.CreateDirectory(UploadPath);
         }
 
-        var path = Path.Combine(BasePath, file.FileName);
-        if (System.IO.File.Exists(path) is false)
+        var path = Path.Combine(UploadPath, file.FileName);
+
+        if (System.IO.File.Exists(path))
         {
-            using var targetStream = System.IO.File.Create(path);
-            if (cancellationToken.IsCancellationRequested is false)
-                await memoryStream.CopyToAsync(targetStream);
+            System.IO.File.Delete(path);
         }
-        else
+
+        using var targetStream = System.IO.File.Create(path);
+        if (cancellationToken.IsCancellationRequested is false)
         {
-            using var targetStream = System.IO.File.Open(path, FileMode.Append);
-            if (cancellationToken.IsCancellationRequested is false)
-                await memoryStream.CopyToAsync(targetStream);
+            await requestStream.CopyToAsync(targetStream, cancellationToken);
         }
 
         return Ok();
     }
 
+
+    [HttpPost]
+    [RequestSizeLimit(11 * 1024 * 1024 /*11MB*/)]
+    public async Task<IActionResult> UploadChunkedFile(IFormFile file, CancellationToken cancellationToken)
+    {
+        if (file is null)
+        {
+            ModelState.AddModelError("File", $"The request couldn't be processed (Error 1).");
+            return BadRequest(ModelState);
+        }
+
+        var bitFileId = Request.Headers["BIT_FILE_ID"].ToString();
+
+        using var requestStream = file.OpenReadStream();
+
+        if (Directory.Exists(UploadPath) is false)
+        {
+            Directory.CreateDirectory(UploadPath);
+        }
+
+        var path = Path.Combine(UploadPath, $"{bitFileId}-{file.FileName}");
+
+        using var targetStream = System.IO.File.Exists(path) 
+            ? System.IO.File.Create(path) 
+            : System.IO.File.Open(path, FileMode.Append);
+
+        if (cancellationToken.IsCancellationRequested is false)
+            await requestStream.CopyToAsync(targetStream, cancellationToken);
+
+        return Ok();
+    }
+
+
     [HttpDelete]
     public IActionResult RemoveFile(string fileName)
     {
-        var path = Path.Combine(BasePath, fileName);
-        if (!System.IO.File.Exists(path)) return NotFound();
+        var path = Path.Combine(UploadPath, fileName);
+
+        if (!System.IO.File.Exists(path))
+        {
+            return NotFound();
+        }
 
         System.IO.File.Delete(path);
+
         return Ok();
     }
 }

@@ -7,6 +7,18 @@ namespace Bit.BlazorUI.Tests.Pickers;
 [TestClass]
 public class BitDatePickerTests : BunitTestContext
 {
+    [DataTestMethod, DataRow("<div>This is labelFragment</div>")]
+    public void BitDatePickerShouldRenderLabelFragment(string labelFragment)
+    {
+        var component = RenderComponent<BitDatePickerTest>(parameters =>
+        {
+            parameters.Add(p => p.LabelFragment, labelFragment);
+        });
+
+        var bitDatePickerLabelChild = component.Find(".bit-dtp > label").ChildNodes;
+        bitDatePickerLabelChild.MarkupMatches(labelFragment);
+    }
+
     [DataTestMethod,
       DataRow(Visual.Fluent, true),
       DataRow(Visual.Fluent, false),
@@ -118,7 +130,7 @@ public class BitDatePickerTests : BunitTestContext
            parameters =>
            {
                parameters.Add(p => p.IsOpen, true);
-               parameters.Add(p => p.Culture, CultureInfoHelper.GetPersianCultureByFinglishNames());
+               parameters.Add(p => p.Culture, CultureInfoHelper.GetFaIrCultureByFingilishNames());
            });
 
         var monthButtons = component.FindAll(".month-picker-wrapper .grid-container .btn-row button");

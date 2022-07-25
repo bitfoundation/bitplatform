@@ -1,0 +1,58 @@
+﻿@import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_media-queries.scss';
+@import '../Styles/abstracts/_colors.scss';
+
+.modal-body {
+    position: relative;
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+    justify-content: center;
+    padding: rem(28px) rem(110px);
+    box-sizing: border-box;
+
+    @include lt-xl {
+        padding: rem(28px) rem(101px);
+    }
+
+    @media screen and (max-width:em(480px)) {
+        padding: rem(28px) rem(47px);
+    }
+}
+
+.modal-close-btn-container {
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+
+.modal-title {
+    margin-bottom: rem(12px);
+    font-size: rem(24px);
+    line-height: rem(40px);
+    font-weight: 600;
+    color: $Black;
+
+    @include lt-xl {
+        margin-bottom: rem(8px);
+        font-size: rem(20px);
+        line-height: rem(32px);
+    }
+
+    @include sm {
+        margin-bottom: rem(4px);
+    }
+}
+
+.modal-desc {
+    margin-bottom: rem(36px);
+    font-size: rem(18px);
+    line-height: rem(24px);
+    color: $Black;
+
+    @include lt-xl {
+        margin-bottom: rem(28px);
+        font-size: rem(14px);
+        line-height: rem(20px);
+    }
+}

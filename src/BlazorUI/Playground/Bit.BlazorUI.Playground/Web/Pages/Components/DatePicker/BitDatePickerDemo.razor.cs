@@ -173,7 +173,14 @@ public partial class BitDatePickerDemo
             Type = "bool",
             DefaultValue = "",
             Description = "Show week number in the year.",
-        }
+        },
+        new ComponentParameter
+        {
+            Name = "LabelFragment",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Used to customize the label for the DatePicker."
+        },
     };
 
     private readonly List<EnumParameter> enumParameters = new()
@@ -218,13 +225,15 @@ public partial class BitDatePickerDemo
 </BitDatePicker>";
 
     private readonly string example3HTMLCode = @"
-<BitDatePicker Culture=""@(new System.Globalization.CultureInfo(""fa-IR""))""
+<BitDatePicker FormatDate=""yyyy/MM/dd hh:mm tt"" 
+               Culture=""CultureInfoHelper.GetFaIrCultureByFarsiNames()""
                GoToToday=""برو به امروز""
                Style=""width: 300px"">
 </BitDatePicker>";
 
     private readonly string example4HTMLCode = @"
-<BitDatePicker Culture=""Bit.BlazorUI.CultureInfoHelper.GetPersianCultureByFinglishNames()""
+<BitDatePicker FormatDate=""yyyy/MM/dd hh:mm tt"" 
+               Culture=""CultureInfoHelper.GetFaIrCultureByFingilishNames()""
                GoToToday=""Boro be emrouz""
                Style=""width: 300px"">
 </BitDatePicker>";
@@ -236,7 +245,7 @@ public partial class BitDatePickerDemo
     private readonly string example5CSharpCode = @"
 private DateTimeOffset? selectedDate = new DateTimeOffset(new DateTime(2020, 1, 17), DateTimeOffset.Now.Offset);";
 
-    private readonly string example6HTMLCode = @"<BitDatePicker FormatDate=""d"" Style=""width: 300px""></BitDatePicker>";
+    private readonly string example6HTMLCode = @"<BitDatePicker FormatDate=""MMM=dd(ddd)=yy"" Style=""width: 300px""></BitDatePicker>";
 
     private readonly string example7HTMLCode = @"
 <BitDatePicker Style=""width: 300px""
@@ -273,86 +282,6 @@ else
     </BitMessageBar>
 }";
 
-    private readonly string example4CSharpCode = @"
-public static class CultureInfoHelper
-{
-    public static CultureInfo GetPersianCultureByFinglishNames()
-    {
-        var cultureInfo = CultureInfo.CreateSpecificCulture(""fa-IR"");
-
-        cultureInfo.DateTimeFormat.MonthNames = new[]
-        {
-            ""Farvardin"",
-            ""Ordibehesht"",
-            ""Khordad"",
-            ""Tir"",
-            ""Mordad"",
-            ""Shahrivar"",
-            ""Mehr"",
-            ""Aban"",
-            ""Azar"",
-            ""Dey"",
-            ""Bahman"",
-            ""Esfand"",
-            """"
-        };
-
-        cultureInfo.DateTimeFormat.AbbreviatedMonthNames = new[]
-        {
-            ""Far"",
-            ""Ord"",
-            ""Khr"",
-            ""Tir"",
-            ""Mrd"",
-            ""Shr"",
-            ""Mhr"",
-            ""Abn"",
-            ""Azr"",
-            ""Dey"",
-            ""Bah"",
-            ""Esf"",
-            """"
-        };
-
-        cultureInfo.DateTimeFormat.MonthGenitiveNames = cultureInfo.DateTimeFormat.MonthNames;
-        cultureInfo.DateTimeFormat.AbbreviatedMonthGenitiveNames = cultureInfo.DateTimeFormat.AbbreviatedMonthNames;
-        cultureInfo.DateTimeFormat.DayNames = new[]
-        {
-            ""YekShanbe"",
-            ""DoShanbe"",
-            ""SeShanbe"",
-            ""ChaharShanbe"",
-            ""PanjShanbe"",
-            ""Jome"",
-            ""Shanbe""
-        };
-
-        cultureInfo.DateTimeFormat.AbbreviatedDayNames = new[]
-        {
-            ""Yek"",
-            ""Do"",
-            ""Se"",
-            ""Ch"",
-            ""Pj"",
-            ""Jom"",
-            ""Shn""
-        };
-
-        cultureInfo.DateTimeFormat.ShortestDayNames = new[]
-        {
-            ""Y"",
-            ""D"",
-            ""S"",
-            ""C"",
-            ""P"",
-            ""J"",
-            ""S""
-        };
-
-        return cultureInfo;
-    }
-}";
-
     private readonly string example8CSharpCode = @"
 public class FormValidationDatePickerModel
 {
@@ -375,4 +304,12 @@ private void HandleInvalidSubmit()
 {
     SuccessMessage = string.Empty;
 }";
+    
+    private readonly string example9HtmlCode = @"
+<BitDatePicker Options=""Example9Options"">
+            <LabelFragment>
+                Custom label <BitIconButton IconName=""BitIconName.Calendar""></BitIconButton>
+            </LabelFragment>
+</BitDatePicker>
+";
 }

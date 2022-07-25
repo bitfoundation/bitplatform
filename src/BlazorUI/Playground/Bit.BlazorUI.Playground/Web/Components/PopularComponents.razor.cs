@@ -18,36 +18,31 @@ public partial class PopularComponents
         {
             Name = "ColorPicker",
             Description = "The ColorPicker component is used to browse through and select colors.",
-            Url = "/components/color-picker",
-            CssClassName = "color-picker"
+            Url = "/components/color-picker"
         },
         new PopularComponent()
         {
             Name = "DatePicker",
             Description = "The DatePicker component offers a drop-down control that’s optimized for picking a single date from a calendar view.",
-            Url = "/components/date-picker",
-            CssClassName = "date-picker"
+            Url = "/components/date-picker"
         },
         new PopularComponent()
         {
             Name = "FileUpload",
             Description = "The FileUpload component wraps the HTML file input element(s) and uploads them to a given URL.",
-            Url = "/components/file-upload",
-            CssClassName = "file-upload"
+            Url = "/components/file-upload"
         },
         new PopularComponent()
         {
             Name = "DropDown",
             Description = "The DropDown component is a list in which the selected item is always visible while other items are visible on demand by clicking a dropdown button.",
-            Url = "/components/drop-down",
-            CssClassName = "drop-down"
+            Url = "/components/drop-down"
         },
         new PopularComponent()
         {
             Name = "Nav (TreeList)",
             Description = "The Nav (TreeList) component provides links to the main areas of an app or site.",
-            Url = "/components/nav",
-            CssClassName = "nav"
+            Url = "/components/nav"
         },
     };
     private PopularComponent SelectedComponent;
@@ -60,7 +55,7 @@ public partial class PopularComponents
     string GetBaseUrl()
     {
 #if BlazorWebAssembly
-        return "/";
+        return "/api/";
 #else
         return Configuration.GetValue<string>("ApiServerAddress");
 #endif

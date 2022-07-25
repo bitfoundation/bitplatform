@@ -1,6 +1,23 @@
 ﻿
 <section class="page-section getting-started-step-section">
 
+    <section class="getting-started-side-rail-section" @ref="GettingStartedElement">
+        <a class="side-rail-item @(CurrentUrl == "#getting-started"? "selected-side-rail-item" : "" )" href="@Urls.TodoTemplate#getting-started" target="_parent">Getting started</a>
+        <a class="side-rail-item @(CurrentUrl == "#development-prerequisites"? "selected-side-rail-item" : "" )" href="@Urls.TodoTemplate#development-prerequisites" target="_parent">Development prerequisites</a>
+        <a class="side-rail-item @(CurrentUrl == "#environments"? "selected-side-rail-item" : "" )" href="@Urls.TodoTemplate#environments" target="_parent">Environment setup</a>
+        <a class="side-rail-item @(CurrentUrl == "#create-project"? "selected-side-rail-item" : "" )" href="@Urls.TodoTemplate#create-project" target="_parent">Create project</a>
+        <a class="side-rail-item @(CurrentUrl == "#prepare-project"? "selected-side-rail-item" : "" )" href="@Urls.TodoTemplate#prepare-project" target="_parent">Prepare The Project</a>
+        <a class="side-rail-item @(CurrentUrl == "#run"? "selected-side-rail-item" : "" )" href="@Urls.TodoTemplate#run" target="_parent">Run</a>
+        <a class="side-rail-item @(CurrentUrl == "#blazor-modes"? "selected-side-rail-item" : "" )" href="@Urls.TodoTemplate#blazor-modes" target="_parent">Blazor Mode (hosting models)</a>
+        <a class="side-rail-item @(CurrentUrl == "#deployment-types"? "selected-side-rail-item" : "" )" href="@Urls.TodoTemplate#deployment-types" target="_parent">WebApp Deployment Type</a>
+        <a class="side-rail-item @(CurrentUrl == "#settings"? "selected-side-rail-item" : "" )" href="@Urls.TodoTemplate#settings" target="_parent">Settings</a>
+        <a class="side-rail-item @(CurrentUrl == "#project-structure"? "selected-side-rail-item" : "" )" href="@Urls.TodoTemplate#project-structure" target="_parent">TodoTemplate Project structure</a>
+        <a class="side-rail-item @(CurrentUrl == "#exception-handling"? "selected-side-rail-item" : "" )" href="@Urls.TodoTemplate#exception-handling" target="_parent">Exception handling</a>
+        <a class="side-rail-item @(CurrentUrl == "#cache-mechanism"? "selected-side-rail-item" : "" )" href="@Urls.TodoTemplate#cache-mechanism" target="_parent">Cache mechanism</a>
+        <a class="side-rail-item @(CurrentUrl == "#contribute"? "selected-side-rail-item" : "" )" href="@Urls.TodoTemplate#contribute" target="_parent">Contribute</a>
+
+    </section>
+
     <div class="step-body-card">
         <h4 id="getting-started">
             <a class="anchor" href="@Urls.TodoTemplate#getting-started" target="_parent"><i class="anchor-icon bit-icon bit-icon--Link12"> </i></a>
@@ -62,6 +79,10 @@
                 <li>
                     Create a new project using the Template installed
                     <pre class="code"><code>dotnet new bit-todo</code></pre>
+                    Or create a new project with the Visual Studio
+                    <div class="image-container">
+                        <img class="image" alt="Create new project" width="1010" height="673" src="/images/projects/create-project.webp" />
+                    </div>
                 </li>
                 <li>
                     Make sure the first line in the <span class="high-light">TodoTemplate.Web.csproj</span> file contains the following value.
@@ -91,7 +112,7 @@
                 For Other Entityframework supported databases, you need to configure the context that provides your preferred database. with change <span class="high-light">UseSqlServer</span> method on <span class="high-light">Api\Startup\Services.cs</span> file
             </div>
             <pre class="code">
-<code>services.AddDbContext@("<TodoTemplateDbContext>")(options =>
+<code>services.AddDbContext@("<AppDbContext>")(options =>
 {
     options.UseSqlServer(configuration.GetConnectionString("SqlServerConnectionString"), sqlOpt =>
     {
@@ -102,7 +123,7 @@
         </pre>
             <h3>Migration</h3>
             <div class="description">To create and migrate the database to the latest version. You can use Entity Framework's built-in tools for migrations. Open <strong>Package Manager Console</strong> in Visual Studio set <strong>TodoTemplate.Api</strong> as the Default Project and run the Update-Database command as shown below:</div>
-            <pre class="code"><code>Update-Database -Context TodoTemplateDbContext</code></pre>
+            <pre class="code"><code>Update-Database -Context AppDbContext</code></pre>
         </div>
     </div>
 
@@ -113,18 +134,26 @@
         </h4>
         <div class="card-container">
             <div class="description">After you've done the configuration, you can run the application. Set Api project as startup and run, you can see the swagger dashboard in the first view</div>
-            <img class="image" src="/images/projects/swagger.png" />
+            <div class="image-container">
+                <img class="image" alt="Swagger dashboard" width="887" height="886" src="/images/projects/swagger.webp" />
+            </div>
             <h3>SignUp</h3>
             <div class="description">
                 With the help of <strong>Swagger</strong>, you can call the <strong>SignUp</strong> API and Start the registration process, navigate to <span class="high-light">Auth/SignUp</span> API and press the <span class="high-light">Try it Out</span> button, in the <span class="high-light">Request body</span> Enter SignUp data, and press Execute button.
             </div>
-            <img class="image" src="/images/projects/swagger-signUp.png" />
+            <div class="image-container">
+                <img class="image" alt="Swagger Sign Up" width="916" height="907" src="/images/projects/swagger-signUp.webp" />
+            </div>
             <div class="description">
                 In <strong>SignUp</strong> Process after call API, a confirmation email send to your email, In the development, Bit saves sent emails as a .eml file in the <span class="high-light">./TodoTemplate/Api/bin/Debug/net6.0/sent-emails</span> path, and developers can easily handle them.
             </div>
-            <img class="image" src="/images/projects/confirm-email.png" />
+            <div class="image-container">
+                <img class="image" alt="Confirm email" width="907" height="926" src="/images/projects/confirm-email.webp" />
+            </div>
             <div class="description">By pressing the <span class="high-light">Confirm email</span> button, the ConfirmEmail Api calls and registration process complete. After it, you can login with the swagger login form on the top of the page, and call other APIs that need Authentication.</div>
-            <img class="image-responsive" src="/images/projects/swagger-login.png" />
+            <div class="image-container">
+                <img class="image" alt="Swagger Sign In" width="757" height="207" src="/images/projects/swagger-login.webp" />
+            </div>
         </div>
     </div>
 
@@ -154,7 +183,9 @@
                 </li>
                 <li>
                     Set solution on Multi-startup project, by right click on solution name and selecting properties from right-click menu (change the action of the Api, Web projects to start)
-                    <img class="image" src="/images/projects/multi-startup.png" />
+                    <div class="image-container">
+                        <img class="image" alt="Multi-startup solution" width="696" height="241" src="/images/projects/multi-startup.webp" />
+                    </div>
                 </li>
                 <li>
                     Make sure the first line in the <span class="high-light">TodoTemplate.Web.csproj</span> file contains the following value.
@@ -200,7 +231,9 @@
                 </li>
                 <li>
                     Set <strong>App</strong> as the startup project, choose either Android, IOS, or Windows, then select your Physical device or Emulator as Debug-Target.
-                    <img class="image" src="/images/projects/debug-target.png" />
+                    <div class="image-container">
+                        <img class="image" alt="Debug target" width="1014" height="350" src="/images/projects/debug-target.webp" />
+                    </div>
                 </li>
                 <li>
                     Set solution on Multi-startup project, by right click on solution name and selecting properties from right-click menu (change the action of the Api, App projects to start)
@@ -341,7 +374,9 @@
             <div class="description">
                 The <strong>TodoTemplate</strong> solution prepared with Bit has 5 Projects.
             </div>
-            <img class="image-responsive" src="/images/projects/todoTemplate-solution.png" />
+            <div class="image-container">
+                <img class="image" alt="TodoTemplate solution" width="398" height="317" src="/images/projects/todo-template-solution.webp" />
+            </div>
             <ul class="first-step-ul">
                 <li>
                     <strong>TodoTemplate.Api</strong>:
@@ -390,8 +425,8 @@
             <h3>Client-Side exception handling</h3>
             <div class="description">When an error is raised in App(android, IOS) maybe cause crash app. for avoiding app crash; Bit provides some mechanism for error handling.</div>
             <ul class="first-step-ul">
-                <li>inheriting <span class="high-light">TodoTemplateComponentBase</span> in razor pages.</li>
-                <li>Instead of initializing your components in the <span class="high-light">OnInitializedAsync</span> method, override the <span class="high-light">OnInitAsync</span> method of the <span class="high-light">TodoTemplateComponentBase</span> class.</li>
+                <li>inheriting <span class="high-light">AppComponentBase</span> in razor pages.</li>
+                <li>Instead of initializing your components in the <span class="high-light">OnInitializedAsync</span> method, override the <span class="high-light">OnInitAsync</span> method of the <span class="high-light">AppComponentBase</span> class.</li>
                 <li>Use <span class="high-light">WrapHandle</span> method instead of direct calling events such as <span class="high-light">OnClick</span> in the Razor components.</li>
                 <li>Use <span class="high-light">try-catch</span> block in <span class="high-light">asyn-avoid</span> method and call <span class="high-light">StatehasChanged</span> method to handle unexpected errors.</li>
             </ul>
@@ -417,8 +452,8 @@
         </div>
     </div>
 
-    <div id="contribute" class="step-body-card">
-        <h4>
+    <div class="step-body-card">
+        <h4 id="contribute">
             <a class="anchor" href="@Urls.TodoTemplate#contribute" target="_parent"><i class="anchor-icon bit-icon bit-icon--Link12"> </i></a>
             Contribute
         </h4>

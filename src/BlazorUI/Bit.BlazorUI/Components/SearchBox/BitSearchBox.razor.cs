@@ -131,9 +131,9 @@ public partial class BitSearchBox
 
     protected override Task OnInitializedAsync()
     {
-        if (DefaultValue.HasValue())
+        if (CurrentValueAsString.HasNoValue() && DefaultValue.HasValue())
         {
-            CurrentValue = DefaultValue;
+            CurrentValueAsString = DefaultValue;
         }
 
         OnCurrentValueChanged += HandleOnCurrentValueChanged;
