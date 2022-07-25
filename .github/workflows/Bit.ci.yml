@@ -6,7 +6,7 @@ on:
     - 'src/**'
 jobs:
   build-prerelease:
-    if: startsWith(github.event.pull_request.title, 'Prerelease')
+    if: startsWith(github.event.pull_request.title, 'Prerelease') || startsWith(github.event.pull_request.title, 'Release')
     name: build and test for prerelease
     runs-on: windows-latest
     steps:
@@ -22,7 +22,7 @@ jobs:
     - name: Test
       run: dotnet test --no-build --verbosity normal src/BlazorUI/Bit.BlazorUI.Tests/Bit.BlazorUI.Tests.csproj
   build:
-    if: startsWith(github.event.pull_request.title, 'Prerelease') != true
+    if: startsWith(github.event.pull_request.title, 'Prerelease') != true && startsWith(github.event.pull_request.title, 'Release') != true
     name: build and test
     runs-on: windows-latest
     steps:
