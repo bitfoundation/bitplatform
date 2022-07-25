@@ -121,13 +121,17 @@ public partial class NavMenu
         var access_token = await stateService.GetValue($"{nameof(NavMenu)}-access_token", async () =>
             await authTokenProvider.GetAcccessToken());
 
-        ProfileImageUrl = $"api/Attachment/GetProfileImage?access_token={access_token}";
-
-#if BlazorServer || BlazorHybrid
-        var serverUrl = configuration.GetValue<string>("ApiServerAddress");
-        ProfileImageUrl = $"{serverUrl}{ProfileImageUrl}";
-#endif
+        ProfileImageUrl = $"{GetBaseUrl()}Attachment/GetProfileImage?access_token={access_token}&file={User!.ProfileImageName}";
 
         await base.OnInitAsync();
+    }
+
+    string GetBaseUrl()
+    {
+#if BlazorWebAssembly
+        return "/api/";
+#else
+        return configuration.GetValue<string>("ApiServerAddress");
+#endif
     }
 }

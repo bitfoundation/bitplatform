@@ -39,14 +39,8 @@ public partial class EditProfilePage
             var access_token = await stateService.GetValue($"{nameof(EditProfilePage)}-access_token", async () =>
                 await authTokenProvider.GetAcccessToken());
 
-            ProfileImageUploadUrl = $"api/Attachment/UploadProfileImage?access_token={access_token}";
-            ProfileImageUrl = $"api/Attachment/GetProfileImage?access_token={access_token}";
-
-#if BlazorServer || BlazorHybrid
-            var serverUrl = configuration.GetValue<string>("ApiServerAddress");
-            ProfileImageUploadUrl = $"{serverUrl}{ProfileImageUploadUrl}";
-            ProfileImageUrl = $"{serverUrl}{ProfileImageUrl}";
-#endif
+            ProfileImageUploadUrl = $"{GetBaseUrl()}Attachment/UploadProfileImage?access_token={access_token}";
+            ProfileImageUrl = $"{GetBaseUrl()}Attachment/GetProfileImage?access_token={access_token}";
 
         }
         finally
@@ -57,11 +51,21 @@ public partial class EditProfilePage
         await base.OnInitAsync();
     }
 
+    string GetBaseUrl()
+    {
+#if BlazorWebAssembly
+        return "/api/";
+#else
+        return configuration.GetValue<string>("ApiServerAddress");
+#endif
+    }
+
     private async Task LoadEditProfileData()
     {
         User = (await stateService.GetValue($"{nameof(EditProfilePage)}-{nameof(User)}", async () =>
             await httpClient.GetFromJsonAsync("User/GetCurrentUser", AppJsonContext.Default.UserDto))) ?? new();
 
+        UserToEdit.ProfileImageName = User.ProfileImageName;
         UserToEdit.FullName = User.FullName;
         UserToEdit.BirthDate = User.BirthDate;
         UserToEdit.Gender = User.Gender;
@@ -89,7 +93,7 @@ public partial class EditProfilePage
             User.BirthDate = UserToEdit.BirthDate;
             User.Gender = UserToEdit.Gender;
 
-            await httpClient.PutAsJsonAsync("User", User, AppJsonContext.Default.EditUserDto);
+            await httpClient.PutAsJsonAsync("User/Update", User, AppJsonContext.Default.EditUserDto);
 
             EditProfileMessageType = BitMessageBarType.Success;
 

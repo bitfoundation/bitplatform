@@ -19,7 +19,7 @@ public partial class BitFileUploadDemo
     string GetBaseUrl()
     {
 #if BlazorWebAssembly
-        return "/";
+        return "/api/";
 #else
         return Configuration.GetValue<string>("ApiServerAddress");
 #endif
