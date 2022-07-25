@@ -301,7 +301,6 @@ private void InitStackedBarChartExample()
     _stackedBarChartConfigExample.Data.Datasets.Add(dataset3);
     _stackedBarChartConfigExample.Data.Labels.AddRange(BitChartDemoUtils.Months.Take(InitalCount));
 }
-
 ";
     #endregion
 
@@ -544,7 +543,6 @@ private void InitDoughnutChartExample()
     _doughnutChartConfigExample.Data.Labels.AddRange(BitChartDemoUtils.Months.Take(InitalCount));
     _doughnutChartConfigExample.Data.Datasets.Add(dataset);
 }
-
 ";
     #endregion
 }

@@ -21,7 +21,6 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-
     <ComponentExampleBox Title="Horizontal Bar Chart" CSharpSourceCode="@example2CSharpCode" HTMLSourceCode="@example2HTMLCode" ExampleId="Example2">
         <ExamplePreview>
             <div class="example-desc">
@@ -32,7 +31,6 @@
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
-
 
     <ComponentExampleBox Title="Stacked Bar Chart" CSharpSourceCode="@example3CSharpCode" HTMLSourceCode="@example3HTMLCode" ExampleId="Example3">
         <ExamplePreview>
@@ -85,8 +83,6 @@
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
-
-
 </ComponentDemo>
 
 @code {
@@ -94,7 +90,6 @@
 
     private BitChartBarConfig _barChartConfigExample;
     private BitChart _barChartExample1;
-
 
     private BitChartBarConfig _horizontalBarChartConfigExample;
     private BitChart _horizontalBarChartExample;
@@ -340,7 +335,7 @@
 
     private void InitDoughnutChartExample()
     {
-        _doughnutChartConfigExample = new BitChartPieConfig(useDoughnutType:true)
+        _doughnutChartConfigExample = new BitChartPieConfig(useDoughnutType: true)
             {
                 Options = new BitChartPieOptions
                 {
