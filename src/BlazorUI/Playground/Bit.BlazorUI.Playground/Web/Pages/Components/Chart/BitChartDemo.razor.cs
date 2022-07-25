@@ -14,7 +14,7 @@ public partial class BitChartDemo
             Name = "SetupCompletedCallback",
             Type = "EventCallback",
             DefaultValue = "",
-            Description = @"This event is fired when the chart has been setup through interop and                            the JavaScript chart object is available. Use this callback if you need to setup custom JavaScript options or register plugins.",
+            Description = @"This event is fired when the chart has been setup through interop and the JavaScript chart object is available. Use this callback if you need to setup custom JavaScript options or register plugins.",
         },
 
          new ComponentParameter
@@ -110,7 +110,7 @@ private void RandomizeBarData()
 
 private void AddBarDataset()
 {
-    Color color = BitChartDemoUtils.ChartColors.All[_barChartConfigExample.Data.Datasets.Count % BitChartDemoUtils.ChartColors.All.Count];
+    Color color = BitChartDemoColors.All[_barChartConfigExample.Data.Datasets.Count % BitChartDemoColors.All.Count];
     IDataset<int> dataset = new BitChartBarDataset<int>(BitChartDemoUtils.RandomScalingFactor(_barChartConfigExample.Data.Labels.Count))
         {
             Label = $""Dataset {_barChartConfigExample.Data.Datasets.Count + 1}"",
@@ -205,16 +205,16 @@ private void InitHorizontalBarChartExample()
     IDataset<int> dataset1 = new BitChartBarDataset<int>(BitChartDemoUtils.RandomScalingFactor(InitalCount, -100), horizontal: true)
         {
             Label = ""My first dataset"",
-            BackgroundColor = BitChartColorUtil.FromDrawingColor(Color.FromArgb(128, BitChartDemoUtils.ChartColors.Red)),
-            BorderColor = BitChartColorUtil.FromDrawingColor(BitChartDemoUtils.ChartColors.Red),
+            BackgroundColor = BitChartColorUtil.FromDrawingColor(Color.FromArgb(128, BitChartDemoColors.Red)),
+            BorderColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Red),
             BorderWidth = 1
         };
 
     IDataset<int> dataset2 = new BitChartBarDataset<int>(BitChartDemoUtils.RandomScalingFactor(InitalCount, -100), horizontal: true)
         {
             Label = ""My second dataset"",
-            BackgroundColor = BitChartColorUtil.FromDrawingColor(Color.FromArgb(128, BitChartDemoUtils.ChartColors.Blue)),
-            BorderColor = BitChartColorUtil.FromDrawingColor(BitChartDemoUtils.ChartColors.Blue),
+            BackgroundColor = BitChartColorUtil.FromDrawingColor(Color.FromArgb(128, BitChartDemoColors.Blue)),
+            BorderColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Blue),
             BorderWidth = 1
         };
 
@@ -280,19 +280,19 @@ private void InitStackedBarChartExample()
     IDataset<int> dataset1 = new BitChartBarDataset<int>(BitChartDemoUtils.RandomScalingFactor(InitalCount))
     {
         Label = ""Dataset 1"",
-        BackgroundColor = BitChartColorUtil.FromDrawingColor(BitChartDemoUtils.ChartColors.Red)
+        BackgroundColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Red)
     };
 
     IDataset<int> dataset2 = new BitChartBarDataset<int>(BitChartDemoUtils.RandomScalingFactor(InitalCount))
     {
         Label = ""Dataset 2"",
-        BackgroundColor = BitChartColorUtil.FromDrawingColor(BitChartDemoUtils.ChartColors.Blue)
+        BackgroundColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Blue)
     };
 
     IDataset<int> dataset3 = new BitChartBarDataset<int>(BitChartDemoUtils.RandomScalingFactor(InitalCount))
     {
         Label = ""Dataset 3"",
-        BackgroundColor = BitChartColorUtil.FromDrawingColor(BitChartDemoUtils.ChartColors.Green)
+        BackgroundColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Green)
     };
 
 
@@ -371,16 +371,16 @@ private void InitlineChartExample()
     IDataset<int> dataset1 = new BitChartLineDataset<int>(BitChartDemoUtils.RandomScalingFactor(InitalCount))
         {
             Label = ""My first dataset"",
-            BackgroundColor = BitChartColorUtil.FromDrawingColor(BitChartDemoUtils.ChartColors.Red),
-            BorderColor = BitChartColorUtil.FromDrawingColor(BitChartDemoUtils.ChartColors.Red),
+            BackgroundColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Red),
+            BorderColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Red),
             Fill = BitChartFillingMode.Disabled
         };
 
     IDataset<int> dataset2 = new BitChartLineDataset<int>(BitChartDemoUtils.RandomScalingFactor(InitalCount))
         {
             Label = ""My second dataset"",
-            BackgroundColor = BitChartColorUtil.FromDrawingColor(BitChartDemoUtils.ChartColors.Blue),
-            BorderColor = BitChartColorUtil.FromDrawingColor(BitChartDemoUtils.ChartColors.Blue),
+            BackgroundColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Blue),
+            BorderColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Blue),
             Fill = BitChartFillingMode.Disabled
         };
 
