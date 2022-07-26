@@ -1,5 +1,8 @@
-﻿@import '../Styles/_shared.scss';
-@import '../Styles/_fonts.scss';
+﻿@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_media-queries.scss';
+@import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_mixins.scss';
+@import '../Styles/abstracts/_fonts.scss';
 
 ::deep * {
     font-family: "Axiforma";
