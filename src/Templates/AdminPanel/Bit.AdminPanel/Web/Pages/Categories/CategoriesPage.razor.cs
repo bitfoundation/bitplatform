@@ -50,7 +50,7 @@ public partial class CategoriesPage
 
                 if (string.IsNullOrEmpty(_categoryNameFilter) is false)
                 {
-                    query.Add("$filter", $"contains(Name,{_categoryNameFilter}");
+                    query.Add("$filter", $"contains(Name,'{_categoryNameFilter}')");
                 }
 
                 if (req.GetSortByProperties().Any())
