@@ -98,8 +98,11 @@ public partial class CategoriesPage
         {
             if (confirmed)
             {
-                await httpClient.DeleteAsync($"Category/Delete/{Category.Id}");
-                await RefreshData();
+                await WrapHandledAsync(async () =>
+                  {
+                      await httpClient.DeleteAsync($"Category/Delete/{Category.Id}");
+                      await RefreshData();
+                  });
             }
         });
     }

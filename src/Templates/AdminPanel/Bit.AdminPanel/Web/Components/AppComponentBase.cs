@@ -103,6 +103,23 @@ public partial class AppComponentBase : ComponentBase
     /// <summary>
     /// Executes passed function while catching all possible exceptions to prevent app crash.
     /// </summary>
+    /// <param name="func"></param>
+    /// <returns></returns>
+    public virtual async Task WrapHandledAsync(Func<Task> func)
+    {
+        try
+        {
+            await func();
+        }
+        catch (Exception exp)
+        {
+            exceptionHandler.Handle(exp);
+        }
+    }
+
+    /// <summary>
+    /// Executes passed function while catching all possible exceptions to prevent app crash.
+    /// </summary>
     public virtual Func<T, Task> WrapHandled<T>(Func<T, Task> func)
     {
         return async (e) =>
