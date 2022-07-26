@@ -2,7 +2,7 @@
 
 public partial class AppComponentBase : ComponentBase
 {
-    [AutoInject] private IExceptionHandler exceptionHandler = default!;
+    [AutoInject] protected IExceptionHandler exceptionHandler = default!;
 
     protected async sealed override Task OnInitializedAsync()
     {
@@ -98,23 +98,6 @@ public partial class AppComponentBase : ComponentBase
                 exceptionHandler.Handle(exp);
             }
         };
-    }
-
-    /// <summary>
-    /// Executes passed function while catching all possible exceptions to prevent app crash.
-    /// </summary>
-    /// <param name="func"></param>
-    /// <returns></returns>
-    public virtual async Task WrapHandledAsync(Func<Task> func)
-    {
-        try
-        {
-            await func();
-        }
-        catch (Exception exp)
-        {
-            exceptionHandler.Handle(exp);
-        }
     }
 
     /// <summary>

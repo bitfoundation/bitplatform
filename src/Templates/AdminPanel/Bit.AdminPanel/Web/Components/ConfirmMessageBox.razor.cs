@@ -2,7 +2,7 @@
 
 public partial class ConfirmMessageBox : IDisposable
 {
-    public Action<bool> CallBackFunction { get; set; }
+    public Action<bool>? CallBackFunction { get; set; }
 
     private static event Action<string, string,string, Action<bool>> OnShow = default!;
 

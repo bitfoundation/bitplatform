@@ -94,17 +94,23 @@ public partial class CategoriesPage
 
     private void DeleteCategory(CategoryDto Category)
     {
-        ConfirmMessageBox.Show("Are you sure delete?", Category.Name!, "Delete", async (confirmed) =>
-        {
-            if (confirmed)
+        ConfirmMessageBox.Show("Are you sure delete?", Category.Name!, "Delete",
+            async (confirmed) =>
             {
-                await WrapHandledAsync(async () =>
-                  {
-                      await httpClient.DeleteAsync($"Category/Delete/{Category.Id}");
-                      await RefreshData();
-                  });
+                if (confirmed)
+                {
+                    try
+                    {
+                        await httpClient.DeleteAsync($"Category/Delete/{Category.Id}");
+                        await RefreshData();
+                    }
+                    catch (Exception exp)
+                    {
+                        exceptionHandler.Handle(exp);
+                    }
+                }
             }
-        });
+        );
     }
 }
 
