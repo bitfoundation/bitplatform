@@ -2,7 +2,7 @@
 
 public partial class AppComponentBase : ComponentBase
 {
-    [AutoInject] private IExceptionHandler exceptionHandler = default!;
+    [AutoInject] protected IExceptionHandler exceptionHandler = default!;
 
     protected async sealed override Task OnInitializedAsync()
     {
