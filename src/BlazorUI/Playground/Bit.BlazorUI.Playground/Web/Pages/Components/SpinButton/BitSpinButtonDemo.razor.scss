@@ -15,3 +15,17 @@
     color: $Red20;
     font-size: rem(12px);
 }
+
+::deep .custom-spb {
+    .bit-spb-wrapper input {
+        background-color: $Gray3;
+    }
+}
+
+::deep .bit-spb {
+    margin-bottom: rem(8px);
+}
+
+::deep .bit-spb-lbl-wrapper {
+    height: auto;
+}

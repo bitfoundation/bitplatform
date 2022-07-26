@@ -7,3 +7,33 @@
 .m-t-20 {
     margin-top: rem(20px);
 }
+
+::deep .tgl-btn {
+    @include sm {
+        margin-top: rem(10px);
+        width: rem(195px);
+    }
+}
+
+::deep .aria-hidden-tgl-btn {
+    @include sm {
+        margin-top: rem(10px);
+        width: rem(239px);
+    }
+}
+
+::deep .bit-tgl-btn-primary-fluent {
+    .bit-icon {
+        color: $White;
+    }
+}
+
+::deep .bit-tgl-btn-fluent {
+    span {
+        span {
+            font-weight: normal;
+            margin: 0;
+            line-height: 0;
+        }
+    }
+}

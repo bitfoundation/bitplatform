@@ -372,3 +372,28 @@
         margin: 0 rem(8px) rem(16px);
     }
 }
+
+::deep .selected-component-icon {
+    path {
+        fill: $White;
+        stroke: $White;
+    }
+}
+
+::deep .component-row-icon {
+    path {
+        fill: $B2Color;
+        stroke: $B2Color;
+    }
+}
+
+::deep .component-row {
+    &:hover {
+        .component-row-icon {
+            path {
+                fill: $White;
+                stroke: $White;
+            }
+        }
+    }
+}

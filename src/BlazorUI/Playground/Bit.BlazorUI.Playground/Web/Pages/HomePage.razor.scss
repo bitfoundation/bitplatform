@@ -1163,3 +1163,52 @@
         }
     }
 }
+
+::deep .component-list-item {
+    max-width: 100%;
+    margin-bottom: rem(4px);
+    color: $Gray1;
+    font-size: rem(16px);
+    line-height: rem(24px);
+    font-family: Axiforma;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    cursor: pointer;
+
+    a {
+        display: flex;
+        align-items: center;
+        color: inherit;
+        font-family: inherit;
+
+        &:hover, &:active {
+            color: $B2Color;
+            text-decoration: none;
+        }
+    }
+
+    &:last-child {
+        margin-bottom: 0;
+    }
+
+    &:hover {
+        color: $B2Color;
+    }
+
+    @include lg {
+        line-height: rem(24px);
+    }
+
+    @include md {
+        font-size: rem(14px);
+        line-height: rem(16px);
+        margin-bottom: rem(12px);
+    }
+
+    @include sm {
+        font-size: rem(14px);
+        line-height: rem(24px);
+        margin-bottom: rem(8px);
+    }
+}

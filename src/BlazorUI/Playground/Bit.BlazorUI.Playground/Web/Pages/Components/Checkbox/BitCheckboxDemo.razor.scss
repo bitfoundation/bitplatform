@@ -15,3 +15,9 @@
     color: $Red20;
     font-size: rem(12px);
 }
+
+::deep .chk-box {
+    .bit-chb-lbl {
+        margin-bottom: rem(10px);
+    }
+}

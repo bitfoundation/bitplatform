@@ -15,3 +15,7 @@
     line-height: normal;
     margin-top: -10px;
 }
+
+::deep .bit-txt-wrapper {
+    margin-bottom: rem(20px);
+}

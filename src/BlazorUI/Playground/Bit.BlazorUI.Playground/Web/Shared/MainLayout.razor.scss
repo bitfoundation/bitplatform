@@ -1,4 +1,44 @@
 ﻿@import '../Styles/_shared.scss';
+@import '../Styles/_fonts.scss';
+
+::deep * {
+    font-family: "Axiforma";
+}
+
+::deep body {
+    width: 100%;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+::deep a {
+    text-decoration: none;
+}
+
+::deep ::-webkit-scrollbar {
+    width: rem(6px);
+}
+
+::deep ::-webkit-scrollbar-thumb {
+    background: $B5Color;
+    border-radius: rem(8px);
+    border: rem(5px) solid $B5Color;
+}
+
+::deep ::-webkit-scrollbar-thumb:hover {
+    background: $B3Color;
+    border-radius: rem(8px);
+    border: rem(4px) solid $B3Color;
+}
+
+::deep ::-webkit-scrollbar-button {
+    display: none;
+}
+
+::deep ::-webkit-scrollbar:horizontal {
+    height: rem(6px);
+}
 
 .main-container {
     display: flex;
@@ -195,4 +235,68 @@
     .main-container-pad {
         padding-left: rem(300px);
     }
+}
+
+::deep .example-desc {
+    margin-bottom: rem(8px);
+}
+
+::deep pre {
+    position: relative;
+    display: flex;
+    flex-flow: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    width: 100%;
+    max-height: rem(464px);
+    min-height: rem(70px);
+    margin: 0;
+    padding: rem(24px) rem(80px) rem(24px) rem(24px);
+    box-sizing: border-box;
+    direction: ltr;
+    overflow: auto;
+    font-family: ui-monospace,SFMono-Regular,SF Mono,Menlo,Consolas,Liberation Mono,monospace;
+    border: rem(1px) solid $B5Color;
+    border-top: none;
+    border-radius: 0 0 rem(10px) rem(10px);
+
+    &::-webkit-scrollbar {
+        width: rem(10px);
+    }
+
+    &::-webkit-scrollbar:horizontal {
+        height: rem(10px);
+    }
+
+    @include lg {
+        max-height: rem(400px);
+        padding: rem(16px) rem(60px) rem(16px) rem(16px);
+        border-radius: 0 0 rem(8px) rem(8px);
+    }
+
+    @include md {
+        max-height: rem(304px);
+        padding: rem(8px) rem(52px) rem(8px) rem(16px);
+        border-radius: 0 0 rem(8px) rem(8px);
+    }
+
+    @include sm {
+        padding: rem(16px) rem(45px) rem(16px) rem(8px);
+        border-radius: 0 0 rem(8px) rem(8px);
+    }
+}
+
+::deep code {
+    line-height: 1.5;
+    font-family: ui-monospace,SFMono-Regular,SF Mono,Menlo,Consolas,Liberation Mono,monospace;
+
+    span {
+        font-family: inherit;
+    }
+}
+
+::deep .hljs {
+    overflow-x: unset !important;
+    padding: 0 !important;
+    background-color: transparent !important;
 }

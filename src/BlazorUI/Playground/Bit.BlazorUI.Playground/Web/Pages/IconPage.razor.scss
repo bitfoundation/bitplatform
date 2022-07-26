@@ -187,3 +187,34 @@
         background-size: rem(96px) rem(120px);
     }
 }
+
+::deep .icongraphy-search-box {
+    width: rem(336px);
+    height: rem(40px);
+    margin-bottom: rem(50px) !important;
+
+    input::-webkit-input-placeholder {
+        font-size: rem(14px);
+        font-weight: 500;
+    }
+
+    @include lg {
+        height: rem(36px);
+    }
+
+    @include md {
+        width: rem(274px);
+        height: rem(36px);
+        margin-bottom: rem(40px) !important;
+    }
+
+    @include sm {
+        width: rem(264px);
+        height: rem(40px);
+        margin-bottom: rem(32px) !important;
+    }
+}
+
+::deep .bit-icon--icongraphy {
+    font-size: 2.25rem !important;
+}

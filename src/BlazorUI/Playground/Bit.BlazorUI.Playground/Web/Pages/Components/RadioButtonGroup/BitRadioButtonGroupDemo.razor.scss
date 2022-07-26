@@ -15,3 +15,9 @@
     color: $Red20;
     font-size: rem(12px);
 }
+
+::deep .ch-group {
+    .bit-txt {
+        margin-bottom: rem(25px);
+    }
+}

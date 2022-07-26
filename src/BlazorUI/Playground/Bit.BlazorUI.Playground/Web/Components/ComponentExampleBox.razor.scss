@@ -121,3 +121,123 @@
         padding: rem(16px) rem(8px);
     }
 }
+
+::deep .com-example-box-header-btn {
+    min-height: rem(32px);
+    height: 100%;
+    border: none;
+    background-color: transparent;
+    color: #2E2E2E !important;
+    border-radius: rem(4px) rem(4px) 0 0;
+    border: rem(1px) solid $B5Color !important;
+    border-bottom: none !important;
+
+    &:hover,
+    &:active,
+    &:focus {
+        background-color: $White;
+    }
+
+    span {
+        i {
+            font-size: rem(26px);
+            color: $B2Color !important;
+        }
+
+        span {
+            min-width: rem(80px);
+        }
+    }
+
+    @include lt-xl {
+        span {
+            i {
+                font-size: rem(20px);
+            }
+        }
+    }
+
+    @include sm {
+        min-height: rem(28px);
+
+        span {
+            span {
+                display: none;
+            }
+        }
+    }
+}
+
+::deep .com-example-box-header-btn {
+    &.bit-ico-btn-fluent {
+        padding: 0 rem(25px);
+    }
+}
+
+::deep .com-example-box-header-btn {
+    &.bit-tgl-btn-fluent {
+        min-width: unset;
+    }
+}
+
+::deep .com-example-box-copy-btn {
+    position: absolute;
+    z-index: 1;
+    right: rem(24px);
+    top: rem(16px);
+    width: rem(48px);
+    height: rem(48px);
+    border-radius: 50%;
+    background-color: $B5Color;
+
+    span {
+        i {
+            color: $B2Color;
+            margin: 0;
+            font-size: rem(28px);
+        }
+    }
+
+    &:hover {
+        background-color: $B5Color;
+    }
+
+    @include lg {
+        width: rem(40px);
+        height: rem(40px);
+        right: rem(16px);
+        top: rem(16px);
+
+        span {
+            i {
+                font-size: rem(24px);
+            }
+        }
+    }
+
+    @include md {
+        width: rem(40px);
+        height: rem(40px);
+        right: rem(8px);
+        top: rem(8px);
+
+        span {
+            i {
+                font-size: rem(24px);
+            }
+        }
+    }
+
+    @include sm {
+        width: rem(32px);
+        height: rem(32px);
+        right: rem(8px);
+        top: rem(8px);
+
+        span {
+            i {
+                font-size: rem(20px);
+            }
+        }
+    }
+}

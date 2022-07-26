@@ -76,6 +76,10 @@
         "outputFile": "Pages/Components/Notification/BitMessageBarDemo.razor.css"
     },
     {
+        "inputFile": "Pages/Components/Notification/BitNavDemo.razor.scss",
+        "outputFile": "Pages/Components/Notification/BitNavDemo.razor.css"
+    },
+    {
         "inputFile": "Pages/Components/Pivot/BitPivotDemo.razor.scss",
         "outputFile": "Pages/Components/Pivot/BitPivotDemo.razor.css"
     },
@@ -86,6 +90,10 @@
     {
         "inputFile": "Pages/Components/Spinner/BitSpinnerDemo.razor.scss",
         "outputFile": "Pages/Components/Spinner/BitSpinnerDemo.razor.css"
+    },
+    {
+        "inputFile": "Pages/Components/Spinner/BitSearchBoxDemo.razor.scss",
+        "outputFile": "Pages/Components/Spinner/BitSearchBoxDemo.razor.css"
     },
     {
         "inputFile": "Pages/Components/Toggle/BitToggleDemo.razor.scss",
