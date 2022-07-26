@@ -98,20 +98,16 @@ public partial class ProductsPage
     }
     private async Task DeleteProduct(ProductDto product)
     {
-        ConfirmMessageBox.Show("Are you sure delete?", product.Name, "Delete", async (confirmed) =>
+        if (await ConfirmMessageBox.Show("Are you sure delete?", product.Name, "Delete"))
         {
-            if (confirmed)
-            {
-                await httpClient.DeleteAsync($"Product/Delete/{product.Id}");
-                await RefreshData();
-            }
-        });
+            await httpClient.DeleteAsync($"Product/Delete/{product.Id}");
+            await RefreshData();
+        }
     }
 
     protected async void OnSuccessfulProductSave()
     {
         MessageBox.Show("Succesfully saved", "product");
-
         await RefreshData();
     }
 }

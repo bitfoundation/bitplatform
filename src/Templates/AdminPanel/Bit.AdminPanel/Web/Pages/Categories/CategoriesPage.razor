@@ -33,7 +33,7 @@
                     </BitDataGridTemplateColumn>
                     <BitDataGridTemplateColumn Title="Action" Align="BitDataGridAlign.Right">
                         <BitIconButton IconName="BitIconName.Edit" OnClick="() => EditCategory(context)" />
-                        <BitIconButton Style="color:red;" IconName="BitIconName.Delete" OnClick="WrapHandled(() => DeleteCategory(context))" />
+                        <BitIconButton Style="color:red;" IconName="BitIconName.Delete" OnClick="WrapHandled(() => DeleteCategoryAsync(context))" />
                     </BitDataGridTemplateColumn>
                 </BitDataGrid>
                 <BitDataGridPaginator Value="@pagination" />

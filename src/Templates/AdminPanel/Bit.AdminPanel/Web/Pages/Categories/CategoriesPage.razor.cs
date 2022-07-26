@@ -92,25 +92,13 @@ public partial class CategoriesPage
         return Task.CompletedTask;
     }
 
-    private void DeleteCategory(CategoryDto Category)
+    private async Task DeleteCategoryAsync(CategoryDto Category)
     {
-        ConfirmMessageBox.Show("Are you sure delete?", Category.Name!, "Delete",
-            async (confirmed) =>
-            {
-                if (confirmed)
-                {
-                    try
-                    {
-                        await httpClient.DeleteAsync($"Category/Delete/{Category.Id}");
-                        await RefreshData();
-                    }
-                    catch (Exception exp)
-                    {
-                        exceptionHandler.Handle(exp);
-                    }
-                }
-            }
-        );
+        if (await ConfirmMessageBox.Show("Are you sure delete?", Category.Name!, "Delete"))
+        {
+            await httpClient.DeleteAsync($"Category/Delete/{Category.Id}");
+            await RefreshData();
+        }
     }
 }
 

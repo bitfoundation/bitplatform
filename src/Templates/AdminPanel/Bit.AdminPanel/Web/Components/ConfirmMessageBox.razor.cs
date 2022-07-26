@@ -2,13 +2,15 @@
 
 public partial class ConfirmMessageBox : IDisposable
 {
-    public Action<bool>? CallBackFunction { get; set; }
+    private static TaskCompletionSource<bool>? taskSource;
 
-    private static event Action<string, string,string, Action<bool>> OnShow = default!;
+    private static event Action<string, string,string> OnShow = default!;
 
-    public static void Show(string message, string context, string title, Action<bool> callBack)
+    public static Task<bool> Show(string message, string context, string title)
     {
-        OnShow?.Invoke(message,context, title, callBack);
+        taskSource = new TaskCompletionSource<bool>();
+        OnShow?.Invoke(message, context, title);
+        return taskSource.Task;
     }
 
     protected override void OnInitialized()
@@ -18,18 +20,14 @@ public partial class ConfirmMessageBox : IDisposable
         base.OnInitialized();
     }
 
-    private void ShowMessageBox(string message, string context, string title, Action<bool> callBack)
+    private void ShowMessageBox(string message, string context, string title)
     {
         InvokeAsync(() =>
         {
             IsOpen = true;
-
             Title = title;
             Message = message;
             Context = context;
-
-            CallBackFunction = callBack;
-
             StateHasChanged();
         });
     }
@@ -42,12 +40,10 @@ public partial class ConfirmMessageBox : IDisposable
 
     private string Context { get; set; } = string.Empty;
 
-
-
     public void Confirmation(bool value)
     {
         IsOpen = false;
-        CallBackFunction?.Invoke(value);
+        taskSource?.SetResult(value);
     }
 
     public void Dispose()
