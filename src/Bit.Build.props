@@ -27,8 +27,8 @@
 
 		<ReleaseVersion>2.0.0</ReleaseVersion>
 
-		<PackageReleaseNotes>https://github.com/bitfoundation/bitplatform/releases/tag/v-$(ReleaseVersion)-pre-12</PackageReleaseNotes>
-		<PackageVersion>$(ReleaseVersion)-pre-12</PackageVersion>
+		<PackageReleaseNotes>https://github.com/bitfoundation/bitplatform/releases/tag/v-$(ReleaseVersion)</PackageReleaseNotes>
+		<PackageVersion>$(ReleaseVersion)</PackageVersion>
 
 		<!-- Version -->
 		<Version Condition=" '$(Configuration)' == 'Release' ">$(ReleaseVersion).$([System.DateTime]::Now.ToString(HHmm))</Version>

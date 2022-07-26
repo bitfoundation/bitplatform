@@ -55,7 +55,7 @@ public partial class PopularComponents
     string GetBaseUrl()
     {
 #if BlazorWebAssembly
-        return "/";
+        return "/api/";
 #else
         return Configuration.GetValue<string>("ApiServerAddress");
 #endif
