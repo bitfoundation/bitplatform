@@ -1,9 +1,5 @@
 ﻿[
     {
-        "inputFile": "Styles/styles.scss",
-        "outputFile": "wwwroot/styles/styles.css"
-    },
-    {
         "inputFile": "Shared/MainLayout.razor.scss",
         "outputFile": "Shared/MainLayout.razor.css"
     },
@@ -76,8 +72,8 @@
         "outputFile": "Pages/Components/Notification/BitMessageBarDemo.razor.css"
     },
     {
-        "inputFile": "Pages/Components/Notification/BitNavDemo.razor.scss",
-        "outputFile": "Pages/Components/Notification/BitNavDemo.razor.css"
+        "inputFile": "Pages/Components/Nav/BitNavDemo.razor.scss",
+        "outputFile": "Pages/Components/Nav/BitNavDemo.razor.css"
     },
     {
         "inputFile": "Pages/Components/Pivot/BitPivotDemo.razor.scss",
@@ -92,8 +88,8 @@
         "outputFile": "Pages/Components/Spinner/BitSpinnerDemo.razor.css"
     },
     {
-        "inputFile": "Pages/Components/Spinner/BitSearchBoxDemo.razor.scss",
-        "outputFile": "Pages/Components/Spinner/BitSearchBoxDemo.razor.css"
+        "inputFile": "Pages/Components/SearchBox/BitSearchBoxDemo.razor.scss",
+        "outputFile": "Pages/Components/SearchBox/BitSearchBoxDemo.razor.css"
     },
     {
         "inputFile": "Pages/Components/Toggle/BitToggleDemo.razor.scss",
@@ -122,10 +118,6 @@
     {
         "inputFile": "Shared/MessageBox.razor.scss",
         "outputFile": "Shared/MessageBox.razor.css"
-    },
-    {
-        "inputFile": "Styles/styles.scss",
-        "outputFile": "wwwroot/styles/styles.css"
     },
     {
         "inputFile": "Pages/Components/TextField/BitTextFieldDemo.razor.scss",

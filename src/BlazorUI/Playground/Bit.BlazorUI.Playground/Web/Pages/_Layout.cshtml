@@ -40,7 +40,46 @@
     <link rel="icon" href="~/favicon.ico" type="image/x-icon" asp-append-version="true">
     <link media="all" rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.min.css" asp-append-version="true" />
     <link media="all" rel="stylesheet" href="Bit.BlazorUI.Playground.Web.styles.css" asp-append-version="true" />
-    <link media="all" rel="stylesheet" href="~/styles/styles.css" asp-append-version="true" />
+    <style>
+        * {
+            font-family: "Axiforma";
+        }
+
+        html, body {
+            width: 100%;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #DFECFF;
+            border-radius: 8px;
+            border: 5px solid #DFECFF;
+        }
+
+            ::-webkit-scrollbar-thumb:hover {
+                background: #5CA1FF;
+                border-radius: 8px;
+                border: 4px solid #5CA1FF;
+            }
+
+        ::-webkit-scrollbar-button {
+            display: none;
+        }
+
+        ::-webkit-scrollbar:horizontal {
+            height: 6px;
+        }
+    </style>
     <link media="all" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/styles/default.min.css">
     <component type="typeof(HeadOutlet)" render-mode="@renderMode" />
 </head>
