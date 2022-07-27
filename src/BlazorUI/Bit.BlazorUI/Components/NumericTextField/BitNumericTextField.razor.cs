@@ -236,7 +236,7 @@ public partial class BitNumericTextField<TValue>
                                             : string.Empty);
     }
 
-    protected async override Task OnParametersSetAsync()
+    protected override async Task OnParametersSetAsync()
     {
         if (internalMin.HasValue is false)
         {
@@ -297,7 +297,7 @@ public partial class BitNumericTextField<TValue>
         await base.OnParametersSetAsync();
     }
 
-    private async void HandleMouseDown(BitNumericTextFieldAction action, MouseEventArgs e)
+    private async Task HandleMouseDown(BitNumericTextFieldAction action, MouseEventArgs e)
     {
         //Change focus from input to numeric text field
         if (action == BitNumericTextFieldAction.Increment)

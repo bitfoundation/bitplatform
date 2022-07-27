@@ -53,7 +53,7 @@ public partial class BitRadioButtonListDemo
         new GenderModel { GenderId = 4, GenderText = "Prefer not to say", IconName = BitIconName.Emoji2 },
     };
 
-    private async void HandleValidSubmit()
+    private async Task HandleValidSubmit()
     {
         SuccessMessage = "Form Submitted Successfully!";
         await Task.Delay(3000);
@@ -367,7 +367,7 @@ private List<GenderModel> GenderOptionsExample5 = new()
     new GenderModel { GenderId = 4, GenderText = ""Prefer not to say"", IconName = BitIconName.Emoji2 },
 };
 
-private async void HandleValidSubmit()
+private async Task HandleValidSubmit()
 {
     SuccessMessage = ""Form Submitted Successfully!"";
     await Task.Delay(3000);

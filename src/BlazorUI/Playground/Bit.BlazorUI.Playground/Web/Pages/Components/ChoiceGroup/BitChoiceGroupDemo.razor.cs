@@ -459,7 +459,7 @@ public class ChoiceGroupValidationModel
     public string Value { get; set; }
 }
 
-private async void HandleValidSubmit()
+private async Task HandleValidSubmit()
 {
     SuccessMessage = ""Form Submitted Successfully!"";
     await Task.Delay(3000);
@@ -602,7 +602,7 @@ protected override void OnInitialized()
 
     #endregion
 
-    private async void HandleValidSubmit()
+    private async Task HandleValidSubmit()
     {
         SuccessMessage = "Form Submitted Successfully!";
         await Task.Delay(3000);
