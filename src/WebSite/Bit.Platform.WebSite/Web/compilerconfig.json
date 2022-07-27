@@ -24,10 +24,6 @@
         "inputFile": "Shared/MainLayout.razor.scss"
     },
     {
-        "outputFile": "wwwroot/styles/styles.css",
-        "inputFile": "Styles/styles.scss"
-    },
-    {
         "outputFile": "Pages/Projects.razor.css",
         "inputFile": "Pages/Projects.razor.scss"
     },

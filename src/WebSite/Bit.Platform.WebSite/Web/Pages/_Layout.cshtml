@@ -40,7 +40,22 @@
     <link rel="icon" href="~/favicon.ico" type="image/x-icon" asp-append-version="true">
     <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.min.css" asp-append-version="true" />
     <link rel="stylesheet" href="Bit.Platform.WebSite.Web.styles.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/styles/styles.css" asp-append-version="true" />
+    <style>
+        * {
+            font-family: "OpenSans";
+        }
+
+        html, body {
+            width: 100%;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        a {
+            text-decoration: none;
+        }
+    </style>
     @*<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/styles/default.min.css">*@
     <component type="typeof(HeadOutlet)" render-mode="@renderMode" />
 </head>
