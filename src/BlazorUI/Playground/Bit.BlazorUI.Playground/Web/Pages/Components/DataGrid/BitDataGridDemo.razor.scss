@@ -2,31 +2,121 @@
     display: inline-flex;
     flex-direction: column;
     width: 100%;
+    border: 1px solid #e9eaed;
 
     ::deep {
+
+        .bitdatagrid-paginator {
+            padding: 0.5rem;
+        }
+
+        .bitdatagrid-paginator nav button {
+            border-radius: 0.25rem;
+        }
+
+        .bitdatagrid-paginator nav button:before {
+            vertical-align: middle;
+        }
+
+        .bitdatagrid-paginator nav button:not([disabled]) {
+            background-color: #eee;
+        }
+
+
+        .bitdatagrid-paginator nav button:not([disabled]):hover {
+            background-color: #e9eaed;
+        }
+
         table {
+            position: relative;
             min-width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            text-indent: initial;
         }
 
         tr {
             height: 1.8rem;
         }
 
-        th:nth-child(1) {
-            width: 15rem;
+        tr:nth-child(even) {
+            background: #f4f5f9
         }
 
-        th:nth-child(1) .col-options-button {
-            background-image: none;
-            cursor: pointer;
+        tr:nth-child(odd) {
+            background: #FFF
+        }
 
-            &:before {
-                display: inline-block;
-                font-family: 'Fabric MDL2 Assets';
-                font-style: normal;
-                font-weight: normal;
-                content: "\E721";
-            }
+        tr:last-child > td {
+            border-bottom: none;
+        }
+
+        th {
+            background-color: #f4f5f9;
+            padding: .5rem;
+            display: table-cell;
+            vertical-align: inherit;
+            font-weight: bold;
+            border-bottom: 1px solid #e9eaed;
+        }
+
+        thead th:not(:last-child) {
+            border-right: 1px solid #e9eaed;
+        }
+
+        td {
+            border-bottom: 1px solid #e9eaed;
+            color: #4f4f50;
+            font-size: 1rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            padding: 0.25rem 0.5rem;
+        }
+
+        td:not(:last-child) {
+            border-right: 1px solid #e9eaed;
+        }
+
+        .sort-indicator {
+            margin-left: auto;
+        }
+
+        /*.sort-indicator:before {
+            content: url("/images/icon/lists-icon.svg")
+        }*/
+
+        thead .col-width-draghandle:after {
+            left: 3px;
+        }
+
+        thead .col-width-draghandle {
+            cursor: col-resize;
+            width: 3px;
+        }
+
+        thead .col-width-draghandle:active {
+            background: unset;
+        }
+
+        thead .col-width-draghandle:hover {
+            background: unset;
+        }
+
+        .col-width-draghandle:after {
+            border-left: unset;
+        }
+
+        .col-header-content {
+            padding-right: 0px;
+        }
+
+        button.col-title:active, .bitdatagrid .col-options-button:active {
+            background-color: unset;
+        }
+
+        button.col-title:hover, .bitdatagrid .col-options-button:hover {
+            background-color: unset;
         }
     }
 }

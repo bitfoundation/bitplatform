@@ -13,17 +13,17 @@
         <ExamplePreview>
             <div class="grid1">
                 <BitDataGrid Items="@FilteredItems" ResizableColumns="true" Pagination="@pagination">
-                    <BitDataGridPropertyColumn Property="@(c => c.Name)" Sortable="true">
+                    <BitDataGridPropertyColumn  Property="@(c => c.Name)" Sortable="true" IsDefaultSort="BitDataGridSortDirection.Ascending">
                         <ColumnOptions>
                             <BitSearchBox @bind-Value="typicalSampleNameFilter"
                                           Placeholder="Search on Name"
                                           InputHtmlAttributes="@(new Dictionary<string, object> {{"autofocus", true}})" />
                         </ColumnOptions>
                     </BitDataGridPropertyColumn>
-                    <BitDataGridPropertyColumn Property="@(c => c.Medals.Gold)" Sortable="true" Align="BitDataGridAlign.Right" />
-                    <BitDataGridPropertyColumn Property="@(c => c.Medals.Silver)" Sortable="true" Align="BitDataGridAlign.Right" />
-                    <BitDataGridPropertyColumn Property="@(c => c.Medals.Bronze)" Sortable="true" Align="BitDataGridAlign.Right" />
-                    <BitDataGridPropertyColumn Property="@(c => c.Medals.Total)" Sortable="true" Align="BitDataGridAlign.Right" />
+                    <BitDataGridPropertyColumn Property="@(c => c.Medals.Gold)" Sortable="true" />
+                    <BitDataGridPropertyColumn Property="@(c => c.Medals.Silver)" Sortable="true" />
+                    <BitDataGridPropertyColumn Property="@(c => c.Medals.Bronze)" Sortable="true" />
+                    <BitDataGridPropertyColumn Property="@(c => c.Medals.Total)" Sortable="true" />
                 </BitDataGrid>
                 <BitDataGridPaginator Value="@pagination" />
             </div>
@@ -95,7 +95,7 @@
     IQueryable<Country> sevenCountries;
     BitDataGridItemsProvider<FoodRecall> foodRecallProvider;
     BitDataGridItemsProvider<ProductDto> productsItemsProvider;
-    BitDataGridPaginationState pagination = new() { ItemsPerPage = 15 };
+    BitDataGridPaginationState pagination = new() { ItemsPerPage = 7 };
     IQueryable<Country> FilteredItems => allCountries?.Where(x => x.Name.Contains(typicalSampleNameFilter, StringComparison.CurrentCultureIgnoreCase));
 
     string typicalSampleNameFilter = string.Empty;
@@ -133,11 +133,11 @@
             try
             {
                 var query = new Dictionary<string, object?>
-                {
+                    {
                     { "search",$"recalling_firm:\"{_virtualSampleNameFilter}\"" },
                     { "skip", req.StartIndex },
                     { "limit", req.Count }
-                };
+                    };
 
                 var sort = req.GetSortByProperties().SingleOrDefault();
 
@@ -171,10 +171,10 @@
                 // https://docs.microsoft.com/en-us/odata/concepts/queryoptions-overview
 
                 var query = new Dictionary<string, object>()
-                {
+                    {
                     { "$top", req.Count ?? 50 },
                     { "$skip", req.StartIndex }
-                };
+                    };
 
                 if (string.IsNullOrEmpty(_odataSampleNameFilter) is false)
                 {
