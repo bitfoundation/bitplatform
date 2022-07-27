@@ -46,17 +46,6 @@
 //    });
 //}
 
-function RegisterOnScrollToChangeHeaderStyle(element: any) {
-    window.addEventListener('scroll', (event) => {
-        if (document.documentElement.scrollTop >= 100) {
-            element.classList.add("blue-header-container");
-        }
-        else {
-            element.classList.remove("blue-header-container");
-        }
-    });
-}
-
 function RegisterOnScrollToChangeGettingStartedSideRailStyle(element: any) {
     window.addEventListener('scroll', (event) => {
         if (document.documentElement.scrollTop >= 500) {

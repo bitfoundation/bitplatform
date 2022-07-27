@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.JSInterop;
 
 namespace Bit.Platform.WebSite.Web.Components;
 
@@ -11,10 +9,7 @@ public partial class Header : IDisposable
 {
     private string CurrentUrl = string.Empty;
 
-    public ElementReference HeaderElement { get; set; }
-
     [AutoInject] private NavigationManager _navigationManager = default!;
-    [AutoInject] private IJSRuntime _jsRuntime = default!;
 
     protected override void OnInitialized()
     {
@@ -30,14 +25,15 @@ public partial class Header : IDisposable
         StateHasChanged();
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    private string GetHeaderLinkClass(string link)
     {
-        if (firstRender)
+        var classStr = "header-link";
+        if ((link == "Home" && CurrentUrl == "/") || (link == "Todo" && CurrentUrl == "/todo-template"))
         {
-            await _jsRuntime.RegisterOnScrollToChangeHeaderStyle(HeaderElement);
+            classStr += " header-link--active";
         }
 
-        await base.OnAfterRenderAsync(firstRender);
+        return classStr;
     }
 
     public void Dispose()
