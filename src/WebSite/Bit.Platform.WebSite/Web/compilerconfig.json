@@ -8,6 +8,10 @@
         "inputFile": "Components/Footer.razor.scss"
     },
     {
+        "outputFile": "Components/SideNav.razor.css",
+        "inputFile": "Components/SideNav.razor.scss"
+    },
+    {
         "outputFile": "Components/NotFoundComponent.razor.css",
         "inputFile": "Components/NotFoundComponent.razor.scss"
     },
@@ -18,6 +22,10 @@
     {
         "outputFile": "Pages/HomePage.razor.css",
         "inputFile": "Pages/HomePage.razor.scss"
+    },
+    {
+        "outputFile": "Pages/TodoOverviewPage.razor.css",
+        "inputFile": "Pages/TodoOverviewPage.razor.scss"
     },
     {
         "outputFile": "Shared/MainLayout.razor.css",

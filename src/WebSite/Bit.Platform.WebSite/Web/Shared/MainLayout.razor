@@ -2,8 +2,14 @@
 
 <Header />
 
-<div>
-    @Body
+<div class="main-container @(CurrentUrl != "/" ? "main-container-pad" : null)">
+    @if (CurrentUrl != "/")
+    {
+        <SideNav />
+    }
+    <div class="page-content">
+        @Body
+    </div>
 </div>
 
 <Footer />

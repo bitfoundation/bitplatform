@@ -132,3 +132,26 @@
         height: rem(28px);
     }
 }
+
+::deep .header-menu-btn {
+    min-width: rem(24px);
+    min-height: rem(24px);
+    max-width: rem(24px);
+    max-height: rem(24px);
+    margin-right: rem(18px);
+    border-radius: 50%;
+    background-color: $B3Color;
+
+    .bit-icon {
+        font-size: rem(12px);
+        color: $White;
+    }
+
+    &:hover {
+        background-color: $B6Color;
+    }
+
+    @include gt-md {
+        display: none;
+    }
+}

@@ -1,4 +1,5 @@
 ﻿using System;
+using Bit.Platform.WebSite.Web.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,6 +11,7 @@ public partial class Header : IDisposable
     private string CurrentUrl = string.Empty;
 
     [AutoInject] private NavigationManager _navigationManager = default!;
+    [Inject] public NavManuService NavManuService { get; set; }
 
     protected override void OnInitialized()
     {
@@ -28,12 +30,17 @@ public partial class Header : IDisposable
     private string GetHeaderLinkClass(string link)
     {
         var classStr = "header-link";
-        if ((link == "Home" && CurrentUrl == "/") || (link == "Todo" && CurrentUrl == "/todo-template"))
+        if ((link == "Home" && CurrentUrl == "/") || (link == "Todo" && CurrentUrl.Contains("todo-template")))
         {
             classStr += " header-link--active";
         }
 
         return classStr;
+    }
+
+    private void ToggleMenu()
+    {
+        NavManuService.ToggleMenu();
     }
 
     public void Dispose()
