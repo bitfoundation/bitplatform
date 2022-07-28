@@ -3,10 +3,9 @@
 
 * {
     font-family: "Axiforma";
-    box-sizing: border-box;
 }
 
-html, body {
+body {
     width: 100%;
     height: 100vh;
     margin: 0;
@@ -40,6 +39,7 @@ a {
 ::-webkit-scrollbar:horizontal {
     height: rem(6px);
 }
+
 /* Home Page ==================================================================================== */
 
 .header-nav-close-btn {
@@ -110,6 +110,7 @@ a {
         margin-bottom: rem(8px);
     }
 }
+
 /* Side Nav ==================================================================================== */
 
 .header-menu-btn {
@@ -342,6 +343,7 @@ a {
         }
     }
 }
+
 /* Not Found Component ==================================================================================== */
 
 .not-found-back-btn {
@@ -365,6 +367,7 @@ a {
         line-height: rem(16px);
     }
 }
+
 /* Component Example Box =================================================================================== */
 .com-example-box-header-btn {
     min-height: rem(32px);
@@ -601,6 +604,7 @@ code {
 .bit-icon--icongraphy {
     font-size: 2.25rem !important;
 }
+
 /* Popular Components =================================================================================== */
 
 .selected-component-icon {
