@@ -12,7 +12,7 @@ public partial class BitDropDownDemo
     private FormValidationDropDownModel formValidationDropDownModel = new();
     private string SuccessMessage = string.Empty;
 
-    private async void HandleValidSubmit()
+    private async Task HandleValidSubmit()
     {
         SuccessMessage = "Form Submitted Successfully!";
         await Task.Delay(3000);
@@ -901,7 +901,7 @@ public class FormValidationDropDownModel
 private FormValidationDropDownModel formValidationDropDownModel = new();
 private string SuccessMessage = string.Empty;
 
-private async void HandleValidSubmit()
+private async Task HandleValidSubmit()
 {
     SuccessMessage = ""Form Submitted Successfully!"";
     await Task.Delay(3000);

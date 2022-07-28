@@ -108,7 +108,7 @@ public partial class ProductsPage
         });
     }
 
-    protected async void OnSuccessfulProductSave()
+    protected async Task OnSuccessfulProductSave()
     {
         MessageBox.Show("Succesfully saved", "product");
 
