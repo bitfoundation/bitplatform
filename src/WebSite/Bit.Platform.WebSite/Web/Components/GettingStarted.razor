@@ -239,8 +239,9 @@
                     Set solution on Multi-startup project, by right click on solution name and selecting properties from right-click menu (change the action of the Api, App projects to start)
                 </li>
                 <li>
-                    In order for the App to access the localhost address during debugging, it is necessary to change the value of the <strong>ApiServerAddress</strong> property in the <strong>appsettings.json</strong> file of the Web project as follows.
-                    <pre class="code"><code>@("\"ApiServerAddress\": \"http://10.0.2.2:5000/api/\"")</code></pre>
+                    For the App to access the backend Api during debugging on Android & IOS,  it is necessary to change the value of the <strong>ApiServerAddress</strong> property in the <strong>appsettings.json</strong> file of the Web project from the localhost to your IP address.
+                    For example:
+                    <pre class="code"><code>@("\"ApiServerAddress\": \"http://192.168.1.5:5000/api/\"")</code></pre>
                 </li>
             </ol>
         </div>
