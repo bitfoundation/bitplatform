@@ -9,7 +9,7 @@ using Microsoft.JSInterop;
 
 namespace Bit.Platform.WebSite.Web.Components;
 
-public partial class SideNav
+public partial class NavMenu
 {
     private bool isNavOpen = false;
     private readonly List<BitNavLinkItem> allNavLinks = new()
@@ -21,7 +21,18 @@ public partial class SideNav
             Links = new List<BitNavLinkItem>
             {
                 new BitNavLinkItem { Name= "Overview", Key = "Overview", Url = "/todo-template/overview"},
-                new BitNavLinkItem { Name= "Installation", Key = "Installation", Url = "/todo-template/installation"}
+                new BitNavLinkItem { Name= "Development prerequisites", Key = "Development prerequisites", Url = "/todo-template/development-prerequisites"},
+                new BitNavLinkItem { Name= "Getting started", Key = "Getting started", Url = "/todo-template/getting-started"},
+                new BitNavLinkItem { Name= "Database", Key = "Database", Url = "/todo-template/database"},
+                new BitNavLinkItem { Name= "Run", Key = "Run", Url = "/todo-template/run"},
+                new BitNavLinkItem { Name= "Hosting models (Blazor mode)", Key = "Hosting models", Url = "/todo-template/hosting-models"},
+                new BitNavLinkItem { Name= "Deployment type", Key = "Deployment type", Url = "/todo-template/deployment-type"},
+                new BitNavLinkItem { Name= "Settings", Key = "Settings", Url = "/todo-template/settings"},
+                new BitNavLinkItem { Name= "Project structure", Key = "Project structure", Url = "/todo-template/project-structure"},
+                new BitNavLinkItem { Name= "Deployment type", Key = "Deployment type", Url = "/todo-template/deployment-type"},
+                new BitNavLinkItem { Name= "Exception handling", Key = "Exception handling", Url = "/todo-template/exception-handling"},
+                new BitNavLinkItem { Name= "Cache mechanism", Key = "Cache mechanism", Url = "/todo-template/cache-mechanism"},
+                new BitNavLinkItem { Name= "Contribute", Key = "Contribute", Url = "/todo-template/contribute"},
             }
         },
         new BitNavLinkItem
@@ -93,14 +104,14 @@ public partial class SideNav
 
     private string GetDemoLinkClassName(string link)
     {
-        var className = "side-nav-demo-link";
+        var className = "nav-menu-demo-link";
         if (CurrentUrl == "/components/overview" && link == "overview")
         {
-            className += " side-nav-demo-link--active";
+            className += " nav-menu-demo-link--active";
         }
         else if (CurrentUrl == "/get-started" && link == "get-started")
         {
-            className += " side-nav-demo-link--active";
+            className += " nav-menu-demo-link--active";
         }
 
         return className;

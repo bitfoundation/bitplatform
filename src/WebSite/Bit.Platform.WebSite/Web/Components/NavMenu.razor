@@ -1,21 +1,21 @@
 ﻿@if (isNavOpen)
 {
-    <div class="side-nav-shadow side-nav-container--mobile" @onclick="@ToggleMenu"></div>
+    <div class="nav-menu-shadow nav-menu-container--mobile" @onclick="@ToggleMenu"></div>
 }
-<div class="side-nav-container @(isNavOpen is false ? "side-nav-container--desktop" : "")">
+<div class="nav-menu-container @(isNavOpen is false ? "nav-menu-container--desktop" : "")">
     <div class="search-box-container">
-        <BitSearchBox Class="side-nav-search-box"
-                      Placeholder="Search Components"
+        <BitSearchBox Class="nav-menu-search-box"
+                      Placeholder="Search"
                       IconName="BitIconName.Search"
                       Value="@searchText"
                       ValueChanged="@HandleChange"
                       OnClear="@HandleClear" />
     </div>
-    <div class="side-nav-list">
-        <BitNav Class="side-nav"
+    <div class="nav-menu-list">
+        <BitNav Class="nav-menu"
                 NavLinkItems="filteredNavLinks"
                 RenderType="renderType"
-                AriaLabel="Bit Component Nav"
+                AriaLabel="Bit Platform Nav"
                 OnLinkClick="HandleLinkClick">
         </BitNav>
     </div>

@@ -30,7 +30,7 @@ public partial class Header : IDisposable
     private string GetHeaderLinkClass(string link)
     {
         var classStr = "header-link";
-        if ((link == "Home" && CurrentUrl == "/") || (link == "Todo" && CurrentUrl.Contains("todo-template")))
+        if ((link == "Home" && CurrentUrl == "/") || (link == "Templates" && CurrentUrl.Contains("todo-template")))
         {
             classStr += " header-link--active";
         }
