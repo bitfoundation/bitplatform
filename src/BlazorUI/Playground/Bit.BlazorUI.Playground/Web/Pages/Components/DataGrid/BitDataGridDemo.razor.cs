@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using Bit.BlazorUI;
+﻿using System.Collections.Generic;
 using Bit.BlazorUI.Playground.Web.Models;
 using Bit.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
@@ -287,50 +285,146 @@ public partial class BitDataGridDemo
     private readonly string example1HTMLCode = @"
 <style scoped>
 .grid {
-    display: inline-flex;
-    flex-direction: column;
-    width: 100%;
+  display: inline-flex;
+  flex-direction: column;
+  width: 100%;
+  border: 1px solid #e9eaed;
 }
-
-.grid ::deep table {
-    min-width: 100%;
+.grid .flag {
+  width: 32px;
+  height: 16px;
+  vertical-align: middle;
 }
-
-.grid ::deep tr {
-    height: 1.8rem;
+.grid ::deep .column--large {
+  width: 220px;
 }
-
-.grid ::deep th:nth-child(1) {
-    width: 15rem;
-}
-
 .grid ::deep th:nth-child(1) .col-options-button {
-    background-image: none;
-    cursor: pointer;
+  background-image: none;
+  cursor: pointer;
 }
-
 .grid ::deep th:nth-child(1) .col-options-button:before {
-    display: inline-block;
-    font-family: 'Fabric MDL2 Assets';
-    font-style: normal;
-    font-weight: normal;
-    content: ""\E721"";
+  display: inline-block;
+  font-family: ""Fabric MDL2 Assets"";
+  font-style: normal;
+  font-weight: normal;
+  content: ""\e721"";
+}
+.grid ::deep th:not(.col-sort-asc):not(.col-sort-desc) .sort-indicator:before {
+  display: inline-block;
+  font-family: ""Fabric MDL2 Assets"";
+  font-style: normal;
+  font-weight: normal;
+  content: ""⇅"";
+  position: relative;
+  top: -2px;
+}
+.grid ::deep .bitdatagrid-paginator {
+  padding: 0.5rem;
+}
+.grid ::deep .bitdatagrid-paginator nav button {
+  border-radius: 0.25rem;
+}
+.grid ::deep .bitdatagrid-paginator nav button:before {
+  vertical-align: middle;
+}
+.grid ::deep .bitdatagrid-paginator nav button:not([disabled]) {
+  background-color: #eee;
+}
+.grid ::deep .bitdatagrid-paginator nav button:not([disabled]):hover {
+  background-color: #d0d1d5;
+}
+.grid ::deep table {
+  position: relative;
+  min-width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  text-indent: initial;
+}
+.grid ::deep thead th:not(:last-child) {
+  border-right: 1px solid #e9eaed;
+}
+.grid ::deep thead .col-width-draghandle {
+  cursor: col-resize;
+  width: 3px;
+}
+.grid ::deep thead .col-width-draghandle:active {
+  background: unset;
+}
+.grid ::deep thead .col-width-draghandle :after {
+  left: 3px;
+  border-left: unset;
+}
+.grid ::deep thead .col-width-draghandle:hover {
+  background: unset;
+}
+.grid ::deep th {
+  background-color: #f4f5f9;
+  padding: 0.5rem;
+  display: table-cell;
+  vertical-align: inherit;
+  font-weight: bold;
+  border-bottom: 1px solid #e9eaed;
+}
+.grid ::deep tr {
+  height: 1.8rem;
+}
+.grid ::deep tr:nth-child(even) {
+  background: #f4f5f9;
+}
+.grid ::deep tr:nth-child(odd) {
+  background: #FFF;
+}
+.grid ::deep tr:last-child > td {
+  border-bottom: none;
+}
+.grid ::deep td {
+  border-bottom: 1px solid #e9eaed;
+  color: #4f4f50;
+  font-size: 1rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 0.25rem 0.5rem;
+}
+.grid ::deep td:not(:last-child) {
+  border-right: 1px solid #e9eaed;
+}
+.grid ::deep .sort-indicator {
+  margin-left: auto;
+}
+.grid ::deep .col-width-draghandle:after {
+  border-left: unset;
+}
+.grid ::deep .col-title-text {
+  color: #262526;
+}
+.grid ::deep .col-header-content {
+  padding-right: 0px;
+}
+.grid ::deep button.col-title:active, .grid ::deep .col-options-button:active {
+  background-color: unset;
+}
+.grid ::deep button.col-title:hover, .grid ::deep .col-options-button:hover {
+  background-color: unset;
 }
 </style>
 
 <div class=""grid"">
-    <BitDataGrid Items=""@FilteredItems"" ResizableColumns=""true"" Pagination=""@pagination"">
-        <BitDataGridPropertyColumn Property=""@(c => c.Name)"" Sortable=""true"">
+    <BitDataGrid Items=""@FilteredItems"" ResizableColumns=""true"" Pagination=""@pagination"">                
+        <BitDataGridPropertyColumn Class=""column--large"" Property=""@(c => c.Name)"" Sortable=""true"" IsDefaultSort=""BitDataGridSortDirection.Ascending"">
             <ColumnOptions>
                 <BitSearchBox @bind-Value=""typicalSampleNameFilter""
-                                          Placeholder=""Search on Name""
-                                          InputHtmlAttributes=""@(new Dictionary<string, object> {{""autofocus"", true}})"" />
+                                Placeholder=""Search on Name""
+                                InputHtmlAttributes=""@(new Dictionary<string, object> {{""autofocus"", true}})"" />
             </ColumnOptions>
         </BitDataGridPropertyColumn>
-        <BitDataGridPropertyColumn Property=""@(c => c.Medals.Gold)"" Sortable=""true"" Align=""BitDataGridAlign.Right"" />
-        <BitDataGridPropertyColumn Property=""@(c => c.Medals.Silver)"" Sortable=""true"" Align=""BitDataGridAlign.Right"" />
-        <BitDataGridPropertyColumn Property=""@(c => c.Medals.Bronze)"" Sortable=""true"" Align=""BitDataGridAlign.Right"" />
-        <BitDataGridPropertyColumn Property=""@(c => c.Medals.Total)"" Sortable=""true"" Align=""BitDataGridAlign.Right"" />
+            <BitDataGridTemplateColumn Title=""Flag"" Align=""BitDataGridAlign.Center"" >
+            <img class=""flag"" src=""images/flags/@(context.Code).png"" />
+        </BitDataGridTemplateColumn>
+        <BitDataGridPropertyColumn Property=""@(c => c.Medals.Gold)"" Sortable=""true"" />
+        <BitDataGridPropertyColumn Property=""@(c => c.Medals.Silver)"" Sortable=""true"" />
+        <BitDataGridPropertyColumn Property=""@(c => c.Medals.Bronze)"" Sortable=""true"" />
+        <BitDataGridPropertyColumn Property=""@(c => c.Medals.Total)"" Sortable=""true"" />
     </BitDataGrid>
     <BitDataGridPaginator Value=""@pagination"" />
 </div>";
@@ -422,8 +516,7 @@ public class Medals
 <div class=""search-panel"">
      <div class=""inline-block"">
         <BitSearchBox @bind-Value=""virtualSampleNameFilter"" Width=""250px""
-                                    Placeholder=""Search on Company""
-                                    InputHtmlAttributes=""@(new Dictionary<string, object> {{""autofocus"", true}})"" />
+                                    Placeholder=""Search on Company""/>
      </div>
 </div>
 ";
@@ -659,8 +752,7 @@ public class Openfda
 <div class=""search-panel"">
      <div class=""inline-block"">
         <BitSearchBox @bind-Value=""ODataSampleNameFilter"" Width=""250px""
-                                  Placeholder=""Search on Name""
-                                  InputHtmlAttributes=""@(new Dictionary<string, object> {{""autofocus"", true}})"" />
+                                  Placeholder=""Search on Name"" />
      </div>
 </div>
 ";
@@ -783,58 +875,7 @@ public class PagedResult<T>
 }
 ";
 
-    private readonly string example4HTMLCode = @"
-<style scoped>
-.grid ::deep .bitdatagrid[theme=redskin] {
-    font-style :italic;
-    color: red;
-}
-
-.grid ::deep .bitdatagrid[theme=redskin] .col-title {
-    gap: 0.4rem; /* Separate the sort indicator from title text */
-    font-weight: bold;
-    text-transform: uppercase;
-    background-color:red;
-    color:white;
-}
-
-.grid ::deep .bitdatagrid[theme=redskin] .sort-indicator {
-    color: white;
-}
-</style>
-
-<div class=""grid"">
-     <BitDataGrid Items=""@data"" Theme=""redskin"">
-         <BitDataGridPropertyColumn Property=""@(c => c.Name)"" Sortable=""true"" />
-         <BitDataGridPropertyColumn Property=""@(c => c.Medals.Gold)"" Sortable=""true"" Align=""BitDataGridAlign.Right"" />
-         <BitDataGridPropertyColumn Property=""@(c => c.Medals.Silver)"" Sortable=""true"" Align=""BitDataGridAlign.Right"" />
-         <BitDataGridPropertyColumn Property=""@(c => c.Medals.Bronze)"" Sortable=""true"" Align=""BitDataGridAlign.Right"" />
-         <BitDataGridPropertyColumn Property=""@(c => c.Medals.Total)"" Sortable=""true"" Align=""BitDataGridAlign.Right"" />
-    </BitDataGrid>
-</div>
-";
-    private readonly string example4CSharpCode = @"
-IQueryable<Country> sevenCountries;
-
-protected override async Task OnInitializedAsync()
-{
-    sevenCountries = _countries.Take(7).AsQueryable();
-}
-
-private readonly static Country[] _countries = new[]
-{
-    new Country { Code = ""AR"", Name=""Argentina"", Medals = new Medals { Gold = 0, Silver = 1, Bronze = 2 } },
-    new Country { Code = ""AM"", Name=""Armenia"", Medals = new Medals { Gold = 0, Silver = 2, Bronze = 2 } },
-    new Country { Code = ""AU"", Name = ""Australia"", Medals = new Medals { Gold = 17, Silver = 7, Bronze = 22 } },
-    new Country { Code = ""AT"", Name = ""Austria"", Medals = new Medals { Gold = 1, Silver = 1, Bronze = 5 } },
-    new Country { Code = ""AZ"", Name = ""Azerbaijan"", Medals = new Medals { Gold = 0, Silver = 3, Bronze = 4 } },
-    new Country { Code = ""BS"", Name = ""Bahamas"", Medals = new Medals { Gold = 2, Silver = 0, Bronze = 0 } },
-    new Country { Code = ""BH"", Name = ""Bahrain"", Medals = new Medals { Gold = 0, Silver = 1, Bronze = 0 } },
-    // ...
-};
-";
-
-    private readonly static Country[] _countries = new[]
+    public readonly static Country[] _countries = new[]
     {
         new Country { Code = "AR", Name="Argentina", Medals = new Medals { Gold = 0, Silver = 1, Bronze = 2 } },
         new Country { Code = "AM", Name="Armenia", Medals = new Medals { Gold = 0, Silver = 2, Bronze = 2 } },
@@ -848,7 +889,6 @@ private readonly static Country[] _countries = new[]
         new Country { Code = "BM", Name="Bermuda", Medals = new Medals { Gold = 1, Silver = 0, Bronze = 0 } },
         new Country { Code = "BW", Name="Botswana", Medals = new Medals { Gold = 0, Silver = 0, Bronze = 1 } },
         new Country { Code = "BR", Name="Brazil", Medals = new Medals { Gold = 7, Silver = 6, Bronze = 8 } },
-        new Country { Code = "BG", Name="Bulgaria", Medals = new Medals { Gold = 3, Silver = 1, Bronze = 2 } },
         new Country { Code = "BF", Name="Burkina Faso", Medals = new Medals { Gold = 0, Silver = 0, Bronze = 1 } },
         new Country { Code = "CA", Name="Canada", Medals = new Medals { Gold = 7, Silver = 6, Bronze = 11 } },
         new Country { Code = "TW", Name="Chinese Taipei", Medals = new Medals { Gold = 2, Silver = 4, Bronze = 6 } },
@@ -860,7 +900,6 @@ private readonly static Country[] _countries = new[]
         new Country { Code = "DK", Name="Denmark", Medals = new Medals { Gold = 3, Silver = 4, Bronze = 4 } },
         new Country { Code = "DO", Name="Dominican Republic", Medals = new Medals { Gold = 0, Silver = 3, Bronze = 2 } },
         new Country { Code = "EC", Name="Ecuador", Medals = new Medals { Gold = 2, Silver = 1, Bronze = 0 } },
-        new Country { Code = "EG", Name="Egypt", Medals = new Medals { Gold = 1, Silver = 1, Bronze = 4 } },
         new Country { Code = "EE", Name="Estonia", Medals = new Medals { Gold = 1, Silver = 0, Bronze = 1 } },
         new Country { Code = "ET", Name="Ethiopia", Medals = new Medals { Gold = 1, Silver = 1, Bronze = 2 } },
         new Country { Code = "FJ", Name="Fiji", Medals = new Medals { Gold = 1, Silver = 0, Bronze = 1 } },
@@ -874,33 +913,27 @@ private readonly static Country[] _countries = new[]
         new Country { Code = "GD", Name="Grenada", Medals = new Medals { Gold = 0, Silver = 0, Bronze = 1 } },
         new Country { Code = "HK", Name="Hong Kong, China", Medals = new Medals { Gold = 1, Silver = 2, Bronze = 3 } },
         new Country { Code = "HU", Name="Hungary", Medals = new Medals { Gold = 6, Silver = 7, Bronze = 7 } },
-        new Country { Code = "IN", Name="India", Medals = new Medals { Gold = 1, Silver = 2, Bronze = 4 } },
         new Country { Code = "ID", Name="Indonesia", Medals = new Medals { Gold = 1, Silver = 1, Bronze = 3 } },
         new Country { Code = "IE", Name="Ireland", Medals = new Medals { Gold = 2, Silver = 0, Bronze = 2 } },
         new Country { Code = "IR", Name="Islamic Republic of Iran", Medals = new Medals { Gold = 3, Silver = 2, Bronze = 2 } },
         new Country { Code = "IL", Name="Israel", Medals = new Medals { Gold = 2, Silver = 0, Bronze = 2 } },
         new Country { Code = "IT", Name="Italy", Medals = new Medals { Gold = 10, Silver = 10, Bronze = 20 } },
         new Country { Code = "JM", Name="Jamaica", Medals = new Medals { Gold = 4, Silver = 1, Bronze = 4 } },
-        new Country { Code = "JP", Name="Japan", Medals = new Medals { Gold = 27, Silver = 14, Bronze = 17 } },
         new Country { Code = "JO", Name="Jordan", Medals = new Medals { Gold = 0, Silver = 1, Bronze = 1 } },
         new Country { Code = "KZ", Name="Kazakhstan", Medals = new Medals { Gold = 0, Silver = 0, Bronze = 8 } },
         new Country { Code = "KE", Name="Kenya", Medals = new Medals { Gold = 4, Silver = 4, Bronze = 2 } },
         new Country { Code = "XK", Name="Kosovo", Medals = new Medals { Gold = 2, Silver = 0, Bronze = 0 } },
         new Country { Code = "KW", Name="Kuwait", Medals = new Medals { Gold = 0, Silver = 0, Bronze = 1 } },
-        new Country { Code = "KG", Name="Kyrgyzstan", Medals = new Medals { Gold = 0, Silver = 2, Bronze = 1 } },
         new Country { Code = "LV", Name="Latvia", Medals = new Medals { Gold = 1, Silver = 0, Bronze = 1 } },
         new Country { Code = "LT", Name="Lithuania", Medals = new Medals { Gold = 0, Silver = 1, Bronze = 0 } },
         new Country { Code = "MY", Name="Malaysia", Medals = new Medals { Gold = 0, Silver = 1, Bronze = 1 } },
         new Country { Code = "MX", Name="Mexico", Medals = new Medals { Gold = 0, Silver = 0, Bronze = 4 } },
-        new Country { Code = "MN", Name="Mongolia", Medals = new Medals { Gold = 0, Silver = 1, Bronze = 3 } },
         new Country { Code = "MA", Name="Morocco", Medals = new Medals { Gold = 1, Silver = 0, Bronze = 0 } },
         new Country { Code = "NA", Name="Namibia", Medals = new Medals { Gold = 0, Silver = 1, Bronze = 0 } },
         new Country { Code = "NL", Name="Netherlands", Medals = new Medals { Gold = 10, Silver = 12, Bronze = 14 } },
         new Country { Code = "NZ", Name="New Zealand", Medals = new Medals { Gold = 7, Silver = 6, Bronze = 7 } },
-        new Country { Code = "NG", Name="Nigeria", Medals = new Medals { Gold = 0, Silver = 1, Bronze = 1 } },
         new Country { Code = "MK", Name="North Macedonia", Medals = new Medals { Gold = 0, Silver = 1, Bronze = 0 } },
         new Country { Code = "NO", Name="Norway", Medals = new Medals { Gold = 4, Silver = 2, Bronze = 2 } },
-        new Country { Code = "CN", Name="People's Republic of China", Medals = new Medals { Gold = 38, Silver = 32, Bronze = 18 } },
         new Country { Code = "PH", Name="Philippines", Medals = new Medals { Gold = 1, Silver = 2, Bronze = 1 } },
         new Country { Code = "PL", Name="Poland", Medals = new Medals { Gold = 4, Silver = 5, Bronze = 5 } },
         new Country { Code = "PT", Name="Portugal", Medals = new Medals { Gold = 1, Silver = 1, Bronze = 2 } },
@@ -908,7 +941,6 @@ private readonly static Country[] _countries = new[]
         new Country { Code = "QA", Name="Qatar", Medals = new Medals { Gold = 2, Silver = 0, Bronze = 1 } },
         new Country { Code = "KR", Name="Republic of Korea", Medals = new Medals { Gold = 6, Silver = 4, Bronze = 10 } },
         new Country { Code = "MD", Name="Republic of Moldova", Medals = new Medals { Gold = 0, Silver = 0, Bronze = 1 } },
-        new Country { Code = "ROC", Name="ROC", Medals = new Medals { Gold = 20, Silver = 28, Bronze = 23 } },
         new Country { Code = "RO", Name="Romania", Medals = new Medals { Gold = 1, Silver = 3, Bronze = 0 } },
         new Country { Code = "SM", Name="San Marino", Medals = new Medals { Gold = 0, Silver = 1, Bronze = 2 } },
         new Country { Code = "SA", Name="Saudi Arabia", Medals = new Medals { Gold = 0, Silver = 1, Bronze = 0 } },
@@ -921,24 +953,20 @@ private readonly static Country[] _countries = new[]
         new Country { Code = "CH", Name="Switzerland", Medals = new Medals { Gold = 3, Silver = 4, Bronze = 6 } },
         new Country { Code = "SY", Name="Syrian Arab Republic", Medals = new Medals { Gold = 0, Silver = 0, Bronze = 1 } },
         new Country { Code = "TH", Name="Thailand", Medals = new Medals { Gold = 1, Silver = 0, Bronze = 1 } },
-        new Country { Code = "TN", Name="Tunisia", Medals = new Medals { Gold = 1, Silver = 1, Bronze = 0 } },
         new Country { Code = "TR", Name="Turkey", Medals = new Medals { Gold = 2, Silver = 2, Bronze = 9 } },
         new Country { Code = "TM", Name="Turkmenistan", Medals = new Medals { Gold = 0, Silver = 1, Bronze = 0 } },
-        new Country { Code = "UG", Name="Uganda", Medals = new Medals { Gold = 2, Silver = 1, Bronze = 1 } },
         new Country { Code = "UA", Name="Ukraine", Medals = new Medals { Gold = 1, Silver = 6, Bronze = 12 } },
         new Country { Code = "US", Name="United States of America", Medals = new Medals { Gold = 39, Silver = 41, Bronze = 33 } },
         new Country { Code = "UZ", Name="Uzbekistan", Medals = new Medals { Gold = 3, Silver = 0, Bronze = 2 } },
         new Country { Code = "VE", Name="Venezuela", Medals = new Medals { Gold = 1, Silver = 3, Bronze = 0 } },
     };
 }
-
 public class Country
 {
     public string Code { get; set; }
     public string Name { get; set; }
     public Medals Medals { get; set; }
 }
-
 public class Medals
 {
     public int Gold { get; set; }

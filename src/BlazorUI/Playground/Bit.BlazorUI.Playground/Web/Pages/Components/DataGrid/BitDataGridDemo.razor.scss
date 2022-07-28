@@ -4,7 +4,42 @@
     width: 100%;
     border: 1px solid #e9eaed;
 
+    .flag {
+        width: 32px;
+        height: 16px;
+        vertical-align: middle;
+    }
+
     ::deep {
+
+        .column--large {
+            width: 220px;
+        }
+
+        th:nth-child(1) .col-options-button {
+            background-image: none;
+            cursor: pointer;
+
+            &:before {
+                display: inline-block;
+                font-family: 'Fabric MDL2 Assets';
+                font-style: normal;
+                font-weight: normal;
+                content: "\E721";
+            }
+        }
+
+        th:not(.col-sort-asc):not(.col-sort-desc) .sort-indicator {
+            &:before {
+                display: inline-block;
+                font-family: 'Fabric MDL2 Assets';
+                font-style: normal;
+                font-weight: normal;
+                content: "\21C5";
+                position: relative;
+                top: -2px;
+            }
+        }
 
         .bitdatagrid-paginator {
             padding: 0.5rem;
@@ -22,9 +57,8 @@
             background-color: #eee;
         }
 
-
         .bitdatagrid-paginator nav button:not([disabled]):hover {
-            background-color: #e9eaed;
+            background-color: #d0d1d5;
         }
 
         table {
@@ -33,6 +67,39 @@
             border-collapse: separate;
             border-spacing: 0;
             text-indent: initial;
+        }
+
+        thead th:not(:last-child) {
+            border-right: 1px solid #e9eaed;
+        }
+
+
+        thead .col-width-draghandle {
+            cursor: col-resize;
+            width: 3px;
+
+            &:active {
+                background: unset;
+            }
+
+            :after {
+                left: 3px;
+                border-left: unset;
+            }
+
+
+            &:hover {
+                background: unset;
+            }
+        }
+
+        th {
+            background-color: #f4f5f9;
+            padding: .5rem;
+            display: table-cell;
+            vertical-align: inherit;
+            font-weight: bold;
+            border-bottom: 1px solid #e9eaed;
         }
 
         tr {
@@ -49,19 +116,6 @@
 
         tr:last-child > td {
             border-bottom: none;
-        }
-
-        th {
-            background-color: #f4f5f9;
-            padding: .5rem;
-            display: table-cell;
-            vertical-align: inherit;
-            font-weight: bold;
-            border-bottom: 1px solid #e9eaed;
-        }
-
-        thead th:not(:last-child) {
-            border-right: 1px solid #e9eaed;
         }
 
         td {
@@ -82,40 +136,23 @@
             margin-left: auto;
         }
 
-        /*.sort-indicator:before {
-            content: url("/images/icon/lists-icon.svg")
-        }*/
-
-        thead .col-width-draghandle:after {
-            left: 3px;
-        }
-
-        thead .col-width-draghandle {
-            cursor: col-resize;
-            width: 3px;
-        }
-
-        thead .col-width-draghandle:active {
-            background: unset;
-        }
-
-        thead .col-width-draghandle:hover {
-            background: unset;
-        }
-
         .col-width-draghandle:after {
             border-left: unset;
+        }
+
+        .col-title-text {
+            color: #262526;
         }
 
         .col-header-content {
             padding-right: 0px;
         }
 
-        button.col-title:active, .bitdatagrid .col-options-button:active {
+        button.col-title:active, .col-options-button:active {
             background-color: unset;
         }
 
-        button.col-title:hover, .bitdatagrid .col-options-button:hover {
+        button.col-title:hover, .col-options-button:hover {
             background-color: unset;
         }
     }

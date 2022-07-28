@@ -5,7 +5,7 @@
 @using Playground.Shared.Dtos.DataGridDemo
 
 <ComponentDemo ComponentName="DataGrid"
-               ComponentDescription="BitDataGrid is a robust way to display an information-rich collection of items, and allow people to sort, group, and filter the content. Use a data-grid when information density is critical."
+               ComponentDescription="BitDataGrid is a robust way to display an information-rich collection of items, and allow people to sort, and filter the content. Use a data-grid when information density is critical."
                ComponentParameters="componentParameters"
                ComponentSubParameters="componentSubParameter"
                EnumParameters="enumParameters">
@@ -13,13 +13,16 @@
         <ExamplePreview>
             <div class="grid1">
                 <BitDataGrid Items="@FilteredItems" ResizableColumns="true" Pagination="@pagination">
-                    <BitDataGridPropertyColumn  Property="@(c => c.Name)" Sortable="true" IsDefaultSort="BitDataGridSortDirection.Ascending">
+                    <BitDataGridPropertyColumn Class="column--large" Property="@(c => c.Name)" Sortable="true" IsDefaultSort="BitDataGridSortDirection.Ascending">
                         <ColumnOptions>
                             <BitSearchBox @bind-Value="typicalSampleNameFilter"
                                           Placeholder="Search on Name"
                                           InputHtmlAttributes="@(new Dictionary<string, object> {{"autofocus", true}})" />
                         </ColumnOptions>
                     </BitDataGridPropertyColumn>
+                    <BitDataGridTemplateColumn Title="Flag" Align="BitDataGridAlign.Center">
+                        <img class="flag" src="images/flags/@(context.Code).png" />
+                    </BitDataGridTemplateColumn>
                     <BitDataGridPropertyColumn Property="@(c => c.Medals.Gold)" Sortable="true" />
                     <BitDataGridPropertyColumn Property="@(c => c.Medals.Silver)" Sortable="true" />
                     <BitDataGridPropertyColumn Property="@(c => c.Medals.Bronze)" Sortable="true" />
@@ -45,8 +48,7 @@
             <div class="search-panel">
                 <div class="inline-block">
                     <BitSearchBox @bind-Value="VirtualSampleNameFilter" Width="250px"
-                                  Placeholder="Search on Company"
-                                  InputHtmlAttributes="@(new Dictionary<string, object> {{"autofocus", true}})" />
+                                  Placeholder="Search on Company" />
                 </div>
             </div>
         </ExamplePreview>
@@ -64,23 +66,8 @@
             <div class="search-panel">
                 <div class="inline-block">
                     <BitSearchBox @bind-Value="ODataSampleNameFilter" Width="250px"
-                                  Placeholder="Search on Name"
-                                  InputHtmlAttributes="@(new Dictionary<string, object> {{"autofocus", true}})" />
+                                  Placeholder="Search on Name" />
                 </div>
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Styling" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
-        <ExamplePreview>
-            <div class="grid3">
-                <BitDataGrid Items="@sevenCountries" Theme="redskin">
-                    <BitDataGridPropertyColumn Property="@(c => c.Name)" Sortable="true" />
-                    <BitDataGridPropertyColumn Property="@(c => c.Medals.Gold)" Sortable="true" Align="BitDataGridAlign.Right" />
-                    <BitDataGridPropertyColumn Property="@(c => c.Medals.Silver)" Sortable="true" Align="BitDataGridAlign.Right" />
-                    <BitDataGridPropertyColumn Property="@(c => c.Medals.Bronze)" Sortable="true" Align="BitDataGridAlign.Right" />
-                    <BitDataGridPropertyColumn Property="@(c => c.Medals.Total)" Sortable="true" Align="BitDataGridAlign.Right" />
-                </BitDataGrid>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -92,7 +79,6 @@
     IQueryable<Country> allCountries;
     BitDataGrid<FoodRecall> dataGrid;
     BitDataGrid<ProductDto> productsDataGrid;
-    IQueryable<Country> sevenCountries;
     BitDataGridItemsProvider<FoodRecall> foodRecallProvider;
     BitDataGridItemsProvider<ProductDto> productsItemsProvider;
     BitDataGridPaginationState pagination = new() { ItemsPerPage = 7 };
@@ -126,18 +112,17 @@
     protected override async Task OnInitializedAsync()
     {
         allCountries = _countries.AsQueryable();
-        sevenCountries = _countries.Take(7).AsQueryable();
 
         foodRecallProvider = async req =>
         {
             try
             {
                 var query = new Dictionary<string, object?>
-                    {
+                            {
                     { "search",$"recalling_firm:\"{_virtualSampleNameFilter}\"" },
                     { "skip", req.StartIndex },
                     { "limit", req.Count }
-                    };
+                            };
 
                 var sort = req.GetSortByProperties().SingleOrDefault();
 
@@ -171,10 +156,10 @@
                 // https://docs.microsoft.com/en-us/odata/concepts/queryoptions-overview
 
                 var query = new Dictionary<string, object>()
-                    {
+                            {
                     { "$top", req.Count ?? 50 },
                     { "$skip", req.StartIndex }
-                    };
+                            };
 
                 if (string.IsNullOrEmpty(_odataSampleNameFilter) is false)
                 {
