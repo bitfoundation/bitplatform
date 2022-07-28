@@ -26,7 +26,7 @@ public partial class BitToggleDemo
         ValidationForm = new FormModel();
     }
 
-    private async void HandleValidSubmit()
+    private async Task HandleValidSubmit()
     {
         SuccessMessage = "Form Submitted Successfully!";
         await Task.Delay(3000);
@@ -218,7 +218,7 @@ protected override void OnInitialized()
     ValidationForm = new FormModel();
 }
 
-private async void HandleValidSubmit()
+private async Task HandleValidSubmit()
 {
     SuccessMessage = ""Form Submitted Successfully!"";
     await Task.Delay(3000);

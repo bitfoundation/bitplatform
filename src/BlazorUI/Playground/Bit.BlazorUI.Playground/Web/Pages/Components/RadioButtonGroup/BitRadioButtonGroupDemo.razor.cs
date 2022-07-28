@@ -11,7 +11,7 @@ public partial class BitRadioButtonGroupDemo
     private string SuccessMessage = string.Empty;
     private FormValidationModel FormValidationModel = new();
 
-    private async void HandleValidSubmit()
+    private async Task HandleValidSubmit()
     {
         SuccessMessage = "Form Submitted Successfully!";
         await Task.Delay(3000);
@@ -224,7 +224,7 @@ else
 private string SuccessMessage = string.Empty;
 private FormValidationModel FormValidationModel = new();
 
-private async void HandleValidSubmit()
+private async Task HandleValidSubmit()
 {
     SuccessMessage = ""Form Submitted Successfully!"";
     await Task.Delay(3000);
