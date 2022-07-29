@@ -51,34 +51,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Cascading DropDowns" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
-        <ExamplePreview>
-            <BitDropDown Label="Category"
-                         Items="GetCategoryItems()"
-                         Placeholder="Select options"
-                         ValueChanged="@((string c) => CategorySelected(c))"
-                         Style="width:290px; margin:20px 0 20px 0">
-            </BitDropDown>
-
-            <BitDropDown Label="Product"
-                         Items="GetProductItems()"
-                         Placeholder="Select options"
-                         ValueChanged="@((string p) => ProductSelected(p))"
-                         IsEnabled="@(CurrentOrder.CategoryId > 0)"
-                         Style="width:290px; margin:20px 0 20px 0">
-            </BitDropDown>
-
-            @if (CurrentOrder.CategoryId > 0 && CurrentOrder.ProductId > 0)
-            {
-                <h5>Order Summary</h5>
-                <strong>Category:</strong> @CurrentOrder.CategoryName
-                <br />
-                <strong>Product:</strong> @CurrentOrder.ProductName
-            }
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Customized Dropdown" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
+    <ComponentExampleBox Title="Customized Dropdown" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
         <ExamplePreview>
             <BitDropDown Label="Custom Controlled"
                          Items="GetCustomDropdownItems()"
@@ -123,6 +96,24 @@
                         <i class="bit-icon bit-icon--Info"></i>
                     </button>
                 </LabelFragment>
+            </BitDropDown>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Cascading DropDowns" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
+        <ExamplePreview>
+            <BitDropDown Label="Category"
+                         Items="Categories"
+                         Placeholder="Select options"
+                         @bind-Value="@CurrentCategory"
+                         Style="width:290px; margin:20px 0 20px 0">
+            </BitDropDown>
+
+            <BitDropDown Label="Product"
+                         Items="Products.Where(p => p.Value == CurrentCategory).ToList()"
+                         Placeholder="Select options"
+                         IsEnabled="string.IsNullOrEmpty(CurrentCategory) is false"
+                         Style="width:290px; margin:20px 0 20px 0">
             </BitDropDown>
         </ExamplePreview>
     </ComponentExampleBox>

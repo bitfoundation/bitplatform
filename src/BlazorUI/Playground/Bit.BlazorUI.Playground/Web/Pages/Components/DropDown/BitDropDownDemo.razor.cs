@@ -13,9 +13,9 @@ public partial class BitDropDownDemo
     private List<string> ControlledValues = new List<string>() { "Apple", "Banana", "Grape" };
     private FormValidationDropDownModel formValidationDropDownModel = new();
     private string SuccessMessage = string.Empty;
-    private List<CategoryModel> Categories = new();
-    private List<ProductModel> Products = new();
-    private OrderModel CurrentOrder = new();
+    private List<BitDropDownItem> Categories = new();
+    private List<BitDropDownItem> Products = new();
+    private string CurrentCategory;
 
     private async void HandleValidSubmit()
     {
@@ -282,81 +282,21 @@ public partial class BitDropDownDemo
 
     protected override void OnInitialized()
     {
+        Categories = Enumerable.Range(1, 6).Select(c => new BitDropDownItem
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Value = c.ToString(),
+            Text = $"Category {c}"
+        }).ToList();
+
+        Products = Enumerable.Range(1, 50).Select(p => new BitDropDownItem
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Text = $"Product {p}",
+            Value = ((int)Math.Ceiling((double)p % 7)).ToString()
+        }).ToList();
+
         base.OnInitialized();
-
-        Categories = Enumerable.Range(1, 6).Select(c => new CategoryModel
-        {
-            Id = c,
-            Name = $"Category {c}"
-        }).ToList();
-
-        Products = Enumerable.Range(1, 50).Select(x => new ProductModel
-        {
-            Id = x,
-            Name = $"Product {x}",
-            CategoryId = (int)Math.Ceiling((double)x % 7)
-        }).ToList();
-    }
-
-    private List<BitDropDownItem> GetCategoryItems()
-    {
-        List<BitDropDownItem> items = new();
-
-        foreach (var item in Categories)
-        {
-            items.Add(new BitDropDownItem()
-            {
-                ItemType = BitDropDownItemType.Normal,
-                Text = item.Name,
-                Value = item.Id.ToString()
-            });
-        }
-
-        return items;
-    }
-
-    private List<BitDropDownItem> GetProductItems()
-    {
-        List<BitDropDownItem> items = new();
-
-        var products = Products.Where(p => p.CategoryId == CurrentOrder.CategoryId);
-        foreach (var item in products)
-        {
-            items.Add(new BitDropDownItem()
-            {
-                ItemType = BitDropDownItemType.Normal,
-                Text = item.Name,
-                Value = item.Id.ToString()
-            });
-        }
-
-        return items;
-    }
-
-    private void CategorySelected(string categoryId)
-    {
-        if (string.IsNullOrEmpty(categoryId))
-        {
-            CurrentOrder.CategoryId = 0;
-        }
-        else
-        {
-            CurrentOrder.CategoryId = Convert.ToInt32(categoryId);
-            CurrentOrder.CategoryName = Categories.FirstOrDefault(c => c.Id == CurrentOrder.CategoryId).Name;
-        }
-    }
-
-    private void ProductSelected(string productId)
-    {
-        if (string.IsNullOrEmpty(productId))
-        {
-            CurrentOrder.ProductId = 0;
-        }
-        else
-        {
-            CurrentOrder.ProductId = Convert.ToInt32(productId);
-            CurrentOrder.ProductName = Products.FirstOrDefault(c => c.Id == CurrentOrder.ProductId).Name;
-        }
     }
 
     private readonly List<ComponentParameter> componentParameters = new()
@@ -753,138 +693,7 @@ private List<BitDropDownItem> GetDropdownItems()
 
     #region Example Code 4
 
-    private readonly string example4HTMLCode = @"<BitDropDown Label=""Category""
-                Items=""GetCategoryItems()""
-                Placeholder=""Select options""
-                ValueChanged=""@((string c) => CategorySelected(c))""
-                Style=""width:290px; margin:20px 0 20px 0"">
-</BitDropDown>
-
-<BitDropDown Label=""Product""
-                Items=""GetProductItems()""
-                Placeholder=""Select options""
-                ValueChanged=""@((string p) => ProductSelected(p))""
-                IsEnabled=""@(CurrentOrder.CategoryId > 0)""
-                Style=""width:290px; margin:20px 0 20px 0"">
-</BitDropDown>
-
-@if (CurrentOrder.CategoryId > 0 && CurrentOrder.ProductId > 0)
-{
-    <h5>Order Summary</h5>
-    <strong>Category:</strong> @CurrentOrder.CategoryName
-    <br />
-    <strong>Product:</strong> @CurrentOrder.ProductName
-}";
-
-    private readonly string example4CSharpCode = @"private List<CategoryModel> Categories = new();
-private List<ProductModel> Products = new();
-private OrderModel CurrentOrder = new();
-
-protected override void OnInitialized()
-{
-    base.OnInitialized();
-
-    Categories = Enumerable.Range(1, 6).Select(c => new CategoryModel
-    {
-        Id = c,
-        Name = $""Category {c}""
-    }).ToList();
-
-    Products = Enumerable.Range(1, 50).Select(x => new ProductModel
-    {
-        Id = x,
-        Name = $""Product {x}"",
-        CategoryId = (int)Math.Ceiling((double)x % 7)
-    }).ToList();
-}
-
-private List<BitDropDownItem> GetCategoryItems()
-{
-    List<BitDropDownItem> items = new();
-
-    foreach (var item in Categories)
-    {
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Normal,
-            Text = item.Name,
-            Value = item.Id.ToString()
-        });
-    }
-
-    return items;
-}
-
-private List<BitDropDownItem> GetProductItems()
-{
-    List<BitDropDownItem> items = new();
-
-    var products = Products.Where(p => p.CategoryId == CurrentOrder.CategoryId);
-    foreach (var item in products)
-    {
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Normal,
-            Text = item.Name,
-            Value = item.Id.ToString()
-        });
-    }
-
-    return items;
-}
-
-private void CategorySelected(string categoryId)
-{
-    if (string.IsNullOrEmpty(categoryId))
-    {
-        CurrentOrder.CategoryId = 0;
-    }
-    else
-    {
-        CurrentOrder.CategoryId = Convert.ToInt32(categoryId);
-        CurrentOrder.CategoryName = Categories.FirstOrDefault(c => c.Id == CurrentOrder.CategoryId).Name;
-    }
-}
-
-private void ProductSelected(string productId)
-{
-    if (string.IsNullOrEmpty(productId))
-    {
-        CurrentOrder.ProductId = 0;
-    }
-    else
-    {
-        CurrentOrder.ProductId = Convert.ToInt32(productId);
-        CurrentOrder.ProductName = Products.FirstOrDefault(c => c.Id == CurrentOrder.ProductId).Name;
-    }
-}
-
-public class CategoryModel
-{
-    public int Id { get; set; }
-    public string Name { get; set; }
-}
-
-public class ProductModel
-{
-    public int Id { get; set; }
-    public int CategoryId { get; set; }
-    public string Name { get; set; }
-}
-
-public class OrderModel
-{
-    public int CategoryId { get; set; }
-    public string CategoryName { get; set; }
-    public int ProductId { get; set; }
-    public string ProductName { get; set; }
-}";
-
-    #endregion
-
-    #region Example Code 5
-
-    private readonly string example5HTMLCode = @"<BitDropDown Label=""Custom Controlled""
+    private readonly string example4HTMLCode = @"<BitDropDown Label=""Custom Controlled""
              Items=""GetCustomDropdownItems()""
              Placeholder=""Select an option""
              AriaLabel=""Custom dropdown""
@@ -929,7 +738,7 @@ public class OrderModel
     </LabelFragment>
 </BitDropDown>";
 
-    private readonly string example5CSharpCode = @"
+    private readonly string example4CSharpCode = @"
 private List<BitDropDownItem> GetCustomDropdownItems()
 {
     List<BitDropDownItem> items = new();
@@ -1051,6 +860,47 @@ private List<BitDropDownItem> GetCustomDropdownItems()
     });
 
     return items;
+}";
+
+    #endregion
+
+    #region Example Code 5
+
+    private readonly string example5HTMLCode = @"<BitDropDown Label=""Category""
+                Items=""Categories""
+                Placeholder=""Select options""
+                @bind-Value=""@CurrentCategory""
+                Style=""width:290px; margin:20px 0 20px 0"">
+</BitDropDown>
+
+<BitDropDown Label=""Product""
+                Items=""Products.Where(p => p.Value == CurrentCategory).ToList()""
+                Placeholder=""Select options""
+                IsEnabled=""string.IsNullOrEmpty(CurrentCategory) is false""
+                Style=""width:290px; margin:20px 0 20px 0"">
+</BitDropDown>";
+
+    private readonly string example5CSharpCode = @"private List<BitDropDownItem> Categories = new();
+private List<BitDropDownItem> Products = new();
+private string CurrentCategory;
+
+protected override void OnInitialized()
+{
+    Categories = Enumerable.Range(1, 6).Select(c => new BitDropDownItem
+    {
+        ItemType = BitDropDownItemType.Normal,
+        Value = c.ToString(),
+        Text = $""Category {c}""
+    }).ToList();
+
+    Products = Enumerable.Range(1, 50).Select(p => new BitDropDownItem
+    {
+        ItemType = BitDropDownItemType.Normal,
+        Text = $""Product {p}"",
+        Value = ((int)Math.Ceiling((double)p % 7)).ToString()
+    }).ToList();
+
+    base.OnInitialized();
 }";
 
     #endregion
