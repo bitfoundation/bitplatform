@@ -16,6 +16,7 @@ public partial class BitDropDownDemo
     private List<BitDropDownItem> Categories = new();
     private List<BitDropDownItem> Products = new();
     private string CurrentCategory;
+    private string CurrentProduct;
 
     private async void HandleValidSubmit()
     {
@@ -293,7 +294,7 @@ public partial class BitDropDownDemo
         {
             ItemType = BitDropDownItemType.Normal,
             Text = $"Product {p}",
-            Value = ((int)Math.Ceiling((double)p % 7)).ToString()
+            Value = $"{((int)Math.Ceiling((double)p % 7))}-{p}"
         }).ToList();
 
         base.OnInitialized();
@@ -866,23 +867,34 @@ private List<BitDropDownItem> GetCustomDropdownItems()
 
     #region Example Code 5
 
-    private readonly string example5HTMLCode = @"<BitDropDown Label=""Category""
-                Items=""Categories""
-                Placeholder=""Select options""
-                @bind-Value=""@CurrentCategory""
-                Style=""width:290px; margin:20px 0 20px 0"">
-</BitDropDown>
+    private readonly string example5HTMLCode = @"<div class=""grid-wrap"">
+    <div>
+        <BitDropDown Label=""Category""
+                        Items=""Categories""
+                        Placeholder=""Select options""
+                        @bind-Value=""@CurrentCategory""
+                        Style=""width:290px; margin:20px 0 20px 0"">
+        </BitDropDown>
 
-<BitDropDown Label=""Product""
-                Items=""Products.Where(p => p.Value == CurrentCategory).ToList()""
-                Placeholder=""Select options""
-                IsEnabled=""string.IsNullOrEmpty(CurrentCategory) is false""
-                Style=""width:290px; margin:20px 0 20px 0"">
-</BitDropDown>";
+        <BitDropDown Label=""Product""
+                        Items=""@(Products.Where(p => p.Value.StartsWith($""{CurrentCategory}-"")).ToList())""
+                        Placeholder=""Select options""
+                        @bind-Value=""@CurrentProduct""
+                        IsEnabled=""string.IsNullOrEmpty(CurrentCategory) is false""
+                        Style=""width:290px; margin:20px 0 20px 0"">
+        </BitDropDown>
+    </div>
+
+    <div class=""cascading-dropdowns-info"">
+        <h5>Current category: @(Categories.FirstOrDefault(c => c.Value == CurrentCategory)?.Text ?? ""-"")</h5>
+        <h5>Current product: @(Products.FirstOrDefault(c => c.Value == CurrentProduct)?.Text ?? ""-"")</h5>
+    </div>
+</div>";
 
     private readonly string example5CSharpCode = @"private List<BitDropDownItem> Categories = new();
 private List<BitDropDownItem> Products = new();
 private string CurrentCategory;
+private string CurrentProduct;
 
 protected override void OnInitialized()
 {
@@ -897,7 +909,7 @@ protected override void OnInitialized()
     {
         ItemType = BitDropDownItemType.Normal,
         Text = $""Product {p}"",
-        Value = ((int)Math.Ceiling((double)p % 7)).ToString()
+        Value = $""{((int)Math.Ceiling((double)p % 7))}-{p}""
     }).ToList();
 
     base.OnInitialized();

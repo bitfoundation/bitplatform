@@ -26,3 +26,21 @@
         margin-right: rem(8px)
     }
 }
+
+.grid-wrap {
+    display: grid;
+    grid-template-columns: auto auto;
+
+    .cascading-dropdowns-info {
+        padding-top: rem(30px);
+    }
+
+    @include sm {
+        display: block;
+        grid-template-columns: none;
+
+        .cascading-dropdowns-info {
+            padding-top: 0;
+        }
+    }
+}

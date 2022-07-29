@@ -102,19 +102,29 @@
 
     <ComponentExampleBox Title="Cascading DropDowns" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
         <ExamplePreview>
-            <BitDropDown Label="Category"
-                         Items="Categories"
-                         Placeholder="Select options"
-                         @bind-Value="@CurrentCategory"
-                         Style="width:290px; margin:20px 0 20px 0">
-            </BitDropDown>
+            <div class="grid-wrap">
+                <div>
+                    <BitDropDown Label="Category"
+                                 Items="Categories"
+                                 Placeholder="Select options"
+                                 @bind-Value="@CurrentCategory"
+                                 Style="width:290px; margin:20px 0 20px 0">
+                    </BitDropDown>
 
-            <BitDropDown Label="Product"
-                         Items="Products.Where(p => p.Value == CurrentCategory).ToList()"
-                         Placeholder="Select options"
-                         IsEnabled="string.IsNullOrEmpty(CurrentCategory) is false"
-                         Style="width:290px; margin:20px 0 20px 0">
-            </BitDropDown>
+                    <BitDropDown Label="Product"
+                                 Items="@(Products.Where(p => p.Value.StartsWith($"{CurrentCategory}-")).ToList())"
+                                 Placeholder="Select options"
+                                 @bind-Value="@CurrentProduct"
+                                 IsEnabled="string.IsNullOrEmpty(CurrentCategory) is false"
+                                 Style="width:290px; margin:20px 0 20px 0">
+                    </BitDropDown>
+                </div>
+
+                <div class="cascading-dropdowns-info">
+                    <h5>Current category: @(Categories.FirstOrDefault(c => c.Value == CurrentCategory)?.Text ?? "-")</h5>
+                    <h5>Current product: @(Products.FirstOrDefault(c => c.Value == CurrentProduct)?.Text ?? "-")</h5>
+                </div>
+            </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
