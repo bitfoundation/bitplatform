@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Bit.BlazorUI.Playground.Web.Models;
 using Bit.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
@@ -11,6 +13,10 @@ public partial class BitDropDownDemo
     private List<string> ControlledValues = new List<string>() { "Apple", "Banana", "Grape" };
     private FormValidationDropDownModel formValidationDropDownModel = new();
     private string SuccessMessage = string.Empty;
+    private List<BitDropDownItem> Categories = new();
+    private List<BitDropDownItem> Products = new();
+    private string CurrentCategory;
+    private string CurrentProduct;
 
     private async Task HandleValidSubmit()
     {
@@ -273,6 +279,25 @@ public partial class BitDropDownDemo
         });
 
         return items;
+    }
+
+    protected override void OnInitialized()
+    {
+        Categories = Enumerable.Range(1, 6).Select(c => new BitDropDownItem
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Value = c.ToString(),
+            Text = $"Category {c}"
+        }).ToList();
+
+        Products = Enumerable.Range(1, 50).Select(p => new BitDropDownItem
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Text = $"Product {p}",
+            Value = $"{((int)Math.Ceiling((double)p % 7))}-{p}"
+        }).ToList();
+
+        base.OnInitialized();
     }
 
     private readonly List<ComponentParameter> componentParameters = new()
@@ -842,7 +867,59 @@ private List<BitDropDownItem> GetCustomDropdownItems()
 
     #region Example Code 5
 
-    private readonly string example5HTMLCode = @"@if (string.IsNullOrEmpty(SuccessMessage))
+    private readonly string example5HTMLCode = @"<div class=""grid-wrap"">
+    <div>
+        <BitDropDown Label=""Category""
+                        Items=""Categories""
+                        Placeholder=""Select options""
+                        @bind-Value=""@CurrentCategory""
+                        Style=""width:290px; margin:20px 0 20px 0"">
+        </BitDropDown>
+
+        <BitDropDown Label=""Product""
+                        Items=""@(Products.Where(p => p.Value.StartsWith($""{CurrentCategory}-"")).ToList())""
+                        Placeholder=""Select options""
+                        @bind-Value=""@CurrentProduct""
+                        IsEnabled=""string.IsNullOrEmpty(CurrentCategory) is false""
+                        Style=""width:290px; margin:20px 0 20px 0"">
+        </BitDropDown>
+    </div>
+
+    <div class=""cascading-dropdowns-info"">
+        <h5>Current category: @(Categories.FirstOrDefault(c => c.Value == CurrentCategory)?.Text ?? ""-"")</h5>
+        <h5>Current product: @(Products.FirstOrDefault(c => c.Value == CurrentProduct)?.Text ?? ""-"")</h5>
+    </div>
+</div>";
+
+    private readonly string example5CSharpCode = @"private List<BitDropDownItem> Categories = new();
+private List<BitDropDownItem> Products = new();
+private string CurrentCategory;
+private string CurrentProduct;
+
+protected override void OnInitialized()
+{
+    Categories = Enumerable.Range(1, 6).Select(c => new BitDropDownItem
+    {
+        ItemType = BitDropDownItemType.Normal,
+        Value = c.ToString(),
+        Text = $""Category {c}""
+    }).ToList();
+
+    Products = Enumerable.Range(1, 50).Select(p => new BitDropDownItem
+    {
+        ItemType = BitDropDownItemType.Normal,
+        Text = $""Product {p}"",
+        Value = $""{((int)Math.Ceiling((double)p % 7))}-{p}""
+    }).ToList();
+
+    base.OnInitialized();
+}";
+
+    #endregion
+
+    #region Example Code 6
+
+    private readonly string example6HTMLCode = @"@if (string.IsNullOrEmpty(SuccessMessage))
 {
     <EditForm Model=""formValidationDropDownModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
         <DataAnnotationsValidator />
@@ -887,7 +964,7 @@ else
     </BitMessageBar>
 }";
 
-    private readonly string example5CSharpCode = @"
+    private readonly string example6CSharpCode = @"
 public class FormValidationDropDownModel
 {
     [MaxLength(2, ErrorMessage = ""The property {0} doesn't have more than {1} elements"")]
@@ -990,16 +1067,16 @@ private List<BitDropDownItem> GetProductDropdownItems()
 
     #endregion
 
-    #region Example Code 6
+    #region Example Code 7
 
-    private readonly string example6HTMLCode = @"<BitDropDown Label=""Responsive DropDown""
+    private readonly string example7HTMLCode = @"<BitDropDown Label=""Responsive DropDown""
              Items=""GetDropdownItems()""
              Placeholder=""Select an option""
              IsResponsiveModeEnabled=true
              Style=""width: 290px; margin: 20px 0 20px 0"">
 </BitDropDown>";
 
-    private readonly string example6CSharpCode = @"
+    private readonly string example7CSharpCode = @"
 private List<BitDropDownItem> GetDropdownItems()
 {
     List<BitDropDownItem> items = new();

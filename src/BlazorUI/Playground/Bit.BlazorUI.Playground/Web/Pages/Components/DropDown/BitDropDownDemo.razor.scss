@@ -1,5 +1,6 @@
 ﻿@import '../../../Styles/abstracts/_colors.scss';
 @import '../../../Styles/abstracts/_functions.scss';
+@import '../../../Styles/abstracts/_media-queries.scss';
 
 .validation-summary {
     border-left: rem(5px) solid $Red10;
@@ -55,4 +56,22 @@
 
 ::deep .bit-drp-lbl {
     padding-bottom: rem(20px);
+}
+
+.grid-wrap {
+    display: grid;
+    grid-template-columns: auto auto;
+
+    .cascading-dropdowns-info {
+        padding-top: rem(30px);
+    }
+
+    @include sm {
+        display: block;
+        grid-template-columns: none;
+
+        .cascading-dropdowns-info {
+            padding-top: 0;
+        }
+    }
 }
