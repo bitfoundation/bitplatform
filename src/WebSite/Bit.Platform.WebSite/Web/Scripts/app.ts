@@ -1,7 +1,7 @@
 ﻿//declare var hljs: any;
 
 function toggleBodyOverflow(isMenuOpen: boolean) {
-    if (window.innerWidth < 1024) {
+    if (window.innerWidth < 1440) {
         if (isMenuOpen) {
             document.body.style.overflow = "hidden";
         } else {

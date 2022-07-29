@@ -19,12 +19,14 @@
     }
 
     @include md {
+        position: fixed;
         top: 56px;
         width: rem(306px);
         height: calc(100vh - #{rem(56px)});
     }
 
     @include sm {
+        position: fixed;
         width: rem(264px);
         height: 100vh;
         top: 0;
