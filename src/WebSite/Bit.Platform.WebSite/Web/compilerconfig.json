@@ -52,6 +52,10 @@
         "inputFile": "Pages/TodoTemplate/SettingsPage.razor.scss"
     },
     {
+        "outputFile": "Pages/TodoTemplate/ProjectStructurePage.razor.css",
+        "inputFile": "Pages/TodoTemplate/ProjectStructurePage.razor.scss"
+    },
+    {
         "outputFile": "Shared/MainLayout.razor.css",
         "inputFile": "Shared/MainLayout.razor.scss"
     },

@@ -1,0 +1,34 @@
+﻿@page "/todo-template/project-structure"
+
+<div class="page-container">
+    <h1 class="page-main-title">TodoTemplate project structure</h1>
+    <div class="page-desc">
+        The <span class="bold-txt">TodoTemplate</span> solution prepared with Bit has 5 Projects.
+
+        <div class="image-container">
+            <img class="image" alt="TodoTemplate solution" width="398" height="317" src="/images/demo/todo-template-solution.webp" />
+        </div>
+
+        <ul>
+            <li>
+                <span class="bold-txt">TodoTemplate.Api</span>:
+                This project contains server-side codes including Controllers, Data access layer (EntityFramework ORM), Identity, etc.
+            </li>
+            <li>
+                <span class="bold-txt">TodoTemplate.App</span>:
+                This project contains code related to building an app, although much of the code is common to the web project and refers to it.
+            </li>
+            <li>
+                <span class="bold-txt">TodoTemplate.Iac</span>:
+                Infrastructure as Code (IaC) is the managing and provisioning of infrastructure through code instead of through manual processes. This project contains the necessary code to provide this feature.
+                You don't have to use either Pulumi or even Azure, Host it wherever you want.
+            </li>
+            <li>
+                <span class="bold-txt">TodoTemplate.Shared</span>: This project is shared on both the server (Api project) and client(Web, App projects) sides, and can share code. The bit puts the code it wants to reuse; Like resources, Dtos, shared contracts, services, etc.
+            </li>
+            <li>
+                <span class="bold-txt">TodoTemplate.Web</span>: This project contains the necessary code to build the project UI, whether it is a web output or an application. And includes components and pages made with the help of Razor and Style sheet
+            </li>
+        </ul>
+    </div>
+</div>

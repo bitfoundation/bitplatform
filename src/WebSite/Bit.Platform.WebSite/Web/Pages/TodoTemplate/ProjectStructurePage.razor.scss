@@ -1,0 +1,61 @@
+﻿@import '../../Styles/abstracts/_media-queries.scss';
+@import '../../Styles/abstracts/_functions.scss';
+@import '../../Styles/abstracts/_mixins.scss';
+
+.page-container {
+    @include PageContainer;
+}
+
+.page-main-title {
+    @include PageMainTitle;
+}
+
+.page-desc {
+    @include PageDescription;
+}
+
+.section-card {
+    @include SectionCard;
+}
+
+.section-card-title {
+    @include SectionCardTitle;
+}
+
+.section-card-txt {
+    @include SectionCardText;
+}
+
+.code-box {
+    @include CodeBox;
+}
+
+.high-light-text {
+    @include HighLightText;
+}
+
+.bold-txt {
+    font-weight: bold;
+}
+
+.image-container {
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+}
+
+.image {
+    width: rem(500px);
+    height: rem(500px);
+    margin: rem(25px) 0;
+
+    @include md {
+        width: rem(400px);
+        height: rem(400px);
+    }
+
+    @include sm {
+        width: rem(280px);
+        height: rem(280px);
+    }
+}
