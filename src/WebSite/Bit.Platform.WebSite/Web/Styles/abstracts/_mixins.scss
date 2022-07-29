@@ -29,25 +29,25 @@
 @mixin PageMainTitle {
     margin-bottom: rem(32px);
     font-weight: 700;
-    font-size: rem(30px);
+    font-size: rem(32px);
     line-height: rem(40px);
     color: $B3Color;
 
     @include lg {
         margin-bottom: rem(24px);
-        font-size: rem(26px);
+        font-size: rem(28px);
         line-height: rem(40px);
     }
 
     @include md {
         margin-bottom: rem(16px);
-        font-size: rem(20px);
+        font-size: rem(22px);
         line-height: rem(32px);
     }
 
     @include sm {
         margin-bottom: rem(12px);
-        font-size: rem(18px);
+        font-size: rem(20px);
         line-height: rem(32px);
     }
 }
@@ -72,6 +72,79 @@
 
     @include sm {
         margin-bottom: rem(40px);
+        font-size: rem(12px);
+        line-height: rem(24px);
+    }
+}
+
+@mixin SectionCard {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: flex-start;
+    width: 100%;
+    margin-bottom: rem(64px);
+    padding: rem(32px) rem(24px);
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.15);
+    border-radius: rem(8px);
+    box-sizing: border-box;
+    background-color: $White;
+
+    @include md {
+        margin-bottom: rem(48px);
+        padding: rem(24px) rem(16px);
+    }
+
+    @include sm {
+        margin-bottom: rem(16px);
+        padding: rem(16px) rem(12px);
+    }
+}
+
+@mixin SectionCardTitle {
+    margin-bottom: rem(16px);
+    font-weight: 700;
+    font-size: rem(30px);
+    line-height: rem(40px);
+    color: $B3Color;
+
+    @include lg {
+        font-size: rem(26px);
+    }
+
+    @include md {
+        margin-bottom: rem(8px);
+        font-size: rem(20px);
+        line-height: rem(32px);
+    }
+
+    @include sm {
+        margin-bottom: rem(8px);
+        font-size: rem(18px);
+        line-height: rem(32px);
+    }
+}
+
+@mixin SectionCardText {
+    margin-bottom: rem(24px);
+    font-weight: 400;
+    font-size: rem(18px);
+    line-height: rem(32px);
+    text-align: justify;
+    color: $Gray1;
+
+    @include lg {
+        font-size: rem(14px);
+    }
+
+    @include md {
+        margin-bottom: rem(16px);
+        font-size: rem(12px);
+        line-height: rem(24px);
+    }
+
+    @include sm {
+        margin-bottom: rem(12px);
         font-size: rem(12px);
         line-height: rem(24px);
     }

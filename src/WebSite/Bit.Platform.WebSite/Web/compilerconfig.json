@@ -28,6 +28,10 @@
         "inputFile": "Pages/TodoTemplate/TodoOverviewPage.razor.scss"
     },
     {
+        "outputFile": "Pages/TodoTemplate/DevelopmentPrerequisitesPage.razor.css",
+        "inputFile": "Pages/TodoTemplate/DevelopmentPrerequisitesPage.razor.scss"
+    },
+    {
         "outputFile": "Shared/MainLayout.razor.css",
         "inputFile": "Shared/MainLayout.razor.scss"
     },

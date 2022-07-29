@@ -1,0 +1,28 @@
+﻿@import '../../Styles/abstracts/_media-queries.scss';
+@import '../../Styles/abstracts/_functions.scss';
+@import '../../Styles/abstracts/_colors.scss';
+@import '../../Styles/abstracts/_mixins.scss';
+
+.page-container {
+    @include PageContainer;
+}
+
+.page-main-title {
+    @include PageMainTitle;
+}
+
+.page-desc {
+    @include PageDescription;
+}
+
+.section-card {
+    @include SectionCard;
+}
+
+.section-card-title {
+    @include SectionCardTitle;
+}
+
+.section-card-txt {
+    @include SectionCardText;
+}
