@@ -915,7 +915,7 @@ public class PagedResult<T>
         new Country { Code = "HU", Name="Hungary", Medals = new Medals { Gold = 6, Silver = 7, Bronze = 7 } },
         new Country { Code = "ID", Name="Indonesia", Medals = new Medals { Gold = 1, Silver = 1, Bronze = 3 } },
         new Country { Code = "IE", Name="Ireland", Medals = new Medals { Gold = 2, Silver = 0, Bronze = 2 } },
-        new Country { Code = "IR", Name="Islamic Republic of Iran", Medals = new Medals { Gold = 3, Silver = 2, Bronze = 2 } },
+        new Country { Code = "IR", Name="Iran", Medals = new Medals { Gold = 3, Silver = 2, Bronze = 2 } },
         new Country { Code = "IL", Name="Israel", Medals = new Medals { Gold = 2, Silver = 0, Bronze = 2 } },
         new Country { Code = "IT", Name="Italy", Medals = new Medals { Gold = 10, Silver = 10, Bronze = 20 } },
         new Country { Code = "JM", Name="Jamaica", Medals = new Medals { Gold = 4, Silver = 1, Bronze = 4 } },

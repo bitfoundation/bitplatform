@@ -26,6 +26,8 @@
                 font-style: normal;
                 font-weight: normal;
                 content: "\E721";
+                position: relative;
+                top: 2px;
             }
         }
 
@@ -43,6 +45,10 @@
 
         .bitdatagrid-paginator {
             padding: 0.5rem;
+        }
+
+        .bitdatagrid-paginator .pagination-text {
+            padding-top: 3px;
         }
 
         .bitdatagrid-paginator nav button {
@@ -121,7 +127,6 @@
         td {
             border-bottom: 1px solid #e9eaed;
             color: #4f4f50;
-            font-size: 1rem;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
