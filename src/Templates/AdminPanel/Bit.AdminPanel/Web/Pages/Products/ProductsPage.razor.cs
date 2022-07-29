@@ -87,14 +87,14 @@ public partial class ProductsPage
         await dataGrid!.RefreshDataAsync();
     }
 
-    private void CreateProduct()
+    private async Task CreateProduct()
     {
-        modal!.ShowModal(new ProductDto());
+        await modal!.ShowModal(new ProductDto());
     }
 
     private async Task EditProduct(ProductDto product)
     {
-        modal!.ShowModal(product);
+        await modal!.ShowModal(product);
     }
     private async Task DeleteProduct(ProductDto product)
     {

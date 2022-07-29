@@ -28,9 +28,9 @@ public partial class CreateEditProductModal
         base.OnInitialized();
     }
 
-    public void ShowModal(ProductDto product)
+    public async Task ShowModal(ProductDto product)
     {
-        InvokeAsync(() =>
+        await InvokeAsync(() =>
         {
             IsOpen = true;
 

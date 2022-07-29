@@ -2,6 +2,8 @@
 
 public partial class ConfirmMessageBox : IDisposable
 {
+    [Inject] private IExceptionHandler exceptionHandler { get; set; } = default!;
+
     public Action<bool> CallBackFunction { get; set; }
 
     private static event Action<string, string,string, Action<bool>> OnShow = default!;
@@ -18,20 +20,27 @@ public partial class ConfirmMessageBox : IDisposable
         base.OnInitialized();
     }
 
-    private void ShowMessageBox(string message, string context, string title, Action<bool> callBack)
+    private async void ShowMessageBox(string message, string context, string title, Action<bool> callBack)
     {
-        InvokeAsync(() =>
+        try
         {
-            IsOpen = true;
+            await InvokeAsync(() =>
+            {
+                IsOpen = true;
 
-            Title = title;
-            Message = message;
-            Context = context;
+                Title = title;
+                Message = message;
+                Context = context;
 
-            CallBackFunction = callBack;
+                CallBackFunction = callBack;
 
-            StateHasChanged();
-        });
+                StateHasChanged();
+            });
+        }
+        catch (Exception ex)
+        {
+            exceptionHandler.Handle(ex);
+        }
     }
 
     // ========================================================================

@@ -1,9 +1,13 @@
 ﻿using System;
+using Bit.BlazorUI.Playground.Web.Services.Contracts;
+using Microsoft.AspNetCore.Components;
 
 namespace Bit.BlazorUI.Playground.Web.Shared;
 
 public partial class MessageBox : IDisposable
 {
+    [Inject] private IExceptionHandler exceptionHandler { get; set; } = default!;
+
     private static event Action<string, string> OnShow = default!;
 
     public static void Show(string message, string title = "")
@@ -18,17 +22,24 @@ public partial class MessageBox : IDisposable
         base.OnInitialized();
     }
 
-    private void ShowMessageBox(string message, string title)
+    private async void ShowMessageBox(string message, string title)
     {
-        InvokeAsync(() =>
+        try
         {
-            IsOpen = true;
+            await InvokeAsync(() =>
+            {
+                IsOpen = true;
 
-            Title = title;
-            Body = message;
+                Title = title;
+                Body = message;
 
-            StateHasChanged();
-        });
+                StateHasChanged();
+            });
+        }
+        catch (Exception ex)
+        {
+            exceptionHandler.Handle(ex);
+        }        
     }
 
     // ========================================================================
