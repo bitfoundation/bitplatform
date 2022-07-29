@@ -58,4 +58,9 @@ internal static class JsRuntimeExtension
     {
         await jsRuntime.InvokeVoidAsync("Bit.selectText", element);
     }
+
+    internal static async Task SetStyle(this IJSRuntime jsRuntime, ElementReference element, string key, string value)
+    {
+        await jsRuntime.InvokeVoidAsync("Bit.setStyle", element, key, value);
+    }
 }
