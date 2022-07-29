@@ -15,41 +15,8 @@
         <a class="side-rail-item @(CurrentUrl == "#exception-handling"? "selected-side-rail-item" : "" )" href="@Urls.TodoTemplate#exception-handling" target="_parent">Exception handling</a>
         <a class="side-rail-item @(CurrentUrl == "#cache-mechanism"? "selected-side-rail-item" : "" )" href="@Urls.TodoTemplate#cache-mechanism" target="_parent">Cache mechanism</a>
         <a class="side-rail-item @(CurrentUrl == "#contribute"? "selected-side-rail-item" : "" )" href="@Urls.TodoTemplate#contribute" target="_parent">Contribute</a>
-
     </section>
 
-    <div class="step-body-card">
-        <h4 id="prepare-project">
-            <a class="anchor" href="@Urls.TodoTemplate#prepare-project" target="_parent"><i class="anchor-icon bit-icon bit-icon--Link12"> </i></a>
-            Prepare The Project
-        </h4>
-        <div class="card-container">
-            <h3>Database</h3>
-            <h5>Connection String</h5>
-            <div class="description">Open <span class="bold">appsettings.json</span> file in TodoTemplate.Api project and change the <strong>ConnectionStrings</strong> connection string if you want</div>
-            <pre class="code">
-<code>"ConnectionStrings": {
-    "SqlServerConnectionString": "Data Source=.; Initial Catalog=TodoTemplateDb;Integrated Security=true;Application Name=Todo;"
-}</code>
-            </pre>
-            <div class="description">
-                For Other Entityframework supported databases, you need to configure the context that provides your preferred database. with change <span class="high-light">UseSqlServer</span> method on <span class="high-light">Api\Startup\Services.cs</span> file
-            </div>
-            <pre class="code">
-<code>services.AddDbContext@("<AppDbContext>")(options =>
-{
-    options.UseSqlServer(configuration.GetConnectionString("SqlServerConnectionString"), sqlOpt =>
-    {
-        sqlOpt.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
-    });
-});
-</code>
-        </pre>
-            <h3>Migration</h3>
-            <div class="description">To create and migrate the database to the latest version. You can use Entity Framework's built-in tools for migrations. Open <strong>Package Manager Console</strong> in Visual Studio set <strong>TodoTemplate.Api</strong> as the Default Project and run the Update-Database command as shown below:</div>
-            <pre class="code"><code>Update-Database -Context AppDbContext</code></pre>
-        </div>
-    </div>
 
     <div class="step-body-card">
         <h4 id="run">
