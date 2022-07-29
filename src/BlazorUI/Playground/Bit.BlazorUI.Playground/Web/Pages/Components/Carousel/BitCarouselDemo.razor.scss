@@ -1,4 +1,5 @@
-﻿@import "../../../Styles/_shared.scss";
+﻿@import '../../../Styles/abstracts/_colors.scss';
+@import '../../../Styles/abstracts/_functions.scss';
 
 .number {
     position: absolute;
@@ -6,6 +7,11 @@
     padding: rem(12px);
     font-size: rem(12px);
     color: $Gray3;
+}
+
+.image {
+    width: 100%;
+    height: 100%;
 }
 
 .text-title {
@@ -38,4 +44,11 @@
 
 ::deep .goto-button {
     margin-right: rem(10px);
+}
+
+::deep .item {
+    text-align: center;
+    color: black;
+    border: 1px solid blue;
+    background-color: lightblue;
 }

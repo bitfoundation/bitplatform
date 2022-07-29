@@ -12,7 +12,7 @@ public partial class BitDatePickerDemo
     private FormValidationDatePickerModel formValidationDatePickerModel = new();
     private string SuccessMessage = string.Empty;
 
-    private async void HandleValidSubmit()
+    private async Task HandleValidSubmit()
     {
         SuccessMessage = "Form Submitted Successfully!";
         await Task.Delay(3000);
@@ -292,7 +292,7 @@ public class FormValidationDatePickerModel
 private FormValidationDatePickerModel formValidationDatePickerModel = new();
 private string SuccessMessage = string.Empty;
 
-private async void HandleValidSubmit()
+private async Task HandleValidSubmit()
 {
     SuccessMessage = ""Form Submitted Successfully!"";
     await Task.Delay(3000);

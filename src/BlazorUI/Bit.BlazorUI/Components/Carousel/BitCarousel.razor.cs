@@ -7,38 +7,25 @@ namespace Bit.BlazorUI;
 
 public partial class BitCarousel
 {
-    private BitCarouselItem? SelectedItem;
-    private int CurrentIndex;
-    private List<BitCarouselItem> AllCarouselItems = new();
-    private string? selectedKey;
-    private bool SelectedKeyHasBeenSet;
+    private ElementReference _carousel = default!;
+    private int[] _currentIndices = Array.Empty<int>();
+    private int[] _othersIndices = Array.Empty<int>();
+    private int _pagesCount;
+    private int _currentPage;
+
+    private readonly List<BitCarouselItem> AllItems = new();
+
+    [Inject] private IJSRuntime _js { get; set; } = default!;
 
     /// <summary>
     /// If enabled the carousel items will navigate in a loop (first item comes after last item and last item comes before first item).
     /// </summary>
-    [Parameter] public bool IsSlideShow { get; set; }
+    [Parameter] public bool InfiniteSliding { get; set; }
 
     /// <summary>
     /// Items of the carousel.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
-
-    /// <summary>
-    /// The Key of the current(selected) item of the carousel.
-    /// </summary>
-    [Parameter]
-    public string? SelectedKey
-    {
-        get => selectedKey;
-        set
-        {
-            if (value == selectedKey) return;
-
-            SelectItemByKey(value);
-        }
-    }
-
-    [Parameter] public EventCallback<string?> SelectedKeyChanged { get; set; }
 
     /// <summary>
     /// Shows or hides the Dots indicator at the bottom of the BitCarousel.
@@ -50,94 +37,217 @@ public partial class BitCarousel
     /// </summary>
     [Parameter] public bool ShowNextPrev { get; set; } = true;
 
-    public void GoNext()
+    /// <summary>
+    /// Number of items that is visible in the carousel
+    /// </summary>
+    [Parameter] public int VisibleItemsCount { get; set; } = 1;
+
+    /// <summary>
+    /// Number of items that is going to be changed on navigation
+    /// </summary>
+    [Parameter] public int ScrollItemsCount { get; set; } = 1;
+
+    public async Task GoPrev()
     {
-        SelectItem(CurrentIndex + 1);
+        await Prev();
     }
 
-    public void GoPrev()
+    public async Task GoNext()
     {
-        SelectItem(CurrentIndex - 1);
+        await Next();
     }
 
-    public void GoTo(int index)
+    public async Task GoTo(int index)
     {
-        SelectItem(index);
+        await GotoPage(index - 1);
     }
 
-    protected override string RootElementClass => "bit-crsl";
 
-    internal void RegisterItem(BitCarouselItem carouselItem)
+    internal void RegisterItem(BitCarouselItem item)
     {
-        if (IsEnabled is false)
-        {
-            carouselItem.IsEnabled = false;
-        }
+        item.Index = AllItems.Count;
 
-        carouselItem.Index = AllCarouselItems.Count;
+        AllItems.Add(item);
 
-        AllCarouselItems.Add(carouselItem);
-
-        if (AllCarouselItems.Count == 1 || SelectedKey.HasValue() && SelectedKey == carouselItem.Key)
-        {
-            carouselItem.SetState(true);
-            SelectedItem = carouselItem;
-        }
         StateHasChanged();
     }
 
     internal void UnregisterItem(BitCarouselItem carouselItem)
     {
-        AllCarouselItems.Remove(carouselItem);
+        AllItems.Remove(carouselItem);
     }
 
-    internal async Task SelectItem(BitCarouselItem item)
+
+    protected override string RootElementClass => "bit-crsl";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (SelectedKeyHasBeenSet && SelectedKeyChanged.HasDelegate is false) return;
-
-        SelectedItem?.SetState(false);
-        item.SetState(true);
-
-        SelectedItem = item;
-        selectedKey = item.Key;
-        CurrentIndex = item.Index;
-
-        await SelectedKeyChanged.InvokeAsync(selectedKey);
-    }
-
-    private void SelectItemByKey(string? key)
-    {
-        if (key.HasNoValue()) return;
-
-        var newItem = AllCarouselItems.FirstOrDefault(i => i.Key == key);
-
-        if (newItem == null || newItem == SelectedItem || newItem.IsEnabled is false)
+        if (firstRender)
         {
-            _ = SelectedKeyChanged.InvokeAsync(selectedKey);
-            return;
+            _currentIndices = Enumerable.Range(0, VisibleItemsCount).ToArray();
+            _othersIndices = Enumerable.Range(0, ScrollItemsCount).ToArray();
+
+            var itemsCount = AllItems.Count;
+            var rect = await _js.GetBoundingClientRect(_carousel);
+
+            for (int i = 0; i < itemsCount; i++)
+            {
+                var item = AllItems[i];
+                item.InternalStyle = $"width:{rect.Width / VisibleItemsCount}px; display:block";
+                item.InternalTransformStyle = $"transform:translateX({100 * i}%)";
+            }
+
+            _pagesCount = (int)Math.Ceiling((decimal)itemsCount / VisibleItemsCount);
+
+            StateHasChanged();
         }
 
-        _ = SelectItem(newItem);
+        await base.OnAfterRenderAsync(firstRender);
     }
 
-    private void SelectItem(int index)
+
+    private async Task Prev()
+    {
+        _othersIndices = Enumerable.Range(0, ScrollItemsCount).Select(i =>
+        {
+            var idx = _currentIndices[0] - (i + 1);
+            if (idx < 0) idx = AllItems.Count + idx;
+            return idx;
+        }).Reverse().ToArray();
+
+        await Go();
+    }
+
+    private async Task Next()
+    {
+        _othersIndices = Enumerable.Range(0, ScrollItemsCount).Select(i =>
+        {
+            var idx = _currentIndices[VisibleItemsCount - 1] + (i + 1);
+            if (idx > AllItems.Count - 1) idx = idx - AllItems.Count;
+            return idx;
+        }).ToArray();
+
+        await Go(true);
+    }
+
+    private async Task Go(bool isNext = false, int scrollCount = 0)
+    {
+        if (scrollCount < 1)
+        {
+            scrollCount = ScrollItemsCount;
+        }
+
+        var diff = VisibleItemsCount - scrollCount;
+        var newIndices = (isNext
+            ? (_currentIndices.Skip(VisibleItemsCount - diff).Take(diff)).Concat(_othersIndices)
+            : _othersIndices.Concat(_currentIndices.Take(diff))).ToArray();
+
+        var currents = _currentIndices.Select(i => AllItems[i]).ToArray();
+        var others = _othersIndices.Select(i => AllItems[i]).ToArray();
+
+        var sign = isNext ? 1 : -1;
+        var offset = isNext ? VisibleItemsCount : scrollCount;
+
+        for (int i = 0; i < others.Length; i++)
+        {
+            var o = others[i];
+            o.InternalTransitionStyle = "";
+            o.InternalTransformStyle = $"transform:translateX({sign * 100 * (offset + (sign * i))}%)";
+        }
+
+        StateHasChanged();
+
+        await Task.Delay(50);
+
+        offset = isNext ? VisibleItemsCount - scrollCount : 0;
+
+        for (int i = 0; i < currents.Length; i++)
+        {
+            var c = currents[i];
+            c.InternalTransitionStyle = $"transition:all 0.5s";
+            c.InternalTransformStyle = $"transform:translateX({-sign * 100 * (scrollCount + (-sign * i))}%)";
+        }
+
+        for (int i = 0; i < others.Length; i++)
+        {
+            var o = others[i];
+            o.InternalTransitionStyle = $"transition:all 0.5s";
+            o.InternalTransformStyle = $"transform:translateX({100 * (offset + i)}%)";
+        }
+
+        _currentIndices = newIndices;
+        _currentPage = (int)Math.Floor((decimal)(_currentIndices[0]) / VisibleItemsCount);
+
+        StateHasChanged();
+
+    }
+
+    private async Task GotoPage(int index)
     {
         if (index < 0)
         {
-            index = IsSlideShow ? AllCarouselItems.Count - 1 : 0;
+            index = InfiniteSliding ? _pagesCount - 1 : 0;
         }
-        else if (index >= AllCarouselItems.Count)
+        else if (index >= _pagesCount)
         {
-            index = IsSlideShow ? 0 : AllCarouselItems.Count - 1;
+            index = InfiniteSliding ? 0 : _pagesCount - 1;
         }
 
-        var newItem = AllCarouselItems.ElementAt(index);
+        if (_currentIndices[0] == index * VisibleItemsCount) return;
 
-        if (newItem == null || newItem == SelectedItem || newItem.IsEnabled is false)
+        var indices = Enumerable.Range(index * VisibleItemsCount, VisibleItemsCount);
+        var isNext = false;
+        if (index < _currentPage) // go prev
         {
-            return;
+            _othersIndices = indices.ToArray();
+        }
+        else // go next
+        {
+            isNext = true;
+            _othersIndices = indices.Select(idx =>
+            {
+                if (idx > AllItems.Count - 1) idx = idx - AllItems.Count;
+                return idx;
+            }).ToArray();
         }
 
-        _ = SelectItem(newItem);
+        await Go(isNext, VisibleItemsCount);
+    }
+
+
+    private double _pointerX;
+    private bool _isPointerDown;
+    private async Task HandlePointerMove(MouseEventArgs e)
+    {
+        if (_isPointerDown is false) return;
+
+        var delta = e.ClientX - _pointerX;
+        if (Math.Abs(delta) <= 20) return;
+
+        _isPointerDown = false;
+        await _js.SetStyle(_carousel, "cursor", "");
+        if (delta < 0)
+        {
+            await Next();
+        }
+        else
+        {
+            await Prev();
+        }
+    }
+
+    private async Task HandlePointerDown(MouseEventArgs e)
+    {
+        _isPointerDown = true;
+        _pointerX = e.ClientX;
+        await _js.SetStyle(_carousel, "cursor", "grabbing");
+        StateHasChanged();
+    }
+
+    private async Task HandlePointerUp(MouseEventArgs e)
+    {
+        _isPointerDown = false;
+        await _js.SetStyle(_carousel, "cursor", "");
+        StateHasChanged();
     }
 }

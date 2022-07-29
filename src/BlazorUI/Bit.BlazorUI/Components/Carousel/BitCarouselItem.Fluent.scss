@@ -1,31 +1,6 @@
 ﻿.bit-crsl-item {
     display: none;
-
-    &.bit-crsl-item-fluent {
-    }
-
-    &.bit-crsl-item-current {
-        display: block;
-        animation: fadein 0.85s;
-    }
-
-    @keyframes fadein {
-        from {
-            opacity: 0
-        }
-
-        to {
-            opacity: 1
-        }
-    }
-
-    @keyframes fadeout {
-        from {
-            opacity: 0
-        }
-
-        to {
-            opacity: 1
-        }
-    }
+    position: absolute;
+    top: 0;
+    bottom: 0;
 }

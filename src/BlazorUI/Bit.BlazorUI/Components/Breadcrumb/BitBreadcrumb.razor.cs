@@ -56,7 +56,7 @@ public partial class BitBreadcrumb
     private IList<BitBreadcrumbItem> _itemsToShowInBreadcrumb = new List<BitBreadcrumbItem>();
     private bool isOpen;
 
-    protected async override Task OnParametersSetAsync()
+    protected override async Task OnParametersSetAsync()
     {
         BreadcrumbItemsWrapperId = $"breadcrumb-items-wrapper-{UniqueId}";
         OverflowDropDownId = $"overflow-dropdown-{UniqueId}";
