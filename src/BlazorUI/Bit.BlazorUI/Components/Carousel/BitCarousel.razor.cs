@@ -84,6 +84,8 @@ public partial class BitCarousel
     {
         if (firstRender)
         {
+            await _js.PreventDefault(_carousel, "touchmove");
+
             _currentIndices = Enumerable.Range(0, VisibleItemsCount).ToArray();
             _othersIndices = Enumerable.Range(0, ScrollItemsCount).ToArray();
 
