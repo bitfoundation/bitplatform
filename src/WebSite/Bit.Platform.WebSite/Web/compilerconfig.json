@@ -16,10 +16,6 @@
         "inputFile": "Components/NotFoundComponent.razor.scss"
     },
     {
-        "outputFile": "Components/GettingStarted.razor.css",
-        "inputFile": "Components/GettingStarted.razor.scss"
-    },
-    {
         "outputFile": "Pages/HomePage.razor.css",
         "inputFile": "Pages/HomePage.razor.scss"
     },
@@ -54,6 +50,14 @@
     {
         "outputFile": "Pages/TodoTemplate/ProjectStructurePage.razor.css",
         "inputFile": "Pages/TodoTemplate/ProjectStructurePage.razor.scss"
+    },
+    {
+        "outputFile": "Pages/TodoTemplate/CacheMechanismPage.razor.css",
+        "inputFile": "Pages/TodoTemplate/CacheMechanismPage.razor.scss"
+    },
+    {
+        "outputFile": "Pages/TodoTemplate/ContributePage.razor.css",
+        "inputFile": "Pages/TodoTemplate/ContributePage.razor.scss"
     },
     {
         "outputFile": "Shared/MainLayout.razor.css",
