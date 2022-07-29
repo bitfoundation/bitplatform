@@ -8,6 +8,7 @@
         <OutputType>Exe</OutputType>
         <UseMaui>true</UseMaui>
         <SingleProject>true</SingleProject>
+        <DefineConstants>$(DefineConstants);Maui</DefineConstants>
         <EnableDefaultCssItems>false</EnableDefaultCssItems>
 
         <!-- Display name -->
@@ -89,16 +90,16 @@
         <PackageReference Include="Bit.BlazorUI" Version="2.0.0" />
         <PackageReference Include="Bit.CodeAnalyzers" Version="2.0.0" />
         <PackageReference Include="Bit.SourceGenerators" Version="2.0.0" />
+        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.7.4">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
         <PackageReference Include="BuildWebCompiler2022" Version="1.14.8">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="jose-jwt" Version="4.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.7" />
-        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.7.4">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
         <Content Remove="appsettings.json" />
         <EmbeddedResource Include="appsettings.json" />
         <Content Remove="Pages\_Host.cshtml" />
