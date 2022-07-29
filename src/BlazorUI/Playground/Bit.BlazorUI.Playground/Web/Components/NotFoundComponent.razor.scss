@@ -1,4 +1,6 @@
-﻿@import '../Styles/_shared.scss';
+﻿@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_media-queries.scss';
+@import '../Styles/abstracts/_functions.scss';
 
 .main {
     display: flex;
@@ -139,5 +141,27 @@
 
     @include sm {
         height: rem(28px);
+    }
+}
+
+::deep .not-found-back-btn {
+    width: rem(213px);
+    height: rem(56px);
+    font-weight: 600;
+    font-size: rem(18px);
+    line-height: rem(32px);
+
+    @include md {
+        width: rem(161px);
+    }
+
+    @include sm {
+        width: rem(118px);
+    }
+
+    @include lt-lg {
+        height: rem(40px);
+        font-size: rem(12px);
+        line-height: rem(16px);
     }
 }

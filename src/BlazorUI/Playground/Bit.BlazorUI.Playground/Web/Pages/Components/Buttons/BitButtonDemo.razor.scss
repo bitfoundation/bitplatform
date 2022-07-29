@@ -1,6 +1,50 @@
-﻿@import "../../../Styles/_shared.scss";
+﻿@import '../../../Styles/abstracts/_colors.scss';
+@import '../../../Styles/abstracts/_media-queries.scss';
+@import '../../../Styles/abstracts/_functions.scss';
 
 .sample-lnk-btn {
     display: flex;
     flex-flow: row wrap;
+}
+
+::deep .custom-button,
+::deep .custom-button:hover {
+    height: rem(40px);
+    width: rem(166px);
+    font-family: Axiforma;
+    font-size: rem(16px);
+    background-color: $B1Color;
+    border-color: $B1Color;
+}
+
+::deep .label-btn {
+    @include sm {
+        margin-top: rem(10px);
+        width: rem(284px);
+    }
+}
+
+::deep .lnk-btn {
+    @include sm {
+        margin-top: rem(10px);
+        width: rem(240px);
+    }
+}
+
+::deep .disable-btn {
+    @include md {
+        margin-top: rem(10px);
+        width: rem(241px);
+    }
+
+    @include sm {
+        margin-top: rem(10px);
+        width: rem(241px);
+    }
+}
+
+::deep .styled-btn {
+    @include sm {
+        margin: 0 0 rem(10px) 0;
+    }
 }
