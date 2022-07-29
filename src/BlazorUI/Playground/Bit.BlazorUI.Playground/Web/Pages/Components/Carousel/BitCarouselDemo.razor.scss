@@ -9,6 +9,11 @@
     color: $Gray3;
 }
 
+.image {
+    width: 100%;
+    height: 100%;
+}
+
 .text-title {
     position: absolute;
     bottom: rem(55px);
@@ -41,6 +46,9 @@
     margin-right: rem(10px);
 }
 
-::deep .bit-crsl-fluent {
-    max-width: 100%;
+::deep .item {
+    text-align: center;
+    color: black;
+    border: 1px solid blue;
+    background-color: lightblue;
 }

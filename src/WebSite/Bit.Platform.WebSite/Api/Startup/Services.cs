@@ -18,7 +18,7 @@ public static class Services
             // Using this registration + registrations provided in Program.cs/Startup.cs of Bit.Platform.WebSite.Web project,
             // you can inject HttpClient and call Bit.Platform.WebSite.Api api controllers in blazor pages.
             // for other usages of http client, for example calling 3rd party apis, please use services.AddHttpClient("NamedHttpClient"), then inject IHttpClientFactory and use its CreateClient("NamedHttpClient") method.
-            return new HttpClient { BaseAddress = new Uri(c.GetRequiredService<NavigationManager>().BaseUri) };
+            return new HttpClient { BaseAddress = new Uri($"{c.GetRequiredService<NavigationManager>().BaseUri}api/") };
         });
         services.AddRazorPages();
         services.AddPlaygroundServices();

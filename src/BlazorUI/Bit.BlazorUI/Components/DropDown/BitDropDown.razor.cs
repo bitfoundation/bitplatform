@@ -231,7 +231,7 @@ public partial class BitDropDown
             : string.Empty);
     }
 
-    protected async override Task OnParametersSetAsync()
+    protected override async Task OnParametersSetAsync()
     {
         DropDownId = $"Dropdown{UniqueId}";
         DropDownOptionId = $"{DropDownId}-option";

@@ -14,7 +14,7 @@ public partial class BitCheckboxDemo
     private BitCheckboxValidationModel ValidationForm = new();
     private string SuccessMessage = string.Empty;
 
-    private async void HandleValidSubmit()
+    private async Task HandleValidSubmit()
     {
         SuccessMessage = "Form Submitted Successfully!";
         await Task.Delay(3000);
@@ -293,7 +293,7 @@ public class BitCheckboxValidationModel
     public bool TermsAgreement { get; set; }
 }
 
-private async void HandleValidSubmit()
+private async Task HandleValidSubmit()
 {
     SuccessMessage = ""Form Submitted Successfully!"";
     await Task.Delay(3000);

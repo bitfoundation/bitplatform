@@ -5,29 +5,9 @@ namespace Bit.BlazorUI;
 
 public partial class BitCarouselItem
 {
-    private bool IsCurrentHasBeenSet;
-
-    private bool isCurrent;
     internal int Index;
 
-    [Parameter]
-    public bool IsCurrent
-    {
-        get => isCurrent;
-        set
-        {
-            if (value == isCurrent) return;
-            isCurrent = value;
-            ClassBuilder.Reset();
-            _ = IsCurrentChanged.InvokeAsync(value);
-        }
-    }
-
-    [Parameter] public EventCallback<bool> IsCurrentChanged { get; set; }
-
     [Parameter] public RenderFragment? ChildContent { get; set; }
-
-    [Parameter] public string Key { get; set; } = string.Empty;
 
     [CascadingParameter] protected BitCarousel? Carousel { get; set; }
 
@@ -45,13 +25,41 @@ public partial class BitCarouselItem
 
     protected override void RegisterComponentClasses()
     {
-        ClassBuilder.Register(() => IsCurrent
-                                   ? $"{RootElementClass}-current" : string.Empty);
+        StyleBuilder.Register(() => internalStyle);
+        StyleBuilder.Register(() => internalTransformStyle);
+        StyleBuilder.Register(() => internalTransitionStyle);
     }
 
-    internal void SetState(bool status)
+    private string internalStyle = string.Empty;
+    internal string InternalStyle
     {
-        IsCurrent = status;
-        StateHasChanged();
+        get => internalStyle;
+        set
+        {
+            internalStyle = value;
+            StyleBuilder.Reset();
+        }
+    }
+
+    private string internalTransformStyle = string.Empty;
+    internal string InternalTransformStyle
+    {
+        get => internalTransformStyle;
+        set
+        {
+            internalTransformStyle = value;
+            StyleBuilder.Reset();
+        }
+    }
+
+    private string internalTransitionStyle = string.Empty;
+    internal string InternalTransitionStyle
+    {
+        get => internalTransitionStyle;
+        set
+        {
+            internalTransitionStyle = value;
+            StyleBuilder.Reset();
+        }
     }
 }
