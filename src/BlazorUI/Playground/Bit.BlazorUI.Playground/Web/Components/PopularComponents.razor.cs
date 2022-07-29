@@ -49,7 +49,7 @@ public partial class PopularComponents
     private string ActiveTab = "demo";
     private string ColorRgb = "rgb(255,255,255)";
     private double Alpha = 1;
-    string UploadUrl => $"{GetBaseUrl()}FileUpload/UploadStreamedFile";
+    string UploadUrl => $"{GetBaseUrl()}FileUpload/UploadChunkedFile";
     string RemoveUrl => $"FileUpload/RemoveFile";
 
     string GetBaseUrl()
