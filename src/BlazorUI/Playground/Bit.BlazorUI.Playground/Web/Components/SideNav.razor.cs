@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Bit.BlazorUI.Playground.Web.Services;
+using Bit.BlazorUI.Playground.Web.Services.Contracts;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.JSInterop;
@@ -111,6 +112,7 @@ public partial class SideNav
     [Inject] public NavManuService NavManuService { get; set; }
     [Inject] public IJSRuntime JsRuntime { get; set; }
     [Inject] public NavigationManager NavigationManager { get; set; }
+    [Inject] private IExceptionHandler exceptionHandler { get; set; } = default!;
 
     public string CurrentUrl { get; set; }
 
@@ -129,12 +131,22 @@ public partial class SideNav
         StateHasChanged();
     }
 
-    private async void ToggleMenu()
+    async void ToggleMenu()
     {
-        isNavOpen = !isNavOpen;
+        try
+        {
+            isNavOpen = !isNavOpen;
 
-        await JsRuntime.SetToggleBodyOverflow(isNavOpen);
-        StateHasChanged();
+            await JsRuntime.SetToggleBodyOverflow(isNavOpen);
+        }
+        catch(Exception ex)
+        {
+            exceptionHandler.Handle(ex);
+        }
+        finally
+        {
+            StateHasChanged();
+        }
     }
 
     private void HandleClear()

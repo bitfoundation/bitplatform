@@ -1,4 +1,6 @@
-﻿@import '../Styles/_shared.scss';
+﻿@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_media-queries.scss';
+@import '../Styles/abstracts/_functions.scss';
 
 .main-container {
     display: flex;
@@ -370,5 +372,30 @@
         width: rem(156px);
         height: rem(112px);
         margin: 0 rem(8px) rem(16px);
+    }
+}
+
+::deep .selected-component-icon {
+    path {
+        fill: $White;
+        stroke: $White;
+    }
+}
+
+::deep .component-row-icon {
+    path {
+        fill: $B2Color;
+        stroke: $B2Color;
+    }
+}
+
+::deep .component-row {
+    &:hover {
+        .component-row-icon {
+            path {
+                fill: $White;
+                stroke: $White;
+            }
+        }
     }
 }

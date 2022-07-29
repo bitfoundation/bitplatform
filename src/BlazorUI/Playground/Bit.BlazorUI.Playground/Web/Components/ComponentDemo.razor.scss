@@ -1,4 +1,6 @@
-﻿@import '../Styles/_shared.scss';
+﻿@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_media-queries.scss';
+@import '../Styles/abstracts/_functions.scss';
 
 .component-demo-container {
     width: 100%;
@@ -268,6 +270,31 @@
 
         &:nth-child(3) {
             width: 36%;
+        }
+    }
+}
+
+::deep .param-table-link {
+    a {
+        font-family: Axiforma;
+        cursor: pointer;
+        color: $B2Color;
+        font-size: rem(14px);
+        line-height: rem(24px);
+
+        @include lg {
+            font-size: rem(12px);
+            line-height: rem(18px);
+        }
+
+        @include md {
+            font-size: rem(10px);
+            line-height: rem(16px);
+        }
+
+        @include sm {
+            font-size: rem(8px);
+            line-height: rem(12px);
         }
     }
 }

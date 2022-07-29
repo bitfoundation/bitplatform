@@ -6,18 +6,24 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
 
-    <div class="bit-crsl-items">
+    <div @ref="_carousel"
+         class="carousel"
+         @onpointermove="HandlePointerMove" 
+         @onpointerdown="HandlePointerDown" 
+         @onpointerleave="HandlePointerUp" 
+         @onpointerup="HandlePointerUp" 
+         @ontouchmove:preventDefault="true">
         <CascadingValue Value="this" IsFixed="true">
             @ChildContent
         </CascadingValue>
 
         @if (ShowNextPrev)
         {
-        <div class="bit-crsl-next-btn" @onclick="(() => SelectItem(CurrentIndex + 1))">
+        <div class="next-btn" @onclick="@Next">
             <i class="bit-icon bit-icon--ChevronRight"></i>
         </div>
 
-        <div class="bit-crsl-prev-btn" @onclick="(() => SelectItem(CurrentIndex - 1))">
+        <div class="prev-btn" @onclick="@Prev">
             <i class="bit-icon bit-icon--ChevronLeft"></i>
         </div>
         }
@@ -25,11 +31,11 @@
 
     @if (ShowDots)
     {
-    <div class="bit-crsl-dots">
-        @for (int i = 0; i < AllCarouselItems.Count; i++)
+    <div class="dots">
+        @for (int i = 0; i < _pagesCount; i++)
         {
             int index = i;
-            <div class="@(CurrentIndex == index ? "bit-crsl-dot-current" : null)" @onclick="(() => SelectItem(index))"></div>
+            <div class="@(_currentPage == index ? " current" : null)" @onclick="(() => GotoPage(index))"></div>
         }
     </div>
     }

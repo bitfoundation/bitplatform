@@ -1,5 +1,7 @@
-﻿@import "../../../Styles/_shared.scss";
-
-.m-t-20 {
+﻿.m-t-20 {
     margin-top: rem(20px);
+}
+
+::deep .bit-pvt-fluent > div {
+    margin-top: rem(10px);
 }

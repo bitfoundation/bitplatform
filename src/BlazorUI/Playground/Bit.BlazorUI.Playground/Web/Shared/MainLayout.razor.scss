@@ -1,9 +1,30 @@
-﻿@import '../Styles/_shared.scss';
+﻿@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_media-queries.scss';
+@import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_mixins.scss';
+@import '../Styles/abstracts/_fonts.scss';
+
+::deep a {
+    text-decoration: none;
+}
+
+::deep * {
+    font-family: "Axiforma";
+    box-sizing: border-box;
+}
+
+.container {
+    width: 100%;
+    height: 100%;
+    //overflow: auto;
+}
 
 .main-container {
+    width: 100%;
+    //height: 100%;
+    //overflow: auto;
     display: flex;
     position: relative;
-    width: 100%;
     min-height: 100vh;
     padding-top: rem(80px);
     box-sizing: border-box;
@@ -93,10 +114,9 @@
         display: flex;
         justify-content: center;
         flex-flow: row nowrap;
-
-        @include lt-lg {
-            top: rem(-35px);
-        }
+        //@include lt-lg {
+        //    top: rem(-35px);
+        //}
     }
 
     @mixin LeftContactLinkContainer {
@@ -109,20 +129,19 @@
         justify-content: center;
         flex-flow: column nowrap;
         transform: translateY(-50%);
-
-        a {
-            background-color: $B4Color;
-        }
+        //a {
+        //    background-color: $B4Color;
+        //}
     }
 
     .contact-link-container--home {
-        @media all and (min-width: #{em(1335px)}) {
-            @include LeftContactLinkContainer;
-        }
-
-        @media all and (max-width: #{em(1334px)}) {
-            @include BottomContactLinkContainer;
-        }
+        @include BottomContactLinkContainer;
+        //@media all and (min-width: #{em(1335px)}) {
+        //    @include LeftContactLinkContainer;
+        //}
+        //@media all and (max-width: #{em(1334px)}) {
+        //    @include BottomContactLinkContainer;
+        //}
     }
 
     .contact-link-container {
@@ -135,17 +154,16 @@
         border-radius: 50%;
         background-position: center;
         background-repeat: no-repeat;
-        background-color: $B2Color;
+        background-color: $B4Color;
         cursor: pointer;
         margin: rem(8px);
         background-size: rem(21px);
-
-        @include lt-lg {
-            width: rem(24px);
-            height: rem(24px);
-            margin: rem(4px);
-            background-size: rem(8px);
-        }
+        //@include lt-lg {
+        //    width: rem(24px);
+        //    height: rem(24px);
+        //    margin: rem(4px);
+        //    background-size: rem(8px);
+        //}
     }
 
     .twitter-link {
@@ -162,7 +180,7 @@
         background-image: url('/images/github-icon.svg');
 
         &:hover {
-            background-color: #171515;
+            background-color: #141414;
         }
     }
 
@@ -196,3 +214,116 @@
         padding-left: rem(300px);
     }
 }
+
+::deep .example-desc {
+    margin-bottom: rem(8px);
+}
+
+::deep pre {
+    position: relative;
+    display: flex;
+    flex-flow: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    width: 100%;
+    max-height: rem(464px);
+    min-height: rem(70px);
+    margin: 0;
+    padding: rem(24px) rem(80px) rem(24px) rem(24px);
+    box-sizing: border-box;
+    direction: ltr;
+    overflow: auto;
+    font-family: ui-monospace,SFMono-Regular,SF Mono,Menlo,Consolas,Liberation Mono,monospace;
+    border: rem(1px) solid $B5Color;
+    border-top: none;
+    border-radius: 0 0 rem(10px) rem(10px);
+
+    &::-webkit-scrollbar {
+        width: rem(10px);
+    }
+
+    &::-webkit-scrollbar:horizontal {
+        height: rem(10px);
+    }
+
+    @include lg {
+        max-height: rem(400px);
+        padding: rem(16px) rem(60px) rem(16px) rem(16px);
+        border-radius: 0 0 rem(8px) rem(8px);
+    }
+
+    @include md {
+        max-height: rem(304px);
+        padding: rem(8px) rem(52px) rem(8px) rem(16px);
+        border-radius: 0 0 rem(8px) rem(8px);
+    }
+
+    @include sm {
+        padding: rem(16px) rem(45px) rem(16px) rem(8px);
+        border-radius: 0 0 rem(8px) rem(8px);
+    }
+}
+
+::deep code {
+    line-height: 1.5;
+    font-family: ui-monospace,SFMono-Regular,SF Mono,Menlo,Consolas,Liberation Mono,monospace;
+
+    span {
+        font-family: inherit;
+    }
+}
+
+::deep .hljs {
+    overflow-x: unset !important;
+    padding: 0 !important;
+    background-color: transparent !important;
+}
+
+::deep .status-bar-safe-area {
+    display: none;
+}
+
+@supports (-webkit-touch-callout: none) {
+    ::deep .status-bar-safe-area {
+        display: flex;
+        position: sticky;
+        top: 0;
+        height: env(safe-area-inset-top);
+        background-color: #f7f7f7;
+        width: 100%;
+        z-index: 1;
+    }
+
+    ::deep .flex-column, ::deep .navbar-brand {
+        padding-left: env(safe-area-inset-left);
+    }
+}
+
+//::-webkit-scrollbar {
+//    width: 16px;
+//    background-color: #fff;
+//}
+
+//::-webkit-scrollbar-track {
+//    background-color: #fff;
+//}
+
+//::-webkit-scrollbar-thumb {
+//    background-color: #babac0;
+//    border-radius: 16px;
+//    border: 4px solid #fff;
+//}
+
+//::-webkit-scrollbar-button {
+//    display: none;
+//}
+
+//::-webkit-scrollbar-thumb:hover {
+//    background: #5CA1FF;
+//    border-radius: 8px;
+//    border: 4px solid #5CA1FF;
+//}
+
+//::-webkit-scrollbar:horizontal {
+//    height: 6px;
+//}
