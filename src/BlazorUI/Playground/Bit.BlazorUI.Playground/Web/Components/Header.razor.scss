@@ -1,4 +1,7 @@
-﻿@import '../Styles/_shared.scss';
+﻿@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_media-queries.scss';
+@import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_mixins.scss';
 
 .main-header {
     position: fixed;
@@ -207,5 +210,48 @@
 
     .header-second-row {
         display: flex;
+    }
+}
+
+::deep .header-nav-close-btn {
+    position: absolute;
+    right: rem(12px);
+    top: rem(16px);
+    color: $B2Color;
+}
+
+::deep .header-action-button {
+    .bit-act-btn-fluent {
+        span:last-child {
+            i {
+                color: $B3Color;
+            }
+        }
+    }
+
+    flex-direction: row-reverse;
+    color: $B3Color;
+}
+
+::deep .header-menu-btn {
+    min-width: rem(24px);
+    min-height: rem(24px);
+    max-width: rem(24px);
+    max-height: rem(24px);
+    margin-right: rem(18px);
+    border-radius: 50%;
+    background-color: $B3Color;
+
+    .bit-icon {
+        font-size: rem(12px);
+        color: $White;
+    }
+
+    &:hover {
+        background-color: $B2Color;
+    }
+
+    @include gt-md {
+        display: none;
     }
 }

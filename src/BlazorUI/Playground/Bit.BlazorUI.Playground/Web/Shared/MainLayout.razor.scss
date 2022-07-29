@@ -1,4 +1,8 @@
-﻿@import '../Styles/_shared.scss';
+﻿@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_media-queries.scss';
+@import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_mixins.scss';
+@import '../Styles/abstracts/_fonts.scss';
 
 .main-container {
     display: flex;
@@ -195,4 +199,121 @@
     .main-container-pad {
         padding-left: rem(300px);
     }
+}
+
+::deep .example-desc {
+    margin-bottom: rem(8px);
+}
+
+::deep pre {
+    position: relative;
+    display: flex;
+    flex-flow: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    width: 100%;
+    max-height: rem(464px);
+    min-height: rem(70px);
+    margin: 0;
+    padding: rem(24px) rem(80px) rem(24px) rem(24px);
+    box-sizing: border-box;
+    direction: ltr;
+    overflow: auto;
+    font-family: ui-monospace,SFMono-Regular,SF Mono,Menlo,Consolas,Liberation Mono,monospace;
+    border: rem(1px) solid $B5Color;
+    border-top: none;
+    border-radius: 0 0 rem(10px) rem(10px);
+
+    &::-webkit-scrollbar {
+        width: rem(10px);
+    }
+
+    &::-webkit-scrollbar:horizontal {
+        height: rem(10px);
+    }
+
+    @include lg {
+        max-height: rem(400px);
+        padding: rem(16px) rem(60px) rem(16px) rem(16px);
+        border-radius: 0 0 rem(8px) rem(8px);
+    }
+
+    @include md {
+        max-height: rem(304px);
+        padding: rem(8px) rem(52px) rem(8px) rem(16px);
+        border-radius: 0 0 rem(8px) rem(8px);
+    }
+
+    @include sm {
+        padding: rem(16px) rem(45px) rem(16px) rem(8px);
+        border-radius: 0 0 rem(8px) rem(8px);
+    }
+}
+
+::deep code {
+    line-height: 1.5;
+    font-family: ui-monospace,SFMono-Regular,SF Mono,Menlo,Consolas,Liberation Mono,monospace;
+
+    span {
+        font-family: inherit;
+    }
+}
+
+::deep .hljs {
+    overflow-x: unset !important;
+    padding: 0 !important;
+    background-color: transparent !important;
+}
+
+::deep .status-bar-safe-area {
+    display: none;
+}
+
+@supports (-webkit-touch-callout: none) {
+    ::deep .status-bar-safe-area {
+        display: flex;
+        position: sticky;
+        top: 0;
+        height: env(safe-area-inset-top);
+        background-color: #f7f7f7;
+        width: 100%;
+        z-index: 1;
+    }
+
+    ::deep .flex-column, ::deep .navbar-brand {
+        padding-left: env(safe-area-inset-left);
+    }
+}
+
+::deep a {
+    text-decoration: none;
+}
+
+::deep * {
+    font-family: "Axiforma";
+    box-sizing: border-box;
+}
+
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #DFECFF;
+    border-radius: 8px;
+    border: 5px solid #DFECFF;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #5CA1FF;
+    border-radius: 8px;
+    border: 4px solid #5CA1FF;
+}
+
+::-webkit-scrollbar-button {
+    display: none;
+}
+
+::-webkit-scrollbar:horizontal {
+    height: 6px;
 }

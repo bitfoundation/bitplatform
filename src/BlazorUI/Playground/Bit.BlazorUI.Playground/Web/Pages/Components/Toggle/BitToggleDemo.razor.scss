@@ -1,4 +1,6 @@
-﻿@import "../../../Styles/_shared.scss";
+﻿@import '../../../Styles/abstracts/_colors.scss';
+@import '../../../Styles/abstracts/_media-queries.scss';
+@import '../../../Styles/abstracts/_functions.scss';
 
 .m-t-15 {
     margin-top: rem(15px);
@@ -12,4 +14,18 @@
     .validation-errors {
         margin: rem(5px);
     }
+}
+
+::deep .bit-tgl > div {
+    margin-top: rem(10px);
+}
+
+::deep .bit-tgl {
+    @include sm {
+        line-height: rem(15px);
+    }
+}
+
+::deep .bit-tgl-inline-fluent > div {
+    margin-top: 0;
 }

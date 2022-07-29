@@ -1,7 +1,17 @@
-﻿@import "../../../Styles/_shared.scss";
+﻿@import '../../../Styles/abstracts/_colors.scss';
+@import '../../../Styles/abstracts/_functions.scss';
 
 .sample-btn {
     text-justify: auto;
     color: $Black1;
     line-height: rem(50px);
+}
+
+::deep .custom-icon-button,
+::deep .custom-icon-button:hover {
+    height: rem(48px);
+    width: rem(48px);
+    border-radius: rem(5px);
+    background-color: $Gray3;
+    border-color: $Gray3;
 }
