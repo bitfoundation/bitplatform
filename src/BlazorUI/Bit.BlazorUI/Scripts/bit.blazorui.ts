@@ -69,6 +69,10 @@ class Bit {
     static selectText(element: HTMLInputElement) {
         element.select();
     }
+
+    static setStyle(element: HTMLElement, key: string, value: string) {
+        (element.style as any)[key] = value;
+    }
 }
 
 window.addEventListener('scroll', (e: any) => {

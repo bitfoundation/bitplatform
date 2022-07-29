@@ -214,4 +214,40 @@ public partial class BitCarousel
         await Go(isNext, VisibleItemsCount);
     }
 
+
+    private double _pointerX;
+    private bool _isPointerDown;
+    private async Task HandlePointerMove(MouseEventArgs e)
+    {
+        if (_isPointerDown is false) return;
+
+        var delta = e.ClientX - _pointerX;
+        if (Math.Abs(delta) <= 20) return;
+
+        _isPointerDown = false;
+        await _js.SetStyle(_carousel, "cursor", "");
+        if (delta < 0)
+        {
+            await Next();
+        }
+        else
+        {
+            await Prev();
+        }
+    }
+
+    private async Task HandlePointerDown(MouseEventArgs e)
+    {
+        _isPointerDown = true;
+        _pointerX = e.ClientX;
+        await _js.SetStyle(_carousel, "cursor", "grabbing");
+        StateHasChanged();
+    }
+
+    private async Task HandlePointerUp(MouseEventArgs e)
+    {
+        _isPointerDown = false;
+        await _js.SetStyle(_carousel, "cursor", "");
+        StateHasChanged();
+    }
 }
