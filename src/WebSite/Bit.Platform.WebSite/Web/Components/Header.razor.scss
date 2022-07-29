@@ -59,7 +59,7 @@
     background-image: url('/images/bit-blue-icon.svg');
     background-position: center;
     background-repeat: no-repeat;
-    background-size: cover;
+    background-size: contain;
     cursor: pointer;
 
     @include md {
@@ -134,13 +134,14 @@
 }
 
 ::deep .header-menu-btn {
+    display: none;
     min-width: rem(24px);
     min-height: rem(24px);
     max-width: rem(24px);
     max-height: rem(24px);
     margin-right: rem(18px);
     border-radius: 50%;
-    background-color: $B3Color;
+    background-color: $B6Color;
 
     .bit-icon {
         font-size: rem(12px);
@@ -148,10 +149,18 @@
     }
 
     &:hover {
-        background-color: $B6Color;
+        background-color: $B3Color;
     }
 
-    @include gt-md {
-        display: none;
+    @include md {
+        display: inline-block;
+        min-width: rem(32px);
+        min-height: rem(32px);
+        max-width: rem(32px);
+        max-height: rem(32px);
+    }
+
+    @include sm {
+        display: inline-block;
     }
 }
