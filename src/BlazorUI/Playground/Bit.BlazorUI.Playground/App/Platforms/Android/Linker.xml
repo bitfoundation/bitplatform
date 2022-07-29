@@ -12,7 +12,7 @@
 		<type fullname="System.Linq.EnumerableRewriter*" />
 	</assembly>
 
-	<assembly fullname="Bit.BlazorUI.Playground.App">
+	<assembly fullname="Bit.BlazorUI.Playground.Web">
 		<type fullname="*" />
 	</assembly>
         
