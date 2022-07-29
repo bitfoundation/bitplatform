@@ -32,10 +32,6 @@
         "inputFile": "Shared/MainLayout.razor.scss"
     },
     {
-        "outputFile": "Pages/Projects.razor.css",
-        "inputFile": "Pages/Projects.razor.scss"
-    },
-    {
         "inputFile": "wwwroot/scripts/app.js",
         "outputFile": "wwwroot/scripts/app.min.js"
     }

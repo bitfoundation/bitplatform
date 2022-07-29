@@ -1,1 +1,78 @@
-﻿
+﻿@import '_media-queries.scss';
+@import '_functions.scss';
+@import '_colors.scss';
+
+@mixin PageContainer {
+    width: 100%;
+    max-width: rem(1232px);
+    padding: rem(156px) rem(32px) 0;
+    box-sizing: border-box;
+
+    @include lg {
+        padding: rem(120px) rem(32px) 0;
+        max-width: rem(1140px);
+    }
+
+    @include md {
+        padding: rem(88px) rem(32px) 0;
+    }
+
+    @include sm {
+        padding: rem(88px) rem(16px) 0;
+    }
+
+    @include lt-lg {
+        max-width: 100%;
+    }
+}
+
+@mixin PageMainTitle {
+    margin-bottom: rem(32px);
+    font-weight: 700;
+    font-size: rem(30px);
+    line-height: rem(40px);
+    color: $B3Color;
+
+    @include lg {
+        margin-bottom: rem(24px);
+        font-size: rem(26px);
+        line-height: rem(40px);
+    }
+
+    @include md {
+        margin-bottom: rem(16px);
+        font-size: rem(20px);
+        line-height: rem(32px);
+    }
+
+    @include sm {
+        margin-bottom: rem(12px);
+        font-size: rem(18px);
+        line-height: rem(32px);
+    }
+}
+
+@mixin PageDescription {
+    margin-bottom: rem(64px);
+    font-weight: 400;
+    font-size: rem(16px);
+    line-height: rem(32px);
+    text-align: justify;
+    color: $Gray1;
+
+    @include lg {
+        font-size: rem(14px);
+    }
+
+    @include md {
+        margin-bottom: rem(40px);
+        font-size: rem(14px);
+        line-height: rem(28px);
+    }
+
+    @include sm {
+        margin-bottom: rem(40px);
+        font-size: rem(12px);
+        line-height: rem(24px);
+    }
+}
