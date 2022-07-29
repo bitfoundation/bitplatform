@@ -48,6 +48,10 @@
         "inputFile": "Pages/TodoTemplate/DeploymentTypePage.razor.scss"
     },
     {
+        "outputFile": "Pages/TodoTemplate/SettingsPage.razor.css",
+        "inputFile": "Pages/TodoTemplate/SettingsPage.razor.scss"
+    },
+    {
         "outputFile": "Shared/MainLayout.razor.css",
         "inputFile": "Shared/MainLayout.razor.scss"
     },

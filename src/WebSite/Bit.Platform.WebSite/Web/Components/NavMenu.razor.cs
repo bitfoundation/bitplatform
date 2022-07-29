@@ -29,7 +29,6 @@ public partial class NavMenu
                 new BitNavLinkItem { Name= "Deployment type", Key = "Deployment type", Url = "/todo-template/deployment-type"},
                 new BitNavLinkItem { Name= "Settings", Key = "Settings", Url = "/todo-template/settings"},
                 new BitNavLinkItem { Name= "Project structure", Key = "Project structure", Url = "/todo-template/project-structure"},
-                new BitNavLinkItem { Name= "Deployment type", Key = "Deployment type", Url = "/todo-template/deployment-type"},
                 new BitNavLinkItem { Name= "Exception handling", Key = "Exception handling", Url = "/todo-template/exception-handling"},
                 new BitNavLinkItem { Name= "Cache mechanism", Key = "Cache mechanism", Url = "/todo-template/cache-mechanism"},
                 new BitNavLinkItem { Name= "Contribute", Key = "Contribute", Url = "/todo-template/contribute"},
