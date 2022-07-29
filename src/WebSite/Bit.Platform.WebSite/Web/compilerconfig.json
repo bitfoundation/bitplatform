@@ -44,6 +44,10 @@
         "inputFile": "Pages/TodoTemplate/HostingModelsPage.razor.scss"
     },
     {
+        "outputFile": "Pages/TodoTemplate/DeploymentTypePage.razor.css",
+        "inputFile": "Pages/TodoTemplate/DeploymentTypePage.razor.scss"
+    },
+    {
         "outputFile": "Shared/MainLayout.razor.css",
         "inputFile": "Shared/MainLayout.razor.scss"
     },

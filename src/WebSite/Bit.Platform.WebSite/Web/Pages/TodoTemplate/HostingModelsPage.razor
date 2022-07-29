@@ -4,13 +4,13 @@
     <h1 class="page-main-title">Hosting models (Blazoe Mode)</h1>
     <div class="page-desc">
         Bit use Blazor for building UI, Blazor is a web framework for building web UI components (<a href="https://docs.microsoft.com/en-us/aspnet/core/blazor/components/?view=aspnetcore-6.0" title="ASP.NET Core Razor components" rel="nofollow">Razor components</a>) that can be hosted in different ways. Razor components can run server-side in ASP.NET Core (Blazor Server) versus client-side in the browser on a <a href="https://webassembly.org/" rel="nofollow">WebAssembly</a>-based .NET runtime (Blazor WebAssembly, Blazor WASM). You can also host Razor components in native mobile and desktop apps that render to an embedded Web View control (Blazor Hybrid). Regardless of the hosting model, the way you build Razor components is the same. The same Razor components can be used with any of the hosting models unchanged (<a href="https://docs.microsoft.com/en-us/aspnet/core/blazor/hosting-models?view=aspnetcore-6.0" rel="nofollow">Read more About ASP.NET Core Blazor hosting models</a>).
-        <span class="bold-txt">Note</span>: Bit supports all three modes. It follows:
+        <br /><span class="bold-txt">Note</span>: Bit supports all three modes. It follows:
     </div>
     <section class="section-card">
         <h2 class="section-card-title">BlazorServer</h2>
         <div class="section-card-txt">
             With the Blazor Server hosting model, the app is executed on the server from within an ASP.NET Core app. UI updates, event handling, and JavaScript calls are handled over a SignalR connection using the WebSockets protocol.
-            To switch to Blazor server mode:
+            <br />To switch to Blazor server mode:
         </div>
         <div class="section-card-txt">
             1. Change value of <span class="bold-txt"> @("<BlazorMode>")</span> on <span class="high-light-text">Directory.build.props </span>  file in <span class="bold-txt">Solution Items</span> root folder.
@@ -37,7 +37,7 @@
         <h2 class="section-card-title">BlazorWebAssembly</h2>
         <div class="section-card-txt">
             Blazor WebAssembly (WASM) apps run client-side in the browser on a WebAssembly-based .NET runtime. The Blazor app, its dependencies, and the .NET runtime are downloaded to the browser. The app is executed directly on the browser UI thread. UI updates and event handling occur within the same process. The app's assets are deployed as static files to a web server or service capable of serving static content to clients.
-            To switch to Blazor WebAssembly mode:
+            <br />To switch to Blazor WebAssembly mode:
         </div>
         <div class="section-card-txt">
             1. Change value of <span class="bold-txt">@("<BlazorMode>")</span> on <span class="high-light-text">Directory.build.props </span> file in <span class="bold-txt">Solution Items</span> root folder.
@@ -60,7 +60,7 @@
         <h2 class="section-card-title">BlazorHybrid</h2>
         <div class="section-card-txt">
             Blazor can also be used to build native client apps using a hybrid approach. Hybrid apps are native apps that leverage web technologies for their functionality. In a Blazor Hybrid app, Razor components run directly in the native app (not on WebAssembly) along with any other .NET code and render web UI based on HTML and CSS to an embedded Web View control through a local interop channel.
-            To switch to Blazor Hybrid mode:
+            <br />To switch to Blazor Hybrid mode:
         </div>
         <div class="section-card-txt">
             1. Change value of <span class="bold-txt">@("<BlazorMode>")</span> on <span class="high-light-text">Directory.build.props </span> file in <span class="bold-txt">Solution Items</span> root folder.
