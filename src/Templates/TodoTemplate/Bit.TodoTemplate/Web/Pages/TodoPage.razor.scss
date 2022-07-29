@@ -187,7 +187,7 @@
     }
 }
 
-.todo-item {
+::deep .todo-item {
     display: flex;
     flex-flow: row wrap;
     justify-content: space-between;
@@ -210,6 +210,12 @@
     @media all and (max-width: #{em(390px)}) {
         min-height: rem(66px);
         padding: rem(14px) rem(18px);
+    }
+
+    .todo-input {
+        @media all and (max-width: #{em(451px)}) {
+            width: 100%
+        }
     }
 }
 
