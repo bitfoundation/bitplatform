@@ -29,13 +29,13 @@
 @code {
     private List<Assembly> lazyLoadedAssemblies = new();
 
-#if BlazorWebAssembly
+#if BlazorWebAssembly && !Maui
     [Inject] private Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader AssemblyLoader { get; set; }
 #endif
 
     private async Task OnNavigateAsync(NavigationContext args)
     {
-#if BlazorWebAssembly
+#if BlazorWebAssembly && !Maui
         /* To lazy load an assembly based on the current route, follow this:
         1- Add the BlazorWebAssemblyLazyLoad tag to the Web project file like:
         <BlazorWebAssemblyLazyLoad Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Sample.dll" />

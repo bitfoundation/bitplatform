@@ -73,6 +73,10 @@ class Bit {
     static setStyle(element: HTMLElement, key: string, value: string) {
         (element.style as any)[key] = value;
     }
+
+    static preventDefault(element: HTMLElement, event: string) {
+        element.addEventListener(event, e => e.preventDefault(), { passive: false });
+    }
 }
 
 window.addEventListener('scroll', (e: any) => {

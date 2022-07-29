@@ -20,11 +20,11 @@
         <PackageReference Include="Bit.BlazorUI" Version="2.0.0" />
         <PackageReference Include="Bit.SourceGenerators" Version="2.0.0" />
         <PackageReference Include="Bit.CodeAnalyzers" Version="2.0.0" />
-        <PackageReference Include="BuildWebCompiler2022" Version="1.14.8">
+        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.7.4">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.7.4">
+        <PackageReference Include="BuildWebCompiler2022" Version="1.14.8">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
