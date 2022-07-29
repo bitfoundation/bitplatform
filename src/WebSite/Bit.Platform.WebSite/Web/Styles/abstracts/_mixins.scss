@@ -149,3 +149,51 @@
         line-height: rem(24px);
     }
 }
+
+@mixin CodeBox {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+    min-height: rem(48px);
+    margin-bottom: rem(32px);
+    border-left: rem(4px) solid $B6Color;
+    padding: rem(12px) rem(22px);
+    box-sizing: border-box;
+    font-weight: 400;
+    font-size: rem(16px);
+    line-height: rem(24px);
+    color: $B3Color;
+    background-color: $Gray5;
+    overflow: auto;
+    white-space: nowrap;
+    font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+
+    @include lg {
+        padding: rem(12px) rem(20px);
+    }
+
+    @include md {
+        min-height: rem(40px);
+        margin-bottom: rem(24px);
+        border-left: rem(2px) solid $B6Color;
+        padding: rem(10px) rem(8px);
+        font-size: rem(12px);
+        line-height: rem(20px);
+    }
+
+    @include sm {
+        min-height: rem(32px);
+        margin-bottom: rem(12px);
+        border-left: rem(2px) solid $B6Color;
+        padding: rem(6px) rem(8px);
+        font-size: rem(12px);
+        line-height: rem(28px);
+    }
+}
+
+@mixin HighLightText {
+    background-color: $B11Color;
+    border-radius: rem(4px);
+    padding: rem(4px);
+}

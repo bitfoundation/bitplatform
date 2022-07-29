@@ -19,45 +19,6 @@
     </section>
 
     <div class="step-body-card">
-        <h4 id="environments">
-            <a class="anchor" href="@Urls.TodoTemplate#environments" target="_parent"><i class="anchor-icon bit-icon bit-icon--Link12"> </i></a>
-            
-        </h4>
-        <div class="card-container">
-            
-        </div>
-    </div>
-
-    <div class="step-body-card">
-        <h4 id="create-project">
-            <a class="anchor" href="@Urls.TodoTemplate#create-project" target="_parent"><i class="anchor-icon bit-icon bit-icon--Link12"> </i></a>
-            Create project
-        </h4>
-        <div class="card-container">
-            <ol class="first-step-ul">
-                <li>
-                    Install the TodoTemplate Template from the NuGet package manager
-                    <pre class="code"><code>dotnet new --install Bit.TodoTemplate</code></pre>
-                </li>
-                <li>
-                    Create a new project using the Template installed
-                    <pre class="code"><code>dotnet new bit-todo</code></pre>
-                    Or create a new project with the Visual Studio
-                    <div class="image-container">
-                        <img class="image" alt="Create new project" width="1010" height="673" src="/images/demo/create-project.webp" />
-                    </div>
-                </li>
-                <li>
-                    Make sure the first line in the <span class="high-light">TodoTemplate.Web.csproj</span> file contains the following value.
-                    <pre class="code"><code>@("<Project Sdk=\"Microsoft.NET.Sdk.Web\">")</code></pre>
-                </li>
-            </ol>
-            <div class="description"><strong>Note</strong>: By default, the current folder name will be considered as the solution name. If you want to choose another name, use the switch -n as below.</div>
-            <div class="margin-20"><pre class="code"><code>dotnet new Bit.TodoTemplate -n [YourSolutionName]</code></pre></div>
-        </div>
-    </div>
-
-    <div class="step-body-card">
         <h4 id="prepare-project">
             <a class="anchor" href="@Urls.TodoTemplate#prepare-project" target="_parent"><i class="anchor-icon bit-icon bit-icon--Link12"> </i></a>
             Prepare The Project

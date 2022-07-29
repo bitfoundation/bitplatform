@@ -32,6 +32,10 @@
         "inputFile": "Pages/TodoTemplate/DevelopmentPrerequisitesPage.razor.scss"
     },
     {
+        "outputFile": "Pages/TodoTemplate/GettingStartedPage.razor.css",
+        "inputFile": "Pages/TodoTemplate/GettingStartedPage.razor.scss"
+    },
+    {
         "outputFile": "Shared/MainLayout.razor.css",
         "inputFile": "Shared/MainLayout.razor.scss"
     },
