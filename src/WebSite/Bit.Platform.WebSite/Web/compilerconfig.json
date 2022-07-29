@@ -36,6 +36,10 @@
         "inputFile": "Pages/TodoTemplate/GettingStartedPage.razor.scss"
     },
     {
+        "outputFile": "Pages/TodoTemplate/RunPage.razor.css",
+        "inputFile": "Pages/TodoTemplate/RunPage.razor.scss"
+    },
+    {
         "outputFile": "Shared/MainLayout.razor.css",
         "inputFile": "Shared/MainLayout.razor.scss"
     },
