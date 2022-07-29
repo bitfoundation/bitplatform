@@ -17,94 +17,13 @@
         <a class="side-rail-item @(CurrentUrl == "#contribute"? "selected-side-rail-item" : "" )" href="@Urls.TodoTemplate#contribute" target="_parent">Contribute</a>
     </section>
 
-
-    <div class="step-body-card">
-        <h4 id="run">
-            <a class="anchor" href="@Urls.TodoTemplate#run" target="_parent"><i class="anchor-icon bit-icon bit-icon--Link12"> </i></a>
-            Run
-        </h4>
-        <div class="card-container">
-            <div class="description">After you've done the configuration, you can run the application. Set Api project as startup and run, you can see the swagger dashboard in the first view</div>
-            <div class="image-container">
-                <img class="image" alt="Swagger dashboard" width="887" height="886" src="/images/demo/swagger.webp" />
-            </div>
-            <h3>SignUp</h3>
-            <div class="description">
-                With the help of <strong>Swagger</strong>, you can call the <strong>SignUp</strong> API and Start the registration process, navigate to <span class="high-light">Auth/SignUp</span> API and press the <span class="high-light">Try it Out</span> button, in the <span class="high-light">Request body</span> Enter SignUp data, and press Execute button.
-            </div>
-            <div class="image-container">
-                <img class="image" alt="Swagger Sign Up" width="916" height="907" src="/images/demo/swagger-signUp.webp" />
-            </div>
-            <div class="description">
-                In <strong>SignUp</strong> Process after call API, a confirmation email send to your email, In the development, Bit saves sent emails as a .eml file in the <span class="high-light">./TodoTemplate/Api/bin/Debug/net6.0/sent-emails</span> path, and developers can easily handle them.
-            </div>
-            <div class="image-container">
-                <img class="image" alt="Confirm email" width="907" height="926" src="/images/demo/confirm-email.webp" />
-            </div>
-            <div class="description">By pressing the <span class="high-light">Confirm email</span> button, the ConfirmEmail Api calls and registration process complete. After it, you can login with the swagger login form on the top of the page, and call other APIs that need Authentication.</div>
-            <div class="image-container">
-                <img class="image" alt="Swagger Sign In" width="757" height="207" src="/images/demo/swagger-login.webp" />
-            </div>
-        </div>
-    </div>
-
     <div class="step-body-card">
         <h4 id="blazor-modes">
             <a class="anchor" href="@Urls.TodoTemplate#blazor-modes" target="_parent"><i class="anchor-icon bit-icon bit-icon--Link12"> </i></a>
             Blazor Mode (hosting models)
         </h4>
         <div class="card-container">
-            <div class="description">
-                Bit use Blazor for building UI, Blazor is a web framework for building web UI components (<a href="https://docs.microsoft.com/en-us/aspnet/core/blazor/components/?view=aspnetcore-6.0" title="ASP.NET Core Razor components" rel="nofollow">Razor components</a>) that can be hosted in different ways. Razor components can run server-side in ASP.NET Core (Blazor Server) versus client-side in the browser on a <a href="https://webassembly.org/" rel="nofollow">WebAssembly</a>-based .NET runtime (Blazor WebAssembly, Blazor WASM). You can also host Razor components in native mobile and desktop apps that render to an embedded Web View control (Blazor Hybrid). Regardless of the hosting model, the way you build Razor components is the same. The same Razor components can be used with any of the hosting models unchanged (<a href="https://docs.microsoft.com/en-us/aspnet/core/blazor/hosting-models?view=aspnetcore-6.0" rel="nofollow">Read more About ASP.NET Core Blazor hosting models</a>).
-            </div>
-            <div class="description">
-                <strong>Note</strong>: Bit supports all three modes. It follows
-            </div>
-            <h3>BlazorServer</h3>
-            <div class="description">
-                With the Blazor Server hosting model, the app is executed on the server from within an ASP.NET Core app. UI updates, event handling, and JavaScript calls are handled over a SignalR connection using the WebSockets protocol.
-            </div>
-            <div class="description">
-                To switch to Blazor server mode
-            </div>
-            <ol class="first-step-ul">
-                <li>
-                    Change value of <strong> @("<BlazorMode>")</strong> on <span class="high-light">Directory.build.props </span>  file in <strong>Solution Items</strong> root folder.
-                    <pre class="code"><code>@("<BlazorMode>BlazorServer</BlazorMode>")</code></pre>
-                </li>
-                <li>
-                    Set solution on Multi-startup project, by right click on solution name and selecting properties from right-click menu (change the action of the Api, Web projects to start)
-                    <div class="image-container">
-                        <img class="image" alt="Multi-startup solution" width="696" height="241" src="/images/demo/multi-startup.webp" />
-                    </div>
-                </li>
-                <li>
-                    Make sure the first line in the <span class="high-light">TodoTemplate.Web.csproj</span> file contains the following value.
-                    <pre class="code"><code>@("<Project Sdk=\"Microsoft.NET.Sdk.Web\">")</code></pre>
-                </li>
-            </ol>
-            <h3>
-                BlazorWebAssembly
-            </h3>
-            <div class="description">
-                Blazor WebAssembly (WASM) apps run client-side in the browser on a WebAssembly-based .NET runtime. The Blazor app, its dependencies, and the .NET runtime are downloaded to the browser. The app is executed directly on the browser UI thread. UI updates and event handling occur within the same process. The app's assets are deployed as static files to a web server or service capable of serving static content to clients.
-            </div>
-            <div class="description">
-                To switch to Blazor WebAssembly mode
-            </div>
-            <ol class="first-step-ul">
-                <li>
-                    Change value of <strong>@("<BlazorMode>")</strong> on <span class="high-light">Directory.build.props </span> file in <strong>Solution Items</strong> root folder.
-                    <pre class="code"><code>@("<BlazorMode>BlazorWebAssembly</BlazorMode>")</code></pre>
-                </li>
-                <li>
-                    Set <strong>Api</strong> project as startup project
-                </li>
-                <li>
-                    Make sure the first line in the <span class="high-light">TodoTemplate.Web.csproj</span> file contains the following value.
-                    <pre class="code"><code>@("<Project Sdk=\"Microsoft.NET.Sdk.BlazorWebAssembly\">")</code></pre>
-                </li>
-            </ol>
+          
 
             <h3>
                 BlazorHybrid

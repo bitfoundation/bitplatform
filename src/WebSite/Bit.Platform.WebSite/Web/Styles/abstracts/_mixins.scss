@@ -59,6 +59,7 @@
     line-height: rem(32px);
     text-align: justify;
     color: $Gray1;
+    white-space: pre-line;
 
     @include lg {
         font-size: rem(14px);
