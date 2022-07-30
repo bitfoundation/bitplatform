@@ -189,6 +189,15 @@ public partial class BitCarousel
 
     private async Task GotoPage(int index)
     {
+        if (index < 0)
+        {
+            index =  0;
+        }
+        else if (index >= _pagesCount)
+        {
+            index = _pagesCount - 1;
+        }
+
         if (_currentIndices[0] == index * VisibleItemsCount) return;
 
         var indices = Enumerable.Range(index * VisibleItemsCount, VisibleItemsCount);
