@@ -21,7 +21,7 @@ public partial class BitCarousel
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
     /// <summary>
-    /// If enabled the carousel items will navigate in a loop (first item comes after last item and last item comes before first item).
+    /// If enabled the carousel items will navigate in a infinite loop (first item comes after last item and last item comes before first item).
     /// </summary>
     [Parameter] public bool InfiniteScrolling { get; set; }
 
