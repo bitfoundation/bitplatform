@@ -279,16 +279,18 @@
         text-align: justify;
         text-align-last: left;
         flex-grow: 1;
-        //@include md {
-        //    font-size: rem(16px);
-        //    line-height: rem(28px);
-        //    margin-bottom: rem(10px);
-        //}
-        //@include sm {
-        //    font-size: rem(14px);
-        //    line-height: rem(24px);
-        //    margin-bottom: rem(8px);
-        //}
+
+        @include md {
+            font-size: rem(18px);
+            line-height: rem(28px);
+            margin-bottom: rem(10px);
+        }
+
+        @include sm {
+            font-size: rem(16px);
+            line-height: rem(24px);
+            margin-bottom: rem(8px);
+        }
     }
 
     .customer-feedback-name {
@@ -664,11 +666,6 @@
         font-size: rem(16px);
         line-height: rem(32px);
         color: $Gray1;
-
-        @include lg {
-            margin-bottom: rem(12px);
-            font-size: rem(14px);
-        }
 
         @include md {
             margin-bottom: rem(12px);
