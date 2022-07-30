@@ -90,3 +90,15 @@
         line-height: rem(24px);
     }
 }
+
+::deep .hero-section-cta {
+    height: rem(34px);
+    border: rem(1px) solid $White;
+    color: $White;
+    background-color: $SecondaryColor;
+
+    &:hover {
+        background-color: $SecondaryColor;
+        border-color: $White;
+    }
+}

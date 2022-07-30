@@ -1,4 +1,5 @@
-﻿@import '../Styles/abstracts/_colors.scss';
+﻿@import '../Styles/abstracts/_media-queries.scss';
+@import '../Styles/abstracts/_colors.scss';
 @import '../Styles/abstracts/_functions.scss';
 
 .header {
@@ -37,4 +38,23 @@
     flex-flow: row nowrap;
     justify-content: flex-start;
     align-items: center;
+}
+
+::deep .header-item {
+    margin-left: rem(12px);
+}
+
+::deep .header-menu {
+    display: none;
+    margin-right: rem(12px);
+
+    span {
+        i {
+            color: $PrimaryColor;
+        }
+    }
+
+    @include lt-lg {
+        display: block;
+    }
 }
