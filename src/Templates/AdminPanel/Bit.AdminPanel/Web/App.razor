@@ -1,9 +1,10 @@
 ﻿<CascadingAuthenticationState>
-    <PageTitle>AdminPanel</PageTitle>
-    <Router AppAssembly="@GetType().Assembly"
-            AdditionalAssemblies="@lazyLoadedAssemblies"
-            OnNavigateAsync="@OnNavigateAsync">
-        <Found Context="routeData">
+<PageTitle>AdminPanel</PageTitle>
+        <Router @ref="router"
+                AppAssembly="@GetType().Assembly"
+                AdditionalAssemblies="@lazyLoadedAssemblies"
+                OnNavigateAsync="@OnNavigateAsync">
+            <Found Context="routeData">
             <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
                 <NotAuthorized>
                     <RedirectToSignIn />
@@ -12,34 +13,46 @@
                     <LoadingComponent Color="#FFF" />
                 </Authorizing>
             </AuthorizeRouteView>
-        </Found>
-        <NotFound>
-            <LayoutView Layout="@typeof(MainLayout)">
-                <PageNotFound />
-            </LayoutView>
-        </NotFound>
-        <Navigating>
-            <LayoutView Layout="@typeof(MainLayout)">
-                <LoadingComponent Color="#FFF" />
-            </LayoutView>
-        </Navigating>
-    </Router>
-</CascadingAuthenticationState>
-                    
+            </Found>
+            <NotFound>
+                <LayoutView Layout="@typeof(MainLayout)">
+                    <PageNotFound />
+                </LayoutView>
+            </NotFound>
+        </Router>
+    </CascadingAuthenticationState>
+
 @code {
     private List<Assembly> lazyLoadedAssemblies = new();
 
 #if BlazorWebAssembly && !Maui
-    [Inject] private Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader AssemblyLoader { get; set; }
+    [Inject] private Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader AssemblyLoader { get; set; } = default!;
 #endif
+
+    private Router router = default!;
+
+    public static RenderFragment Loading = __builder =>
+    {
+        <LayoutView Layout="@typeof(MainLayout)">
+            <LoadingComponent Color="#FFF" />
+        </LayoutView>
+    };
 
     private async Task OnNavigateAsync(NavigationContext args)
     {
 #if BlazorWebAssembly && !Maui
-        if (args.Path.Contains("analytics"))
+        if (args.Path.Contains("analytics") && lazyLoadedAssemblies.Any(asm => asm.GetName().Name == "Newtonsoft.Json") is false)
         {
-            var assemblies = await AssemblyLoader.LoadAssembliesAsync(new[] { "Newtonsoft.Json.dll", "System.Private.Xml.dll", "System.Data.Common.dll" });
-            lazyLoadedAssemblies.AddRange(assemblies);
+            try
+            {
+                router.Navigating = Loading; // https://github.com/dotnet/aspnetcore/issues/42902
+                var assemblies = await AssemblyLoader.LoadAssembliesAsync(new[] { "Newtonsoft.Json.dll", "System.Private.Xml.dll", "System.Data.Common.dll" });
+                lazyLoadedAssemblies.AddRange(assemblies);
+            }
+            finally
+            {
+                router.Navigating = null;
+            }
         }
 #endif
     }

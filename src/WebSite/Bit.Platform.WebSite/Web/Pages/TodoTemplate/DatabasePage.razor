@@ -1,0 +1,40 @@
+﻿@page "/todo-template/database"
+
+<div class="page-container">
+    <h1 class="page-main-title">Database</h1>
+    <div class="page-desc">
+        Configure the database to work with the apps built with the Bit TodoTemplate.
+    </div>
+    <section class="section-card">
+        <h2 class="section-card-title">Connection String</h2>
+        <div class="section-card-txt">
+            Open <span class="bold-txt">appsettings.json</span> file in TodoTemplate.Api project and change the <span class="bold-txt">ConnectionStrings</span> connection string if you want.
+        </div>
+        <div class="code-box">
+            <pre>
+<code>"ConnectionStrings": {
+    "SqlServerConnectionString": "Data Source=.; Initial Catalog=TodoTemplateDb;Integrated Security=true;Application Name=Todo;"
+}</code>
+            </pre>
+        </div>
+        <div class="section-card-txt">For Other Entityframework supported databases, you need to configure the context that provides your preferred database. with change <span class="high-light-text">UseSqlServer</span> method on <span class="high-light-text">Api\Startup\Services.cs</span> file.</div>
+        <div class="code-box">
+            <pre>
+<code>services.AddDbContext@("<AppDbContext>")(options =>
+{
+    options.UseSqlServer(configuration.GetConnectionString("SqlServerConnectionString"), sqlOpt =>
+    {
+        sqlOpt.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+    });
+});
+</code>
+        </pre>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <h2 class="section-card-title">Migration</h2>
+        <div class="section-card-txt">To create and migrate the database to the latest version. You can use Entity Framework's built-in tools for migrations. Open <span class="bold-txt">Package Manager Console</span> in Visual Studio set <span class="bold-txt">TodoTemplate.Api</span> as the Default Project and run the Update-Database command as shown below:</div>
+        <div class="code-box"><pre><code>Update-Database -Context AppDbContext</code></pre></div>
+    </section>
+</div>

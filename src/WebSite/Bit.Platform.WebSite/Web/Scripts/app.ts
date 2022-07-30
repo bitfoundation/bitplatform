@@ -1,28 +1,14 @@
 ﻿//declare var hljs: any;
 
-//const headerBtn = document.getElementById("headerBtn");
-
-//if (headerBtn != null) {
-//    window.addEventListener('scroll', () => {
-
-//        if (document.body.scrollTop > 10 || document.documentElement.scrollTop > 10) {
-//            headerBtn.style.display = "flex";
-//        } else {
-//            headerBtn.style.display = "none";
-//        }
-
-//    }, true);
-//}
-
-//function toggleBodyOverflow(isMenuOpen: boolean) {
-//    if (window.innerWidth < 1024) {
-//        if (isMenuOpen) {
-//            document.body.style.overflow = "hidden";
-//        } else {
-//            document.body.style.overflow = "auto";
-//        }
-//    }
-//}
+function toggleBodyOverflow(isMenuOpen: boolean) {
+    if (window.innerWidth < 1440) {
+        if (isMenuOpen) {
+            document.body.style.overflow = "hidden";
+        } else {
+            document.body.style.overflow = "auto";
+        }
+    }
+}
 
 //function scrollToElement(targetElementId: string) {
 //    const element = document.getElementById(targetElementId);
@@ -45,17 +31,6 @@
 //        hljs.highlightBlock(el);
 //    });
 //}
-
-function RegisterOnScrollToChangeHeaderStyle(element: any) {
-    window.addEventListener('scroll', (event) => {
-        if (document.documentElement.scrollTop >= 100) {
-            element.classList.add("blue-header-container");
-        }
-        else {
-            element.classList.remove("blue-header-container");
-        }
-    });
-}
 
 function RegisterOnScrollToChangeGettingStartedSideRailStyle(element: any) {
     window.addEventListener('scroll', (event) => {
