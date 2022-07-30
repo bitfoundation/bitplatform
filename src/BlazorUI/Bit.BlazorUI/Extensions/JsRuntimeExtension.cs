@@ -63,4 +63,9 @@ internal static class JsRuntimeExtension
     {
         await jsRuntime.InvokeVoidAsync("Bit.setStyle", element, key, value);
     }
+
+    internal static async Task PreventDefault(this IJSRuntime jsRuntime, ElementReference element, string @event)
+    {
+        await jsRuntime.InvokeVoidAsync("Bit.preventDefault", element, @event);
+    }
 }

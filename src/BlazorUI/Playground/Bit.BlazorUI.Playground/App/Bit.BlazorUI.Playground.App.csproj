@@ -9,6 +9,7 @@
         <RootNamespace>Bit.BlazorUI.Playground.Web</RootNamespace>
         <UseMaui>true</UseMaui>
         <SingleProject>true</SingleProject>
+        <DefineConstants>$(DefineConstants);Maui</DefineConstants>
         <EnableDefaultCssItems>false</EnableDefaultCssItems>
         <AssemblyName>Bit.BlazorUI.Playground.Web</AssemblyName>
 
@@ -78,11 +79,11 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="BuildWebCompiler2022" Version="1.14.8">
+        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.7.4">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.7.4">
+        <PackageReference Include="BuildWebCompiler2022" Version="1.14.8">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

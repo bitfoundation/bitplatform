@@ -8,11 +8,10 @@
 
     <div @ref="_carousel"
          class="carousel"
-         @onpointermove="HandlePointerMove" 
-         @onpointerdown="HandlePointerDown" 
-         @onpointerleave="HandlePointerUp" 
-         @onpointerup="HandlePointerUp" 
-         @ontouchmove:preventDefault="true">
+         @onpointermove="HandlePointerMove"
+         @onpointerdown="HandlePointerDown"
+         @onpointerleave="HandlePointerUp"
+         @onpointerup="HandlePointerUp">
         <CascadingValue Value="this" IsFixed="true">
             @ChildContent
         </CascadingValue>

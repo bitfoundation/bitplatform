@@ -1,7 +1,8 @@
 ﻿<PageTitle>Bit's Native Blazor UI Components</PageTitle>
 <CascadingValue Value="Visual.Fluent" IsFixed="true">
     <CascadingValue Value="Theme.Light" IsFixed="true">
-        <Router AppAssembly="@typeof(MainLayout).Assembly"
+        <Router @ref="router"
+                AppAssembly="@typeof(MainLayout).Assembly"
                 AdditionalAssemblies="@lazyLoadedAssemblies"
                 OnNavigateAsync="@OnNavigateAsync">
             <Found Context="routeData">
@@ -10,11 +11,6 @@
             <NotFound>
                 <NotFoundComponent />
             </NotFound>
-            <Navigating>
-                <LayoutView Layout="@typeof(MainLayout)">
-                    <LoadingComponent />
-                </LayoutView>
-            </Navigating>
         </Router>
     </CascadingValue>
 </CascadingValue>
@@ -22,17 +18,34 @@
 @code {
     private List<Assembly> lazyLoadedAssemblies = new();
 
-#if BlazorWebAssembly
+#if BlazorWebAssembly && !Maui
     [Inject] private Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader AssemblyLoader { get; set; }
 #endif
 
+    private Router router;
+
+    public static RenderFragment Loading = __builder =>
+    {
+        <LayoutView Layout="@typeof(MainLayout)">
+            <LoadingComponent />
+        </LayoutView>
+    };
+
     private async Task OnNavigateAsync(NavigationContext args)
     {
-#if BlazorWebAssembly
-        if (args.Path.Contains("chart"))
+#if BlazorWebAssembly && !Maui
+        if (args.Path.Contains("chart") && lazyLoadedAssemblies.Any(asm => asm.GetName().Name == "Newtonsoft.Json") is false)
         {
-            var assemblies = await AssemblyLoader.LoadAssembliesAsync(new[] { "Newtonsoft.Json.dll", "System.Private.Xml.dll", "System.Data.Common.dll" });
-            lazyLoadedAssemblies.AddRange(assemblies);
+            try
+            {
+                router.Navigating = Loading; // https://github.com/dotnet/aspnetcore/issues/42902
+                var assemblies = await AssemblyLoader.LoadAssembliesAsync(new[] { "Newtonsoft.Json.dll", "System.Private.Xml.dll", "System.Data.Common.dll" });
+                lazyLoadedAssemblies.AddRange(assemblies);
+            }
+            finally
+            {
+                router.Navigating = null;
+            }
         }
 #endif
     }

@@ -28,11 +28,11 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.BlazorUI" Version="2.0.0" />
-		<PackageReference Include="Bit.BlazorUI.Charts" Version="2.0.0" />
-        <PackageReference Include="Bit.Bswup" Version="2.0.0" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="2.0.0" />
-        <PackageReference Include="Bit.SourceGenerators" Version="2.0.0" />
+        <PackageReference Include="Bit.BlazorUI" Version="3.0.0-pre-01" />
+		<PackageReference Include="Bit.BlazorUI.Charts" Version="3.0.0-pre-01" />
+        <PackageReference Include="Bit.Bswup" Version="3.0.0-pre-01" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="3.0.0-pre-01" />
+        <PackageReference Include="Bit.SourceGenerators" Version="3.0.0-pre-01" />
         <PackageReference Include="jose-jwt" Version="4.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.7" />
         <!--/-:msbuild-conditional:noEmit -->
@@ -43,11 +43,11 @@
 
     <ItemGroup>
         <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.min.js" Condition="'$(WebAppDeploymentType)' == 'PWA'" />
-        <PackageReference Include="BuildWebCompiler2022" Version="1.14.8">
+        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.7.4">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.7.4">
+        <PackageReference Include="BuildWebCompiler2022" Version="1.14.8">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
