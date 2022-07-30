@@ -1,20 +1,17 @@
 ﻿using System;
-using System.Threading.Tasks;
+using Bit.Platform.WebSite.Web.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.JSInterop;
 
-namespace Bit.Platform.WebSite.Web.Components;
+namespace Bit.Platform.WebSite.Web.Shared;
 
 public partial class Header : IDisposable
 {
     private string CurrentUrl = string.Empty;
 
-    public ElementReference HeaderElement { get; set; }
-
     [AutoInject] private NavigationManager _navigationManager = default!;
-    [AutoInject] private IJSRuntime _jsRuntime = default!;
+    [Inject] public NavManuService NavManuService { get; set; }
 
     protected override void OnInitialized()
     {
@@ -30,14 +27,20 @@ public partial class Header : IDisposable
         StateHasChanged();
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    private string GetHeaderLinkClass(string link)
     {
-        if (firstRender)
+        var classStr = "header-link";
+        if ((link == "Home" && CurrentUrl == "/") || (link == "Templates" && CurrentUrl.Contains("todo-template")))
         {
-            await _jsRuntime.RegisterOnScrollToChangeHeaderStyle(HeaderElement);
+            classStr += " header-link--active";
         }
 
-        await base.OnAfterRenderAsync(firstRender);
+        return classStr;
+    }
+
+    private void ToggleMenu()
+    {
+        NavManuService.ToggleMenu();
     }
 
     public void Dispose()

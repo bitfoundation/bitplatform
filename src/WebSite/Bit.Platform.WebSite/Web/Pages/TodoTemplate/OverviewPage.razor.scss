@@ -1,0 +1,118 @@
+﻿@import '../../Styles/abstracts/_media-queries.scss';
+@import '../../Styles/abstracts/_functions.scss';
+@import '../../Styles/abstracts/_colors.scss';
+@import '../../Styles/abstracts/_mixins.scss';
+
+.page-container {
+    @include PageContainer;
+}
+
+.page-main-title {
+    @include PageMainTitle;
+}
+
+.page-desc {
+    @include PageDescription;
+}
+
+.demo-card-group {
+    width: 100%;
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.demo-card {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: flex-start;
+    width: rem(248px);
+    height: rem(240px);
+    padding-top: rem(48px);
+    padding-left: rem(56px);
+    margin: rem(8px);
+    border-radius: rem(16px);
+    box-sizing: border-box;
+    background-color: $White;
+    background-image: url('/images/demo/demo-card-bg.svg');
+    background-repeat: no-repeat;
+    background-size: rem(55px) rem(160px);
+    background-position: top right;
+    font-weight: 400;
+    font-size: rem(24px);
+    line-height: rem(32px);
+    color: $B2Color;
+    cursor: pointer;
+
+    @include md {
+        width: rem(158px);
+        height: rem(136px);
+        padding-top: rem(32px);
+        padding-left: rem(46px);
+        margin: rem(12px);
+        border-radius: rem(8px);
+        background-size: rem(40px) rem(75px);
+        font-size: rem(14px);
+        line-height: rem(28px);
+    }
+
+    @include sm {
+        width: rem(156px);
+        height: rem(140px);
+        padding-top: rem(32px);
+        padding-left: rem(45px);
+        margin: rem(8px);
+        border-radius: rem(8px);
+        background-size: rem(40px) rem(75px);
+        font-size: rem(14px);
+        line-height: rem(28px);
+    }
+
+    .demo-logo {
+        width: rem(66px);
+        height: rem(72px);
+        margin-bottom: rem(24px);
+        background-repeat: no-repeat;
+        background-size: contain;
+        background-position: center;
+
+        @include lg {
+            width: rem(62px);
+            height: rem(66px);
+        }
+
+        @include md {
+            width: rem(36px);
+            height: rem(40px);
+            margin-bottom: rem(16px);
+        }
+
+        @include sm {
+            width: rem(43px);
+            height: rem(48px);
+            margin-bottom: rem(8px);
+        }
+    }
+
+    .pwa {
+        background-image: url('/images/demo/pwa.svg');
+    }
+
+    .spa {
+        background-image: url('/images/demo/spa.svg');
+    }
+
+    .app-center {
+        background-image: url('/images/demo/app-center.svg');
+    }
+
+    .nuget {
+        background-image: url('/images/demo/nuget.svg');
+    }
+
+    .figma {
+        background-image: url('/images/demo/figma.svg');
+    }
+}
