@@ -51,4 +51,8 @@
     color: black;
     border: 1px solid blue;
     background-color: lightblue;
+
+    div {
+        transform: translate(0, 80%);
+    }
 }
