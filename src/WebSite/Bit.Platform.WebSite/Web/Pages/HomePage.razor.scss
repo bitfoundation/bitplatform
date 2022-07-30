@@ -31,6 +31,19 @@
     width: 100%;
     max-width: rem(1232px);
 
+    .twitter-link {
+        background-image: url('/images/footer/twitter-icon.svg');
+        width: rem(32px);
+        height: rem(32px);
+        margin: 0 rem(6);
+        background-position: center;
+        background-repeat: no-repeat;
+        background-color: $B7Color;
+        border-radius: 50%;
+        cursor: pointer;
+        background-size: rem(18px);
+    }
+
     @include lg {
         max-width: rem(1140px);
     }
@@ -235,25 +248,26 @@
     }
 
     .qoute-mark {
-        width: rem(45px);
-        height: rem(45px);
-        background-image: url('/images/home/quote-icon.webp');
+        width: rem(48px);
+        height: rem(48px);
+        background-image: url('/images/home/twitter-icon.svg');
         background-position: center;
         background-repeat: no-repeat;
-        background-size: cover;
-        margin-bottom: rem(16px);
+        border-radius: 50%;
+        cursor: pointer;
+        background-size: rem(32px);
 
-        @include md {
-            width: rem(28px);
-            height: rem(28px);
-            margin-bottom: rem(8px);
-        }
+        //@include md {
+        //    width: rem(28px);
+        //    height: rem(28px);
+        //    margin-bottom: rem(8px);
+        //}
 
-        @include sm {
-            width: rem(25px);
-            height: rem(25px);
-            margin-bottom: rem(4px);
-        }
+        //@include sm {
+        //    width: rem(25px);
+        //    height: rem(25px);
+        //    margin-bottom: rem(4px);
+        //}
     }
 
     .customer-feedback-txt {

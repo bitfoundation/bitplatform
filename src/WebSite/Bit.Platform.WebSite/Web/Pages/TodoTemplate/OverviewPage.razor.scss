@@ -46,6 +46,11 @@
     color: $B2Color;
     cursor: pointer;
 
+
+    &:hover {
+        background-color: $B7Color;
+    }
+
     @include md {
         width: rem(158px);
         height: rem(136px);
