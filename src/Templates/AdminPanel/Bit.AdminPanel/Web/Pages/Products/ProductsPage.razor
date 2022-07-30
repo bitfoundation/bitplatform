@@ -43,6 +43,6 @@
     </div>
 </div>
 
-<CreateEditProductModal OnProductSave="@OnSuccessfulProductSave" @ref="modal" />
+<CreateEditProductModal OnProductSave="WrapHandled(OnSuccessfulProductSave)" @ref="modal" />
 
 <ConfirmMessageBox />

@@ -457,7 +457,7 @@ else
     private readonly string example13CSharpCode = @"private ValidationTextFieldModel validationTextFieldModel = new();
 public bool formIsValidSubmit;
 	
-private async void HandleValidSubmit()
+private async Task HandleValidSubmit()
 {
     formIsValidSubmit = true;
 
@@ -502,7 +502,7 @@ public class ValidationTextFieldModel
     private readonly string example14CSharpCode = @"private string NonTrimmedTextValue;
 private string TrimmedTextValue;";
 
-    private async void HandleValidSubmit()
+    private async Task HandleValidSubmit()
     {
         formIsValidSubmit = true;
 

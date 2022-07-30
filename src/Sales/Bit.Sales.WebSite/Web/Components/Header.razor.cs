@@ -15,14 +15,14 @@ public partial class Header
         base.OnInitialized();
     }
 
-    private async void OpenMenu()
+    private async Task OpenMenu()
     {
         MenuShadowStyles = "display:flex;";
         await JSRuntime.InvokeVoidAsync("App.setBodyStyle", "overflow:hidden;");
         StateHasChanged();
     }
 
-    private async void CloseMenu()
+    private async Task CloseMenu()
     {
         MenuShadowStyles = "display:none";
         await JSRuntime.InvokeVoidAsync("App.setBodyStyle", "overflow:auto;");

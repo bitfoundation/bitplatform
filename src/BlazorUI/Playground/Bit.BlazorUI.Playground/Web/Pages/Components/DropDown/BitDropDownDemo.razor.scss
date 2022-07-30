@@ -1,4 +1,6 @@
-﻿@import "../../../Styles/_shared.scss";
+﻿@import '../../../Styles/abstracts/_colors.scss';
+@import '../../../Styles/abstracts/_functions.scss';
+@import '../../../Styles/abstracts/_media-queries.scss';
 
 .validation-summary {
     border-left: rem(5px) solid $Red10;
@@ -24,5 +26,52 @@
 
     i {
         margin-right: rem(8px)
+    }
+}
+
+.custom-drp-lbl-ic {
+    width: 32px;
+    height: 32px;
+    outline: transparent;
+    font-size: 14px;
+    font-weight: 400;
+    box-sizing: border-box;
+    border: none;
+    display: inline-block;
+    text-decoration: none;
+    text-align: center;
+    cursor: pointer;
+    padding: 0 4px;
+    border-radius: 2px;
+    background-color: transparent;
+    color: #0078d4;
+    margin-bottom: -8px;
+    user-select: none;
+
+    &:hover {
+        color: #106EBE;
+        background-color: #f3f2f1;
+    }
+}
+
+::deep .bit-drp-lbl {
+    padding-bottom: rem(20px);
+}
+
+.grid-wrap {
+    display: grid;
+    grid-template-columns: auto auto;
+
+    .cascading-dropdowns-info {
+        padding-top: rem(30px);
+    }
+
+    @include sm {
+        display: block;
+        grid-template-columns: none;
+
+        .cascading-dropdowns-info {
+            padding-top: 0;
+        }
     }
 }

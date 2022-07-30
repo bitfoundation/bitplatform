@@ -16,7 +16,7 @@ public partial class BitNumericTextFieldDemo
     private string SuccessMessage = string.Empty;
     private BitNumericTextFieldValidationModel ValidationModel = new();
 
-    private async void HandleValidSubmit()
+    private async Task HandleValidSubmit()
     {
         SuccessMessage = "Form Submitted Successfully!";
         await Task.Delay(3000);
@@ -422,7 +422,7 @@ public class BitNumericTextFieldValidationModel
     public double AgeInYears { get; set; }
 }
 
-private async void HandleValidSubmit()
+private async Task HandleValidSubmit()
 {
     SuccessMessage = ""Form Submitted Successfully!"";
     await Task.Delay(3000);

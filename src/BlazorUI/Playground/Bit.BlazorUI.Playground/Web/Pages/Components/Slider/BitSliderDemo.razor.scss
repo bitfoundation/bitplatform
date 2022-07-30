@@ -1,3 +1,20 @@
 ﻿.flex-container {
     display: flex;
 }
+
+::deep .bit-slider-ranged-vertical .bit-slider-value, 
+::deep .bit-slider-vertical .bit-slider-value {
+    margin-top: rem(30px);
+}
+
+::deep .bit-slider-vertical {
+    padding: rem(20px) rem(40px);
+}
+
+::deep .bit-slider-container {
+    padding: rem(30px) 0;
+}
+
+::deep .bit-btn-slider {
+    margin-bottom: rem(30px);
+}

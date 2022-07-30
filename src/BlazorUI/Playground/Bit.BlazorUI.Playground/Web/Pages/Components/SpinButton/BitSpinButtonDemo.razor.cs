@@ -24,7 +24,7 @@ public partial class BitSpinButtonDemo
         public double AgeInYears { get; set; }
     }
 
-    private async void HandleValidSubmit()
+    private async Task HandleValidSubmit()
     {
         SuccessMessage = "Form Submitted Successfully!";
         await Task.Delay(3000);
@@ -415,7 +415,7 @@ public class BitSpinButtonValidationModel
     public double AgeInYears { get; set; }
 }
 
-private async void HandleValidSubmit()
+private async Task HandleValidSubmit()
 {
     SuccessMessage = ""Form Submitted Successfully!"";
     await Task.Delay(3000);

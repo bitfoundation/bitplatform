@@ -7,6 +7,11 @@ namespace Microsoft.JSInterop;
 
 internal static class JsRuntimeExtension
 {
+    internal static async Task Log(this IJSRuntime jsRuntime, object value)
+    {
+        await jsRuntime.InvokeVoidAsync("console.log", value);
+    }
+
     internal static async Task SetProperty(this IJSRuntime jsRuntime, ElementReference element, string property, object value)
     {
         await jsRuntime.InvokeVoidAsync("Bit.setProperty", element, property, value);
@@ -52,5 +57,15 @@ internal static class JsRuntimeExtension
     internal static async Task SelectText(this IJSRuntime jsRuntime, ElementReference element)
     {
         await jsRuntime.InvokeVoidAsync("Bit.selectText", element);
+    }
+
+    internal static async Task SetStyle(this IJSRuntime jsRuntime, ElementReference element, string key, string value)
+    {
+        await jsRuntime.InvokeVoidAsync("Bit.setStyle", element, key, value);
+    }
+
+    internal static async Task PreventDefault(this IJSRuntime jsRuntime, ElementReference element, string @event)
+    {
+        await jsRuntime.InvokeVoidAsync("Bit.preventDefault", element, @event);
     }
 }

@@ -12,7 +12,7 @@ public partial class Header : IAsyncDisposable
 
     public bool IsUserAuthenticated { get; set; }
 
-    protected async override Task OnInitAsync()
+    protected override async Task OnInitAsync()
     {
         authStateProvider.AuthenticationStateChanged += VerifyUserIsAuthenticatedOrNot;
 

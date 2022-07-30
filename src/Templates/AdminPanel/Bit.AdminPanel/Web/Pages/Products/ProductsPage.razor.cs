@@ -54,7 +54,7 @@ public partial class ProductsPage
 
                 if (string.IsNullOrEmpty(_productNameFilter) is false)
                 {
-                    query.Add("$filter", $"contains(Name,{_productNameFilter}");
+                    query.Add("$filter", $"contains(Name,'{_productNameFilter}')");
                 }
 
                 if (req.GetSortByProperties().Any())
@@ -108,7 +108,7 @@ public partial class ProductsPage
         });
     }
 
-    protected async void OnSuccessfulProductSave()
+    protected async Task OnSuccessfulProductSave()
     {
         MessageBox.Show("Succesfully saved", "product");
 

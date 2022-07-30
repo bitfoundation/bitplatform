@@ -1,4 +1,4 @@
-﻿@import "../../../Styles/_shared.scss";
+﻿@import '../../../Styles/abstracts/_functions.scss';
 
 .m-b-15 {
     margin-bottom: rem(15px);
@@ -42,4 +42,26 @@
             margin-top: rem(20px);
         }
     }
+}
+
+::deep .spinner-container, 
+::deep .spinner-positioning {
+    & > div {
+        & label {
+            font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+            -webkit-font-smoothing: antialiased;
+            font-size: 14px;
+            font-weight: 600;
+            color: rgb(50, 49, 48);
+            box-sizing: border-box;
+            box-shadow: none;
+            display: block;
+            padding: 5px 0px;
+            overflow-wrap: break-word;
+        }
+    }
+}
+
+::deep .bit-spn-fluent {
+    margin-top: rem(10px);
 }

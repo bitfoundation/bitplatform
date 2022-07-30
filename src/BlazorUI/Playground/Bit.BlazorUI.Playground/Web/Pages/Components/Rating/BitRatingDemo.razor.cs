@@ -24,7 +24,7 @@ public partial class BitRatingDemo
         ValidationForm = new BitRatingDemoFormModel();
     }
 
-    private async void HandleValidSubmit()
+    private async Task HandleValidSubmit()
     {
         SuccessMessage = "Form Submitted Successfully!";
         await Task.Delay(3000);
@@ -256,7 +256,7 @@ private double RatingOutsideValue = 0; ";
         ValidationForm = new BitRatingDemoFormModel();
     }
 
-    private async void HandleValidSubmit()
+    private async Task HandleValidSubmit()
     {
         SuccessMessage = ""Form Submitted Successfully!"";
         await Task.Delay(3000);

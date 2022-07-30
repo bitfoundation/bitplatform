@@ -160,9 +160,9 @@ public abstract partial class BitComponentBase : ComponentBase
     {
         RegisterComponentStyles();
         StyleBuilder
-            .Register(() => Style)
-            .Register(() => Visibility == BitComponentVisibility.Hidden ? "visibility:hidden" :
-                            Visibility == BitComponentVisibility.Collapsed ? "display:none" :
+            .Register(() => style)
+            .Register(() => visibility == BitComponentVisibility.Hidden ? "visibility:hidden" :
+                            visibility == BitComponentVisibility.Collapsed ? "display:none" :
                             string.Empty);
 
         ClassBuilder
@@ -170,7 +170,7 @@ public abstract partial class BitComponentBase : ComponentBase
             .Register(() => $"{RootElementClass}-{VisualClassRegistrar()}")
             .Register(() => $"{RootElementClass}-{(IsEnabled ? "enabled" : "disabled")}-{VisualClassRegistrar()}");
         RegisterComponentClasses();
-        ClassBuilder.Register(() => Class);
+        ClassBuilder.Register(() => @class);
 
         base.OnInitialized();
     }
@@ -192,15 +192,9 @@ public abstract partial class BitComponentBase : ComponentBase
 
     protected ElementStyleBuilder StyleBuilder { get; private set; } = new ElementStyleBuilder();
 
-    protected virtual void RegisterComponentStyles()
-    {
-    }
+    protected virtual void RegisterComponentStyles() { }
 
-    protected virtual void RegisterComponentClasses()
-    {
-    }
+    protected virtual void RegisterComponentClasses() { }
 
-    protected virtual void OnComponentVisibilityChanged(BitComponentVisibility visibility)
-    {
-    }
+    protected virtual void OnComponentVisibilityChanged(BitComponentVisibility visibility) { }
 }

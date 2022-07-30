@@ -39,14 +39,8 @@ public partial class EditProfilePage
             var access_token = await stateService.GetValue($"{nameof(EditProfilePage)}-access_token", async () =>
                 await authTokenProvider.GetAcccessToken());
 
-            ProfileImageUploadUrl = $"Attachment/UploadProfileImage?access_token={access_token}";
-            ProfileImageUrl = $"Attachment/GetProfileImage?access_token={access_token}";
-
-#if BlazorServer || BlazorHybrid
-            var serverUrl = configuration.GetValue<string>("ApiServerAddress");
-            ProfileImageUploadUrl = $"{serverUrl}{ProfileImageUploadUrl}";
-            ProfileImageUrl = $"{serverUrl}{ProfileImageUrl}";
-#endif
+            ProfileImageUploadUrl = $"{GetBaseUrl()}Attachment/UploadProfileImage?access_token={access_token}";
+            ProfileImageUrl = $"{GetBaseUrl()}Attachment/GetProfileImage?access_token={access_token}";
 
         }
         finally
@@ -55,6 +49,15 @@ public partial class EditProfilePage
         }
 
         await base.OnInitAsync();
+    }
+
+    string GetBaseUrl()
+    {
+#if BlazorWebAssembly
+        return "/api/";
+#else
+        return configuration.GetValue<string>("ApiServerAddress");
+#endif
     }
 
     private async Task LoadEditProfileData()
