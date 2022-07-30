@@ -134,6 +134,9 @@ public partial class BitCarousel
 
     private async Task Go(bool isNext = false, int scrollCount = 0)
     {
+        if (InfiniteSliding is false && ((_currentPage == 0 && isNext == false)) || (_currentPage == (_pagesCount -1) && isNext))
+            return;
+
         if (scrollCount < 1)
         {
             scrollCount = ScrollItemsCount;
@@ -186,15 +189,6 @@ public partial class BitCarousel
 
     private async Task GotoPage(int index)
     {
-        if (index < 0)
-        {
-            index = InfiniteSliding ? _pagesCount - 1 : 0;
-        }
-        else if (index >= _pagesCount)
-        {
-            index = InfiniteSliding ? 0 : _pagesCount - 1;
-        }
-
         if (_currentIndices[0] == index * VisibleItemsCount) return;
 
         var indices = Enumerable.Range(index * VisibleItemsCount, VisibleItemsCount);
