@@ -34,14 +34,50 @@
             ]
         },
 
+        "ApiProjectHttpPortGenerated": {
+            "type": "generated",
+            "generator": "port",
+            "parameters": {
+                "fallback": "5000"
+            },
+            "replaces": "5000"
+        },
+
+        "ApiProjectHttpsPortGenerated": {
+            "type": "generated",
+            "generator": "port",
+            "parameters": {
+                "fallback": "5001"
+            },
+            "replaces": "5001"
+        },
+
+        "WebProjectHttpPortGenerated": {
+            "type": "generated",
+            "generator": "port",
+            "parameters": {
+                "fallback": "4000"
+            },
+            "replaces": "4000"
+        },
+
+        "WebProjectHttpsPortGenerated": {
+            "type": "generated",
+            "generator": "port",
+            "parameters": {
+                "fallback": "4001"
+            },
+            "replaces": "4001"
+        },
+
         "SeedDataProductCreatedOn": {
             "type": "generated",
             "generator": "now",
-            "replaces":"2022-07-12",
+            "replaces": "2022-07-12",
             "parameters": {
-            "format": "yyyy-MM-dd"
-            }          
-          }
+                "format": "yyyy-MM-dd"
+            }
+        }
 
     },
     "postActions": [
