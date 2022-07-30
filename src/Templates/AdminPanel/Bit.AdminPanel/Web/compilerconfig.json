@@ -1,29 +1,5 @@
 ﻿[
     {
-        "inputFile": "Styles/app.scss",
-        "outputFile": "wwwroot/styles/app.css"
-    },
-    {
-        "inputFile": "Components/Header.razor.scss",
-        "outputFile": "Components/Header.razor.css"
-    },
-    {
-        "inputFile": "Components/Footer.razor.scss",
-        "outputFile": "Components/Footer.razor.css"
-    },
-    {
-        "inputFile": "Components/NavMenu.razor.scss",
-        "outputFile": "Components/NavMenu.razor.css"
-    },
-    {
-        "inputFile": "Components/SignOutConfirmModal.razor.scss",
-        "outputFile": "Components/SignOutConfirmModal.razor.css"
-    },
-    {
-        "inputFile": "Components/PageNotFound.razor.scss",
-        "outputFile": "Components/PageNotFound.razor.css"
-    },
-    {
         "inputFile": "Shared/MainLayout.razor.scss",
         "outputFile": "Shared/MainLayout.razor.css"
     },
@@ -74,6 +50,26 @@
     {
         "inputFile": "Pages/Products/CreateEditProductModal.razor.scss",
         "outputFile": "Pages/Products/CreateEditProductModal.razor.css"
+    },
+    {
+        "inputFile": "Components/Header.razor.scss",
+        "outputFile": "Components/Header.razor.css"
+    },
+    {
+        "inputFile": "Components/Footer.razor.scss",
+        "outputFile": "Components/Footer.razor.css"
+    },
+    {
+        "inputFile": "Components/NavMenu.razor.scss",
+        "outputFile": "Components/NavMenu.razor.css"
+    },
+    {
+        "inputFile": "Components/SignOutConfirmModal.razor.scss",
+        "outputFile": "Components/SignOutConfirmModal.razor.css"
+    },
+    {
+        "inputFile": "Components/PageNotFound.razor.scss",
+        "outputFile": "Components/PageNotFound.razor.css"
     },
     {
         "inputFile": "Pages/HomePage.razor.scss",
