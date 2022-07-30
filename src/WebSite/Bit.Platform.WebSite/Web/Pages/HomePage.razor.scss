@@ -1,483 +1,225 @@
-﻿@import '../Styles/_shared.scss';
+﻿@import '../Styles/abstracts/_media-queries.scss';
+@import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_colors.scss';
 
-.page-container {
-    @include PageContainer;
-    background-color: transparent;
-    position: relative;
+.page {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+    background-image: url('/images/home/home-page-bg.webp');
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
 }
 
 .page-section {
-    @include PageSection;
-
-    h2 {
-        color: $B3Color;
-        margin-top: rem(80px);
-
-        @include lg {
-            margin-top: rem(80px);
-        }
-
-        @include md {
-            margin-top: rem(32px);
-        }
-
-        @include sm {
-            margin-top: rem(32px);
-        }
-    }
-
-    .subtitle {
-        @include Body3;
-        color: $Gray1;
-    }
-}
-
-.arrow-right {
-    margin-left: rem(8px);
-    width: rem(20px);
-    height: rem(20px);
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    width: 100%;
+    padding: 0 rem(32px);
     box-sizing: border-box;
-    background-image: url('/images/arrow-right.svg');
+
+    @include sm {
+        padding: 0 rem(16px);
+    }
 }
 
-/*----------------hero section---------------*/
+.section-content-container {
+    width: 100%;
+    max-width: rem(1232px);
+
+    .twitter-link {
+        background-image: url('/images/footer/twitter-icon.svg');
+        width: rem(32px);
+        height: rem(32px);
+        margin: 0 rem(6);
+        background-position: center;
+        background-repeat: no-repeat;
+        background-color: $B7Color;
+        border-radius: 50%;
+        cursor: pointer;
+        background-size: rem(18px);
+    }
+
+    @include lg {
+        max-width: rem(1140px);
+    }
+
+    @include md {
+        max-width: rem(704px);
+    }
+
+    @include sm {
+        max-width: 100%;
+    }
+}
 
 .hero-section {
-    display: flex;
-    flex-flow: column nowrap;
-    align-items: center;
-    width: 100%;
-    height: rem(880px);
-    background-image: url('/images/home/hero-banner.webp');
-    background-position: center;
+    background-image: url('/images/home/hero-banner.png');
+    background-position: center left;
     background-repeat: no-repeat;
-    color: $Gray4;
+    background-size: cover;
 
-    @include lg {
-        height: rem(660px);
-    }
-
-    @include md {
-        height: rem(768px);
-    }
-
-    @include sm {
-        background-image: none;
-        background-color: $B5Color;
-        height: rem(432px);
-    }
-
-    .hero-section-container {
-        max-width: rem(504px);
-
-        h1 {
-            color: $White;
-            margin-top: rem(40px);
-            margin-bottom: rem(16px);
-        }
-
-        div {
-            @include Subtitle3;
-
-            @include sm {
-                @include Body3;
-            }
-        }
-    }
-
-    .page-section {
-        height: inherit;
-        align-items: center;
-    }
-
-    .github-btn {
+    .section-content-container {
         display: flex;
-        justify-content: center;
-        align-items: center;
-        border-radius: rem(4px);
-        background-color: $White;
-        box-sizing: border-box;
-        width: rem(213px);
-        height: rem(56px);
-        font-size: rem(22px);
-        font-weight: 600;
-        line-height: rem(40px);
-        color: $B6Color;
-        cursor: pointer;
-        margin-top: rem(112px);
-
-        &:hover {
-            color: $B3Color;
-        }
+        flex-flow: row nowrap;
+        justify-content: flex-start;
+        align-items: flex-start;
+        padding: rem(240px) 0 rem(108px);
 
         @include lg {
-            width: rem(213px);
-            height: rem(56px);
-            font-size: rem(20px);
-            font-weight: 600;
-            line-height: rem(32px);
-            margin-top: rem(64px);
+            padding: rem(152px) 0 rem(52px);
         }
 
         @include md {
-            width: rem(143px);
-            height: rem(48px);
-            font-size: rem(16px);
-            font-weight: 600;
-            line-height: rem(32px);
-            margin-top: rem(32px);
+            padding: rem(96px) 0 rem(28px);
         }
 
         @include sm {
-            width: rem(143px);
-            height: rem(48px);
-            font-size: rem(16px);
-            font-weight: 600;
-            line-height: rem(32px);
-            margin-top: rem(20px);
-        }
-
-        .github-icon {
-            width: rem(40px);
-            height: rem(40px);
-            border-radius: 50%;
-            background-image: url('/images/github-icon.svg');
-            background-position: center bottom;
-            background-repeat: no-repeat;
-            background-size: rem(40px);
-            background-color: $B2Color;
-            cursor: pointer;
-            margin-right: rem(10px);
-            background-size: rem(40px);
-
-
-            @include lt-lg {
-                width: rem(24px);
-                height: rem(24px);
-                background-size: rem(24px);
-            }
+            padding: rem(88px) 0 rem(72px);
         }
     }
-}
 
-/*----------------project template section---------------*/
-
-.project-template-section {
-    display: flex;
-    flex-flow: column nowrap;
-}
-
-.projetc-template-card {
-    @include Card;
-    padding: rem(24px) rem(40px) rem(24px) rem(100px);
-    margin-top: rem(40px);
-    display: flex;
-    flex-flow: row nowrap;
-    justify-content: space-between;
-
-    @include lg {
-        padding: rem(24px) rem(40px) rem(24px) rem(100px);
-    }
-
-    @include md {
-        padding: rem(40px) rem(32px);
-    }
-
-    @include sm {
-        padding: rem(24px) rem(16px) rem(32px) rem(16px);
-    }
-
-    .content {
-        width: 50%;
+    .hero-section-content {
         display: flex;
-        flex-flow: column;
-        justify-content: center;
+        flex-flow: column nowrap;
+        justify-content: flex-start;
+        align-items: flex-start;
+        width: 100%;
+        max-width: rem(504px);
 
-        h4 {
-            color: $Black1;
+        @include lg {
+            max-width: rem(424px);
+        }
+
+        @include md {
+            max-width: rem(340px);
+        }
+
+        @include sm {
+            max-width: 100%;
+        }
+    }
+
+    .hero-section-main-title {
+        margin: 0;
+        margin-bottom: rem(40px);
+        font-weight: 600;
+        font-size: rem(34px);
+        line-height: rem(48px);
+        color: $Gray4;
+
+        @include lg {
+            font-size: rem(32px);
+        }
+
+        @include md {
+            margin-bottom: rem(24px);
+            font-size: rem(16px);
+            line-height: rem(32px);
+        }
+
+        @include sm {
+            margin-bottom: rem(12px);
+            font-size: rem(20px);
+            line-height: rem(32px);
+        }
+    }
+
+    .hero-section-title {
+        margin: 0;
+        margin-bottom: rem(16px);
+        font-weight: 700;
+        font-size: rem(50px);
+        line-height: rem(58px);
+        color: $White;
+
+        @include lg {
+            font-size: rem(40px);
+            line-height: rem(64px);
+        }
+
+        @include md {
+            margin-bottom: rem(8px);
+            font-weight: 600;
+            font-size: rem(26px);
+            line-height: rem(40px);
+        }
+
+        @include sm {
+            margin-bottom: rem(24px);
+            font-weight: 600;
+            font-size: rem(26px);
+            line-height: rem(40px);
+        }
+    }
+
+    .hero-section-desc {
+        margin-bottom: rem(112px);
+        font-weight: 700;
+        font-size: rem(18x);
+        line-height: rem(32px);
+        color: $Gray4;
+
+        @include lg {
+            margin-bottom: rem(64px);
+            font-size: rem(16x);
+        }
+
+        @include lt-lg {
             margin-bottom: rem(32px);
-
-            @include lt-lg {
-                margin-bottom: rem(8px);
-            }
-        }
-
-        div {
-            color: $Gray1;
-            @include Body3;
-        }
-
-        a {
-            color: $B6Color;
-            @include Subtitle4;
-            display: flex;
-            align-items: center
-        }
-
-        @include sm {
-            width: 100%;
+            font-weight: 400;
+            font-size: rem(14px);
+            line-height: rem(28px);
         }
     }
 
-    .banner {
-        width: 50%;
-        height: 50%;
-
-        @include sm {
-            display: none;
-        }
-    }
-}
-
-/*----------------services box section---------------*/
-
-.services-section {
-    display: flex;
-    flex-flow: column nowrap;
-
-    .services-card-container {
-        display: flex;
-        flex-flow: row wrap;
-    }
-}
-
-.services-card {
-    @include Card;
-    padding: rem(46px) rem(40px);
-    margin-top: rem(40px);
-    width: calc(50% - 55px);
-    margin-right: rem(55Px);
-    position: relative;
-
-    @include md {
-        padding: rem(30px) rem(24px);
-        margin-top: rem(12px);
-        width: calc(100% - 55px);
-        margin-right: rem(55Px);
-    }
-
-    @include sm {
-        padding: rem(24px);
-        margin-top: rem(56px);
-        width: 100%;
-        margin-right: 0;
-    }
-
-    .content {
-        width: 72%;
-
-        h4 {
-            color: $Black1;
-            margin-bottom: rem(20px);
-        }
-
-        div {
-            color: $Gray1;
-            @include Body3;
-        }
-
-        a {
-            color: $B6Color;
-            @include Subtitle4;
-            display: flex;
-            align-items: center
-        }
-
-        @include sm {
-            width: 100%;
-        }
-    }
-}
-
-.no-download-box {
-    width: 50%;
-    margin-right: 0;
-
-    @include lt-lg {
-        width: 100%;
-    }
-}
-
-/*----------------services download box section---------------*/
-
-.download-box {
-    position: absolute;
-    top: rem(51px);
-    right: rem(-36px);
-    box-sizing: border-box;
-    background: linear-gradient(225.14deg, #004EBA -11.79%, #0164EC 95.46%);
-    box-shadow: 0 rem(4px) rem(20px) rgba(0, 101, 239, 0.3);
-    border-radius: rem(20px);
-    width: rem(192px);
-    height: rem(192px);
-    display: flex;
-    flex-flow: column nowrap;
-    align-items: center;
-    color: $Gray4;
-    justify-content: center;
-    @include Subtitle4;
-
-    @include sm {
-        display: none;
-    }
-
-    @include md {
-        width: rem(160px);
-        height: rem(160px);
-        top: rem(25px);
-    }
-
-    .download-icon {
-        width: rem(53px);
-        height: rem(53px);
-        background-image: url('/images/home/download-icon.svg');
-        background-position: center;
-        background-repeat: no-repeat;
-        background-size: rem(53px);
-    }
-}
-
-.download-row {
-    display: none;
-
-    @include sm {
+    .hero-section-cta {
         display: flex;
         flex-flow: row nowrap;
+        justify-content: center;
         align-items: center;
+        width: rem(193px);
+        height: rem(64px);
+        border-radius: rem(8px);
+        background-color: $White;
+        font-weight: 600;
+        font-size: rem(22px);
+        line-height: rem(40px);
+        color: $B6Color;
 
-        h5 {
-            margin: 0 rem(10px);
-            font-weight: 600;
+        @include lg {
+            width: rem(186px);
+            font-size: rem(20px);
+            line-height: rem(32px);
+        }
+
+        @include lt-lg {
+            width: rem(143px);
+            height: rem(48px);
+            font-size: rem(16px);
+            line-height: rem(32px);
         }
     }
 
-    .download-icon {
-        width: rem(25px);
-        height: rem(25px);
-        background-image: url('/images/home/download-blue-icon.svg');
+    .hero-section-github-ico {
+        width: rem(40px);
+        height: rem(40px);
+        margin-right: rem(8px);
+        background-image: url('/images/github-icon.svg');
         background-position: center;
         background-repeat: no-repeat;
-        background-size: rem(25px);
-    }
-}
+        background-size: cover;
+        cursor: pointer;
 
-/*----------------background section---------------*/
-
-.background-section {
-
-    .circle1 {
-        position: absolute;
-        width: rem(300px);
-        height: rem(300px);
-        border-radius: 50%;
-        border: rem(3px) solid rgba(255, 255, 255, 0.2);
-        top: rem(140px);
-        right: rem(-150px);
-
-        @include sm {
-            border: none;
-            background: rgba(255, 255, 255, 0.2);
-            top: rem(320px);
-            right: rem(-56px);
+        @include lt-lg {
+            width: rem(28px);
+            height: rem(28px);
         }
     }
-
-    .circle2 {
-        position: absolute;
-        width: rem(250px);
-        height: rem(250px);
-        border-radius: 0 0 100% 0;
-        background: rgba(255, 255, 255, 0.13);
-        top: 0;
-        left: 0;
-
-        @include sm {
-            width: rem(150px);
-            height: rem(150px);
-            border-radius: 50%;
-            top: rem(-50px);
-            left: rem(-40px);
-        }
-    }
-
-    .circle3 {
-        position: absolute;
-        width: rem(350px);
-        height: rem(350px);
-        border-radius: 50%;
-        border: rem(2px) solid rgba(255, 255, 255, 0.15);
-        top: rem(37px);
-        left: rem(-175px);
-
-        @include sm {
-            width: rem(100px);
-            height: rem(100px);
-            top: rem(60px);
-            left: rem(-50px);
-        }
-    }
-    //1913
-    .circle4 {
-        position: absolute;
-        border-radius: 50%;
-        z-index: -1;
-        width: rem(502px);
-        height: rem(502px);
-        right: rem(-250px);
-        top: rem(903px);
-        background: rgba(255, 255, 255, 0.2);
-    }
-    //1911
-    .circle5 {
-        position: absolute;
-        border-radius: 50%;
-        z-index: -1;
-        width: rem(568px);
-        height: rem(568px);
-        left: rem(-200px);
-        top: rem(1513px);
-        background: rgba(255, 255, 255, 0.2);
-    }
-
-    .circle6 {
-        position: absolute;
-        border-radius: 50%;
-        z-index: -1;
-        width: rem(802px);
-        height: rem(802px);
-        background: $Background2Color;
-        filter: blur(rem(274px));
-        left: rem(-37px);
-        top: rem(1239px);
-    }
-
-    .circle7 {
-        position: absolute;
-        border-radius: 50%;
-        z-index: -1;
-        width: rem(1154px);
-        height: rem(1154px);
-        right: rem(-40px);
-        top: rem(814px);
-        background: $Background1Color;
-        filter: blur(rem(274px));
-    }
-
-    .background-color {
-        position: absolute;
-        background-color: $BackgroundColor;
-        width: 100%;
-        height: 100%;
-        z-index: -2;
-        top: 0;
-        left: 0;
-    }
-}
-
-/*----------------customer section---------------*/
-
-.customers-section {
-    flex-flow: column nowrap;
 }
 
 .customer-feedback-card {
@@ -487,48 +229,47 @@
     justify-content: flex-start;
     align-items: flex-start;
     width: 100%;
-    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.15);
-    border-radius: rem(16px);
+    height: 100%;
+    //box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.15);
+    //border-radius: rem(16px);
     padding: rem(46px) rem(40px);
     box-sizing: border-box;
     background-color: $White;
     cursor: pointer;
 
     @include md {
-        border-radius: rem(14px);
+        //border-radius: rem(14px);
         padding: rem(28px) rem(25px);
     }
 
     @include sm {
-        border-radius: rem(14px);
+        //border-radius: rem(14px);
         padding: rem(24px);
     }
 
     .qoute-mark {
-        width: rem(45px);
-        height: rem(45px);
-        background-image: url('/images/home/quote-icon.webp');
+        width: rem(48px);
+        height: rem(48px);
+        background-image: url('/images/home/twitter-icon.svg');
         background-position: center;
         background-repeat: no-repeat;
-        background-size: cover;
-        margin-bottom: rem(16px);
-
-        @include md {
-            width: rem(28px);
-            height: rem(28px);
-            margin-bottom: rem(8px);
-        }
-
-        @include sm {
-            width: rem(25px);
-            height: rem(25px);
-            margin-bottom: rem(4px);
-        }
+        border-radius: 50%;
+        cursor: pointer;
+        background-size: rem(32px);
+        //@include md {
+        //    width: rem(28px);
+        //    height: rem(28px);
+        //    margin-bottom: rem(8px);
+        //}
+        //@include sm {
+        //    width: rem(25px);
+        //    height: rem(25px);
+        //    margin-bottom: rem(4px);
+        //}
     }
 
     .customer-feedback-txt {
         width: 100%;
-        height: rem(60px);
         font-weight: 400;
         font-size: rem(20px);
         line-height: rem(32px);
@@ -537,17 +278,16 @@
         overflow: hidden;
         text-align: justify;
         text-align-last: left;
+        flex-grow: 1;
 
         @include md {
-            height: rem(50px);
-            font-size: rem(16px);
+            font-size: rem(18px);
             line-height: rem(28px);
             margin-bottom: rem(10px);
         }
 
         @include sm {
-            height: rem(41px);
-            font-size: rem(14px);
+            font-size: rem(16px);
             line-height: rem(24px);
             margin-bottom: rem(8px);
         }
@@ -589,6 +329,475 @@
         @include sm {
             top: rem(70px);
             height: rem(60px);
+        }
+    }
+
+    .author-container {
+        display: flex;
+        align-items: center;
+    }
+
+    .image {
+        width: rem(64px);
+        border-radius: 50%;
+        margin-right: rem(10px);
+    }
+}
+
+::deep .customer-feedback-carousel {
+    width: 100%;
+    height: rem(360px);
+    margin: rem(32px) auto;
+    //@include md {
+    //    height: rem(285px);
+    //}
+    //@include sm {
+    //    height: rem(250px);
+    //}
+
+    &.bit-crsl {
+        .carousel {
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.15);
+            border-radius: rem(16px);
+
+            @include md {
+                border-radius: rem(14px);
+            }
+
+            @include sm {
+                border-radius: rem(14px);
+            }
+        }
+    }
+}
+
+.section-title {
+    margin: rem(88px) 0 rem(32px);
+    font-weight: 700;
+    font-size: rem(40px);
+    line-height: rem(56px);
+    color: $B3Color;
+
+    @include lg {
+        font-size: rem(36px);
+    }
+
+    @include md {
+        margin: rem(24px) 0 rem(16px);
+        font-size: rem(24px);
+        line-height: rem(40px);
+    }
+
+    @include sm {
+        margin: rem(32px) 0 rem(12px);
+        font-size: rem(20px);
+        line-height: rem(32px);
+    }
+}
+
+.section-desc {
+    margin-bottom: rem(40px);
+    font-weight: 400;
+    font-size: rem(16px);
+    line-height: rem(32px);
+    color: $Gray1;
+
+    @include md {
+        margin-bottom: rem(32px);
+        font-size: rem(14px);
+        line-height: rem(28px);
+    }
+
+    @include sm {
+        margin-bottom: rem(28px);
+        font-size: rem(14px);
+        line-height: rem(28px);
+    }
+}
+
+.template-card {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: rem(24px) rem(40px) rem(24px) rem(104px);
+    border-radius: rem(20px);
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.15);
+    box-sizing: border-box;
+    background-color: $White;
+
+    @include lg {
+        padding: rem(40px) rem(32px) rem(40px) rem(88px);
+    }
+
+    @include md {
+        border-radius: rem(16px);
+        padding: rem(40px) rem(32px);
+    }
+
+    @include sm {
+        padding: rem(24px) rem(16px);
+    }
+
+    .template-content-continaer {
+        display: flex;
+        flex-flow: column nowrap;
+        justify-content: center;
+        align-items: flex-start;
+        width: 100%;
+        max-width: rem(394px);
+        margin-right: rem(5px);
+
+        @include md {
+            max-width: rem(336px);
+        }
+
+        @include sm {
+            max-width: 100%;
+            margin-right: 0;
+        }
+    }
+
+    .template-name {
+        margin-bottom: rem(32px);
+        font-weight: 700;
+        font-size: rem(30px);
+        line-height: rem(40px);
+        color: $Black1;
+
+        @include lg {
+            font-size: rem(26px);
+        }
+
+        @include md {
+            margin-bottom: rem(8px);
+            font-size: rem(20px);
+            line-height: rem(32px);
+        }
+
+        @include sm {
+            margin-bottom: rem(16px);
+            font-weight: 600;
+            font-size: rem(18px);
+            line-height: rem(32px);
+        }
+    }
+
+    .template-desc {
+        margin-bottom: rem(24px);
+        font-weight: 400;
+        font-size: rem(16px);
+        line-height: rem(32px);
+        color: $Gray1;
+
+        @include md {
+            margin-bottom: rem(8px);
+            font-size: rem(14px);
+            line-height: rem(28px);
+        }
+
+        @include sm {
+            margin-bottom: rem(32px);
+            font-size: rem(12px);
+            line-height: rem(24px);
+        }
+    }
+
+    .template-link {
+        display: flex;
+        flex-flow: row nowrap;
+        align-items: center;
+        font-weight: 700;
+        font-size: rem(16px);
+        line-height: rem(32px);
+        color: $B6Color;
+        cursor: pointer;
+
+        @include md {
+            font-size: rem(12px);
+            line-height: rem(24px);
+        }
+
+        @include sm {
+            font-weight: 600;
+            font-size: rem(12px);
+            line-height: rem(24px);
+        }
+    }
+
+    .template-link-arrow {
+        width: rem(20px);
+        height: rem(20px);
+        margin-left: rem(8px);
+        background-image: url('/images/arrow-right-blue-icon.svg');
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: cover;
+
+        @include sm {
+            width: rem(18px);
+            height: rem(18px);
+            margin-left: rem(2px);
+        }
+    }
+
+    .template-img {
+        width: rem(564px);
+        height: rem(376px);
+        background-image: url('/images/home/project-template.webp');
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: cover;
+
+        @include lg {
+            width: rem(498px);
+            height: rem(332px);
+        }
+
+        @include md {
+            width: rem(300px);
+            height: rem(200px);
+        }
+
+        @include sm {
+            display: none;
+        }
+    }
+}
+
+.service-section {
+    .section-card-group {
+        width: 100%;
+        display: flex;
+        flex-flow: row nowrap;
+        justify-content: space-between;
+        align-items: center;
+
+        @include lt-lg {
+            flex-flow: column nowrap;
+            justify-content: flex-start;
+            align-items: flex-start;
+        }
+    }
+}
+
+.servic-card {
+    position: relative;
+    width: calc(50% - 27px);
+    height: 100%;
+    min-height: rem(296px);
+    background-color: $White;
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.15);
+    border-radius: rem(20px);
+    padding: rem(46px) rem(40px);
+    box-sizing: border-box;
+
+    @include lg {
+        min-height: rem(264px);
+        padding: rem(32px) rem(24px);
+    }
+
+    @include md {
+        margin-bottom: rem(12px);
+        width: calc(100% - 38px);
+        min-height: unset;
+        padding: rem(30px) rem(24px);
+    }
+
+    @include sm {
+        margin-bottom: rem(24px);
+        width: 100%;
+        min-height: unset;
+        padding: rem(24px);
+    }
+
+    &:last-child {
+        margin: 0;
+    }
+
+    .service-content-container {
+        display: flex;
+        flex-flow: column nowrap;
+        justify-content: center;
+        align-items: flex-start;
+        width: calc(100% - 186px);
+        //@include lg {
+        //    width: calc(100% - 138px);
+        //}
+
+        @include md {
+            width: calc(100% - 144px);
+        }
+
+        @include sm {
+            width: 100%;
+        }
+    }
+
+    .service-name {
+        margin-bottom: rem(20px);
+        font-weight: 700;
+        font-size: rem(30px);
+        line-height: rem(40px);
+        color: $Black1;
+
+        @include lg {
+            font-size: rem(26px);
+        }
+
+        @include md {
+            margin-bottom: rem(30px);
+            font-size: rem(20px);
+            line-height: rem(32px);
+        }
+
+        @include sm {
+            margin-bottom: rem(16px);
+            font-weight: 600;
+            font-size: rem(18px);
+            line-height: rem(32px);
+        }
+    }
+
+    .service-desc {
+        margin-bottom: rem(16px);
+        font-weight: 400;
+        font-size: rem(16px);
+        line-height: rem(32px);
+        color: $Gray1;
+
+        @include md {
+            margin-bottom: rem(12px);
+            font-size: rem(14px);
+            line-height: rem(20px);
+        }
+
+        @include sm {
+            margin-bottom: rem(16px);
+            font-size: rem(14px);
+            line-height: rem(20px);
+        }
+    }
+
+    .service-link {
+        font-weight: 700;
+        font-size: rem(16px);
+        line-height: rem(32px);
+        color: $B6Color;
+
+        @include md {
+            font-weight: 600;
+        }
+
+        @include sm {
+            font-weight: 600;
+            font-size: rem(12px);
+            line-height: rem(24px);
+        }
+    }
+
+    .download-row {
+        display: none;
+        margin-bottom: rem(20px);
+        padding-left: rem(40px);
+        background-image: url('/images/home/download-blue-icon.svg');
+        background-position: center left;
+        background-repeat: no-repeat;
+        background-size: rem(32px);
+        font-weight: 400;
+        font-size: rem(12px);
+        line-height: rem(24px);
+        color: $Gray1;
+
+        .bold-txt {
+            font-weight: 600;
+            font-size: rem(16px);
+            line-height: rem(32px);
+            color: $Black1;
+        }
+
+        @include sm {
+            display: block;
+        }
+    }
+
+    .service-badge--blue {
+        position: absolute;
+        right: rem(-36px);
+        top: 50%;
+        transform: translateY(-50%);
+        display: flex;
+        flex-flow: column nowrap;
+        justify-content: center;
+        align-items: center;
+        width: rem(192px);
+        height: rem(192px);
+        box-shadow: 0px 4px 20px rgba(0, 101, 239, 0.3);
+        border-radius: rem(20px);
+        background: linear-gradient(225.14deg, #004EBA -11.79%, #0164EC 95.46%);
+
+        @include lg {
+            right: rem(-38px);
+            width: rem(160px);
+            height: rem(160px);
+        }
+
+        @include md {
+            right: rem(-38px);
+            width: rem(156px);
+            height: rem(156px);
+        }
+
+        @include sm {
+            display: none;
+        }
+
+        .badge-icon {
+            width: rem(50px);
+            height: rem(53px);
+            background-image: url('/images/home/download-white-icon.svg');
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+            margin-bottom: rem(21px);
+
+            @include lt-xl {
+                width: rem(44px);
+                height: rem(46px);
+                margin-bottom: rem(12px);
+            }
+        }
+
+        .badge-txt {
+            font-weight: 700;
+            font-size: rem(16px);
+            line-height: rem(32px);
+            color: $Gray4;
+
+            @include md {
+                font-size: rem(14px);
+                line-height: rem(28px);
+            }
+        }
+
+        .badge-main-txt {
+            font-weight: 600;
+            font-size: rem(34px);
+            line-height: rem(48px);
+            color: $White;
+
+            @include lg {
+                font-weight: 700;
+                font-size: rem(26px);
+                line-height: rem(40px);
+            }
+
+            @include md {
+                font-weight: 700;
+                font-size: rem(20px);
+                line-height: rem(32px);
+            }
         }
     }
 }

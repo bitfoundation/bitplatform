@@ -1,140 +1,145 @@
 ﻿@page "/"
 
-<div class="page-container">
-
-    <section class="hero-section">
-        <div class="page-section">
-            <div class="hero-section-container">
-                <h3>Bit Platform</h3>
-                <h1>
-                    The home for .NET developers
-                </h1>
-                <div>bit is a platform for .NET developers to easily Code, Build & Deploy their projects across multiple platforms.</div>
-                <div>Our mission is to make development easier.</div>
-                <a class="github-btn" target="_blank" href="@Urls.Github"><span class="github-icon"></span>GitHub</a>
+<div class="page">
+    <section class="page-section hero-section">
+        <div class="section-content-container">
+            <div class="hero-section-content">
+                <h1 class="hero-section-main-title">bit platform:</h1>
+                <h2 class="hero-section-title">
+                    Home for .NET<br />
+                    Developers
+                </h2>
+                <div class="hero-section-desc">
+                    bit is a platform for .NET developers to easily Code, Build & Deploy their projects across multiple platforms.<br />
+                    Our mission is to make development easier.
+                </div>
+                <a class="hero-section-cta" href="https://github.com/bitfoundation/bitplatform" target="_blank">
+                    <span class="hero-section-github-ico"></span>
+                    GitHub
+                </a>
             </div>
         </div>
     </section>
 
-    <section class="page-section project-template-section">
-        <h2>
-            Project Templates
-        </h2>
-        <div class="subtitle">
-            Coding templates based on .Net MAUI / Blazor that enables high quality speedy cross-platform development for web, android and iOS and also has pixel-perfect, ready to use UIs.
-        </div>
-
-        <div class="projetc-template-card">
-            <div class="content">
-                <h4>TodoTemplate</h4>
-                <div>TodoTemplate is based on ASP.NET core, identity, web api and ef core for the server side + blazor at client side.</div>
-                <div> It allows you building Android, iOS, Windows, Web applications from single code base</div>
-                <a href="@Urls.GettingStarted">Read more about TodoTemplate<span class="arrow-right"></span></a>
+    <section class="page-section template-section">
+        <div class="section-content-container">
+            <h2 class="section-title">
+                Project<br />
+                Templates
+            </h2>
+            <div class="section-desc">Coding templates based on .Net MAUI / Blazor that enables high quality speedy cross-platform development for web, android and iOS and also has pixel-perfect, ready to use UIs.</div>
+            <div class="template-card">
+                <div class="template-content-continaer">
+                    <div class="template-name">TodoTemplate</div>
+                    <div class="template-desc">
+                        TodoTemplate is based on ASP.NET core, identity, web api and ef core for the server side + blazor at client side.<br />
+                        It allows you building Android, iOS, Windows, Web applications from single code base.
+                    </div>
+                    <a class="template-link" href="/todo-template/overview">Read more about TodoTemplate <span class="template-link-arrow"></span></a>
+                </div>
+                <div class="template-img"></div>
             </div>
-            <img class="banner" alt="TodoTemplate project" width="564" height="376" src="images/home/project-template-1.webp" />
         </div>
     </section>
 
-    <section class="page-section services-section">
-        <h2>
-            Products & Services
-        </h2>
-        <div class="subtitle">
-        </div>
-
-        <div class="services-card-container">
-            <div class="services-card">
-                <div class="content">
-                    <h4>Bit components</h4>
-                    <div class="download-row">
-                        <div class="download-icon" />
-                        <h5>32 (Daily)</h5>
-                        <div>Downloads</div>
+    <section class="page-section service-section">
+        <div class="section-content-container">
+            <h2 class="section-title">
+                Products<br />
+                & Services
+            </h2>
+            <div class="section-card-group">
+                <div class="servic-card">
+                    <div class="service-content-container">
+                        <div class="service-name">Bit BlazorUI</div>
+                        <div class="download-row"><span class="bold-txt">48 (Daily)</span> Downloads</div>
+                        <div class="service-desc">Easy to use, easy to customize, native, high performance Blazor components that significantly speed up coding.</div>
+                        <a class="service-link" href="https://components.bitplatform.dev/" target="_blank">Read more about Bit BlazorUI</a>
                     </div>
-                    <div>
-                        Easy to use, easy to customize, native, high performance Blazor components that significantly speed up coding.
-                    </div>
-                    <a target="_blank" href="https://components.bitplatform.dev/">Read more about components<span class="arrow-right"></span></a>
-                </div>
-                <div class="download-box">
-                    <div class="download-icon" />
-                    <div>Downloads</div>
-                    <h5>32 (Daily)</h5>
-                </div>
-            </div>
-            <div class="services-card no-download-box">
-                <div class="content">
-                    <h4>Dedicated Support</h4>
-                    <div>
-                        Community support will be free forever. Dedicated end-to-end support is available to purchase
+                    <div class="service-badge--blue">
+                        <span class="badge-icon"></span>
+                        <span class="badge-txt">Downloads</span>
+                        <span class="badge-main-txt">48 (Daily)</span>
                     </div>
                 </div>
+                <div class="servic-card">
+                    <div class="service-content-container">
+                        <div class="service-name">Dedicated Support</div>
+                        <div class="service-desc">Community support will be free forever. Dedicated end-to-end support is available to purchase.</div>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
 
-    <section class="page-section customers-section">
-        <h2>Our customers love what we do</h2>
-        <BitCarousel Class="customer-feedback-carousel">
-            <BitCarouselItem Class="customer-feedback-item">
-                <a class="customer-feedback-card" href="" target="_blank">
-                    <span class="qoute-mark"></span>
-                    <div class="customer-feedback-txt">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</div>
-                    <div class="fade-bar"></div>
-                    <div class="customer-feedback-name">Yaser Moradi</div>
-                </a>
-            </BitCarouselItem>
-            <BitCarouselItem>
-                <a class="customer-feedback-card" href="" target="_blank">
-                    <span class="qoute-mark"></span>
-                    <div class="customer-feedback-txt">Wow! Using Bit platform has made the work enjoyable for me! :)))</div>
-                    <div class="fade-bar"></div>
-                    <div class="customer-feedback-name">Yaser Moradi</div>
-                </a>
-            </BitCarouselItem>
-            <BitCarouselItem>
-                <a class="customer-feedback-card" href="" target="_blank">
-                    <span class="qoute-mark"></span>
-                    <div class="customer-feedback-txt">Wow! Using Bit platform has made the work enjoyable for me! :)))</div>
-                    <div class="fade-bar"></div>
-                    <div class="customer-feedback-name">Yaser Moradi</div>
-                </a>
-            </BitCarouselItem>
-            <BitCarouselItem>
-                <a class="customer-feedback-card" href="" target="_blank">
-                    <span class="qoute-mark"></span>
-                    <div class="customer-feedback-txt">Wow! Using Bit platform has made the work enjoyable for me! :)))</div>
-                    <div class="fade-bar"></div>
-                    <div class="customer-feedback-name">Yaser Moradi</div>
-                </a>
-            </BitCarouselItem>
-            <BitCarouselItem>
-                <a class="customer-feedback-card" href="" target="_blank">
-                    <span class="qoute-mark"></span>
-                    <div class="customer-feedback-txt">Wow! Using Bit platform has made the work enjoyable for me! :)))</div>
-                    <div class="fade-bar"></div>
-                    <div class="customer-feedback-name">Yaser Moradi</div>
-                </a>
-            </BitCarouselItem>
-            <BitCarouselItem>
-                <a class="customer-feedback-card" href="" target="_blank">
-                    <span class="qoute-mark"></span>
-                    <div class="customer-feedback-txt">Wow! Using Bit platform has made the work enjoyable for me! :)))</div>
-                    <div class="fade-bar"></div>
-                    <div class="customer-feedback-name">Yaser Moradi</div>
-                </a>
-            </BitCarouselItem>
-        </BitCarousel>
-    </section>
+    <section class="page-section customer-section">
+        <div class="section-content-container">
+            <h2 class="section-title">
+                Our customers love <br />
+                what we do
+            </h2>
+            <BitCarousel Class="customer-feedback-carousel" ShowNextPrev="false">
+                <BitCarouselItem>
+                    <a class="customer-feedback-card" href="https://twitter.com/mehrandvd/status/1553142453091401729" target="_blank">
+                        <span class="qoute-mark"></span>
+                        <div class="customer-feedback-txt">
+                            I'm more than happy for the decision we made to use <span style="color:#004099">#BitPlatform</span> in our #dotnet products at
+                            @@MelkRadar and #BeyondTeam and all other teams I'm consulting. It's so promising,
+                            robust and reliable for scale...
+                        </div>
+                        @*<div class="fade-bar"></div>*@
+                        <div class="author-container">
+                            <img class="image" src="images/home/twitter/1.webp" />
+                            <div class="customer-feedback-name">uɒɹɥəɯ</div>
+                        </div>
+                    </a>
+                </BitCarouselItem>
+                <BitCarouselItem>
+                    <a class="customer-feedback-card" href="https://twitter.com/hootanht/status/1553199172957995008" target="_blank">
+                        <span class="qoute-mark"></span>
+                        <div class="customer-feedback-txt">
+                            We're excited too. <span style="color:#004099">#BitPlatform</span> helps us to achieve more flexibility and
+                            opportunities in our projects than we think.😍🌹🙏
+                        </div>
+                        @*<div class="fade-bar"></div>*@
+                        <div class="author-container">
+                            <img class="image" src="images/home/twitter/4.webp" />
+                            <div class="customer-feedback-name">Hootan HT</div>
+                        </div>
+                    </a>
+                </BitCarouselItem>
+                <BitCarouselItem>
+                    <a class="customer-feedback-card" href="https://twitter.com/HamedHajiloo96/status/1541649567644614656" target="_blank">
+                        <span class="qoute-mark"></span>
+                        <div class="customer-feedback-txt">
+                            We want to launch a website that works entirely with .NET <br />
+                            Thanks to <span style="color:#004099">#BitPlatform</span> we can have a well-performance public website with #Blazor
+                        </div>
+                        @*<div class="fade-bar"></div>*@
+                        <div class="author-container">
+                            <img class="image" src="images/home/twitter/2.webp" />
+                            <div class="customer-feedback-name">Hamed Hajiloo</div>
+                        </div>
+                    </a>
+                </BitCarouselItem>
+                <BitCarouselItem>
+                    <a class="customer-feedback-card" href="https://twitter.com/mhrastegari77/status/1553252183973453824" target="_blank">
+                        <span class="qoute-mark"></span>
+                        <div class="customer-feedback-txt">
+                            Man! <span style="color:#004099">#BitPlatform</span> team is really awesome and powerful!!! <br />
+                            Yesterday I requested a draggable Carousel component for #Blazor and
+                            they literally published a pre release of it today. 🔥
+                        </div>
+                        @*<div class="fade-bar"></div>*@
+                        <div class="author-container">
+                            <img class="image" src="images/home/twitter/3.webp" />
+                            <div class="customer-feedback-name">MH Rastegari</div>
+                        </div>
+                    </a>
+                </BitCarouselItem>
+            </BitCarousel>
 
-    <section class="background-section">
-        <div class="circle1" />
-        <div class="circle2" />
-        <div class="circle3" />
-        <div class="circle4" />
-        <div class="circle5" />
-        <div class="circle6" />
-        <div class="circle7" />
-        <div class="background-color" />
+            @*<a class="twitter-link" href="twitter.com"></a>*@
+        </div>
     </section>
 </div>
