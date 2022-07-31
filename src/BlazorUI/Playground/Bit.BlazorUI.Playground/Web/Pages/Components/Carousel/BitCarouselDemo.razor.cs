@@ -56,6 +56,13 @@ public partial class BitCarouselDemo
             Type = "bool",
             DefaultValue = "true",
             Description = "Shows or hides the Next/Prev buttons of the BitCarousel."
+        },
+        new()
+        {
+            Name = "AutoPlay",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Enables/disables the auto scrolling of the slides."
         }
     };
 
@@ -322,6 +329,72 @@ private void GoTo()
 }";
 
     private readonly string example5HTMLCode = @"
+<style>
+    .image {
+        width: 100%;
+        height: 100%;
+    }
+    .text-title {
+        position: absolute;
+        bottom: 3.4375rem;
+        width: 100%;
+        font-size: 0.9375rem;
+        text-align: center;
+        color: #FFFFFF;
+    }
+
+    .text-description {
+        position: absolute;
+        bottom: 1.875rem;
+        width: 100%;
+        font-size: 0.6875rem;
+        text-align: center;
+        color: #FFFFFF;
+    }
+
+    .buttons-container {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .goto-container {
+        display: flex;
+        justify-content: space-around;
+    }
+
+    ::deep .goto-button {
+        margin-right: rem(10px);
+    }
+</style>
+
+<BitCarousel ShowNextPrev=""false"" @ref=""carousel"">
+    <BitCarouselItem>
+        <div class=""numbertext"">1 / 4</div>
+        <img class=""image"" src=""/images/carousel/img1.jpg"" />
+        <div class=""text-title"">Aurora</div>
+        <div class=""text-description"">This is Aurora and it's fantastic</div>
+    </BitCarouselItem>
+    <BitCarouselItem>
+        <div class=""numbertext"">2 / 4</div>
+        <img class=""image"" src=""/images/carousel/img2.jpg"" />
+        <div class=""text-title"">Beautiful Mountain</div>
+        <div class=""text-description"">This is a Beautiful Mountain and it's gorgeous</div>
+    </BitCarouselItem>
+    <BitCarouselItem>
+        <div class=""numbertext"">3 / 4</div>
+        <img class=""image"" src=""/images/carousel/img3.jpg"" />
+        <div class=""text-title"">Forest In The Valley</div>
+        <div class=""text-description"">This is a Forest In The Valley and it's beautiful</div>
+    </BitCarouselItem>
+    <BitCarouselItem>
+        <div class=""numbertext"">4 / 4</div>
+        <img class=""image"" src=""/images/carousel/img4.jpg"" />
+        <div class=""text-title"">Road Among The Mountains</div>
+        <div class=""text-description"">This is a Road Among The Mountains and it's amazing</div>
+    </BitCarouselItem>
+</BitCarousel>";
+
+    private readonly string example6HTMLCode = @"
 <style>
     ::deep .item {
         text-align: center;
