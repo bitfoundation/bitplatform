@@ -87,6 +87,7 @@
     flex-flow: column nowrap;
     place-content: flex-start;
     width: 100%;
+    max-width: calc((100vw - 32px) - 16px);
     margin-bottom: rem(40px);
     padding: rem(40px) rem(24px);
     border: rem(1px) solid $B5Color;
@@ -102,6 +103,7 @@
     @include md {
         margin-bottom: rem(24px);
         padding: rem(24px) rem(16px);
+        max-width: calc((100vw - 64px) - 16px);
     }
 
     @include sm {
@@ -201,11 +203,11 @@
     }
 
     @include md {
-        min-height: rem(24px);
+        min-height: rem(40px);
         margin: rem(8px) 0;
         border-left: rem(2px) solid $B2Color;
         padding: rem(5px) rem(8px);
-        font-size: rem(10px);
+        font-size: rem(13px);
         line-height: rem(14px);
     }
 
@@ -214,7 +216,7 @@
         margin: rem(8px) 0;
         border-left: rem(2px) solid $B2Color;
         padding: rem(5px) rem(4px);
-        font-size: rem(12px);
+        font-size: rem(13px);
         line-height: rem(16px);
     }
 }
