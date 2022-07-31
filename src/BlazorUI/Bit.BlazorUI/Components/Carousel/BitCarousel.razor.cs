@@ -5,16 +5,17 @@ using Microsoft.AspNetCore.Components;
 
 namespace Bit.BlazorUI;
 
-public partial class BitCarousel
+public partial class BitCarousel : IDisposable
 {
     private ElementReference _carousel = default!;
     private int[] _currentIndices = Array.Empty<int>();
     private int[] _othersIndices = Array.Empty<int>();
     private int _pagesCount;
     private int _currentPage;
-
-    private int scrollItemsCount = 1;
     private int _internalScrollItemsCount = 1;
+    private int scrollItemsCount = 1;
+
+    private System.Timers.Timer _autoPlayTimer = default!;
 
     private readonly List<BitCarouselItem> AllItems = new();
 
@@ -59,6 +60,11 @@ public partial class BitCarousel
         }
     }
 
+    /// <summary>
+    /// Enables/disables the auto scrolling of the slides.
+    /// </summary>
+    [Parameter] public bool AutoPlay { get; set; }
+
     public async Task GoPrev()
     {
         await Prev();
@@ -96,6 +102,13 @@ public partial class BitCarousel
     {
         if (firstRender)
         {
+            if (AutoPlay)
+            {
+                _autoPlayTimer = new System.Timers.Timer(2000);
+                _autoPlayTimer.Elapsed += AutoPlayTimerElapsed;
+                _autoPlayTimer.Start();
+            }
+
             if (scrollItemsCount > VisibleItemsCount)
             {
                 _internalScrollItemsCount = VisibleItemsCount;
@@ -123,7 +136,6 @@ public partial class BitCarousel
         await base.OnAfterRenderAsync(firstRender);
     }
 
-
     private async Task Prev()
     {
         _othersIndices = Enumerable.Range(0, _internalScrollItemsCount).Select(i =>
@@ -135,7 +147,6 @@ public partial class BitCarousel
 
         await Go();
     }
-
     private async Task Next()
     {
         var itemsCount = AllItems.Count;
@@ -148,7 +159,6 @@ public partial class BitCarousel
 
         await Go(true);
     }
-
     private async Task Go(bool isNext = false, int scrollCount = 0)
     {
         if (_othersIndices.Length == 0) return;
@@ -202,7 +212,6 @@ public partial class BitCarousel
         StateHasChanged();
 
     }
-
     private async Task GotoPage(int index)
     {
         if (index < 0)
@@ -239,7 +248,6 @@ public partial class BitCarousel
 
     private double _pointerX;
     private bool _isPointerDown;
-
     private async Task HandlePointerMove(MouseEventArgs e)
     {
         if (_isPointerDown is false) return;
@@ -258,7 +266,6 @@ public partial class BitCarousel
             await Prev();
         }
     }
-
     private async Task HandlePointerDown(MouseEventArgs e)
     {
         _isPointerDown = true;
@@ -266,11 +273,41 @@ public partial class BitCarousel
         await _js.SetStyle(_carousel, "cursor", "grabbing");
         StateHasChanged();
     }
-
     private async Task HandlePointerUp(MouseEventArgs e)
     {
         _isPointerDown = false;
         await _js.SetStyle(_carousel, "cursor", "");
         StateHasChanged();
+    }
+
+    private async void AutoPlayTimerElapsed(object? sender, System.Timers.ElapsedEventArgs e)
+    {
+        try
+        {
+            await InvokeAsync(Next);
+        }
+        catch
+        {
+            throw;
+        }
+    }
+
+    private bool _disposed;
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_disposed) return;
+
+        if (disposing && _autoPlayTimer is not null)
+        {
+            _autoPlayTimer.Elapsed -= AutoPlayTimerElapsed;
+            _autoPlayTimer.Dispose();
+            _disposed = true;
+        }
     }
 }
