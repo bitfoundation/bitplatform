@@ -2,18 +2,18 @@
     display: inline-flex;
     flex-direction: column;
     width: 100%;
+    border: 1px solid #e9eaed;
+
+    .flag {
+        width: 32px;
+        height: 16px;
+        vertical-align: middle;
+    }
 
     ::deep {
-        table {
-            min-width: 100%;
-        }
 
-        tr {
-            height: 1.8rem;
-        }
-
-        th:nth-child(1) {
-            width: 15rem;
+        .column--large {
+            width: 220px;
         }
 
         th:nth-child(1) .col-options-button {
@@ -26,7 +26,139 @@
                 font-style: normal;
                 font-weight: normal;
                 content: "\E721";
+                position: relative;
+                top: 2px;
             }
+        }
+
+        th:not(.col-sort-asc):not(.col-sort-desc) .sort-indicator {
+            &:before {
+                display: inline-block;
+                font-family: 'Fabric MDL2 Assets';
+                font-style: normal;
+                font-weight: normal;
+                content: "\21C5";
+                position: relative;
+                top: -2px;
+            }
+        }
+
+        .bitdatagrid-paginator {
+            padding: 0.5rem;
+        }
+
+        .bitdatagrid-paginator .pagination-text {
+            padding-top: 3px;
+        }
+
+        .bitdatagrid-paginator nav button {
+            border-radius: 0.25rem;
+        }
+
+        .bitdatagrid-paginator nav button:before {
+            vertical-align: middle;
+        }
+
+        .bitdatagrid-paginator nav button:not([disabled]) {
+            background-color: #eee;
+        }
+
+        .bitdatagrid-paginator nav button:not([disabled]):hover {
+            background-color: #d0d1d5;
+        }
+
+        table {
+            position: relative;
+            min-width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            text-indent: initial;
+        }
+
+        thead th:not(:last-child) {
+            border-right: 1px solid #e9eaed;
+        }
+
+
+        thead .col-width-draghandle {
+            cursor: col-resize;
+            width: 3px;
+
+            &:active {
+                background: unset;
+            }
+
+            :after {
+                left: 3px;
+                border-left: unset;
+            }
+
+
+            &:hover {
+                background: unset;
+            }
+        }
+
+        th {
+            background-color: #f4f5f9;
+            padding: .5rem;
+            display: table-cell;
+            vertical-align: inherit;
+            font-weight: bold;
+            border-bottom: 1px solid #e9eaed;
+        }
+
+        tr {
+            height: 1.8rem;
+        }
+
+        tr:nth-child(even) {
+            background: #f4f5f9
+        }
+
+        tr:nth-child(odd) {
+            background: #FFF
+        }
+
+        tr:last-child > td {
+            border-bottom: none;
+        }
+
+        td {
+            border-bottom: 1px solid #e9eaed;
+            color: #4f4f50;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            padding: 0.25rem 0.5rem;
+        }
+
+        td:not(:last-child) {
+            border-right: 1px solid #e9eaed;
+        }
+
+        .sort-indicator {
+            margin-left: auto;
+        }
+
+        .col-width-draghandle:after {
+            border-left: unset;
+        }
+
+        .col-title-text {
+            color: #262526;
+        }
+
+        .col-header-content {
+            padding-right: 0px;
+        }
+
+        button.col-title:active, .col-options-button:active {
+            background-color: unset;
+        }
+
+        button.col-title:hover, .col-options-button:hover {
+            background-color: unset;
         }
     }
 }
