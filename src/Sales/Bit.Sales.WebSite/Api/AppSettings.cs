@@ -8,7 +8,7 @@ public class AppSettings
 
     public EmailSettings EmailSettings { get; set; } = default!;
 
-    public HealCheckSettings HealCheckSettings { get; set; } = default!;
+    public HealthCheckSettings HealthCheckSettings { get; set; } = default!;
 
     public ReceiverEmailSetting ReceiverEmailSetting { get; set; } = default!;
 
@@ -17,7 +17,7 @@ public class AppSettings
     public string WebServerAddress { get; set; } = default!;
 }
 
-public class HealCheckSettings
+public class HealthCheckSettings
 {
     public bool EnableHealthChecks { get; set; }
 }
