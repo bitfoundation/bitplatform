@@ -13,14 +13,17 @@ public partial class BitCarousel
     private int _pagesCount;
     private int _currentPage;
 
+    private int scrollItemsCount = 1;
+    private int _internalScrollItemsCount = 1;
+
     private readonly List<BitCarouselItem> AllItems = new();
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
     /// <summary>
-    /// If enabled the carousel items will navigate in a loop (first item comes after last item and last item comes before first item).
+    /// If enabled the carousel items will navigate in an infinite loop (first item comes after last item and last item comes before first item).
     /// </summary>
-    [Parameter] public bool InfiniteSliding { get; set; }
+    [Parameter] public bool InfiniteScrolling { get; set; }
 
     /// <summary>
     /// Items of the carousel.
@@ -45,7 +48,16 @@ public partial class BitCarousel
     /// <summary>
     /// Number of items that is going to be changed on navigation
     /// </summary>
-    [Parameter] public int ScrollItemsCount { get; set; } = 1;
+    [Parameter]
+    public int ScrollItemsCount
+    {
+        get => scrollItemsCount;
+        set
+        {
+            scrollItemsCount = value;
+            _internalScrollItemsCount = value;
+        }
+    }
 
     public async Task GoPrev()
     {
@@ -84,8 +96,14 @@ public partial class BitCarousel
     {
         if (firstRender)
         {
+            if (scrollItemsCount > VisibleItemsCount)
+            {
+                _internalScrollItemsCount = VisibleItemsCount;
+            }
+            await _js.PreventDefault(_carousel, "touchmove");
+
             _currentIndices = Enumerable.Range(0, VisibleItemsCount).ToArray();
-            _othersIndices = Enumerable.Range(0, ScrollItemsCount).ToArray();
+            _othersIndices = Enumerable.Range(0, _internalScrollItemsCount).ToArray();
 
             var itemsCount = AllItems.Count;
             var rect = await _js.GetBoundingClientRect(_carousel);
@@ -108,33 +126,36 @@ public partial class BitCarousel
 
     private async Task Prev()
     {
-        _othersIndices = Enumerable.Range(0, ScrollItemsCount).Select(i =>
+        _othersIndices = Enumerable.Range(0, _internalScrollItemsCount).Select(i =>
         {
             var idx = _currentIndices[0] - (i + 1);
-            if (idx < 0) idx = AllItems.Count + idx;
+            if (InfiniteScrolling && idx < 0) idx += AllItems.Count;
             return idx;
-        }).Reverse().ToArray();
+        }).Where(i => i >= 0).Reverse().ToArray();
 
         await Go();
     }
 
     private async Task Next()
     {
-        _othersIndices = Enumerable.Range(0, ScrollItemsCount).Select(i =>
+        var itemsCount = AllItems.Count;
+        _othersIndices = Enumerable.Range(0, _internalScrollItemsCount).Select(i =>
         {
-            var idx = _currentIndices[VisibleItemsCount - 1] + (i + 1);
-            if (idx > AllItems.Count - 1) idx = idx - AllItems.Count;
+            var idx = _currentIndices[_currentIndices.Length - 1] + (i + 1);
+            if (InfiniteScrolling && idx > itemsCount - 1) idx -= itemsCount;
             return idx;
-        }).ToArray();
+        }).Where(i => i < itemsCount).ToArray();
 
         await Go(true);
     }
 
     private async Task Go(bool isNext = false, int scrollCount = 0)
     {
+        if (_othersIndices.Length == 0) return;
+
         if (scrollCount < 1)
         {
-            scrollCount = ScrollItemsCount;
+            scrollCount = _internalScrollItemsCount;
         }
 
         var diff = VisibleItemsCount - scrollCount;
@@ -186,11 +207,11 @@ public partial class BitCarousel
     {
         if (index < 0)
         {
-            index = InfiniteSliding ? _pagesCount - 1 : 0;
+            index = InfiniteScrolling ? _pagesCount - 1 : 0;
         }
         else if (index >= _pagesCount)
         {
-            index = InfiniteSliding ? 0 : _pagesCount - 1;
+            index = InfiniteScrolling ? 0 : _pagesCount - 1;
         }
 
         if (_currentIndices[0] == index * VisibleItemsCount) return;
@@ -204,11 +225,12 @@ public partial class BitCarousel
         else // go next
         {
             isNext = true;
+            var itemsCount = AllItems.Count;
             _othersIndices = indices.Select(idx =>
             {
-                if (idx > AllItems.Count - 1) idx = idx - AllItems.Count;
+                if (InfiniteScrolling && idx > itemsCount - 1) idx -= itemsCount;
                 return idx;
-            }).ToArray();
+            }).Where(i => i < itemsCount).ToArray();
         }
 
         await Go(isNext, VisibleItemsCount);
@@ -217,6 +239,7 @@ public partial class BitCarousel
 
     private double _pointerX;
     private bool _isPointerDown;
+
     private async Task HandlePointerMove(MouseEventArgs e)
     {
         if (_isPointerDown is false) return;

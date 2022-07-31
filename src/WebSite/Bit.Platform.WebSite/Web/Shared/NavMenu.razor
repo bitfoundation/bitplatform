@@ -1,0 +1,22 @@
+﻿@if (isNavOpen)
+{
+    <div class="nav-menu-shadow nav-menu-container--mobile" @onclick="@ToggleMenu"></div>
+}
+<div class="nav-menu-container @(isNavOpen is false ? "nav-menu-container--desktop" : "")">
+    <div class="search-box-container">
+        <BitSearchBox Class="nav-menu-search-box"
+                      Placeholder="Search"
+                      IconName="BitIconName.Search"
+                      Value="@searchText"
+                      ValueChanged="@HandleChange"
+                      OnClear="@HandleClear" />
+    </div>
+    <div class="nav-menu-list">
+        <BitNav Class="nav-menu"
+                NavLinkItems="filteredNavLinks"
+                RenderType="renderType"
+                AriaLabel="Bit Platform Nav"
+                OnLinkClick="HandleLinkClick">
+        </BitNav>
+    </div>
+</div>

@@ -2,8 +2,14 @@
 
 <Header />
 
-<div>
-    @Body
+<div class="main-container">
+    @if (CurrentUrl != "/")
+    {
+        <NavMenu />
+    }
+    <div class="page-content @(CurrentUrl == "/" ? "page-content-home" : null)">
+        @Body
+    </div>
 </div>
 
 <Footer />

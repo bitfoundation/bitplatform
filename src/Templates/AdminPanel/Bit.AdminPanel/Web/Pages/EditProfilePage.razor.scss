@@ -207,3 +207,25 @@
         max-width: 100%;
     }
 }
+
+::deep .edit-profile-dtp {
+    .bit-dtp-wrapper {
+        z-index: 5;
+    }
+
+    .bit-dtp-overlay {
+        z-index: 4;
+    }
+
+    .bit-dtp-callout {
+        z-index: 6;
+    }
+}
+
+::deep .edit-profile-form {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+}
