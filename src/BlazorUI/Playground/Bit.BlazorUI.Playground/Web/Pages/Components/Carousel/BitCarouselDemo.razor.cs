@@ -63,6 +63,13 @@ public partial class BitCarouselDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Enables/disables the auto scrolling of the slides."
+        },
+        new()
+        {
+            Name = "AutoPlayInterval",
+            Type = "double",
+            DefaultValue = "2000",
+            Description = "Sets the interval of the auto scrolling in milliseconds (the default value is 2000)."
         }
     };
 

@@ -65,6 +65,11 @@ public partial class BitCarousel : IDisposable
     /// </summary>
     [Parameter] public bool AutoPlay { get; set; }
 
+    /// <summary>
+    /// Sets the interval of the auto scrolling in milliseconds (the default value is 2000).
+    /// </summary>
+    [Parameter] public double AutoPlayInterval { get; set; } = 2000;
+
     public async Task GoPrev()
     {
         await Prev();
@@ -104,7 +109,7 @@ public partial class BitCarousel : IDisposable
         {
             if (AutoPlay)
             {
-                _autoPlayTimer = new System.Timers.Timer(2000);
+                _autoPlayTimer = new System.Timers.Timer(AutoPlayInterval);
                 _autoPlayTimer.Elapsed += AutoPlayTimerElapsed;
                 _autoPlayTimer.Start();
             }
