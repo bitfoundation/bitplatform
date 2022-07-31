@@ -16,3 +16,11 @@
     overflow-y: hidden;
     line-height: rem(20px);
 }
+
+.position-btn {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: space-between;
+    width: fit-content;
+    height: rem(150px);
+}
