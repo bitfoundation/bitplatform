@@ -239,11 +239,32 @@
     border-radius: 0 0 rem(10px) rem(10px);
 
     &::-webkit-scrollbar {
-        width: rem(10px);
+        width: rem(6.5px);
+        background-color: $White;
+    }
+
+    &::-webkit-scrollbar-track {
+        background-color: $White;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background-color: $B2Color;
+        border-radius: rem(8px);
+        border: rem(4px) solid $B2Color;
+    }
+
+    &::-webkit-scrollbar-button {
+        display: none;
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+        background-color: $B3Color;
+        border-radius: rem(8px);
+        border: rem(4px) solid $B3Color;
     }
 
     &::-webkit-scrollbar:horizontal {
-        height: rem(10px);
+        height: rem(6.5px);
     }
 
     @include lg {

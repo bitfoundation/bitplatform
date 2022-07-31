@@ -7,13 +7,19 @@
     flex-flow: column nowrap;
     justify-content: flex-start;
     width: 100%;
+    max-width: calc((100vw - 32px) - 16px);
     margin-bottom: rem(80px);
 
     @include lg {
         margin-bottom: rem(64px);
     }
 
-    @include lt-lg {
+    @include md {
+        margin-bottom: rem(40px);
+        max-width: calc((100vw - 64px) - 16px);
+    }
+
+    @include sm {
         margin-bottom: rem(40px);
     }
 }
@@ -74,7 +80,6 @@
     color: $Gray1;
     font-size: rem(16px);
     line-height: rem(24px);
-    overflow: auto;
 
     &::-webkit-scrollbar {
         width: rem(6px);
@@ -91,12 +96,12 @@
 
     @include md {
         border-radius: 0 0 rem(8px) rem(8px);
-        font-size: rem(10px);
+        font-size: rem(13px);
     }
 
     @include sm {
         border-radius: 0 0 rem(8px) rem(8px);
-        font-size: rem(12px);
+        font-size: rem(13px);
     }
 }
 
