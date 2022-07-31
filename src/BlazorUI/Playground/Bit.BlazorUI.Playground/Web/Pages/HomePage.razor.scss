@@ -997,11 +997,11 @@
     justify-content: center;
     align-items: center;
     min-width: rem(40px);
-    height: rem(16px);
+    height: rem(20px);
     border-radius: rem(20px);
     margin-left: rem(10px);
-    padding: 0 rem(5px);
-    font-size: rem(8px);
+    padding: rem(8px) rem(6px) rem(6px) rem(22px);
+    font-size: rem(10px);
     font-weight: 500;
 
     &.blue {
@@ -1009,9 +1009,13 @@
         color: $White;
     }
 
-    &.yellow {
-        background-color: $Y1Color;
-        color: $B2Color;
+    &.featured {
+        background-color: $B2Color;
+        background-image: url('/images/home/star-icon.webp');
+        background-position: center left rem(5px);
+        background-repeat: no-repeat;
+        background-size: rem(14px);
+        color: $White;
     }
 }
 
