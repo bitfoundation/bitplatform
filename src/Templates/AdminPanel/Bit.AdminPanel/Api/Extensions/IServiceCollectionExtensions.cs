@@ -137,7 +137,7 @@ public static class IServiceCollectionExtensions
     {
         var appsettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
 
-        var healthCheckSettings = appsettings.HealCheckSettings;
+        var healthCheckSettings = appsettings.HealthCheckSettings;
 
         if (healthCheckSettings.EnableHealthChecks is false)
             return;
