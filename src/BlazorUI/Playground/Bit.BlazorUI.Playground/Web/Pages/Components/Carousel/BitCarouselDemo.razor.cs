@@ -70,6 +70,13 @@ public partial class BitCarouselDemo
             Type = "double",
             DefaultValue = "2000",
             Description = "Sets the interval of the auto scrolling in milliseconds (the default value is 2000)."
+        },
+        new()
+        {
+            Name = "AnimationDuration",
+            Type = "double",
+            DefaultValue = "2000",
+            Description = "Sets the duration of the scrolling animation in seconds (the default value is 0.5)."
         }
     };
 
@@ -120,7 +127,7 @@ public partial class BitCarouselDemo
 </style>
 
 <BitCarousel>
-    <BitCarouselItem>
+    <BitCarouselItem AnimationDuration=""2"">
         <div class=""numbertext"">1 / 4</div>
         <img class=""image"" src=""/images/carousel/img1.jpg"">
     </BitCarouselItem>

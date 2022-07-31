@@ -70,6 +70,11 @@ public partial class BitCarousel : IDisposable
     /// </summary>
     [Parameter] public double AutoPlayInterval { get; set; } = 2000;
 
+    /// <summary>
+    /// Sets the duration of the scrolling animation in seconds (the default value is 0.5).
+    /// </summary>
+    [Parameter] public double AnimationDuration { get; set; } = 0.5;
+
     public async Task GoPrev()
     {
         await Prev();
@@ -200,19 +205,19 @@ public partial class BitCarousel : IDisposable
         for (int i = 0; i < currents.Length; i++)
         {
             var c = currents[i];
-            c.InternalTransitionStyle = $"transition:all 0.5s";
+            c.InternalTransitionStyle = $"transition:all {AnimationDuration}s";
             c.InternalTransformStyle = $"transform:translateX({-sign * 100 * (scrollCount + (-sign * i))}%)";
         }
 
         for (int i = 0; i < others.Length; i++)
         {
             var o = others[i];
-            o.InternalTransitionStyle = $"transition:all 0.5s";
+            o.InternalTransitionStyle = $"transition:all {AnimationDuration}s";
             o.InternalTransformStyle = $"transform:translateX({100 * (offset + i)}%)";
         }
 
         _currentIndices = newIndices;
-        _currentPage = (int)Math.Floor((decimal)(_currentIndices[0]) / VisibleItemsCount);
+        _currentPage = (int)Math.Floor((decimal)_currentIndices[0] / VisibleItemsCount);
 
         StateHasChanged();
 
