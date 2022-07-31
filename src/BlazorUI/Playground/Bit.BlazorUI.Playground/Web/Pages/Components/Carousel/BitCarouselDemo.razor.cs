@@ -374,7 +374,7 @@ private void GoTo()
     }
 </style>
 
-<BitCarousel ShowNextPrev=""false"" @ref=""carousel"">
+<BitCarousel ShowNextPrev=""false"" AutoPlay=""true"" AutoPlayInterval=""2500"">
     <BitCarouselItem>
         <div class=""numbertext"">1 / 4</div>
         <img class=""image"" src=""/images/carousel/img1.jpg"" />
