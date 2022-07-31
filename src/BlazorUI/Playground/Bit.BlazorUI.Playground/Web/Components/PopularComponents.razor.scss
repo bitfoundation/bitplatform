@@ -399,3 +399,10 @@
         }
     }
 }
+
+::deep .card-icon {
+    path {
+        fill: $White;
+        stroke: $White;
+    }
+}
