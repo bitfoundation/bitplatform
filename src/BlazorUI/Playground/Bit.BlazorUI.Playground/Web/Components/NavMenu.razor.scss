@@ -2,8 +2,8 @@
 @import '../Styles/abstracts/_media-queries.scss';
 @import '../Styles/abstracts/_functions.scss';
 
-.side-nav-container {
-    position: fixed;
+.nav-menu-container {
+    position: sticky;
     z-index: 3000;
     left: 0;
     width: rem(344px);
@@ -17,11 +17,13 @@
     }
 
     @include md {
+        position: fixed;
         width: rem(306px);
         height: calc(100vh - #{rem(41px)});
     }
 
     @include sm {
+        position: fixed;
         width: rem(264px);
         height: 100vh;
         top: 0;
@@ -29,7 +31,7 @@
     }
 }
 
-.side-nav-container--desktop {
+.nav-menu-container--desktop {
     display: block;
 
     @include lt-lg {
@@ -37,7 +39,7 @@
     }
 }
 
-.side-nav-container--mobile {
+.nav-menu-container--mobile {
     display: none;
 
     @include lt-lg {
@@ -45,7 +47,7 @@
     }
 }
 
-.side-nav-shadow {
+.nav-menu-shadow {
     position: fixed;
     top: 0;
     left: 0;
@@ -77,7 +79,7 @@
     }
 }
 
-.side-nav-list {
+.nav-menu-list {
     width: 100%;
     height: calc(100% - #{rem(102px)});
     padding-top: rem(20px);
@@ -102,7 +104,7 @@
     }
 }
 
-::deep .side-nav-search-box {
+::deep .nav-menu-search-box {
     width: 100%;
     height: rem(40px);
 
@@ -120,7 +122,7 @@
     }
 }
 
-::deep .side-nav-demo-link {
+::deep .nav-menu-demo-link {
     display: block;
     width: 100%;
     height: rem(40px);
@@ -180,7 +182,7 @@
     }
 }
 
-::deep .side-nav-demo-link--active {
+::deep .nav-menu-demo-link--active {
     a {
         padding-left: rem(40px);
         background-color: $B5Color;
