@@ -1,13 +1,14 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace Bit.BlazorUI.Playground.Web.Services;
 
 public class NavManuService
 {
-    public event Action OnToggleMenu;
+    public event Func<Task> OnToggleMenu;
 
-    public void ToggleMenu()
+    public async Task ToggleMenu()
     {
-        OnToggleMenu.Invoke();
+        await OnToggleMenu.Invoke();
     }
 }

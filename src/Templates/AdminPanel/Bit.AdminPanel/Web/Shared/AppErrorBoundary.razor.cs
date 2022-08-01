@@ -16,11 +16,9 @@ public partial class AppErrorBoundary
     }
 #endif
 
-    protected override Task OnErrorAsync(Exception exception)
+    protected override async Task OnErrorAsync(Exception exception)
     {
         exceptionHandler.Handle(exception);
-
-        return Task.CompletedTask;
     }
 
     private void Refresh()

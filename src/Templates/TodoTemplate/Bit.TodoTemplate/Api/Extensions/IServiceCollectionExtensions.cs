@@ -76,7 +76,7 @@ public static class IServiceCollectionExtensions
 
             options.Events = new JwtBearerEvents
             {
-                OnMessageReceived = context =>
+                OnMessageReceived = async context =>
                 {
                     // The server accepts the access_token from either the authorization header, the cookie, or the request URL query string
 
@@ -88,8 +88,6 @@ public static class IServiceCollectionExtensions
                     }
 
                     context.Token = access_token;
-
-                    return Task.CompletedTask;
                 }
             };
 

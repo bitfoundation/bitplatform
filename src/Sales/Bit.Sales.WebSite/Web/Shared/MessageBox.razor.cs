@@ -2,40 +2,32 @@
 
 public partial class MessageBox : IDisposable
 {
-    [Inject] private IExceptionHandler exceptionHandler { get; set; } = default!;
+    private static event Func<string, string, Task> OnShow = default!;
 
-    private static event Action<string, string> OnShow = default!;
-
-    public static void Show(string message, string title = "")
+    public static async Task Show(string message, string title = "")
     {
-        OnShow?.Invoke(message, title);
+        if (OnShow is not null)
+            await OnShow.Invoke(message, title);
     }
 
     protected override void OnInitialized()
     {
-        MessageBox.OnShow += ShowMessageBox;
+        OnShow += ShowMessageBox;
 
         base.OnInitialized();
     }
 
-    private async void ShowMessageBox(string message, string title)
+    private async Task ShowMessageBox(string message, string title)
     {
-        try
+        await InvokeAsync(() =>
         {
-            await InvokeAsync(() =>
-            {
-                IsOpen = true;
+            IsOpen = true;
 
-                Title = title;
-                Body = message;
+            Title = title;
+            Body = message;
 
-                StateHasChanged();
-            });
-        }
-        catch (Exception ex)
-        {
-            exceptionHandler.Handle(ex);
-        }
+            StateHasChanged();
+        });
     }
 
     // ========================================================================
@@ -56,6 +48,6 @@ public partial class MessageBox : IDisposable
 
     public void Dispose()
     {
-        MessageBox.OnShow -= ShowMessageBox;
+        OnShow -= ShowMessageBox;
     }
 }

@@ -47,7 +47,7 @@ public static class IServiceCollectionExtensions
             options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
             options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-        }).AddJwtBearer(options =>
+        }).AddJwtBearer(async options =>
         {
             var certificatePath = Path.Combine(Directory.GetCurrentDirectory(), "IdentityCertificate.pfx");
             RSA? rsaPrivateKey;
@@ -76,7 +76,7 @@ public static class IServiceCollectionExtensions
 
             options.Events = new JwtBearerEvents
             {
-                OnMessageReceived = context =>
+                OnMessageReceived = async context =>
                 {
                     // The server accepts the access_token from either the authorization header, the cookie, or the request URL query string
 
@@ -88,8 +88,6 @@ public static class IServiceCollectionExtensions
                     }
 
                     context.Token = access_token;
-
-                    return Task.CompletedTask;
                 }
             };
 

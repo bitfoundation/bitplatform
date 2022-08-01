@@ -2,45 +2,37 @@
 
 public partial class ConfirmMessageBox : IDisposable
 {
-    [Inject] private IExceptionHandler exceptionHandler { get; set; } = default!;
+    private static event Func<string, string, string, Task<bool>> OnShow = default!;
 
-    public Action<bool> CallBackFunction { get; set; }
-
-    private static event Action<string, string,string, Action<bool>> OnShow = default!;
-
-    public static void Show(string message, string context, string title, Action<bool> callBack)
+    public static async Task<bool> Show(string message, string context, string title)
     {
-        OnShow?.Invoke(message,context, title, callBack);
+        return await OnShow.Invoke(message, context, title);
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitAsync()
     {
-        ConfirmMessageBox.OnShow += ShowMessageBox;
+        OnShow += ShowMessageBox;
 
-        base.OnInitialized();
+        await base.OnInitAsync();
     }
 
-    private async void ShowMessageBox(string message, string context, string title, Action<bool> callBack)
+    private TaskCompletionSource<bool>? _tsc;
+
+    private async Task<bool> ShowMessageBox(string message, string context, string title)
     {
-        try
+        _tsc = new TaskCompletionSource<bool>();
+
+        await InvokeAsync(() =>
         {
-            await InvokeAsync(() =>
-            {
-                IsOpen = true;
+            IsOpen = true;
+            Title = title;
+            Message = message;
+            Context = context;
 
-                Title = title;
-                Message = message;
-                Context = context;
+            StateHasChanged();
+        });
 
-                CallBackFunction = callBack;
-
-                StateHasChanged();
-            });
-        }
-        catch (Exception ex)
-        {
-            exceptionHandler.Handle(ex);
-        }
+        return await _tsc.Task;
     }
 
     // ========================================================================
@@ -51,12 +43,10 @@ public partial class ConfirmMessageBox : IDisposable
 
     private string Context { get; set; } = string.Empty;
 
-
-
     public void Confirmation(bool value)
     {
         IsOpen = false;
-        CallBackFunction?.Invoke(value);
+        _tsc?.SetResult(value);
     }
 
     public void Dispose()
