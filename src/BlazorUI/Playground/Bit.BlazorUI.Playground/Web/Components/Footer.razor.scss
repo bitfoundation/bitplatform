@@ -1,0 +1,115 @@
+﻿@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_media-queries.scss';
+@import '../Styles/abstracts/_functions.scss';
+
+.footer {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    width: 100%;
+
+    .footer-gray-bar {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: rem(24px);
+        box-sizing: border-box;
+        text-align: center;
+        font-size: rem(15px);
+        line-height: rem(24px);
+        color: $Gray1;
+        background-color: $B6Color;
+
+        @include lt-xl {
+            font-weight: 500;
+            font-size: rem(8px);
+            line-height: rem(12px);
+        }
+
+        @include lt-lg {
+            height: rem(12px);
+        }
+    }
+
+    @mixin BottomContactLinkContainer {
+        position: absolute;
+        top: rem(-50px);
+        z-index: 1;
+        margin: 0 auto;
+        right: 0;
+        left: 0;
+        display: flex;
+        justify-content: center;
+        flex-flow: row nowrap;
+    }
+
+    @mixin LeftContactLinkContainer {
+        position: fixed;
+        top: 50%;
+        left: rem(50px);
+        z-index: 1;
+        right: unset;
+        display: flex;
+        justify-content: center;
+        flex-flow: column nowrap;
+        transform: translateY(-50%);
+    }
+
+    .contact-link-container--home {
+        @include BottomContactLinkContainer;
+    }
+
+    .contact-link-container {
+        @include BottomContactLinkContainer;
+    }
+
+    @mixin FooterLink {
+        width: rem(40px);
+        height: rem(40px);
+        border-radius: 50%;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-color: $B4Color;
+        cursor: pointer;
+        margin: rem(8px);
+        background-size: rem(21px);
+    }
+
+    .twitter-link {
+        @include FooterLink;
+        background-image: url('/images/twitter-icon.svg');
+
+        &:hover {
+            background-color: #1DA1F2;
+        }
+    }
+
+    .github-link {
+        @include FooterLink;
+        background-image: url('/images/github-icon.svg');
+
+        &:hover {
+            background-color: #141414;
+        }
+    }
+
+    .youtube-link {
+        @include FooterLink;
+        background-image: url('/images/youtube-icon.svg');
+
+        &:hover {
+            background-color: #FF0000;
+        }
+    }
+
+    .linkedin-link {
+        @include FooterLink;
+        background-image: url('/images/linkedin-icon.svg');
+
+        &:hover {
+            background-color: #0A66C2;
+        }
+    }
+}
