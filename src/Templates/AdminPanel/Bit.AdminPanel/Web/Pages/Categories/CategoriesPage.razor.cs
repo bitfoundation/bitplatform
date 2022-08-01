@@ -1,5 +1,4 @@
 ﻿//-:cnd:noEmit
-using System.Collections.Generic;
 using AdminPanel.Shared.Dtos.Categories;
 
 namespace AdminPanel.App.Pages.Categories;
@@ -86,22 +85,20 @@ public partial class CategoriesPage
         navigationManager.NavigateTo("add-edit-category");
     }
 
-    private Task EditCategory(CategoryDto Category)
+    private async Task EditCategory(CategoryDto Category)
     {
         navigationManager.NavigateTo($"add-edit-category/{Category!.Id}");
-        return Task.CompletedTask;
     }
 
-    private void DeleteCategory(CategoryDto Category)
+    private async Task DeleteCategory(CategoryDto Category)
     {
-        ConfirmMessageBox.Show("Are you sure delete?", Category.Name!, "Delete", async (confirmed) =>
+        var confirmed = await ConfirmMessageBox.Show("Are you sure delete?", Category.Name!, "Delete");
+
+        if (confirmed)
         {
-            if (confirmed)
-            {
-                await httpClient.DeleteAsync($"Category/Delete/{Category.Id}");
-                await RefreshData();
-            }
-        });
+            await httpClient.DeleteAsync($"Category/Delete/{Category.Id}");
+            await RefreshData();
+        }
     }
 }
 

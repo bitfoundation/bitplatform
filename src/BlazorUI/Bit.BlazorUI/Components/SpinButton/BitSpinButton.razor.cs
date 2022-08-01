@@ -253,9 +253,9 @@ public partial class BitSpinButton
 
 
         await HandleMouseDownAction(action, e);
-        timer = new Timer((_) =>
+        timer = new Timer(async (_) =>
         {
-            InvokeAsync(async () =>
+            await InvokeAsync(async () =>
             {
                 await HandleMouseDownAction(action, e);
                 StateHasChanged();

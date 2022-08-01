@@ -22,15 +22,16 @@ public partial class CreateEditProductModal
 
     public string SelectedCategoyId { get => Product!.CategoryId!.ToString(); set { Product.CategoryId = int.Parse(value); } }
 
-    protected override async void OnInitialized()
+    protected override async Task OnInitAsync()
     {
         AllCategoryList = await GetCategoryDropdownItemsAsync();
-        base.OnInitialized();
+
+        await base.OnInitAsync();
     }
 
-    public void ShowModal(ProductDto product)
+    public async Task ShowModal(ProductDto product)
     {
-        InvokeAsync(() =>
+        await InvokeAsync(() =>
         {
             IsOpen = true;
 
