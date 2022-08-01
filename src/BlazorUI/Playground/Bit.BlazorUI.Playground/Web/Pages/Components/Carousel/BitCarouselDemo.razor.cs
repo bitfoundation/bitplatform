@@ -77,6 +77,13 @@ public partial class BitCarouselDemo
             Type = "double",
             DefaultValue = "2000",
             Description = "Sets the duration of the scrolling animation in seconds (the default value is 0.5)."
+        },
+        new()
+        {
+            Name = "Direction",
+            Type = "Direction",
+            DefaultValue = "Direction.LeftToRight",
+            Description = "Sets the direction of the scrolling (the default value is LeftToRight)."
         }
     };
 
@@ -84,28 +91,22 @@ public partial class BitCarouselDemo
     {
         new EnumParameter()
         {
-            Id = "component-visibility-enum",
-            Title = "BitComponentVisibility Enum",
-            Description = "",
+            Id = "direction-enum",
+            Title = "BitDirection Enum",
+            Description = "Describes the render direction",
             EnumList = new List<EnumItem>()
             {
                 new EnumItem()
                 {
-                    Name= "Visible",
-                    Description="Show content of the component.",
+                    Name= "LeftToRight",
+                    Description="Renders content from left to right.",
                     Value="0",
                 },
                 new EnumItem()
                 {
-                    Name= "Hidden",
-                    Description="Hide content of the component,though the space it takes on the page remains.",
+                    Name= "RightToLeft",
+                    Description="Renders content from right to left.",
                     Value="1",
-                },
-                new EnumItem()
-                {
-                    Name= "Collapsed",
-                    Description="Hide content of the component,though the space it takes on the page gone.",
-                    Value="2",
                 }
             }
         }
@@ -381,7 +382,7 @@ private void GoTo()
     }
 </style>
 
-<BitCarousel ShowNextPrev=""false"" AutoPlay=""true"" AutoPlayInterval=""2500"">
+<BitCarousel ShowNextPrev=""false"" AutoPlay=""true"" AutoPlayInterval=""2500"" InfiniteScrolling=""true"">
     <BitCarouselItem>
         <div class=""numbertext"">1 / 4</div>
         <img class=""image"" src=""/images/carousel/img1.jpg"" />
@@ -433,6 +434,34 @@ private void GoTo()
         <BitCarouselItem Class=""item""><div>7</div></BitCarouselItem>
         <BitCarouselItem Class=""item""><div>8</div></BitCarouselItem>
         <BitCarouselItem Class=""item""><div>9</div></BitCarouselItem>
+    </BitCarousel>
+</div>";
+
+    private readonly string example7HTMLCode = @"
+<style>
+    ::deep .item {
+        text-align: center;
+        color: black;
+        border: 1px solid blue;
+        background-color: lightblue;
+    }
+
+    ::deep .item div {
+        transform: translate(0, 80%);
+    }
+</style>
+
+<div>
+    <BitCarousel Style=""height: 100px"" Direction=""BitDirection.RightToLeft"" VisibleItemsCount=""3"" ScrollItemsCount=""1"" InfiniteScrolling=""true"">
+        <BitCarouselItem Class=""item""><div>یک</div></BitCarouselItem>
+        <BitCarouselItem Class=""item""><div>دو</div></BitCarouselItem>
+        <BitCarouselItem Class=""item""><div>سه</div></BitCarouselItem>
+        <BitCarouselItem Class=""item""><div>چهار</div></BitCarouselItem>
+        <BitCarouselItem Class=""item""><div>پنج</div></BitCarouselItem>
+        <BitCarouselItem Class=""item""><div>شیش</div></BitCarouselItem>
+        <BitCarouselItem Class=""item""><div>هفت</div></BitCarouselItem>
+        <BitCarouselItem Class=""item""><div>هشت</div></BitCarouselItem>
+        <BitCarouselItem Class=""item""><div>نه</div></BitCarouselItem>
     </BitCarousel>
 </div>";
 }
