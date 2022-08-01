@@ -24,10 +24,10 @@ public partial class BitCarouselDemo
         },
         new()
         {
-            Name = "IsSlideShow",
+            Name = "InfiniteScrolling",
             Type = "bool",
             DefaultValue = "false",
-            Description = "If enabled the carousel items will navigate in a loop (first item comes after last item and last item comes before first item)."
+            Description = "If enabled the carousel items will navigate in an infinite loop (first item comes after last item and last item comes before first item)."
         },
         new()
         {
@@ -56,6 +56,27 @@ public partial class BitCarouselDemo
             Type = "bool",
             DefaultValue = "true",
             Description = "Shows or hides the Next/Prev buttons of the BitCarousel."
+        },
+        new()
+        {
+            Name = "AutoPlay",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Enables/disables the auto scrolling of the slides."
+        },
+        new()
+        {
+            Name = "AutoPlayInterval",
+            Type = "double",
+            DefaultValue = "2000",
+            Description = "Sets the interval of the auto scrolling in milliseconds (the default value is 2000)."
+        },
+        new()
+        {
+            Name = "AnimationDuration",
+            Type = "double",
+            DefaultValue = "2000",
+            Description = "Sets the duration of the scrolling animation in seconds (the default value is 0.5)."
         }
     };
 
@@ -106,7 +127,7 @@ public partial class BitCarouselDemo
 </style>
 
 <BitCarousel>
-    <BitCarouselItem>
+    <BitCarouselItem AnimationDuration=""2"">
         <div class=""numbertext"">1 / 4</div>
         <img class=""image"" src=""/images/carousel/img1.jpg"">
     </BitCarouselItem>
@@ -149,7 +170,7 @@ public partial class BitCarouselDemo
     }
 </style>
 
-<BitCarousel IsSlideShow=""true"">
+<BitCarousel InfiniteScrolling=""true"">
     <BitCarouselItem>
         <img class=""image"" src=""/images/carousel/img1.jpg"" />
         <div class=""text-title"">Aurora</div>
@@ -197,23 +218,27 @@ public partial class BitCarouselDemo
     }
 </style>
 
-<BitCarousel IsSlideShow=""true"" ShowDots=""false"">
+<BitCarousel ShowDots=""false"">
     <BitCarouselItem>
+        <div class=""numbertext"">1 / 4</div>
         <img class=""image"" src=""/images/carousel/img1.jpg"" />
         <div class=""text-title"">Aurora</div>
         <div class=""text-description"">This is Aurora and it's fantastic</div>
     </BitCarouselItem>
     <BitCarouselItem>
+        <div class=""numbertext"">2 / 4</div>
         <img class=""image"" src=""/images/carousel/img2.jpg"" />
         <div class=""text-title"">Beautiful Mountain</div>
         <div class=""text-description"">This is a Beautiful Mountain and it's gorgeous</div>
     </BitCarouselItem>
     <BitCarouselItem>
+        <div class=""numbertext"">3 / 4</div>
         <img class=""image"" src=""/images/carousel/img3.jpg"" />
         <div class=""text-title"">Forest In The Valley</div>
         <div class=""text-description"">This is a Forest In The Valley and it's beautiful</div>
     </BitCarouselItem>
     <BitCarouselItem>
+        <div class=""numbertext"">4 / 4</div>
         <img class=""image"" src=""/images/carousel/img4.jpg"" />
         <div class=""text-title"">Road Among The Mountains</div>
         <div class=""text-description"">This is a Road Among The Mountains and it's amazing</div>
@@ -260,23 +285,27 @@ public partial class BitCarouselDemo
 </style>
 
 <div>
-    <BitCarousel IsSlideShow=""true"" ShowNextPrev=""false"" @ref=""carousel"">
+    <BitCarousel ShowNextPrev=""false"" @ref=""carousel"">
         <BitCarouselItem>
+            <div class=""numbertext"">1 / 4</div>
             <img class=""image"" src=""/images/carousel/img1.jpg"" />
             <div class=""text-title"">Aurora</div>
             <div class=""text-description"">This is Aurora and it's fantastic</div>
         </BitCarouselItem>
         <BitCarouselItem>
+            <div class=""numbertext"">2 / 4</div>
             <img class=""image"" src=""/images/carousel/img2.jpg"" />
             <div class=""text-title"">Beautiful Mountain</div>
             <div class=""text-description"">This is a Beautiful Mountain and it's gorgeous</div>
         </BitCarouselItem>
         <BitCarouselItem>
+            <div class=""numbertext"">3 / 4</div>
             <img class=""image"" src=""/images/carousel/img3.jpg"" />
             <div class=""text-title"">Forest In The Valley</div>
             <div class=""text-description"">This is a Forest In The Valley and it's beautiful</div>
         </BitCarouselItem>
         <BitCarouselItem>
+            <div class=""numbertext"">4 / 4</div>
             <img class=""image"" src=""/images/carousel/img4.jpg"" />
             <div class=""text-title"">Road Among The Mountains</div>
             <div class=""text-description"">This is a Road Among The Mountains and it's amazing</div>
@@ -315,46 +344,95 @@ private void GoTo()
 
     private readonly string example5HTMLCode = @"
 <style>
+    .image {
+        width: 100%;
+        height: 100%;
+    }
+    .text-title {
+        position: absolute;
+        bottom: 3.4375rem;
+        width: 100%;
+        font-size: 0.9375rem;
+        text-align: center;
+        color: #FFFFFF;
+    }
+
+    .text-description {
+        position: absolute;
+        bottom: 1.875rem;
+        width: 100%;
+        font-size: 0.6875rem;
+        text-align: center;
+        color: #FFFFFF;
+    }
+
+    .buttons-container {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .goto-container {
+        display: flex;
+        justify-content: space-around;
+    }
+
+    ::deep .goto-button {
+        margin-right: rem(10px);
+    }
+</style>
+
+<BitCarousel ShowNextPrev=""false"" AutoPlay=""true"" AutoPlayInterval=""2500"">
+    <BitCarouselItem>
+        <div class=""numbertext"">1 / 4</div>
+        <img class=""image"" src=""/images/carousel/img1.jpg"" />
+        <div class=""text-title"">Aurora</div>
+        <div class=""text-description"">This is Aurora and it's fantastic</div>
+    </BitCarouselItem>
+    <BitCarouselItem>
+        <div class=""numbertext"">2 / 4</div>
+        <img class=""image"" src=""/images/carousel/img2.jpg"" />
+        <div class=""text-title"">Beautiful Mountain</div>
+        <div class=""text-description"">This is a Beautiful Mountain and it's gorgeous</div>
+    </BitCarouselItem>
+    <BitCarouselItem>
+        <div class=""numbertext"">3 / 4</div>
+        <img class=""image"" src=""/images/carousel/img3.jpg"" />
+        <div class=""text-title"">Forest In The Valley</div>
+        <div class=""text-description"">This is a Forest In The Valley and it's beautiful</div>
+    </BitCarouselItem>
+    <BitCarouselItem>
+        <div class=""numbertext"">4 / 4</div>
+        <img class=""image"" src=""/images/carousel/img4.jpg"" />
+        <div class=""text-title"">Road Among The Mountains</div>
+        <div class=""text-description"">This is a Road Among The Mountains and it's amazing</div>
+    </BitCarouselItem>
+</BitCarousel>";
+
+    private readonly string example6HTMLCode = @"
+<style>
     ::deep .item {
         text-align: center;
         color: black;
         border: 1px solid blue;
         background-color: lightblue;
     }
+
+    ::deep .item div {
+        transform: translate(0, 80%);
+    }
 </style>
 
 <div>
-    <BitCarousel Style=""height: 100px"" VisibleItemsCount=""3"" ScrollItemsCount=""1"">
-        <BitCarouselItem Class=""item"">
-            <div>1</div>
-        </BitCarouselItem>
-        <BitCarouselItem Class=""item"">
-            <div>2</div>
-        </BitCarouselItem>
-        <BitCarouselItem Class=""item"">
-            <div>3</div>
-        </BitCarouselItem>
-        <BitCarouselItem Class=""item"">
-            <div>4</div>
-        </BitCarouselItem>
-        <BitCarouselItem Class=""item"">
-            <div>5</div>
-        </BitCarouselItem>
-        <BitCarouselItem Class=""item"">
-            <div>6</div>
-        </BitCarouselItem>
-        <BitCarouselItem Class=""item"">
-            <div>7</div>
-        </BitCarouselItem>
-        <BitCarouselItem Class=""item"">
-            <div>8</div>
-        </BitCarouselItem>
-        <BitCarouselItem Class=""item"">
-            <div>9</div>
-        </BitCarouselItem>
-        <BitCarouselItem Class=""item"">
-            <div>10</div>
-        </BitCarouselItem>
+    <BitCarousel Style=""height: 100px"" VisibleItemsCount=""3"" ScrollItemsCount=""3"">
+        <BitCarouselItem Class=""item""><div>1</div></BitCarouselItem>
+        <BitCarouselItem Class=""item""><div>2</div></BitCarouselItem>
+        <BitCarouselItem Class=""item""><div>3</div></BitCarouselItem>
+        <BitCarouselItem Class=""item""><div>4</div></BitCarouselItem>
+        <BitCarouselItem Class=""item""><div>5</div></BitCarouselItem>
+        <BitCarouselItem Class=""item""><div>6</div></BitCarouselItem>
+        <BitCarouselItem Class=""item""><div>7</div></BitCarouselItem>
+        <BitCarouselItem Class=""item""><div>8</div></BitCarouselItem>
+        <BitCarouselItem Class=""item""><div>9</div></BitCarouselItem>
     </BitCarousel>
 </div>";
 }

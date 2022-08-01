@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Bit.BlazorUI.Playground.Web.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
@@ -13,12 +14,12 @@ public partial class Header
     [Inject] public NavigationManager NavigationManager { get; set; }
     [Inject] public NavManuService NavManuService { get; set; }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitAsync()
     {
         CurrentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
         NavigationManager.LocationChanged += OnLocationChanged;
 
-        base.OnInitialized();
+        await base.OnInitAsync();
     }
 
     private void OnLocationChanged(object sender, LocationChangedEventArgs args)
@@ -27,10 +28,11 @@ public partial class Header
         StateHasChanged();
     }
 
-    private void ToggleMenu()
+    private async Task ToggleMenu()
     {
-        NavManuService.ToggleMenu();
+        await NavManuService.ToggleMenu();
     }
+
     private string GetActiveRouteName()
     {
         return CurrentUrl switch

@@ -10,6 +10,7 @@
          class="carousel"
          @onpointermove="HandlePointerMove"
          @onpointerdown="HandlePointerDown"
+         @onpointerdown:preventDefault="true"
          @onpointerleave="HandlePointerUp"
          @onpointerup="HandlePointerUp">
         <CascadingValue Value="this" IsFixed="true">

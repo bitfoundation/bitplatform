@@ -69,7 +69,7 @@ public class Middlewares
 
             var appsettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
 
-            var healthCheckSettings = appsettings.HealCheckSettings;
+            var healthCheckSettings = appsettings.HealthCheckSettings;
 
             if (healthCheckSettings.EnableHealthChecks)
             {

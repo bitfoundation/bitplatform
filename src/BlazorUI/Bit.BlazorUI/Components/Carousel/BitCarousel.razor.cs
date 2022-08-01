@@ -5,22 +5,26 @@ using Microsoft.AspNetCore.Components;
 
 namespace Bit.BlazorUI;
 
-public partial class BitCarousel
+public partial class BitCarousel : IDisposable
 {
     private ElementReference _carousel = default!;
     private int[] _currentIndices = Array.Empty<int>();
     private int[] _othersIndices = Array.Empty<int>();
     private int _pagesCount;
     private int _currentPage;
+    private int _internalScrollItemsCount = 1;
+    private int scrollItemsCount = 1;
+
+    private System.Timers.Timer _autoPlayTimer = default!;
 
     private readonly List<BitCarouselItem> AllItems = new();
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
     /// <summary>
-    /// If enabled the carousel items will navigate in a loop (first item comes after last item and last item comes before first item).
+    /// If enabled the carousel items will navigate in an infinite loop (first item comes after last item and last item comes before first item).
     /// </summary>
-    [Parameter] public bool InfiniteSliding { get; set; }
+    [Parameter] public bool InfiniteScrolling { get; set; }
 
     /// <summary>
     /// Items of the carousel.
@@ -45,7 +49,31 @@ public partial class BitCarousel
     /// <summary>
     /// Number of items that is going to be changed on navigation
     /// </summary>
-    [Parameter] public int ScrollItemsCount { get; set; } = 1;
+    [Parameter]
+    public int ScrollItemsCount
+    {
+        get => scrollItemsCount;
+        set
+        {
+            scrollItemsCount = value;
+            _internalScrollItemsCount = value;
+        }
+    }
+
+    /// <summary>
+    /// Enables/disables the auto scrolling of the slides.
+    /// </summary>
+    [Parameter] public bool AutoPlay { get; set; }
+
+    /// <summary>
+    /// Sets the interval of the auto scrolling in milliseconds (the default value is 2000).
+    /// </summary>
+    [Parameter] public double AutoPlayInterval { get; set; } = 2000;
+
+    /// <summary>
+    /// Sets the duration of the scrolling animation in seconds (the default value is 0.5).
+    /// </summary>
+    [Parameter] public double AnimationDuration { get; set; } = 0.5;
 
     public async Task GoPrev()
     {
@@ -84,10 +112,21 @@ public partial class BitCarousel
     {
         if (firstRender)
         {
+            if (AutoPlay)
+            {
+                _autoPlayTimer = new System.Timers.Timer(AutoPlayInterval);
+                _autoPlayTimer.Elapsed += AutoPlayTimerElapsed;
+                _autoPlayTimer.Start();
+            }
+
+            if (scrollItemsCount > VisibleItemsCount)
+            {
+                _internalScrollItemsCount = VisibleItemsCount;
+            }
             await _js.PreventDefault(_carousel, "touchmove");
 
             _currentIndices = Enumerable.Range(0, VisibleItemsCount).ToArray();
-            _othersIndices = Enumerable.Range(0, ScrollItemsCount).ToArray();
+            _othersIndices = Enumerable.Range(0, _internalScrollItemsCount).ToArray();
 
             var itemsCount = AllItems.Count;
             var rect = await _js.GetBoundingClientRect(_carousel);
@@ -107,36 +146,36 @@ public partial class BitCarousel
         await base.OnAfterRenderAsync(firstRender);
     }
 
-
     private async Task Prev()
     {
-        _othersIndices = Enumerable.Range(0, ScrollItemsCount).Select(i =>
+        _othersIndices = Enumerable.Range(0, _internalScrollItemsCount).Select(i =>
         {
             var idx = _currentIndices[0] - (i + 1);
-            if (idx < 0) idx = AllItems.Count + idx;
+            if (InfiniteScrolling && idx < 0) idx += AllItems.Count;
             return idx;
-        }).Reverse().ToArray();
+        }).Where(i => i >= 0).Reverse().ToArray();
 
         await Go();
     }
-
     private async Task Next()
     {
-        _othersIndices = Enumerable.Range(0, ScrollItemsCount).Select(i =>
+        var itemsCount = AllItems.Count;
+        _othersIndices = Enumerable.Range(0, _internalScrollItemsCount).Select(i =>
         {
-            var idx = _currentIndices[VisibleItemsCount - 1] + (i + 1);
-            if (idx > AllItems.Count - 1) idx = idx - AllItems.Count;
+            var idx = _currentIndices[_currentIndices.Length - 1] + (i + 1);
+            if (InfiniteScrolling && idx > itemsCount - 1) idx -= itemsCount;
             return idx;
-        }).ToArray();
+        }).Where(i => i < itemsCount).ToArray();
 
         await Go(true);
     }
-
     private async Task Go(bool isNext = false, int scrollCount = 0)
     {
+        if (_othersIndices.Length == 0) return;
+
         if (scrollCount < 1)
         {
-            scrollCount = ScrollItemsCount;
+            scrollCount = _internalScrollItemsCount;
         }
 
         var diff = VisibleItemsCount - scrollCount;
@@ -166,33 +205,32 @@ public partial class BitCarousel
         for (int i = 0; i < currents.Length; i++)
         {
             var c = currents[i];
-            c.InternalTransitionStyle = $"transition:all 0.5s";
+            c.InternalTransitionStyle = $"transition:all {AnimationDuration}s";
             c.InternalTransformStyle = $"transform:translateX({-sign * 100 * (scrollCount + (-sign * i))}%)";
         }
 
         for (int i = 0; i < others.Length; i++)
         {
             var o = others[i];
-            o.InternalTransitionStyle = $"transition:all 0.5s";
+            o.InternalTransitionStyle = $"transition:all {AnimationDuration}s";
             o.InternalTransformStyle = $"transform:translateX({100 * (offset + i)}%)";
         }
 
         _currentIndices = newIndices;
-        _currentPage = (int)Math.Floor((decimal)(_currentIndices[0]) / VisibleItemsCount);
+        _currentPage = (int)Math.Floor((decimal)_currentIndices[0] / VisibleItemsCount);
 
         StateHasChanged();
 
     }
-
     private async Task GotoPage(int index)
     {
         if (index < 0)
         {
-            index = InfiniteSliding ? _pagesCount - 1 : 0;
+            index = InfiniteScrolling ? _pagesCount - 1 : 0;
         }
         else if (index >= _pagesCount)
         {
-            index = InfiniteSliding ? 0 : _pagesCount - 1;
+            index = InfiniteScrolling ? 0 : _pagesCount - 1;
         }
 
         if (_currentIndices[0] == index * VisibleItemsCount) return;
@@ -206,11 +244,12 @@ public partial class BitCarousel
         else // go next
         {
             isNext = true;
+            var itemsCount = AllItems.Count;
             _othersIndices = indices.Select(idx =>
             {
-                if (idx > AllItems.Count - 1) idx = idx - AllItems.Count;
+                if (InfiniteScrolling && idx > itemsCount - 1) idx -= itemsCount;
                 return idx;
-            }).ToArray();
+            }).Where(i => i < itemsCount).ToArray();
         }
 
         await Go(isNext, VisibleItemsCount);
@@ -237,7 +276,6 @@ public partial class BitCarousel
             await Prev();
         }
     }
-
     private async Task HandlePointerDown(MouseEventArgs e)
     {
         _isPointerDown = true;
@@ -245,11 +283,41 @@ public partial class BitCarousel
         await _js.SetStyle(_carousel, "cursor", "grabbing");
         StateHasChanged();
     }
-
     private async Task HandlePointerUp(MouseEventArgs e)
     {
         _isPointerDown = false;
         await _js.SetStyle(_carousel, "cursor", "");
         StateHasChanged();
+    }
+
+    private async void AutoPlayTimerElapsed(object? sender, System.Timers.ElapsedEventArgs e)
+    {
+        try
+        {
+            await InvokeAsync(Next);
+        }
+        catch
+        {
+            throw;
+        }
+    }
+
+    private bool _disposed;
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_disposed) return;
+
+        if (disposing && _autoPlayTimer is not null)
+        {
+            _autoPlayTimer.Elapsed -= AutoPlayTimerElapsed;
+            _autoPlayTimer.Dispose();
+            _disposed = true;
+        }
     }
 }

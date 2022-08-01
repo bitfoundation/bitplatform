@@ -62,12 +62,14 @@
         <ExamplePreview>
             <div class="example-desc">To set the modal position on the page you can use the BitModalPosition parameter.</div>
             <div>
-                <BitButton OnClick="() => OpenModalInPosition(BitModalPosition.TopRight)">Open Modal (top and right)</BitButton>
-                <BitButton OnClick="() => OpenModalInPosition(BitModalPosition.TopLeft)">Open Modal (top and left)</BitButton>
-                <BitButton OnClick="() => OpenModalInPosition(BitModalPosition.BottomRight)">Open Modal (bottom and right)</BitButton>
-                <BitButton OnClick="() => OpenModalInPosition(BitModalPosition.BottomLeft)">Open Modal (bottom and left)</BitButton>
+                <div class="position-btn">
+                    <BitButton OnClick="() => OpenModalInPosition(BitModalPosition.TopRight)">Open Modal (top and right)</BitButton>
+                    <BitButton OnClick="() => OpenModalInPosition(BitModalPosition.TopLeft)">Open Modal (top and left)</BitButton>
+                    <BitButton OnClick="() => OpenModalInPosition(BitModalPosition.BottomRight)">Open Modal (bottom and right)</BitButton>
+                    <BitButton OnClick="() => OpenModalInPosition(BitModalPosition.BottomLeft)">Open Modal (bottom and left)</BitButton>
+                </div>
                 <BitModal @bind-IsOpen="IsOpenInPosition" Position="position">
-                   <div class="modal-header">
+                    <div class="modal-header">
                         <span>Lorem Ipsum</span>
                         <BitIconButton OnClick=@(()=>IsOpenInPosition=false) IconName="BitIconName.ChromeClose" Title="Close" />
                     </div>

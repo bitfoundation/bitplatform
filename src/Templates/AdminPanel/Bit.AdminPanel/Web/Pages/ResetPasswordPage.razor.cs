@@ -1,5 +1,4 @@
-﻿using System.Threading.Channels;
-using AdminPanel.Shared.Dtos.Account;
+﻿using AdminPanel.Shared.Dtos.Account;
 
 namespace AdminPanel.App.Pages;
 
@@ -72,12 +71,12 @@ public partial class ResetPasswordPage
         }
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitAsync()
     {
         ResetPasswordModel.Email = Email;
         ResetPasswordModel.Token = Token;
 
-        base.OnInitialized();
+        await base.OnInitAsync();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
