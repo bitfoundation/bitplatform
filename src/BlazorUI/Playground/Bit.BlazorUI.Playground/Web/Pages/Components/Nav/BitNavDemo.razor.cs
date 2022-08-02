@@ -535,7 +535,7 @@ private readonly List<BitNavLinkItem> BasicNavLinks = new()
        box-sizing: border-box;
        border: 1px solid #eee;
        overflow-y: auto;""
-        Class=""bit-nav-wrapped-link""
+        Class=""wrapped-link""
         SelectedKey=""key6""
         AriaLabel=""Nav example with wrapped link text""
         NavLinkItems=""BasicNoToolTipNavLinks"">
