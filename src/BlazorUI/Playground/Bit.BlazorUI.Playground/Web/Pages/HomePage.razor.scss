@@ -749,29 +749,25 @@
             width: rem(40px);
             height: rem(40px);
             border-radius: 50%;
-            background-image: url('/images/github-icon.svg');
+            background-image: url('/images/github-icon.webp');
             background-position: center bottom;
             background-repeat: no-repeat;
-            background-size: rem(26px);
-            background-color: $B2Color;
+            background-size: contain;
             cursor: pointer;
 
             @include lg {
                 width: rem(32px);
                 height: rem(32px);
-                background-size: rem(22px);
             }
 
             @include md {
                 width: rem(20px);
                 height: rem(20px);
-                background-size: rem(15px);
             }
 
             @include sm {
                 width: rem(16px);
                 height: rem(16px);
-                background-size: rem(11px);
             }
         }
 
@@ -794,19 +790,6 @@
             @include sm {
                 font-size: rem(12px);
                 line-height: rem(16px);
-            }
-        }
-
-        &:hover {
-            border-color: $B3Color;
-            background-color: $Gray5;
-
-            .github-icon {
-                background-color: $B3Color;
-            }
-
-            .github-txt {
-                color: $B3Color;
             }
         }
     }
