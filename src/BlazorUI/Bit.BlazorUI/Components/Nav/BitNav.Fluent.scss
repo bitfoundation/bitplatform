@@ -2,9 +2,10 @@
 
 @mixin getLinkStyle($hasUrl: true, $enabled: true) {
     position: relative;
-    display: block;
+    display: flex;
+    align-items: center;
     width: 100%;
-    height: rem(44px);
+    min-height: rem(40px);
     border: rem(1px) solid transparent;
     border-radius: rem(2px);
     outline: transparent;
