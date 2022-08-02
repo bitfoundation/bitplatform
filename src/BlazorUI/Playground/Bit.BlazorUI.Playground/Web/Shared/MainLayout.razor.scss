@@ -12,7 +12,6 @@
     padding-top: rem(56px);
     padding-left: rem($NavMenuWidth);
     box-sizing: border-box;
-    background-color: #faf9f8;
 
     @include lt-lg {
         padding-left: 0;
@@ -21,6 +20,10 @@
     @include sm {
         padding-top: rem(100px);
     }
+}
+
+.main--components-demo {
+    background-color: #faf9f8;
 }
 
 .main--home {
@@ -113,9 +116,8 @@
     direction: ltr;
     overflow: auto;
     font-family: ui-monospace,SFMono-Regular,SF Mono,Menlo,Consolas,Liberation Mono,monospace;
-    border: rem(1px) solid $B5Color;
+    border: rem(1px) solid #a19f9d;
     border-top: none;
-    border-radius: 0 0 rem(10px) rem(10px);
 
     &::-webkit-scrollbar {
         width: rem(6.5px);
@@ -149,18 +151,15 @@
     @include lg {
         max-height: rem(400px);
         padding: rem(16px) rem(60px) rem(16px) rem(16px);
-        border-radius: 0 0 rem(8px) rem(8px);
     }
 
     @include md {
         max-height: rem(304px);
         padding: rem(8px) rem(52px) rem(8px) rem(16px);
-        border-radius: 0 0 rem(8px) rem(8px);
     }
 
     @include sm {
         padding: rem(16px) rem(45px) rem(16px) rem(8px);
-        border-radius: 0 0 rem(8px) rem(8px);
     }
 }
 
