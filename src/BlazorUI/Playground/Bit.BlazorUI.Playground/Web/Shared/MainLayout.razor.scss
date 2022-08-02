@@ -3,6 +3,20 @@
 @import '../Styles/abstracts/_functions.scss';
 @import '../Styles/abstracts/_mixins.scss';
 @import '../Styles/abstracts/_fonts.scss';
+@import '../Styles/abstracts/_vars.scss';
+
+.main {
+    display: flex;
+    width: 100%;
+}
+
+.site-content {
+    width: calc(100% - rem($NavMenuWidth));
+}
+
+.site-content--home {
+    width: 100%;
+}
 
 ::deep a {
     text-decoration: none;
@@ -11,78 +25,6 @@
 ::deep * {
     font-family: "Axiforma";
     box-sizing: border-box;
-}
-
-.container {
-    width: 100%;
-    height: 100%;
-    //overflow: auto;
-}
-
-.main-container {
-    width: 100%;
-    //height: 100%;
-    //overflow: auto;
-    display: flex;
-    position: relative;
-    min-height: 100vh;
-    padding-top: rem(80px);
-    box-sizing: border-box;
-
-    @include lg {
-        padding-top: rem(56px);
-    }
-
-    @include md {
-        padding-top: rem(40px);
-    }
-
-    @include sm {
-        padding-top: rem(92px);
-    }
-}
-
-.main-container-pad {
-    padding-right: rem(288px);
-    padding-left: rem(288px);
-    box-sizing: border-box;
-
-    @include gt-xl {
-        padding-right: rem(448px);
-        padding-left: rem(448px);
-    }
-
-    @include lg {
-        padding-right: rem(100px);
-        padding-left: rem(100px);
-    }
-
-    @include md {
-        padding-right: rem(32px);
-        padding-left: rem(32px);
-    }
-
-    @include sm {
-        padding-right: rem(16px);
-        padding-left: rem(16px);
-    }
-}
-
-.page-content {
-    flex-grow: 1;
-    position: relative;
-}
-
-@media all and (max-width: #{em(1800px)}) and (min-width: #{em(1441)}) {
-    .main-container-pad {
-        padding-left: rem(380px);
-    }
-}
-
-@media all and (max-width: #{em(1390px)}) and (min-width: #{em(901)}) {
-    .main-container-pad {
-        padding-left: rem(300px);
-    }
 }
 
 ::deep .example-desc {

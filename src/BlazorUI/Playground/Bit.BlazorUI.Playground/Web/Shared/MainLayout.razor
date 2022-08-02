@@ -1,17 +1,16 @@
 ﻿@inherits LayoutComponentBase
 
-<div class="container">
-    <Header />
+<Header />
 
-    <div class="main-container @(CurrentUrl != "/" ? "main-container-pad" : null)">
-        @if (CurrentUrl != "/")
-        {
-            <NavMenu />
-        }
-        <div class="page-content">
-            @Body
-        </div>
-        <Footer />
+<div class="main">
+    @if (CurrentUrl != "/")
+    {
+        <NavMenu />
+    }
+    <div class="site-content @(CurrentUrl == "/" ? "site-content--home" : null)">
+        @Body
     </div>
-    <MessageBox />
 </div>
+
+<MessageBox />
+<Footer />
