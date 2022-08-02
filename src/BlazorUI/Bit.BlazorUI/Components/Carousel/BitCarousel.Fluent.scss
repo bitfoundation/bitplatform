@@ -20,8 +20,8 @@
         cursor: grab;
     }
 
-    .next-btn,
-    .prev-btn {
+    .go-left-btn,
+    .go-right-btn {
         font-size: 1.5rem;
         cursor: pointer;
         position: absolute;
@@ -48,11 +48,11 @@
         }
     }
 
-    .next-btn {
+    .go-left-btn {
         right: 0;
     }
 
-    .prev-btn {
+    .go-right-btn {
         left: 0;
     }
 
