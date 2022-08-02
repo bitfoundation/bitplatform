@@ -27,7 +27,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Carousel with InfiniteScrolling enabled" HTMLSourceCode="@example2HTMLCode" ExampleId="example2">
+    <ComponentExampleBox Title="InfiniteScrolling Carousel" HTMLSourceCode="@example2HTMLCode" ExampleId="example2">
         <ExamplePreview>
             <div>
                 <BitCarousel InfiniteScrolling="true">
@@ -134,7 +134,7 @@
 
     <ComponentExampleBox Title="AutoPlay Carousel" HTMLSourceCode="@example5HTMLCode" ExampleId="example5">
         <ExamplePreview>
-            <BitCarousel ShowNextPrev="false" AutoPlay="true" AutoPlayInterval="2500">
+            <BitCarousel ShowNextPrev="false" AutoPlay="true" AutoPlayInterval="2500" InfiniteScrolling="true">
                 <BitCarouselItem>
                     <div class="number">1 / 4</div>
                     <img class="image" src="/images/carousel/img1.jpg" />
@@ -163,7 +163,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Advanced Carousel" HTMLSourceCode="@example6HTMLCode" ExampleId="example1">
+    <ComponentExampleBox Title="Advanced Carousel" HTMLSourceCode="@example6HTMLCode" ExampleId="example6">
         <ExamplePreview>
             <div>
                 <BitCarousel Style="height: 100px" VisibleItemsCount="3" ScrollItemsCount="3">
@@ -180,6 +180,25 @@
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
+
+    <ComponentExampleBox Title="RTL Carousel" HTMLSourceCode="@example7HTMLCode" ExampleId="example7">
+        <ExamplePreview>
+            <div>
+                <BitCarousel Style="height: 100px" Direction="BitDirection.RightToLeft" VisibleItemsCount="3" ScrollItemsCount="1" InfiniteScrolling="true">
+                    <BitCarouselItem Class="item"><div>یک</div></BitCarouselItem>
+                    <BitCarouselItem Class="item"><div>دو</div></BitCarouselItem>
+                    <BitCarouselItem Class="item"><div>سه</div></BitCarouselItem>
+                    <BitCarouselItem Class="item"><div>چهار</div></BitCarouselItem>
+                    <BitCarouselItem Class="item"><div>پنج</div></BitCarouselItem>
+                    <BitCarouselItem Class="item"><div>شیش</div></BitCarouselItem>
+                    <BitCarouselItem Class="item"><div>هفت</div></BitCarouselItem>
+                    <BitCarouselItem Class="item"><div>هشت</div></BitCarouselItem>
+                    <BitCarouselItem Class="item"><div>نه</div></BitCarouselItem>
+                </BitCarousel>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
 </ComponentDemo>
 
 @code {
