@@ -12,6 +12,7 @@
     padding-top: rem(56px);
     padding-left: rem($NavMenuWidth);
     box-sizing: border-box;
+    background-color: #faf9f8;
 
     @include lt-lg {
         padding-left: 0;
@@ -24,6 +25,7 @@
 
 .main--home {
     padding-left: 0;
+    background-color: $White;
 
     .site-content {
         padding-left: rem(20px);
