@@ -1,67 +1,59 @@
 ﻿@import '../Styles/abstracts/_colors.scss';
 @import '../Styles/abstracts/_media-queries.scss';
 @import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_vars.scss';
 
-.nav-menu-container {
-    position: sticky;
-    z-index: 3000;
+.nav-menu {
+    position: fixed;
+    z-index: 1200;
     left: 0;
-    width: rem(344px);
-    height: calc(100vh - #{rem(80px)});
-    box-sizing: border-box;
-    background-color: $Gray5;
+    top: rem($HeaderHeight);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    flex: 1 0 auto;
+    width: rem($NavMenuWidth);
+    height: calc(100% - rem($HeaderHeight));
+    border-right: rem(1px) solid rgb(231, 235, 240);
+    outline: 0;
+    box-shadow: none;
+    background-color: $White;
+    transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+    overflow-y: auto;
 
-    @include lg {
-        width: rem(272px);
-        height: calc(100vh - #{rem(56px)});
-    }
-
-    @include md {
+    @include lt-lg {
+        height: 100vh;
         position: fixed;
-        width: rem(306px);
-        height: calc(100vh - #{rem(41px)});
+        top: 0;
+        inset: 0;
     }
 
     @include sm {
-        position: fixed;
-        width: rem(264px);
-        height: 100vh;
-        top: 0;
-        z-index: 30000;
+        border-radius: 0 rem(10px) rem(10px) 0;
     }
 }
 
-.nav-menu-container--desktop {
-    display: block;
+.nav-menu--desktop {
+    display: flex;
 
     @include lt-lg {
         display: none;
     }
 }
 
-.nav-menu-container--mobile {
+.nav-menu--mobile {
     display: none;
 
     @include lt-lg {
-        display: flex;
+        display: block;
     }
 }
 
 .nav-menu-shadow {
     position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 2000;
-    width: 100%;
-    height: 100vh;
-    justify-content: flex-start;
-    align-items: flex-start;
-    background-color: $Gray2;
-    opacity: 0.4;
-
-    @include sm {
-        z-index: 30000;
-    }
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1101;
 }
 
 .search-box-container {

@@ -7,11 +7,16 @@
 
 .main {
     display: flex;
+    justify-content: flex-end;
     width: 100%;
 }
 
 .site-content {
     width: calc(100% - rem($NavMenuWidth));
+
+    @include lt-lg {
+        width: 100%;
+    }
 }
 
 .site-content--home {

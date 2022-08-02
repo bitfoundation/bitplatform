@@ -15,7 +15,7 @@ if (headerBtn != null) {
 }
 
 function toggleBodyOverflow(isMenuOpen: boolean) {
-    if (window.innerWidth < 1024) {
+    if (window.innerWidth < 901) {
         if (isMenuOpen) {
             document.body.style.overflow = "hidden";
         } else {
