@@ -39,175 +39,177 @@
     }
 }
 
-.bit-nav-fluent {
-    font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
-    -webkit-font-smoothing: antialiased;
-    font-size: inherit;
-    font-weight: inherit;
-    user-select: none;
-}
-
-.bit-nav-grp {
-    margin: 0;
-    padding: 0;
-    border: 0;
-    font-size: 100%;
-    font: inherit;
-    vertical-align: baseline;
-    text-decoration: none;
-}
-
-.bit-nav-grp-content {
-    display: block;
-    margin-bottom: rem(40px);
-    animation-name: css-0, css-13;
-    animation-duration: 0.367s;
-    animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
-    animation-fill-mode: both;
-}
-
-.bit-nav-list {
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
-}
-
-.bit-nav-item {
-    padding: 0;
-}
-
-.bit-nav-composite-link {
-    display: block;
-    position: relative;
-    color: $Grey160;
-    cursor: pointer;
-
-    &:hover {
-        background-color: $Grey20;
-    }
-
-    button {
-        background-color: transparent;
-    }
-}
-
-.bit-nav-link-container {
-    display: flex;
-    height: 100%;
-    flex-flow: row nowrap;
-    justify-content: flex-start;
-    align-items: center;
-
-    i {
-        font-size: rem(16px);
-        margin: 0 rem(4px);
-        height: rem(16px);
-        line-height: rem(16px);
-        text-align: center;
-        flex-shrink: 0;
-        color: $Primary;
-    }
-
-    .bit-nav-link-txt {
-        margin: 0 rem(4px);
-        overflow: hidden;
-        vertical-align: middle;
-        text-align: left;
-        text-overflow: ellipsis;
-    }
-}
-
-.bit-nav-disabled-composite-link {
-    &:hover {
-        background-color: transparent;
-    }
-}
-
-.bit-nav-chevron-btn {
-    position: absolute;
-    top: rem(1px);
-    left: rem(1px);
-    z-index: 1;
-    display: block;
-    width: rem(26px);
-    height: rem(42px);
-    font-size: rem(12px);
-    font-weight: 400;
-    text-align: left;
-    line-height: rem(44px);
-    margin: 0;
-    padding: 0;
-    border: none;
-    outline: transparent;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    overflow: hidden;
-    cursor: pointer;
-
-    i {
-        position: absolute;
-        top: 0px;
-        left: rem(8px);
-        display: inline-flex;
-        align-items: center;
-        width: unset;
-        height: rem(44px);
-        font-size: rem(12px);
-        line-height: rem(44px);
-        speak: none;
-        transition: transform 0.1s linear 0s;
+.bit-nav {
+    &.fluent {
+        font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
         -webkit-font-smoothing: antialiased;
+        font-size: inherit;
+        font-weight: inherit;
+        user-select: none;
     }
-}
 
-.bit-nav-grp-chevron-btn {
-    position: relative;
-    width: 100%;
-    height: rem(44px);
-    font-size: rem(18px);
-    margin: rem(5px) 0;
-    padding-left: rem(28px);
-    border-bottom: rem(1px) solid $Grey30;
-    -webkit-font-smoothing: antialiased;
-    color: $Grey160;
-    background-color: transparent;
-}
+    .grp {
+        margin: 0;
+        padding: 0;
+        border: 0;
+        font-size: 100%;
+        font: inherit;
+        vertical-align: baseline;
+        text-decoration: none;
+    }
 
-.bit-nav-expand-fluent {
-    transform: rotate(-180deg);
-}
+    .grp-content {
+        display: block;
+        margin-bottom: rem(40px);
+        animation-name: css-0, css-13;
+        animation-duration: 0.367s;
+        animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
+        animation-fill-mode: both;
+    }
 
-.bit-nav-link-enabled-hasurl-fluent {
-    @include getLinkStyle()
-}
+    .list {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+    }
 
-.bit-nav-link-enabled-nourl-fluent {
-    @include getLinkStyle($hasUrl:false)
-}
+    .item {
+        padding: 0;
+    }
 
-.bit-nav-link-disabled-hasurl-fluent {
-    @include getLinkStyle($enabled:false)
-}
+    .composite-link {
+        display: block;
+        position: relative;
+        color: $Grey160;
+        cursor: pointer;
 
-.bit-nav-link-disabled-nourl-fluent {
-    @include getLinkStyle($hasUrl: false, $enabled: false)
-}
+        &:hover {
+            background-color: $Grey20;
+        }
 
-.bit-nav-selected-fluent {
-    background-color: $Grey30;
-    font-weight: 600;
-    color: $Black;
+        button {
+            background-color: transparent;
+        }
+    }
 
-    &:after {
-        border-left: rem(2px) solid $Primary;
-        content: "";
+    .link-container {
+        display: flex;
+        height: 100%;
+        flex-flow: row nowrap;
+        justify-content: flex-start;
+        align-items: center;
+
+        i {
+            font-size: rem(16px);
+            margin: 0 rem(4px);
+            height: rem(16px);
+            line-height: rem(16px);
+            text-align: center;
+            flex-shrink: 0;
+            color: $Primary;
+        }
+
+        .link-txt {
+            margin: 0 rem(4px);
+            overflow: hidden;
+            vertical-align: middle;
+            text-align: left;
+            text-overflow: ellipsis;
+        }
+    }
+
+    .disabled-composite-link {
+        &:hover {
+            background-color: transparent;
+        }
+    }
+
+    .chevron-btn {
         position: absolute;
-        inset: 0;
-        pointer-events: none;
+        top: rem(1px);
+        left: rem(1px);
+        z-index: 1;
+        display: block;
+        width: rem(26px);
+        height: rem(42px);
+        font-size: rem(12px);
+        font-weight: 400;
+        text-align: left;
+        line-height: rem(44px);
+        margin: 0;
+        padding: 0;
+        border: none;
+        outline: transparent;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+        cursor: pointer;
+
+        i {
+            position: absolute;
+            top: 0px;
+            left: rem(8px);
+            display: inline-flex;
+            align-items: center;
+            width: unset;
+            height: rem(44px);
+            font-size: rem(12px);
+            line-height: rem(44px);
+            speak: none;
+            transition: transform 0.1s linear 0s;
+            -webkit-font-smoothing: antialiased;
+        }
     }
 
-    &:hover {
-        background-color: $Grey20;
+    .grp-chevron-btn {
+        position: relative;
+        width: 100%;
+        height: rem(44px);
+        font-size: rem(18px);
+        margin: rem(5px) 0;
+        padding-left: rem(28px);
+        border-bottom: rem(1px) solid $Grey30;
+        -webkit-font-smoothing: antialiased;
+        color: $Grey160;
+        background-color: transparent;
+    }
+
+    .expand-fluent {
+        transform: rotate(-180deg);
+    }
+
+    .link-enabled-hasurl-fluent {
+        @include getLinkStyle()
+    }
+
+    .link-enabled-nourl-fluent {
+        @include getLinkStyle($hasUrl:false)
+    }
+
+    .link-disabled-hasurl-fluent {
+        @include getLinkStyle($enabled:false)
+    }
+
+    .link-disabled-nourl-fluent {
+        @include getLinkStyle($hasUrl: false, $enabled: false)
+    }
+
+    .selected-fluent {
+        background-color: $Grey30;
+        font-weight: 600;
+        color: $Black;
+
+        &:after {
+            border-left: rem(2px) solid $Primary;
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+        }
+
+        &:hover {
+            background-color: $Grey20;
+        }
     }
 }
 
