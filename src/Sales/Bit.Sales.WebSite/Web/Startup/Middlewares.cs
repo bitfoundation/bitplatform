@@ -15,7 +15,10 @@ public class Middlewares
         }
 
         app.UseHttpsRedirection();
-        app.UseResponseCompression();
+        if (env.IsDevelopment() is false)
+        {
+            app.UseResponseCompression();
+        }
         app.UseStaticFiles();
 
         app.UseRouting();

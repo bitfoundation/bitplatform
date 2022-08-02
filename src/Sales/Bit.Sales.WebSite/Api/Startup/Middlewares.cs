@@ -33,7 +33,10 @@ public class Middlewares
             options.InjectJavascript("/swagger/swagger-utils.js");
         });
 
-        app.UseResponseCompression();
+        if (env.IsDevelopment() is false)
+        {
+            app.UseResponseCompression();
+        }
 
         app.UseStaticFiles(new StaticFileOptions
         {
