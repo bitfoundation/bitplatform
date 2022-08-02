@@ -50,20 +50,10 @@
 }
 
 .table-title {
-    margin-bottom: rem(8px);
-    font-weight: 500;
+    margin-bottom: rem(20px);
+    font-weight: 600;
     font-size: rem(20px);
-    line-height: rem(32px);
     color: $B2Color;
-
-    @include lt-xl {
-        font-size: rem(16px);
-        line-height: rem(24px);
-    }
-
-    @include sm {
-        font-size: rem(12px);
-    }
 }
 
 .table-view {
@@ -84,12 +74,8 @@
 .th-row {
     display: flex;
     width: 100%;
-    min-height: rem(48px);
+    min-height: rem(42px);
     background-color: $B5Color;
-
-    @include lt-xl {
-        min-height: rem(40px);
-    }
 }
 
 .tdata-row {
@@ -110,32 +96,16 @@
     padding: rem(5px) rem(16px) rem(5px) rem(16px);
     border-right: rem(1px) solid $B5Color;
     box-sizing: border-box;
-    font-size: rem(18px);
-    line-height: rem(31px);
+    font-size: rem(14px);
+    font-weight: 600;
     text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
     color: $B2Color;
     background-color: transparent;
 
     &:last-child {
         border: none;
-    }
-
-    @include lg {
-        font-size: rem(16px);
-        line-height: rem(24px);
-    }
-
-    @include md {
-        font-weight: 500;
-        font-size: rem(14px);
-        line-height: rem(24px);
-    }
-
-    @include sm {
-        padding: rem(5px) rem(8px) rem(5px) rem(8px);
-        font-weight: 500;
-        font-size: rem(10px);
-        line-height: rem(16px);
     }
 }
 
@@ -146,8 +116,7 @@
     padding: rem(16px);
     border-right: rem(1px) solid $B5Color;
     box-sizing: border-box;
-    font-size: rem(14px);
-    line-height: rem(24px);
+    font-size: rem(11px);
     text-align: left;
     color: $Gray1;
     text-overflow: clip;
@@ -159,22 +128,6 @@
 
     &:last-child {
         border: none;
-    }
-
-    @include lg {
-        font-size: rem(12px);
-        line-height: rem(18px);
-    }
-
-    @include md {
-        font-size: rem(10px);
-        line-height: rem(16px);
-    }
-
-    @include sm {
-        padding: rem(8px);
-        font-size: rem(8px);
-        line-height: rem(12px);
     }
 }
 
@@ -215,25 +168,10 @@
 
 ::deep .param-table-link {
     a {
-        font-family: Axiforma;
+        font-family: "Axiforma";
         cursor: pointer;
         color: $B2Color;
-        font-size: rem(14px);
+        font-size: rem(11px);
         line-height: rem(24px);
-
-        @include lg {
-            font-size: rem(12px);
-            line-height: rem(18px);
-        }
-
-        @include md {
-            font-size: rem(10px);
-            line-height: rem(16px);
-        }
-
-        @include sm {
-            font-size: rem(8px);
-            line-height: rem(12px);
-        }
     }
 }
