@@ -8,6 +8,7 @@
 
     <div @ref="_carousel"
          class="carousel"
+         style="@_directionStyle"
          @onpointermove="HandlePointerMove"
          @onpointerdown="HandlePointerDown"
          @onpointerdown:preventDefault="true"
@@ -19,11 +20,11 @@
 
         @if (ShowNextPrev)
         {
-        <div class="next-btn" @onclick="@Next">
+        <div class="go-left-btn" @onclick="GoLeft" style="@_goLeftButtonStyle">
             <i class="bit-icon bit-icon--ChevronRight"></i>
         </div>
 
-        <div class="prev-btn" @onclick="@Prev">
+        <div class="go-right-btn" @onclick="GoRight" style="@_goRightButtonStyle">
             <i class="bit-icon bit-icon--ChevronLeft"></i>
         </div>
         }
@@ -31,7 +32,7 @@
 
     @if (ShowDots)
     {
-    <div class="dots">
+    <div class="dots" style="@_directionStyle">
         @for (int i = 0; i < _pagesCount; i++)
         {
             int index = i;
