@@ -4,32 +4,35 @@
 @import '../Styles/abstracts/_mixins.scss';
 
 .main-header {
-    position: fixed;
+    position: -webkit-sticky;
+    position: sticky;
     top: 0;
-    z-index: 10000;
-    width: 100%;
-    background-color: $White;
-    box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.08);
+    -webkit-transition: top 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+    transition: top 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+    z-index: 1100;
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+    box-shadow: inset 0px -1px 1px #e7ebf0;
+    background-color: rgba(255,255,255,0.72);
 }
 
 .header-main-container {
+    width: 100%;
+    max-width: 1200px;
+    min-height: 56px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 20px;
+    padding-right: 20px;
+    box-sizing: border-box;
     display: flex;
+    align-items: center;
     flex-flow: row nowrap;
     justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    height: rem(80px);
-    padding: 0 rem(164px);
-    box-sizing: border-box;
-
-    @include lg {
-        height: rem(56px);
-        padding: 0 rem(100px);
-    }
 
     @include md {
-        height: rem(48px);
-        padding: 0 rem(32px);
+        padding-left: 30px;
+        padding-right: 30px;
     }
 }
 
@@ -176,7 +179,7 @@
     color: $B2Color;
 }
 
-@media all and (max-width: #{em(630px)}) {
+@media all and (max-width: #{em(600px)}) {
     .header-main-container {
         height: rem(48px);
         padding: 0 rem(16px);

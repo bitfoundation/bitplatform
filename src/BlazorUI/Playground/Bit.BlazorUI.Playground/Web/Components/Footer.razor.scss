@@ -3,11 +3,18 @@
 @import '../Styles/abstracts/_functions.scss';
 
 .footer {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    left: 0;
+    display: block;
     width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    box-sizing: border-box;
+    padding-left: 20px;
+    padding-right: 20px;
+
+    @include md {
+        padding-left: 30px;
+        padding-right: 30px;
+    }
 
     .footer-gray-bar {
         display: flex;
