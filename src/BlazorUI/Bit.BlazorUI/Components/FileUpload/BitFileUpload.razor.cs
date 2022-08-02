@@ -37,6 +37,8 @@ public partial class BitFileUpload : IAsyncDisposable
     private DotNetObjectReference<BitFileUpload>? dotnetObjectReference;
     private ElementReference inputFileElement;
     private IJSObjectReference? dropZoneInstance;
+    private long internalChunkSize = MIN_CHUNK_SIZE;
+    private long? chunkSize;
 
     [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
 
@@ -61,7 +63,24 @@ public partial class BitFileUpload : IAsyncDisposable
     /// <summary>
     /// The size of each chunk of file upload in bytes.
     /// </summary>
-    [Parameter] public long ChunkSize { get; set; } = FileSizeHumanizer.OneMegaByte * 10;
+    [Parameter]
+    public long? ChunkSize
+    {
+        get => chunkSize;
+        set
+        {
+            chunkSize = value;
+
+            if (chunkSize.HasValue is false || AutoChunkSizeEnabled)
+            {
+                internalChunkSize = MIN_CHUNK_SIZE;
+            }
+            else
+            {
+                internalChunkSize = chunkSize.Value;
+            }
+        }
+    }
 
     /// <summary>
     /// Enables multi-file select and upload.
@@ -308,9 +327,9 @@ public partial class BitFileUpload : IAsyncDisposable
         if (EnableChunkedUpload)
         {
             from = Files[index].TotalSizeOfUploaded;
-            if (Files[index].Size > ChunkSize)
+            if (Files[index].Size > internalChunkSize)
             {
-                to = from + ChunkSize;
+                to = from + internalChunkSize;
             }
             else
             {
@@ -402,7 +421,7 @@ public partial class BitFileUpload : IAsyncDisposable
             UploadStatus == BitFileUploadStatus.Paused ||
             Files[fileIndex].Status != BitFileUploadStatus.InProgress) return;
 
-        Files[fileIndex].TotalSizeOfUploaded += EnableChunkedUpload ? ChunkSize : Files[fileIndex].Size;
+        Files[fileIndex].TotalSizeOfUploaded += EnableChunkedUpload ? internalChunkSize : Files[fileIndex].Size;
         Files[fileIndex].SizeOfLastChunkUploaded = 0;
 
         UpdateChunkSize(fileIndex);
@@ -436,16 +455,16 @@ public partial class BitFileUpload : IAsyncDisposable
 
         if (duration is >= 1000 and <= 1500) return;
 
-        ChunkSize = Convert.ToInt64(ChunkSize / (duration / 1000));
+        internalChunkSize = Convert.ToInt64(internalChunkSize / (duration / 1000));
 
-        if (ChunkSize > MAX_CHUNK_SIZE)
+        if (internalChunkSize > MAX_CHUNK_SIZE)
         {
-            ChunkSize = MAX_CHUNK_SIZE;
+            internalChunkSize = MAX_CHUNK_SIZE;
         }
 
-        if (ChunkSize < MIN_CHUNK_SIZE)
+        if (internalChunkSize < MIN_CHUNK_SIZE)
         {
-            ChunkSize = MIN_CHUNK_SIZE;
+            internalChunkSize = MIN_CHUNK_SIZE;
         }
     }
 

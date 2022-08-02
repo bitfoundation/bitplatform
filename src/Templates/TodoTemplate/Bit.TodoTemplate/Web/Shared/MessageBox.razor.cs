@@ -2,23 +2,24 @@
 
 public partial class MessageBox : IDisposable
 {
-    private static event Action<string, string> OnShow = default!;
+    private static event Func<string, string, Task> OnShow = default!;
 
-    public static void Show(string message, string title = "")
+    public static async Task Show(string message, string title = "")
     {
-        OnShow?.Invoke(message, title);
+        if (OnShow is not null)
+            await OnShow.Invoke(message, title);
     }
 
     protected override void OnInitialized()
     {
-        MessageBox.OnShow += ShowMessageBox;
+        OnShow += ShowMessageBox;
 
         base.OnInitialized();
     }
 
-    private void ShowMessageBox(string message, string title)
+    private async Task ShowMessageBox(string message, string title)
     {
-        InvokeAsync(() =>
+        await InvokeAsync(() =>
         {
             IsOpen = true;
 
@@ -47,6 +48,6 @@ public partial class MessageBox : IDisposable
 
     public void Dispose()
     {
-        MessageBox.OnShow -= ShowMessageBox;
+        OnShow -= ShowMessageBox;
     }
 }

@@ -12,6 +12,10 @@ public partial class BitCarousel : IDisposable
     private int[] _othersIndices = Array.Empty<int>();
     private int _pagesCount;
     private int _currentPage;
+    private string _directionStyle = string.Empty;
+    private string _goLeftButtonStyle = string.Empty;
+    private string _goRightButtonStyle = string.Empty;
+
     private int _internalScrollItemsCount = 1;
     private int scrollItemsCount = 1;
 
@@ -75,6 +79,11 @@ public partial class BitCarousel : IDisposable
     /// </summary>
     [Parameter] public double AnimationDuration { get; set; } = 0.5;
 
+    /// <summary>
+    /// Sets the direction of the scrolling (the default value is LeftToRight).
+    /// </summary>
+    [Parameter] public BitDirection Direction { get; set; } = BitDirection.LeftToRight;
+
     public async Task GoPrev()
     {
         await Prev();
@@ -110,6 +119,7 @@ public partial class BitCarousel : IDisposable
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        _directionStyle = Direction == BitDirection.RightToLeft ? "direction:rtl" : "";
         if (firstRender)
         {
             if (AutoPlay)
@@ -131,20 +141,37 @@ public partial class BitCarousel : IDisposable
             var itemsCount = AllItems.Count;
             var rect = await _js.GetBoundingClientRect(_carousel);
 
+            var sign = Direction == BitDirection.RightToLeft ? -1 : 1;
             for (int i = 0; i < itemsCount; i++)
             {
                 var item = AllItems[i];
                 item.InternalStyle = $"width:{rect.Width / VisibleItemsCount}px; display:block";
-                item.InternalTransformStyle = $"transform:translateX({100 * i}%)";
+                item.InternalTransformStyle = $"transform:translateX({sign * 100 * i}%)";
+
             }
 
             _pagesCount = (int)Math.Ceiling((decimal)itemsCount / VisibleItemsCount);
 
+            SetNavigationButtonsVisibility();
+
             StateHasChanged();
         }
 
+
+
         await base.OnAfterRenderAsync(firstRender);
     }
+
+    private void SetNavigationButtonsVisibility()
+    {
+        _goLeftButtonStyle = (InfiniteScrolling is false && _currentIndices[_currentIndices.Length - 1] == AllItems.Count - 1) ? "display:none" : "";
+
+        _goRightButtonStyle = (InfiniteScrolling is false && _currentIndices[0] == 0) ? "display:none" : "";
+    }
+
+    private async Task GoLeft() => await (Direction == BitDirection.LeftToRight ? Next() : Prev());
+
+    private async Task GoRight() => await (Direction == BitDirection.LeftToRight ? Prev() : Next());
 
     private async Task Prev()
     {
@@ -193,7 +220,9 @@ public partial class BitCarousel : IDisposable
         {
             var o = others[i];
             o.InternalTransitionStyle = "";
-            o.InternalTransformStyle = $"transform:translateX({sign * 100 * (offset + (sign * i))}%)";
+            var x = sign * 100 * (offset + (sign * i));
+            x = Direction == BitDirection.LeftToRight ? x : -x;
+            o.InternalTransformStyle = $"transform:translateX({x}%)";
         }
 
         StateHasChanged();
@@ -206,18 +235,24 @@ public partial class BitCarousel : IDisposable
         {
             var c = currents[i];
             c.InternalTransitionStyle = $"transition:all {AnimationDuration}s";
-            c.InternalTransformStyle = $"transform:translateX({-sign * 100 * (scrollCount + (-sign * i))}%)";
+            var x = -sign * 100 * (scrollCount + (-sign * i));
+            x = Direction == BitDirection.LeftToRight ? x : -x;
+            c.InternalTransformStyle = $"transform:translateX({x}%)";
         }
 
         for (int i = 0; i < others.Length; i++)
         {
             var o = others[i];
             o.InternalTransitionStyle = $"transition:all {AnimationDuration}s";
-            o.InternalTransformStyle = $"transform:translateX({100 * (offset + i)}%)";
+            var x = 100 * (offset + i);
+            x = Direction == BitDirection.LeftToRight ? x : -x;
+            o.InternalTransformStyle = $"transform:translateX({x}%)";
         }
 
         _currentIndices = newIndices;
         _currentPage = (int)Math.Floor((decimal)_currentIndices[0] / VisibleItemsCount);
+
+        SetNavigationButtonsVisibility();
 
         StateHasChanged();
 
@@ -269,11 +304,11 @@ public partial class BitCarousel : IDisposable
         await _js.SetStyle(_carousel, "cursor", "");
         if (delta < 0)
         {
-            await Next();
+            await GoLeft();
         }
         else
         {
-            await Prev();
+            await GoRight();
         }
     }
     private async Task HandlePointerDown(MouseEventArgs e)

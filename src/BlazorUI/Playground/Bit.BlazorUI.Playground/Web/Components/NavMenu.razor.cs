@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Bit.BlazorUI.Playground.Web.Services;
 using Bit.BlazorUI.Playground.Web.Services.Contracts;
 using Microsoft.AspNetCore.Components;
@@ -105,6 +106,7 @@ public partial class NavMenu
             },
         },
     };
+
     private List<BitNavLinkItem> filteredNavLinks;
     private BitNavRenderType renderType = BitNavRenderType.Grouped;
     private string searchText = string.Empty;
@@ -116,13 +118,14 @@ public partial class NavMenu
 
     public string CurrentUrl { get; set; }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitAsync()
     {
         HandleClear();
         NavManuService.OnToggleMenu += ToggleMenu;
         CurrentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
         NavigationManager.LocationChanged += OnLocationChanged;
-        base.OnInitialized();
+
+        await base.OnInitAsync();
     }
 
     private void OnLocationChanged(object sender, LocationChangedEventArgs args)
@@ -131,22 +134,11 @@ public partial class NavMenu
         StateHasChanged();
     }
 
-    async void ToggleMenu()
+    async Task ToggleMenu()
     {
-        try
-        {
-            isNavOpen = !isNavOpen;
+        isNavOpen = !isNavOpen;
 
-            await JsRuntime.SetToggleBodyOverflow(isNavOpen);
-        }
-        catch(Exception ex)
-        {
-            exceptionHandler.Handle(ex);
-        }
-        finally
-        {
-            StateHasChanged();
-        }
+        await JsRuntime.SetToggleBodyOverflow(isNavOpen);
     }
 
     private void HandleClear()
@@ -166,12 +158,12 @@ public partial class NavMenu
         filteredNavLinks = flatNavLinkList.FindAll(link => link.Name.Contains(text, StringComparison.InvariantCultureIgnoreCase));
     }
 
-    private void HandleLinkClick(BitNavLinkItem item)
+    private async Task HandleLinkClick()
     {
         searchText = string.Empty;
 
         HandleClear();
-        ToggleMenu();
+        await ToggleMenu();
     }
 
     private string GetDemoLinkClassName(string link)

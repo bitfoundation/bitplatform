@@ -1,4 +1,6 @@
-﻿@if (isNavOpen)
+﻿@inherits AppComponentBase
+
+@if (isNavOpen)
 {
     <div class="nav-menu-shadow nav-menu--mobile" @onclick="@ToggleMenu"></div>
 }
@@ -20,7 +22,7 @@
                 NavLinkItems="filteredNavLinks"
                 RenderType="renderType"
                 AriaLabel="Bit Component Nav"
-                OnLinkClick="HandleLinkClick">
+                OnLinkClick="WrapHandled(HandleLinkClick)">
         </BitNav>
     </div>
 </div>

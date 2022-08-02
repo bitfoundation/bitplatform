@@ -206,7 +206,7 @@
 }
 
 ::deep .side-nav {
-    .bit-nav-grp-chevron-btn {
+    .grp-chevron-btn {
         height: rem(40px);
         margin: 0;
         padding-left: rem(44px);
@@ -226,7 +226,7 @@
             transform: rotate( -90deg);
         }
 
-        .bit-nav-expand-fluent {
+        .expand-fluent {
             height: 100%;
             left: rem(17px);
             transform: rotate(0deg);
@@ -254,15 +254,15 @@
         }
     }
 
-    .bit-nav-grp-content {
+    .grp-content {
         margin-bottom: 0;
     }
 
-    .bit-nav-link-txt {
+    .link-txt {
         white-space: nowrap;
     }
 
-    .bit-nav-link-enabled-hasurl-fluent {
+    .link-enabled-hasurl-fluent {
         height: rem(40px);
         padding: 0 rem(16px) 0 rem(52px) !important;
         box-sizing: border-box;
@@ -294,7 +294,7 @@
         }
     }
 
-    .bit-nav-selected-fluent {
+    .selected-fluent {
         font-weight: unset;
         color: $B2Color;
 

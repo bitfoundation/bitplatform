@@ -1,7 +1,6 @@
 ﻿//-:cnd:noEmit
 using AdminPanel.App.Shared;
 using AdminPanel.Shared.Dtos.Products;
-using Microsoft.AspNetCore.Components;
 
 namespace AdminPanel.App.Pages.Products;
 public partial class ProductsPage
@@ -87,30 +86,30 @@ public partial class ProductsPage
         await dataGrid!.RefreshDataAsync();
     }
 
-    private void CreateProduct()
+    private async Task CreateProduct()
     {
-        modal!.ShowModal(new ProductDto());
+        await modal!.ShowModal(new ProductDto());
     }
 
     private async Task EditProduct(ProductDto product)
     {
-        modal!.ShowModal(product);
+        await modal!.ShowModal(product);
     }
+
     private async Task DeleteProduct(ProductDto product)
     {
-        ConfirmMessageBox.Show("Are you sure delete?", product.Name, "Delete", async (confirmed) =>
+        var confirmed = await ConfirmMessageBox.Show("Are you sure delete?", product.Name, "Delete");
+
+        if (confirmed)
         {
-            if (confirmed)
-            {
-                await httpClient.DeleteAsync($"Product/Delete/{product.Id}");
-                await RefreshData();
-            }
-        });
+            await httpClient.DeleteAsync($"Product/Delete/{product.Id}");
+            await RefreshData();
+        }
     }
 
     protected async Task OnSuccessfulProductSave()
     {
-        MessageBox.Show("Succesfully saved", "product");
+        await MessageBox.Show("Succesfully saved", "product");
 
         await RefreshData();
     }

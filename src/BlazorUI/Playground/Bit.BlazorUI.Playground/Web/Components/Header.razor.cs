@@ -18,12 +18,12 @@ public partial class Header
     [Inject] public IJSRuntime JsRuntime { get; set; }
     [Inject] private IExceptionHandler exceptionHandler { get; set; } = default!;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitAsync()
     {
         CurrentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
         NavigationManager.LocationChanged += OnLocationChanged;
 
-        base.OnInitialized();
+        await base.OnInitAsync();
     }
 
     private void OnLocationChanged(object sender, LocationChangedEventArgs args)
@@ -32,10 +32,11 @@ public partial class Header
         StateHasChanged();
     }
 
-    private void ToggleMenu()
+    private async Task ToggleMenu()
     {
-        NavManuService.ToggleMenu();
+        await NavManuService.ToggleMenu();
     }
+
     private string GetActiveRouteName()
     {
         return CurrentUrl switch
