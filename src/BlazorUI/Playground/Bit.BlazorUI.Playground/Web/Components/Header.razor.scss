@@ -15,13 +15,18 @@
     background-color: rgba(255, 255, 255, 0.72);
 }
 
+.main-header--home {
+    .header-main-container {
+        max-width: rem(1200px);
+    }
+}
+
 .header-main-container {
     display: flex;
     align-items: center;
     flex-flow: row nowrap;
     justify-content: space-between;
     width: 100%;
-    max-width: rem(1200px);
     min-height: rem($HeaderHeight);
     margin-left: auto;
     margin-right: auto;

@@ -1,4 +1,4 @@
-﻿<header class="main-header">
+﻿<header class="main-header @(CurrentUrl == "/" ? "main-header--home" : null)">
     <div class="header-main-container">
         <div class="header-content-container">
             @if (CurrentUrl != "/")
