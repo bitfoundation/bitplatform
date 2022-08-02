@@ -13,6 +13,9 @@ public partial class BitCarousel : IDisposable
     private int _pagesCount;
     private int _currentPage;
     private string _directionStyle = string.Empty;
+    private string _goLeftButtonStyle = string.Empty;
+    private string _goRightButtonStyle = string.Empty;
+
     private int _internalScrollItemsCount = 1;
     private int scrollItemsCount = 1;
 
@@ -149,14 +152,25 @@ public partial class BitCarousel : IDisposable
 
             _pagesCount = (int)Math.Ceiling((decimal)itemsCount / VisibleItemsCount);
 
+            SetNavigationButtonsVisibility();
+
             StateHasChanged();
         }
+
+
 
         await base.OnAfterRenderAsync(firstRender);
     }
 
+    private void SetNavigationButtonsVisibility()
+    {
+        _goLeftButtonStyle = (InfiniteScrolling is false && _currentIndices[_currentIndices.Length - 1] == AllItems.Count - 1) ? "display:none" : "";
+
+        _goRightButtonStyle = (InfiniteScrolling is false && _currentIndices[0] == 0) ? "display:none" : "";
+    }
+
     private async Task GoLeft() => await (Direction == BitDirection.LeftToRight ? Next() : Prev());
-    
+
     private async Task GoRight() => await (Direction == BitDirection.LeftToRight ? Prev() : Next());
 
     private async Task Prev()
@@ -237,6 +251,8 @@ public partial class BitCarousel : IDisposable
 
         _currentIndices = newIndices;
         _currentPage = (int)Math.Floor((decimal)_currentIndices[0] / VisibleItemsCount);
+
+        SetNavigationButtonsVisibility();
 
         StateHasChanged();
 

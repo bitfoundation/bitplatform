@@ -20,11 +20,11 @@
 
         @if (ShowNextPrev)
         {
-        <div class="next-btn" @onclick="GoLeft">
+        <div class="go-left-btn" @onclick="GoLeft" style="@_goLeftButtonStyle">
             <i class="bit-icon bit-icon--ChevronRight"></i>
         </div>
 
-        <div class="prev-btn" @onclick="GoRight">
+        <div class="go-right-btn" @onclick="GoRight" style="@_goRightButtonStyle">
             <i class="bit-icon bit-icon--ChevronLeft"></i>
         </div>
         }
