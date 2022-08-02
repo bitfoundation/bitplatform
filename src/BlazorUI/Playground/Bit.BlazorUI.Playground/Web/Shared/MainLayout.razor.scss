@@ -13,6 +13,10 @@
     padding-left: rem($NavMenuWidth);
     box-sizing: border-box;
 
+    @include lt-lg {
+        padding-left: 0;
+    }
+
     @include sm {
         padding-top: rem(100px);
     }
@@ -22,25 +26,60 @@
     padding-left: 0;
 
     .site-content {
-        width: 100%;
-        margin-left: auto;
-        margin-right: auto;
+        padding-left: rem(20px);
+        padding-right: rem(20px);
+        padding-top: 0;
+        padding-bottom: 0;
+
+        @include lt-xl {
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+
+        @include lg {
+            padding-left: rem(20px);
+            padding-right: rem(20px);
+        }
+
+        @include md {
+            padding-left: rem(30px);
+            padding-right: rem(30px);
+        }
+
+        @include sm {
+            padding-left: rem(20px);
+            padding-right: rem(20px);
+        }
     }
 }
 
 .site-content {
+    width: 100%;
     max-width: rem(1200px);
-    padding-left: rem(20px);
-    padding-right: rem(20px);
+    padding-left: rem(60px);
+    padding-right: rem(60px);
+    padding-top: rem(65px);
+    padding-bottom: rem(65px);
     margin: 0 auto;
+
+    @include lt-xl {
+        padding-top: rem(35px);
+        padding-bottom: rem(35px);
+    }
+
+    @include lg {
+        padding-left: rem(16px);
+        padding-right: rem(16px);
+    }
 
     @include md {
         padding-left: rem(30px);
         padding-right: rem(30px);
     }
 
-    @include lt-lg {
-        width: 100%;
+    @include sm {
+        padding-left: rem(20px);
+        padding-right: rem(20px);
     }
 }
 
