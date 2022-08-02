@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Bit.BlazorUI.Playground.Web.Services;
+using Bit.BlazorUI.Playground.Web.Services.Contracts;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
+using Microsoft.JSInterop;
 
 namespace Bit.BlazorUI.Playground.Web.Components;
 
@@ -12,6 +15,8 @@ public partial class Header
 
     [Inject] public NavigationManager NavigationManager { get; set; }
     [Inject] public NavManuService NavManuService { get; set; }
+    [Inject] public IJSRuntime JsRuntime { get; set; }
+    [Inject] private IExceptionHandler exceptionHandler { get; set; } = default!;
 
     protected override void OnInitialized()
     {
@@ -43,8 +48,21 @@ public partial class Header
         };
     }
 
-    private void ToggleHeaderMenu()
+    private async Task ToggleHeaderMenu()
     {
-        IsHeaderMenuOpen = !IsHeaderMenuOpen;
+        try
+        {
+            IsHeaderMenuOpen = !IsHeaderMenuOpen;
+
+            await JsRuntime.SetToggleBodyOverflow(IsHeaderMenuOpen);
+        }
+        catch (Exception ex)
+        {
+            exceptionHandler.Handle(ex);
+        }
+        finally
+        {
+            StateHasChanged();
+        }
     }
 }

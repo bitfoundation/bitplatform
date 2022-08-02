@@ -9,6 +9,11 @@
     display: flex;
     justify-content: flex-end;
     width: 100%;
+    padding-top: rem(56px);
+
+    @include sm {
+        padding-top: rem(100px);
+    }
 }
 
 .site-content {
