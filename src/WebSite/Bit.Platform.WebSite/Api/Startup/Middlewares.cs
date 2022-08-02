@@ -18,7 +18,10 @@ public static class Middlewares
         app.UseBlazorFrameworkFiles();
 #endif
 
-        app.UseResponseCompression();
+        if (env.IsDevelopment() is false)
+        {
+            app.UseResponseCompression();
+        }
         app.UseStaticFiles(new StaticFileOptions
         {
             OnPrepareResponse = ctx =>
