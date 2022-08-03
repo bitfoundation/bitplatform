@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
 
 namespace Bit.BlazorUI;
@@ -51,7 +52,12 @@ public partial class BitActionButton
     /// <summary>
     /// The type of the button
     /// </summary>
-    [Parameter] public BitButtonType ButtonType { get; set; } = BitButtonType.Button;
+    [Parameter] public BitButtonType? ButtonType { get; set; }
+
+    /// <summary>
+    /// The EditContext, which is set if the button is inside an <see cref="EditForm"/>
+    /// </summary>
+    [CascadingParameter] public EditContext? EditContext { get; set; }
 
     /// <summary>
     /// Callback for when the button clicked
@@ -66,6 +72,8 @@ public partial class BitActionButton
         {
             tabIndex = AllowDisabledFocus ? null : -1;
         }
+        
+        ButtonType ??= EditContext is null ? BitButtonType.Button : BitButtonType.Submit;
 
         await base.OnInitializedAsync();
     }
