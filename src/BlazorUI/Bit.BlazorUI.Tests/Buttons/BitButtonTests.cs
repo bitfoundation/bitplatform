@@ -1,4 +1,5 @@
 ﻿using Bunit;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Buttons;
@@ -156,7 +157,7 @@ public class BitButtonTests : BunitTestContext
 
         var bitButton = com.Find(".bit-btn");
 
-        Assert.AreEqual(bitButton.HasAttribute("aria-hidden"), expectedResult);
+        Assert.AreEqual(expectedResult, bitButton.HasAttribute("aria-hidden"));
     }
 
     [DataTestMethod,
@@ -174,6 +175,33 @@ public class BitButtonTests : BunitTestContext
         var bitButton = com.Find(".bit-btn");
 
         var buttonTypeName = buttonType == BitButtonType.Button ? "button" : buttonType == BitButtonType.Submit ? "submit" : "reset";
-        Assert.AreEqual(bitButton.GetAttribute("type"), buttonTypeName);
+        Assert.AreEqual(buttonTypeName, bitButton.GetAttribute("type"));
+    }
+
+    [TestMethod]
+    public void BitButtonSubmitStateInEditContextTest()
+    {
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.EditContext, new EditContext(this));
+        });
+        
+        var bitButton = com.Find(".bit-btn");
+
+        Assert.AreEqual("submit", bitButton.GetAttribute("type"));
+    }
+    
+    [TestMethod]
+    public void BitButtonButtonStateNotOverridenInEditContextTest()
+    {
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.EditContext, new EditContext(this));
+            parameters.Add(p => p.ButtonType, BitButtonType.Button);
+        });
+        
+        var bitButton = com.Find(".bit-btn");
+
+        Assert.AreEqual("button", bitButton.GetAttribute("type"));
     }
 }

@@ -271,3 +271,6 @@ custom.aprof
 
 /src/Sales/Bit.Sales.WebSite/Web/**/*.css
 /src/Sales/Bit.Sales.WebSite/Web/**/*.js
+
+# MacOS files
+.DS_Store
