@@ -10,7 +10,7 @@ using Microsoft.JSInterop;
 
 namespace Bit.BlazorUI.Playground.Web.Components;
 
-public partial class SideNav
+public partial class NavMenu
 {
     private bool isNavOpen = false;
     private readonly List<BitNavLinkItem> allNavLinks = new()
@@ -136,9 +136,20 @@ public partial class SideNav
 
     async Task ToggleMenu()
     {
-        isNavOpen = !isNavOpen;
+        try
+        {
+            isNavOpen = !isNavOpen;
 
-        await JsRuntime.SetToggleBodyOverflow(isNavOpen);
+            await JsRuntime.SetToggleBodyOverflow(isNavOpen);
+        }
+        catch (Exception ex)
+        {
+            exceptionHandler.Handle(ex);
+        }
+        finally
+        {
+            StateHasChanged();
+        }
     }
 
     private void HandleClear()
@@ -168,14 +179,14 @@ public partial class SideNav
 
     private string GetDemoLinkClassName(string link)
     {
-        var className = "side-nav-demo-link";
+        var className = "nav-menu-demo-link";
         if (CurrentUrl == "/components/overview" && link == "overview")
         {
-            className += " side-nav-demo-link--active";
+            className += " nav-menu-demo-link--active";
         }
         else if (CurrentUrl == "/get-started" && link == "get-started")
         {
-            className += " side-nav-demo-link--active";
+            className += " nav-menu-demo-link--active";
         }
 
         return className;
