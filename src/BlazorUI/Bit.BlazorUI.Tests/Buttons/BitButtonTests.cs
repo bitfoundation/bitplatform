@@ -181,7 +181,7 @@ public class BitButtonTests : BunitTestContext
     [TestMethod]
     public void BitButtonSubmitStateInEditContextTest()
     {
-        var com = RenderComponent<BitButtonTest>(parameters =>
+        var com = RenderComponent<BitButton>(parameters =>
         {
             parameters.Add(p => p.EditContext, new EditContext(this));
         });
@@ -194,7 +194,7 @@ public class BitButtonTests : BunitTestContext
     [TestMethod]
     public void BitButtonButtonStateNotOverridenInEditContextTest()
     {
-        var com = RenderComponent<BitButtonTest>(parameters =>
+        var com = RenderComponent<BitButton>(parameters =>
         {
             parameters.Add(p => p.EditContext, new EditContext(this));
             parameters.Add(p => p.ButtonType, BitButtonType.Button);
