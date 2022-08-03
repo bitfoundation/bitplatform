@@ -158,8 +158,8 @@
     z-index: 1;
     right: rem(24px);
     top: rem(16px);
-    width: rem(48px);
-    height: rem(48px);
+    width: rem(34px);
+    height: rem(34px);
     border-radius: 50%;
     background-color: $B5Color;
 
@@ -167,50 +167,11 @@
         i {
             color: $B2Color;
             margin: 0;
-            font-size: rem(28px);
+            font-size: rem(16px);
         }
     }
 
     &:hover {
         background-color: $B5Color;
-    }
-
-    @include lg {
-        width: rem(40px);
-        height: rem(40px);
-        right: rem(16px);
-        top: rem(16px);
-
-        span {
-            i {
-                font-size: rem(24px);
-            }
-        }
-    }
-
-    @include md {
-        width: rem(40px);
-        height: rem(40px);
-        right: rem(8px);
-        top: rem(8px);
-
-        span {
-            i {
-                font-size: rem(24px);
-            }
-        }
-    }
-
-    @include sm {
-        width: rem(32px);
-        height: rem(32px);
-        right: rem(8px);
-        top: rem(8px);
-
-        span {
-            i {
-                font-size: rem(20px);
-            }
-        }
     }
 }

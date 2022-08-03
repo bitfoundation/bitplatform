@@ -17,13 +17,7 @@
     </div>
 
     <div class="box-content">
-        @if (!showCode)
-        {
-            <div class="example-container">
-                @ExamplePreview
-            </div>
-        }
-        else
+        @if (showCode)
         {
             <BitIconButton Class="com-example-box-copy-btn"
                        OnClick=CopyCodeToClipboard
@@ -37,10 +31,15 @@
                 @if (CSharpSourceCode.HasValue())
                 {
                 <code class="csharp">
-&#64code {@CSharpSourceCode.Trim().Replace("\n", "\n     ")
+&#64code {
+    @CSharpSourceCode.Trim().Replace("\n", "\n     ")
 }</code>
                 }
              </pre>
         }
+
+        <div class="example-container">
+            @ExamplePreview
+        </div>
     </div>
 </section>
