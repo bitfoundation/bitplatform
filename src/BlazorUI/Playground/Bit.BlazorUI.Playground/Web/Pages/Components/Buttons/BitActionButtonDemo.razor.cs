@@ -152,7 +152,7 @@ public partial class BitActionButtonDemo
     private readonly string example1HTMLCode = @"<BitActionButton IconName=""BitIconName.AddFriend"">Create account</BitActionButton>
 <BitActionButton AllowDisabledFocus=""false"" IsEnabled=""false"" IconName=""BitIconName.UserRemove"">Remove user</BitActionButton>";
 
-    private readonly string example2HTMLCode = @"<BitActionButton IconName=""BitIconName.ThisPC"" Style=""font-family:'Axiforma';font-size:16px;border:2px solid #32385B;justify-content: center;width: 232px;"">
+    private readonly string example2HTMLCode = @"<BitActionButton IconName=""BitIconName.ThisPC"" Style=""font-size:16px;border:2px solid #32385B;justify-content: center;width: 232px;"">
     Styled Action Button
 </BitActionButton>
 <BitActionButton IconName=""BitIconName.ThisPC"" Class=""custom-action-button"">

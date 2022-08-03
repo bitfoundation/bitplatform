@@ -185,7 +185,7 @@ public partial class BitButtonDemo
     <label>A Text from label element</label>
 </BitButton>";
 
-    private readonly string example2HTMLCode = @"<BitButton Style=""height: 40px;width: 166px;font-family: 'Axiforma';font-size: 16px;"" Class=""styled-btn"">
+    private readonly string example2HTMLCode = @"<BitButton Style=""height: 40px;width: 166px;font-size: 16px;"" Class=""styled-btn"">
     Styled Button
 </BitButton>
 <BitButton Class=""custom-button"">
