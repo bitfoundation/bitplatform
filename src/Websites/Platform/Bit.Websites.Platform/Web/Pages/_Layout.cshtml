@@ -1,0 +1,82 @@
+﻿@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+@namespace Bit.Websites.Platform.Web.Pages
+
+@using Bit.Websites.Platform.Web
+@using Bit.Websites.Platform.Shared;
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Http
+
+@inject IHttpContextAccessor ContextAccessor
+
+@{
+    var isBlazorServer = BlazorModeDetector.Current.IsBlazorServer();
+    RenderMode renderMode = isBlazorServer ? RenderMode.ServerPrerendered : RenderMode.WebAssemblyPrerendered;
+
+    if (renderMode is RenderMode.ServerPrerendered or RenderMode.WebAssemblyPrerendered)
+    {
+        var shouldRenderStaticMode = ContextAccessor?.HttpContext?.Request.ShouldRenderStaticMode();
+
+        if (shouldRenderStaticMode is not null && shouldRenderStaticMode.Value)
+        {
+            renderMode = RenderMode.Static;
+        }
+    }
+}
+
+@*
+    Unlike most client-side Blazor projects (WASM Blazor), we use .cshtml instead of .html index file.
+    This provides PreRendering(SSR) to the client blazor projects and the ability to use "asp-append-version".
+    Note that these files(_Host.cshtml & _Layout.cshtml) are being used for both "Client" and "Server" blazor.
+*@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="bit is a platform for .NET developers to easily Code, Build & Deploy their projects across multiple platforms." />
+    <base href="~/" />
+    <link rel="icon" href="~/favicon.ico" type="image/x-icon" asp-append-version="true">
+    <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.min.css" asp-append-version="true" />
+    <link rel="stylesheet" href="Bit.Websites.Platform.Web.styles.css" asp-append-version="true" />
+    <style>
+        * {
+            font-family: "OpenSans";
+        }
+
+        html, body {
+            width: 100%;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        a {
+            text-decoration: none;
+        }
+    </style>
+    @*<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/styles/default.min.css">*@
+    <component type="typeof(HeadOutlet)" render-mode="@renderMode" />
+</head>
+<body>
+
+    @RenderBody()
+
+    @*<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/highlight.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/languages/csharp.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/languages/xml.min.js"></script>*@
+    <script src="_content/Bit.BlazorUI/scripts/bit.blazorui.min.js" asp-append-version="true"></script>
+    <script src="~/scripts/app.min.js" asp-append-version="true"></script>
+
+    @if (isBlazorServer)
+    {
+        <script src="_framework/blazor.server.js" asp-append-version="true"></script>
+    }
+    else
+    {
+        <script src="_framework/blazor.webassembly.js" asp-append-version="true"></script>
+    }
+    <persist-component-state />
+</body>
+</html>
