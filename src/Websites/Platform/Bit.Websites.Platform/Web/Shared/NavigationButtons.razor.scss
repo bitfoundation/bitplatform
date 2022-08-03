@@ -1,0 +1,38 @@
+﻿@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_media-queries.scss';
+
+.container {
+    display: flex;
+    align-content: center;
+    justify-content: space-between;
+    height: 3rem;
+    padding: 1rem;
+}
+
+.button {
+    display: flex;
+    align-items: center;
+    border-radius: 0.5rem;
+    transition: all 0.2s;
+
+    &:hover {
+        padding: 0.5rem;
+        background-color: $B10Color;
+    }
+}
+
+.link {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    outline: none;
+    color: $B4Color;
+
+    .right {
+        margin-right: 0.5rem;
+    }
+
+    .left {
+        margin-left: 0.5rem;
+    }
+}

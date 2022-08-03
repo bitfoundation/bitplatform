@@ -17,6 +17,10 @@
         "inputFile": "Shared/Footer.razor.scss"
     },
     {
+        "outputFile": "Shared/NavigationButtons.razor.css",
+        "inputFile": "Shared/NavigationButtons.razor.scss"
+    },
+    {
         "outputFile": "Shared/NavMenu.razor.css",
         "inputFile": "Shared/NavMenu.razor.scss"
     },
