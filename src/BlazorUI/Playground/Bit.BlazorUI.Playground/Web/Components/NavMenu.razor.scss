@@ -70,11 +70,7 @@
     overflow-x: hidden;
 
     &::-webkit-scrollbar {
-        width: rem(10px);
-    }
-
-    &::-webkit-scrollbar:horizontal {
-        height: rem(10px);
+        width: rem(6px);
     }
 }
 
