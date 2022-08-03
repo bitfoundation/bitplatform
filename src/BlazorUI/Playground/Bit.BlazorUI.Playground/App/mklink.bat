@@ -1,3 +1,5 @@
+powershell.exe "& Get-ChildItem | Where-Object { $_.Attributes -match 'ReparsePoint' -and ((Test-Path -Path ('../Web/' + $_.Name)) -eq $false -and $_.Name -ne 'Main.razor') } | Remove-Item -Confirm:$false -Force -Recurse "
+
 if not exist "Pages/." mklink /j "Pages" "../Web/Pages"
 if not exist "Models/." mklink /j "Models" "../Web/Models"
 if not exist "Shared/." mklink /j "Shared" "../Web/Shared"
@@ -15,6 +17,8 @@ if not exist compilerconfig.json mklink "compilerconfig.json" "%cd%/../Web/compi
 if not exist compilerconfig.json.defaults mklink "compilerconfig.json.defaults" "%cd%/../Web/compilerconfig.json.defaults"
 
 cd wwwroot
+
+powershell.exe "& Get-ChildItem | Where-Object { $_.Attributes -match 'ReparsePoint' -and ((Test-Path -Path ('../../Web/wwwroot/' + $_.Name)) -eq $false) } | Remove-Item -Confirm:$false -Force -Recurse "
 
 if not exist "images/." mklink /j "images" "../../Web/wwwroot/images"
 if not exist "fonts/." mklink /j "fonts" "../../Web/wwwroot/fonts"
