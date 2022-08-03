@@ -145,7 +145,7 @@ public class BitActionButtonTests : BunitTestContext
         var bitActionButton = component.Find(".bit-act-btn");
 
         var buttonTypeName = buttonType == BitButtonType.Button ? "button" : buttonType == BitButtonType.Submit ? "submit" : "reset";
-        Assert.AreEqual(bitActionButton.GetAttribute("type"), buttonTypeName);
+        Assert.AreEqual(buttonTypeName, bitActionButton.GetAttribute("type"));
     }
     
     [TestMethod]

@@ -112,17 +112,16 @@ public class BitIconButtonTests : BunitTestContext
         DataRow(false),
         DataRow(null)
     ]
-    public void BitIconButtonAriaHiddenTest(bool ariaHidden)
+    public void BitIconButtonAriaHiddenTest(bool expectedAriaHidden)
     {
         var com = RenderComponent<BitIconButtonTest>(parameters =>
         {
-            parameters.Add(p => p.AriaHidden, ariaHidden);
+            parameters.Add(p => p.AriaHidden, expectedAriaHidden);
         });
 
         var bitIconButton = com.Find(".bit-ico-btn");
-        var expectedResult = ariaHidden ? true : false;
 
-        Assert.AreEqual(bitIconButton.HasAttribute("aria-hidden"), expectedResult);
+        Assert.AreEqual(expectedAriaHidden, bitIconButton.HasAttribute("aria-hidden"));
     }
 
     [DataTestMethod,
