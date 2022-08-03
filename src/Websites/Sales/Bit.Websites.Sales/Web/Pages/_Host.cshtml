@@ -1,0 +1,34 @@
+﻿@page "/"
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+@using Bit.Websites.Sales.Web
+@using Bit.Websites.Sales.Shared.Infra
+
+@namespace Bit.Websites.Sales.Web.Pages
+
+@{
+    Layout = "_Layout";
+    var isBlazorServer = BlazorModeDetector.Current.IsBlazorServer();
+    var isDefaultDeploymentType = WebAppDeploymentTypeDetector.Current.IsDefault();
+    var isStatic = WebAppDeploymentTypeDetector.Current.IsStatic();
+    RenderMode renderMode = isStatic
+                            ? RenderMode.Static
+                            : isBlazorServer
+                            ? isDefaultDeploymentType
+                            ? RenderMode.Server
+                            : RenderMode.ServerPrerendered
+                            : isDefaultDeploymentType
+                            ? RenderMode.WebAssembly
+                            : RenderMode.WebAssemblyPrerendered;
+
+    if (renderMode is RenderMode.ServerPrerendered or RenderMode.WebAssemblyPrerendered)
+    {
+        if (Request.ShouldRenderStaticMode())
+        {
+            renderMode = RenderMode.Static;
+        }
+    }
+}
+
+<component type="typeof(App)"
+           render-mode="@renderMode" />

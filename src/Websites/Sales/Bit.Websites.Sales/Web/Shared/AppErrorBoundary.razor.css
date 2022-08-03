@@ -1,0 +1,31 @@
+﻿.main {
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  width: 100%;
+  max-width: 50rem;
+  max-height: 37.5rem;
+  background-color: #FFF;
+  border-radius: 0.25rem;
+  padding: 0.5rem;
+}
+
+.header {
+  text-align: right;
+}
+
+.title {
+  color: #F56565;
+}
+
+.exception {
+  color: #000;
+  white-space: pre;
+  overflow: auto;
+  text-align: left;
+  margin: 1.5rem;
+}
+
+.buttons {
+  margin-bottom: 1.5rem;
+}

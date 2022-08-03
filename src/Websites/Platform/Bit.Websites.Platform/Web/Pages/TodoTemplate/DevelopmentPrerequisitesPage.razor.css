@@ -1,0 +1,137 @@
+﻿.page-container {
+  width: 100%;
+  max-width: 77rem;
+  padding: 6.25rem 2rem 0;
+  box-sizing: border-box;
+}
+@media screen and (min-width: 48em) and (max-width: 83.6875em) {
+  .page-container {
+    padding: 5.5rem 2rem 0;
+  }
+}
+@media screen and (max-width: 47.9375em) {
+  .page-container {
+    padding: 5.5rem 1rem 0;
+  }
+}
+@media screen and (max-width: 83.6875em) {
+  .page-container {
+    max-width: 100%;
+  }
+}
+
+.page-main-title {
+  margin-bottom: 2rem;
+  font-weight: 700;
+  font-size: 2rem;
+  line-height: 2.5rem;
+  color: #002A66;
+}
+@media screen and (min-width: 48em) and (max-width: 83.6875em) {
+  .page-main-title {
+    margin-bottom: 1rem;
+    font-size: 1.75rem;
+    line-height: 2.1875rem;
+  }
+}
+@media screen and (max-width: 47.9375em) {
+  .page-main-title {
+    margin-bottom: 0.75rem;
+    font-size: 1.625rem;
+    line-height: 2rem;
+  }
+}
+
+.page-desc {
+  margin-bottom: 4rem;
+  font-weight: 400;
+  font-size: 1rem;
+  line-height: 2rem;
+  text-align: justify;
+  color: #515151;
+}
+@media screen and (min-width: 48em) and (max-width: 83.6875em) {
+  .page-desc {
+    margin-bottom: 2.5rem;
+    font-size: 0.875rem;
+    line-height: 1.75rem;
+  }
+}
+@media screen and (max-width: 47.9375em) {
+  .page-desc {
+    margin-bottom: 2.5rem;
+    font-size: 0.875rem;
+    line-height: 1.75rem;
+  }
+}
+
+.section-card {
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: flex-start;
+  align-items: flex-start;
+  width: 100%;
+  margin-bottom: 4rem;
+  padding: 2rem 1.5rem;
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.15);
+  border-radius: 0.5rem;
+  box-sizing: border-box;
+  background-color: #FFFFFF;
+}
+@media screen and (min-width: 48em) and (max-width: 83.6875em) {
+  .section-card {
+    margin-bottom: 3rem;
+    padding: 1.5rem 1rem;
+  }
+}
+@media screen and (max-width: 47.9375em) {
+  .section-card {
+    margin-bottom: 1rem;
+    padding: 1rem 0.75rem;
+  }
+}
+
+.section-card-title {
+  margin-bottom: 1rem;
+  font-weight: 700;
+  font-size: 1.875rem;
+  line-height: 2.5rem;
+  color: #002A66;
+}
+@media screen and (min-width: 48em) and (max-width: 83.6875em) {
+  .section-card-title {
+    margin-bottom: 0.5rem;
+    font-size: 1.625rem;
+    line-height: 2rem;
+  }
+}
+@media screen and (max-width: 47.9375em) {
+  .section-card-title {
+    margin-bottom: 0.5rem;
+    font-size: 1.5rem;
+    line-height: 1.875rem;
+  }
+}
+
+.section-card-txt {
+  margin-bottom: 1.5rem;
+  font-weight: 400;
+  font-size: 1.125rem;
+  line-height: 2rem;
+  text-align: justify;
+  color: #515151;
+}
+@media screen and (min-width: 48em) and (max-width: 83.6875em) {
+  .section-card-txt {
+    margin-bottom: 1rem;
+    font-size: 1rem;
+    line-height: 1.875rem;
+  }
+}
+@media screen and (max-width: 47.9375em) {
+  .section-card-txt {
+    margin-bottom: 0.75rem;
+    font-size: 0.9375rem;
+    line-height: 1.75rem;
+  }
+}

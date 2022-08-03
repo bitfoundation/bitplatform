@@ -1,0 +1,17 @@
+﻿.main-container {
+  width: 100%;
+  padding-top: 9.875rem;
+}
+@media screen and (max-width: 64em) {
+  .main-container {
+    padding-top: 6.25rem;
+  }
+}
+
+.no-pad {
+  padding: 0;
+}
+
+.small-pad {
+  padding-top: 6.25rem;
+}
