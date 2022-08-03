@@ -61,19 +61,11 @@
     padding: rem(24px) rem(22px);
     border-bottom: rem(1px) solid $B5Color;
     box-sizing: border-box;
-
-    @include lt-xl {
-        padding: rem(24px) rem(16px);
-    }
-
-    @include sm {
-        padding: rem(40px) rem(28px) rem(16px);
-    }
 }
 
 .nav-menu-list {
     width: 100%;
-    height: calc(100% - #{rem(102px)});
+    height: calc(100% - #{rem(89px)});
     padding-top: rem(20px);
     box-sizing: border-box;
     overflow-y: auto;
@@ -86,14 +78,6 @@
     &::-webkit-scrollbar:horizontal {
         height: rem(10px);
     }
-
-    @include lt-xl {
-        height: calc(100% - #{rem(98px)});
-    }
-
-    @include sm {
-        height: calc(100% - #{rem(110px)});
-    }
 }
 
 ::deep .nav-menu-search-box {
@@ -103,14 +87,6 @@
     input::-webkit-input-placeholder {
         font-size: rem(14px);
         font-weight: 500;
-    }
-
-    @include lg {
-        height: rem(36px);
-    }
-
-    @include md {
-        height: rem(36px);
     }
 }
 
@@ -139,39 +115,6 @@
             text-decoration: none;
         }
     }
-
-    @include lg {
-        height: rem(32px);
-
-        a {
-            height: rem(32px);
-            padding-left: rem(36px);
-            font-size: rem(14px);
-            line-height: rem(24px);
-        }
-    }
-
-    @include md {
-        height: rem(36px);
-
-        a {
-            height: rem(36px);
-            padding-left: rem(36px);
-            font-size: rem(16px);
-            line-height: rem(24px);
-        }
-    }
-
-    @include sm {
-        height: rem(40px);
-
-        a {
-            height: rem(40px);
-            padding-left: rem(40px);
-            font-size: rem(14px);
-            line-height: rem(24px);
-        }
-    }
 }
 
 ::deep .nav-menu-demo-link--active {
@@ -183,24 +126,6 @@
 
         &:hover {
             background-color: $Gray4;
-        }
-
-        @include lg {
-            a {
-                padding-left: rem(32px);
-            }
-        }
-
-        @include md {
-            a {
-                padding-left: rem(32px);
-            }
-        }
-
-        @include sm {
-            a {
-                padding-left: rem(36px);
-            }
         }
     }
 }
@@ -231,27 +156,6 @@
             left: rem(17px);
             transform: rotate(0deg);
         }
-
-        @include lg {
-            height: rem(32px);
-            padding-left: rem(36px);
-            font-size: rem(14px);
-            line-height: rem(24px);
-        }
-
-        @include md {
-            height: rem(36px);
-            padding-left: rem(36px);
-            font-size: rem(16px);
-            line-height: rem(24px);
-        }
-
-        @include sm {
-            height: rem(40px);
-            padding-left: rem(40px);
-            font-size: rem(14px);
-            line-height: rem(24px);
-        }
     }
 
     .grp-content {
@@ -272,25 +176,6 @@
 
         &:hover {
             color: $B2Color;
-        }
-
-        @include lg {
-            height: rem(32px);
-            font-size: rem(12px);
-            line-height: rem(18px);
-        }
-
-        @include md {
-            height: rem(36px);
-            font-size: rem(16px);
-            line-height: rem(24px);
-        }
-
-        @include sm {
-            height: rem(40px);
-            font-size: rem(12px);
-            font-weight: 500;
-            line-height: rem(24px);
         }
     }
 
