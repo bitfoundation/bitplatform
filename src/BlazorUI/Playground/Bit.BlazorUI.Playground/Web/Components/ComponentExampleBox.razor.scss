@@ -7,21 +7,8 @@
     flex-flow: column nowrap;
     justify-content: flex-start;
     width: 100%;
-    max-width: calc((100vw - 32px) - 16px);
-    margin-bottom: rem(80px);
-
-    @include lg {
-        margin-bottom: rem(64px);
-    }
-
-    @include md {
-        margin-bottom: rem(40px);
-        max-width: calc((100vw - 64px) - 16px);
-    }
-
-    @include sm {
-        margin-bottom: rem(40px);
-    }
+    max-width: 100%;
+    margin-bottom: rem(36px);
 }
 
 .box-header {
@@ -31,37 +18,16 @@
     justify-content: space-between;
     align-items: center;
     width: 100%;
-    height: rem(48px);
-    padding-left: rem(24px);
-    border-radius: rem(10px) rem(10px) 0 0;
+    height: rem(40px);
     box-sizing: border-box;
-    border-bottom: rem(1px) solid $B5Color;
-    color: $B2Color;
-
-    @include lt-xl {
-        height: rem(40px);
-        padding-left: rem(16px);
-        border-radius: rem(8px) rem(8px) 0 0;
-    }
-
-    @include sm {
-        padding-left: rem(8px);
-    }
+    border-bottom: rem(1px) solid #a19f9d;
+    margin-top: rem(32px);
 }
 
 .header-title {
-    font-weight: 500;
+    font-weight: 600;
     font-size: rem(20px);
-    line-height: rem(32px);
-
-    @include lt-xl {
-        font-size: rem(16px);
-        line-height: rem(24px);
-    }
-
-    @include sm {
-        font-size: rem(12px);
-    }
+    color: #605e5c;
 }
 
 .header-btn-group {
@@ -90,17 +56,14 @@
     }
 
     @include lg {
-        border-radius: 0 0 rem(8px) rem(8px);
         font-size: rem(13px);
     }
 
     @include md {
-        border-radius: 0 0 rem(8px) rem(8px);
         font-size: rem(13px);
     }
 
     @include sm {
-        border-radius: 0 0 rem(8px) rem(8px);
         font-size: rem(13px);
     }
 }
@@ -130,58 +93,31 @@
 }
 
 ::deep .com-example-box-header-btn {
-    min-height: rem(32px);
+    min-height: rem(40px);
     height: 100%;
-    border: none;
     background-color: transparent;
     color: #2E2E2E !important;
     border-radius: rem(4px) rem(4px) 0 0;
-    border: rem(1px) solid $B5Color !important;
+    border: rem(1px) solid #a19f9d !important;
     border-bottom: none !important;
-
-    &:hover,
-    &:active,
-    &:focus {
-        background-color: $White;
-    }
 
     span {
         i {
-            font-size: rem(26px);
+            font-size: rem(18px);
             color: $B2Color !important;
         }
 
         span {
+            font-size: rem(14px);
+            font-weight: 400;
             min-width: rem(80px);
         }
     }
 
-    @include lt-xl {
-        span {
-            i {
-                font-size: rem(20px);
-            }
-        }
-    }
-
-    @include sm {
-        min-height: rem(28px);
-
-        span {
-            span {
-                display: none;
-            }
-        }
-    }
-}
-
-::deep .com-example-box-header-btn {
     &.bit-ico-btn-fluent {
         padding: 0 rem(25px);
     }
-}
 
-::deep .com-example-box-header-btn {
     &.bit-tgl-btn-fluent {
         min-width: unset;
     }
@@ -192,8 +128,8 @@
     z-index: 1;
     right: rem(24px);
     top: rem(16px);
-    width: rem(48px);
-    height: rem(48px);
+    width: rem(34px);
+    height: rem(34px);
     border-radius: 50%;
     background-color: $B5Color;
 
@@ -201,50 +137,11 @@
         i {
             color: $B2Color;
             margin: 0;
-            font-size: rem(28px);
+            font-size: rem(16px);
         }
     }
 
     &:hover {
         background-color: $B5Color;
-    }
-
-    @include lg {
-        width: rem(40px);
-        height: rem(40px);
-        right: rem(16px);
-        top: rem(16px);
-
-        span {
-            i {
-                font-size: rem(24px);
-            }
-        }
-    }
-
-    @include md {
-        width: rem(40px);
-        height: rem(40px);
-        right: rem(8px);
-        top: rem(8px);
-
-        span {
-            i {
-                font-size: rem(24px);
-            }
-        }
-    }
-
-    @include sm {
-        width: rem(32px);
-        height: rem(32px);
-        right: rem(8px);
-        top: rem(8px);
-
-        span {
-            i {
-                font-size: rem(20px);
-            }
-        }
     }
 }

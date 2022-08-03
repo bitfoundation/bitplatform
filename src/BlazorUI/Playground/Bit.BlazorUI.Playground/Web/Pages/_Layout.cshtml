@@ -42,10 +42,27 @@
     <link media="all" rel="stylesheet" href="Bit.BlazorUI.Playground.Web.styles.css" asp-append-version="true" />
     <style>
         html, body {
-            width: 100%;
+            -webkit-font-smoothing: antialiased;
+            -webkit-tap-highlight-color: transparent;
             height: 100%;
+            width: 100%;
             margin: 0;
             padding: 0;
+        }
+
+        html {
+            box-sizing: border-box;
+        }
+
+        body {
+            color: #323130;
+            font-size: 1rem;
+            line-height: 1.5;
+            letter-spacing: 0;
+            font-family: "Segoe UI";
+            font-weight: 400;
+            scroll-margin-top: calc(56px + 32px);
+            background-color: #fff;
         }
     </style>
     <link media="all" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/styles/default.min.css">

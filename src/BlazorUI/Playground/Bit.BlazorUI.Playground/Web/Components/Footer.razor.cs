@@ -1,11 +1,11 @@
-﻿using System;
-using Bit.BlazorUI.Playground.Web.Services.Contracts;
-using Microsoft.AspNetCore.Components;
+﻿using Bit.BlazorUI.Playground.Web.Services.Contracts;
 using Microsoft.AspNetCore.Components.Routing;
+using Microsoft.AspNetCore.Components;
+using System;
 
-namespace Bit.BlazorUI.Playground.Web.Shared;
+namespace Bit.BlazorUI.Playground.Web.Components;
 
-public partial class MainLayout : IDisposable
+public partial class Footer
 {
     [Inject]
     public NavigationManager NavigationManager { get; set; }

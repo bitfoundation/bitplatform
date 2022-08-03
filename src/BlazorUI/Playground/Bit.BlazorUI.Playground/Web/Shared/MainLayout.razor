@@ -1,26 +1,16 @@
 ﻿@inherits LayoutComponentBase
 
-<div class="container">
-    <Header />
+<Header />
 
-    <div class="main-container @(CurrentUrl != "/" ? "main-container-pad" : null)">
-        @if (CurrentUrl != "/")
-        {
-            <SideNav />
-        }
-        <div class="page-content">
-            @Body
-        </div>
-
-        <footer class="footer">
-            <div class="@(CurrentUrl == "/" ? "contact-link-container--home" : "contact-link-container")">
-                <a class="twitter-link" target="_blank" href="https://twitter.com/bitplatformhq" aria-label="Twitter link"></a>
-                <a class="github-link" target="_blank" href="https://github.com/bitfoundation/bitplatform" aria-label="Github link"></a>
-                <a class="youtube-link" target="_blank" href="https://www.youtube.com/channel/UCtk33NQ91f3GOJG0HAdkdog" aria-label="Youtube link"></a>
-                <a class="linkedin-link" target="_blank" href="https://www.linkedin.com/company/bit-foundation/" aria-label="Linkedin link"></a>
-            </div>
-            <div class="footer-gray-bar">Copyright © 2022 Bit Platform.</div>
-        </footer>
+<div class="main @(CurrentUrl == "/" ? "main--home" : null) @(CurrentUrl.Contains("/components") ? "main--components-demo" : null)">
+    @if (CurrentUrl != "/")
+    {
+        <NavMenu />
+    }
+    <div class="site-content">
+        @Body
     </div>
-    <MessageBox />
 </div>
+
+<MessageBox />
+<Footer />
