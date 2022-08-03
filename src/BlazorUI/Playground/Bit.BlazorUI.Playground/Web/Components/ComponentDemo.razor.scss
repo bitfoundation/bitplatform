@@ -24,7 +24,7 @@
     font-size: rem(32px);
     font-weight: 600;
     line-height: 1;
-    color: $B2Color;
+    color: #323130;
 
     @include lt-lg {
         margin-bottom: rem(28px);
@@ -46,21 +46,19 @@
     font-weight: 600;
     font-size: rem(24px);
     line-height: 1;
-    color: $B2Color;
+    color: #323130;
 }
 
 .table-title {
     margin-bottom: rem(20px);
     font-weight: 600;
     font-size: rem(20px);
-    color: $B2Color;
+    color: #323130;
 }
 
 .table-view {
     width: 100%;
     margin-bottom: rem(40px);
-    border: rem(1px) solid $B5Color;
-    border-radius: rem(10px);
     box-sizing: border-box;
     background-color: $White;
     overflow: hidden;
@@ -75,13 +73,12 @@
     display: flex;
     width: 100%;
     min-height: rem(42px);
-    background-color: $B5Color;
 }
 
 .tdata-row {
     display: flex;
     width: 100%;
-    border-bottom: rem(1px) solid $B5Color;
+    border-bottom: rem(1px) solid #edebe9;
 
     &:last-child {
         border: none;
@@ -94,14 +91,13 @@
     align-items: center;
     min-height: 100%;
     padding: rem(5px) rem(16px) rem(5px) rem(16px);
-    border-right: rem(1px) solid $B5Color;
     box-sizing: border-box;
     font-size: rem(14px);
     font-weight: 600;
     text-align: left;
     overflow: hidden;
     text-overflow: ellipsis;
-    color: $B2Color;
+    color: #323130;
     background-color: transparent;
 
     &:last-child {
@@ -114,7 +110,6 @@
     justify-content: flex-start;
     align-items: flex-start;
     padding: rem(16px);
-    border-right: rem(1px) solid $B5Color;
     box-sizing: border-box;
     font-size: rem(11px);
     text-align: left;

@@ -71,7 +71,6 @@
     padding: rem(10px);
     box-sizing: border-box;
     font-size: rem(14px);
-    font-weight: 700;
     line-height: 1.5;
     color: $Gray1;
     text-decoration: none;
@@ -128,8 +127,7 @@
 .header-nav-link {
     padding: rem(8px) 0;
     margin-bottom: rem(16px);
-    font-weight: 700;
-    font-size: rem(14px);
+    font-size: rem(15px);
     line-height: 1.5;
     color: $Gray2;
     text-decoration: none;
@@ -150,14 +148,15 @@
     &.bit-act-btn-fluent {
         flex-direction: row-reverse;
         padding: 0;
-        font-size: rem(14px);
-        font-weight: 700;
+        font-size: rem(15px);
+        font-weight: 600;
         line-height: 1.5;
         color: $Gray1;
 
         span {
             i {
                 font-size: rem(12px);
+                color: $Gray1;
             }
         }
     }

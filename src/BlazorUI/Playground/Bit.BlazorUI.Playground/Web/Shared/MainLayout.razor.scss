@@ -129,9 +129,9 @@
     }
 
     &::-webkit-scrollbar-thumb {
-        background-color: $B2Color;
+        background-color: #c8c6c4;
         border-radius: rem(8px);
-        border: rem(4px) solid $B2Color;
+        border: rem(4px) solid #c8c6c4;
     }
 
     &::-webkit-scrollbar-button {
@@ -203,15 +203,15 @@
 //    background-color: #fff;
 //}
 
-//::-webkit-scrollbar-track {
-//    background-color: #fff;
-//}
+::deep ::-webkit-scrollbar-track {
+    background-color: #fff;
+}
 
-//::-webkit-scrollbar-thumb {
-//    background-color: #babac0;
-//    border-radius: 16px;
-//    border: 4px solid #fff;
-//}
+::deep ::-webkit-scrollbar-thumb {
+    background-color: #c8c6c4;
+    border-radius: 16px;
+    border: 4px solid #c8c6c4;
+}
 
 //::-webkit-scrollbar-button {
 //    display: none;

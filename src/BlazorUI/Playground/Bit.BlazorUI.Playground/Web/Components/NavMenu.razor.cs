@@ -136,9 +136,20 @@ public partial class NavMenu
 
     async Task ToggleMenu()
     {
-        isNavOpen = !isNavOpen;
+        try
+        {
+            isNavOpen = !isNavOpen;
 
-        await JsRuntime.SetToggleBodyOverflow(isNavOpen);
+            await JsRuntime.SetToggleBodyOverflow(isNavOpen);
+        }
+        catch (Exception ex)
+        {
+            exceptionHandler.Handle(ex);
+        }
+        finally
+        {
+            StateHasChanged();
+        }
     }
 
     private void HandleClear()

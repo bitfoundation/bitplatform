@@ -59,14 +59,12 @@
 .search-box-container {
     width: 100%;
     padding: rem(24px) rem(22px);
-    border-bottom: rem(1px) solid $B5Color;
     box-sizing: border-box;
 }
 
 .nav-menu-list {
     width: 100%;
     height: calc(100% - #{rem(89px)});
-    padding-top: rem(20px);
     box-sizing: border-box;
     overflow-y: auto;
     overflow-x: hidden;
@@ -103,14 +101,12 @@
         height: rem(40px);
         padding-left: rem(44px);
         box-sizing: border-box;
-        font-weight: 500;
-        font-size: rem(16px);
+        font-weight: 600;
+        font-size: rem(14px);
         line-height: rem(32px);
-        color: $Gray1;
+        color: #323130;
 
         &:hover {
-            background-color: $Gray4;
-            color: $B2Color;
             text-decoration: none;
         }
     }
@@ -135,13 +131,13 @@
         margin: 0;
         padding-left: rem(44px);
         border: none;
-        font-weight: 500;
-        font-size: rem(16px);
+        font-weight: 600;
+        font-size: rem(14px);
         line-height: rem(32px);
-        color: $Gray2;
+        color: #323130;
 
         &:hover {
-            color: $B2Color;
+            color: #323130;
         }
 
         i {
@@ -169,12 +165,13 @@
         height: rem(40px);
         padding: 0 rem(16px) 0 rem(52px) !important;
         box-sizing: border-box;
-        font-size: rem(15px);
+        font-size: rem(14px);
+        font-weight: 400;
         line-height: rem(26px);
-        color: $Gray1;
+        color: #323130;
 
         &:hover {
-            color: $B2Color;
+            color: #323130;
         }
     }
 

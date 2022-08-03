@@ -8,7 +8,7 @@
     justify-content: flex-start;
     width: 100%;
     max-width: 100%;
-    margin-bottom: rem(68px);
+    margin-bottom: rem(36px);
 }
 
 .box-header {
@@ -21,12 +21,13 @@
     height: rem(40px);
     box-sizing: border-box;
     border-bottom: rem(1px) solid #a19f9d;
-    color: $B2Color;
+    margin-top: rem(32px);
 }
 
 .header-title {
     font-weight: 600;
     font-size: rem(20px);
+    color: #605e5c;
 }
 
 .header-btn-group {
@@ -55,17 +56,14 @@
     }
 
     @include lg {
-        border-radius: 0 0 rem(8px) rem(8px);
         font-size: rem(13px);
     }
 
     @include md {
-        border-radius: 0 0 rem(8px) rem(8px);
         font-size: rem(13px);
     }
 
     @include sm {
-        border-radius: 0 0 rem(8px) rem(8px);
         font-size: rem(13px);
     }
 }
@@ -103,15 +101,9 @@
     border: rem(1px) solid #a19f9d !important;
     border-bottom: none !important;
 
-    &:hover,
-    &:active,
-    &:focus {
-        background-color: $White;
-    }
-
     span {
         i {
-            font-size: rem(26px);
+            font-size: rem(18px);
             color: $B2Color !important;
         }
 
@@ -122,32 +114,10 @@
         }
     }
 
-    @include lt-xl {
-        span {
-            i {
-                font-size: rem(20px);
-            }
-        }
-    }
-
-    @include sm {
-        min-height: rem(28px);
-
-        span {
-            span {
-                display: none;
-            }
-        }
-    }
-}
-
-::deep .com-example-box-header-btn {
     &.bit-ico-btn-fluent {
         padding: 0 rem(25px);
     }
-}
 
-::deep .com-example-box-header-btn {
     &.bit-tgl-btn-fluent {
         min-width: unset;
     }
