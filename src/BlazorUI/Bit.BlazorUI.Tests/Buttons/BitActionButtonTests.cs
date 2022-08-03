@@ -1,4 +1,5 @@
 ﻿using Bunit;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Buttons;
@@ -144,6 +145,33 @@ public class BitActionButtonTests : BunitTestContext
         var bitActionButton = component.Find(".bit-act-btn");
 
         var buttonTypeName = buttonType == BitButtonType.Button ? "button" : buttonType == BitButtonType.Submit ? "submit" : "reset";
-        Assert.AreEqual(bitActionButton.GetAttribute("type"), buttonTypeName);
+        Assert.AreEqual(buttonTypeName, bitActionButton.GetAttribute("type"));
+    }
+    
+    [TestMethod]
+    public void BitActionButtonSubmitStateInEditContextTest()
+    {
+        var com = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.EditContext, new EditContext(this));
+        });
+        
+        var bitButton = com.Find(".bit-act-btn");
+
+        Assert.AreEqual("submit", bitButton.GetAttribute("type"));
+    }
+    
+    [TestMethod]
+    public void BitActionButtonButtonStateNotOverridenInEditContextTest()
+    {
+        var com = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.EditContext, new EditContext(this));
+            parameters.Add(p => p.ButtonType, BitButtonType.Button);
+        });
+        
+        var bitButton = com.Find(".bit-act-btn");
+
+        Assert.AreEqual("button", bitButton.GetAttribute("type"));
     }
 }

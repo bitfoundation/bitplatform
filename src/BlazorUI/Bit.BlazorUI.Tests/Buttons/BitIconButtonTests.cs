@@ -1,4 +1,5 @@
 ﻿using Bunit;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Buttons;
@@ -111,17 +112,16 @@ public class BitIconButtonTests : BunitTestContext
         DataRow(false),
         DataRow(null)
     ]
-    public void BitIconButtonAriaHiddenTest(bool ariaHidden)
+    public void BitIconButtonAriaHiddenTest(bool expectedAriaHidden)
     {
         var com = RenderComponent<BitIconButtonTest>(parameters =>
         {
-            parameters.Add(p => p.AriaHidden, ariaHidden);
+            parameters.Add(p => p.AriaHidden, expectedAriaHidden);
         });
 
         var bitIconButton = com.Find(".bit-ico-btn");
-        var expectedResult = ariaHidden ? true : false;
 
-        Assert.AreEqual(bitIconButton.HasAttribute("aria-hidden"), expectedResult);
+        Assert.AreEqual(expectedAriaHidden, bitIconButton.HasAttribute("aria-hidden"));
     }
 
     [DataTestMethod,
@@ -160,5 +160,32 @@ public class BitIconButtonTests : BunitTestContext
 
         var buttonTypeName = buttonType == BitButtonType.Button ? "button" : buttonType == BitButtonType.Submit ? "submit" : "reset";
         Assert.AreEqual(bitIconButton.GetAttribute("type"), buttonTypeName);
+    }
+    
+    [TestMethod]
+    public void BitIconButtonSubmitStateInEditContextTest()
+    {
+        var com = RenderComponent<BitIconButton>(parameters =>
+        {
+            parameters.Add(p => p.EditContext, new EditContext(this));
+        });
+        
+        var bitButton = com.Find(".bit-ico-btn");
+
+        Assert.AreEqual("submit", bitButton.GetAttribute("type"));
+    }
+    
+    [TestMethod]
+    public void BitIconButtonButtonStateNotOverridenInEditContextTest()
+    {
+        var com = RenderComponent<BitIconButton>(parameters =>
+        {
+            parameters.Add(p => p.EditContext, new EditContext(this));
+            parameters.Add(p => p.ButtonType, BitButtonType.Button);
+        });
+        
+        var bitButton = com.Find(".bit-ico-btn");
+
+        Assert.AreEqual("button", bitButton.GetAttribute("type"));
     }
 }
