@@ -22,14 +22,16 @@ public class BitCompoundButtonTests : BunitTestContext
         DataRow(Visual.Material, false, BitButtonStyle.Primary),
         DataRow(Visual.Material, false, BitButtonStyle.Standard)
     ]
-    public void BitCompoundButtonTest(Visual visual, bool isEnabled, BitButtonStyle style)
+    public void BitCompoundButton(Visual visual, bool isEnabled, BitButtonStyle style)
     {
-        var com = RenderComponent<BitCompoundButtonTest>(parameters =>
-            {
-                parameters.Add(p => p.Visual, visual);
-                parameters.Add(p => p.IsEnabled, isEnabled);
-                parameters.Add(p => p.ButtonStyle, style);
-            });
+        var clicked = false;
+        var com = RenderComponent<BitCompoundButton>(parameters =>
+        {
+            parameters.AddCascadingValue(visual);
+            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.ButtonStyle, style);
+            parameters.Add(p => p.OnClick, () => clicked = true);
+        });
 
         var bitButton = com.Find(".bit-cmp-btn");
 
@@ -39,7 +41,7 @@ public class BitCompoundButtonTests : BunitTestContext
 
         bitButton.Click();
 
-        Assert.AreEqual(isEnabled ? 1 : 0, com.Instance.CurrentCount);
+        Assert.AreEqual(isEnabled, clicked);
     }
 
     [DataTestMethod,
@@ -50,7 +52,7 @@ public class BitCompoundButtonTests : BunitTestContext
     ]
     public void BitCompoundButtonDisabledFocusTest(bool isEnabled, BitButtonStyle style, bool allowDisabledFocus, bool expectedResult)
     {
-        var com = RenderComponent<BitCompoundButtonTest>(parameters =>
+        var com = RenderComponent<BitCompoundButton>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, isEnabled);
             parameters.Add(p => p.ButtonStyle, style);
@@ -72,7 +74,7 @@ public class BitCompoundButtonTests : BunitTestContext
     [DataTestMethod, DataRow("Detailed description")]
     public void BitCompoundButtonAriaDescriptionTest(string ariaDescription)
     {
-        var com = RenderComponent<BitCompoundButtonTest>(parameters =>
+        var com = RenderComponent<BitCompoundButton>(parameters =>
         {
             parameters.Add(p => p.AriaDescription, ariaDescription);
         });
@@ -85,7 +87,7 @@ public class BitCompoundButtonTests : BunitTestContext
     [DataTestMethod, DataRow("Detailed label")]
     public void BitCompoundButtonAriaLabelTest(string ariaLabel)
     {
-        var com = RenderComponent<BitCompoundButtonTest>(parameters =>
+        var com = RenderComponent<BitCompoundButton>(parameters =>
         {
             parameters.Add(p => p.AriaLabel, ariaLabel);
         });
@@ -98,7 +100,7 @@ public class BitCompoundButtonTests : BunitTestContext
     [DataTestMethod, DataRow(true, true), DataRow(false, false), DataRow(null, false)]
     public void BitCompoundButtonAriaHiddenTest(bool ariaHidden, bool expectedResult)
     {
-        var com = RenderComponent<BitCompoundButtonTest>(parameters =>
+        var com = RenderComponent<BitCompoundButton>(parameters =>
         {
             parameters.Add(p => p.AriaHidden, ariaHidden);
         });
@@ -115,7 +117,7 @@ public class BitCompoundButtonTests : BunitTestContext
     ]
     public void BitCompoundButtonShouldRenderExpectedElementBasedOnHref(string href, bool isEnabled)
     {
-        var component = RenderComponent<BitCompoundButtonTest>(parameters =>
+        var component = RenderComponent<BitCompoundButton>(parameters =>
         {
             parameters.Add(p => p.Href, href);
             parameters.Add(p => p.IsEnabled, isEnabled);
@@ -138,7 +140,7 @@ public class BitCompoundButtonTests : BunitTestContext
     ]
     public void BitCompoundButtonShouldHaveCorrectDisabledClassBasedOnButtonStyle(Visual visual, BitButtonStyle buttonStyle, bool isEnabled)
     {
-        var component = RenderComponent<BitCompoundButtonTest>(parameters =>
+        var component = RenderComponent<BitCompoundButton>(parameters =>
         {
             parameters.Add(p => p.Visual, visual);
             parameters.Add(p => p.ButtonStyle, buttonStyle);
@@ -159,7 +161,7 @@ public class BitCompoundButtonTests : BunitTestContext
     ]
     public void BitCompoundButtonTypeOfButtonTest(BitButtonType buttonType)
     {
-        var component = RenderComponent<BitCompoundButtonTest>(parameters =>
+        var component = RenderComponent<BitCompoundButton>(parameters =>
         {
             parameters.Add(p => p.ButtonType, buttonType);
         });
