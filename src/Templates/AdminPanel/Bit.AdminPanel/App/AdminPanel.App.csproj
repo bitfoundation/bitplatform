@@ -91,11 +91,8 @@
         <PackageReference Include="Bit.BlazorUI.Charts" Version="3.0.0-pre-01" />
         <PackageReference Include="Bit.CodeAnalyzers" Version="3.0.0-pre-01" />
         <PackageReference Include="Bit.SourceGenerators" Version="3.0.0-pre-01" />
+        <PackageReference Include="LibSassBuilder" Version="2.0.2" />
         <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.7.4">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="BuildWebCompiler2022" Version="1.14.8">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
