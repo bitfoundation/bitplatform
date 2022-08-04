@@ -17,6 +17,7 @@
     overflow: hidden;
     cursor: pointer;
     user-select: none;
+    white-space: nowrap;
 
     @if $enabled {
         color: $Grey160;

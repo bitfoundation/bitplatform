@@ -65,10 +65,10 @@ public partial class BitNavDemo
                 new BitNavLinkItem { Name = "MSN", Url = "http://msn.com", Key = "key2", IsEnabled = false, Target = "_blank", Title = "" }
             }
         },
-        new BitNavLinkItem { Name = "Shared Documents and Files", Url = "http://example.com", Key = "key3", Target = "_blank", Title = "" },
+        new BitNavLinkItem { Name = "Shared Documents and Files", Url = "http://example.com", Key = "key3", Target = "_blank", Title = "", ItemStyle="white-space: normal;" },
         new BitNavLinkItem { Name = "Pages", Url = "http://msn.com", Key = "key4", Target = "_parent", Title = "" },
         new BitNavLinkItem { Name = "Notebook", Url = "http://msn.com", Key = "key5", IsEnabled = false, Title = "" },
-        new BitNavLinkItem { Name = "Communication and Media", Url = "http://msn.com", Key = "key6", Target = "_top", Title = "" },
+        new BitNavLinkItem { Name = "Communication and Media", Url = "http://msn.com", Key = "key6", Target = "_top", Title = "", ItemStyle="white-space: normal;" },
         new BitNavLinkItem { Name = "News", Key = "key7", Url = "http://cnn.com", IconName = BitIconName.News, Target = "_self", Title = "" }
     };
 
@@ -439,6 +439,13 @@ public partial class BitNavDemo
                },
                new ComponentParameter()
                {
+                   Name = "ItemStyle",
+                   Type = "string?",
+                   DefaultValue = "",
+                   Description = "Custom style for the each item element.",
+               },
+               new ComponentParameter()
+               {
                    Name = "Key",
                    Type = "string",
                    DefaultValue = "",
@@ -558,10 +565,10 @@ private readonly List<BitNavLinkItem> BasicNoToolTipNavLinks = new()
             new BitNavLinkItem { Name = ""MSN"", Url = ""http://msn.com"", Key = ""key2"", IsEnabled = false, Target = ""_blank"", Title = """" }
         }
     },
-    new BitNavLinkItem { Name = ""Shared Documents and Files"", Url = ""http://example.com"", Key = ""key3"", Target = ""_blank"", Title = """" },
+    new BitNavLinkItem { Name = ""Shared Documents and Files"", Url = ""http://example.com"", Key = ""key3"", Target = ""_blank"", Title = """", ItemStyle=""white-space: normal;"" },
     new BitNavLinkItem { Name = ""Pages"", Url = ""http://msn.com"", Key = ""key4"", Target = ""_parent"", Title = """" },
     new BitNavLinkItem { Name = ""Notebook"", Url = ""http://msn.com"", Key = ""key5"", IsEnabled = false, Title = """" },
-    new BitNavLinkItem { Name = ""Communication and Media"", Url = ""http://msn.com"", Key = ""key6"", Target = ""_top"", Title = """" },
+    new BitNavLinkItem { Name = ""Communication and Media"", Url = ""http://msn.com"", Key = ""key6"", Target = ""_top"", Title = """", ItemStyle=""white-space: normal;"" },
     new BitNavLinkItem { Name = ""News"", Key = ""key7"", Url = ""http://cnn.com"", IconName = BitIconName.News, Target = ""_self"", Title = """" }
 };";
 
