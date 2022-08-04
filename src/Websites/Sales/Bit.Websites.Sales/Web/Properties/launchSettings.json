@@ -2,6 +2,7 @@
     "profiles": {
         "Bit.Websites.Sales.Web": {
             "commandName": "Project",
+            "dotnetRunMessages": true,
             "launchBrowser": true,
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development"

@@ -35,7 +35,7 @@ public class Program
         var builder = WebApplication.CreateBuilder(args);
 
 #if DEBUG
-        builder.WebHost.UseUrls("https://*:4001", "http://*:4000");
+        builder.WebHost.UseUrls("https://localhost:4001", "http://localhost:4000", "https://*:4001", "http://*:4000");
 #endif
 
         Startup.Services.Add(builder.Services, builder.Configuration);
