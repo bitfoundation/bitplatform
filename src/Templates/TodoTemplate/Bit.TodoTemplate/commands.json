@@ -1,0 +1,12 @@
+{
+    "commands": {
+        "mklink": {
+            "fileName": "cmd.exe",
+            "workingDirectory": "App\\",
+            "arguments": "/c mklink.bat"
+        }
+    },
+    "-vs-binding": {
+        "ProjectOpened": [ "mklink" ]
+    }
+}
