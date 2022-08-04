@@ -37,47 +37,49 @@
 
     <div class="content-container">
         <div class="example-preview">
-            @if (SelectedComponent.Name == "ColorPicker")
-            {
-                <BitColorPicker ShowPreview="true" @bind-Alpha="@Alpha" @bind-Color="@ColorRgb">Default ColorPicker</BitColorPicker>
-            }
-            else if (SelectedComponent.Name == "DatePicker")
-            {
-                <BitDatePicker Style="width: 300px"
-                           ShowWeekNumbers="true">
-                </BitDatePicker>
-            }
-            else if (SelectedComponent.Name == "FileUpload")
-            {
-                <BitFileUpload IsMultiSelect="true"
-                           Label="Select files"
-                           AutoUploadEnabled="true"
-                           UploadUrl="@UploadUrl"
-                           RemoveUrl="@RemoveUrl"
-                           Style="flex-grow:1; max-width:none;">
-                </BitFileUpload>
-            }
-            else if (SelectedComponent.Name == "DropDown")
-            {
-                <BitDropDown Label="Multi-select uncontrolled"
-                         Items="GetDropdownItems()"
-                         Placeholder="Select options"
-                         IsMultiSelect="true"
-                         Style="width: 290px; margin-bottom: 20px;">
-                </BitDropDown>
-            }
-            else if (SelectedComponent.Name == "Nav (TreeList)")
-            {
-                <BitNav Style="width: 208px;
+            <div class="white-box">
+                @if (SelectedComponent.Name == "ColorPicker")
+                {
+                    <BitColorPicker ShowPreview="true" @bind-Alpha="@Alpha" @bind-Color="@ColorRgb">Default ColorPicker</BitColorPicker>
+                }
+                else if (SelectedComponent.Name == "DatePicker")
+                {
+                    <BitDatePicker Style="width: 300px"
+                               ShowWeekNumbers="true">
+                    </BitDatePicker>
+                }
+                else if (SelectedComponent.Name == "FileUpload")
+                {
+                    <BitFileUpload IsMultiSelect="true"
+                               Label="Select files"
+                               AutoUploadEnabled="true"
+                               UploadUrl="@UploadUrl"
+                               RemoveUrl="@RemoveUrl"
+                               Style="flex-grow:1; max-width:none;">
+                    </BitFileUpload>
+                }
+                else if (SelectedComponent.Name == "DropDown")
+                {
+                    <BitDropDown Label="Multi-select uncontrolled"
+                             Items="GetDropdownItems()"
+                             Placeholder="Select options"
+                             IsMultiSelect="true"
+                             Style="width: 290px; margin-bottom: 20px;">
+                    </BitDropDown>
+                }
+                else if (SelectedComponent.Name == "Nav (TreeList)")
+                {
+                    <BitNav Style="width: 208px;
                        height: 350px;
                        box-sizing: border-box;
                        border: 1px solid #eee;
                        overflow-y: auto;"
-                    NavLinkItems="BasicNavLinks"
-                    AriaLabel="Nav basic example"
-                    SelectedKey="key3">
-                </BitNav>
-            }
+                        NavLinkItems="BasicNavLinks"
+                        AriaLabel="Nav basic example"
+                        SelectedKey="key3">
+                    </BitNav>
+                }
+            </div>
         </div>
         <div class="example-code">
             @if (SelectedComponent.Name == "ColorPicker")
