@@ -102,13 +102,5 @@
     {
         "inputFile": "Pages/EditProfilePage.razor.scss",
         "outputFile": "Pages/EditProfilePage.razor.css"
-    },
-    {
-        "inputFile": "wwwroot/scripts/app.js",
-        "outputFile": "wwwroot/scripts/app.min.js"
-    },
-    {
-        "inputFile": "wwwroot/service-worker.published.js",
-        "outputFile": "wwwroot/service-worker.published.min.js"
     }
 ]
