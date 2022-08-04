@@ -5,7 +5,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Bit.BlazorUI.Tests.Buttons;
 
 [TestClass]
-public class BitIconButtons : BunitTestContext
+public class BitIconButtonTests : BunitTestContext
 {
     [DataTestMethod,
            DataRow(Visual.Fluent, true, BitIconName.Emoji2, null),

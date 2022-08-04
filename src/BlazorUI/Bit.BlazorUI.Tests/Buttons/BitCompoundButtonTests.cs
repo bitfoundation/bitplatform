@@ -4,7 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Bit.BlazorUI.Tests.Buttons;
 
 [TestClass]
-public class BitCompoundButtons : BunitTestContext
+public class BitCompoundButtonTests : BunitTestContext
 {
     [DataTestMethod,
         DataRow(Visual.Fluent, true, BitButtonStyle.Primary),
