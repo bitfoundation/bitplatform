@@ -14,7 +14,7 @@ public class BitFileUploadTests : BunitTestContext
     ]
     public void BitUploadFile_HasBasicClasses(Visual visual)
     {
-        var com = RenderComponent<BitFileUploadTest>(parameters =>
+        var com = RenderComponent<BitFileUpload>(parameters =>
         {
             parameters.Add(p => p.Visual, visual);
         });
@@ -31,7 +31,7 @@ public class BitFileUploadTests : BunitTestContext
     ]
     public void BitFileUpload_MultipleAttribute_Test(bool isMultiSelect)
     {
-        var com = RenderComponent<BitFileUploadTest>(parameters =>
+        var com = RenderComponent<BitFileUpload>(parameters =>
         {
             parameters.Add(p => p.IsMultiSelect, isMultiSelect);
         });
@@ -46,7 +46,7 @@ public class BitFileUploadTests : BunitTestContext
     public void BitFileUpload_AcceptAttribute_Test()
     {
         var allowedExtensions = new List<string> { ".mp4", ".mp3" };
-        var com = RenderComponent<BitFileUploadTest>(parameters =>
+        var com = RenderComponent<BitFileUpload>(parameters =>
         {
             parameters.Add(p => p.AllowedExtensions, allowedExtensions);
         });
@@ -62,21 +62,14 @@ public class BitFileUploadTests : BunitTestContext
     ]
     public void BitFileUpload_IsEnabled_Test(bool isEnabled)
     {
-        var com = RenderComponent<BitFileUploadTest>(parameters =>
+        var com = RenderComponent<BitFileUpload>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, isEnabled);
         });
 
         var bitFileUpload = com.Find(".file-input");
         var hasDisabledAttribute = bitFileUpload.HasAttribute("disabled");
-
-        if (isEnabled)
-        {
-            Assert.IsFalse(hasDisabledAttribute);
-        }
-        else
-        {
-            Assert.IsTrue(hasDisabledAttribute);
-        }
+        
+        Assert.AreEqual(isEnabled, !hasDisabledAttribute);
     }
 }
