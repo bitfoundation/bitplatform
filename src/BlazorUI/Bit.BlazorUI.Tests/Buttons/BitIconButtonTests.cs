@@ -23,14 +23,16 @@ public class BitIconButtonTests : BunitTestContext
            DataRow(Visual.Material, true, BitIconName.Emoji2, "I'm Happy"),
            DataRow(Visual.Material, false, BitIconName.Emoji2, "I'm Happy"),
        ]
-    public void BitIconButtonTest(Visual visual, bool isEnabled, BitIconName iconName, string title)
+    public void BitIconButton(Visual visual, bool isEnabled, BitIconName iconName, string title)
     {
-        var com = RenderComponent<BitIconButtonTest>(parameters =>
+        var clicked = false;
+        var com = RenderComponent<BitIconButton>(parameters =>
         {
-            parameters.Add(p => p.Visual, visual);
+            parameters.AddCascadingValue(visual);
             parameters.Add(p => p.IsEnabled, isEnabled);
             parameters.Add(p => p.IconName, iconName);
             parameters.Add(p => p.Title, title);
+            parameters.Add(p => p.OnClick, () => clicked = true);
         });
 
         var bitIconButton = com.Find(".bit-ico-btn");
@@ -50,7 +52,7 @@ public class BitIconButtonTests : BunitTestContext
 
         bitIconButton.Click();
 
-        Assert.AreEqual(isEnabled ? 1 : 0, com.Instance.CurrentCount);
+        Assert.AreEqual(isEnabled, clicked);
     }
 
     [DataTestMethod,
@@ -61,7 +63,7 @@ public class BitIconButtonTests : BunitTestContext
     ]
     public void BitIconButtonDisabledFocusTest(bool isEnabled, bool allowDisabledFocus)
     {
-        var com = RenderComponent<BitIconButtonTest>(parameters =>
+        var com = RenderComponent<BitIconButton>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, isEnabled);
             parameters.Add(p => p.AllowDisabledFocus, allowDisabledFocus);
@@ -84,7 +86,7 @@ public class BitIconButtonTests : BunitTestContext
     [DataTestMethod, DataRow("Detailed description")]
     public void BitIconButtonAriaDescriptionTest(string ariaDescription)
     {
-        var com = RenderComponent<BitIconButtonTest>(parameters =>
+        var com = RenderComponent<BitIconButton>(parameters =>
         {
             parameters.Add(p => p.AriaDescription, ariaDescription);
         });
@@ -97,7 +99,7 @@ public class BitIconButtonTests : BunitTestContext
     [DataTestMethod, DataRow("Detailed label")]
     public void BitIconButtonAriaLabelTest(string ariaLabel)
     {
-        var com = RenderComponent<BitIconButtonTest>(parameters =>
+        var com = RenderComponent<BitIconButton>(parameters =>
         {
             parameters.Add(p => p.AriaLabel, ariaLabel);
         });
@@ -114,7 +116,7 @@ public class BitIconButtonTests : BunitTestContext
     ]
     public void BitIconButtonAriaHiddenTest(bool expectedAriaHidden)
     {
-        var com = RenderComponent<BitIconButtonTest>(parameters =>
+        var com = RenderComponent<BitIconButton>(parameters =>
         {
             parameters.Add(p => p.AriaHidden, expectedAriaHidden);
         });

@@ -29,9 +29,9 @@ public class BitToggleButtonTests : BunitTestContext
         BitIconName? iconName,
         string title)
     {
-        var component = RenderComponent<BitToggleButtonTest>(parameters =>
+        var component = RenderComponent<BitToggleButton>(parameters =>
         {
-            parameters.Add(p => p.Visual, visual);
+            parameters.AddCascadingValue(visual);
             parameters.Add(p => p.IsChecked, isChecked);
             parameters.Add(p => p.Label, label);
             parameters.Add(p => p.IconName, iconName);
@@ -61,16 +61,18 @@ public class BitToggleButtonTests : BunitTestContext
     ]
     public void BitToggleButtonClickEvent(bool isEnabled)
     {
-        var component = RenderComponent<BitToggleButtonTest>(parameters =>
+        var clicked = false;
+        var component = RenderComponent<BitToggleButton>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.OnClick, () => clicked = true);
         });
 
         var bitToggleButton = component.Find(".bit-tgl-btn");
 
         bitToggleButton.Click();
 
-        Assert.AreEqual(isEnabled ? 1 : 0, component.Instance.CurrentCount);
+        Assert.AreEqual(isEnabled, clicked);
     }
 
     [DataTestMethod,
@@ -81,7 +83,7 @@ public class BitToggleButtonTests : BunitTestContext
     ]
     public void BitToggleButtonShouldChangeIsCheckedParameterAfterClickWhenIsEnable(bool isEnabled, bool isChecked)
     {
-        var component = RenderComponent<BitToggleButtonTest>(parameters =>
+        var component = RenderComponent<BitToggleButton>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, isEnabled);
             parameters.Add(p => p.IsChecked, isChecked);
@@ -103,7 +105,7 @@ public class BitToggleButtonTests : BunitTestContext
     ]
     public void BitToggleButtonShouldAddRomveCheckedClassAfterClickWhenIsEnable(bool isEnabled, bool isChecked)
     {
-        var component = RenderComponent<BitToggleButtonTest>(parameters =>
+        var component = RenderComponent<BitToggleButton>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, isEnabled);
             parameters.Add(p => p.IsChecked, isChecked);
@@ -125,7 +127,7 @@ public class BitToggleButtonTests : BunitTestContext
     ]
     public void BitToggleButtonDisabledFocusTest(bool isEnabled, bool allowDisabledFocus)
     {
-        var component = RenderComponent<BitToggleButtonTest>(parameters =>
+        var component = RenderComponent<BitToggleButton>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, isEnabled);
             parameters.Add(p => p.AllowDisabledFocus, allowDisabledFocus);
@@ -145,7 +147,7 @@ public class BitToggleButtonTests : BunitTestContext
     [DataTestMethod, DataRow("Detailed description")]
     public void BitToggleButtonAriaDescriptionTest(string ariaDescription)
     {
-        var component = RenderComponent<BitToggleButtonTest>(parameters =>
+        var component = RenderComponent<BitToggleButton>(parameters =>
         {
             parameters.Add(p => p.AriaDescription, ariaDescription);
         });
@@ -160,7 +162,7 @@ public class BitToggleButtonTests : BunitTestContext
     [DataTestMethod, DataRow("Detailed label")]
     public void BitToggleButtonAriaLabelTest(string ariaLabel)
     {
-        var component = RenderComponent<BitToggleButtonTest>(parameters =>
+        var component = RenderComponent<BitToggleButton>(parameters =>
         {
             parameters.Add(p => p.AriaLabel, ariaLabel);
         });
@@ -179,7 +181,7 @@ public class BitToggleButtonTests : BunitTestContext
     ]
     public void BitToggleButtonAriaHiddenTest(bool ariaHidden)
     {
-        var component = RenderComponent<BitToggleButtonTest>(parameters =>
+        var component = RenderComponent<BitToggleButton>(parameters =>
         {
             parameters.Add(p => p.AriaHidden, ariaHidden);
         });

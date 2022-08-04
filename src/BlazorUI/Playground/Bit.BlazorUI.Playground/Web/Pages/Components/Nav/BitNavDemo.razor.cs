@@ -693,18 +693,6 @@ private readonly List<BitNavLinkItem> CustomHeaderLinks = new()
 };";
 
     private static string example6HTMLCode = @"<BitNav Style=""width: 208px;
-                height: 350px;
-                box-sizing: border-box;
-                border: 1px solid #eee;
-                overflow-y: auto;
-                z-index: 2;
-                background-color: white;""
-        NavLinkItems=""BasicNavLinks""
-        AriaLabel=""Nav basic example""
-        SelectedKey=""key3"">
-</BitNav>";
-
-    private static string example7HTMLCode = @"<BitNav Style=""width: 208px;
        height: 350px;
        box-sizing: border-box;
        border: 1px solid #eee;
@@ -716,7 +704,7 @@ private readonly List<BitNavLinkItem> CustomHeaderLinks = new()
         SelectedKeyChanged=""HandleSelectedKeyChange"">
 </BitNav>";
 
-    private static string example7CSharpCode = @"
+    private static string example6CSharpCode = @"
 private readonly List<BitNavLinkItem> BasicNavLinksWithoutURL = new()
 {
     new BitNavLinkItem
