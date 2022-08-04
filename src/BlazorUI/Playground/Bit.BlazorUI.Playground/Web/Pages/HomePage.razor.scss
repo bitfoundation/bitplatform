@@ -59,8 +59,10 @@
             }
         }
 
-        .gray {
+        .hero-section-components {
             position: relative;
+            display: flex;
+            flex-flow: row nowrap;
             background-color: #F3F6F9;
             min-width: rem(2000px);
             min-height: rem(500px);
@@ -74,6 +76,14 @@
 
             @include gt-md {
                 max-height: rem(700px);
+            }
+        }
+
+        .hero-section-components-col {
+            width: rem(380px);
+
+            &:last-child {
+                margin-left: rem(20px);
             }
         }
     }
@@ -508,4 +518,26 @@
             background-size: cover;
         }
     }
+}
+
+::deep .bit-drp-wrapper {
+    background-color: $White;
+}
+
+.component-box {
+    background-color: $White;
+    color: rgb(61, 71, 82);
+    transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+    border-radius: rem(8px);
+    border: rem(1px) solid rgb(229, 232, 236);
+    overflow: hidden;
+    padding: rem(10px);
+    display: flex;
+    justify-content: center;
+    margin-top: rem(40px);
+    width: rem(360px);
+}
+
+::deep .bit-spn-fluent {
+    margin-bottom: rem(20px);
 }

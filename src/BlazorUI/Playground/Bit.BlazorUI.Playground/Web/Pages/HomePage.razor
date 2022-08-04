@@ -9,7 +9,46 @@
                 <a class="primary-btn" href="/get-started">Get started<span class="chevron-icon"></span></a>
             </div>
             <div class="hero-section-content">
-                <div class="gray"></div>
+                <div class="hero-section-components">
+                    <div class="hero-section-components-col">
+                        <div class="component-box">
+                            <BitDropDown Label="Select two ptoducts"
+                                         Items="GetProductDropdownItems()"
+                                         IsMultiSelect="true"
+                                         Placeholder="Select an option"
+                                         Style="width: 326px; margin: 20px 0 20px 0" />
+                        </div>
+                        <div class="component-box">
+                            <BitColorPicker ShowPreview="true" @bind-Color="@SelectedColor" ShowAlphaSlider="false">Default ColorPicker</BitColorPicker>
+
+                        </div>
+                    </div>
+                    <div class="hero-section-components-col">
+                        <BitChart Config="_horizontalBarChartConfigExample" @ref="_horizontalBarChartExample" />
+                        <div class="component-box">
+                            <BitBreadcrumb Items="GetBreadcrumbItems()"
+                                           MaxDisplayedItems="3"
+                                           AriaLabel="Breadcrumb with 3 maxDisplayedItems"></BitBreadcrumb>
+                        </div>
+
+                        <div style="display: flex">
+                            <div class="component-box" style="width: 60px">
+                                <BitSlider Max="100" ValueFormat="P00"
+                                           IsVertical="true" />
+                            </div>
+                            <div style="margin: 40px; padding: 20px">
+                                <BitSpinner Size="BitSpinnerSize.XSmall" />
+                                <BitSpinner Size="BitSpinnerSize.Small" />
+                                <BitSpinner Size="BitSpinnerSize.Medium" />
+                                <BitSpinner Size="BitSpinnerSize.Large" />
+                            </div>
+                            <div class="component-box" style="height: fit-content;">
+                                <BitToggle @bind-Value="IsToggleChecked" IsEnabled="true" OnText="On" OffText="Off" />
+                                <BitToggle @bind-Value="IsToggleUnChecked" IsEnabled="true" OnText="On" OffText="Off" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
