@@ -46,6 +46,45 @@
         font-size: inherit;
         font-weight: inherit;
         user-select: none;
+
+        .composite-link {
+            display: block;
+            position: relative;
+            color: $Grey160;
+            cursor: pointer;
+
+            &:hover {
+                background-color: $Grey20;
+            }
+
+            button, a {
+                background-color: transparent;
+            }
+
+            button.selected-fluent, a.selected-fluent {
+                background-color: $Grey30;
+                font-weight: 600;
+                color: $Black;
+
+                &:after {
+                    border-left: rem(2px) solid $Primary;
+                    content: "";
+                    position: absolute;
+                    inset: 0;
+                    pointer-events: none;
+                }
+
+                &:hover {
+                    background-color: $Grey20;
+                }
+            }
+        }
+
+        .disabled-composite-link {
+            &:hover {
+                background-color: transparent;
+            }
+        }
     }
 
     .grp {
@@ -77,21 +116,6 @@
         padding: 0;
     }
 
-    .composite-link {
-        display: block;
-        position: relative;
-        color: $Grey160;
-        cursor: pointer;
-
-        &:hover {
-            background-color: $Grey20;
-        }
-
-        button {
-            background-color: transparent;
-        }
-    }
-
     .link-container {
         display: flex;
         height: 100%;
@@ -115,12 +139,6 @@
             vertical-align: middle;
             text-align: left;
             text-overflow: ellipsis;
-        }
-    }
-
-    .disabled-composite-link {
-        &:hover {
-            background-color: transparent;
         }
     }
 
@@ -192,24 +210,6 @@
 
     .link-disabled-nourl-fluent {
         @include getLinkStyle($hasUrl: false, $enabled: false)
-    }
-
-    .selected-fluent {
-        background-color: $Grey30 !important;
-        font-weight: 600;
-        color: $Black;
-
-        &:after {
-            border-left: rem(2px) solid $Primary;
-            content: "";
-            position: absolute;
-            inset: 0;
-            pointer-events: none;
-        }
-
-        &:hover {
-            background-color: $Grey20;
-        }
     }
 }
 
