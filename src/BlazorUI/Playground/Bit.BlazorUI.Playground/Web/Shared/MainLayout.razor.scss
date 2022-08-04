@@ -1,7 +1,6 @@
 ﻿@import '../Styles/abstracts/_colors.scss';
 @import '../Styles/abstracts/_media-queries.scss';
 @import '../Styles/abstracts/_functions.scss';
-@import '../Styles/abstracts/_mixins.scss';
 @import '../Styles/abstracts/_fonts.scss';
 @import '../Styles/abstracts/_vars.scss';
 
@@ -23,7 +22,7 @@
 }
 
 .main--components-demo {
-    background-color: #faf9f8;
+    background-color: #F3F6F9;
 }
 
 .main--home {
@@ -31,8 +30,9 @@
     background-color: $White;
 
     .site-content {
-        padding-left: rem(20px);
-        padding-right: rem(20px);
+        max-width: 100%;
+        padding-left: 0;
+        padding-right: 0;
         padding-top: 0;
         padding-bottom: 0;
 
@@ -42,18 +42,18 @@
         }
 
         @include lg {
-            padding-left: rem(20px);
-            padding-right: rem(20px);
+            padding-left: 0;
+            padding-right: 0;
         }
 
         @include md {
-            padding-left: rem(30px);
-            padding-right: rem(30px);
+            padding-left: 0;
+            padding-right: 0;
         }
 
         @include sm {
-            padding-left: rem(20px);
-            padding-right: rem(20px);
+            padding-left: 0;
+            padding-right: 0;
         }
     }
 }

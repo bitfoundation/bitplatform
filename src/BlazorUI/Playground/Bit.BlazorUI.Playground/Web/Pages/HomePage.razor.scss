@@ -1,7 +1,6 @@
 ﻿@import '../Styles/abstracts/_colors.scss';
 @import '../Styles/abstracts/_media-queries.scss';
 @import '../Styles/abstracts/_functions.scss';
-@import '../Styles/abstracts/_mixins.scss';
 
 .page-container {
     display: flex;
@@ -9,829 +8,310 @@
     justify-content: flex-start;
     align-items: center;
     width: 100%;
-    padding: 0 rem(16px);
     box-sizing: border-box;
     overflow: hidden;
 }
 
 .page-section {
     display: flex;
+    justify-content: center;
     width: 100%;
-    max-width: rem(1232px);
-    box-sizing: border-box;
-
-    @include lg {
-        max-width: rem(1160px);
-    }
-
-    @include md {
-        max-width: rem(960px);
-    }
-
-    @include sm {
-        max-width: 100%;
-    }
 }
 
-.text--underlined {
-    position: relative;
-    display: inline-block;
+.page-section-contnet {
+    width: 100%;
+    max-width: rem(1200px);
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: rem(20px);
     padding-right: rem(20px);
+    box-sizing: border-box;
 
-    .text-border {
-        position: absolute;
-        bottom: rem(14px);
-        left: 0;
-        z-index: -1;
-        display: inline-block;
-        width: 100%;
-        height: rem(10px);
-        background-color: $Y1Color;
-
-        @include lg {
-            height: rem(8px);
-        }
-
-        @include md {
-            height: rem(6px);
-        }
-
-        @include sm {
-            height: rem(4px);
-        }
+    @include md {
+        padding-left: rem(30px);
+        padding-right: rem(30px);
     }
 }
 
 .hero-section {
-    flex-flow: row nowrap;
-    justify-content: space-between;
-    align-items: center;
-    padding: rem(56px) 0;
-
-    @include lg {
-        padding: rem(72px) 0;
-    }
-
-    @include md {
-        padding: rem(35px) 0 rem(64px);
-    }
-
-    @include sm {
-        flex-flow: column-reverse nowrap;
-        justify-content: flex-start;
-        align-items: center;
-        padding: rem(32px) 0 rem(40px);
-    }
-
-    .flex-container {
-        display: flex;
-        flex-flow: column nowrap;
-        justify-content: flex-start;
-        align-items: flex-start;
-
-        @include sm {
-            align-items: center;
-        }
-    }
-
-    .section-title {
-        position: relative;
-        margin: 0;
-        margin-bottom: rem(32px);
-        font-weight: bold;
-        font-size: rem(38px);
-        line-height: rem(56px);
-        color: $B2Color;
-
-
-        @include lg {
-            margin-bottom: rem(23px);
-            font-size: rem(32px);
-            line-height: rem(48px);
-        }
-
-        @include md {
-            margin-bottom: rem(16px);
-            font-size: rem(24px);
-            line-height: rem(40px);
-        }
-
-        @include sm {
-            display: none;
-        }
-    }
-
-    .hero-title-bg {
-        position: absolute;
-        z-index: -1;
-        top: rem(-65px);
-        left: rem(-85px);
-        display: block;
-        width: rem(228px);
-        height: rem(216px);
-        background-image: url('/images/home/hero-title-bg.svg');
-        background-position: center;
-        background-repeat: no-repeat;
-        background-size: cover;
-
-        @include lg {
-            top: rem(-75px);
-            width: rem(222px);
-        }
-
-        @include md {
-            display: none;
-        }
-    }
-
-    .section-title--sm {
-        display: none;
-
-        @include sm {
-            display: block;
-            margin-bottom: rem(32px);
-            font-weight: bold;
-            font-size: rem(18px);
-            line-height: rem(32px);
-            color: $B2Color;
-            text-align: center;
-        }
-    }
-
-    .section-subtitle {
-        max-width: rem(712px);
-        margin-bottom: rem(80px);
-        font-weight: 500;
-        font-size: rem(20px);
-        line-height: rem(32px);
-        color: $Gray1;
-
-        @include lg {
-            max-width: rem(600px);
-            margin-bottom: rem(65px);
-            font-size: rem(16px);
-            line-height: rem(24px);
-        }
-
-        @include md {
-            max-width: rem(373px);
-            margin-bottom: rem(40px);
-            font-size: rem(14px);
-            line-height: rem(24px);
-        }
-
-        @include sm {
-            max-width: 100%;
-            margin-bottom: rem(32px);
-            font-size: rem(14px);
-            line-height: rem(24px);
-            text-align: center;
-        }
-    }
-
-    .section-btn-group {
+    .page-section-contnet {
         display: flex;
         flex-flow: row nowrap;
-        align-items: center;
-
-        @media all and (max-width: #{em(610px)}) and (min-width: #{em(551px)}) {
-            flex-flow: row wrap;
-        }
+        justify-content: center;
     }
 
-    .section-btn {
-        &:first-child {
-            margin-right: rem(4px);
-        }
+    .hero-section-content {
+        position: relative;
+        display: flex;
+        flex-flow: column nowrap;
+        justify-content: center;
+        align-items: flex-start;
+        width: 50%;
 
-        &:last-child {
-            margin-left: rem(4px);
-        }
+        @include lt-lg {
+            width: 100%;
+            justify-content: center;
+            align-items: center;
+            padding: rem(80px) 0;
 
-        @media all and (max-width: #{em(610px)}) and (min-width: #{em(551px)}) {
             &:last-child {
-                margin-left: 0;
-                margin-top: rem(8px);
+                display: none;
+            }
+        }
+
+        .gray {
+            position: relative;
+            background-color: #F3F6F9;
+            min-width: rem(2000px);
+            min-height: rem(500px);
+            height: calc(100vh - 120px);
+            border-bottom-left-radius: rem(10px);
+            transition: max-height 0.3s;
+            overflow: hidden;
+            padding: rem(30px);
+            margin-left: rem(20px);
+            box-sizing: border-box;
+
+            @include gt-md {
+                max-height: rem(700px);
             }
         }
     }
 
-    .btn--primary {
-        @include PrimaryBtn;
-    }
+    .hero-title {
+        max-width: rem(500px);
+        margin: 0;
+        font-size: clamp(2.625rem, 1.2857rem + 3.5714vw, 4rem);
+        font-weight: 800;
+        line-height: 1.1142857142857143;
+        margin-top: rem(20px);
+        margin-bottom: rem(20px);
+        background: linear-gradient(to right, #007FFF, #0059B2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
 
-    .btn--secondary {
-        @include SecondaryBtn;
-    }
-
-    .hero-banner {
-        width: rem(501px);
-        height: rem(526px);
-        background-image: url('/images/home/hero-banner.webp');
-        background-position: center;
-        background-repeat: no-repeat;
-        background-size: cover;
-
-        @include lg {
-            width: rem(495px);
-            height: rem(526px);
+        @include lt-lg {
+            text-align: center;
         }
+    }
 
-        @include md {
-            width: rem(334px);
-            height: rem(353px);
+    .hero-desc {
+        max-width: rem(500px);
+        margin: 0;
+        font-size: rem(16px);
+        line-height: 1.5;
+        letter-spacing: 0;
+        font-weight: 400;
+        color: #3E5060;
+        margin-bottom: rem(30px);
+
+        @include lt-lg {
+            text-align: center;
+        }
+    }
+
+    .primary-btn {
+        display: inline-flex;
+        justify-content: center;
+        padding: rem(14px) rem(16px);
+        border-radius: rem(10px);
+        box-shadow: none;
+        cursor: pointer;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        text-decoration: none;
+        transition: background-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,border-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+        background-color: $B2Color;
+        color: $White;
+        font-size: rem(16px);
+        line-height: 1.3125;
+        letter-spacing: 0;
+        font-weight: 700;
+
+        &:hover {
+            background-color: $B1Color;
         }
 
         @include sm {
-            width: rem(270px);
-            height: rem(292px);
-            margin-bottom: rem(24px);
+            width: 100%;
+        }
+
+        .chevron-icon {
+            display: inline-block;
+            width: rem(22px);
+            height: rem(22px);
+            margin-left: rem(8px);
+            background-image: url('/images/icon/chevron-icon.webp');
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
         }
     }
 }
 
 .popular-components-section {
-    flex-flow: column nowrap;
-    justify-content: flex-start;
-    align-items: center;
-    padding: rem(148px) 0 rem(288px);
-
-    @include lg {
-        padding: rem(160px) 0 rem(160px);
-    }
+    background-color: #F3F6F9;
+    overflow: hidden;
+    padding-top: rem(80px);
+    padding-bottom: rem(80px);
+    margin-top: rem(100px);
 
     @include md {
-        padding: rem(80px) 0 rem(56px);
+        margin-top: rem(60px);
+        padding-top: rem(60px);
+        padding-bottom: rem(60px);
     }
 
     @include sm {
-        padding: rem(80px) 0 rem(64px);
-    }
-
-    .section-title {
-        margin: 0;
-        margin-bottom: rem(72px);
-        font-weight: bold;
-        font-size: rem(32px);
-        line-height: rem(48px);
-        color: $B2Color;
-
-        @include lg {
-            margin-bottom: rem(56px);
-            font-size: rem(24px);
-            line-height: rem(32px);
-        }
-
-        @include md {
-            margin-bottom: rem(88px);
-            font-size: rem(20px);
-            line-height: rem(32px);
-        }
-
-        @include sm {
-            margin-bottom: rem(16px);
-            font-size: rem(16px);
-            line-height: rem(24px);
-        }
-
-        .text--underlined {
-            .text-border {
-                bottom: rem(10px);
-            }
-        }
+        margin-top: rem(40px);
+        padding-top: rem(40px);
+        padding-bottom: rem(40px);
     }
 }
 
-.benefits-section {
-    position: relative;
-    flex-flow: column nowrap;
-    justify-content: flex-start;
-    align-items: center;
+.benefit-section {
+    padding-top: rem(80px);
+    padding-bottom: rem(80px);
+
+    @include md {
+        padding-top: rem(60px);
+        padding-bottom: rem(60px);
+    }
+
+    @include sm {
+        padding-top: rem(40px);
+        padding-bottom: rem(40px);
+    }
 
     .section-title {
+        max-width: rem(500px);
         margin: 0;
-        margin-bottom: rem(72px);
-        font-weight: bold;
-        font-size: rem(32px);
-        line-height: rem(48px);
-        color: $B2Color;
-
-        @include lg {
-            margin-bottom: rem(56px);
-            font-size: rem(24px);
-            line-height: rem(32px);
-        }
-
-        @include md {
-            margin-bottom: rem(48px);
-            font-size: rem(20px);
-            line-height: rem(32px);
-        }
+        margin-top: rem(10px);
+        margin-bottom: rem(40px);
+        font-size: clamp(1.5rem, 0.9643rem + 1.4286vw, 2.25rem);
+        font-weight: 800;
+        line-height: 1.2222222222222223;
+        color: #132F4C;
 
         @include sm {
-            margin-bottom: rem(24px);
-            font-size: rem(16px);
-            line-height: rem(24px);
-        }
-
-        .text--underlined {
-            .text-border {
-                bottom: rem(10px);
-            }
+            margin-bottom: rem(20px);
         }
     }
 
-    .section-clipart {
-        position: absolute;
-        display: block;
-        background-position: center;
-        background-repeat: no-repeat;
-        background-size: cover;
-
-        @include lt-lg {
-            display: none;
-        }
+    .card-list {
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: center;
+        width: calc(100% + 20px);
+        margin-left: -20px;
     }
 
-    .section-clipart--top {
-        top: rem(140px);
-        right: rem(-345px);
-        width: rem(200px);
-        height: rem(400px);
-        background-image: url('/images/home/benefit-top-clipart.svg');
-
-        @include lg {
-            top: rem(405px);
-            right: rem(-140px);
-            width: rem(160px);
-            height: rem(320px);
-        }
-    }
-
-    .section-clipart--bottom {
-        bottom: rem(-45px);
-        left: rem(-345px);
-        width: rem(200px);
-        height: rem(400px);
-        background-image: url('/images/home/benefit-bottom-clipart.svg');
-
-        @include lg {
-            bottom: rem(50px);
-            left: rem(-140px);
-            width: rem(170px);
-            height: rem(340px);
-        }
-    }
-
-    @include lg {
-        padding: rem(80px) rem(32px);
-    }
-
-    @include md {
-        padding: rem(56px) rem(32px);
-    }
-
-    @include sm {
-        padding: rem(48px) rem(16px);
-    }
-}
-
-.benefit-card {
-    display: flex;
-    flex-flow: column nowrap;
-    justify-content: flex-start;
-    align-items: flex-start;
-    width: 100%;
-    max-width: rem(1232px);
-    border: rem(1px) solid $B5Color;
-    border-radius: rem(10px);
-    padding: rem(24px);
-    margin-bottom: rem(16px);
-    box-sizing: border-box;
-    background-color: $White;
-    cursor: pointer;
-
-    &:last-child {
-        margin-bottom: 0;
-    }
-
-    &:hover {
-        background-color: $B6Color;
-
-        .native-icon {
-            background-image: url('/images/home/native-white-icon.png');
-        }
-
-        .customize-icon {
-            background-image: url('/images/home/customize-white-icon.png');
-        }
-
-        .open-source-icon {
-            background-image: url('/images/home/open-source-white-icon.png');
-        }
-
-        .special-components-icon {
-            background-image: url('/images/home/special-components-white-icon.png');
-        }
-
-        .design-system-icon {
-            background-image: url('/images/home/design-system-white-icon.png');
-        }
-
-        .benefit-card-title {
-            color: $B2Color;
-        }
-    }
-
-    @include lg {
-        max-width: rem(864px);
-        padding: rem(24px) rem(16px);
-    }
-
-    @include md {
-        max-width: rem(690px);
-        padding: rem(20px) rem(16px);
-        margin-bottom: rem(8px);
-    }
-
-    @include sm {
-        max-width: 100%;
-        padding: rem(16px) rem(8px);
-        margin-bottom: rem(8px);
+    .benefit-card {
+        flex-basis: calc(25% - 20px);
+        flex-grow: 0;
+        max-width: calc(25% - 20px);
+        min-width: rem(275px);
+        height: 100%;
+        min-height: rem(241px);
+        padding: rem(20px);
+        margin-top: rem(20px);
+        margin-left: rem(20px);
+        border-radius: rem(10px);
+        border: rem(1px) solid #E0E3E7;
+        box-sizing: border-box;
+        color: #1A2027;
+        transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+        background-color: $White;
     }
 
     .benefit-card-title {
-        display: flex;
-        justify-content: flex-start;
-        align-items: center;
-        width: 100%;
-        min-height: rem(64px);
-        font-weight: 500;
-        font-size: rem(22px);
-        line-height: rem(40px);
-        margin-bottom: rem(16px);
-        padding-left: rem(80px);
+        margin-bottom: rem(10px);
+        font-size: rem(14px);
+        line-height: 1.5;
+        letter-spacing: 0;
+        font-weight: 700;
+        color: #1A2027;
+        padding-left: rem(30px);
         box-sizing: border-box;
-        color: #2E2E2E;
+        background-size: rem(20px);
         background-position: center left;
         background-repeat: no-repeat;
-        background-size: rem(56px);
-
-        @include lg {
-            min-height: rem(56px);
-            font-size: rem(18px);
-            line-height: rem(31px);
-            margin-bottom: rem(16px);
-            padding-left: rem(72px);
-            background-size: rem(53px);
-        }
-
-        @include md {
-            min-height: rem(48px);
-            font-size: rem(14px);
-            line-height: rem(24px);
-            margin-bottom: rem(12px);
-            padding-left: rem(56px);
-            background-size: rem(44px);
-        }
-
-        @include sm {
-            min-height: rem(40px);
-            font-size: rem(12px);
-            line-height: rem(18px);
-            margin-bottom: rem(8px);
-            padding-left: rem(48px);
-            background-size: rem(36px);
-        }
-    }
-
-    .pink-text {
-        color: $P2Color;
-        white-space: pre;
-    }
-
-    .native-icon {
-        background-image: url('/images/home/native-orange-icon.png');
-    }
-
-    .customize-icon {
-        background-image: url('/images/home/customize-orange-icon.png');
-    }
-
-    .open-source-icon {
-        background-image: url('/images/home/open-source-orange-icon.png');
-    }
-
-    .special-components-icon {
-        background-image: url('/images/home/special-components-orange-icon.png');
-    }
-
-    .design-system-icon {
-        background-image: url('/images/home/design-system-orange-icon.png');
     }
 
     .benefit-card-desc {
-        width: 100%;
-        font-size: rem(18px);
-        line-height: rem(31px);
-        color: $Gray1;
+        font-size: rem(14px);
+        line-height: 1.5;
+        letter-spacing: 0;
+        font-weight: 400;
+        color: #3E5060;
+    }
 
-        @include lg {
-            font-weight: 500;
-            font-size: rem(14px);
-            line-height: rem(24px);
-        }
+    .native-icon {
+        background-image: url('/images/home/native-icon.webp');
+    }
 
-        @include md {
-            font-weight: 500;
-            font-size: rem(12px);
-            line-height: rem(20px);
-        }
+    .open-source-icon {
+        background-image: url('/images/home/open-source-icon.webp');
+    }
 
-        @include sm {
-            font-weight: 500;
-            font-size: rem(10px);
-            line-height: rem(16px);
-        }
+    .customize-icon {
+        background-image: url('/images/home/customize-icon.webp');
+    }
+
+    .special-components-icon {
+        background-image: url('/images/home/special-components-icon.webp');
+    }
+
+    .design-system-icon {
+        background-image: url('/images/home/design-system-icon.webp');
     }
 }
 
-.contribution-section {
-    position: relative;
-    flex-flow: row nowrap;
-    justify-content: space-between;
-    align-items: center;
-    margin: rem(160px) 0;
-    border-radius: rem(10px);
-    background-color: $B5Color;
-
-    @include lg {
-        margin: rem(148px) 0;
-    }
-
-    @include md {
-        margin: rem(80px) 0;
-    }
-
-    @include sm {
-        margin: rem(126px) 0;
-    }
-
-    .flex-container {
-        display: flex;
-        flex-flow: column nowrap;
-        justify-content: flex-start;
-        align-items: flex-start;
-        width: calc(100% - #{rem(360px)});
-        padding: rem(40px) rem(5px) rem(40px) rem(104px);
-        box-sizing: border-box;
-
-        @include lg {
-            width: calc(100% - #{rem(300px)});
-            padding: rem(28px) rem(5px) rem(28px) rem(88px);
-        }
-
-        @include md {
-            width: calc(100% - #{rem(256px)});
-            padding: rem(40px);
-        }
-
-        @include sm {
-            align-items: center;
-            width: 100%;
-            padding: rem(77px) rem(8px);
-        }
-    }
-
-    .section-clipart {
-        position: absolute;
-        right: 0;
-        display: inline-block;
-        width: rem(360px);
-        height: 100%;
-        background-image: url('/images/home/contribution-clipart.png');
-        background-position: center;
-        background-size: rem(360px) 100%;
-        background-repeat: no-repeat;
-
-        @include lt-xl {
-            width: rem(300px);
-            background-size: rem(300px) 100%;
-        }
-
-        @include md {
-            width: rem(256px);
-            background-size: rem(256px) 100%;
-        }
-
-        @include sm {
-            display: none;
-        }
-    }
-
-    .section-clipart--small {
-        position: absolute;
-        display: inline-block;
-        width: rem(128px);
-        height: rem(128px);
-        background-position: center;
-        background-size: cover;
-        background-repeat: no-repeat;
-
-        @include gt-sm {
-            display: none;
-        }
-    }
-
-    .section-clipart--top {
-        top: rem(-50px);
-        left: 0;
-        background-image: url('/images/home/contribution-clipart-top.svg');
-    }
-
-    .section-clipart--bottom {
-        bottom: rem(-50px);
-        right: 0;
-        background-image: url('/images/home/contribution-clipart-bottom.svg');
-    }
-
-    .section-title {
-        margin: 0;
-        margin-bottom: rem(24px);
-        font-weight: bold;
-        font-size: rem(32px);
-        line-height: rem(48px);
-        color: $B2Color;
-
-        @include lg {
-            font-size: rem(24px);
-            line-height: rem(32px);
-            margin-bottom: rem(16px);
-        }
-
-        @include md {
-            font-size: rem(20px);
-            line-height: rem(32px);
-            margin-bottom: rem(8px);
-        }
-
-        @include sm {
-            text-align: center;
-            font-size: rem(16px);
-            line-height: rem(24px);
-            margin-bottom: rem(16px);
-        }
-    }
-
-    .secion-desc {
-        max-width: rem(688px);
-        margin-bottom: rem(24px);
-        font-weight: 500;
-        font-size: rem(20px);
-        line-height: rem(32px);
-        color: $Gray1;
-
-        @include lg {
-            margin-bottom: rem(40px);
-            font-size: rem(18px);
-            line-height: rem(32px);
-        }
-
-        @include md {
-            max-width: rem(560px);
-            margin-bottom: rem(24px);
-            font-size: rem(14px);
-            line-height: rem(24px);
-        }
-
-        @include sm {
-            text-align: center;
-            max-width: 100%;
-            margin-bottom: rem(24px);
-            font-size: rem(10px);
-            line-height: rem(16px);
-        }
-    }
-
-    .section-btn {
-        display: flex;
-        flex-flow: row nowrap;
-        justify-content: space-between;
-        align-items: center;
-        width: rem(209px);
-        height: rem(56px);
-        border: rem(2px) solid $B2Color;
-        border-radius: rem(4px);
-        box-sizing: border-box;
-        background-color: $White;
-        cursor: pointer;
-        padding: 0 rem(48px);
-
-        @include lg {
-            width: rem(178px);
-            height: rem(48px);
-            padding: 0 rem(40px);
-        }
-
-        @include md {
-            width: rem(135px);
-            height: rem(40px);
-            padding: 0 rem(32px);
-        }
-
-        @include sm {
-            width: rem(115px);
-            height: rem(40px);
-            padding: 0 rem(24px);
-        }
-
-        .github-icon {
-            width: rem(40px);
-            height: rem(40px);
-            border-radius: 50%;
-            background-image: url('/images/github-icon.webp');
-            background-position: center bottom;
-            background-repeat: no-repeat;
-            background-size: contain;
-            cursor: pointer;
-
-            @include lg {
-                width: rem(32px);
-                height: rem(32px);
-            }
-
-            @include md {
-                width: rem(20px);
-                height: rem(20px);
-            }
-
-            @include sm {
-                width: rem(16px);
-                height: rem(16px);
-            }
-        }
-
-        .github-txt {
-            font-weight: 600;
-            font-size: rem(18px);
-            line-height: rem(32px);
-            color: $B2Color;
-
-            @include lg {
-                font-size: rem(16px);
-                line-height: rem(24px);
-            }
-
-            @include md {
-                font-size: rem(12px);
-                line-height: rem(16px);
-            }
-
-            @include sm {
-                font-size: rem(12px);
-                line-height: rem(16px);
-            }
-        }
-    }
+.text--gradiant {
+    background: linear-gradient(to right, #007FFF, #0059B2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 .component-list-section {
-    position: relative;
-    flex-flow: column nowrap;
-    justify-content: flex-start;
-    align-items: center;
+    background-color: #132F4C;
+    overflow: hidden;
+    padding-top: rem(80px);
+    padding-bottom: rem(80px);
+    margin-top: rem(100px);
+
+    @include md {
+        margin-top: rem(60px);
+        padding-top: rem(60px);
+        padding-bottom: rem(60px);
+    }
+
+    @include sm {
+        margin-top: rem(40px);
+        padding-top: rem(40px);
+        padding-bottom: rem(40px);
+    }
+
+    .page-section-contnet {
+        display: flex;
+        flex-flow: column nowrap;
+        align-items: center;
+    }
 
     .section-title {
+        max-width: rem(500px);
         margin: 0;
-        margin-bottom: rem(72px);
-        font-weight: bold;
-        font-size: rem(32px);
-        line-height: rem(48px);
-        color: $B2Color;
+        margin-bottom: rem(40px);
+        margin-top: rem(10px);
+        font-size: clamp(1.5rem, 0.9643rem + 1.4286vw, 2.25rem);
+        font-weight: 800;
+        line-height: 1.2222222222222223;
+    }
 
-        @include lg {
-            margin-bottom: rem(56px);
-            font-size: rem(24px);
-            line-height: rem(32px);
-        }
-
-        @include md {
-            margin-bottom: rem(48px);
-            font-size: rem(20px);
-            line-height: rem(32px);
-        }
-
-        @include sm {
-            margin-bottom: rem(24px);
-            font-size: rem(16px);
-            line-height: rem(24px);
-        }
-
-        .text--underlined {
-            .text-border {
-                bottom: rem(10px);
-            }
-        }
+    @include sm {
+        margin-bottom: rem(20px);
     }
 
     .list-group {
@@ -840,22 +320,6 @@
         justify-content: space-between;
         align-items: flex-start;
         width: 100%;
-        border-radius: rem(8px);
-        padding: rem(48px);
-        box-sizing: border-box;
-        background-color: $Gray5;
-
-        @include lg {
-            padding: rem(32px) rem(60px);
-        }
-
-        @include md {
-            padding: rem(36px) rem(60px);
-        }
-
-        @include sm {
-            padding: rem(16px);
-        }
     }
 
     .list-col {
@@ -892,9 +356,10 @@
         align-items: flex-start;
         width: 100%;
         margin-bottom: rem(24px);
-        //&:last-child {
-        //    margin-bottom: 0;
-        //}
+
+        &:last-child {
+            margin-bottom: 0;
+        }
 
         @include lg {
             margin-bottom: rem(32px);
@@ -913,7 +378,7 @@
         margin-bottom: rem(8px);
         font-size: rem(18px);
         line-height: rem(32px);
-        color: $B3Color;
+        color: #99CCF3;
 
         @include lt-xl {
             font-weight: 500;
@@ -929,275 +394,118 @@
         }
     }
 
-    .section-clipart {
-        position: absolute;
-        z-index: -1;
-        width: rem(180px);
-        height: rem(180px);
-        background-position: center;
-        background-repeat: no-repeat;
-        background-size: cover;
+    .components-label {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-width: rem(40px);
+        height: rem(20px);
+        border-radius: rem(20px);
+        margin-left: rem(10px);
+        padding: rem(8px) rem(6px) rem(6px) rem(22px);
+        font-size: rem(10px);
+        font-weight: 500;
 
-        @include md {
-            width: rem(104px);
-            height: rem(104px);
-        }
-
-        @include sm {
-            display: none;
-        }
-    }
-
-    .section-clipart--top {
-        top: rem(20px);
-        right: rem(-100px);
-        background-image: url('/images/home/components-clipart-top.svg');
-
-        @include lg {
-            top: rem(-15px);
-        }
-
-        @include md {
-            top: rem(20px);
-            right: rem(-60px);
-        }
-    }
-
-    .section-clipart--bottom {
-        bottom: rem(-110px);
-        left: rem(-110px);
-        background-image: url('/images/home/components-clipart-bottom.svg');
-
-        @include md {
-            bottom: rem(-60px);
-            left: rem(-60px);
+        &.featured {
+            background-color: $B2Color;
+            background-image: url('/images/home/star-icon.webp');
+            background-position: center left rem(5px);
+            background-repeat: no-repeat;
+            background-size: rem(14px);
+            color: $White;
         }
     }
 }
 
-.components-label {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-width: rem(40px);
-    height: rem(20px);
-    border-radius: rem(20px);
-    margin-left: rem(10px);
-    padding: rem(8px) rem(6px) rem(6px) rem(22px);
-    font-size: rem(10px);
-    font-weight: 500;
-
-    &.blue {
-        background-color: $B2Color;
+::deep .bit-lnk-fluent {
+    a {
+        display: flex;
         color: $White;
-    }
 
-    &.featured {
-        background-color: $B2Color;
-        background-image: url('/images/home/star-icon.webp');
-        background-position: center left rem(5px);
-        background-repeat: no-repeat;
-        background-size: rem(14px);
-        color: $White;
+        &:hover {
+            color: $White;
+            text-decoration: none;
+        }
     }
 }
 
-.bottom-section {
-    position: relative;
-    flex-flow: column nowrap;
-    justify-content: flex-start;
-    align-items: center;
-    height: rem(920px);
-    padding: rem(160px) 0;
+.contribution-section {
+    padding-top: rem(80px);
+    padding-bottom: rem(80px);
+
+    @include md {
+        padding-top: rem(60px);
+        padding-bottom: rem(60px);
+    }
 
     @include sm {
-        height: rem(320px);
-        padding: rem(80px) 0;
+        padding-top: rem(40px);
+        padding-bottom: rem(40px);
+    }
+
+    .page-section-contnet {
+        display: flex;
+        flex-flow: column nowrap;
+        justify-content: flex-start;
+        align-items: flex-start;
     }
 
     .section-title {
         margin: 0;
-        margin-bottom: rem(160px);
-        font-weight: bold;
-        font-size: rem(32px);
-        line-height: rem(48px);
-        color: $B2Color;
+        font-size: clamp(1.5rem, 0.9643rem + 1.4286vw, 2.25rem);
+        font-weight: 800;
+        line-height: 1.2222222222222223;
+        color: #132F4C;
+        margin-top: rem(10px);
+        margin-bottom: rem(20px);
+        max-width: rem(500px);
+    }
 
-        @include lg {
-            margin-bottom: rem(120px);
-            font-size: rem(24px);
-            line-height: rem(32px);
-        }
-
-        @include md {
-            margin-bottom: rem(157px);
-            font-size: rem(20px);
-            line-height: rem(32px);
-        }
-
-        @include sm {
-            margin-bottom: rem(54px);
-            font-size: rem(16px);
-            line-height: rem(24px);
-        }
-
-        .text--underlined {
-            .text-border {
-                bottom: rem(10px);
-            }
-        }
+    .section-desc {
+        margin: 0;
+        font-size: rem(16px);
+        line-height: 1.5;
+        letter-spacing: 0;
+        font-weight: 400;
+        color: #2D3843;
+        margin-top: rem(10px);
+        margin-bottom: rem(20px);
+        max-width: rem(700px);
     }
 
     .section-btn {
-        @include PrimaryBtn;
-
-        @include md {
-            position: relative;
-            left: rem(180px);
-        }
-    }
-
-    .section-girl-clipart {
-        position: absolute;
-        top: rem(150px);
-        right: 50%;
-        transform: translateX(rem(-155px));
-        width: rem(553px);
-        height: rem(585px);
-        background-image: url('/images/home/bottom-section-girl-clipart.webp');
-        background-position: center;
-        background-repeat: no-repeat;
-        background-size: cover;
-
-        @include lg {
-            width: rem(497px);
-            height: rem(526px);
-            transform: translateX(rem(-90px));
-        }
-
-        @include md {
-            width: rem(392px);
-            height: rem(455px);
-            transform: translateX(rem(95px));
-            top: rem(215px);
-        }
+        display: inline-flex;
+        justify-content: center;
+        padding: rem(14px) rem(16px);
+        border-radius: rem(10px);
+        box-shadow: none;
+        cursor: pointer;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        text-decoration: none;
+        transition: background-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,border-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+        background-color: $B2Color;
+        color: $White;
+        font-size: rem(16px);
+        line-height: 1.3125;
+        letter-spacing: 0;
+        font-weight: 700;
 
         @include sm {
-            display: none;
-        }
-    }
-
-    .section-light-clipart {
-        position: absolute;
-        width: rem(73px);
-        height: rem(69px);
-        background-image: url('/images/home/light-clipart.png');
-        background-position: center;
-        background-repeat: no-repeat;
-        background-size: cover;
-
-        @include lg {
-            width: rem(57px);
-            height: rem(54px);
+            width: 100%;
         }
 
-        @include md {
-            width: rem(56px);
-            height: rem(50px);
+        .github-icon {
+            display: inline-block;
+            width: rem(22px);
+            height: rem(22px);
+            margin-right: rem(8px);
+            background-image: url('/images/icon/github-blue-icon.svg');
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
         }
-
-        @include sm {
-            width: rem(37px);
-            height: rem(33px);
-        }
-    }
-
-    .light-clipart--top {
-        top: rem(310px);
-        right: 50%;
-        transform: translateX(rem(165px)) rotate(10deg);
-
-        @include lg {
-            top: rem(265px);
-            transform: translateX(rem(140px)) rotate(10deg);
-        }
-
-        @include md {
-            transform: translateX(rem(295px)) rotate(10deg);
-        }
-
-        @include sm {
-            top: rem(130px);
-            transform: translateX(rem(90px)) rotate(10deg);
-        }
-    }
-
-    .light-clipart--bottom {
-        top: rem(418px);
-        right: 50%;
-        transform: translateX(rem(-95px)) rotate(190deg);
-
-        @include lg {
-            top: rem(355px);
-            transform: translateX(rem(-90px)) rotate(190deg);
-        }
-
-        @include md {
-            top: rem(380px);
-            transform: translateX(rem(118px)) rotate(190deg);
-        }
-
-        @include sm {
-            top: rem(195px);
-            transform: translateX(rem(-53px)) rotate(190deg);
-        }
-    }
-}
-
-::deep .component-list-item {
-    max-width: 100%;
-    margin-bottom: rem(4px);
-    color: $Gray1;
-    font-size: rem(16px);
-    line-height: rem(24px);
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    cursor: pointer;
-
-    a {
-        display: flex;
-        align-items: center;
-        color: inherit;
-        font-family: inherit;
-
-        &:hover, &:active {
-            color: $B2Color;
-            text-decoration: none;
-        }
-    }
-
-    &:last-child {
-        margin-bottom: 0;
-    }
-
-    &:hover {
-        color: $B2Color;
-    }
-
-    @include lg {
-        line-height: rem(24px);
-    }
-
-    @include md {
-        font-size: rem(14px);
-        line-height: rem(16px);
-        margin-bottom: rem(12px);
-    }
-
-    @include sm {
-        font-size: rem(14px);
-        line-height: rem(24px);
-        margin-bottom: rem(8px);
     }
 }
