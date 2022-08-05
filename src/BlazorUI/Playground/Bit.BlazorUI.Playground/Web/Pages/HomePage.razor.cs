@@ -12,8 +12,8 @@ public partial class HomePage
     private BitChartBarConfig _horizontalBarChartConfigExample;
     private BitChart _horizontalBarChartExample;
     private const int InitalCount = 5;
-    private bool IsToggleChecked = false;
-    private bool IsToggleUnChecked = true;
+    private bool IsToggleChecked = true;
+    private bool IsToggleUnChecked = false;
 
     protected override void OnInitialized()
     {

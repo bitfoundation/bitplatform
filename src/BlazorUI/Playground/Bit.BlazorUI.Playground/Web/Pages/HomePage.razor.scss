@@ -525,19 +525,30 @@
 }
 
 .component-box {
+    display: flex;
+    justify-content: center;
+    width: rem(360px);
+    margin-bottom: rem(40px);
+    padding: rem(10px);
+    border-radius: rem(4px);
+    border: rem(1px) solid rgb(229, 232, 236);
     background-color: $White;
     color: rgb(61, 71, 82);
     transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
-    border-radius: rem(4px);
-    border: rem(1px) solid rgb(229, 232, 236);
     overflow: hidden;
-    padding: rem(10px);
-    display: flex;
-    justify-content: center;
-    margin-top: rem(40px);
-    width: rem(360px);
 }
 
-::deep .bit-spn-fluent {
-    margin-bottom: rem(20px);
+.component-box--transparent {
+    display: flex;
+    justify-content: flex-start;
+    width: rem(360px);
+    margin-bottom: rem(40px);
+}
+
+::deep .bit-cmp-btn-fluent {
+    margin-right: rem(10px);
+}
+
+::deep .bit-slider-fluent {
+    width: 100%;
 }
