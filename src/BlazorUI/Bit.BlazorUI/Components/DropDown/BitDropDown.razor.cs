@@ -239,10 +239,34 @@ public partial class BitDropDown
         DropDownOverlayId = $"{DropDownId}-overlay";
         DropDownCalloutId = $"{DropDownId}-list";
 
+        InitValueOrValues();
+
         NormalDropDownItems = Items.FindAll(i => i.ItemType == BitDropDownItemType.Normal).ToList();
         InitText();
 
         await base.OnParametersSetAsync();
+    }
+
+    private void InitValueOrValues()
+    {
+        if (IsMultiSelect)
+        {
+            if (Values.Any() is false) return;
+
+            var intersectValues = Values.Intersect(Items.Select(i => i.Value)).ToList();
+
+            bool isEqual = intersectValues.OrderBy(i => i).SequenceEqual(Values.OrderBy(v => v));
+            if (isEqual) return;
+
+            Values = intersectValues;
+        }
+        else
+        {
+            if (Value.HasNoValue()) return;
+            if (Items.Any(i => i.Value == Value)) return;
+
+            CurrentValue = null;
+        }
     }
 
     private void ChangeAllItemsIsSelected(bool value)
@@ -383,6 +407,10 @@ public partial class BitDropDown
                 var firstSelectedItem = Items.Find(i => i.IsSelected && i.ItemType == BitDropDownItemType.Normal)!;
                 Text = firstSelectedItem.Text;
                 Items.FindAll(i => i.Value != firstSelectedItem.Value).ForEach(i => i.IsSelected = false);
+            }
+            else
+            {
+                Text = string.Empty;
             }
         }
     }
