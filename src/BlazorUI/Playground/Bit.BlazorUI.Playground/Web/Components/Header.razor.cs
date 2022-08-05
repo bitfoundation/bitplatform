@@ -39,10 +39,13 @@ public partial class Header
 
     private string GetActiveRouteName()
     {
-        return CurrentUrl switch
+        if(CurrentUrl.Contains("components"))
+        {
+            return "Demo";
+        }
+        else return CurrentUrl switch
         {
             "/" => "Home",
-            "/components/overview" => "Demo",
             "/get-started" => "Get Started",
             "/icons" => "Iconography",
             _ => "",
