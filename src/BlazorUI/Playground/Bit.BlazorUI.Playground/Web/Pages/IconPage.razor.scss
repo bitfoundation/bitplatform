@@ -2,146 +2,52 @@
 @import '../Styles/abstracts/_media-queries.scss';
 @import '../Styles/abstracts/_functions.scss';
 
+
 .page-container {
     width: 100%;
-    max-width: rem(1044px);
-    margin: 0 auto;
-    padding: rem(112px) 0;
-
-    @include lg {
-        max-width: rem(792px);
-    }
-
-    @include md {
-        max-width: rem(596px);
-        padding: rem(72px) 0;
-    }
-
-    @include sm {
-        padding: rem(32px) 0 rem(56px);
-    }
 }
 
 .page-title {
+    margin-bottom: rem(52px);
+    padding: 0;
+    font-size: rem(36px);
+    font-weight: 800;
+    line-height: 1;
+    color: #0a1929;
+
+    @include lt-lg {
+        margin-bottom: rem(28px);
+    }
+}
+
+.page-section {
     position: relative;
-    margin-bottom: rem(16px);
-    padding-left: rem(10px);
-    box-sizing: border-box;
-    font-weight: bold;
-    font-size: rem(32px);
-    line-height: rem(48px);
-    color: $B2Color;
-
-    @include lg {
-        padding-left: rem(8px);
-        font-size: rem(24px);
-        line-height: rem(32px);
-    }
-
-    @include md {
-        font-size: rem(20px);
-        padding-left: rem(12px);
-        line-height: rem(32px);
-    }
-
-    @include sm {
-        margin-bottom: rem(8px);
-        padding-left: rem(8px);
-        font-size: rem(16px);
-        line-height: rem(24px);
-    }
-}
-
-.page-desc {
-    margin-bottom: rem(96px);
-    padding-left: rem(10px);
-    box-sizing: border-box;
-    font-size: rem(18px);
-    line-height: rem(31px);
-    color: #2E2E2E;
-
-    @include lg {
-        padding-left: rem(8px);
-        margin-bottom: rem(80px);
-        font-size: rem(16px);
-        line-height: rem(24px);
-    }
-
-    @include md {
-        padding-left: rem(12px);
-        margin-bottom: rem(40px);
-        font-size: rem(14px);
-        line-height: rem(24px);
-        font-weight: 500;
-    }
-
-    @include sm {
-        padding-left: rem(8px);
-        margin-bottom: rem(48px);
-        font-size: rem(12px);
-        line-height: rem(24px);
-        font-weight: 500;
-    }
-}
-
-.page-box {
-    display: flex;
-    flex-flow: column nowrap;
-    justify-content: flex-start;
     width: 100%;
-    border: rem(1px) solid $B5Color;
+    padding: rem(28px);
+    margin-bottom: rem(28px);
+    border-radius: rem(4px);
+    border: rem(1px) solid #E0E3E7;
+    box-shadow: 0 1.6px 3.6px 0 rgb(0 0 0 / 13%), 0 0.3px 0.9px 0 rgb(0 0 0 / 11%);
     box-sizing: border-box;
-    border-radius: rem(10px);
-    overflow: hidden;
-
-    @include lt-xl {
-        border-radius: rem(8px);
-    }
+    background-clip: padding-box;
+    background-color: $White;
 }
 
-.box-header {
-    display: flex;
-    flex-flow: row nowrap;
-    justify-content: flex-start;
-    align-items: center;
+.section-title {
+    padding: 0;
+    margin-bottom: rem(20px);
+    font-weight: 700;
+    font-size: rem(24px);
+    line-height: 1;
+    color: #1a2027;
+}
+
+.section-desc {
     width: 100%;
-    height: rem(48px);
-    padding: 0 rem(24px);
-    box-sizing: border-box;
-    background-color: $B5Color;
-    font-weight: 500;
-    font-size: rem(20px);
+    font-size: rem(16px);
+    font-weight: 400;
     line-height: rem(32px);
-    color: $B2Color;
-
-    @include lt-xl {
-        height: rem(40px);
-        font-size: rem(16px);
-        line-height: rem(24px);
-    }
-
-    @include sm {
-        padding: 0 rem(16px);
-        font-size: rem(12px);
-    }
-}
-
-.box-content {
-    display: flex;
-    flex-flow: column nowrap;
-    justify-content: flex-start;
-    align-items: flex-start;
-    width: 100%;
-    padding: rem(44px) rem(24px);
-    box-sizing: border-box;
-
-    @include lt-xl {
-        padding: rem(24px);
-    }
-
-    @include sm {
-        padding: rem(24px) rem(16px);
-    }
+    color: #2E2E2E;
 }
 
 .icon-list {
@@ -191,28 +97,15 @@
 }
 
 ::deep .icongraphy-search-box {
-    width: rem(336px);
-    height: rem(40px);
+    width: 100%;
+    width: rem(300px);
     margin-bottom: rem(50px) !important;
 
-    input::-webkit-input-placeholder {
-        font-size: rem(14px);
-        font-weight: 500;
-    }
-
-    @include lg {
-        height: rem(36px);
-    }
-
     @include md {
-        width: rem(274px);
-        height: rem(36px);
         margin-bottom: rem(40px) !important;
     }
 
     @include sm {
-        width: rem(264px);
-        height: rem(40px);
         margin-bottom: rem(32px) !important;
     }
 }
