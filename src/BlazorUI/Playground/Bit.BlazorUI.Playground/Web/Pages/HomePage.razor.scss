@@ -124,7 +124,7 @@
         display: inline-flex;
         justify-content: center;
         padding: rem(14px) rem(16px);
-        border-radius: rem(10px);
+        border-radius: rem(4px);
         box-shadow: none;
         cursor: pointer;
         -webkit-user-select: none;
@@ -228,7 +228,7 @@
         padding: rem(20px);
         margin-top: rem(20px);
         margin-left: rem(20px);
-        border-radius: rem(10px);
+        border-radius: rem(4px);
         border: rem(1px) solid #E0E3E7;
         box-sizing: border-box;
         color: #1A2027;
@@ -410,7 +410,7 @@
         align-items: center;
         min-width: rem(40px);
         height: rem(20px);
-        border-radius: rem(20px);
+        border-radius: rem(4px);
         margin-left: rem(10px);
         padding: rem(8px) rem(6px) rem(6px) rem(22px);
         font-size: rem(10px);
@@ -442,6 +442,7 @@
 .contribution-section {
     padding-top: rem(80px);
     padding-bottom: rem(80px);
+    background: linear-gradient(180deg, #F3F6F9 0%, #FFFFFF 100%);
 
     @include md {
         padding-top: rem(60px);
@@ -487,7 +488,7 @@
         display: inline-flex;
         justify-content: center;
         padding: rem(14px) rem(16px);
-        border-radius: rem(10px);
+        border-radius: rem(4px);
         box-shadow: none;
         cursor: pointer;
         -webkit-user-select: none;
@@ -528,7 +529,7 @@
     background-color: $White;
     color: rgb(61, 71, 82);
     transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
-    border-radius: rem(8px);
+    border-radius: rem(4px);
     border: rem(1px) solid rgb(229, 232, 236);
     overflow: hidden;
     padding: rem(10px);

@@ -2,7 +2,7 @@
 
 <Header />
 
-<div class="main @(CurrentUrl == "/" ? "main--home" : null) @(CurrentUrl.Contains("/components") ? "main--components-demo" : null)">
+<div class="main @(CurrentUrl == "/" ? "main--home" : null)">
     @if (CurrentUrl != "/")
     {
         <NavMenu />

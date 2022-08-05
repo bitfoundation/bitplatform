@@ -4,8 +4,8 @@
 @import '../Styles/abstracts/_vars.scss';
 
 .nav-menu {
-    position: fixed;
-    z-index: 1200;
+    position: sticky;
+    z-index: 1000;
     left: 0;
     top: rem($HeaderHeight);
     display: flex;
@@ -13,7 +13,8 @@
     flex-shrink: 0;
     flex: 1 0 auto;
     width: rem($NavMenuWidth);
-    height: calc(100% - rem($HeaderHeight));
+    max-width: rem($NavMenuWidth);
+    height: calc(100vh - rem($HeaderHeight));
     border-right: rem(1px) solid rgb(231, 235, 240);
     outline: 0;
     box-shadow: none;
@@ -24,6 +25,7 @@
     @include lt-lg {
         height: 100vh;
         position: fixed;
+        z-index: 1200;
         top: 0;
         inset: 0;
     }
