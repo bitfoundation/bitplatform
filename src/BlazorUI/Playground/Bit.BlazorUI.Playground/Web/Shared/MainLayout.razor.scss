@@ -11,6 +11,7 @@
     min-height: 100vh;
     padding-top: rem(56px);
     box-sizing: border-box;
+    background: linear-gradient(180deg, #F3F6F9 0%, #FFFFFF 100%);
 
     @include sm {
         padding-top: rem(100px);
@@ -18,7 +19,7 @@
 }
 
 .main--home {
-    background-color: $White;
+    background: $White;
 
     .site-content {
         max-width: 100%;

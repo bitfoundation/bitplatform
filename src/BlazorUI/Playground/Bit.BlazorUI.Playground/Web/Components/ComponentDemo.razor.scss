@@ -13,6 +13,7 @@
     margin-bottom: rem(28px);
     border-radius: rem(4px);
     border: rem(1px) solid #E0E3E7;
+    box-shadow: 0 1.6px 3.6px 0 rgb(0 0 0 / 13%), 0 0.3px 0.9px 0 rgb(0 0 0 / 11%);
     box-sizing: border-box;
     background-clip: padding-box;
     background-color: $White;
@@ -24,7 +25,7 @@
     font-size: rem(36px);
     font-weight: 800;
     line-height: 1;
-    color: $B2Color;
+    color: #0a1929;
 
     @include lt-lg {
         margin-bottom: rem(28px);
@@ -36,7 +37,6 @@
     font-size: rem(16px);
     font-weight: 400;
     line-height: rem(32px);
-    text-align: justify;
     color: #2E2E2E;
 }
 

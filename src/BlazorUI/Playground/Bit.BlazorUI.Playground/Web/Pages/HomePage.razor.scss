@@ -202,7 +202,7 @@
         margin-bottom: rem(40px);
         font-size: clamp(1.5rem, 0.9643rem + 1.4286vw, 2.25rem);
         font-weight: 800;
-        line-height: 1.2222222222222223;
+        line-height: 1.2;
         color: #132F4C;
 
         @include sm {
@@ -230,6 +230,7 @@
         margin-left: rem(20px);
         border-radius: rem(4px);
         border: rem(1px) solid #E0E3E7;
+        box-shadow: 0 1.6px 3.6px 0 rgb(0 0 0 / 13%), 0 0.3px 0.9px 0 rgb(0 0 0 / 11%);
         box-sizing: border-box;
         color: #1A2027;
         transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
@@ -317,7 +318,8 @@
         margin-top: rem(10px);
         font-size: clamp(1.5rem, 0.9643rem + 1.4286vw, 2.25rem);
         font-weight: 800;
-        line-height: 1.2222222222222223;
+        line-height: 1.2;
+        color: gainsboro;
     }
 
     @include sm {
@@ -410,18 +412,14 @@
         align-items: center;
         min-width: rem(40px);
         height: rem(20px);
-        border-radius: rem(4px);
+        border-radius: rem(2px);
         margin-left: rem(10px);
-        padding: rem(8px) rem(6px) rem(6px) rem(22px);
+        padding: rem(4px);
         font-size: rem(10px);
         font-weight: 500;
 
         &.featured {
             background-color: $B2Color;
-            background-image: url('/images/home/star-icon.webp');
-            background-position: center left rem(5px);
-            background-repeat: no-repeat;
-            background-size: rem(14px);
             color: $White;
         }
     }
@@ -430,6 +428,7 @@
 ::deep .bit-lnk-fluent {
     a {
         display: flex;
+        align-items: center;
         color: $White;
 
         &:hover {
