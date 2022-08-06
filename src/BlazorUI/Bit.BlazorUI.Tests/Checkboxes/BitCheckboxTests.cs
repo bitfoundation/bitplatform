@@ -424,7 +424,7 @@ public class BitCheckboxTests : BunitTestContext
         var component = RenderComponent<BitCheckboxValidationTest>(parameters =>
         {
             parameters.Add(p => p.TestModel, new BitCheckboxTestModel { Value = value });
-            parameters.AddCascadingValue(visual);
+            parameters.Add(p => p.Visual, visual);
             parameters.Add(p => p.IsEnabled, true);
         });
 
