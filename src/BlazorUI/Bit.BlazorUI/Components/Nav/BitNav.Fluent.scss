@@ -44,77 +44,88 @@
     &.bit-nav-fluent {
         font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
         -webkit-font-smoothing: antialiased;
-        font-size: inherit;
-        font-weight: inherit;
+        font-size: rem(14px);
+        font-weight: 400;
         user-select: none;
-
-        .composite-link {
-            display: block;
-            position: relative;
-            color: $Grey160;
-            cursor: pointer;
-
-            &:hover {
-                background-color: $Grey20;
-            }
-
-            button, a {
-                background-color: transparent;
-            }
-
-            button.selected-fluent, a.selected-fluent {
-                background-color: $Grey30;
-                font-weight: 600;
-                color: $Black;
-
-                &:after {
-                    border-left: rem(2px) solid $Primary;
-                    content: "";
-                    position: absolute;
-                    inset: 0;
-                    pointer-events: none;
-                }
-
-                &:hover {
-                    background-color: $Grey20;
-                }
-            }
-        }
-
-        .disabled-composite-link {
-            &:hover {
-                background-color: transparent;
-            }
-        }
     }
 
-    .grp {
+    .nav-group {
         margin: 0;
         padding: 0;
         border: 0;
-        font-size: 100%;
         font: inherit;
         vertical-align: baseline;
         text-decoration: none;
     }
 
-    .grp-content {
+    .group-content {
         display: block;
         margin-bottom: rem(40px);
-        animation-name: css-0, css-13;
-        animation-duration: 0.367s;
-        animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
-        animation-fill-mode: both;
     }
 
-    .list {
+    .nav-items {
         list-style-type: none;
         padding: 0;
         margin: 0;
     }
 
-    .item {
+    .nav-item {
         padding: 0;
+    }
+
+    .composite-link {
+        display: block;
+        position: relative;
+        color: $Grey160;
+        cursor: pointer;
+
+        &:hover {
+            background-color: $Grey20;
+        }
+
+        &.disabled {
+            &:hover {
+                background-color: transparent;
+            }
+        }
+
+        button, a {
+            background-color: transparent;
+        }
+
+        button.selected, a.selected {
+            background-color: $Grey30;
+            font-weight: 600;
+            color: $Black;
+
+            &:after {
+                border-left: rem(2px) solid $Primary;
+                content: "";
+                position: absolute;
+                inset: 0;
+                pointer-events: none;
+            }
+
+            &:hover {
+                background-color: $Grey20;
+            }
+        }
+
+        button.link-enabled-hasurl, a.link-enabled-hasurl {
+            @include getLinkStyle()
+        }
+
+        button.link-enabled-nourl, a.link-enabled-nourl {
+            @include getLinkStyle($hasUrl:false)
+        }
+
+        button.link-disabled-nourl, a.link-disabled-nourl {
+            @include getLinkStyle($hasUrl: false, $enabled: false)
+        }
+
+        button.link-disabled-hasurl, a.link-disabled-hasurl {
+            @include getLinkStyle($enabled:false)
+        }
     }
 
     .link-container {
@@ -168,7 +179,6 @@
             position: absolute;
             top: 0px;
             left: rem(8px);
-            display: inline-flex;
             align-items: center;
             width: unset;
             height: rem(44px);
@@ -177,10 +187,14 @@
             speak: none;
             transition: transform 0.1s linear 0s;
             -webkit-font-smoothing: antialiased;
+
+            &.expand {
+                transform: rotate(-180deg);
+            }
         }
     }
 
-    .grp-chevron-btn {
+    .group-chevron-btn {
         position: relative;
         width: 100%;
         height: rem(44px);
@@ -191,39 +205,5 @@
         -webkit-font-smoothing: antialiased;
         color: $Grey160;
         background-color: transparent;
-    }
-
-    .expand-fluent {
-        transform: rotate(-180deg);
-    }
-
-    .link-enabled-hasurl-fluent {
-        @include getLinkStyle()
-    }
-
-    .link-enabled-nourl-fluent {
-        @include getLinkStyle($hasUrl:false)
-    }
-
-    .link-disabled-hasurl-fluent {
-        @include getLinkStyle($enabled:false)
-    }
-
-    .link-disabled-nourl-fluent {
-        @include getLinkStyle($hasUrl: false, $enabled: false)
-    }
-}
-
-@keyframes nav-top-animation {
-    0% {
-        opacity: 0;
-        transform: translate3d(rem(-40px), 0, 0);
-        pointer-events: none;
-    }
-
-    100% {
-        opacity: 1;
-        transform: translate3d(0, 0, 0);
-        pointer-events: auto;
     }
 }
