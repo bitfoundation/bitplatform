@@ -1,0 +1,25 @@
+﻿@inherits AppComponentBase;
+@inject NavigationManager navigationManager
+
+<AuthorizeView>
+    @ErrorStrings.ForbiddenException
+</AuthorizeView>
+
+@code {
+    [Parameter] public ClaimsPrincipal User { get; set; } = default!;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (User.Identity?.IsAuthenticated is false)
+            {
+                var redirectUrl = navigationManager.ToBaseRelativePath(navigationManager.Uri);
+
+                navigationManager.NavigateTo($"/sign-in?redirectUrl={redirectUrl}");
+            }
+        }
+
+        base.OnAfterRender(firstRender);
+    }
+}
