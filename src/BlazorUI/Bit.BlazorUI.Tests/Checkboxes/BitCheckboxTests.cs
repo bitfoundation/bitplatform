@@ -31,7 +31,7 @@ public class BitCheckboxTests : BunitTestContext
         var changed = false;
         var component = RenderComponent<BitCheckbox>(parameters =>
         {
-            parameters.Add(p => p.Visual, visual);
+            parameters.AddCascadingValue(visual);
             parameters.Add(p => p.IsEnabled, isEnabled);
             parameters.Add(p => p.DefaultValue, defaultValue);
             parameters.Add(p => p.OnClick, () => clicked = true);
@@ -62,7 +62,7 @@ public class BitCheckboxTests : BunitTestContext
     {
         var component = RenderComponent<BitCheckbox>(parameters =>
         {
-            parameters.Add(p => p.Visual, visual);
+            parameters.AddCascadingValue(visual);
             parameters.Add(p => p.BoxSide, boxSide);
         });
 
@@ -424,7 +424,7 @@ public class BitCheckboxTests : BunitTestContext
         var component = RenderComponent<BitCheckboxValidationTest>(parameters =>
         {
             parameters.Add(p => p.TestModel, new BitCheckboxTestModel { Value = value });
-            parameters.Add(p => p.Visual, visual);
+            parameters.AddCascadingValue(visual);
             parameters.Add(p => p.IsEnabled, true);
         });
 

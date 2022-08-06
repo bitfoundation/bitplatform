@@ -16,7 +16,7 @@ public class BitFileUploadTests : BunitTestContext
     {
         var com = RenderComponent<BitFileUpload>(parameters =>
         {
-            parameters.Add(p => p.Visual, visual);
+            parameters.AddCascadingValue(visual);
         });
 
         var bitFileUpload = com.Find(".bit-upl");

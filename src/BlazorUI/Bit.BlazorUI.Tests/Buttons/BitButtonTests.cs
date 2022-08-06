@@ -96,7 +96,7 @@ public class BitButtonTests : BunitTestContext
     {
         var com = RenderComponent<BitButton>(parameters =>
         {
-            parameters.Add(p => p.Visual, visual);
+            parameters.AddCascadingValue(visual);
             parameters.Add(p => p.IsEnabled, isEnabled);
             parameters.Add(p => p.ButtonStyle, style);
             parameters.Add(p => p.Href, href);

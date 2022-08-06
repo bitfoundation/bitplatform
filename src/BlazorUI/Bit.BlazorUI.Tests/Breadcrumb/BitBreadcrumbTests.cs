@@ -17,7 +17,7 @@ public class BitBreadcrumbTests : BunitTestContext
         var component = RenderComponent<BitBreadcrumb>(parameters =>
         {
             parameters.Add(p => p.Items, GetBreadcrumbItems());
-            parameters.Add(p => p.Visual, visual);
+            parameters.AddCascadingValue(visual);
         });
 
         var bitBreadcrumb = component.Find(".bit-brc");

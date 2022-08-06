@@ -29,7 +29,7 @@ public class BitChoiceGroupTests : BunitTestContext
         var component = RenderComponent<BitChoiceGroup>(
             parameters =>
             {
-                parameters.Add(p => p.Visual, visual);
+                parameters.AddCascadingValue(visual);
                 parameters.Add(p => p.IsEnabled, groupIsEnabled);
                 parameters.Add(p => p.Options, new List<BitChoiceGroupOption>
                 {
