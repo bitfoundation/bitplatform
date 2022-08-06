@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System.Collections.Generic;
+using System.Drawing;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -25,14 +26,14 @@ public class BitChoiceGroupTests : BunitTestContext
    ]
     public void BitChoiceGroupShouldRespectIsEnabled(Visual visual, bool groupIsEnabled, bool optionIsEnabled)
     {
-        var component = RenderComponent<BitChoiceGroupTest>(
+        var component = RenderComponent<BitChoiceGroup>(
             parameters =>
             {
-                parameters.Add(p => p.Visual, visual);
+                parameters.AddCascadingValue(visual);
                 parameters.Add(p => p.IsEnabled, groupIsEnabled);
-                parameters.Add(p => p.Options, new()
+                parameters.Add(p => p.Options, new List<BitChoiceGroupOption>
                 {
-                    new BitChoiceGroupOption
+                    new()
                     {
                         Value = "key1",
                         IsEnabled = optionIsEnabled
@@ -57,17 +58,17 @@ public class BitChoiceGroupTests : BunitTestContext
     [DataTestMethod, DataRow("key1")]
     public void BitChoiceGroupRespectDafaultValue(string defaultValue)
     {
-        var component = RenderComponent<BitChoiceGroupTest>(
+        var component = RenderComponent<BitChoiceGroup>(
            parameters =>
            {
                parameters.Add(p => p.DefaultValue, defaultValue);
-               parameters.Add(p => p.Options, new()
+               parameters.Add(p => p.Options, new List<BitChoiceGroupOption>
                {
-                    new BitChoiceGroupOption
+                    new()
                     {
                         Value = "key1"
                     },
-                    new BitChoiceGroupOption
+                    new()
                     {
                         Value = "key2"
                     }
@@ -82,13 +83,13 @@ public class BitChoiceGroupTests : BunitTestContext
     [DataTestMethod, DataRow("ChoiceGroupName")]
     public void BitChoiceGroupShouldGiveNameBitChoiceGroupOptions(string choiceGroupName)
     {
-        var component = RenderComponent<BitChoiceGroupTest>(
+        var component = RenderComponent<BitChoiceGroup>(
              parameters =>
              {
                  parameters.Add(p => p.Name, choiceGroupName);
-                 parameters.Add(p => p.Options, new()
+                 parameters.Add(p => p.Options, new List<BitChoiceGroupOption>
                  {
-                    new BitChoiceGroupOption
+                    new()
                     {
                         Value = "key1"
                     }
@@ -104,7 +105,7 @@ public class BitChoiceGroupTests : BunitTestContext
     [DataTestMethod, DataRow("this is label")]
     public void BitChoiceGroupShouldTakeLabel(string label)
     {
-        var component = RenderComponent<BitChoiceGroupTest>(
+        var component = RenderComponent<BitChoiceGroup>(
               parameters =>
               {
                   parameters.Add(p => p.Label, label);
@@ -118,12 +119,12 @@ public class BitChoiceGroupTests : BunitTestContext
     [DataTestMethod, DataRow("https://picsum.photos/100", "this is alt", 50, 50)]
     public void BitChoiceGroupShouldRespectImage(string imageSrc, string imageAlt, int width, int height)
     {
-        var component = RenderComponent<BitChoiceGroupTest>(
+        var component = RenderComponent<BitChoiceGroup>(
              parameters =>
              {
-                 parameters.Add(p => p.Options, new()
+                 parameters.Add(p => p.Options, new List<BitChoiceGroupOption>
                  {
-                    new BitChoiceGroupOption
+                    new()
                     {
                         Value = "key1",
                         ImageSrc = imageSrc,
@@ -150,10 +151,10 @@ public class BitChoiceGroupTests : BunitTestContext
     [DataTestMethod, DataRow(BitIconName.Emoji2)]
     public void BitChoiceGroupShouldRespectIcon(BitIconName iconName)
     {
-        var component = RenderComponent<BitChoiceGroupTest>(
+        var component = RenderComponent<BitChoiceGroup>(
             parameters =>
             {
-                parameters.Add(p => p.Options, new()
+                parameters.Add(p => p.Options, new List<BitChoiceGroupOption>
                 {
                     new BitChoiceGroupOption
                     {
@@ -172,13 +173,13 @@ public class BitChoiceGroupTests : BunitTestContext
     {
         bool optionOnChangeValue = false;
 
-        var component = RenderComponent<BitChoiceGroupTest>(
+        var component = RenderComponent<BitChoiceGroup>(
            parameters =>
            {
                parameters.Add(p => p.IsEnabled, groupIsEnabled);
-               parameters.Add(p => p.Options, new()
+               parameters.Add(p => p.Options, new List<BitChoiceGroupOption>
                {
-                    new BitChoiceGroupOption
+                    new()
                     {
                         Value = "key1",
                         IsEnabled = optionIsEnabled,
