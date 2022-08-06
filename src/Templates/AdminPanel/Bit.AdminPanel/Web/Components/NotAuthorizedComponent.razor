@@ -1,0 +1,8 @@
+﻿@inherits AppComponentBase;
+@inject NavigationManager navigationManager
+
+<AuthorizeView>
+    @ErrorStrings.ForbiddenException
+    You're signed in as @User.GetUserName();
+    <BitButton OnClick="WrapHandled(SignIn)">Sign in as different user</BitButton>
+</AuthorizeView>
