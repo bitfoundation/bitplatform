@@ -3,23 +3,6 @@
 
 <AuthorizeView>
     @ErrorStrings.ForbiddenException
+    You're signed in as @User.GetUserName();
+    <BitButton OnClick="WrapHandled(SignIn)">Sign in as different user</BitButton>
 </AuthorizeView>
-
-@code {
-    [Parameter] public ClaimsPrincipal ClaimsPrincipal { get; set; } = default!;
-
-    protected override void OnAfterRender(bool firstRender)
-    {
-        if (firstRender)
-        {
-            if (ClaimsPrincipal.Identity?.IsAuthenticated is false)
-            {
-                var redirectUrl = navigationManager.ToBaseRelativePath(navigationManager.Uri);
-
-                navigationManager.NavigateTo($"/sign-in?redirectUrl={redirectUrl}");
-            }
-        }
-
-        base.OnAfterRender(firstRender);
-    }
-}

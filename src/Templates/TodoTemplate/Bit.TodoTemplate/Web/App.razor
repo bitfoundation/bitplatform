@@ -5,9 +5,9 @@
                 AdditionalAssemblies="@lazyLoadedAssemblies"
                 OnNavigateAsync="@OnNavigateAsync">
             <Found Context="routeData">
-                <AuthorizeRouteView Context="authState" RouteData="@routeData">
+                <AuthorizeRouteView RouteData="@routeData">
                     <NotAuthorized>
-                        <NotAuthorizedComponent ClaimsPrincipal="@authState.User" />
+                        <NotAuthorizedComponent />
                     </NotAuthorized>
                     <Authorizing>
                         <LoadingComponent Color="#FFF" />
