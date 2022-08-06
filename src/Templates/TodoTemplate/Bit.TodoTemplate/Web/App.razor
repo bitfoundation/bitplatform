@@ -7,7 +7,7 @@
             <Found Context="routeData">
                 <AuthorizeRouteView Context="authState" RouteData="@routeData">
                     <NotAuthorized>
-                        <NotAuthorizedComponent User="@authState.User" />
+                        <NotAuthorizedComponent ClaimsPrincipal="@authState.User" />
                     </NotAuthorized>
                     <Authorizing>
                         <LoadingComponent Color="#FFF" />

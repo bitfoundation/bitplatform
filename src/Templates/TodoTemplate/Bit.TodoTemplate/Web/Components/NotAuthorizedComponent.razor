@@ -6,13 +6,13 @@
 </AuthorizeView>
 
 @code {
-    [Parameter] public ClaimsPrincipal User { get; set; } = default!;
+    [Parameter] public ClaimsPrincipal ClaimsPrincipal { get; set; } = default!;
 
     protected override void OnAfterRender(bool firstRender)
     {
         if (firstRender)
         {
-            if (User.Identity?.IsAuthenticated is false)
+            if (ClaimsPrincipal.Identity?.IsAuthenticated is false)
             {
                 var redirectUrl = navigationManager.ToBaseRelativePath(navigationManager.Uri);
 
