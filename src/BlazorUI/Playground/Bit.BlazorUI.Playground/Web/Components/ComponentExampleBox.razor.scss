@@ -111,6 +111,10 @@
             font-size: rem(14px);
             font-weight: 400;
             min-width: rem(80px);
+
+            @include sm {
+                display: none;
+            }
         }
     }
 
