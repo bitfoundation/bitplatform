@@ -63,6 +63,7 @@ public partial class NavMenu
                 new BitNavLinkItem { Name = "BasicList", Key = "BasicList", Url="/components/basic-list" },
                 new BitNavLinkItem { Name = "DataGrid", Key = "DataGrid", Url="/components/data-grid" },
                 new BitNavLinkItem { Name= "Carousel", Key = "Carousel", Url = "/components/carousel" },
+                new BitNavLinkItem { Name= "Swiper", Key = "Swiper", Url = "/components/swiper" },
                 new BitNavLinkItem { Name = "Persona", Key = "Persona", Url="/components/persona" }
             }
         },
