@@ -144,3 +144,9 @@
         }
     }
 }
+
+::deep .searched-side-nav {
+    .link-enabled-hasurl-fluent {
+        padding: 0 20px 0 27px !important;
+    }
+}
