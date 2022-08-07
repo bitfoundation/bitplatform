@@ -4,10 +4,30 @@
 
 
 .page-container {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: center;
     width: 100%;
+    box-sizing: border-box;
+    background: linear-gradient(180deg, #F3F6F9 0%, #FFFFFF 100%);
+}
+
+.page-contnet {
+    width: 100%;
+    max-width: rem(1200px);
+    margin-left: auto;
+    margin-right: auto;
     padding-left: rem(20px);
     padding-right: rem(20px);
+    padding-top: rem(65px);
+    padding-bottom: rem(65px);
     box-sizing: border-box;
+
+    @include lt-xl {
+        padding-top: rem(35px);
+        padding-bottom: rem(35px);
+    }
 
     @include md {
         padding-left: rem(30px);
@@ -16,6 +36,7 @@
 }
 
 .page-title {
+    margin: 0;
     margin-bottom: rem(52px);
     padding: 0;
     font-size: rem(36px);
