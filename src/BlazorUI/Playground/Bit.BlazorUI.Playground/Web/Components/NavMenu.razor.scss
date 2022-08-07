@@ -87,29 +87,25 @@
 }
 
 ::deep .side-nav {
-    .grp-chevron-btn {
-        height: rem(40px);
-        margin: 0;
-        padding-left: rem(44px);
-        border: none;
+    .link-enabled-nourl-fluent {
         font-weight: 600;
         font-size: rem(14px);
         line-height: rem(32px);
         color: #323130;
+    }
 
+    .chevron-btn {
         &:hover {
             color: #323130;
         }
 
         i {
             height: 100%;
-            left: rem(17px);
             transform: rotate( -90deg);
         }
 
         .expand-fluent {
             height: 100%;
-            left: rem(17px);
             transform: rotate(0deg);
         }
     }
