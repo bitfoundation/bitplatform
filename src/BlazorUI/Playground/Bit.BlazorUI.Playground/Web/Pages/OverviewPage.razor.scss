@@ -1,0 +1,150 @@
+﻿@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_media-queries.scss';
+@import '../Styles/abstracts/_functions.scss';
+
+.page-container {
+    width: 100%;
+}
+
+.page-title {
+    margin-bottom: rem(52px);
+    padding: 0;
+    font-size: rem(36px);
+    font-weight: 800;
+    line-height: 1;
+    color: #0a1929;
+
+    @include lt-lg {
+        margin-bottom: rem(28px);
+    }
+}
+
+.page-section {
+    position: relative;
+    width: 100%;
+    padding: rem(28px);
+    margin-bottom: rem(28px);
+    border-radius: rem(4px);
+    border: rem(1px) solid #E0E3E7;
+    box-shadow: 0 1.6px 3.6px 0 rgb(0 0 0 / 13%), 0 0.3px 0.9px 0 rgb(0 0 0 / 11%);
+    box-sizing: border-box;
+    background-clip: padding-box;
+    background-color: $White;
+}
+
+.section-title {
+    padding: 0;
+    margin-bottom: rem(20px);
+    font-weight: 700;
+    font-size: rem(24px);
+    line-height: 1;
+    color: #1a2027;
+}
+
+.section-desc {
+    width: 100%;
+    font-size: rem(16px);
+    font-weight: 400;
+    line-height: rem(32px);
+    color: #2E2E2E;
+}
+
+.card-container {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: flex-start;
+    align-items: flex-start;
+    width: 100%;
+    gap: 10px;
+
+    @include sm {
+        justify-content: center;
+    }
+}
+
+.card {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: center;
+    align-items: center;
+    width: calc(25% - 8px);
+    height: rem(260px);
+    border-radius: rem(4px);
+    padding: rem(16px);
+    border: rem(1px) solid $B5Color;
+    box-shadow: 0 1.6px 3.6px 0 rgb(0 0 0 / 13%), 0 0.3px 0.9px 0 rgb(0 0 0 / 11%);
+    box-sizing: border-box;
+    font-weight: 600;
+    font-size: rem(20px);
+    line-height: rem(40px);
+    color: #2E2E2E;
+    text-align: center;
+    background-color: $B6Color;
+    cursor: pointer;
+    overflow: hidden;
+
+    @include lg {
+        width: calc((100% / 3) - 8px);
+    }
+
+    @include md {
+        width: calc(50% - 5px);
+        height: rem(190px);
+    }
+
+    @include sm {
+        width: 100%;
+        height: rem(185px);
+    }
+}
+
+.card-img {
+    width: rem(56px);
+    height: rem(56px);
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    margin-bottom: rem(8px);
+}
+
+.input-card {
+    .card-img {
+        background-image: url('/images/icon/input-icon.svg');
+    }
+}
+
+.picker-card {
+    .card-img {
+        background-image: url('/images/icon/pickers-icon.svg');
+    }
+}
+
+.list-card {
+    .card-img {
+        background-image: url('/images/icon/lists-icon.svg');
+    }
+}
+
+.nav-card {
+    .card-img {
+        background-image: url('/images/icon/navs-icon.svg');
+    }
+}
+
+.notification-card {
+    .card-img {
+        background-image: url('/images/icon/notifications-icon.svg');
+    }
+}
+
+.progress-card {
+    .card-img {
+        background-image: url('/images/icon/progrss-icon.svg');
+    }
+}
+
+.surface-card {
+    .card-img {
+        background-image: url('/images/icon/surfaces-icon.svg');
+    }
+}
