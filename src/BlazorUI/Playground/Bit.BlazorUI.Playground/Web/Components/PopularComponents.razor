@@ -90,9 +90,8 @@
     Default ColorPicker
 &lt/BitColorPicker></code>
 <code class="csharp">&#64;code {
-    private BitColorPicker ColorPicker;
-    private string Color = "#FFFFFF";
-    private bool IsToggleChecked = false;
+    private string ColorRgb = "rgb(0,101,239)";
+    private double Alpha = 1;
 }</code></pre>
             }
             else if (SelectedComponent.Name == "DatePicker")
@@ -116,7 +115,7 @@
             }
             else if (SelectedComponent.Name == "DropDown")
             {
-                <pre class="code"><code class="html">&ltBitDropDown Label="Multi-select controlled"
+                <pre class="code"><code class="html">&ltBitDropDown Label="Multi-select uncontrolled"
              Items="GetDropdownItems()"
              Placeholder="Select options"
              &#64;bind-SelectedMultipleKeys="ControlledSelectedMultipleKeys"
