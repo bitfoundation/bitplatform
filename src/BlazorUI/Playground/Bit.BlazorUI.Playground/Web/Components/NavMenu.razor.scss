@@ -86,43 +86,6 @@
     }
 }
 
-::deep .nav-menu-demo-link {
-    display: block;
-    width: 100%;
-    height: rem(40px);
-
-    a {
-        display: flex;
-        justify-content: flex-start;
-        align-items: center;
-        width: 100%;
-        height: rem(40px);
-        padding-left: rem(44px);
-        box-sizing: border-box;
-        font-weight: 600;
-        font-size: rem(14px);
-        line-height: rem(32px);
-        color: #323130;
-
-        &:hover {
-            text-decoration: none;
-        }
-    }
-}
-
-::deep .nav-menu-demo-link--active {
-    a {
-        padding-left: rem(40px);
-        background-color: #edebe9;
-        color: $B2Color;
-        border-left: rem(4px) solid $B2Color;
-
-        &:hover {
-            background-color: $Gray4;
-        }
-    }
-}
-
 ::deep .side-nav {
     .grp-chevron-btn {
         height: rem(40px);
@@ -161,7 +124,6 @@
 
     .link-enabled-hasurl-fluent {
         height: rem(40px);
-        padding: 0 rem(16px) 0 rem(52px) !important;
         box-sizing: border-box;
         font-size: rem(14px);
         font-weight: 400;
