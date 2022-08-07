@@ -41,12 +41,13 @@ public partial class Header
     {
         if(CurrentUrl.Contains("components"))
         {
-            return "Demo";
+            return "Docs";
         }
         else return CurrentUrl switch
         {
             "/" => "Home",
-            "/get-started" => "Get Started",
+            "/overview" => "Docs",
+            "/get-started" => "Docs",
             "/icons" => "Iconography",
             _ => "",
         };

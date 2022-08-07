@@ -15,105 +15,97 @@ public partial class NavMenu
     private bool isNavOpen = false;
     private readonly List<BitNavLinkItem> allNavLinks = new()
     {
-        new BitNavLinkItem { Name= "Get started", Key = "GetStarted", Url = "/get-started"},
-        new BitNavLinkItem { Name= "Iconography", Key = "Iconography", Url = "/icons"},
+        new BitNavLinkItem { Name= "Overview", Key = "Overview", Url = "/overview"},
+        new BitNavLinkItem { Name= "Getting started", Key = "GetStarted", Url = "/get-started"},
         new BitNavLinkItem
         {
-            Name = "Components",
-            Key = "Components",
+            Name = "Basic Inputs",
+            Key = "Inputs",
             Links = new List<BitNavLinkItem>
             {
-                new BitNavLinkItem
-                {
-                    Name = "Basic Inputs",
-                    Key = "Inputs",
-                    Links = new List<BitNavLinkItem>
-                    {
-                        new BitNavLinkItem { Name= "Button", Key = "Button", Url = "/components/button"},
-                        new BitNavLinkItem { Name= "ActionButton", Key = "ActionButton", Url = "/components/action-button"},
-                        new BitNavLinkItem { Name= "CompoundButton", Key = "CompoundButton", Url = "/components/compound-button"},
-                        new BitNavLinkItem { Name= "IconButton", Key = "IconButton", Url = "/components/icon-button"},
-                        new BitNavLinkItem { Name= "ToggleButton", Key = "ToggleButton", Url = "/components/toggle-button" },
-                        new BitNavLinkItem { Name= "CheckBox", Key = "CheckBox", Url = "/components/check-box" },
-                        new BitNavLinkItem { Name= "ChoiceGroup", Key = "ChoiceGroup", Url = "/components/choice-group" },
-                        new BitNavLinkItem { Name= "RadioButtonGroup", Key = "RadioButtonGroup", Url = "/components/radio-button-group" },
-                        new BitNavLinkItem { Name = "RadioButtonList", Key = "RadioButtonList", Url="/components/radio-button-list" },
-                        new BitNavLinkItem { Name= "DropDown", Key = "DropDown", Url = "/components/drop-down" },
-                        new BitNavLinkItem { Name= "FileUpload", Key= "FileUpload", Url = "/components/file-upload"},
-                        new BitNavLinkItem { Name= "Label", Key = "Label",  Url = "/components/label" },
-                        new BitNavLinkItem { Name= "Link", Key = "Link", Url = "/components/link" },
-                        new BitNavLinkItem { Name= "Rating", Key = "Rating", Url = "/components/rating" },
-                        new BitNavLinkItem { Name= "SearchBox", Key = "SearchBox", Url = "/components/search-box" },
-                        new BitNavLinkItem { Name= "Slider", Key = "Slider", Url = "/components/slider" },
-                        new BitNavLinkItem { Name= "SpinButton", Key = "SpinButton", Url = "/components/spin-button"},
-                        new BitNavLinkItem { Name= "TextField", Key = "TextField", Url = "/components/text-field" },
-                        new BitNavLinkItem { Name= "NumericTextField", Key = "NumericTextField", Url = "/components/numeric-text-field" },
-                        new BitNavLinkItem { Name= "Toggle (Switch)", Key = "Toggle", Url = "/components/toggle" }
-                    }
-                },
-                new BitNavLinkItem
-                {
-                    Name = "Galleries & Pickers",
-                    Key = "Pickers",
-                    Links = new List<BitNavLinkItem>
-                    {
-                        new BitNavLinkItem { Name= "ColorPicker", Key = "ColorPicker", Url = "/components/color-picker" },
-                        new BitNavLinkItem { Name = "DatePicker", Key = "DatePicker", Url="/components/date-picker" },
-                        new BitNavLinkItem { Name = "Chart", Key = "Chart", Url="/components/chart" }
-                    }
-                },
-                new BitNavLinkItem
-                {
-                    Name = "Items & Lists",
-                    Key = "Lists",
-                    Links = new List<BitNavLinkItem>
-                    {
-                        new BitNavLinkItem { Name = "BasicList", Key = "BasicList", Url="/components/basic-list" },
-                        new BitNavLinkItem { Name = "DataGrid", Key = "DataGrid", Url="/components/data-grid" },
-                        new BitNavLinkItem { Name= "Carousel", Key = "Carousel", Url = "/components/carousel" },
-                        new BitNavLinkItem { Name = "Persona", Key = "Persona", Url="/components/persona" }
-                    }
-                },
-                new BitNavLinkItem
-                {
-                    Name = "Commands, Menus & Navs",
-                    Key = "Navigations",
-                    Links = new List<BitNavLinkItem>
-                    {
-                        new BitNavLinkItem { Name = "Breadcrumb", Key = "Breadcrumb", Url = "/components/breadcrumb" },
-                        new BitNavLinkItem { Name = "Nav (TreeList)", Key = "Nav", Url = "/components/nav" },
-                        new BitNavLinkItem { Name = "Pivot (Tab)", Key = "Pivot", Url = "/components/pivot" },
-                    }
-                },
-                new BitNavLinkItem
-                {
-                    Name = "Notification & Engagement",
-                    Key = "Notifications",
-                    Links = new List<BitNavLinkItem>
-                    {
-                        new BitNavLinkItem { Name = "MessageBar", Key = "MessageBar", Url="/components/message-bar" }
-                    }
-                },
-                new BitNavLinkItem
-                {
-                    Name = "Progress",
-                    Key = "Progress",
-                    Links = new List<BitNavLinkItem>
-                    {
-                        new BitNavLinkItem{ Name = "Progressindicator", Key = "ProgressIndicator", Url = "/components/progress-indicator" },
-                        new BitNavLinkItem{ Name = "Spinner", Key = "Spinner", Url = "/components/spinner" }
-                    },
-                },
-                new BitNavLinkItem
-                {
-                    Name = "Surfaces",
-                    Key = "Surfaces",
-                    Links = new List<BitNavLinkItem>
-                    {
-                        new BitNavLinkItem { Name = "Modal", Key = "Modal", Url = "/components/modal" },
-                    },
-                }
+                new BitNavLinkItem { Name= "Button", Key = "Button", Url = "/components/button"},
+                new BitNavLinkItem { Name= "ActionButton", Key = "ActionButton", Url = "/components/action-button"},
+                new BitNavLinkItem { Name= "CompoundButton", Key = "CompoundButton", Url = "/components/compound-button"},
+                new BitNavLinkItem { Name= "IconButton", Key = "IconButton", Url = "/components/icon-button"},
+                new BitNavLinkItem { Name= "ToggleButton", Key = "ToggleButton", Url = "/components/toggle-button" },
+                new BitNavLinkItem { Name= "CheckBox", Key = "CheckBox", Url = "/components/check-box" },
+                new BitNavLinkItem { Name= "ChoiceGroup", Key = "ChoiceGroup", Url = "/components/choice-group" },
+                new BitNavLinkItem { Name= "RadioButtonGroup", Key = "RadioButtonGroup", Url = "/components/radio-button-group" },
+                new BitNavLinkItem { Name = "RadioButtonList", Key = "RadioButtonList", Url="/components/radio-button-list" },
+                new BitNavLinkItem { Name= "DropDown", Key = "DropDown", Url = "/components/drop-down" },
+                new BitNavLinkItem { Name= "FileUpload", Key= "FileUpload", Url = "/components/file-upload"},
+                new BitNavLinkItem { Name= "Label", Key = "Label",  Url = "/components/label" },
+                new BitNavLinkItem { Name= "Link", Key = "Link", Url = "/components/link" },
+                new BitNavLinkItem { Name= "Rating", Key = "Rating", Url = "/components/rating" },
+                new BitNavLinkItem { Name= "SearchBox", Key = "SearchBox", Url = "/components/search-box" },
+                new BitNavLinkItem { Name= "Slider", Key = "Slider", Url = "/components/slider" },
+                new BitNavLinkItem { Name= "SpinButton", Key = "SpinButton", Url = "/components/spin-button"},
+                new BitNavLinkItem { Name= "TextField", Key = "TextField", Url = "/components/text-field" },
+                new BitNavLinkItem { Name= "NumericTextField", Key = "NumericTextField", Url = "/components/numeric-text-field" },
+                new BitNavLinkItem { Name= "Toggle (Switch)", Key = "Toggle", Url = "/components/toggle" }
             }
+        },
+        new BitNavLinkItem
+        {
+            Name = "Galleries & Pickers",
+            Key = "Pickers",
+            Links = new List<BitNavLinkItem>
+            {
+                new BitNavLinkItem { Name= "ColorPicker", Key = "ColorPicker", Url = "/components/color-picker" },
+                new BitNavLinkItem { Name = "DatePicker", Key = "DatePicker", Url="/components/date-picker" },
+                new BitNavLinkItem { Name = "Chart", Key = "Chart", Url="/components/chart" }
+            }
+        },
+        new BitNavLinkItem
+        {
+            Name = "Items & Lists",
+            Key = "Lists",
+            Links = new List<BitNavLinkItem>
+            {
+                new BitNavLinkItem { Name = "BasicList", Key = "BasicList", Url="/components/basic-list" },
+                new BitNavLinkItem { Name = "DataGrid", Key = "DataGrid", Url="/components/data-grid" },
+                new BitNavLinkItem { Name= "Carousel", Key = "Carousel", Url = "/components/carousel" },
+                new BitNavLinkItem { Name = "Persona", Key = "Persona", Url="/components/persona" }
+            }
+        },
+        new BitNavLinkItem
+        {
+            Name = "Commands, Menus & Navs",
+            Key = "Navigations",
+            Links = new List<BitNavLinkItem>
+            {
+                new BitNavLinkItem { Name = "Breadcrumb", Key = "Breadcrumb", Url = "/components/breadcrumb" },
+                new BitNavLinkItem { Name = "Nav (TreeList)", Key = "Nav", Url = "/components/nav" },
+                new BitNavLinkItem { Name = "Pivot (Tab)", Key = "Pivot", Url = "/components/pivot" },
+            }
+        },
+        new BitNavLinkItem
+        {
+            Name = "Notification & Engagement",
+            Key = "Notifications",
+            Links = new List<BitNavLinkItem>
+            {
+                new BitNavLinkItem { Name = "MessageBar", Key = "MessageBar", Url="/components/message-bar" }
+            }
+        },
+        new BitNavLinkItem
+        {
+            Name = "Progress",
+            Key = "Progress",
+            Links = new List<BitNavLinkItem>
+            {
+                new BitNavLinkItem{ Name = "Progressindicator", Key = "ProgressIndicator", Url = "/components/progress-indicator" },
+                new BitNavLinkItem{ Name = "Spinner", Key = "Spinner", Url = "/components/spinner" }
+            },
+        },
+        new BitNavLinkItem
+        {
+            Name = "Surfaces",
+            Key = "Surfaces",
+            Links = new List<BitNavLinkItem>
+            {
+                new BitNavLinkItem { Name = "Modal", Key = "Modal", Url = "/components/modal" },
+            },
         }
     };
 

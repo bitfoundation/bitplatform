@@ -2,8 +2,8 @@
 
 <Header />
 
-<div class="main @(CurrentUrl == "/" ? "main--home" : null)">
-    @if (CurrentUrl != "/")
+<div class="main @(CurrentUrl == "/" ? "main--full-page" : null)">
+    @if (CurrentUrl != "/" && CurrentUrl != "/icons")
     {
         <NavMenu />
     }

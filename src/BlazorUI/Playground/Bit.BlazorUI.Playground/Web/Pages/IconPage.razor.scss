@@ -5,6 +5,14 @@
 
 .page-container {
     width: 100%;
+    padding-left: rem(20px);
+    padding-right: rem(20px);
+    box-sizing: border-box;
+
+    @include md {
+        padding-left: rem(30px);
+        padding-right: rem(30px);
+    }
 }
 
 .page-title {
