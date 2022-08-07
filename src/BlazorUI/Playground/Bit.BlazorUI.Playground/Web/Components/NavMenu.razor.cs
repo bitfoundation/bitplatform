@@ -16,7 +16,7 @@ public partial class NavMenu
     private readonly List<BitNavLinkItem> allNavLinks = new()
     {
         new BitNavLinkItem { Name= "Overview", Key = "Overview", Url = "/overview"},
-        new BitNavLinkItem { Name= "Getting started", Key = "GetStarted", Url = "/get-started"},
+        new BitNavLinkItem { Name= "Getting started", Key = "GettingStarted", Url = "/getting-started"},
         new BitNavLinkItem
         {
             Name = "Basic Inputs",
