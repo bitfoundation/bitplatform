@@ -21,7 +21,7 @@ public partial class BitSwiperItem
         return base.OnInitializedAsync();
     }
 
-    protected override string RootElementClass => "bit-sls-item";
+    protected override string RootElementClass => "bit-swp-item";
 
     protected override void RegisterComponentClasses()
     {
