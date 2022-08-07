@@ -68,14 +68,14 @@
     justify-content: center;
     align-items: center;
     width: calc(25% - 8px);
-    height: rem(260px);
+    height: rem(190px);
     border-radius: rem(4px);
     padding: rem(16px);
     border: rem(1px) solid $B5Color;
     box-shadow: 0 1.6px 3.6px 0 rgb(0 0 0 / 13%), 0 0.3px 0.9px 0 rgb(0 0 0 / 11%);
     box-sizing: border-box;
-    font-weight: 600;
-    font-size: rem(20px);
+    font-weight: 500;
+    font-size: rem(16px);
     line-height: rem(40px);
     color: #2E2E2E;
     text-align: center;
@@ -89,12 +89,10 @@
 
     @include md {
         width: calc(50% - 5px);
-        height: rem(190px);
     }
 
     @include sm {
         width: 100%;
-        height: rem(185px);
     }
 }
 
