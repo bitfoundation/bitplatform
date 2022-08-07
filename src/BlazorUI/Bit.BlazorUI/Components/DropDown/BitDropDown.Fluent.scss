@@ -17,13 +17,13 @@
         display: block;
     }
 
-    .filter-box {
+    .search-box {
         display: flex;
         flex-flow: row nowrap;
         align-items: stretch;
         height: rem(32px);
         box-shadow: none;
-        border: rem(1px) solid $Grey130;
+        border: rem(1px) solid $Grey60;
         border-radius: 0;
         border-width: 0 0 rem(1px);
         margin: 0;
@@ -74,7 +74,7 @@
         }
     }
 
-    .filter-input {
+    .search-input {
         flex: 1 1 0px;
         min-width: 0px;
         box-shadow: none;
@@ -92,7 +92,7 @@
         overflow: hidden;
     }
 
-    .filter-clear-btn-container {
+    .search-clear-btn-container {
         display: flex;
         flex-direction: row;
         align-items: stretch;
@@ -103,7 +103,7 @@
         cursor: pointer;
 
         &:hover {
-            .filter-clear-btn {
+            .search-clear-btn {
                 background-color: $Grey20;
 
                 i {
@@ -113,7 +113,7 @@
         }
     }
 
-    .filter-clear-btn {
+    .search-clear-btn {
         position: relative;
         display: inline-block;
         width: rem(32px);
@@ -154,7 +154,7 @@
         }
     }
 
-    .filter-has-value {
+    .search-has-value {
         &:hover {
             .icon-container {
                 width: rem(4px);
@@ -168,7 +168,7 @@
         }
     }
 
-    .filter-focused {
+    .search-focused {
         border-bottom: rem(2px) solid $ThemePrimary;
 
         .icon-container {

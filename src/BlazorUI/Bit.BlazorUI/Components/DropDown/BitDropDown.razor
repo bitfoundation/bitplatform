@@ -80,30 +80,30 @@
                            Title="Close"
                            OnClick=CloseCallout />
         </div>
-        @if (Filterable)
+        @if (ShowSearchBox)
         {
-            <div class="@GetFilterBoxClasses()">
+            <div class="@GetSearchBoxClasses()">
                 <div class="icon-container" aria-hidden="true">
                     <i class="bit-icon bit-icon--Search" aria-hidden="true"></i>
                 </div>
-                <input class="filter-input"
+                <input class="search-input"
                        type="text"
                        aria-label="Search text"
-                       placeholder="@PlaceholderFilter"
+                       placeholder="@PlaceholderSearchBox"
                        role="searchbox"
-                       value="@filterText"
-                       @onfocusin="HandleFilterFocusIn"
-                       @onfocusout="HandleFilterFocusOut"
+                       value="@searchText"
+                       @onfocusin="HandleSearchBoxFocusIn"
+                       @onfocusout="HandleSearchBoxFocusOut"
                        @oninput="@HandleFilterChange" />
-                @if (filterText.HasValue())
+                @if (searchText.HasValue())
                 {
-                    <div class="filter-clear-btn-container">
-                        <button class="filter-clear-btn"
+                    <div class="search-clear-btn-container">
+                        <button class="search-clear-btn"
                                 type="button"
                                 aria-label="Clear text"
                                 aria-hidden="true"
-                                disabled="@(filterText.HasNoValue())"
-                                @onclick="HandleFilterOnClear">
+                                disabled="@(searchText.HasNoValue())"
+                                @onclick="HandleSearchBoxOnClear">
                             <span>
                                 <i class="bit-icon bit-icon--Clear" aria-hidden="true"></i>
                             </span>
