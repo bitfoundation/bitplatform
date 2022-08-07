@@ -16,6 +16,176 @@
         position: relative;
         display: block;
     }
+
+    .filter-box {
+        display: flex;
+        flex-flow: row nowrap;
+        align-items: stretch;
+        height: rem(32px);
+        box-shadow: none;
+        border: rem(1px) solid $Grey130;
+        border-radius: 0;
+        border-width: 0 0 rem(1px);
+        margin: 0;
+        padding: rem(1px) 0 rem(1px) rem(8px);
+        box-sizing: border-box;
+        font-size: rem(14px);
+        font-weight: 400;
+        color: $Grey160;
+        font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+        background-color: $White;
+        -webkit-font-smoothing: antialiased;
+
+        &:hover {
+            border-top-width: 0;
+            border-left-width: 0;
+            border-right-width: 0;
+            border-color: $Grey160;
+
+            .icon-container {
+                i {
+                    color: $Dark;
+                }
+            }
+        }
+
+        .icon-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            flex-shrink: 0;
+            width: rem(32px);
+            font-size: rem(16px);
+            text-align: center;
+            color: $ThemePrimary;
+            cursor: text;
+            transition: width 0.167s ease 0s;
+
+            i {
+                display: inline-block;
+                width: unset;
+                height: unset;
+                -webkit-font-smoothing: antialiased;
+                color: $ThemePrimary;
+                speak: none;
+                opacity: 1;
+                transition: opacity 0.167s ease 0s;
+            }
+        }
+    }
+
+    .filter-input {
+        flex: 1 1 0px;
+        min-width: 0px;
+        box-shadow: none;
+        border: none;
+        outline: none;
+        margin: 0;
+        padding: 0 0 rem(0.5px);
+        box-sizing: border-box;
+        font-weight: inherit;
+        font-family: inherit;
+        font-size: inherit;
+        color: $Grey160;
+        text-overflow: ellipsis;
+        background-color: transparent;
+        overflow: hidden;
+    }
+
+    .filter-clear-btn-container {
+        display: flex;
+        flex-direction: row;
+        align-items: stretch;
+        flex-basis: rem(32px);
+        flex-shrink: 0;
+        padding: 0;
+        margin: rem(-1px) 0;
+        cursor: pointer;
+
+        &:hover {
+            .filter-clear-btn {
+                background-color: $Grey20;
+
+                i {
+                    color: $Grey160;
+                }
+            }
+        }
+    }
+
+    .filter-clear-btn {
+        position: relative;
+        display: inline-block;
+        width: rem(32px);
+        height: auto;
+        padding: 0 rem(4px);
+        border-radius: 0 rem(1px) rem(1px) 0;
+        outline: transparent;
+        border: none;
+        box-sizing: border-box;
+        font-size: rem(14px);
+        font-weight: 400;
+        font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+        -webkit-font-smoothing: antialiased;
+        text-decoration: none;
+        text-align: center;
+        color: $ThemePrimary;
+        cursor: pointer;
+        background-color: transparent;
+        user-select: none;
+
+        span {
+            display: flex;
+            flex-wrap: nowrap;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+        }
+
+        i {
+            flex-shrink: 0;
+            width: unset;
+            height: rem(16px);
+            margin: 0 rem(4px);
+            font-size: rem(12px);
+            line-height: rem(16px);
+            text-align: center;
+            color: $Grey130;
+        }
+    }
+
+    .filter-has-value {
+        &:hover {
+            .icon-container {
+                width: rem(4px);
+                color: $Dark;
+
+                i {
+                    color: $Dark;
+                    opacity: 0;
+                }
+            }
+        }
+    }
+
+    .filter-focused {
+        border-bottom: rem(2px) solid $ThemePrimary;
+
+        .icon-container {
+            width: rem(4px);
+            color: $Dark;
+
+            i {
+                color: $Dark;
+                opacity: 0;
+            }
+        }
+
+        &:hover {
+            border-width: 0 0 rem(1px);
+            border-bottom: rem(2px) solid $ThemePrimary;
+        }
+    }
 }
 
 .bit-drp-overlay {
