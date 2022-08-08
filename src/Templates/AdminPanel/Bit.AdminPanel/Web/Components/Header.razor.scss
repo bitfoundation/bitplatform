@@ -181,6 +181,11 @@
     background: #E6F1FF;
     border-radius: rem(2px);
     cursor: default;
+    user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
 }
 
 .user-info-container {

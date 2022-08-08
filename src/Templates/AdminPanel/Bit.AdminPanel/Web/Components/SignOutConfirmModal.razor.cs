@@ -1,8 +1,12 @@
-﻿namespace AdminPanel.App.Components;
+﻿using Microsoft.JSInterop;
+
+namespace AdminPanel.App.Components;
 
 public partial class SignOutConfirmModal
 {
     [AutoInject] private IAuthenticationService authService = default!;
+
+    [AutoInject] private IJSRuntime jsRuntime = default!;
 
     private bool isOpen;
 
@@ -20,9 +24,10 @@ public partial class SignOutConfirmModal
 
     [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
 
-    private void CloseModal()
+    private async Task CloseModal()
     {
         IsOpen = false;
+        await jsRuntime.SetToggleBodyOverflow(false);
     }
 
     private async Task SignOut()

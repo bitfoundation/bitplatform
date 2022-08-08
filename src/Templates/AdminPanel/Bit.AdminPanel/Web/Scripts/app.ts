@@ -31,3 +31,11 @@
         return value.replace(/^\s+|\s+$/g, '');
     }
 }
+
+function toggleBodyOverflow(isOverflowHidden: boolean) {
+    if (isOverflowHidden) {
+        document.body.style.overflow = "hidden";
+    } else {
+        document.body.style.overflow = "auto";
+    }
+}

@@ -2,13 +2,13 @@
 
 @if (IsUserAuthenticated)
 {
-    <Header />
+    <Header OnToggleMenu=@ToggleMenuHandler />
 }
 
 <div class="main @(IsUserAuthenticated is false ? "main--full-page" : null)">
     @if (IsUserAuthenticated)
     {
-        <NavMenu />
+        <NavMenu @bind-IsMenuOpen=@IsMenuOpen />
     }
     <div class="site-content">
         <AppErrorBoundary>

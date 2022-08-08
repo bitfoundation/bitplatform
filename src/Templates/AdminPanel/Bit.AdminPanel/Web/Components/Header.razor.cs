@@ -1,4 +1,5 @@
 ﻿using AdminPanel.Shared.Dtos.Account;
+using Microsoft.JSInterop;
 
 namespace AdminPanel.App.Components;
 
@@ -19,6 +20,8 @@ public partial class Header : IAsyncDisposable
     [AutoInject] private IExceptionHandler exceptionHandler = default!;
 
     [AutoInject] private NavigationManager navigationManager = default!;
+
+    [AutoInject] private IJSRuntime jsRuntime = default!;
 
     [Parameter] public EventCallback OnToggleMenu { get; set; }
 
@@ -79,10 +82,11 @@ public partial class Header : IAsyncDisposable
         await OnToggleMenu.InvokeAsync();
     }
 
-    private void OpenSignOutModal()
+    private async Task OpenSignOutModal()
     {
+        ToggleHeaderDrpDown();
+        await jsRuntime.SetToggleBodyOverflow(true);
         IsSignOutModalOpen = true;
-        StateHasChanged();
     }
 
     private void ToggleHeaderDrpDown()

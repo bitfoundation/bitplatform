@@ -11,7 +11,7 @@
                 <div class="header-address-indicator--dark-txt">Level title</div>
             </div>
         </div>
-        @if (User is null)
+        @if (string.IsNullOrEmpty(User?.Email))
         {
             <BitSpinner Size="BitSpinnerSize.XSmall" />
         }
@@ -46,8 +46,8 @@
 
                 @if (IsHeaderDrpDownOpen)
                 {
-                    <div class="header-drp-overlay" @onclick=@ToggleHeaderDrpDown></div>
-                    <section class="header-drp-wrapper">
+                    <div class="header-drp-overlay"></div>
+                    <section class="header-drp-wrapper" @onclick:stopPropagation="true">
                         <div class="user-info-container">
                             <div class="img-wrapper">
                                 @if (User?.ProfileImageName != null)
