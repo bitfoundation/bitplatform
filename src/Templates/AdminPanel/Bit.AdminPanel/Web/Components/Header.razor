@@ -3,15 +3,82 @@
 <header class="main-header">
     <div class="header-main-container">
         <div class="header-content-container">
-            @if (CurrentUrl != "/")
-            {
-                <BitIconButton Class="header-menu-btn" IconName=BitIconName.CollapseMenu OnClick=@WrapHandled(ToggleMenu) AriaLabel="Header menu button" />
-            }
+            <BitIconButton Class="header-menu-btn" IconName=BitIconName.CollapseMenu OnClick=@WrapHandled(ToggleMenu) AriaLabel="Header menu button" />
             <a class="header-logo" href="/" aria-label="Homepage"></a>
-            <a class="header-link @(CurrentUrl == "/" ? "header-link--active" : "")" href="/">Home</a>
-            <a class="header-link @(CurrentUrl == "/overview" ? "header-link--active" : "")" href="/overview">Docs</a>
-            <a class="header-link @(CurrentUrl == "/icons" ? "header-link--active" : "")" href="/icons">Iconography</a>
+            <div class="header-address-indicator">
+                <div class="header-address-indicator--light-txt">Level title</div>
+                <span class="chevron-right-icon"></span>
+                <div class="header-address-indicator--dark-txt">Level title</div>
+            </div>
         </div>
-        <a class="github-btn" target="_blank" aria-label="Github repository" href="https://github.com/bitfoundation/bitplatform"></a>
+        @if (User is null)
+        {
+            <BitSpinner Size="BitSpinnerSize.XSmall" />
+        }
+        else
+        {
+            <div class="header-content-container" style="cursor: pointer" @onclick=@ToggleHeaderDrpDown>
+                <div class="img-wrapper">
+                    @if (User?.ProfileImageName != null)
+                    {
+                        <img src="@ProfileImageUrl" class="user-img" alt="User profile image" width="28" height="28" />
+                    }
+                    else if (string.IsNullOrEmpty(User?.FullName) is false && User?.FullName.Length >= 2)
+                    {
+                        @User?.FullName?.ToUpper()[..2]
+                    }
+                    else
+                    {
+                        @User?.UserName?.ToUpper()[..2]
+                    }
+                </div>
+                <div class="user-name">
+                    @if (string.IsNullOrEmpty(User?.FullName) is false)
+                    {
+                        @User?.FullName
+                    }
+                    else
+                    {
+                        @User?.UserName
+                    }
+                </div>
+                <div class="chevron-bottom-icon @(IsHeaderDrpDownOpen ? "chevron-up-icon" : null)"></div>
+
+                @if (IsHeaderDrpDownOpen)
+                {
+                    <div class="header-drp-overlay" @onclick=@ToggleHeaderDrpDown></div>
+                    <section class="header-drp-wrapper">
+                        <div class="user-info-container">
+                            <div class="img-wrapper">
+                                @if (User?.ProfileImageName != null)
+                                {
+                                    <img src="@ProfileImageUrl" class="user-img" alt="User profile image" width="28" height="28" />
+                                }
+                                else if (string.IsNullOrEmpty(User?.FullName) is false && User?.FullName.Length >= 2)
+                                {
+                                    @User?.FullName?.ToUpper()[..2]
+                                }
+                                else
+                                {
+                                    @User?.UserName?.ToUpper()[..2]
+                                }
+                            </div>
+                            <div class="user-name">
+                                @if (string.IsNullOrEmpty(User?.FullName) is false)
+                                {
+                                    <div class="full-name"></div>
+                                }
+
+                                <div class="email">@User?.UserName</div>
+                            </div>
+                        </div>
+                        <BitActionButton Class="edit-profile-btn" IconName="BitIconName.Edit" OnClick=@WrapHandled(OpenEditProfilePage) AriaLabel="EditProfile">Edit profile</BitActionButton>
+                        <BitActionButton Class="sign-out-btn" IconName="BitIconName.OutOfOffice" OnClick=@WrapHandled(OpenSignOutModal) AriaLabel="SignOut">Sign out</BitActionButton>
+                    </section>
+                }
+            </div>
+        }
     </div>
 </header>
+
+<SignOutConfirmModal @bind-IsOpen=IsSignOutModalOpen></SignOutConfirmModal>

@@ -1,6 +1,9 @@
 ﻿@inherits LayoutComponentBase
 
-<Header />
+@if (IsUserAuthenticated)
+{
+    <Header />
+}
 
 <div class="main @(IsUserAuthenticated is false ? "main--full-page" : null)">
     @if (IsUserAuthenticated)
