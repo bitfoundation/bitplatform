@@ -14,16 +14,18 @@ public partial class BitSwiper : IDisposable
     private int _currentPage;
     private double _lastDiffX;
     private double _translateX;
+    private double _rootWidth;
     private double _swiperWidth;
     private bool _isPointerDown;
     private double _pointerDownX;
     private long _pointerDownTime;
     private double _swiperEffectiveWidth;
     private int _internalScrollItemsCount = 1;
-    private ElementReference _swiper = default!;
     private string _directionStyle = string.Empty;
-    private string _rightButtonStyle = string.Empty;
     private string _leftButtonStyle = string.Empty;
+    private string _rightButtonStyle = string.Empty;
+
+    private ElementReference _swiper = default!;
     private System.Timers.Timer _autoPlayTimer = default!;
 
     private readonly List<BitSwiperItem> AllItems = new();
@@ -33,7 +35,7 @@ public partial class BitSwiper : IDisposable
     /// <summary>
     /// If enabled the swiper items will navigate in an infinite loop.
     /// </summary>
-    [Parameter] public bool InfiniteScrolling { get; set; }
+    //[Parameter] public bool InfiniteScrolling { get; set; }
 
     /// <summary>
     /// Items of the carousel.
@@ -43,7 +45,7 @@ public partial class BitSwiper : IDisposable
     /// <summary>
     /// Shows or hides the Dots indicator at the bottom of the BitCarousel.
     /// </summary>
-    [Parameter] public bool ShowDots { get; set; } = true;
+    //[Parameter] public bool ShowDots { get; set; } = true;
 
     /// <summary>
     /// Shows or hides the Next/Prev buttons of the BitCarousel.
@@ -58,12 +60,12 @@ public partial class BitSwiper : IDisposable
     /// <summary>
     /// Enables/disables the auto scrolling of the slides.
     /// </summary>
-    [Parameter] public bool AutoPlay { get; set; }
+    //[Parameter] public bool AutoPlay { get; set; }
 
     /// <summary>
     /// Sets the interval of the auto scrolling in milliseconds (the default value is 2000).
     /// </summary>
-    [Parameter] public double AutoPlayInterval { get; set; } = 2000;
+    //[Parameter] public double AutoPlayInterval { get; set; } = 2000;
 
     /// <summary>
     /// Sets the duration of the scrolling animation in seconds (the default value is 0.5).
@@ -131,16 +133,17 @@ public partial class BitSwiper : IDisposable
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        await GetDimensions();
+
         if (firstRender)
         {
-            if (AutoPlay)
-            {
-                _autoPlayTimer = new System.Timers.Timer(AutoPlayInterval);
-                _autoPlayTimer.Elapsed += AutoPlayTimerElapsed;
-                _autoPlayTimer.Start();
-            }
+            //if (AutoPlay)
+            //{
+            //    _autoPlayTimer = new System.Timers.Timer(AutoPlayInterval);
+            //    _autoPlayTimer.Elapsed += AutoPlayTimerElapsed;
+            //    _autoPlayTimer.Start();
+            //}
 
-            await GetSwiperDimensions();
             await _js.RegisterPointerLeave(RootElement, DotNetObjectReference.Create(this));
 
             SetNavigationButtonsVisibility(_translateX);
@@ -154,15 +157,15 @@ public partial class BitSwiper : IDisposable
 
     private void SetNavigationButtonsVisibility(double translateX)
     {
-        _rightButtonStyle = (InfiniteScrolling is false &&  translateX == (Direction == BitDirection.LeftToRight ? -_swiperEffectiveWidth : 0)) ? "display:none" : "";
-        _leftButtonStyle = (InfiniteScrolling is false && translateX == (Direction == BitDirection.LeftToRight ? 0 : _swiperEffectiveWidth)) ? "display:none" : "";
+        _rightButtonStyle = (/*InfiniteScrolling is false && */translateX == (Direction == BitDirection.LeftToRight ? -_swiperEffectiveWidth : 0)) ? "display:none" : "";
+        _leftButtonStyle = (/*InfiniteScrolling is false && */translateX == (Direction == BitDirection.LeftToRight ? 0 : _swiperEffectiveWidth)) ? "display:none" : "";
 
         StateHasChanged();
     }
 
     private async Task Go(bool isNext)
     {
-        await GetSwiperDimensions();
+        await GetDimensions();
         await _js.SetStyle(_swiper, "transitionDuration", "");
 
         var sign = isNext ? -1 : 1;
@@ -204,7 +207,7 @@ public partial class BitSwiper : IDisposable
         _pointerDownX = e.ClientX;
         _pointerDownTime = DateTime.Now.Ticks;
 
-        await GetSwiperDimensions();
+        await GetDimensions();
 
         await _js.SetStyle(_swiper, "cursor", "grabbing");
         await _js.SetStyle(_swiper, "transitionDuration", "");
@@ -226,7 +229,7 @@ public partial class BitSwiper : IDisposable
         var time = (DateTime.Now.Ticks - _pointerDownTime) / 10_000;
         var distance = Math.Abs(clientX - _pointerDownX);
 
-        await GetSwiperDimensions();
+        await GetDimensions();
 
         var swipeSpeed = distance / time;
 
@@ -239,6 +242,8 @@ public partial class BitSwiper : IDisposable
 
     private async Task Swipe(double x)
     {
+        if (_rootWidth > _swiperWidth || IsEnabled is false) return;
+
         if (Direction == BitDirection.LeftToRight)
         {
             if (x > 0) x = 0;
@@ -255,12 +260,13 @@ public partial class BitSwiper : IDisposable
         SetNavigationButtonsVisibility(x);
     }
 
-    private async Task GetSwiperDimensions()
+    private async Task GetDimensions()
     {
-        var dimensions = await _js.GetSwiperDimensions(_swiper);
-        _swiperWidth = dimensions?.Width ?? 0;
-        _swiperEffectiveWidth = dimensions?.EffectiveWidth ?? 0;
-        _translateX = dimensions?.TranslateX ?? 0;
+        var dimensions = await _js.GetDimensions(RootElement, _swiper);
+        _rootWidth = dimensions?.RootWidth ?? 0;
+        _swiperWidth = dimensions?.SwiperWidth ?? 0;
+        _swiperEffectiveWidth = dimensions?.EffectiveSwiperWidth ?? 0;
+        _translateX = dimensions?.SwiperTranslateX ?? 0;
     }
 
 }
