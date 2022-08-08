@@ -1,5 +1,4 @@
 ﻿//-:cnd:noEmit
-using AdminPanel.App.Shared;
 using AdminPanel.Shared.Dtos.Products;
 
 namespace AdminPanel.App.Pages.Products;
@@ -105,13 +104,6 @@ public partial class ProductsPage
             await httpClient.DeleteAsync($"Product/Delete/{product.Id}");
             await RefreshData();
         }
-    }
-
-    protected async Task OnSuccessfulProductSave()
-    {
-        await MessageBox.Show("Succesfully saved", "product");
-
-        await RefreshData();
     }
 }
 

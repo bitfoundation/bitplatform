@@ -70,29 +70,20 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Add.
+        ///   Looks up a localized string similar to New category.
         /// </summary>
-        public static string Add {
+        public static string AddCategory {
             get {
-                return ResourceManager.GetString("Add", resourceCulture);
+                return ResourceManager.GetString("AddCategory", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Add/Edit category.
+        ///   Looks up a localized string similar to New product.
         /// </summary>
-        public static string AddEditCategory {
+        public static string AddProduct {
             get {
-                return ResourceManager.GetString("AddEditCategory", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Add/Edit product.
-        /// </summary>
-        public static string AddEditProduct {
-            get {
-                return ResourceManager.GetString("AddEditProduct", resourceCulture);
+                return ResourceManager.GetString("AddProduct", resourceCulture);
             }
         }
         
@@ -183,6 +174,24 @@ namespace AdminPanel.Shared.Resources {
         public static string Edit {
             get {
                 return ResourceManager.GetString("Edit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Edit category.
+        /// </summary>
+        public static string EditCategory {
+            get {
+                return ResourceManager.GetString("EditCategory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Edit product.
+        /// </summary>
+        public static string EditProduct {
+            get {
+                return ResourceManager.GetString("EditProduct", resourceCulture);
             }
         }
         

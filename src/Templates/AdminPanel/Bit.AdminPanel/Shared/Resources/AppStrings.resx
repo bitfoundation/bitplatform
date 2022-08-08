@@ -120,14 +120,11 @@
   <data name="Active" xml:space="preserve">
     <value>Active</value>
   </data>
-  <data name="Add" xml:space="preserve">
-    <value>Add</value>
+  <data name="AddCategory" xml:space="preserve">
+    <value>New category</value>
   </data>
-  <data name="AddEditCategory" xml:space="preserve">
-    <value>Add/Edit category</value>
-  </data>
-  <data name="AddEditProduct" xml:space="preserve">
-    <value>Add/Edit product</value>
+  <data name="AddProduct" xml:space="preserve">
+    <value>New product</value>
   </data>
   <data name="AdminPanelHomeMessage" xml:space="preserve">
     <value>Create your multi-mode (WASM, Server, Hybrid, pre-rendering) Blazor app easily in the shortest time ever!</value>
@@ -158,6 +155,12 @@
   </data>
   <data name="Edit" xml:space="preserve">
     <value>Edit</value>
+  </data>
+  <data name="EditCategory" xml:space="preserve">
+    <value>Edit category</value>
+  </data>
+  <data name="EditProduct" xml:space="preserve">
+    <value>Edit product</value>
   </data>
   <data name="EditProfileTitle" xml:space="preserve">
     <value>Edit profile</value>

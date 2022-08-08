@@ -54,22 +54,22 @@
     margin-right: auto;
     padding: 0 rem($LargeScreenPadding);
     max-width: rem($LargeScreenMaxWidth);
-    padding-top: rem(56px);
-    padding-bottom: rem(56px);
+    padding-top: rem(32px);
+    padding-bottom: rem(32px);
     box-sizing: border-box;
 
     @include md {
         padding: 0 rem($MediumScreenPadding);
         max-width: rem($MediumScreenMaxWidth);
-        padding-top: rem(40px);
-        padding-bottom: rem(40px);
+        padding-top: rem(32px);
+        padding-bottom: rem(32px);
     }
 
     @include sm {
         padding: 0 rem($SmallScreenPadding);
         max-width: rem($SmallScreenMaxWidth);
-        padding-top: rem(40px);
-        padding-bottom: rem(40px);
+        padding-top: rem(16px);
+        padding-bottom: rem(16px);
     }
 }
 
