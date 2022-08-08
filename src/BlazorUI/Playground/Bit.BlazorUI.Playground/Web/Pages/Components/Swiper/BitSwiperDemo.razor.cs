@@ -13,28 +13,28 @@ public partial class BitSwiperDemo
         //    Name = "InfiniteScrolling",
         //    Type = "bool",
         //    DefaultValue = "false",
-        //    Description = "If enabled the carousel items will navigate in an infinite loop (first item comes after last item and last item comes before first item)."
+        //    Description = "If enabled the swiper items will navigate in an infinite loop."
         //},
         new()
         {
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "",
-            Description = "Items of the carousel."
+            Description = "Items of the swiper."
         },
         //new()
         //{
         //    Name = "ShowDots",
         //    Type = "bool",
         //    DefaultValue = "true",
-        //    Description = "Shows or hides the Dots indicator at the bottom of the BitCarousel."
+        //    Description = "Shows or hides the Dots indicator at the bottom of the BitSwiper."
         //},
         new()
         {
             Name = "ShowNextPrev",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Shows or hides the Next/Prev buttons of the BitCarousel."
+            Description = "Shows or hides the Next/Prev buttons of the BitSwiper."
         },
         //new()
         //{

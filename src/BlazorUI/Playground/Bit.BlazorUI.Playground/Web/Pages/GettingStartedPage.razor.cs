@@ -3,7 +3,7 @@ using Bit.BlazorUI.Playground.Web.Models;
 
 namespace Bit.BlazorUI.Playground.Web.Pages;
 
-public partial class GetStartedPage
+public partial class GettingStartedPage
 {
     private List<SideRailItem> items { get; set; } = new()
     {

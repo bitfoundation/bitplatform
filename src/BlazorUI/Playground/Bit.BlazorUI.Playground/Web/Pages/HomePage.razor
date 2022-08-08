@@ -2,244 +2,309 @@
 
 <div class="page-container">
     <section class="page-section hero-section">
-        <div class="flex-container">
-            <h1 class="section-title">
-                <span class="hero-title-bg"></span>
-                Bit <span class="text--underlined">Components<span class="text-border"></span></span>
-            </h1>
-            <div class="section-subtitle">Using the Bit’s native Blazor UI components that are easy-to-customize and work on all Blazor modes (WASM, Server, Hybrid, pre-rendering), save time and make working enjoyable.</div>
-            <div class="section-btn-group">
-                <a class="section-btn btn--primary" href="/get-started">Try for Free!</a>
-                <a class="section-btn btn--secondary" href="/components/overview">Demo</a>
+        <div class="page-section-contnet">
+            <div class="hero-section-content">
+                <h1 class="hero-title">Bit BlazorUI</h1>
+                <div class="hero-desc">Using the Bit’s native Blazor UI components that are easy-to-customize and work on all Blazor modes (WASM, Server, Hybrid, pre-rendering), save time and make working enjoyable.</div>
+                <a class="primary-btn" href="/get-started">Get started<span class="chevron-icon"></span></a>
+            </div>
+            <div class="hero-section-content">
+                <div class="hero-section-components">
+                    <div class="hero-section-components-col">
+                        <div class="component-box">
+                            <BitDropDown Label="Select two ptoducts"
+                                         Items="GetProductDropdownItems()"
+                                         IsMultiSelect="true"
+                                         Placeholder="Select an option"
+                                         Style="width: 326px; margin: 20px 0 20px 0" />
+                        </div>
+                        <div class="component-box">
+                            <BitColorPicker ShowPreview="true" @bind-Color="@SelectedColor" ShowAlphaSlider="false">Default ColorPicker</BitColorPicker>
+                        </div>
+                        <div class="component-box--transparent" style="height: fit-content;">
+                            <BitToggle @bind-Value="IsToggleUnChecked" IsEnabled="true" OnText="On" OffText="Off" />
+                            <BitToggle @bind-Value="IsToggleChecked" IsEnabled="true" OnText="On" OffText="Off" />
+                        </div>
+                    </div>
+                    <div class="hero-section-components-col">
+                        <div class="component-box--transparent">
+                            <BitRadioButtonGroup Name="Group1" Label="Select an item" DefaultValue="pie">
+                                <BitRadioButtonOption Text="Clustered bar chart" Value="bar" ImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png" ImageAlt="alt for image Option 1" SelectedImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png" ImageSize="new System.Drawing.Size( width: 32, height: 32)"></BitRadioButtonOption>
+                                <BitRadioButtonOption Text="Pie chart" Value="pie" ImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png" ImageAlt="alt for image Option 2" SelectedImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png" ImageSize="new System.Drawing.Size( width: 32, height: 32)"></BitRadioButtonOption>
+                                <BitRadioButtonOption Text="Disabeled" IsEnabled="false" Value="disabeled_option" ImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png" ImageAlt="alt for image Option 2" SelectedImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png" ImageSize="new System.Drawing.Size( width: 32, height: 32)"></BitRadioButtonOption>
+                            </BitRadioButtonGroup>
+                        </div>
+                        <div class="component-box">
+                            <BitSlider Label="Origin from zero"
+                                       Min="-5"
+                                       Max="5"
+                                       Step="1"
+                                       DefaultUpperValue="2"
+                                       DefaultLowerValue="-3"
+                                       IsRanged="true"
+                                       IsOriginFromZero="true" />
+                        </div>
+                        <div class="component-box">
+                            <BitCompoundButton IsEnabled="true"
+                                               Text="Primary"
+                                               SecondaryText="This Button is a compound button">
+                            </BitCompoundButton>
+                            <BitCompoundButton IsEnabled="true"
+                                               Text="Standard"
+                                               AriaHidden="true"
+                                               SecondaryText="This Button is a compound button"
+                                               ButtonStyle="BitButtonStyle.Standard">
+                            </BitCompoundButton>
+                        </div>
+                        <BitProgressIndicator BarHeight="20"></BitProgressIndicator>
+                        <BitPivot LinkFormat="@BitPivotLinkFormat.Tabs"
+                                  DefaultSelectedKey="Overview"
+                                  LinkSize="@BitPivotLinkSize.Large"
+                                  HeadersOnly="true"
+                                  OnLinkClick="@(item => PivotSelectedKey = item.Key)">
+                            <BitPivotItem HeaderText="Overview" Key="Overview"></BitPivotItem>
+                            <BitPivotItem HeaderText="Features" Key="Features"></BitPivotItem>
+                            <BitPivotItem HeaderText="Comments" Key="Comments"></BitPivotItem>
+                            <BitPivotItem HeaderText="FAQ" Key="FAQ"></BitPivotItem>
+                        </BitPivot>
+                        <div class="tab-content">
+                            @if (PivotSelectedKey == "Overview")
+                            {
+                                <div>The is the "Overview" section.</div>
+                            }
+                            else if (PivotSelectedKey == "Comments")
+                            {
+                                <div>The is the "Comments" section.</div>
+                            }
+                            else if (PivotSelectedKey == "Features")
+                            {
+                                <div>The is the "Features" section.</div>
+                            }
+                            else if (PivotSelectedKey == "FAQ")
+                            {
+                                <div>The is the "FAQ" section.</div>
+                            }
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-        <div class="hero-banner"></div>
-        <h1 class="section-title--sm">Bit <span class="text--underlined">Components<span class="text-border"></span></span></h1>
     </section>
+
     <section class="page-section popular-components-section">
-        <h1 class="section-title">
-            Most Popular <span class="text--underlined">Components<span class="text-border"></span></span>
-        </h1>
-        <PopularComponents />
-    </section>
-    <section class="page-section benefits-section">
-        <span class="section-clipart section-clipart--top"></span>
-        <span class="section-clipart section-clipart--bottom"></span>
-        <h1 class="section-title">
-            Why Bit <span class="text--underlined">Components?<span class="text-border"></span></span>
-        </h1>
-        <div class="benefit-card">
-            <div class="benefit-card-title native-icon">
-                Bit’s Blazor UI Components are Native
-            </div>
-            <div class="benefit-card-desc">
-                Written entirely in C#, Bit’s Blazor UI components are native and therefore have high performance. These components can be used in all Blazor modes (WASM, Server, Hybrid, pre-rendering) while the compressed size of your project will eventually increase up to 180kb!
-            </div>
-        </div>
-
-        <div class="benefit-card">
-            <div class="benefit-card-title open-source-icon">
-                Open source contribution with a professional dedicated development team
-            </div>
-            <div class="benefit-card-desc">
-                Since Bit components are developed by a professional dedicated team, you can get sufficient technical support from them, and even make open source contributions on GitHub. Bit components have a fast release cycle and are updated at short intervals.
-            </div>
-        </div>
-
-        <div class="benefit-card">
-            <div class="benefit-card-title customize-icon">
-                Customize Bit components easily
-            </div>
-            <div class="benefit-card-desc">
-                By using Bit components that have been implemented in a standard format, you will no longer have the challenge of customizing the styles and functionalities of the components, and you can easily meet your development needs in a short time!
-            </div>
-        </div>
-
-        <div class="benefit-card">
-            <div class="benefit-card-title special-components-icon">
-                Find some special components you are looking for
-            </div>
-            <div class="benefit-card-desc">
-                Are you looking for special components that are difficult to implement?!
-                The Bit component package includes some special components such as file uploader or Jalali date picker that you can not find anywhere for free!
-            </div>
-        </div>
-
-        <div class="benefit-card">
-            <div class="benefit-card-title design-system-icon">
-                Achieve multiple design systems<span class="pink-text"> (coming soon)</span>
-            </div>
-            <div class="benefit-card-desc">
-                Using Bit components allows you to switch between multiple provided design systems such as Microsoft Fluent, Material, and Cupertino easily or create your own custom design system.
-            </div>
+        <div class="page-section-contnet">
+            <PopularComponents />
         </div>
     </section>
+
+    <section class="page-section benefit-section">
+        <div class="page-section-contnet">
+            <h2 class="section-title">
+                Why <span class="text--gradiant">Bit BlazorUI</span>
+            </h2>
+            <div class="card-list">
+                <div class="benefit-card">
+                    <div class="benefit-card-title native-icon">
+                        Native Blazor UI components
+                    </div>
+                    <div class="benefit-card-desc">
+                        Written entirely in C#, Bit’s Blazor UI components are native and therefore have high performance. These components can be used in all Blazor modes (WASM, Server, Hybrid, pre-rendering) while the compressed size of your project will eventually increase up to 180kb!
+                    </div>
+                </div>
+
+                <div class="benefit-card">
+                    <div class="benefit-card-title open-source-icon">
+                        Dedicated development team
+                    </div>
+                    <div class="benefit-card-desc">
+                        Since Bit components are developed by a professional dedicated team, you can get sufficient technical support from them, and even make open source contributions on GitHub. Bit components have a fast release cycle and are updated at short intervals.
+                    </div>
+                </div>
+
+                <div class="benefit-card">
+                    <div class="benefit-card-title customize-icon">
+                        Easy to customize
+                    </div>
+                    <div class="benefit-card-desc">
+                        By using Bit components that have been implemented in a standard format, you will no longer have the challenge of customizing the styles and functionalities of the components, and you can easily meet your development needs in a short time!
+                    </div>
+                </div>
+
+                <div class="benefit-card">
+                    <div class="benefit-card-title special-components-icon">
+                        Special components
+                    </div>
+                    <div class="benefit-card-desc">
+                        Are you looking for special components that are difficult to implement?!
+                        The Bit component package includes some special components such as file uploader or Jalali date picker that you can not find anywhere for free!
+                    </div>
+                </div>
+
+                <div class="benefit-card">
+                    <div class="benefit-card-title design-system-icon">
+                        Multiple design systems
+                    </div>
+                    <div class="benefit-card-desc">
+                        Using Bit components allows you to switch between multiple provided design systems such as Microsoft Fluent, Material, and Cupertino easily or create your own custom design system.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="page-section component-list-section">
+        <div class="page-section-contnet">
+            <h2 class="section-title">Bit BlazorUI components</h2>
+            <div class="list-group">
+                <div class="list-col">
+                    <div class="list">
+                        <div class="list-title">Basic inputs</div>
+                        <BitLink Class="component-list-item" Href="/components/button" title="Button">
+                            <span>Button</span>
+                        </BitLink>
+                        <BitLink Class="component-list-item" Href="/components/action-button" title="ActionButton">
+                            <span>ActionButton</span>
+                        </BitLink>
+                        <BitLink Class="component-list-item" Href="/components/compound-button" title="CompoundButton">
+                            <span>CompoundButton</span>
+                        </BitLink>
+                        <BitLink Class="component-list-item" Href="/components/icon-button" title="IconButton">
+                            <span>IconButton</span>
+                        </BitLink>
+                        <BitLink Class="component-list-item" Href="/components/toggle-button" title="ToggleButton">
+                            <span>ToggleButton</span>
+                        </BitLink>
+                        <BitLink Class="component-list-item" Href="/components/check-box" title="Checkbox">
+                            <span>Checkbox</span>
+                        </BitLink>
+                        <BitLink Class="component-list-item" Href="/components/choice-group" title="ChoiceGroup">
+                            <span>ChoiceGroup</span>
+                        </BitLink>
+                        <BitLink Class="component-list-item" Href="/components/radio-button-group" title="RadioButtonGroup">
+                            <span>RadioButtonGroup</span>
+                        </BitLink>
+                        <BitLink Class="component-list-item" Href="/components/radio-button-list" title="RadioButtonList">
+                            <span>RadioButtonList</span>
+                        </BitLink>
+                        <BitLink Class="component-list-item" Href="/components/drop-down" title="DropDown">
+                            <span>DropDown</span>
+                            <div class="components-label featured">featured</div>
+                        </BitLink>
+                        <BitLink Class="component-list-item" Href="/components/file-upload" title="FileUpload">
+                            <span>FileUpload</span>
+                            <div class="components-label featured">featured</div>
+                        </BitLink>
+                        <BitLink Class="component-list-item" Href="/components/label" title="Label">
+                            <span>Label</span>
+                        </BitLink>
+                        <BitLink Class="component-list-item" Href="/components/link" title="Link">
+                            <span>Link</span>
+                        </BitLink>
+                        <BitLink Class="component-list-item" Href="/components/rating" title="Rating">
+                            <span>Rating</span>
+                        </BitLink>
+                        <BitLink Class="component-list-item" Href="/components/search-box" title="SearchBox">
+                            <span>SearchBox</span>
+                        </BitLink>
+                        <BitLink Class="component-list-item" Href="/components/slider" title="Slider">
+                            <span>Slider</span>
+                        </BitLink>
+                        <BitLink Class="component-list-item" Href="/components/spin-button" title="SpinButton">
+                            <span>SpinButton</span>
+                        </BitLink>
+                        <BitLink Class="component-list-item" Href="/components/text-field" title="TextField">
+                            <span>TextField</span>
+                        </BitLink>
+                        <BitLink Class="component-list-item" Href="/components/numeric-text-field" title="Numeric TextField">
+                            <span>NumericTextField</span>
+                        </BitLink>
+                        <BitLink Class="component-list-item" Href="/components/toggle" title="Toggle (Switch)">
+                            <span>Toggle (Switch)</span>
+                        </BitLink>
+                    </div>
+                </div>
+                <div class="list-col">
+                    <div class="list">
+                        <div class="list-title">Galleries & Pickers</div>
+                        <BitLink Class="component-list-item" Href="/components/color-picker" title="ColorPicker">
+                            <span>ColorPicker</span>
+                            <div class="components-label featured">featured</div>
+                        </BitLink>
+                        <BitLink Class="component-list-item" Href="/components/date-picker" title="DatePicker">
+                            <span>DatePicker</span>
+                            <div class="components-label featured">featured</div>
+                        </BitLink>
+                        <BitLink Class="component-list-item" Href="/components/chart" title="Chart">
+                            <span>Chart</span>
+                            <div class="components-label featured">featured</div>
+                        </BitLink>
+                    </div>
+                    <div class="list">
+                        <div class="list-title">Items & Lists</div>
+                        <BitLink Class="component-list-item" Href="/components/basic-list" title="BasicList">
+                            <span>BasicList</span>
+                        </BitLink>
+                        <BitLink Class="component-list-item" Href="/components/data-grid" title="DataGrid">
+                            <span>DataGrid</span>
+                            <div class="components-label featured">featured</div>
+                        </BitLink>
+                        <BitLink Class="component-list-item" Href="/components/carousel" title="Carousel">
+                            <span>Carousel</span>
+                            <div class="components-label featured">featured</div>
+                        </BitLink>
+                        <BitLink Class="component-list-item" Href="/components/persona" title="Persona">
+                            <span>Persona</span>
+                        </BitLink>
+                    </div>
+                    <div class="list">
+                        <div class="list-title">Commands, Menus & Navs</div>
+                        <BitLink Class="component-list-item" Href="/components/nav" title="Nav (TreeList)">
+                            <span>Nav (TreeList)</span>
+                            <div class="components-label featured">featured</div>
+                        </BitLink>
+                        <BitLink Class="component-list-item" Href="/components/pivot" title="Pivot (Tab)">
+                            <span>Pivot (Tab)</span>
+                        </BitLink>
+                        <BitLink Class="component-list-item" Href="/components/breadcrumb" title="Breadcrumb">
+                            <span>Breadcrumb</span>
+                        </BitLink>
+                    </div>
+                </div>
+                <div class="list-col">
+                    <div class="list">
+                        <div class="list-title">Notification & Engagement</div>
+                        <BitLink Class="component-list-item" Href="/components/message-bar" title="MessageBar">
+                            <span>MessageBar</span>
+                        </BitLink>
+                    </div>
+                    <div class="list">
+                        <div class="list-title">Progress</div>
+                        <BitLink Class="component-list-item" Href="/components/progress-indicator" title="ProgressIndicator">
+                            <span>ProgressIndicator</span>
+                        </BitLink>
+                        <BitLink Class="component-list-item" Href="/components/spinner" title="Spinner">
+                            <span>Spinner</span>
+                        </BitLink>
+                    </div>
+                    <div class="list">
+                        <div class="list-title">Surfaces</div>
+                        <BitLink Class="component-list-item" Href="/components/modal" title="Modal">
+                            <span>Modal</span>
+                        </BitLink>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <section class="page-section contribution-section">
-        <div class="flex-container">
-            <h1 class="section-title">Open Source Contribution</h1>
-            <div class="secion-desc">Backed by a professional dedicated development team and an active community, you are well supported to work out all challenges. Since all open source components are on GitHub, you can follow the production flow of the components.  Feel free to report bugs, fork the repo, and submit pull request.</div>
+        <div class="page-section-contnet">
+            <h2 class="section-title"><span class="text--gradiant">Open Source</span> contribution</h2>
+            <div class="section-desc">Backed by a professional dedicated development team and an active community, you are well supported to work out all challenges. Since all open source components are on GitHub, you can follow the production flow of the components.  Feel free to report bugs, fork the repo, and submit pull request.</div>
             <a class="section-btn" target="_blank" href="https://github.com/bitfoundation/bitplatform">
                 <span class="github-icon"></span>
-                <span class="github-txt">GitHub</span>
+                GitHub
             </a>
         </div>
-        <span class="section-clipart"></span>
-        <span class="section-clipart--small section-clipart--top"></span>
-        <span class="section-clipart--small section-clipart--bottom"></span>
-    </section>
-    <section class="page-section component-list-section">
-        <span class="section-clipart section-clipart--top"></span>
-        <span class="section-clipart section-clipart--bottom"></span>
-        <h1 class="section-title">
-            <span class="text--underlined">Components<span class="text-border"></span></span>
-        </h1>
-        <div class="list-group">
-            <div class="list-col">
-                <div class="list">
-                    <div class="list-title">Basic inputs</div>
-                    <BitLink Class="component-list-item" Href="/components/button" title="Button">
-                        <span>Button</span>
-                    </BitLink>
-                    <BitLink Class="component-list-item" Href="/components/action-button" title="ActionButton">
-                        <span>ActionButton</span>
-                    </BitLink>
-                    <BitLink Class="component-list-item" Href="/components/compound-button" title="CompoundButton">
-                        <span>CompoundButton</span>
-                    </BitLink>
-                    <BitLink Class="component-list-item" Href="/components/icon-button" title="IconButton">
-                        <span>IconButton</span>
-                    </BitLink>
-                    <BitLink Class="component-list-item" Href="/components/toggle-button" title="ToggleButton">
-                        <span>ToggleButton</span>
-                    </BitLink>
-                    <BitLink Class="component-list-item" Href="/components/check-box" title="Checkbox">
-                        <span>Checkbox</span>
-                    </BitLink>
-                    <BitLink Class="component-list-item" Href="/components/choice-group" title="ChoiceGroup">
-                        <span>ChoiceGroup</span>
-                    </BitLink>
-                    <BitLink Class="component-list-item" Href="/components/radio-button-group" title="RadioButtonGroup">
-                        <span>RadioButtonGroup</span>
-                    </BitLink>
-                    <BitLink Class="component-list-item" Href="/components/radio-button-list" title="RadioButtonList">
-                        <span>RadioButtonList</span>
-                    </BitLink>
-                    <BitLink Class="component-list-item" Href="/components/drop-down" title="DropDown">
-                        <span>DropDown</span>
-                        <div class="components-label featured">featured</div>
-                    </BitLink>
-                    <BitLink Class="component-list-item" Href="/components/file-upload" title="FileUpload">
-                        <span>FileUpload</span>
-                        <div class="components-label featured">featured</div>
-                    </BitLink>
-                    <BitLink Class="component-list-item" Href="/components/label" title="Label">
-                        <span>Label</span>
-                    </BitLink>
-                    <BitLink Class="component-list-item" Href="/components/link" title="Link">
-                        <span>Link</span>
-                    </BitLink>
-                    <BitLink Class="component-list-item" Href="/components/rating" title="Rating">
-                        <span>Rating</span>
-                    </BitLink>
-                    <BitLink Class="component-list-item" Href="/components/search-box" title="SearchBox">
-                        <span>SearchBox</span>
-                    </BitLink>
-                    <BitLink Class="component-list-item" Href="/components/slider" title="Slider">
-                        <span>Slider</span>
-                    </BitLink>
-                    <BitLink Class="component-list-item" Href="/components/spin-button" title="SpinButton">
-                        <span>SpinButton</span>
-                    </BitLink>
-                    <BitLink Class="component-list-item" Href="/components/text-field" title="TextField">
-                        <span>TextField</span>
-                    </BitLink>
-                    <BitLink Class="component-list-item" Href="/components/numeric-text-field" title="Numeric TextField">
-                        <span>NumericTextField</span>
-                    </BitLink>
-                    <BitLink Class="component-list-item" Href="/components/toggle" title="Toggle (Switch)">
-                        <span>Toggle (Switch)</span>
-                    </BitLink>
-                </div>
-            </div>
-            <div class="list-col">
-                <div class="list">
-                    <div class="list-title">Galleries & Pickers</div>
-                    <BitLink Class="component-list-item" Href="/components/color-picker" title="ColorPicker">
-                        <span>ColorPicker</span>
-                        <div class="components-label featured">featured</div>
-                    </BitLink>
-                    <BitLink Class="component-list-item" Href="/components/date-picker" title="DatePicker">
-                        <span>DatePicker</span>
-                        <div class="components-label featured">featured</div>
-                    </BitLink>
-                    <BitLink Class="component-list-item" Href="/components/chart" title="Chart">
-                        <span>Chart</span>
-                        <div class="components-label featured">featured</div>
-                    </BitLink>
-                </div>
-                <div class="list">
-                    <div class="list-title">Items & Lists</div>
-                    <BitLink Class="component-list-item" Href="/components/basic-list" title="BasicList">
-                        <span>BasicList</span>
-                    </BitLink>
-                    <BitLink Class="component-list-item" Href="/components/data-grid" title="DataGrid">
-                        <span>DataGrid</span>
-                        <div class="components-label featured">featured</div>
-                    </BitLink>
-                    <BitLink Class="component-list-item" Href="/components/carousel" title="Carousel">
-                        <span>Carousel</span>
-                        <div class="components-label featured">featured</div>
-                    </BitLink>
-                    <BitLink Class="component-list-item" Href="/components/persona" title="Persona">
-                        <span>Persona</span>
-                    </BitLink>
-                </div>
-                <div class="list">
-                    <div class="list-title">Commands, Menus & Navs</div>
-                    <BitLink Class="component-list-item" Href="/components/nav" title="Nav (TreeList)">
-                        <span>Nav (TreeList)</span>
-                        <div class="components-label featured">featured</div>
-                    </BitLink>
-                    <BitLink Class="component-list-item" Href="/components/pivot" title="Pivot (Tab)">
-                        <span>Pivot (Tab)</span>
-                    </BitLink>
-                    <BitLink Class="component-list-item" Href="/components/breadcrumb" title="Breadcrumb">
-                        <span>Breadcrumb</span>
-                    </BitLink>
-                </div>
-            </div>
-            <div class="list-col">
-                <div class="list">
-                    <div class="list-title">Notification & Engagement</div>
-                    <BitLink Class="component-list-item" Href="/components/message-bar" title="MessageBar">
-                        <span>MessageBar</span>
-                    </BitLink>
-                </div>
-                <div class="list">
-                    <div class="list-title">Progress</div>
-                    <BitLink Class="component-list-item" Href="/components/progress-indicator" title="ProgressIndicator">
-                        <span>ProgressIndicator</span>
-                    </BitLink>
-                    <BitLink Class="component-list-item" Href="/components/spinner" title="Spinner">
-                        <span>Spinner</span>
-                    </BitLink>
-                </div>
-                <div class="list">
-                    <div class="list-title">Surfaces</div>
-                    <BitLink Class="component-list-item" Href="/components/modal" title="Modal">
-                        <span>Modal</span>
-                    </BitLink>
-                </div>
-            </div>
-        </div>
-    </section>
-    <section class="page-section bottom-section">
-        <h1 class="section-title">
-            Ready to <span class="text--underlined">Try it Out?<span class="text-border"></span></span>
-        </h1>
-        <a class="section-btn" href="/get-started">Try for Free!</a>
-        <span class="section-girl-clipart"></span>
-        <span class="section-light-clipart light-clipart--top"></span>
-        <span class="section-light-clipart light-clipart--bottom"></span>
     </section>
 </div>

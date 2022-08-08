@@ -2,8 +2,8 @@
 
 <Header />
 
-<div class="main @(CurrentUrl == "/" ? "main--home" : null) @(CurrentUrl.Contains("/components") ? "main--components-demo" : null)">
-    @if (CurrentUrl != "/")
+<div class="main @(CurrentUrl == "/" || CurrentUrl == "/icons" ? "main--full-page" : null)">
+    @if (CurrentUrl != "/" && CurrentUrl != "/icons")
     {
         <NavMenu />
     }

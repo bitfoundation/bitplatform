@@ -4,8 +4,8 @@
 @import '../Styles/abstracts/_vars.scss';
 
 .nav-menu {
-    position: fixed;
-    z-index: 1200;
+    position: sticky;
+    z-index: 1000;
     left: 0;
     top: rem($HeaderHeight);
     display: flex;
@@ -13,7 +13,8 @@
     flex-shrink: 0;
     flex: 1 0 auto;
     width: rem($NavMenuWidth);
-    height: calc(100% - rem($HeaderHeight));
+    max-width: rem($NavMenuWidth);
+    height: calc(100vh - rem($HeaderHeight));
     border-right: rem(1px) solid rgb(231, 235, 240);
     outline: 0;
     box-shadow: none;
@@ -24,6 +25,7 @@
     @include lt-lg {
         height: 100vh;
         position: fixed;
+        z-index: 1200;
         top: 0;
         inset: 0;
     }
@@ -84,67 +86,26 @@
     }
 }
 
-::deep .nav-menu-demo-link {
-    display: block;
-    width: 100%;
-    height: rem(40px);
-
-    a {
-        display: flex;
-        justify-content: flex-start;
-        align-items: center;
-        width: 100%;
-        height: rem(40px);
-        padding-left: rem(44px);
-        box-sizing: border-box;
-        font-weight: 600;
-        font-size: rem(14px);
-        line-height: rem(32px);
-        color: #323130;
-
-        &:hover {
-            text-decoration: none;
-        }
-    }
-}
-
-::deep .nav-menu-demo-link--active {
-    a {
-        padding-left: rem(40px);
-        background-color: $B5Color;
-        color: $B2Color;
-        border-left: rem(4px) solid $B2Color;
-
-        &:hover {
-            background-color: $Gray4;
-        }
-    }
-}
-
 ::deep .side-nav {
-    .grp-chevron-btn {
-        height: rem(40px);
-        margin: 0;
-        padding-left: rem(44px);
-        border: none;
+    .link-enabled-nourl-fluent {
         font-weight: 600;
         font-size: rem(14px);
         line-height: rem(32px);
         color: #323130;
+    }
 
+    .chevron-btn {
         &:hover {
             color: #323130;
         }
 
         i {
             height: 100%;
-            left: rem(17px);
             transform: rotate( -90deg);
         }
 
         .expand-fluent {
             height: 100%;
-            left: rem(17px);
             transform: rotate(0deg);
         }
     }
@@ -159,7 +120,6 @@
 
     .link-enabled-hasurl-fluent {
         height: rem(40px);
-        padding: 0 rem(16px) 0 rem(52px) !important;
         box-sizing: border-box;
         font-size: rem(14px);
         font-weight: 400;
@@ -178,5 +138,11 @@
         &:after {
             border-left: rem(4px) solid $B2Color;
         }
+    }
+}
+
+::deep .searched-side-nav {
+    .link-enabled-hasurl-fluent {
+        padding: 0 20px 0 27px !important;
     }
 }

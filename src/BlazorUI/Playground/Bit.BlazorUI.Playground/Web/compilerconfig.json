@@ -104,8 +104,8 @@
         "inputFile": "Pages/Components/Toggle/BitToggleDemo.razor.scss"
     },
     {
-        "outputFile": "Pages/GetStartedPage.razor.css",
-        "inputFile": "Pages/GetStartedPage.razor.scss"
+        "outputFile": "Pages/GettingStartedPage.razor.css",
+        "inputFile": "Pages/GettingStartedPage.razor.scss"
     },
     {
         "outputFile": "Pages/HomePage.razor.css",
@@ -114,10 +114,6 @@
     {
         "outputFile": "Pages/IconPage.razor.css",
         "inputFile": "Pages/IconPage.razor.scss"
-    },
-    {
-        "outputFile": "Pages/OverviewPage.razor.css",
-        "inputFile": "Pages/OverviewPage.razor.scss"
     },
     {
         "outputFile": "Shared/AppErrorBoundary.razor.css",
@@ -162,5 +158,9 @@
     {
         "outputFile": "Pages/Components/DataGrid/BitDataGridDemo.razor.css",
         "inputFile": "Pages/Components/DataGrid/BitDataGridDemo.razor.scss"
+    },
+    {
+        "outputFile": "Pages/OverviewPage.razor.css",
+        "inputFile": "Pages/OverviewPage.razor.scss"
     }
 ]

@@ -1,29 +1,31 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Timers;
 using Microsoft.AspNetCore.Components;
 
 namespace Bit.BlazorUI;
 
 public partial class BitSwiper : IDisposable
 {
-    private ElementReference _swiper = default!;
-    private double _pointerDownX;
-    private bool _isPointerDown;
-    private double _translateX;
-    private long _pointerDownTime;
     private double _lastX;
-    private double _lastDiffX;
-    private double _swiperEffectiveWidth;
-    private double _swiperWidth;
+    private bool _disposed;
     private int _pagesCount;
     private int _currentPage;
-    private string _directionStyle = string.Empty;
-    private string _rightButtonStyle = string.Empty;
-    private string _leftButtonStyle = string.Empty;
-
+    private double _lastDiffX;
+    private double _translateX;
+    private double _rootWidth;
+    private double _swiperWidth;
+    private bool _isPointerDown;
+    private double _pointerDownX;
+    private long _pointerDownTime;
+    private double _swiperEffectiveWidth;
     private int _internalScrollItemsCount = 1;
+    private string _directionStyle = string.Empty;
+    private string _leftButtonStyle = string.Empty;
+    private string _rightButtonStyle = string.Empty;
 
+    private ElementReference _swiper = default!;
     private System.Timers.Timer _autoPlayTimer = default!;
 
     private readonly List<BitSwiperItem> AllItems = new();
@@ -31,22 +33,22 @@ public partial class BitSwiper : IDisposable
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
     ///// <summary>
-    ///// If enabled the carousel items will navigate in an infinite loop (first item comes after last item and last item comes before first item).
+    ///// If enabled the swiper items will navigate in an infinite loop.
     ///// </summary>
     //[Parameter] public bool InfiniteScrolling { get; set; }
 
     /// <summary>
-    /// Items of the carousel.
+    /// Items of the swiper.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     ///// <summary>
-    ///// Shows or hides the Dots indicator at the bottom of the BitCarousel.
+    ///// Shows or hides the Dots indicator at the bottom of the BitSwiper.
     ///// </summary>
     //[Parameter] public bool ShowDots { get; set; } = true;
 
     /// <summary>
-    /// Shows or hides the Next/Prev buttons of the BitCarousel.
+    /// Shows or hides the Next/Prev buttons of the BitSwiper.
     /// </summary>
     [Parameter] public bool ShowNextPrev { get; set; } = true;
 
@@ -65,10 +67,10 @@ public partial class BitSwiper : IDisposable
     ///// </summary>
     //[Parameter] public double AutoPlayInterval { get; set; } = 2000;
 
-    ///// <summary>
-    ///// Sets the duration of the scrolling animation in seconds (the default value is 0.5).
-    ///// </summary>
-    //[Parameter] public double AnimationDuration { get; set; } = 0.5;
+    /// <summary>
+    /// Sets the duration of the scrolling animation in seconds (the default value is 0.5).
+    /// </summary>
+    [Parameter] public double AnimationDuration { get; set; } = 0.5;
 
     /// <summary>
     /// Sets the direction of the scrolling (the default value is LeftToRight).
@@ -79,10 +81,16 @@ public partial class BitSwiper : IDisposable
 
     public async Task GoNext() => await Go(true);
 
-    //public async Task GoTo(int index)
-    //{
-    //    await GotoPage(index - 1);
-    //}
+    public async Task GoTo(int index)
+    {
+        await GotoPage(index - 1);
+    }
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
 
 
     internal void RegisterItem(BitSwiperItem item)
@@ -97,41 +105,67 @@ public partial class BitSwiper : IDisposable
         AllItems.Remove(carouselItem);
     }
 
-
-    protected override string RootElementClass => "bit-sls";
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected virtual void Dispose(bool disposing)
     {
+        if (_disposed) return;
+
+        if (disposing && _autoPlayTimer is not null)
+        {
+            _autoPlayTimer.Elapsed -= AutoPlayTimerElapsed;
+            _autoPlayTimer.Dispose();
+            _disposed = true;
+        }
+    }
+
+    protected override string RootElementClass => "bit-swp";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _directionStyle = Direction == BitDirection.RightToLeft ? "direction:rtl" : "";
+
         var itemsCount = AllItems.Count;
 
-        _directionStyle = Direction == BitDirection.RightToLeft ? "direction:rtl" : "";
         _internalScrollItemsCount = ScrollItemsCount < 0 ? 0
                                     : ScrollItemsCount > itemsCount ? itemsCount : ScrollItemsCount;
 
+        await base.OnParametersSetAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await GetDimensions();
+
         if (firstRender)
         {
+            //if (AutoPlay)
+            //{
+            //    _autoPlayTimer = new System.Timers.Timer(AutoPlayInterval);
+            //    _autoPlayTimer.Elapsed += AutoPlayTimerElapsed;
+            //    _autoPlayTimer.Start();
+            //}
+
             await _js.RegisterPointerLeave(RootElement, DotNetObjectReference.Create(this));
-            await GetSwiperDimensions();
+
             SetNavigationButtonsVisibility(_translateX);
         }
 
         await base.OnAfterRenderAsync(firstRender);
     }
 
+
+    private async void AutoPlayTimerElapsed(object? sender, ElapsedEventArgs e) => await InvokeAsync(async () => await Go(true));
+
     private void SetNavigationButtonsVisibility(double translateX)
     {
-        //_rightButtonStyle = (InfiniteScrolling is false && translateX == -_swiperEffectiveWidth) ? "display:none" : "";
-        _rightButtonStyle = (translateX == (Direction == BitDirection.LeftToRight ? -_swiperEffectiveWidth : 0)) ? "display:none" : "";
-
-        //_leftButtonStyle = (InfiniteScrolling is false && translateX == 0) ? "display:none" : "";
-        _leftButtonStyle = (translateX == (Direction == BitDirection.LeftToRight ? 0 : _swiperEffectiveWidth)) ? "display:none" : "";
+        _rightButtonStyle = (/*InfiniteScrolling is false && */translateX == (Direction == BitDirection.LeftToRight ? -_swiperEffectiveWidth : 0)) ? "display:none" : "";
+        _leftButtonStyle = (/*InfiniteScrolling is false && */translateX == (Direction == BitDirection.LeftToRight ? 0 : _swiperEffectiveWidth)) ? "display:none" : "";
 
         StateHasChanged();
     }
 
     private async Task Go(bool isNext)
     {
-        await GetSwiperDimensions();
+        await GetDimensions();
         await _js.SetStyle(_swiper, "transitionDuration", "");
 
         var sign = isNext ? -1 : 1;
@@ -142,10 +176,10 @@ public partial class BitSwiper : IDisposable
         await Swipe(x);
     }
 
-    //private async Task GotoPage(int index)
-    //{
+    private async Task GotoPage(int index)
+    {
 
-    //}
+    }
 
     private async Task HandlePointerMove(MouseEventArgs e)
     {
@@ -173,11 +207,12 @@ public partial class BitSwiper : IDisposable
         _pointerDownX = e.ClientX;
         _pointerDownTime = DateTime.Now.Ticks;
 
-        await GetSwiperDimensions();
+        await GetDimensions();
 
         await _js.SetStyle(_swiper, "cursor", "grabbing");
         await _js.SetStyle(_swiper, "transitionDuration", "");
     }
+
     private async Task HandlePointerUp(MouseEventArgs e)
     {
         await HandlePointerLeave(e.ClientX);
@@ -194,7 +229,7 @@ public partial class BitSwiper : IDisposable
         var time = (DateTime.Now.Ticks - _pointerDownTime) / 10_000;
         var distance = Math.Abs(clientX - _pointerDownX);
 
-        await GetSwiperDimensions();
+        await GetDimensions();
 
         var swipeSpeed = distance / time;
 
@@ -207,6 +242,8 @@ public partial class BitSwiper : IDisposable
 
     private async Task Swipe(double x)
     {
+        if (_rootWidth > _swiperWidth || IsEnabled is false) return;
+
         if (Direction == BitDirection.LeftToRight)
         {
             if (x > 0) x = 0;
@@ -223,42 +260,13 @@ public partial class BitSwiper : IDisposable
         SetNavigationButtonsVisibility(x);
     }
 
-    private async Task GetSwiperDimensions()
+    private async Task GetDimensions()
     {
-        var dimensions = await _js.GetSwiperDimensions(_swiper);
-        _swiperWidth = dimensions?.Width ?? 0;
-        _swiperEffectiveWidth = dimensions?.EffectiveWidth ?? 0;
-        _translateX = dimensions?.TranslateX ?? 0;
+        var dimensions = await _js.GetDimensions(RootElement, _swiper);
+        _rootWidth = dimensions?.RootWidth ?? 0;
+        _swiperWidth = dimensions?.SwiperWidth ?? 0;
+        _swiperEffectiveWidth = dimensions?.EffectiveSwiperWidth ?? 0;
+        _translateX = dimensions?.SwiperTranslateX ?? 0;
     }
 
-    private async void AutoPlayTimerElapsed(object? sender, System.Timers.ElapsedEventArgs e)
-    {
-        try
-        {
-            await InvokeAsync(async () => await Go(true));
-        }
-        catch
-        {
-            throw;
-        }
-    }
-
-    private bool _disposed;
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (_disposed) return;
-
-        if (disposing && _autoPlayTimer is not null)
-        {
-            _autoPlayTimer.Elapsed -= AutoPlayTimerElapsed;
-            _autoPlayTimer.Dispose();
-            _disposed = true;
-        }
-    }
 }

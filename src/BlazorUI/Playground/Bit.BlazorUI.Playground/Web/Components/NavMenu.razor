@@ -7,7 +7,7 @@
 <div class="nav-menu @(isNavOpen is false ? "nav-menu--desktop" : null)">
     <div class="search-box-container">
         <BitSearchBox Class="nav-menu-search-box"
-                      Placeholder="Search Components"
+                      Placeholder="Search components"
                       IconName="BitIconName.Search"
                       IsUnderlined="true"
                       Value="@searchText"
@@ -15,13 +15,8 @@
                       OnClear="@HandleClear" />
     </div>
     <div class="nav-menu-list">
-        <BitLink Class="@GetDemoLinkClassName("overview")"
-                 Href="/components/overview">Overview</BitLink>
-        <BitLink Class="@GetDemoLinkClassName("get-started")"
-                 Href="/get-started">Get started</BitLink>
-        <BitNav Class="side-nav"
+        <BitNav Class="@GetNavMenuClass()"
                 NavLinkItems="filteredNavLinks"
-                RenderType="renderType"
                 AriaLabel="Bit Component Nav"
                 OnLinkClick="WrapHandled(HandleLinkClick)">
         </BitNav>
