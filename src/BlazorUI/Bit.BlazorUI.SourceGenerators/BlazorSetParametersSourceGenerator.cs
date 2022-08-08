@@ -68,7 +68,7 @@ namespace {namespaceName}
             {
                 source.AppendLine($"                       {bitProperty.PropertySymbol.Name}HasBeenSet = true;");
             }
-            source.AppendLine($"                       {bitProperty.PropertySymbol.Name} = ({bitProperty.PropertySymbol.Type.ToDisplayString()})parameter.Value;");
+            source.AppendLine($"                       {bitProperty.PropertySymbol.Name} = parameter.Value is null ? default! : ({bitProperty.PropertySymbol.Type.ToDisplayString()})parameter.Value;");
             source.AppendLine("                       parametersDictionary.Remove(parameter.Key);");
             source.AppendLine("                       break;");
         }
