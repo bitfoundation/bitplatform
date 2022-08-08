@@ -3,7 +3,6 @@
 @import '../Styles/abstracts/_functions.scss';
 @import '../Styles/abstracts/_vars.scss';
 
-
 .nav-menu {
     position: sticky;
     z-index: 1000;
@@ -11,17 +10,19 @@
     top: rem($HeaderHeight);
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
     flex-shrink: 0;
     flex: 1 0 auto;
     width: rem($NavMenuWidth);
     max-width: rem($NavMenuWidth);
-    height: calc(100vh - rem($HeaderHeight));
-    border-right: rem(1px) solid rgb(231, 235, 240);
+    height: calc(100vh - #{rem($HeaderHeight)});
     outline: 0;
     box-shadow: none;
-    background-color: $White;
-    transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+    background-color: $Blue1;
     overflow-y: auto;
+    padding: rem(24px) 0;
+    box-sizing: border-box;
 
     @include lt-lg {
         height: 100vh;
@@ -36,128 +37,11 @@
     }
 }
 
-.nav-menu--desktop {
-    display: flex;
-
-    @include lt-lg {
-        display: none;
-    }
-}
-
-.nav-menu--mobile {
-    display: none;
-
-    @include lt-lg {
-        display: block;
-    }
-}
-
-.nav-menu-shadow {
-    position: fixed;
-    inset: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 1101;
-}
-
-
-.main-container {
-    position: fixed;
-    left: 0;
-    top: rem(48px);
-    z-index: 16;
-    display: flex;
-    flex-flow: column nowrap;
-    justify-content: flex-start;
-    width: rem(240px);
-    height: calc(100vh - #{rem(48px)});
-    background-color: $Gray3;
-
-    @include lg {
-        width: rem(206px);
-    }
-
-    @include lt-lg {
-        width: rem(306px);
-    }
-}
-
-.main-container--closed {
+.nav-menu--closed {
     display: none;
 
     @include gt-md {
         display: flex;
-    }
-}
-
-.top-container {
-    display: flex;
-    flex-flow: column nowrap;
-    justify-content: flex-start;
-    align-items: center;
-    width: 100%;
-    padding: rem(24px) 0 rem(12px);
-    margin-bottom: rem(20px);
-    border-bottom: rem(1px) solid $Gray4;
-
-    @include lg {
-        padding: rem(24px) 0 rem(8px);
-    }
-
-    @include lt-lg {
-        padding: rem(24px) 0 rem(16px);
-        margin-bottom: rem(24px);
-    }
-}
-
-.user-img-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: rem(56px);
-    height: rem(56px);
-    margin-bottom: rem(4px);
-    border-radius: 50%;
-    background-color: $S2Color;
-    font-size: rem(18px);
-    line-height: rem(24px);
-    color: $White;
-
-    @include lg {
-        width: rem(48px);
-        height: rem(48px);
-        margin-bottom: rem(2px);
-    }
-
-    @include lt-lg {
-        font-size: rem(20px);
-    }
-}
-
-.user-img {
-    width: rem(56px);
-    height: rem(56px);
-    border-radius: 50%;
-
-    @include lg {
-        width: rem(48px);
-        height: rem(48px);
-    }
-}
-
-.user-name {
-    margin-bottom: rem(8px);
-    font-size: rem(13px);
-    line-height: rem(21px);
-    color: $S3Color;
-
-    @include lg {
-        margin-bottom: rem(6px);
-        font-size: rem(12px);
-        line-height: rem(20px);
-    }
-
-    @include lt-lg {
-        margin-bottom: rem(6px);
     }
 }
 
@@ -173,5 +57,74 @@
 
     @include lt-lg {
         display: block;
+    }
+}
+
+.menu-banner {
+    width: rem(190px);
+    height: rem(296px);
+    border-radius: rem(6px);
+    background-image: url('/images/menu-banner.webp');
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+::deep .bit-nav-menu {
+    width: 100%;
+
+    .link-enabled-hasurl-fluent {
+        span {
+            i {
+                color: $ThemeLightColor;
+            }
+        }
+    }
+
+    .link-container {
+        color: $Gray10;
+
+        i {
+            color: $ThemeLightColor;
+        }
+    }
+
+    .composite-link {
+        a {
+            font-weight: 400;
+            font-size: rem(14px);
+            line-height: rem(20px);
+            color: $Gray10;
+        }
+
+        &:hover {
+            background-color: $Blue1;
+            color: $Gray10;
+
+            &::after {
+                border-color: $Blue1;
+            }
+        }
+
+        button {
+            color: $ThemeLightColor;
+        }
+
+        a.selected-fluent {
+            background-color: $Blue2;
+            font-weight: 600;
+            font-size: rem(14px);
+            line-height: rem(20px);
+            color: $Gray10;
+
+            &::after {
+                border-color: $ThemeLighterAltColor;
+            }
+
+            &:hover {
+                background-color: $Blue2;
+                color: $Gray10;
+            }
+        }
     }
 }

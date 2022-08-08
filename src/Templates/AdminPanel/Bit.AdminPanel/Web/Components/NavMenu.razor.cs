@@ -32,16 +32,13 @@ public partial class NavMenu
             new BitNavLinkItem
             {
                 Name = "Dashboard",
-                Url = "/",
-                IconName = BitIconName.ViewDashboard,
-                Key = "Dashboard",
+                IconName = BitIconName.Home,
                 Links=new List<BitNavLinkItem>
                         {
                             new BitNavLinkItem
                             {
                                 Name = "Analytics",
                                 Url = "/analytics",
-                                IconName = BitIconName.AnalyticsReport,
                                 Key = "Analytics"
                             },
                         }
@@ -49,44 +46,22 @@ public partial class NavMenu
             new BitNavLinkItem
             {
                 Name = "Product catologue",
-                Url = "/",
-                IconName = BitIconName.ProductCatalog,
-                Key = "ProductCatologue",
+                IconName = BitIconName.Tag,
                 Links=new List<BitNavLinkItem>
                         {
                             new BitNavLinkItem
                             {
                                 Name = "Products",
                                 Url = "/products",
-                                IconName = BitIconName.Product,
                                 Key = "Products"
                             },
                             new BitNavLinkItem
                             {
                                 Name = "Categories",
                                 Url = "/categories",
-                                IconName = BitIconName.ProductCatalog,
                                 Key = "Categories"
                             },
                         }
-            },
-            new BitNavLinkItem
-            {
-                Name = "Home",
-                Url = "/",
-                IconName = BitIconName.Home,
-                Key = "Home"
-            },
-            new BitNavLinkItem
-            {
-                Name = "Sign out",
-                OnClick = (item) =>
-                {
-                    IsSignOutModalOpen = true;
-                    StateHasChanged();
-                },
-                IconName = BitIconName.SignOut,
-                Key = "SignOut"
             }
         };
     }
