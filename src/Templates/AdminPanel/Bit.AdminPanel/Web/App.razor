@@ -7,7 +7,7 @@
             <Found Context="routeData">
                 <AuthorizeRouteView RouteData="@routeData">
                     <NotAuthorized>
-                        <RedirectToSignIn />
+                        <NotAuthorizedComponent />
                     </NotAuthorized>
                     <Authorizing>
                         <LoadingComponent Color="#FFF" />

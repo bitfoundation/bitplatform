@@ -13,7 +13,7 @@
             if (Href!.StartsWith("#"))
             {
                <a class="@(HasUnderline ? "underlined" : "")"
-                  @onclick="ScrollToFragment"
+                  @onclick="ScrollIntoView"
                   @onclick:preventDefault="true">
                    @ChildContent
                </a>

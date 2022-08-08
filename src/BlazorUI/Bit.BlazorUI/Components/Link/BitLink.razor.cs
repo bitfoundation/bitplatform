@@ -44,8 +44,8 @@ public partial class BitLink
         }
     }
 
-    private async Task ScrollToFragment()
+    private async Task ScrollIntoView()
     {
-        await JSRuntime.BitLinkScrollToFragmentOnClickEvent(Href![1..]);
+        await JSRuntime.ScrollElementIntoView(Href![1..]);
     }
 }
