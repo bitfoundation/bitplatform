@@ -48,11 +48,11 @@
 .menu-shadow {
     position: fixed;
     left: 0;
-    top: rem(48px);
-    z-index: 15;
+    top: 0;
+    z-index: 1101;
     display: none;
     width: 100%;
-    height: calc(100vh - #{rem(48px)});
+    height: 100vh;
     background-color: rgba(0, 0, 0, 0.5);
 
     @include lt-lg {
