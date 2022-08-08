@@ -10,6 +10,7 @@ namespace TodoTemplate.Api.Controllers;
 public partial class AttachmentController : AppControllerBase
 {
     [AutoInject] private UserManager<User> _userManager = default!;
+    [AutoInject] private IWebHostEnvironment _webHostEnvironment = default!;
 
     [HttpPost]
     [RequestSizeLimit(11 * 1024 * 1024 /*11MB*/)]
@@ -107,7 +108,7 @@ public partial class AttachmentController : AppControllerBase
         if (SystemFile.Exists(filePath) is false)
             return new EmptyResult();
 
-        return PhysicalFile(Path.Combine(WebHostEnvironment.ContentRootPath, filePath),
+        return PhysicalFile(Path.Combine(_webHostEnvironment.ContentRootPath, filePath),
             MimeTypeMap.GetMimeType(Path.GetExtension(filePath)), enableRangeProcessing: true);
     }
 }
