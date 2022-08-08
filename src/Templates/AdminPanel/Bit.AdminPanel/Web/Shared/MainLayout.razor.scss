@@ -50,37 +50,26 @@
 
 .site-content {
     width: 100%;
-    max-width: calc(100vw - $NavMenuWidth);
-    padding-left: rem(60px);
-    padding-right: rem(60px);
-    padding-top: rem(65px);
-    padding-bottom: rem(65px);
-    margin: 0 auto;
-
-    @include lt-xl {
-        padding-top: rem(35px);
-        padding-bottom: rem(35px);
-    }
-
-    @include lg {
-        padding-left: rem(16px);
-        padding-right: rem(16px);
-    }
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0 rem($LargeScreenPadding);
+    max-width: rem($LargeScreenMaxWidth);
+    padding-top: rem(56px);
+    padding-bottom: rem(56px);
+    box-sizing: border-box;
 
     @include md {
-        max-width: 100%;
-        padding-left: rem(30px);
-        padding-right: rem(30px);
+        padding: 0 rem($MediumScreenPadding);
+        max-width: rem($MediumScreenMaxWidth);
+        padding-top: rem(40px);
+        padding-bottom: rem(40px);
     }
 
     @include sm {
-        max-width: 100%;
-        padding-left: rem(20px);
-        padding-right: rem(20px);
-    }
-
-    @media all and (min-width: 1621px) {
-        max-width: rem(1320px);
+        padding: 0 rem($SmallScreenPadding);
+        max-width: rem($SmallScreenMaxWidth);
+        padding-top: rem(40px);
+        padding-bottom: rem(40px);
     }
 }
 

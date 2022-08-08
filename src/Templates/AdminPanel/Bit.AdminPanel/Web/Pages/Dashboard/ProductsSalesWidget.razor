@@ -2,14 +2,15 @@
 
 <div class="card">
     <div class="card-header">
-        @AppStrings.ProductSales
+        <div class="title">
+            @AppStrings.ProductSales
+        </div>
+        <div class="subtitle">Secondary text</div>
     </div>
     <div class="card-body">
         @if (IsLoading)
         {
-            <div class="spinner">
-                <BitSpinner Size="BitSpinnerSize.Large"></BitSpinner>
-            </div>
+            <BitSpinner Size="BitSpinnerSize.Large"></BitSpinner>
         }
         else
         {

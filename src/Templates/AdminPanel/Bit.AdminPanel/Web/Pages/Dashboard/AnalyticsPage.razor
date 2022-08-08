@@ -4,23 +4,14 @@
 @inherits AppComponentBase;
 
 <div class="page-container">
-
     <OverallStatsWidget />
 
-    <div class="row">
-        <div class="col">
-            <ProductsCountPerCategotyWidget />
-        </div>
-
-        <div class="col">
-            <ProductsPercentageWidget/>
-        </div>
-
+    <div class="page-row">
+        <ProductsCountPerCategotyWidget />
+        <ProductsPercentageWidget />
     </div>
 
-    <div class="row">
-        <div class="col">
-            <ProductsSalesWidget />
-        </div>
+    <div class="page-row">
+        <ProductsSalesWidget />
     </div>
 </div>
