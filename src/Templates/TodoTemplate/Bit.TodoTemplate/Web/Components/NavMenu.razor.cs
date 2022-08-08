@@ -5,16 +5,6 @@ namespace TodoTemplate.App.Components;
 
 public partial class NavMenu
 {
-    [AutoInject] private HttpClient httpClient = default!;
-
-    [AutoInject] private IStateService stateService = default!;
-
-    [AutoInject] private IAuthTokenProvider authTokenProvider = default!;
-
-#if BlazorServer || BlazorHybrid
-    [AutoInject] private IConfiguration configuration = default!;
-#endif
-
     private bool isMenuOpen;
 
     public List<BitNavLinkItem> NavLinks { get; set; }
@@ -81,11 +71,11 @@ public partial class NavMenu
 
     protected override async Task OnInitAsync()
     {
-        User = await stateService.GetValue($"{nameof(NavMenu)}-{nameof(User)}", async () =>
-            await httpClient.GetFromJsonAsync("User/GetCurrentUser", AppJsonContext.Default.UserDto));
+        User = await StateService.GetValue($"{nameof(NavMenu)}-{nameof(User)}", async () =>
+            await HttpClient.GetFromJsonAsync("User/GetCurrentUser", AppJsonContext.Default.UserDto));
 
-        var access_token = await stateService.GetValue($"{nameof(NavMenu)}-access_token", async () =>
-            await authTokenProvider.GetAcccessToken());
+        var access_token = await StateService.GetValue($"{nameof(NavMenu)}-access_token", async () =>
+            await AuthTokenProvider.GetAcccessToken());
 
         ProfileImageUrl = $"{GetBaseUrl()}Attachment/GetProfileImage?access_token={access_token}&file={User!.ProfileImageName}";
 
@@ -97,7 +87,7 @@ public partial class NavMenu
 #if BlazorWebAssembly
         return "/api/";
 #else
-        return configuration.GetValue<string>("ApiServerAddress");
+        return Configuration.GetValue<string>("ApiServerAddress");
 #endif
     }
 }

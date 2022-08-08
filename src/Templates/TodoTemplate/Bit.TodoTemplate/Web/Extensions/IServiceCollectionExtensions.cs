@@ -10,18 +10,6 @@ public static class IServiceCollectionExtensions
         services.AddScoped<IStateService, StateService>();
         services.AddScoped<IExceptionHandler, ExceptionHandler>();
 
-#if BlazorServer || BlazorHybrid
-        services.AddScoped(sp =>
-        {
-            HttpClient httpClient = new(sp.GetRequiredService<AppHttpClientHandler>())
-            {
-                BaseAddress = new Uri($"{sp.GetRequiredService<IConfiguration>()["ApiServerAddress"]}")
-            };
-
-            return httpClient;
-        });
-#endif
-
         services.AddTransient<AppHttpClientHandler>();
 
         services.AddAuthorizationCore();

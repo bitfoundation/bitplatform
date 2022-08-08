@@ -9,6 +9,21 @@ public static class Services
 {
     public static void Add(IServiceCollection services, IConfiguration configuration)
     {
+        services.AddHttpClient("BlazorServerHttpClient")
+            .ConfigurePrimaryHttpMessageHandler<AppHttpClientHandler>()
+            .ConfigureHttpClient((sp, httpClient) =>
+            {
+                httpClient.BaseAddress = new Uri($"{sp.GetRequiredService<IConfiguration>()["ApiServerAddress"]}");
+            });
+
+        services.AddScoped(sp =>
+        {
+            HttpClient httpClient = sp.GetRequiredService<IHttpClientFactory>()
+                .CreateClient("BlazorServerHttpClient");
+
+            return httpClient;
+        });
+
         services.AddHttpContextAccessor();
         services.AddRazorPages();
         services.AddServerSideBlazor();

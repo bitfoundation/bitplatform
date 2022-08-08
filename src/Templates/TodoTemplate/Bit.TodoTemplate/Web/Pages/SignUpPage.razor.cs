@@ -4,12 +4,6 @@ namespace TodoTemplate.App.Pages;
 
 public partial class SignUpPage
 {
-    [AutoInject] private HttpClient httpClient = default!;
-
-    [AutoInject] private NavigationManager navigationManager = default!;
-
-    [AutoInject] private AppAuthenticationStateProvider authStateProvider = default!;
-
     public SignUpRequestDto SignUpModel { get; set; } = new();
 
     public bool IsSignedUp { get; set; }
@@ -38,7 +32,7 @@ public partial class SignUpPage
         {
             SignUpModel.Email = SignUpModel.UserName;
 
-            await httpClient.PostAsJsonAsync("Auth/SignUp", SignUpModel, AppJsonContext.Default.SignUpRequestDto);
+            await HttpClient.PostAsJsonAsync("Auth/SignUp", SignUpModel, AppJsonContext.Default.SignUpRequestDto);
 
             IsSignedUp = true;
         }
@@ -71,7 +65,7 @@ public partial class SignUpPage
 
         try
         {
-            await httpClient.PostAsJsonAsync("Auth/SendConfirmationEmail", new()
+            await HttpClient.PostAsJsonAsync("Auth/SendConfirmationEmail", new()
             {
                 Email = SignUpModel.Email
             }, AppJsonContext.Default.SendConfirmationEmailRequestDto);
@@ -96,9 +90,9 @@ public partial class SignUpPage
 
         if (firstRender)
         {
-            if (await authStateProvider.IsUserAuthenticated())
+            if (await AuthenticationStateProvider.IsUserAuthenticated())
             {
-                navigationManager.NavigateTo("/");
+                NavigationManager.NavigateTo("/");
             }
         }
     }

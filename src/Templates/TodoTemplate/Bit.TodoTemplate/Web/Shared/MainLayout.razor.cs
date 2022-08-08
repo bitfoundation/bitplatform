@@ -4,11 +4,11 @@ namespace TodoTemplate.App.Shared;
 
 public partial class MainLayout : IAsyncDisposable
 {
-    [AutoInject] private IStateService stateService = default!;
+    [AutoInject] private IStateService _stateService = default!;
 
-    [AutoInject] private IExceptionHandler exceptionHandler = default!;
+    [AutoInject] private IExceptionHandler _exceptionHandler = default!;
 
-    [AutoInject] private AppAuthenticationStateProvider authStateProvider = default!;
+    [AutoInject] private AppAuthenticationStateProvider _authStateProvider = default!;
 
     private ErrorBoundary ErrorBoundaryRef = default!;
 
@@ -28,15 +28,15 @@ public partial class MainLayout : IAsyncDisposable
     {
         try
         {
-            authStateProvider.AuthenticationStateChanged += VerifyUserIsAuthenticatedOrNot;
+            _authStateProvider.AuthenticationStateChanged += VerifyUserIsAuthenticatedOrNot;
 
-            IsUserAuthenticated = await stateService.GetValue($"{nameof(MainLayout)}-{nameof(IsUserAuthenticated)}", authStateProvider.IsUserAuthenticated);
+            IsUserAuthenticated = await _stateService.GetValue($"{nameof(MainLayout)}-{nameof(IsUserAuthenticated)}", _authStateProvider.IsUserAuthenticated);
 
             await base.OnInitializedAsync();
         }
         catch (Exception exp)
         {
-            exceptionHandler.Handle(exp);
+            _exceptionHandler.Handle(exp);
         }
     }
 
@@ -44,11 +44,11 @@ public partial class MainLayout : IAsyncDisposable
     {
         try
         {
-            IsUserAuthenticated = await authStateProvider.IsUserAuthenticated();
+            IsUserAuthenticated = await _authStateProvider.IsUserAuthenticated();
         }
         catch (Exception ex)
         {
-            exceptionHandler.Handle(ex);
+            _exceptionHandler.Handle(ex);
         }
         finally
         {
@@ -63,6 +63,6 @@ public partial class MainLayout : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        authStateProvider.AuthenticationStateChanged -= VerifyUserIsAuthenticatedOrNot;
+        _authStateProvider.AuthenticationStateChanged -= VerifyUserIsAuthenticatedOrNot;
     }
 }

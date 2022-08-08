@@ -11,17 +11,13 @@ namespace TodoTemplate.Api.Controllers;
 
 [Route("api/[controller]/[action]")]
 [ApiController, AllowAnonymous]
-public partial class AuthController : ControllerBase
+public partial class AuthController : AppControllerBase
 {
     [AutoInject] private UserManager<User> _userManager = default!;
 
     [AutoInject] private IJwtService _jwtService = default!;
 
-    [AutoInject] private IMapper _mapper = default!;
-
     [AutoInject] private SignInManager<User> _signInManager = default!;
-
-    [AutoInject] private IOptionsSnapshot<AppSettings> _appSettings = default!;
 
     [AutoInject] private IFluentEmail _fluentEmail = default!;
 
@@ -30,7 +26,7 @@ public partial class AuthController : ControllerBase
     {
         var existingUser = await _userManager.FindByNameAsync(signUpRequest.UserName);
 
-        var userToAdd = _mapper.Map<User>(signUpRequest);
+        var userToAdd = Mapper.Map<User>(signUpRequest);
 
         if (existingUser is not null)
         {
@@ -71,7 +67,7 @@ public partial class AuthController : ControllerBase
 
     private async Task SendConfirmationEmail(SendConfirmationEmailRequestDto sendConfirmationEmailRequest, User user, CancellationToken cancellationToken)
     {
-        if ((DateTimeOffset.Now - user.ConfirmationEmailRequestedOn) < _appSettings.Value.IdentitySettings.ConfirmationEmailResendDelay)
+        if ((DateTimeOffset.Now - user.ConfirmationEmailRequestedOn) < AppSettings.Value.IdentitySettings.ConfirmationEmailResendDelay)
             throw new TooManyRequestsExceptions(nameof(ErrorStrings.WaitForConfirmationEmailResendDelay));
 
         var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
@@ -109,7 +105,7 @@ public partial class AuthController : ControllerBase
     {
         var user = await _userManager.FindByEmailAsync(sendResetPasswordEmailRequest.Email);
 
-        if ((DateTimeOffset.Now - user.ResetPasswordEmailRequestedOn) < _appSettings.Value.IdentitySettings.ResetPasswordEmailResendDelay)
+        if ((DateTimeOffset.Now - user.ResetPasswordEmailRequestedOn) < AppSettings.Value.IdentitySettings.ResetPasswordEmailResendDelay)
             throw new TooManyRequestsExceptions(nameof(ErrorStrings.WaitForResetPasswordEmailResendDelay));
 
         if (user is null)
@@ -120,7 +116,7 @@ public partial class AuthController : ControllerBase
         var resetPasswordLink = $"reset-password?email={user.Email}&token={HttpUtility.UrlEncode(token)}";
 
 #if BlazorServer
-        resetPasswordLink = $"{_appSettings.Value.WebServerAddress}{resetPasswordLink}";
+        resetPasswordLink = $"{AppSettings.Value.WebServerAddress}{resetPasswordLink}";
 #else
         resetPasswordLink = $"{new Uri($"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}{HttpContext.Request.PathBase}")}{resetPasswordLink}";
 #endif
@@ -161,7 +157,7 @@ public partial class AuthController : ControllerBase
         string url = $"email-confirmation?email={email}&email-confirmed={emailConfirmed}";
 
 #if BlazorServer
-        url = $"{_appSettings.Value.WebServerAddress}{url}";
+        url = $"{AppSettings.Value.WebServerAddress}{url}";
 #else
         url = $"/{url}";
 #endif

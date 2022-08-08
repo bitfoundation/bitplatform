@@ -2,21 +2,15 @@
 
 public partial class Header : IAsyncDisposable
 {
-    [AutoInject] private IStateService stateService = default!;
-
-    [AutoInject] private AppAuthenticationStateProvider authStateProvider = default!;
-
-    [AutoInject] private IExceptionHandler exceptionHandler = default!;
-
     [Parameter] public EventCallback OnToggleMenu { get; set; }
 
     public bool IsUserAuthenticated { get; set; }
 
     protected override async Task OnInitAsync()
     {
-        authStateProvider.AuthenticationStateChanged += VerifyUserIsAuthenticatedOrNot;
+        AuthenticationStateProvider.AuthenticationStateChanged += VerifyUserIsAuthenticatedOrNot;
 
-        IsUserAuthenticated = await stateService.GetValue($"{nameof(Header)}-{nameof(IsUserAuthenticated)}", authStateProvider.IsUserAuthenticated);
+        IsUserAuthenticated = await StateService.GetValue($"{nameof(Header)}-{nameof(IsUserAuthenticated)}", AuthenticationStateProvider.IsUserAuthenticated);
 
         await base.OnInitAsync();
     }
@@ -25,11 +19,11 @@ public partial class Header : IAsyncDisposable
     {
         try
         {
-            IsUserAuthenticated = await authStateProvider.IsUserAuthenticated();
+            IsUserAuthenticated = await AuthenticationStateProvider.IsUserAuthenticated();
         }
         catch (Exception ex)
         {
-            exceptionHandler.Handle(ex);
+            ExceptionHandler.Handle(ex);
         }
         finally
         {
@@ -44,6 +38,6 @@ public partial class Header : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        authStateProvider.AuthenticationStateChanged -= VerifyUserIsAuthenticatedOrNot;
+        AuthenticationStateProvider.AuthenticationStateChanged -= VerifyUserIsAuthenticatedOrNot;
     }
 }

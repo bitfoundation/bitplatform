@@ -2,12 +2,9 @@
 
 namespace TodoTemplate.App.Pages;
 
+[Authorize]
 public partial class TodoPage
-{
-    [AutoInject] private HttpClient httpClient = default!;
-
-    [AutoInject] private IStateService stateService = default!;
-
+{ 
     public bool IsLoading { get; set; }
     public string SelectedPivotName { get; set; } = AppStrings.All;
     public string? EditModeTodoItemText { get; set; }
@@ -42,7 +39,7 @@ public partial class TodoPage
         IsLoading = true;
         try
         {
-            AllTodoItemList = await stateService.GetValue($"{nameof(TodoPage)}-{nameof(AllTodoItemList)}", async () => await httpClient.GetFromJsonAsync("TodoItem/Get", AppJsonContext.Default.ListTodoItemDto));
+            AllTodoItemList = await StateService.GetValue($"{nameof(TodoPage)}-{nameof(AllTodoItemList)}", async () => await HttpClient.GetFromJsonAsync("TodoItem/Get", AppJsonContext.Default.ListTodoItemDto));
             GenarateViewTodoItemList();
         }
         finally
@@ -153,7 +150,7 @@ public partial class TodoPage
                 Date = DateTimeOffset.Now,
             };
 
-            await httpClient.PostAsJsonAsync("TodoItem/Create", newTodoItem, AppJsonContext.Default.TodoItemDto);
+            await HttpClient.PostAsJsonAsync("TodoItem/Create", newTodoItem, AppJsonContext.Default.TodoItemDto);
 
             await LoadTodoItems();
 
@@ -167,7 +164,7 @@ public partial class TodoPage
 
     private async Task DeleteTodoItem(TodoItemDto todoItem)
     {
-        await httpClient.DeleteAsync($"TodoItem/Delete/{todoItem.Id}");
+        await HttpClient.DeleteAsync($"TodoItem/Delete/{todoItem.Id}");
         AllTodoItemList?.Remove(todoItem);
         GenarateViewTodoItemList();
     }
@@ -179,7 +176,7 @@ public partial class TodoPage
 
         todoItem.IsInEditMode = false;
 
-        await httpClient.PutAsJsonAsync("TodoItem/Update", todoItem, AppJsonContext.Default.TodoItemDto);
+        await HttpClient.PutAsJsonAsync("TodoItem/Update", todoItem, AppJsonContext.Default.TodoItemDto);
         GenarateViewTodoItemList();
     }
 }

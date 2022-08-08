@@ -4,8 +4,6 @@ namespace TodoTemplate.App.Pages;
 
 public partial class ForgotPasswordPage
 {
-    [AutoInject] private HttpClient httpClient = default!;
-
     public SendResetPasswordEmailRequestDto ForgotPasswordModel { get; set; } = new();
 
     public bool IsLoading { get; set; }
@@ -30,7 +28,7 @@ public partial class ForgotPasswordPage
 
         try
         {
-            await httpClient.PostAsJsonAsync("Auth/SendResetPasswordEmail", ForgotPasswordModel, AppJsonContext.Default.SendResetPasswordEmailRequestDto);
+            await HttpClient.PostAsJsonAsync("Auth/SendResetPasswordEmail", ForgotPasswordModel, AppJsonContext.Default.SendResetPasswordEmailRequestDto);
 
             ForgotPasswordMessageType = BitMessageBarType.Success;
 

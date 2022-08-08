@@ -2,8 +2,6 @@
 
 public partial class SignOutConfirmModal
 {
-    [AutoInject] private IAuthenticationService authService = default!;
-
     private bool isOpen;
 
     [Parameter]
@@ -27,7 +25,7 @@ public partial class SignOutConfirmModal
 
     private async Task SignOut()
     {
-        await authService.SignOut();
+        await AuthenticationService.SignOut();
         CloseModal();
     }
 }
