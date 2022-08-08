@@ -11,12 +11,10 @@
     min-height: 100vh;
     padding-top: rem($HeaderHeight);
     box-sizing: border-box;
-    background: linear-gradient(180deg, #F3F6F9 0%, #FFFFFF 100%);
+    background: $BackgroundColor;
 }
 
 .main--full-page {
-    background: $White;
-
     .site-content {
         max-width: 100%;
         padding-left: 0;
