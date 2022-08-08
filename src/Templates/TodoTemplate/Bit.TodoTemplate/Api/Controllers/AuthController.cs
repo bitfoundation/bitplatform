@@ -26,7 +26,7 @@ public partial class AuthController : AppControllerBase
     {
         var existingUser = await _userManager.FindByNameAsync(signUpRequest.UserName);
 
-        var userToAdd = Mapper.Map<User>(signUpRequest);
+        var userToAdd = _mapper.Map<User>(signUpRequest);
 
         if (existingUser is not null)
         {
@@ -67,7 +67,7 @@ public partial class AuthController : AppControllerBase
 
     private async Task SendConfirmationEmail(SendConfirmationEmailRequestDto sendConfirmationEmailRequest, User user, CancellationToken cancellationToken)
     {
-        if ((DateTimeOffset.Now - user.ConfirmationEmailRequestedOn) < AppSettings.Value.IdentitySettings.ConfirmationEmailResendDelay)
+        if ((DateTimeOffset.Now - user.ConfirmationEmailRequestedOn) < _appSettings.Value.IdentitySettings.ConfirmationEmailResendDelay)
             throw new TooManyRequestsExceptions(nameof(ErrorStrings.WaitForConfirmationEmailResendDelay));
 
         var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
@@ -105,7 +105,7 @@ public partial class AuthController : AppControllerBase
     {
         var user = await _userManager.FindByEmailAsync(sendResetPasswordEmailRequest.Email);
 
-        if ((DateTimeOffset.Now - user.ResetPasswordEmailRequestedOn) < AppSettings.Value.IdentitySettings.ResetPasswordEmailResendDelay)
+        if ((DateTimeOffset.Now - user.ResetPasswordEmailRequestedOn) < _appSettings.Value.IdentitySettings.ResetPasswordEmailResendDelay)
             throw new TooManyRequestsExceptions(nameof(ErrorStrings.WaitForResetPasswordEmailResendDelay));
 
         if (user is null)
@@ -116,7 +116,7 @@ public partial class AuthController : AppControllerBase
         var resetPasswordLink = $"reset-password?email={user.Email}&token={HttpUtility.UrlEncode(token)}";
 
 #if BlazorServer
-        resetPasswordLink = $"{AppSettings.Value.WebServerAddress}{resetPasswordLink}";
+        resetPasswordLink = $"{_appSettings.Value.WebServerAddress}{resetPasswordLink}";
 #else
         resetPasswordLink = $"{new Uri($"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}{HttpContext.Request.PathBase}")}{resetPasswordLink}";
 #endif
@@ -157,7 +157,7 @@ public partial class AuthController : AppControllerBase
         string url = $"email-confirmation?email={email}&email-confirmed={emailConfirmed}";
 
 #if BlazorServer
-        url = $"{AppSettings.Value.WebServerAddress}{url}";
+        url = $"{_appSettings.Value.WebServerAddress}{url}";
 #else
         url = $"/{url}";
 #endif

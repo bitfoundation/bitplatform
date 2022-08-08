@@ -38,19 +38,19 @@ public partial class ResetPasswordPage
 
         try
         {
-            await HttpClient.PostAsJsonAsync("Auth/ResetPassword", ResetPasswordModel, AppJsonContext.Default.ResetPasswordRequestDto);
+            await _httpClient.PostAsJsonAsync("Auth/ResetPassword", ResetPasswordModel, AppJsonContext.Default.ResetPasswordRequestDto);
 
             ResetPasswordMessageType = BitMessageBarType.Success;
 
             ResetPasswordMessage = AuthStrings.PasswordChangedSuccessfullyMessage;
 
-            await AuthenticationService.SignIn(new SignInRequestDto
+            await _authenticationService.SignIn(new SignInRequestDto
             {
                 UserName = Email,
                 Password = ResetPasswordModel.Password
             });
 
-            NavigationManager.NavigateTo("/");
+            _navigationManager.NavigateTo("/");
         }
         catch (KnownException e)
         {
@@ -76,9 +76,9 @@ public partial class ResetPasswordPage
     {
         if (firstRender)
         {
-            if (await AuthenticationStateProvider.IsUserAuthenticated())
+            if (await _authenticationStateProvider.IsUserAuthenticated())
             {
-                NavigationManager.NavigateTo("/");
+                _navigationManager.NavigateTo("/");
             }
         }
 

@@ -32,7 +32,7 @@ public partial class SignUpPage
         {
             SignUpModel.Email = SignUpModel.UserName;
 
-            await HttpClient.PostAsJsonAsync("Auth/SignUp", SignUpModel, AppJsonContext.Default.SignUpRequestDto);
+            await _httpClient.PostAsJsonAsync("Auth/SignUp", SignUpModel, AppJsonContext.Default.SignUpRequestDto);
 
             IsSignedUp = true;
         }
@@ -65,7 +65,7 @@ public partial class SignUpPage
 
         try
         {
-            await HttpClient.PostAsJsonAsync("Auth/SendConfirmationEmail", new()
+            await _httpClient.PostAsJsonAsync("Auth/SendConfirmationEmail", new()
             {
                 Email = SignUpModel.Email
             }, AppJsonContext.Default.SendConfirmationEmailRequestDto);
@@ -90,9 +90,9 @@ public partial class SignUpPage
 
         if (firstRender)
         {
-            if (await AuthenticationStateProvider.IsUserAuthenticated())
+            if (await _authenticationStateProvider.IsUserAuthenticated())
             {
-                NavigationManager.NavigateTo("/");
+                _navigationManager.NavigateTo("/");
             }
         }
     }

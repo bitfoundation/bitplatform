@@ -71,11 +71,11 @@ public partial class NavMenu
 
     protected override async Task OnInitAsync()
     {
-        User = await StateService.GetValue($"{nameof(NavMenu)}-{nameof(User)}", async () =>
-            await HttpClient.GetFromJsonAsync("User/GetCurrentUser", AppJsonContext.Default.UserDto));
+        User = await _stateService.GetValue($"{nameof(NavMenu)}-{nameof(User)}", async () =>
+            await _httpClient.GetFromJsonAsync("User/GetCurrentUser", AppJsonContext.Default.UserDto));
 
-        var access_token = await StateService.GetValue($"{nameof(NavMenu)}-access_token", async () =>
-            await AuthTokenProvider.GetAcccessToken());
+        var access_token = await _stateService.GetValue($"{nameof(NavMenu)}-access_token", async () =>
+            await _authTokenProvider.GetAcccessToken());
 
         ProfileImageUrl = $"{GetBaseUrl()}Attachment/GetProfileImage?access_token={access_token}&file={User!.ProfileImageName}";
 
@@ -87,7 +87,7 @@ public partial class NavMenu
 #if BlazorWebAssembly
         return "/api/";
 #else
-        return Configuration.GetValue<string>("ApiServerAddress");
+        return _configuration.GetValue<string>("ApiServerAddress");
 #endif
     }
 }

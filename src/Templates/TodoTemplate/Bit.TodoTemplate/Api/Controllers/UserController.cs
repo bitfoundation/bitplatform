@@ -19,7 +19,7 @@ public partial class UserController : AppControllerBase
         if (user is null)
             throw new ResourceNotFoundException();
 
-        return Mapper.Map<User, UserDto>(user);
+        return _mapper.Map<User, UserDto>(user);
     }
 
     [HttpPut]
@@ -35,7 +35,7 @@ public partial class UserController : AppControllerBase
         if (user is null)
             throw new ResourceNotFoundException();
 
-        var updatedUser = Mapper.Map(userDto, user);
+        var updatedUser = _mapper.Map(userDto, user);
 
         await _userManager.UpdateAsync(updatedUser);
     }

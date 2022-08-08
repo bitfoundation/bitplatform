@@ -2,11 +2,11 @@
 
 public partial class AppControllerBase : ControllerBase
 {
-    [AutoInject] public IOptionsSnapshot<AppSettings> AppSettings { get; set; } = default!;
+    [AutoInject] protected IOptionsSnapshot<AppSettings> _appSettings { get; set; } = default!;
 
-    [AutoInject] public IWebHostEnvironment WebHostEnvironment { get; set; } = default!;
+    [AutoInject] protected IWebHostEnvironment _webHostEnvironment { get; set; } = default!;
 
-    [AutoInject] public IMapper Mapper { get; set; } = default!;
+    [AutoInject] protected IMapper _mapper { get; set; } = default!;
 
-    [AutoInject] public AppDbContext DbContext { get; set; } = default!;
+    [AutoInject] protected AppDbContext _dbContext { get; set; } = default!;
 }

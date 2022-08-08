@@ -17,7 +17,7 @@ public partial class EmailConfirmationPage
 
     private void RedirectToSignIn()
     {
-        NavigationManager.NavigateTo("/sign-in");
+        _navigationManager.NavigateTo("/sign-in");
     }
 
     private async Task ResendLink()
@@ -32,7 +32,7 @@ public partial class EmailConfirmationPage
 
         try
         {
-            await HttpClient.PostAsJsonAsync("Auth/SendConfirmationEmail", new()
+            await _httpClient.PostAsJsonAsync("Auth/SendConfirmationEmail", new()
             {
                 Email = Email
             }, AppJsonContext.Default.SendConfirmationEmailRequestDto);
