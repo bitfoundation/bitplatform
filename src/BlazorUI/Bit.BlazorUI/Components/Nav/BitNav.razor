@@ -13,7 +13,7 @@
         {
             @if (navLinkItem is not null)
             {
-                <div class="grp">
+                <div class="nav-group">
                     @*GroupHeader*@
                     @if (navLinkItem.Name.HasValue())
                     {
@@ -23,13 +23,13 @@
                         }
                         else
                         {
-                            <button class="chevron-btn grp-chevron-btn"
+                            <button class="chevron-btn group-chevron-btn"
                                     tabindex="0"
                                     type="button"
                                     aria-label="@(navLinkItem.IsExpanded ? navLinkItem.CollapseAriaLabel : navLinkItem.ExpandAriaLabel)"
                                     aria-expanded="@(navLinkItem.IsExpanded ? "true" : "false")"
                                     @onclick="(() => HandleGroupHeaderClick(navLinkItem))">
-                                <i class="bit-icon bit-icon--ChevronDown @(navLinkItem.IsExpanded ? "expand-fluent" : "")" aria-hidden="true"></i>
+                                <i class="bit-icon bit-icon--ChevronDown @(navLinkItem.IsExpanded ? "expand" : "")" aria-hidden="true"></i>
                                 @navLinkItem.Name
                             </button>
                         }
@@ -37,8 +37,8 @@
 
                     @if ((navLinkItem.Links?.Any() ?? false) && navLinkItem.IsExpanded)
                     {
-                        <div class="grp-content">
-                            <ul class="list" role="list">
+                        <div class="group-content">
+                            <ul class="nav-items" role="list">
                                 @foreach (var childNavLinkItem in navLinkItem.Links)
                                 {
                                     @childTemplate!(childNavLinkItem)
@@ -52,9 +52,9 @@
     }
     else
     {
-        <div class="grp">
-            <div class="grp-content">
-                <ul class="list" role="list">
+        <div class="nav-group">
+            <div class="group-content">
+                <ul class="nav-items" role="list">
                     @foreach (var navLinkItem in NavLinkItems)
                     {
                         @if (navLinkItem is not null)
@@ -77,12 +77,12 @@
 
         childTemplate = (navLinkItem) =>
         (
-    @<li class="item"
+    @<li class="nav-item"
          role="listitem"
          @key="navLinkItem.Key"
          @onclick="(() => HandleClick(navLinkItem))">
 
-        <div class="composite-link @(!navLinkItem.IsEnabled ? "disabled-composite-link" : "")"
+        <div class="composite-link @(!navLinkItem.IsEnabled ? "disabled" : "")"
              name="@navLinkItem.Name">
             @if (navLinkItem.Links?.Any() ?? false)
             {
@@ -93,7 +93,7 @@
                         aria-label="@GetExpandButtonAriaLabel(navLinkItem)"
                         aria-expanded="@(navLinkItem.IsExpanded ? "true" : "false")"
                         @onclick="(() => HandleLinkExpand(navLinkItem))">
-                    <i class="bit-icon bit-icon--ChevronDown @(navLinkItem.IsExpanded ? "expand-fluent" : "")"
+                    <i class="bit-icon bit-icon--ChevronDown @(navLinkItem.IsExpanded ? "expand" : "")"
                        aria-hidden="true"></i>
                 </button>
             }
@@ -160,7 +160,7 @@
         </div>
         @if ((navLinkItem.Links?.Any() ?? false) && navLinkItem.IsExpanded)
         {
-            <ul class="list"
+        <ul class="nav-items"
                 role="list">
                 @foreach (var childLinkItem in navLinkItem.Links)
                 {

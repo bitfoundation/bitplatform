@@ -87,7 +87,7 @@
 }
 
 ::deep .side-nav {
-    .link-enabled-nourl-fluent {
+    .link-enabled-nourl {
         font-weight: 600;
         font-size: rem(14px);
         line-height: rem(32px);
@@ -104,13 +104,13 @@
             transform: rotate( -90deg);
         }
 
-        .expand-fluent {
+        .expand {
             height: 100%;
             transform: rotate(0deg);
         }
     }
 
-    .grp-content {
+    .group-content {
         margin-bottom: 0;
     }
 
@@ -118,7 +118,7 @@
         white-space: nowrap;
     }
 
-    .link-enabled-hasurl-fluent {
+    .link-enabled-hasurl {
         height: rem(40px);
         box-sizing: border-box;
         font-size: rem(14px);
@@ -131,7 +131,7 @@
         }
     }
 
-    .selected-fluent {
+    .selected {
         font-weight: unset;
         color: $B2Color;
 
@@ -142,7 +142,7 @@
 }
 
 ::deep .searched-side-nav {
-    .link-enabled-hasurl-fluent {
+    .link-enabled-hasurl {
         padding: 0 20px 0 27px !important;
     }
 }
