@@ -32,23 +32,23 @@ public partial class BitSwiper : IDisposable
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
-    /// <summary>
-    /// If enabled the swiper items will navigate in an infinite loop.
-    /// </summary>
+    ///// <summary>
+    ///// If enabled the swiper items will navigate in an infinite loop.
+    ///// </summary>
     //[Parameter] public bool InfiniteScrolling { get; set; }
 
     /// <summary>
-    /// Items of the carousel.
+    /// Items of the swiper.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
-    /// <summary>
-    /// Shows or hides the Dots indicator at the bottom of the BitCarousel.
-    /// </summary>
+    ///// <summary>
+    ///// Shows or hides the Dots indicator at the bottom of the BitSwiper.
+    ///// </summary>
     //[Parameter] public bool ShowDots { get; set; } = true;
 
     /// <summary>
-    /// Shows or hides the Next/Prev buttons of the BitCarousel.
+    /// Shows or hides the Next/Prev buttons of the BitSwiper.
     /// </summary>
     [Parameter] public bool ShowNextPrev { get; set; } = true;
 
@@ -57,14 +57,14 @@ public partial class BitSwiper : IDisposable
     /// </summary>
     [Parameter] public int ScrollItemsCount { get; set; } = 1;
 
-    /// <summary>
-    /// Enables/disables the auto scrolling of the slides.
-    /// </summary>
+    ///// <summary>
+    ///// Enables/disables the auto scrolling of the slides.
+    ///// </summary>
     //[Parameter] public bool AutoPlay { get; set; }
 
-    /// <summary>
-    /// Sets the interval of the auto scrolling in milliseconds (the default value is 2000).
-    /// </summary>
+    ///// <summary>
+    ///// Sets the interval of the auto scrolling in milliseconds (the default value is 2000).
+    ///// </summary>
     //[Parameter] public double AutoPlayInterval { get; set; } = 2000;
 
     /// <summary>
