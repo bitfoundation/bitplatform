@@ -13,12 +13,7 @@
     backdrop-filter: blur(20px);
     box-shadow: inset 0px -1px 1px #e7ebf0;
     background-color: rgba(255, 255, 255, 0.72);
-}
-
-.main-header--full-page {
-    .header-main-container {
-        max-width: rem(1200px);
-    }
+    border-bottom: rem(1px) solid $Gray10;
 }
 
 .header-main-container {
@@ -30,8 +25,8 @@
     min-height: rem($HeaderHeight);
     margin-left: auto;
     margin-right: auto;
-    padding-left: rem(20px);
-    padding-right: rem(20px);
+    padding: 0 rem($LargeScreenPadding);
+    max-width: rem($LargeScreenMaxWidth);
     box-sizing: border-box;
 
     @include md {
