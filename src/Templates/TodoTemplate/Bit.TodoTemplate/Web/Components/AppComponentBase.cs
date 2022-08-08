@@ -2,23 +2,23 @@
 
 public partial class AppComponentBase : ComponentBase
 {
-    [AutoInject] protected IExceptionHandler exceptionHandler = default!;
+    [AutoInject] protected IExceptionHandler ExceptionHandler { get; set; } = default!;
 
-    [AutoInject] protected IStateService stateService = default!;
+    [AutoInject] protected IStateService StateService { get; set; } = default!;
 
-    [AutoInject] protected AppAuthenticationStateProvider authStateProvider = default!;
+    [AutoInject] protected AppAuthenticationStateProvider AuthenticationStateProvider { get; set; } = default!;
 
-    [AutoInject] protected HttpClient httpClient = default!;
+    [AutoInject] protected HttpClient HttpClient { get; set; } = default!;
 
-    [AutoInject] protected IAuthTokenProvider authTokenProvider = default!;
+    [AutoInject] protected IAuthTokenProvider AuthTokenProvider { get; set; } = default!;
 
 #if BlazorServer || BlazorHybrid
-    [AutoInject] protected IConfiguration configuration = default!;
+    [AutoInject] protected IConfiguration Configuration { get; set; } = default!;
 #endif
 
-    [AutoInject] protected NavigationManager navigationManager = default!;
+    [AutoInject] protected NavigationManager NavigationManager { get; set; } = default!;
 
-    [AutoInject] protected IAuthenticationService authenticationService = default!;
+    [AutoInject] protected IAuthenticationService AuthenticationService { get; set; } = default!;
 
     protected async sealed override Task OnInitializedAsync()
     {
@@ -29,7 +29,7 @@ public partial class AppComponentBase : ComponentBase
         }
         catch (Exception exp)
         {
-            exceptionHandler.Handle(exp);
+            ExceptionHandler.Handle(exp);
         }
     }
 
@@ -42,7 +42,7 @@ public partial class AppComponentBase : ComponentBase
         }
         catch (Exception exp)
         {
-            exceptionHandler.Handle(exp);
+            ExceptionHandler.Handle(exp);
         }
     }
 
@@ -75,7 +75,7 @@ public partial class AppComponentBase : ComponentBase
             }
             catch (Exception exp)
             {
-                exceptionHandler.Handle(exp);
+                ExceptionHandler.Handle(exp);
             }
         };
     }
@@ -93,7 +93,7 @@ public partial class AppComponentBase : ComponentBase
             }
             catch (Exception exp)
             {
-                exceptionHandler.Handle(exp);
+                ExceptionHandler.Handle(exp);
             }
         };
     }
@@ -111,7 +111,7 @@ public partial class AppComponentBase : ComponentBase
             }
             catch (Exception exp)
             {
-                exceptionHandler.Handle(exp);
+                ExceptionHandler.Handle(exp);
             }
         };
     }
@@ -129,7 +129,7 @@ public partial class AppComponentBase : ComponentBase
             }
             catch (Exception exp)
             {
-                exceptionHandler.Handle(exp);
+                ExceptionHandler.Handle(exp);
             }
         };
     }

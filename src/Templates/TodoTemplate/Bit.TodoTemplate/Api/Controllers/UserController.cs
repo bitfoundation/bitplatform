@@ -7,19 +7,19 @@ namespace TodoTemplate.Api.Controllers;
 [ApiController]
 public partial class UserController : AppControllerBase
 {
-    [AutoInject] private UserManager<User> userManager = default!;
+    [AutoInject] private UserManager<User> _userManager = default!;
 
     [HttpGet]
     public async Task<UserDto> GetCurrentUser(CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
 
-        var user = await userManager.Users.FirstOrDefaultAsync(user => user.Id == userId, cancellationToken);
+        var user = await _userManager.Users.FirstOrDefaultAsync(user => user.Id == userId, cancellationToken);
 
         if (user is null)
             throw new ResourceNotFoundException();
 
-        return mapper.Map<User, UserDto>(user);
+        return Mapper.Map<User, UserDto>(user);
     }
 
     [HttpPut]
@@ -30,13 +30,13 @@ public partial class UserController : AppControllerBase
         if (userId != User.GetUserId())
             throw new UnauthorizedException();
 
-        var user = await userManager.Users.FirstOrDefaultAsync(user => user.Id == userId, cancellationToken);
+        var user = await _userManager.Users.FirstOrDefaultAsync(user => user.Id == userId, cancellationToken);
 
         if (user is null)
             throw new ResourceNotFoundException();
 
-        var updatedUser = mapper.Map(userDto, user);
+        var updatedUser = Mapper.Map(userDto, user);
 
-        await userManager.UpdateAsync(updatedUser);
+        await _userManager.UpdateAsync(updatedUser);
     }
 }

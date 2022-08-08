@@ -28,9 +28,9 @@ public partial class SignInPage
 
         try
         {
-            await authenticationService.SignIn(SignInModel);
+            await AuthenticationService.SignIn(SignInModel);
 
-            navigationManager.NavigateTo(RedirectUrl ?? "/");
+            NavigationManager.NavigateTo(RedirectUrl ?? "/");
         }
         catch (KnownException e)
         {
@@ -53,8 +53,8 @@ public partial class SignInPage
     {
         if (firstRender)
         {
-            if (await authStateProvider.IsUserAuthenticated())
-                navigationManager.NavigateTo("/");
+            if (await AuthenticationStateProvider.IsUserAuthenticated())
+                NavigationManager.NavigateTo("/");
         }
 
         await base.OnAfterRenderAsync(firstRender);

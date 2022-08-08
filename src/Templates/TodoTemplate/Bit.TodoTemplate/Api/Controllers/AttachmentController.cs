@@ -9,7 +9,7 @@ namespace TodoTemplate.Api.Controllers;
 [ApiController]
 public partial class AttachmentController : AppControllerBase
 {
-    [AutoInject] private UserManager<User> userManager = default!;
+    [AutoInject] private UserManager<User> _userManager = default!;
 
     [HttpPost]
     [RequestSizeLimit(11 * 1024 * 1024 /*11MB*/)]
@@ -20,7 +20,7 @@ public partial class AttachmentController : AppControllerBase
 
         var userId = User.GetUserId();
 
-        var user = await userManager.FindByIdAsync(userId.ToString());
+        var user = await _userManager.FindByIdAsync(userId.ToString());
 
         if (user is null)
             throw new ResourceNotFoundException();
@@ -29,9 +29,9 @@ public partial class AttachmentController : AppControllerBase
 
         await using var requestStream = file.OpenReadStream();
 
-        Directory.CreateDirectory(appSettings.Value.UserProfileImagePath);
+        Directory.CreateDirectory(AppSettings.Value.UserProfileImagePath);
 
-        var path = Path.Combine(appSettings.Value.UserProfileImagePath, fileName);
+        var path = Path.Combine(AppSettings.Value.UserProfileImagePath, fileName);
 
         await using var fileStream = SystemFile.Exists(path) 
             ? SystemFile.Open(path, FileMode.Append) 
@@ -43,7 +43,7 @@ public partial class AttachmentController : AppControllerBase
         {
             try
             {
-                var filePath = Path.Combine(appSettings.Value.UserProfileImagePath, user.ProfileImageName);
+                var filePath = Path.Combine(AppSettings.Value.UserProfileImagePath, user.ProfileImageName);
 
                 if (SystemFile.Exists(filePath))
                 {
@@ -60,7 +60,7 @@ public partial class AttachmentController : AppControllerBase
         {
             user.ProfileImageName = fileName;
 
-            await userManager.UpdateAsync(user);
+            await _userManager.UpdateAsync(user);
         }
         catch
         {
@@ -75,19 +75,19 @@ public partial class AttachmentController : AppControllerBase
     {
         var userId = User.GetUserId();
 
-        var user = await userManager.FindByIdAsync(userId.ToString());
+        var user = await _userManager.FindByIdAsync(userId.ToString());
 
         if (user?.ProfileImageName is null)
             throw new ResourceNotFoundException();
 
-        var filePath = Path.Combine(appSettings.Value.UserProfileImagePath, user.ProfileImageName);
+        var filePath = Path.Combine(AppSettings.Value.UserProfileImagePath, user.ProfileImageName);
 
         if (SystemFile.Exists(filePath) is false)
             throw new ResourceNotFoundException(nameof(ErrorStrings.UserImageCouldNotBeFound));
 
         user.ProfileImageName = null;
 
-        await userManager.UpdateAsync(user);
+        await _userManager.UpdateAsync(user);
 
         SystemFile.Delete(filePath);
     }
@@ -97,17 +97,17 @@ public partial class AttachmentController : AppControllerBase
     {
         var userId = User.GetUserId();
 
-        var user = await userManager.FindByIdAsync(userId.ToString());
+        var user = await _userManager.FindByIdAsync(userId.ToString());
 
         if (user?.ProfileImageName is null)
             throw new ResourceNotFoundException();
 
-        var filePath = Path.Combine(appSettings.Value.UserProfileImagePath, user.ProfileImageName);
+        var filePath = Path.Combine(AppSettings.Value.UserProfileImagePath, user.ProfileImageName);
 
         if (SystemFile.Exists(filePath) is false)
             return new EmptyResult();
 
-        return PhysicalFile(Path.Combine(webHostEnvironment.ContentRootPath, filePath),
+        return PhysicalFile(Path.Combine(WebHostEnvironment.ContentRootPath, filePath),
             MimeTypeMap.GetMimeType(Path.GetExtension(filePath)), enableRangeProcessing: true);
     }
 }
