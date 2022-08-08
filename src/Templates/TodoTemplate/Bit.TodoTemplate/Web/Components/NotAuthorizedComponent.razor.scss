@@ -1,0 +1,29 @@
+﻿@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_functions.scss';
+
+.main {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    width: 100%;
+    max-width: rem(800px);
+    max-height: rem(600px);
+    background-color: $White;
+    border-radius: rem(4px);
+    padding: rem(8px);
+}
+
+.title {
+    color: $Red;
+}
+
+.description {
+    color: $Black;
+    white-space: pre;
+    overflow: auto;
+    margin: rem(24px);
+}
+
+.buttons {
+    margin-bottom: rem(24px);
+}

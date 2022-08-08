@@ -152,6 +152,15 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Please enter the email address you have been signed up with so we can send a reset password link to your email address.
+        /// </summary>
+        public static string ForgetPasswordMessage {
+            get {
+                return ResourceManager.GetString("ForgetPasswordMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Forget password.
         /// </summary>
         public static string ForgetPasswordTitle {
@@ -251,7 +260,7 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The reset password link has been sent..
+        ///   Looks up a localized string similar to The reset password link has been sent to your email address.
         /// </summary>
         public static string ResetPasswordLinkSentMessage {
             get {
@@ -314,7 +323,7 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Submit.
+        ///   Looks up a localized string similar to Send reset link.
         /// </summary>
         public static string Submit {
             get {
