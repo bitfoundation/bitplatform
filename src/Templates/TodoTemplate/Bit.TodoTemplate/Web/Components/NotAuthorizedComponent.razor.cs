@@ -8,7 +8,7 @@ public partial class NotAuthorizedComponent
 
     async Task SignIn()
     {
-        await _authenticationService.SignOut();
+        await AuthenticationService.SignOut();
 
         RedirectToSignInPage();
     }
@@ -22,8 +22,8 @@ public partial class NotAuthorizedComponent
 
     void RedirectToSignInPage()
     {
-        var redirectUrl = _navigationManager.ToBaseRelativePath(_navigationManager.Uri);
-        _navigationManager.NavigateTo($"/sign-in?redirectUrl={redirectUrl}");
+        var redirectUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        NavigationManager.NavigateTo($"/sign-in?redirectUrl={redirectUrl}");
     }
 
     protected override void OnAfterRender(bool firstRender)

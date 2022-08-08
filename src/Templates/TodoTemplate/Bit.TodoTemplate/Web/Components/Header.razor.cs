@@ -8,9 +8,9 @@ public partial class Header : IAsyncDisposable
 
     protected override async Task OnInitAsync()
     {
-        _authenticationStateProvider.AuthenticationStateChanged += VerifyUserIsAuthenticatedOrNot;
+        AuthenticationStateProvider.AuthenticationStateChanged += VerifyUserIsAuthenticatedOrNot;
 
-        IsUserAuthenticated = await _stateService.GetValue($"{nameof(Header)}-{nameof(IsUserAuthenticated)}", _authenticationStateProvider.IsUserAuthenticated);
+        IsUserAuthenticated = await StateService.GetValue($"{nameof(Header)}-{nameof(IsUserAuthenticated)}", AuthenticationStateProvider.IsUserAuthenticated);
 
         await base.OnInitAsync();
     }
@@ -19,11 +19,11 @@ public partial class Header : IAsyncDisposable
     {
         try
         {
-            IsUserAuthenticated = await _authenticationStateProvider.IsUserAuthenticated();
+            IsUserAuthenticated = await AuthenticationStateProvider.IsUserAuthenticated();
         }
         catch (Exception ex)
         {
-            _exceptionHandler.Handle(ex);
+            ExceptionHandler.Handle(ex);
         }
         finally
         {
@@ -38,6 +38,6 @@ public partial class Header : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        _authenticationStateProvider.AuthenticationStateChanged -= VerifyUserIsAuthenticatedOrNot;
+        AuthenticationStateProvider.AuthenticationStateChanged -= VerifyUserIsAuthenticatedOrNot;
     }
 }

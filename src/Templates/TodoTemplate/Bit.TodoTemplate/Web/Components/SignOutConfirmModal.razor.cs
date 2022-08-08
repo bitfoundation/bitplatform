@@ -25,7 +25,7 @@ public partial class SignOutConfirmModal
 
     private async Task SignOut()
     {
-        await _authenticationService.SignOut();
+        await AuthenticationService.SignOut();
         CloseModal();
     }
 }

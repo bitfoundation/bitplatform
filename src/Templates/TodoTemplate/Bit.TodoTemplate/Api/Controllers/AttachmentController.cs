@@ -29,9 +29,9 @@ public partial class AttachmentController : AppControllerBase
 
         await using var requestStream = file.OpenReadStream();
 
-        Directory.CreateDirectory(_appSettings.Value.UserProfileImagePath);
+        Directory.CreateDirectory(AppSettings.Value.UserProfileImagePath);
 
-        var path = Path.Combine(_appSettings.Value.UserProfileImagePath, fileName);
+        var path = Path.Combine(AppSettings.Value.UserProfileImagePath, fileName);
 
         await using var fileStream = SystemFile.Exists(path) 
             ? SystemFile.Open(path, FileMode.Append) 
@@ -43,7 +43,7 @@ public partial class AttachmentController : AppControllerBase
         {
             try
             {
-                var filePath = Path.Combine(_appSettings.Value.UserProfileImagePath, user.ProfileImageName);
+                var filePath = Path.Combine(AppSettings.Value.UserProfileImagePath, user.ProfileImageName);
 
                 if (SystemFile.Exists(filePath))
                 {
@@ -80,7 +80,7 @@ public partial class AttachmentController : AppControllerBase
         if (user?.ProfileImageName is null)
             throw new ResourceNotFoundException();
 
-        var filePath = Path.Combine(_appSettings.Value.UserProfileImagePath, user.ProfileImageName);
+        var filePath = Path.Combine(AppSettings.Value.UserProfileImagePath, user.ProfileImageName);
 
         if (SystemFile.Exists(filePath) is false)
             throw new ResourceNotFoundException(nameof(ErrorStrings.UserImageCouldNotBeFound));
@@ -102,12 +102,12 @@ public partial class AttachmentController : AppControllerBase
         if (user?.ProfileImageName is null)
             throw new ResourceNotFoundException();
 
-        var filePath = Path.Combine(_appSettings.Value.UserProfileImagePath, user.ProfileImageName);
+        var filePath = Path.Combine(AppSettings.Value.UserProfileImagePath, user.ProfileImageName);
 
         if (SystemFile.Exists(filePath) is false)
             return new EmptyResult();
 
-        return PhysicalFile(Path.Combine(_webHostEnvironment.ContentRootPath, filePath),
+        return PhysicalFile(Path.Combine(WebHostEnvironment.ContentRootPath, filePath),
             MimeTypeMap.GetMimeType(Path.GetExtension(filePath)), enableRangeProcessing: true);
     }
 }
