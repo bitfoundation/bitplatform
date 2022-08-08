@@ -56,7 +56,35 @@
                                                ButtonStyle="BitButtonStyle.Standard">
                             </BitCompoundButton>
                         </div>
-                        <BitChart Config="_horizontalBarChartConfigExample" @ref="_horizontalBarChartExample" />
+                        <BitProgressIndicator BarHeight="20"></BitProgressIndicator>
+                        <BitPivot LinkFormat="@BitPivotLinkFormat.Tabs"
+                                  DefaultSelectedKey="Overview"
+                                  LinkSize="@BitPivotLinkSize.Large"
+                                  HeadersOnly="true"
+                                  OnLinkClick="@(item => PivotSelectedKey = item.Key)">
+                            <BitPivotItem HeaderText="Overview" Key="Overview"></BitPivotItem>
+                            <BitPivotItem HeaderText="Features" Key="Features"></BitPivotItem>
+                            <BitPivotItem HeaderText="Comments" Key="Comments"></BitPivotItem>
+                            <BitPivotItem HeaderText="FAQ" Key="FAQ"></BitPivotItem>
+                        </BitPivot>
+                        <div class="tab-content">
+                            @if (PivotSelectedKey == "Overview")
+                            {
+                                <div>The is the "Overview" section.</div>
+                            }
+                            else if (PivotSelectedKey == "Comments")
+                            {
+                                <div>The is the "Comments" section.</div>
+                            }
+                            else if (PivotSelectedKey == "Features")
+                            {
+                                <div>The is the "Features" section.</div>
+                            }
+                            else if (PivotSelectedKey == "FAQ")
+                            {
+                                <div>The is the "FAQ" section.</div>
+                            }
+                        </div>
                     </div>
                 </div>
             </div>

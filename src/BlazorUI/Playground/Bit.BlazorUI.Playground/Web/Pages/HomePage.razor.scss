@@ -416,11 +416,12 @@
         margin-left: rem(10px);
         padding: rem(4px);
         font-size: rem(10px);
-        font-weight: 500;
+        font-weight: 700;
+        letter-spacing: 0.25px;
 
         &.featured {
-            background-color: $B2Color;
-            color: $White;
+            background-color: #fcd077;
+            color: #132f4c;
         }
     }
 }
@@ -551,4 +552,25 @@
 
 ::deep .bit-slider-fluent {
     width: 100%;
+}
+
+::deep .bit-pi-fluent {
+    margin-bottom: rem(30px);
+    width: rem(360px);
+}
+
+.tab-content {
+    display: flex;
+    justify-content: flex-start;
+    width: rem(360px);
+    height: rem(200px);
+    margin-bottom: rem(40px);
+    margin-top: rem(8px);
+    padding: rem(10px);
+    border-radius: rem(4px);
+    border: rem(1px) solid rgb(229, 232, 236);
+    background-color: $White;
+    color: rgb(61, 71, 82);
+    transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+    overflow: hidden;
 }
