@@ -123,17 +123,17 @@ public partial class BitSwiper : IDisposable
     {
         _directionStyle = Direction == BitDirection.RightToLeft ? "direction:rtl" : "";
 
-        var itemsCount = AllItems.Count;
-
-        _internalScrollItemsCount = ScrollItemsCount < 0 ? 0
-                                    : ScrollItemsCount > itemsCount ? itemsCount : ScrollItemsCount;
-
         await base.OnParametersSetAsync();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await GetDimensions();
+
+        var itemsCount = AllItems.Count;
+        _internalScrollItemsCount = ScrollItemsCount < 1 ? 1
+                                    : ScrollItemsCount > itemsCount ? itemsCount
+                                    : ScrollItemsCount;
 
         if (firstRender)
         {
@@ -172,7 +172,7 @@ public partial class BitSwiper : IDisposable
         var scrollX = _swiperWidth / AllItems.Count * _internalScrollItemsCount;
         var passedSlidesX = (int)(_translateX / scrollX);
         var x = sign * scrollX + passedSlidesX * scrollX;
-
+        
         await Swipe(x);
     }
 
