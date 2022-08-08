@@ -2,23 +2,23 @@
 
 public partial class AppComponentBase : ComponentBase
 {
-    [AutoInject] protected IExceptionHandler ExceptionHandler { get; set; } = default!;
+    [AutoInject] public IExceptionHandler ExceptionHandler { get; set; } = default!;
 
-    [AutoInject] protected IStateService StateService { get; set; } = default!;
+    [AutoInject] public IStateService StateService { get; set; } = default!;
 
-    [AutoInject] protected AppAuthenticationStateProvider AuthenticationStateProvider { get; set; } = default!;
+    [AutoInject] public AppAuthenticationStateProvider AuthenticationStateProvider { get; set; } = default!;
 
-    [AutoInject] protected HttpClient HttpClient { get; set; } = default!;
+    [AutoInject] public HttpClient HttpClient { get; set; } = default!;
 
-    [AutoInject] protected IAuthTokenProvider AuthTokenProvider { get; set; } = default!;
+    [AutoInject] public IAuthTokenProvider AuthTokenProvider { get; set; } = default!;
 
 #if BlazorServer || BlazorHybrid
-    [AutoInject] protected IConfiguration Configuration { get; set; } = default!;
+    [AutoInject] public IConfiguration Configuration { get; set; } = default!;
 #endif
 
-    [AutoInject] protected NavigationManager NavigationManager { get; set; } = default!;
+    [AutoInject] public NavigationManager NavigationManager { get; set; } = default!;
 
-    [AutoInject] protected IAuthenticationService AuthenticationService { get; set; } = default!;
+    [AutoInject] public IAuthenticationService AuthenticationService { get; set; } = default!;
 
     protected async sealed override Task OnInitializedAsync()
     {

@@ -7,8 +7,8 @@ namespace TodoTemplate.App.Services.Implementations;
 #if BlazorServer
 public partial class ServerSideAuthTokenProvider : IAuthTokenProvider
 {
-    [AutoInject] readonly IJSRuntime _jsRuntime = default!;
-    [AutoInject] readonly IHttpContextAccessor _httpContextAccessor = default!;
+    [AutoInject] private IJSRuntime _jsRuntime = default!;
+    [AutoInject] private IHttpContextAccessor _httpContextAccessor = default!;
 
     private static readonly PropertyInfo IsInitializedProp = Assembly.Load("Microsoft.AspNetCore.Components.Server")
         .GetType("Microsoft.AspNetCore.Components.Server.Circuits.RemoteJSRuntime")

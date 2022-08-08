@@ -9,9 +9,9 @@ namespace TodoTemplate.Api.Services.Implementations;
 
 public partial class JwtService : IJwtService
 {
-    [AutoInject] readonly SignInManager<User> _signInManager = default!;
+    [AutoInject] private SignInManager<User> _signInManager = default!;
 
-    [AutoInject] readonly IOptionsSnapshot<AppSettings> _appSettings = default!;
+    [AutoInject] private IOptionsSnapshot<AppSettings> _appSettings = default!;
 
     public async Task<SignInResponseDto> GenerateToken(User user)
     {

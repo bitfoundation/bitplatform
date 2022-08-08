@@ -2,7 +2,7 @@
 
 public partial class ClientSideAuthTokenProvider : IAuthTokenProvider
 {
-    [AutoInject] readonly IJSRuntime _jsRuntime = default!;
+    [AutoInject] private IJSRuntime _jsRuntime = default!;
 
     public async Task<string?> GetAcccessToken()
     {
