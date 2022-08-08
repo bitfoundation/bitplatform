@@ -55,8 +55,9 @@
 }
 
 .site-content {
+    position: relative;
     width: 100%;
-    max-width: calc(100vw - $NavMenuWidth);
+    max-width: calc(100% - $NavMenuWidth);
     padding-left: rem(60px);
     padding-right: rem(60px);
     padding-top: rem(65px);
@@ -110,7 +111,6 @@
     justify-content: flex-start;
     align-items: flex-start;
     width: 100%;
-    max-width: calc(100vw - 503px);
     max-height: rem(464px);
     min-height: rem(70px);
     margin: 0;
@@ -148,15 +148,7 @@
     }
 
     &::-webkit-scrollbar:horizontal {
-        height: rem(6.5px);
-    }
-
-    @include lg {
-        max-width: calc(100vw - 415px);
-    }
-
-    @include lt-lg {
-        max-width: unset;
+        height: rem(8px);
     }
 }
 

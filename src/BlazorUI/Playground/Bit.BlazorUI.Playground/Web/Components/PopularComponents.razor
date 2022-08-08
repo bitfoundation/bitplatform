@@ -84,12 +84,12 @@
         <div class="example-code">
             @if (SelectedComponent.Name == "ColorPicker")
             {
-                <pre class="code"><code class="html">&ltBitColorPicker ShowPreview="true"
+                <pre class="code"><code class="language-cshtml">&ltBitColorPicker ShowPreview="true"
                 &#64;bind-Alpha="&#64;Alpha"
                 &#64;bind-Color="&#64;ColorRgb">
     Default ColorPicker
 &lt/BitColorPicker></code>
-<code class="csharp">
+<code class="language-csharp">
 &#64;code {
     private string ColorRgb = "rgb(0,101,239)";
     private double Alpha = 1;
@@ -97,19 +97,19 @@
             }
             else if (SelectedComponent.Name == "DatePicker")
             {
-                <pre class="code"><code class="html">&ltBitDatePicker Style="width: 300px"
+                <pre class="code"><code class="language-cshtml">&ltBitDatePicker Style="width: 300px"
                ShowWeekNumbers="true">
 &lt/BitDatePicker></code></pre>
             }
             else if (SelectedComponent.Name == "FileUpload")
             {
-                <pre class="code"><code class="html">&ltBitFileUpload Label="Select files"
+                <pre class="code"><code class="language-cshtml">&ltBitFileUpload Label="Select files"
                IsMultiSelect="true"    
                UploadUrl="&#64;UploadUrl"
                RemoveUrl="&#64;RemoveUrl"
                Style="flex-grow:1; max-width:none;">
 &lt/BitFileUpload></code>
-<code class="csharp">
+<code class="language-csharp">
 &#64;code {
     private string UploadUrl;
     private string RemoveUrl;
@@ -117,14 +117,14 @@
             }
             else if (SelectedComponent.Name == "DropDown")
             {
-                <pre class="code"><code class="html">&ltBitDropDown Label="Multi-select uncontrolled"
+                <pre class="code"><code class="language-cshtml">&ltBitDropDown Label="Multi-select uncontrolled"
              Items="GetDropdownItems()"
              Placeholder="Select options"
              &#64;bind-SelectedMultipleKeys="ControlledSelectedMultipleKeys"
              IsMultiSelect="true"
              Style="width:290px; margin:20px 0 20px 0">
 &lt/BitDropDown></code>
-<code class="csharp">
+<code class="language-csharp">
 &#64;code {
     private List&ltstring> ControlledSelectedMultipleKeys = new List&ltstring>() { "Apple", "Banana", "Grape" };
     private List&ltBitDropDownItem> GetDropdownItems()
@@ -183,7 +183,7 @@
             }
             else if (SelectedComponent.Name == "Nav (TreeList)")
             {
-                <pre class="code"><code class="html">&ltBitNav Style="width: 208px;
+                <pre class="code"><code class="language-cshtml">&ltBitNav Style="width: 208px;
                height: 350px;
                box-sizing: border-box;
                border: 1px solid #eee;
@@ -192,7 +192,7 @@
         AriaLabel="Nav basic example"
         SelectedKey="key3">
 &lt/BitNav></code>
-<code class="csharp">
+<code class="language-csharp">
 &#64;code {
     private readonly List&ltBitNavLinkItem> BasicNavLinks = new()
     {

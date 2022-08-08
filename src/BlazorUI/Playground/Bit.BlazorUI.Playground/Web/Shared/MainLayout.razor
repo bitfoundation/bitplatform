@@ -3,7 +3,7 @@
 <Header />
 
 <div class="main @(CurrentUrl == "/" || CurrentUrl == "/icons" ? "main--full-page" : null)">
-    @if (CurrentUrl != "/" && CurrentUrl != "/icons")
+    @if (CurrentUrl != "/")
     {
         <NavMenu />
     }
