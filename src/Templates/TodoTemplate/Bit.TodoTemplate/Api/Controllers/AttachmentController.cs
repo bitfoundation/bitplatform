@@ -7,13 +7,9 @@ namespace TodoTemplate.Api.Controllers;
 
 [Route("api/[controller]/[action]")]
 [ApiController]
-public partial class AttachmentController : ControllerBase
+public partial class AttachmentController : AppControllerBase
 {
-    [AutoInject] private IOptionsSnapshot<AppSettings> _appSettings = default!;
-
-    [AutoInject] private UserManager<User> _userManager = default!;
-
-    [AutoInject] private IWebHostEnvironment _webHostEnvironment = default!;
+    [AutoInject] private UserManager<User> userManager = default!;
 
     [HttpPost]
     [RequestSizeLimit(11 * 1024 * 1024 /*11MB*/)]
@@ -24,7 +20,7 @@ public partial class AttachmentController : ControllerBase
 
         var userId = User.GetUserId();
 
-        var user = await _userManager.FindByIdAsync(userId.ToString());
+        var user = await userManager.FindByIdAsync(userId.ToString());
 
         if (user is null)
             throw new ResourceNotFoundException();
@@ -33,9 +29,9 @@ public partial class AttachmentController : ControllerBase
 
         await using var requestStream = file.OpenReadStream();
 
-        Directory.CreateDirectory(_appSettings.Value.UserProfileImagePath);
+        Directory.CreateDirectory(appSettings.Value.UserProfileImagePath);
 
-        var path = Path.Combine(_appSettings.Value.UserProfileImagePath, fileName);
+        var path = Path.Combine(appSettings.Value.UserProfileImagePath, fileName);
 
         await using var fileStream = SystemFile.Exists(path) 
             ? SystemFile.Open(path, FileMode.Append) 
@@ -47,7 +43,7 @@ public partial class AttachmentController : ControllerBase
         {
             try
             {
-                var filePath = Path.Combine(_appSettings.Value.UserProfileImagePath, user.ProfileImageName);
+                var filePath = Path.Combine(appSettings.Value.UserProfileImagePath, user.ProfileImageName);
 
                 if (SystemFile.Exists(filePath))
                 {
@@ -64,7 +60,7 @@ public partial class AttachmentController : ControllerBase
         {
             user.ProfileImageName = fileName;
 
-            await _userManager.UpdateAsync(user);
+            await userManager.UpdateAsync(user);
         }
         catch
         {
@@ -79,19 +75,19 @@ public partial class AttachmentController : ControllerBase
     {
         var userId = User.GetUserId();
 
-        var user = await _userManager.FindByIdAsync(userId.ToString());
+        var user = await userManager.FindByIdAsync(userId.ToString());
 
         if (user?.ProfileImageName is null)
             throw new ResourceNotFoundException();
 
-        var filePath = Path.Combine(_appSettings.Value.UserProfileImagePath, user.ProfileImageName);
+        var filePath = Path.Combine(appSettings.Value.UserProfileImagePath, user.ProfileImageName);
 
         if (SystemFile.Exists(filePath) is false)
             throw new ResourceNotFoundException(nameof(ErrorStrings.UserImageCouldNotBeFound));
 
         user.ProfileImageName = null;
 
-        await _userManager.UpdateAsync(user);
+        await userManager.UpdateAsync(user);
 
         SystemFile.Delete(filePath);
     }
@@ -101,17 +97,17 @@ public partial class AttachmentController : ControllerBase
     {
         var userId = User.GetUserId();
 
-        var user = await _userManager.FindByIdAsync(userId.ToString());
+        var user = await userManager.FindByIdAsync(userId.ToString());
 
         if (user?.ProfileImageName is null)
             throw new ResourceNotFoundException();
 
-        var filePath = Path.Combine(_appSettings.Value.UserProfileImagePath, user.ProfileImageName);
+        var filePath = Path.Combine(appSettings.Value.UserProfileImagePath, user.ProfileImageName);
 
         if (SystemFile.Exists(filePath) is false)
             return new EmptyResult();
 
-        return PhysicalFile(Path.Combine(_webHostEnvironment.ContentRootPath, filePath),
+        return PhysicalFile(Path.Combine(webHostEnvironment.ContentRootPath, filePath),
             MimeTypeMap.GetMimeType(Path.GetExtension(filePath)), enableRangeProcessing: true);
     }
 }

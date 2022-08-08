@@ -1,13 +1,8 @@
 ﻿namespace TodoTemplate.App.Services.Implementations;
 
-public class AppAuthenticationStateProvider : AuthenticationStateProvider
+public partial class AppAuthenticationStateProvider : AuthenticationStateProvider
 {
-    private readonly IAuthTokenProvider _tokenProvider;
-
-    public AppAuthenticationStateProvider(IAuthTokenProvider tokenProvider)
-    {
-        _tokenProvider = tokenProvider;
-    }
+    [AutoInject] private IAuthTokenProvider tokenProvider = default!;
 
     public async Task RaiseAuthenticationStateHasChanged()
     {
@@ -16,7 +11,7 @@ public class AppAuthenticationStateProvider : AuthenticationStateProvider
 
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
-        var access_token = await _tokenProvider.GetAcccessToken();
+        var access_token = await tokenProvider.GetAcccessToken();
 
         if (string.IsNullOrWhiteSpace(access_token))
         {

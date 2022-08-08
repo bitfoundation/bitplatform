@@ -4,6 +4,22 @@ public partial class AppComponentBase : ComponentBase
 {
     [AutoInject] protected IExceptionHandler exceptionHandler = default!;
 
+    [AutoInject] protected IStateService stateService = default!;
+
+    [AutoInject] protected AppAuthenticationStateProvider authStateProvider = default!;
+
+    [AutoInject] protected HttpClient httpClient = default!;
+
+    [AutoInject] protected IAuthTokenProvider authTokenProvider = default!;
+
+#if BlazorServer || BlazorHybrid
+    [AutoInject] protected IConfiguration configuration = default!;
+#endif
+
+    [AutoInject] protected NavigationManager navigationManager = default!;
+
+    [AutoInject] protected IAuthenticationService authenticationService = default!;
+
     protected async sealed override Task OnInitializedAsync()
     {
         try

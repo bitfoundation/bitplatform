@@ -4,8 +4,6 @@ namespace TodoTemplate.App.Pages;
 
 public partial class ForgotPasswordPage
 {
-    [AutoInject] private HttpClient httpClient = default!;
-
     public SendResetPasswordEmailRequestDto ForgotPasswordModel { get; set; } = new();
 
     public bool IsLoading { get; set; }

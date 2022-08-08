@@ -2,12 +2,9 @@
 
 namespace TodoTemplate.App.Pages;
 
+[Authorize]
 public partial class TodoPage
-{
-    [AutoInject] private HttpClient httpClient = default!;
-
-    [AutoInject] private IStateService stateService = default!;
-
+{ 
     public bool IsLoading { get; set; }
     public string SelectedPivotName { get; set; } = AppStrings.All;
     public string? EditModeTodoItemText { get; set; }

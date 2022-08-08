@@ -4,12 +4,6 @@ namespace TodoTemplate.App.Pages;
 
 public partial class SignUpPage
 {
-    [AutoInject] private HttpClient httpClient = default!;
-
-    [AutoInject] private NavigationManager navigationManager = default!;
-
-    [AutoInject] private AppAuthenticationStateProvider authStateProvider = default!;
-
     public SignUpRequestDto SignUpModel { get; set; } = new();
 
     public bool IsSignedUp { get; set; }

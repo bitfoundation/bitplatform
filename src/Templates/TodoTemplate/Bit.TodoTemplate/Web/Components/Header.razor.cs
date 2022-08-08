@@ -2,12 +2,6 @@
 
 public partial class Header : IAsyncDisposable
 {
-    [AutoInject] private IStateService stateService = default!;
-
-    [AutoInject] private AppAuthenticationStateProvider authStateProvider = default!;
-
-    [AutoInject] private IExceptionHandler exceptionHandler = default!;
-
     [Parameter] public EventCallback OnToggleMenu { get; set; }
 
     public bool IsUserAuthenticated { get; set; }

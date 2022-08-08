@@ -1,20 +1,15 @@
 ﻿namespace TodoTemplate.App.Services.Implementations;
 
-public class ClientSideAuthTokenProvider : IAuthTokenProvider
+public partial class ClientSideAuthTokenProvider : IAuthTokenProvider
 {
-    private readonly IJSRuntime _jsRuntime;
-
-    public ClientSideAuthTokenProvider(IJSRuntime jsRuntime)
-    {
-        _jsRuntime = jsRuntime;
-    }
+    [AutoInject] readonly IJSRuntime jsRuntime = default!;
 
     public async Task<string?> GetAcccessToken()
     {
 #if BlazorHybrid
         return Preferences.Get("access_token", null);
 #else
-        return await _jsRuntime.InvokeAsync<string>("App.getCookie", "access_token");
+        return await jsRuntime.InvokeAsync<string>("App.getCookie", "access_token");
 #endif
     }
 }

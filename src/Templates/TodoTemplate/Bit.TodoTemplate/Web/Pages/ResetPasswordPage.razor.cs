@@ -5,14 +5,6 @@ namespace TodoTemplate.App.Pages;
 
 public partial class ResetPasswordPage
 {
-    [AutoInject] private HttpClient httpClient = default!;
-
-    [AutoInject] private NavigationManager navigationManager = default!;
-
-    [AutoInject] private IAuthenticationService authService = default!;
-
-    [AutoInject] private AppAuthenticationStateProvider authStateProvider = default!;
-
     [Parameter]
     [SupplyParameterFromQuery]
     public string? Email { get; set; }
@@ -52,7 +44,7 @@ public partial class ResetPasswordPage
 
             ResetPasswordMessage = AuthStrings.PasswordChangedSuccessfullyMessage;
 
-            await authService.SignIn(new SignInRequestDto
+            await authenticationService.SignIn(new SignInRequestDto
             {
                 UserName = Email,
                 Password = ResetPasswordModel.Password

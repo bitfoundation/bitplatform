@@ -2,8 +2,6 @@
 
 public partial class NotAuthorizedComponent
 {
-    [AutoInject] private IAuthenticationService authenticationService = default!;
-
     [CascadingParameter] public Task<AuthenticationState> AuthenticationState { get; set; } = default!;
 
     public ClaimsPrincipal User { get; set; } = default!;

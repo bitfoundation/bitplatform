@@ -5,18 +5,14 @@ namespace TodoTemplate.Api.Controllers;
 
 [Route("api/[controller]/[action]")]
 [ApiController]
-public partial class TodoItemController : ControllerBase
+public partial class TodoItemController : AppControllerBase
 {
-    [AutoInject] private AppDbContext _dbContext = default!;
-
-    [AutoInject] private IMapper _mapper = default!;
-
     [HttpGet, EnableQuery]
     public IQueryable<TodoItemDto> Get(CancellationToken cancellationToken)
     {
-        return _dbContext.TodoItems
+        return dbContext.TodoItems
             .Where(t => t.UserId == User.GetUserId())
-            .ProjectTo<TodoItemDto>(_mapper.ConfigurationProvider, cancellationToken);
+            .ProjectTo<TodoItemDto>(mapper.ConfigurationProvider, cancellationToken);
     }
 
     [HttpGet("{id:int}")]
@@ -33,36 +29,36 @@ public partial class TodoItemController : ControllerBase
     [HttpPost]
     public async Task Create(TodoItemDto dto, CancellationToken cancellationToken)
     {
-        var todoItemToAdd = _mapper.Map<TodoItem>(dto);
+        var todoItemToAdd = mapper.Map<TodoItem>(dto);
 
         todoItemToAdd.UserId = User.GetUserId();
 
-        await _dbContext.TodoItems.AddAsync(todoItemToAdd, cancellationToken);
+        await dbContext.TodoItems.AddAsync(todoItemToAdd, cancellationToken);
 
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
     }
 
     [HttpPut]
     public async Task Update(TodoItemDto dto, CancellationToken cancellationToken)
     {
-        var todoItemToUpdate = await _dbContext.TodoItems.FirstOrDefaultAsync(t => t.Id == dto.Id, cancellationToken);
+        var todoItemToUpdate = await dbContext.TodoItems.FirstOrDefaultAsync(t => t.Id == dto.Id, cancellationToken);
 
         if (todoItemToUpdate is null)
             throw new ResourceNotFoundException(nameof(ErrorStrings.ToDoItemCouldNotBeFound));
 
-        var updatedTodoItem = _mapper.Map(dto, todoItemToUpdate);
+        var updatedTodoItem = mapper.Map(dto, todoItemToUpdate);
 
-        _dbContext.TodoItems.Update(updatedTodoItem);
+        dbContext.TodoItems.Update(updatedTodoItem);
 
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
     }
 
     [HttpDelete("{id:int}")]
     public async Task Delete(int id, CancellationToken cancellationToken)
     {
-        _dbContext.Remove(new TodoItem { Id = id });
+        dbContext.Remove(new TodoItem { Id = id });
 
-        var affectedRows = await _dbContext.SaveChangesAsync(cancellationToken);
+        var affectedRows = await dbContext.SaveChangesAsync(cancellationToken);
 
         if (affectedRows < 1)
             throw new ResourceNotFoundException(nameof(ErrorStrings.ToDoItemCouldNotBeFound));

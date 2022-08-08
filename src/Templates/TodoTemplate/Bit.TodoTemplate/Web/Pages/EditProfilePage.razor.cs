@@ -3,18 +3,9 @@ using TodoTemplate.Shared.Dtos.Account;
 
 namespace TodoTemplate.App.Pages;
 
+[Authorize]
 public partial class EditProfilePage
 {
-    [AutoInject] private IAuthTokenProvider authTokenProvider = default!;
-
-    [AutoInject] private HttpClient httpClient = default!;
-
-    [AutoInject] private IStateService stateService = default!;
-
-#if BlazorServer || BlazorHybrid
-    [AutoInject] private IConfiguration configuration = default!;
-#endif
-
     public UserDto User { get; set; } = new();
     public UserDto UserToEdit { get; set; } = new();
 

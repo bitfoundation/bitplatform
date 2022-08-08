@@ -2,10 +2,6 @@
 
 public partial class EmailConfirmationPage
 {
-    [AutoInject] private HttpClient httpClient = default!;
-
-    [AutoInject] private NavigationManager navigationManager = default!;
-
     [Parameter]
     [SupplyParameterFromQuery]
     public string? Email { get; set; }

@@ -3,20 +3,15 @@ using System.Runtime.InteropServices;
 
 namespace TodoTemplate.App.Services.Implementations;
 
-public class AppHttpClientHandler : HttpClientHandler
+public partial class AppHttpClientHandler : HttpClientHandler
 {
-    private readonly IAuthTokenProvider _tokenProvider;
-
-    public AppHttpClientHandler(IAuthTokenProvider tokenProvider)
-    {
-        _tokenProvider = tokenProvider;
-    }
+    [AutoInject] private IAuthTokenProvider tokenProvider = default!;
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         if (request.Headers.Authorization is null && RuntimeInformation.ProcessArchitecture != Architecture.Wasm)
         {
-            var access_token = await _tokenProvider.GetAcccessToken();
+            var access_token = await tokenProvider.GetAcccessToken();
             if (access_token is not null)
             {
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", access_token);

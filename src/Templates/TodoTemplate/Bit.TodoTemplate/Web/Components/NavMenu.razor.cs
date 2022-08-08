@@ -5,16 +5,6 @@ namespace TodoTemplate.App.Components;
 
 public partial class NavMenu
 {
-    [AutoInject] private HttpClient httpClient = default!;
-
-    [AutoInject] private IStateService stateService = default!;
-
-    [AutoInject] private IAuthTokenProvider authTokenProvider = default!;
-
-#if BlazorServer || BlazorHybrid
-    [AutoInject] private IConfiguration configuration = default!;
-#endif
-
     private bool isMenuOpen;
 
     public List<BitNavLinkItem> NavLinks { get; set; }

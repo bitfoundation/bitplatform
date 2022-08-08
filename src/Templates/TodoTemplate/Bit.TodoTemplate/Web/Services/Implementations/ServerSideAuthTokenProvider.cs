@@ -5,16 +5,10 @@ using System.Reflection;
 namespace TodoTemplate.App.Services.Implementations;
 
 #if BlazorServer
-public class ServerSideAuthTokenProvider : IAuthTokenProvider
+public partial class ServerSideAuthTokenProvider : IAuthTokenProvider
 {
-    private readonly IJSRuntime _jsRuntime;
-    private readonly IHttpContextAccessor _httpContextAccessor;
-
-    public ServerSideAuthTokenProvider(IJSRuntime jsRuntime, IHttpContextAccessor httpContextAccessor)
-    {
-        _jsRuntime = jsRuntime;
-        _httpContextAccessor = httpContextAccessor;
-    }
+    [AutoInject] readonly IJSRuntime jsRuntime = default!;
+    [AutoInject] readonly IHttpContextAccessor httpContextAccessor = default!;
 
     private static readonly PropertyInfo IsInitializedProp = Assembly.Load("Microsoft.AspNetCore.Components.Server")
         .GetType("Microsoft.AspNetCore.Components.Server.Circuits.RemoteJSRuntime")
@@ -22,14 +16,14 @@ public class ServerSideAuthTokenProvider : IAuthTokenProvider
 
     public async Task<string?> GetAcccessToken()
     {
-        var isInitialized = (bool)IsInitializedProp.GetValue(_jsRuntime);
+        var isInitialized = (bool)IsInitializedProp.GetValue(jsRuntime);
 
         if (isInitialized)
         {
-            return await _jsRuntime.InvokeAsync<string>("App.getCookie", "access_token");
+            return await jsRuntime.InvokeAsync<string>("App.getCookie", "access_token");
         }
 
-        return _httpContextAccessor.HttpContext?.Request.Cookies["access_token"];
+        return httpContextAccessor.HttpContext?.Request.Cookies["access_token"];
     }
 }
 #else
