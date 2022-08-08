@@ -142,7 +142,7 @@ public class BitCompoundButtonTests : BunitTestContext
     {
         var component = RenderComponent<BitCompoundButton>(parameters =>
         {
-            parameters.Add(p => p.Visual, visual);
+            parameters.AddCascadingValue(visual);
             parameters.Add(p => p.ButtonStyle, buttonStyle);
             parameters.Add(p => p.IsEnabled, isEnabled);
         });

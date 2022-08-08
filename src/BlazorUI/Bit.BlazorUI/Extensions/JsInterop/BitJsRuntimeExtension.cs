@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace Microsoft.JSInterop;
 
-internal static class JsRuntimeExtension
+internal static class BitJsRuntimeExtension
 {
     internal static async Task Log(this IJSRuntime jsRuntime, object value)
     {
@@ -32,26 +32,9 @@ internal static class JsRuntimeExtension
         return await jsRuntime.InvokeAsync<BoundingClientRect>("Bit.getBoundingClientRect", element);
     }
 
-    internal static async Task<string> RegisterOnWindowMouseUpEvent(this IJSRuntime jsRuntime, BitComponentBase dontetHelper, string callbackName)
+    internal static async Task ScrollElementIntoView(this IJSRuntime jsRuntime, string targetElementId)
     {
-
-        return await jsRuntime.InvokeAsync<string>("BitColorPicker.registerOnWindowMouseUpEvent", DotNetObjectReference.Create(dontetHelper),
-            callbackName);
-    }
-    internal static async Task<string> RegisterOnWindowMouseMoveEvent(this IJSRuntime jsRuntime, BitComponentBase dontetHelper, string callbackName)
-    {
-        return await jsRuntime.InvokeAsync<string>("BitColorPicker.registerOnWindowMouseMoveEvent", DotNetObjectReference.Create(dontetHelper),
-             callbackName);
-    }
-
-    internal static async Task AbortProcedure(this IJSRuntime jSRuntime, string abortControllerId)
-    {
-        await jSRuntime.InvokeVoidAsync("BitColorPicker.abortProcedure", abortControllerId);
-    }
-
-    internal static async Task BitLinkScrollToFragmentOnClickEvent(this IJSRuntime jsRuntime, string targetElementId)
-    {
-        await jsRuntime.InvokeVoidAsync("BitLink.scrollToFragmentOnClickEvent", targetElementId);
+        await jsRuntime.InvokeVoidAsync("Bit.scrollElementIntoView", targetElementId);
     }
 
     internal static async Task SelectText(this IJSRuntime jsRuntime, ElementReference element)
@@ -67,5 +50,10 @@ internal static class JsRuntimeExtension
     internal static async Task PreventDefault(this IJSRuntime jsRuntime, ElementReference element, string @event)
     {
         await jsRuntime.InvokeVoidAsync("Bit.preventDefault", element, @event);
+    }
+
+    internal static async Task<TransformMatrix> GetComputedTransform(this IJSRuntime jsRuntime, ElementReference element)
+    {
+        return await jsRuntime.InvokeAsync<TransformMatrix>("Bit.getComputedTransform", element);
     }
 }

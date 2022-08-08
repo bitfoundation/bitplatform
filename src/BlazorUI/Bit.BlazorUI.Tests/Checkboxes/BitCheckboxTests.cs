@@ -27,11 +27,15 @@ public class BitCheckboxTests : BunitTestContext
     ]
     public void BitCheckboxOnClickShouldWorkIfIsEnabled(Visual visual, bool defaultValue, bool isEnabled)
     {
-        var component = RenderComponent<BitCheckboxTest>(parameters =>
+        var clicked = false;
+        var changed = false;
+        var component = RenderComponent<BitCheckbox>(parameters =>
         {
-            parameters.Add(p => p.Visual, visual);
+            parameters.AddCascadingValue(visual);
             parameters.Add(p => p.IsEnabled, isEnabled);
             parameters.Add(p => p.DefaultValue, defaultValue);
+            parameters.Add(p => p.OnClick, () => clicked = true);
+            parameters.Add(p => p.OnChange, () => changed = true);
         });
 
         var chb = component.Find(".bit-chb");
@@ -40,11 +44,8 @@ public class BitCheckboxTests : BunitTestContext
 
         Assert.AreEqual(defaultValue, chb.ClassList.Contains($"bit-chb-checked-{visualClass}"));
         chbCheckbox.Click();
-        if (isEnabled)
-        {
-            Assert.AreEqual(1, component.Instance.ClickCounter);
-            Assert.IsTrue(component.Instance.ValueChanged);
-        }
+        Assert.AreEqual(isEnabled, clicked);
+        Assert.AreEqual(isEnabled, changed);
     }
 
     [DataTestMethod,
@@ -59,9 +60,9 @@ public class BitCheckboxTests : BunitTestContext
     ]
     public void BitCheckboxBoxSideTest(Visual visual, BitCheckBoxSide boxSide)
     {
-        var component = RenderComponent<BitCheckboxTest>(parameters =>
+        var component = RenderComponent<BitCheckbox>(parameters =>
         {
-            parameters.Add(p => p.Visual, visual);
+            parameters.AddCascadingValue(visual);
             parameters.Add(p => p.BoxSide, boxSide);
         });
 
@@ -108,7 +109,7 @@ public class BitCheckboxTests : BunitTestContext
     ]
     public void BitCheckboxAriaLabelTest(string ariaLabel)
     {
-        var component = RenderComponent<BitCheckboxTest>(parameters =>
+        var component = RenderComponent<BitCheckbox>(parameters =>
         {
             parameters.Add(p => p.AriaLabel, ariaLabel);
         });
@@ -131,7 +132,7 @@ public class BitCheckboxTests : BunitTestContext
     ]
     public void BitCheckboxAriaDescriptionTest(string ariaDescription)
     {
-        var component = RenderComponent<BitCheckboxTest>(parameters =>
+        var component = RenderComponent<BitCheckbox>(parameters =>
         {
             parameters.Add(p => p.AriaDescription, ariaDescription);
         });
@@ -154,7 +155,7 @@ public class BitCheckboxTests : BunitTestContext
     ]
     public void BitCheckboxAriaLabelledbyTest(string ariaLabelledby)
     {
-        var component = RenderComponent<BitCheckboxTest>(parameters =>
+        var component = RenderComponent<BitCheckbox>(parameters =>
         {
             parameters.Add(p => p.AriaLabelledby, ariaLabelledby);
         });
@@ -177,7 +178,7 @@ public class BitCheckboxTests : BunitTestContext
     ]
     public void BitCheckboxTitleTest(string title)
     {
-        var component = RenderComponent<BitCheckboxTest>(parameters =>
+        var component = RenderComponent<BitCheckbox>(parameters =>
         {
             parameters.Add(p => p.Title, title);
         });
@@ -200,7 +201,7 @@ public class BitCheckboxTests : BunitTestContext
     ]
     public void BitCheckboxNameTest(string name)
     {
-        var component = RenderComponent<BitCheckboxTest>(parameters =>
+        var component = RenderComponent<BitCheckbox>(parameters =>
         {
             parameters.Add(p => p.Name, name);
         });
@@ -223,7 +224,7 @@ public class BitCheckboxTests : BunitTestContext
     ]
     public void BitCheckboxAriaPostionInSetTest(int? ariaPosInSet)
     {
-        var component = RenderComponent<BitCheckboxTest>(parameters =>
+        var component = RenderComponent<BitCheckbox>(parameters =>
         {
             parameters.Add(p => p.AriaPositionInSet, ariaPosInSet);
         });
@@ -246,7 +247,7 @@ public class BitCheckboxTests : BunitTestContext
     ]
     public void BitCheckboxAriaSetSizeTest(int? ariaSetSize)
     {
-        var component = RenderComponent<BitCheckboxTest>(parameters =>
+        var component = RenderComponent<BitCheckbox>(parameters =>
         {
             parameters.Add(p => p.AriaSetSize, ariaSetSize);
         });
@@ -268,7 +269,7 @@ public class BitCheckboxTests : BunitTestContext
     ]
     public void BitCheckboxCustomCheckmarkIconTest(BitIconName checkmarkIconName)
     {
-        var component = RenderComponent<BitCheckboxTest>(parameters =>
+        var component = RenderComponent<BitCheckbox>(parameters =>
         {
             parameters.Add(p => p.CheckmarkIconName, checkmarkIconName);
         });
@@ -284,7 +285,7 @@ public class BitCheckboxTests : BunitTestContext
     ]
     public void BitCheckboxCheckmarkIconAriaLabelTest(string ariaLabel)
     {
-        var component = RenderComponent<BitCheckboxTest>(parameters =>
+        var component = RenderComponent<BitCheckbox>(parameters =>
         {
             parameters.Add(p => p.CheckmarkIconAriaLabel, ariaLabel);
         });
@@ -307,7 +308,7 @@ public class BitCheckboxTests : BunitTestContext
     ]
     public void BitCheckboxCustomChildContentTest(string childContent)
     {
-        var component = RenderComponent<BitCheckboxTest>(parameters =>
+        var component = RenderComponent<BitCheckbox>(parameters =>
         {
             parameters.Add(p => p.ChildContent, childContent);
         });

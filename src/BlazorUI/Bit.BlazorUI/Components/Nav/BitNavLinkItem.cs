@@ -75,6 +75,11 @@ public class BitNavLinkItem
     public bool IsEnabled { get; set; } = true;
 
     /// <summary>
+    /// Custom style for the each item element.
+    /// </summary>
+    public string? ItemStyle { get; set; }
+
+    /// <summary>
     /// Link target, specifies how to open the link
     /// </summary>
     public string? Target { get; set; }

@@ -151,6 +151,9 @@ Please confirm your email by clicking on the link.</value>
   <data name="ForgetPasswordTitle" xml:space="preserve">
     <value>Forget password</value>
   </data>
+  <data name="ForgetPasswordMessage" xml:space="preserve">
+    <value>Please enter the email address you have been signed up with so we can send a reset password link to your email address.</value>
+  </data>
   <data name="ForgotPasswordLink" xml:space="preserve">
     <value>Forgot password?</value>
   </data>
@@ -182,7 +185,7 @@ Please confirm your email by clicking on the link.</value>
     <value>Reset password</value>
   </data>
   <data name="ResetPasswordLinkSentMessage" xml:space="preserve">
-    <value>The reset password link has been sent.</value>
+    <value>The reset password link has been sent to your email address.</value>
   </data>
   <data name="ResetPasswordTitle" xml:space="preserve">
     <value>Reset password</value>
@@ -203,6 +206,6 @@ Please confirm your email by clicking on the link.</value>
     <value>Sign up</value>
   </data>
   <data name="Submit" xml:space="preserve">
-    <value>Submit</value>
+    <value>Send reset link</value>
   </data>
 </root>

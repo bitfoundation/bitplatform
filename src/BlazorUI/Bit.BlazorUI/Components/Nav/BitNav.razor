@@ -101,7 +101,7 @@
             @if (navLinkItem.Url.HasValue() || navLinkItem.ForceAnchor)
             {
                 <a class="@GetLinkClass(navLinkItem)"
-                   style="padding: 0 20px 0 @(((navLinkItem.Depth * 14) + 27).ToString() + "px");"
+                   style="padding: 0 20px 0 @(((navLinkItem.Depth * 14) + 27).ToString() + "px"); @navLinkItem.ItemStyle;"
                    href="@(navLinkItem.IsEnabled ? navLinkItem.Url : null)"
                    target="@navLinkItem.Target"
                    title="@(navLinkItem.Title is not null ? navLinkItem.Title : navLinkItem.Name)"
@@ -132,7 +132,7 @@
             else
             {
                 <button class="@GetLinkClass(navLinkItem)"
-                        style="padding: 0 20px 0 @(((navLinkItem.Depth * 14) + 27).ToString() + "px");"
+                        style="padding: 0 20px 0 @(((navLinkItem.Depth * 14) + 27).ToString() + "px"); @navLinkItem.ItemStyle;"
                         title="@(navLinkItem.Title is not null ? navLinkItem.Title : navLinkItem.Name)"
                         disabled="@(navLinkItem.IsEnabled is false)"
                         aria-label="@navLinkItem.AriaLabel"

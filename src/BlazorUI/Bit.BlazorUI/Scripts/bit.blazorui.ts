@@ -24,9 +24,9 @@ class CalloutComponent {
 }
 
 class Bit {
-    static currentCallout: CalloutComponent = new CalloutComponent();
-    static currentDropDownCalloutId: string = "";
-    static currentDropDownCalloutResponsiveModeIsEnabled: boolean = false;
+    static currentDropDownCalloutId = "";
+    static currentCallout = new CalloutComponent();
+    static currentDropDownCalloutResponsiveModeIsEnabled = false;
 
     static setProperty(element: Record<string, any>, property: string, value: any): void {
         element[property] = value;
@@ -36,12 +36,24 @@ class Bit {
         return element[property];
     }
 
+    static getClientHeight(element: HTMLElement): number {
+        return element.clientHeight;
+    }
+
     static getBoundingClientRect(element: HTMLElement): DOMRect {
         return element.getBoundingClientRect();
     }
 
-    static getClientHeight(element: HTMLElement): number {
-        return element.clientHeight;
+    static scrollElementIntoView(targetElementId: string) {
+        const element = document.getElementById(targetElementId);
+
+        if (element != null) {
+            element.scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+                inline: "nearest"
+            });
+        }
     }
 
     static closeCurrentCalloutIfExists(calloutId: string, overlayId: string, obj: DotNetObject | null) {
@@ -76,6 +88,26 @@ class Bit {
 
     static preventDefault(element: HTMLElement, event: string) {
         element.addEventListener(event, e => e.preventDefault(), { passive: false });
+    }
+
+    static getComputedTransform(element: HTMLElement) {
+        const computedStyle = window.getComputedStyle(element);
+        const matrix = computedStyle.getPropertyValue('transform');
+        const matched = matrix.match(/matrix\((.+)\)/);
+
+        if (matched && matched.length > 1) {
+            const splitted = matched[1].split(',');
+            return {
+                ScaleX: +splitted[0],
+                SkewY: +splitted[1],
+                SkewX: +splitted[2],
+                ScaleY: +splitted[3],
+                TranslateX: +splitted[4],
+                TranslateY: +splitted[5]
+            }
+        }
+
+        return null;
     }
 }
 

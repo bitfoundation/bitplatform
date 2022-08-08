@@ -84,6 +84,10 @@
         "inputFile": "Pages/Components/Pivot/BitPivotDemo.razor.scss"
     },
     {
+        "outputFile": "Pages/Components/Swiper/BitSwiperDemo.razor.css",
+        "inputFile": "Pages/Components/Swiper/BitSwiperDemo.razor.scss"
+    },
+    {
         "outputFile": "Pages/Components/Slider/BitSliderDemo.razor.css",
         "inputFile": "Pages/Components/Slider/BitSliderDemo.razor.scss"
     },

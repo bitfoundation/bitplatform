@@ -1,4 +1,4 @@
-﻿namespace Microsoft.JSInterop;
+﻿namespace Bit.BlazorUI;
 
 internal class BoundingClientRect
 {

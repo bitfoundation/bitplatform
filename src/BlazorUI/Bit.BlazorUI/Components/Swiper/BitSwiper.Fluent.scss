@@ -1,0 +1,82 @@
+﻿@import "../../Styles/Fluent/colors.fluent.scss";
+@import "../../Styles/functions.scss";
+
+.bit-sls {
+    margin: auto;
+    overflow: hidden;
+
+    &.bit-sls-fluent {
+    }
+
+    .swiper {
+        width: 100%;
+        height: 100%;
+        cursor: grab;
+        display: flex;
+        user-select: none;
+        transform: translateX(0px);
+        transition-duration: 300ms;
+        transition-timing-function: ease-out;
+        transition-property: transform, -webkit-transform;
+    }
+
+    .right-btn,
+    .left-btn {
+        font-size: 1.5rem;
+        cursor: pointer;
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 10%;
+        padding: 0;
+        color: $White;
+        text-align: center;
+        background: 0 0;
+        border: 0;
+        opacity: .5;
+        transition: opacity .15s ease;
+
+        &:hover {
+            color: #fff;
+            text-decoration: none;
+            outline: 0;
+            opacity: .9;
+        }
+    }
+
+    .right-btn {
+        right: 0;
+    }
+
+    .left-btn {
+        left: 0;
+    }
+
+    .dots {
+        text-align: center;
+        margin-top: rem(10px);
+
+        > div {
+            cursor: pointer;
+            height: rem(10px);
+            width: rem(10px);
+            margin: 0 rem(4px);
+            background-color: $Grey120;
+            border-radius: 50%;
+            display: inline-block;
+            transition: background-color 0.6s ease;
+
+            &:hover {
+                background-color: $Grey160;
+            }
+
+            &.current, &.current:hover {
+                background-color: $Primary;
+            }
+        }
+    }
+}

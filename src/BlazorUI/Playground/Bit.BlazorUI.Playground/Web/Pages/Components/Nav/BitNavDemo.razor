@@ -11,7 +11,7 @@
                    overflow-y: auto;"
                     NavLinkItems="BasicNavLinks"
                     AriaLabel="Nav basic example"
-                    SelectedKey="key3">
+                    InitialSelectedKey="key3">
             </BitNav>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -24,9 +24,9 @@
                    border: 1px solid #eee;
                    overflow-y: auto;"
                     Class="bit-nav-wrapped-link"
-                    SelectedKey="key6"
+                    InitialSelectedKey="key6"
                     AriaLabel="Nav example with wrapped link text"
-                    NavLinkItems="BasicNoToolTipNavLinks">
+                    NavLinkItems="NavLinksNoToolTip">
             </BitNav>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -34,7 +34,7 @@
     <ComponentExampleBox Title="Nav similar to the one in this demo app" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example3">
         <ExamplePreview>
             <BitNav Style="width: 300px;"
-                    NavLinkItems="BasicNoUrlNavLinks"
+                    NavLinkItems="NavLinksSimilarThisApp"
                     RenderType="BitNavRenderType.Grouped"
                     AriaLabel="Nav example similar to one found in this demo page">
             </BitNav>
@@ -43,7 +43,7 @@
 
     <ComponentExampleBox Title="Nav with nested links" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
         <ExamplePreview>
-            <BitNav NavLinkItems="NestedLinks"
+            <BitNav NavLinkItems="NavWithNestedLinks"
                     AriaLabel="Nav example with nested links"
                     SelectedKey="Key1-1-2">
             </BitNav>
@@ -52,7 +52,7 @@
 
     <ComponentExampleBox Title="Nav with custom group header" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
         <ExamplePreview>
-            <BitNav NavLinkItems="CustomHeaderLinks"
+            <BitNav NavLinkItems="NavLinksWithCustomHeader"
                     RenderType="BitNavRenderType.Grouped"
                     AriaLabel="Nav with custom group header">
                 <HeaderTemplate Context="link">
@@ -69,7 +69,7 @@
                    box-sizing: border-box;
                    border: 1px solid #eee;
                    overflow-y: auto;"
-                    NavLinkItems="BasicNavLinksWithoutURL"
+                    NavLinkItems="NavLinksWithManualMode"
                     Mode="BitNavMode.Manual"
                     AriaLabel="Nav manual mode example"
                     SelectedKey="@BitNavManualModeSelectedKey"
