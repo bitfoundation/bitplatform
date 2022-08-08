@@ -15,6 +15,8 @@ public partial class NavMenu
     private bool isNavOpen = false;
     private readonly List<BitNavLinkItem> allNavLinks = new()
     {
+        new BitNavLinkItem { Name= "Overview", Key = "Overview", Url = "/overview"},
+        new BitNavLinkItem { Name= "Getting started", Key = "GettingStarted", Url = "/getting-started"},
         new BitNavLinkItem
         {
             Name = "Basic Inputs",
@@ -105,11 +107,10 @@ public partial class NavMenu
             {
                 new BitNavLinkItem { Name = "Modal", Key = "Modal", Url = "/components/modal" },
             },
-        },
+        }
     };
 
     private List<BitNavLinkItem> filteredNavLinks;
-    private BitNavRenderType renderType = BitNavRenderType.Grouped;
     private string searchText = string.Empty;
 
     [Inject] public NavManuService NavManuService { get; set; }
@@ -155,7 +156,6 @@ public partial class NavMenu
 
     private void HandleClear()
     {
-        renderType = BitNavRenderType.Grouped;
         filteredNavLinks = allNavLinks;
     }
 
@@ -165,7 +165,6 @@ public partial class NavMenu
         searchText = text;
         if (string.IsNullOrEmpty(text)) return;
 
-        renderType = BitNavRenderType.Normal;
         var flatNavLinkList = Flatten(allNavLinks).ToList().FindAll(link => !string.IsNullOrEmpty(link.Url));
         filteredNavLinks = flatNavLinkList.FindAll(link => link.Name.Contains(text, StringComparison.InvariantCultureIgnoreCase));
     }
@@ -178,19 +177,16 @@ public partial class NavMenu
         await ToggleMenu();
     }
 
-    private string GetDemoLinkClassName(string link)
+    private string GetNavMenuClass()
     {
-        var className = "nav-menu-demo-link";
-        if (CurrentUrl == "/components/overview" && link == "overview")
+        if (string.IsNullOrEmpty(searchText))
         {
-            className += " nav-menu-demo-link--active";
+            return "side-nav";
         }
-        else if (CurrentUrl == "/get-started" && link == "get-started")
+        else
         {
-            className += " nav-menu-demo-link--active";
+            return "side-nav searched-side-nav";
         }
-
-        return className;
     }
 
     private static IEnumerable<BitNavLinkItem> Flatten(IEnumerable<BitNavLinkItem> e) => e.SelectMany(c => Flatten(c.Links)).Concat(e);

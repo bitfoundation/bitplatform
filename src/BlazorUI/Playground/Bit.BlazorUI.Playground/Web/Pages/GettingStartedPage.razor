@@ -1,11 +1,13 @@
-@page "/get-started"
+@page "/getting-started"
 
-<section class="page-container">
-    <h1 class="page-title">Get Started</h1>
-    <div class="page-desc">This tutorial shows how to install and use Bit's Blazor UI Components in blazor projects.</div>
+<div class="page-container">
+    <h1 class="page-title">Getting started</h1>
+    <section class="page-section">
+        <div class="section-desc">This tutorial shows how to install and use Bit's Blazor UI Components in blazor projects.</div>
+    </section>
 
     <section class="page-section">
-        <h2 class="section-title"><span class="title-number">1.</span> Install</h2>
+        <h2 class="section-title">Install</h2>
         <div class="section-desc">Bit's Blazor UI Components are distributed as the <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI/" Target="_blank">Bit.BlazorUI nuget package</BitLink>. You can add them to your project in one of the following ways:</div>
         <div class="section-desc">Install the package from command line by running this command:</div>
         <div class="code-box">dotnet add package Bit.BlazorUI</div>
@@ -15,13 +17,13 @@
     </section>
 
     <section class="page-section">
-        <h2 class="section-title"><span class="title-number">2.</span> Import the namespace</h2>
+        <h2 class="section-title">Import the namespace</h2>
         <div class="section-desc">Open the <span class="txt--blue">_Imports.razor</span> file of your Blazor application and add this line:</div>
         <div class="code-box">&#64;using Bit.BlazorUI</div>
     </section>
 
     <section class="page-section">
-        <h2 class="section-title"><span class="title-number">3.</span> Include styles and script file</h2>
+        <h2 class="section-title">Include styles and script file</h2>
         <div class="section-desc">Open the <span class="txt--blue">_Host.cshtml</span> file, <span class="txt--blue">_Layout.cshtml</span> file, or <span class="txt--blue">wwwroot/index.html</span> file and include a CSS file by adding this snippet:</div>
         <div class="code-box">&lt;link href="_content/Bit.BlazorUI/styles/bit.blazorui.min.css" rel="stylesheet" /></div>
         <div class="section-desc">then include the script file by adding this snippet:</div>
@@ -40,4 +42,4 @@
         <br />
         <a target="_blank" href="https://gitpod.io/#https://github.com/bitfoundation/bit-components-playground">Open Bit BlazorUI playground on Gitpod</a>
     </section>
-</section>
+</div>

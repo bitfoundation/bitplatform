@@ -7,94 +7,47 @@
 }
 
 .page-title {
-    position: relative;
-    margin-bottom: rem(16px);
-    padding-left: rem(10px);
-    box-sizing: border-box;
-    font-weight: bold;
-    font-size: rem(32px);
-    line-height: rem(48px);
-    color: $B2Color;
+    margin: 0;
+    margin-bottom: rem(52px);
+    padding: 0;
+    font-size: rem(36px);
+    font-weight: 800;
+    line-height: 1;
+    color: #0a1929;
 
-    @include lg {
-        padding-left: rem(8px);
-        font-size: rem(24px);
-        line-height: rem(32px);
-    }
-
-    @include md {
-        font-size: rem(20px);
-        padding-left: rem(12px);
-        line-height: rem(32px);
-    }
-
-    @include sm {
-        margin-bottom: rem(8px);
-        padding-left: rem(8px);
-        font-size: rem(16px);
-        line-height: rem(24px);
-    }
-
-    .title-clipart {
-        position: absolute;
-        z-index: -1;
-        top: rem(-65px);
-        left: rem(-52px);
-        width: rem(116px);
-        height: rem(109px);
-        background-image: url('/images/overview-title-clipart.svg');
-        background-position: center;
-        background-size: cover;
-        background-repeat: no-repeat;
-
-        @include lg {
-            top: rem(-80px);
-            left: rem(-30px);
-        }
-
-        @include md {
-            width: rem(90px);
-            height: rem(85px);
-            top: rem(-58px);
-            left: rem(-58px);
-        }
-
-        @include sm {
-            display: none;
-        }
+    @include lt-lg {
+        margin-bottom: rem(28px);
     }
 }
 
-.page-desc {
-    margin-bottom: rem(96px);
-    padding-left: rem(10px);
+.page-section {
+    position: relative;
+    width: 100%;
+    padding: rem(28px);
+    margin-bottom: rem(28px);
+    border-radius: rem(4px);
+    border: rem(1px) solid #E0E3E7;
+    box-shadow: 0 1.6px 3.6px 0 rgb(0 0 0 / 13%), 0 0.3px 0.9px 0 rgb(0 0 0 / 11%);
     box-sizing: border-box;
-    font-size: rem(18px);
-    line-height: rem(31px);
+    background-clip: padding-box;
+    background-color: $White;
+}
+
+.section-title {
+    padding: 0;
+    margin-bottom: rem(20px);
+    font-weight: 700;
+    font-size: rem(24px);
+    line-height: 1;
+    color: #1a2027;
+}
+
+.section-desc {
+    width: 100%;
+    font-size: rem(16px);
+    font-weight: 400;
+    line-height: rem(32px);
     color: #2E2E2E;
-
-    @include lg {
-        padding-left: rem(8px);
-        margin-bottom: rem(80px);
-        font-size: rem(16px);
-        line-height: rem(24px);
-    }
-
-    @include md {
-        padding-left: rem(12px);
-        margin-bottom: rem(40px);
-        font-size: rem(14px);
-        line-height: rem(24px);
-        font-weight: 500;
-    }
-
-    @include sm {
-        padding-left: rem(8px);
-        margin-bottom: rem(48px);
-        font-size: rem(12px);
-        line-height: rem(24px);
-        font-weight: 500;
-    }
 }
 
 .card-container {
@@ -103,6 +56,7 @@
     justify-content: flex-start;
     align-items: flex-start;
     width: 100%;
+    gap: 10px;
 
     @include sm {
         justify-content: center;
@@ -110,193 +64,86 @@
 }
 
 .card {
-    width: rem(328px);
-    height: rem(260px);
-    border-radius: rem(10px);
-    margin: 0 rem(10px) rem(24px);
-    border: rem(1px) solid $B5Color;
-    background-color: $B6Color;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    overflow: hidden;
-
-    &:hover {
-        transform: translateY(-16px);
-
-        .card-bottom-content {
-            @include gt-md {
-                display: none;
-            }
-        }
-
-        .card-top-content {
-            height: 100%;
-
-            @include gt-md {
-                background-color: $B3Color;
-                color: $White;
-                padding: rem(146px) rem(16px) 0;
-                background-position: top rem(74px) center;
-            }
-
-            @include lg {
-                padding: rem(107px) rem(16px) 0;
-                background-position: top rem(51px) center;
-            }
-        }
-    }
-
-    @include lg {
-        width: rem(248px);
-        height: rem(190px);
-        border-radius: rem(8px);
-        margin: 0 rem(8px) rem(16px);
-
-        &:hover {
-            transform: translateY(-8px);
-        }
-    }
-
-    @include md {
-        width: rem(274px);
-        height: rem(190px);
-        border-radius: rem(8px);
-        margin: 0 rem(12px) rem(24px);
-
-        &:hover {
-            transform: translateY(0);
-        }
-    }
-
-    @include sm {
-        width: rem(156px);
-        height: rem(112px);
-        margin: 0 rem(8px) rem(16px);
-
-        &:hover {
-            transform: translateY(0);
-        }
-    }
-}
-
-.card-top-content {
     display: flex;
+    flex-flow: column nowrap;
     justify-content: center;
-    align-items: flex-start;
-    width: 100%;
-    height: rem(204px);
-    padding: rem(112px) rem(16px) 0;
+    align-items: center;
+    width: calc(25% - 8px);
+    height: rem(190px);
+    border-radius: rem(4px);
+    padding: rem(16px);
+    border: rem(1px) solid $B5Color;
+    box-shadow: 0 1.6px 3.6px 0 rgb(0 0 0 / 13%), 0 0.3px 0.9px 0 rgb(0 0 0 / 11%);
     box-sizing: border-box;
     font-weight: 500;
-    font-size: rem(22px);
+    font-size: rem(16px);
     line-height: rem(40px);
     color: #2E2E2E;
     text-align: center;
-    background-position: top rem(40px) center;
-    background-size: rem(56px);
-    background-repeat: no-repeat;
-    transition: all 0.2s linear;
-
-    @include lg {
-        height: rem(150px);
-        padding: rem(88px) rem(16px) 0;
-        font-size: rem(18px);
-        line-height: rem(31px);
-        background-position: top rem(32px) center;
-        background-size: rem(40px);
-    }
-
-    @include md {
-        height: rem(150px);
-        padding: rem(84px) rem(16px) 0;
-        font-size: rem(14px);
-        line-height: rem(24px);
-        background-position: top rem(28px) center;
-        background-size: rem(40px);
-    }
-
-    @include sm {
-        height: 100%;
-        padding: rem(60px) rem(5px) 0;
-        font-size: rem(12px);
-        line-height: rem(24px);
-        background-position: top rem(18px) center;
-        background-size: rem(32px);
-    }
-}
-
-.card-bottom-content {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    height: rem(56px);
-    padding: 0 rem(24px);
-    box-sizing: border-box;
-    font-size: rem(14px);
-    line-height: rem(24px);
-    color: $White;
-    background-color: $B3Color;
-
-    @include lg {
-        height: rem(40px);
-        padding: 0 rem(16px);
-        font-size: rem(12px);
-        line-height: rem(18px);
-    }
-
-    @include md {
-        height: rem(40px);
-        padding: 0 rem(16px);
-        font-weight: 500;
-        font-size: rem(12px);
-        line-height: rem(20px);
-    }
-
-    @include sm {
-        display: none;
-    }
-}
-
-.card-txt {
-    width: rem(280px);
+    background-color: $B6Color;
+    cursor: pointer;
     overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
 
     @include lg {
-        width: rem(216px);
+        width: calc((100% / 3) - 8px);
     }
 
     @include md {
-        width: rem(242px);
+        width: calc(50% - 5px);
     }
+
+    @include sm {
+        width: 100%;
+    }
+}
+
+.card-img {
+    width: rem(56px);
+    height: rem(56px);
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    margin-bottom: rem(8px);
 }
 
 .input-card {
-    background-image: url('/images/icon/input-icon.svg');
+    .card-img {
+        background-image: url('/images/icon/input-icon.svg');
+    }
 }
 
 .picker-card {
-    background-image: url('/images/icon/pickers-icon.svg');
+    .card-img {
+        background-image: url('/images/icon/pickers-icon.svg');
+    }
 }
 
 .list-card {
-    background-image: url('/images/icon/lists-icon.svg');
+    .card-img {
+        background-image: url('/images/icon/lists-icon.svg');
+    }
 }
 
 .nav-card {
-    background-image: url('/images/icon/navs-icon.svg');
+    .card-img {
+        background-image: url('/images/icon/navs-icon.svg');
+    }
 }
 
 .notification-card {
-    background-image: url('/images/icon/notifications-icon.svg');
+    .card-img {
+        background-image: url('/images/icon/notifications-icon.svg');
+    }
 }
 
 .progress-card {
-    background-image: url('/images/icon/progrss-icon.svg');
+    .card-img {
+        background-image: url('/images/icon/progrss-icon.svg');
+    }
 }
 
 .surface-card {
-    background-image: url('/images/icon/surfaces-icon.svg');
+    .card-img {
+        background-image: url('/images/icon/surfaces-icon.svg');
+    }
 }
