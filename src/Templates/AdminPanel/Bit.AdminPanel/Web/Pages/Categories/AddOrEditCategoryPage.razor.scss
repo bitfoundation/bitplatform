@@ -1,7 +1,55 @@
-﻿.form-container {
+﻿@import '../../Styles/abstracts/_media-queries.scss';
+@import '../../Styles/abstracts/_colors.scss';
+@import '../../Styles/abstracts/_functions.scss';
+
+.page-header {
     display: flex;
-    flex-flow: column nowrap;
+    align-items: center;
+    margin-bottom: rem(37px);
+
+    @include sm {
+        margin-bottom: rem(29px);
+    }
+}
+
+.loading-contianer {
+    display: flex;
     justify-content: center;
     align-items: center;
     width: 100%;
+    height: 100%;
+}
+
+::deep .back-btn {
+    color: #212121;
+}
+
+.page-title {
+    margin: 0;
+    font-weight: 700;
+    font-size: rem(24px);
+    line-height: rem(32px);
+    color: $Gray190;
+
+    @include md {
+        font-weight: 600;
+        font-size: rem(20px);
+        line-height: rem(28px);
+    }
+
+    @include sm {
+        font-weight: 600;
+        font-size: rem(18px);
+        line-height: rem(24px);
+    }
+}
+
+.form-input-container {
+    width: 100%;
+    max-width: rem(388px);
+    margin-bottom: rem(24px);
+}
+
+::deep .validation-message {
+    color: $StatusErrorColor;
 }

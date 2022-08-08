@@ -7,39 +7,39 @@
 
 <PageTitle>@AppStrings.CategoriesPageTitle</PageTitle>
 <div class="page-container">
-    <div class="page-content--white">
-        @if (IsLoading)
-        {
-            <div class="spinner">
-                <BitSpinner Size="BitSpinnerSize.Large"></BitSpinner>
-            </div>
-        }
-        <div class="page-header">
-            <h3>Category</h3>
-            <BitButton OnClick="CreateCategory">@AppStrings.AddCategory</BitButton>
+    @if (IsLoading)
+    {
+        <div class="loading-container">
+            <BitSpinner Size="BitSpinnerSize.Large"></BitSpinner>
         </div>
-        <div class="content">
-            <div class="grid">
-                <BitDataGrid ItemsProvider="@categoriesProvider" TGridItem="@CategoryDto" ResizableColumns="true" Pagination="@pagination" @ref="dataGrid">
-                    <BitDataGridPropertyColumn Property="@(c => c.Name)" Sortable="true" Class="column1">
-                        <ColumnOptions>
-                            <BitSearchBox @bind-Value="CategoryNameFilter"
-                                          Placeholder="Search on Name"
-                                          InputHtmlAttributes="@(new Dictionary<string, object> {{"autofocus", true}})" />
-                        </ColumnOptions>
-                    </BitDataGridPropertyColumn>
-                    <BitDataGridTemplateColumn Title="Color" Align="BitDataGridAlign.Left" >
-                        <span class="color-box" style="background-color:@(context.Color)" ></span>
-                    </BitDataGridTemplateColumn>
-                    <BitDataGridTemplateColumn Title="Action" Align="BitDataGridAlign.Right">
-                        <BitIconButton IconName="BitIconName.Edit" OnClick="() => EditCategory(context)" />
-                        <BitIconButton Style="color:red;" IconName="BitIconName.Delete" OnClick="WrapHandled(() => DeleteCategory(context))" />
-                    </BitDataGridTemplateColumn>
-                </BitDataGrid>
-                <BitDataGridPaginator Value="@pagination" />
-            </div>
-
-        </div>
+    }
+    <div class="page-row">
+        <h1 class="page-title">Categories</h1>
+        <BitButton OnClick="CreateCategory">@AppStrings.AddCategory</BitButton>
+    </div>
+    <BitSearchBox Class="cat-search-box"
+                  @bind-Value="CategoryNameFilter"
+                  Placeholder="Search some category..."
+                  InputHtmlAttributes="@(new Dictionary<string, object> {{"autofocus", true}})" />
+    <div class="grid">
+        <BitDataGrid ItemsProvider="@categoriesProvider" TGridItem="@CategoryDto" ResizableColumns="true" Pagination="@pagination" @ref="dataGrid">
+            <BitDataGridPropertyColumn Property="@(c => c.Name)" Sortable="true" Align="BitDataGridAlign.Left">
+                <ColumnOptions>
+                    <BitSearchBox @bind-Value="CategoryNameFilter"
+                                  Placeholder="Search on name"
+                                  InputHtmlAttributes="@(new Dictionary<string, object> {{"autofocus", true}})" />
+                </ColumnOptions>
+            </BitDataGridPropertyColumn>
+            <BitDataGridPropertyColumn Property="@(c => c.Id)" Sortable="true" Align="BitDataGridAlign.Left" />
+            <BitDataGridTemplateColumn Title="Color" Align="BitDataGridAlign.Left">
+                <span class="color-box" style="background-color:@(context.Color)"></span>
+            </BitDataGridTemplateColumn>
+            <BitDataGridTemplateColumn Title="Action" Align="BitDataGridAlign.Center">
+                <BitIconButton Style="color:#605E5C;" IconName="BitIconName.Edit" OnClick="() => EditCategory(context)" Title="Edit"/>
+                <BitIconButton Style="color:#605E5C;" IconName="BitIconName.Delete" OnClick="WrapHandled(() => DeleteCategory(context))" Title="Delete"/>
+            </BitDataGridTemplateColumn>
+        </BitDataGrid>
+        <BitDataGridPaginator Value="@pagination" />
     </div>
 </div>
-<ConfirmMessageBox/>
+<ConfirmMessageBox />

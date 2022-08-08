@@ -20,7 +20,7 @@ align-items: center">
 
             <DataAnnotationsValidator />
             <div class="form-input-container">
-                <BitTextField Label="@(nameof(Product.Name))" @bind-Value="Product.Name" />
+                <BitTextField Label="@(nameof(Product.Name))" @bind-Value="Product.Name" Placeholder="Enter product name" />
                 <ValidationMessage For="() => Product.Name" />
             </div>
 
@@ -48,7 +48,6 @@ align-items: center">
                               @bind-Value="Product.Description" />
                 <ValidationMessage For="() => Product.Description" />
             </div>
-
 
             <BitButton ButtonType="BitButtonType.Submit">
                 @if (IsSaveLoading)

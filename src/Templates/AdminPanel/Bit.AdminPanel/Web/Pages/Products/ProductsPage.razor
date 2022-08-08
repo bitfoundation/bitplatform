@@ -35,8 +35,8 @@
             <BitDataGridPropertyColumn Property="@(c => c.CategoryId)" Sortable="true" Align="BitDataGridAlign.Left" />
             <BitDataGridPropertyColumn Property="@(c => c.Price)" Sortable="true" Align="BitDataGridAlign.Left" />
             <BitDataGridTemplateColumn Title="Action" Align="BitDataGridAlign.Center">
-                <BitIconButton Style="color:#605E5C;" IconName="BitIconName.Edit" OnClick=@(() => EditProduct(context)) />
-                <BitIconButton Style="color:#605E5C;" IconName="BitIconName.Delete" OnClick="WrapHandled(() => DeleteProduct(context))" />
+                <BitIconButton Style="color:#605E5C;" IconName="BitIconName.Edit" OnClick=@(() => EditProduct(context)) Title="Edit" />
+                <BitIconButton Style="color:#605E5C;" IconName="BitIconName.Delete" OnClick="WrapHandled(() => DeleteProduct(context))" Title="Delete" />
             </BitDataGridTemplateColumn>
         </BitDataGrid>
         <BitDataGridPaginator Value="@pagination" />
