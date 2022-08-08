@@ -1,6 +1,64 @@
 ﻿@import '../Styles/abstracts/_media-queries.scss';
 @import '../Styles/abstracts/_colors.scss';
 @import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_vars.scss';
+
+
+.nav-menu {
+    position: sticky;
+    z-index: 1000;
+    left: 0;
+    top: rem($HeaderHeight);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    flex: 1 0 auto;
+    width: rem($NavMenuWidth);
+    max-width: rem($NavMenuWidth);
+    height: calc(100vh - rem($HeaderHeight));
+    border-right: rem(1px) solid rgb(231, 235, 240);
+    outline: 0;
+    box-shadow: none;
+    background-color: $White;
+    transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+    overflow-y: auto;
+
+    @include lt-lg {
+        height: 100vh;
+        position: fixed;
+        z-index: 1200;
+        top: 0;
+        inset: 0;
+    }
+
+    @include sm {
+        border-radius: 0 rem(10px) rem(10px) 0;
+    }
+}
+
+.nav-menu--desktop {
+    display: flex;
+
+    @include lt-lg {
+        display: none;
+    }
+}
+
+.nav-menu--mobile {
+    display: none;
+
+    @include lt-lg {
+        display: block;
+    }
+}
+
+.nav-menu-shadow {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1101;
+}
+
 
 .main-container {
     position: fixed;
