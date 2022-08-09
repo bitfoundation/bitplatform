@@ -116,6 +116,8 @@
     border-radius: rem(2px);
 }
 
-::deep .bit-mdl-container {
-    min-height: unset;
+::deep .bit-mdl-fluent {
+    .bit-mdl-container {
+        min-height: unset !important;
+    }
 }

@@ -1,58 +1,59 @@
 ﻿@import '../Styles/abstracts/_functions.scss';
-@import '../Styles/abstracts/_media-queries.scss';
 @import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_media-queries.scss';
 
-.modal-body {
-    position: relative;
+.main-container {
     display: flex;
     flex-flow: column nowrap;
+    justify-content: flex-start;
     align-items: center;
-    justify-content: center;
-    padding: rem(28px) rem(110px);
+    width: rem(560px);
+    padding: rem(16px) rem(24px);
     box-sizing: border-box;
-
-    @include lt-xl {
-        padding: rem(28px) rem(101px);
-    }
-
-    @media screen and (max-width:em(480px)) {
-        padding: rem(28px) rem(47px);
-    }
-}
-
-.modal-close-btn-container {
-    position: absolute;
-    right: 0;
-    top: 0;
-}
-
-.modal-title {
-    margin-bottom: rem(12px);
-    font-size: rem(24px);
-    line-height: rem(40px);
-    font-weight: 600;
-    color: $Black;
-
-    @include lt-xl {
-        margin-bottom: rem(8px);
-        font-size: rem(20px);
-        line-height: rem(32px);
-    }
+    background-color: $White;
 
     @include sm {
-        margin-bottom: rem(4px);
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        border-radius: rem(8px) rem(8px) 0 0;
     }
 }
 
-.modal-desc {
-    margin-bottom: rem(36px);
-    font-size: rem(18px);
-    line-height: rem(24px);
-    color: $Black;
+.header {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: rem(20px);
+}
 
-    @include lt-xl {
-        margin-bottom: rem(28px);
-        font-size: rem(14px);
-        line-height: rem(20px);
-    }
+.title {
+    font-weight: 600;
+    font-size: rem(20px);
+    line-height: rem(28px);
+    color: $Gray190;
+}
+
+.body {
+    width: 100%;
+    font-weight: 400;
+    font-size: rem(14px);
+    line-height: rem(20px);
+    color: $Gray130;
+    margin-bottom: rem(16px);
+}
+
+.btn-group {
+    width: 100%;
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+::deep .bit-mdl-container {
+    min-height: unset;
 }
