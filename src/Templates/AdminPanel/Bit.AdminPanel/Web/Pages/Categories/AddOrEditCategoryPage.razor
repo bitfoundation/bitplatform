@@ -3,11 +3,20 @@
 
 @inherits AppComponentBase;
 
-<PageTitle>@AppStrings.EditCategory (@Category?.Name)</PageTitle>
+<PageTitle>
+    @if (Category?.Id == 0)
+    {
+        @AppStrings.AddCategory
+    }
+    else
+    {
+        @AppStrings.EditCategory
+    }
+</PageTitle>
 
 <div class="page-container">
     <div class="page-header">
-        <BitIconButton Class="back-btn" Href="/categories" IconName="BitIconName.Back" Title="Back"/>
+        <BitIconButton Class="back-btn" Href="/categories" IconName="BitIconName.Back" Title="Back" />
         <h1 class="page-title">
             @if (Category?.Id == 0)
             {
@@ -36,13 +45,30 @@
             </BitMessageBar>
         }
         <div class="form-input-container">
-            <BitTextField Label="@(nameof(Category.Name))" @bind-Value="Category!.Name" Placeholder="Enter category name"/>
+            <BitTextField Label="@(nameof(Category.Name))" @bind-Value="Category!.Name" Placeholder="Enter category name" />
             <ValidationMessage For="() => Category.Name" />
         </div>
 
         <div class="form-input-container">
-            <label for="catColorInput">Color</label>
-            <BitColorPicker id="catColorInput" ShowPreview="true" @bind-Color="Category!.Color">Default Color Picker</BitColorPicker>
+            <BitLabel For="catColorInput">Color</BitLabel>
+            <div class="color-container">
+                <button class="color-btn @(Category!.Color == "#FFCD56" ? "color-btn--active" : null)" style="background-color: #FFCD56" @onclick=@(() => SetCategoryColor("#FFCD56"))></button>
+                <button class="color-btn @(Category!.Color == "#FF6384" ? "color-btn--active" : null)" style="background-color: #FF6384" @onclick=@(() => SetCategoryColor("#FF6384"))></button>
+                <button class="color-btn @(Category!.Color == "#4BC0C0" ? "color-btn--active" : null)" style="background-color: #4BC0C0" @onclick=@(() => SetCategoryColor("#4BC0C0"))></button>
+                <button class="color-btn @(Category!.Color == "#FF9124" ? "color-btn--active" : null)" style="background-color: #FF9124" @onclick=@(() => SetCategoryColor("#FF9124"))></button>
+                <button class="color-btn @(Category!.Color == "#2B88D8" ? "color-btn--active" : null)" style="background-color: #2B88D8" @onclick=@(() => SetCategoryColor("#2B88D8"))></button>
+                <button class="color-btn @(Category!.Color == "#C7E0F4" ? "color-btn--active" : null)" style="background-color: #C7E0F4" @onclick=@(() => SetCategoryColor("#C7E0F4"))></button>
+                <button class="custom-color-btn" @onclick=@ToggleColorPicker>
+                    <div class="btn-color" style="background-color: #F0F0F0"></div>
+                    Custom color
+                </button>
+            </div>
+            @if (IsColorPickerOpen)
+            {
+                <div class="color-picker-container">
+                    <BitColorPicker id="catColorInput" ShowPreview="true" @bind-Color="Category!.Color">Default Color Picker</BitColorPicker>
+                </div>
+            }
             <ValidationMessage For="() => Category.Color" />
         </div>
 

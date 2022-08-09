@@ -66,7 +66,7 @@
                             <div class="user-name">
                                 @if (string.IsNullOrEmpty(User?.FullName) is false)
                                 {
-                                    <div class="full-name"></div>
+                                    <div class="full-name">@User?.FullName</div>
                                 }
 
                                 <div class="email">@User?.UserName</div>

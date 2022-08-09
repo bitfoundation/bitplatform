@@ -111,3 +111,7 @@
     border-radius: 16px;
     border: 4px solid $Gray90;
 }
+
+::deep .bit-btn-fluent {
+    border-radius: rem(2px);
+}

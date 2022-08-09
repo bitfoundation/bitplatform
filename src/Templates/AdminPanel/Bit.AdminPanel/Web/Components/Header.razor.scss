@@ -111,6 +111,7 @@
 .user-img {
     width: rem(28px);
     height: rem(28px);
+    border-radius: 50%;
 }
 
 .user-name {
@@ -216,6 +217,7 @@
         width: rem(48px);
         height: rem(48px);
         border: rem(1px) solid $Gray10;
+        border-radius: 50%;
     }
 
     .user-name {
