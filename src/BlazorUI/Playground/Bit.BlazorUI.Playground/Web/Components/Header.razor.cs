@@ -46,10 +46,7 @@ public partial class Header
         else return CurrentUrl switch
         {
             "/" => "Home",
-            "/overview" => "Docs",
-            "/getting-started" => "Docs",
-            "/icons" => "Iconography",
-            _ => "",
+            _ => "Docs",
         };
     }
 
