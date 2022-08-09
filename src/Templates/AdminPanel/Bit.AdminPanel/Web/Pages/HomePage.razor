@@ -10,11 +10,17 @@
         <div class="hero-section-desc">
             @AppStrings.AdminPanelHomeMessage
         </div>
-        <BitButton Class="hero-section-cta"
-                   Href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Templates/AdminPanel/Bit.AdminPanel"
-                   Target="_blank"
-                   Title="@AppStrings.GitHubRepo"
-                   AriaLabel="@AppStrings.GitHubRepo"
-                   ButtonStyle="BitButtonStyle.Standard">@AppStrings.GitHubRepo</BitButton>
+        <div style="display: flex">
+            <BitButton Style="margin-right: 0.5rem"
+                       Href="/sign-up"
+                       Title="@AuthStrings.SingUpTitle"
+                       AriaLabel="@AuthStrings.SingUpTitle"
+                       ButtonStyle="BitButtonStyle.Primary">@AuthStrings.SingUpTitle</BitButton>
+            <BitButton Href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Templates/AdminPanel/Bit.AdminPanel"
+                       Target="_blank"
+                       Title="@AppStrings.GitHubRepo"
+                       AriaLabel="@AppStrings.GitHubRepo"
+                       ButtonStyle="BitButtonStyle.Standard">@AppStrings.GitHubRepo</BitButton>
+        </div>
     </section>
 </div>

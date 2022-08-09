@@ -127,10 +127,10 @@
     <value>New product</value>
   </data>
   <data name="AdminPanelHomeMessage" xml:space="preserve">
-    <value>Create your multi-mode (WASM, Server, Hybrid, pre-rendering) Blazor app easily in the shortest time ever!</value>
+    <value>Create your multi-mode (WASM, Server, Hybrid, pre-rendering) Blazor admin panel easily in the shortest time ever!</value>
   </data>
   <data name="AdminPanelHomeTitle" xml:space="preserve">
-    <value>Admin Panel Home</value>
+    <value>Bit Admin Panel</value>
   </data>
   <data name="AdminPanelTitle" xml:space="preserve">
     <value>Admin Panel</value>
@@ -224,6 +224,12 @@
   </data>
   <data name="SortBy" xml:space="preserve">
     <value>Sort by</value>
+  </data>
+  <data name="StartupPageDescription" xml:space="preserve">
+    <value>Admin Panel is a project template that provides common features such as Sign-up &amp; Sign-in. This template is powered by Bit BlazorUI components.</value>
+  </data>
+  <data name="StartupPageTitle" xml:space="preserve">
+    <value>Bit Admin Panel</value>
   </data>
   <data name="TotalCategories" xml:space="preserve">
     <value>Total categories</value>

@@ -88,7 +88,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Create your multi-mode (WASM, Server, Hybrid, pre-rendering) Blazor app easily in the shortest time ever!.
+        ///   Looks up a localized string similar to Create your multi-mode (WASM, Server, Hybrid, pre-rendering) Blazor admin panel easily in the shortest time ever!.
         /// </summary>
         public static string AdminPanelHomeMessage {
             get {
@@ -97,7 +97,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Admin Panel Home.
+        ///   Looks up a localized string similar to Bit Admin Panel.
         /// </summary>
         public static string AdminPanelHomeTitle {
             get {
@@ -381,6 +381,24 @@ namespace AdminPanel.Shared.Resources {
         public static string SortBy {
             get {
                 return ResourceManager.GetString("SortBy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Admin Panel is a project template that provides common features such as Sign-up &amp; Sign-in. This template is powered by Bit BlazorUI components..
+        /// </summary>
+        public static string StartupPageDescription {
+            get {
+                return ResourceManager.GetString("StartupPageDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Bit Admin Panel.
+        /// </summary>
+        public static string StartupPageTitle {
+            get {
+                return ResourceManager.GetString("StartupPageTitle", resourceCulture);
             }
         }
         
