@@ -47,7 +47,7 @@ public partial class Header
         {
             "/" => "Home",
             "/overview" => "Docs",
-            "/get-started" => "Docs",
+            "/getting-started" => "Docs",
             "/icons" => "Iconography",
             _ => "",
         };
