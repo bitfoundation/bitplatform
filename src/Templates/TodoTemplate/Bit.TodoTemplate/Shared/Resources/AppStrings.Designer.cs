@@ -106,6 +106,33 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The argument &apos;{0}&apos; cannot be null, empty or contain only whitespace..
+        /// </summary>
+        public static string ArgumentIsNullOrWhitespace {
+            get {
+                return ResourceManager.GetString("ArgumentIsNullOrWhitespace", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The associated metadata type for type &apos;{0}&apos; contains the following unknown properties or fields: {1}. Please make sure that the names of these members match the names of the properties on the main type..
+        /// </summary>
+        public static string AssociatedMetadataTypeTypeDescriptor_MetadataTypeContainsUnknownProperties {
+            get {
+                return ResourceManager.GetString("AssociatedMetadataTypeTypeDescriptor_MetadataTypeContainsUnknownProperties", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The type &apos;{0}&apos; does not contain a public property named &apos;{1}&apos;..
+        /// </summary>
+        public static string AttributeStore_Unknown_Property {
+            get {
+                return ResourceManager.GetString("AttributeStore_Unknown_Property", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid request.
         /// </summary>
         public static string BadRequestException {
@@ -129,6 +156,33 @@ namespace TodoTemplate.Shared.Resources {
         public static string CheckSpamMailMessage {
             get {
                 return ResourceManager.GetString("CheckSpamMailMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The property {0}.{1} could not be found..
+        /// </summary>
+        public static string Common_PropertyNotFound {
+            get {
+                return ResourceManager.GetString("Common_PropertyNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; and &apos;{1}&apos; do not match..
+        /// </summary>
+        public static string CompareAttribute_MustMatch {
+            get {
+                return ResourceManager.GetString("CompareAttribute_MustMatch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not find a property named {0}..
+        /// </summary>
+        public static string CompareAttribute_UnknownProperty {
+            get {
+                return ResourceManager.GetString("CompareAttribute_UnknownProperty", resourceCulture);
             }
         }
         
@@ -188,11 +242,110 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The {0} field is not a valid credit card number..
+        /// </summary>
+        public static string CreditCardAttribute_Invalid {
+            get {
+                return ResourceManager.GetString("CreditCardAttribute_Invalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The CustomValidationAttribute method &apos;{0}&apos; in type &apos;{1}&apos; must return System.ComponentModel.DataAnnotations.ValidationResult.  Use System.ComponentModel.DataAnnotations.ValidationResult.Success to represent success..
+        /// </summary>
+        public static string CustomValidationAttribute_Method_Must_Return_ValidationResult {
+            get {
+                return ResourceManager.GetString("CustomValidationAttribute_Method_Must_Return_ValidationResult", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The CustomValidationAttribute method &apos;{0}&apos; does not exist in type &apos;{1}&apos; or is not public and static..
+        /// </summary>
+        public static string CustomValidationAttribute_Method_Not_Found {
+            get {
+                return ResourceManager.GetString("CustomValidationAttribute_Method_Not_Found", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The CustomValidationAttribute.Method was not specified..
+        /// </summary>
+        public static string CustomValidationAttribute_Method_Required {
+            get {
+                return ResourceManager.GetString("CustomValidationAttribute_Method_Required", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The CustomValidationAttribute method &apos;{0}&apos; in type &apos;{1}&apos; must match the expected signature: public static ValidationResult {0}(object value, ValidationContext context).  The value can be strongly typed.  The ValidationContext parameter is optional..
+        /// </summary>
+        public static string CustomValidationAttribute_Method_Signature {
+            get {
+                return ResourceManager.GetString("CustomValidationAttribute_Method_Signature", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not convert the value of type &apos;{0}&apos; to &apos;{1}&apos; as expected by method {2}.{3}..
+        /// </summary>
+        public static string CustomValidationAttribute_Type_Conversion_Failed {
+            get {
+                return ResourceManager.GetString("CustomValidationAttribute_Type_Conversion_Failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The custom validation type &apos;{0}&apos; must be public..
+        /// </summary>
+        public static string CustomValidationAttribute_Type_Must_Be_Public {
+            get {
+                return ResourceManager.GetString("CustomValidationAttribute_Type_Must_Be_Public", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} is not valid..
+        /// </summary>
+        public static string CustomValidationAttribute_ValidationError {
+            get {
+                return ResourceManager.GetString("CustomValidationAttribute_ValidationError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The CustomValidationAttribute.ValidatorType was not specified..
+        /// </summary>
+        public static string CustomValidationAttribute_ValidatorType_Required {
+            get {
+                return ResourceManager.GetString("CustomValidationAttribute_ValidatorType_Required", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The custom DataType string cannot be null or empty..
+        /// </summary>
+        public static string DataTypeAttribute_EmptyDataTypeString {
+            get {
+                return ResourceManager.GetString("DataTypeAttribute_EmptyDataTypeString", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Date.
         /// </summary>
         public static string Date {
             get {
                 return ResourceManager.GetString("Date", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The {0} property has not been set.  Use the {1} method to get the value..
+        /// </summary>
+        public static string DisplayAttribute_PropertyNotSet {
+            get {
+                return ResourceManager.GetString("DisplayAttribute_PropertyNotSet", resourceCulture);
             }
         }
         
@@ -260,6 +413,15 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The {0} field is not a valid e-mail address..
+        /// </summary>
+        public static string EmailAddressAttribute_Invalid {
+            get {
+                return ResourceManager.GetString("EmailAddressAttribute_Invalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Your email is already confirmed..
         /// </summary>
         public static string EmailAlreadyConfirmed {
@@ -305,11 +467,38 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The type provided for EnumDataTypeAttribute cannot be null..
+        /// </summary>
+        public static string EnumDataTypeAttribute_TypeCannotBeNull {
+            get {
+                return ResourceManager.GetString("EnumDataTypeAttribute_TypeCannotBeNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The type &apos;{0}&apos; needs to represent an enumeration type..
+        /// </summary>
+        public static string EnumDataTypeAttribute_TypeNeedsToBeAnEnum {
+            get {
+                return ResourceManager.GetString("EnumDataTypeAttribute_TypeNeedsToBeAnEnum", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Error.
         /// </summary>
         public static string Error {
             get {
                 return ResourceManager.GetString("Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The {0} field only accepts files with the following extensions: {1}.
+        /// </summary>
+        public static string FileExtensionsAttribute_Invalid {
+            get {
+                return ResourceManager.GetString("FileExtensionsAttribute_Invalid", resourceCulture);
             }
         }
         
@@ -458,6 +647,15 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Is accept privacy policy?.
+        /// </summary>
+        public static string IsAcceptPrivacy {
+            get {
+                return ResourceManager.GetString("IsAcceptPrivacy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Known error.
         /// </summary>
         public static string KnownException {
@@ -467,11 +665,74 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The field of type {0} must be a string, array or ICollection type..
+        /// </summary>
+        public static string LengthAttribute_InvalidValueType {
+            get {
+                return ResourceManager.GetString("LengthAttribute_InvalidValueType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot retrieve property &apos;{0}&apos; because localization failed.  Type &apos;{1}&apos; is not public or does not contain a public static string property with the name &apos;{2}&apos;..
+        /// </summary>
+        public static string LocalizableString_LocalizationFailed {
+            get {
+                return ResourceManager.GetString("LocalizableString_LocalizationFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to A user with this login already exists..
         /// </summary>
         public static string LoginAlreadyAssociated {
             get {
                 return ResourceManager.GetString("LoginAlreadyAssociated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to MaxLengthAttribute must have a Length value that is greater than zero. Use MaxLength() without parameters to indicate that the string or array can have the maximum allowable length..
+        /// </summary>
+        public static string MaxLengthAttribute_InvalidMaxLength {
+            get {
+                return ResourceManager.GetString("MaxLengthAttribute_InvalidMaxLength", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The field {0} must be a string or array type with a maximum length of &apos;{1}&apos;..
+        /// </summary>
+        public static string MaxLengthAttribute_ValidationError {
+            get {
+                return ResourceManager.GetString("MaxLengthAttribute_ValidationError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to MetadataClassType cannot be null..
+        /// </summary>
+        public static string MetadataTypeAttribute_TypeCannotBeNull {
+            get {
+                return ResourceManager.GetString("MetadataTypeAttribute_TypeCannotBeNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to MinLengthAttribute must have a Length value that is zero or greater..
+        /// </summary>
+        public static string MinLengthAttribute_InvalidMinLength {
+            get {
+                return ResourceManager.GetString("MinLengthAttribute_InvalidMinLength", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The field {0} must be a string or array type with a minimum length of &apos;{1}&apos;..
+        /// </summary>
+        public static string MinLengthAttribute_ValidationError {
+            get {
+                return ResourceManager.GetString("MinLengthAttribute_ValidationError", resourceCulture);
             }
         }
         
@@ -602,6 +863,24 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The {0} field is not a valid phone number..
+        /// </summary>
+        public static string PhoneAttribute_Invalid {
+            get {
+                return ResourceManager.GetString("PhoneAttribute_Invalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Phone number.
+        /// </summary>
+        public static string PhoneNumber {
+            get {
+                return ResourceManager.GetString("PhoneNumber", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to I agree to the.
         /// </summary>
         public static string PrivacyPolicyAgreementMessage {
@@ -647,6 +926,51 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The type {0} must implement {1}..
+        /// </summary>
+        public static string RangeAttribute_ArbitraryTypeNotIComparable {
+            get {
+                return ResourceManager.GetString("RangeAttribute_ArbitraryTypeNotIComparable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The maximum value &apos;{0}&apos; must be greater than or equal to the minimum value &apos;{1}&apos;..
+        /// </summary>
+        public static string RangeAttribute_MinGreaterThanMax {
+            get {
+                return ResourceManager.GetString("RangeAttribute_MinGreaterThanMax", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The minimum and maximum values must be set..
+        /// </summary>
+        public static string RangeAttribute_Must_Set_Min_And_Max {
+            get {
+                return ResourceManager.GetString("RangeAttribute_Must_Set_Min_And_Max", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The OperandType must be set when strings are used for minimum and maximum values..
+        /// </summary>
+        public static string RangeAttribute_Must_Set_Operand_Type {
+            get {
+                return ResourceManager.GetString("RangeAttribute_Must_Set_Operand_Type", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The field {0} must be between {1} and {2}..
+        /// </summary>
+        public static string RangeAttribute_ValidationError {
+            get {
+                return ResourceManager.GetString("RangeAttribute_ValidationError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Recovery code redemption failed..
         /// </summary>
         public static string RecoveryCodeRedemptionFailed {
@@ -656,11 +980,38 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The field {0} must match the regular expression &apos;{1}&apos;..
+        /// </summary>
+        public static string RegexAttribute_ValidationError {
+            get {
+                return ResourceManager.GetString("RegexAttribute_ValidationError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The pattern must be set to a valid regular expression..
+        /// </summary>
+        public static string RegularExpressionAttribute_Empty_Pattern {
+            get {
+                return ResourceManager.GetString("RegularExpressionAttribute_Empty_Pattern", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Remove.
         /// </summary>
         public static string Remove {
             get {
                 return ResourceManager.GetString("Remove", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The {0} field is required..
+        /// </summary>
+        public static string RequiredAttribute_ValidationError {
+            get {
+                return ResourceManager.GetString("RequiredAttribute_ValidationError", resourceCulture);
             }
         }
         
@@ -818,6 +1169,33 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The maximum length must be a nonnegative integer..
+        /// </summary>
+        public static string StringLengthAttribute_InvalidMaxLength {
+            get {
+                return ResourceManager.GetString("StringLengthAttribute_InvalidMaxLength", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The field {0} must be a string with a maximum length of {1}..
+        /// </summary>
+        public static string StringLengthAttribute_ValidationError {
+            get {
+                return ResourceManager.GetString("StringLengthAttribute_ValidationError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The field {0} must be a string with a minimum length of {2} and a maximum length of {1}..
+        /// </summary>
+        public static string StringLengthAttribute_ValidationErrorIncludingMinimum {
+            get {
+                return ResourceManager.GetString("StringLengthAttribute_ValidationErrorIncludingMinimum", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Send reset link.
         /// </summary>
         public static string Submit {
@@ -890,6 +1268,42 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The key parameter at position {0} with value &apos;{1}&apos; is not a string. Every key control parameter must be a string..
+        /// </summary>
+        public static string UIHintImplementation_ControlParameterKeyIsNotAString {
+            get {
+                return ResourceManager.GetString("UIHintImplementation_ControlParameterKeyIsNotAString", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The key parameter at position {0} is null. Every key control parameter must be a string..
+        /// </summary>
+        public static string UIHintImplementation_ControlParameterKeyIsNull {
+            get {
+                return ResourceManager.GetString("UIHintImplementation_ControlParameterKeyIsNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The key parameter at position {0} with value &apos;{1}&apos; occurs more than once..
+        /// </summary>
+        public static string UIHintImplementation_ControlParameterKeyOccursMoreThanOnce {
+            get {
+                return ResourceManager.GetString("UIHintImplementation_ControlParameterKeyOccursMoreThanOnce", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The number of control parameters must be even..
+        /// </summary>
+        public static string UIHintImplementation_NeedEvenNumberOfControlParameters {
+            get {
+                return ResourceManager.GetString("UIHintImplementation_NeedEvenNumberOfControlParameters", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Your request lacks valid authentication credentials.
         /// </summary>
         public static string UnauthorizedException {
@@ -922,6 +1336,15 @@ namespace TodoTemplate.Shared.Resources {
         public static string UploadNewProfileImage {
             get {
                 return ResourceManager.GetString("UploadNewProfileImage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The {0} field is not a valid fully-qualified http, https, or ftp URL..
+        /// </summary>
+        public static string UrlAttribute_Invalid {
+            get {
+                return ResourceManager.GetString("UrlAttribute_Invalid", resourceCulture);
             }
         }
         
@@ -962,6 +1385,15 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Username.
+        /// </summary>
+        public static string UserName {
+            get {
+                return ResourceManager.GetString("UserName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to User {0} does not exist..
         /// </summary>
         public static string UserNameNotFound {
@@ -980,6 +1412,78 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Either ErrorMessageString or ErrorMessageResourceName must be set, but not both..
+        /// </summary>
+        public static string ValidationAttribute_Cannot_Set_ErrorMessage_And_Resource {
+            get {
+                return ResourceManager.GetString("ValidationAttribute_Cannot_Set_ErrorMessage_And_Resource", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IsValid(object value) has not been implemented by this class.  The preferred entry point is GetValidationResult() and classes should override IsValid(object value, ValidationContext context)..
+        /// </summary>
+        public static string ValidationAttribute_IsValid_NotImplemented {
+            get {
+                return ResourceManager.GetString("ValidationAttribute_IsValid_NotImplemented", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Both ErrorMessageResourceType and ErrorMessageResourceName need to be set on this attribute..
+        /// </summary>
+        public static string ValidationAttribute_NeedBothResourceTypeAndResourceName {
+            get {
+                return ResourceManager.GetString("ValidationAttribute_NeedBothResourceTypeAndResourceName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The property &apos;{0}&apos; on resource type &apos;{1}&apos; is not a string type..
+        /// </summary>
+        public static string ValidationAttribute_ResourcePropertyNotStringType {
+            get {
+                return ResourceManager.GetString("ValidationAttribute_ResourcePropertyNotStringType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The resource type &apos;{0}&apos; does not have an accessible static property named &apos;{1}&apos;..
+        /// </summary>
+        public static string ValidationAttribute_ResourceTypeDoesNotHaveProperty {
+            get {
+                return ResourceManager.GetString("ValidationAttribute_ResourceTypeDoesNotHaveProperty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The field {0} is invalid..
+        /// </summary>
+        public static string ValidationAttribute_ValidationError {
+            get {
+                return ResourceManager.GetString("ValidationAttribute_ValidationError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The instance provided must match the ObjectInstance on the ValidationContext supplied..
+        /// </summary>
+        public static string Validator_InstanceMustMatchValidationContextInstance {
+            get {
+                return ResourceManager.GetString("Validator_InstanceMustMatchValidationContextInstance", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The value for property &apos;{0}&apos; must be of type &apos;{1}&apos;..
+        /// </summary>
+        public static string Validator_Property_Value_Wrong_Type {
+            get {
+                return ResourceManager.GetString("Validator_Property_Value_Wrong_Type", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to You have already requested the confirmation email. Try again in {0}.
         /// </summary>
         public static string WaitForConfirmationEmailResendDelay {
@@ -994,6 +1498,15 @@ namespace TodoTemplate.Shared.Resources {
         public static string WaitForResetPasswordEmailResendDelay {
             get {
                 return ResourceManager.GetString("WaitForResetPasswordEmailResendDelay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You must agree to our privacy policy..
+        /// </summary>
+        public static string YouHaveToAcceptPrivacyPolicy {
+            get {
+                return ResourceManager.GetString("YouHaveToAcceptPrivacyPolicy", resourceCulture);
             }
         }
     }
