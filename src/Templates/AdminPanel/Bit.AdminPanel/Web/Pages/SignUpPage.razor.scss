@@ -236,3 +236,8 @@
     width: rem(280px);
     height: rem(24px);
 }
+
+::deep .bit-msg-bar-fluent {
+    position: absolute;
+    top: 0;
+}

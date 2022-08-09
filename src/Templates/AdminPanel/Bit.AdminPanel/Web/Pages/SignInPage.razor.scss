@@ -201,3 +201,8 @@
     font-size: rem(14px);
     line-height: rem(20px);
 }
+
+::deep .bit-msg-bar-fluent {
+    position: absolute;
+    top: 0;
+}
