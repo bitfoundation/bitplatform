@@ -42,7 +42,7 @@ public partial class ResetPasswordPage
 
             ResetPasswordMessageType = BitMessageBarType.Success;
 
-            ResetPasswordMessage = AuthStrings.PasswordChangedSuccessfullyMessage;
+            ResetPasswordMessage = AppStrings.PasswordChangedSuccessfullyMessage;
 
             await AuthenticationService.SignIn(new SignInRequestDto
             {
@@ -56,7 +56,7 @@ public partial class ResetPasswordPage
         {
             ResetPasswordMessageType = BitMessageBarType.Error;
 
-            ResetPasswordMessage = ErrorStrings.ResourceManager.Translate(e.Message, Email!);
+            ResetPasswordMessage = e.Message;
         }
         finally
         {

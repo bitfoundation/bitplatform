@@ -1,7 +1,7 @@
 ﻿@page "/edit-profile"
 @inherits AppComponentBase;
 
-<PageTitle>@AppStrings.EditProfileTitle</PageTitle>
+<PageTitle>@Localizer[nameof(AppStrings.EditProfileTitle)]</PageTitle>
 
 <div class="page-container">
     <div class="content-container--white">
@@ -15,7 +15,7 @@
         }
 
         <h1 class="page-title">
-            @AppStrings.EditProfileTitle
+            @Localizer[nameof(AppStrings.EditProfileTitle)]
         </h1>
         @if (IsLoadingData)
         {
@@ -46,37 +46,37 @@
             </div>
             <div class="form-input-container">
                 <BitLabel>Profile image</BitLabel>
-                <BitFileUpload Label="@AppStrings.UploadNewProfileImage"
+                <BitFileUpload Label="@Localizer[nameof(AppStrings.UploadNewProfileImage)]"
                            AllowedExtensions="@(new [] {".png", ".jpg", ".jpeg", ".webp", ".bpm", ".gif"})"
                            AutoUploadEnabled="true"
                            UploadUrl="@ProfileImageUploadUrl"
                            OnUploadComplete="WrapHandled(LoadEditProfileData)"
-                           OnUploadFailed="() => ProfileImageError = ErrorStrings.FileUploadFailed"
+                           OnUploadFailed="() => ProfileImageError = Localizer[nameof(AppStrings.FileUploadFailed)]"
                            @onfocus="() => ProfileImageError = null" />
                 <div class="form-input-error">@ProfileImageError</div>
             </div>
             <EditForm Model="UserToEdit" OnSubmit="WrapHandled(Save)" class="edit-profile-form">
                 <div class="form-input-container">
-                    <BitTextField Label="@AppStrings.FullName"
+                    <BitTextField Label="@Localizer[nameof(AppStrings.FullName)]"
                               @bind-Value="UserToEdit.FullName"
-                              Placeholder="@AppStrings.FullName" />
+                              Placeholder="@Localizer[nameof(AppStrings.FullName)]" />
                 </div>
                 <div class="form-input-container">
                     <BitDatePicker Label="Birthday"
                                Class="edit-profile-dtp"
                                @bind-Value="UserToEdit.BirthDate"
-                               Placeholder="@AppStrings.SelectBirthDate" />
+                               Placeholder="@Localizer[nameof(AppStrings.SelectBirthDate)]" />
                 </div>
                 <div class="form-choice-container">
                     <BitRadioButtonGroup Label="Gender" @bind-Value="UserToEdit.GenderAsString">
-                        <BitRadioButtonOption Value="@Gender.Male.ToString()" Text="Male" AriaLabel="@AppStrings.GenderMale"></BitRadioButtonOption>
-                        <BitRadioButtonOption Value="@Gender.Female.ToString()" Text="Famale" AriaLabel="@AppStrings.GenderFemale"></BitRadioButtonOption>
-                        <BitRadioButtonOption Value="@Gender.Custom.ToString()" Text="Custom" AriaLabel="@AppStrings.GenderCustom"></BitRadioButtonOption>
+                        <BitRadioButtonOption Value="@Gender.Male.ToString()" Text="Male" AriaLabel="@Localizer[nameof(AppStrings.GenderMale)]"></BitRadioButtonOption>
+                        <BitRadioButtonOption Value="@Gender.Female.ToString()" Text="Famale" AriaLabel="@Localizer[nameof(AppStrings.GenderFemale)]"></BitRadioButtonOption>
+                        <BitRadioButtonOption Value="@Gender.Custom.ToString()" Text="Custom" AriaLabel="@Localizer[nameof(AppStrings.GenderCustom)]"></BitRadioButtonOption>
                     </BitRadioButtonGroup>
                 </div>
                 <BitButton ButtonStyle="BitButtonStyle.Primary"
-                       AriaLabel="@AppStrings.Save"
-                       Title="@AppStrings.Save"
+                       AriaLabel="@Localizer[nameof(AppStrings.Save)]"
+                       Title="@Localizer[nameof(AppStrings.Save)]"
                        IsEnabled="IsSubmitButtonEnabled"
                        ButtonType="BitButtonType.Submit">
                     @if (IsSavingData)
@@ -85,7 +85,7 @@
                     }
                     else
                     {
-                        <span>@AppStrings.Save</span>
+                        <span>@Localizer[nameof(AppStrings.Save)]</span>
                     }
                 </BitButton>
             </EditForm>

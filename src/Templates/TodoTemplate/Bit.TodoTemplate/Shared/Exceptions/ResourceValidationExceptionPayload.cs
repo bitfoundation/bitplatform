@@ -6,5 +6,12 @@ public class ResourceValidationExceptionPayload
 
     public string? Property { get; set; } = "*";
 
-    public IEnumerable<string> Messages { get; set; } = Array.Empty<string>();
+    public IEnumerable<ResourceValidationExceptionPayloadError> Errors { get; set; } = Array.Empty<ResourceValidationExceptionPayloadError>();
+}
+
+public class ResourceValidationExceptionPayloadError
+{
+    public string? Key { get; set; }
+
+    public string? Message { get; set; }
 }

@@ -118,144 +118,337 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="BadRequestException" xml:space="preserve">
-    <value>Invalid request</value>
+    <value>Requête invalide</value>
   </data>
   <data name="ConflicException" xml:space="preserve">
-    <value>Request could not be processed because of conflict in the request</value>
+    <value>Échec de la simultanéité optimiste, l'objet a été modifié.</value>
   </data>
   <data name="FileRemoveFailed" xml:space="preserve">
-    <value>An error occurred while removing file</value>
+    <value>Une erreur s'est produite lors de la suppression du fichier</value>
   </data>
   <data name="FileUploadFailed" xml:space="preserve">
-    <value>An error occurred while uploading file</value>
+    <value>Une erreur s'est produite lors du téléchargement du fichier</value>
   </data>
   <data name="ForbiddenException" xml:space="preserve">
-    <value>Access to the requested resource is forbidden</value>
+    <value>L'accès à la ressource demandée est interdit</value>
   </data>
   <data name="ResourceValidationException" xml:space="preserve">
-    <value>Request data is not valid</value>
+    <value>Les données de la demande ne sont pas valides</value>
   </data>
   <data name="RestException" xml:space="preserve">
-    <value>An error occurred while communicating with server</value>
+    <value>Une erreur s'est produite lors de la communication avec le serveur</value>
   </data>
   <data name="ToDoItemCouldNotBeFound" xml:space="preserve">
-    <value>To Do item could not be found</value>
+    <value>L'élément à faire est introuvable</value>
   </data>
   <data name="UnauthorizedException" xml:space="preserve">
-    <value>Your request lacks valid authentication credentials</value>
+    <value>Votre demande ne contient pas d'identifiants d'authentification valides</value>
   </data>
   <data name="UnknownException" xml:space="preserve">
-    <value>Unknown error has occurred</value>
+    <value>Une erreur inconnue s'est produite</value>
   </data>
   <data name="UserImageCouldNotBeFound" xml:space="preserve">
-    <value>User image could not be found</value>
+    <value>L'image de l'utilisateur est introuvable</value>
   </data>
   <data name="ConcurrencyFailure" xml:space="preserve">
     <value>Optimistic concurrency failure, object has been modified.</value>
     <comment>Error when optimistic concurrency fails</comment>
   </data>
   <data name="DuplicateEmail" xml:space="preserve">
-    <value>Email '{0}' is already taken.</value>
+    <value>L'e-mail '{0}' est déjà pris.</value>
     <comment>Error for duplicate emails</comment>
   </data>
   <data name="DuplicateRoleName" xml:space="preserve">
-    <value>Role name '{0}' is already taken.</value>
+    <value>Le nom de rôle '{0}' est déjà pris.</value>
     <comment>Error for duplicate roles</comment>
   </data>
   <data name="DuplicateUserName" xml:space="preserve">
-    <value>Username '{0}' is already taken.</value>
+    <value>Le nom d'utilisateur '{0}' est déjà pris.</value>
     <comment>Error for duplicate user names</comment>
   </data>
   <data name="InvalidEmail" xml:space="preserve">
-    <value>Email '{0}' is invalid.</value>
+    <value>L'e-mail '{0}' n'est pas valide.</value>
     <comment>Invalid email</comment>
   </data>
   <data name="InvalidRoleName" xml:space="preserve">
-    <value>Role name '{0}' is invalid.</value>
+    <value>Le nom de rôle '{0}' n'est pas valide.</value>
     <comment>Error for invalid role names</comment>
   </data>
   <data name="InvalidToken" xml:space="preserve">
-    <value>Invalid token.</value>
+    <value>Jeton invalide.</value>
     <comment>Error when a token is not recognized</comment>
   </data>
   <data name="InvalidUserName" xml:space="preserve">
-    <value>Username '{0}' is invalid, can only contain letters or digits.</value>
+    <value>Le nom d'utilisateur '{0}' n'est pas valide, ne peut contenir que des lettres ou des chiffres.</value>
     <comment>User names can only contain letters or digits</comment>
   </data>
   <data name="LoginAlreadyAssociated" xml:space="preserve">
-    <value>A user with this login already exists.</value>
+    <value>Un utilisateur avec ce login existe déjà.</value>
     <comment>Error when a login already linked</comment>
   </data>
   <data name="PasswordMismatch" xml:space="preserve">
-    <value>Incorrect password.</value>
+    <value>Mot de passe incorrect.</value>
     <comment>Error when a password doesn't match</comment>
   </data>
   <data name="PasswordRequiresDigit" xml:space="preserve">
-    <value>Passwords must have at least one digit ('0'-'9').</value>
+    <value>Les mots de passe doivent comporter au moins un chiffre ('0'-'9').</value>
     <comment>Error when passwords do not have a digit</comment>
   </data>
   <data name="PasswordRequiresLower" xml:space="preserve">
-    <value>Passwords must have at least one lowercase ('a'-'z').</value>
+    <value>Les mots de passe doivent avoir au moins une minuscule ('a'-'z').</value>
     <comment>Error when passwords do not have a lowercase letter</comment>
   </data>
   <data name="PasswordRequiresNonAlphanumeric" xml:space="preserve">
-    <value>Passwords must have at least one non alphanumeric character.</value>
+    <value>Les mots de passe doivent comporter au moins un caractère non alphanumérique.</value>
     <comment>Error when password does not have enough non alphanumeric characters</comment>
   </data>
   <data name="PasswordRequiresUpper" xml:space="preserve">
-    <value>Passwords must have at least one uppercase ('A'-'Z').</value>
+    <value>Les mots de passe doivent avoir au moins une majuscule ('A'-'Z').</value>
     <comment>Error when passwords do not have an uppercase letter</comment>
   </data>
   <data name="PasswordTooShort" xml:space="preserve">
-    <value>Passwords must be at least {0} characters.</value>
+    <value>Les mots de passe doivent comporter au moins {0} caractères.</value>
     <comment>Error message for passwords that are too short</comment>
   </data>
   <data name="RoleNotFound" xml:space="preserve">
-    <value>Role {0} does not exist.</value>
+    <value>Le rôle {0} n'existe pas.</value>
     <comment>Error when a role does not exist</comment>
   </data>
   <data name="RecoveryCodeRedemptionFailed" xml:space="preserve">
-    <value>Recovery code redemption failed.</value>
+    <value>Échec de l'utilisation du code de récupération.</value>
     <comment>Error when a recovery code is not redeemed.</comment>
   </data>
   <data name="UserAlreadyHasPassword" xml:space="preserve">
-    <value>User already has a password set.</value>
+    <value>L'utilisateur a déjà défini un mot de passe.</value>
     <comment>Error when AddPasswordAsync called when a user already has a password</comment>
   </data>
   <data name="UserAlreadyInRole" xml:space="preserve">
-    <value>User already in role '{0}'.</value>
+    <value>Utilisateur déjà dans le rôle '{0}'.</value>
     <comment>Error when a user is already in a role</comment>
   </data>
   <data name="UserLockedOut" xml:space="preserve">
-    <value>User is locked out.</value>
+    <value>L'utilisateur est verrouillé. Réessayez dans {0}</value>
     <comment>Error when a user is locked out</comment>
   </data>
   <data name="UserNameNotFound" xml:space="preserve">
-    <value>User {0} does not exist.</value>
+    <value>L'utilisateur {0} n'existe pas.</value>
     <comment>Error when a user does not exist</comment>
   </data>
   <data name="UserNotInRole" xml:space="preserve">
-    <value>User is not in role '{0}'.</value>
+    <value>L'utilisateur n'est pas dans le rôle '{0}'.</value>
     <comment>Error when a user is not in the role</comment>
   </data>
   <data name="PasswordRequiresUniqueChars" xml:space="preserve">
-    <value>Passwords must use at least {0} different characters.</value>
+    <value>Les mots de passe doivent utiliser au moins {0} caractères différents.</value>
     <comment>Error message for passwords that are based on similar characters</comment>
   </data>
   <data name="EmailNotConfirmed" xml:space="preserve">
-    <value>Email '{0}' is not confirmed.</value>
+    <value>L'e-mail '{0}' n'est pas confirmé.</value>
     <comment>Error when a email is not confirmed by the confirmation link</comment>
   </data>
   <data name="WaitForConfirmationEmailResendDelay" xml:space="preserve">
-    <value>You have already requested for the confirmation email for '{0}'. Try again later.</value>
+    <value>Vous avez déjà demandé l'e-mail de confirmation. Réessayez dans {0}</value>
   </data>
   <data name="WaitForResetPasswordEmailResendDelay" xml:space="preserve">
-    <value>You have already requested for the reset password email for '{0}'. Try again later.</value>
+    <value>Vous avez déjà demandé l'e-mail de réinitialisation du mot de passe. Réessayez dans {0}</value>
   </data>
   <data name="EmailAlreadyConfirmed" xml:space="preserve">
-    <value>Your email is already confirmed.</value>
+    <value>Votre email est déjà confirmé.</value>
   </data>
   <data name="UpdateConcurrencyException" xml:space="preserve">
-      <value>The record was modified by another user after you got the original data. the operation was canceled.</value>
+    <value>L'enregistrement a été modifié par un autre utilisateur après que vous ayez obtenu les données d'origine. l'opération a été annulée.</value>
+  </data>
+  <data name="KnownException" xml:space="preserve">
+    <value>Erreur connue</value>
+  </data>
+  <data name="ResourceNotFoundException" xml:space="preserve">
+    <value>Ressource introuvable</value>
+  </data>
+  <data name="TooManyRequestsExceptions" xml:space="preserve">
+    <value>Trop de demandes</value>
+  </data>
+  <data name="Error" xml:space="preserve">
+    <value>Erreur</value>
+  </data>
+  <data name="Active" xml:space="preserve">
+    <value>Active</value>
+  </data>
+  <data name="Add" xml:space="preserve">
+    <value>Ajouter</value>
+  </data>
+  <data name="All" xml:space="preserve">
+    <value>Toute</value>
+  </data>
+  <data name="Alphabetical" xml:space="preserve">
+    <value>Alphabétique</value>
+  </data>
+  <data name="AlreadyHaveAccountMessage" xml:space="preserve">
+    <value>Vous avez déjà un compte?</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Annuler</value>
+  </data>
+  <data name="CheckSpamMailMessage" xml:space="preserve">
+    <value>Vérifiez votre Spam/Junk, si vous ne le trouvez pas dans la boîte de réception.</value>
+  </data>
+  <data name="Completed" xml:space="preserve">
+    <value>Completed</value>
+  </data>
+  <data name="ConfirmEmailMessage" xml:space="preserve">
+    <value>Nous avons envoyé un lien de confirmation à votre adresse e-mail.
+Veuillez confirmer votre email en cliquant sur le lien.</value>
+  </data>
+  <data name="ConfirmEmailTitle" xml:space="preserve">
+    <value>confirmez votre adresse email</value>
+  </data>
+  <data name="ConfirmNewPassword" xml:space="preserve">
+    <value>Confirmer le nouveau mot de passe</value>
+  </data>
+  <data name="Date" xml:space="preserve">
+    <value>Complété</value>
+  </data>
+  <data name="DontHaveAccountMessage" xml:space="preserve">
+    <value>Vous n'avez pas de compte ?</value>
+  </data>
+  <data name="Edit" xml:space="preserve">
+    <value>Éditer</value>
+  </data>
+  <data name="EditProfileTitle" xml:space="preserve">
+    <value>Editer le profil</value>
+  </data>
+  <data name="Email" xml:space="preserve">
+    <value>E-mail</value>
+  </data>
+  <data name="EmailConfirmationFailedMessage" xml:space="preserve">
+    <value>Echec de la confirmation par e-mail !</value>
+  </data>
+  <data name="EmailConfirmationTitle" xml:space="preserve">
+    <value>confirmation de l'émail</value>
+  </data>
+  <data name="EmailConfirmedSuccessfullyMessage" xml:space="preserve">
+    <value>E-mail confirmé avec succès !</value>
+  </data>
+  <data name="ForgetPasswordTitle" xml:space="preserve">
+    <value>Mot de passe oublié</value>
+  </data>
+  <data name="ForgotPasswordLink" xml:space="preserve">
+    <value>mot de passe oublié?</value>
+  </data>
+  <data name="FullName" xml:space="preserve">
+    <value>Nom et prénom</value>
+  </data>
+  <data name="GenderCustom" xml:space="preserve">
+    <value>Personnalisé</value>
+  </data>
+  <data name="GenderFemale" xml:space="preserve">
+    <value>Femelle</value>
+  </data>
+  <data name="GenderMale" xml:space="preserve">
+    <value>Mâle</value>
+  </data>
+  <data name="GitHubRepo" xml:space="preserve">
+    <value>Dépôt GitHub</value>
+  </data>
+  <data name="InvalidConfirmationLinkMessage" xml:space="preserve">
+    <value>Il semble que le lien de confirmation soit invalide ou ait expiré.</value>
+  </data>
+  <data name="NewPassword" xml:space="preserve">
+    <value>nouveau mot de passe</value>
+  </data>
+  <data name="NoTodos" xml:space="preserve">
+    <value>Pas encore de tâches</value>
+  </data>
+  <data name="NotReceivedConfirmationEmailMessage" xml:space="preserve">
+    <value>Vous n'avez pas reçu le mail de confirmation ?</value>
+  </data>
+  <data name="NotReceivedConfirmationEmailMessage1" xml:space="preserve">
+    <value>Vous n'avez pas reçu le mail de confirmation?</value>
+  </data>
+  <data name="Or" xml:space="preserve">
+    <value>OU</value>
+  </data>
+  <data name="Password" xml:space="preserve">
+    <value>Mot de passe</value>
+  </data>
+  <data name="PasswordChangedSuccessfullyMessage" xml:space="preserve">
+    <value>Votre mot de passe a été modifié avec succès.</value>
+  </data>
+  <data name="PrivacyPolicyAgreementMessage" xml:space="preserve">
+    <value>je suis d'accord avec le</value>
+  </data>
+  <data name="PrivacyPolicyPageMessage" xml:space="preserve">
+    <value>Utilisez cette page pour détailler la politique de confidentialité de votre site.</value>
+  </data>
+  <data name="PrivacyPolicySectionMessage" xml:space="preserve">
+    <value>Utilisez cette section pour détailler la politique de confidentialité de votre site.</value>
+  </data>
+  <data name="PrivacyPolicyTitle" xml:space="preserve">
+    <value>Politique de confidentialité</value>
+  </data>
+  <data name="ProfileUpdatedSuccessfullyMessage" xml:space="preserve">
+    <value>Mise à jour du profil réussie.</value>
+  </data>
+  <data name="Remove" xml:space="preserve">
+    <value>Retirer</value>
+  </data>
+  <data name="ResendConfirmationLinkMessage" xml:space="preserve">
+    <value>Le lien de confirmation a été renvoyé à votre adresse e-mail.</value>
+  </data>
+  <data name="ResendEmail" xml:space="preserve">
+    <value>Ré-envoyer l'email</value>
+  </data>
+  <data name="ResetPassword" xml:space="preserve">
+    <value>Réinitialiser le mot de passe</value>
+  </data>
+  <data name="ResetPasswordLinkSentMessage" xml:space="preserve">
+    <value>Le lien de réinitialisation du mot de passe a été envoyé.</value>
+  </data>
+  <data name="ResetPasswordTitle" xml:space="preserve">
+    <value>Réinitialiser le mot de passe</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>sauvegarder</value>
+  </data>
+  <data name="SelectBirthDate" xml:space="preserve">
+    <value>Sélectionnez votre date de naissance</value>
+  </data>
+  <data name="SignIn" xml:space="preserve">
+    <value>S'identifier</value>
+  </data>
+  <data name="SignInTitle" xml:space="preserve">
+    <value>S'identifier</value>
+  </data>
+  <data name="SignOut" xml:space="preserve">
+    <value>Déconnexion</value>
+  </data>
+  <data name="SignUp" xml:space="preserve">
+    <value>Chantez</value>
+  </data>
+  <data name="SingUpTitle" xml:space="preserve">
+    <value>Chantez</value>
+  </data>
+  <data name="SortBy" xml:space="preserve">
+    <value>Trier par</value>
+  </data>
+  <data name="Submit" xml:space="preserve">
+    <value>Soumettre</value>
+  </data>
+  <data name="TodoAddPlaceholder" xml:space="preserve">
+    <value>Ajouter une tâche</value>
+  </data>
+  <data name="TodoSearchPlaceholder" xml:space="preserve">
+    <value>Cherchez quelque chose à faire...</value>
+  </data>
+  <data name="TodoTemplateHomeMessage" xml:space="preserve">
+    <value>Créez facilement votre application Blazor multi-mode (WASM, serveur, hybride, pré-rendu) dans les plus brefs délais !</value>
+  </data>
+  <data name="TodoTemplateHomeTitle" xml:space="preserve">
+    <value>TodoTemplate Accueil</value>
+  </data>
+  <data name="TodoTitle" xml:space="preserve">
+    <value>Faire</value>
+  </data>
+  <data name="UploadNewProfileImage" xml:space="preserve">
+    <value>Télécharger une nouvelle image de profil</value>
   </data>
 </root>

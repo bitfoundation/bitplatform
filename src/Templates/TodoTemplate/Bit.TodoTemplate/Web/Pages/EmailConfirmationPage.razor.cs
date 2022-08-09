@@ -39,13 +39,13 @@ public partial class EmailConfirmationPage
 
             EmailConfirmationMessageType = BitMessageBarType.Success;
 
-            EmailConfirmationMessage = AuthStrings.ResendConfirmationLinkMessage;
+            EmailConfirmationMessage = AppStrings.ResendConfirmationLinkMessage;
         }
         catch (KnownException e)
         {
             EmailConfirmationMessageType = BitMessageBarType.Error;
 
-            EmailConfirmationMessage = ErrorStrings.ResourceManager.Translate(e.Message, Email!);
+            EmailConfirmationMessage = e.Message;
         }
         finally
         {
