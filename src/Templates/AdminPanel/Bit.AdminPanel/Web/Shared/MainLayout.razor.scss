@@ -115,3 +115,7 @@
 ::deep .bit-btn-fluent {
     border-radius: rem(2px);
 }
+
+::deep .bit-mdl-container {
+    min-height: unset;
+}

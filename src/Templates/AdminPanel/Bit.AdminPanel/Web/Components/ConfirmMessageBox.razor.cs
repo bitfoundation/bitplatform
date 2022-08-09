@@ -43,7 +43,7 @@ public partial class ConfirmMessageBox : IDisposable
 
     private string Context { get; set; } = string.Empty;
 
-    public void Confirmation(bool value)
+    public void Confirm(bool value)
     {
         IsOpen = false;
         _tsc?.SetResult(value);

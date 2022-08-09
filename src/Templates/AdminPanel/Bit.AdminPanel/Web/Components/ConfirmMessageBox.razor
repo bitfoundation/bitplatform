@@ -1,18 +1,18 @@
 ﻿@inherits AppComponentBase;
 
 <BitModal @bind-IsOpen="IsOpen">
-    <div class="main">
+    <div class="main-container">
         <div class="header">
             <span class="title">@Title</span>
-            <BitIconButton IconName="BitIconName.ChromeClose" OnClick="@(()=>Confirmation(false))" />
+            <BitIconButton IconName="BitIconName.ChromeClose" OnClick="@(() => Confirm(false))" />
         </div>
         <div class="body">
-           <p>@Message</p>  
-           <p><strong>@Context</strong></p>
+            @Message
+            @Context
         </div>
-        <div >
-            <BitButton ButtonStyle="BitButtonStyle.Primary" Style="float:left" OnClick="@(()=>Confirmation(true))">Yes</BitButton>
-            <BitButton ButtonStyle="BitButtonStyle.Standard" Style="float:right" OnClick="@(()=>Confirmation(false))">No</BitButton>
+        <div class="btn-group">
+            <BitButton ButtonStyle="BitButtonStyle.Primary" Style="margin-right: 0.5rem" OnClick="@(() => Confirm(true))">Yes</BitButton>
+            <BitButton ButtonStyle="BitButtonStyle.Standard" OnClick="@(() => Confirm(false))">No</BitButton>
         </div>
     </div>
 </BitModal>

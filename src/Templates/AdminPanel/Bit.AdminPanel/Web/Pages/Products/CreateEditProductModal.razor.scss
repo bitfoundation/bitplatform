@@ -15,7 +15,11 @@
     box-sizing: border-box;
 
     @include sm {
+        position: fixed;
+        bottom: 0;
+        left: 0;
         width: 100%;
+        border-radius: rem(8px) rem(8px) 0 0;
     }
 }
 
