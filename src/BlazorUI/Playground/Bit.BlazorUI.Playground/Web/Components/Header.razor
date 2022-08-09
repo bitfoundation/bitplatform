@@ -1,6 +1,6 @@
 ﻿@inherits AppComponentBase
 
-<header class="main-header @(CurrentUrl == "/" || CurrentUrl == "/icons" ? "main-header--full-page" : null)">
+<header class="main-header @(CurrentUrl == "/" ? "main-header--full-page" : null)">
     <div class="header-main-container">
         <div class="header-content-container">
             @if (CurrentUrl != "/")
@@ -9,8 +9,7 @@
             }
             <a class="header-logo" href="/" aria-label="Homepage"></a>
             <a class="header-link @(CurrentUrl == "/" ? "header-link--active" : "")" href="/">Home</a>
-            <a class="header-link @(CurrentUrl == "/overview" ? "header-link--active" : "")" href="/overview">Docs</a>
-            <a class="header-link @(CurrentUrl == "/icons" ? "header-link--active" : "")" href="/icons">Iconography</a>
+            <a class="header-link @(CurrentUrl != "/" ? "header-link--active" : "")" href="/overview">Docs</a>
         </div>
         <a class="github-btn" target="_blank" aria-label="Github repository" href="https://github.com/bitfoundation/bitplatform"></a>
     </div>
@@ -29,7 +28,6 @@
                    IconName=BitIconName.Cancel
                    OnClick=ToggleHeaderMenu />
         <a class="header-nav-link @(CurrentUrl == "/" ? "header-nav-link--active" : "")" href="/" @onclick=ToggleHeaderMenu>Home</a>
-        <a class="header-nav-link @(CurrentUrl == "/overview" ? "header-nav-link--active" : "")" href="/overview" @onclick=ToggleHeaderMenu>Docs</a>
-        <a class="header-nav-link @(CurrentUrl == "/icons" ? "header-nav-link--active" : "")" href="/icons" @onclick=ToggleHeaderMenu>Iconography</a>
+        <a class="header-nav-link @(CurrentUrl != "/" ? "header-nav-link--active" : "")" href="/overview" @onclick=ToggleHeaderMenu>Docs</a>
     </nav>
 }

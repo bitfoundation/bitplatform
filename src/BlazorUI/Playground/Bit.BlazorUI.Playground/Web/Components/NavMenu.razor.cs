@@ -17,6 +17,7 @@ public partial class NavMenu
     {
         new BitNavLinkItem { Name= "Overview", Key = "Overview", Url = "/overview"},
         new BitNavLinkItem { Name= "Getting started", Key = "GettingStarted", Url = "/getting-started"},
+        new BitNavLinkItem { Name= "Icons", Key = "Icons", Url = "/icons"},
         new BitNavLinkItem
         {
             Name = "Basic Inputs",

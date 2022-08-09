@@ -1,4 +1,4 @@
-﻿declare var hljs: any;
+﻿declare var Prism: any;
 
 function toggleBodyOverflow(isMenuOpen: boolean) {
     if (window.innerWidth < 901) {
@@ -28,6 +28,6 @@ function copyToClipboard(codeSampleContentForCopy: string) {
 
 function highlightSnippet() {
     document.querySelectorAll('pre code').forEach((el) => {
-        hljs.highlightBlock(el);
+        Prism.highlightElement(el);
     });
 }

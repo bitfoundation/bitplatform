@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Bit.BlazorUI.Playground.Web.Pages;
 
-public partial class IconPage
+public partial class IconsPage
 {
     private List<string> allIcons;
     private List<string> filteredIcons;

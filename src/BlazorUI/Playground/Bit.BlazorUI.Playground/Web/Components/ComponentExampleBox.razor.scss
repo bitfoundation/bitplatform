@@ -47,24 +47,17 @@
     font-size: rem(16px);
     line-height: rem(24px);
 
+    pre {
+        margin: 0;
+        background-color: $White;
+    }
+
     &::-webkit-scrollbar {
         width: rem(6px);
     }
 
     &::-webkit-scrollbar:horizontal {
-        height: rem(6px);
-    }
-
-    @include lg {
-        font-size: rem(13px);
-    }
-
-    @include md {
-        font-size: rem(13px);
-    }
-
-    @include sm {
-        font-size: rem(13px);
+        height: rem(8px);
     }
 }
 
