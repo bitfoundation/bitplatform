@@ -16,9 +16,9 @@
         }
         @if (EmailConfirmed)
         {
-            <h1 class="form-title">
+            <h2 class="form-title">
                 @AuthStrings.EmailConfirmedSuccessfullyMessage
-            </h1>
+            </h2>
             <BitButton Class="form-submit-button"
                    ButtonStyle="BitButtonStyle.Primary"
                    Title="@AuthStrings.SignIn"
@@ -29,9 +29,9 @@
         }
         else
         {
-            <h1 class="form-title">
+            <h2 class="form-title">
                 @AuthStrings.EmailConfirmationFailedMessage
-            </h1>
+            </h2>
             <div class="form-description">
                 @AuthStrings.InvalidConfirmationLinkMessage
             </div>
