@@ -42,7 +42,7 @@ public partial class ResetPasswordPage
 
             ResetPasswordMessageType = BitMessageBarType.Success;
 
-            ResetPasswordMessage = AppStrings.PasswordChangedSuccessfullyMessage;
+            ResetPasswordMessage = Localizer[nameof(AppStrings.PasswordChangedSuccessfullyMessage)];
 
             await AuthenticationService.SignIn(new SignInRequestDto
             {

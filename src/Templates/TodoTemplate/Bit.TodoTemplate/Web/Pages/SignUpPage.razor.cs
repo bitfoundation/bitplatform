@@ -71,7 +71,7 @@ public partial class SignUpPage
             }, AppJsonContext.Default.SendConfirmationEmailRequestDto);
 
             SignUpMessageType = BitMessageBarType.Success;
-            SignUpMessage = AppStrings.ResendConfirmationLinkMessage;
+            SignUpMessage = Localizer[nameof(AppStrings.ResendConfirmationLinkMessage)];
         }
         catch (KnownException e)
         {

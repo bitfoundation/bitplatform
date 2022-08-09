@@ -39,7 +39,7 @@ public partial class EmailConfirmationPage
 
             EmailConfirmationMessageType = BitMessageBarType.Success;
 
-            EmailConfirmationMessage = AppStrings.ResendConfirmationLinkMessage;
+            EmailConfirmationMessage = Localizer[nameof(AppStrings.ResendConfirmationLinkMessage)];
         }
         catch (KnownException e)
         {
