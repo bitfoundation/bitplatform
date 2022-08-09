@@ -76,10 +76,6 @@
         "outputFile": "Pages/HomePage.razor.css"
     },
     {
-        "inputFile": "Pages/PrivacyPage.razor.scss",
-        "outputFile": "Pages/PrivacyPage.razor.css"
-    },
-    {
         "inputFile": "Pages/SignUpPage.razor.scss",
         "outputFile": "Pages/SignUpPage.razor.css"
     },
