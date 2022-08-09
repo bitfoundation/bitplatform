@@ -5,51 +5,61 @@
 <PageTitle>@AuthStrings.EmailConfirmationTitle</PageTitle>
 
 <div class="page-container">
-    <div class="form--white">
-        @if (string.IsNullOrEmpty(EmailConfirmationMessage) is false)
-        {
-            <BitMessageBar Class="form-message-bar"
-                       MessageBarType="@EmailConfirmationMessageType"
-                       OnDismiss="() => EmailConfirmationMessage = null">
-                @EmailConfirmationMessage
-            </BitMessageBar>
-        }
-        @if (EmailConfirmed)
-        {
-            <h2 class="form-title">
-                @AuthStrings.EmailConfirmedSuccessfullyMessage
-            </h2>
-            <BitButton Class="form-submit-button"
-                   ButtonStyle="BitButtonStyle.Primary"
-                   Title="@AuthStrings.SignIn"
-                   AriaLabel="@AuthStrings.SignIn"
-                   OnClick="WrapHandled(RedirectToSignIn)">
-                <span>@AuthStrings.SignIn</span>
-            </BitButton>
-        }
-        else
-        {
-            <h2 class="form-title">
-                @AuthStrings.EmailConfirmationFailedMessage
-            </h2>
-            <div class="form-description">
-                @AuthStrings.InvalidConfirmationLinkMessage
-            </div>
-            <BitButton Class="form-submit-button"
-                   ButtonStyle="BitButtonStyle.Primary"
-                   IsEnabled="@(IsLoading is false)"
-                   Title="@AuthStrings.ResendEmail"
-                   AriaLabel="@AuthStrings.ResendEmail"
-                   OnClick="WrapHandled(ResendLink)">
-                @if (IsLoading)
-                {
-                    <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
-                }
-                else
-                {
-                    <span>@AuthStrings.ResendEmail</span>
-                }
-            </BitButton>
-        }
-    </div>
+    <section class="page-section">
+        <div class="bit-logo--white"></div>
+        <div class="bg-img"></div>
+        <div class="section-content">
+            <h1 class="section-title">Bit Admin Panel</h1>
+            <div class="section-desc">Admin Panel is a project template that provides common features such as Sign-up & Sign-in. This template is powered by Bit BlazorUI components.</div>
+        </div>
+    </section>
+    <section class="page-section">
+        <div class="form">
+            @if (string.IsNullOrEmpty(EmailConfirmationMessage) is false)
+            {
+                <BitMessageBar Class="form-message-bar"
+                           MessageBarType="@EmailConfirmationMessageType"
+                           OnDismiss="() => EmailConfirmationMessage = null">
+                    @EmailConfirmationMessage
+                </BitMessageBar>
+            }
+            @if (EmailConfirmed)
+            {
+                <h2 class="form-title">
+                    @AuthStrings.EmailConfirmedSuccessfullyMessage
+                </h2>
+                <BitButton Class="form-submit-button"
+                       ButtonStyle="BitButtonStyle.Primary"
+                       Title="@AuthStrings.SignIn"
+                       AriaLabel="@AuthStrings.SignIn"
+                       OnClick="WrapHandled(RedirectToSignIn)">
+                    <span>@AuthStrings.SignIn</span>
+                </BitButton>
+            }
+            else
+            {
+                <h2 class="form-title">
+                    @AuthStrings.EmailConfirmationFailedMessage
+                </h2>
+                <div class="form-description">
+                    @AuthStrings.InvalidConfirmationLinkMessage
+                </div>
+                <BitButton Class="form-submit-button"
+                       ButtonStyle="BitButtonStyle.Primary"
+                       IsEnabled="@(IsLoading is false)"
+                       Title="@AuthStrings.ResendEmail"
+                       AriaLabel="@AuthStrings.ResendEmail"
+                       OnClick="WrapHandled(ResendLink)">
+                    @if (IsLoading)
+                    {
+                        <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
+                    }
+                    else
+                    {
+                        <span>@AuthStrings.ResendEmail</span>
+                    }
+                </BitButton>
+            }
+        </div>
+    </section>
 </div>
