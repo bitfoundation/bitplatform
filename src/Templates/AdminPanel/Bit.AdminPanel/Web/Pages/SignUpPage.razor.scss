@@ -197,8 +197,8 @@
 
 .form-description {
     font-weight: 600;
-    font-size: rem(16px);
-    line-height: rem(24px);
+    font-size: rem(14px);
+    line-height: rem(20px);
     width: rem(432px);
     height: rem(48px);
 
@@ -216,40 +216,23 @@
         width: rem(280px);
         height: rem(60px);
     }
-
-    @include lt-xl {
-        font-size: rem(14px);
-        line-height: rem(20px);
-    }
 }
 
 .form-link {
     font-weight: 400;
-    font-size: rem(16px);
-    line-height: rem(24px);
+    font-size: rem(14px);
+    line-height: rem(22px);
     color: $Black3;
-    width: rem(319px);
+    width: rem(280px);
     height: rem(24px);
     margin-top: rem(36px);
-
-    @include lt-xl {
-        font-size: rem(14px);
-        line-height: rem(22px);
-        width: rem(280px);
-    }
 }
 
 .form-note {
     font-weight: 400;
-    font-size: rem(11.2px);
-    line-height: rem(24px);
+    font-size: rem(10px);
+    line-height: rem(22px);
     color: $Black3;
-    width: rem(319px);
+    width: rem(280px);
     height: rem(24px);
-
-    @include lt-xl {
-        font-size: rem(9.8px);
-        line-height: rem(22px);
-        width: rem(280px);
-    }
 }
