@@ -5,91 +5,91 @@
 <PageTitle>@AppStrings.EditProfileTitle</PageTitle>
 
 <div class="page-container">
-    <div class="content-container--white">
-        @if (string.IsNullOrEmpty(EditProfileMessage) is false)
-        {
-            <BitMessageBar Class="form-message-bar"
-                       MessageBarType="@EditProfileMessageType"
-                       OnDismiss="() => EditProfileMessage = null">
-                @EditProfileMessage
-            </BitMessageBar>
-        }
+    @if (string.IsNullOrEmpty(EditProfileMessage) is false)
+    {
+        <BitMessageBar Class="form-message-bar"
+                   MessageBarType="@EditProfileMessageType"
+                   OnDismiss="() => EditProfileMessage = null">
+            @EditProfileMessage
+        </BitMessageBar>
+    }
 
-        <h1 class="page-title">
-            @AppStrings.EditProfileTitle
-        </h1>
-        @if (IsLoadingData)
-        {
-            <div class="loading-container">
-                <BitSpinner Size="BitSpinnerSize.Large"></BitSpinner>
+    <div class="page-header">
+        <BitIconButton Class="back-btn" Href="/analytics" IconName="BitIconName.Back" Title="Back" />
+        <h1 class="page-title">@AppStrings.EditProfileTitle</h1>
+    </div>
+    @if (IsLoadingData)
+    {
+        <div class="loading-container">
+            <BitSpinner Size="BitSpinnerSize.Large"></BitSpinner>
+        </div>
+    }
+    else
+    {
+        <div class="form-profile-container">
+            <div class="form-profile-img">
+                @if (User.ProfileImageName != null)
+                {
+                    <img src="@($"{ProfileImageUrl}&file={User.ProfileImageName}")" class="profile-img" alt="User profile image" width="48" height="48"/>
+                }
+                else if (string.IsNullOrEmpty(User.FullName) is false && User.FullName.Length >= 2)
+                {
+                    @User.FullName?.ToUpper()[..2]
+                }
+                else
+                {
+                    @User.UserName?.ToUpper()[..2]
+                }
             </div>
-        }
-        else
-        {
-            <div class="form-profile-container">
-                <div class="form-profile-img">
-                    @if (User.ProfileImageName != null)
-                    {
-                        <img src="@($"{ProfileImageUrl}&file={User.ProfileImageName}")" class="profile-img" alt="User profile image" />
-                    }
-                    else if (string.IsNullOrEmpty(User.FullName) is false && User.FullName.Length >= 2)
-                    {
-                        @User.FullName?.ToUpper()[..2]
-                    }
-                    else
-                    {
-                        @User.UserName?.ToUpper()[..2]
-                    }
-                </div>
-                <div class="form-profile-email">
-                    @User.UserName
-                </div>
+            <div class="form-profile-email">
+                @User.UserName
+            </div>
+        </div>
+        <div class="form-input-container">
+            <BitLabel>Profile image</BitLabel>
+            <BitFileUpload Label="@AppStrings.UploadNewProfileImage"
+                       Style="max-width: 100%"
+                       AllowedExtensions="@(new [] {".png", ".jpg", ".jpeg", ".webp", ".bpm", ".gif"})"
+                       AutoUploadEnabled="true"
+                       UploadUrl="@ProfileImageUploadUrl"
+                       OnUploadComplete="WrapHandled(LoadEditProfileData)"
+                       OnUploadFailed="() => ProfileImageError = ErrorStrings.FileUploadFailed"
+                       @onfocus="() => ProfileImageError = null" />
+            <div class="form-input-error">@ProfileImageError</div>
+        </div>
+        <EditForm Model="UserToEdit" OnSubmit="WrapHandled(Save)">
+            <div class="form-input-container">
+                <BitTextField Label="@AppStrings.FullName"
+                          @bind-Value="UserToEdit.FullName"
+                          Placeholder="@AppStrings.FullName" />
             </div>
             <div class="form-input-container">
-                <BitLabel>Profile image</BitLabel>
-                <BitFileUpload Label="@AppStrings.UploadNewProfileImage"
-                           AllowedExtensions="@(new [] {".png", ".jpg", ".jpeg", ".webp", ".bpm", ".gif"})"
-                           AutoUploadEnabled="true"
-                           UploadUrl="@ProfileImageUploadUrl"
-                           OnUploadComplete="WrapHandled(LoadEditProfileData)"
-                           OnUploadFailed="() => ProfileImageError = ErrorStrings.FileUploadFailed"
-                           @onfocus="() => ProfileImageError = null" />
-                <div class="form-input-error">@ProfileImageError</div>
+                <BitDatePicker Label="Birthday"
+                           Class="edit-profile-dtp"
+                           @bind-Value="UserToEdit.BirthDate"
+                           Placeholder="@AppStrings.SelectBirthDate" />
             </div>
-            <EditForm Model="UserToEdit" OnSubmit="WrapHandled(Save)" class="edit-profile-form">
-                <div class="form-input-container">
-                    <BitTextField Label="@AppStrings.FullName"
-                              @bind-Value="UserToEdit.FullName"
-                              Placeholder="@AppStrings.FullName" />
-                </div>
-                <div class="form-input-container">
-                    <BitDatePicker Label="Birthday"
-                               Class="edit-profile-dtp"
-                               @bind-Value="UserToEdit.BirthDate"
-                               Placeholder="@AppStrings.SelectBirthDate" />
-                </div>
-                <div class="form-choice-container">
-                    <BitRadioButtonGroup Label="Gender" @bind-Value="UserToEdit.GenderAsString">
-                        <BitRadioButtonOption Value="@Gender.Male.ToString()" Text="Male" AriaLabel="@AppStrings.GenderMale"></BitRadioButtonOption>
-                        <BitRadioButtonOption Value="@Gender.Female.ToString()" Text="Famale" AriaLabel="@AppStrings.GenderFemale"></BitRadioButtonOption>
-                        <BitRadioButtonOption Value="@Gender.Custom.ToString()" Text="Custom" AriaLabel="@AppStrings.GenderCustom"></BitRadioButtonOption>
-                    </BitRadioButtonGroup>
-                </div>
-                <BitButton ButtonStyle="BitButtonStyle.Primary"
-                       AriaLabel="@AppStrings.Save"
-                       Title="@AppStrings.Save"
-                       IsEnabled="IsSubmitButtonEnabled"
-                       ButtonType="BitButtonType.Submit">
-                    @if (IsSavingData)
-                    {
-                        <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
-                    }
-                    else
-                    {
-                        <span>@AppStrings.Save</span>
-                    }
-                </BitButton>
-            </EditForm>
-        }
-    </div>
+            <div class="form-choice-container">
+                <BitRadioButtonGroup Label="Gender" @bind-Value="UserToEdit.GenderAsString">
+                    <BitRadioButtonOption Value="@Gender.Male.ToString()" Text="Male" AriaLabel="@AppStrings.GenderMale"></BitRadioButtonOption>
+                    <BitRadioButtonOption Value="@Gender.Female.ToString()" Text="Famale" AriaLabel="@AppStrings.GenderFemale"></BitRadioButtonOption>
+                    <BitRadioButtonOption Value="@Gender.Custom.ToString()" Text="Custom" AriaLabel="@AppStrings.GenderCustom"></BitRadioButtonOption>
+                </BitRadioButtonGroup>
+            </div>
+            <BitButton ButtonStyle="BitButtonStyle.Primary"
+                   AriaLabel="@AppStrings.Save"
+                   Title="@AppStrings.Save"
+                   IsEnabled="IsSubmitButtonEnabled"
+                   ButtonType="BitButtonType.Submit">
+                @if (IsSavingData)
+                {
+                    <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
+                }
+                else
+                {
+                    <span>@AppStrings.Save</span>
+                }
+            </BitButton>
+        </EditForm>
+    }
 </div>
