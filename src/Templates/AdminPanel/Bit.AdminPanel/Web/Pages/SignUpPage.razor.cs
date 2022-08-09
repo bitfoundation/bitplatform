@@ -97,7 +97,7 @@ public partial class SignUpPage
         {
             if (await authStateProvider.IsUserAuthenticated())
             {
-                navigationManager.NavigateTo("/");
+                navigationManager.NavigateTo("/analytics");
             }
         }
     }
