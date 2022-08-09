@@ -15,36 +15,10 @@
 }
 
 .main--full-page {
+    padding: 0;
+
     .site-content {
-        max-width: 100%;
-        padding-left: 0;
-        padding-right: 0;
-        padding-top: 0;
-        padding-bottom: 0;
-
-        @include lt-xl {
-            padding-top: 0;
-            padding-bottom: 0;
-        }
-
-        @include lg {
-            padding-left: 0;
-            padding-right: 0;
-        }
-
-        @include md {
-            padding-left: 0;
-            padding-right: 0;
-        }
-
-        @include sm {
-            padding-left: 0;
-            padding-right: 0;
-        }
-
-        @media all and (min-width: 1620px) {
-            max-width: 100%;
-        }
+        padding: 0 !important;
     }
 }
 
