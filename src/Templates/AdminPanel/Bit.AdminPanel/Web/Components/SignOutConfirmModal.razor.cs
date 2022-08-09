@@ -1,6 +1,4 @@
-﻿using Microsoft.JSInterop;
-
-namespace AdminPanel.App.Components;
+﻿namespace AdminPanel.App.Components;
 
 public partial class SignOutConfirmModal
 {
@@ -33,6 +31,6 @@ public partial class SignOutConfirmModal
     private async Task SignOut()
     {
         await authService.SignOut();
-        CloseModal();
+        await CloseModal();
     }
 }

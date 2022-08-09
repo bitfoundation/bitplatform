@@ -85,14 +85,14 @@ public partial class CategoriesPage
         navigationManager.NavigateTo("add-edit-category");
     }
 
-    private async Task EditCategory(CategoryDto Category)
+    private void EditCategory(CategoryDto Category)
     {
         navigationManager.NavigateTo($"add-edit-category/{Category!.Id}");
     }
 
     private async Task DeleteCategory(CategoryDto Category)
     {
-        var confirmed = await ConfirmMessageBox.Show("Are you sure delete?", Category.Name!, "Delete");
+        var confirmed = await ConfirmMessageBox.Show($"Are you sure delete {Category.Name}?", "Delete category");
 
         if (confirmed)
         {

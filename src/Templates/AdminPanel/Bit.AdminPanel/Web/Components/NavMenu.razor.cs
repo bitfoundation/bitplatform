@@ -11,6 +11,8 @@ public partial class NavMenu
 
     [AutoInject] private IAuthTokenProvider authTokenProvider = default!;
 
+    [AutoInject] private IJSRuntime jSRuntime = default!;
+
 #if BlazorServer || BlazorHybrid
     [AutoInject] private IConfiguration configuration = default!;
 #endif
@@ -85,9 +87,10 @@ public partial class NavMenu
 
     [Parameter] public EventCallback<bool> IsMenuOpenChanged { get; set; }
 
-    private void CloseMenu()
+    private async Task CloseMenu()
     {
         IsMenuOpen = false;
+        await jSRuntime.SetToggleBodyOverflow(false);
     }
 
     protected override async Task OnInitAsync()
