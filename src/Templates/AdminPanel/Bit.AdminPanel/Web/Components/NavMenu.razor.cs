@@ -32,8 +32,9 @@ public partial class NavMenu
             new BitNavLinkItem
             {
                 Name = "Dashboard",
+                Key = "Dashboard",
                 IconName = BitIconName.Home,
-                Links=new List<BitNavLinkItem>
+                Links = new List<BitNavLinkItem>
                         {
                             new BitNavLinkItem
                             {
@@ -46,8 +47,9 @@ public partial class NavMenu
             new BitNavLinkItem
             {
                 Name = "Product catologue",
+                Key = "Product catologue",
                 IconName = BitIconName.Tag,
-                Links=new List<BitNavLinkItem>
+                Links = new List<BitNavLinkItem>
                         {
                             new BitNavLinkItem
                             {
