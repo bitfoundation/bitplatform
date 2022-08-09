@@ -6,4 +6,9 @@ public static class JsRuntimeExtension
     {
         await jsRuntime.InvokeVoidAsync("toggleBodyOverflow", isOverflowHidden);
     }
+
+    public static async Task GoBack(this IJSRuntime jsRuntime)
+    {
+        await jsRuntime.InvokeVoidAsync("navigateToPrevUrl");
+    }
 }

@@ -15,7 +15,7 @@
     }
 
     <div class="page-header">
-        <BitIconButton Class="back-btn" Href="/analytics" IconName="BitIconName.Back" Title="Back" />
+        <BitIconButton Class="back-btn" OnClick=@GoBack IconName="BitIconName.Back" Title="Back" />
         <h1 class="page-title">@AppStrings.EditProfileTitle</h1>
     </div>
     @if (IsLoadingData)

@@ -39,3 +39,7 @@ function toggleBodyOverflow(isOverflowHidden: boolean) {
         document.body.style.overflow = "auto";
     }
 }
+
+function navigateToPrevUrl() {
+    history.back();
+}
