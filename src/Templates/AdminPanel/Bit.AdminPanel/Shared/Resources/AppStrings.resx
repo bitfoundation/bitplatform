@@ -180,6 +180,9 @@
   <data name="GitHubRepo" xml:space="preserve">
     <value>GitHub Repo</value>
   </data>
+  <data name="Last30DaysCategoryCount" xml:space="preserve">
+    <value>Last 30 days category count</value>
+  </data>
   <data name="Last30DaysProductCount" xml:space="preserve">
     <value>Last 30 days product count</value>
   </data>
@@ -201,14 +204,23 @@
   <data name="ProductSales" xml:space="preserve">
     <value>Product sales</value>
   </data>
+  <data name="ProductSalesText" xml:space="preserve">
+    <value>This chart shows the sale number of each product.</value>
+  </data>
   <data name="ProductsCountPerCategoryChart" xml:space="preserve">
     <value>Products count per category chart</value>
+  </data>
+  <data name="ProductsCountPerCategoryChartText" xml:space="preserve">
+    <value>This chart shows the number of products in each category.</value>
   </data>
   <data name="ProductsPageTitle" xml:space="preserve">
     <value>Products</value>
   </data>
   <data name="ProductsPercentagePerCategory" xml:space="preserve">
     <value>Products percentage per category</value>
+  </data>
+  <data name="ProductsPercentagePerCategoryText" xml:space="preserve">
+    <value>This chart shows the percentage of products in each category.</value>
   </data>
   <data name="ProfileUpdatedSuccessfullyMessage" xml:space="preserve">
     <value>Profile updated successfully.</value>

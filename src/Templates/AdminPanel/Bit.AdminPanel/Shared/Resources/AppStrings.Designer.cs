@@ -250,6 +250,15 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Last 30 days category count.
+        /// </summary>
+        public static string Last30DaysCategoryCount {
+            get {
+                return ResourceManager.GetString("Last30DaysCategoryCount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Last 30 days product count.
         /// </summary>
         public static string Last30DaysProductCount {
@@ -313,11 +322,29 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to This chart shows the sale number of each product..
+        /// </summary>
+        public static string ProductSalesText {
+            get {
+                return ResourceManager.GetString("ProductSalesText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Products count per category chart.
         /// </summary>
         public static string ProductsCountPerCategoryChart {
             get {
                 return ResourceManager.GetString("ProductsCountPerCategoryChart", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This chart shows the number of products in each category..
+        /// </summary>
+        public static string ProductsCountPerCategoryChartText {
+            get {
+                return ResourceManager.GetString("ProductsCountPerCategoryChartText", resourceCulture);
             }
         }
         
@@ -336,6 +363,15 @@ namespace AdminPanel.Shared.Resources {
         public static string ProductsPercentagePerCategory {
             get {
                 return ResourceManager.GetString("ProductsPercentagePerCategory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This chart shows the percentage of products in each category..
+        /// </summary>
+        public static string ProductsPercentagePerCategoryText {
+            get {
+                return ResourceManager.GetString("ProductsPercentagePerCategoryText", resourceCulture);
             }
         }
         
