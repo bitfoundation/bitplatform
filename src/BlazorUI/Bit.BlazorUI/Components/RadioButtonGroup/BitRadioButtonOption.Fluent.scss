@@ -175,7 +175,7 @@
     position: relative;
     display: inline-block;
     height: rem(32px);
-    width: rem(32px);
+    min-width: rem(32px);
     padding: 0 rem(30px);
 }
 
