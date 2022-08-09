@@ -88,9 +88,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.BlazorUI" Version="3.0.0-pre-03" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="3.0.0-pre-03" />
-        <PackageReference Include="Bit.SourceGenerators" Version="3.0.0-pre-03" />
+        <PackageReference Include="Bit.BlazorUI" Version="3.0.0-pre-04" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="3.0.0-pre-04" />
+        <PackageReference Include="Bit.SourceGenerators" Version="3.0.0-pre-04" />
         <PackageReference Include="LibSassBuilder" Version="2.0.2" />
         <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.7.4">
             <PrivateAssets>all</PrivateAssets>
