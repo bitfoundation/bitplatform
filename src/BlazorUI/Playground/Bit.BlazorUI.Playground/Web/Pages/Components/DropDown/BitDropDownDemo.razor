@@ -190,4 +190,29 @@
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
+
+    <ComponentExampleBox Title="DropDown with search box" HTMLSourceCode="@example8HTMLCode" CSharpSourceCode="@example8CSharpCode" ExampleId="example8">
+        <ExamplePreview>
+            <div>
+                <BitDropDown Label="Single-select Controlled with search box"
+                             Items="GetDropdownItems()"
+                             Placeholder="Select an option"
+                             IsResponsiveModeEnabled="true"
+                             ShowSearchBox="true"
+                             PlaceholderSearchBox="Search item"
+                             Style="width: 290px; margin: 20px 0 20px 0">
+                </BitDropDown>
+
+                <BitDropDown Label="Multi-select controlled with search box"
+                             Items="GetDropdownItems()"
+                             Placeholder="Select options"
+                             IsMultiSelect="true"
+                             IsResponsiveModeEnabled="true"
+                             ShowSearchBox="true"
+                             PlaceholderSearchBox="Search items"
+                             Style="width: 290px; margin: 20px 0 20px 0">
+                </BitDropDown>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
 </ComponentDemo>
