@@ -46,12 +46,12 @@
     display: inline-flex;
     flex-direction: column;
     width: 100%;
-}
-
-.grid ::deep table {
-    min-width: 100%;
     border: rem(1px) solid $ThemeLightColor;
     border-radius: rem(2px);
+}
+
+::deep table {
+    min-width: 100%;
     border-spacing: 0;
 }
 
@@ -83,6 +83,7 @@
 ::deep tr td:first-child {
     font-size: rem(14px);
     line-height: rem(20px);
+    padding-left: rem(12px);
 }
 
 ::deep .col-options-button {
@@ -103,7 +104,7 @@
     margin-bottom: rem(24px);
 }
 
-.grid ::deep th:nth-child(1) .col-options-button {
+::deep th:nth-child(1) .col-options-button {
     background-image: none;
     cursor: pointer;
 
@@ -114,4 +115,12 @@
         font-weight: normal;
         content: "\E721";
     }
+}
+
+::deep .bitdatagrid-paginator {
+    height: rem(43px);
+    margin-top: 0;
+    border-top: rem(1px) solid $Gray40;
+    padding: 0 rem(12px);
+    font-size: rem(14px);
 }

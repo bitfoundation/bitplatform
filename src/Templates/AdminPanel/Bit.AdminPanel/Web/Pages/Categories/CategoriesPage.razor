@@ -17,7 +17,7 @@
         <h1 class="page-title">Categories</h1>
         <BitButton OnClick="CreateCategory">@AppStrings.AddCategory</BitButton>
     </div>
-    <BitSearchBox Class="cat-search-box"
+    <BitSearchBox Class="category-search-box"
                   @bind-Value="CategoryNameFilter"
                   Placeholder="Search some category..."
                   InputHtmlAttributes="@(new Dictionary<string, object> {{"autofocus", true}})" />
