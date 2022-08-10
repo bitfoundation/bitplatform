@@ -4,6 +4,7 @@
             "commandName": "Project",
             "dotnetRunMessages": true,
             "launchBrowser": true,
+            "launchUrl": "sign-in",
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development"
             },
