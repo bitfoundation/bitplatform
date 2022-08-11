@@ -97,7 +97,7 @@ public partial class ProductsPage
 
     private async Task DeleteProduct(ProductDto product)
     {
-        var confirmed = await ConfirmMessageBox.Show($"Are you sure delete {product.Name}?", "Delete product");
+        var confirmed = await ConfirmMessageBox.Show($"Are you sure you want to delete product \"{product.Name}\"?", "Delete product");
 
         if (confirmed)
         {

@@ -1,5 +1,5 @@
 ﻿using AdminPanel.Shared.Dtos.Account;
-using Microsoft.JSInterop;
+using Microsoft.AspNetCore.Components.Routing;
 
 namespace AdminPanel.App.Components;
 
@@ -35,8 +35,24 @@ public partial class Header : IAsyncDisposable
 
     public bool IsSignOutModalOpen { get; set; }
 
+    public string CurrentUrl { get; set; } = string.Empty;
+
+    public List<BitBreadcrumbItem> BreadcrumbItems { get; set; } = new List<BitBreadcrumbItem>();
+
     protected override async Task OnInitAsync()
     {
+        try
+        {
+            SetCurrentUrl();
+            navigationManager.LocationChanged += OnLocationChanged;
+
+            base.OnInitialized();
+        }
+        catch (Exception exp)
+        {
+            exceptionHandler.Handle(exp);
+        }
+
         User = await stateService.GetValue($"{nameof(NavMenu)}-{nameof(User)}", async () =>
             await httpClient.GetFromJsonAsync("User/GetCurrentUser", AppJsonContext.Default.UserDto));
 
@@ -75,6 +91,22 @@ public partial class Header : IAsyncDisposable
         {
             StateHasChanged();
         }
+    }
+    private void OnLocationChanged(object sender, LocationChangedEventArgs args)
+    {
+        SetCurrentUrl();
+        SetBreadcrumbItem();
+        StateHasChanged();
+    }
+
+    private void SetCurrentUrl()
+    {
+        CurrentUrl = navigationManager.Uri.Replace(navigationManager.BaseUri, "/", StringComparison.InvariantCultureIgnoreCase);
+    }
+
+    private void SetBreadcrumbItem()
+    {
+
     }
 
     private async Task ToggleMenu()

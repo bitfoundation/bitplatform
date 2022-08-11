@@ -92,7 +92,7 @@ public partial class CategoriesPage
 
     private async Task DeleteCategory(CategoryDto Category)
     {
-        var confirmed = await ConfirmMessageBox.Show($"Are you sure delete {Category.Name}?", "Delete category");
+        var confirmed = await ConfirmMessageBox.Show($"Are you sure you want to delete category \"{Category.Name}\"?", "Delete category");
 
         if (confirmed)
         {

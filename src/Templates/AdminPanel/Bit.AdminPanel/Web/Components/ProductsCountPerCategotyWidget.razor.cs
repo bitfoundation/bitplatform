@@ -1,4 +1,6 @@
-﻿namespace AdminPanel.App.Pages.Dashboard;
+﻿using AdminPanel.App.Pages.Dashboard;
+
+namespace AdminPanel.App.Components;
 
 public partial class ProductsCountPerCategotyWidget
 {
@@ -34,7 +36,7 @@ public partial class ProductsCountPerCategotyWidget
         {
             IsLoading = true;
 
-            var data = await stateService.GetValue($"{nameof(AnalyticsPage)}-{nameof(ProductsCountPerCategotyWidget)}", async () => await httpClient.GetFromJsonAsync($"Dashboard/GetProductsCountPerCategotyStats", AppJsonContext.Default.ListProductsCountPerCategoryDto));
+            var data = await stateService.GetValue($"{nameof(HomePage)}-{nameof(ProductsCountPerCategotyWidget)}", async () => await httpClient.GetFromJsonAsync($"Dashboard/GetProductsCountPerCategotyStats", AppJsonContext.Default.ListProductsCountPerCategoryDto));
 
             BitChartBarDataset<int> chartDataSet = new BitChartBarDataset<int>();
             chartDataSet.AddRange(data.Select(d => d.ProductCount));

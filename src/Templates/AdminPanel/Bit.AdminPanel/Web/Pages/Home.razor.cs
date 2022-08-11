@@ -1,5 +1,5 @@
 ﻿namespace AdminPanel.App.Pages.Dashboard;
 
-public partial class AnalyticsPage
+public partial class HomePage
 {
 }

@@ -1,6 +1,6 @@
-﻿@import "../../Styles/abstracts/_functions.scss";
-@import "../../Styles/abstracts/_media-queries.scss";
-@import "../../Styles/abstracts/_colors.scss";
+﻿@import "../Styles/abstracts/_functions.scss";
+@import "../Styles/abstracts/_media-queries.scss";
+@import "../Styles/abstracts/_colors.scss";
 
 .card-container {
     display: flex;
@@ -34,7 +34,7 @@
     border-radius: rem(8px);
     padding: rem(24px);
     box-sizing: border-box;
-    background-image: url('/images/analytics/stat-card-bg.svg');
+    background-image: url('/images/stat-card-bg.svg');
     background-position: center right;
     background-repeat: no-repeat;
     background-size: rem(84px) 100%;
@@ -83,7 +83,7 @@
     &:hover {
         background-color: $ThemePrimaryColor;
         background-size: rem(128px) 100%;
-        background-image: url('/images/analytics/stat-card-bg-hover.svg');
+        background-image: url('/images/stat-card-bg-hover.svg');
 
         .card-num {
             color: $White;

@@ -5,13 +5,20 @@
 @import '../Styles/abstracts/_vars.scss';
 
 .main {
+    position: relative;
     display: flex;
+    flex-flow: column nowrap;
     justify-content: flex-start;
     width: 100%;
     min-height: 100vh;
     padding-top: rem($HeaderHeight);
+    padding-left: rem($NavMenuWidth);
     box-sizing: border-box;
     background: $BackgroundColor;
+
+    @include lt-lg {
+        padding-left: 0;
+    }
 }
 
 .main--full-page {
@@ -19,11 +26,13 @@
 
     .site-content {
         padding: 0 !important;
+        height: 100vh;
     }
 }
 
 .site-content {
     width: 100%;
+    min-height: calc(100vh - 48px);
     margin-left: auto;
     margin-right: auto;
     padding: 0 rem($LargeScreenPadding);
@@ -94,4 +103,8 @@
     .bit-mdl-container {
         min-height: unset !important;
     }
+}
+
+::deep .validation-message {
+    color: $StatusErrorColor;
 }

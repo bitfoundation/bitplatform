@@ -33,18 +33,10 @@ public partial class NavMenu
         {
             new BitNavLinkItem
             {
-                Name = "Dashboard",
-                Key = "Dashboard",
+                Name = "Home",
+                Key = "Home",
                 IconName = BitIconName.Home,
-                Links = new List<BitNavLinkItem>
-                        {
-                            new BitNavLinkItem
-                            {
-                                Name = "Analytics",
-                                Url = "/analytics",
-                                Key = "Analytics"
-                            },
-                        }
+                Url = "/",
             },
             new BitNavLinkItem
             {

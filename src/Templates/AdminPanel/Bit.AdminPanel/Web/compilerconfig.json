@@ -16,8 +16,8 @@
         "outputFile": "Components/ConfirmMessageBox.razor.css"
     },
     {
-        "inputFile": "Pages/Dashboard/AnalyticsPage.razor.scss",
-        "outputFile": "Pages/Dashboard/AnalyticsPage.razor.css"
+        "inputFile": "Pages/Dashboard/HomePage.razor.scss",
+        "outputFile": "Pages/Dashboard/HomePage.razor.css"
     },
     {
         "inputFile": "Pages/Dashboard/OverallStatsWidget.razor.scss",

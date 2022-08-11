@@ -9,9 +9,15 @@
     position: fixed;
     top: 0;
     z-index: 1100;
-    width: 100%;
-    background-color: $White;
+    width: calc(100% - #{$NavMenuWidth});
     border-bottom: rem(1px) solid $Gray10;
+    backdrop-filter: blur(20px);
+    box-shadow: inset 0px -1px 1px #e7ebf0;
+    background-color: rgba(255, 255, 255, 0.72);
+
+    @include lt-lg {
+        width: 100%;
+    }
 }
 
 .header-main-container {
