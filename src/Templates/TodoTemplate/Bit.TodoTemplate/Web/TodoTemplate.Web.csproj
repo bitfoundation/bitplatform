@@ -1,65 +1,64 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
-	<PropertyGroup>
-		<TargetFramework>net6.0</TargetFramework>
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
         <!--If you don't need to use the time zone and your app is in WASM format, you can reduce the output size of the app by disabling the time zone.-->
         <BlazorEnableTimeZoneSupport>true</BlazorEnableTimeZoneSupport>
-		<BlazorWebAssemblyPreserveCollationData>false</BlazorWebAssemblyPreserveCollationData>
-		<InvariantGlobalization>true</InvariantGlobalization>
-		<RootNamespace>TodoTemplate.App</RootNamespace>
-		<AssemblyName>TodoTemplate.App</AssemblyName>
+        <BlazorWebAssemblyPreserveCollationData>false</BlazorWebAssemblyPreserveCollationData>
+        <InvariantGlobalization>true</InvariantGlobalization>
+        <RootNamespace>TodoTemplate.App</RootNamespace>
+        <AssemblyName>TodoTemplate.App</AssemblyName>
         <!--/-:msbuild-conditional:noEmit -->
         <ServiceWorkerAssetsManifest Condition="'$(WebAppDeploymentType)' == 'PWA'">service-worker-assets.js</ServiceWorkerAssetsManifest>
         <BlazorCacheBootResources Condition="'$(WebAppDeploymentType)' == 'PWA'">false</BlazorCacheBootResources>
         <!--/+:msbuild-conditional:noEmit -->
-	</PropertyGroup>
+    </PropertyGroup>
 
-	<ItemGroup>
+    <ItemGroup>
         <!--/-:msbuild-conditional:noEmit -->
         <!-- In the Blazor Web Assembly mode, the API project will host the web client app itself -->
-		<Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Remove="appsettings.json" />
-		<Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Remove="Pages\_Host.cshtml" />
+        <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Remove="Pages\_Host.cshtml" />
         <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Remove="Pages\_Layout.cshtml" />
         <Compile Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Remove="Services\Implementations\ServerSideAuthTokenProvider.cs" />
         <Compile Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Remove="Extensions\HttpRequestExtensions.cs" />
         <!--/+:msbuild-conditional:noEmit -->
-		<Content Remove="compilerconfig.json" />
-		<None Include="compilerconfig.json" />
-	</ItemGroup>
+        <Content Remove="compilerconfig.json" />
+        <None Include="compilerconfig.json" />
+    </ItemGroup>
 
-	<ItemGroup>
-		<PackageReference Include="Bit.BlazorUI" Version="3.0.0-pre-04" />
-		<PackageReference Include="Bit.Bswup" Version="3.0.0-pre-04" />
-		<PackageReference Include="Bit.CodeAnalyzers" Version="3.0.0-pre-04" />
-		<PackageReference Include="Bit.SourceGenerators" Version="3.0.0-pre-04" />
-		<PackageReference Include="BuildWebCompiler2022" Version="1.14.8" />
-		<PackageReference Include="jose-jwt" Version="4.0.0" />
-		<PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.8" />
+    <ItemGroup>
+        <PackageReference Include="Bit.BlazorUI" Version="3.0.0-pre-04" />
+        <PackageReference Include="Bit.Bswup" Version="3.0.0-pre-04" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="3.0.0-pre-04" />
+        <PackageReference Include="Bit.SourceGenerators" Version="3.0.0-pre-04" />
+        <PackageReference Include="BuildWebCompiler2022" Version="1.14.8" />
+        <PackageReference Include="jose-jwt" Version="4.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.8" />
         <!--/-:msbuild-conditional:noEmit -->
-		<PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.8" />
-		<PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.8" PrivateAssets="all" />
+        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.8" />
+        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.8" PrivateAssets="all" />
         <!--/+:msbuild-conditional:noEmit -->
-	</ItemGroup>
+    </ItemGroup>
 
-	<ItemGroup>
+    <ItemGroup>
         <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" Condition="'$(WebAppDeploymentType)' == 'PWA'" />
         <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.7.4">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-		<ProjectReference Include="..\Shared\TodoTemplate.Shared.csproj" />
-		
-		<Using Include="Microsoft.AspNetCore.Components" />
-		<Using Include="TodoTemplate.App.Services.Contracts" />
-		<Using Include="TodoTemplate.App.Services.Implementations" />
-		<Using Include="Microsoft.Extensions.Configuration" />
-		<Using Include="Microsoft.JSInterop" />
+        <ProjectReference Include="..\Shared\TodoTemplate.Shared.csproj" />
+
+        <Using Include="Microsoft.AspNetCore.Components" />
+        <Using Include="TodoTemplate.App.Services.Contracts" />
+        <Using Include="TodoTemplate.App.Services.Implementations" />
+        <Using Include="Microsoft.Extensions.Configuration" />
+        <Using Include="Microsoft.JSInterop" />
         <Using Include="System.Net.Http.Json" />
         <Using Include="System.Collections.Concurrent" />
         <Using Include="Microsoft.AspNetCore.Components.Authorization" />
         <Using Include="TodoTemplate.App.Components" />
         <Using Include="Bit.BlazorUI" />
         <Using Include="Microsoft.AspNetCore.Authorization" />
-	</ItemGroup>
+    </ItemGroup>
 
 </Project>

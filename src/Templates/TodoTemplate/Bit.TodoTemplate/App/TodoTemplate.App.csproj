@@ -98,8 +98,8 @@
         </PackageReference>
         <PackageReference Include="jose-jwt" Version="4.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.8" />
-        <Content Remove="appsettings.json" />
-        <EmbeddedResource Include="appsettings.json" />
+        <Content Remove="wwwroot\appsettings.json" />
+        <EmbeddedResource Include="wwwroot\appsettings.json" />
         <Content Remove="Pages\_Host.cshtml" />
         <Content Remove="Pages\_Layout.cshtml" />
         <Compile Remove="Extensions\HttpRequestExtensions.cs" />
