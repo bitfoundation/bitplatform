@@ -12,9 +12,7 @@ public partial class AppComponentBase : ComponentBase
 
     [AutoInject] protected IAuthTokenProvider AuthTokenProvider = default!;
 
-#if BlazorServer || BlazorHybrid
     [AutoInject] protected IConfiguration Configuration = default!;
-#endif
 
     [AutoInject] protected NavigationManager NavigationManager = default!;
 

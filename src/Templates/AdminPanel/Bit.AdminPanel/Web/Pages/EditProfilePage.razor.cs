@@ -11,9 +11,7 @@ public partial class EditProfilePage
 
     [AutoInject] private IStateService stateService = default!;
 
-#if BlazorServer || BlazorHybrid
     [AutoInject] private IConfiguration configuration = default!;
-#endif
 
     public UserDto User { get; set; } = new();
     public UserDto UserToEdit { get; set; } = new();

@@ -12,7 +12,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.JSInterop" Version="6.0.7" />
+        <PackageReference Include="Microsoft.JSInterop" Version="6.0.8" />
         <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.7.4">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
