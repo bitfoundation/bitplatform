@@ -21,7 +21,7 @@
     box-shadow: none;
     background-color: $Blue1;
     overflow-y: auto;
-    padding: rem(24px) 0;
+    padding-bottom: rem(24px);
     box-sizing: border-box;
 
     @include lt-lg {
@@ -60,6 +60,20 @@
     }
 }
 
+.menu-content {
+    width: 100%;
+}
+
+.menu-top-row {
+    width: 100%;
+    height: rem($HeaderHeight);
+    border-bottom: rem(1px) solid $Blue2;
+    background-image: url('/images/bit-white-logo.svg');
+    background-position: top rem(16px) left rem(16px);
+    background-repeat: no-repeat;
+    background-size: rem(30px) rem(20px);
+}
+
 .menu-banner {
     width: rem(190px);
     height: rem(296px);
@@ -72,6 +86,7 @@
 
 ::deep .bit-nav-menu {
     width: 100%;
+    padding-top: rem(24px);
 
     .link-enabled-hasurl-fluent {
         span {
