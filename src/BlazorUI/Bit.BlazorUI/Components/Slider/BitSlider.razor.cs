@@ -134,13 +134,13 @@ public partial class BitSlider
     /// The initial range value of the Slider. Use this parameter to set value for both LowerValue and UpperValue
     /// </summary>
     [Parameter]
-    public (double? Lower, double? Upper) RangeValue
+    public BitSliderRangeValue? RangeValue
     {
-        get => (lowerValue, upperValue);
+        get => new() { Lower = lowerValue, Upper = upperValue };
         set
         {
-            if (value.Lower == lowerValue && value.Upper == upperValue) return;
-            if ((!value.Lower.HasValue && lowerValue.HasValue) || (!value.Upper.HasValue && upperValue.HasValue)) return;
+            if (value?.Lower == lowerValue && value?.Upper == upperValue) return;
+            if (value is null || (value.Lower.HasValue is false && lowerValue.HasValue) || (value.Upper.HasValue is false && upperValue.HasValue)) return;
 
             lowerValue = value.Lower;
             upperValue = value.Upper;
@@ -154,7 +154,7 @@ public partial class BitSlider
     /// <summary>
     /// Callback for when range value changed
     /// </summary>
-    [Parameter] public EventCallback<(double? Lower, double? Upper)> RangeValueChanged { get; set; }
+    [Parameter] public EventCallback<BitSliderRangeValue?> RangeValueChanged { get; set; }
 
     /// <summary>
     /// Whether to attach the origin of slider to zero
