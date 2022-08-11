@@ -235,7 +235,7 @@ public class BitSliderTests : BunitTestContext
         var com = RenderComponent<BitSliderTest>(parameters =>
         {
             parameters.Add(p => p.Visual, visual);
-            parameters.Add(p => p.RangeValue, (lowerValue, upperValue));
+            parameters.Add(p => p.RangeValue, new BitSliderRangeValue { Lower = lowerValue, Upper = upperValue });
             parameters.Add(p => p.ShowValue, true);
             parameters.Add(p => p.Ranged, true);
         });
