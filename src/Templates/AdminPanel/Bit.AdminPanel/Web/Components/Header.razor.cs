@@ -39,12 +39,90 @@ public partial class Header : IAsyncDisposable
 
     public List<BitBreadcrumbItem> BreadcrumbItems { get; set; } = new List<BitBreadcrumbItem>();
 
+    private List<BitBreadcrumbItem> ProductsBreadcrumbItems = new List<BitBreadcrumbItem>
+    {
+        new()
+        {
+            Text = "Product catologue",
+            Key = "Product catologue"
+        },
+        new()
+        {
+            Text = "Products",
+            Key = "Products",
+            href = "/products",
+            IsCurrentItem = true
+        }
+    };
+
+    private List<BitBreadcrumbItem> CategoriesBreadcrumbItems = new List<BitBreadcrumbItem>
+    {
+        new()
+        {
+            Text = "Product catologue",
+            Key = "Product catologue"
+        },
+        new()
+        {
+            Text = "Categories",
+            Key = "Categories",
+            href = "/categories",
+            IsCurrentItem = true
+        }
+    };
+
+    private List<BitBreadcrumbItem> AddCategoryBreadcrumbItems = new List<BitBreadcrumbItem>
+    {
+        new()
+        {
+            Text = "Product catologue",
+            Key = "Product catologue"
+        },
+        new()
+        {
+            Text = "Categories",
+            Key = "Categories",
+            href = "/categories",
+        },
+        new()
+        {
+            Text = "Add/Edit Category",
+            Key = "Add/Edit Category",
+            IsCurrentItem = true
+        }
+    };
+
+    private List<BitBreadcrumbItem> HomeBreadcrumbItems = new List<BitBreadcrumbItem>
+    {
+        new()
+        {
+            Text = "Home",
+            Key = "Home",
+            href = "/",
+            IsCurrentItem = true
+        }
+    };
+
+    private List<BitBreadcrumbItem> ProfileBreadcrumbItems = new List<BitBreadcrumbItem>
+    {
+        new()
+        {
+            Text = "Edit profile",
+            Key = "Edit profile",
+            href = "/edit-profile",
+            IsCurrentItem = true
+        }
+    };
+
     protected override async Task OnInitAsync()
     {
         try
         {
             SetCurrentUrl();
+            SetBreadcrumbItem();
+#pragma warning disable CS8622 // Nullability of reference types in type of parameter doesn't match the target delegate (possibly because of nullability attributes).
             navigationManager.LocationChanged += OnLocationChanged;
+#pragma warning restore CS8622 // Nullability of reference types in type of parameter doesn't match the target delegate (possibly because of nullability attributes).
 
             base.OnInitialized();
         }
@@ -96,6 +174,7 @@ public partial class Header : IAsyncDisposable
     {
         SetCurrentUrl();
         SetBreadcrumbItem();
+        Task.Delay(300);
         StateHasChanged();
     }
 
@@ -106,7 +185,31 @@ public partial class Header : IAsyncDisposable
 
     private void SetBreadcrumbItem()
     {
-
+        if (CurrentUrl.Contains("/add-edit-category"))
+        {
+            BreadcrumbItems = AddCategoryBreadcrumbItems;
+        }
+        else
+        {
+            switch (CurrentUrl)
+            {
+                case "/":
+                    BreadcrumbItems = HomeBreadcrumbItems;
+                    break;
+                case "/products":
+                    BreadcrumbItems = ProductsBreadcrumbItems;
+                    break;
+                case "/categories":
+                    BreadcrumbItems = CategoriesBreadcrumbItems;
+                    break;
+                case "/edit-profile":
+                    BreadcrumbItems = ProfileBreadcrumbItems;
+                    break;
+                default:
+                    BreadcrumbItems = new List<BitBreadcrumbItem>();
+                    break;
+            }
+        }
     }
 
     private async Task ToggleMenu()

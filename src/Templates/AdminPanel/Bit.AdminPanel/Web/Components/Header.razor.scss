@@ -67,41 +67,6 @@
     }
 }
 
-.header-address-indicator {
-    display: flex;
-    flex-flow: row nowrap;
-    align-items: center;
-    height: 100%;
-
-    @include sm {
-        display: none;
-    }
-}
-
-.header-address-indicator--light-txt {
-    font-weight: 400;
-    font-size: rem(14px);
-    line-height: rem(20px);
-    color: $Gray130;
-}
-
-.header-address-indicator--dark-txt {
-    font-weight: 600;
-    font-size: rem(14px);
-    line-height: rem(20px);
-    color: $Gray190;
-}
-
-.chevron-right-icon {
-    width: rem(12px);
-    height: rem(12px);
-    background-image: url('/images/icons/chevron-right-icon.svg');
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: cover;
-    margin: 0 rem(8px);
-}
-
 .img-wrapper {
     display: flex;
     justify-content: center;
@@ -282,5 +247,27 @@
                 color: $StatusSevereWarningColor;
             }
         }
+    }
+}
+
+::deep .bit-brc-items-wrapper {
+    .bit-brc-itm {
+        font-weight: 400;
+        font-size: rem(14px);
+        line-height: rem(20px);
+    }
+
+    .bit-brc-lst-itm {
+        font-weight: 600;
+        font-size: rem(14px);
+        line-height: rem(20px);
+    }
+
+    .bit-icon {
+        font-size: rem(12px) !important;
+    }
+
+    @include sm {
+        display: none;
     }
 }
