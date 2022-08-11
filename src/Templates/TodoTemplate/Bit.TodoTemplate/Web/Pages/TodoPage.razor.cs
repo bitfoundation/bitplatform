@@ -4,9 +4,9 @@ namespace TodoTemplate.App.Pages;
 
 [Authorize]
 public partial class TodoPage
-{ 
+{
     public bool IsLoading { get; set; }
-    public string SelectedPivotName { get; set; } = AppStrings.All;
+    public string SelectedPivotName { get; set; }
     public string? EditModeTodoItemText { get; set; }
     public bool IsAddLoading { get; set; }
     public string? SelectedSortTodoItemName { get; set; }
@@ -15,20 +15,24 @@ public partial class TodoPage
     public List<TodoItemDto>? AllTodoItemList { get; set; } = new();
     public List<TodoItemDto>? ViewTodoItemList { get; set; } = new();
 
-    public List<BitDropDownItem> SortItemList = new()
-    {
-        new BitDropDownItem
-        {
-            Text = AppStrings.Alphabetical,
-        },
-        new BitDropDownItem
-        {
-            Text = AppStrings.Date,
-        }
-    };
+    public List<BitDropDownItem> SortItemList = new();
 
     protected override async Task OnInitAsync()
     {
+        SelectedPivotName = Localizer[nameof(AppStrings.All)];
+
+        SortItemList = new()
+        {
+            new BitDropDownItem
+            {
+                Text = Localizer[nameof(AppStrings.Alphabetical)],
+            },
+            new BitDropDownItem
+            {
+                Text = Localizer[nameof(AppStrings.Date)],
+            }
+        };
+
         await LoadTodoItems();
 
         await base.OnInitAsync();
@@ -70,15 +74,15 @@ public partial class TodoPage
 
     private void FilterTodoItemList()
     {
-        if (SelectedPivotName == AppStrings.All)
+        if (SelectedPivotName == Localizer[nameof(AppStrings.All)])
         {
             ViewTodoItemList = AllTodoItemList?.ToList();
         }
-        if (SelectedPivotName == AppStrings.Active)
+        if (SelectedPivotName == Localizer[nameof(AppStrings.Active)])
         {
             ViewTodoItemList = AllTodoItemList?.Where(c => c.IsDone == false).ToList();
         }
-        if (SelectedPivotName == AppStrings.Completed)
+        if (SelectedPivotName == Localizer[nameof(AppStrings.Completed)])
         {
             ViewTodoItemList = AllTodoItemList?.Where(c => c.IsDone == true).ToList();
         }
@@ -105,7 +109,7 @@ public partial class TodoPage
 
     private void HandlerTodoItemSort()
     {
-        if (SelectedSortTodoItemName == AppStrings.Alphabetical)
+        if (SelectedSortTodoItemName == Localizer[nameof(AppStrings.Alphabetical)])
         {
             ViewTodoItemList = ViewTodoItemList?.OrderBy(td => td.Title).ToList();
         }

@@ -6,7 +6,7 @@ namespace TodoTemplate.Shared.Exceptions;
 public class UnknownException : ApplicationException
 {
     public UnknownException()
-        : this(nameof(UnknownException))
+        : base(nameof(AppStrings.UnknownException))
     {
     }
 

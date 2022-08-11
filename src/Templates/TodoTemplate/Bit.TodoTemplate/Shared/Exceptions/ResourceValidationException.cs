@@ -6,38 +6,44 @@ namespace TodoTemplate.Shared.Exceptions;
 [Serializable]
 public class ResourceValidationException : RestException
 {
-    public ResourceValidationException(params string[] errorMessages)
-        : this(errorMessages.Select(errMsg => (string.Empty, string.Empty, new[] { errMsg })).ToArray())
+    public ResourceValidationException(LocalizedString errorMessage)
+        : this(new[] { errorMessage })
     {
 
     }
 
-    public ResourceValidationException(params (string propName, string errorMessages)[] errors)
+    public ResourceValidationException(params LocalizedString[] errorMessages)
+        : this(errorMessages.Select(errMsg => ("*", string.Empty, new[] { errMsg })).ToArray())
+    {
+
+    }
+
+    public ResourceValidationException(params (string propName, LocalizedString errorMessages)[] errors)
         : this(errors.Select(err => (err.propName, string.Empty, new[] { err.errorMessages })).ToArray())
     {
 
     }
 
-    public ResourceValidationException(params (string propName, Type resourceType, string errorMessages)[] errors)
+    public ResourceValidationException(params (string propName, Type resourceType, LocalizedString errorMessages)[] errors)
         : this(errors.Select(err => (err.propName, err.resourceType.Name, new[] { err.errorMessages })).ToArray())
     {
 
     }
 
-    public ResourceValidationException(params (string propName, string resourceTypeName, string[] errorMessages)[] errors)
+    public ResourceValidationException(params (string propName, string resourceTypeName, LocalizedString[] errorMessages)[] errors)
         : this(new List<ResourceValidationExceptionPayload>(errors
                 .Select(e => new ResourceValidationExceptionPayload
                 {
                     ResourceTypeName = e.resourceTypeName,
                     Property = e.propName,
-                    Messages = e.errorMessages
+                    Errors = e.errorMessages.Select(err => new ResourceValidationExceptionPayloadError { Key = err.Name, Message = err.Value }).ToArray()
                 })))
     {
 
     }
 
     public ResourceValidationException(List<ResourceValidationExceptionPayload> error)
-        : base(message: nameof(ResourceValidationException))
+        : base(message: nameof(AppStrings.ResourceValidationException))
     {
         Details = error;
     }

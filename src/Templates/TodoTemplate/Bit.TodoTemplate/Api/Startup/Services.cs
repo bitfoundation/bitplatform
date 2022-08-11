@@ -48,6 +48,7 @@ public static class Services
 
         services
             .AddControllers()
+            .AddDataAnnotationsLocalization(options => options.DataAnnotationLocalizerProvider = (type, factory) => factory.Create(typeof(AppStrings)))
             .AddOData(options => options.EnableQueryFeatures(maxTopValue: 20))
             .AddJsonOptions(options => options.JsonSerializerOptions.AddContext<AppJsonContext>());
 
@@ -56,7 +57,7 @@ public static class Services
             options.ForwardedHeaders = ForwardedHeaders.All;
             options.ForwardedHostHeaderName = "X-Host";
         });
-        
+
         services.AddResponseCaching();
 
         services.AddHttpContextAccessor();

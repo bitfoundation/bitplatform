@@ -21,7 +21,7 @@ public partial class TodoItemController : AppControllerBase
         var todoItem = await Get(cancellationToken).FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
 
         if (todoItem is null)
-            throw new ResourceNotFoundException(nameof(ErrorStrings.ToDoItemCouldNotBeFound));
+            throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ToDoItemCouldNotBeFound)]);
 
         return todoItem;
     }
@@ -44,7 +44,7 @@ public partial class TodoItemController : AppControllerBase
         var todoItemToUpdate = await DbContext.TodoItems.FirstOrDefaultAsync(t => t.Id == dto.Id, cancellationToken);
 
         if (todoItemToUpdate is null)
-            throw new ResourceNotFoundException(nameof(ErrorStrings.ToDoItemCouldNotBeFound));
+            throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ToDoItemCouldNotBeFound)]);
 
         var updatedTodoItem = Mapper.Map(dto, todoItemToUpdate);
 
@@ -61,7 +61,7 @@ public partial class TodoItemController : AppControllerBase
         var affectedRows = await DbContext.SaveChangesAsync(cancellationToken);
 
         if (affectedRows < 1)
-            throw new ResourceNotFoundException(nameof(ErrorStrings.ToDoItemCouldNotBeFound));
+            throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ToDoItemCouldNotBeFound)]);
     }
 }
 
