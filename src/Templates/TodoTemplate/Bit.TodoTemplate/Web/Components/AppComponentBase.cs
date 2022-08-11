@@ -20,6 +20,8 @@ public partial class AppComponentBase : ComponentBase
 
     [AutoInject] protected IAuthenticationService AuthenticationService = default!;
 
+    [AutoInject] protected IStringLocalizer<AppStrings> Localizer = default!;
+
     protected async sealed override Task OnInitializedAsync()
     {
         try

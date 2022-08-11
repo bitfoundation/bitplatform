@@ -27,13 +27,6 @@ public class Middlewares
         app.UseBlazorFrameworkFiles();
 #endif
 
-        app.UseSwagger();
-
-        app.UseSwaggerUI(options =>
-        {
-            options.InjectJavascript("/swagger/swagger-utils.js");
-        });
-
         if (env.IsDevelopment() is false)
         {
             app.UseResponseCompression();
@@ -65,6 +58,21 @@ public class Middlewares
         app.UseResponseCaching();
         app.UseAuthentication();
         app.UseAuthorization();
+
+        var supportedCultures = new[] { "en", "fr" };
+        var localizationOptions = new RequestLocalizationOptions()
+            .SetDefaultCulture(supportedCultures[0])
+            .AddSupportedCultures(supportedCultures)
+            .AddSupportedUICultures(supportedCultures);
+
+        app.UseRequestLocalization(localizationOptions);
+
+        app.UseSwagger();
+
+        app.UseSwaggerUI(options =>
+        {
+            options.InjectJavascript("/swagger/swagger-utils.js");
+        });
 
         app.UseEndpoints(endpoints =>
         {

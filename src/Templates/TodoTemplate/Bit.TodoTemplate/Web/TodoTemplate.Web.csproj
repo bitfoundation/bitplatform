@@ -5,7 +5,7 @@
         <!--If you don't need to use the time zone and your app is in WASM format, you can reduce the output size of the app by disabling the time zone.-->
         <BlazorEnableTimeZoneSupport>true</BlazorEnableTimeZoneSupport>
 		<BlazorWebAssemblyPreserveCollationData>false</BlazorWebAssemblyPreserveCollationData>
-		<InvariantGlobalization>true</InvariantGlobalization>
+		<InvariantGlobalization Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' ">true</InvariantGlobalization>
 		<RootNamespace>TodoTemplate.App</RootNamespace>
 		<AssemblyName>TodoTemplate.App</AssemblyName>
         <!--/-:msbuild-conditional:noEmit -->

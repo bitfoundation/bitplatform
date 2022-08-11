@@ -7,16 +7,26 @@ namespace TodoTemplate.Shared.Exceptions;
 public class TooManyRequestsExceptions : RestException
 {
     public TooManyRequestsExceptions()
-        : this(nameof(TooManyRequestsExceptions))
+        : base(nameof(AppStrings.TooManyRequestsExceptions))
     {
     }
 
-    public TooManyRequestsExceptions(string? message)
+    public TooManyRequestsExceptions(string message)
         : base(message)
     {
     }
 
-    public TooManyRequestsExceptions(string? message, Exception? innerException)
+    public TooManyRequestsExceptions(string message, Exception? innerException)
+        : base(message, innerException)
+    {
+    }
+
+    public TooManyRequestsExceptions(LocalizedString message)
+        : base(message)
+    {
+    }
+
+    public TooManyRequestsExceptions(LocalizedString message, Exception? innerException)
         : base(message, innerException)
     {
     }

@@ -36,7 +36,7 @@ public partial class SignInPage
         {
             SignInMessageType = BitMessageBarType.Error;
 
-            SignInMessage = ErrorStrings.ResourceManager.Translate(e.Message, SignInModel.UserName!);
+            SignInMessage = e.Message;
         }
         finally
         {

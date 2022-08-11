@@ -32,13 +32,13 @@ public partial class ForgotPasswordPage
 
             ForgotPasswordMessageType = BitMessageBarType.Success;
 
-            ForgotPasswordMessage = AuthStrings.ResetPasswordLinkSentMessage;
+            ForgotPasswordMessage = Localizer[nameof(AppStrings.ResetPasswordLinkSentMessage)];
         }
         catch (KnownException e)
         {
             ForgotPasswordMessageType = BitMessageBarType.Error;
 
-            ForgotPasswordMessage = ErrorStrings.ResourceManager.Translate(e.Message, ForgotPasswordModel.Email!);
+            ForgotPasswordMessage = e.Message;
         }
         finally
         {
