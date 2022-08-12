@@ -1,119 +1,119 @@
 ﻿@import "../../../Styles/Fluent/colors.fluent.scss", "../../../Styles/functions.scss";
 
-.bit-tgl-btn-fluent {
-    font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
-    text-align: center;
-    border-radius: rem(2px);
-    padding: 0 rem(16px);
-    font-size: rem(14px);
-    font-weight: 400;
-    line-height: rem(20px);
-    cursor: pointer;
-    min-height: rem(32px);
-    min-width: rem(80px);
-    text-decoration: none;
-    box-sizing: border-box;
-    display: inline-block;
-    height: 32px;
-
-    > span {
-        display: flex;
-        flex-flow: row nowrap;
-        height: 100%;
-        justify-content: center;
-        align-items: center;
+.bit-tgl-btn {
+    &.bit-tgl-btn-fluent {
+        font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+        text-align: center;
+        border-radius: rem(2px);
+        padding: 0 rem(16px);
+        font-size: rem(14px);
+        font-weight: 400;
+        line-height: rem(20px);
+        cursor: pointer;
+        min-height: rem(32px);
+        min-width: rem(80px);
+        text-decoration: none;
+        box-sizing: border-box;
+        display: inline-block;
+        height: 32px;
 
         > span {
-            margin: 0 rem(4px);
-            line-height: 100%;
-            display: block;
-            font-weight: 600;
-        }
+            display: flex;
+            flex-flow: row nowrap;
+            height: 100%;
+            justify-content: center;
+            align-items: center;
 
-        > i {
-            font-size: rem(16px);
-            margin: 0 rem(4px);
-            height: rem(16px);
-            line-height: rem(16px);
-            text-align: center;
-            flex-shrink: 0;
+            > span {
+                margin: 0 rem(4px);
+                line-height: 100%;
+                display: block;
+                font-weight: 600;
+            }
+
+            > i {
+                font-size: rem(16px);
+                margin: 0 rem(4px);
+                height: rem(16px);
+                line-height: rem(16px);
+                text-align: center;
+                flex-shrink: 0;
+            }
         }
     }
-}
 
-.bit-tgl-btn-standard-fluent {
-    color: $Grey160;
-    background: $White;
-    border: 1px solid $GreyInputBorder;
+    &.bit-tgl-btn-disabled-fluent {
+        background: $Grey20;
+        border: 1px solid $Grey20;
+        cursor: default;
+        pointer-events: none;
 
-    &:hover {
-        background-color: $Grey20;
+        > span {
+            > i {
+                color: $Grey90;
+            }
+        }
+    }
+
+    &.standard {
+        color: $Grey160;
+        background: $White;
+        border: 1px solid $GreyInputBorder;
+
+        &:hover {
+            background-color: $Grey20;
+            color: $Grey190;
+        }
+
+        &:active {
+            background-color: $Grey30;
+        }
+    }
+
+    &.standard-checked {
+        background-color: $Grey30;
         color: $Grey190;
-    }
 
-    &:active {
-        background-color: $Grey30;
-    }
-}
-
-
-.bit-tgl-btn-standard-checked-fluent {
-    background-color: $Grey30;
-    color: $Grey190;
-
-    &:hover {
-        background-color: $Grey30;
-        color: $Black;
-    }
-}
-
-.bit-tgl-btn-primary-fluent {
-    color: $White;
-    background: $Primary;
-    border: 1px solid $Primary;
-
-    &:hover {
-        background-color: $DarkAlt;
-        border-color: $DarkAlt;
-    }
-
-    &:active {
-        background-color: $Dark;
-        border-color: $Dark;
-    }
-}
-
-.bit-tgl-btn-primary-checked-fluent {
-    background-color: $Dark;
-
-    &:hover {
-        background-color: $Dark;
-        border-color: $Primary;
-    }
-
-    &:active {
-        border-color: $Primary;
-    }
-}
-
-.bit-tgl-btn-disabled-fluent {
-    background: $Grey20;
-    border: 1px solid $Grey20;
-    cursor: default;
-    pointer-events: none;
-
-    > span {
-        > i {
-            color: $Grey90;
+        &:hover {
+            background-color: $Grey30;
+            color: $Black;
         }
     }
-}
 
-.bit-tgl-btn-primary-disabled-fluent {
-    color: $Grey50;
-}
+    &.standard-disabled {
+        color: $Grey90;
+    }
 
-.bit-tgl-btn-standard-disabled-fluent {
-    color: $Grey90;
-}
+    &.primary {
+        color: $White;
+        background: $Primary;
+        border: 1px solid $Primary;
 
+        &:hover {
+            background-color: $DarkAlt;
+            border-color: $DarkAlt;
+        }
+
+        &:active {
+            background-color: $Dark;
+            border-color: $Dark;
+        }
+    }
+
+    &.primary-checked {
+        background-color: $Dark;
+
+        &:hover {
+            background-color: $Dark;
+            border-color: $Primary;
+        }
+
+        &:active {
+            border-color: $Primary;
+        }
+    }
+
+    &.primary-disabled {
+        color: $Grey50;
+    }
+}

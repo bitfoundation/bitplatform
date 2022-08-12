@@ -110,17 +110,17 @@ public partial class BitToggleButton
     {
         ClassBuilder.Register(() => IsEnabled is false
                                    ? ButtonStyle == BitButtonStyle.Primary
-                                       ? $"{RootElementClass}-primary-disabled-{VisualClassRegistrar()}"
-                                       : $"{RootElementClass}-standard-disabled-{VisualClassRegistrar()}"
+                                       ? "primary-disabled"
+                                       : "standard-disabled"
                                    : ButtonStyle == BitButtonStyle.Primary
-                                       ? $"{RootElementClass}-primary-{VisualClassRegistrar()}"
-                                       : $"{RootElementClass}-standard-{VisualClassRegistrar()}");
+                                       ? "primary"
+                                       : "standard");
 
         ClassBuilder.Register(() => IsChecked is false
                                         ? string.Empty
                                         : ButtonStyle == BitButtonStyle.Primary
-                                           ? $"{RootElementClass}-primary-checked-{VisualClassRegistrar()}"
-                                           : $"{RootElementClass}-standard-checked-{VisualClassRegistrar()}");
+                                           ? "primary-checked"
+                                           : "standard-checked");
     }
 
     protected override async Task OnInitializedAsync()

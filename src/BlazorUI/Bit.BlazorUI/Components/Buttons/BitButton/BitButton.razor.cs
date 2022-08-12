@@ -82,8 +82,8 @@ public partial class BitButton
         ClassBuilder.Register(() => IsEnabled is false
                                        ? string.Empty
                                        : ButtonStyle == BitButtonStyle.Primary
-                                           ? $"{RootElementClass}-primary-{VisualClassRegistrar()}"
-                                           : $"{RootElementClass}-standard-{VisualClassRegistrar()}");
+                                           ? "primary"
+                                           : "standard");
     }
 
     protected override async Task OnInitializedAsync()
