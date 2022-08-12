@@ -170,8 +170,10 @@ public partial class NavMenu
         filteredNavLinks = flatNavLinkList.FindAll(link => link.Name.Contains(text, StringComparison.InvariantCultureIgnoreCase));
     }
 
-    private async Task HandleLinkClick()
+    private async Task HandleLinkClick(BitNavLinkItem item)
     {
+        if (item.Url.HasNoValue()) return;
+
         searchText = string.Empty;
 
         HandleClear();
