@@ -11,10 +11,11 @@ jobs:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Setup .NET 6.0.x
+    - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 6.0.x
+        dotnet-version: 7.0.x
+        include-prerelease: true
     - name: Restore prerelease
       run: dotnet restore src/Bit-CI-release.sln
     - name: MSBuild prerelease
@@ -27,10 +28,11 @@ jobs:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Setup .NET 6.0.x
+    - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 6.0.x
+        dotnet-version: 7.0.x
+        include-prerelease: true
     - name: Restore
       run: dotnet restore src/Bit-CI.sln
     - name: MSBuild

@@ -17,7 +17,7 @@ public static class MauiProgram
 
         builder
             .UseMauiApp<App>()
-            .Configuration.AddJsonFile(new EmbeddedFileProvider(assembly), "appsettings.json", optional: false, false);
+            .Configuration.AddJsonFile(new EmbeddedFileProvider(assembly), "wwwroot.appsettings.json", optional: false, false);
 
         var services = builder.Services;
 

@@ -11,9 +11,7 @@ public partial class NavMenu
 
     [AutoInject] private IAuthTokenProvider authTokenProvider = default!;
 
-#if BlazorServer || BlazorHybrid
     [AutoInject] private IConfiguration configuration = default!;
-#endif
 
     private bool isMenuOpen;
 

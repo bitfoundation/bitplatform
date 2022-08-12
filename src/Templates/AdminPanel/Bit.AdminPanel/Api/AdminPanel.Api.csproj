@@ -16,7 +16,7 @@
         <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\Web\Pages\_Layout.cshtml" Link="Pages\_Layout.cshtml" />
         <Compile Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\Web\Services\Implementations\ServerSideAuthTokenProvider.cs" Link="Services\Implementations\ServerSideAuthTokenProvider.cs" />
         <Compile Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\Web\Extensions\HttpRequestExtensions.cs" Link="Extensions\HttpRequestExtensions.cs" />
-        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="6.0.7" />
+        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="6.0.8" />
         <ProjectReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\Web\AdminPanel.Web.csproj" />
         <!--/+:msbuild-conditional:noEmit -->
 
@@ -28,28 +28,28 @@
         <PackageReference Include="FluentEmail.Razor" Version="3.0.2" />
         <PackageReference Include="FluentEmail.Smtp" Version="3.0.2" />
 
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.7" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.8" />
 
 
-        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.7" />
+        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.8" />
         <PackageReference Include="Microsoft.AspNetCore.OData" Version="8.0.10" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.7">
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.8">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.7" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.7">
+        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.8" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.8">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="6.0.7" />
+        <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="6.0.8" />
         <PackageReference Include="MimeTypeMapOfficial" Version="1.0.17" />
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.3.2" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
         <PackageReference Include="AspNetCore.HealthChecks.System" Version="6.0.5" />
-        <PackageReference Include="AspNetCore.HealthChecks.UI" Version="6.0.4" />
-        <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="6.0.4" />
-        <PackageReference Include="AspNetCore.HealthChecks.UI.InMemory.Storage" Version="6.0.4" />
-        <PackageReference Include="AspNetCore.HealthChecks.Network" Version="6.0.3" />
+        <PackageReference Include="AspNetCore.HealthChecks.UI" Version="6.0.5" />
+        <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="6.0.5" />
+        <PackageReference Include="AspNetCore.HealthChecks.UI.InMemory.Storage" Version="6.0.5" />
+        <PackageReference Include="AspNetCore.HealthChecks.Network" Version="6.0.4" />
     </ItemGroup>
 
     <ItemGroup>

@@ -37,6 +37,8 @@ public class Program
 #elif BlazorServer
     public static WebApplication CreateHostBuilder(string[] args)
     {
+        File.Copy("wwwroot/appsettings.json", "appsettings.json", overwrite: true);
+
         var builder = WebApplication.CreateBuilder(args);
 
 #if DEBUG
