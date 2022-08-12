@@ -6,6 +6,9 @@ namespace Bit.BlazorUI.Playground.Web.Pages.Components.Buttons;
 
 public partial class BitButtonDemo
 {
+    public int PrimaryCounter;
+    public int StandardCounter;
+
     private readonly List<ComponentParameter> componentParameters = new()
     {
         new ComponentParameter()
@@ -172,11 +175,11 @@ public partial class BitButtonDemo
         }
     };
 
-    private readonly string example1HTMLCode = @"<BitButton IsEnabled=""true"">
-    Primary
+    private readonly string example1HTMLCode = @"<BitButton IsEnabled=""true"" OnClick=""() => PrimaryCounter++"">
+    Primary (@PrimaryCounter)
 </BitButton>
-<BitButton ButtonStyle=""BitButtonStyle.Standard"" Style=""margin-right: 2px;"" IsEnabled=""true"">
-    Standard
+<BitButton ButtonStyle=""BitButtonStyle.Standard"" Style=""margin-right: 2px;"" IsEnabled=""true"" OnClick=""() => StandardCounter++"">
+    Standard (@StandardCounter)
 </BitButton>
 <BitButton IsEnabled=""false"" AllowDisabledFocus=""false"">
     Disabled
@@ -184,6 +187,10 @@ public partial class BitButtonDemo
 <BitButton Class=""label-btn"" IsEnabled=""true"">
     <label>A Text from label element</label>
 </BitButton>";
+
+    private readonly string example1CSharpCode = @"
+public int PrimaryCounter;
+public int StandardCounter;";
 
     private readonly string example2HTMLCode = @"<BitButton Style=""height: 40px;width: 166px;font-size: 16px;"" Class=""styled-btn"">
     Styled Button

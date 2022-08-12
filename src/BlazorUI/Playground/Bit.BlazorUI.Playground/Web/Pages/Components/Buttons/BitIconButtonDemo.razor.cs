@@ -143,7 +143,6 @@ public partial class BitIconButtonDemo
     };
 
     private readonly string example1HTMLCode = @"<BitIconButton IconName=""BitIconName.Emoji"" />
-<BitIconButton IconName=""BitIconName.Emoji2"" Title=""I'm Happy"" />
 <BitIconButton IconName=""BitIconName.EmojiDisappointed"" AllowDisabledFocus=""false"" IsEnabled=""false"" />";
 
     private readonly string example2HTMLCode = @"<BitIconButton IconName=""BitIconName.Home"" Style=""border-radius: 5px;padding: 23px;border: #D7D7D7 solid 2px;"" />
@@ -169,4 +168,6 @@ public partial class BitIconButtonDemo
 <BitIconButton IconName=""BitIconName.Website"" Target=""_self"" Href=""https://github.com/bitfoundation/bitplatform"" IsEnabled=""false"">
     <span>Bit Platform From Span</span>
 </BitIconButton>";
+
+    private readonly string example6HTMLCode = @"<BitIconButton IconName=""BitIconName.Emoji2"" Title=""I'm Happy"" />";
 }
