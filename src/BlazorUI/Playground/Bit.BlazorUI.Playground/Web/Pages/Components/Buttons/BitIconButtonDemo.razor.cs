@@ -142,25 +142,29 @@ public partial class BitIconButtonDemo
         }
     };
 
-    private readonly string example1HTMLCode = @"<BitIconButton IconName=""BitIconName.Emoji"" />
-<BitIconButton IconName=""BitIconName.Emoji2"" Title=""I'm Happy"" />
+    private readonly string example1HTMLCode = @"
+<BitIconButton IconName=""BitIconName.Emoji"" />
 <BitIconButton IconName=""BitIconName.EmojiDisappointed"" AllowDisabledFocus=""false"" IsEnabled=""false"" />";
 
-    private readonly string example2HTMLCode = @"<BitIconButton IconName=""BitIconName.Home"" Style=""border-radius: 5px;padding: 23px;border: #D7D7D7 solid 2px;"" />
+    private readonly string example2HTMLCode = @"
+<BitIconButton IconName=""BitIconName.Home"" Style=""border-radius: 5px;padding: 23px;border: #D7D7D7 solid 2px;"" />
 <BitIconButton IconName=""BitIconName.FileImage"" Class=""custom-icon-button"" />";
 
-    private readonly string example3HTMLCode = @"<BitIconButton IconName=""BitIconName.List"" Visibility=""BitComponentVisibility.Visible"">Visible Button</BitIconButton>
+    private readonly string example3HTMLCode = @"
+<BitIconButton IconName=""BitIconName.List"" Visibility=""BitComponentVisibility.Visible"">Visible Button</BitIconButton>
 <div><span>Hidden Button: </span>[<BitIconButton Visibility=""BitComponentVisibility.Hidden"">Hidden Button</BitIconButton>]</div>
 <div><span>Collapsed Button: </span>[<BitIconButton Visibility=""BitComponentVisibility.Collapsed"">Collapsed Button</BitIconButton>]</div>";
 
-    private readonly string example4HTMLCode = @"<BitIconButton IconName=""BitIconName.Library"" AriaDescription=""Detailed description used for screen reader."">
+    private readonly string example4HTMLCode = @"
+<BitIconButton IconName=""BitIconName.Library"" AriaDescription=""Detailed description used for screen reader."">
     Button with Aria Description
 </BitIconButton>
 <BitIconButton IconName=""BitIconName.Library"" AriaHidden=""true"">
     Button with Aria Hidden
 </BitIconButton>";
 
-    private readonly string example5HTMLCode = @"<BitIconButton IconName=""BitIconName.Website"" Target=""_blank"" Href=""https://github.com/bitfoundation/bitplatform"">
+    private readonly string example5HTMLCode = @"
+<BitIconButton IconName=""BitIconName.Website"" Target=""_blank"" Href=""https://github.com/bitfoundation/bitplatform"">
     Open Bit Platform In New Tab
 </BitIconButton>
 <BitIconButton IconName=""BitIconName.Website"" Href=""https://github.com/bitfoundation/bitplatform"" ButtonStyle=""BitButtonStyle.Standard"">
@@ -169,4 +173,7 @@ public partial class BitIconButtonDemo
 <BitIconButton IconName=""BitIconName.Website"" Target=""_self"" Href=""https://github.com/bitfoundation/bitplatform"" IsEnabled=""false"">
     <span>Bit Platform From Span</span>
 </BitIconButton>";
+
+    private readonly string example6HTMLCode = @"
+<BitIconButton IconName=""BitIconName.Emoji2"" Title=""I'm Happy"" />";
 }
