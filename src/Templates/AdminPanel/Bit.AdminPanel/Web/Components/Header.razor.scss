@@ -1,60 +1,273 @@
-﻿@import '../Styles/abstracts/_media-queries.scss';
-@import '../Styles/abstracts/_colors.scss';
+﻿@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_media-queries.scss';
 @import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_vars.scss';
+@import '../Styles/abstracts/_fonts.scss';
 
-.header {
+.main-header {
+    font-family: "Segoe UI";
     position: fixed;
     top: 0;
-    z-index: 100;
-    display: flex;
-    flex-flow: row nowrap;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    height: rem(48px);
-    padding: 0 rem(32px);
-    box-sizing: border-box;
-    background-color: $Gray5;
+    z-index: 1100;
+    width: calc(100% - #{$NavMenuWidth});
+    border-bottom: rem(1px) solid $Gray10;
+    backdrop-filter: blur(20px);
+    box-shadow: inset 0px -1px 1px #e7ebf0;
+    background-color: rgba(255, 255, 255, 0.72);
 
-    @media all and (max-width: #{em(370px)}) {
-        padding: 0 rem(16px);
+    @include lt-lg {
+        width: 100%;
     }
 }
 
-.logo-lnk {
-    width: rem(24px);
-    min-width: rem(24px);
-    height: rem(24px);
-    border-radius: rem(4px);
+.header-main-container {
+    display: flex;
+    align-items: center;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    width: 100%;
+    min-height: rem($HeaderHeight);
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0 rem($LargeScreenPadding);
+    max-width: rem($LargeScreenMaxWidth);
+    box-sizing: border-box;
+
+    @include md {
+        padding: 0 rem($MediumScreenPadding);
+        max-width: rem($MediumScreenMaxWidth);
+    }
+
+    @include sm {
+        padding: 0 rem($SmallScreenPadding);
+        max-width: rem($SmallScreenMaxWidth);
+    }
+}
+
+.header-content-container {
+    position: relative;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    height: 100%;
+}
+
+.header-logo {
+    width: rem(30px);
+    height: rem(20px);
     background-image: url('/images/bit-logo.svg');
     background-position: center;
     background-repeat: no-repeat;
     background-size: contain;
     cursor: pointer;
+    margin-right: rem(24px);
+
+    @include gt-md {
+        display: none;
+    }
 }
 
-.header-contact {
+.img-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: rem(32px);
+    height: rem(32px);
+    border-radius: 50%;
+    border: rem(1px) solid $ThemeLighterColor;
+    color: $Blue1;
+    font-size: rem(12px);
+}
+
+.user-img {
+    width: rem(28px);
+    height: rem(28px);
+    border-radius: 50%;
+}
+
+.user-name {
+    margin-left: rem(4px);
+    font-weight: 400;
+    font-size: rem(10px);
+    line-height: rem(12px);
+    color: $Gray160;
+
+    @include sm {
+        display: none;
+    }
+}
+
+.chevron-bottom-icon {
+    width: rem(12px);
+    height: rem(12px);
+    background-image: url('/images/icons/chevron-bottom-icon.svg');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    margin-left: rem(4px);
+
+    @include sm {
+        display: none;
+    }
+}
+
+.chevron-up-icon {
+    transform: rotate(180deg);
+}
+
+::deep .header-menu-btn {
+    min-width: rem(24px);
+    min-height: rem(24px);
+    max-width: rem(24px);
+    max-height: rem(24px);
+    margin-right: rem(24px);
+    border-radius: 50%;
+    background-color: $White;
+
+    .bit-icon {
+        font-size: rem(14px);
+        color: $ThemePrimaryColor;
+    }
+
+    &:hover {
+        background-color: $White;
+    }
+
+    @include gt-md {
+        display: none;
+    }
+}
+
+.header-drp-wrapper {
+    position: absolute;
+    right: 0;
+    top: rem(43px);
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: flex-start;
+    width: rem(224px);
+    height: rem(200px);
+    padding: 0 rem(8px);
+    box-sizing: border-box;
+    background: #E6F1FF;
+    border-radius: rem(2px);
+    cursor: default;
+    user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+.user-info-container {
     display: flex;
     flex-flow: row nowrap;
     justify-content: flex-start;
     align-items: center;
+    width: 100%;
+    height: rem(112px);
+    padding: 0 rem(2px);
+    box-sizing: border-box;
+    border-bottom: rem(1px) solid $Gray10;
+
+    .img-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: rem(56px);
+        height: rem(56px);
+        border-radius: 50%;
+        border: rem(2px) solid $Gray10;
+        color: $Blue1;
+        font-size: rem(14px);
+        margin-right: rem(18px);
+    }
+
+    .user-img {
+        width: rem(48px);
+        height: rem(48px);
+        border: rem(1px) solid $Gray10;
+        border-radius: 50%;
+    }
+
+    .user-name {
+        display: flex;
+        flex-flow: column nowrap;
+        justify-content: flex-start;
+        align-items: flex-start;
+    }
+
+    .full-name {
+        font-weight: 400;
+        font-size: rem(10px);
+        line-height: rem(12px);
+        color: $Gray90;
+        margin-bottom: rem(4px);
+    }
+
+    .email {
+        font-weight: 400;
+        font-size: rem(12px);
+        line-height: rem(16px);
+        color: $Gray160;
+    }
 }
 
-::deep .header-item {
-    margin-left: rem(12px);
-}
-
-::deep .header-menu {
-    display: none;
-    margin-right: rem(12px);
+::deep .edit-profile-btn {
+    color: $Gray160;
 
     span {
         i {
-            color: $PrimaryColor;
+            color: $Gray160;
         }
     }
 
-    @include lt-lg {
-        display: block;
+    &:hover {
+        span {
+            i {
+                color: $Gray160;
+            }
+        }
+    }
+}
+
+::deep .sign-out-btn {
+    color: $StatusSevereWarningColor;
+
+    span {
+        i {
+            color: $StatusSevereWarningColor;
+        }
+    }
+
+    &:hover {
+        span {
+            i {
+                color: $StatusSevereWarningColor;
+            }
+        }
+    }
+}
+
+::deep .bit-brc-items-wrapper {
+    .bit-brc-itm {
+        font-weight: 400;
+        font-size: rem(14px);
+        line-height: rem(20px);
+    }
+
+    .bit-brc-lst-itm {
+        font-weight: 600;
+        font-size: rem(14px);
+        line-height: rem(20px);
+    }
+
+    .bit-icon {
+        font-size: rem(12px) !important;
+    }
+
+    @include sm {
+        display: none;
     }
 }

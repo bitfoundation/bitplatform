@@ -11,6 +11,8 @@ public partial class EditProfilePage
 
     [AutoInject] private IStateService stateService = default!;
 
+    [AutoInject] private IJSRuntime jSRuntime = default!;
+
     [AutoInject] private IConfiguration configuration = default!;
 
     public UserDto User { get; set; } = new();
@@ -74,6 +76,11 @@ public partial class EditProfilePage
             || User.BirthDate != UserToEdit.BirthDate
             || User.Gender != UserToEdit.Gender)
             && IsSavingData is false;
+
+    private async Task GoBack()
+    {
+        await jSRuntime.GoBack();
+    }
 
     private async Task Save()
     {

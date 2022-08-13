@@ -1,14 +1,28 @@
 ﻿@inherits AppComponentBase;
 
 <BitModal @bind-IsOpen="IsOpen">
-    <div class="main">
+    <div class="main-container">
         <div class="header">
-            <span class="title">@AppStrings.AddEditProduct</span>
+            <span class="title">
+                @if (Product.Id != 0)
+                {
+                    @AppStrings.EditProduct
+                }
+                else
+                {
+                    @AppStrings.AddProduct
+                }
+            </span>
             <BitIconButton IconName="BitIconName.ChromeClose" OnClick="OnCloseClick" />
         </div>
-        <EditForm Model="Product" OnValidSubmit="WrapHandled(Save)">
+        <EditForm Model="Product" OnValidSubmit="WrapHandled(Save)" style="width: 100%; display: flex; flex-direction: column;
+align-items: center">
 
             <DataAnnotationsValidator />
+            <div class="form-input-container">
+                <BitTextField Label="@(nameof(Product.Name))" @bind-Value="Product.Name" Placeholder="Enter product name" />
+                <ValidationMessage For="() => Product.Name" />
+            </div>
 
             <div class="form-input-container">
                 <BitDropDown Label="Select category"
@@ -17,12 +31,6 @@
                              @bind-Value="SelectedCategoyId"
                              Placeholder="Select a category" />
                 <ValidationMessage For="@(() => Product.CategoryId)" />
-            </div>
-
-
-            <div class="form-input-container">
-                <BitTextField Label="@(nameof(Product.Name))" @bind-Value="Product.Name" />
-                <ValidationMessage For="() => Product.Name" />
             </div>
 
             <div class="form-input-container">
@@ -41,19 +49,16 @@
                 <ValidationMessage For="() => Product.Description" />
             </div>
 
-
-            <div class="footer">
-                <BitButton ButtonType="BitButtonType.Submit">
-                    @if (IsSaveLoading)
-                    {
-                        <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
-                    }
-                    else
-                    {
-                        <span>@AppStrings.Save</span>
-                    }
-                </BitButton>
-            </div>
+            <BitButton ButtonType="BitButtonType.Submit">
+                @if (IsSaveLoading)
+                {
+                    <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
+                }
+                else
+                {
+                    <span>@AppStrings.Save</span>
+                }
+            </BitButton>
         </EditForm>
     </div>
 </BitModal>

@@ -20,8 +20,7 @@ public partial class SignUpPage
 
     private bool IsSubmitButtonEnabled =>
         string.IsNullOrWhiteSpace(SignUpModel.UserName) is false &&
-        string.IsNullOrWhiteSpace(SignUpModel.Password) is false && 
-        SignUpModel.IsAcceptPrivacy && 
+        string.IsNullOrWhiteSpace(SignUpModel.Password) is false &&
         IsLoading is false;
 
     private async Task DoSignUp()

@@ -10,6 +10,8 @@ public partial class MainLayout : IAsyncDisposable
 
     [AutoInject] private AppAuthenticationStateProvider authStateProvider = default!;
 
+    [AutoInject] private IJSRuntime jsRuntime = default!;
+
     private ErrorBoundary ErrorBoundaryRef = default!;
 
     public bool IsUserAuthenticated { get; set; }
@@ -56,9 +58,10 @@ public partial class MainLayout : IAsyncDisposable
         }
     }
 
-    private void ToggleMenuHandler()
+    private async Task ToggleMenuHandler()
     {
         IsMenuOpen = !IsMenuOpen;
+        await jsRuntime.SetToggleBodyOverflow(IsMenuOpen);
     }
 
     public async ValueTask DisposeAsync()

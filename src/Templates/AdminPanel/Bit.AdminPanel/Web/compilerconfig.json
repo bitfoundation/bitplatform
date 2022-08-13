@@ -16,24 +16,24 @@
         "outputFile": "Components/ConfirmMessageBox.razor.css"
     },
     {
-        "inputFile": "Pages/Dashboard/AnalyticsPage.razor.scss",
-        "outputFile": "Pages/Dashboard/AnalyticsPage.razor.css"
+        "inputFile": "Pages/HomePage.razor.scss",
+        "outputFile": "Pages/HomePage.razor.css"
     },
     {
-        "inputFile": "Pages/Dashboard/OverallStatsWidget.razor.scss",
-        "outputFile": "Pages/Dashboard/OverallStatsWidget.razor.css"
+        "inputFile": "Components/OverallStatsWidget.razor.scss",
+        "outputFile": "Components/OverallStatsWidget.razor.css"
     },
     {
-        "inputFile": "Pages/Dashboard/ProductsCountPerCategotyWidget.razor.scss",
-        "outputFile": "Pages/Dashboard/ProductsCountPerCategotyWidget.razor.css"
+        "inputFile": "Components/ProductsCountPerCategotyWidget.razor.scss",
+        "outputFile": "Components/ProductsCountPerCategotyWidget.razor.css"
     },
     {
-        "inputFile": "Pages/Dashboard/ProductsSalesWidget.razor.scss",
-        "outputFile": "Pages/Dashboard/ProductsSalesWidget.razor.css"
+        "inputFile": "Components/ProductsSalesWidget.razor.scss",
+        "outputFile": "Components/ProductsSalesWidget.razor.css"
     },
     {
-        "inputFile": "Pages/Dashboard/ProductsPercentageWidget.razor.scss",
-        "outputFile": "Pages/Dashboard/ProductsPercentageWidget.razor.css"
+        "inputFile": "Components/ProductsPercentageWidget.razor.scss",
+        "outputFile": "Components/ProductsPercentageWidget.razor.css"
     },
     {
         "inputFile": "Pages/Categories/CategoriesPage.razor.scss",
@@ -70,14 +70,6 @@
     {
         "inputFile": "Components/PageNotFound.razor.scss",
         "outputFile": "Components/PageNotFound.razor.css"
-    },
-    {
-        "inputFile": "Pages/HomePage.razor.scss",
-        "outputFile": "Pages/HomePage.razor.css"
-    },
-    {
-        "inputFile": "Pages/PrivacyPage.razor.scss",
-        "outputFile": "Pages/PrivacyPage.razor.css"
     },
     {
         "inputFile": "Pages/SignUpPage.razor.scss",

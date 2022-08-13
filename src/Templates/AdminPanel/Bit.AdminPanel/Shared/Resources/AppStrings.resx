@@ -120,20 +120,17 @@
   <data name="Active" xml:space="preserve">
     <value>Active</value>
   </data>
-  <data name="Add" xml:space="preserve">
-    <value>Add</value>
+  <data name="AddCategory" xml:space="preserve">
+    <value>New category</value>
   </data>
-  <data name="AddEditCategory" xml:space="preserve">
-    <value>Add/Edit category</value>
-  </data>
-  <data name="AddEditProduct" xml:space="preserve">
-    <value>Add/Edit product</value>
+  <data name="AddProduct" xml:space="preserve">
+    <value>New product</value>
   </data>
   <data name="AdminPanelHomeMessage" xml:space="preserve">
-    <value>Create your multi-mode (WASM, Server, Hybrid, pre-rendering) Blazor app easily in the shortest time ever!</value>
+    <value>Create your multi-mode (WASM, Server, Hybrid, pre-rendering) Blazor admin panel easily in the shortest time ever!</value>
   </data>
   <data name="AdminPanelHomeTitle" xml:space="preserve">
-    <value>Admin Panel Home</value>
+    <value>Bit Admin Panel</value>
   </data>
   <data name="AdminPanelTitle" xml:space="preserve">
     <value>Admin Panel</value>
@@ -159,6 +156,12 @@
   <data name="Edit" xml:space="preserve">
     <value>Edit</value>
   </data>
+  <data name="EditCategory" xml:space="preserve">
+    <value>Edit category</value>
+  </data>
+  <data name="EditProduct" xml:space="preserve">
+    <value>Edit product</value>
+  </data>
   <data name="EditProfileTitle" xml:space="preserve">
     <value>Edit profile</value>
   </data>
@@ -176,6 +179,9 @@
   </data>
   <data name="GitHubRepo" xml:space="preserve">
     <value>GitHub Repo</value>
+  </data>
+  <data name="Last30DaysCategoryCount" xml:space="preserve">
+    <value>Last 30 days category count</value>
   </data>
   <data name="Last30DaysProductCount" xml:space="preserve">
     <value>Last 30 days product count</value>
@@ -198,14 +204,23 @@
   <data name="ProductSales" xml:space="preserve">
     <value>Product sales</value>
   </data>
+  <data name="ProductSalesText" xml:space="preserve">
+    <value>This chart shows the sale number of each product.</value>
+  </data>
   <data name="ProductsCountPerCategoryChart" xml:space="preserve">
     <value>Products count per category chart</value>
+  </data>
+  <data name="ProductsCountPerCategoryChartText" xml:space="preserve">
+    <value>This chart shows the number of products in each category.</value>
   </data>
   <data name="ProductsPageTitle" xml:space="preserve">
     <value>Products</value>
   </data>
   <data name="ProductsPercentagePerCategory" xml:space="preserve">
     <value>Products percentage per category</value>
+  </data>
+  <data name="ProductsPercentagePerCategoryText" xml:space="preserve">
+    <value>This chart shows the percentage of products in each category.</value>
   </data>
   <data name="ProfileUpdatedSuccessfullyMessage" xml:space="preserve">
     <value>Profile updated successfully.</value>
@@ -221,6 +236,12 @@
   </data>
   <data name="SortBy" xml:space="preserve">
     <value>Sort by</value>
+  </data>
+  <data name="StartupPageDescription" xml:space="preserve">
+    <value>Admin Panel is a project template that provides common features such as Sign-up &amp; Sign-in. This template is powered by Bit BlazorUI components.</value>
+  </data>
+  <data name="StartupPageTitle" xml:space="preserve">
+    <value>Bit Admin Panel</value>
   </data>
   <data name="TotalCategories" xml:space="preserve">
     <value>Total categories</value>

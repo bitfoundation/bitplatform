@@ -11,6 +11,8 @@ public partial class NavMenu
 
     [AutoInject] private IAuthTokenProvider authTokenProvider = default!;
 
+    [AutoInject] private IJSRuntime jSRuntime = default!;
+
     [AutoInject] private IConfiguration configuration = default!;
 
     private bool isMenuOpen;
@@ -29,62 +31,31 @@ public partial class NavMenu
         {
             new BitNavLinkItem
             {
-                Name = "Dashboard",
+                Name = "Home",
+                Key = "Home",
+                IconName = BitIconName.Home,
                 Url = "/",
-                IconName = BitIconName.ViewDashboard,
-                Key = "Dashboard",
-                Links=new List<BitNavLinkItem>
-                        {
-                            new BitNavLinkItem
-                            {
-                                Name = "Analytics",
-                                Url = "/analytics",
-                                IconName = BitIconName.AnalyticsReport,
-                                Key = "Analytics"
-                            },
-                        }
             },
             new BitNavLinkItem
             {
-                Name = "Product catologue",
-                Url = "/",
-                IconName = BitIconName.ProductCatalog,
-                Key = "ProductCatologue",
-                Links=new List<BitNavLinkItem>
+                Name = "Product catolog",
+                Key = "Product catolog",
+                IconName = BitIconName.Tag,
+                Links = new List<BitNavLinkItem>
                         {
                             new BitNavLinkItem
                             {
                                 Name = "Products",
                                 Url = "/products",
-                                IconName = BitIconName.Product,
                                 Key = "Products"
                             },
                             new BitNavLinkItem
                             {
                                 Name = "Categories",
                                 Url = "/categories",
-                                IconName = BitIconName.ProductCatalog,
                                 Key = "Categories"
                             },
                         }
-            },
-            new BitNavLinkItem
-            {
-                Name = "Home",
-                Url = "/",
-                IconName = BitIconName.Home,
-                Key = "Home"
-            },
-            new BitNavLinkItem
-            {
-                Name = "Sign out",
-                OnClick = (item) =>
-                {
-                    IsSignOutModalOpen = true;
-                    StateHasChanged();
-                },
-                IconName = BitIconName.SignOut,
-                Key = "SignOut"
             }
         };
     }
@@ -106,9 +77,17 @@ public partial class NavMenu
 
     [Parameter] public EventCallback<bool> IsMenuOpenChanged { get; set; }
 
-    private void CloseMenu()
+    private async Task HandleLinkClick(BitNavLinkItem item)
+    {
+        if (string.IsNullOrWhiteSpace(item.Url)) return;
+
+        await CloseNavMenu();
+    }
+
+    private async Task CloseNavMenu()
     {
         IsMenuOpen = false;
+        await jSRuntime.SetToggleBodyOverflow(false);
     }
 
     protected override async Task OnInitAsync()

@@ -34,7 +34,7 @@
     private async Task OnNavigateAsync(NavigationContext args)
     {
 #if BlazorWebAssembly && !Maui
-    if (args.Path.Contains("analytics") && lazyLoadedAssemblies.Any(asm => asm.GetName().Name == "Newtonsoft.Json") is false)
+    if (args.Path == "/" && lazyLoadedAssemblies.Any(asm => asm.GetName().Name == "Newtonsoft.Json") is false)
     {
         var assemblies = await AssemblyLoader.LoadAssembliesAsync(new[] { "Newtonsoft.Json.dll", "System.Private.Xml.dll", "System.Data.Common.dll" });
         lazyLoadedAssemblies.AddRange(assemblies);

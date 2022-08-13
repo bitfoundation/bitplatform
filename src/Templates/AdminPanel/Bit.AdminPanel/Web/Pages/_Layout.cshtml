@@ -54,7 +54,7 @@
             padding: 0;
             width: 100%;
             height: 100%;
-            background: #0D2960;
+            background: #FBFCFF;
         }
     </style>
     @if (isPwa)
@@ -80,7 +80,9 @@
             {
                 <script src="_framework/blazor.webassembly.js" autostart=false></script>
                 <script src="_content/Bit.Bswup/bit-bswup.js" scope="/" sw="service-worker.js" handler="bitBswupHandler"></script>
-                <component type="typeof(Bit.Bswup.BswupProgress)" render-mode="@RenderMode.Static" param-AutoReload="true" param-AppContainer="@("#app-container")" />
+                <component type="typeof(Bit.Bswup.BswupProgress)" render-mode="@RenderMode.Static"
+                            param-AutoReload="true"
+                            param-AppContainer="@("#app-container")" />
             }
             else
             {

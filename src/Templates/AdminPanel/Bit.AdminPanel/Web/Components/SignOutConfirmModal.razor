@@ -1,14 +1,14 @@
 ﻿@inherits AppComponentBase;
 
 <BitModal @bind-IsOpen="IsOpen">
-    <div class="modal-body">
-        <div class="modal-close-btn-container">
+    <div class="main-container">
+        <div class="header">
+            <span class="title">Sign out</span>
             <BitIconButton OnClick="CloseModal" IconName="BitIconName.ChromeClose" Title="Close" />
         </div>
-        <div class="modal-title">Sign out</div>
-        <div class="modal-desc">Are you sure you want to Sign out?</div>
-        <div>
-            <BitButton ButtonStyle="BitButtonStyle.Primary" OnClick="SignOut">Sign out</BitButton>
+        <div class="body">Are you sure you want to Sign out?</div>
+        <div class="btn-group">
+            <BitButton ButtonStyle="BitButtonStyle.Primary" Style="margin-right: 0.5rem" OnClick="SignOut">Sign out</BitButton>
             <BitButton ButtonStyle="BitButtonStyle.Standard" OnClick="CloseModal">Cancel</BitButton>
         </div>
     </div>

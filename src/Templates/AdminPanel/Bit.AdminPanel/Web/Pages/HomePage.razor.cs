@@ -1,6 +1,5 @@
-﻿namespace AdminPanel.App.Pages;
+﻿namespace AdminPanel.App.Pages.Dashboard;
 
 public partial class HomePage
 {
 }
-
