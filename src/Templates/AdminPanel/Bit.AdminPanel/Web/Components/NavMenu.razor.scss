@@ -31,10 +31,6 @@
         top: 0;
         inset: 0;
     }
-
-    @include sm {
-        border-radius: 0 rem(10px) rem(10px) 0;
-    }
 }
 
 .nav-menu--closed {
