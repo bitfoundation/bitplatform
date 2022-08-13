@@ -149,28 +149,33 @@ public partial class BitActionButtonDemo
         }
     };
 
-    private readonly string example1HTMLCode = @"<BitActionButton IconName=""BitIconName.AddFriend"">Create account</BitActionButton>
+    private readonly string example1HTMLCode = @"
+<BitActionButton IconName=""BitIconName.AddFriend"">Create account</BitActionButton>
 <BitActionButton AllowDisabledFocus=""false"" IsEnabled=""false"" IconName=""BitIconName.UserRemove"">Remove user</BitActionButton>";
 
-    private readonly string example2HTMLCode = @"<BitActionButton IconName=""BitIconName.ThisPC"" Style=""font-size:16px;border:2px solid #32385B;justify-content: center;width: 232px;"">
+    private readonly string example2HTMLCode = @"
+<BitActionButton IconName=""BitIconName.ThisPC"" Style=""font-size:16px;border:2px solid #32385B;justify-content: center;width: 232px;"">
     Styled Action Button
 </BitActionButton>
 <BitActionButton IconName=""BitIconName.ThisPC"" Class=""custom-action-button"">
     Classed Action Button
 </BitActionButton>";
 
-    private readonly string example3HTMLCode = @"<BitActionButton IconName=""BitIconName.AddEvent"" Visibility=""BitComponentVisibility.Visible"">Add Event</BitActionButton>
+    private readonly string example3HTMLCode = @"
+<BitActionButton IconName=""BitIconName.AddEvent"" Visibility=""BitComponentVisibility.Visible"">Add Event</BitActionButton>
 <div><span>Hidden Button: </span>[<BitActionButton Visibility=""BitComponentVisibility.Hidden"">Hidden Action Button</BitActionButton>]</div>
 <div><span>Collapsed Button: </span>[<BitActionButton Visibility=""BitComponentVisibility.Collapsed"">Collapsed Action Button</BitActionButton>]</div>";
 
-    private readonly string example4HTMLCode = @"<BitActionButton IconName=""BitIconName.Library"" AriaDescription=""Detailed description used for screen reader."">
+    private readonly string example4HTMLCode = @"
+<BitActionButton IconName=""BitIconName.Library"" AriaDescription=""Detailed description used for screen reader."">
     Action Button with Aria Description
 </BitActionButton>
 <BitActionButton IconName=""BitIconName.Library"" AriaHidden=""true"">
     Action Button with Aria Hidden
 </BitActionButton>";
 
-    private readonly string example5HTMLCode = @"<BitActionButton IconName=""BitIconName.Website"" Target=""_blank"" Href=""https://github.com/bitfoundation/bitplatform"">
+    private readonly string example5HTMLCode = @"
+<BitActionButton IconName=""BitIconName.Website"" Target=""_blank"" Href=""https://github.com/bitfoundation/bitplatform"">
     Open Bit Platform In New Tab
 </BitActionButton>
 <BitActionButton IconName=""BitIconName.Website"" Href=""https://github.com/bitfoundation/bitplatform"" ButtonStyle=""BitButtonStyle.Standard"">
