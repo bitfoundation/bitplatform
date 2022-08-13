@@ -163,7 +163,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.Visual, visual);
+            parameters.AddCascadingValue(visual);
             parameters.Add(p => p.UpperValue, upperValue);
             parameters.Add(p => p.DefaultUpperValue, defaultUpperValue);
             parameters.Add(p => p.ShowValue, true);
