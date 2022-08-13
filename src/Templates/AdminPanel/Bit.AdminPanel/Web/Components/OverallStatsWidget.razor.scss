@@ -40,6 +40,10 @@
     background-size: rem(84px) 100%;
     transition: 0.3s all linear;
 
+    @include sm {
+        height: 204px;
+    }
+
     .card-num {
         margin-bottom: rem(24px);
         font-weight: 600;
@@ -53,7 +57,7 @@
             line-height: rem(36px);
         }
 
-        @include md {
+        @include sm {
             font-size: rem(28px);
             line-height: rem(36px);
         }

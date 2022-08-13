@@ -49,6 +49,16 @@
     border: rem(1px) solid $ThemeLightColor;
     border-radius: rem(2px);
     overflow: auto;
+
+    ::deep {
+        .id-col {
+            width: 90px;
+        }
+
+        .bitdatagrid th .col-options-button {
+            cursor: help;
+        }
+    }
 }
 
 ::deep table {
