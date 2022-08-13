@@ -38,8 +38,8 @@ public partial class NavMenu
             },
             new BitNavLinkItem
             {
-                Name = "Product catologue",
-                Key = "Product catologue",
+                Name = "Product catolog",
+                Key = "Product catolog",
                 IconName = BitIconName.Tag,
                 Links = new List<BitNavLinkItem>
                         {

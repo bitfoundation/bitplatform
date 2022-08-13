@@ -18,12 +18,9 @@
         <h1 class="page-title">Products</h1>
         <BitButton OnClick="WrapHandled(CreateProduct)">@AppStrings.AddProduct</BitButton>
     </div>
-    <BitSearchBox Class="product-search-box"
-                  @bind-Value="ProductNameFilter"
-                  Placeholder="Search some product..."
-                  InputHtmlAttributes="@(new Dictionary<string, object> {{"autofocus", true}})" />
     <div class="grid">
         <BitDataGrid ItemsProvider="@productsProvider" TGridItem="@ProductDto" ResizableColumns="true" Pagination="@pagination" @ref="dataGrid">
+            <BitDataGridPropertyColumn Property="@(c => c.Id)" Sortable="true" Align="BitDataGridAlign.Left" IsDefaultSort="BitDataGridSortDirection.Ascending" Class="id-col" />
             <BitDataGridPropertyColumn Property="@(c => c.Name)" Sortable="true" Class="column1">
                 <ColumnOptions>
                     <BitSearchBox @bind-Value="ProductNameFilter"
@@ -31,7 +28,6 @@
                                   InputHtmlAttributes="@(new Dictionary<string, object> {{"autofocus", true}})" />
                 </ColumnOptions>
             </BitDataGridPropertyColumn>
-            <BitDataGridPropertyColumn Property="@(c => c.Id)" Sortable="true" Align="BitDataGridAlign.Left" />
             <BitDataGridPropertyColumn Property="@(c => c.CategoryId)" Sortable="true" Align="BitDataGridAlign.Left" />
             <BitDataGridPropertyColumn Property="@(c => c.Price)" Sortable="true" Align="BitDataGridAlign.Left" />
             <BitDataGridTemplateColumn Title="Action" Align="BitDataGridAlign.Center">

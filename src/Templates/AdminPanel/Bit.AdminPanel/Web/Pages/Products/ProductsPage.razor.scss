@@ -49,6 +49,16 @@
     border: rem(1px) solid $ThemeLightColor;
     border-radius: rem(2px);
     overflow: auto;
+
+    ::deep {
+        .id-col {
+            width: 90px;
+        }
+
+        .bitdatagrid th .col-options-button {
+            cursor: help;
+        }
+    }
 }
 
 ::deep table {
@@ -105,7 +115,7 @@
     margin-bottom: rem(24px);
 }
 
-::deep th:nth-child(1) .col-options-button {
+::deep th:nth-child(2) .col-options-button {
     background-image: none;
     cursor: pointer;
 
