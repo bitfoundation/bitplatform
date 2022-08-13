@@ -1,4 +1,6 @@
-﻿namespace AdminPanel.App.Pages.Dashboard;
+﻿using AdminPanel.App.Pages.Dashboard;
+
+namespace AdminPanel.App.Components;
 
 public partial class ProductsSalesWidget
 {
@@ -33,7 +35,7 @@ public partial class ProductsSalesWidget
         {
             IsLoading = true;
 
-            var Data = await stateService.GetValue($"{nameof(AnalyticsPage)}-{nameof(ProductsSalesWidget)}", async () => await httpClient.GetFromJsonAsync($"Dashboard/GetProductsSalesStats", AppJsonContext.Default.ListProductSaleStatDto));
+            var Data = await stateService.GetValue($"{nameof(HomePage)}-{nameof(ProductsSalesWidget)}", async () => await httpClient.GetFromJsonAsync($"Dashboard/GetProductsSalesStats", AppJsonContext.Default.ListProductSaleStatDto));
 
             BitChartBarDataset<decimal> chartDataSet = new BitChartBarDataset<decimal>();
             chartDataSet.AddRange(Data.Select(d => d.SaleAmount));

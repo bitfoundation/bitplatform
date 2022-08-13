@@ -1,6 +1,7 @@
 ﻿@import '../Styles/abstracts/_media-queries.scss';
 @import '../Styles/abstracts/_colors.scss';
 @import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_vars.scss';
 
 .footer {
     display: flex;
@@ -8,48 +9,70 @@
     justify-content: center;
     align-items: center;
     width: 100%;
+    background-color: $White;
+    border-top: rem(1px) solid $Gray10;
+    font-family: "Segoe UI";
 }
 
 .footer-content {
     display: flex;
-    flex-flow: column nowrap;
-    justify-content: center;
+    flex-flow: row nowrap;
+    justify-content: space-between;
     align-items: center;
     width: 100%;
-    min-height: rem(54px);
-    border-top: rem(1px) solid $S1Color;
-    padding: rem(4px) 0;
+    height: rem($HeaderHeight);
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0 rem($LargeScreenPadding);
+    max-width: rem($LargeScreenMaxWidth);
     box-sizing: border-box;
 
-    @include lt-xl {
-        min-height: rem(50px);
+    @include md {
+        padding: 0 rem($MediumScreenPadding);
+        max-width: rem($MediumScreenMaxWidth);
+    }
+
+    @include sm {
+        padding: 0 rem($SmallScreenPadding);
+        max-width: rem($SmallScreenMaxWidth);
     }
 }
 
-.footer-contact {
-    margin-bottom: rem(4px);
-    font-size: rem(14px);
-    line-height: rem(20px);
-    color: $S4Color;
+.footer-email {
+    font-weight: 400;
+    font-size: rem(12px);
+    line-height: rem(16px);
+    color: $Gray150;
 
-    @include lg {
-        font-size: rem(13px);
-        line-height: rem(19px);
-    }
-
-    @include lt-lg {
-        font-size: rem(12px);
+    @include sm {
+        font-size: rem(10px);
+        line-height: rem(12px);
     }
 }
 
 .footer-copyright {
-    font-size: rem(12px);
-    line-height: rem(20px);
-    color: $S4Color;
+    font-weight: 400;
+    font-size: rem(10px);
+    line-height: rem(12px);
+    color: $Gray150;
 
-    @include lt-xl {
-        font-size: rem(10px);
-        line-height: rem(16px);
+    @include sm {
+        display: none;
+    }
+}
+
+.text--red {
+    color: red;
+}
+
+.footer-txt-group {
+    .footer-copyright {
+        display: none;
+
+        @include sm {
+            display: inline-block !important;
+            margin-bottom: rem(4px);
+        }
     }
 }
 
@@ -61,29 +84,31 @@
 }
 
 .social-lnk {
-    width: rem(32px);
-    height: rem(32px);
+    width: rem(24px);
+    height: rem(24px);
     background-position: center;
     background-repeat: no-repeat;
-    background-size: cover;
+    margin: 0 rem(6px);
+    border: rem(0.5px) solid $Blue2;
+    border-radius: 50%;
 }
 
 .twitter-lnk {
     background-image: url('/images/icons/twitter-icon.svg');
+    background-size: rem(13px) rem(11px);
 }
 
 .youtube-lnk {
     background-image: url('/images/icons/youtube-icon.svg');
+    background-size: rem(12px) rem(9px);
 }
 
 .linkedin-lnk {
     background-image: url('/images/icons/linkedin-icon.svg');
+    background-size: rem(11px) rem(11px);
 }
 
 .github-lnk {
     background-image: url('/images/icons/github-icon.svg');
-}
-
-.text--red {
-    color: $Red;
+    background-size: rem(11px) rem(12px);
 }

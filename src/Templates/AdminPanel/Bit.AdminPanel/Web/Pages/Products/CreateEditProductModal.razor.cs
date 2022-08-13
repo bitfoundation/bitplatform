@@ -8,11 +8,10 @@ public partial class CreateEditProductModal
 
     [AutoInject] private IStateService stateService = default!;
 
-    [Parameter]
-    public ProductDto Product { get; set; }
+    [AutoInject] private IJSRuntime jsRuntime = default!;
 
     [Parameter]
-    public EventCallback OnProductSave { get; set; }
+    public ProductDto Product { get; set; }
 
     private bool IsOpen { get; set; }
     public bool IsLoading { get; private set; }
@@ -31,9 +30,10 @@ public partial class CreateEditProductModal
 
     public async Task ShowModal(ProductDto product)
     {
-        await InvokeAsync(() =>
+        await InvokeAsync(async () =>
         {
             IsOpen = true;
+            await jsRuntime.SetToggleBodyOverflow(true);
 
             Product = product;
 
@@ -83,8 +83,7 @@ public partial class CreateEditProductModal
             }
 
             IsOpen = false;
-
-            await OnProductSave.InvokeAsync();
+            await jsRuntime.SetToggleBodyOverflow(false);
         }
         finally
         {
@@ -92,8 +91,9 @@ public partial class CreateEditProductModal
         }
     }
 
-    private void OnCloseClick()
+    private async Task OnCloseClick()
     {
         IsOpen = false;
+        await jsRuntime.SetToggleBodyOverflow(false);
     }
 }

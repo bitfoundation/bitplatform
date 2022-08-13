@@ -16,6 +16,7 @@ public partial class AddOrEditCategoryPage
     public CategoryDto? Category { get; set; } = new();
     public bool IsLoading { get; private set; }
     public bool IsSaveLoading { get; private set; }
+    public bool IsColorPickerOpen { get; set; }
     public BitMessageBarType SaveMessageType { get; set; }
     public string? SaveMessage { get; set; }
     protected override async Task OnInitAsync()
@@ -40,7 +41,16 @@ public partial class AddOrEditCategoryPage
         {
             IsLoading = false;
         }
-        
+    }
+
+    private void SetCategoryColor(string color)
+    {
+        Category!.Color = color;
+    }
+
+    private void ToggleColorPicker()
+    {
+        IsColorPickerOpen = !IsColorPickerOpen;
     }
 
     private async Task Save()

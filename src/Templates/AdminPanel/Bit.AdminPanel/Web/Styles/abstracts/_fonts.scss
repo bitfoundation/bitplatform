@@ -1,0 +1,34 @@
+﻿@font-face {
+    font-family: 'Segoe UI';
+    src: local('Segoe UI Semilight'), url('../fonts/segoe-ui-semilight.woff2') format('woff2');
+    font-weight: 200;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Segoe UI';
+    src: local('Segoe UI Light'), url('../fonts/segoe-ui-light.woff2') format('woff2');
+    font-weight: 300;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Segoe UI';
+    src: local('Segoe UI'), url('../fonts/segoe-ui-normal.woff2') format('woff2');
+    font-weight: 400;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Segoe UI';
+    src: local('Segoe UI Semibold'), url('../fonts/segoe-ui-semibold.woff2') format('woff2');
+    font-weight: 600;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Segoe UI';
+    src: local('Segoe UI Bold'), url('../fonts/segoe-ui-bold.woff2') format('woff2');
+    font-weight: 700;
+    font-display: swap;
+}

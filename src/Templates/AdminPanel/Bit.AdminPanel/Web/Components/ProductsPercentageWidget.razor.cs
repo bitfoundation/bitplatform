@@ -1,4 +1,6 @@
-﻿namespace AdminPanel.App.Pages.Dashboard;
+﻿using AdminPanel.App.Pages.Dashboard;
+
+namespace AdminPanel.App.Components;
 
 public partial class ProductsPercentageWidget
 {
@@ -31,7 +33,7 @@ public partial class ProductsPercentageWidget
         {
             IsLoading = true;
 
-            var Data = await stateService.GetValue($"{nameof(AnalyticsPage)}-{nameof(ProductsPercentageWidget)}", async () => await httpClient.GetFromJsonAsync($"Dashboard/GetProductsPercentagePerCategoryStats", AppJsonContext.Default.ListProductPercentagePerCategoryDto));
+            var Data = await stateService.GetValue($"{nameof(HomePage)}-{nameof(ProductsPercentageWidget)}", async () => await httpClient.GetFromJsonAsync($"Dashboard/GetProductsPercentagePerCategoryStats", AppJsonContext.Default.ListProductPercentagePerCategoryDto));
 
             BitChartPieDataset<float> chartDataSet = new BitChartPieDataset<float>();
             chartDataSet.AddRange(Data!.Select(d => d.ProductPercentage));
