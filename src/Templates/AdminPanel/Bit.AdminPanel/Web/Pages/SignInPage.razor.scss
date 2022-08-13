@@ -203,6 +203,17 @@
 }
 
 ::deep .bit-msg-bar-fluent {
+    top: 24px;
     position: absolute;
-    top: 0;
+    width: calc(100% - 48px);
+
+    @include md {
+        top: 16px;
+        width: calc(100% - 32px);
+    }
+
+    @include sm {
+        top: 16px;
+        width: calc(100% - 32px);
+    }
 }

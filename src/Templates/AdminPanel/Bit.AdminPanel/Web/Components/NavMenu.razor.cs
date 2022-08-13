@@ -77,7 +77,14 @@ public partial class NavMenu
 
     [Parameter] public EventCallback<bool> IsMenuOpenChanged { get; set; }
 
-    private async Task CloseMenu()
+    private async Task HandleLinkClick(BitNavLinkItem item)
+    {
+        if (string.IsNullOrWhiteSpace(item.Url)) return;
+
+        await CloseNavMenu();
+    }
+
+    private async Task CloseNavMenu()
     {
         IsMenuOpen = false;
         await jSRuntime.SetToggleBodyOverflow(false);

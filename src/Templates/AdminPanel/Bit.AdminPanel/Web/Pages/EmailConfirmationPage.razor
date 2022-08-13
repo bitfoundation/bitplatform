@@ -17,11 +17,7 @@
         <div class="form">
             @if (string.IsNullOrEmpty(EmailConfirmationMessage) is false)
             {
-                <BitMessageBar Class="form-message-bar"
-                           MessageBarType="@EmailConfirmationMessageType"
-                           OnDismiss="() => EmailConfirmationMessage = null">
-                    @EmailConfirmationMessage
-                </BitMessageBar>
+                <BitMessageBar MessageBarType="@EmailConfirmationMessageType" OnDismiss="() => EmailConfirmationMessage = null">@EmailConfirmationMessage</BitMessageBar>
             }
             @if (EmailConfirmed)
             {

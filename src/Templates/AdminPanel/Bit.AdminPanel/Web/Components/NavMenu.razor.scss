@@ -84,23 +84,20 @@
     background-repeat: no-repeat;
 }
 
-::deep .bit-nav-menu {
+::deep .nav-menu {
     width: 100%;
     padding-top: rem(24px);
 
-    .link-enabled-hasurl-fluent {
-        span {
+    .link-enabled-hasurl,
+    .link-enabled-nourl,
+    .link-enabled-nourl:active,
+    .link-enabled-hasurl:active {
+        .link-container {
+            color: $Gray10;
+
             i {
                 color: $ThemeLightColor;
             }
-        }
-    }
-
-    .link-container {
-        color: $Gray10;
-
-        i {
-            color: $ThemeLightColor;
         }
     }
 

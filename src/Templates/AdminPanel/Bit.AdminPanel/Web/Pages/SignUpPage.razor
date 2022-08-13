@@ -20,11 +20,7 @@
             <DataAnnotationsValidator />
             @if (string.IsNullOrEmpty(SignUpMessage) is false)
             {
-                <BitMessageBar Class="form-message-bar"
-                           MessageBarType="@SignUpMessageType"
-                           OnDismiss="() => SignUpMessage = null">
-                    @SignUpMessage
-                </BitMessageBar>
+                <BitMessageBar MessageBarType="@SignUpMessageType" OnDismiss="() => SignUpMessage = null">@SignUpMessage</BitMessageBar>
             }
             @if (IsSignedUp)
             {

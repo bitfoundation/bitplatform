@@ -14,15 +14,12 @@
         </div>
     </section>
     <section class="page-section">
+        <div class="bit-logo--blue"></div>
         <EditForm Model="SignInModel" OnValidSubmit="WrapHandled(DoSignIn)" class="form">
             <DataAnnotationsValidator />
             @if (string.IsNullOrEmpty(SignInMessage) is false)
             {
-                <BitMessageBar Class="form-message-bar"
-                           MessageBarType="@SignInMessageType"
-                           OnDismiss="() => SignInMessage = null">
-                    @SignInMessage
-                </BitMessageBar>
+                <BitMessageBar MessageBarType="@SignInMessageType" OnDismiss="() => SignInMessage = null">@SignInMessage</BitMessageBar>
             }
             <h2 class="form-title">@AuthStrings.SignInTitle</h2>
             <div class="form-input-container">

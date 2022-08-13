@@ -2,17 +2,17 @@
 
 @if (IsMenuOpen)
 {
-    <div class="menu-shadow" @onclick=CloseMenu></div>
+    <div class="menu-shadow" @onclick=CloseNavMenu></div>
 }
 
 <section class="nav-menu @(IsMenuOpen ? null : "nav-menu--closed")">
     <div class="menu-content">
         <div class="menu-top-row"></div>
-        <BitNav Class="bit-nav-menu"
+        <BitNav Class="nav-menu"
                 NavLinkItems="NavLinks"
                 AriaLabel="NavMenu"
                 SelectedKey="Home"
-                OnLinkClick=CloseMenu>
+                OnLinkClick=HandleLinkClick>
         </BitNav>
     </div>
     <a class="menu-banner" href="https://todo.bitplatform.dev" target="_blank"></a>

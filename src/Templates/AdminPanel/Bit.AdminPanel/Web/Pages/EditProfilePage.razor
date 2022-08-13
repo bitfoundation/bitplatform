@@ -7,11 +7,7 @@
 <div class="page-container">
     @if (string.IsNullOrEmpty(EditProfileMessage) is false)
     {
-        <BitMessageBar Class="form-message-bar"
-                   MessageBarType="@EditProfileMessageType"
-                   OnDismiss="() => EditProfileMessage = null">
-            @EditProfileMessage
-        </BitMessageBar>
+        <BitMessageBar MessageBarType="@EditProfileMessageType" OnDismiss="() => EditProfileMessage = null">@EditProfileMessage</BitMessageBar>
     }
 
     <div class="page-header">
