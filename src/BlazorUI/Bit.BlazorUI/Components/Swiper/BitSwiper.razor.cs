@@ -25,6 +25,9 @@ public partial class BitSwiper : IDisposable
     private string _leftButtonStyle = string.Empty;
     private string _rightButtonStyle = string.Empty;
 
+    private string _resizeObserverId = string.Empty;
+    private DotNetObjectReference<BitSwiper>? _dotnetObjectReference = default!;
+
     private ElementReference _swiper = default!;
     private System.Timers.Timer _autoPlayTimer = default!;
 
@@ -108,13 +111,21 @@ public partial class BitSwiper : IDisposable
     protected virtual void Dispose(bool disposing)
     {
         if (_disposed) return;
+        if (!disposing) return;
 
-        if (disposing && _autoPlayTimer is not null)
+        if (_autoPlayTimer is not null)
         {
             _autoPlayTimer.Elapsed -= AutoPlayTimerElapsed;
             _autoPlayTimer.Dispose();
-            _disposed = true;
         }
+
+        if (_dotnetObjectReference is not null)
+        {
+            _dotnetObjectReference.Dispose();
+            _ = _js.UnregisterResizeObserver(RootElement, _resizeObserverId);
+        }
+
+        _disposed = true;
     }
 
     protected override string RootElementClass => "bit-swp";
@@ -144,12 +155,22 @@ public partial class BitSwiper : IDisposable
             //    _autoPlayTimer.Start();
             //}
 
+            _dotnetObjectReference = DotNetObjectReference.Create(this);
+            _resizeObserverId = await _js.RegisterResizeObserver(RootElement, _dotnetObjectReference, "OnRootResize");
+
             await _js.RegisterPointerLeave(RootElement, DotNetObjectReference.Create(this));
 
             SetNavigationButtonsVisibility(_translateX);
         }
 
         await base.OnAfterRenderAsync(firstRender);
+    }
+
+    [JSInvokable("OnRootResize")]
+    public async Task OnRootResize(ContentRect rect)
+    {
+        await GetDimensions();
+        await Swipe(0);
     }
 
 
