@@ -4,7 +4,6 @@
 
     <PropertyGroup>
         <TargetFrameworks>net7.0;net6.0</TargetFrameworks>
-        <IncludeContentInPack>false</IncludeContentInPack>
         <IsTrimmable>true</IsTrimmable>
         <ImplicitUsings>enable</ImplicitUsings>
     </PropertyGroup>
