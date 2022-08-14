@@ -5,24 +5,6 @@ namespace AdminPanel.App.Components;
 
 public partial class Header : IAsyncDisposable
 {
-    [AutoInject] private HttpClient httpClient = default!;
-
-#if BlazorServer || BlazorHybrid
-    [AutoInject] private IConfiguration configuration = default!;
-#endif
-
-    [AutoInject] private IAuthTokenProvider authTokenProvider = default!;
-
-    [AutoInject] private IStateService stateService = default!;
-
-    [AutoInject] private AppAuthenticationStateProvider authStateProvider = default!;
-
-    [AutoInject] private IExceptionHandler exceptionHandler = default!;
-
-    [AutoInject] private NavigationManager navigationManager = default!;
-
-    [AutoInject] private IJSRuntime jsRuntime = default!;
-
     [Parameter] public EventCallback OnToggleMenu { get; set; }
 
     public UserDto? User { get; set; } = new();
@@ -121,27 +103,27 @@ public partial class Header : IAsyncDisposable
             SetCurrentUrl();
             SetBreadcrumbItem();
 #pragma warning disable CS8622 // Nullability of reference types in type of parameter doesn't match the target delegate (possibly because of nullability attributes).
-            navigationManager.LocationChanged += OnLocationChanged;
+            NavigationManager.LocationChanged += OnLocationChanged;
 #pragma warning restore CS8622 // Nullability of reference types in type of parameter doesn't match the target delegate (possibly because of nullability attributes).
 
             base.OnInitialized();
         }
         catch (Exception exp)
         {
-            exceptionHandler.Handle(exp);
+            ExceptionHandler.Handle(exp);
         }
 
-        User = await stateService.GetValue($"{nameof(NavMenu)}-{nameof(User)}", async () =>
-            await httpClient.GetFromJsonAsync("User/GetCurrentUser", AppJsonContext.Default.UserDto));
+        User = await StateService.GetValue($"{nameof(NavMenu)}-{nameof(User)}", async () =>
+            await HttpClient.GetFromJsonAsync("User/GetCurrentUser", AppJsonContext.Default.UserDto));
 
-        var access_token = await stateService.GetValue($"{nameof(NavMenu)}-access_token", async () =>
-            await authTokenProvider.GetAcccessToken());
+        var access_token = await StateService.GetValue($"{nameof(NavMenu)}-access_token", async () =>
+            await AuthTokenProvider.GetAcccessToken());
 
         ProfileImageUrl = $"{GetBaseUrl()}Attachment/GetProfileImage?access_token={access_token}&file={User!.ProfileImageName}";
 
-        authStateProvider.AuthenticationStateChanged += VerifyUserIsAuthenticatedOrNot;
+        AuthenticationStateProvider.AuthenticationStateChanged += VerifyUserIsAuthenticatedOrNot;
 
-        IsUserAuthenticated = await stateService.GetValue($"{nameof(Header)}-{nameof(IsUserAuthenticated)}", authStateProvider.IsUserAuthenticated);
+        IsUserAuthenticated = await StateService.GetValue($"{nameof(Header)}-{nameof(IsUserAuthenticated)}", AuthenticationStateProvider.IsUserAuthenticated);
 
         await base.OnInitAsync();
     }
@@ -151,7 +133,7 @@ public partial class Header : IAsyncDisposable
 #if BlazorWebAssembly
         return "/api/";
 #else
-        return configuration.GetValue<string>("ApiServerAddress");
+        return Configuration.GetValue<string>("ApiServerAddress");
 #endif
     }
 
@@ -159,11 +141,11 @@ public partial class Header : IAsyncDisposable
     {
         try
         {
-            IsUserAuthenticated = await authStateProvider.IsUserAuthenticated();
+            IsUserAuthenticated = await AuthenticationStateProvider.IsUserAuthenticated();
         }
         catch (Exception ex)
         {
-            exceptionHandler.Handle(ex);
+            ExceptionHandler.Handle(ex);
         }
         finally
         {
@@ -180,7 +162,7 @@ public partial class Header : IAsyncDisposable
 
     private void SetCurrentUrl()
     {
-        CurrentUrl = navigationManager.Uri.Replace(navigationManager.BaseUri, "/", StringComparison.InvariantCultureIgnoreCase);
+        CurrentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.InvariantCultureIgnoreCase);
     }
 
     private void SetBreadcrumbItem()
@@ -220,7 +202,7 @@ public partial class Header : IAsyncDisposable
     private async Task OpenSignOutModal()
     {
         ToggleHeaderDrpDown();
-        await jsRuntime.SetToggleBodyOverflow(true);
+        await JavaScriptRuntime.SetToggleBodyOverflow(true);
         IsSignOutModalOpen = true;
     }
 
@@ -232,11 +214,11 @@ public partial class Header : IAsyncDisposable
     private void OpenEditProfilePage()
     {
         ToggleHeaderDrpDown();
-        navigationManager.NavigateTo("/edit-profile");
+        NavigationManager.NavigateTo("/edit-profile");
     }
 
     public async ValueTask DisposeAsync()
     {
-        authStateProvider.AuthenticationStateChanged -= VerifyUserIsAuthenticatedOrNot;
+        AuthenticationStateProvider.AuthenticationStateChanged -= VerifyUserIsAuthenticatedOrNot;
     }
 }

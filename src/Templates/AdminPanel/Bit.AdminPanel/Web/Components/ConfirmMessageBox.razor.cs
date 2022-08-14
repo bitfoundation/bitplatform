@@ -2,8 +2,6 @@
 
 public partial class ConfirmMessageBox : IDisposable
 {
-    [AutoInject] private IJSRuntime jsRuntime = default!;
-
     private static event Func<string, string, Task<bool>> OnShow = default!;
 
     public static async Task<bool> Show(string message, string title)
@@ -27,7 +25,7 @@ public partial class ConfirmMessageBox : IDisposable
         await InvokeAsync(async () =>
         {
             IsOpen = true;
-            await jsRuntime.SetToggleBodyOverflow(true);
+            await JavaScriptRuntime.SetToggleBodyOverflow(true);
             Title = title;
             Message = message;
 
@@ -46,7 +44,7 @@ public partial class ConfirmMessageBox : IDisposable
     public async Task Confirm(bool value)
     {
         IsOpen = false;
-        await jsRuntime.SetToggleBodyOverflow(false);
+        await JavaScriptRuntime.SetToggleBodyOverflow(false);
         _tsc?.SetResult(value);
     }
 

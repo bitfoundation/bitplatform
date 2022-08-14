@@ -4,10 +4,8 @@ namespace AdminPanel.Api.Controllers;
 
 [Route("api/[controller]/[action]")]
 [ApiController]
-public partial class DashboardController : ControllerBase
+public partial class DashboardController : AppControllerBase
 {
-    [AutoInject] private AppDbContext _dbContext = default!;
-
     [HttpGet]
     public async Task<OverallAnalyticsStatsDataDto> GetOverallAnalyticsStatsData()
     {
@@ -15,9 +13,9 @@ public partial class DashboardController : ControllerBase
 
         var last30DaysDate = DateTimeOffset.UtcNow.AddDays(-30);
 
-        result.TotalProducts = await _dbContext.Products.CountAsync();
-        result.Last30DaysProductCount = await _dbContext.Products.CountAsync(p => p.CreatedOn > last30DaysDate);
-        result.TotalCategories = await _dbContext.Categories.CountAsync();
+        result.TotalProducts = await DbContext.Products.CountAsync();
+        result.Last30DaysProductCount = await DbContext.Products.CountAsync(p => p.CreatedOn > last30DaysDate);
+        result.TotalCategories = await DbContext.Categories.CountAsync();
 
         return result;
     }
@@ -25,7 +23,7 @@ public partial class DashboardController : ControllerBase
     [HttpGet]
     public async Task<List<ProductsCountPerCategoryDto>> GetProductsCountPerCategotyStats()
     {
-        return await _dbContext.Categories
+        return await DbContext.Categories
             .Select(c => new ProductsCountPerCategoryDto()
             {
                 CategoryName = c.Name,
@@ -38,7 +36,7 @@ public partial class DashboardController : ControllerBase
     public async Task<List<ProductSaleStatDto>> GetProductsSalesStats()
     {
         Random rand = new Random();
-        return await _dbContext.Products.Include(p => p.Category)
+        return await DbContext.Products.Include(p => p.Category)
              .Select(p => new ProductSaleStatDto()
              {
                  ProductName = p.Name,
@@ -51,14 +49,14 @@ public partial class DashboardController : ControllerBase
     [HttpGet]
     public async Task<List<ProductPercentagePerCategoryDto>> GetProductsPercentagePerCategoryStats()
     {
-        var productsTotalCount = await _dbContext.Products.CountAsync();
+        var productsTotalCount = await DbContext.Products.CountAsync();
 
         if (productsTotalCount == 0)
         {
             return new List<ProductPercentagePerCategoryDto>();
         }
 
-        return await _dbContext.Categories
+        return await DbContext.Categories
              .Select(c => new ProductPercentagePerCategoryDto()
              {
                  CategoryName = c!.Name,

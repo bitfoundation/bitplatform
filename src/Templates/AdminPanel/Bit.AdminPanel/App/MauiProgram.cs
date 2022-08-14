@@ -27,6 +27,17 @@ public static class MauiProgram
         services.AddBlazorWebViewDeveloperTools();
 #endif
 
+        services.AddScoped(sp =>
+        {
+            HttpClient httpClient = new(sp.GetRequiredService<AppHttpClientHandler>())
+            {
+                BaseAddress = new Uri($"{sp.GetRequiredService<IConfiguration>()["ApiServerAddress"]}")
+            };
+
+            return httpClient;
+        });
+
+
         services.AddTransient<IAuthTokenProvider, ClientSideAuthTokenProvider>();
         services.AddSharedServices();
         services.AddAppServices();

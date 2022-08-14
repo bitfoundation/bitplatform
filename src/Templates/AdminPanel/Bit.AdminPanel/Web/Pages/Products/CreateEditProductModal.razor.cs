@@ -4,12 +4,6 @@ namespace AdminPanel.App.Pages.Products;
 
 public partial class CreateEditProductModal
 {
-    [AutoInject] private HttpClient httpClient = default!;
-
-    [AutoInject] private IStateService stateService = default!;
-
-    [AutoInject] private IJSRuntime jsRuntime = default!;
-
     [Parameter]
     public ProductDto Product { get; set; }
 
@@ -33,7 +27,7 @@ public partial class CreateEditProductModal
         await InvokeAsync(async () =>
         {
             IsOpen = true;
-            await jsRuntime.SetToggleBodyOverflow(true);
+            await JavaScriptRuntime.SetToggleBodyOverflow(true);
 
             Product = product;
 
@@ -47,7 +41,7 @@ public partial class CreateEditProductModal
 
         try
         {
-            var categoryList = await stateService.GetValue($"{nameof(ProductsPage)}-{nameof(AllCategoryList)}", async () => await httpClient.GetFromJsonAsync("Category/Get", AppJsonContext.Default.ListCategoryDto));
+            var categoryList = await StateService.GetValue($"{nameof(ProductsPage)}-{nameof(AllCategoryList)}", async () => await HttpClient.GetFromJsonAsync("Category/Get", AppJsonContext.Default.ListCategoryDto));
 
             return categoryList!.Select(c => new BitDropDownItem()
             {
@@ -75,15 +69,15 @@ public partial class CreateEditProductModal
 
             if (Product.Id == 0)
             {
-                await httpClient.PostAsJsonAsync("Product/Create", Product, AppJsonContext.Default.ProductDto);
+                await HttpClient.PostAsJsonAsync("Product/Create", Product, AppJsonContext.Default.ProductDto);
             }
             else
             {
-                await httpClient.PutAsJsonAsync("Product/Update", Product, AppJsonContext.Default.ProductDto);
+                await HttpClient.PutAsJsonAsync("Product/Update", Product, AppJsonContext.Default.ProductDto);
             }
 
             IsOpen = false;
-            await jsRuntime.SetToggleBodyOverflow(false);
+            await JavaScriptRuntime.SetToggleBodyOverflow(false);
         }
         finally
         {
@@ -94,6 +88,6 @@ public partial class CreateEditProductModal
     private async Task OnCloseClick()
     {
         IsOpen = false;
-        await jsRuntime.SetToggleBodyOverflow(false);
+        await JavaScriptRuntime.SetToggleBodyOverflow(false);
     }
 }

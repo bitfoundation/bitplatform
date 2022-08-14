@@ -4,10 +4,6 @@ namespace AdminPanel.App.Components;
 
 public partial class ProductsCountPerCategotyWidget
 {
-    [AutoInject] private HttpClient httpClient = default!;
-
-    [AutoInject] private IStateService stateService = default!;
-
     public bool IsLoading { get; set; }
 
     private BitChartBarConfig _config = default!;
@@ -36,7 +32,7 @@ public partial class ProductsCountPerCategotyWidget
         {
             IsLoading = true;
 
-            var data = await stateService.GetValue($"{nameof(HomePage)}-{nameof(ProductsCountPerCategotyWidget)}", async () => await httpClient.GetFromJsonAsync($"Dashboard/GetProductsCountPerCategotyStats", AppJsonContext.Default.ListProductsCountPerCategoryDto));
+            var data = await StateService.GetValue($"{nameof(HomePage)}-{nameof(ProductsCountPerCategotyWidget)}", async () => await HttpClient.GetFromJsonAsync($"Dashboard/GetProductsCountPerCategotyStats", AppJsonContext.Default.ListProductsCountPerCategoryDto));
 
             BitChartBarDataset<int> chartDataSet = new BitChartBarDataset<int>();
             chartDataSet.AddRange(data.Select(d => d.ProductCount));

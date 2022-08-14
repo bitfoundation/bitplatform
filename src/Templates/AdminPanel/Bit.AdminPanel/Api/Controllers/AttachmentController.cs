@@ -7,10 +7,8 @@ namespace AdminPanel.Api.Controllers;
 
 [Route("api/[controller]/[action]")]
 [ApiController]
-public partial class AttachmentController : ControllerBase
+public partial class AttachmentController : AppControllerBase
 {
-    [AutoInject] private IOptionsSnapshot<AppSettings> _appSettings = default!;
-
     [AutoInject] private UserManager<User> _userManager = default!;
 
     [AutoInject] private IWebHostEnvironment _webHostEnvironment = default!;
@@ -33,9 +31,9 @@ public partial class AttachmentController : ControllerBase
 
         await using var requestStream = file.OpenReadStream();
 
-        Directory.CreateDirectory(_appSettings.Value.UserProfileImagePath);
+        Directory.CreateDirectory(AppSettings.Value.UserProfileImagePath);
 
-        var path = Path.Combine(_appSettings.Value.UserProfileImagePath, fileName);
+        var path = Path.Combine(AppSettings.Value.UserProfileImagePath, fileName);
 
         await using var fileStream = SystemFile.Exists(path)
             ? SystemFile.Open(path, FileMode.Append)
@@ -47,7 +45,7 @@ public partial class AttachmentController : ControllerBase
         {
             try
             {
-                var filePath = Path.Combine(_appSettings.Value.UserProfileImagePath, user.ProfileImageName);
+                var filePath = Path.Combine(AppSettings.Value.UserProfileImagePath, user.ProfileImageName);
 
                 if (SystemFile.Exists(filePath))
                 {
@@ -84,7 +82,7 @@ public partial class AttachmentController : ControllerBase
         if (user?.ProfileImageName is null)
             throw new ResourceNotFoundException();
 
-        var filePath = Path.Combine(_appSettings.Value.UserProfileImagePath, user.ProfileImageName);
+        var filePath = Path.Combine(AppSettings.Value.UserProfileImagePath, user.ProfileImageName);
 
         if (SystemFile.Exists(filePath) is false)
             throw new ResourceNotFoundException(nameof(ErrorStrings.UserImageCouldNotBeFound));
@@ -106,7 +104,7 @@ public partial class AttachmentController : ControllerBase
         if (user?.ProfileImageName is null)
             throw new ResourceNotFoundException();
 
-        var filePath = Path.Combine(_appSettings.Value.UserProfileImagePath, user.ProfileImageName);
+        var filePath = Path.Combine(AppSettings.Value.UserProfileImagePath, user.ProfileImageName);
 
         if (SystemFile.Exists(filePath) is false)
             return new EmptyResult();

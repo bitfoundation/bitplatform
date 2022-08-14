@@ -4,10 +4,6 @@ namespace AdminPanel.App.Components;
 
 public partial class ProductsSalesWidget
 {
-    [AutoInject] private HttpClient httpClient = default!;
-
-    [AutoInject] private IStateService stateService = default!;
-
     public bool IsLoading { get; set; }
     private BitChartBarConfig _config = default!;
     private BitChart? _chart;
@@ -35,7 +31,7 @@ public partial class ProductsSalesWidget
         {
             IsLoading = true;
 
-            var Data = await stateService.GetValue($"{nameof(HomePage)}-{nameof(ProductsSalesWidget)}", async () => await httpClient.GetFromJsonAsync($"Dashboard/GetProductsSalesStats", AppJsonContext.Default.ListProductSaleStatDto));
+            var Data = await StateService.GetValue($"{nameof(HomePage)}-{nameof(ProductsSalesWidget)}", async () => await HttpClient.GetFromJsonAsync($"Dashboard/GetProductsSalesStats", AppJsonContext.Default.ListProductSaleStatDto));
 
             BitChartBarDataset<decimal> chartDataSet = new BitChartBarDataset<decimal>();
             chartDataSet.AddRange(Data.Select(d => d.SaleAmount));

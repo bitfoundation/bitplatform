@@ -1,8 +1,28 @@
-﻿namespace AdminPanel.App.Components;
+﻿using Microsoft.Extensions.Localization;
+
+namespace AdminPanel.App.Components;
 
 public partial class AppComponentBase : ComponentBase
 {
-    [AutoInject] private IExceptionHandler exceptionHandler = default!;
+    [AutoInject] protected IExceptionHandler ExceptionHandler { get; set; } = default!;
+
+    [AutoInject] protected IStateService StateService = default!;
+
+    [AutoInject] protected AppAuthenticationStateProvider AuthenticationStateProvider = default!;
+
+    [AutoInject] protected HttpClient HttpClient = default!;
+
+    [AutoInject] protected IAuthTokenProvider AuthTokenProvider = default!;
+
+#if BlazorServer || BlazorHybrid
+    [AutoInject] protected IConfiguration Configuration = default!;
+#endif
+
+    [AutoInject] protected NavigationManager NavigationManager = default!;
+
+    [AutoInject] protected IAuthenticationService AuthenticationService = default!;
+
+    [AutoInject] protected IJSRuntime JavaScriptRuntime = default!;
 
     protected async sealed override Task OnInitializedAsync()
     {
@@ -13,7 +33,7 @@ public partial class AppComponentBase : ComponentBase
         }
         catch (Exception exp)
         {
-            exceptionHandler.Handle(exp);
+            ExceptionHandler.Handle(exp);
         }
     }
 
@@ -26,7 +46,7 @@ public partial class AppComponentBase : ComponentBase
         }
         catch (Exception exp)
         {
-            exceptionHandler.Handle(exp);
+            ExceptionHandler.Handle(exp);
         }
     }
 
@@ -64,7 +84,7 @@ public partial class AppComponentBase : ComponentBase
             }
             catch (Exception exp)
             {
-                exceptionHandler.Handle(exp);
+                ExceptionHandler.Handle(exp);
             }
         };
     }
@@ -82,7 +102,7 @@ public partial class AppComponentBase : ComponentBase
             }
             catch (Exception exp)
             {
-                exceptionHandler.Handle(exp);
+                ExceptionHandler.Handle(exp);
             }
         };
     }
@@ -100,7 +120,7 @@ public partial class AppComponentBase : ComponentBase
             }
             catch (Exception exp)
             {
-                exceptionHandler.Handle(exp);
+                ExceptionHandler.Handle(exp);
             }
         };
     }
@@ -118,7 +138,7 @@ public partial class AppComponentBase : ComponentBase
             }
             catch (Exception exp)
             {
-                exceptionHandler.Handle(exp);
+                ExceptionHandler.Handle(exp);
             }
         };
     }

@@ -1,13 +1,8 @@
 ﻿namespace AdminPanel.App.Services.Implementations;
 
-public class ClientSideAuthTokenProvider : IAuthTokenProvider
+public partial class ClientSideAuthTokenProvider : IAuthTokenProvider
 {
-    private readonly IJSRuntime _jsRuntime;
-
-    public ClientSideAuthTokenProvider(IJSRuntime jsRuntime)
-    {
-        _jsRuntime = jsRuntime;
-    }
+    [AutoInject] private IJSRuntime _jsRuntime = default!;
 
     public async Task<string?> GetAcccessToken()
     {

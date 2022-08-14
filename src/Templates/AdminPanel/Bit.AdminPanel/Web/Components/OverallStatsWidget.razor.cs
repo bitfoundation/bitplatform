@@ -5,10 +5,6 @@ namespace AdminPanel.App.Components;
 
 public partial class OverallStatsWidget
 {
-    [AutoInject] private HttpClient httpClient = default!;
-
-    [AutoInject] private IStateService stateService = default!;
-
     public bool IsLoading { get; set; }
     public OverallAnalyticsStatsDataDto Data { get; set; } = new OverallAnalyticsStatsDataDto();
 
@@ -23,7 +19,7 @@ public partial class OverallStatsWidget
         try
         {
             IsLoading = true;
-            Data = await stateService.GetValue($"{nameof(HomePage)}-{nameof(OverallStatsWidget)}", async () => await httpClient.GetFromJsonAsync($"Dashboard/GetOverallAnalyticsStatsData", AppJsonContext.Default.OverallAnalyticsStatsDataDto));
+            Data = await StateService.GetValue($"{nameof(HomePage)}-{nameof(OverallStatsWidget)}", async () => await HttpClient.GetFromJsonAsync($"Dashboard/GetOverallAnalyticsStatsData", AppJsonContext.Default.OverallAnalyticsStatsDataDto));
         }
         finally
         {

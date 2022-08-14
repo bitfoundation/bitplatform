@@ -2,14 +2,9 @@
 
 namespace AdminPanel.App.Pages.Categories;
 
+[Authorize]
 public partial class AddOrEditCategoryPage
 {
-    [AutoInject] private HttpClient httpClient = default!;
-
-    [AutoInject] private NavigationManager navigationManager = default!;
-
-    [AutoInject] private IStateService stateService = default!;
-
     [Parameter]
     public int? Id { get; set; }
 
@@ -35,7 +30,7 @@ public partial class AddOrEditCategoryPage
         try
         {
             IsLoading = true;
-            Category = await httpClient.GetFromJsonAsync($"Category/Get/{Id}", AppJsonContext.Default.CategoryDto);
+            Category = await HttpClient.GetFromJsonAsync($"Category/Get/{Id}", AppJsonContext.Default.CategoryDto);
         }        
         finally
         {
@@ -66,14 +61,14 @@ public partial class AddOrEditCategoryPage
 
             if (Category!.Id == 0)
             {
-                await httpClient.PostAsJsonAsync("Category/Create", Category, AppJsonContext.Default.CategoryDto);
+                await HttpClient.PostAsJsonAsync("Category/Create", Category, AppJsonContext.Default.CategoryDto);
             }
             else
             {
-                await httpClient.PutAsJsonAsync("Category/Update", Category, AppJsonContext.Default.CategoryDto);
+                await HttpClient.PutAsJsonAsync("Category/Update", Category, AppJsonContext.Default.CategoryDto);
             }
 
-            navigationManager.NavigateTo("categories");
+            NavigationManager.NavigateTo("categories");
         }
         catch (ResourceValidationException e)
         {
