@@ -213,99 +213,102 @@
 }
 
 ::deep .nav-menu {
-    .bit-nav-grp-chevron-btn {
-        height: rem(40px);
-        margin: 0;
-        padding-left: rem(44px);
-        border: none;
-        font-weight: 500;
-        font-size: rem(16px);
-        line-height: rem(32px);
-        color: $Gray2;
 
-        &:hover {
-            color: $B6Color;
-        }
-
-        i {
-            height: 100%;
-            left: rem(17px);
-            transform: rotate( -90deg);
-        }
-
-        .bit-nav-expand-fluent {
-            height: 100%;
-            left: rem(17px);
-            transform: rotate(0deg);
-        }
-        //@include lg {
-        //    height: rem(32px);
-        //    padding-left: rem(36px);
-        //    font-size: rem(14px);
-        //    line-height: rem(24px);
-        //}
-
-        @include md {
-            height: rem(36px);
-            padding-left: rem(36px);
-            font-size: rem(16px);
-            line-height: rem(24px);
-        }
-
-        @include sm {
+    .bit-nav {
+        .group-chevron-btn {
             height: rem(40px);
-            padding-left: rem(40px);
-            font-size: rem(14px);
-            line-height: rem(24px);
-        }
-    }
-
-    .bit-nav-grp-content {
-        margin-bottom: 0;
-    }
-
-    .bit-nav-link-txt {
-        white-space: nowrap;
-    }
-
-    .bit-nav-link-enabled-hasurl-fluent {
-        height: rem(40px);
-        padding: 0 rem(16px) 0 rem(52px) !important;
-        box-sizing: border-box;
-        font-size: rem(15px);
-        line-height: rem(26px);
-        color: $Gray1;
-
-        &:hover {
-            color: $B6Color;
-        }
-
-        @include lg {
-            //height: rem(32px);
-            //font-size: rem(12px);
-            //line-height: rem(18px);
-        }
-
-        @include md {
-            height: rem(36px);
-            font-size: rem(16px);
-            line-height: rem(24px);
-        }
-
-        @include sm {
-            height: rem(40px);
+            margin: 0;
+            padding-left: rem(44px);
+            border: none;
             font-weight: 500;
-            //font-size: rem(12px);
-            //line-height: rem(24px);
+            font-size: rem(16px);
+            line-height: rem(32px);
+            color: $Gray2;
+
+            &:hover {
+                color: $B6Color;
+            }
+
+            i {
+                height: 100%;
+                left: rem(17px);
+                transform: rotate( -90deg);
+            }
+
+            .expand {
+                height: 100%;
+                left: rem(17px);
+                transform: rotate(0deg);
+            }
+            //@include lg {
+            //    height: rem(32px);
+            //    padding-left: rem(36px);
+            //    font-size: rem(14px);
+            //    line-height: rem(24px);
+            //}
+
+            @include md {
+                height: rem(36px);
+                padding-left: rem(36px);
+                font-size: rem(16px);
+                line-height: rem(24px);
+            }
+
+            @include sm {
+                height: rem(40px);
+                padding-left: rem(40px);
+                font-size: rem(14px);
+                line-height: rem(24px);
+            }
         }
-    }
 
-    .bit-nav-selected-fluent {
-        font-weight: unset;
-        color: $B6Color;
+        .group-content {
+            margin-bottom: 0;
+        }
 
-        &:after {
-            border-left: rem(4px) solid $B6Color;
+        .link-txt {
+            white-space: nowrap;
+        }
+
+        .link-enabled-hasurl {
+            height: rem(40px);
+            padding: 0 rem(16px) 0 rem(52px) !important;
+            box-sizing: border-box;
+            font-size: rem(15px);
+            line-height: rem(26px);
+            color: $Gray1;
+
+            &:hover {
+                color: $B6Color;
+            }
+
+            @include lg {
+                //height: rem(32px);
+                //font-size: rem(12px);
+                //line-height: rem(18px);
+            }
+
+            @include md {
+                height: rem(36px);
+                font-size: rem(16px);
+                line-height: rem(24px);
+            }
+
+            @include sm {
+                height: rem(40px);
+                font-weight: 500;
+                //font-size: rem(12px);
+                //line-height: rem(24px);
+            }
+        }
+
+        .selected {
+            font-weight: unset;
+            color: $B6Color;
+
+            &:after {
+                border-left: rem(4px) solid $B6Color;
+            }
         }
     }
 }
