@@ -34,6 +34,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.BlazorUI.SourceGenerato
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{04FCC31B-45F7-4DBF-B9B3-2DCC8168759E}"
 	ProjectSection(SolutionItems) = preProject
+		..\..\.github\workflows\Bit.ci.yml = ..\..\.github\workflows\Bit.ci.yml
 		..\..\.github\workflows\nuget.org.yml = ..\..\.github\workflows\nuget.org.yml
 		..\..\.github\workflows\Prerelease.nuget.org.yml = ..\..\.github\workflows\Prerelease.nuget.org.yml
 	EndProjectSection
