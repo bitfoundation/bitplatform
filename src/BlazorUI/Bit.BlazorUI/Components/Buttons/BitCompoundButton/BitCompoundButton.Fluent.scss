@@ -1,79 +1,81 @@
 ﻿@import "../../../Styles/Fluent/colors.fluent.scss", "../../../Styles/functions.scss";
 
-.bit-cmp-btn-fluent {
-    font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
-    text-align: left;
-    border-radius: em(2px);
-    padding: em(16px) em(12px);
-    font-size: rem(14px);
-    font-weight: 600;
-    line-height: em(20px);
-    cursor: pointer;
-    box-sizing: border-box;
-    max-width: 280px;
-    min-height: 72px;
-    display: inline-flex;
-    position: relative;
-    text-decoration: none;
+.bit-cmp-btn {
+    &.bit-cmp-btn-fluent {
+        font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+        text-align: left;
+        border-radius: em(2px);
+        padding: em(16px) em(12px);
+        font-size: rem(14px);
+        font-weight: 600;
+        line-height: em(20px);
+        cursor: pointer;
+        box-sizing: border-box;
+        max-width: 280px;
+        min-height: 72px;
+        display: inline-flex;
+        position: relative;
+        text-decoration: none;
 
-    & > span {
-        height: 100%;
-        min-width: 100%;
+        & > span {
+            height: 100%;
+            min-width: 100%;
 
-        .bit-cmp-btn-text {
-            margin: 0px 0px 5px;
-            display: block;
+            .bit-cmp-btn-text {
+                margin: 0px 0px 5px;
+                display: block;
+            }
+
+            .bit-cmp-btn-secondary-text {
+                font-size: rem(12px);
+                font-weight: 400;
+                line-height: 100%;
+            }
+        }
+    }
+
+    &.bit-cmp-btn-disabled-fluent {
+        background: $Grey20;
+        border: 1px solid $Grey20;
+        cursor: default;
+        pointer-events: none;
+        border: 1px solid $Grey20;
+    }
+
+    &.primary {
+        color: $White;
+        background: $Primary;
+        border: 1px solid $Primary;
+
+        &:hover {
+            background-color: $DarkAlt;
         }
 
-        .bit-cmp-btn-secondary-text {
-            font-size: rem(12px);
-            font-weight: 400;
-            line-height: 100%;
+        &:active {
+            background-color: $Dark;
         }
     }
-}
 
-.bit-cmp-btn-primary-fluent {
-    color: $White;
-    background: $Primary;
-    border: 1px solid $Primary;
+    &.standard {
+        color: $Grey160;
+        background: $White;
+        border: 1px solid $GreyInputBorder;
 
-    &:hover {
-        background-color: $DarkAlt;
+        &:hover {
+            background-color: $Grey20;
+            border-color: $Grey160;
+        }
+
+        &:active {
+            background-color: $Grey30;
+        }
     }
 
-    &:active {
-        background-color: $Dark;
-    }
-}
-
-.bit-cmp-btn-standard-fluent {
-    color: $Grey160;
-    background: $White;
-    border: 1px solid $GreyInputBorder;
-
-    &:hover {
-        background-color: $Grey20;
-        border-color: $Grey160;
+    &.primary-disabled {
+        color: $Grey50;
     }
 
-    &:active {
-        background-color: $Grey30;
+    &.standard-disabled {
+        color: $Grey90;
     }
-}
-
-.bit-cmp-btn-disabled-fluent {
-    background: $Grey20;
-    border: 1px solid $Grey20;
-    cursor: default;
-    pointer-events: none;
-    border: 1px solid $Grey20;
-}
-
-.bit-cmp-btn-primary-disabled-fluent {
-    color: $Grey50;
-}
-
-.bit-cmp-btn-standard-disabled-fluent {
-    color: $Grey90;
 }

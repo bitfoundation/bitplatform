@@ -151,7 +151,7 @@ public class BitCompoundButtonTests : BunitTestContext
 
         var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
         var buttonStyleStr = buttonStyle == BitButtonStyle.Primary ? "primary" : "standard";
-        Assert.IsTrue(bitCompoundButton.ClassList.Contains($"bit-cmp-btn-{buttonStyleStr}-disabled-{visualClass}"));
+        Assert.IsTrue(bitCompoundButton.ClassList.Contains($"{buttonStyleStr}-disabled"));
     }
 
     [DataTestMethod,
