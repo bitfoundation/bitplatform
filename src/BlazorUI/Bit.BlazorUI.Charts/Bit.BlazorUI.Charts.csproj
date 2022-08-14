@@ -4,7 +4,6 @@
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
-        <IncludeContentInPack>false</IncludeContentInPack>
         <ImplicitUsings>enable</ImplicitUsings>
         <RootNamespace>Bit.BlazorUI</RootNamespace>
     </PropertyGroup>
