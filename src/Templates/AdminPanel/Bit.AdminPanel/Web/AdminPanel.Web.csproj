@@ -60,6 +60,7 @@
         <Using Include="Microsoft.AspNetCore.Components.Authorization" />
         <Using Include="AdminPanel.App.Components" />
         <Using Include="Bit.BlazorUI" />
+        <Using Include="Microsoft.AspNetCore.Authorization" />
     </ItemGroup>
 
     <ItemGroup>

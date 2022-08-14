@@ -3,18 +3,9 @@ using AdminPanel.Shared.Dtos.Account;
 
 namespace AdminPanel.App.Pages;
 
+[Authorize]
 public partial class EditProfilePage
 {
-    [AutoInject] private IAuthTokenProvider authTokenProvider = default!;
-
-    [AutoInject] private HttpClient httpClient = default!;
-
-    [AutoInject] private IStateService stateService = default!;
-
-    [AutoInject] private IJSRuntime jSRuntime = default!;
-
-    [AutoInject] private IConfiguration configuration = default!;
-
     public UserDto User { get; set; } = new();
     public UserDto UserToEdit { get; set; } = new();
 
@@ -36,8 +27,8 @@ public partial class EditProfilePage
         {
             await LoadEditProfileData();
 
-            var access_token = await stateService.GetValue($"{nameof(EditProfilePage)}-access_token", async () =>
-                await authTokenProvider.GetAcccessToken());
+            var access_token = await StateService.GetValue($"{nameof(EditProfilePage)}-access_token", async () =>
+                await AuthTokenProvider.GetAcccessToken());
 
             ProfileImageUploadUrl = $"{GetBaseUrl()}Attachment/UploadProfileImage?access_token={access_token}";
             ProfileImageUrl = $"{GetBaseUrl()}Attachment/GetProfileImage?access_token={access_token}";
@@ -56,14 +47,14 @@ public partial class EditProfilePage
 #if BlazorWebAssembly
         return "/api/";
 #else
-        return configuration.GetValue<string>("ApiServerAddress");
+        return Configuration.GetValue<string>("ApiServerAddress");
 #endif
     }
 
     private async Task LoadEditProfileData()
     {
-        User = (await stateService.GetValue($"{nameof(EditProfilePage)}-{nameof(User)}", async () =>
-            await httpClient.GetFromJsonAsync("User/GetCurrentUser", AppJsonContext.Default.UserDto))) ?? new();
+        User = (await StateService.GetValue($"{nameof(EditProfilePage)}-{nameof(User)}", async () =>
+            await HttpClient.GetFromJsonAsync("User/GetCurrentUser", AppJsonContext.Default.UserDto))) ?? new();
 
         UserToEdit.ProfileImageName = User.ProfileImageName;
         UserToEdit.FullName = User.FullName;
@@ -79,7 +70,7 @@ public partial class EditProfilePage
 
     private async Task GoBack()
     {
-        await jSRuntime.GoBack();
+        await JsRuntime.GoBack();
     }
 
     private async Task Save()
@@ -98,7 +89,7 @@ public partial class EditProfilePage
             User.BirthDate = UserToEdit.BirthDate;
             User.Gender = UserToEdit.Gender;
 
-            await httpClient.PutAsJsonAsync("User/Update", User, AppJsonContext.Default.EditUserDto);
+            await HttpClient.PutAsJsonAsync("User/Update", User, AppJsonContext.Default.EditUserDto);
 
             EditProfileMessageType = BitMessageBarType.Success;
 

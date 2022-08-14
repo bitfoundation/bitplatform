@@ -5,17 +5,13 @@ namespace AdminPanel.Api.Controllers;
 
 [Route("api/[controller]/[action]")]
 [ApiController]
-public partial class ProductController : ControllerBase
+public partial class ProductController : AppControllerBase
 {
-    [AutoInject] private AppDbContext _dbContext = default!;
-
-    [AutoInject] private IMapper _mapper = default!;
-
     [HttpGet, EnableQuery]
     public IQueryable<ProductDto> Get(CancellationToken cancellationToken)
     {
-        return _dbContext.Products
-            .ProjectTo<ProductDto>(_mapper.ConfigurationProvider, cancellationToken);
+        return DbContext.Products
+            .ProjectTo<ProductDto>(Mapper.ConfigurationProvider, cancellationToken);
     }
 
     [HttpGet("{id:int}")]
@@ -48,34 +44,34 @@ public partial class ProductController : ControllerBase
     [HttpPost]
     public async Task Create(ProductDto dto, CancellationToken cancellationToken)
     {
-        var productToAdd = _mapper.Map<Product>(dto);
+        var productToAdd = Mapper.Map<Product>(dto);
 
-        await _dbContext.Products.AddAsync(productToAdd, cancellationToken);
+        await DbContext.Products.AddAsync(productToAdd, cancellationToken);
 
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        await DbContext.SaveChangesAsync(cancellationToken);
     }
 
     [HttpPut]
     public async Task Update(ProductDto dto, CancellationToken cancellationToken)
     {
-        var productToUpdate = await _dbContext.Products.FirstOrDefaultAsync(t => t.Id == dto.Id, cancellationToken);
+        var productToUpdate = await DbContext.Products.FirstOrDefaultAsync(t => t.Id == dto.Id, cancellationToken);
 
         if (productToUpdate is null)
             throw new ResourceNotFoundException(nameof(ErrorStrings.ProductCouldNotBeFound));
 
-        var updatedProduct = _mapper.Map(dto, productToUpdate);
+        var updatedProduct = Mapper.Map(dto, productToUpdate);
 
-        _dbContext.Products.Update(productToUpdate);
+        DbContext.Products.Update(productToUpdate);
 
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        await DbContext.SaveChangesAsync(cancellationToken);
     }
 
     [HttpDelete("{id:int}")]
     public async Task Delete(int id, CancellationToken cancellationToken)
     {
-        _dbContext.Remove(new Product { Id = id });
+        DbContext.Remove(new Product { Id = id });
 
-        var affectedRows = await _dbContext.SaveChangesAsync(cancellationToken);
+        var affectedRows = await DbContext.SaveChangesAsync(cancellationToken);
 
         if (affectedRows < 1)
             throw new ResourceNotFoundException(nameof(ErrorStrings.ProductCouldNotBeFound));

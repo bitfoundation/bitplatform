@@ -1,13 +1,8 @@
 ﻿namespace AdminPanel.App.Services.Implementations;
 
-public class AppAuthenticationStateProvider : AuthenticationStateProvider
+public partial class AppAuthenticationStateProvider : AuthenticationStateProvider
 {
-    private readonly IAuthTokenProvider _tokenProvider;
-
-    public AppAuthenticationStateProvider(IAuthTokenProvider tokenProvider)
-    {
-        _tokenProvider = tokenProvider;
-    }
+    [AutoInject] private IAuthTokenProvider _tokenProvider = default!;
 
     public async Task RaiseAuthenticationStateHasChanged()
     {
