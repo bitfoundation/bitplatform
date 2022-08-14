@@ -1,32 +1,11 @@
-﻿interface DotNetObject {
-
-    invokeMethod<T>(methodIdentifier: string, ...args: any[]): T;
-
-    invokeMethodAsync<T>(methodIdentifier: string, ...args: any[]): Promise<T>;
-}
-
-class CalloutComponent {
-    calloutId: string;
-    overlayId: string;
-    objRef: DotNetObject | null;
-
-    constructor() {
-        this.calloutId = "";
-        this.overlayId = "";
-        this.objRef = null;
-    }
-
-    update(calloutId: string, overlayId: string, obj: DotNetObject | null) {
-        this.calloutId = calloutId;
-        this.overlayId = overlayId;
-        this.objRef = obj;
-    }
-}
-
-class Bit {
+﻿class Bit {
     static currentDropDownCalloutId = "";
-    static currentCallout = new CalloutComponent();
+    static currentCallout: BitCalloutComponent;
     static currentDropDownCalloutResponsiveModeIsEnabled = false;
+
+    static init() {
+        Bit.currentCallout = new BitCalloutComponent();
+    }
 
     static setProperty(element: Record<string, any>, property: string, value: any): void {
         element[property] = value;
@@ -109,16 +88,26 @@ class Bit {
 
         return null;
     }
+
+    static registerResizeObserver(element: HTMLElement, obj: DotNetObject, method: string = "resized") {
+        const observer = new ResizeObserver(entries => {
+            const entry = entries[0];
+            if (!entry) return;
+            obj.invokeMethodAsync(method, entry.contentRect);
+        });
+
+        observer.observe(element);
+    }
+
+    // https://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid/#2117523
+    private static guidTemplate = '10000000-1000-4000-8000-100000000000';
+    static uuidv4(): string {
+        const result = this.guidTemplate.replace(/[018]/g, (c) => {
+            const n = +c;
+            const random = crypto.getRandomValues(new Uint8Array(1));
+            const result = (n ^ random[0] & 15 >> n / 4);
+            return result.toString(16);
+        });
+        return result;
+    }
 }
-
-window.addEventListener('scroll', (e: any) => {
-    const minimumWidthForDropDownNormalOpen = 640;
-    if ((Bit.currentDropDownCalloutId && window.innerWidth < minimumWidthForDropDownNormalOpen && Bit.currentDropDownCalloutResponsiveModeIsEnabled) ||
-        (e.target.id && Bit.currentDropDownCalloutId === e.target.id)) return;
-
-    Bit.closeCurrentCalloutIfExists("", "", null);
-}, true);
-
-window.addEventListener('resize', (e: any) => {
-    Bit.closeCurrentCalloutIfExists("", "", null);
-}, true);
