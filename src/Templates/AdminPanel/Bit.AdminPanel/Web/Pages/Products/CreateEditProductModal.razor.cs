@@ -27,7 +27,7 @@ public partial class CreateEditProductModal
         await InvokeAsync(async () =>
         {
             IsOpen = true;
-            await JavaScriptRuntime.SetToggleBodyOverflow(true);
+            await JsRuntime.SetToggleBodyOverflow(true);
 
             Product = product;
 
@@ -77,7 +77,7 @@ public partial class CreateEditProductModal
             }
 
             IsOpen = false;
-            await JavaScriptRuntime.SetToggleBodyOverflow(false);
+            await JsRuntime.SetToggleBodyOverflow(false);
         }
         finally
         {
@@ -88,6 +88,6 @@ public partial class CreateEditProductModal
     private async Task OnCloseClick()
     {
         IsOpen = false;
-        await JavaScriptRuntime.SetToggleBodyOverflow(false);
+        await JsRuntime.SetToggleBodyOverflow(false);
     }
 }

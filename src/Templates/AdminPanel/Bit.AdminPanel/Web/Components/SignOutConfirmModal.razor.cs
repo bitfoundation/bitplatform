@@ -21,7 +21,7 @@ public partial class SignOutConfirmModal
     private async Task CloseModal()
     {
         IsOpen = false;
-        await JavaScriptRuntime.SetToggleBodyOverflow(false);
+        await JsRuntime.SetToggleBodyOverflow(false);
     }
 
     private async Task SignOut()

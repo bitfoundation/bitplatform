@@ -25,7 +25,7 @@ public partial class ConfirmMessageBox : IDisposable
         await InvokeAsync(async () =>
         {
             IsOpen = true;
-            await JavaScriptRuntime.SetToggleBodyOverflow(true);
+            await JsRuntime.SetToggleBodyOverflow(true);
             Title = title;
             Message = message;
 
@@ -44,7 +44,7 @@ public partial class ConfirmMessageBox : IDisposable
     public async Task Confirm(bool value)
     {
         IsOpen = false;
-        await JavaScriptRuntime.SetToggleBodyOverflow(false);
+        await JsRuntime.SetToggleBodyOverflow(false);
         _tsc?.SetResult(value);
     }
 

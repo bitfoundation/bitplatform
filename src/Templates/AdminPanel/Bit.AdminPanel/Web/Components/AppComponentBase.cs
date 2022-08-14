@@ -14,15 +14,13 @@ public partial class AppComponentBase : ComponentBase
 
     [AutoInject] protected IAuthTokenProvider AuthTokenProvider = default!;
 
-#if BlazorServer || BlazorHybrid
     [AutoInject] protected IConfiguration Configuration = default!;
-#endif
 
     [AutoInject] protected NavigationManager NavigationManager = default!;
 
     [AutoInject] protected IAuthenticationService AuthenticationService = default!;
 
-    [AutoInject] protected IJSRuntime JavaScriptRuntime = default!;
+    [AutoInject] protected IJSRuntime JsRuntime = default!;
 
     protected async sealed override Task OnInitializedAsync()
     {

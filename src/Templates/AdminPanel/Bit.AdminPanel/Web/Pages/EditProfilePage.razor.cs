@@ -70,7 +70,7 @@ public partial class EditProfilePage
 
     private async Task GoBack()
     {
-        await JavaScriptRuntime.GoBack();
+        await JsRuntime.GoBack();
     }
 
     private async Task Save()

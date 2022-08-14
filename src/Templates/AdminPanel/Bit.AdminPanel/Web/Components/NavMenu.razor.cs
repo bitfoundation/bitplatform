@@ -77,7 +77,7 @@ public partial class NavMenu
     private async Task CloseNavMenu()
     {
         IsMenuOpen = false;
-        await JavaScriptRuntime.SetToggleBodyOverflow(false);
+        await JsRuntime.SetToggleBodyOverflow(false);
     }
 
     protected override async Task OnInitAsync()
