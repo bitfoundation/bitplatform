@@ -1,4 +1,4 @@
-﻿namespace AdminPanel.App.Pages.Dashboard;
+﻿namespace AdminPanel.App.Pages;
 
 [Authorize]
 public partial class HomePage
