@@ -96,7 +96,8 @@ public partial class NavMenu
             Links = new List<BitNavLinkItem>
             {
                 new BitNavLinkItem{ Name = "Progressindicator", Key = "ProgressIndicator", Url = "/components/progress-indicator" },
-                new BitNavLinkItem{ Name = "Spinner", Key = "Spinner", Url = "/components/spinner" }
+                new BitNavLinkItem{ Name = "Spinner", Key = "Spinner", Url = "/components/spinner" },
+                new BitNavLinkItem{ Name = "Loading", Key = "Loading", Url = "/components/loading" }
             },
         },
         new BitNavLinkItem

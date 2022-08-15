@@ -94,6 +94,10 @@
     border: rem(1px) solid #a19f9d !important;
     border-bottom: none !important;
 
+    &:hover {
+        background-color: #f3f2f1;
+    }
+
     span {
         i {
             font-size: rem(18px);
