@@ -61,6 +61,15 @@ namespace TodoTemplate.Api.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to TodoTemplate.
+        /// </summary>
+        public static string AppName {
+            get {
+                return ResourceManager.GetString("AppName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to TodoTemplate - Confirm your email address.
         /// </summary>
         public static string ConfirmationEmailSubject {
@@ -143,20 +152,11 @@ namespace TodoTemplate.Api.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to TodoTemplate.
-        /// </summary>
-        public static string TodoTemplate {
-            get {
-                return ResourceManager.GetString("TodoTemplate", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Welcome to TodoTemplate!.
         /// </summary>
-        public static string WelcomeToTodoTemplate {
+        public static string WelcomeToApp {
             get {
-                return ResourceManager.GetString("WelcomeToTodoTemplate", resourceCulture);
+                return ResourceManager.GetString("WelcomeToApp", resourceCulture);
             }
         }
     }

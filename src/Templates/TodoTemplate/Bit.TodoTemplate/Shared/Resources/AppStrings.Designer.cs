@@ -602,6 +602,24 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Create your multi-mode (WASM, Server, Hybrid, pre-rendering) Blazor app easily in the shortest time ever!.
+        /// </summary>
+        public static string HomeMessage {
+            get {
+                return ResourceManager.GetString("HomeMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to TodoTemplate Home.
+        /// </summary>
+        public static string HomeTitle {
+            get {
+                return ResourceManager.GetString("HomeTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Looks like the confirmation link either is invalid or has expired..
         /// </summary>
         public static string InvalidConfirmationLinkMessage {
@@ -1228,24 +1246,6 @@ namespace TodoTemplate.Shared.Resources {
         public static string TodoSearchPlaceholder {
             get {
                 return ResourceManager.GetString("TodoSearchPlaceholder", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Create your multi-mode (WASM, Server, Hybrid, pre-rendering) Blazor app easily in the shortest time ever!.
-        /// </summary>
-        public static string TodoTemplateHomeMessage {
-            get {
-                return ResourceManager.GetString("TodoTemplateHomeMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to TodoTemplate Home.
-        /// </summary>
-        public static string TodoTemplateHomeTitle {
-            get {
-                return ResourceManager.GetString("TodoTemplateHomeTitle", resourceCulture);
             }
         }
         

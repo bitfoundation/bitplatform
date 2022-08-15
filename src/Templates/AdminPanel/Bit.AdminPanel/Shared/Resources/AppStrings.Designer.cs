@@ -88,33 +88,6 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Create your multi-mode (WASM, Server, Hybrid, pre-rendering) Blazor admin panel easily in the shortest time ever!.
-        /// </summary>
-        public static string AdminPanelHomeMessage {
-            get {
-                return ResourceManager.GetString("AdminPanelHomeMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Bit Admin Panel.
-        /// </summary>
-        public static string AdminPanelHomeTitle {
-            get {
-                return ResourceManager.GetString("AdminPanelHomeTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Admin Panel.
-        /// </summary>
-        public static string AdminPanelTitle {
-            get {
-                return ResourceManager.GetString("AdminPanelTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to All.
         /// </summary>
         public static string All {
@@ -129,6 +102,15 @@ namespace AdminPanel.Shared.Resources {
         public static string Alphabetical {
             get {
                 return ResourceManager.GetString("Alphabetical", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Admin Panel.
+        /// </summary>
+        public static string AppTitle {
+            get {
+                return ResourceManager.GetString("AppTitle", resourceCulture);
             }
         }
         
@@ -246,6 +228,24 @@ namespace AdminPanel.Shared.Resources {
         public static string GitHubRepo {
             get {
                 return ResourceManager.GetString("GitHubRepo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Create your multi-mode (WASM, Server, Hybrid, pre-rendering) Blazor admin panel easily in the shortest time ever!.
+        /// </summary>
+        public static string HomeMessage {
+            get {
+                return ResourceManager.GetString("HomeMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Bit Admin Panel.
+        /// </summary>
+        public static string HomeTitle {
+            get {
+                return ResourceManager.GetString("HomeTitle", resourceCulture);
             }
         }
         

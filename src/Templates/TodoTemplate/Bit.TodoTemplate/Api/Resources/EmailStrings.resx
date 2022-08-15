@@ -145,10 +145,10 @@
   <data name="ResetYourPassword" xml:space="preserve">
     <value>Reset your password</value>
   </data>
-  <data name="TodoTemplate" xml:space="preserve">
+  <data name="AppName" xml:space="preserve">
     <value>TodoTemplate</value>
   </data>
-  <data name="WelcomeToTodoTemplate" xml:space="preserve">
+  <data name="WelcomeToApp" xml:space="preserve">
     <value>Welcome to TodoTemplate!</value>
   </data>
 </root>

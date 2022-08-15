@@ -442,10 +442,10 @@ Please confirm your email by clicking on the link.</value>
   <data name="TodoSearchPlaceholder" xml:space="preserve">
     <value>Search some todo...</value>
   </data>
-  <data name="TodoTemplateHomeMessage" xml:space="preserve">
+  <data name="HomeMessage" xml:space="preserve">
     <value>Create your multi-mode (WASM, Server, Hybrid, pre-rendering) Blazor app easily in the shortest time ever!</value>
   </data>
-  <data name="TodoTemplateHomeTitle" xml:space="preserve">
+  <data name="HomeTitle" xml:space="preserve">
     <value>TodoTemplate Home</value>
   </data>
   <data name="TodoTitle" xml:space="preserve">
