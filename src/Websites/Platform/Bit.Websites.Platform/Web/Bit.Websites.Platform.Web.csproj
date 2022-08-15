@@ -17,9 +17,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.BlazorUI" Version="3.0.0-pre-09" />
-        <PackageReference Include="Bit.SourceGenerators" Version="3.0.0-pre-09" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="3.0.0-pre-09" />
+        <PackageReference Include="Bit.BlazorUI" Version="3.0.0" />
+        <PackageReference Include="Bit.SourceGenerators" Version="3.0.0" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="3.0.0" />
         <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.7.4">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
