@@ -126,13 +126,13 @@
   <data name="AddProduct" xml:space="preserve">
     <value>New product</value>
   </data>
-  <data name="AdminPanelHomeMessage" xml:space="preserve">
+  <data name="HomeMessage" xml:space="preserve">
     <value>Create your multi-mode (WASM, Server, Hybrid, pre-rendering) Blazor admin panel easily in the shortest time ever!</value>
   </data>
-  <data name="AdminPanelHomeTitle" xml:space="preserve">
+  <data name="HomeTitle" xml:space="preserve">
     <value>Bit Admin Panel</value>
   </data>
-  <data name="AdminPanelTitle" xml:space="preserve">
+  <data name="AppTitle" xml:space="preserve">
     <value>Admin Panel</value>
   </data>
   <data name="All" xml:space="preserve">

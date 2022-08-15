@@ -130,10 +130,10 @@
     <value>Vous recevez ce message car vous vous êtes récemment inscrit à un compte TodoTemplate.
                      Confirmez votre adresse e-mail en cliquant sur le bouton ci-dessous.</value>
   </data>
-  <data name="WelcomeToTodoTemplate" xml:space="preserve">
+  <data name="WelcomeToApp" xml:space="preserve">
     <value>Bienvenue sur TodoTemplate !</value>
   </data>
-  <data name="TodoTemplate" xml:space="preserve">
+  <data name="AppName" xml:space="preserve">
     <value>TodoTemplate</value>
   </data>
   <data name="CopyLink" xml:space="preserve">
