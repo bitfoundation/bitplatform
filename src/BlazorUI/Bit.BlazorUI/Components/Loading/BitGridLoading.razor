@@ -1,0 +1,85 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitLoadingComponentBase
+
+<style>
+    .blazor-loading-grid {
+        display: inline-block;
+        position: relative;
+        width: @(Size)px;
+        height: @(Size)px;
+    }
+
+        .blazor-loading-grid div {
+            position: absolute;
+            width: @(Convert(16))px;
+            height: @(Convert(16))px;
+            border-radius: 50%;
+            background: @Color;
+            animation: blazor-loading-grid 1.2s linear infinite;
+        }
+
+            .blazor-loading-grid div:nth-child(1) {
+                top: @(Convert(8))px;
+                left: @(Convert(8))px;
+                animation-delay: 0s;
+            }
+
+            .blazor-loading-grid div:nth-child(2) {
+                top: @(Convert(8))px;
+                left: @(Convert(32))px;
+                animation-delay: -0.4s;
+            }
+
+            .blazor-loading-grid div:nth-child(3) {
+                top: @(Convert(8))px;
+                left: @(Convert(56))px;
+                animation-delay: -0.8s;
+            }
+
+            .blazor-loading-grid div:nth-child(4) {
+                top: @(Convert(32))px;
+                left: @(Convert(8))px;
+                animation-delay: -0.4s;
+            }
+
+            .blazor-loading-grid div:nth-child(5) {
+                top: @(Convert(32))px;
+                left: @(Convert(32))px;
+                animation-delay: -0.8s;
+            }
+
+            .blazor-loading-grid div:nth-child(6) {
+                top: @(Convert(32))px;
+                left: @(Convert(56))px;
+                animation-delay: -1.2s;
+            }
+
+            .blazor-loading-grid div:nth-child(7) {
+                top: @(Convert(56))px;
+                left: @(Convert(8))px;
+                animation-delay: -0.8s;
+            }
+
+            .blazor-loading-grid div:nth-child(8) {
+                top: @(Convert(56))px;
+                left: @(Convert(32))px;
+                animation-delay: -1.2s;
+            }
+
+            .blazor-loading-grid div:nth-child(9) {
+                top: @(Convert(56))px;
+                left: @(Convert(56))px;
+                animation-delay: -1.6s;
+            }
+
+    @@keyframes blazor-loading-grid {
+        0%, 100% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.5;
+        }
+    }
+</style>
+<div class="blazor-loading-grid"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>

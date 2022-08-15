@@ -1,0 +1,43 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitLoadingComponentBase
+
+@code {
+    protected override int OriginalSize { get; set; } = 64;
+}
+
+<style>
+    .blazor-loading-circle {
+        display: inline-block;
+        transform: translateZ(1px);
+    }
+
+        .blazor-loading-circle > div {
+            display: inline-block;
+            width: @(Size)px;
+            height: @(Size)px;
+            margin: @(Convert(8))px;
+            border-radius: 50%;
+            background: @Color;
+            animation: blazor-loading-circle 2.4s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+        }
+
+    @@keyframes blazor-loading-circle {
+        0%, 100% {
+            animation-timing-function: cubic-bezier(0.5, 0, 1, 0.5);
+        }
+
+        0% {
+            transform: rotateY(0deg);
+        }
+
+        50% {
+            transform: rotateY(1800deg);
+            animation-timing-function: cubic-bezier(0, 0.5, 0.5, 1);
+        }
+
+        100% {
+            transform: rotateY(3600deg);
+        }
+    }
+</style>
+<div class="blazor-loading-circle"><div></div></div>
