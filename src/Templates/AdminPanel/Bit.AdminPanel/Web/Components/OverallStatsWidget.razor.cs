@@ -1,4 +1,4 @@
-﻿using AdminPanel.App.Pages.Dashboard;
+﻿using AdminPanel.App.Pages;
 using AdminPanel.Shared.Dtos.Dashboard;
 
 namespace AdminPanel.App.Components;
