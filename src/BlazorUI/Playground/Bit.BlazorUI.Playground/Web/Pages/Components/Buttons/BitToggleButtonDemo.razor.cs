@@ -55,6 +55,13 @@ public partial class BitToggleButtonDemo
         },
         new ComponentParameter()
         {
+            Name = "DefaultIsChecked",
+            Type = "bool",
+            DefaultValue = "",
+            Description = "Default is checked for toggle button.",
+        },
+        new ComponentParameter()
+        {
             Name = "Href",
             Type = "string",
             DefaultValue = "",

@@ -45,6 +45,11 @@ public partial class BitToggleButton
     [Parameter] public EventCallback<bool> IsCheckedChanged { get; set; }
 
     /// <summary>
+    /// Default Is Checked for BitToggleButton.
+    /// </summary>
+    [Parameter] public bool DefaultIsChecked { get; set; }
+
+    /// <summary>
     /// The icon that shows in the button.
     /// </summary>
     [Parameter] public BitIconName? IconName { get; set; }
@@ -128,6 +133,11 @@ public partial class BitToggleButton
         if (!IsEnabled)
         {
             tabIndex = AllowDisabledFocus ? null : -1;
+        }
+
+        if (IsCheckedHasBeenSet is false && IsCheckedChanged.HasDelegate is false)
+        {
+            IsChecked = DefaultIsChecked;
         }
 
         await base.OnInitializedAsync();
