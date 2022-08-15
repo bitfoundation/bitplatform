@@ -1,0 +1,33 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitLoadingComponentBase
+
+<style>
+    .blazor-loading-dual-ring {
+        display: inline-block;
+        width: @(Size)px;
+        height: @(Size)px;
+    }
+
+        .blazor-loading-dual-ring:after {
+            content: " ";
+            display: block;
+            width: @(Convert(64))px;
+            height: @(Convert(64))px;
+            margin: @(Convert(8))px;
+            border-radius: 50%;
+            border: @(Convert(6))px solid @Color;
+            border-color: @Color transparent @Color transparent;
+            animation: blazor-loading-dual-ring 1.2s linear infinite;
+        }
+
+    @@keyframes blazor-loading-dual-ring {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+</style>
+<div class="blazor-loading-dual-ring"></div>

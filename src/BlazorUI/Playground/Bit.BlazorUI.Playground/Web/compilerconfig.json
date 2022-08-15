@@ -68,6 +68,10 @@
         "inputFile": "Pages/Components/List/BitBasicListDemo.razor.scss"
     },
     {
+        "outputFile": "Pages/Components/Loading/BitLoadingDemo.razor.css",
+        "inputFile": "Pages/Components/Loading/BitLoadingDemo.razor.scss"
+    },
+    {
         "outputFile": "Pages/Components/Modal/BitModalDemo.razor.css",
         "inputFile": "Pages/Components/Modal/BitModalDemo.razor.scss"
     },
