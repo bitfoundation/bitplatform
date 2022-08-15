@@ -6,8 +6,8 @@
 
 	<ItemGroup>
 		<SupportedPlatform Include="browser" />
-        <PackageReference Include="Bit.SourceGenerators" Version="3.0.0" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="3.0.0" />
+        <PackageReference Include="Bit.SourceGenerators" Version="3.0.0-pre-09" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="3.0.0-pre-09" />
 	</ItemGroup>
 
 </Project>
