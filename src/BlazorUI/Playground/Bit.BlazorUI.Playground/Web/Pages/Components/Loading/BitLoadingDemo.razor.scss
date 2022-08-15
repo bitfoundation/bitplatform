@@ -1,0 +1,15 @@
+﻿::deep .container {
+    display: flex;
+    height: 100px;
+    align-items: center;
+    margin-bottom: 30px;
+    justify-content: space-evenly;
+}
+
+::deep .wrapper {
+    width: 33%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}

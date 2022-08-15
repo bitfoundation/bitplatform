@@ -234,12 +234,12 @@ public partial class BitSlider
 
     protected override void OnInitialized()
     {
-        if (DefaultUpperValue.HasValue)
+        if (UpperValue.HasValue is false && DefaultUpperValue.HasValue)
         {
             UpperValue = DefaultUpperValue.Value;
         }
 
-        if (DefaultLowerValue.HasValue)
+        if (LowerValue.HasValue is false && DefaultLowerValue.HasValue)
         {
             LowerValue = DefaultLowerValue.Value;
         }
@@ -248,12 +248,12 @@ public partial class BitSlider
         {
             SetInputValueOnRanged(lowerValue, upperValue);
         }
-        else if (!Value.HasValue)
+        else if (Value.HasValue is false)
         {
             value = DefaultValue.GetValueOrDefault(Min);
         }
 
-        if (!IsVertical)
+        if (IsVertical is false)
         {
             FillSlider();
         }

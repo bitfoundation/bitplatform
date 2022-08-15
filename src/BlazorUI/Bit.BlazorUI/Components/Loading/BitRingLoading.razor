@@ -1,0 +1,47 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitLoadingComponentBase
+
+<style>
+    .blazor-loading-ring {
+        display: inline-block;
+        position: relative;
+        width: @(Size)px;
+        height: @(Size)px;
+    }
+
+        .blazor-loading-ring div {
+            box-sizing: border-box;
+            display: block;
+            position: absolute;
+            width: @(Convert(64))px;
+            height: @(Convert(64))px;
+            margin: @(Convert(8))px;
+            border: @(Convert(8))px solid @Color;
+            border-radius: 50%;
+            animation: blazor-loading-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+            border-color: @Color transparent transparent transparent;
+        }
+
+            .blazor-loading-ring div:nth-child(1) {
+                animation-delay: -0.45s;
+            }
+
+            .blazor-loading-ring div:nth-child(2) {
+                animation-delay: -0.3s;
+            }
+
+            .blazor-loading-ring div:nth-child(3) {
+                animation-delay: -0.15s;
+            }
+
+    @@keyframes blazor-loading-ring {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+</style>
+<div class="blazor-loading-ring"><div></div><div></div><div></div><div></div></div>

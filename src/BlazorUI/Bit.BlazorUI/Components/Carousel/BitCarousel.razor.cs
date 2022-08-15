@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.JSInterop;
 
 namespace Bit.BlazorUI;
 
@@ -18,6 +15,9 @@ public partial class BitCarousel : IDisposable
 
     private int _internalScrollItemsCount = 1;
     private int scrollItemsCount = 1;
+
+    private string _resizeObserverId = string.Empty;
+    private DotNetObjectReference<BitCarousel>? _dotnetObjectReference = default!;
 
     private System.Timers.Timer _autoPlayTimer = default!;
 
@@ -120,8 +120,12 @@ public partial class BitCarousel : IDisposable
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         _directionStyle = Direction == BitDirection.RightToLeft ? "direction:rtl" : "";
+
         if (firstRender)
         {
+            _dotnetObjectReference = DotNetObjectReference.Create(this);
+            _resizeObserverId = await _js.RegisterResizeObserver(RootElement, _dotnetObjectReference, "OnRootResize");
+
             if (AutoPlay)
             {
                 _autoPlayTimer = new System.Timers.Timer(AutoPlayInterval);
@@ -135,26 +139,7 @@ public partial class BitCarousel : IDisposable
             }
             await _js.PreventDefault(_carousel, "touchmove");
 
-            _currentIndices = Enumerable.Range(0, VisibleItemsCount).ToArray();
-            _othersIndices = Enumerable.Range(0, _internalScrollItemsCount).ToArray();
-
-            var itemsCount = AllItems.Count;
-            var rect = await _js.GetBoundingClientRect(_carousel);
-
-            var sign = Direction == BitDirection.RightToLeft ? -1 : 1;
-            for (int i = 0; i < itemsCount; i++)
-            {
-                var item = AllItems[i];
-                item.InternalStyle = $"width:{rect.Width / VisibleItemsCount}px; display:block";
-                item.InternalTransformStyle = $"transform:translateX({sign * 100 * i}%)";
-
-            }
-
-            _pagesCount = (int)Math.Ceiling((decimal)itemsCount / VisibleItemsCount);
-
-            SetNavigationButtonsVisibility();
-
-            StateHasChanged();
+            await ResetDimensionsAsync();
         }
 
 
@@ -162,6 +147,35 @@ public partial class BitCarousel : IDisposable
         await base.OnAfterRenderAsync(firstRender);
     }
 
+    private async Task ResetDimensionsAsync()
+    {
+        _currentIndices = Enumerable.Range(0, VisibleItemsCount).ToArray();
+        _othersIndices = Enumerable.Range(0, _internalScrollItemsCount).ToArray();
+
+        var itemsCount = AllItems.Count;
+        var rect = await _js.GetBoundingClientRect(_carousel);
+
+        var sign = Direction == BitDirection.RightToLeft ? -1 : 1;
+        for (int i = 0; i < itemsCount; i++)
+        {
+            var item = AllItems[i];
+            item.InternalStyle = $"width:{rect.Width / VisibleItemsCount}px; display:block";
+            item.InternalTransformStyle = $"transform:translateX({sign * 100 * i}%)";
+
+        }
+
+        _pagesCount = (int)Math.Ceiling((decimal)itemsCount / VisibleItemsCount);
+
+        SetNavigationButtonsVisibility();
+
+        StateHasChanged();
+    }
+
+    [JSInvokable("OnRootResize")]
+    public async Task OnRootResize(ContentRect rect)
+    {
+        await ResetDimensionsAsync();
+    }
     private void SetNavigationButtonsVisibility()
     {
         _goLeftButtonStyle = (InfiniteScrolling is false && _currentIndices[_currentIndices.Length - 1] == AllItems.Count - 1) ? "display:none" : "";
@@ -347,12 +361,20 @@ public partial class BitCarousel : IDisposable
     protected virtual void Dispose(bool disposing)
     {
         if (_disposed) return;
+        if (!disposing) return;
 
-        if (disposing && _autoPlayTimer is not null)
+        if (_autoPlayTimer is not null)
         {
             _autoPlayTimer.Elapsed -= AutoPlayTimerElapsed;
             _autoPlayTimer.Dispose();
-            _disposed = true;
         }
+
+        if (_dotnetObjectReference is not null)
+        {
+            _dotnetObjectReference.Dispose();
+            _ = _js.UnregisterResizeObserver(RootElement, _resizeObserverId);
+        }
+
+        _disposed = true;
     }
 }

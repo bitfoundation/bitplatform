@@ -1,0 +1,49 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitLoadingComponentBase
+
+<style>
+    .blazor-loading-bars {
+        display: inline-block;
+        position: relative;
+        width: @(Size)px;
+        height: @(Size)px;
+    }
+
+        .blazor-loading-bars div {
+            display: inline-block;
+            position: absolute;
+            left: @(Convert(8))px;
+            width: @(Convert(16))px;
+            background: @Color;
+            animation: blazor-loading-bars 1.2s cubic-bezier(0, 0.5, 0.5, 1) infinite;
+        }
+
+            .blazor-loading-bars div:nth-child(1) {
+                left: @(Convert(8))px;
+                animation-delay: -0.24s;
+            }
+
+            .blazor-loading-bars div:nth-child(2) {
+                left: @(Convert(32))px;
+                animation-delay: -0.12s;
+            }
+
+            .blazor-loading-bars div:nth-child(3) {
+                left: @(Convert(56))px;
+                animation-delay: 0;
+            }
+
+    @@keyframes blazor-loading-bars {
+        0% {
+            top: @(Convert(8))px;
+            height: @(Convert(64))px;
+        }
+
+        50%, 100% {
+            top: @(Convert(24))px;
+            height: @(Convert(32))px;
+        }
+    }
+
+</style>
+<div class="blazor-loading-bars"><div></div><div></div><div></div></div>

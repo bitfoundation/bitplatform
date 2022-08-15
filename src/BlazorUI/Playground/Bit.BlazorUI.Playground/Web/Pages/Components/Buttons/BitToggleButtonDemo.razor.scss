@@ -10,32 +10,35 @@
     margin-top: rem(20px);
 }
 
-::deep .tgl-btn {
-    @include sm {
-        margin-top: rem(10px);
-        width: rem(195px);
-    }
-}
+::deep .bit-tgl-btn {
 
-::deep .aria-hidden-tgl-btn {
-    @include sm {
-        margin-top: rem(10px);
-        width: rem(239px);
+    &.tgl-btn {
+        @include sm {
+            margin-top: rem(10px);
+            width: rem(195px);
+        }
     }
-}
 
-::deep .bit-tgl-btn-primary-fluent {
-    .bit-icon {
-        color: $White;
+    &.aria-hidden-tgl-btn {
+        @include sm {
+            margin-top: rem(10px);
+            width: rem(239px);
+        }
     }
-}
 
-::deep .bit-tgl-btn-fluent {
-    span {
+    &.primary {
+        .bit-icon {
+            color: $White;
+        }
+    }
+
+    &.bit-tgl-btn-fluent {
         span {
-            font-weight: normal;
-            margin: 0;
-            line-height: 0;
+            span {
+                font-weight: normal;
+                margin: 0;
+                line-height: 0;
+            }
         }
     }
 }
