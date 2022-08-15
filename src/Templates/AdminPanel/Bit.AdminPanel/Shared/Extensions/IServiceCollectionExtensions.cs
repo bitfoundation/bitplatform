@@ -7,5 +7,7 @@ public static class IServiceCollectionExtensions
     public static void AddSharedServices(this IServiceCollection services)
     {
         services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
+
+        services.AddLocalization();
     }
 }
