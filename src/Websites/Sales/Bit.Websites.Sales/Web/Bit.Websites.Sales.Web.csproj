@@ -19,9 +19,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.BlazorUI" Version="3.0.0-pre-08" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="3.0.0-pre-08" />
-        <PackageReference Include="Bit.SourceGenerators" Version="3.0.0-pre-08" />
+        <PackageReference Include="Bit.BlazorUI" Version="3.0.0" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="3.0.0" />
+        <PackageReference Include="Bit.SourceGenerators" Version="3.0.0" />
         <PackageReference Include="Blazored.Toast" Version="3.2.2" />
         <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.0-preview.7.22376.6" />
         <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.0-preview.7.22376.6" PrivateAssets="all" />
