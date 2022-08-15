@@ -1,0 +1,39 @@
+﻿@page "/todo-template/run"
+
+<div class="page-container">
+    <h1 class="page-main-title">Run</h1>
+    <div class="page-desc">
+        To run the apps built with the Bit TodoTemplate use the following instructions.
+    </div>
+    <section class="section-card">
+        <h2 class="section-card-title">Run</h2>
+        <div class="section-card-txt">
+            After you've done the configuration, you can run the application. Set Api project as startup and run, you can see the swagger dashboard in the first view.
+        </div>
+        <div class="image-container">
+            <img class="image" alt="Swagger dashboard" width="887" height="886" src="/images/demo/swagger.webp" />
+        </div>
+    </section>
+
+    <section class="section-card">
+        <h2 class="section-card-title">SignUp</h2>
+        <div class="section-card-txt">
+            With the help of <span class="bold-txt">Swagger</span>, you can call the <span class="bold-txt">SignUp</span> API and Start the registration process, navigate to <span class="high-light-text">Auth/SignUp</span> API and press the <span class="high-light-text">Try it Out</span> button, in the <span class="high-light-text">Request body</span> Enter SignUp data, and press Execute button.
+        </div>
+        <div class="image-container">
+            <img class="image" alt="Swagger Sign Up" width="916" height="907" src="/images/demo/swagger-signUp.webp" />
+        </div>
+        <div class="section-card-txt">
+            In <span class="bold-txt">SignUp</span> Process after call API, a confirmation email send to your email, In the development, Bit saves sent emails as a .eml file in the <span class="high-light-text">./TodoTemplate/Api/bin/Debug/net6.0/sent-emails</span> path, and developers can easily handle them.
+        </div>
+        <div class="image-container">
+            <img class="image" alt="Confirm email" width="907" height="926" src="/images/demo/confirm-email.webp" />
+        </div>
+        <div class="section-card-txt">By pressing the <span class="high-light-text">Confirm email</span> button, the ConfirmEmail Api calls and registration process complete. After it, you can login with the swagger login form on the top of the page, and call other APIs that need Authentication.</div>
+        <div class="image-container">
+            <img class="image" alt="Swagger Sign In" width="757" height="207" src="/images/demo/swagger-login.webp" />
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="Database" PrevUrl="/todo-template/database" Next="Hosting models" NextUrl="/todo-template/hosting-models"/>

@@ -185,7 +185,7 @@ public partial class BitSpinButton
                                             : string.Empty);
     }
 
-    protected async override Task OnParametersSetAsync()
+    protected override async Task OnParametersSetAsync()
     {
         min = Min.HasValue ? Min.Value : double.MinValue;
         max = Max.HasValue ? Max.Value : double.MaxValue;
@@ -239,7 +239,7 @@ public partial class BitSpinButton
         await base.OnParametersSetAsync();
     }
 
-    private async void HandleMouseDown(BitSpinButtonAction action, MouseEventArgs e)
+    private async Task HandleMouseDown(BitSpinButtonAction action, MouseEventArgs e)
     {
         //Change focus from input to spin button
         if (action == BitSpinButtonAction.Increment)
@@ -253,9 +253,9 @@ public partial class BitSpinButton
 
 
         await HandleMouseDownAction(action, e);
-        timer = new Timer((_) =>
+        timer = new Timer(async (_) =>
         {
-            InvokeAsync(async () =>
+            await InvokeAsync(async () =>
             {
                 await HandleMouseDownAction(action, e);
                 StateHasChanged();

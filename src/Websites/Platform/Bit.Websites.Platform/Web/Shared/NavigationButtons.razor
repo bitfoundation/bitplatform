@@ -1,0 +1,20 @@
+﻿<div class="container">
+    <div class="button">
+        @if (string.IsNullOrWhiteSpace(Prev) is false)
+        {
+            <a class="link" href="@PrevUrl">
+                <i class="bit-icon bit-icon--ChevronLeft"></i>
+                <span class="left">@Prev</span>
+            </a>
+        }
+    </div>
+    <div class="button">
+        @if (string.IsNullOrWhiteSpace(Next) is false)
+        {
+            <a class="link" href="@NextUrl">
+                <span class="right">@Next</span>
+                <i class="bit-icon bit-icon--ChevronRight"></i>
+            </a>
+        }
+    </div>
+</div>

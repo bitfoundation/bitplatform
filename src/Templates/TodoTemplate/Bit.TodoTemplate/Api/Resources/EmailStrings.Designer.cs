@@ -61,6 +61,15 @@ namespace TodoTemplate.Api.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to TodoTemplate.
+        /// </summary>
+        public static string AppName {
+            get {
+                return ResourceManager.GetString("AppName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to TodoTemplate - Confirm your email address.
         /// </summary>
         public static string ConfirmationEmailSubject {
@@ -70,11 +79,84 @@ namespace TodoTemplate.Api.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Confirm email.
+        /// </summary>
+        public static string ConfirmEmail {
+            get {
+                return ResourceManager.GetString("ConfirmEmail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Or, copy the link below to your browser address bar:.
+        /// </summary>
+        public static string CopyLink {
+            get {
+                return ResourceManager.GetString("CopyLink", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You&apos;re receiving this message because recently you have signed up for a TodoTemplate account.
+        ///                    Confirm your email address by clicking the button below..
+        /// </summary>
+        public static string EmailConfirmationMessageBody {
+            get {
+                return ResourceManager.GetString("EmailConfirmationMessageBody", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to TodoTemplate - Reset your password.
         /// </summary>
         public static string ResetPasswordEmailSubject {
             get {
                 return ResourceManager.GetString("ResetPasswordEmailSubject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hello {0}.
+        /// </summary>
+        public static string ResetPasswordHello {
+            get {
+                return ResourceManager.GetString("ResetPasswordHello", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Someone has requested a link to change your password..
+        /// </summary>
+        public static string ResetPasswordMessage {
+            get {
+                return ResourceManager.GetString("ResetPasswordMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Your password won&apos;t change until you access the link above and create a new one..
+        /// </summary>
+        public static string ResetPasswordNote {
+            get {
+                return ResourceManager.GetString("ResetPasswordNote", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Reset your password.
+        /// </summary>
+        public static string ResetYourPassword {
+            get {
+                return ResourceManager.GetString("ResetYourPassword", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Welcome to TodoTemplate!.
+        /// </summary>
+        public static string WelcomeToApp {
+            get {
+                return ResourceManager.GetString("WelcomeToApp", resourceCulture);
             }
         }
     }

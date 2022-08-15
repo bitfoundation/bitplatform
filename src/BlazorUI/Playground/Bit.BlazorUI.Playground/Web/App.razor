@@ -1,39 +1,39 @@
 ﻿<PageTitle>Bit's Native Blazor UI Components</PageTitle>
 <CascadingValue Value="Visual.Fluent" IsFixed="true">
     <CascadingValue Value="Theme.Light" IsFixed="true">
-        <Router AppAssembly="@typeof(MainLayout).Assembly"
-                AdditionalAssemblies="@lazyLoadedAssemblies"
-                OnNavigateAsync="@OnNavigateAsync">
-            <Found Context="routeData">
-                <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
-            </Found>
-            <NotFound>
-                <NotFoundComponent />
-            </NotFound>
-            <Navigating>
-                <LayoutView Layout="@typeof(MainLayout)">
+        <LayoutView Layout="@typeof(MainLayout)">
+            <Router AppAssembly="@typeof(MainLayout).Assembly"
+                    AdditionalAssemblies="@lazyLoadedAssemblies"
+                    OnNavigateAsync="@OnNavigateAsync">
+                <Found Context="routeData">
+                    <RouteView RouteData="@routeData" />
+                </Found>
+                <NotFound>
+                    <NotFoundComponent />
+                </NotFound>
+                <Navigating>
                     <LoadingComponent />
-                </LayoutView>
-            </Navigating>
-        </Router>
+                </Navigating>
+            </Router>
+        </LayoutView>
     </CascadingValue>
 </CascadingValue>
 
 @code {
     private List<Assembly> lazyLoadedAssemblies = new();
 
-#if BlazorWebAssembly
+#if BlazorWebAssembly && !Maui
     [Inject] private Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader AssemblyLoader { get; set; }
 #endif
 
     private async Task OnNavigateAsync(NavigationContext args)
     {
-#if BlazorWebAssembly
-        if (args.Path.Contains("chart"))
-        {
-            var assemblies = await AssemblyLoader.LoadAssembliesAsync(new[] { "Newtonsoft.Json.dll", "System.Private.Xml.dll", "System.Data.Common.dll" });
-            lazyLoadedAssemblies.AddRange(assemblies);
-        }
+#if BlazorWebAssembly && !Maui
+    if (args.Path.Contains("chart") && lazyLoadedAssemblies.Any(asm => asm.GetName().Name == "Newtonsoft.Json") is false)
+    {
+        var assemblies = await AssemblyLoader.LoadAssembliesAsync(new[] { "Newtonsoft.Json.dll", "System.Private.Xml.dll", "System.Data.Common.dll" });
+        lazyLoadedAssemblies.AddRange(assemblies);
+    }
 #endif
     }
 }

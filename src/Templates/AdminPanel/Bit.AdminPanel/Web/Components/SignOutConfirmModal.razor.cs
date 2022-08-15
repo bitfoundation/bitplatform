@@ -2,8 +2,6 @@
 
 public partial class SignOutConfirmModal
 {
-    [AutoInject] private IAuthenticationService authService = default!;
-
     private bool isOpen;
 
     [Parameter]
@@ -20,14 +18,15 @@ public partial class SignOutConfirmModal
 
     [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
 
-    private void CloseModal()
+    private async Task CloseModal()
     {
         IsOpen = false;
+        await JsRuntime.SetToggleBodyOverflow(false);
     }
 
     private async Task SignOut()
     {
-        await authService.SignOut();
-        CloseModal();
+        await AuthenticationService.SignOut();
+        await CloseModal();
     }
 }

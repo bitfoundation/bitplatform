@@ -1,0 +1,11 @@
+﻿<LayoutView Layout="@typeof(MainLayout)">
+    <Router AppAssembly="@GetType().Assembly">
+        <Found Context="routeData">
+            <PageTitle>Bit Foundation</PageTitle>
+            <RouteView RouteData="@routeData" />
+        </Found>
+        <NotFound>
+            <PageNotFound />
+        </NotFound>
+    </Router>
+</LayoutView>

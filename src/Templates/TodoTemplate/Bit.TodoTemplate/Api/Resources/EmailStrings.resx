@@ -120,7 +120,35 @@
   <data name="ConfirmationEmailSubject" xml:space="preserve">
     <value>TodoTemplate - Confirm your email address</value>
   </data>
+  <data name="ConfirmEmail" xml:space="preserve">
+    <value>Confirm email</value>
+  </data>
+  <data name="CopyLink" xml:space="preserve">
+    <value>Or, copy the link below to your browser address bar:</value>
+  </data>
+  <data name="EmailConfirmationMessageBody" xml:space="preserve">
+    <value>You're receiving this message because recently you have signed up for a TodoTemplate account.
+                    Confirm your email address by clicking the button below.</value>
+  </data>
   <data name="ResetPasswordEmailSubject" xml:space="preserve">
     <value>TodoTemplate - Reset your password</value>
+  </data>
+  <data name="ResetPasswordHello" xml:space="preserve">
+    <value>Hello {0}</value>
+  </data>
+  <data name="ResetPasswordMessage" xml:space="preserve">
+    <value>Someone has requested a link to change your password.</value>
+  </data>
+  <data name="ResetPasswordNote" xml:space="preserve">
+    <value>Your password won't change until you access the link above and create a new one.</value>
+  </data>
+  <data name="ResetYourPassword" xml:space="preserve">
+    <value>Reset your password</value>
+  </data>
+  <data name="AppName" xml:space="preserve">
+    <value>TodoTemplate</value>
+  </data>
+  <data name="WelcomeToApp" xml:space="preserve">
+    <value>Welcome to TodoTemplate!</value>
   </data>
 </root>

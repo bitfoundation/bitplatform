@@ -1,6 +1,17 @@
-﻿@import "../../../Styles/_shared.scss";
+﻿@import '../../../Styles/abstracts/_colors.scss';
+@import '../../../Styles/abstracts/_functions.scss';
 
 .sample-btn {
     line-height: rem(50px);
     color: $Black1;
+}
+
+::deep .custom-action-button,
+::deep .custom-action-button:hover {
+    font-size: rem(16px);
+    background-color: $Gray3;
+    border-color: $Gray3;
+    justify-content: center;
+    width: rem(232px);
+    margin-top: rem(10px);
 }

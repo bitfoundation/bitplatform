@@ -1,4 +1,5 @@
-﻿@import "../../../Styles/_shared.scss";
+﻿@import '../../../Styles/abstracts/_colors.scss';
+@import '../../../Styles/abstracts/_functions.scss';
 
 .validation-summary {
     border-left: rem(5px) solid $Red10;
@@ -14,4 +15,10 @@
 ::deep div.validation-message {
     color: $Red20;
     font-size: rem(12px);
+}
+
+::deep .ch-group {
+    .bit-txt {
+        margin-bottom: rem(25px);
+    }
 }

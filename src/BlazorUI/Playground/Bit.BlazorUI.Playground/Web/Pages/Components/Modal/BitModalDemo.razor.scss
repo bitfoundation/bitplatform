@@ -1,4 +1,5 @@
-﻿@import "../../../Styles/_shared.scss";
+﻿@import '../../../Styles/abstracts/_colors.scss';
+@import '../../../Styles/abstracts/_functions.scss';
 
 .modal-header {
     display: flex;
@@ -14,4 +15,12 @@
     padding: 0 rem(24px) rem(24px);
     overflow-y: hidden;
     line-height: rem(20px);
+}
+
+.position-btn {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: space-between;
+    width: fit-content;
+    height: rem(150px);
 }

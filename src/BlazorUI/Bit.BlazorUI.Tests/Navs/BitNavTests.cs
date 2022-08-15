@@ -38,7 +38,7 @@ public class BitNavTests : BunitTestContext
             parameters.Add(p => p.SelectedKeyChanged, HandleSelectedKeyChange);
         });
 
-        var navItem = component.Find(".bit-nav-composite-link > a");
+        var navItem = component.Find(".composite-link > a");
         //navItem.Click();
         //Assert.AreEqual("key", BitNavSelectedKey);
     }
@@ -72,17 +72,16 @@ public class BitNavTests : BunitTestContext
 
         var enabledClass = isEnabled ? "enabled" : "disabled";
         var hasUrlClass = hasUrl ? "hasurl" : "nourl";
-        var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
 
         if (hasUrl)
         {
             var element = component.Find("a");
-            Assert.IsTrue(element.ClassList.Contains($"bit-nav-link-{enabledClass}-{hasUrlClass}-{visualClass}"));
+            Assert.IsTrue(element.ClassList.Contains($"link-{enabledClass}-{hasUrlClass}"));
         }
         else
         {
             var element = component.Find("button");
-            Assert.IsTrue(element.ClassList.Contains($"bit-nav-link-{enabledClass}-{hasUrlClass}-{visualClass}"));
+            Assert.IsTrue(element.ClassList.Contains($"link-{enabledClass}-{hasUrlClass}"));
         }
     }
 
@@ -147,11 +146,11 @@ public class BitNavTests : BunitTestContext
 
         if (type == BitNavRenderType.Grouped)
         {
-            Assert.IsNotNull(component.Find(".bit-nav-grp-chevron-btn"));
+            Assert.IsNotNull(component.Find(".group-chevron-btn"));
         }
         else
         {
-            Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".bit-nav-grp-chevron-btn"));
+            Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".group-chevron-btn"));
         }
     }
 
@@ -170,7 +169,7 @@ public class BitNavTests : BunitTestContext
         });
 
         var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
-        var selectedItemTxt = component.Find($".bit-nav-selected-{visualClass} > .bit-nav-link-container > .bit-nav-link-txt");
+        var selectedItemTxt = component.Find($".selected > .link-container > .link-txt");
         var expectedResult = BasicNavLinks.Find(i => i.Key == initialSelectedKey).Name;
         Assert.AreEqual(expectedResult, selectedItemTxt.TextContent);
     }
@@ -188,7 +187,7 @@ public class BitNavTests : BunitTestContext
             parameters.Add(p => p.NavLinkItems, items);
         });
 
-        var button = componenet.Find(".bit-nav-chevron-btn");
+        var button = componenet.Find(".chevron-btn");
 
         //TODO: bypassed - BUnit or Blazor issue
         //button.Click();
@@ -218,18 +217,18 @@ public class BitNavTests : BunitTestContext
             parameters.Add(p => p.RenderType, BitNavRenderType.Grouped);
         });
 
-        var groupHeaderBtn = componenet.Find(".bit-nav-grp-chevron-btn");
-        var groupHeaderBtnIcon = componenet.Find(".bit-nav-grp-chevron-btn > i");
+        var groupHeaderBtn = componenet.Find(".group-chevron-btn");
+        var groupHeaderBtnIcon = componenet.Find(".group-chevron-btn > i");
 
         if (isCollapseByDefault)
         {
             Assert.AreEqual("false", groupHeaderBtn.GetAttribute("aria-expanded"));
-            Assert.IsFalse(groupHeaderBtnIcon.ClassList.Contains("bit-nav-expand-fluent"));
+            Assert.IsFalse(groupHeaderBtnIcon.ClassList.Contains("expand"));
         }
         else
         {
             Assert.AreEqual("true", groupHeaderBtn.GetAttribute("aria-expanded"));
-            Assert.IsTrue(groupHeaderBtnIcon.ClassList.Contains("bit-nav-expand-fluent"));
+            Assert.IsTrue(groupHeaderBtnIcon.ClassList.Contains("expand"));
         }
     }
 
@@ -282,7 +281,7 @@ public class BitNavTests : BunitTestContext
             parameters.Add(p => p.NavLinkItems, items);
         });
 
-        var navLinkItem = componenet.Find(".bit-nav-link-enabled-nourl-fluent");
+        var navLinkItem = componenet.Find(".link-enabled-nourl");
 
         if (title is null)
         {

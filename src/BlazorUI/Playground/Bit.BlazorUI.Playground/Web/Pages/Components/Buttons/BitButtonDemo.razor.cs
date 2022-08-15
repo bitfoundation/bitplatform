@@ -6,6 +6,9 @@ namespace Bit.BlazorUI.Playground.Web.Pages.Components.Buttons;
 
 public partial class BitButtonDemo
 {
+    public int PrimaryCounter;
+    public int StandardCounter;
+
     private readonly List<ComponentParameter> componentParameters = new()
     {
         new ComponentParameter()
@@ -172,11 +175,12 @@ public partial class BitButtonDemo
         }
     };
 
-    private readonly string example1HTMLCode = @"<BitButton IsEnabled=""true"">
-    Primary
+    private readonly string example1HTMLCode = @"
+<BitButton IsEnabled=""true"" OnClick=""() => PrimaryCounter++"">
+    Primary (@PrimaryCounter)
 </BitButton>
-<BitButton ButtonStyle=""BitButtonStyle.Standard"" Style=""margin-right: 2px;"" IsEnabled=""true"">
-    Standard
+<BitButton ButtonStyle=""BitButtonStyle.Standard"" Style=""margin-right: 2px;"" IsEnabled=""true"" OnClick=""() => StandardCounter++"">
+    Standard (@StandardCounter)
 </BitButton>
 <BitButton IsEnabled=""false"" AllowDisabledFocus=""false"">
     Disabled
@@ -185,25 +189,33 @@ public partial class BitButtonDemo
     <label>A Text from label element</label>
 </BitButton>";
 
-    private readonly string example2HTMLCode = @"<BitButton Style=""height: 40px;width: 166px;font-family: 'Axiforma';font-size: 16px;"" Class=""styled-btn"">
+    private readonly string example1CSharpCode = @"
+public int PrimaryCounter;
+public int StandardCounter;";
+
+    private readonly string example2HTMLCode = @"
+<BitButton Style=""height: 40px;width: 166px;font-size: 16px;"" Class=""styled-btn"">
     Styled Button
 </BitButton>
 <BitButton Class=""custom-button"">
     Classed Button
 </BitButton>";
 
-    private readonly string example3HTMLCode = @"<BitButton Style=""margin-bottom: 10px;"" Visibility=""BitComponentVisibility.Visible"">Visible Button</BitButton>
+    private readonly string example3HTMLCode = @"
+<BitButton Style=""margin-bottom: 10px;"" Visibility=""BitComponentVisibility.Visible"">Visible Button</BitButton>
 <div>Hidden Button: [<BitButton Visibility=""BitComponentVisibility.Hidden"">Hidden Button</BitButton>]</div>
 <div>Collapsed Button: [<BitButton Visibility=""BitComponentVisibility.Collapsed"">Collapsed Button</BitButton>]</div>";
 
-    private readonly string example4HTMLCode = @"<BitButton AriaDescription=""Detailed description used for screen reader."">
+    private readonly string example4HTMLCode = @"
+<BitButton AriaDescription=""Detailed description used for screen reader."">
     Button with Aria Description
 </BitButton>
 <BitButton ButtonStyle=""BitButtonStyle.Standard"" AriaHidden=""true"">
     Button with Aria Hidden
 </BitButton>";
 
-    private readonly string example5HTMLCode = @"<BitButton Style=""margin-right: 10px;"" Title=""Primary"" Target=""_blank"" Href=""https://github.com/bitfoundation/bitplatform"">
+    private readonly string example5HTMLCode = @"
+<BitButton Style=""margin-right: 10px;"" Title=""Primary"" Target=""_blank"" Href=""https://github.com/bitfoundation/bitplatform"">
     Open Bit Platform In New Tab
 </BitButton>
 <BitButton Class=""lnk-btn"" Style=""margin-right: 10px;"" Title=""Standard"" Href=""https://github.com/bitfoundation/bitplatform"" ButtonStyle=""BitButtonStyle.Standard"">

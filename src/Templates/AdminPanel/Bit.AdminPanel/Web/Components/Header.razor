@@ -1,19 +1,73 @@
 ﻿@inherits AppComponentBase;
 
-<header class="header">
-    <div class="header-contact">
-        @if (IsUserAuthenticated)
-        {
-            <BitIconButton Class="header-menu" IconName=BitIconName.CollapseMenu OnClick=ToggleMenu />
-        }
-        <a class="logo-lnk" href="/"></a>
-    </div>
-    <div class="header-contact">
-        <BitLink Class="header-item--privacy" Href="/privacy" Target="_self">Privacy</BitLink>
-        @if (!IsUserAuthenticated)
-        {
-            <BitActionButton Class="header-item" IconName="BitIconName.AddFriend" Href="/sign-up" Target="_self">Sign up</BitActionButton>
-            <BitActionButton Class="header-item" IconName="BitIconName.Signin" Href="/sign-in" Target="_self">Sign in</BitActionButton>
-        }
+<header class="main-header">
+    <div class="header-main-container">
+        <div class="header-content-container">
+            <BitIconButton Class="header-menu-btn" IconName=BitIconName.CollapseMenu OnClick=@WrapHandled(ToggleMenu) AriaLabel="Header menu button" />
+            <a class="header-logo" href="/" aria-label="Homepage"></a>
+            <BitBreadcrumb Items=@BreadcrumbItems></BitBreadcrumb>
+        </div>
+        <div class="header-content-container" style="cursor: pointer" @onclick=@ToggleHeaderDrpDown>
+            <div class="img-wrapper">
+                @if (User?.ProfileImageName != null)
+                {
+                    <img src="@ProfileImageUrl" class="user-img" alt="User profile image" width="28" height="28" />
+                }
+                else if (string.IsNullOrEmpty(User?.FullName) is false && User?.FullName.Length >= 2)
+                {
+                    @User?.FullName?.ToUpper()[..2]
+                }
+                else
+                {
+                    @User?.UserName?.ToUpper()[..2]
+                }
+            </div>
+            <div class="user-name">
+                @if (string.IsNullOrEmpty(User?.FullName) is false)
+                {
+                    @User?.FullName
+                }
+                else
+                {
+                    @User?.UserName
+                }
+            </div>
+            <div class="chevron-bottom-icon @(IsHeaderDrpDownOpen ? "chevron-up-icon" : null)"></div>
+
+            @if (IsHeaderDrpDownOpen)
+            {
+                <div class="header-drp-overlay"></div>
+                <section class="header-drp-wrapper" @onclick:stopPropagation="true">
+                    <div class="user-info-container">
+                        <div class="img-wrapper">
+                            @if (User?.ProfileImageName != null)
+                            {
+                                <img src="@ProfileImageUrl" class="user-img" alt="User profile image" width="28" height="28" />
+                            }
+                            else if (string.IsNullOrEmpty(User?.FullName) is false && User?.FullName.Length >= 2)
+                            {
+                                @User?.FullName?.ToUpper()[..2]
+                            }
+                            else
+                            {
+                                @User?.UserName?.ToUpper()[..2]
+                            }
+                        </div>
+                        <div class="user-name">
+                            @if (string.IsNullOrEmpty(User?.FullName) is false)
+                            {
+                                <div class="full-name">@User?.FullName</div>
+                            }
+
+                            <div class="email">@User?.UserName</div>
+                        </div>
+                    </div>
+                    <BitActionButton Class="edit-profile-btn" IconName="BitIconName.Edit" OnClick=@WrapHandled(OpenEditProfilePage) AriaLabel="EditProfile">Edit profile</BitActionButton>
+                    <BitActionButton Class="sign-out-btn" IconName="BitIconName.OutOfOffice" OnClick=@WrapHandled(OpenSignOutModal) AriaLabel="SignOut">Sign out</BitActionButton>
+                </section>
+            }
+        </div>
     </div>
 </header>
+
+<SignOutConfirmModal @bind-IsOpen=IsSignOutModalOpen></SignOutConfirmModal>

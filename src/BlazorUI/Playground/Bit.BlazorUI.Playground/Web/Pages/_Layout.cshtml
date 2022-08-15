@@ -40,8 +40,29 @@
     <link rel="icon" href="~/favicon.ico" type="image/x-icon" asp-append-version="true">
     <link media="all" rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.min.css" asp-append-version="true" />
     <link media="all" rel="stylesheet" href="Bit.BlazorUI.Playground.Web.styles.css" asp-append-version="true" />
-    <link media="all" rel="stylesheet" href="~/styles/styles.css" asp-append-version="true" />
-    <link media="all" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/styles/default.min.css">
+    <style>
+        * {
+            font-family: "Segoe UI";
+            box-sizing: border-box;
+        }
+
+        html, body {
+            -webkit-font-smoothing: antialiased;
+            -webkit-tap-highlight-color: transparent;
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            color: #323130;
+            font-size: 1rem;
+            line-height: 1.5;
+            letter-spacing: 0;
+            font-weight: 400;
+            scroll-margin-top: calc(56px + 32px);
+            background-color: #fff;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/themes/prism.min.css" />
     <component type="typeof(HeadOutlet)" render-mode="@renderMode" />
 </head>
 <body>
@@ -50,9 +71,9 @@
 
     @if (renderMode is not RenderMode.Static)
     {
-        <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/highlight.min.js"></script>
-        <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/languages/csharp.min.js"></script>
-        <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/languages/xml.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/prism.min.js" data-manual></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/components/prism-csharp.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/components/prism-cshtml.min.js"></script>
         <script src="_content/Bit.BlazorUI/scripts/bit.blazorui.min.js" asp-append-version="true"></script>
         <script src="_content/Bit.BlazorUI.Charts/scripts/bit.blazorui.charts.min.js" asp-append-version="true"></script>
         <script src="~/scripts/app.js" asp-append-version="true"></script>

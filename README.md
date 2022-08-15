@@ -28,6 +28,7 @@ The following websites are developed by Bit Platform and published in Blazor Web
 * [Todo app with pre rendering](https://todo.bitplatform.dev/)
 * [Todo app PWA](https://todo-app.bitplatform.dev/)
 * [Todo app in App Center](https://install.appcenter.ms/orgs/bitfoundation/apps/todo/distribution_groups/testers)
+* [Bit Blazor UI demo app in App Center](https://install.appcenter.ms/orgs/bitfoundation/apps/bitcomponents/distribution_groups/testers)
 * Todo app in Google Play (Coming soon...)
 * Todo app in Apple Store (Coming soon...)
 * Todo app in Microsoft Store (Coming soon...)

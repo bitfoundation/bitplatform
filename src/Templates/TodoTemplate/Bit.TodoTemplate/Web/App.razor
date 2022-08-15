@@ -1,52 +1,44 @@
 ﻿<CascadingAuthenticationState>
     <PageTitle>TodoTemplate</PageTitle>
-    <Router AppAssembly="@GetType().Assembly"
-            AdditionalAssemblies="@lazyLoadedAssemblies"
-            OnNavigateAsync="@OnNavigateAsync">
-        <Found Context="routeData">
-            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
-                <NotAuthorized>
-                    <RedirectToSignIn />
-                </NotAuthorized>
-                <Authorizing>
-                    <LoadingComponent Color="#FFF" />
-                </Authorizing>
-            </AuthorizeRouteView>
-        </Found>
-        <NotFound>
-            <LayoutView Layout="@typeof(MainLayout)">
+    <LayoutView Layout="@typeof(MainLayout)">
+        <Router AppAssembly="@GetType().Assembly"
+                AdditionalAssemblies="@lazyLoadedAssemblies"
+                OnNavigateAsync="@OnNavigateAsync">
+            <Found Context="routeData">
+                <AuthorizeRouteView RouteData="@routeData">
+                    <NotAuthorized>
+                        <NotAuthorizedComponent />
+                    </NotAuthorized>
+                    <Authorizing>
+                        <LoadingComponent Color="#FFF" />
+                    </Authorizing>
+                </AuthorizeRouteView>
+            </Found>
+            <NotFound>
                 <PageNotFound />
-            </LayoutView>
-        </NotFound>
-        <Navigating>
-            <LayoutView Layout="@typeof(MainLayout)">
+            </NotFound>
+            <Navigating>
                 <LoadingComponent Color="#FFF" />
-            </LayoutView>
-        </Navigating>
-    </Router>
+            </Navigating>
+        </Router>
+    </LayoutView>
 </CascadingAuthenticationState>
 
 @code {
     private List<Assembly> lazyLoadedAssemblies = new();
 
-#if BlazorWebAssembly
-    [Inject] private Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader AssemblyLoader { get; set; }
+#if BlazorWebAssembly && !Maui
+    [Inject] private Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader AssemblyLoader { get; set; } = default!;
 #endif
 
     private async Task OnNavigateAsync(NavigationContext args)
     {
-#if BlazorWebAssembly
-        /* To lazy load an assembly based on the current route, follow this:
-        1- Add the BlazorWebAssemblyLazyLoad tag to the Web project file like:
-        <BlazorWebAssemblyLazyLoad Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Sample.dll" />
-        2- Add the assembly to the lazyLoadedAssemblies as follows:
-        if (args.Path.Contains("sample"))
-        {
-          var assemblies = await AssemblyLoader.LoadAssembliesAsync(new[] { "Sample.dll" });
-          lazyLoadedAssemblies.AddRange(assemblies);
-        }
-        The rest of the work is already taken care of in the template source code.
-        */
+#if BlazorWebAssembly && !Maui
+    if (args.Path.Contains("some-lazy-loaded-page") && lazyLoadedAssemblies.Any(asm => asm.GetName().Name == "SomeAssembly") is false)
+    {
+        var assemblies = await AssemblyLoader.LoadAssembliesAsync(new[] { "SomeAssembly.dll" });
+        lazyLoadedAssemblies.AddRange(assemblies);
+    }
 #endif
     }
 }

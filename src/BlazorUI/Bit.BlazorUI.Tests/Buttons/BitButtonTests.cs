@@ -1,4 +1,5 @@
 ﻿using Bunit;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Buttons;
@@ -24,12 +25,14 @@ public class BitButtonTests : BunitTestContext
     ]
     public void BitButtonTest(Visual visual, bool isEnabled, BitButtonStyle style, string title)
     {
-        var com = RenderComponent<BitButtonTest>(parameters =>
+        var clicked = false;
+        var com = RenderComponent<BitButton>(parameters =>
         {
-            parameters.Add(p => p.Visual, visual);
+            parameters.AddCascadingValue(visual);
             parameters.Add(p => p.IsEnabled, isEnabled);
             parameters.Add(p => p.ButtonStyle, style);
             parameters.Add(p => p.Title, title);
+            parameters.Add(p => p.OnClick, () => clicked = true);
         });
 
         var bitButton = com.Find(".bit-btn");
@@ -43,7 +46,7 @@ public class BitButtonTests : BunitTestContext
 
         bitButton.Click();
 
-        Assert.AreEqual(isEnabled ? 1 : 0, com.Instance.CurrentCount);
+        Assert.AreEqual(isEnabled, clicked);
     }
 
     [DataTestMethod,
@@ -54,7 +57,7 @@ public class BitButtonTests : BunitTestContext
     ]
     public void BitButtonDisabledFocusTest(bool isEnabled, BitButtonStyle style, bool allowDisabledFocus, bool expectedResult)
     {
-        var com = RenderComponent<BitButtonTest>(parameters =>
+        var com = RenderComponent<BitButton>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, isEnabled);
             parameters.Add(p => p.ButtonStyle, style);
@@ -91,9 +94,9 @@ public class BitButtonTests : BunitTestContext
     ]
     public void BitAnchorButtonTest(Visual visual, bool isEnabled, BitButtonStyle style, string href, string title, string target)
     {
-        var com = RenderComponent<BitButtonTest>(parameters =>
+        var com = RenderComponent<BitButton>(parameters =>
         {
-            parameters.Add(p => p.Visual, visual);
+            parameters.AddCascadingValue(visual);
             parameters.Add(p => p.IsEnabled, isEnabled);
             parameters.Add(p => p.ButtonStyle, style);
             parameters.Add(p => p.Href, href);
@@ -123,7 +126,7 @@ public class BitButtonTests : BunitTestContext
     [DataTestMethod, DataRow("Detailed description")]
     public void BitButtonAriaDescriptionTest(string ariaDescription)
     {
-        var com = RenderComponent<BitButtonTest>(parameters =>
+        var com = RenderComponent<BitButton>(parameters =>
         {
             parameters.Add(p => p.AriaDescription, ariaDescription);
         });
@@ -136,7 +139,7 @@ public class BitButtonTests : BunitTestContext
     [DataTestMethod, DataRow("Detailed label")]
     public void BitButtonAriaLabelTest(string ariaLabel)
     {
-        var com = RenderComponent<BitButtonTest>(parameters =>
+        var com = RenderComponent<BitButton>(parameters =>
         {
             parameters.Add(p => p.AriaLabel, ariaLabel);
         });
@@ -149,14 +152,14 @@ public class BitButtonTests : BunitTestContext
     [DataTestMethod, DataRow(true, true), DataRow(false, false), DataRow(null, false)]
     public void BitButtonAriaHiddenTest(bool ariaHidden, bool expectedResult)
     {
-        var com = RenderComponent<BitButtonTest>(parameters =>
+        var com = RenderComponent<BitButton>(parameters =>
         {
             parameters.Add(p => p.AriaHidden, ariaHidden);
         });
 
         var bitButton = com.Find(".bit-btn");
 
-        Assert.AreEqual(bitButton.HasAttribute("aria-hidden"), expectedResult);
+        Assert.AreEqual(expectedResult, bitButton.HasAttribute("aria-hidden"));
     }
 
     [DataTestMethod,
@@ -166,7 +169,7 @@ public class BitButtonTests : BunitTestContext
     ]
     public void BitButtonTypeOfButtonTest(BitButtonType buttonType)
     {
-        var com = RenderComponent<BitButtonTest>(parameters =>
+        var com = RenderComponent<BitButton>(parameters =>
         {
             parameters.Add(p => p.ButtonType, buttonType);
         });
@@ -174,6 +177,33 @@ public class BitButtonTests : BunitTestContext
         var bitButton = com.Find(".bit-btn");
 
         var buttonTypeName = buttonType == BitButtonType.Button ? "button" : buttonType == BitButtonType.Submit ? "submit" : "reset";
-        Assert.AreEqual(bitButton.GetAttribute("type"), buttonTypeName);
+        Assert.AreEqual(buttonTypeName, bitButton.GetAttribute("type"));
+    }
+
+    [TestMethod]
+    public void BitButtonSubmitStateInEditContextTest()
+    {
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.EditContext, new EditContext(this));
+        });
+        
+        var bitButton = com.Find(".bit-btn");
+
+        Assert.AreEqual("submit", bitButton.GetAttribute("type"));
+    }
+    
+    [TestMethod]
+    public void BitButtonButtonStateNotOverridenInEditContextTest()
+    {
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.EditContext, new EditContext(this));
+            parameters.Add(p => p.ButtonType, BitButtonType.Button);
+        });
+        
+        var bitButton = com.Find(".bit-btn");
+
+        Assert.AreEqual("button", bitButton.GetAttribute("type"));
     }
 }

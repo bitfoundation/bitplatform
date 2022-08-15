@@ -17,7 +17,7 @@ public static class MauiProgram
 
         builder
             .UseMauiApp<App>()
-            .Configuration.AddJsonFile(new EmbeddedFileProvider(assembly), "appsettings.json", optional: false, false);
+            .Configuration.AddJsonFile(new EmbeddedFileProvider(assembly), "wwwroot.appsettings.json", optional: false, false);
 
         var services = builder.Services;
 
@@ -25,6 +25,16 @@ public static class MauiProgram
 #if DEBUG
         services.AddBlazorWebViewDeveloperTools();
 #endif
+
+        services.AddScoped(sp =>
+        {
+            HttpClient httpClient = new(sp.GetRequiredService<AppHttpClientHandler>())
+            {
+                BaseAddress = new Uri($"{sp.GetRequiredService<IConfiguration>()["ApiServerAddress"]}")
+            };
+
+            return httpClient;
+        });
 
         services.AddTransient<IAuthTokenProvider, ClientSideAuthTokenProvider>();
         services.AddSharedServices();

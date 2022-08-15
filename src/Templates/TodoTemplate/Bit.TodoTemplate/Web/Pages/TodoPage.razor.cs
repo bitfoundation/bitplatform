@@ -2,14 +2,11 @@
 
 namespace TodoTemplate.App.Pages;
 
+[Authorize]
 public partial class TodoPage
 {
-    [AutoInject] private HttpClient httpClient = default!;
-
-    [AutoInject] private IStateService stateService = default!;
-
     public bool IsLoading { get; set; }
-    public string SelectedPivotName { get; set; } = AppStrings.All;
+    public string SelectedPivotName { get; set; }
     public string? EditModeTodoItemText { get; set; }
     public bool IsAddLoading { get; set; }
     public string? SelectedSortTodoItemName { get; set; }
@@ -18,20 +15,24 @@ public partial class TodoPage
     public List<TodoItemDto>? AllTodoItemList { get; set; } = new();
     public List<TodoItemDto>? ViewTodoItemList { get; set; } = new();
 
-    public List<BitDropDownItem> SortItemList = new()
-    {
-        new BitDropDownItem
-        {
-            Text = AppStrings.Alphabetical,
-        },
-        new BitDropDownItem
-        {
-            Text = AppStrings.Date,
-        }
-    };
+    public List<BitDropDownItem> SortItemList = new();
 
     protected override async Task OnInitAsync()
     {
+        SelectedPivotName = Localizer[nameof(AppStrings.All)];
+
+        SortItemList = new()
+        {
+            new BitDropDownItem
+            {
+                Text = Localizer[nameof(AppStrings.Alphabetical)],
+            },
+            new BitDropDownItem
+            {
+                Text = Localizer[nameof(AppStrings.Date)],
+            }
+        };
+
         await LoadTodoItems();
 
         await base.OnInitAsync();
@@ -42,7 +43,7 @@ public partial class TodoPage
         IsLoading = true;
         try
         {
-            AllTodoItemList = await stateService.GetValue($"{nameof(TodoPage)}-{nameof(AllTodoItemList)}", async () => await httpClient.GetFromJsonAsync("TodoItem/Get", AppJsonContext.Default.ListTodoItemDto));
+            AllTodoItemList = await StateService.GetValue($"{nameof(TodoPage)}-{nameof(AllTodoItemList)}", async () => await HttpClient.GetFromJsonAsync("TodoItem/Get", AppJsonContext.Default.ListTodoItemDto));
             GenarateViewTodoItemList();
         }
         finally
@@ -73,15 +74,15 @@ public partial class TodoPage
 
     private void FilterTodoItemList()
     {
-        if (SelectedPivotName == AppStrings.All)
+        if (SelectedPivotName == Localizer[nameof(AppStrings.All)])
         {
             ViewTodoItemList = AllTodoItemList?.ToList();
         }
-        if (SelectedPivotName == AppStrings.Active)
+        if (SelectedPivotName == Localizer[nameof(AppStrings.Active)])
         {
             ViewTodoItemList = AllTodoItemList?.Where(c => c.IsDone == false).ToList();
         }
-        if (SelectedPivotName == AppStrings.Completed)
+        if (SelectedPivotName == Localizer[nameof(AppStrings.Completed)])
         {
             ViewTodoItemList = AllTodoItemList?.Where(c => c.IsDone == true).ToList();
         }
@@ -108,7 +109,7 @@ public partial class TodoPage
 
     private void HandlerTodoItemSort()
     {
-        if (SelectedSortTodoItemName == AppStrings.Alphabetical)
+        if (SelectedSortTodoItemName == Localizer[nameof(AppStrings.Alphabetical)])
         {
             ViewTodoItemList = ViewTodoItemList?.OrderBy(td => td.Title).ToList();
         }
@@ -153,7 +154,7 @@ public partial class TodoPage
                 Date = DateTimeOffset.Now,
             };
 
-            await httpClient.PostAsJsonAsync("TodoItem/Create", newTodoItem, AppJsonContext.Default.TodoItemDto);
+            await HttpClient.PostAsJsonAsync("TodoItem/Create", newTodoItem, AppJsonContext.Default.TodoItemDto);
 
             await LoadTodoItems();
 
@@ -167,7 +168,7 @@ public partial class TodoPage
 
     private async Task DeleteTodoItem(TodoItemDto todoItem)
     {
-        await httpClient.DeleteAsync($"TodoItem/Delete/{todoItem.Id}");
+        await HttpClient.DeleteAsync($"TodoItem/Delete/{todoItem.Id}");
         AllTodoItemList?.Remove(todoItem);
         GenarateViewTodoItemList();
     }
@@ -179,7 +180,7 @@ public partial class TodoPage
 
         todoItem.IsInEditMode = false;
 
-        await httpClient.PutAsJsonAsync("TodoItem/Update", todoItem, AppJsonContext.Default.TodoItemDto);
+        await HttpClient.PutAsJsonAsync("TodoItem/Update", todoItem, AppJsonContext.Default.TodoItemDto);
         GenarateViewTodoItemList();
     }
 }

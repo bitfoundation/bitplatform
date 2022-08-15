@@ -2,10 +2,6 @@
 
 public partial class EmailConfirmationPage
 {
-    [AutoInject] private HttpClient httpClient = default!;
-
-    [AutoInject] private NavigationManager navigationManager = default!;
-
     [Parameter]
     [SupplyParameterFromQuery]
     public string? Email { get; set; }
@@ -21,7 +17,7 @@ public partial class EmailConfirmationPage
 
     private void RedirectToSignIn()
     {
-        navigationManager.NavigateTo("/sign-in");
+        NavigationManager.NavigateTo("/sign-in");
     }
 
     private async Task ResendLink()
@@ -36,20 +32,20 @@ public partial class EmailConfirmationPage
 
         try
         {
-            await httpClient.PostAsJsonAsync("Auth/SendConfirmationEmail", new()
+            await HttpClient.PostAsJsonAsync("Auth/SendConfirmationEmail", new()
             {
                 Email = Email
             }, AppJsonContext.Default.SendConfirmationEmailRequestDto);
 
             EmailConfirmationMessageType = BitMessageBarType.Success;
 
-            EmailConfirmationMessage = AuthStrings.ResendConfirmationLinkMessage;
+            EmailConfirmationMessage = Localizer[nameof(AppStrings.ResendConfirmationLinkMessage)];
         }
         catch (KnownException e)
         {
             EmailConfirmationMessageType = BitMessageBarType.Error;
 
-            EmailConfirmationMessage = ErrorStrings.ResourceManager.Translate(e.Message, Email!);
+            EmailConfirmationMessage = e.Message;
         }
         finally
         {

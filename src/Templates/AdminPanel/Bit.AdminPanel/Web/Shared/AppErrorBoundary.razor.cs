@@ -3,9 +3,9 @@ namespace AdminPanel.App.Shared;
 
 public partial class AppErrorBoundary
 {
-    [AutoInject] private IExceptionHandler exceptionHandler = default!;
+    [AutoInject] private IExceptionHandler _exceptionHandler = default!;
 
-    [AutoInject] private NavigationManager navigationManager = default!;
+    [AutoInject] private NavigationManager _navigationManager = default!;
 
     private bool ShowException { get; set; }
 
@@ -16,20 +16,18 @@ public partial class AppErrorBoundary
     }
 #endif
 
-    protected override Task OnErrorAsync(Exception exception)
+    protected override async Task OnErrorAsync(Exception exception)
     {
-        exceptionHandler.Handle(exception);
-
-        return Task.CompletedTask;
+        _exceptionHandler.Handle(exception);
     }
 
     private void Refresh()
     {
-        navigationManager.NavigateTo(navigationManager.Uri, true);
+        _navigationManager.NavigateTo(_navigationManager.Uri, true);
     }
 
     private void GoHome()
     {
-        navigationManager.NavigateTo("/", true);
+        _navigationManager.NavigateTo("/", true);
     }
 }

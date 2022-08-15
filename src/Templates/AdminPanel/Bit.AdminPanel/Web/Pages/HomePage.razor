@@ -1,20 +1,15 @@
 ﻿@page "/"
-
 @inherits AppComponentBase;
 
-<PageTitle>@AppStrings.AdminPanelHomeTitle</PageTitle>
-
 <div class="page-container">
-    <section class="page-section hero-section">
-        <h1 class="hero-section-title">@AppStrings.AdminPanelHomeTitle</h1>
-        <div class="hero-section-desc">
-            @AppStrings.AdminPanelHomeMessage
-        </div>
-        <BitButton Class="hero-section-cta"
-                   Href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Templates/AdminPanel/Bit.AdminPanel"
-                   Target="_blank"
-                   Title="@AppStrings.GitHubRepo"
-                   AriaLabel="@AppStrings.GitHubRepo"
-                   ButtonStyle="BitButtonStyle.Standard">@AppStrings.GitHubRepo</BitButton>
-    </section>
+    <OverallStatsWidget />
+
+    <div class="page-row">
+        <ProductsCountPerCategotyWidget />
+        <ProductsPercentageWidget />
+    </div>
+
+    <div class="page-row">
+        <ProductsSalesWidget />
+    </div>
 </div>

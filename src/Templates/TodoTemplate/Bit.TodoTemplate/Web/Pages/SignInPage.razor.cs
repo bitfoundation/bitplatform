@@ -4,12 +4,6 @@ namespace TodoTemplate.App.Pages;
 
 public partial class SignInPage
 {
-    [AutoInject] private NavigationManager navigationManager = default!;
-
-    [AutoInject] private IAuthenticationService authService = default!;
-
-    [AutoInject] private AppAuthenticationStateProvider authStateProvider = default!;
-
     public SignInRequestDto SignInModel { get; set; } = new();
 
     public bool IsLoading { get; set; }
@@ -34,15 +28,15 @@ public partial class SignInPage
 
         try
         {
-            await authService.SignIn(SignInModel);
+            await AuthenticationService.SignIn(SignInModel);
 
-            navigationManager.NavigateTo(RedirectUrl ?? "/");
+            NavigationManager.NavigateTo(RedirectUrl ?? "/");
         }
         catch (KnownException e)
         {
             SignInMessageType = BitMessageBarType.Error;
 
-            SignInMessage = ErrorStrings.ResourceManager.Translate(e.Message, SignInModel.UserName!);
+            SignInMessage = e.Message;
         }
         finally
         {
@@ -59,8 +53,8 @@ public partial class SignInPage
     {
         if (firstRender)
         {
-            if (await authStateProvider.IsUserAuthenticated())
-                navigationManager.NavigateTo("/");
+            if (await AuthenticationStateProvider.IsUserAuthenticated())
+                NavigationManager.NavigateTo("/");
         }
 
         await base.OnAfterRenderAsync(firstRender);

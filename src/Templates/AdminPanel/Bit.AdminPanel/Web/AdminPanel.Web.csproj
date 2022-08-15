@@ -17,7 +17,6 @@
     <ItemGroup>
         <!--/-:msbuild-conditional:noEmit -->
         <!-- In the Blazor Web Assembly mode, the API project will host the web client app itself -->
-        <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Remove="appsettings.json" />
         <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Remove="Pages\_Host.cshtml" />
         <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Remove="Pages\_Layout.cshtml" />
         <Compile Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Remove="Services\Implementations\ServerSideAuthTokenProvider.cs" />
@@ -28,25 +27,23 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.BlazorUI" Version="2.0.0" />
-		<PackageReference Include="Bit.BlazorUI.Charts" Version="2.0.0" />
-        <PackageReference Include="Bit.Bswup" Version="2.0.0" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="2.0.0" />
-        <PackageReference Include="Bit.SourceGenerators" Version="2.0.0" />
+        <PackageReference Include="Bit.BlazorUI" Version="3.0.0" />
+		<PackageReference Include="Bit.BlazorUI.Charts" Version="3.0.0" />
+        <PackageReference Include="Bit.Bswup" Version="3.0.0" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="3.0.0" />
+        <PackageReference Include="Bit.SourceGenerators" Version="3.0.0" />
+        <PackageReference Include="BuildWebCompiler2022" Version="1.14.8" />
         <PackageReference Include="jose-jwt" Version="4.0.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.7" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.8" />
         <!--/-:msbuild-conditional:noEmit -->
-        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.7" />
-        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.7" PrivateAssets="all" />
+        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.8" />
+        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.8" PrivateAssets="all" />
         <!--/+:msbuild-conditional:noEmit -->
     </ItemGroup>
 
     <ItemGroup>
-        <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.min.js" Condition="'$(WebAppDeploymentType)' == 'PWA'" />
-        <PackageReference Include="BuildWebCompiler2022" Version="1.14.8">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
+        <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" Condition="'$(WebAppDeploymentType)' == 'PWA'" />
+        <PackageReference Include="LibSassBuilder" Version="2.0.2" />
         <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.7.4">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -63,6 +60,7 @@
         <Using Include="Microsoft.AspNetCore.Components.Authorization" />
         <Using Include="AdminPanel.App.Components" />
         <Using Include="Bit.BlazorUI" />
+        <Using Include="Microsoft.AspNetCore.Authorization" />
     </ItemGroup>
 
     <ItemGroup>

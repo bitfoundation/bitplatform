@@ -1,58 +1,110 @@
-﻿@import '../Styles/abstracts/_media-queries.scss';
-@import '../Styles/abstracts/_colors.scss';
+﻿@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_media-queries.scss';
 @import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_fonts.scss';
+@import '../Styles/abstracts/_vars.scss';
 
 .main {
     position: relative;
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
     width: 100%;
     min-height: 100vh;
-    padding-top: rem(48px);
+    padding-top: rem($HeaderHeight);
+    padding-left: rem($NavMenuWidth);
     box-sizing: border-box;
-    background-color: $SecondaryColor;
-    font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
-}
-
-.main--authenticated {
-    width: calc(100% - #{rem(240px)});
-    margin-left: rem(240px);
-
-    @include lg {
-        width: calc(100% - #{rem(206px)});
-        margin-left: rem(206px);
-    }
+    background: $BackgroundColor;
 
     @include lt-lg {
-        width: 100%;
-        margin-left: 0;
+        padding-left: 0;
     }
 }
 
-.main-content {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: calc(100vh - 138px);
+.main--full-page {
+    padding: 0;
 
-    @include lg {
-        min-height: calc(100vh - 134px);
+    .site-content {
+        padding: 0 !important;
+        height: 100vh;
     }
+}
+
+.site-content {
+    width: 100%;
+    min-height: calc(100vh - 48px);
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0 rem($LargeScreenPadding);
+    max-width: rem($LargeScreenMaxWidth);
+    padding-top: rem(32px);
+    padding-bottom: rem(32px);
+    box-sizing: border-box;
 
     @include md {
-        min-height: calc(100vh - 134px);
+        padding: 0 rem($MediumScreenPadding);
+        max-width: rem($MediumScreenMaxWidth);
+        padding-top: rem(32px);
+        padding-bottom: rem(32px);
+    }
+
+    @include sm {
+        padding: 0 rem($SmallScreenPadding);
+        max-width: rem($SmallScreenMaxWidth);
+        padding-top: rem(16px);
+        padding-bottom: rem(16px);
     }
 }
 
-@media all and (max-width: #{em(370px)}) {
-    .main--authenticated {
-        padding-top: rem(84px);
+::deep a {
+    text-decoration: none;
+}
+
+::deep * {
+    font-family: "Segoe UI";
+    box-sizing: border-box;
+}
+
+::deep .status-bar-safe-area {
+    display: none;
+}
+
+@supports (-webkit-touch-callout: none) {
+    ::deep .status-bar-safe-area {
+        display: flex;
+        position: sticky;
+        top: 0;
+        height: env(safe-area-inset-top);
+        background-color: #f7f7f7;
+        width: 100%;
+        z-index: 1;
     }
 
-    .main {
-        padding-top: rem(84px);
-        min-height: calc(100vh - 170px);
+    ::deep .flex-column, ::deep .navbar-brand {
+        padding-left: env(safe-area-inset-left);
     }
+}
 
-    .main-content {
-        min-height: calc(100vh - 170px);
+::deep ::-webkit-scrollbar-track {
+    background-color: #fff;
+}
+
+::deep ::-webkit-scrollbar-thumb {
+    background-color: $Gray90;
+    border-radius: 16px;
+    border: 4px solid $Gray90;
+}
+
+::deep .bit-btn-fluent {
+    border-radius: rem(2px);
+}
+
+::deep .bit-mdl-fluent {
+    .bit-mdl-container {
+        min-height: unset !important;
     }
+}
+
+::deep .validation-message {
+    color: $StatusErrorColor;
 }

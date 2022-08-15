@@ -5,11 +5,9 @@ namespace AdminPanel.Api.Controllers;
 
 [Route("api/[controller]/[action]")]
 [ApiController]
-public partial class UserController : ControllerBase
+public partial class UserController : AppControllerBase
 {
     [AutoInject] private UserManager<User> _userManager = default!;
-
-    [AutoInject] private IMapper _mapper = default!;
 
     [HttpGet]
     public async Task<UserDto> GetCurrentUser(CancellationToken cancellationToken)
@@ -21,7 +19,7 @@ public partial class UserController : ControllerBase
         if (user is null)
             throw new ResourceNotFoundException();
 
-        return _mapper.Map<User, UserDto>(user);
+        return Mapper.Map<User, UserDto>(user);
     }
 
     [HttpPut]
@@ -37,7 +35,7 @@ public partial class UserController : ControllerBase
         if (user is null)
             throw new ResourceNotFoundException();
 
-        var updatedUser = _mapper.Map(userDto, user);
+        var updatedUser = Mapper.Map(userDto, user);
 
         await _userManager.UpdateAsync(updatedUser);
     }

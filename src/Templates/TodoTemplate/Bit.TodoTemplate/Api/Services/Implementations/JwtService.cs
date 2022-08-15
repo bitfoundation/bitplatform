@@ -7,23 +7,17 @@ using TodoTemplate.Shared.Dtos.Account;
 
 namespace TodoTemplate.Api.Services.Implementations;
 
-public class JwtService : IJwtService
+public partial class JwtService : IJwtService
 {
-    private readonly SignInManager<User> _signInManager;
+    [AutoInject] private SignInManager<User> _signInManager = default!;
 
-    private readonly AppSettings _appSettings;
-
-    public JwtService(SignInManager<User> signInManager, IOptionsSnapshot<AppSettings> setting)
-    {
-        _signInManager = signInManager;
-        _appSettings = setting.Value;
-    }
+    [AutoInject] private IOptionsSnapshot<AppSettings> _appSettings = default!;
 
     public async Task<SignInResponseDto> GenerateToken(User user)
     {
         var certificatePath = Path.Combine(Directory.GetCurrentDirectory(), "IdentityCertificate.pfx");
         RSA? rsaPrivateKey;
-        using (X509Certificate2 signingCert = new X509Certificate2(certificatePath, _appSettings.JwtSettings.IdentityCertificatePassword))
+        using (X509Certificate2 signingCert = new X509Certificate2(certificatePath, _appSettings.Value.JwtSettings.IdentityCertificatePassword))
         {
             rsaPrivateKey = signingCert.GetRSAPrivateKey();
         }
@@ -37,11 +31,11 @@ public class JwtService : IJwtService
         var securityToken = jwtSecurityTokenHandler
             .CreateJwtSecurityToken(new SecurityTokenDescriptor
             {
-                Issuer = _appSettings.JwtSettings.Issuer,
-                Audience = _appSettings.JwtSettings.Audience,
+                Issuer = _appSettings.Value.JwtSettings.Issuer,
+                Audience = _appSettings.Value.JwtSettings.Audience,
                 IssuedAt = DateTime.Now,
-                NotBefore = DateTime.Now.AddMinutes(_appSettings.JwtSettings.NotBeforeMinutes),
-                Expires = DateTime.Now.AddMinutes(_appSettings.JwtSettings.ExpirationMinutes),
+                NotBefore = DateTime.Now.AddMinutes(_appSettings.Value.JwtSettings.NotBeforeMinutes),
+                Expires = DateTime.Now.AddMinutes(_appSettings.Value.JwtSettings.ExpirationMinutes),
                 SigningCredentials = signingCredentials,
                 Subject = new ClaimsIdentity(claims)
             });
@@ -49,7 +43,7 @@ public class JwtService : IJwtService
         return new SignInResponseDto
         {
             AccessToken = jwtSecurityTokenHandler.WriteToken(securityToken),
-            ExpiresIn = (long)TimeSpan.FromMinutes(_appSettings.JwtSettings.ExpirationMinutes).TotalSeconds
+            ExpiresIn = (long)TimeSpan.FromMinutes(_appSettings.Value.JwtSettings.ExpirationMinutes).TotalSeconds
         };
     }
 }

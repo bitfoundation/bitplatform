@@ -2,6 +2,7 @@
     "profiles": {
         "AdminPanel.Web": {
             "commandName": "Project",
+            "dotnetRunMessages": true,
             "launchBrowser": true,
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development"

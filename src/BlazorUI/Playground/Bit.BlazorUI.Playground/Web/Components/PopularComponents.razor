@@ -1,44 +1,43 @@
 ﻿<section class="main-container">
-    <div class="left-box">
-        <span class="box-clipart"></span>
-        <span class="plane-clipart plane-clipart--top"></span>
+    <div class="content-container">
+        <h2 class="main-title">Most popular components</h2>
         <div class="component-list">
             @foreach (var com in Components)
             {
-                @if (com.Name == SelectedComponent.Name)
-                {
-                    <div class="selected-component">
-                        <div class="selected-component-icon">
-                            <PopularComponentsIcon ComponentName="@SelectedComponent.Name"></PopularComponentsIcon>
-                        </div>
-                        <div class="selected-component-name">@SelectedComponent.Name</div>
-                        <div class="selected-component-desc">@SelectedComponent.Description</div>
-                        <a class="demo-btn" href="@SelectedComponent.Url">More about @SelectedComponent.Name</a>
+                <button class="component-row @(com.Name == SelectedComponent.Name ? "component-row--active" : null)" @onclick="(() => SelectComponent(com))">
+                    <div class="component-icon">
+                        <PopularComponentsIcon ComponentName="@com.Name"></PopularComponentsIcon>
                     </div>
-                }
-                else
-                {
-                    <div class="component-row" @onclick="@(() => SelectComponent(com))">
-                        <div class="component-row-icon">
-                            <PopularComponentsIcon ComponentName="@com.Name"></PopularComponentsIcon>
-                        </div>
-                        <div class="component-row-name">@com.Name</div>
+                    <div class="component-info-container">
+                        <div class="component-name">@com.Name</div>
+                        <div class="component-desc">@com.Description</div>
+                        <a class="component-link" href="@com.Url">More about @com.Name</a>
                     </div>
-                }
+                </button>
             }
         </div>
+        <BitCarousel Class="component-carousel" ShowNextPrev=false>
+            @foreach (var com in Components)
+            {
+                <BitCarouselItem Style="width: 100%">
+                    <button class="component-row @(com.Name == SelectedComponent.Name ? "component-row--active" : null)" @onclick="(() => SelectComponent(com))">
+                        <div class="component-icon">
+                            <PopularComponentsIcon ComponentName="@com.Name"></PopularComponentsIcon>
+                        </div>
+                        <div class="component-info-container">
+                            <div class="component-name">@com.Name</div>
+                            <div class="component-desc">@com.Description</div>
+                            <a class="component-link" href="@com.Url">More about @com.Name</a>
+                        </div>
+                    </button>
+                </BitCarouselItem>
+            }
+        </BitCarousel>
     </div>
 
-    <div class="right-box">
-        <span class="plane-clipart plane-clipart--bottom"></span>
-        <div class="top-bar">
-            <div class="top-bar-tab @(ActiveTab == "demo" ? "actvie-tab" : "")" @onclick="@(() => SelectTab("demo"))">Demo</div>
-            <div class="top-bar-tab @(ActiveTab == "code" ? "actvie-tab" : "")" @onclick="@(() => SelectTab("code"))">Code</div>
-        </div>
-
-        <div class="tab-content" style="@(ActiveTab != "demo" ? "padding: 0" : null)">
-            @if (ActiveTab == "demo")
-            {
+    <div class="content-container">
+        <div class="example-preview">
+            <div class="white-box">
                 @if (SelectedComponent.Name == "ColorPicker")
                 {
                     <BitColorPicker ShowPreview="true" @bind-Alpha="@Alpha" @bind-Color="@ColorRgb">Default ColorPicker</BitColorPicker>
@@ -46,25 +45,26 @@
                 else if (SelectedComponent.Name == "DatePicker")
                 {
                     <BitDatePicker Style="width: 300px"
-                           ShowWeekNumbers="true">
+                                   ShowWeekNumbers="true">
                     </BitDatePicker>
                 }
                 else if (SelectedComponent.Name == "FileUpload")
                 {
                     <BitFileUpload IsMultiSelect="true"
-                           Label="Select files"
-                           UploadUrl="@UploadUrl"
-                           RemoveUrl="@RemoveUrl"
-                           Style="flex-grow:1; max-width:none;">
+                               Label="Select files"
+                               AutoUploadEnabled="true"
+                               UploadUrl="@UploadUrl"
+                               RemoveUrl="@RemoveUrl"
+                               Style="flex-grow:1; max-width:none;">
                     </BitFileUpload>
                 }
                 else if (SelectedComponent.Name == "DropDown")
                 {
                     <BitDropDown Label="Multi-select uncontrolled"
-                         Items="GetDropdownItems()"
-                         Placeholder="Select options"
-                         IsMultiSelect="true"
-                         Style="width: 290px; margin-bottom: 20px;">
+                             Items="GetDropdownItems()"
+                             Placeholder="Select options"
+                             IsMultiSelect="true"
+                             Style="width: 290px; margin-bottom: 20px;">
                     </BitDropDown>
                 }
                 else if (SelectedComponent.Name == "Nav (TreeList)")
@@ -74,169 +74,149 @@
                        box-sizing: border-box;
                        border: 1px solid #eee;
                        overflow-y: auto;"
-                    NavLinkItems="BasicNavLinks"
-                    AriaLabel="Nav basic example"
-                    SelectedKey="key3">
+                        NavLinkItems="BasicNavLinks"
+                        AriaLabel="Nav basic example"
+                        SelectedKey="key3">
                     </BitNav>
                 }
-            }
-            else
+            </div>
+        </div>
+        <div class="example-code">
+            @if (SelectedComponent.Name == "ColorPicker")
             {
-                @if (SelectedComponent.Name == "ColorPicker")
-                {
-                    <pre class="code">
-                        <code class="html">&ltBitColorPicker ShowPreview="&#64;IsToggleChecked" &#64;ref="ColorPicker" &#64;bind-Color="&#64;Color" ShowAlphaSlider="false">Default ColorPicker&lt/BitColorPicker>
-                        </code>
-                        <code class="csharp">
-private BitColorPicker ColorPicker;
-private string Color = "#FFFFFF";
-private bool IsToggleChecked = false;
-                        </code>
-                    </pre>
-                }
-                else if (SelectedComponent.Name == "DatePicker")
-                {
-                    <pre class="code">
-                        <code class="html">&ltBitDatePicker Style="width: 300px" ShowWeekNumbers="true"> &lt/BitDatePicker>
-                        </code>
-                    </pre>
-                }
-                else if (SelectedComponent.Name == "FileUpload")
-                {
-                    <pre class="code">
-                        <code class="html">
-&ltBitFileUpload Label="Select or drag and drop files"
-                                IsMultiSelect="true"    
-                                UploadUrl="&#64;UploadUrl"
-                                RemoveUrl="&#64;RemoveUrl"
-                                Style="flex-grow:1; max-width:none;">
-                        &lt/BitFileUpload>
-                        </code>
-                        <code class="csharp">
-private string UploadUrl;
-private string RemoveUrl;
-                        </code>
-                    </pre>
-                }
-                else if (SelectedComponent.Name == "DropDown")
-                {
-                    <pre class="code">
-                        <code class="html">&ltBitDropDown Label="Multi-select controlled"
-                                Items="GetDropdownItems()"
-                                Placeholder="Select options"
-                                &#64;bind-SelectedMultipleKeys="ControlledSelectedMultipleKeys"
-                                IsMultiSelect="true"
-                                Style="width:290px; margin:20px 0 20px 0">
-                        &lt/BitDropDown>
-                        </code>
-                        <code class="csharp">
-private List&ltstring> ControlledSelectedMultipleKeys = new List&ltstring>() { "Apple", "Banana", "Grape" };
-private List&ltBitDropDownItem> GetDropdownItems()
-{
-    List&ltBitDropDownItem> items = new();
-
-    items.Add(new BitDropDownItem()
+                <pre class="code"><code class="language-cshtml">&ltBitColorPicker ShowPreview="true"
+                &#64;bind-Alpha="&#64;Alpha"
+                &#64;bind-Color="&#64;ColorRgb">
+    Default ColorPicker
+&lt/BitColorPicker></code>
+<code class="language-csharp">
+&#64;code {
+    private string ColorRgb = "rgb(0,101,239)";
+    private double Alpha = 1;
+}</code></pre>
+            }
+            else if (SelectedComponent.Name == "DatePicker")
+            {
+                <pre class="code"><code class="language-cshtml">&ltBitDatePicker Style="width: 300px"
+               ShowWeekNumbers="true">
+&lt/BitDatePicker></code></pre>
+            }
+            else if (SelectedComponent.Name == "FileUpload")
+            {
+                <pre class="code"><code class="language-cshtml">&ltBitFileUpload Label="Select files"
+               IsMultiSelect="true"    
+               UploadUrl="&#64;UploadUrl"
+               RemoveUrl="&#64;RemoveUrl"
+               Style="flex-grow:1; max-width:none;">
+&lt/BitFileUpload></code>
+<code class="language-csharp">
+&#64;code {
+    private string UploadUrl;
+    private string RemoveUrl;
+}</code></pre>
+            }
+            else if (SelectedComponent.Name == "DropDown")
+            {
+                <pre class="code"><code class="language-cshtml">&ltBitDropDown Label="Multi-select uncontrolled"
+             Items="GetDropdownItems()"
+             Placeholder="Select options"
+             &#64;bind-SelectedMultipleKeys="ControlledSelectedMultipleKeys"
+             IsMultiSelect="true"
+             Style="width:290px; margin:20px 0 20px 0">
+&lt/BitDropDown></code>
+<code class="language-csharp">
+&#64;code {
+    private List&ltstring> ControlledSelectedMultipleKeys = new List&ltstring>() { "Apple", "Banana", "Grape" };
+    private List&ltBitDropDownItem> GetDropdownItems()
     {
-        ItemType = BitDropDownItemType.Header,
-        Text = "Fruits"
-    });
+        List&ltBitDropDownItem> items = new();
 
-    items.Add(new BitDropDownItem()
+        items.Add(new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Header,
+            Text = "Fruits"
+        });
+
+        items.Add(new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Text = "Apple",
+            Value = "f-app"
+        });
+
+        items.Add(new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Text = "Orange",
+            Value = "f-ora",
+            IsEnabled = false
+        });
+
+        items.Add(new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Text = "Banana",
+            Value = "f-ban",
+        });
+
+        items.Add(new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Divider,
+        });
+
+        items.Add(new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Header,
+            Text = "Vegetables"
+        });
+
+        items.Add(new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Text = "Broccoli",
+            Value = "v-bro",
+        });
+
+        return items;
+    }
+}</code></pre>
+            }
+            else if (SelectedComponent.Name == "Nav (TreeList)")
+            {
+                <pre class="code"><code class="language-cshtml">&ltBitNav Style="width: 208px;
+               height: 350px;
+               box-sizing: border-box;
+               border: 1px solid #eee;
+               overflow-y: auto;"
+        NavLinkItems="BasicNavLinks"
+        AriaLabel="Nav basic example"
+        SelectedKey="key3">
+&lt/BitNav></code>
+<code class="language-csharp">
+&#64;code {
+    private readonly List&ltBitNavLinkItem> BasicNavLinks = new()
     {
-        ItemType = BitDropDownItemType.Normal,
-        Text = "Apple",
-        Value = "f-app"
-    });
-
-    items.Add(new BitDropDownItem()
-    {
-        ItemType = BitDropDownItemType.Normal,
-        Text = "Orange",
-        Value = "f-ora",
-        IsEnabled = false
-    });
-
-    items.Add(new BitDropDownItem()
-    {
-        ItemType = BitDropDownItemType.Normal,
-        Text = "Banana",
-        Value = "f-ban",
-    });
-
-    items.Add(new BitDropDownItem()
-    {
-        ItemType = BitDropDownItemType.Divider,
-    });
-
-    items.Add(new BitDropDownItem()
-    {
-        ItemType = BitDropDownItemType.Header,
-        Text = "Vegetables"
-    });
-
-    items.Add(new BitDropDownItem()
-    {
-        ItemType = BitDropDownItemType.Normal,
-        Text = "Broccoli",
-        Value = "v-bro",
-    });
-
-    return items;
-}
-                        </code>
-                    </pre>
-                }
-                else if (SelectedComponent.Name == "Nav (TreeList)")
-                {
-                    <pre class="code">
-                        <code class="html">&ltBitNav Style="width: 208px;
-                               height: 350px;
-                               box-sizing: border-box;
-                               border: 1px solid #eee;
-                               overflow-y: auto;"
-                                NavLinkItems="BasicNavLinks"
-                                AriaLabel="Nav basic example"
-                                SelectedKey="key3">
-                        &lt/BitNav>
-                        </code>
-                        <code class="csharp">
-private readonly List&ltBitNavLinkItem> BasicNavLinks = new()
-{
         new BitNavLinkItem
         {
-                Name = "Home",
-                Url = "http://example.com",
-                ExpandAriaLabel = "Expand Home section",
-                CollapseAriaLabel = "Collapse Home section",
-                IsExpanded = true,
-                Links = new List&ltBitNavLinkItem>
-                {
-                        new BitNavLinkItem { Name = "Activity", Url = "http://msn.com", Key = "key1", Target="_blank" },
-                        new BitNavLinkItem { Name = "MSN", Url = "http://msn.com", Key = "key2", IsEnabled = false, Target = "_blank" }
-                }
+            Name = "Home",
+            Url = "http://example.com",
+            ExpandAriaLabel = "Expand Home section",
+            CollapseAriaLabel = "Collapse Home section",
+            IsExpanded = true,
+            Links = new List&ltBitNavLinkItem>
+            {
+                    new BitNavLinkItem { Name = "Activity", Url = "http://msn.com", Key = "key1", Target="_blank" },
+                    new BitNavLinkItem { Name = "MSN", Url = "http://msn.com", Key = "key2", IsEnabled = false, Target = "_blank" }
+            }
         },
         new BitNavLinkItem { Name = "Documents", Url = "http://example.com", Key = "key3", Target = "_blank", IsExpanded = true },
         new BitNavLinkItem { Name = "Pages", Url = "http://msn.com", Key = "key4", Target = "_parent" },
         new BitNavLinkItem { Name = "Notebook", Url = "http://msn.com", Key = "key5", IsEnabled = false },
         new BitNavLinkItem { Name = "Communication and Media", Url = "http://msn.com", Key = "key6", Target = "_top" },
         new BitNavLinkItem { Name = "News", Title = "News", Url = "http://msn.com", Key = "key7", Icon = "News", Target = "_self" },
-};
-                        </code>
-                    </pre>
-                }
+    };
+}</code></pre>
             }
         </div>
     </div>
-</section>
-
-<section class="card-container">
-    @foreach (var com in Components)
-    {
-        <a class="card" href="@com.Url">
-            <div class="card-icon">
-                <PopularComponentsIcon ComponentName="@com.Name"></PopularComponentsIcon>
-            </div>
-            <div class="card-name">@com.Name</div>
-        </a>
-    }
 </section>

@@ -5,54 +5,59 @@
 <PageTitle>@AuthStrings.SignInTitle</PageTitle>
 
 <div class="page-container">
-    <EditForm Model="SignInModel" OnValidSubmit="WrapHandled(DoSignIn)" class="form--white">
-
-        <DataAnnotationsValidator />
-
-        @if (string.IsNullOrEmpty(SignInMessage) is false)
-        {
-            <BitMessageBar Class="form-message-bar"
-                       MessageBarType="@SignInMessageType"
-                       OnDismiss="() => SignInMessage = null">
-                @SignInMessage
-            </BitMessageBar>
-        }
-        <h1 class="form-title">@AuthStrings.SignInTitle</h1>
-        <div class="form-input-container">
-            <BitTextField Label="@AuthStrings.Email"
-                          Placeholder="@AuthStrings.Email"
-                          Type="BitTextFieldType.Email"
-                          @bind-Value="SignInModel.UserName" />
-            <ValidationMessage For="@(() => SignInModel.UserName)" />
+    <section class="page-section">
+        <div class="bit-logo--white"></div>
+        <div class="bg-img"></div>
+        <div class="section-content">
+            <h1 class="section-title">@AppStrings.StartupPageTitle</h1>
+            <div class="section-desc">@AppStrings.StartupPageDescription</div>
         </div>
-        <div class="form-input-container">
-            <BitTextField Label="@AuthStrings.Password"
-                          @bind-Value="SignInModel.Password"
-                          Type="BitTextFieldType.Password"
-                          CanRevealPassword="true"
-                          Placeholder="@AuthStrings.Password" />
-            <ValidationMessage For="@(() => SignInModel.Password)" />
-        </div>
-        <BitButton Class="form-submit-button"
-                   ButtonStyle="BitButtonStyle.Primary"
-                   IsEnabled="IsSubmitButtonEnabled"
-                   Title="@AuthStrings.SignIn"
-                   AriaLabel="@AuthStrings.SignIn"
-                   ButtonType="BitButtonType.Submit">
-            @if (IsLoading)
+    </section>
+    <section class="page-section">
+        <div class="bit-logo--blue"></div>
+        <EditForm Model="SignInModel" OnValidSubmit="WrapHandled(DoSignIn)" class="form">
+            <DataAnnotationsValidator />
+            @if (string.IsNullOrEmpty(SignInMessage) is false)
             {
-                <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
+                <BitMessageBar MessageBarType="@SignInMessageType" OnDismiss="() => SignInMessage = null">@SignInMessage</BitMessageBar>
             }
-            else
-            {
-                <span>@AuthStrings.SignIn</span>
-            }
-        </BitButton>
-        <div class="form-forgot-password">
-            <BitLink Href="/forgot-password">@AuthStrings.ForgotPasswordLink</BitLink>
-        </div>
-        <div>
-            @AuthStrings.DontHaveAccountMessage <BitLink Href="/sign-up">@AuthStrings.SignUp</BitLink>
-        </div>
-    </EditForm>
+            <h2 class="form-title">@AuthStrings.SignInTitle</h2>
+            <div class="form-input-container">
+                <BitTextField Label="@AuthStrings.Email"
+                              Placeholder="@AuthStrings.Email"
+                              Type="BitTextFieldType.Email"
+                              @bind-Value="SignInModel.UserName" />
+                <ValidationMessage For="@(() => SignInModel.UserName)" />
+            </div>
+            <div class="form-input-container">
+                <BitTextField Label="@AuthStrings.Password"
+                              @bind-Value="SignInModel.Password"
+                              Type="BitTextFieldType.Password"
+                              CanRevealPassword="true"
+                              Placeholder="@AuthStrings.Password" />
+                <ValidationMessage For="@(() => SignInModel.Password)" />
+            </div>
+            <BitButton Class="form-submit-button"
+                       ButtonStyle="BitButtonStyle.Primary"
+                       IsEnabled="IsSubmitButtonEnabled"
+                       Title="@AuthStrings.SignIn"
+                       AriaLabel="@AuthStrings.SignIn"
+                       ButtonType="BitButtonType.Submit">
+                @if (IsLoading)
+                {
+                    <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
+                }
+                else
+                {
+                    <span>@AuthStrings.SignIn</span>
+                }
+            </BitButton>
+            <div class="form-forgot-password">
+                <BitLink Href="/forgot-password">@AuthStrings.ForgotPasswordLink</BitLink>
+            </div>
+            <div class="sign-up-row">
+                @AuthStrings.DontHaveAccountMessage <BitLink Href="/sign-up">@AuthStrings.SignUp</BitLink>
+            </div>
+        </EditForm>
+    </section>
 </div>

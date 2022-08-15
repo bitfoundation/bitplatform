@@ -70,56 +70,20 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Add.
+        ///   Looks up a localized string similar to New category.
         /// </summary>
-        public static string Add {
+        public static string AddCategory {
             get {
-                return ResourceManager.GetString("Add", resourceCulture);
+                return ResourceManager.GetString("AddCategory", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Add/Edit category.
+        ///   Looks up a localized string similar to New product.
         /// </summary>
-        public static string AddEditCategory {
+        public static string AddProduct {
             get {
-                return ResourceManager.GetString("AddEditCategory", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Add/Edit product.
-        /// </summary>
-        public static string AddEditProduct {
-            get {
-                return ResourceManager.GetString("AddEditProduct", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Create your multi-mode (WASM, Server, Hybrid, pre-rendering) Blazor app easily in the shortest time ever!.
-        /// </summary>
-        public static string AdminPanelHomeMessage {
-            get {
-                return ResourceManager.GetString("AdminPanelHomeMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Admin Panel Home.
-        /// </summary>
-        public static string AdminPanelHomeTitle {
-            get {
-                return ResourceManager.GetString("AdminPanelHomeTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Admin Panel.
-        /// </summary>
-        public static string AdminPanelTitle {
-            get {
-                return ResourceManager.GetString("AdminPanelTitle", resourceCulture);
+                return ResourceManager.GetString("AddProduct", resourceCulture);
             }
         }
         
@@ -138,6 +102,15 @@ namespace AdminPanel.Shared.Resources {
         public static string Alphabetical {
             get {
                 return ResourceManager.GetString("Alphabetical", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Admin Panel.
+        /// </summary>
+        public static string AppTitle {
+            get {
+                return ResourceManager.GetString("AppTitle", resourceCulture);
             }
         }
         
@@ -183,6 +156,24 @@ namespace AdminPanel.Shared.Resources {
         public static string Edit {
             get {
                 return ResourceManager.GetString("Edit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Edit category.
+        /// </summary>
+        public static string EditCategory {
+            get {
+                return ResourceManager.GetString("EditCategory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Edit product.
+        /// </summary>
+        public static string EditProduct {
+            get {
+                return ResourceManager.GetString("EditProduct", resourceCulture);
             }
         }
         
@@ -237,6 +228,33 @@ namespace AdminPanel.Shared.Resources {
         public static string GitHubRepo {
             get {
                 return ResourceManager.GetString("GitHubRepo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Create your multi-mode (WASM, Server, Hybrid, pre-rendering) Blazor admin panel easily in the shortest time ever!.
+        /// </summary>
+        public static string HomeMessage {
+            get {
+                return ResourceManager.GetString("HomeMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Bit Admin Panel.
+        /// </summary>
+        public static string HomeTitle {
+            get {
+                return ResourceManager.GetString("HomeTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Last 30 days category count.
+        /// </summary>
+        public static string Last30DaysCategoryCount {
+            get {
+                return ResourceManager.GetString("Last30DaysCategoryCount", resourceCulture);
             }
         }
         
@@ -304,11 +322,29 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to This chart shows the sale number of each product..
+        /// </summary>
+        public static string ProductSalesText {
+            get {
+                return ResourceManager.GetString("ProductSalesText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Products count per category chart.
         /// </summary>
         public static string ProductsCountPerCategoryChart {
             get {
                 return ResourceManager.GetString("ProductsCountPerCategoryChart", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This chart shows the number of products in each category..
+        /// </summary>
+        public static string ProductsCountPerCategoryChartText {
+            get {
+                return ResourceManager.GetString("ProductsCountPerCategoryChartText", resourceCulture);
             }
         }
         
@@ -327,6 +363,15 @@ namespace AdminPanel.Shared.Resources {
         public static string ProductsPercentagePerCategory {
             get {
                 return ResourceManager.GetString("ProductsPercentagePerCategory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This chart shows the percentage of products in each category..
+        /// </summary>
+        public static string ProductsPercentagePerCategoryText {
+            get {
+                return ResourceManager.GetString("ProductsPercentagePerCategoryText", resourceCulture);
             }
         }
         
@@ -372,6 +417,24 @@ namespace AdminPanel.Shared.Resources {
         public static string SortBy {
             get {
                 return ResourceManager.GetString("SortBy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Admin Panel is a project template that provides common features such as Sign-up &amp; Sign-in. This template is powered by Bit BlazorUI components..
+        /// </summary>
+        public static string StartupPageDescription {
+            get {
+                return ResourceManager.GetString("StartupPageDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Bit Admin Panel.
+        /// </summary>
+        public static string StartupPageTitle {
+            get {
+                return ResourceManager.GetString("StartupPageTitle", resourceCulture);
             }
         }
         

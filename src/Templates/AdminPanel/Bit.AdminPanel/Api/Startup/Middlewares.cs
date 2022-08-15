@@ -34,7 +34,10 @@ public class Middlewares
             options.InjectJavascript("/swagger/swagger-utils.js");
         });
 
-        app.UseResponseCompression();
+        if (env.IsDevelopment() is false)
+        {
+            app.UseResponseCompression();
+        }
 
         app.UseStaticFiles(new StaticFileOptions
         {
@@ -69,7 +72,7 @@ public class Middlewares
 
             var appsettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
 
-            var healthCheckSettings = appsettings.HealCheckSettings;
+            var healthCheckSettings = appsettings.HealthCheckSettings;
 
             if (healthCheckSettings.EnableHealthChecks)
             {

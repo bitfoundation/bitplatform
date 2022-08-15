@@ -44,30 +44,30 @@
     <meta name="description" content="AdminPanel is a project template based on ASP.NET core, identity, web api and ef core for the server side + blazor at client side. It allows you building Android, iOS, Windows, Web applications from single code base." />
     <base href="~/" />
     <link rel="icon" href="~/favicon.ico" type="image/x-icon" asp-append-version="@shoudAddAspAppendVersion">
-    <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.min.css" asp-append-version="@shoudAddAspAppendVersion" />
-    <link href="styles/app.min.css" rel="stylesheet" asp-append-version="@shoudAddAspAppendVersion" />
-    <link href="AdminPanel.App.styles.css" rel="stylesheet" asp-append-version="@shoudAddAspAppendVersion" />
     <component type="typeof(HeadOutlet)" render-mode="@renderMode" />
     <link rel="apple-touch-icon" sizes="512x512" href="images/icons/bit-icon-512.png" />
+    @if (isPwa)
+    {
+        <link rel="manifest" href="manifest.json">
+    }
     <style>
         html, body, #app-container {
             margin: 0;
             padding: 0;
             width: 100%;
             height: 100%;
-            background: #0D2960;
+            background: #FBFCFF;
         }
     </style>
-    @if (isPwa)
-    {
-    <link rel="manifest" href="manifest.json">
-    }
 </head>
 <body>
     <div id="app-container">
-        <component type="typeof(App.Components.LoadingComponent)" param-Color="@("#FFF")" render-mode="@RenderMode.Static" />
+        <component type="typeof(App.Components.LoadingComponent)" param-Color="@("#002A66")" render-mode="@RenderMode.Static" />
         @RenderBody()
     </div>
+
+    <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.min.css" asp-append-version="@shoudAddAspAppendVersion" />
+    <link href="AdminPanel.App.styles.css" rel="stylesheet" asp-append-version="@shoudAddAspAppendVersion" />
 
     @if (isStatic is false)
     {
@@ -82,6 +82,7 @@
                 <script src="_framework/blazor.webassembly.js" autostart=false></script>
                 <script src="_content/Bit.Bswup/bit-bswup.js" scope="/" sw="service-worker.js" handler="bitBswupHandler"></script>
                 <component type="typeof(Bit.Bswup.BswupProgress)" render-mode="@RenderMode.Static"
+                            param-AutoReload="true"
                             param-AppContainer="@("#app-container")" />
             }
             else
@@ -94,7 +95,7 @@
         <script src="_content/Bit.BlazorUI.Charts/scripts/bit.blazorui.charts.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
     }
 
-    <script src="scripts/app.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
+    <script src="scripts/app.js" asp-append-version="@shoudAddAspAppendVersion"></script>
 
     @if (isSsr)
     {

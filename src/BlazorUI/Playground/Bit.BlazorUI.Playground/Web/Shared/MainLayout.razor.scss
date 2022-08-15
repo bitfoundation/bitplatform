@@ -1,198 +1,212 @@
-﻿@import '../Styles/_shared.scss';
+﻿@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_media-queries.scss';
+@import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_fonts.scss';
+@import '../Styles/abstracts/_vars.scss';
 
-.main-container {
+.main {
     display: flex;
-    position: relative;
+    justify-content: flex-start;
     width: 100%;
     min-height: 100vh;
-    padding-top: rem(80px);
+    padding-top: rem(56px);
     box-sizing: border-box;
-
-    @include lg {
-        padding-top: rem(56px);
-    }
-
-    @include md {
-        padding-top: rem(40px);
-    }
+    background: linear-gradient(180deg, #F3F6F9 0%, #FFFFFF 100%);
 
     @include sm {
-        padding-top: rem(92px);
+        padding-top: rem(100px);
     }
 }
 
-.main-container-pad {
-    padding-right: rem(288px);
-    padding-left: rem(288px);
-    box-sizing: border-box;
+.main--full-page {
+    background: $White;
 
-    @include gt-xl {
-        padding-right: rem(448px);
-        padding-left: rem(448px);
-    }
-
-    @include lg {
-        padding-right: rem(100px);
-        padding-left: rem(100px);
-    }
-
-    @include md {
-        padding-right: rem(32px);
-        padding-left: rem(32px);
-    }
-
-    @include sm {
-        padding-right: rem(16px);
-        padding-left: rem(16px);
-    }
-}
-
-.page-content {
-    flex-grow: 1;
-    position: relative;
-}
-
-.footer {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    left: 0;
-    width: 100%;
-
-    .footer-gray-bar {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: 100%;
-        height: rem(24px);
-        box-sizing: border-box;
-        text-align: center;
-        font-size: rem(15px);
-        line-height: rem(24px);
-        color: $Gray1;
-        background-color: $B6Color;
+    .site-content {
+        max-width: 100%;
+        padding-left: 0;
+        padding-right: 0;
+        padding-top: 0;
+        padding-bottom: 0;
 
         @include lt-xl {
-            font-weight: 500;
-            font-size: rem(8px);
-            line-height: rem(12px);
+            padding-top: 0;
+            padding-bottom: 0;
         }
 
-        @include lt-lg {
-            height: rem(12px);
+        @include lg {
+            padding-left: 0;
+            padding-right: 0;
+        }
+
+        @include md {
+            padding-left: 0;
+            padding-right: 0;
+        }
+
+        @include sm {
+            padding-left: 0;
+            padding-right: 0;
+        }
+
+        @media all and (min-width: 1620px) {
+            max-width: 100%;
         }
     }
+}
 
-    @mixin BottomContactLinkContainer {
-        position: absolute;
-        top: rem(-50px);
-        z-index: 1;
-        margin: 0 auto;
-        right: 0;
-        left: 0;
+.site-content {
+    position: relative;
+    width: 100%;
+    max-width: calc(100% - $NavMenuWidth);
+    padding-left: rem(60px);
+    padding-right: rem(60px);
+    padding-top: rem(65px);
+    padding-bottom: rem(65px);
+    margin: 0 auto;
+
+    @include lt-xl {
+        padding-top: rem(35px);
+        padding-bottom: rem(35px);
+    }
+
+    @include lg {
+        padding-left: rem(16px);
+        padding-right: rem(16px);
+    }
+
+    @include md {
+        max-width: 100%;
+        padding-left: rem(30px);
+        padding-right: rem(30px);
+    }
+
+    @include sm {
+        max-width: 100%;
+        padding-left: rem(20px);
+        padding-right: rem(20px);
+    }
+
+    @media all and (min-width: 1621px) {
+        max-width: rem(1320px);
+    }
+}
+
+::deep a {
+    text-decoration: none;
+}
+
+::deep .example-desc {
+    margin-bottom: rem(8px);
+}
+
+::deep pre {
+    position: relative;
+    display: flex;
+    flex-flow: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    width: 100%;
+    max-height: rem(464px);
+    min-height: rem(70px);
+    margin: 0;
+    padding: 24px 80px 24px 24px;
+    box-sizing: border-box;
+    direction: ltr;
+    overflow: auto;
+    font-family: ui-monospace,SFMono-Regular,SF Mono,Menlo,Consolas,Liberation Mono,monospace;
+    border: rem(1px) solid #a19f9d;
+    border-top: none;
+
+    &::-webkit-scrollbar {
+        width: rem(6.5px);
+        background-color: $White;
+    }
+
+    &::-webkit-scrollbar-track {
+        background-color: $White;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background-color: #c8c6c4;
+        border-radius: rem(8px);
+        border: rem(4px) solid #c8c6c4;
+    }
+
+    &::-webkit-scrollbar-button {
+        display: none;
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+        background-color: $B3Color;
+        border-radius: rem(8px);
+        border: rem(4px) solid $B3Color;
+    }
+
+    &::-webkit-scrollbar:horizontal {
+        height: rem(8px);
+    }
+}
+
+::deep code {
+    line-height: 1.5;
+    font-family: ui-monospace,SFMono-Regular,SF Mono,Menlo,Consolas,Liberation Mono,monospace;
+
+    span {
+        font-family: inherit;
+    }
+}
+
+::deep .hljs {
+    overflow-x: unset !important;
+    padding: 0 !important;
+    background-color: transparent !important;
+}
+
+::deep .status-bar-safe-area {
+    display: none;
+}
+
+@supports (-webkit-touch-callout: none) {
+    ::deep .status-bar-safe-area {
         display: flex;
-        justify-content: center;
-        flex-flow: row nowrap;
-
-        @include lt-lg {
-            top: rem(-35px);
-        }
-    }
-
-    @mixin LeftContactLinkContainer {
-        position: fixed;
-        top: 50%;
-        left: rem(50px);
+        position: sticky;
+        top: 0;
+        height: env(safe-area-inset-top);
+        background-color: #f7f7f7;
+        width: 100%;
         z-index: 1;
-        right: unset;
-        display: flex;
-        justify-content: center;
-        flex-flow: column nowrap;
-        transform: translateY(-50%);
-
-        a {
-            background-color: $B4Color;
-        }
     }
 
-    .contact-link-container--home {
-        @media all and (min-width: #{em(1335px)}) {
-            @include LeftContactLinkContainer;
-        }
-
-        @media all and (max-width: #{em(1334px)}) {
-            @include BottomContactLinkContainer;
-        }
-    }
-
-    .contact-link-container {
-        @include BottomContactLinkContainer;
-    }
-
-    @mixin FooterLink {
-        width: rem(40px);
-        height: rem(40px);
-        border-radius: 50%;
-        background-position: center;
-        background-repeat: no-repeat;
-        background-color: $B2Color;
-        cursor: pointer;
-        margin: rem(8px);
-        background-size: rem(21px);
-
-        @include lt-lg {
-            width: rem(24px);
-            height: rem(24px);
-            margin: rem(4px);
-            background-size: rem(8px);
-        }
-    }
-
-    .twitter-link {
-        @include FooterLink;
-        background-image: url('/images/twitter-icon.svg');
-
-        &:hover {
-            background-color: #1DA1F2;
-        }
-    }
-
-    .github-link {
-        @include FooterLink;
-        background-image: url('/images/github-icon.svg');
-
-        &:hover {
-            background-color: #171515;
-        }
-    }
-
-    .youtube-link {
-        @include FooterLink;
-        background-image: url('/images/youtube-icon.svg');
-
-        &:hover {
-            background-color: #FF0000;
-        }
-    }
-
-    .linkedin-link {
-        @include FooterLink;
-        background-image: url('/images/linkedin-icon.svg');
-
-        &:hover {
-            background-color: #0A66C2;
-        }
+    ::deep .flex-column, ::deep .navbar-brand {
+        padding-left: env(safe-area-inset-left);
     }
 }
 
-@media all and (max-width: #{em(1800px)}) and (min-width: #{em(1441)}) {
-    .main-container-pad {
-        padding-left: rem(380px);
-    }
+//::-webkit-scrollbar {
+//    width: 16px;
+//    background-color: #fff;
+//}
+
+::deep ::-webkit-scrollbar-track {
+    background-color: #fff;
 }
 
-@media all and (max-width: #{em(1390px)}) and (min-width: #{em(901)}) {
-    .main-container-pad {
-        padding-left: rem(300px);
-    }
+::deep ::-webkit-scrollbar-thumb {
+    background-color: #c8c6c4;
+    border-radius: 16px;
+    border: 4px solid #c8c6c4;
 }
+
+//::-webkit-scrollbar-button {
+//    display: none;
+//}
+
+//::-webkit-scrollbar-thumb:hover {
+//    background: #5CA1FF;
+//    border-radius: 8px;
+//    border: 4px solid #5CA1FF;
+//}
+
+//::-webkit-scrollbar:horizontal {
+//    height: 6px;
+//}

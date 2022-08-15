@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
 
 namespace Bit.BlazorUI;
@@ -67,7 +68,12 @@ public partial class BitButton
     /// <summary>
     /// The type of the button
     /// </summary>
-    [Parameter] public BitButtonType ButtonType { get; set; } = BitButtonType.Button;
+    [Parameter] public BitButtonType? ButtonType { get; set; }
+
+    /// <summary>
+    /// The EditContext, which is set if the button is inside an <see cref="EditForm"/>
+    /// </summary>
+    [CascadingParameter] public EditContext? EditContext { get; set; }
 
     protected override string RootElementClass => "bit-btn";
 
@@ -76,8 +82,8 @@ public partial class BitButton
         ClassBuilder.Register(() => IsEnabled is false
                                        ? string.Empty
                                        : ButtonStyle == BitButtonStyle.Primary
-                                           ? $"{RootElementClass}-primary-{VisualClassRegistrar()}"
-                                           : $"{RootElementClass}-standard-{VisualClassRegistrar()}");
+                                           ? "primary"
+                                           : "standard");
     }
 
     protected override async Task OnInitializedAsync()
@@ -86,6 +92,8 @@ public partial class BitButton
         {
             tabIndex = AllowDisabledFocus ? null : -1;
         }
+
+        ButtonType ??= EditContext is null ? BitButtonType.Button : BitButtonType.Submit;
 
         await base.OnInitializedAsync();
     }

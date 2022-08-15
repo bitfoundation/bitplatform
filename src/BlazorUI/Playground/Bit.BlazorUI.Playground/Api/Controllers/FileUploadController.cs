@@ -57,8 +57,6 @@ public class FileUploadController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        var bitFileId = Request.Headers["BIT_FILE_ID"].ToString();
-
         using var requestStream = file.OpenReadStream();
 
         if (Directory.Exists(UploadPath) is false)
@@ -66,14 +64,15 @@ public class FileUploadController : ControllerBase
             Directory.CreateDirectory(UploadPath);
         }
 
+        var bitFileId = Request.Headers["BIT_FILE_ID"].ToString();
         var path = Path.Combine(UploadPath, $"{bitFileId}-{file.FileName}");
 
         using var targetStream = System.IO.File.Exists(path) 
-            ? System.IO.File.Create(path) 
-            : System.IO.File.Open(path, FileMode.Append);
+            ? System.IO.File.Open(path, FileMode.Append)
+            : System.IO.File.Create(path);
 
         if (cancellationToken.IsCancellationRequested is false)
-            await requestStream.CopyToAsync(targetStream, cancellationToken);
+            await requestStream.CopyToAsync(targetStream);
 
         return Ok();
     }

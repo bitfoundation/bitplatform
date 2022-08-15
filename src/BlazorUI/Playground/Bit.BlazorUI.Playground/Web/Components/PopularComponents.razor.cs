@@ -46,11 +46,10 @@ public partial class PopularComponents
         },
     };
     private PopularComponent SelectedComponent;
-    private string ActiveTab = "demo";
-    private string ColorRgb = "rgb(255,255,255)";
+    private string ColorRgb = "rgb(0,101,239)";
     private double Alpha = 1;
-    string UploadUrl => $"{GetBaseUrl()}FileUpload/UploadStreamedFile";
-    string RemoveUrl => $"{GetBaseUrl()}FileUpload/RemoveFile";
+    string UploadUrl => $"{GetBaseUrl()}FileUpload/UploadChunkedFile";
+    string RemoveUrl => $"FileUpload/RemoveFile";
 
     string GetBaseUrl()
     {
@@ -76,11 +75,6 @@ public partial class PopularComponents
     {
         SelectedComponent = com;
         StateHasChanged();
-    }
-
-    private void SelectTab(string tab)
-    {
-        ActiveTab = tab;
     }
 
     private readonly List<BitNavLinkItem> BasicNavLinks = new()

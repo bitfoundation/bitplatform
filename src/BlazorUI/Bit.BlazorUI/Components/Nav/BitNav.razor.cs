@@ -213,11 +213,9 @@ public partial class BitNav : IDisposable
         var enabledClass = navLinkItem.IsEnabled ? "enabled" : "disabled";
         var hasUrlClass = navLinkItem.Url.HasNoValue() ? "nourl" : "hasurl";
 
-        var mainStyle = $"bit-nav-link-{enabledClass}-{hasUrlClass}-{VisualClassRegistrar()}";
+        var mainStyle = $"link-{enabledClass}-{hasUrlClass}";
 
-        var selectedClass = selectedKey.HasValue() && navLinkItem.Key == SelectedKey
-                                ? $"bit-nav-selected-{VisualClassRegistrar()}"
-                                : string.Empty;
+        var selectedClass = selectedKey.HasValue() && navLinkItem.Key == SelectedKey ? $"selected" : string.Empty;
 
         return $"{mainStyle} {selectedClass}";
     }

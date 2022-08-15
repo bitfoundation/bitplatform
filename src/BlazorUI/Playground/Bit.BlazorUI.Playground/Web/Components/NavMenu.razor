@@ -1,0 +1,24 @@
+﻿@inherits AppComponentBase
+
+@if (isNavOpen)
+{
+    <div class="nav-menu-shadow nav-menu--mobile" @onclick="@ToggleMenu"></div>
+}
+<div class="nav-menu @(isNavOpen is false ? "nav-menu--desktop" : null)">
+    <div class="search-box-container">
+        <BitSearchBox Class="nav-menu-search-box"
+                      Placeholder="Search components"
+                      IconName="BitIconName.Search"
+                      IsUnderlined="true"
+                      Value="@searchText"
+                      ValueChanged="@HandleChange"
+                      OnClear="@HandleClear" />
+    </div>
+    <div class="nav-menu-list">
+        <BitNav Class="@GetNavMenuClass()"
+                NavLinkItems="filteredNavLinks"
+                AriaLabel="Bit Component Nav"
+                OnLinkClick="WrapHandled<BitNavLinkItem>(HandleLinkClick)">
+        </BitNav>
+    </div>
+</div>

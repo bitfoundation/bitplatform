@@ -4,15 +4,8 @@ namespace AdminPanel.App.Pages.Products;
 
 public partial class CreateEditProductModal
 {
-    [AutoInject] private HttpClient httpClient = default!;
-
-    [AutoInject] private IStateService stateService = default!;
-
     [Parameter]
     public ProductDto Product { get; set; }
-
-    [Parameter]
-    public EventCallback OnProductSave { get; set; }
 
     private bool IsOpen { get; set; }
     public bool IsLoading { get; private set; }
@@ -22,17 +15,19 @@ public partial class CreateEditProductModal
 
     public string SelectedCategoyId { get => Product!.CategoryId!.ToString(); set { Product.CategoryId = int.Parse(value); } }
 
-    protected override async void OnInitialized()
+    protected override async Task OnInitAsync()
     {
         AllCategoryList = await GetCategoryDropdownItemsAsync();
-        base.OnInitialized();
+
+        await base.OnInitAsync();
     }
 
-    public void ShowModal(ProductDto product)
+    public async Task ShowModal(ProductDto product)
     {
-        InvokeAsync(() =>
+        await InvokeAsync(async () =>
         {
             IsOpen = true;
+            await JsRuntime.SetToggleBodyOverflow(true);
 
             Product = product;
 
@@ -46,7 +41,7 @@ public partial class CreateEditProductModal
 
         try
         {
-            var categoryList = await stateService.GetValue($"{nameof(ProductsPage)}-{nameof(AllCategoryList)}", async () => await httpClient.GetFromJsonAsync("Category/Get", AppJsonContext.Default.ListCategoryDto));
+            var categoryList = await StateService.GetValue($"{nameof(ProductsPage)}-{nameof(AllCategoryList)}", async () => await HttpClient.GetFromJsonAsync("Category/Get", AppJsonContext.Default.ListCategoryDto));
 
             return categoryList!.Select(c => new BitDropDownItem()
             {
@@ -74,16 +69,15 @@ public partial class CreateEditProductModal
 
             if (Product.Id == 0)
             {
-                await httpClient.PostAsJsonAsync("Product/Create", Product, AppJsonContext.Default.ProductDto);
+                await HttpClient.PostAsJsonAsync("Product/Create", Product, AppJsonContext.Default.ProductDto);
             }
             else
             {
-                await httpClient.PutAsJsonAsync("Product/Update", Product, AppJsonContext.Default.ProductDto);
+                await HttpClient.PutAsJsonAsync("Product/Update", Product, AppJsonContext.Default.ProductDto);
             }
 
             IsOpen = false;
-
-            await OnProductSave.InvokeAsync();
+            await JsRuntime.SetToggleBodyOverflow(false);
         }
         finally
         {
@@ -91,8 +85,9 @@ public partial class CreateEditProductModal
         }
     }
 
-    private void OnCloseClick()
+    private async Task OnCloseClick()
     {
         IsOpen = false;
+        await JsRuntime.SetToggleBodyOverflow(false);
     }
 }

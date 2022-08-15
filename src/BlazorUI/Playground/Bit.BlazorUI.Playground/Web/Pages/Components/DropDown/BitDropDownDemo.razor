@@ -100,7 +100,35 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="DropDown with validation" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
+    <ComponentExampleBox Title="Cascading DropDowns" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
+        <ExamplePreview>
+            <div class="grid-wrap">
+                <div>
+                    <BitDropDown Label="Category"
+                                 Items="Categories"
+                                 Placeholder="Select options"
+                                 @bind-Value="@CurrentCategory"
+                                 Style="width:290px; margin:20px 0 20px 0">
+                    </BitDropDown>
+
+                    <BitDropDown Label="Product"
+                                 Items="@(Products.Where(p => p.Value.StartsWith($"{CurrentCategory}-")).ToList())"
+                                 Placeholder="Select options"
+                                 @bind-Value="@CurrentProduct"
+                                 IsEnabled="string.IsNullOrEmpty(CurrentCategory) is false"
+                                 Style="width:290px; margin:20px 0 20px 0">
+                    </BitDropDown>
+                </div>
+
+                <div class="cascading-dropdowns-info">
+                    <h5>Current category: @(Categories.FirstOrDefault(c => c.Value == CurrentCategory)?.Text ?? "-")</h5>
+                    <h5>Current product: @(Products.FirstOrDefault(c => c.Value == CurrentProduct)?.Text ?? "-")</h5>
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="DropDown with validation" HTMLSourceCode="@example6HTMLCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example6">
         <ExamplePreview>
             @if (string.IsNullOrEmpty(SuccessMessage))
             {
@@ -149,7 +177,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Responsive BitDropDown" HTMLSourceCode="@example6HTMLCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example6">
+    <ComponentExampleBox Title="Responsive BitDropDown" HTMLSourceCode="@example7HTMLCode" CSharpSourceCode="@example7CSharpCode" ExampleId="example7">
         <ExamplePreview>
             <div class="example-desc">Using the IsResponsiveModeEnabled parameter, the drop down items will render in a side panel in small screen sizes.</div>
             <div>
@@ -157,6 +185,31 @@
                              Items="GetDropdownItems()"
                              Placeholder="Select an option"
                              IsResponsiveModeEnabled=true
+                             Style="width: 290px; margin: 20px 0 20px 0">
+                </BitDropDown>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="DropDown with search box" HTMLSourceCode="@example8HTMLCode" CSharpSourceCode="@example8CSharpCode" ExampleId="example8">
+        <ExamplePreview>
+            <div>
+                <BitDropDown Label="Single-select Controlled with search box"
+                             Items="GetDropdownItems()"
+                             Placeholder="Select an option"
+                             IsResponsiveModeEnabled="true"
+                             ShowSearchBox="true"
+                             PlaceholderSearchBox="Search item"
+                             Style="width: 290px; margin: 20px 0 20px 0">
+                </BitDropDown>
+
+                <BitDropDown Label="Multi-select controlled with search box"
+                             Items="GetDropdownItems()"
+                             Placeholder="Select options"
+                             IsMultiSelect="true"
+                             IsResponsiveModeEnabled="true"
+                             ShowSearchBox="true"
+                             PlaceholderSearchBox="Search items"
                              Style="width: 290px; margin: 20px 0 20px 0">
                 </BitDropDown>
             </div>

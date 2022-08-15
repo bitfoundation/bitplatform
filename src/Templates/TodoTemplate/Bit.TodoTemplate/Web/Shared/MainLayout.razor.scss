@@ -133,16 +133,7 @@
 }
 
 ::deep .form-submit-button {
-    margin-top: rem(32px);
-    margin-bottom: rem(24px);
-
-    @include lg {
-        margin-bottom: rem(16px);
-    }
-
-    @include sm {
-        margin-bottom: rem(20px);
-    }
+    margin-top: rem(20px);
 }
 
 ::deep .form-message-bar {

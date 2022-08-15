@@ -1,4 +1,6 @@
-﻿@import "../../../Styles/_shared.scss";
+﻿@import '../../../Styles/abstracts/_colors.scss';
+@import '../../../Styles/abstracts/_media-queries.scss';
+@import '../../../Styles/abstracts/_functions.scss';
 
 .m-t-10 {
     margin-top: rem(10px);
@@ -6,4 +8,37 @@
 
 .m-t-20 {
     margin-top: rem(20px);
+}
+
+::deep .bit-tgl-btn {
+
+    &.tgl-btn {
+        @include sm {
+            margin-top: rem(10px);
+            width: rem(195px);
+        }
+    }
+
+    &.aria-hidden-tgl-btn {
+        @include sm {
+            margin-top: rem(10px);
+            width: rem(239px);
+        }
+    }
+
+    &.primary {
+        .bit-icon {
+            color: $White;
+        }
+    }
+
+    &.bit-tgl-btn-fluent {
+        span {
+            span {
+                font-weight: normal;
+                margin: 0;
+                line-height: 0;
+            }
+        }
+    }
 }

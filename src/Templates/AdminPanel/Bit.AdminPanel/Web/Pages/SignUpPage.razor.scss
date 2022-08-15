@@ -4,78 +4,233 @@
 
 .page-container {
     display: flex;
-    flex-flow: column nowrap;
+    flex-flow: row nowrap;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
     width: 100%;
     height: 100%;
-    padding: rem(56px) rem(16px);
+
+    @include md {
+        flex-flow: column nowrap;
+        justify-content: flex-start;
+        align-items: center;
+    }
+}
+
+.page-section {
+    position: relative;
+    width: 50%;
+    height: 100%;
     box-sizing: border-box;
 
-    @include lg {
-        padding: rem(48px) rem(16px);
+    @include lt-lg {
+        width: 100%;
+        height: unset;
+    }
+
+    &:first-child {
+        display: flex;
+        flex-flow: column nowrap;
+        justify-content: center;
+        align-items: flex-start;
+        padding: rem(135px) rem(76px) rem(40px);
+        background-color: $Blue1;
+
+        @include md {
+            flex-flow: row-reverse nowrap;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding: rem(25px) rem(32px);
+        }
+
+        @include sm {
+            display: none;
+        }
+    }
+
+    &:last-child {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: $BackgroundColor;
+
+        @include lt-lg {
+            height: 100%;
+        }
+
+        @include sm {
+            padding: 0 rem(16px);
+        }
+    }
+}
+
+.bit-logo--white {
+    position: absolute;
+    top: rem(40px);
+    left: rem(76px);
+    width: rem(40px);
+    height: rem(26px);
+    background-image: url('/images/bit-white-logo.svg');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
+
+    @include md {
+        top: rem(32px);
+        left: rem(32px);
+    }
+}
+
+.bit-logo--blue {
+    display: none;
+    position: absolute;
+    top: rem(24px);
+    left: rem(16px);
+    width: rem(30px);
+    height: rem(20px);
+    background-image: url('/images/bit-logo.svg');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
+
+    @include sm {
+        display: block;
+    }
+}
+
+.bg-img {
+    flex-shrink: 0;
+    width: 100%;
+    height: rem(348px);
+    background-image: url('/images/sign-in-up-bg.webp');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
+    margin-bottom: rem(48px);
+
+    @include md {
+        width: rem(287px);
+        height: rem(180px);
+        margin-bottom: rem(0);
+        margin-left: rem(52px);
+    }
+}
+
+.section-content {
+    width: 100%;
+    max-width: rem(357px);
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: flex-start;
+
+    .section-title {
+        margin: 0;
+        margin-bottom: rem(12px);
+        font-weight: 600;
+        font-size: rem(28px);
+        line-height: rem(36px);
+        color: $White;
+
+        @include md {
+            font-size: rem(20px);
+            line-height: rem(28px);
+        }
+    }
+
+    .section-desc {
+        font-weight: 400;
+        font-size: rem(16px);
+        line-height: rem(24px);
+        color: $BackgroundColor;
+
+        @include md {
+            font-size: rem(14px);
+            line-height: rem(20px);
+        }
+    }
+
+    @include md {
+        max-width: 100%;
+    }
+}
+
+::deep .form {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+    max-width: rem(405px);
+    text-align: center;
+}
+
+.form-title {
+    margin: 0;
+    margin-bottom: rem(60px);
+    font-weight: 600;
+    font-size: rem(42px);
+    line-height: rem(52px);
+    color: $Gray190;
+
+    @include md {
+        font-size: rem(32px);
+        line-height: rem(40px);
     }
 
     @include sm {
-        padding: rem(40px) rem(16px);
+        font-size: rem(28px);
+        line-height: rem(36px);
     }
+}
+
+.form-input-container {
+    width: 100%;
+    margin-bottom: rem(24px);
+    text-align: left;
+}
+
+.sign-in-row {
+    margin-top: rem(24px);
+    font-weight: 400;
+    font-size: rem(14px);
+    line-height: rem(20px);
 }
 
 .form-description {
     font-weight: 600;
-    font-size: rem(16px);
-    line-height: rem(24px);
-    width: rem(432px);
-    height: rem(48px);
-
-    @include lg {
-        width: rem(368px);
-        height: rem(40px);
-    }
-
-    @include md {
-        width: rem(364px);
-        height: rem(40px);
-    }
-
-    @include sm {
-        width: rem(280px);
-        height: rem(60px);
-    }
-
-    @include lt-xl {
-        font-size: rem(14px);
-        line-height: rem(20px);
-    }
+    font-size: rem(14px);
+    line-height: rem(20px);
 }
 
 .form-link {
     font-weight: 400;
-    font-size: rem(16px);
-    line-height: rem(24px);
+    font-size: rem(14px);
+    line-height: rem(22px);
     color: $Black3;
-    width: rem(319px);
-    height: rem(24px);
     margin-top: rem(36px);
-
-    @include lt-xl {
-        font-size: rem(14px);
-        line-height: rem(22px);
-        width: rem(280px);
-    }
 }
 
 .form-note {
     font-weight: 400;
-    font-size: rem(11.2px);
-    line-height: rem(24px);
+    font-size: rem(10px);
+    line-height: rem(22px);
     color: $Black3;
-    width: rem(319px);
-    height: rem(24px);
+    margin-bottom: rem(16px);
+}
 
-    @include lt-xl {
-        font-size: rem(9.8px);
-        line-height: rem(22px);
-        width: rem(280px);
+::deep .bit-msg-bar-fluent {
+    top: 24px;
+    position: absolute;
+    width: calc(100% - 48px);
+
+    @include md {
+        top: 16px;
+        width: calc(100% - 32px);
+    }
+
+    @include sm {
+        top: 16px;
+        width: calc(100% - 32px);
     }
 }

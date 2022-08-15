@@ -1,18 +1,9 @@
-﻿using System.Threading.Channels;
-using AdminPanel.Shared.Dtos.Account;
+﻿using AdminPanel.Shared.Dtos.Account;
 
 namespace AdminPanel.App.Pages;
 
 public partial class ResetPasswordPage
 {
-    [AutoInject] private HttpClient httpClient = default!;
-
-    [AutoInject] private NavigationManager navigationManager = default!;
-
-    [AutoInject] private IAuthenticationService authService = default!;
-
-    [AutoInject] private AppAuthenticationStateProvider authStateProvider = default!;
-
     [Parameter]
     [SupplyParameterFromQuery]
     public string? Email { get; set; }
@@ -46,19 +37,19 @@ public partial class ResetPasswordPage
 
         try
         {
-            await httpClient.PostAsJsonAsync("Auth/ResetPassword", ResetPasswordModel, AppJsonContext.Default.ResetPasswordRequestDto);
+            await HttpClient.PostAsJsonAsync("Auth/ResetPassword", ResetPasswordModel, AppJsonContext.Default.ResetPasswordRequestDto);
 
             ResetPasswordMessageType = BitMessageBarType.Success;
 
             ResetPasswordMessage = AuthStrings.PasswordChangedSuccessfullyMessage;
 
-            await authService.SignIn(new SignInRequestDto
+            await AuthenticationService.SignIn(new SignInRequestDto
             {
                 UserName = Email,
                 Password = ResetPasswordModel.Password
             });
 
-            navigationManager.NavigateTo("/");
+            NavigationManager.NavigateTo("/");
         }
         catch (KnownException e)
         {
@@ -72,21 +63,21 @@ public partial class ResetPasswordPage
         }
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitAsync()
     {
         ResetPasswordModel.Email = Email;
         ResetPasswordModel.Token = Token;
 
-        base.OnInitialized();
+        await base.OnInitAsync();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            if (await authStateProvider.IsUserAuthenticated())
+            if (await AuthenticationStateProvider.IsUserAuthenticated())
             {
-                navigationManager.NavigateTo("/");
+                NavigationManager.NavigateTo("/");
             }
         }
 

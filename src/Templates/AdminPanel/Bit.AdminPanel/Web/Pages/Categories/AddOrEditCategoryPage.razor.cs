@@ -2,20 +2,16 @@
 
 namespace AdminPanel.App.Pages.Categories;
 
+[Authorize]
 public partial class AddOrEditCategoryPage
 {
-    [AutoInject] private HttpClient httpClient = default!;
-
-    [AutoInject] private NavigationManager navigationManager = default!;
-
-    [AutoInject] private IStateService stateService = default!;
-
     [Parameter]
     public int? Id { get; set; }
 
     public CategoryDto? Category { get; set; } = new();
     public bool IsLoading { get; private set; }
     public bool IsSaveLoading { get; private set; }
+    public bool IsColorPickerOpen { get; set; }
     public BitMessageBarType SaveMessageType { get; set; }
     public string? SaveMessage { get; set; }
     protected override async Task OnInitAsync()
@@ -34,13 +30,22 @@ public partial class AddOrEditCategoryPage
         try
         {
             IsLoading = true;
-            Category = await httpClient.GetFromJsonAsync($"Category/Get/{Id}", AppJsonContext.Default.CategoryDto);
+            Category = await HttpClient.GetFromJsonAsync($"Category/Get/{Id}", AppJsonContext.Default.CategoryDto);
         }        
         finally
         {
             IsLoading = false;
         }
-        
+    }
+
+    private void SetCategoryColor(string color)
+    {
+        Category!.Color = color;
+    }
+
+    private void ToggleColorPicker()
+    {
+        IsColorPickerOpen = !IsColorPickerOpen;
     }
 
     private async Task Save()
@@ -56,14 +61,14 @@ public partial class AddOrEditCategoryPage
 
             if (Category!.Id == 0)
             {
-                await httpClient.PostAsJsonAsync("Category/Create", Category, AppJsonContext.Default.CategoryDto);
+                await HttpClient.PostAsJsonAsync("Category/Create", Category, AppJsonContext.Default.CategoryDto);
             }
             else
             {
-                await httpClient.PutAsJsonAsync("Category/Update", Category, AppJsonContext.Default.CategoryDto);
+                await HttpClient.PutAsJsonAsync("Category/Update", Category, AppJsonContext.Default.CategoryDto);
             }
 
-            navigationManager.NavigateTo("categories");
+            NavigationManager.NavigateTo("categories");
         }
         catch (ResourceValidationException e)
         {

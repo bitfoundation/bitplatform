@@ -1,14 +1,11 @@
 ﻿//-:cnd:noEmit
-using System.Collections.Generic;
 using AdminPanel.Shared.Dtos.Categories;
 
 namespace AdminPanel.App.Pages.Categories;
+
+[Authorize]
 public partial class CategoriesPage
 {
-    [AutoInject] private HttpClient httpClient = default!;
-
-    [AutoInject] private NavigationManager navigationManager = default!;
-
     public bool IsLoading { get; set; }
 
     BitDataGridPaginationState pagination = new() { ItemsPerPage = 10 };
@@ -50,7 +47,7 @@ public partial class CategoriesPage
 
                 if (string.IsNullOrEmpty(_categoryNameFilter) is false)
                 {
-                    query.Add("$filter", $"contains(Name,{_categoryNameFilter}");
+                    query.Add("$filter", $"contains(Name,'{_categoryNameFilter}')");
                 }
 
                 if (req.GetSortByProperties().Any())
@@ -58,9 +55,9 @@ public partial class CategoriesPage
                     query.Add("$orderby", string.Join(", ", req.GetSortByProperties().Select(p => $"{p.PropertyName} {(p.Direction == BitDataGridSortDirection.Ascending ? "asc" : "desc")}")));
                 }
 
-                var url = navigationManager.GetUriWithQueryParameters("Category/GetCategories", query);
+                var url = NavigationManager.GetUriWithQueryParameters("Category/GetCategories", query);
 
-                var data = await httpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultCategoryDto);
+                var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultCategoryDto);
 
                 return BitDataGridItemsProviderResult.From(data!.Items, (int)data!.TotalCount);
             }
@@ -83,25 +80,23 @@ public partial class CategoriesPage
 
     private void CreateCategory()
     {
-        navigationManager.NavigateTo("add-edit-category");
+        NavigationManager.NavigateTo("add-edit-category");
     }
 
-    private Task EditCategory(CategoryDto Category)
+    private void EditCategory(CategoryDto Category)
     {
-        navigationManager.NavigateTo($"add-edit-category/{Category!.Id}");
-        return Task.CompletedTask;
+        NavigationManager.NavigateTo($"add-edit-category/{Category!.Id}");
     }
 
-    private void DeleteCategory(CategoryDto Category)
+    private async Task DeleteCategory(CategoryDto Category)
     {
-        ConfirmMessageBox.Show("Are you sure delete?", Category.Name!, "Delete", async (confirmed) =>
+        var confirmed = await ConfirmMessageBox.Show($"Are you sure you want to delete category \"{Category.Name}\"?", "Delete category");
+
+        if (confirmed)
         {
-            if (confirmed)
-            {
-                await httpClient.DeleteAsync($"Category/Delete/{Category.Id}");
-                await RefreshData();
-            }
-        });
+            await HttpClient.DeleteAsync($"Category/Delete/{Category.Id}");
+            await RefreshData();
+        }
     }
 }
 

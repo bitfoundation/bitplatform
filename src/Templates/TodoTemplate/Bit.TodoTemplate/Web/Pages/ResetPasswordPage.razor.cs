@@ -5,14 +5,6 @@ namespace TodoTemplate.App.Pages;
 
 public partial class ResetPasswordPage
 {
-    [AutoInject] private HttpClient httpClient = default!;
-
-    [AutoInject] private NavigationManager navigationManager = default!;
-
-    [AutoInject] private IAuthenticationService authService = default!;
-
-    [AutoInject] private AppAuthenticationStateProvider authStateProvider = default!;
-
     [Parameter]
     [SupplyParameterFromQuery]
     public string? Email { get; set; }
@@ -46,25 +38,25 @@ public partial class ResetPasswordPage
 
         try
         {
-            await httpClient.PostAsJsonAsync("Auth/ResetPassword", ResetPasswordModel, AppJsonContext.Default.ResetPasswordRequestDto);
+            await HttpClient.PostAsJsonAsync("Auth/ResetPassword", ResetPasswordModel, AppJsonContext.Default.ResetPasswordRequestDto);
 
             ResetPasswordMessageType = BitMessageBarType.Success;
 
-            ResetPasswordMessage = AuthStrings.PasswordChangedSuccessfullyMessage;
+            ResetPasswordMessage = Localizer[nameof(AppStrings.PasswordChangedSuccessfullyMessage)];
 
-            await authService.SignIn(new SignInRequestDto
+            await AuthenticationService.SignIn(new SignInRequestDto
             {
                 UserName = Email,
                 Password = ResetPasswordModel.Password
             });
 
-            navigationManager.NavigateTo("/");
+            NavigationManager.NavigateTo("/");
         }
         catch (KnownException e)
         {
             ResetPasswordMessageType = BitMessageBarType.Error;
 
-            ResetPasswordMessage = ErrorStrings.ResourceManager.Translate(e.Message, Email!);
+            ResetPasswordMessage = e.Message;
         }
         finally
         {
@@ -84,9 +76,9 @@ public partial class ResetPasswordPage
     {
         if (firstRender)
         {
-            if (await authStateProvider.IsUserAuthenticated())
+            if (await AuthenticationStateProvider.IsUserAuthenticated())
             {
-                navigationManager.NavigateTo("/");
+                NavigationManager.NavigateTo("/");
             }
         }
 

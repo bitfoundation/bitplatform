@@ -1,0 +1,35 @@
+﻿@import '../Styles/abstracts/_fonts.scss';
+@import '../Styles/abstracts/_media-queries.scss';
+@import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_vars.scss';
+
+* {
+    font-family: "OpenSans";
+}
+
+.main-container {
+    position: relative;
+    display: flex;
+    width: 100%;
+    min-height: 100vh;
+    box-sizing: border-box;
+    background: linear-gradient(169.63deg, rgba(231, 240, 255, 0.71) 0.83%, rgba(246, 249, 255, 0.67) 21.07%, rgba(234, 242, 255, 0.72) 94.64%), #FFFFFF;
+}
+
+.page-content {
+    flex-grow: 1;
+    position: relative;
+    max-width: calc(100% - rem($NavMenuWidth));
+
+    @include md {
+        max-width: 100%;
+    }
+
+    @include sm {
+        max-width: 100%;
+    }
+
+    &.page-content-home {
+        max-width: 100%;
+    }
+}

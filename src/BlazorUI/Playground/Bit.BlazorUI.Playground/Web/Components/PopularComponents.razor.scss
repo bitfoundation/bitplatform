@@ -1,374 +1,252 @@
-﻿@import '../Styles/_shared.scss';
+﻿@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_media-queries.scss';
+@import '../Styles/abstracts/_functions.scss';
 
 .main-container {
     display: flex;
     flex-flow: row nowrap;
-    justify-content: center;
-    align-items: center;
-    height: rem(504px);
-
-    @include lg {
-        height: rem(442px);
-    }
+    justify-content: space-between;
+    align-items: flex-start;
+    width: 100%;
 
     @include lt-lg {
-        display: none;
+        flex-flow: column nowrap;
+        justify-content: flex-start;
     }
 }
 
-.left-box {
-    position: relative;
-    display: flex;
-    flex-flow: column nowrap;
-    width: rem(608px);
-    height: 100%;
-    margin-right: rem(16px);
-    border-radius: rem(10px);
-    border: rem(1px) solid $B5Color;
-    box-sizing: border-box;
-    background-color: $White;
-
-    @include lg {
-        width: rem(512px);
-    }
-
-    .box-clipart {
-        position: absolute;
-        z-index: -1;
-        bottom: -120px;
-        left: -120px;
-        width: rem(384px);
-        height: rem(384px);
-        background-image: url('/images/home/most-popular-components-box-clipart.svg');
-        background-repeat: no-repeat;
-        background-position: center;
-        background-size: cover;
-
-        @include lg {
-            width: rem(360px);
-            height: rem(360px);
-        }
-    }
-}
-
-.plane-clipart {
-    position: absolute;
-    display: block;
-    background-image: url('/images/home/plane-clipart.png');
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: cover;
-}
-
-.plane-clipart--top {
-    top: rem(-225px);
-    left: rem(-65px);
-    width: rem(120px);
-    height: rem(116px);
-}
-
-.plane-clipart--bottom {
-    bottom: rem(-85px);
-    right: rem(-85px);
-    width: rem(110px);
-    height: rem(110px);
-    transform: scaleX(-1) rotate(-90deg);
-}
-
-.selected-component {
-    position: relative;
+.content-container {
     display: flex;
     flex-flow: column nowrap;
     justify-content: flex-start;
-    align-items: flex-start;
-    width: 100%;
-    height: rem(184px);
-    border-bottom: rem(1px) solid $B5Color;
-    padding: rem(25px) rem(40px) rem(16px) rem(104px);
-    box-sizing: border-box;
-    background-color: $B6Color;
+    width: 50%;
 
-    @include lg {
-        height: rem(202px);
-        padding: rem(24px) rem(24px) rem(24px) rem(96px);
+    &:last-child {
+        margin-left: rem(20px);
     }
 
-    .selected-component-icon {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        position: absolute;
-        top: rem(16px);
-        left: rem(32px);
-        width: rem(48px);
-        height: rem(48px);
-        background-color: $B2Color;
-        border-radius: 50%;
-
-        @include lg {
-            top: rem(19px);
-            left: rem(32px);
-            width: rem(40px);
-            height: rem(40px);
-        }
-    }
-
-    .selected-component-name {
-        font-weight: 500;
-        font-size: rem(20px);
-        line-height: rem(32px);
-        margin-bottom: rem(8px);
-        color: $B2Color;
-
-        @include lg {
-            font-size: rem(18px);
-            line-height: rem(31px);
-        }
-    }
-
-    .selected-component-desc {
+    @include lt-lg {
         width: 100%;
-        height: rem(65px);
-        font-size: rem(14px);
-        line-height: rem(24px);
-        margin-bottom: rem(8px);
-        color: $Gray1;
 
-        @include lg {
-            height: rem(82px);
+        &:last-child {
+            margin-left: 0;
         }
     }
+}
 
-    .demo-btn {
-        font-size: rem(14px);
-        line-height: rem(24px);
-        color: $B3Color;
-        cursor: pointer;
-    }
+.main-title {
+    margin: 0;
+    font-size: clamp(1.5rem, 0.9643rem + 1.4286vw, 2.25rem);
+    font-weight: 800;
+    line-height: 1.2222222222222223;
+    color: #132F4C;
+    margin-top: rem(10px);
+    margin-bottom: rem(20px);
+    max-width: rem(500px);
 }
 
 .component-list {
     display: flex;
     flex-flow: column nowrap;
     width: 100%;
+    max-width: rem(500px);
 
-    .component-row {
-        display: flex;
-        justify-content: flex-start;
-        align-items: center;
-        width: 100%;
-        height: rem(80px);
-        border-bottom: rem(1px) solid $B5Color;
-        box-sizing: border-box;
-        cursor: pointer;
-
-        .component-row-icon {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: rem(48px);
-            height: rem(48px);
-            border-radius: 50%;
-            margin-left: rem(32px);
-            background-color: $B5Color;
-
-            @include lg {
-                width: rem(40px);
-                height: rem(40px);
-            }
-        }
-
-        .component-row-name {
-            font-weight: 500;
-            font-size: rem(20px);
-            line-height: rem(32px);
-            color: $Gray1;
-            margin-left: rem(24px);
-
-            @include lg {
-                font-size: rem(18px);
-                line-height: rem(31px);
-            }
-        }
-
-        &:last-child {
-            border: none;
-        }
-
-        &:hover {
-            .component-row-icon {
-                background-color: $B2Color;
-            }
-
-            .component-row-name {
-                color: $B2Color;
-            }
-        }
-
-        @include lg {
-            height: rem(60px);
-        }
+    @include lt-lg {
+        display: none;
     }
 }
 
-.right-box {
+.component-row {
     position: relative;
-    display: flex;
-    flex-flow: column nowrap;
-    width: rem(512px);
-    height: 100%;
-    border: rem(1px) solid $B5Color;
-    border-radius: rem(10px);
-    box-sizing: border-box;
-    background-color: $White;
-
-    @include lg {
-        width: rem(512px);
-    }
-
-    .top-bar {
-        display: flex;
-        flex-flow: row nowrap;
-        justify-content: flex-start;
-        align-items: center;
-        width: 100%;
-        height: rem(72px);
-        padding-left: rem(48px);
-        box-sizing: border-box;
-        border-bottom: rem(1px) solid $B5Color;
-        background-color: $B6Color;
-
-        @include lg {
-            height: rem(60px);
-            padding-left: rem(46px);
-        }
-    }
-
-    .top-bar-tab {
-        height: 100%;
-        padding: rem(32px) rem(16px) rem(8px);
-        margin-right: rem(40px);
-        box-sizing: border-box;
-        font-weight: 600;
-        font-size: rem(18px);
-        line-height: rem(32px);
-        color: $B3Color;
-        cursor: pointer;
-
-        &:hover {
-            color: $B2Color;
-        }
-
-        @include lg {
-            padding: rem(24px) 0 rem(12px);
-            font-size: rem(16px);
-            line-height: rem(24px);
-        }
-    }
-
-    .actvie-tab {
-        border-bottom: rem(1px) solid $B2Color;
-        color: $B2Color;
-    }
-
-    .tab-content {
-        display: flex;
-        justify-content: flex-start;
-        align-items: flex-start;
-        width: 100%;
-        height: calc(100% - #{rem(72px)});
-        padding: rem(24px);
-        box-sizing: border-box;
-        overflow: auto;
-
-        @include lg {
-            height: calc(100% - #{rem(60px)});
-        }
-
-        pre {
-            height: 100%;
-            margin-top: 0;
-            margin-bottom: 0;
-        }
-    }
-}
-
-.card-container {
-    display: none;
-    flex-flow: row wrap;
-    justify-content: center;
+    display: inline-flex;
+    flex-flow: row nowrap;
+    justify-content: flex-start;
     align-items: flex-start;
-    width: rem(597px);
-
-    @include sm {
-        width: 100%;
-    }
-}
-
-.card {
-    display: flex;
-    flex-flow: column nowrap;
-    justify-content: space-evenly;
-    align-items: center;
-    width: rem(175px);
-    height: rem(136px);
-    border-radius: rem(10px);
-    border: rem(1px) solid $B5Color;
-    margin: 0 rem(12px) rem(24px);
+    width: 100%;
+    outline: 0;
+    padding: rem(20px);
+    margin-top: rem(10px);
+    border-radius: rem(4px);
+    border: rem(1px) solid transparent;
     box-sizing: border-box;
-    background-color: $B6Color;
     cursor: pointer;
+    background-color: transparent;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    text-decoration: none;
+    transition-property: all;
+    transition-duration: 150ms;
+    color: #A0AAB4;
 
-    &:last-child {
-        margin-bottom: 0;
+    &:hover {
+        background-color: #E7EBF0;
     }
 
-    .card-icon {
+    .component-icon {
         display: flex;
         justify-content: center;
         align-items: center;
-        width: rem(48px);
-        height: rem(48px);
+        min-width: rem(36px);
+        height: rem(36px);
         border-radius: 50%;
-        background-color: $B2Color;
+        background-color: $White;
+        margin-right: rem(20px);
 
-        @include sm {
-            width: rem(32px);
-            height: rem(32px);
-        }
-
-        path {
-            fill: $White;
-            stroke: $White;
+        @include lt-lg {
+            margin-bottom: rem(10px);
         }
     }
 
-    .card-name {
-        font-weight: 500;
-        font-size: rem(14px);
-        line-height: rem(24px);
-        color: #2E2E2E;
-    }
-}
-
-@media all and (max-width: em(1100px)) {
-    .main-container {
-        display: none;
-    }
-
-    .card-container {
+    .component-info-container {
+        width: 100%;
         display: flex;
+        flex-flow: column nowrap;
+        justify-content: center;
+        align-items: flex-start;
+    }
+
+    .component-name {
+        margin: 0;
+        font-size: rem(14px);
+        line-height: 1.5;
+        letter-spacing: 0;
+        color: #1A2027;
+        font-weight: 700;
+    }
+
+    .component-desc {
+        margin-top: rem(5px);
+        margin-bottom: rem(5px);
+        font-size: rem(14px);
+        line-height: 1.5;
+        letter-spacing: 0;
+        font-weight: 400;
+        color: #3E5060;
+        text-align: left;
+    }
+
+    .component-link {
+        min-height: rem(24px);
+        margin: 0;
+        font-size: rem(14px);
+        line-height: 1.5;
+        letter-spacing: 0;
+        text-decoration: none;
+        color: #0072E5;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+
+        &:hover {
+            color: #0059B2;
+        }
+    }
+
+    @include lt-lg {
+        flex-flow: column nowrap;
+        justify-content: flex-start;
+        align-items: flex-start;
     }
 }
 
-@media all and (max-width: em(610px)) {
-    .card-container {
-        max-width: rem(344px);
+.component-row--active {
+    border-color: #E0E3E7;
+    background-color: $White;
+
+    &:hover {
+        background-color: $White;
     }
 
-    .card {
-        width: rem(156px);
-        height: rem(112px);
-        margin: 0 rem(8px) rem(16px);
+    .component-icon {
+        background-color: #eaeef3;
+    }
+}
+
+::deep .component-row--active {
+    .component-icon {
+        path {
+            fill: $B2Color;
+            stroke: $B2Color;
+        }
+    }
+}
+
+::deep .component-icon {
+    path {
+        fill: $B2Color;
+        stroke: $B2Color;
+    }
+}
+
+.example-preview {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: rem(20px);
+    border-radius: rem(4px) rem(4px) 0 0;
+    border: rem(1px) solid rgb(205, 210, 215);
+    box-sizing: border-box;
+    color: rgb(26, 32, 39);
+    transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+    background-color: rgb(231, 235, 240);
+    overflow: auto;
+
+    @include lt-lg {
+        margin-top: rem(20px);
+    }
+}
+
+.white-box {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    width: 100%;
+    height: 100%;
+    min-height: rem(180px);
+    padding: rem(20px);
+    border-radius: rem(4px);
+    border: rem(1px) solid rgb(224, 227, 231);
+    box-shadow: rgb(61 71 82 / 25%) 0px 4px 20px;
+    box-sizing: border-box;
+    color: rgb(26, 32, 39);
+    background-color: $White;
+}
+
+.example-code {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    max-width: 100%;
+    width: 100%;
+    border: rem(1px) solid rgb(205, 210, 215);
+    border-radius: 0 0 rem(4px) rem(4px);
+    box-sizing: border-box;
+    overflow: auto;
+
+    pre {
+        background-color: $White;
+        direction: ltr;
+        overflow: auto;
+        margin: 0;
+        max-height: rem(615px);
+        min-height: rem(200px);
+        border: none;
+
+        &::-webkit-scrollbar-thumb:hover {
+            background-color: #c8c6c4 !important;
+            border-radius: rem(8px);
+            border: rem(4px) solid #c8c6c4 !important;
+        }
+    }
+}
+
+::deep .component-carousel {
+    height: rem(250px);
+
+    @include gt-md {
+        display: none;
     }
 }

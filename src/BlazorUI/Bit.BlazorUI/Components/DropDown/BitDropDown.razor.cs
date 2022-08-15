@@ -21,6 +21,8 @@ public partial class BitDropDown
     private bool ValuesHasBeenSet;
     private bool isValuesChanged;
     private List<BitDropDownItem> NormalDropDownItems = new();
+    private bool inputSearchHasFocus;
+    private string? searchText;
 
     [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
 
@@ -49,6 +51,7 @@ public partial class BitDropDown
         {
             isOpen = value;
             ClassBuilder.Reset();
+            ClearSearchBox();
         }
     }
 
@@ -137,6 +140,11 @@ public partial class BitDropDown
     [Parameter] public string? Placeholder { get; set; }
 
     /// <summary>
+    /// Filter input placeholder text
+    /// </summary>
+    [Parameter] public string? PlaceholderSearchBox { get; set; }
+
+    /// <summary>
     /// the label associated with the dropdown
     /// </summary>
     [Parameter] public string? Label { get; set; }
@@ -191,14 +199,17 @@ public partial class BitDropDown
     /// </summary>
     [Parameter] public RenderFragment<BitDropDownItem>? ItemTemplate { get; set; }
 
-    public string? Text { get; set; }
+    /// <summary>
+    /// Search box is enabled for the end user
+    /// </summary>
+    [Parameter] public bool ShowSearchBox { get; set; }
 
+    public string? Text { get; set; }
     public string DropDownId { get; set; } = string.Empty;
     public string? DropdownLabelId { get; set; } = string.Empty;
     public string DropDownOptionId { get; set; } = string.Empty;
     public string DropDownCalloutId { get; set; } = string.Empty;
     public string DropDownOverlayId { get; set; } = string.Empty;
-
 
     [JSInvokable("CloseCallout")]
     public void CloseCalloutBeforeAnotherCalloutIsOpened()
@@ -231,7 +242,7 @@ public partial class BitDropDown
             : string.Empty);
     }
 
-    protected async override Task OnParametersSetAsync()
+    protected override async Task OnParametersSetAsync()
     {
         DropDownId = $"Dropdown{UniqueId}";
         DropDownOptionId = $"{DropDownId}-option";
@@ -239,10 +250,34 @@ public partial class BitDropDown
         DropDownOverlayId = $"{DropDownId}-overlay";
         DropDownCalloutId = $"{DropDownId}-list";
 
+        InitValueOrValues();
+
         NormalDropDownItems = Items.FindAll(i => i.ItemType == BitDropDownItemType.Normal).ToList();
         InitText();
 
         await base.OnParametersSetAsync();
+    }
+
+    private void InitValueOrValues()
+    {
+        if (IsMultiSelect)
+        {
+            if (Values.Any() is false) return;
+
+            var intersectValues = Values.Intersect(Items.Select(i => i.Value)).ToList();
+
+            bool isEqual = intersectValues.OrderBy(i => i).SequenceEqual(Values.OrderBy(v => v));
+            if (isEqual) return;
+
+            Values = intersectValues;
+        }
+        else
+        {
+            if (Value.HasNoValue()) return;
+            if (Items.Any(i => i.Value == Value)) return;
+
+            CurrentValue = null;
+        }
     }
 
     private void ChangeAllItemsIsSelected(bool value)
@@ -328,6 +363,7 @@ public partial class BitDropDown
             var obj = DotNetObjectReference.Create(this);
             await JSRuntime.InvokeVoidAsync("BitDropDown.toggleDropDownCallout", obj, UniqueId, DropDownId, DropDownCalloutId, DropDownOverlayId, isOpen, isResponsiveModeEnabled);
             isOpen = false;
+            ClearSearchBox();
 
             if (isSameItemSelected && !NotifyOnReselect) return;
 
@@ -384,8 +420,57 @@ public partial class BitDropDown
                 Text = firstSelectedItem.Text;
                 Items.FindAll(i => i.Value != firstSelectedItem.Value).ForEach(i => i.IsSelected = false);
             }
+            else
+            {
+                Text = string.Empty;
+            }
         }
     }
+
+    private void HandleSearchBoxFocusIn()
+    {
+        inputSearchHasFocus = true;
+    }
+
+    private void HandleSearchBoxFocusOut()
+    {
+        inputSearchHasFocus = false;
+    }
+
+    private void HandleSearchBoxOnClear()
+    {
+        ClearSearchBox();
+    }
+
+    private void HandleFilterChange(ChangeEventArgs e)
+    {
+        if (IsEnabled is false) return;
+        if (ShowSearchBox is false) return;
+
+        searchText = e.Value?.ToString();
+    }
+
+    private void ClearSearchBox()
+    {
+        if (IsEnabled is false) return;
+        if (ShowSearchBox is false) return;
+
+        searchText = null;
+    }
+
+    private IEnumerable<BitDropDownItem> GetItems()
+    {
+        if (ShowSearchBox && searchText.HasValue())
+        {
+            return Items.Where(i => i.Text.Contains(searchText!, StringComparison.OrdinalIgnoreCase));
+        }
+        else
+        {
+            return Items;
+        }
+    }
+
+    private string GetSearchBoxClasses() => $"search-box {(searchText.HasValue() ? "search-has-value" : null)} {(inputSearchHasFocus ? "search-focused" : null)}";
 
     private string GetDropdownAriaLabelledby => Label.HasValue() ? $"{DropDownId}-label {DropDownId}-option" : $"{DropDownId}-option";
     private int GetItemPosInSet(BitDropDownItem item) => NormalDropDownItems.IndexOf(item) + 1;

@@ -1,4 +1,6 @@
-﻿@import "../../../Styles/_shared.scss";
+﻿@import '../../../Styles/abstracts/_colors.scss';
+@import '../../../Styles/abstracts/_media-queries.scss';
+@import '../../../Styles/abstracts/_functions.scss';
 
 .sample-btn {
     text-justify: auto;
@@ -11,4 +13,30 @@
 
 .m-l-45 {
     margin-left: rem(45px);
+}
+
+::deep .disable-cmp-btn {
+    @include lg {
+        margin-top: rem(10px);
+    }
+
+    @include md {
+        margin-top: rem(10px);
+    }
+}
+
+::deep .bit-cmp-btn {
+    @include sm {
+        margin-top: rem(10px);
+        width: rem(230px);
+    }
+}
+
+::deep .custom-compound-button,
+::deep .custom-compound-button:hover {
+    width: rem(230px);
+    font-size: rem(16px);
+    color: $White;
+    background-color: $B1Color;
+    border-color: $B1Color;
 }

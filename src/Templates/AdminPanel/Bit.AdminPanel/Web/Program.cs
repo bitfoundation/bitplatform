@@ -38,11 +38,13 @@ public class Program
 #elif BlazorServer
     public static WebApplication CreateHostBuilder(string[] args)
     {
+        File.Copy("wwwroot/appsettings.json", "appsettings.json", overwrite: true);
+
         var builder = WebApplication.CreateBuilder(args);
 
 #if DEBUG
         // The following line (using the * in the URL), allows the emulators and mobile devices to access the app using the host IP address.
-        builder.WebHost.UseUrls("https://*:4001", "http://*:4000");
+        builder.WebHost.UseUrls("https://localhost:4001", "http://localhost:4000", "https://*:4001", "http://*:4000");
 #endif
 
         Startup.Services.Add(builder.Services, builder.Configuration);

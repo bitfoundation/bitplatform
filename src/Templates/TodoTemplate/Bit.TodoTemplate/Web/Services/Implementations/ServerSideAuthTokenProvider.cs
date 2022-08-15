@@ -5,16 +5,10 @@ using System.Reflection;
 namespace TodoTemplate.App.Services.Implementations;
 
 #if BlazorServer
-public class ServerSideAuthTokenProvider : IAuthTokenProvider
+public partial class ServerSideAuthTokenProvider : IAuthTokenProvider
 {
-    private readonly IJSRuntime _jsRuntime;
-    private readonly IHttpContextAccessor _httpContextAccessor;
-
-    public ServerSideAuthTokenProvider(IJSRuntime jsRuntime, IHttpContextAccessor httpContextAccessor)
-    {
-        _jsRuntime = jsRuntime;
-        _httpContextAccessor = httpContextAccessor;
-    }
+    [AutoInject] private IJSRuntime _jsRuntime = default!;
+    [AutoInject] private IHttpContextAccessor _httpContextAccessor = default!;
 
     private static readonly PropertyInfo IsInitializedProp = Assembly.Load("Microsoft.AspNetCore.Components.Server")
         .GetType("Microsoft.AspNetCore.Components.Server.Circuits.RemoteJSRuntime")

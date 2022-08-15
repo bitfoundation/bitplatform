@@ -1,22 +1,121 @@
-﻿.grid {
+﻿@import '../../Styles/abstracts/_media-queries.scss';
+@import '../../Styles/abstracts/_colors.scss';
+@import '../../Styles/abstracts/_functions.scss';
+
+.page-container {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: flex-start;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+.loading-contianer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+}
+
+.page-row {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: rem(24px);
+}
+
+.page-title {
+    margin: 0;
+    font-weight: 600;
+    font-size: rem(20px);
+    line-height: rem(28px);
+    color: $Gray190;
+
+    @include sm {
+        font-size: rem(18px);
+        line-height: rem(24px);
+    }
+}
+
+.grid {
     display: inline-flex;
     flex-direction: column;
     width: 100%;
+    border: rem(1px) solid $ThemeLightColor;
+    border-radius: rem(2px);
+    overflow: auto;
+
+    ::deep {
+        .id-col {
+            width: 90px;
+        }
+
+        .bitdatagrid th .col-options-button {
+            cursor: help;
+        }
+    }
 }
 
-.grid ::deep table {
+::deep table {
     min-width: 100%;
+    border-spacing: 0;
 }
 
-.grid ::deep tr {
-    height: 1.8rem;
+::deep thead {
+    height: rem(43px);
+    background-color: $ThemeLighterAltColor;
 }
 
-.grid ::deep th:nth-child(1) {
-    width: 15rem;
+::deep tr {
+    height: rem(43px);
 }
 
-.grid ::deep th:nth-child(1) .col-options-button {
+::deep th {
+    font-weight: 600;
+    font-size: rem(14px);
+    line-height: rem(20px);
+    color: $Gray190;
+    padding: 0 rem(12px);
+}
+
+::deep td {
+    font-weight: 400;
+    font-size: rem(12px);
+    line-height: rem(16px);
+    color: $Gray130;
+    border-top: rem(1px) solid $Gray40;
+}
+
+::deep tr td:first-child {
+    font-size: rem(14px);
+    line-height: rem(20px);
+    padding-left: rem(12px);
+}
+
+::deep .col-options-button {
+    &:hover {
+        background-color: transparent;
+    }
+}
+
+::deep .col-title {
+    &:hover {
+        background-color: transparent !important;
+    }
+}
+
+::deep .product-search-box {
+    width: 100%;
+    max-width: rem(300px);
+    margin-bottom: rem(24px);
+}
+
+::deep th:nth-child(2) .col-options-button {
     background-image: none;
     cursor: pointer;
 
@@ -27,4 +126,12 @@
         font-weight: normal;
         content: "\E721";
     }
+}
+
+::deep .bitdatagrid-paginator {
+    height: rem(43px);
+    margin-top: 0;
+    border-top: rem(1px) solid $Gray40;
+    padding: 0 rem(12px);
+    font-size: rem(14px);
 }

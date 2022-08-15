@@ -4,12 +4,6 @@ namespace TodoTemplate.App.Pages;
 
 public partial class SignUpPage
 {
-    [AutoInject] private HttpClient httpClient = default!;
-
-    [AutoInject] private NavigationManager navigationManager = default!;
-
-    [AutoInject] private AppAuthenticationStateProvider authStateProvider = default!;
-
     public SignUpRequestDto SignUpModel { get; set; } = new();
 
     public bool IsSignedUp { get; set; }
@@ -38,20 +32,20 @@ public partial class SignUpPage
         {
             SignUpModel.Email = SignUpModel.UserName;
 
-            await httpClient.PostAsJsonAsync("Auth/SignUp", SignUpModel, AppJsonContext.Default.SignUpRequestDto);
+            await HttpClient.PostAsJsonAsync("Auth/SignUp", SignUpModel, AppJsonContext.Default.SignUpRequestDto);
 
             IsSignedUp = true;
         }
         catch (ResourceValidationException e)
         {
             SignUpMessageType = BitMessageBarType.Error;
-            SignUpMessage = string.Join(Environment.NewLine, e.Details.SelectMany(d => d.Messages)
-                .Select(e => ErrorStrings.ResourceManager.Translate(e, SignUpModel.UserName!)));
+            SignUpMessage = string.Join(Environment.NewLine, e.Details.SelectMany(d => d.Errors)
+                .Select(e => e.Message));
         }
         catch (KnownException e)
         {
             SignUpMessageType = BitMessageBarType.Error;
-            SignUpMessage = ErrorStrings.ResourceManager.Translate(e.Message, SignUpModel.UserName);
+            SignUpMessage = e.Message;
         }
         finally
         {
@@ -71,18 +65,18 @@ public partial class SignUpPage
 
         try
         {
-            await httpClient.PostAsJsonAsync("Auth/SendConfirmationEmail", new()
+            await HttpClient.PostAsJsonAsync("Auth/SendConfirmationEmail", new()
             {
                 Email = SignUpModel.Email
             }, AppJsonContext.Default.SendConfirmationEmailRequestDto);
 
             SignUpMessageType = BitMessageBarType.Success;
-            SignUpMessage = AuthStrings.ResendConfirmationLinkMessage;
+            SignUpMessage = Localizer[nameof(AppStrings.ResendConfirmationLinkMessage)];
         }
         catch (KnownException e)
         {
             SignUpMessageType = BitMessageBarType.Error;
-            SignUpMessage = ErrorStrings.ResourceManager.Translate(e.Message, SignUpModel.Email);
+            SignUpMessage = e.Message;
         }
         finally
         {
@@ -96,9 +90,9 @@ public partial class SignUpPage
 
         if (firstRender)
         {
-            if (await authStateProvider.IsUserAuthenticated())
+            if (await AuthenticationStateProvider.IsUserAuthenticated())
             {
-                navigationManager.NavigateTo("/");
+                NavigationManager.NavigateTo("/");
             }
         }
     }

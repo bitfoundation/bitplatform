@@ -45,6 +45,11 @@ public partial class AppComponentBase : ComponentBase
         return Task.CompletedTask;
     }
 
+    protected sealed override void OnInitialized()
+    {
+        base.OnInitialized();
+    }
+
     /// <summary>
     /// Replacement for <see cref="OnParametersSetAsync"/> which catches all possible exceptions in order to prevent app crash.
     /// </summary>

@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net7.0</TargetFramework>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<SupportedPlatform Include="browser" />
+        <PackageReference Include="Bit.SourceGenerators" Version="3.0.0" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="3.0.0" />
+	</ItemGroup>
+
+</Project>

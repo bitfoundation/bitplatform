@@ -1,0 +1,15 @@
+﻿<PageTitle>Bit Platform</PageTitle>
+<CascadingValue Value="Visual.Fluent" IsFixed="true">
+    <CascadingValue Value="Theme.Light" IsFixed="true">
+        <LayoutView Layout="typeof(MainLayout)">
+            <Router AppAssembly="@typeof(MainLayout).Assembly" AdditionalAssemblies="@(new [] { Assembly.Load("Bit.BlazorUI") })">
+                <Found Context="routeData">
+                    <RouteView RouteData="@routeData" />
+                </Found>
+                <NotFound>
+                    <NotFoundComponent />
+                </NotFound>
+            </Router>
+        </LayoutView>
+    </CascadingValue>
+</CascadingValue>

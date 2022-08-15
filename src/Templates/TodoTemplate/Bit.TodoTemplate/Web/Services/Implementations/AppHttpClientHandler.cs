@@ -3,14 +3,9 @@ using System.Runtime.InteropServices;
 
 namespace TodoTemplate.App.Services.Implementations;
 
-public class AppHttpClientHandler : HttpClientHandler
+public partial class AppHttpClientHandler : HttpClientHandler
 {
-    private readonly IAuthTokenProvider _tokenProvider;
-
-    public AppHttpClientHandler(IAuthTokenProvider tokenProvider)
-    {
-        _tokenProvider = tokenProvider;
-    }
+    [AutoInject] private IAuthTokenProvider _tokenProvider = default!;
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
@@ -33,7 +28,9 @@ public class AppHttpClientHandler : HttpClientHandler
 
                 Type exceptionType = typeof(RestExceptionPayload).Assembly.GetType(restError.ExceptionType) ?? typeof(UnknownException);
 
-                Exception exp = (Exception)Activator.CreateInstance(exceptionType, args: new object[] { restError.Message });
+                var args = new[] { typeof(KnownException).IsAssignableFrom(exceptionType) ? new LocalizedString(restError.Key!, restError.Message!) as object : restError.Message as object };
+
+                Exception exp = (Exception)Activator.CreateInstance(exceptionType, args);
 
                 if (exp is ResourceValidationException resValidationException)
                 {

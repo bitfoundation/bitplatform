@@ -2,13 +2,13 @@
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
-        <NeutralLanguage>en-US</NeutralLanguage>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.CodeAnalyzers" Version="2.0.0" />
-        <PackageReference Include="Bit.SourceGenerators" Version="2.0.0" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="3.0.0" />
+        <PackageReference Include="Bit.SourceGenerators" Version="3.0.0" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Localization" Version="6.0.7" />
         <PackageReference Include="System.Text.Json" Version="7.0.0-preview.6.22324.4" />
     </ItemGroup>
 

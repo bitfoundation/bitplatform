@@ -27,14 +27,10 @@ public class Middlewares
         app.UseBlazorFrameworkFiles();
 #endif
 
-        app.UseSwagger();
-
-        app.UseSwaggerUI(options =>
+        if (env.IsDevelopment() is false)
         {
-            options.InjectJavascript("/swagger/swagger-utils.js");
-        });
-
-        app.UseResponseCompression();
+            app.UseResponseCompression();
+        }
 
         app.UseStaticFiles(new StaticFileOptions
         {
@@ -63,13 +59,28 @@ public class Middlewares
         app.UseAuthentication();
         app.UseAuthorization();
 
+        var supportedCultures = new[] { "en", "fr" };
+        var localizationOptions = new RequestLocalizationOptions()
+            .SetDefaultCulture(supportedCultures[0])
+            .AddSupportedCultures(supportedCultures)
+            .AddSupportedUICultures(supportedCultures);
+
+        app.UseRequestLocalization(localizationOptions);
+
+        app.UseSwagger();
+
+        app.UseSwaggerUI(options =>
+        {
+            options.InjectJavascript("/swagger/swagger-utils.js");
+        });
+
         app.UseEndpoints(endpoints =>
         {
             endpoints.MapControllers().RequireAuthorization();
 
             var appsettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
 
-            var healthCheckSettings = appsettings.HealCheckSettings;
+            var healthCheckSettings = appsettings.HealthCheckSettings;
 
             if (healthCheckSettings.EnableHealthChecks)
             {
