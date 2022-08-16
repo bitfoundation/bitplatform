@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -61,7 +62,7 @@ public class BitDropDownTests : BunitTestContext
 
         var bitDrp = component.Find(".bit-drp");
 
-        if(isResponsiveModeEnabled)
+        if (isResponsiveModeEnabled)
         {
             var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
 
@@ -817,6 +818,105 @@ public class BitDropDownTests : BunitTestContext
         }
 
         Assert.IsFalse(bitDropDown.ClassList.Contains($"bit-drp-invalid-{visualClass}"));
+    }
+
+    [DataTestMethod,
+        DataRow(Visual.Fluent, true, null),
+        DataRow(Visual.Fluent, true, "Search items"),
+        DataRow(Visual.Fluent, false, null),
+        DataRow(Visual.Fluent, false, "Search items"),
+
+        DataRow(Visual.Cupertino, true, null),
+        DataRow(Visual.Cupertino, true, "Search items"),
+        DataRow(Visual.Cupertino, false, null),
+        DataRow(Visual.Cupertino, false, "Search items"),
+
+        DataRow(Visual.Material, true, null),
+        DataRow(Visual.Material, true, "Search items"),
+        DataRow(Visual.Material, false, null),
+        DataRow(Visual.Material, false, "Search items")
+    ]
+    public void BitDropDownShowSearchBoxTest(Visual visual, bool showSearchBox, string searchBoxPlaceholder)
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var items = GetRawDropdownItems();
+        var component = RenderComponent<BitDropDown>(parameters =>
+        {
+            parameters.AddCascadingValue(visual);
+            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.ShowSearchBox, showSearchBox);
+            parameters.Add(p => p.PlaceholderSearchBox, searchBoxPlaceholder);
+            parameters.Add(p => p.Items, items);
+        });
+
+        var bitDropDown = component.Find(".bit-drp-wrapper");
+        bitDropDown.Click();
+
+        var searchBox = component.FindAll(".bit-drp-items-wrapper .search-box");
+        if (showSearchBox)
+        {
+            Assert.AreEqual(1, searchBox.Count);
+
+            var searchInput = component.Find(".search-input");
+            var inputPlaceholder = searchInput.GetAttribute("placeholder");
+
+            Assert.AreEqual(searchBoxPlaceholder, inputPlaceholder);
+        }
+        else
+        {
+            Assert.AreEqual(0, searchBox.Count);
+        }
+    }
+
+    [DataTestMethod,
+        DataRow(Visual.Fluent, null, false),
+        DataRow(Visual.Fluent, "app", false),
+        DataRow(Visual.Fluent, null, true),
+        DataRow(Visual.Fluent, "app", true),
+
+        DataRow(Visual.Cupertino, null, false),
+        DataRow(Visual.Cupertino, "app", false),
+        DataRow(Visual.Cupertino, null, true),
+        DataRow(Visual.Cupertino, "app", true),
+
+        DataRow(Visual.Material, null, false),
+        DataRow(Visual.Material, "app", false),
+        DataRow(Visual.Material, null, true),
+        DataRow(Visual.Material, "app", true),
+    ]
+    public void BitDropDownSearchItemTest(Visual visual, string search, bool isMultiSelect)
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var items = GetRawDropdownItems();
+        var component = RenderComponent<BitDropDown>(parameters =>
+        {
+            parameters.AddCascadingValue(visual);
+            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.ShowSearchBox, true);
+            parameters.Add(p => p.IsMultiSelect, isMultiSelect);
+            parameters.Add(p => p.Items, items);
+        });
+
+        var bitDropDown = component.Find(".bit-drp-wrapper");
+        bitDropDown.Click();
+
+        var drpItems = component.FindAll(isMultiSelect ? ".bit-drp-chb" : ".bit-drp-item", true);
+
+        Assert.AreEqual(items.Count, drpItems.Count);
+
+        var searchInput = component.Find(".search-input");
+        searchInput.Input(search);
+
+        var itemCount = string.IsNullOrEmpty(search) ? items.Count : items.Count(i => i.Text.Contains(search, StringComparison.OrdinalIgnoreCase));
+        Assert.AreEqual(itemCount, drpItems.Count);
+
+        if (string.IsNullOrEmpty(search) is false)
+        {
+            searchInput.Input(string.Empty);
+            Assert.AreEqual(items.Count, drpItems.Count);
+        }
     }
 
     private void HandleValueChanged(string value)
