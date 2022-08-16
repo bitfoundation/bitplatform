@@ -1,0 +1,35 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+<div>
+    <div>
+        <button>
+            @Item.Text
+        </button>
+
+        <button>
+            <i class="bit-icon bit-icon--Search" aria-hidden="true"></i>
+        </button>
+
+        <span class="separator"></span>
+    </div>
+
+    <div>
+        <ul>
+            @foreach (BitSplitButtonItem item in Items)
+            {
+                <li>
+                    <button @onclick="() => HandleItemOnClick(item)">
+                        @if (item.IconName.HasValue)
+                        {
+                            <i class="bit-icon bit-icon--@item.IconName.GetName()"></i>
+                        }
+                        <span>
+                            @item.Text
+                        </span>
+                    </button>
+                </li>
+            }
+        </ul>
+    </div>
+</div>
