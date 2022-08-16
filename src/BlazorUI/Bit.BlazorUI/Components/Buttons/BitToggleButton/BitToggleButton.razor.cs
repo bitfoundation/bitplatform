@@ -45,9 +45,9 @@ public partial class BitToggleButton
     [Parameter] public EventCallback<bool> IsCheckedChanged { get; set; }
 
     /// <summary>
-    /// Default Is Checked for BitToggleButton.
+    /// Default value of the IsChecked.
     /// </summary>
-    [Parameter] public bool DefaultIsChecked { get; set; }
+    [Parameter] public bool? DefaultIsChecked { get; set; }
 
     /// <summary>
     /// The icon that shows in the button.
@@ -130,14 +130,14 @@ public partial class BitToggleButton
 
     protected override async Task OnInitializedAsync()
     {
-        if (!IsEnabled)
+        if (IsEnabled is false)
         {
             tabIndex = AllowDisabledFocus ? null : -1;
         }
 
-        if (IsCheckedHasBeenSet is false && IsCheckedChanged.HasDelegate is false)
+        if (IsCheckedHasBeenSet is false && DefaultIsChecked.HasValue)
         {
-            IsChecked = DefaultIsChecked;
+            IsChecked = DefaultIsChecked.Value;
         }
 
         await base.OnInitializedAsync();
