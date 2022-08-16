@@ -400,7 +400,7 @@
 .bit-drp-items-wrapper {
     display: none;
     position: fixed;
-    max-height: 744px;
+    max-height: rem(744px);
     font-size: rem(14px);
     font-weight: 400;
     box-sizing: border-box;
@@ -412,8 +412,14 @@
     animation-fill-mode: both;
     background-color: $White;
     z-index: 1001;
-    overflow: hidden auto;
+    overflow: hidden;
     -webkit-font-smoothing: antialiased;
+
+    .scroll-wrapper {
+        height: 100%;
+        max-height: rem(711px);
+        overflow: hidden auto;
+    }
 
     .bit-drp-head-fluent {
         width: 100%;
