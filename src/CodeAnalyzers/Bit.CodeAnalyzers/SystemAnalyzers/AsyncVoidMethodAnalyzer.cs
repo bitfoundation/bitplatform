@@ -51,7 +51,7 @@ public class AsyncVoidMethodAnalyzer : DiagnosticAnalyzer
         if (returnType.Keyword.IsKind(SyntaxKind.VoidKeyword) is false)
             return;
 
-        if (methodDec.Body?.Statements.Any(SyntaxKind.TryStatement) is true)
+        if (methodDec.Body?.Statements.FirstOrDefault()?.IsKind(SyntaxKind.TryStatement) is true)
             return;
 
         Diagnostic diagnostic = Diagnostic.Create(Rule, root.GetLocation(), Message);
