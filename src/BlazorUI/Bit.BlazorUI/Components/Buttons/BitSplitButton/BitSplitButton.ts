@@ -27,10 +27,7 @@
             splitButtonCallout.style.display = "none";
             splitButtonOverlay.style.display = "none";
             Bit.currentCallout.update("", "", null);
-            Bit.currentDropDownCalloutId = "";
         } else {
-            Bit.currentDropDownCalloutId = splitButtonCalloutId;
-            Bit.currentDropDownCalloutResponsiveModeIsEnabled = isResponsiveModeEnabled;
             Bit.closeCurrentCalloutIfExists(splitButtonCalloutId, splitButtonOverlayId, dotnetObjReference);
             splitButtonCallout.style.display = "block";
             splitButtonOverlay.style.display = "block";
