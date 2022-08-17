@@ -1,9 +1,11 @@
-﻿using Bit.BlazorUI;
+﻿using System.Diagnostics.CodeAnalysis;
+using Bit.BlazorUI;
 
 namespace Microsoft.JSInterop;
 
 internal static class BitObserversJsRuntimeExtension
 {
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ContentRect))]
     internal static async Task<string> RegisterResizeObserver<T>(this IJSRuntime jsRuntime, ElementReference element, DotNetObjectReference<T> obj, string method) where T : class
     {
         return await jsRuntime.InvokeAsync<string>("BitObservers.resize", element, obj, method);
