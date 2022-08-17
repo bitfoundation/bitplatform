@@ -460,10 +460,10 @@ public partial class BitDropDownDemo
         },
         new ComponentParameter()
         {
-            Name = "PlaceholderSearchBox",
+            Name = "SearchBoxPlaceholder",
             Type = "string",
             DefaultValue = "",
-            Description = "Search input placeholder text.",
+            Description = "Search box input placeholder text.",
         }
     };
 
@@ -1153,7 +1153,7 @@ private List<BitDropDownItem> GetDropdownItems()
                 Placeholder=""Select an option""
                 IsResponsiveModeEnabled=""true""
                 ShowSearchBox=""true""
-                PlaceholderSearchBox=""Search item""
+                SearchBoxPlaceholder=""Search item""
                 Style=""width: 290px; margin: 20px 0 20px 0"">
 </BitDropDown>
 
@@ -1163,7 +1163,7 @@ private List<BitDropDownItem> GetDropdownItems()
                 IsMultiSelect=""true""
                 IsResponsiveModeEnabled=""true""
                 ShowSearchBox=""true""
-                PlaceholderSearchBox=""Search items""
+                SearchBoxPlaceholder=""Search items""
                 Style=""width: 290px; margin: 20px 0 20px 0"">
 </BitDropDown>";
 
