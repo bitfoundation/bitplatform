@@ -1,0 +1,68 @@
+﻿@import "../../Styles/Fluent/colors.fluent.scss", "../../Styles/functions.scss";
+
+.bit-ttp {
+    position: relative;
+    top: 200px;
+    left: 300px;
+    width: 100px;
+
+    .tooltip {
+        position: absolute;
+        display: none;
+        font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+        font-size: rem(10px);
+        font-weight: 400;
+        width: max-content;
+        height: max-content;
+        left: -5%;
+        padding: 10px;
+        transition-property: all;
+        transition-delay: .9s;
+        background-color: antiquewhite;
+        color: black;
+        text-align: center;
+        z-index: 1;
+    }
+
+    .tooltip-position-top {
+        position: absolute;
+        bottom: 100%;
+        margin: 10px;
+
+        &::after {
+            content: " ";
+            position: absolute;
+            top: 100%;
+            left: 15%;
+            margin-left: -10px;
+            border-width: 10px;
+            border-style: solid;
+            border-color: antiquewhite transparent transparent transparent;
+        }
+    }
+
+    .tooltip-position-bottom {
+        position: absolute;
+        top: 100%;
+        margin: 10px;
+
+        &::after {
+            content: " ";
+            position: absolute;
+            bottom: 100%;
+            left: 15%;
+            margin-left: -10px;
+            border-width: 10px;
+            border-style: solid;
+            border-color: transparent transparent antiquewhite transparent;
+        }
+    }
+
+    &:hover .tooltip {
+        display: inline-block;
+    }
+
+    .tooltip-disabled-fluent {
+        color: $Grey90;
+    }
+}
