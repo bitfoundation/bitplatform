@@ -1,1 +1,226 @@
-﻿
+﻿@import "../../../Styles/Fluent/colors.fluent.scss", "../../../Styles/functions.scss";
+
+.bit-splt-btn {
+    &.bit-splt-btn-fluent {
+        display: inline-flex;
+        position: relative;
+        outline: transparent;
+        font-size: rem(14px);
+        font-weight: 400;
+        font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    .overlay {
+        display: none;
+        width: 100%;
+        height: 100%;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 999;
+        background-color: transparent;
+    }
+
+    .selected-item {
+        display: flex;
+        width: 100%;
+    }
+
+    .operator-btn {
+        box-sizing: border-box;
+        display: inline-block;
+        text-decoration: none;
+        text-align: center;
+        cursor: pointer;
+        padding: 0px 16px;
+        min-width: 80px;
+        height: 32px;
+        user-select: none;
+        border-radius: 2px;
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+
+        &.standard {
+            color: $Grey160;
+            background-color: $White;
+            border-top: 1px solid $GreyInputBorder;
+            border-left: 1px solid $GreyInputBorder;
+            border-bottom: 1px solid $GreyInputBorder;
+
+            &:hover {
+                background-color: $Grey20;
+            }
+
+            &:active {
+                background-color: $Grey30;
+            }
+        }
+
+        &.primary {
+            color: $White;
+            background-color: $Primary;
+            border-top: 1px solid $Primary;
+            border-left: 1px solid $Primary;
+            border-bottom: 1px solid $Primary;
+
+            &:hover {
+                background-color: $DarkAlt;
+            }
+
+            &:active {
+                background-color: $Dark;
+            }
+        }
+    }
+
+    .Chevron-btn {
+        box-sizing: border-box;
+        display: inline-block;
+        text-decoration: none;
+        text-align: center;
+        cursor: pointer;
+        padding: 6px;
+        width: 32px;
+        height: 32px;
+        user-select: none;
+        border-radius: 2px;
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+
+        &.standard {
+            color: $Grey160;
+            background: $White;
+            border-top: 1px solid $GreyInputBorder;
+            border-right: 1px solid $GreyInputBorder;
+            border-bottom: 1px solid $GreyInputBorder;
+
+            &:hover {
+                background-color: $Grey20;
+            }
+
+            &:active {
+                background-color: $Grey30;
+            }
+        }
+
+        &.primary {
+            color: $White;
+            background: $Primary;
+            border-top: 1px solid $Primary;
+            border-right: 1px solid $Primary;
+            border-bottom: 1px solid $Primary;
+
+            &:hover {
+                background-color: $DarkAlt;
+            }
+
+            &:active {
+                background-color: $Dark;
+            }
+        }
+    }
+
+    .btn-separator {
+        position: absolute;
+        width: 1px;
+        right: 32px;
+        top: 8px;
+        bottom: 8px;
+
+        &.standard {
+            background-color: $Grey50;
+        }
+
+        &.primary {
+            background-color: $White;
+        }
+    }
+
+    .items {
+        display: flex;
+        position: absolute;
+        min-width: 180px;
+        background-color: $White;
+        box-sizing: border-box;
+        border-radius: 2px;
+        overflow: hidden auto;
+        box-shadow: rgb(0 0 0 / 13%) 0px 3.2px 7.2px 0px, rgb(0 0 0 / 11%) 0px 0.6px 1.8px 0px;
+        animation-name: opacity, trans-y;
+        animation-duration: 0.367s;
+        animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
+        animation-fill-mode: both;
+
+        ul {
+            list-style-type: none;
+            margin: 0px;
+            padding: 0px;
+            width: 100%;
+        }
+    }
+
+    .item {
+        display: flex;
+        background-color: transparent;
+        width: 100%;
+        height: 36px;
+        line-height: 36px;
+        align-items: center;
+        text-align: left;
+        cursor: pointer;
+        padding: 0px 8px 0px 4px;
+        border: none;
+
+        i {
+            color: $Primary;
+            margin: 0px 4px;
+        }
+
+        span {
+            margin: 0px 4px;
+            vertical-align: middle;
+            display: inline-block;
+            flex-grow: 1;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        &:hover {
+            background-color: $Grey20;
+        }
+    }
+}
+
+@keyframes opacity {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes trans-y {
+    0% {
+        transform: translate3d(0px, -10px, 0px);
+        pointer-events: none;
+    }
+
+    100% {
+        transform: translate3d(0px, 0px, 0px);
+        pointer-events: auto;
+    }
+}
+
+@keyframes trans-x {
+    0% {
+        transform: translate3d(40px, 0px, 0px);
+        pointer-events: none;
+    }
+
+    100% {
+        transform: translate3d(0px, 0px, 0px);
+        pointer-events: auto;
+    }
+}

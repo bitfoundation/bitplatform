@@ -12,13 +12,13 @@ public partial class BitSplitButtonDemo
         {
             Text = "Option A",
             Value = "A",
-            IconName = BitIconName.AccessLogoFill
+            IconName = BitIconName.Add
         },
         new BitSplitButtonItem()
         {
             Text = "Option B",
             Value = "B",
-            IconName = BitIconName.AccountManagement
+            IconName = BitIconName.Delete
         }
     };
 

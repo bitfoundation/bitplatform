@@ -1,25 +1,40 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
-<div>
-    <div>
-        <button>
+<div @ref="RootElement"
+     @attributes="HtmlAttributes"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     id="@UniqueId">
+
+    <div id="@SplitButtonOverlayId" class="overlay" @onclick="CloseCallout"></div>
+
+    <div id="@SplitButtonId" class="selected-item">
+        <button type="button"
+                aria-roledescription="@AriaRoleDescription"
+                tabindex="-1"
+                class="operator-btn @GetButtonClasses()"
+                @onclick="() => HandleOnClick(Item)">
             @Item.Text
         </button>
-
-        <button>
-            <i class="bit-icon bit-icon--Search" aria-hidden="true"></i>
+        <button type="button"
+                aria-haspopup="true"
+                aria-expanded="@IsOpenMenu"
+                tabindex="-1"
+                aria-label="@AriaLabel"
+                class="Chevron-btn @GetButtonClasses()"
+                @onclick="HandleMenuOpen">
+            <i class="bit-icon bit-icon--ChevronDown" aria-hidden="true"></i>
         </button>
-
-        <span class="separator"></span>
+        <span aria-hidden="true" class="btn-separator @GetButtonClasses()"></span>
     </div>
 
-    <div>
+    <div id="@SplitButtonCalloutId" class="items">
         <ul>
             @foreach (BitSplitButtonItem item in Items)
             {
                 <li>
-                    <button @onclick="() => HandleItemOnClick(item)">
+                    <button class="item" @onclick="() => HandleItemOnClick(item)">
                         @if (item.IconName.HasValue)
                         {
                             <i class="bit-icon bit-icon--@item.IconName.GetName()"></i>
@@ -32,4 +47,5 @@
             }
         </ul>
     </div>
+
 </div>
