@@ -1,12 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Text;
+﻿using System.Text;
 using System.Text.Encodings.Web;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
 
 namespace Bit.BlazorUI;
 
@@ -15,23 +8,6 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitFileUpload : IAsyncDisposable
 {
-    // !!! to prevent the type being removed by the linker !!!
-#pragma warning disable CA1823 // Avoid unused private fields
-    private static readonly BitFileInfo __dummy_fileInfo__ = new()
-    {
-        ContentType = "dummy",
-        Size = -1,
-        Name = "dummy",
-        Message = "dummy",
-        RequestToCancel = true,
-        RequestToPause = true,
-        SizeOfLastChunkUploaded = 1,
-        StartTimeUpload = DateTime.UtcNow,
-        Status = BitFileUploadStatus.Paused,
-        TotalSizeOfUploaded = 1
-    };
-#pragma warning restore CA1823 // Avoid unused private fields
-
     private const int MIN_CHUNK_SIZE = 512 * 1024; // 512 kb
     private const int MAX_CHUNK_SIZE = 10 * 1024 * 1024; // 10 mb
     private DotNetObjectReference<BitFileUpload>? dotnetObjectReference;
