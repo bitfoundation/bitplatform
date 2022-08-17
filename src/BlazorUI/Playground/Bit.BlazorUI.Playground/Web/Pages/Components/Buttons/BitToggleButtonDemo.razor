@@ -57,7 +57,20 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Arias for Screen Reader" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
+    <ComponentExampleBox Title="Toggle Button with default value" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
+        <ExamplePreview>
+            <div class="example-desc">Set default checked or unchecked value without two way binding.</div>
+            <div>
+                <BitToggleButton OnChange="((e) => ToggleButtonDefaultValue = e)"
+                                 DefaultIsChecked="ToggleButtonDefaultValue"
+                                 Label="@(ToggleButtonDefaultValue ? "Mute" : "Unmute")"
+                                 IconName=@(ToggleButtonDefaultValue ? BitIconName.MicOff : BitIconName.Microphone)>
+                </BitToggleButton>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Arias for Screen Reader" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
         <ExamplePreview>
             <div class="example-desc">Aria attribues can also set for a BitToggleButton.</div>
             <div>

@@ -210,4 +210,25 @@ public class BitToggleButtonTests : BunitTestContext
 
         Assert.AreEqual(expectedElement, tagName, ignoreCase: true);
     }
+
+    [DataTestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitToggleButtonDefaultIsCheckedTest(bool defaultIsChecked)
+    {
+        bool isCheckedAfterOnChange = !defaultIsChecked;
+
+        var component = RenderComponent<BitToggleButton>(parameters =>
+        {
+            parameters.Add(p => p.DefaultIsChecked, defaultIsChecked);
+            parameters.Add(p => p.OnChange, (e) => defaultIsChecked = e);
+        });
+
+        var bitToggleButton = component.Find(".bit-tgl-btn");
+
+        bitToggleButton.Click();
+
+        Assert.AreEqual(defaultIsChecked, isCheckedAfterOnChange);
+    }
 }
