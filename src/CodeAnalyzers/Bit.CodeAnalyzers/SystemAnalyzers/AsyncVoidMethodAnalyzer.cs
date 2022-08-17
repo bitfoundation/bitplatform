@@ -8,13 +8,12 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 namespace Bit.CodeAnalyzers.SystemAnalyzers;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
-public class MethodAsyncVoidAnalyzer : DiagnosticAnalyzer
+public class AsyncVoidMethodAnalyzer : DiagnosticAnalyzer
 {
-    public const string DiagnosticId = nameof(MethodAsyncVoidAnalyzer);
-
-    public const string Title = "Change return type of async method to Task";
-    public const string Message = "Return type of async method must be Task or contain try/catch";
-    public const string Description = Message;
+    private const string DiagnosticId = nameof(AsyncVoidMethodAnalyzer);
+    private const string Title = "Avoid using 'async void'";
+    private const string Message = "Either change the return type to 'Task' or use try/catch to handle the exceptions.";
+    private const string Description = Message;
     private const string Category = "System";
 
     private static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(DiagnosticId, Title, Message, Category, DiagnosticSeverity.Error, isEnabledByDefault: true, description: Description);
@@ -24,7 +23,7 @@ public class MethodAsyncVoidAnalyzer : DiagnosticAnalyzer
 
     public override void Initialize(AnalysisContext context)
     {
-        if (context == null)
+        if (context is null)
             throw new ArgumentNullException(nameof(context));
 
         context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
@@ -36,10 +35,10 @@ public class MethodAsyncVoidAnalyzer : DiagnosticAnalyzer
     {
         SyntaxNode root = context.Node;
 
-        if ((root is MethodDeclarationSyntax) is false)
-            return;
+        var methodDec = context.Node as MethodDeclarationSyntax;
 
-        MethodDeclarationSyntax methodDec = (MethodDeclarationSyntax)context.Node;
+        if (methodDec is null)
+            return;
 
         if (methodDec.Modifiers.Any(SyntaxKind.AsyncKeyword) is false)
             return;
@@ -52,10 +51,7 @@ public class MethodAsyncVoidAnalyzer : DiagnosticAnalyzer
         if (returnType.Keyword.IsKind(SyntaxKind.VoidKeyword) is false)
             return;
 
-        if (methodDec.Body is null)
-            return;
-
-        if (methodDec.Body.Statements.Any(SyntaxKind.TryStatement))
+        if (methodDec.Body?.Statements.Any(SyntaxKind.TryStatement) is true)
             return;
 
         Diagnostic diagnostic = Diagnostic.Create(Rule, root.GetLocation(), Message);
