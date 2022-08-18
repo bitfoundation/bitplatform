@@ -8,7 +8,8 @@
         <ExamplePreview>
             <BitCheckbox @bind-Value="IsHideDetails" OnClick="()=>IsHideDetails=!IsHideDetails">Include BitPersona details</BitCheckbox>
             <div class="title">Size 24 Persona</div>
-            <BitPersona ImageUrl="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"
+            <BitPersona ImageUrl="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png1"
+                        ShowInitialsUntilImageLoads=true
                         Presence=@BitPersonaPresenceStatus.None
                         Size=@BitPersonaSize.Size24
                         HidePersonaDetails="!IsHideDetails"

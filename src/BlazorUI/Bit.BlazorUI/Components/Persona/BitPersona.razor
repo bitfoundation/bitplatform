@@ -1,5 +1,4 @@
 ﻿@namespace Bit.BlazorUI
-
 @inherits BitComponentBase
 
 <div @ref="RootElement"
@@ -8,7 +7,7 @@
      class="@ClassBuilder.Value">
 
     <div role="presentation" class="bit-prs-coin">
-        @if (Size != BitPersonaSize.Size8)
+        @if (Size != BitPersonaSize.Size20)
         {
             string dimension = CoinSize != -1 ? $"{CoinSize.ToString()}px" : Size!;
 
@@ -27,12 +26,27 @@
                                 <span>Edit image</span>
                             }
                         </div>
-                        <img src="@ImageUrl"
-                     class="bit-prs-img"
-                     alt="@ImageAlt"
-                     width="@dimension"
-                     height="@dimension" />
+                        @if (_hasError is false)
+                        {
+                            <img src="@ImageUrl"
+                                 class="bit-prs-img"
+                                 alt="@ImageAlt"
+                                 width="@dimension"
+                                 height="@dimension"
+                                 @onerror="HandleOnError"
+                                 @onload="HandleOnLoad" />
+                        }
+                        @if ((ShowInitialsUntilImageLoads && _isLoaded is false) || _hasError)
+                        {
+                            <div class="initials">
+                                @_internalInitials
+                            </div>
+                        }
                     </div>
+                }
+                else
+                {
+
                 }
 
                 @if (OnActionClick.HasDelegate)
@@ -60,10 +74,10 @@
         {
             if (Presence != BitPersonaPresenceStatus.None)
             {
-                <div title=@PresenceTitle class="bit-prs-presence" style="@PresenceStyle">
-                    @if (RenderIcon)
+                <div title=@PresenceTitle class="bit-prs-presence" style="@_presenceStyle">
+                    @if (_renderIcon)
                     {
-                        <i class=@($"bit-prs-icon bit-icon--{DetermineIcon(Presence, IsOutOfOffice)}") role="presentation" style="@IconStyle"></i>
+                        <i class=@($"bit-prs-icon bit-icon--{DetermineIcon(Presence, IsOutOfOffice)}") role="presentation" style="@_iconStyle"></i>
                     }
                 </div>
             }
@@ -74,7 +88,7 @@
         }
     </div>
 
-    @if (HidePersonaDetails is false || Size == BitPersonaSize.Size8)
+    @if (HidePersonaDetails is false)
     {
         <div class="bit-prs-details">
             <div dir="auto" class="bit-prs-primary-text">
