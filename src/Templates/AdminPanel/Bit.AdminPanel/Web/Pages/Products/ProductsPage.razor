@@ -1,48 +1,41 @@
 ﻿@using AdminPanel.Shared.Dtos.Products
 
 @page "/products"
-@attribute [Authorize]
-
 @inherits AppComponentBase;
 
 <PageTitle>@AppStrings.ProductsPageTitle</PageTitle>
 
 <div class="page-container">
-    <div class="page-content--white">
-        @if (IsLoading)
-        {
-            <div class="spinner">
-                <BitSpinner Size="BitSpinnerSize.Large"></BitSpinner>
-            </div>
-        }
-        <div class="page-header">
-            <h3>Product</h3>
-            <BitButton OnClick="WrapHandled(CreateProduct)">@AppStrings.Add</BitButton>
+    @if (IsLoading)
+    {
+        <div class="loading-contianer">
+            <BitSpinner Size="BitSpinnerSize.Large"></BitSpinner>
         </div>
-        <div class="content">
-            <div class="grid">
-                <BitDataGrid ItemsProvider="@productsProvider" TGridItem="@ProductDto" ResizableColumns="true" Pagination="@pagination" @ref="dataGrid">
-                    <BitDataGridPropertyColumn Property="@(c => c.Name)" Sortable="true" Class="column1">
-                        <ColumnOptions>
-                            <BitSearchBox @bind-Value="ProductNameFilter"
-                                          Placeholder="Search on Name"
-                                          InputHtmlAttributes="@(new Dictionary<string, object> {{"autofocus", true}})" />
-                        </ColumnOptions>
-                    </BitDataGridPropertyColumn>
-                    <BitDataGridPropertyColumn Property="@(c => c.Price)" Sortable="true" Align="BitDataGridAlign.Left" />
-                    <BitDataGridTemplateColumn Title="Action" Align="BitDataGridAlign.Right">
-                        <BitIconButton IconName="BitIconName.Edit" OnClick=@(() => EditProduct(context)) />
-                        <BitIconButton Style="color:red;" IconName="BitIconName.Delete" OnClick="WrapHandled(() => DeleteProduct(context))" />
-                    </BitDataGridTemplateColumn>
-
-                </BitDataGrid>
-                <BitDataGridPaginator Value="@pagination" />
-            </div>
-
-        </div>
+    }
+    <div class="page-row">
+        <h1 class="page-title">Products</h1>
+        <BitButton OnClick="WrapHandled(CreateProduct)">@AppStrings.AddProduct</BitButton>
+    </div>
+    <div class="grid">
+        <BitDataGrid ItemsProvider="@productsProvider" TGridItem="@ProductDto" ResizableColumns="true" Pagination="@pagination" @ref="dataGrid">
+            <BitDataGridPropertyColumn Property="@(c => c.Id)" Sortable="true" Align="BitDataGridAlign.Left" IsDefaultSort="BitDataGridSortDirection.Ascending" Class="id-col" />
+            <BitDataGridPropertyColumn Property="@(c => c.Name)" Sortable="true" Class="column1">
+                <ColumnOptions>
+                    <BitSearchBox @bind-Value="ProductNameFilter"
+                                  Placeholder="Search on Name"
+                                  InputHtmlAttributes="@(new Dictionary<string, object> {{"autofocus", true}})" />
+                </ColumnOptions>
+            </BitDataGridPropertyColumn>
+            <BitDataGridPropertyColumn Property="@(c => c.CategoryId)" Sortable="true" Align="BitDataGridAlign.Left" />
+            <BitDataGridPropertyColumn Property="@(c => c.Price)" Sortable="true" Align="BitDataGridAlign.Left" />
+            <BitDataGridTemplateColumn Title="Action" Align="BitDataGridAlign.Center">
+                <BitIconButton Style="color:#605E5C;" IconName="BitIconName.Edit" OnClick=@(() => EditProduct(context)) Title="Edit" />
+                <BitIconButton Style="color:#605E5C;" IconName="BitIconName.Delete" OnClick="WrapHandled(() => DeleteProduct(context))" Title="Delete" />
+            </BitDataGridTemplateColumn>
+        </BitDataGrid>
+        <BitDataGridPaginator Value="@pagination" />
     </div>
 </div>
 
-<CreateEditProductModal OnProductSave="WrapHandled(OnSuccessfulProductSave)" @ref="modal" />
-
+<CreateEditProductModal @ref="modal" />
 <ConfirmMessageBox />

@@ -450,6 +450,20 @@ public partial class BitDropDownDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether the drop down items get rendered in a side panel in small screen sizes or not.",
+        },
+        new ComponentParameter()
+        {
+            Name = "ShowSearchBox",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Search box is enabled for the end user.",
+        },
+        new ComponentParameter()
+        {
+            Name = "PlaceholderSearchBox",
+            Type = "string",
+            DefaultValue = "",
+            Description = "Search input placeholder text.",
         }
     };
 
@@ -1077,6 +1091,83 @@ private List<BitDropDownItem> GetProductDropdownItems()
 </BitDropDown>";
 
     private readonly string example7CSharpCode = @"
+private List<BitDropDownItem> GetDropdownItems()
+{
+    List<BitDropDownItem> items = new();
+
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Header,
+        Text = ""Fruits""
+    });
+
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Normal,
+        Text = ""Apple"",
+        Value = ""f-app""
+    });
+
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Normal,
+        Text = ""Orange"",
+        Value = ""f-ora"",
+        IsEnabled = false
+    });
+
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Normal,
+        Text = ""Banana"",
+        Value = ""f-ban"",
+    });
+
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Divider,
+    });
+
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Header,
+        Text = ""Vegetables""
+    });
+
+    items.Add(new BitDropDownItem()
+    {
+        ItemType = BitDropDownItemType.Normal,
+        Text = ""Broccoli"",
+        Value = ""v-bro"",
+    });
+
+    return items;
+}";
+
+    #endregion
+
+    #region Example Code 8
+
+    private readonly string example8HTMLCode = @"<BitDropDown Label=""Single-select Controlled with search box""
+                Items=""GetDropdownItems()""
+                Placeholder=""Select an option""
+                IsResponsiveModeEnabled=""true""
+                ShowSearchBox=""true""
+                PlaceholderSearchBox=""Search item""
+                Style=""width: 290px; margin: 20px 0 20px 0"">
+</BitDropDown>
+
+<BitDropDown Label=""Multi-select controlled with search box""
+                Items=""GetDropdownItems()""
+                Placeholder=""Select options""
+                IsMultiSelect=""true""
+                IsResponsiveModeEnabled=""true""
+                ShowSearchBox=""true""
+                PlaceholderSearchBox=""Search items""
+                Style=""width: 290px; margin: 20px 0 20px 0"">
+</BitDropDown>";
+
+    private readonly string example8CSharpCode = @"private string ControlledValue = ""Apple"";
 private List<BitDropDownItem> GetDropdownItems()
 {
     List<BitDropDownItem> items = new();

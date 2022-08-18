@@ -3,7 +3,7 @@
 <AuthorizeView>
     <div class="main">
         <div><img src="/images/icons/error-triangle.svg" /></div>
-        <h2 class="title">@ErrorStrings.ForbiddenException</h2>
+        <h2 class="title">@Localizer[nameof(AppStrings.ForbiddenException)]</h2>
         <h4 class="description">You're signed in as @User.GetUserName()</h4>
         <div class="buttons">
             <BitButton OnClick="WrapHandled(SignIn)">Sign in as different user</BitButton>

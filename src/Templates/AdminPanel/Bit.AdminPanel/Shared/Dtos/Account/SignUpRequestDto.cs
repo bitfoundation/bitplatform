@@ -14,8 +14,4 @@ public class SignUpRequestDto
     [Required(ErrorMessage = "Please enter your password.")]
     [MinLength(6, ErrorMessage = "The password must have at least 6 characters.")]
     public string? Password { get; set; }
-
-    [NotMapped]
-    [Range(typeof(bool), "true", "true", ErrorMessage = "You must agree to our privacy policy.")]
-    public bool IsAcceptPrivacy { get; set; }
 }

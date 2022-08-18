@@ -55,6 +55,13 @@ public partial class BitToggleButtonDemo
         },
         new ComponentParameter()
         {
+            Name = "DefaultIsChecked",
+            Type = "bool?",
+            DefaultValue = "",
+            Description = "Default value of the IsChecked.",
+        },
+        new ComponentParameter()
+        {
             Name = "Href",
             Type = "string",
             DefaultValue = "",
@@ -172,7 +179,8 @@ public partial class BitToggleButtonDemo
         }
     };
 
-    private readonly string example1HTMLCode = @"<BitToggleButton @bind-IsChecked=""TogglePrimaryButtonChecked""
+    private readonly string example1HTMLCode = @"
+<BitToggleButton @bind-IsChecked=""TogglePrimaryButtonChecked""
                  Class=""tgl-btn""
                  Label=""@(TogglePrimaryButtonChecked ? ""Primary Mute"":""Primary Unmute"")""
                  IconName=@(TogglePrimaryButtonChecked ? BitIconName.MicOff : BitIconName.Microphone)
@@ -197,7 +205,8 @@ private bool ToggleDisabledButtonChecked;
 private bool TogglePrimaryButtonChecked;
 ";
 
-    private readonly string example2HTMLCode = @"<BitToggleButton @bind-IsChecked=""ToggleButtonForOnChange""
+    private readonly string example2HTMLCode = @"
+<BitToggleButton @bind-IsChecked=""ToggleButtonForOnChange""
                  Label=""@(ToggleButtonForOnChange ? ""Mute"" : ""Unmute"")""
                  IconName=@(ToggleButtonForOnChange ? BitIconName.MicOff : BitIconName.Microphone)
                  OnChange=""ToggleButtonChanged"">
@@ -212,7 +221,8 @@ private void ToggleButtonChanged(bool newValue)
     OnToggleButtonChanged = newValue;
 }";
 
-    private readonly string example3HTMLCode = @"<input type=checkbox id=""BitToggleButtonTwoWayValue"" @bind=""ToggleButtonTwoWayValue"">
+    private readonly string example3HTMLCode = @"
+<input type=checkbox id=""BitToggleButtonTwoWayValue"" @bind=""ToggleButtonTwoWayValue"">
 <label class=""checkbox-status"" for=""BitToggleButtonTwoWayValue"">Checked Toggle Button</label>
 <div>
     <BitToggleButton @bind-IsChecked=""ToggleButtonTwoWayValue""
@@ -222,10 +232,10 @@ private void ToggleButtonChanged(bool newValue)
 </div>";
 
     private readonly string example3CSharpCode = @"
-private bool ToggleButtonTwoWayValue = true;
-";
+private bool ToggleButtonTwoWayValue = true;";
 
-    private readonly string example4HTMLCode = @"<BitToggleButton @bind-IsChecked=""ToggleButtonChecked""
+    private readonly string example4HTMLCode = @"
+<BitToggleButton @bind-IsChecked=""ToggleButtonChecked""
                  Label=""@(ToggleButtonChecked ? ""Aria Description Mute"" : ""Aria Description Unmute"")""
                  IconName=""@(ToggleButtonChecked ? BitIconName.MicOff : BitIconName.Microphone)""
                  AriaDescription=""Detailed description used for screen reader"">
@@ -238,6 +248,5 @@ private bool ToggleButtonTwoWayValue = true;
 </BitToggleButton>";
 
     private readonly string example4CSharpCode = @"
-private bool ToggleButtonChecked = false;
-";
+private bool ToggleButtonChecked = false;";
 }

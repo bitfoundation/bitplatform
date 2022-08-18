@@ -45,6 +45,11 @@ public partial class BitToggleButton
     [Parameter] public EventCallback<bool> IsCheckedChanged { get; set; }
 
     /// <summary>
+    /// Default value of the IsChecked.
+    /// </summary>
+    [Parameter] public bool? DefaultIsChecked { get; set; }
+
+    /// <summary>
     /// The icon that shows in the button.
     /// </summary>
     [Parameter] public BitIconName? IconName { get; set; }
@@ -110,24 +115,29 @@ public partial class BitToggleButton
     {
         ClassBuilder.Register(() => IsEnabled is false
                                    ? ButtonStyle == BitButtonStyle.Primary
-                                       ? $"{RootElementClass}-primary-disabled-{VisualClassRegistrar()}"
-                                       : $"{RootElementClass}-standard-disabled-{VisualClassRegistrar()}"
+                                       ? "primary-disabled"
+                                       : "standard-disabled"
                                    : ButtonStyle == BitButtonStyle.Primary
-                                       ? $"{RootElementClass}-primary-{VisualClassRegistrar()}"
-                                       : $"{RootElementClass}-standard-{VisualClassRegistrar()}");
+                                       ? "primary"
+                                       : "standard");
 
         ClassBuilder.Register(() => IsChecked is false
                                         ? string.Empty
                                         : ButtonStyle == BitButtonStyle.Primary
-                                           ? $"{RootElementClass}-primary-checked-{VisualClassRegistrar()}"
-                                           : $"{RootElementClass}-standard-checked-{VisualClassRegistrar()}");
+                                           ? "primary-checked"
+                                           : "standard-checked");
     }
 
     protected override async Task OnInitializedAsync()
     {
-        if (!IsEnabled)
+        if (IsEnabled is false)
         {
             tabIndex = AllowDisabledFocus ? null : -1;
+        }
+
+        if (IsCheckedHasBeenSet is false && DefaultIsChecked.HasValue)
+        {
+            IsChecked = DefaultIsChecked.Value;
         }
 
         await base.OnInitializedAsync();

@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using Bunit;
+using Bunit.Extensions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Sliders;
@@ -109,20 +110,27 @@ public class BitSliderTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow(Visual.Fluent, null),
-        DataRow(Visual.Fluent, 2),
+        DataRow(Visual.Fluent, null, 3),
+        DataRow(Visual.Fluent, 2, null),
+        DataRow(Visual.Fluent, 2, 3),
+        DataRow(Visual.Fluent, null, null),
 
-        DataRow(Visual.Cupertino, null),
-        DataRow(Visual.Cupertino, 2),
+        DataRow(Visual.Cupertino, null, 3),
+        DataRow(Visual.Cupertino, 2, null),
+        DataRow(Visual.Cupertino, 2, 3),
+        DataRow(Visual.Cupertino, null, null),
 
-        DataRow(Visual.Material, null),
-        DataRow(Visual.Material, 2),
+        DataRow(Visual.Material, null, 3),
+        DataRow(Visual.Material, 2, null),
+        DataRow(Visual.Material, 2, 3),
+        DataRow(Visual.Material, null, null)
     ]
-    public void BitSliderDefaultLowerValueTest(Visual visual, int? defaultLowerValue)
+    public void BitSliderDefaultLowerValueTest(Visual visual, int? lowerValue, int? defaultLowerValue)
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.Visual, visual);
+            parameters.AddCascadingValue(visual);
+            parameters.Add(p => p.LowerValue, lowerValue);
             parameters.Add(p => p.DefaultLowerValue, defaultLowerValue);
             parameters.Add(p => p.ShowValue, true);
             parameters.Add(p => p.IsRanged, true);
@@ -131,24 +139,32 @@ public class BitSliderTests : BunitTestContext
         // Find fisrt label with valueLabel css class
         var label = com.Find(".bit-slider-value");
 
-        Assert.AreEqual(label.TextContent, defaultLowerValue.GetValueOrDefault().ToString());
+        var actualValue = lowerValue.HasValue ? lowerValue : defaultLowerValue;
+        Assert.AreEqual(label.TextContent, actualValue.GetValueOrDefault().ToString());
     }
 
     [DataTestMethod,
-        DataRow(Visual.Fluent, null),
-        DataRow(Visual.Fluent, 2),
+        DataRow(Visual.Fluent, null, 3),
+        DataRow(Visual.Fluent, 2, null),
+        DataRow(Visual.Fluent, 2, 3),
+        DataRow(Visual.Fluent, null, null),
 
-        DataRow(Visual.Cupertino, null),
-        DataRow(Visual.Cupertino, 2),
+        DataRow(Visual.Cupertino, null, 3),
+        DataRow(Visual.Cupertino, 2, null),
+        DataRow(Visual.Cupertino, 2, 3),
+        DataRow(Visual.Cupertino, null, null),
 
-        DataRow(Visual.Material, null),
-        DataRow(Visual.Material, 2),
+        DataRow(Visual.Material, null, 3),
+        DataRow(Visual.Material, 2, null),
+        DataRow(Visual.Material, 2, 3),
+        DataRow(Visual.Material, null, null)
     ]
-    public void BitSliderDefaultUpperValueTest(Visual visual, int? defaultUpperValue)
+    public void BitSliderDefaultUpperValueTest(Visual visual, int? upperValue, int? defaultUpperValue)
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.Visual, visual);
+            parameters.AddCascadingValue(visual);
+            parameters.Add(p => p.UpperValue, upperValue);
             parameters.Add(p => p.DefaultUpperValue, defaultUpperValue);
             parameters.Add(p => p.ShowValue, true);
             parameters.Add(p => p.IsRanged, true);
@@ -157,8 +173,10 @@ public class BitSliderTests : BunitTestContext
         // Find labels with valueLabel css class
         var labels = com.FindAll(".bit-slider-value");
 
-        Assert.AreEqual(labels.Count, 2);
-        Assert.AreEqual(labels.Last().TextContent, defaultUpperValue.GetValueOrDefault().ToString());
+        var actualValue = upperValue.HasValue ? upperValue : defaultUpperValue;
+
+        Assert.AreEqual(2, labels.Count);
+        Assert.AreEqual(labels.Last().TextContent, actualValue.GetValueOrDefault().ToString());
     }
 
     [DataTestMethod,
@@ -235,7 +253,7 @@ public class BitSliderTests : BunitTestContext
         var com = RenderComponent<BitSliderTest>(parameters =>
         {
             parameters.Add(p => p.Visual, visual);
-            parameters.Add(p => p.RangeValue, (lowerValue, upperValue));
+            parameters.Add(p => p.RangeValue, new BitSliderRangeValue { Lower = lowerValue, Upper = upperValue });
             parameters.Add(p => p.ShowValue, true);
             parameters.Add(p => p.Ranged, true);
         });

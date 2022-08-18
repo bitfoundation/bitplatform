@@ -1,0 +1,70 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitLoadingComponentBase
+
+<style>
+    .blazor-loading-heart {
+        display: inline-block;
+        position: relative;
+        width: @(Size)px;
+        height: @(Size)px;
+        transform: rotate(45deg);
+        transform-origin: @(Convert(40))px @(Convert(40))px;
+    }
+
+        .blazor-loading-heart div {
+            top: @(Convert(32))px;
+            left: @(Convert(32))px;
+            position: absolute;
+            width: @(Convert(32))px;
+            height: @(Convert(32))px;
+            background: @Color;
+            animation: blazor-loading-heart 1.2s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
+        }
+
+            .blazor-loading-heart div:after,
+            .blazor-loading-heart div:before {
+                content: " ";
+                position: absolute;
+                display: block;
+                width: @(Convert(32))px;
+                height: @(Convert(32))px;
+                background: @Color;
+            }
+
+            .blazor-loading-heart div:before {
+                left: -@(Convert(24))px;
+                border-radius: 50% 0 0 50%;
+            }
+
+            .blazor-loading-heart div:after {
+                top: -@(Convert(24))px;
+                border-radius: 50% 50% 0 0;
+            }
+
+    @@keyframes blazor-loading-heart {
+        0% {
+            transform: scale(0.95);
+        }
+
+        5% {
+            transform: scale(1.1);
+        }
+
+        39% {
+            transform: scale(0.85);
+        }
+
+        45% {
+            transform: scale(1);
+        }
+
+        60% {
+            transform: scale(0.95);
+        }
+
+        100% {
+            transform: scale(0.9);
+        }
+    }
+</style>
+<div class="blazor-loading-heart"><div></div></div>

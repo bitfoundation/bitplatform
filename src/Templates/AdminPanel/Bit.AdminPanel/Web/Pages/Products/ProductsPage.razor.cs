@@ -1,16 +1,11 @@
 ﻿//-:cnd:noEmit
-using AdminPanel.App.Shared;
 using AdminPanel.Shared.Dtos.Products;
 
 namespace AdminPanel.App.Pages.Products;
+
+[Authorize]
 public partial class ProductsPage
 {
-    [AutoInject] private HttpClient httpClient = default!;
-
-    [AutoInject] private IStateService stateService = default!;
-
-    [AutoInject] private NavigationManager navigationManager = default!;
-
     public bool IsLoading { get; set; }
 
     CreateEditProductModal? modal;
@@ -61,9 +56,9 @@ public partial class ProductsPage
                     query.Add("$orderby", string.Join(", ", req.GetSortByProperties().Select(p => $"{p.PropertyName} {(p.Direction == BitDataGridSortDirection.Ascending ? "asc" : "desc")}")));
                 }
 
-                var url = navigationManager.GetUriWithQueryParameters("Product/GetProducts", query);
+                var url = NavigationManager.GetUriWithQueryParameters("Product/GetProducts", query);
 
-                var data = await httpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto);
+                var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto);
 
                 TotalCount = data!.TotalCount;
 
@@ -98,20 +93,13 @@ public partial class ProductsPage
 
     private async Task DeleteProduct(ProductDto product)
     {
-        var confirmed = await ConfirmMessageBox.Show("Are you sure delete?", product.Name, "Delete");
+        var confirmed = await ConfirmMessageBox.Show($"Are you sure you want to delete product \"{product.Name}\"?", "Delete product");
 
         if (confirmed)
         {
-            await httpClient.DeleteAsync($"Product/Delete/{product.Id}");
+            await HttpClient.DeleteAsync($"Product/Delete/{product.Id}");
             await RefreshData();
         }
-    }
-
-    protected async Task OnSuccessfulProductSave()
-    {
-        await MessageBox.Show("Succesfully saved", "product");
-
-        await RefreshData();
     }
 }
 

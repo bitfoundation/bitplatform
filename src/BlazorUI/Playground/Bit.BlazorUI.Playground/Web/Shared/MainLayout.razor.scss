@@ -95,11 +95,6 @@
     text-decoration: none;
 }
 
-::deep * {
-    font-family: "Segoe UI";
-    box-sizing: border-box;
-}
-
 ::deep .example-desc {
     margin-bottom: rem(8px);
 }

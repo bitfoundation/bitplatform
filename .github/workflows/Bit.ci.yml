@@ -6,34 +6,63 @@ on:
     - 'src/**'
 jobs:
   build-release:
-    if: startsWith(github.event.pull_request.title, 'Prerelease') || startsWith(github.event.pull_request.title, 'Release')
+    if: startsWith(github.event.pull_request.title, 'Prerelease') || startsWith(github.event.pull_request.title, 'Release') || startsWith(github.event.pull_request.title, 'Version')
     name: build and test for release
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout source code
+      uses: actions/checkout@v2
+
     - name: Setup .NET 6.0.x
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 6.0.x
+
+    - name: Setup .NET 7.0.x
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 7.0.x
+        include-prerelease: true
+
+    - name: Install wasm-tools
+      run: dotnet workload install wasm-tools
+      
     - name: Restore prerelease
       run: dotnet restore src/Bit-CI-release.sln
+
     - name: MSBuild prerelease
       run: dotnet msbuild src/Bit-CI-release.sln -m:1
+
     - name: Test
       run: dotnet test --no-build --verbosity normal src/BlazorUI/Bit.BlazorUI.Tests/Bit.BlazorUI.Tests.csproj
+
   build:
-    if: startsWith(github.event.pull_request.title, 'Prerelease') != true && startsWith(github.event.pull_request.title, 'Release') != true
+    if: startsWith(github.event.pull_request.title, 'Prerelease') != true && startsWith(github.event.pull_request.title, 'Release') != true && startsWith(github.event.pull_request.title, 'Version') != true
     name: build and test
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout source code
+      uses: actions/checkout@v2
+
     - name: Setup .NET 6.0.x
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 6.0.x
+
+    - name: Setup .NET 7.0.x
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 7.0.x
+        include-prerelease: true
+    
+    - name: Install wasm-tools
+      run: dotnet workload install wasm-tools
+
     - name: Restore
       run: dotnet restore src/Bit-CI.sln
+
     - name: MSBuild
       run: dotnet msbuild src/Bit-CI.sln -m:1
+      
     - name: Test
       run: dotnet test --no-build --verbosity normal src/BlazorUI/Bit.BlazorUI.Tests/Bit.BlazorUI.Tests.csproj

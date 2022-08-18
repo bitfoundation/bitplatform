@@ -3,14 +3,9 @@ using System.Runtime.InteropServices;
 
 namespace AdminPanel.App.Services.Implementations;
 
-public class AppHttpClientHandler : HttpClientHandler
+public partial class AppHttpClientHandler : HttpClientHandler
 {
-    private readonly IAuthTokenProvider _tokenProvider;
-
-    public AppHttpClientHandler(IAuthTokenProvider tokenProvider)
-    {
-        _tokenProvider = tokenProvider;
-    }
+    [AutoInject] private IAuthTokenProvider _tokenProvider = default!;
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {

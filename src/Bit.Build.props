@@ -27,8 +27,8 @@
 
 		<ReleaseVersion>3.0.0</ReleaseVersion>
 
-		<PackageReleaseNotes>https://github.com/bitfoundation/bitplatform/releases/tag/v-$(ReleaseVersion)-pre-04</PackageReleaseNotes>
-		<PackageVersion>$(ReleaseVersion)-pre-04</PackageVersion>
+		<PackageReleaseNotes>https://github.com/bitfoundation/bitplatform/releases/tag/v-$(ReleaseVersion)</PackageReleaseNotes>
+		<PackageVersion>$(ReleaseVersion)</PackageVersion>
 
 		<!-- Version -->
 		<Version Condition=" '$(Configuration)' == 'Release' ">$(ReleaseVersion).$([System.DateTime]::Now.ToString(HHmm))</Version>
@@ -46,7 +46,6 @@
 
 		<AnalysisLevel>latest</AnalysisLevel>
 		<AnalysisMode>AllEnabledByDefault</AnalysisMode>
-		<CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
 		<EnableNETAnalyzers>true</EnableNETAnalyzers>
 		<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
 	</PropertyGroup>

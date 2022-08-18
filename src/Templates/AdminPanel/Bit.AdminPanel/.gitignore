@@ -247,3 +247,5 @@ custom.aprof
 
 /Web/wwwroot/scripts/app*.js
 /Web/wwwroot/service-worker.published.min.js
+/Web/appsettings.json
+/App/wwwroot/appsettings.json

@@ -8,7 +8,7 @@
     <ItemGroup>
         <ProjectReference Include="..\..\Bit.Bswup\Bit.Bswup.csproj" />
         <ProjectReference Include="..\Client\Bit.Bswup.Demo.Client.csproj" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="6.0.7" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="6.0.8" />
     </ItemGroup>
 
 </Project>

@@ -17,7 +17,6 @@ public partial class NavMenu
     {
         new BitNavLinkItem { Name= "Overview", Key = "Overview", Url = "/overview"},
         new BitNavLinkItem { Name= "Getting started", Key = "GettingStarted", Url = "/getting-started"},
-        new BitNavLinkItem { Name= "Icons", Key = "Icons", Url = "/icons"},
         new BitNavLinkItem
         {
             Name = "Basic Inputs",
@@ -97,7 +96,8 @@ public partial class NavMenu
             Links = new List<BitNavLinkItem>
             {
                 new BitNavLinkItem{ Name = "Progressindicator", Key = "ProgressIndicator", Url = "/components/progress-indicator" },
-                new BitNavLinkItem{ Name = "Spinner", Key = "Spinner", Url = "/components/spinner" }
+                new BitNavLinkItem{ Name = "Spinner", Key = "Spinner", Url = "/components/spinner" },
+                new BitNavLinkItem{ Name = "Loading", Key = "Loading", Url = "/components/loading" }
             },
         },
         new BitNavLinkItem
@@ -108,7 +108,8 @@ public partial class NavMenu
             {
                 new BitNavLinkItem { Name = "Modal", Key = "Modal", Url = "/components/modal" },
             },
-        }
+        },
+        new BitNavLinkItem { Name= "Icons", Key = "Icons", Url = "/icons"},
     };
 
     private List<BitNavLinkItem> filteredNavLinks;
@@ -170,8 +171,10 @@ public partial class NavMenu
         filteredNavLinks = flatNavLinkList.FindAll(link => link.Name.Contains(text, StringComparison.InvariantCultureIgnoreCase));
     }
 
-    private async Task HandleLinkClick()
+    private async Task HandleLinkClick(BitNavLinkItem item)
     {
+        if (item.Url.HasNoValue()) return;
+
         searchText = string.Empty;
 
         HandleClear();

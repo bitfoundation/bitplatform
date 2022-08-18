@@ -1,7 +1,135 @@
-﻿.form-container {
+﻿@import '../../Styles/abstracts/_media-queries.scss';
+@import '../../Styles/abstracts/_colors.scss';
+@import '../../Styles/abstracts/_functions.scss';
+
+.page-container {
     display: flex;
     flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: flex-start;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+.page-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: rem(37px);
+
+    @include sm {
+        margin-bottom: rem(29px);
+    }
+}
+
+.loading-contianer {
+    display: flex;
     justify-content: center;
     align-items: center;
     width: 100%;
+    height: 100%;
+}
+
+::deep .back-btn {
+    color: #212121;
+}
+
+.page-title {
+    margin: 0;
+    font-weight: 700;
+    font-size: rem(24px);
+    line-height: rem(32px);
+    color: $Gray190;
+
+    @include md {
+        font-weight: 600;
+        font-size: rem(20px);
+        line-height: rem(28px);
+    }
+
+    @include sm {
+        font-weight: 600;
+        font-size: rem(18px);
+        line-height: rem(24px);
+    }
+}
+
+.form-input-container {
+    width: 100%;
+    max-width: rem(388px);
+    margin-bottom: rem(24px);
+}
+
+::deep .validation-message {
+    color: $StatusErrorColor;
+}
+
+.color-container {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.color-btn {
+    width: rem(32px);
+    height: rem(32px);
+    border-radius: rem(2px);
+    margin-right: rem(12px);
+    margin-bottom: rem(12px);
+    border: none;
+    outline: none;
+    cursor: pointer;
+
+    @include sm {
+        width: rem(28px);
+        height: rem(28px);
+        margin-right: rem(8px);
+        margin-bottom: rem(8px);
+    }
+}
+
+.color-btn--active {
+    background-image: url('/images/icons/checkmark-icon.svg');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: rem(20px);
+}
+
+.custom-color-btn {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: rem(124px);
+    height: rem(32px);
+    border: rem(1px) solid $Gray110;
+    border-radius: rem(2px);
+    margin-bottom: rem(12px);
+    padding: rem(4px);
+    box-sizing: border-box;
+    font-weight: 600;
+    font-size: rem(12px);
+    line-height: rem(16px);
+    color: $Gray190;
+    cursor: pointer;
+    background-color: $White;
+
+    .btn-color {
+        width: rem(24px);
+        height: rem(24px);
+        border-radius: rem(2px);
+        margin-right: rem(8px);
+    }
+
+    @include sm {
+        width: rem(112px);
+        height: rem(28px);
+        margin-bottom: rem(8px);
+
+        .btn-color {
+            width: rem(20px);
+            height: rem(20px);
+            margin-right: rem(4px);
+        }
+    }
 }

@@ -77,100 +77,97 @@
 
         childTemplate = (navLinkItem) =>
         (
-    @<li class="nav-item"
-         role="listitem"
-         @key="navLinkItem.Key"
-         @onclick="(() => HandleClick(navLinkItem))">
+            @<li class="nav-item"
+                 role="listitem"
+                 @key="navLinkItem.Key"
+                 @onclick="(() => HandleClick(navLinkItem))">
 
-        <div class="composite-link @(!navLinkItem.IsEnabled ? "disabled" : "")"
-             name="@navLinkItem.Name">
-            @if (navLinkItem.Links?.Any() ?? false)
-            {
-                <button class="chevron-btn"
-                        style="margin-left: @((navLinkItem.Depth * 14).ToString() + "px");"
-                        type="button"
-                        tabindex="0"
-                        aria-label="@GetExpandButtonAriaLabel(navLinkItem)"
-                        aria-expanded="@(navLinkItem.IsExpanded ? "true" : "false")"
-                        @onclick="(() => HandleLinkExpand(navLinkItem))">
-                    <i class="bit-icon bit-icon--ChevronDown @(navLinkItem.IsExpanded ? "expand" : "")"
-                       aria-hidden="true"></i>
-                </button>
-            }
-
-            @if (navLinkItem.Url.HasValue() || navLinkItem.ForceAnchor)
-            {
-                <a class="@GetLinkClass(navLinkItem)"
-                   style="padding: 0 20px 0 @(((navLinkItem.Depth * 14) + 27).ToString() + "px"); @navLinkItem.ItemStyle;"
-                   href="@(navLinkItem.IsEnabled ? navLinkItem.Url : null)"
-                   target="@navLinkItem.Target"
-                   title="@(navLinkItem.Title is not null ? navLinkItem.Title : navLinkItem.Name)"
-                   disabled="@(navLinkItem.IsEnabled is false)"
-                   aria-label="@navLinkItem.AriaLabel"
-                   aria-current="@(navLinkItem.Key == SelectedKey ? AriaCurrentMap[navLinkItem.AriaCurrent] : null)"
-                   tabindex="-1"
-                   rel="@GetNavLinkItemRel(navLinkItem)"
-                   @onclick="(()=>HandleLinkClick(navLinkItem))">
-
-                    <span class="link-container">
-                        @if (navLinkItem.IconName.HasValue)
-                        {
-                            <i class=@($"bit-icon bit-icon--{navLinkItem.IconName.GetName()}") aria-hidden="true"></i>
-                        }
-
-                        @if (LinkTemplate is not null)
-                        {
-                            @LinkTemplate(navLinkItem)
-                        }
-                        else
-                        {
-                            <div class="link-txt">@navLinkItem.Name</div>
-                        }
-                    </span>
-                </a>
-            }
-            else
-            {
-                <button class="@GetLinkClass(navLinkItem)"
-                        style="padding: 0 20px 0 @(((navLinkItem.Depth * 14) + 27).ToString() + "px"); @navLinkItem.ItemStyle;"
-                        title="@(navLinkItem.Title is not null ? navLinkItem.Title : navLinkItem.Name)"
-                        disabled="@(navLinkItem.IsEnabled is false)"
-                        aria-label="@navLinkItem.AriaLabel"
-                        aria-current="@(navLinkItem.Key == SelectedKey ? AriaCurrentMap[navLinkItem.AriaCurrent] : null)"
-                        tabindex="-1"
-                        type="button"
-                        @onclick="(() => HandleLinkClick(navLinkItem))">
-                    <span class="link-container">
-                        @if (navLinkItem.IconName.HasValue)
-                        {
-                            <i class=@($"bit-icon bit-icon--{navLinkItem.IconName.GetName()}") aria-hidden="true"></i>
-                        }
-
-                        @if (LinkTemplate is not null)
-                        {
-                            @LinkTemplate(navLinkItem)
-                        }
-                        else
-                        {
-                            <div class="link-txt">@navLinkItem.Name</div>
-                        }
-                    </span>
-                </button>
-            }
-        </div>
-        @if ((navLinkItem.Links?.Any() ?? false) && navLinkItem.IsExpanded)
-        {
-        <ul class="nav-items"
-                role="list">
-                @foreach (var childLinkItem in navLinkItem.Links)
-                {
-                    childLinkItem.Depth = navLinkItem.Depth + 1;
-                    if (childTemplate is not null)
-                        @childTemplate!(childLinkItem)
+                <div class="composite-link @(!navLinkItem.IsEnabled ? "disabled" : "")" name="@navLinkItem.Name">
+                    @if (navLinkItem.Links?.Any() ?? false)
+                    {
+                        <button class="chevron-btn"
+                                style="margin-left: @((navLinkItem.Depth * 14).ToString() + "px");"
+                                type="button"
+                                tabindex="0"
+                                aria-label="@GetExpandButtonAriaLabel(navLinkItem)"
+                                aria-expanded="@(navLinkItem.IsExpanded ? "true" : "false")"
+                                @onclick="(() => HandleLinkExpand(navLinkItem))">
+                            <i class="bit-icon bit-icon--ChevronDown @(navLinkItem.IsExpanded ? "expand" : "")" aria-hidden="true"></i>
+                        </button>
                     }
-            </ul>
-        }
-    </li>
-    );
+
+                    @if (navLinkItem.Url.HasValue() || navLinkItem.ForceAnchor)
+                    {
+                        <a class="@GetLinkClass(navLinkItem)"
+                           style="padding: 0 20px 0 @(((navLinkItem.Depth * 14) + 27).ToString() + "px"); @navLinkItem.ItemStyle;"
+                           href="@(navLinkItem.IsEnabled ? navLinkItem.Url : null)"
+                           target="@navLinkItem.Target"
+                           title="@(navLinkItem.Title is not null ? navLinkItem.Title : navLinkItem.Name)"
+                           disabled="@(navLinkItem.IsEnabled is false)"
+                           aria-label="@navLinkItem.AriaLabel"
+                           aria-current="@(navLinkItem.Key == SelectedKey ? AriaCurrentMap[navLinkItem.AriaCurrent] : null)"
+                           tabindex="-1"
+                           rel="@GetNavLinkItemRel(navLinkItem)"
+                           @onclick="(()=>HandleLinkClick(navLinkItem))">
+
+                        <div class="link-container">
+                            @if (navLinkItem.IconName.HasValue)
+                            {
+                                <i class=@($"bit-icon bit-icon--{navLinkItem.IconName.GetName()}") aria-hidden="true"></i>
+                            }
+
+                            @if (LinkTemplate is not null)
+                            {
+                                @LinkTemplate(navLinkItem)
+                            }
+                            else
+                            {
+                                <div class="link-txt">@navLinkItem.Name</div>
+                            }
+                        </div>
+                    </a>
+                    }
+                    else
+                    {
+                        <button class="@GetLinkClass(navLinkItem)"
+                                style="padding: 0 20px 0 @(((navLinkItem.Depth * 14) + 27).ToString() + "px"); @navLinkItem.ItemStyle;"
+                                title="@(navLinkItem.Title is not null ? navLinkItem.Title : navLinkItem.Name)"
+                                disabled="@(navLinkItem.IsEnabled is false)"
+                                aria-label="@navLinkItem.AriaLabel"
+                                aria-current="@(navLinkItem.Key == SelectedKey ? AriaCurrentMap[navLinkItem.AriaCurrent] : null)"
+                                tabindex="-1"
+                                type="button"
+                                @onclick="(() => HandleLinkClick(navLinkItem))">
+                            <div class="link-container">
+                                @if (navLinkItem.IconName.HasValue)
+                                {
+                                    <i class=@($"bit-icon bit-icon--{navLinkItem.IconName.GetName()}") aria-hidden="true"></i>
+                                }
+
+                                @if (LinkTemplate is not null)
+                                {
+                                    @LinkTemplate(navLinkItem)
+                                }
+                                else
+                                {
+                                    <div class="link-txt">@navLinkItem.Name</div>
+                                }
+                            </div>
+                        </button>
+                    }
+                </div>
+                @if ((navLinkItem.Links?.Any() ?? false) && navLinkItem.IsExpanded)
+                {
+                    <ul class="nav-items" role="list">
+                        @foreach (var childLinkItem in navLinkItem.Links)
+                        {
+                            childLinkItem.Depth = navLinkItem.Depth + 1;
+                            if (childTemplate is not null)
+                                @childTemplate!(childLinkItem)
+                        }
+                    </ul>
+                }
+            </li>
+        );
     }
 }

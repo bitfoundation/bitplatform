@@ -86,11 +86,11 @@ public partial class BitCompoundButton
     {
         ClassBuilder.Register(() => IsEnabled is false
                                     ? ButtonStyle == BitButtonStyle.Primary
-                                        ? $"{RootElementClass}-primary-disabled-{VisualClassRegistrar()}"
-                                        : $"{RootElementClass}-standard-disabled-{VisualClassRegistrar()}"
+                                        ? "primary-disabled"
+                                        : "standard-disabled"
                                     : ButtonStyle == BitButtonStyle.Primary
-                                        ? $"{RootElementClass}-primary-{VisualClassRegistrar()}"
-                                        : $"{RootElementClass}-standard-{VisualClassRegistrar()}");
+                                        ? "primary"
+                                        : "standard");
     }
 
     protected override async Task OnInitializedAsync()

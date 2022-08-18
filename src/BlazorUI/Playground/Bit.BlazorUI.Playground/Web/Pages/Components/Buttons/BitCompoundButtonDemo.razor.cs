@@ -179,7 +179,8 @@ public partial class BitCompoundButtonDemo
         }
     };
 
-    private readonly string example1HTMLCode = @"<BitCompoundButton IsEnabled=""true""
+    private readonly string example1HTMLCode = @"
+<BitCompoundButton IsEnabled=""true""
                    Text=""Primary""
                    SecondaryText=""This Button is a compound button"">
 </BitCompoundButton>
@@ -197,17 +198,21 @@ public partial class BitCompoundButtonDemo
                    SecondaryText=""This Button is a disabled compound button"">
 </BitCompoundButton>";
 
-    private readonly string example2HTMLCode = @"<BitCompoundButton Style=""height: 80px;font-size: 16px;text-decoration: underline;"" Text=""Styled"" SecondaryText=""This is styled compound button""></BitCompoundButton>
+    private readonly string example2HTMLCode = @"
+<BitCompoundButton Style=""height: 80px;font-size: 16px;text-decoration: underline;"" Text=""Styled"" SecondaryText=""This is styled compound button""></BitCompoundButton>
 <BitCompoundButton ButtonStyle=""BitButtonStyle.Standard"" Class=""custom-compound-button"" Text=""Classed"" SecondaryText=""This is classed compound button""></BitCompoundButton>";
 
-    private readonly string example3HTMLCode = @"<BitCompoundButton Visibility=""BitComponentVisibility.Visible"" Text=""Visible"" SecondaryText=""This Button is a visible compound button""></BitCompoundButton>
+    private readonly string example3HTMLCode = @"
+<BitCompoundButton Visibility=""BitComponentVisibility.Visible"" Text=""Visible"" SecondaryText=""This Button is a visible compound button""></BitCompoundButton>
 <div><span>Hidden Button: </span>[<BitCompoundButton Text=""Hidden"" SecondaryText=""This Button is a hidden compound button"" Visibility=""BitComponentVisibility.Hidden""></BitCompoundButton>]</div>
 <div><span>Collapsed Button: </span>[<BitCompoundButton Text=""Collapsed"" SecondaryText=""This Button is a collapsed compound button"" Visibility=""BitComponentVisibility.Collapsed""></BitCompoundButton>]</div>";
 
-    private readonly string example4HTMLCode = @"<BitCompoundButton ButtonStyle=""BitButtonStyle.Standard"" Text=""AriaDescription"" SecondaryText=""This is a compound button with aria description"" AriaDescription=""Button with Aria Description""></BitCompoundButton>
-<BitCompoundButton Text=""AriaHidden"" Style=""height: 85px;"" SecondaryText=""This is a compound button with aria hidden"" AriaHidden=""true""></BitCompoundButton>";
+    private readonly string example4HTMLCode = @"
+<BitCompoundButton ButtonStyle=""BitButtonStyle.Standard"" Text=""AriaDescription"" SecondaryText=""This is a compound button with aria description"" AriaDescription=""Button with Aria Description""></BitCompoundButton>
+<BitCompoundButton Text=""AriaHidden"" SecondaryText=""This is a compound button with aria hidden"" AriaHidden=""true""></BitCompoundButton>";
 
-    private readonly string example5HTMLCode = @"<BitCompoundButton Target=""_blank"" Href=""https://github.com/bitfoundation/bitplatform"" Text=""Open the site"" SecondaryText=""Open Bit Platform In New Tab""></BitCompoundButton>
+    private readonly string example5HTMLCode = @"
+<BitCompoundButton Target=""_blank"" Href=""https://github.com/bitfoundation/bitplatform"" Text=""Open the site"" SecondaryText=""Open Bit Platform In New Tab""></BitCompoundButton>
 <BitCompoundButton Href=""https://github.com/bitfoundation/bitplatform"" ButtonStyle=""BitButtonStyle.Standard"" Text=""Open the site"" SecondaryText=""Go To Bit Platform""></BitCompoundButton>
 <BitCompoundButton Target=""_self"" Href=""https://github.com/bitfoundation/bitplatform"" IsEnabled=""false"" Text=""Open the site"" SecondaryText=""Go To Bit Platform""></BitCompoundButton>";
 }

@@ -2,10 +2,6 @@
 
 public partial class EmailConfirmationPage
 {
-    [AutoInject] private HttpClient httpClient = default!;
-
-    [AutoInject] private NavigationManager navigationManager = default!;
-
     [Parameter]
     [SupplyParameterFromQuery]
     public string? Email { get; set; }
@@ -21,7 +17,7 @@ public partial class EmailConfirmationPage
 
     private void RedirectToSignIn()
     {
-        navigationManager.NavigateTo("/sign-in");
+        NavigationManager.NavigateTo("/sign-in");
     }
 
     private async Task ResendLink()
@@ -36,7 +32,7 @@ public partial class EmailConfirmationPage
 
         try
         {
-            await httpClient.PostAsJsonAsync("Auth/SendConfirmationEmail", new()
+            await HttpClient.PostAsJsonAsync("Auth/SendConfirmationEmail", new()
             {
                 Email = Email
             }, AppJsonContext.Default.SendConfirmationEmailRequestDto);

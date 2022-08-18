@@ -4,7 +4,6 @@
     
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
-        <IncludeContentInPack>true</IncludeContentInPack>
         <IncludeBuildOutput>false</IncludeBuildOutput>
         <ContentTargetFolders>content</ContentTargetFolders>
         <EnableDefaultItems>false</EnableDefaultItems>

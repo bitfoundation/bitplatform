@@ -1,0 +1,72 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitLoadingComponentBase
+
+<style>
+    .blazor-loading-ellipsis {
+        display: inline-block;
+        position: relative;
+        width: @(Size)px;
+        height: @(Size)px;
+    }
+
+        .blazor-loading-ellipsis div {
+            position: absolute;
+            top: @(Convert(33))px;
+            width: @(Convert(13))px;
+            height: @(Convert(13))px;
+            border-radius: 50%;
+            background: @Color;
+            animation-timing-function: cubic-bezier(0, 1, 1, 0);
+        }
+
+            .blazor-loading-ellipsis div:nth-child(1) {
+                left: @(Convert(8))px;
+                animation: blazor-loading-ellipsis1 0.6s infinite;
+            }
+
+            .blazor-loading-ellipsis div:nth-child(2) {
+                left: @(Convert(8))px;
+                animation: blazor-loading-ellipsis2 0.6s infinite;
+            }
+
+            .blazor-loading-ellipsis div:nth-child(3) {
+                left: @(Convert(32))px;
+                animation: blazor-loading-ellipsis2 0.6s infinite;
+            }
+
+            .blazor-loading-ellipsis div:nth-child(4) {
+                left: @(Convert(56))px;
+                animation: blazor-loading-ellipsis3 0.6s infinite;
+            }
+
+    @@keyframes blazor-loading-ellipsis1 {
+        0% {
+            transform: scale(0);
+        }
+
+        100% {
+            transform: scale(1);
+        }
+    }
+
+    @@keyframes blazor-loading-ellipsis3 {
+        0% {
+            transform: scale(1);
+        }
+
+        100% {
+            transform: scale(0);
+        }
+    }
+
+    @@keyframes blazor-loading-ellipsis2 {
+        0% {
+            transform: translate(0, 0);
+        }
+
+        100% {
+            transform: translate(@(Convert(24))px, 0);
+        }
+    }
+</style>
+<div class="blazor-loading-ellipsis"><div></div><div></div><div></div><div></div></div>

@@ -27,7 +27,7 @@ public class AppDbContext : IdentityDbContext<User, Role, int>
         }
         catch (DbUpdateConcurrencyException exception)
         {
-            throw new ConflictException(nameof(ErrorStrings.UpdateConcurrencyException), exception);
+            throw new ConflictException(nameof(AppStrings.UpdateConcurrencyException), exception);
         }
     }
 
@@ -39,7 +39,7 @@ public class AppDbContext : IdentityDbContext<User, Role, int>
         }
         catch (DbUpdateConcurrencyException exception)
         {
-            throw new ConflictException(nameof(ErrorStrings.UpdateConcurrencyException), exception);
+            throw new ConflictException(nameof(AppStrings.UpdateConcurrencyException), exception);
         }
     }
 

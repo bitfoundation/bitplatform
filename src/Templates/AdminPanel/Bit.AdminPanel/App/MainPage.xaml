@@ -6,7 +6,7 @@
     xmlns:b="clr-namespace:Microsoft.AspNetCore.Components.WebView.Maui;assembly=Microsoft.AspNetCore.Components.WebView.Maui"
     BackgroundColor="{DynamicResource PageBackgroundColor}">
 
-    <b:BlazorWebView BackgroundColor="#0D2960" HostPage="wwwroot/index.html">
+    <b:BlazorWebView BackgroundColor="#002A66" HostPage="wwwroot/index.html">
         <b:BlazorWebView.RootComponents>
             <b:RootComponent ComponentType="{x:Type app:Main}" Selector="app" />
         </b:BlazorWebView.RootComponents>
