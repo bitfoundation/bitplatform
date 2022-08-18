@@ -166,5 +166,9 @@
     {
         "outputFile": "Pages/OverviewPage.razor.css",
         "inputFile": "Pages/OverviewPage.razor.scss"
+    },
+    {
+        "outputFile": "Pages/Components/NumericTextField/BitNumericTextFieldDemo.razor.css",
+        "inputFile": "Pages/Components/NumericTextField/BitNumericTextFieldDemo.razor.scss"
     }
 ]
