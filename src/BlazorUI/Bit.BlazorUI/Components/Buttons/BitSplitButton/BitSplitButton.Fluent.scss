@@ -1,7 +1,7 @@
 ﻿@import "../../../Styles/Fluent/colors.fluent.scss", "../../../Styles/functions.scss";
 
-.bit-splt-btn {
-    &.bit-splt-btn-fluent {
+.bit-spl {
+    &.bit-spl-fluent {
         display: inline-flex;
         position: relative;
         outline: transparent;
@@ -11,7 +11,7 @@
         -webkit-font-smoothing: antialiased;
     }
 
-    &.bit-splt-btn-disabled-fluent {
+    &.bit-spl-disabled-fluent {
         background-color: $Grey20;
         color: $Grey90;
         cursor: default;
@@ -30,7 +30,7 @@
         background-color: transparent;
     }
 
-    .selected-item {
+    .current-item {
         display: flex;
         width: 100%;
     }

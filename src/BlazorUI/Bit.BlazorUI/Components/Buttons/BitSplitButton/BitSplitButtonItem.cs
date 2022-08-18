@@ -19,19 +19,9 @@ public class BitSplitButtonItem
     public string? key { get; set; }
 
     /// <summary>
-    /// Callback invoked with key value when a selected item is clicked.
-    /// </summary>
-    public Action<string?>? OnClick { get; set; }
-
-    /// <summary>
     /// The content inside the item can be customized.
     /// </summary>
     public RenderFragment<BitSplitButtonItem>? ItemTemplate { get; set; }
-
-    /// <summary>
-    /// If true, the item is selected in the first rendering.
-    /// </summary>
-    public bool DefaultIsSelected { get; set; }
 
     /// <summary>
     /// Whether or not the item is enabled.

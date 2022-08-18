@@ -6,57 +6,57 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      id="@UniqueId">
-    <div id="@SplitButtonOverlayId" class="overlay" @onclick="CloseCallout"></div>
-    <div id="@SplitButtonId" class="selected-item">
-        <button type="button"
+    <div id="@_splitButtonOverlayId" class="overlay" @onclick="CloseCallout"></div>
+    <div id="@_splitButtonId" class="current-item">
+        <button type="@ButtonType?.GetValue()"
                 aria-label="@AriaLabel"
                 aria-describedby="@AriaDescription"
                 aria-hidden="@AriaHidden"
                 tabindex="@(IsEnabled ? 0 : -1)"
-                class="operator-btn @GetButtonClasses()"
-                @onclick="() => HandleOnClick(Item)">
-            @Item.Text
+                class="operator-btn @_buttonStyle"
+                @onclick="() => HandleOnClick(_currentItem)">
+            @_currentItem.Text
         </button>
         <button type="button"
-                aria-expanded="@IsOpenMenu"
-                aria-label="@AriaLabel"
-                aria-describedby="@AriaDescription"
-                aria-hidden="@AriaHidden"
                 tabindex="@(IsEnabled ? 0 : -1)"
-                class="Chevron-btn @GetButtonClasses()"
+                class="Chevron-btn @_buttonStyle"
                 @onclick="HandleMenuOpen">
             <i class="bit-icon bit-icon--ChevronDown"></i>
         </button>
-        <span class="btn-separator @GetButtonClasses()"></span>
+        <span class="btn-separator @_buttonStyle"></span>
     </div>
-    <div id="@SplitButtonCalloutId"
+    <div id="@_splitButtonCalloutId"
          class="items"
          tabindex="@(IsEnabled ? 0 : -1)">
         <ul role="presentation">
             @foreach (BitSplitButtonItem item in Items)
             {
-                <li role="presentation">
-                    @if (item.ItemTemplate is null)
-                    {
-                        <button role="menuitem"
-                                aria-disabled="@item.IsEnabled"
-                                tabindex="@(item.IsEnabled ? 0 : -1)"
-                                class="item @(item.IsEnabled is false ? "disabled" : null)"
-                                @onclick="() => HandleItemOnClick(item)">
-                            @if (item.IconName.HasValue)
-                            {
-                                <i class="bit-icon bit-icon--@item.IconName.GetName()"></i>
-                            }
-                            <span>
-                                @item.Text
-                            </span>
-                        </button>
-                    }
-                    else
-                    {
-                        @item.ItemTemplate(item);
-                    }
-                </li>
+                @if (item != _currentItem)
+                {
+                    <li role="presentation">
+                        @if (item.ItemTemplate is null)
+                        {
+                            <button type="@ButtonType?.GetValue()"
+                                    role="menuitem"
+                                    aria-disabled="@item.IsEnabled"
+                                    tabindex="@(item.IsEnabled ? 0 : -1)"
+                                    class="item @(item.IsEnabled is false ? "disabled" : null)"
+                                    @onclick="() => HandleOnItemClick(item)">
+                                @if (item.IconName.HasValue)
+                                {
+                                    <i class="bit-icon bit-icon--@item.IconName.GetName()"></i>
+                                }
+                                <span>
+                                    @item.Text
+                                </span>
+                            </button>
+                        }
+                        else
+                        {
+                            @item.ItemTemplate(item);
+                        }
+                    </li>
+                }
             }
         </ul>
     </div>
