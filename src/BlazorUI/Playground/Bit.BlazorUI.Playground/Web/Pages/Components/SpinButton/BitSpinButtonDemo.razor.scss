@@ -12,18 +12,18 @@
     }
 }
 
-::deep div.validation-message {
-    color: $Red20;
-    font-size: rem(12px);
-}
-
-::deep .custom-spb {
-    .bit-spb-wrapper input {
-        background-color: $Gray3;
-    }
-}
-
 ::deep {
+    div.validation-message {
+        color: $Red20;
+        font-size: rem(12px);
+    }
+
+    .custom-spb {
+        .bit-spb-wrapper input {
+            background-color: $Gray3;
+        }
+    }
+
     .bit-spb-wrapped {
         margin-top: rem(8px);
         margin-bottom: rem(8px);
