@@ -11,6 +11,14 @@
         -webkit-font-smoothing: antialiased;
     }
 
+    &.bit-splt-btn-disabled-fluent {
+        background-color: $Grey20;
+        color: $Grey90;
+        cursor: default;
+        pointer-events: none;
+        border-radius: rem(2px);
+    }
+
     .overlay {
         display: none;
         width: 100%;
@@ -33,11 +41,11 @@
         text-decoration: none;
         text-align: center;
         cursor: pointer;
-        padding: 0px 16px;
-        min-width: 80px;
-        height: 32px;
+        padding: 0 rem(16px);
+        min-width: rem(80px);
+        height: rem(32px);
         user-select: none;
-        border-radius: 2px;
+        border-radius: rem(2px);
         border-top-right-radius: 0;
         border-bottom-right-radius: 0;
 
@@ -80,11 +88,11 @@
         text-decoration: none;
         text-align: center;
         cursor: pointer;
-        padding: 6px;
-        width: 32px;
-        height: 32px;
+        padding: rem(6px);
+        width: rem(32px);
+        height: rem(32px);
         user-select: none;
-        border-radius: 2px;
+        border-radius: rem(2px);
         border-top-left-radius: 0;
         border-bottom-left-radius: 0;
 
@@ -123,13 +131,14 @@
 
     .btn-separator {
         position: absolute;
-        width: 1px;
-        right: 32px;
-        top: 8px;
-        bottom: 8px;
+        width: rem(1px);
+        right: rem(32px);
+        top: rem(8px);
+        bottom: rem(8px);
+        background-color: $Grey60;
 
         &.standard {
-            background-color: $Grey50;
+            background-color: $Grey90;
         }
 
         &.primary {
@@ -138,23 +147,25 @@
     }
 
     .items {
-        display: flex;
-        position: absolute;
+        display: none;
+        position: fixed;
         min-width: 180px;
         background-color: $White;
         box-sizing: border-box;
-        border-radius: 2px;
-        overflow: hidden auto;
+        border-radius: 0 0 rem(2px) rem(2px);
         box-shadow: rgb(0 0 0 / 13%) 0px 3.2px 7.2px 0px, rgb(0 0 0 / 11%) 0px 0.6px 1.8px 0px;
         animation-name: opacity, trans-y;
         animation-duration: 0.367s;
         animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
         animation-fill-mode: both;
+        z-index: 1001;
+        overflow: hidden auto;
+        -webkit-font-smoothing: antialiased;
 
         ul {
             list-style-type: none;
-            margin: 0px;
-            padding: 0px;
+            margin: 0;
+            padding: 0;
             width: 100%;
         }
     }
@@ -163,26 +174,40 @@
         display: flex;
         background-color: transparent;
         width: 100%;
-        height: 36px;
-        line-height: 36px;
+        height: rem(36px);
+        line-height: rem(36px);
         align-items: center;
         text-align: left;
         cursor: pointer;
-        padding: 0px 8px 0px 4px;
+        padding: 0 rem(8px) 0 rem(4px);
         border: none;
+        color: $Grey160;
 
         i {
             color: $Primary;
-            margin: 0px 4px;
+            margin: 0 rem(4px);
         }
 
         span {
-            margin: 0px 4px;
+            margin: 0 rem(4px);
             vertical-align: middle;
             display: inline-block;
             flex-grow: 1;
             text-overflow: ellipsis;
             white-space: nowrap;
+        }
+
+        &.disabled {
+            cursor: default;
+            color: $Grey90;
+
+            i {
+                color: $BlizzardBlue;
+            }
+
+            &:hover {
+                background-color: transparent;
+            }
         }
 
         &:hover {

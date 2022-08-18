@@ -12,20 +12,24 @@ public partial class BitSplitButton
     [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
 
     /// <summary>
-    /// 
+    /// Detailed description of the button for the benefit of screen readers
     /// </summary>
-    [Parameter] public string? AriaRoleDescription { get; set; }
+    [Parameter] public string? AriaDescription { get; set; }
 
     /// <summary>
-    /// 
+    /// If true, add an aria-hidden attribute instructing screen readers to ignore the element
+    /// </summary>
+    [Parameter] public bool AriaHidden { get; set; }
+
+    /// <summary>
+    ///  List of Item, each of which can be a Button with different action in the SplitButton.
     /// </summary>
     [Parameter] public IEnumerable<BitSplitButtonItem> Items { get; set; } = new List<BitSplitButtonItem>();
 
     /// <summary>
     /// The style of button, Possible values: Primary | Standard
     /// </summary>
-    [Parameter]
-    public BitButtonStyle ButtonStyle { get; set; } = BitButtonStyle.Primary;
+    [Parameter] public BitButtonStyle ButtonStyle { get; set; } = BitButtonStyle.Primary;
 
     protected override string RootElementClass => "bit-splt-btn";
 
@@ -62,7 +66,7 @@ public partial class BitSplitButton
 
         if (item.OnClick is not null)
         {
-            item.OnClick.Invoke();
+            item.OnClick.Invoke(item.key);
         }
     }
 
@@ -71,7 +75,7 @@ public partial class BitSplitButton
         if (IsEnabled is false) return;
 
         var obj = DotNetObjectReference.Create(this);
-        await JSRuntime.InvokeVoidAsync("BitSplitButton.toggleSplitButtonCallout", obj, UniqueId, SplitButtonId, SplitButtonCalloutId, SplitButtonOverlayId, IsOpenMenu, true);
+        await JSRuntime.InvokeVoidAsync("BitSplitButton.toggleSplitButtonCallout", obj, UniqueId, SplitButtonId, SplitButtonCalloutId, SplitButtonOverlayId, IsOpenMenu);
 
         IsOpenMenu = !IsOpenMenu;
     }
@@ -83,21 +87,15 @@ public partial class BitSplitButton
         Item = item;
 
         var obj = DotNetObjectReference.Create(this);
-        await JSRuntime.InvokeVoidAsync("BitSplitButton.toggleSplitButtonCallout", obj, UniqueId, SplitButtonId, SplitButtonCalloutId, SplitButtonOverlayId, IsOpenMenu, true);
+        await JSRuntime.InvokeVoidAsync("BitSplitButton.toggleSplitButtonCallout", obj, UniqueId, SplitButtonId, SplitButtonCalloutId, SplitButtonOverlayId, IsOpenMenu);
         
         IsOpenMenu = false;
     }
 
-    //[JSInvokable("CloseCallout")]
-    //public void CloseCalloutBeforeAnotherCalloutIsOpened()
-    //{
-    //    IsOpenMenu = false;
-    //}
-
     private async Task CloseCallout()
     {
         var obj = DotNetObjectReference.Create(this);
-        await JSRuntime.InvokeVoidAsync("BitSplitButton.toggleSplitButtonCallout", obj, UniqueId, SplitButtonId, SplitButtonCalloutId, SplitButtonOverlayId, IsOpenMenu, true);
+        await JSRuntime.InvokeVoidAsync("BitSplitButton.toggleSplitButtonCallout", obj, UniqueId, SplitButtonId, SplitButtonCalloutId, SplitButtonOverlayId, IsOpenMenu);
         IsOpenMenu = false;
     }
 }

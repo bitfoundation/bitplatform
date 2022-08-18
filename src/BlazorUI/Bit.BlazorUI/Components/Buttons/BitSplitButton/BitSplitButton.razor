@@ -6,46 +6,58 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      id="@UniqueId">
-
     <div id="@SplitButtonOverlayId" class="overlay" @onclick="CloseCallout"></div>
-
     <div id="@SplitButtonId" class="selected-item">
         <button type="button"
-                aria-roledescription="@AriaRoleDescription"
-                tabindex="-1"
+                aria-label="@AriaLabel"
+                aria-describedby="@AriaDescription"
+                aria-hidden="@AriaHidden"
+                tabindex="@(IsEnabled ? 0 : -1)"
                 class="operator-btn @GetButtonClasses()"
                 @onclick="() => HandleOnClick(Item)">
             @Item.Text
         </button>
         <button type="button"
-                aria-haspopup="true"
                 aria-expanded="@IsOpenMenu"
-                tabindex="-1"
                 aria-label="@AriaLabel"
+                aria-describedby="@AriaDescription"
+                aria-hidden="@AriaHidden"
+                tabindex="@(IsEnabled ? 0 : -1)"
                 class="Chevron-btn @GetButtonClasses()"
                 @onclick="HandleMenuOpen">
-            <i class="bit-icon bit-icon--ChevronDown" aria-hidden="true"></i>
+            <i class="bit-icon bit-icon--ChevronDown"></i>
         </button>
-        <span aria-hidden="true" class="btn-separator @GetButtonClasses()"></span>
+        <span class="btn-separator @GetButtonClasses()"></span>
     </div>
-
-    <div id="@SplitButtonCalloutId" class="items">
-        <ul>
+    <div id="@SplitButtonCalloutId"
+         class="items"
+         tabindex="@(IsEnabled ? 0 : -1)">
+        <ul role="presentation">
             @foreach (BitSplitButtonItem item in Items)
             {
-                <li>
-                    <button class="item" @onclick="() => HandleItemOnClick(item)">
-                        @if (item.IconName.HasValue)
-                        {
-                            <i class="bit-icon bit-icon--@item.IconName.GetName()"></i>
-                        }
-                        <span>
-                            @item.Text
-                        </span>
-                    </button>
+                <li role="presentation">
+                    @if (item.ItemTemplate is null)
+                    {
+                        <button role="menuitem"
+                                aria-disabled="@item.IsEnabled"
+                                tabindex="@(item.IsEnabled ? 0 : -1)"
+                                class="item @(item.IsEnabled is false ? "disabled" : null)"
+                                @onclick="() => HandleItemOnClick(item)">
+                            @if (item.IconName.HasValue)
+                            {
+                                <i class="bit-icon bit-icon--@item.IconName.GetName()"></i>
+                            }
+                            <span>
+                                @item.Text
+                            </span>
+                        </button>
+                    }
+                    else
+                    {
+                        @item.ItemTemplate(item);
+                    }
                 </li>
             }
         </ul>
     </div>
-
 </div>
