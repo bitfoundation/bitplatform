@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public partial class BitTooltip
 {
@@ -40,8 +34,14 @@ public partial class BitTooltip
 
     private string GetPositionClass() => Position switch
     {
+        BitTooltipPosition.TopLeft => $"tooltip-position-top-left",
         BitTooltipPosition.Top => $"tooltip-position-top",
+        BitTooltipPosition.TopRight => $"tooltip-position-top-right",
+        BitTooltipPosition.Right => $"tooltip-position-right",
+        BitTooltipPosition.BottomRight => $"tooltip-position-bottom-right",
         BitTooltipPosition.Bottom => $"tooltip-position-bottom",
+        BitTooltipPosition.BottomLeft => $"tooltip-position-bottom-left",
+        BitTooltipPosition.Left => $"tooltip-position-left",
 
         _ => $"tooltip-position-top",
     };

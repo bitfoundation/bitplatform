@@ -2,64 +2,145 @@
 
 .bit-ttp {
     position: relative;
-    top: 200px;
-    left: 300px;
-    width: 100px;
 
     .tooltip {
         position: absolute;
-        display: none;
+        visibility: hidden;
+        opacity: 0;
         font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
         font-size: rem(10px);
-        font-weight: 400;
+        font-weight: 500;
         width: max-content;
         height: max-content;
-        left: -5%;
-        padding: 10px;
-        transition-property: all;
-        transition-delay: .9s;
+        padding: rem(10px);
+        transition: all 0.2s linear;
         background-color: antiquewhite;
         color: black;
         text-align: center;
         z-index: 1;
     }
 
-    .tooltip-position-top {
-        position: absolute;
-        bottom: 100%;
-        margin: 10px;
+    .tooltip-position-top-left {
+        top: rem(-45px);
+        right: 94%;
 
         &::after {
             content: " ";
             position: absolute;
             top: 100%;
-            left: 15%;
-            margin-left: -10px;
-            border-width: 10px;
-            border-style: solid;
+            right: 0%;
+            border: rem(10px) solid;
             border-color: antiquewhite transparent transparent transparent;
         }
     }
 
-    .tooltip-position-bottom {
-        position: absolute;
-        top: 100%;
-        margin: 10px;
+    .tooltip-position-top {
+        top: rem(-45px);
+        left: 50%;
+        transform: translateX(-50%);
+
+        &::after {
+            content: " ";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: rem(10px) solid;
+            border-color: antiquewhite transparent transparent transparent;
+        }
+    }
+
+    .tooltip-position-top-right {
+        top: rem(-45px);
+        left: 94%;
+
+        &::after {
+            content: " ";
+            position: absolute;
+            top: 100%;
+            left: 0%;
+            border: rem(10px) solid;
+            border-color: antiquewhite transparent transparent transparent;
+        }
+    }
+
+    .tooltip-position-right {
+        top: rem(-2px);
+        left: 105%;
+
+        &::after {
+            content: " ";
+            position: absolute;
+            top: 50%;
+            right: 100%;
+            transform: rotate(90deg) translateX(-50%);
+            border: rem(10px) solid;
+            border-color: antiquewhite transparent transparent transparent;
+        }
+    }
+
+    .tooltip-position-bottom-right {
+        bottom: rem(-45px);
+        left: 94%;
 
         &::after {
             content: " ";
             position: absolute;
             bottom: 100%;
-            left: 15%;
-            margin-left: -10px;
-            border-width: 10px;
-            border-style: solid;
+            left: 0%;
+            border: rem(10px) solid;
+            border-color: transparent transparent antiquewhite transparent;
+        }
+    }
+
+    .tooltip-position-bottom {
+        bottom: rem(-45px);
+        left: 50%;
+        transform: translateX(-50%);
+
+        &::after {
+            content: " ";
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: rem(10px) solid;
+            border-color: transparent transparent antiquewhite transparent;
+        }
+    }
+
+    .tooltip-position-left {
+        top: rem(-2px);
+        right: 105%;
+
+        &::after {
+            content: " ";
+            position: absolute;
+            top: 50%;
+            left: 100%;
+            transform: rotate(90deg) translateX(-50%);
+            border: rem(10px) solid;
+            border-color: transparent transparent antiquewhite transparent;
+        }
+    }
+
+    .tooltip-position-bottom-left {
+        bottom: rem(-45px);
+        right: 94%;
+
+        &::after {
+            content: " ";
+            position: absolute;
+            bottom: 100%;
+            right: 0%;
+            border: rem(10px) solid;
             border-color: transparent transparent antiquewhite transparent;
         }
     }
 
     &:hover .tooltip {
-        display: inline-block;
+        visibility: visible;
+        opacity: 1;
     }
 
     .tooltip-disabled-fluent {
