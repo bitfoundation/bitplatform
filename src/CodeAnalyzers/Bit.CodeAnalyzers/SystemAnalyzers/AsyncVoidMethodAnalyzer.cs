@@ -63,7 +63,7 @@ public class AsyncVoidMethodAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        if (IsTryStatementUsedCorrectly(methodDec) is true)
+        if (IsTryStatementUsedCorrectly(methodDec))
             return;
 
         RepoertError(context, root, CorrenctUsageOfTryStatementRule);
