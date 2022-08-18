@@ -61,10 +61,10 @@
         <ExamplePreview>
             <div class="example-desc">Set default checked or unchecked value without two way binding.</div>
             <div>
-                <BitToggleButton OnChange="((e) => ToggleButtonDefaultValue = e)"
-                                 DefaultIsChecked="ToggleButtonDefaultValue"
-                                 Label="@(ToggleButtonDefaultValue ? "Mute" : "Unmute")"
-                                 IconName=@(ToggleButtonDefaultValue ? BitIconName.MicOff : BitIconName.Microphone)>
+                <BitToggleButton OnChange="((e) => ToggleButtonValue = e)"
+                                 DefaultIsChecked="true"
+                                 Label="@(ToggleButtonValue ? "Mute" : "Unmute")"
+                                 IconName=@(ToggleButtonValue ? BitIconName.MicOff : BitIconName.Microphone)>
                 </BitToggleButton>
             </div>
         </ExamplePreview>

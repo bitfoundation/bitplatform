@@ -14,7 +14,7 @@ public partial class BitToggleButtonDemo
     private bool ToggleButtonForOnChange = true;
     private bool OnToggleButtonChanged = true;
 
-    private bool ToggleButtonDefaultValue = true;
+    private bool ToggleButtonValue = true;
 
     private bool ToggleButtonTwoWayValue = true;
 
