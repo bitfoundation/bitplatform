@@ -17,11 +17,13 @@
     font-size: rem(12px);
 }
 
-::deep .bit-ntf-wrapped {
-    margin-top: rem(8px);
-    margin-bottom: rem(8px);
-}
+::deep {
+    .bit-ntf-wrapped {
+        margin-top: rem(8px);
+        margin-bottom: rem(8px);
+    }
 
-::deep .bit-ntf-lbl-wrapped label {
-    width: rem(155px);
+    .bit-ntf-lbl-wrapped label {
+        width: rem(155px);
+    }
 }
