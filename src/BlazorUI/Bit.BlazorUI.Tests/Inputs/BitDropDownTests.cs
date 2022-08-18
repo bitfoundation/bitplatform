@@ -846,7 +846,7 @@ public class BitDropDownTests : BunitTestContext
             parameters.AddCascadingValue(visual);
             parameters.Add(p => p.IsEnabled, true);
             parameters.Add(p => p.ShowSearchBox, showSearchBox);
-            parameters.Add(p => p.PlaceholderSearchBox, searchBoxPlaceholder);
+            parameters.Add(p => p.SearchBoxPlaceholder, searchBoxPlaceholder);
             parameters.Add(p => p.Items, items);
         });
 

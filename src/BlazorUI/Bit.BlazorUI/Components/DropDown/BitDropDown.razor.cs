@@ -140,9 +140,9 @@ public partial class BitDropDown
     [Parameter] public string? Placeholder { get; set; }
 
     /// <summary>
-    /// Filter input placeholder text
+    /// Search box input placeholder text
     /// </summary>
-    [Parameter] public string? PlaceholderSearchBox { get; set; }
+    [Parameter] public string? SearchBoxPlaceholder { get; set; }
 
     /// <summary>
     /// the label associated with the dropdown
