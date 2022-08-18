@@ -23,10 +23,14 @@
     }
 }
 
-::deep .bit-spb {
-    margin-bottom: rem(8px);
-}
+::deep {
+    .bit-spb-wrapped {
+        margin-top: rem(8px);
+        margin-bottom: rem(8px);
+    }
 
-::deep .bit-spb-lbl-wrapper {
-    height: auto;
+    .bit-spb-lbl-wrapped label {
+        height: auto;
+        width: rem(155px);
+    }
 }
