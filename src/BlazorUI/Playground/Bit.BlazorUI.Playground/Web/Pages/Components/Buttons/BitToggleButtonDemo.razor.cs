@@ -14,6 +14,8 @@ public partial class BitToggleButtonDemo
     private bool ToggleButtonForOnChange = true;
     private bool OnToggleButtonChanged = true;
 
+    private bool ToggleButtonValue = true;
+
     private bool ToggleButtonTwoWayValue = true;
 
     private void ToggleButtonChanged(bool newValue)
@@ -235,6 +237,16 @@ private void ToggleButtonChanged(bool newValue)
 private bool ToggleButtonTwoWayValue = true;";
 
     private readonly string example4HTMLCode = @"
+<BitToggleButton OnChange=""((e) => ToggleButtonDefaultValue = e)""
+                 DefaultIsChecked=""ToggleButtonDefaultValue""
+                 Label=""@(ToggleButtonDefaultValue ? ""Mute"" : ""Unmute"")""
+                 IconName=@(ToggleButtonDefaultValue ? BitIconName.MicOff : BitIconName.Microphone)>
+</BitToggleButton>";
+
+    private readonly string example4CSharpCode = @"
+private bool ToggleButtonDefaultValue = true;";
+
+    private readonly string example5HTMLCode = @"
 <BitToggleButton @bind-IsChecked=""ToggleButtonChecked""
                  Label=""@(ToggleButtonChecked ? ""Aria Description Mute"" : ""Aria Description Unmute"")""
                  IconName=""@(ToggleButtonChecked ? BitIconName.MicOff : BitIconName.Microphone)""
@@ -247,6 +259,6 @@ private bool ToggleButtonTwoWayValue = true;";
                  AriaHidden=""true"">
 </BitToggleButton>";
 
-    private readonly string example4CSharpCode = @"
+    private readonly string example5CSharpCode = @"
 private bool ToggleButtonChecked = false;";
 }
