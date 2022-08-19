@@ -76,9 +76,17 @@
          role="listbox"
          aria-labelledby="@DropdownLabelId">
         <div class="bit-drp-close-btn-contianer">
-            <BitIconButton IconName="BitIconName.ChromeClose"
-                           Title="Close"
-                           OnClick=CloseCallout />
+            <button class="close-btn"
+                    type="button"
+                    aria-label="Close"
+                    aria-describedby="Close"
+                    aria-hidden="Close"
+                    title="Close"
+                    @onclick="CloseCallout">
+                <span>
+                    <i class="bit-icon bit-icon--@BitIconName.ChromeClose.GetName()"></i>
+                </span>
+            </button>
         </div>
         @if (ShowSearchBox)
         {
@@ -158,8 +166,8 @@
                     <label class="bit-drp-chb-lbl" for="@($"{DropDownId}-list{dropDownItem.index}")" @onclick="@((e) => HandleItemClick(dropDownItem.item))">
                         <div class="bit-drp-chb-checkbox">
                             <i class=@($"bit-drp-chb-checkmark bit-icon bit-icon--{BitIconName.Accept.GetName()}")
-                               aria-hidden="true"
-                               aria-label="@dropDownItem.item.Text"></i>
+                   aria-hidden="true"
+                   aria-label="@dropDownItem.item.Text"></i>
                         </div>
 
                         <span class="bit-drp-chb-txt no-text-select">
@@ -178,21 +186,21 @@
             else
             {
                 <button class="bit-drp-item @(dropDownItem.item.IsSelected ? $"{RootElementClass}-slc-{VisualClassRegistrar()}" : string.Empty)"
-                        style="@(dropDownItem.item.IsHidden ? "display: none" : string.Empty)"
-                        id="@($"{DropDownId}-list{dropDownItem.index}")"
-                        type="button"
-                        role="option"
-                        data-is-focusable="@(dropDownItem.item.IsEnabled ? "true" : "false")"
-                        disabled=@(!dropDownItem.item.IsEnabled)
-                        data-index="@dropDownItem.index"
-                        aria-disabled="@(!dropDownItem.item.IsEnabled)"
-                        aria-selected="@(dropDownItem.item.IsSelected ? "true" : "false")"
-                        aria-setsize="@NormalDropDownItems.Count"
-                        aria-posinset="@GetItemPosInSet(dropDownItem.item)"
-                        tabindex="@(dropDownItem.item.IsEnabled ? 0 : -1)"
-                        title="@dropDownItem.item.Title"
-                        aria-label="@dropDownItem.item.AriaLabel"
-                        @onclick="()=> HandleItemClick(dropDownItem.item)">
+        style="@(dropDownItem.item.IsHidden ? "display: none" : string.Empty)"
+        id="@($"{DropDownId}-list{dropDownItem.index}")"
+        type="button"
+        role="option"
+        data-is-focusable="@(dropDownItem.item.IsEnabled ? "true" : "false")"
+        disabled=@(!dropDownItem.item.IsEnabled)
+        data-index="@dropDownItem.index"
+        aria-disabled="@(!dropDownItem.item.IsEnabled)"
+        aria-selected="@(dropDownItem.item.IsSelected ? "true" : "false")"
+        aria-setsize="@NormalDropDownItems.Count"
+        aria-posinset="@GetItemPosInSet(dropDownItem.item)"
+        tabindex="@(dropDownItem.item.IsEnabled ? 0 : -1)"
+        title="@dropDownItem.item.Title"
+        aria-label="@dropDownItem.item.AriaLabel"
+            @onclick="()=> HandleItemClick(dropDownItem.item)">
                     @if (ItemTemplate is not null)
                     {
                         @ItemTemplate(dropDownItem.item)
