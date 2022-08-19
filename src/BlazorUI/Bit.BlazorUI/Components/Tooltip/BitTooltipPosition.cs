@@ -18,9 +18,19 @@ public enum BitTooltipPosition
     TopRight,
 
     /// <summary>
-    /// The position of tooltip right of its anchor
+    /// The position of tooltip right top of its anchor
     /// </summary>
+    RightTop,
+    
+    /// <summary>
+          /// The position of tooltip right of its anchor
+          /// </summary>
     Right,
+
+    /// <summary>
+    /// The position of tooltip right bottom of its anchor
+    /// </summary>
+    RightBottom,
 
     /// <summary>
     /// The position of tooltip bottom right of its anchor
@@ -38,7 +48,17 @@ public enum BitTooltipPosition
     BottomLeft,
 
     /// <summary>
+    /// The position of tooltip left bottom of its anchor
+    /// </summary>
+    LeftBottom,
+
+    /// <summary>
     /// The position of tooltip left of its anchor
     /// </summary>
-    Left
+    Left,
+
+    /// <summary>
+    /// The position of tooltip left top of its anchor
+    /// </summary>
+    LeftTop
 }

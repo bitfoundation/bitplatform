@@ -8,134 +8,16 @@
         visibility: hidden;
         opacity: 0;
         font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
-        font-size: rem(10px);
+        font-size: rem(12px);
         font-weight: 500;
         width: max-content;
-        height: max-content;
+        height: auto;
         padding: rem(10px);
         transition: all 0.2s linear;
-        background-color: antiquewhite;
+        background-color: white;
         color: black;
         text-align: center;
         z-index: 1;
-    }
-
-    .tooltip-position-top-left {
-        top: rem(-45px);
-        right: 94%;
-
-        &::after {
-            content: " ";
-            position: absolute;
-            top: 100%;
-            right: 0%;
-            border: rem(10px) solid;
-            border-color: antiquewhite transparent transparent transparent;
-        }
-    }
-
-    .tooltip-position-top {
-        top: rem(-45px);
-        left: 50%;
-        transform: translateX(-50%);
-
-        &::after {
-            content: " ";
-            position: absolute;
-            top: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            border: rem(10px) solid;
-            border-color: antiquewhite transparent transparent transparent;
-        }
-    }
-
-    .tooltip-position-top-right {
-        top: rem(-45px);
-        left: 94%;
-
-        &::after {
-            content: " ";
-            position: absolute;
-            top: 100%;
-            left: 0%;
-            border: rem(10px) solid;
-            border-color: antiquewhite transparent transparent transparent;
-        }
-    }
-
-    .tooltip-position-right {
-        top: rem(-2px);
-        left: 105%;
-
-        &::after {
-            content: " ";
-            position: absolute;
-            top: 50%;
-            right: 100%;
-            transform: rotate(90deg) translateX(-50%);
-            border: rem(10px) solid;
-            border-color: antiquewhite transparent transparent transparent;
-        }
-    }
-
-    .tooltip-position-bottom-right {
-        bottom: rem(-45px);
-        left: 94%;
-
-        &::after {
-            content: " ";
-            position: absolute;
-            bottom: 100%;
-            left: 0%;
-            border: rem(10px) solid;
-            border-color: transparent transparent antiquewhite transparent;
-        }
-    }
-
-    .tooltip-position-bottom {
-        bottom: rem(-45px);
-        left: 50%;
-        transform: translateX(-50%);
-
-        &::after {
-            content: " ";
-            position: absolute;
-            bottom: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            border: rem(10px) solid;
-            border-color: transparent transparent antiquewhite transparent;
-        }
-    }
-
-    .tooltip-position-left {
-        top: rem(-2px);
-        right: 105%;
-
-        &::after {
-            content: " ";
-            position: absolute;
-            top: 50%;
-            left: 100%;
-            transform: rotate(90deg) translateX(-50%);
-            border: rem(10px) solid;
-            border-color: transparent transparent antiquewhite transparent;
-        }
-    }
-
-    .tooltip-position-bottom-left {
-        bottom: rem(-45px);
-        right: 94%;
-
-        &::after {
-            content: " ";
-            position: absolute;
-            bottom: 100%;
-            right: 0%;
-            border: rem(10px) solid;
-            border-color: transparent transparent antiquewhite transparent;
-        }
     }
 
     &:hover .tooltip {
@@ -143,7 +25,215 @@
         opacity: 1;
     }
 
-    .tooltip-disabled-fluent {
-        color: $Grey90;
+    &.bit-ttp-disabled-fluent {
+        .tooltip {
+            color: $Grey90;
+        }
+    }
+
+    .tooltip-position-top-left {
+        top: rem(-47px);
+        right: 94%;
+        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.1), 0 1px 1px 0 rgba(0, 0, 0, 0.1);
+
+        &::after {
+            content: "";
+            position: absolute;
+            bottom: rem(-9px);
+            right: rem(-2px);
+            border: rem(6px) solid;
+            border-color: transparent white white transparent;
+            transform: rotate(45deg) translateX(-50%);
+            box-shadow: 2px 2px 2px 0 rgba(0, 0, 0, 0.1);
+        }
+    }
+
+    .tooltip-position-top {
+        top: rem(-47px);
+        left: 50%;
+        transform: translateX(-50%);
+        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.1), 0 1px 1px 0 rgba(0, 0, 0, 0.1);
+
+        &::after {
+            content: "";
+            position: absolute;
+            bottom: rem(-9px);
+            left: 50%;
+            border: rem(6px) solid;
+            border-color: transparent white white transparent;
+            transform: rotate(45deg) translateX(-50%);
+            box-shadow: 2px 2px 2px 0 rgba(0, 0, 0, 0.1);
+        }
+    }
+
+    .tooltip-position-top-right {
+        top: rem(-47px);
+        left: 94%;
+        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.1), 0 1px 1px 0 rgba(0, 0, 0, 0.1);
+
+        &::after {
+            content: "";
+            position: absolute;
+            bottom: rem(-9px);
+            left: rem(-2px);
+            border: rem(6px) solid;
+            border-color: white white transparent transparent;
+            transform: rotate(135deg) translateX(-50%);
+            box-shadow: 2px -2px 2px 0 rgba(0, 0, 0, 0.1);
+        }
+    }
+
+    .tooltip-position-right-top {
+        top: rem(-27px);
+        left: 104%;
+        box-shadow: -2px 0 2px 0 rgba(0, 0, 0, 0.1), 0 1px 1px 0 rgba(0, 0, 0, 0.1);
+
+        &::after {
+            content: "";
+            position: absolute;
+            bottom: rem(-2px);
+            left: 0%;
+            border: rem(6px) solid;
+            border-color: white transparent transparent white;
+            transform: rotate(-45deg) translateY(-50%);
+            box-shadow: -2px -2px 2px 0 rgba(0, 0, 0, 0.1);
+        }
+    }
+
+    .tooltip-position-right {
+        top: rem(-4px);
+        left: 104%;
+        box-shadow: -2px 0 2px 0 rgba(0, 0, 0, 0.1), 0 1px 1px 0 rgba(0, 0, 0, 0.1);
+
+        &::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 0%;
+            border: rem(6px) solid;
+            border-color: white transparent transparent white;
+            transform: rotate(-45deg) translateY(-50%);
+            box-shadow: -2px -2px 2px 0 rgba(0, 0, 0, 0.1);
+        }
+    }
+
+    .tooltip-position-right-bottom {
+        bottom: rem(-27px);
+        left: 104%;
+        box-shadow: -2px 0 2px 0 rgba(0, 0, 0, 0.1), 0 1px 1px 0 rgba(0, 0, 0, 0.1);
+
+        &::after {
+            content: "";
+            position: absolute;
+            top: rem(-2px);
+            left: 0%;
+            border: rem(6px) solid;
+            border-color: white white transparent transparent;
+            transform: rotate(-135deg) translateY(-50%);
+            box-shadow: 2px -2px 2px 0 rgba(0, 0, 0, 0.1);
+        }
+    }
+
+    .tooltip-position-bottom-right {
+        bottom: rem(-47px);
+        left: 95%;
+        box-shadow: 0 -2px 2px 0 rgba(0, 0, 0, 0.1), 0 1px 1px 0 rgba(0, 0, 0, 0.1);
+
+        &::after {
+            content: "";
+            position: absolute;
+            top: rem(-1px);
+            left: rem(-2px);
+            border: rem(6px) solid;
+            border-color: transparent transparent white white;
+            transform: rotate(135deg) translateX(-50%);
+            box-shadow: -2px 2px 2px 0 rgba(0, 0, 0, 0.1);
+        }
+    }
+
+    .tooltip-position-bottom {
+        bottom: rem(-47px);
+        left: 50%;
+        transform: translateX(-50%);
+        box-shadow: 0 -2px 2px 0 rgba(0, 0, 0, 0.1), 0 1px 1px 0 rgba(0, 0, 0, 0.1);
+
+        &::after {
+            content: "";
+            position: absolute;
+            top: rem(-1px);
+            left: 50%;
+            border: rem(6px) solid;
+            border-color: white transparent transparent white;
+            transform: rotate(45deg) translateX(-50%);
+            box-shadow: -2px -2px 2px 0 rgba(0, 0, 0, 0.1);
+        }
+    }
+
+    .tooltip-position-bottom-left {
+        bottom: rem(-47px);
+        right: 95%;
+        box-shadow: 0 -2px 2px 0 rgba(0, 0, 0, 0.1), 0 1px 1px 0 rgba(0, 0, 0, 0.1);
+
+        &::after {
+            content: "";
+            position: absolute;
+            top: rem(-1px);
+            right: -2px;
+            border: rem(6px) solid;
+            border-color: white transparent transparent white;
+            transform: rotate(45deg) translateX(-50%);
+            box-shadow: -2px -2px 2px 0 rgba(0, 0, 0, 0.1);
+        }
+    }
+
+    .tooltip-position-left-bottom {
+        bottom: rem(-27px);
+        right: 104%;
+        box-shadow: 2px 0 2px 0 rgba(0, 0, 0, 0.1), 0 1px 1px 0 rgba(0, 0, 0, 0.1);
+
+        &::after {
+            content: "";
+            position: absolute;
+            top: rem(-2px);
+            right: 0%;
+            border: rem(6px) solid;
+            border-color: transparent transparent white white;
+            transform: rotate(-135deg) translateX(-50%);
+            box-shadow: -2px 2px 2px 0 rgba(0, 0, 0, 0.1);
+        }
+    }
+
+    .tooltip-position-left {
+        top: rem(-4px);
+        right: 104%;
+        box-shadow: 2px 0 2px 0 rgba(0, 0, 0, 0.1), 0 1px 1px 0 rgba(0, 0, 0, 0.1);
+
+        &::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            right: 0%;
+            border: rem(6px) solid;
+            border-color: white transparent transparent white;
+            transform: rotate(135deg) translateX(-50%);
+            box-shadow: -2px -2px 2px 0 rgba(0, 0, 0, 0.1);
+        }
+    }
+
+    .tooltip-position-left-top {
+        top: rem(-27px);
+        right: 104%;
+        box-shadow: 2px 0 2px 0 rgba(0, 0, 0, 0.1), 0 1px 1px 0 rgba(0, 0, 0, 0.1);
+
+        &::after {
+            content: "";
+            position: absolute;
+            bottom: rem(-2px);
+            right: 0%;
+            border: rem(6px) solid;
+            border-color: white transparent transparent white;
+            transform: rotate(135deg) translateX(-50%);
+            box-shadow: -2px -2px 2px 0 rgba(0, 0, 0, 0.1);
+        }
     }
 }

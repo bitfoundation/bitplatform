@@ -26,22 +26,20 @@ public partial class BitTooltip
 
     protected override string RootElementClass => "bit-ttp";
 
-    protected override void RegisterComponentClasses()
-    {
-        ClassBuilder.Register(() => IsEnabled is false
-            ? $"{RootElementClass} tooltip-disabled-{VisualClassRegistrar()}" : string.Empty);
-    }
-
     private string GetPositionClass() => Position switch
     {
         BitTooltipPosition.TopLeft => $"tooltip-position-top-left",
         BitTooltipPosition.Top => $"tooltip-position-top",
         BitTooltipPosition.TopRight => $"tooltip-position-top-right",
+        BitTooltipPosition.RightTop => $"tooltip-position-right-top",
         BitTooltipPosition.Right => $"tooltip-position-right",
+        BitTooltipPosition.RightBottom => $"tooltip-position-right-bottom",
         BitTooltipPosition.BottomRight => $"tooltip-position-bottom-right",
         BitTooltipPosition.Bottom => $"tooltip-position-bottom",
         BitTooltipPosition.BottomLeft => $"tooltip-position-bottom-left",
+        BitTooltipPosition.LeftBottom => $"tooltip-position-left-bottom",
         BitTooltipPosition.Left => $"tooltip-position-left",
+        BitTooltipPosition.LeftTop => $"tooltip-position-left-top",
 
         _ => $"tooltip-position-top",
     };
