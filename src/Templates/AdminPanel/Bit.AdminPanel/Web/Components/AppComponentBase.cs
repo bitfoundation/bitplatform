@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Localization;
-
-namespace AdminPanel.App.Components;
+﻿namespace AdminPanel.App.Components;
 
 public partial class AppComponentBase : ComponentBase
 {

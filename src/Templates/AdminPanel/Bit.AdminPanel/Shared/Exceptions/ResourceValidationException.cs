@@ -1,6 +1,5 @@
 ﻿using System.Net;
 using System.Runtime.Serialization;
-using Microsoft.Extensions.Localization;
 
 namespace AdminPanel.Shared.Exceptions;
 

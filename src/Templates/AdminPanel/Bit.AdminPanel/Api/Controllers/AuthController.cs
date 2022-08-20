@@ -6,7 +6,6 @@ using AdminPanel.Api.Resources;
 using AdminPanel.Api.Models.Account;
 using AdminPanel.Shared.Dtos.Account;
 using AdminPanel.Api.Models.Emailing;
-using Microsoft.Extensions.Localization;
 
 namespace AdminPanel.Api.Controllers;
 

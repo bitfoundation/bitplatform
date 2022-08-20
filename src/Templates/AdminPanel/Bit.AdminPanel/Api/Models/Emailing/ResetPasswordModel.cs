@@ -1,5 +1,4 @@
 ﻿using AdminPanel.Api.Resources;
-using Microsoft.Extensions.Localization;
 
 namespace AdminPanel.Api.Models.Emailing;
 

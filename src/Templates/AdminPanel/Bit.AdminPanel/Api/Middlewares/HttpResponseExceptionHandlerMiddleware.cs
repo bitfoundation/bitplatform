@@ -1,6 +1,5 @@
 ﻿using System.Net;
 using System.Reflection;
-using Microsoft.Extensions.Localization;
 
 namespace AdminPanel.Api.Middlewares;
 

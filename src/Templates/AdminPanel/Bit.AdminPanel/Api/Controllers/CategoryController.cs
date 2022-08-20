@@ -1,6 +1,5 @@
 ﻿using AdminPanel.Api.Models.Categories;
 using AdminPanel.Shared.Dtos.Categories;
-using Microsoft.Extensions.Localization;
 
 namespace AdminPanel.Api.Controllers;
 

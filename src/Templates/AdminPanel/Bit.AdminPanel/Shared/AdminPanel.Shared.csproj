@@ -28,5 +28,5 @@
             <LastGenOutput>%(Filename).Designer.cs</LastGenOutput>
         </EmbeddedResource>
     </ItemGroup>
-    
+
 </Project>
