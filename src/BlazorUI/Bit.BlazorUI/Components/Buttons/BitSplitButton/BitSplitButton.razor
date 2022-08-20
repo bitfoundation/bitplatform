@@ -15,12 +15,12 @@
                 tabindex="@(IsEnabled ? 0 : -1)"
                 class="operator-btn @_buttonStyle"
                 @onclick="() => HandleOnClick(_currentItem)">
-            @_currentItem.Text
+            @_currentItem?.Text
         </button>
         <button type="button"
                 tabindex="@(IsEnabled ? 0 : -1)"
                 class="Chevron-btn @_buttonStyle"
-                @onclick="HandleMenuOpen">
+                @onclick="ToggleCallout">
             <i class="bit-icon bit-icon--ChevronDown"></i>
         </button>
         <span class="btn-separator @_buttonStyle"></span>

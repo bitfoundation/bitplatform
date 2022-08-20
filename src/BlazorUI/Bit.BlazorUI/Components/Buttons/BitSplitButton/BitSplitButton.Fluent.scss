@@ -1,7 +1,7 @@
 ﻿@import "../../../Styles/Fluent/colors.fluent.scss", "../../../Styles/functions.scss";
 
-.bit-spl {
-    &.bit-spl-fluent {
+.bit-splb {
+    &.bit-splb-fluent {
         display: inline-flex;
         position: relative;
         outline: transparent;
@@ -11,7 +11,7 @@
         -webkit-font-smoothing: antialiased;
     }
 
-    &.bit-spl-disabled-fluent {
+    &.bit-splb-disabled-fluent {
         background-color: $Grey20;
         color: $Grey90;
         cursor: default;
