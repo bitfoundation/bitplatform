@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Runtime.Serialization;
+using Microsoft.Extensions.Localization;
 
 namespace AdminPanel.Shared.Exceptions;
 
@@ -7,16 +8,26 @@ namespace AdminPanel.Shared.Exceptions;
 public class UnauthorizedException : RestException
 {
     public UnauthorizedException()
-        : this(nameof(UnauthorizedException))
+        : base(nameof(AppStrings.UnauthorizedException))
     {
     }
 
-    public UnauthorizedException(string? message)
+    public UnauthorizedException(string message)
         : base(message)
     {
     }
 
-    public UnauthorizedException(string? message, Exception? innerException)
+    public UnauthorizedException(string message, Exception? innerException)
+        : base(message, innerException)
+    {
+    }
+
+    public UnauthorizedException(LocalizedString message)
+        : base(message)
+    {
+    }
+
+    public UnauthorizedException(LocalizedString message, Exception? innerException)
         : base(message, innerException)
     {
     }

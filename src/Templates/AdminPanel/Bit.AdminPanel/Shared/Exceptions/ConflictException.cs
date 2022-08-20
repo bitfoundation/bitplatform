@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Runtime.Serialization;
+using Microsoft.Extensions.Localization;
 
 namespace AdminPanel.Shared.Exceptions;
 
@@ -7,16 +8,26 @@ namespace AdminPanel.Shared.Exceptions;
 public class ConflictException : RestException
 {
     public ConflictException()
-        : this(nameof(ConflictException))
+        : this(nameof(AppStrings.ConflicException))
     {
     }
 
-    public ConflictException(string? message)
+    public ConflictException(string message)
         : base(message)
     {
     }
 
-    public ConflictException(string? message, Exception? innerException)
+    public ConflictException(string message, Exception? innerException)
+        : base(message, innerException)
+    {
+    }
+
+    public ConflictException(LocalizedString message)
+        : base(message)
+    {
+    }
+
+    public ConflictException(LocalizedString message, Exception? innerException)
         : base(message, innerException)
     {
     }

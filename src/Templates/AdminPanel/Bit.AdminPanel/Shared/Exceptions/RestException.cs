@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Runtime.Serialization;
+using Microsoft.Extensions.Localization;
 
 namespace AdminPanel.Shared.Exceptions;
 
@@ -7,16 +8,26 @@ namespace AdminPanel.Shared.Exceptions;
 public class RestException : KnownException
 {
     public RestException()
-        : this(nameof(RestException))
+        : base(nameof(AppStrings.RestException))
     {
     }
 
-    public RestException(string? message)
+    public RestException(string message)
         : base(message)
     {
     }
 
-    public RestException(string? message, Exception? innerException)
+    public RestException(string message, Exception? innerException)
+        : base(message, innerException)
+    {
+    }
+
+    public RestException(LocalizedString message)
+        : base(message)
+    {
+    }
+
+    public RestException(LocalizedString message, Exception? innerException)
         : base(message, innerException)
     {
     }

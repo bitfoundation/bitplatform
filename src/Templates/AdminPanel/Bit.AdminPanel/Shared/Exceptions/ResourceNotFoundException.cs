@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Runtime.Serialization;
+using Microsoft.Extensions.Localization;
 
 namespace AdminPanel.Shared.Exceptions;
 
@@ -7,16 +8,26 @@ namespace AdminPanel.Shared.Exceptions;
 public class ResourceNotFoundException : RestException
 {
     public ResourceNotFoundException()
-        : this(nameof(ResourceNotFoundException))
+        : base(nameof(AppStrings.ResourceNotFoundException))
     {
     }
 
-    public ResourceNotFoundException(string? message)
+    public ResourceNotFoundException(string message)
         : base(message)
     {
     }
 
-    public ResourceNotFoundException(string? message, Exception? innerException)
+    public ResourceNotFoundException(string message, Exception? innerException)
+        : base(message, innerException)
+    {
+    }
+
+    public ResourceNotFoundException(LocalizedString message)
+        : base(message)
+    {
+    }
+
+    public ResourceNotFoundException(LocalizedString message, Exception? innerException)
         : base(message, innerException)
     {
     }

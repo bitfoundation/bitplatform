@@ -29,4 +29,11 @@
         </EmbeddedResource>
     </ItemGroup>
 
+    <ItemGroup>
+      <Compile Update="Resources\AppStrings.Designer.cs">
+        <DesignTime>True</DesignTime>
+        <DependentUpon>AppStrings.resx</DependentUpon>
+      </Compile>
+    </ItemGroup>
+
 </Project>
