@@ -2,10 +2,10 @@
 
 public partial class BitTooltip
 {
-    private bool isVisible;
+    private string _positionClass = string.Empty;
 
     /// <summary>
-    /// The position of tooltip around the its anchor
+    /// The position of tooltip around its anchor
     /// </summary>
     [Parameter] public BitTooltipPosition Position { get; set; }
 
@@ -15,32 +15,36 @@ public partial class BitTooltip
     [Parameter] public string? Text { get; set; }
 
     /// <summary>
-    /// The content of tooltip, It can be Any custom tag or a text
+    /// The content of tooltip, It can be any custom tag or a text
     /// </summary>
     [Parameter] public RenderFragment? TextFragment { get; set; }
 
-    /// <summary>
-    /// The anchor content, It can be Any custom tag or a text
-    /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     protected override string RootElementClass => "bit-ttp";
 
+    protected override Task OnParametersSetAsync()
+    {
+        _positionClass = GetPositionClass();
+
+        return base.OnParametersSetAsync();
+    }
+
     private string GetPositionClass() => Position switch
     {
-        BitTooltipPosition.TopLeft => $"tooltip-position-top-left",
-        BitTooltipPosition.Top => $"tooltip-position-top",
-        BitTooltipPosition.TopRight => $"tooltip-position-top-right",
-        BitTooltipPosition.RightTop => $"tooltip-position-right-top",
-        BitTooltipPosition.Right => $"tooltip-position-right",
-        BitTooltipPosition.RightBottom => $"tooltip-position-right-bottom",
-        BitTooltipPosition.BottomRight => $"tooltip-position-bottom-right",
-        BitTooltipPosition.Bottom => $"tooltip-position-bottom",
-        BitTooltipPosition.BottomLeft => $"tooltip-position-bottom-left",
-        BitTooltipPosition.LeftBottom => $"tooltip-position-left-bottom",
-        BitTooltipPosition.Left => $"tooltip-position-left",
-        BitTooltipPosition.LeftTop => $"tooltip-position-left-top",
+        BitTooltipPosition.TopLeft => $"top-left",
+        BitTooltipPosition.Top => $"top",
+        BitTooltipPosition.TopRight => $"top-right",
+        BitTooltipPosition.RightTop => $"right-top",
+        BitTooltipPosition.Right => $"right",
+        BitTooltipPosition.RightBottom => $"right-bottom",
+        BitTooltipPosition.BottomRight => $"bottom-right",
+        BitTooltipPosition.Bottom => $"bottom",
+        BitTooltipPosition.BottomLeft => $"bottom-left",
+        BitTooltipPosition.LeftBottom => $"left-bottom",
+        BitTooltipPosition.Left => $"left",
+        BitTooltipPosition.LeftTop => $"left-top",
 
-        _ => $"tooltip-position-top",
+        _ => $"top",
     };
 }

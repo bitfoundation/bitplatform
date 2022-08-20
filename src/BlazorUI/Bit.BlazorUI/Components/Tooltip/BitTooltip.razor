@@ -4,9 +4,11 @@
 <div @ref="RootElement"
      @attributes="HtmlAttributes"
      style="@StyleBuilder.Value"
-     class="@ClassBuilder.Value" >
+     class="@ClassBuilder.Value">
+
     @ChildContent
-    <div class="tooltip @GetPositionClass()">
+
+    <div class="tooltip @_positionClass">
         @if (TextFragment is not null)
         {
             @TextFragment
