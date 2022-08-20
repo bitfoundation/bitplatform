@@ -124,6 +124,15 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Back.
+        /// </summary>
+        public static string Back {
+            get {
+                return ResourceManager.GetString("Back", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid request.
         /// </summary>
         public static string BadRequestException {
@@ -238,6 +247,15 @@ namespace AdminPanel.Shared.Resources {
         public static string Date {
             get {
                 return ResourceManager.GetString("Date", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Default color picker.
+        /// </summary>
+        public static string DefaultColorPicker {
+            get {
+                return ResourceManager.GetString("DefaultColorPicker", resourceCulture);
             }
         }
         
@@ -364,6 +382,15 @@ namespace AdminPanel.Shared.Resources {
         public static string EmailNotConfirmed {
             get {
                 return ResourceManager.GetString("EmailNotConfirmed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enter category name.
+        /// </summary>
+        public static string EnterCategoryName {
+            get {
+                return ResourceManager.GetString("EnterCategoryName", resourceCulture);
             }
         }
         

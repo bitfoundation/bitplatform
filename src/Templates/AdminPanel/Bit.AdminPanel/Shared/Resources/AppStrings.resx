@@ -496,4 +496,13 @@ Please confirm your email by clicking on the link.</value>
   <data name="Error" xml:space="preserve">
     <value>Error</value>
   </data>
+  <data name="Back" xml:space="preserve">
+    <value>Back</value>
+  </data>
+  <data name="DefaultColorPicker" xml:space="preserve">
+    <value>Default color picker</value>
+  </data>
+  <data name="EnterCategoryName" xml:space="preserve">
+    <value>Enter category name</value>
+  </data>
 </root>
