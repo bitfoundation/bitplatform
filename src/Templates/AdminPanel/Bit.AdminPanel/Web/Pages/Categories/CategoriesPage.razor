@@ -3,7 +3,7 @@
 @page "/categories"
 @inherits AppComponentBase;
 
-<PageTitle>@AppStrings.CategoriesPageTitle</PageTitle>
+<PageTitle>@Localizer[nameof(AppStrings.CategoriesPageTitle)]</PageTitle>
 <div class="page-container">
     @if (IsLoading)
     {
@@ -13,7 +13,7 @@
     }
     <div class="page-row">
         <h1 class="page-title">Categories</h1>
-        <BitButton OnClick="CreateCategory">@AppStrings.AddCategory</BitButton>
+        <BitButton OnClick="CreateCategory">@Localizer[nameof(AppStrings.AddCategory)]</BitButton>
     </div>
     <div class="grid">
         <BitDataGrid ItemsProvider="@categoriesProvider" TGridItem="@CategoryDto" ResizableColumns="true" Pagination="@pagination" @ref="dataGrid">

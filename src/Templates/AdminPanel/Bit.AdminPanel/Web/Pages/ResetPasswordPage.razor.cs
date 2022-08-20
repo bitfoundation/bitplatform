@@ -22,7 +22,7 @@ public partial class ResetPasswordPage
 
     private bool IsSubmitButtonEnabled =>
         string.IsNullOrWhiteSpace(ResetPasswordModel.Password) is false &&
-        string.IsNullOrWhiteSpace(ResetPasswordModel.ConfirmPassword) is false && 
+        string.IsNullOrWhiteSpace(ResetPasswordModel.ConfirmPassword) is false &&
         IsLoading is false;
 
     private async Task Submit()
@@ -41,7 +41,7 @@ public partial class ResetPasswordPage
 
             ResetPasswordMessageType = BitMessageBarType.Success;
 
-            ResetPasswordMessage = AuthStrings.PasswordChangedSuccessfullyMessage;
+            ResetPasswordMessage = Localizer[nameof(AppStrings.PasswordChangedSuccessfullyMessage)];
 
             await AuthenticationService.SignIn(new SignInRequestDto
             {
@@ -55,7 +55,7 @@ public partial class ResetPasswordPage
         {
             ResetPasswordMessageType = BitMessageBarType.Error;
 
-            ResetPasswordMessage = ErrorStrings.ResourceManager.Translate(e.Message, Email!);
+            ResetPasswordMessage = e.Message;
         }
         finally
         {

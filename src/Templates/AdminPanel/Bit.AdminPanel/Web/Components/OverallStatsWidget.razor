@@ -12,7 +12,7 @@
                 @Data.Last30DaysProductCount
             }
         </div>
-        <div class="card-title">@AppStrings.Last30DaysProductCount</div>
+        <div class="card-title">@Localizer[nameof(AppStrings.Last30DaysProductCount)]</div>
     </div>
     <div class="card">
         <div class="card-num @(IsLoading ? "no-border" : null)">
@@ -25,7 +25,7 @@
                 @Data.TotalProducts
             }
         </div>
-        <div class="card-title">@AppStrings.TotalProducts</div>
+        <div class="card-title">@Localizer[nameof(AppStrings.TotalProducts)]</div>
     </div>
     <div class="card">
         <div class="card-num @(IsLoading ? "no-border" : null)">
@@ -38,7 +38,7 @@
                 @Data.TotalCategories
             }
         </div>
-        <div class="card-title">@AppStrings.Last30DaysCategoryCount</div>
+        <div class="card-title">@Localizer[nameof(AppStrings.Last30DaysCategoryCount)]</div>
     </div>
     <div class="card">
         <div class="card-num @(IsLoading ? "no-border" : null)">
@@ -51,6 +51,6 @@
                 @Data.TotalCategories
             }
         </div>
-        <div class="card-title">@AppStrings.TotalCategories</div>
+        <div class="card-title">@Localizer[nameof(AppStrings.TotalCategories)]</div>
     </div>
 </div>

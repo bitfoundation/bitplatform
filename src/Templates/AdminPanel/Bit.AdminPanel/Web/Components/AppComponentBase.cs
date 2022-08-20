@@ -10,6 +10,8 @@ public partial class AppComponentBase : ComponentBase
 
     [AutoInject] protected AppAuthenticationStateProvider AuthenticationStateProvider = default!;
 
+    [AutoInject] protected IStringLocalizer<AppStrings> Localizer = default!;
+
     [AutoInject] protected HttpClient HttpClient = default!;
 
     [AutoInject] protected IAuthTokenProvider AuthTokenProvider = default!;

@@ -3,9 +3,9 @@
 <div class="card">
     <div class="card-header">
         <div class="title">
-            @AppStrings.ProductSales
+            @Localizer[nameof(AppStrings.ProductSales)]
         </div>
-        <div class="subtitle">@AppStrings.ProductSalesText</div>
+        <div class="subtitle">@Localizer[nameof(AppStrings.ProductSalesText)]</div>
     </div>
     <div class="card-body">
         @if (IsLoading)

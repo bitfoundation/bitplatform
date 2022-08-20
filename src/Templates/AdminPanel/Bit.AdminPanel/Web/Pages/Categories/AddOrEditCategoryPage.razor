@@ -4,11 +4,11 @@
 <PageTitle>
     @if (Category?.Id == 0)
     {
-        @AppStrings.AddCategory
+        @Localizer[nameof(AppStrings.AddCategory)]
     }
     else
     {
-        @AppStrings.EditCategory
+        @Localizer[nameof(AppStrings.EditCategory)]
     }
 </PageTitle>
 
@@ -18,11 +18,11 @@
         <h1 class="page-title">
             @if (Category?.Id == 0)
             {
-                @AppStrings.AddCategory
+                @Localizer[nameof(AppStrings.AddCategory)]
             }
             else
             {
-                @AppStrings.EditCategory
+                @Localizer[nameof(AppStrings.EditCategory)]
             }
         </h1>
     </div>
@@ -76,7 +76,7 @@
             }
             else
             {
-                <span>@AppStrings.Save</span>
+                <span>@Localizer[nameof(AppStrings.Save)]</span>
             }
         </BitButton>
 
