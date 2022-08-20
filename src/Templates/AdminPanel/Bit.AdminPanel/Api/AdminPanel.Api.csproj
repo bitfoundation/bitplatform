@@ -97,4 +97,11 @@
       <Folder Include="Properties\" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Compile Update="Resources\EmailStrings.Designer.cs">
+        <DependentUpon>EmailStrings.resx</DependentUpon>
+        <DesignTime>True</DesignTime>
+      </Compile>
+    </ItemGroup>
+
 </Project>

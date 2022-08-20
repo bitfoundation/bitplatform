@@ -1,5 +1,6 @@
 ﻿using AdminPanel.Api.Models.Categories;
 using AdminPanel.Shared.Dtos.Categories;
+using Microsoft.Extensions.Localization;
 
 namespace AdminPanel.Api.Controllers;
 
@@ -20,7 +21,7 @@ public partial class CategoryController : AppControllerBase
         var category = await Get(cancellationToken).FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
 
         if (category is null)
-            throw new ResourceNotFoundException(nameof(ErrorStrings.CategoryCouldNotBeFound));
+            throw new ResourceNotFoundException(Localizer[nameof(AppStrings.CategoryCouldNotBeFound)]);
 
         return category;
     }
@@ -57,7 +58,7 @@ public partial class CategoryController : AppControllerBase
         var categoryToUpdate = await DbContext.Categories.FirstOrDefaultAsync(t => t.Id == dto.Id, cancellationToken);
 
         if (categoryToUpdate is null)
-            throw new ResourceNotFoundException(nameof(ErrorStrings.CategoryCouldNotBeFound));
+            throw new ResourceNotFoundException(Localizer[nameof(AppStrings.CategoryCouldNotBeFound)]);
 
         var updatedCategory = Mapper.Map(dto, categoryToUpdate);
 
@@ -71,7 +72,7 @@ public partial class CategoryController : AppControllerBase
     {
         if (DbContext.Products.Any(p => p.CategoryId == id))
         {
-            throw new BadRequestException(nameof(ErrorStrings.CategoryNotEmpty));
+            throw new BadRequestException(Localizer[nameof(AppStrings.CategoryNotEmpty)]);
         }
 
         DbContext.Remove(new Category { Id = id });
@@ -79,7 +80,7 @@ public partial class CategoryController : AppControllerBase
         var affectedRows = await DbContext.SaveChangesAsync(cancellationToken);
 
         if (affectedRows < 1)
-            throw new ResourceNotFoundException(nameof(ErrorStrings.CategoryCouldNotBeFound));
+            throw new ResourceNotFoundException(Localizer[nameof(AppStrings.CategoryCouldNotBeFound)]);
     }
 }
 
