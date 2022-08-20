@@ -79,6 +79,28 @@
                         SelectedKey="key3">
                     </BitNav>
                 }
+                else if (SelectedComponent.Name == "DataGrid")
+                {
+                    <div class="grid">
+                        <BitDataGrid Items="@FilteredItems" ResizableColumns="true" Pagination="@pagination">                
+                            <BitDataGridPropertyColumn Class="column--large" Property="@(c => c.Name)" Sortable="true" IsDefaultSort="BitDataGridSortDirection.Ascending">
+                                <ColumnOptions>
+                                    <BitSearchBox @bind-Value="typicalSampleNameFilter"
+                                                    Placeholder="Search on Name"
+                                                    InputHtmlAttributes="@(new Dictionary<string, object> {{"autofocus", true}})" />
+                                </ColumnOptions>
+                            </BitDataGridPropertyColumn>
+                                <BitDataGridTemplateColumn Title="Flag" Align="BitDataGridAlign.Center" >
+                                <img class="flag" src="https://countryflagsapi.com/svg/@(context.Code)" />
+                            </BitDataGridTemplateColumn>
+                            <BitDataGridPropertyColumn Property="@(c => c.Medals.Gold)" Sortable="true" />
+                            <BitDataGridPropertyColumn Property="@(c => c.Medals.Silver)" Sortable="true" />
+                            <BitDataGridPropertyColumn Property="@(c => c.Medals.Bronze)" Sortable="true" />
+                            <BitDataGridPropertyColumn Property="@(c => c.Medals.Total)" Sortable="true" />
+                        </BitDataGrid>
+                        <BitDataGridPaginator Value="@pagination" />
+                    </div>
+                }
             </div>
         </div>
         <div class="example-code">
@@ -215,6 +237,267 @@
         new BitNavLinkItem { Name = "Communication and Media", Url = "http://msn.com", Key = "key6", Target = "_top" },
         new BitNavLinkItem { Name = "News", Title = "News", Url = "http://msn.com", Key = "key7", Icon = "News", Target = "_self" },
     };
+                        }</code></pre>
+            }
+            else if (SelectedComponent.Name == "DataGrid")
+            {
+                <pre class ="code">
+                <code class="language-cshtml">&ltstyle scoped>
+    .grid {
+        display: inline-flex;
+        flex-direction: column;
+        width: 100%;
+        border: 1px solid #e9eaed;
+        overflow: auto;
+
+        .flag {
+            width: 32px;
+            height: 16px;
+            vertical-align: middle;
+        }
+
+        ::deep {
+            .column--large {
+                width: 220px;
+            }
+
+            th:nth-child(1) {
+                .col-options-button {
+                    background-image: none;
+                    cursor: pointer;
+                }
+            }
+
+            th:nth-child(1) {
+                .col-options-button:before {
+                    display: inline-block;
+                    font-family: "Fabric MDL2 Assets";
+                    font-style: normal;
+                    font-weight: normal;
+                    content: "\e721";
+                    position: relative;
+                    top: 2px;
+                }
+            }
+
+            th:not(.col-sort-asc):not(.col-sort-desc) {
+                .sort-indicator:before {
+                    display: inline-block;
+                    font-family: "Fabric MDL2 Assets";
+                    font-style: normal;
+                    font-weight: normal;
+                    content: "⇅";
+                    position: relative;
+                    top: -2px;
+                }
+            }
+
+            .bitdatagrid-paginator {
+                padding: 0.5rem;
+            }
+
+            .bitdatagrid-paginator {
+                .pagination-text {
+                    padding-top: 3px;
+                }
+            }
+
+            .bitdatagrid-paginator {
+                nav {
+                    button {
+                        border-radius: 0.25rem;
+                    }
+                }
+            }
+
+            .bitdatagrid-paginator {
+                nav {
+                    button:before {
+                        vertical-align: middle;
+                    }
+                }
+            }
+
+            .bitdatagrid-paginator {
+                nav {
+                    button:not([disabled]) {
+                        background-color: #eee;
+                    }
+                }
+            }
+
+            .bitdatagrid-paginator {
+                nav {
+                    button:not([disabled]):hover {
+                        background-color: #d0d1d5;
+                    }
+                }
+            }
+
+            table {
+                position: relative;
+                min-width: 100%;
+                border-collapse: separate;
+                border-spacing: 0;
+                text-indent: initial;
+            }
+
+            thead {
+                th:not(:last-child) {
+                    border-right: 1px solid #e9eaed;
+                }
+
+                .col-width-draghandle {
+                    cursor: col-resize;
+                    width: 3px;
+                }
+
+                .col-width-draghandle:active {
+                    background: unset;
+                }
+
+                .col-width-draghandle:after {
+                    left: 3px;
+                    border-left: unset;
+                }
+
+                .col-width-draghandle:hover {
+                    background: unset;
+                }
+            }
+
+            th {
+                background-color: #f4f5f9;
+                padding: 0.5rem;
+                display: table-cell;
+                vertical-align: inherit;
+                font-weight: bold;
+                border-bottom: 1px solid #e9eaed;
+            }
+
+            tr {
+                height: 1.8rem;
+            }
+
+            tr:nth-child(even) {
+                background: #f4f5f9;
+            }
+
+            tr:nth-child(odd) {
+                background: #FFF;
+            }
+
+            tr:last-child > td {
+                border-bottom: none;
+            }
+
+            td {
+                border-bottom: 1px solid #e9eaed;
+                color: #4f4f50;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                padding: 0.25rem 0.5rem;
+            }
+
+            td:not(:last-child) {
+                border-right: 1px solid #e9eaed;
+            }
+
+            .sort-indicator {
+                margin-left: auto;
+            }
+
+            .col-width-draghandle:after {
+                border-left: unset;
+            }
+
+            .col-title-text {
+                color: #262526;
+            }
+
+            .col-header-content {
+                padding-right: 0px;
+            }
+
+            button.col-title:active {
+                background-color: unset;
+            }
+
+            .col-options-button:active {
+                background-color: unset;
+            }
+
+            button.col-title:hover {
+                background-color: unset;
+            }
+
+            .col-options-button:hover {
+                background-color: unset;
+            }
+        }
+    }
+&lt/style>
+
+&ltdiv class="grid">
+    &ltBitDataGrid Items="&#64;FilteredItems" ResizableColumns="true" Pagination="&#64;pagination">                
+        &ltBitDataGridPropertyColumn Class="column--large" Property="&#64;(c => c.Name)" Sortable="true" IsDefaultSort="BitDataGridSortDirection.Ascending">
+            &ltColumnOptions>
+            &ltBitSearchBox &#64;bind-Value="typicalSampleNameFilter"
+                      Placeholder="Search on Name"
+                      InputHtmlAttributes="&#64;(new Dictionary&ltstring, object> {{"autofocus", true}})" />
+            &lt/ColumnOptions>
+        &lt/BitDataGridPropertyColumn>
+        &ltBitDataGridTemplateColumn Title="Flag" Align="BitDataGridAlign.Center">
+                &ltimg class="flag" src="https://countryflagsapi.com/svg/&#64(context.Code)" />
+        &lt/BitDataGridTemplateColumn>
+        &ltBitDataGridPropertyColumn Property="&#64;(c => c.Medals.Gold)" Sortable="true" />
+        &ltBitDataGridPropertyColumn Property="&#64;(c => c.Medals.Silver)" Sortable="true" />
+        &ltBitDataGridPropertyColumn Property="&#64;(c => c.Medals.Bronze)" Sortable="true" />
+        &ltBitDataGridPropertyColumn Property="&#64;(c => c.Medals.Total)" Sortable="true" />
+    &lt/BitDataGrid>
+    &ltBitDataGridPaginator Value="&#64;pagination" />
+&lt/div>
+</code>
+    <code class="language-csharp">
+&#64;code {
+    IQueryable&ltCountry> allCountries;
+    string typicalSampleNameFilter = string.Empty;
+    BitDataGridPaginationState pagination = new() { ItemsPerPage = 7 };
+    IQueryable&ltCountry> FilteredItems => allCountries?.Where(x => x.Name.Contains(typicalSampleNameFilter, StringComparison.CurrentCultureIgnoreCase));
+    string typicalSampleNameFilter = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        allCountries = _countries.AsQueryable();
+    }
+    
+    private readonly static Country[] _countries = new[]
+    {
+        new Country { Code = ""AR"", Name=""Argentina"", Medals = new Medals { Gold = 0, Silver = 1, Bronze = 2 } },
+        new Country { Code = ""AM"", Name=""Armenia"", Medals = new Medals { Gold = 0, Silver = 2, Bronze = 2 } },
+        new Country { Code = ""AU"", Name = ""Australia"", Medals = new Medals { Gold = 17, Silver = 7, Bronze = 22 } },
+        new Country { Code = ""AT"", Name = ""Austria"", Medals = new Medals { Gold = 1, Silver = 1, Bronze = 5 } },
+        new Country { Code = ""AZ"", Name = ""Azerbaijan"", Medals = new Medals { Gold = 0, Silver = 3, Bronze = 4 } },
+        new Country { Code = ""BS"", Name = ""Bahamas"", Medals = new Medals { Gold = 2, Silver = 0, Bronze = 0 } },
+        new Country { Code = ""BH"", Name = ""Bahrain"", Medals = new Medals { Gold = 0, Silver = 1, Bronze = 0 } },
+        // ...
+    };
+    
+    public class Country
+    {
+        public string Code { get; set; }
+        public string Name { get; set; }
+        public Medals Medals { get; set; }
+    }
+    
+    public class Medals
+    {
+        public int Gold { get; set; }
+        public int Silver { get; set; }
+        public int Bronze { get; set; }
+        public int Total => Gold + Silver + Bronze;
+    }
 }</code></pre>
             }
         </div>
