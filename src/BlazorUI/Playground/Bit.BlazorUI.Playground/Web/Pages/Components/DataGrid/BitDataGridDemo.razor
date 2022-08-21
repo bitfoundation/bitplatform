@@ -120,11 +120,11 @@
             try
             {
                 var query = new Dictionary<string, object?>
-                            {
+                {
                     { "search",$"recalling_firm:\"{_virtualSampleNameFilter}\"" },
                     { "skip", req.StartIndex },
                     { "limit", req.Count }
-                            };
+                };
 
                 var sort = req.GetSortByProperties().SingleOrDefault();
 
@@ -158,10 +158,10 @@
                 // https://docs.microsoft.com/en-us/odata/concepts/queryoptions-overview
 
                 var query = new Dictionary<string, object>()
-                            {
+                {
                     { "$top", req.Count ?? 50 },
                     { "$skip", req.StartIndex }
-                            };
+                };
 
                 if (string.IsNullOrEmpty(_odataSampleNameFilter) is false)
                 {
