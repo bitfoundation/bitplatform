@@ -12,22 +12,24 @@
     <ComponentExampleBox Title="Typical usage, Columns, Sorting, Filtring, Paging" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
             <div class="grid1">
-                <BitDataGrid Items="@FilteredItems" ResizableColumns="true" Pagination="@pagination">
-                    <BitDataGridPropertyColumn Class="column--large" Property="@(c => c.Name)" Sortable="true" IsDefaultSort="BitDataGridSortDirection.Ascending">
-                        <ColumnOptions>
-                            <BitSearchBox @bind-Value="typicalSampleNameFilter"
-                                          Placeholder="Search on Name"
-                                          InputHtmlAttributes="@(new Dictionary<string, object> {{"autofocus", true}})" />
-                        </ColumnOptions>
-                    </BitDataGridPropertyColumn>
-                    <BitDataGridTemplateColumn Title="Flag" Align="BitDataGridAlign.Center">
-                        <img class="flag" src="https://countryflagsapi.com/svg/@(context.Code)" loading="lazy" />
-                    </BitDataGridTemplateColumn>
-                    <BitDataGridPropertyColumn Property="@(c => c.Medals.Gold)" Sortable="true" />
-                    <BitDataGridPropertyColumn Property="@(c => c.Medals.Silver)" Sortable="true" />
-                    <BitDataGridPropertyColumn Property="@(c => c.Medals.Bronze)" Sortable="true" />
-                    <BitDataGridPropertyColumn Property="@(c => c.Medals.Total)" Sortable="true" />
-                </BitDataGrid>
+                <div class="grid1-container">
+                    <BitDataGrid Items="@FilteredItems" ResizableColumns="true" Pagination="@pagination">
+                        <BitDataGridPropertyColumn Class="column--large" Property="@(c => c.Name)" Sortable="true" IsDefaultSort="BitDataGridSortDirection.Ascending">
+                            <ColumnOptions>
+                                <BitSearchBox @bind-Value="typicalSampleNameFilter"
+                                              Placeholder="Search on Name"
+                                              InputHtmlAttributes="@(new Dictionary<string, object> {{"autofocus", true}})" />
+                            </ColumnOptions>
+                        </BitDataGridPropertyColumn>
+                        <BitDataGridTemplateColumn Title="Flag" Align="BitDataGridAlign.Center">
+                            <img class="flag" src="https://countryflagsapi.com/svg/@(context.Code)" loading="lazy" />
+                        </BitDataGridTemplateColumn>
+                        <BitDataGridPropertyColumn Property="@(c => c.Medals.Gold)" Sortable="true" />
+                        <BitDataGridPropertyColumn Property="@(c => c.Medals.Silver)" Sortable="true" />
+                        <BitDataGridPropertyColumn Property="@(c => c.Medals.Bronze)" Sortable="true" />
+                        <BitDataGridPropertyColumn Property="@(c => c.Medals.Total)" Sortable="true" />
+                    </BitDataGrid>
+                </div>
                 <BitDataGridPaginator Value="@pagination" />
             </div>
         </ExamplePreview>
@@ -118,11 +120,11 @@
             try
             {
                 var query = new Dictionary<string, object?>
-                {
+                            {
                     { "search",$"recalling_firm:\"{_virtualSampleNameFilter}\"" },
                     { "skip", req.StartIndex },
                     { "limit", req.Count }
-                };
+                            };
 
                 var sort = req.GetSortByProperties().SingleOrDefault();
 
@@ -156,10 +158,10 @@
                 // https://docs.microsoft.com/en-us/odata/concepts/queryoptions-overview
 
                 var query = new Dictionary<string, object>()
-                {
+                            {
                     { "$top", req.Count ?? 50 },
                     { "$skip", req.StartIndex }
-                };
+                            };
 
                 if (string.IsNullOrEmpty(_odataSampleNameFilter) is false)
                 {
