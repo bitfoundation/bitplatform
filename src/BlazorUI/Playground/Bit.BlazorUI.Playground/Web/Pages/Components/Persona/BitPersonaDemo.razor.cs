@@ -359,7 +359,7 @@ public partial class BitPersonaDemo
             {
                 new()
                 {
-                    Name = "Size8",
+                    Name = "Size20",
                     Description = "Renders a 20px BitPersonaCoin.",
                     Value = "20px",
                 },
@@ -429,10 +429,10 @@ public partial class BitPersonaDemo
         _imageClickCount++;
     }
 
-    private static string example1CSharpCode = @"
+    private static readonly string example1CSharpCode = @"
 public bool IsHideDetails { get; set; } = true;";
 
-    private static string example1HTMLCode = @"<BitCheckbox @bind-Value=""IsHideDetails"" 
+    private static readonly string example1HtmlCode = @"<BitCheckbox @bind-Value=""IsHideDetails"" 
              OnClick=""()=>IsHideDetails=!IsHideDetails"">Include BitPersona details</BitCheckbox>
 
 <div class=""title"">Size 24 BitPersona</div>
@@ -504,7 +504,7 @@ public bool IsHideDetails { get; set; } = true;";
             TertiaryText=""In a meeting""
             OptionalText=""Available at 4:00pm""></BitPersona>";
 
-    private static string example2CSharpCode = @"
+    private static readonly string example2CSharpCode = @"
 private int _actionClickCount = 0;
 
 private void HandleActionClick()
@@ -512,7 +512,7 @@ private void HandleActionClick()
     _actionClickCount++;
 }";
 
-    private static string example2HTMLCode = @"
+    private static readonly string example2HtmlCode = @"
 <BitPersona ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png""
             Presence=@BitPersonaPresenceStatus.None
             Size=@BitPersonaSize.Size120
@@ -525,7 +525,7 @@ private void HandleActionClick()
             OptionalText=""Available at 4:00pm""></BitPersona>
 <p>ActionClickCount: @_actionClickCount</p>";
 
-    private static string example3CSharpCode = @"
+    private static readonly string example3CSharpCode = @"
 private int _imageClickCount = 0;
 
 private void HandleImageClick()
@@ -533,7 +533,7 @@ private void HandleImageClick()
     _imageClickCount++;
 }";
 
-    private static string example3HTMLCode = @"
+    private static readonly string example3HtmlCode = @"
 <BitPersona ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png""
             Presence=@BitPersonaPresenceStatus.Online
             Size=@BitPersonaSize.Size120
@@ -544,4 +544,12 @@ private void HandleImageClick()
             TertiaryText=""In a meeting""
             OptionalText=""Available at 4:00pm""></BitPersona>
 <p>ImageClickCount: @_imageClickCount</p>";
+
+    private static readonly string example4HtmlCode = @"
+<BitPersona ImageUrl=""invalid-src""
+            Size=@BitPersonaSize.Size120
+            Text=""Annie Lindqvist""
+            SecondaryText=""Software Engineer""
+            TertiaryText=""In a meeting""
+            OptionalText=""Available at 4:00pm""></BitPersona>";
 }

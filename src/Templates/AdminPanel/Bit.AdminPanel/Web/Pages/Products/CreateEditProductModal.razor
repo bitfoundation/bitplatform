@@ -6,11 +6,11 @@
             <span class="title">
                 @if (Product.Id != 0)
                 {
-                    @AppStrings.EditProduct
+                    @Localizer[nameof(AppStrings.EditProduct)]
                 }
                 else
                 {
-                    @AppStrings.AddProduct
+                    @Localizer[nameof(AppStrings.AddProduct)]
                 }
             </span>
             <BitIconButton IconName="BitIconName.ChromeClose" OnClick="OnCloseClick" />
@@ -56,7 +56,7 @@ align-items: center">
                 }
                 else
                 {
-                    <span>@AppStrings.Save</span>
+                    <span>@Localizer[nameof(AppStrings.Save)]</span>
                 }
             </BitButton>
         </EditForm>

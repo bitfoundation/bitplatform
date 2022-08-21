@@ -28,7 +28,9 @@ public partial class AppHttpClientHandler : HttpClientHandler
 
                 Type exceptionType = typeof(RestExceptionPayload).Assembly.GetType(restError.ExceptionType) ?? typeof(UnknownException);
 
-                Exception exp = (Exception)Activator.CreateInstance(exceptionType, args: new object[] { restError.Message });
+                var args = new[] { typeof(KnownException).IsAssignableFrom(exceptionType) ? new LocalizedString(restError.Key!, restError.Message!) as object : restError.Message as object };
+
+                Exception exp = (Exception)Activator.CreateInstance(exceptionType, args);
 
                 if (exp is ResourceValidationException resValidationException)
                 {

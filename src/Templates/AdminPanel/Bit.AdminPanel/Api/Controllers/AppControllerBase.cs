@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Localization;
-
-namespace AdminPanel.Api.Controllers;
+﻿namespace AdminPanel.Api.Controllers;
 
 public partial class AppControllerBase : ControllerBase
 {

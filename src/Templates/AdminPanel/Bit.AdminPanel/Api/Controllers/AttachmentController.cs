@@ -85,7 +85,7 @@ public partial class AttachmentController : AppControllerBase
         var filePath = Path.Combine(AppSettings.Value.UserProfileImagePath, user.ProfileImageName);
 
         if (SystemFile.Exists(filePath) is false)
-            throw new ResourceNotFoundException(nameof(ErrorStrings.UserImageCouldNotBeFound));
+            throw new ResourceNotFoundException(Localizer[nameof(AppStrings.UserImageCouldNotBeFound)]);
 
         user.ProfileImageName = null;
 

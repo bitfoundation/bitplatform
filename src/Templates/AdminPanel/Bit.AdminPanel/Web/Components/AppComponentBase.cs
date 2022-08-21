@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Localization;
-
-namespace AdminPanel.App.Components;
+﻿namespace AdminPanel.App.Components;
 
 public partial class AppComponentBase : ComponentBase
 {
@@ -9,6 +7,8 @@ public partial class AppComponentBase : ComponentBase
     [AutoInject] protected IStateService StateService = default!;
 
     [AutoInject] protected AppAuthenticationStateProvider AuthenticationStateProvider = default!;
+
+    [AutoInject] protected IStringLocalizer<AppStrings> Localizer = default!;
 
     [AutoInject] protected HttpClient HttpClient = default!;
 

@@ -186,6 +186,44 @@
             border-bottom: rem(2px) solid $ThemePrimary;
         }
     }
+
+    .close-btn {
+        width: rem(32px);
+        height: rem(32px);
+        text-align: center;
+        font-size: rem(14px);
+        font-weight: 400;
+        padding: 0 rem(4px);
+        cursor: pointer;
+        color: $Primary;
+        border: none;
+        background-color: transparent;
+        box-sizing: border-box;
+        display: inline-block;
+        text-decoration: none;
+
+        & > span {
+            display: flex;
+            height: 100%;
+            flex-wrap: nowrap;
+            justify-content: center;
+            align-items: center;
+
+            i {
+                margin: 0 rem(4px);
+            }
+        }
+
+        &:active {
+            color: $Dark;
+            background-color: $Grey30;
+        }
+
+        &:hover {
+            color: $DarkAlt;
+            background-color: $Grey20;
+        }
+    }
 }
 
 .bit-drp-overlay {

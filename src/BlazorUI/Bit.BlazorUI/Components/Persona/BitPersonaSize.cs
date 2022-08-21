@@ -2,7 +2,7 @@
 
 public static class BitPersonaSize
 {
-    public const string Size8 = "20px";
+    public const string Size20 = "20px";
     public const string Size24 = "24px";
     public const string Size32 = "32px";
     public const string Size40 = "40px";

@@ -209,7 +209,7 @@ public partial class BitDropDown
     /// UI rendering to just the parts that are currently visible
     /// defualt is false
     /// </summary>
-    [Parameter] public bool Virtualize { get; set; } = false;
+    [Parameter] public bool Virtualize { get; set; }
 
     /// <summary>
     /// determines how many additional items are rendered before and after the visible region
@@ -218,7 +218,7 @@ public partial class BitDropDown
     [Parameter] public int OverscanCount { get; set; } = 3;
 
     /// <summary>
-    /// The height of each item in pixels, defualt is 50
+    /// The height of each item in pixels, defualt is 35
     /// </summary>
     [Parameter] public int ItemSize { get; set; } = 35;
 
