@@ -1,26 +1,5 @@
 ﻿@import "../../Styles/Fluent/colors.fluent.scss";
-@import "../../Styles/functions.scss"; 
-
-@mixin getUnderlineStyle($isEnabled: true) {
-    .dtp-wrapper {
-        display: flex;
-        width: 100%;
-        border-bottom: rem(1px) solid;
-
-        @if($isEnabled == true) {
-            border-bottom-color: $Grey130;
-        }
-        @else {
-            border-bottom-color: $Grey20;
-        }
-    }
-
-    .dtp-field-grp {
-        border: none;
-        flex: 1 1 0px;
-        text-align: left;
-    }
-}
+@import "../../Styles/functions.scss";
 
 .bit-dtp-fluent {
     position: relative;
@@ -109,7 +88,18 @@
 }
 
 .bit-dtp-underlined-fluent {
-    @include getUnderlineStyle();
+    .dtp-wrapper {
+        display: flex;
+        width: 100%;
+        border-bottom: rem(1px) solid;
+        border-bottom-color: $Grey130;
+    }
+
+    .dtp-field-grp {
+        border: none;
+        flex: 1 1 0px;
+        text-align: left;
+    }
 }
 
 .bit-dtp-disabled-fluent {
@@ -132,7 +122,18 @@
 }
 
 .bit-dtp-underlined-disabled-fluent {
-    @include getUnderlineStyle( $isEnabled: false);
+    .dtp-wrapper {
+        display: flex;
+        width: 100%;
+        border-bottom: rem(1px) solid;
+        border-bottom-color: $Grey20;
+    }
+
+    .dtp-field-grp {
+        border: none;
+        flex: 1 1 0px;
+        text-align: left;
+    }
 }
 
 .bit-dtp-focused-fluent {
