@@ -13,9 +13,9 @@
 
             <div class="bit-prs-image-area" style="width:@dimension;height:@dimension">
 
-                @if (ImageUrl != null)
-                {
-                    <div class="bit-prs-img-container" @onclick="HandleImageClick">
+                <div class="bit-prs-img-container" @onclick="HandleImageClick">
+                    @if (ImageUrl is not null)
+                    {
 
                         @if (OnImageClick.HasDelegate)
                         {
@@ -49,12 +49,14 @@
                                  @onerror="HandleOnError"
                                  @onload="HandleOnLoad" />
                         }
-                    </div>
-                }
-                else
-                {
-
-                }
+                    }
+                    else
+                    {
+                        <div class="initials">
+                            @_internalInitials
+                        </div>
+                    }
+                </div>
 
                 @if (OnActionClick.HasDelegate)
                 {
