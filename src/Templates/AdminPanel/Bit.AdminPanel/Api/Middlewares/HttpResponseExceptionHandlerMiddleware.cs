@@ -24,14 +24,20 @@ public class HttpResponseExceptionHandlerMiddleware
         catch (Exception e)
         {
             var exception = UnWrapException(e);
-            var isKnownException = exception is KnownException;
+            var localizer = context.RequestServices.GetRequiredService<IStringLocalizer<AppStrings>>();
+            var knownException = exception as KnownException;
+
+            // The details of all of the exceptions are returned only in dev mode. in any other modes like production, only the details of the known exceptions are returned.
+            string key = knownException?.Key ?? nameof(UnknownException);
+            string message = knownException?.Message ?? (webHostEnvironment.IsDevelopment() ? exception.Message : localizer[nameof(UnknownException)]);
+
             var statusCode = (int)(exception is RestException restExp ? restExp.StatusCode : HttpStatusCode.InternalServerError);
 
             RestExceptionPayload restExceptionPayload = new RestExceptionPayload
             {
-                // The details of all of the exceptions are returned only in dev mode. in any other modes like production, only the details of the known exceptions are returned.
-                Message = isKnownException || webHostEnvironment.IsDevelopment() ? exception.Message : nameof(UnknownException), 
-                ExceptionType = isKnownException ? exception.GetType().FullName : typeof(UnknownException).FullName
+                Key = key,
+                Message = message,
+                ExceptionType = knownException?.GetType().FullName ?? typeof(UnknownException).FullName
             };
 
             if (exception is ResourceValidationException validationException)
@@ -40,6 +46,7 @@ public class HttpResponseExceptionHandlerMiddleware
             }
 
             context.Response.StatusCode = statusCode;
+
             await context.Response.WriteAsJsonAsync(restExceptionPayload);
         }
     }

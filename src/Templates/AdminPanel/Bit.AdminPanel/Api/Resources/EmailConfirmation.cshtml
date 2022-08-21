@@ -1,5 +1,7 @@
 ﻿@using AdminPanel.Api.Models.Emailing
 @using System
+@using AdminPanel.Api.Resources
+
 @model EmailConfirmationModel
 
 <!DOCTYPE html>
@@ -7,7 +9,7 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="Content-TypeEntity" content="text/html; charset=UTF-8" />
-    <title>Email Confirmation</title>
+    <title>@Model.EmailLocalizer[nameof(EmailStrings.ConfirmationEmailSubject)]</title>
 </head>
 <body style="width:100%; height:100%; margin:0; padding:0; background-color:#FCFCFC; font-family:Arial,sans-serif;">
     <main style="padding: 6% 4%;">
@@ -15,13 +17,12 @@
                style="border:1px solid #EDEBE9; border-radius:2px; padding:50px; text-align:center;">
             <tr>
                 <td style="color:#002A66; font-weight:600; font-size:24px; line-height:150%; padding-bottom:20px;">
-                    Welcome to AdminPanel!
+                    @Model.EmailLocalizer[nameof(EmailStrings.WelcomeToAdminPanel)]
                 </td>
             </tr>
             <tr>
                 <td style="font-weight:400; font-size:18px; line-height:155%; padding-bottom:50px;">
-                    You're receiving this message because recently you have signed up for a AdminPanel account.
-                    Confirm your email address by clicking the button below.
+                    @Model.EmailLocalizer[nameof(EmailStrings.EmailConfirmationMessageBody)]
                 </td>
             </tr>
             <tr>
@@ -30,7 +31,7 @@
                         <tr>
                             <td style="background-color:#0078D4; border-radius:2px; padding:10px 20px;">
                                 <a href="@Model.ConfirmationLink" style="text-decoration:none; color:#FFFFFF; font-weight:600;">
-                                    Confirm email
+                                    @Model.EmailLocalizer[nameof(EmailStrings.ConfirmEmail)]
                                 </a>
                             </td>
                         </tr>
@@ -48,7 +49,7 @@
             <tr>
                 <td>
                     <a style="text-decoration:none; color:#0065EF; font-weight:400; font-size:12px; line-height:150%;" href="@Model.HostUri">
-                        AdminPanel
+                        @Model.EmailLocalizer[nameof(EmailStrings.AdminPanel)]
                     </a>
                 </td>
             </tr>

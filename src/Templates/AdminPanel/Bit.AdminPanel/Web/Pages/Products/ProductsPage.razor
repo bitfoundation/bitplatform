@@ -3,7 +3,7 @@
 @page "/products"
 @inherits AppComponentBase;
 
-<PageTitle>@AppStrings.ProductsPageTitle</PageTitle>
+<PageTitle>@Localizer[nameof(AppStrings.ProductsPageTitle)]</PageTitle>
 
 <div class="page-container">
     @if (IsLoading)
@@ -14,7 +14,7 @@
     }
     <div class="page-row">
         <h1 class="page-title">Products</h1>
-        <BitButton OnClick="WrapHandled(CreateProduct)">@AppStrings.AddProduct</BitButton>
+        <BitButton OnClick="WrapHandled(CreateProduct)">@Localizer[nameof(AppStrings.AddProduct)]</BitButton>
     </div>
     <div class="grid">
         <BitDataGrid ItemsProvider="@productsProvider" TGridItem="@ProductDto" ResizableColumns="true" Pagination="@pagination" @ref="dataGrid">

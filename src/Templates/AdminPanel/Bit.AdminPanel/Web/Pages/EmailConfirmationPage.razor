@@ -2,15 +2,15 @@
 
 @inherits AppComponentBase;
 
-<PageTitle>@AuthStrings.EmailConfirmationTitle</PageTitle>
+<PageTitle>@Localizer[nameof(AppStrings.EmailConfirmationTitle)]</PageTitle>
 
 <div class="page-container">
     <section class="page-section">
         <div class="bit-logo--white"></div>
         <div class="bg-img"></div>
         <div class="section-content">
-            <h1 class="section-title">@AppStrings.StartupPageTitle</h1>
-            <div class="section-desc">@AppStrings.StartupPageDescription</div>
+            <h1 class="section-title">@Localizer[nameof(AppStrings.StartupPageTitle)]</h1>
+            <div class="section-desc">@Localizer[nameof(AppStrings.StartupPageDescription)]</div>
         </div>
     </section>
     <section class="page-section">
@@ -22,29 +22,29 @@
             @if (EmailConfirmed)
             {
                 <h2 class="form-title">
-                    @AuthStrings.EmailConfirmedSuccessfullyMessage
+                    @Localizer[nameof(AppStrings.EmailConfirmedSuccessfullyMessage)]
                 </h2>
                 <BitButton Class="form-submit-button"
                        ButtonStyle="BitButtonStyle.Primary"
-                       Title="@AuthStrings.SignIn"
-                       AriaLabel="@AuthStrings.SignIn"
+                       Title="@Localizer[nameof(AppStrings.SignIn)]"
+                       AriaLabel="@Localizer[nameof(AppStrings.SignIn)]"
                        OnClick="WrapHandled(RedirectToSignIn)">
-                    <span>@AuthStrings.SignIn</span>
+                    <span>@Localizer[nameof(AppStrings.SignIn)]</span>
                 </BitButton>
             }
             else
             {
                 <h2 class="form-title">
-                    @AuthStrings.EmailConfirmationFailedMessage
+                    @Localizer[nameof(AppStrings.EmailConfirmationFailedMessage)]
                 </h2>
                 <div class="form-description">
-                    @AuthStrings.InvalidConfirmationLinkMessage
+                    @Localizer[nameof(AppStrings.InvalidConfirmationLinkMessage)]
                 </div>
                 <BitButton Class="form-submit-button"
                        ButtonStyle="BitButtonStyle.Primary"
                        IsEnabled="@(IsLoading is false)"
-                       Title="@AuthStrings.ResendEmail"
-                       AriaLabel="@AuthStrings.ResendEmail"
+                       Title="@Localizer[nameof(AppStrings.ResendEmail)]"
+                       AriaLabel="@Localizer[nameof(AppStrings.ResendEmail)]"
                        OnClick="WrapHandled(ResendLink)">
                     @if (IsLoading)
                     {
@@ -52,7 +52,7 @@
                     }
                     else
                     {
-                        <span>@AuthStrings.ResendEmail</span>
+                        <span>@Localizer[nameof(AppStrings.ResendEmail)]</span>
                     }
                 </BitButton>
             }

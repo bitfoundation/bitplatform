@@ -93,13 +93,13 @@ public partial class EditProfilePage
 
             EditProfileMessageType = BitMessageBarType.Success;
 
-            EditProfileMessage = AppStrings.ProfileUpdatedSuccessfullyMessage;
+            EditProfileMessage = Localizer[nameof(AppStrings.ProfileUpdatedSuccessfullyMessage)];
         }
         catch (KnownException e)
         {
             EditProfileMessageType = BitMessageBarType.Error;
 
-            EditProfileMessage = ErrorStrings.ResourceManager.Translate(e.Message);
+            EditProfileMessage = e.Message;
         }
         finally
         {
