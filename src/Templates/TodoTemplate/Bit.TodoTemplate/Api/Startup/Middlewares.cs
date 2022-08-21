@@ -49,7 +49,6 @@ public class Middlewares
             }
         });
 
-        app.UseHttpResponseExceptionHandler();
         app.UseRouting();
 
         // 0.0.0.0 is for the Blazor Hybrid mode (Android, iOS, Windows apps)
@@ -66,6 +65,8 @@ public class Middlewares
             .AddSupportedUICultures(supportedCultures);
 
         app.UseRequestLocalization(localizationOptions);
+
+        app.UseHttpResponseExceptionHandler();
 
         app.UseSwagger();
 

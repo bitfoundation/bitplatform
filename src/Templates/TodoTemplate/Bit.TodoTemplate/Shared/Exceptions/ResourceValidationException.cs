@@ -42,10 +42,22 @@ public class ResourceValidationException : RestException
 
     }
 
-    public ResourceValidationException(List<ResourceValidationExceptionPayload> error)
-        : base(message: nameof(AppStrings.ResourceValidationException))
+    public ResourceValidationException(List<ResourceValidationExceptionPayload> errors)
+        : this(message: nameof(AppStrings.ResourceValidationException), errors)
     {
-        Details = error;
+
+    }
+
+    public ResourceValidationException(string message, List<ResourceValidationExceptionPayload> errors)
+        : base(message)
+    {
+        Details = errors;
+    }
+
+    public ResourceValidationException(LocalizedString message, List<ResourceValidationExceptionPayload> errors)
+        : base(message)
+    {
+        Details = errors;
     }
 
     protected ResourceValidationException(SerializationInfo info, StreamingContext context)

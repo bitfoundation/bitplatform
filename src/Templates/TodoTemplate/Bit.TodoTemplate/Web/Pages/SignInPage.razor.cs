@@ -1,9 +1,12 @@
-﻿using TodoTemplate.Shared.Dtos.Account;
+﻿using Microsoft.AspNetCore.Components.Forms;
+using TodoTemplate.Shared.Dtos.Account;
 
 namespace TodoTemplate.App.Pages;
 
 public partial class SignInPage
 {
+    private EditContext? editContext;
+
     public SignInRequestDto SignInModel { get; set; } = new();
 
     public bool IsLoading { get; set; }
@@ -45,8 +48,7 @@ public partial class SignInPage
     }
 
     private bool IsSubmitButtonEnabled =>
-        string.IsNullOrWhiteSpace(SignInModel.UserName) is false &&
-        string.IsNullOrWhiteSpace(SignInModel.Password) is false && 
+        editContext?.GetValidationMessages().Any() is false &&
         IsLoading is false;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -58,6 +60,13 @@ public partial class SignInPage
         }
 
         await base.OnAfterRenderAsync(firstRender);
+    }
+
+    protected override Task OnInitAsync()
+    {
+        editContext = new(SignInModel);
+
+        return base.OnInitAsync();
     }
 }
 
