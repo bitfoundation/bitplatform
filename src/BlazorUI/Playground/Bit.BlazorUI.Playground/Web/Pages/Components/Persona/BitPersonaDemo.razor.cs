@@ -359,7 +359,7 @@ public partial class BitPersonaDemo
             {
                 new()
                 {
-                    Name = "Size8",
+                    Name = "Size20",
                     Description = "Renders a 20px BitPersonaCoin.",
                     Value = "20px",
                 },
