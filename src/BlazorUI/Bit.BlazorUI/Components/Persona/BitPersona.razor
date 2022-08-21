@@ -16,31 +16,38 @@
                 @if (ImageUrl != null)
                 {
                     <div class="bit-prs-img-container" @onclick="HandleImageClick">
-                        <div class="bit-prs-img-overlay">
-                            @if (ImageOverlayFragment is not null)
-                            {
-                                @ImageOverlayFragment
-                            }
-                            else
-                            {
-                                <span>Edit image</span>
-                            }
-                        </div>
+
+                        @if (OnImageClick.HasDelegate)
+                        {
+                            <div class="bit-prs-img-overlay">
+                                @if (ImageOverlayFragment is not null)
+                                {
+                                    @ImageOverlayFragment
+                                }
+                                else
+                                {
+                                    <span>Edit image</span>
+                                }
+                            </div>
+                        }
+
+                        @if ((ShowInitialsUntilImageLoads && _isLoaded is false) || _hasError)
+                        {
+                            <div class="initials">
+                                @_internalInitials
+                            </div>
+                        }
+
                         @if (_hasError is false)
                         {
                             <img src="@ImageUrl"
+                                 style="display:@(_isLoaded ? "unset": "none")"
                                  class="bit-prs-img"
                                  alt="@ImageAlt"
                                  width="@dimension"
                                  height="@dimension"
                                  @onerror="HandleOnError"
                                  @onload="HandleOnLoad" />
-                        }
-                        @if ((ShowInitialsUntilImageLoads && _isLoaded is false) || _hasError)
-                        {
-                            <div class="initials">
-                                @_internalInitials
-                            </div>
                         }
                     </div>
                 }
@@ -65,7 +72,7 @@
                 else if (Presence != BitPersonaPresenceStatus.None)
                 {
                     <div title=@PresenceTitle class="bit-prs-presence">
-                        <i class=@($"bit-prs-icon bit-icon--{DetermineIcon(Presence, IsOutOfOffice)}") role="presentation"></i>
+                        <i class=@($"bit-prs-icon bit-icon--{DetermineIcon()}") role="presentation"></i>
                     </div>
                 }
             </div>
@@ -77,7 +84,7 @@
                 <div title=@PresenceTitle class="bit-prs-presence" style="@_presenceStyle">
                     @if (_renderIcon)
                     {
-                        <i class=@($"bit-prs-icon bit-icon--{DetermineIcon(Presence, IsOutOfOffice)}") role="presentation" style="@_iconStyle"></i>
+                        <i class=@($"bit-prs-icon bit-icon--{DetermineIcon()}") role="presentation" style="@_iconStyle"></i>
                     }
                 </div>
             }

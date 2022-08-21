@@ -176,22 +176,22 @@ public partial class BitPersona
 
         ClassBuilder.Register(() => OnImageClick.HasDelegate ? "bit-prs-img-act" : string.Empty);
 
-        ClassBuilder.Register(() => Presence != BitPersonaPresenceStatus.None ? $"bit-prs-{Presence.ToString().ToLower(Thread.CurrentThread.CurrentCulture)}" : string.Empty);
+        ClassBuilder.Register(() => Presence != BitPersonaPresenceStatus.None ? $"bit-prs-{Presence.ToString().ToLower()}" : string.Empty);
     }
 
-    private static string DetermineIcon(BitPersonaPresenceStatus presence, bool isOutofOffice)
+    private string DetermineIcon()
     {
-        if (presence == BitPersonaPresenceStatus.None)
-            return string.Empty;
+        if (Presence == BitPersonaPresenceStatus.None) return string.Empty;
+
         string oofIcon = "presence_oof";
 
-        return presence switch
+        return Presence switch
         {
             BitPersonaPresenceStatus.Online => "presence_available",
             BitPersonaPresenceStatus.Busy => "presence_busy",
-            BitPersonaPresenceStatus.Away => isOutofOffice ? oofIcon : "presence_away",
+            BitPersonaPresenceStatus.Away => IsOutOfOffice ? oofIcon : "presence_away",
             BitPersonaPresenceStatus.DND => "presence_dnd",
-            BitPersonaPresenceStatus.Offline => isOutofOffice ? oofIcon : "presence_offline",
+            BitPersonaPresenceStatus.Offline => IsOutOfOffice ? oofIcon : "presence_offline",
             _ => "presence_unknown",
         };
     }
@@ -201,16 +201,17 @@ public partial class BitPersona
         return InitialsColor is not null ? BitPersonaColorUtils.GetPersonaColorHexCode(InitialsColor.Value) : BitPersonaColorUtils.GetPersonaColorHexCode(BitPersonaColorUtils.GetInitialsColorFromName(Text));
     }
 
+
     protected string GetInitials()
     {
         if (string.IsNullOrWhiteSpace(Text)) return "";
 
-        var text = UNWANTED_CHARS_REGEX.Replace(Text, "");
+        var text = Text.Trim();
+        text = UNWANTED_CHARS_REGEX.Replace(text, "");
         text = MULTIPLE_WHITESPACES_REGEX.Replace(text, " ");
-        text = text.Trim();
 
         if (UNSUPPORTED_TEXT_REGEX.IsMatch(text)) return "";
-        if (AllowPhoneInitials is false || PHONE_NUMBER_REGEX.IsMatch(Text)) return "";
+        //if (AllowPhoneInitials && PHONE_NUMBER_REGEX.IsMatch(text) is false) return "";
 
         var splits = text.Split(' ');
 
