@@ -9,22 +9,22 @@
 
     @if (LabelFragment is not null)
     {
-        <label class="bit-dtp-label" id="@LabelId" for="@TextFieldId">
+        <label class="dtp-label" id="@LabelId" for="@TextFieldId">
             @LabelFragment
         </label>
     }
     else if (Label.HasValue())
     {
-        <label class="bit-dtp-label" id="@LabelId" for="@TextFieldId">
+        <label class="dtp-label" id="@LabelId" for="@TextFieldId">
             @Label
         </label>
     }
-    <div class="bit-dtp-wrapper"
+    <div class="dtp-wrapper"
          id="@WrapperId"
          aria-owns="@(IsOpen ? CalloutId : null)"
          @onclick="HandleClick">
 
-        <div class="bit-dtp-field-grp @(AllowTextInput ? "editable-input" : null)">
+        <div class="dtp-field-grp @(AllowTextInput ? "editable-input" : null)">
             <input @attributes="InputHtmlAttributes"
                    id="@TextFieldId"
                    disabled=@(!IsEnabled)
@@ -48,15 +48,15 @@
         </div>
     </div>
 
-    <div class="bit-dtp-overlay"
+    <div class="dtp-overlay"
          id="@OverlayId"
          @onclick="CloseCallout">
     </div>
 
-    <div class="bit-dtp-callout" id="@CalloutId">
-        <div class="bit-dtp-callout-main" role="dialog">
+    <div class="dtp-callout" id="@CalloutId">
+        <div class="dtp-callout-main" role="dialog">
             <div aria-hidden="true" tabindex="0" data-is-visible="true" style="pointer-events: none; position: fixed;"></div>
-            <div class="bit-dtp-group"
+            <div class="dtp-group"
                  role="group"
                  aria-label="">
                 <div aria-live="polite" aria-atomic="true">Selected date @CurrentValueAsString</div>

@@ -188,7 +188,7 @@ public partial class BitDatePicker
             ? $"{RootElementClass}-disabled-{VisualClassRegistrar()}" : string.Empty);
 
         ClassBuilder.Register(() => Culture.TextInfo.IsRightToLeft
-            ? $"{RootElementClass}-rtl" : string.Empty);
+            ? $"{RootElementClass}-rtl-{VisualClassRegistrar()}" : string.Empty);
 
         ClassBuilder.Register(() => IsUnderlined
             ? $"{RootElementClass}-underlined-{(IsEnabled is false ? "disabled-" : string.Empty)}{VisualClassRegistrar()}" : string.Empty);
@@ -559,11 +559,6 @@ public partial class BitDatePicker
         var todayMonth = Culture.DateTimeFormat.Calendar.GetMonth(DateTime.Now);
         var todayDay = Culture.DateTimeFormat.Calendar.GetDayOfMonth(DateTime.Now);
         var currentDay = currentMonthCalendar[week, day];
-
-        if (IsInCurrentMonth(week, day) is false)
-        {
-            className += className.Length == 0 ? "date-cell--outside-month" : " date-cell--outside-month";
-        }
 
         if (IsInCurrentMonth(week, day) && todayYear == currentYear && todayMonth == currentMonth && todayDay == currentDay)
         {
