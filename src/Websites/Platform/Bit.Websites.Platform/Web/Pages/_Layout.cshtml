@@ -6,10 +6,14 @@
 @using Bit.Websites.Platform.Shared;
 @using Microsoft.AspNetCore.Components.Web
 @using Microsoft.AspNetCore.Http
+@using Microsoft.Extensions.Configuration
 
 @inject IHttpContextAccessor ContextAccessor
+@inject IConfiguration Configuration
 
 @{
+    var googleTagContainerID = @Configuration.GetSection("GoogleTagManager")["ContainerID"];
+
     var isBlazorServer = BlazorModeDetector.Current.IsBlazorServer();
     RenderMode renderMode = isBlazorServer ? RenderMode.ServerPrerendered : RenderMode.WebAssemblyPrerendered;
 
@@ -78,5 +82,17 @@
         <script src="_framework/blazor.webassembly.js" asp-append-version="true"></script>
     }
     <persist-component-state />
+
+    <!-- Google Tag Manager -->
+    <script>
+        (function (w, d, s, l, i) {
+            w[l] = w[l] || []; w[l].push({
+                'gtm.start':
+                    new Date().getTime(), event: 'gtm.js'
+            }); var f = d.getElementsByTagName(s)[0],
+                j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+                    'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+        })(window, document, 'script', 'dataLayer', '@googleTagContainerID');</script>
+    <!-- End Google Tag Manager -->
 </body>
 </html>
