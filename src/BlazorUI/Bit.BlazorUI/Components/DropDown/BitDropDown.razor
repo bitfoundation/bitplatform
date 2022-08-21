@@ -76,9 +76,17 @@
          role="listbox"
          aria-labelledby="@DropdownLabelId">
         <div class="bit-drp-close-btn-contianer">
-            <BitIconButton IconName="BitIconName.ChromeClose"
-                           Title="Close"
-                           OnClick=CloseCallout />
+            <button class="close-btn"
+                    type="button"
+                    aria-label="Close"
+                    aria-describedby="Close"
+                    aria-hidden="Close"
+                    title="Close"
+                    @onclick="CloseCallout">
+                <span>
+                    <i class="bit-icon bit-icon--ChromeClose"></i>
+                </span>
+            </button>
         </div>
         @if (ShowSearchBox)
         {
