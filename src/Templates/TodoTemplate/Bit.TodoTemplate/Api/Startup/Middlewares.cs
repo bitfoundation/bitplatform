@@ -58,6 +58,7 @@ public class Middlewares
         app.UseAuthentication();
         app.UseAuthorization();
 
+#if MultilingualEnabled
         var supportedCultures = new[] { "en", "fr" };
         var localizationOptions = new RequestLocalizationOptions()
             .SetDefaultCulture(supportedCultures[0])
@@ -65,6 +66,7 @@ public class Middlewares
             .AddSupportedUICultures(supportedCultures);
 
         app.UseRequestLocalization(localizationOptions);
+#endif
 
         app.UseHttpResponseExceptionHandler();
 

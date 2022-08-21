@@ -625,4 +625,19 @@ Please confirm your email by clicking on the link.</value>
   <data name="YouHaveToAcceptPrivacyPolicy" xml:space="preserve">
     <value>You must agree to our privacy policy.</value>
   </data>
+  <data name="GoToToday" xml:space="preserve">
+    <value>Go to today</value>
+  </data>
+  <data name="Gender" xml:space="preserve">
+    <value>Gender</value>
+  </data>
+  <data name="Privacy" xml:space="preserve">
+    <value>Privacy</value>
+  </data>
+  <data name="SignOutPrompt" xml:space="preserve">
+    <value>Are you sure you want to Sign out?</value>
+  </data>
+  <data name="Birthday" xml:space="preserve">
+    <value>Birthday</value>
+  </data>
 </root>

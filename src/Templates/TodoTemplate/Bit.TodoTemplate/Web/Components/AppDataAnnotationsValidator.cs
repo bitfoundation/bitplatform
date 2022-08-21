@@ -10,11 +10,15 @@ public partial class AppDataAnnotationsValidator : AppComponentBase, IDisposable
 
     [AutoInject] private IServiceProvider _serviceProvider = default!;
 
+    [AutoInject] private IStringLocalizerFactory _stringLocalizerFactory = default!;
+
     private ValidationMessageStore _validationMessageStore = default!;
 
     private ValidationContext _validationContext = default!;
 
     private Dictionary<string, string> _displayColumns = new();
+
+    private IStringLocalizer _localizer = default!;
 
     protected override async Task OnInitAsync()
     {
@@ -33,6 +37,8 @@ public partial class AppDataAnnotationsValidator : AppComponentBase, IDisposable
             .GetProperties()
             .ToDictionary(p => p.Name, p => p.GetCustomAttribute<DisplayAttribute>()?.Name ?? p.Name);
 
+        _localizer = StringLocalizerProvider.ProvideLocalizer(EditContext.Model.GetType(), _stringLocalizerFactory);
+
         base.OnInitialized();
     }
 
@@ -50,7 +56,7 @@ public partial class AppDataAnnotationsValidator : AppComponentBase, IDisposable
 
                 var fieldIdentifier = new FieldIdentifier(EditContext.Model, memberName);
 
-                _validationMessageStore.Add(fieldIdentifier, Localizer.GetString(validationResult.ErrorMessage!, Localizer[_displayColumns[memberName]]));
+                _validationMessageStore.Add(fieldIdentifier, _localizer.GetString(validationResult.ErrorMessage!, _localizer[_displayColumns[memberName]]));
             }
         }
     }
@@ -72,7 +78,7 @@ public partial class AppDataAnnotationsValidator : AppComponentBase, IDisposable
                 if (memberName != fieldIdentifier.FieldName)
                     continue;
 
-                _validationMessageStore.Add(fieldIdentifier, Localizer.GetString(validationResultOfCurrentField.ErrorMessage!, Localizer[_displayColumns[memberName]]));
+                _validationMessageStore.Add(fieldIdentifier, _localizer.GetString(validationResultOfCurrentField.ErrorMessage!, _localizer[_displayColumns[memberName]]));
             }
         }
     }
