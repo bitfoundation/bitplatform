@@ -1,33 +1,28 @@
-﻿using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
+﻿using System.Text.RegularExpressions;
 
 namespace Bit.BlazorUI;
 
 public partial class BitPersona
 {
-    private readonly Regex UNSUPPORTED_TEXT_REGEX = new(@"[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\u1100-\u11FF\u3130-\u318F\uA960-\uA97F\uAC00-\uD7AF\uD7B0-\uD7FF\u3040-\u309F\u30A0-\u30FF\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF]|[\uD840-\uD869][\uDC00-\uDED6]");
-
-    private readonly Regex PHONENUMBER_REGEX = new(@"^\d+[\d\s]*(:?ext|x|)\s*\d+$");
-
-    private readonly Regex UNWANTED_CHARS_REGEX = new(@"\([^)]*\)|[\0-\u001F\!-/:-@\[-`\{-\u00BF\u0250-\u036F\uD800-\uFFFF]");
-
     private readonly Regex MULTIPLE_WHITESPACES_REGEX = new(@"\s+");
+    private readonly Regex PHONE_NUMBER_REGEX = new(@"^\d+[\d\s]*(:?ext|x|)\s*\d+$");
+    private readonly Regex UNWANTED_CHARS_REGEX = new(@"\([^)]*\)|[\0-\u001F\!-/:-@\[-`\{-\u00BF\u0250-\u036F\uD800-\uFFFF]");
+    private readonly Regex UNSUPPORTED_TEXT_REGEX = new(@"[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\u1100-\u11FF\u3130-\u318F\uA960-\uA97F\uAC00-\uD7AF\uD7B0-\uD7FF\u3040-\u309F\u30A0-\u30FF\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF]|[\uD840-\uD869][\uDC00-\uDED6]");
 
     private const int PRESENCE_MAX_SIZE = 40;
     private const int COIN_SIZE_PRESENCE_SCALE_FACTOR = 3;
 
-    private string? size;
-    private string? presenceFontSize;
-    private string? presenceHeightWidth;
-
-    private bool RenderIcon { get; set; }
-    private string? IconStyle { get; set; }
-    private string? PresenceStyle { get; set; }
-    private string? PresenceAfterStyle { get; set; }
-    private string? PresenceBeforeStyle { get; set; }
+    private bool _isLoaded;
+    private bool _hasError;
+    private bool _renderIcon;
+    private string? _size = string.Empty;
+    private string? _iconStyle = string.Empty;
+    private string? _presenceStyle = string.Empty;
+    private string _internalInitials = string.Empty;
+    private string? _presenceFontSize = string.Empty;
+    private string? _presenceAfterStyle = string.Empty;
+    private string? _presenceBeforeStyle = string.Empty;
+    private string? _presenceHeightWidth = string.Empty;
 
     /// <summary>
     /// Whether to not render persona details, and just render the persona image/initials.
@@ -67,10 +62,10 @@ public partial class BitPersona
     [Parameter]
     public string? Size
     {
-        get => size;
+        get => _size;
         set
         {
-            size = value!;
+            _size = value!;
             ClassBuilder.Reset();
         }
     }
@@ -157,17 +152,18 @@ public partial class BitPersona
     {
         if (CoinSize != -1)
         {
-            presenceHeightWidth = CoinSize / COIN_SIZE_PRESENCE_SCALE_FACTOR < PRESENCE_MAX_SIZE
+            _presenceHeightWidth = CoinSize / COIN_SIZE_PRESENCE_SCALE_FACTOR < PRESENCE_MAX_SIZE
                 ? CoinSize / COIN_SIZE_PRESENCE_SCALE_FACTOR + "px"
                 : PRESENCE_MAX_SIZE + "px";
 
-            presenceFontSize = CoinSize / COIN_SIZE_PRESENCE_SCALE_FACTOR < PRESENCE_MAX_SIZE
+            _presenceFontSize = CoinSize / COIN_SIZE_PRESENCE_SCALE_FACTOR < PRESENCE_MAX_SIZE
                 ? CoinSize / COIN_SIZE_PRESENCE_SCALE_FACTOR + "px"
                 : PRESENCE_MAX_SIZE + "px";
         }
 
-        RenderIcon = !(Size == BitPersonaSize.Size8 || Size == BitPersonaSize.Size24 || Size == BitPersonaSize.Size32) && (CoinSize == -1 || CoinSize > 32);
+        _renderIcon = !(Size == BitPersonaSize.Size20 || Size == BitPersonaSize.Size24 || Size == BitPersonaSize.Size32) && (CoinSize == -1 || CoinSize > 32);
 
+        _internalInitials = ImageInitials ?? GetInitials();
 
         return base.OnParametersSetAsync();
     }
@@ -180,22 +176,22 @@ public partial class BitPersona
 
         ClassBuilder.Register(() => OnImageClick.HasDelegate ? "bit-prs-img-act" : string.Empty);
 
-        ClassBuilder.Register(() => Presence != BitPersonaPresenceStatus.None ? $"bit-prs-{Presence.ToString().ToLower(Thread.CurrentThread.CurrentCulture)}" : string.Empty);
+        ClassBuilder.Register(() => Presence != BitPersonaPresenceStatus.None ? $"bit-prs-{Presence.ToString().ToLower()}" : string.Empty);
     }
 
-    private static string DetermineIcon(BitPersonaPresenceStatus presence, bool isOutofOffice)
+    private string DetermineIcon()
     {
-        if (presence == BitPersonaPresenceStatus.None)
-            return string.Empty;
+        if (Presence == BitPersonaPresenceStatus.None) return string.Empty;
+
         string oofIcon = "presence_oof";
 
-        return presence switch
+        return Presence switch
         {
             BitPersonaPresenceStatus.Online => "presence_available",
             BitPersonaPresenceStatus.Busy => "presence_busy",
-            BitPersonaPresenceStatus.Away => isOutofOffice ? oofIcon : "presence_away",
+            BitPersonaPresenceStatus.Away => IsOutOfOffice ? oofIcon : "presence_away",
             BitPersonaPresenceStatus.DND => "presence_dnd",
-            BitPersonaPresenceStatus.Offline => isOutofOffice ? oofIcon : "presence_offline",
+            BitPersonaPresenceStatus.Offline => IsOutOfOffice ? oofIcon : "presence_offline",
             _ => "presence_unknown",
         };
     }
@@ -205,58 +201,36 @@ public partial class BitPersona
         return InitialsColor is not null ? BitPersonaColorUtils.GetPersonaColorHexCode(InitialsColor.Value) : BitPersonaColorUtils.GetPersonaColorHexCode(BitPersonaColorUtils.GetInitialsColorFromName(Text));
     }
 
-    protected string GetInitials(string? displayName, bool isRTL, bool allowPhoneInitials)
+
+    protected string GetInitials()
     {
-        if (string.IsNullOrWhiteSpace(displayName))
-            return "";
+        if (string.IsNullOrWhiteSpace(Text)) return "";
 
-        displayName = CleanupDisplayName(displayName);
+        var text = Text.Trim();
+        text = UNWANTED_CHARS_REGEX.Replace(text, "");
+        text = MULTIPLE_WHITESPACES_REGEX.Replace(text, " ");
 
-        if (UNSUPPORTED_TEXT_REGEX.IsMatch(displayName) || (!allowPhoneInitials && PHONENUMBER_REGEX.IsMatch(displayName)))
-        {
-            return "";
-        }
+        if (UNSUPPORTED_TEXT_REGEX.IsMatch(text)) return "";
+        //if (AllowPhoneInitials && PHONE_NUMBER_REGEX.IsMatch(text) is false) return "";
 
-        return GetInitialsLatin(displayName, isRTL);
-    }
-
-    private string CleanupDisplayName(string displayName)
-    {
-        displayName = UNWANTED_CHARS_REGEX.Replace(displayName, "");
-        displayName = MULTIPLE_WHITESPACES_REGEX.Replace(displayName, " ");
-        displayName = displayName.Trim();
-        return displayName;
-    }
-
-    private static string GetInitialsLatin(string displayName, bool isRtl)
-    {
-        StringBuilder? initials = new("");
-
-        string[] splits = displayName.Split(' ');
+        var splits = text.Split(' ');
 
         if (splits.Length == 2)
         {
-            initials.Append(splits[0].ToUpper(Thread.CurrentThread.CurrentCulture)[0]);
-            initials.Append(splits[1].ToUpper(Thread.CurrentThread.CurrentCulture)[0]);
-        }
-        else if (splits.Length == 3)
-        {
-            initials.Append(splits[0].ToUpper(Thread.CurrentThread.CurrentCulture)[0]);
-            initials.Append(splits[2].ToUpper(Thread.CurrentThread.CurrentCulture)[0]);
-        }
-        else if (splits.Length != 0)
-        {
-            initials.Append(splits[0].ToUpper(Thread.CurrentThread.CurrentCulture)[0]);
+            return $"{splits[0][0]}{splits[1][0]}";
         }
 
-        if (isRtl && initials.Length > 1)
+        if (splits.Length == 3)
         {
-            StringBuilder returnValue = new();
-            returnValue.Append(initials[1].ToString(Thread.CurrentThread.CurrentCulture));
-            returnValue.Append(initials[0].ToString(Thread.CurrentThread.CurrentCulture));
+            return $"{splits[0][0]}{splits[2][0]}";
         }
 
-        return initials.ToString();
+        if (splits.Length != 0)
+        {
+            return $"{splits[0][0]}";
+        }
+
+        return string.Empty;
     }
 
     private async Task HandleActionClick(MouseEventArgs e)
@@ -267,5 +241,18 @@ public partial class BitPersona
     private async Task HandleImageClick(MouseEventArgs e)
     {
         await OnImageClick.InvokeAsync(e);
+    }
+
+    private void HandleOnError(Microsoft.AspNetCore.Components.Web.ErrorEventArgs e)
+    {
+        _hasError = true;
+        _isLoaded = true;
+        StateHasChanged();
+    }
+
+    private void HandleOnLoad(ProgressEventArgs e)
+    {
+        _isLoaded = true;
+        StateHasChanged();
     }
 }

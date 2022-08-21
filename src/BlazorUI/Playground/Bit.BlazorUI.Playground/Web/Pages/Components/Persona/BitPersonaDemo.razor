@@ -4,9 +4,9 @@
                ComponentDescription="A Bitpersona is a visual representation of a person across products, typically showcasing the image that person has chosen to upload themselves. The control can also be used to show that person's online status.The complete control includes an individual's avatar (an uploaded image or a composition of the person’s initials on a background color), their name or identification, and online status.The Bitpersona control is used in the PeoplePicker and Facepile controls."
                ComponentParameters="componentParameters"
                EnumParameters="enumParameters">
-    <ComponentExampleBox Title="Persona in various sizes" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
+    <ComponentExampleBox Title="Persona in various sizes" HTMLSourceCode="@example1HtmlCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
-            <BitCheckbox @bind-Value="IsHideDetails" OnClick="()=>IsHideDetails=!IsHideDetails">Include BitPersona details</BitCheckbox>
+            <BitCheckbox @bind-Value="IsHideDetails" OnClick="() => IsHideDetails =! IsHideDetails">Include BitPersona details</BitCheckbox>
             <div class="title">Size 24 Persona</div>
             <BitPersona ImageUrl="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"
                         Presence=@BitPersonaPresenceStatus.None
@@ -78,7 +78,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Persona with custom action" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example2">
+    <ComponentExampleBox Title="Persona with custom action" HTMLSourceCode="@example2HtmlCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example2">
         <ExamplePreview>
             <BitPersona ImageUrl="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"
                         Presence=@BitPersonaPresenceStatus.None
@@ -94,7 +94,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Persona with image action" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example3">
+    <ComponentExampleBox Title="Persona with image action" HTMLSourceCode="@example3HtmlCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example3">
         <ExamplePreview>
             <BitPersona ImageUrl="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"
                         Presence=@BitPersonaPresenceStatus.Online
@@ -106,6 +106,19 @@
                         TertiaryText="In a meeting"
                         OptionalText="Available at 4:00pm"></BitPersona>
             <p>ImageClickCount: @_imageClickCount</p>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Persona with Initials" HTMLSourceCode="@example4HtmlCode" ExampleId="example4">
+        <ExamplePreview>
+            <div class="title">Persoan with invalid ImageUrl</div>
+            <BitPersona ImageUrl="invalid-src"
+                        ShowInitialsUntilImageLoads=true
+                        Size=@BitPersonaSize.Size120
+                        Text="Saleh Khafan"></BitPersona>
+
+            <div class="title">Persoan with no ImageUrl</div>
+            <BitPersona Size=@BitPersonaSize.Size120 Text="Saleh Xafan"></BitPersona>
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>
