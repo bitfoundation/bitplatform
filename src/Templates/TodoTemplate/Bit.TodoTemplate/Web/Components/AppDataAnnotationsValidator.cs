@@ -10,7 +10,7 @@ public partial class AppDataAnnotationsValidator : AppComponentBase, IDisposable
 
     [AutoInject] private IServiceProvider _serviceProvider = default!;
 
-    private ValidationMessageStore ValidationMessageStore = default!;
+    private ValidationMessageStore _validationMessageStore = default!;
 
     private ValidationContext _validationContext = default!;
 
@@ -24,7 +24,7 @@ public partial class AppDataAnnotationsValidator : AppComponentBase, IDisposable
         EditContext.OnValidationRequested += ValidationRequested;
         EditContext.OnFieldChanged += FieldChanged;
 
-        ValidationMessageStore = new ValidationMessageStore(EditContext);
+        _validationMessageStore = new ValidationMessageStore(EditContext);
 
         _validationContext = new ValidationContext(EditContext.Model, serviceProvider: _serviceProvider, items: null);
 
@@ -38,7 +38,7 @@ public partial class AppDataAnnotationsValidator : AppComponentBase, IDisposable
 
     void ValidationRequested(object sender, ValidationRequestedEventArgs args)
     {
-        ValidationMessageStore.Clear();
+        _validationMessageStore.Clear();
 
         var validationResults = new List<ValidationResult>();
 
@@ -50,7 +50,7 @@ public partial class AppDataAnnotationsValidator : AppComponentBase, IDisposable
 
                 var fieldIdentifier = new FieldIdentifier(EditContext.Model, memberName);
 
-                ValidationMessageStore.Add(fieldIdentifier, Localizer.GetString(validationResult.ErrorMessage!, Localizer[_displayColumns[memberName]]));
+                _validationMessageStore.Add(fieldIdentifier, Localizer.GetString(validationResult.ErrorMessage!, Localizer[_displayColumns[memberName]]));
             }
         }
     }
@@ -59,7 +59,7 @@ public partial class AppDataAnnotationsValidator : AppComponentBase, IDisposable
     {
         FieldIdentifier fieldIdentifier = args.FieldIdentifier;
 
-        ValidationMessageStore.Clear(fieldIdentifier);
+        _validationMessageStore.Clear(fieldIdentifier);
 
         var validationResults = new List<ValidationResult>();
 
@@ -72,7 +72,7 @@ public partial class AppDataAnnotationsValidator : AppComponentBase, IDisposable
                 if (memberName != fieldIdentifier.FieldName)
                     continue;
 
-                ValidationMessageStore.Add(fieldIdentifier, Localizer.GetString(validationResultOfCurrentField.ErrorMessage!, Localizer[_displayColumns[memberName]]));
+                _validationMessageStore.Add(fieldIdentifier, Localizer.GetString(validationResultOfCurrentField.ErrorMessage!, Localizer[_displayColumns[memberName]]));
             }
         }
     }
