@@ -6,10 +6,14 @@
 @using Bit.Websites.Platform.Shared;
 @using Microsoft.AspNetCore.Components.Web
 @using Microsoft.AspNetCore.Http
+@using Microsoft.Extensions.Configuration
 
 @inject IHttpContextAccessor ContextAccessor
+@inject IConfiguration Configuration
 
 @{
+    var googleTagContainerID = @Configuration.GetSection("GoogleTagManager")["ContainerID"];
+
     var isBlazorServer = BlazorModeDetector.Current.IsBlazorServer();
     RenderMode renderMode = isBlazorServer ? RenderMode.ServerPrerendered : RenderMode.WebAssemblyPrerendered;
 
@@ -58,6 +62,18 @@
     </style>
     @*<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/styles/default.min.css">*@
     <component type="typeof(HeadOutlet)" render-mode="@renderMode" />
+
+    <!-- Google Tag Manager -->
+    <script>
+        (function (w, d, s, l, i) {
+            w[l] = w[l] || []; w[l].push({
+                'gtm.start':
+                    new Date().getTime(), event: 'gtm.js'
+            }); var f = d.getElementsByTagName(s)[0],
+                j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+                    'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+        })(window, document, 'script', 'dataLayer', '@googleTagContainerID');</script>
+    <!-- End Google Tag Manager -->
 </head>
 <body>
 
@@ -78,5 +94,12 @@
         <script src="_framework/blazor.webassembly.js" asp-append-version="true"></script>
     }
     <persist-component-state />
+
+    <!-- Google Tag Manager (noscript) -->
+    <noscript>
+        <iframe src="https://www.googletagmanager.com/ns.html?id=@(googleTagContainerID)"
+                height="0" width="0" style="display:none;visibility:hidden"></iframe>
+    </noscript>
+    <!-- End Google Tag Manager (noscript) -->
 </body>
 </html>
