@@ -1,564 +1,559 @@
 ﻿@import "../../Styles/Fluent/colors.fluent.scss";
-@import "../../Styles/functions.scss"; 
+@import "../../Styles/functions.scss";
 
-@mixin getUnderlineStyle($isEnabled: true) {
-    .bit-dtp-wrapper {
-        display: flex;
-        width: 100%;
-        border-bottom: rem(1px) solid;
-
-        @if($isEnabled == true) {
-            border-bottom-color: $Grey130;
-        }
-        @else {
-            border-bottom-color: $Grey20;
-        }
-    }
-
-    .bit-dtp-field-grp {
-        border: none;
-        flex: 1 1 0px;
-        text-align: left;
-    }
-}
-
-.bit-dtp-fluent {
-    position: relative;
-    margin: 0;
-    padding: 0;
-    box-shadow: none;
-    box-sizing: border-box;
-    font-size: rem(18px);
-    font-weight: 400;
-    font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
-    -webkit-font-smoothing: antialiased;
-
-    .bit-dtp-label {
-        display: block;
-        padding: rem(5px) 0;
+.bit-dtp {
+    &.bit-dtp-fluent {
+        position: relative;
         margin: 0;
-        box-shadow: none;
-        box-sizing: border-box;
-        font-size: rem(14px);
-        font-weight: 600;
-        color: $Grey160;
-        overflow-wrap: break-word;
-        -webkit-font-smoothing: antialiased;
-    }
-}
-
-.bit-dtp-wrapper {
-    position: relative;
-    z-index: 1000;
-
-    .bit-txt-enabled-fluent {
-        div {
-            div {
-                cursor: pointer;
-                color: $Grey130;
-            }
-        }
-
-        input {
-            cursor: pointer;
-        }
-    }
-}
-
-.bit-dtp-field-grp {
-    position: relative;
-    display: flex;
-    flex-flow: row nowrap;
-    align-items: center;
-    height: rem(32px);
-    margin: 0;
-    padding: 0 rem(8px);
-    box-shadow: none;
-    border-radius: rem(2px);
-    border: rem(1px) solid $Grey130;
-    box-sizing: border-box;
-    background-color: $White;
-    cursor: pointer;
-
-    input {
-        width: 100%;
-        min-width: 0;
-        height: 100%;
-        border: none;
-        border-radius: 0;
-        outline: 0;
         padding: 0;
-        margin: 0;
         box-shadow: none;
         box-sizing: border-box;
-        background: none transparent;
-        font-size: rem(14px);
+        font-size: rem(18px);
         font-weight: 400;
-        color: $Grey160;
-        text-overflow: ellipsis;
+        -webkit-font-smoothing: antialiased;
         font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
-        -webkit-font-smoothing: antialiased;
-        cursor: pointer;
-    }
 
-    &.editable-input {
-        input {
-            cursor: default;
-        }
-    }
-}
-
-.bit-dtp-underlined-fluent {
-    @include getUnderlineStyle();
-}
-
-.bit-dtp-disabled-fluent {
-    .bit-dtp-label {
-        color: $Grey90;
-    }
-
-    .bit-dtp-field-grp {
-        border: rem(1px) solid $Grey20;
-        background: $White;
-        color: $Grey90;
-        cursor: default;
-        border: none $Grey20;
-        background: none $Grey20;
-    }
-
-    input {
-        color: $Grey90;
-    }
-}
-
-.bit-dtp-underlined-disabled-fluent {
-    @include getUnderlineStyle( $isEnabled: false);
-}
-
-.bit-dtp-focused-fluent {
-    .bit-dtp-field-grp::after {
-        position: absolute;
-        inset: rem(-1px);
-        border: rem(2px) solid $Primary;
-        border-radius: rem(2px);
-        content: "";
-        pointer-events: none;
-    }
-}
-
-.bit-dtp-underlined-focused-fluent {
-    .bit-dtp-wrapper::after {
-        position: absolute;
-        border-bottom: rem(2px) solid $Primary;
-        inset: rem(32px) 0;
-        content: "";
-        pointer-events: none;
-    }
-}
-
-.bit-dtp-no-border-fluent {
-    .bit-dtp-field-grp {
-        border: none;
-    }
-}
-
-.bit-dtp-callout {
-    position: fixed;
-    top: rem(34px);
-    z-index: 1001;
-    display: none;
-    border-radius: rem(2px);
-    box-shadow: rgba(0,0,0,0.13) 0px 3.2px 7.2px 0px, rgba(0,0,0,0.11) 0px 0.6px 1.8px 0px;
-    outline: transparent;
-    box-sizing: border-box;
-    font-size: rem(14px);
-    font-weight: 400;
-    font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
-    -webkit-font-smoothing: antialiased;
-}
-
-.bit-dtp-callout-main {
-    position: relative;
-    border-radius: rem(2px);
-    outline: none;
-    background-color: $White;
-    overflow: hidden auto;
-}
-
-.bit-dtp-group {
-    display: flex;
-    box-shadow: none;
-    outline: none;
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    animation-name: fadeIn, slideDown;
-    animation-duration: 167ms;
-    animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
-    animation-fill-mode: both;
-
-    > div:first-child {
-        position: absolute;
-        width: rem(1px);
-        height: 0;
-        border: 0;
-        margin: 0;
-        padding: 0;
-        overflow: hidden;
-    }
-}
-
-.day-picker-wrapper {
-    display: flex;
-    flex-flow: column nowrap;
-    min-width: rem(196px);
-    margin: 0;
-    padding: rem(12px);
-    box-shadow: none;
-    box-sizing: content-box;
-
-    table {
-        position: relative;
-        //width: rem(196px);
-        text-align: center;
-        border-collapse: collapse;
-        border-spacing: 0;
-        table-layout: fixed;
-        font-size: inherit;
-        margin-top: rem(4px);
-        margin-bottom: rem(10px);
-    }
-
-    .week-day-label {
-        position: relative;
-        width: rem(28px);
-        height: rem(28px);
-        margin: 0;
-        padding: 0;
-        border: none;
-        font-weight: 400;
-        font-size: rem(12px);
-        line-height: rem(28px);
-        text-align: center;
-        color: $Grey160;
-        cursor: pointer;
-        animation-name: fadeIn;
-        animation-duration: 0.267s;
-        animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
-        animation-fill-mode: both;
-    }
-
-    tr {
-        width: 100%;
-        display: flex;
-        flex-flow: row nowrap;
-    }
-
-    .date-cell {
-        position: relative;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: rem(28px);
-        min-width: rem(28px);
-        height: rem(28px);
-        border-radius: rem(2px);
-        border: none;
-        margin: 0;
-        padding: 0;
-        font-size: rem(12px);
-        font-weight: 400;
-        line-height: rem(28px);
-        text-align: center;
-        color: $Grey160;
-        cursor: pointer;
-
-        &:hover {
-            background-color: $Grey30;
-        }
-    }
-
-    .day-btn {
-        position: relative;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: rem(24px);
-        height: rem(24px);
-        padding: rem(3px) 0 0 0;
-        border-radius: rem(2px);
-        outline: transparent;
-        border: none;
-        box-sizing: border-box;
-        line-height: rem(24px);
-        font-size: rem(12px);
-        font-weight: inherit;
-        color: inherit;
-        background-color: transparent;
-        overflow: visible;
-        cursor: pointer;
-
-        &:disabled {
-            pointer-events: none;
-            background-color: transparent;
-            color: $Grey60;
-        }
-    }
-
-    .date-cell--today {
-        .day-btn {
-            border-radius: 50%;
+        .dtp-label {
+            display: block;
+            padding: rem(5px) 0;
+            margin: 0;
+            box-shadow: none;
+            box-sizing: border-box;
+            font-size: rem(14px);
             font-weight: 600;
-            color: $White;
-            background-color: $CyanBlue10;
-        }
-    }
-
-    .date-cell--selected {
-        background-color: $Grey30;
-
-        &::after {
-            content: "";
-            position: absolute;
-            inset: 0;
-            border: rem(1px) solid $Grey130;
-        }
-    }
-
-    .week-num-cell {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: rem(28px);
-        height: rem(28px);
-        margin: 0;
-        padding: rem(3px) 0 0 0;
-        border-right: rem(1px) solid $Grey30;
-        box-sizing: border-box;
-        font-weight: 400;
-        font-size: rem(12px);
-        color: $Grey130;
-        background-color: $Grey10;
-    }
-    //tr[role=presentation] {
-    //    position: absolute;
-    //    opacity: 0;
-    //    width: 0px;
-    //    height: 0px;
-    //    overflow: hidden;
-    //    animation-name: css-147;
-    //    td {
-    //        color: $Grey130;
-    //        font-weight: 400;
-    //        margin: em(0px);
-    //        padding: em(0px);
-    //        width: 28px;
-    //        height: 28px;
-    //        line-height: 28px;
-    //        text-align: center;
-    //        font-size: em(12px);
-    //        font-weight: 400;
-    //        color: $Grey160;
-    //        cursor: pointer;
-    //        position: relative;
-    //        &:hover {
-    //            background-color: $Grey30;
-    //        }
-    //    }
-    //    button {
-    //        outline: transparent;
-    //        position: relative;
-    //        width: em(24px);
-    //        height: em(24px);
-    //        line-height: em(24px);
-    //        font-size: em(12px);
-    //        font-weight: inherit;
-    //        border-radius: em(2px);
-    //        border: none;
-    //        padding: em(0px);
-    //        color: inherit;
-    //        background-color: transparent;
-    //        cursor: pointer;
-    //        overflow: visible;
-    //        span {
-    //            height: inherit;
-    //            line-height: inherit;
-    //        }
-    //    }
-    //}
-}
-
-.picker-header {
-    position: relative;
-    display: inline-flex;
-    width: 100%;
-    height: rem(28px);
-    line-height: rem(44px);
-
-    .header-title {
-        position: relative;
-        display: inline-block;
-        align-items: center;
-        flex-grow: 1;
-        padding: 0 rem(4px) 0 rem(10px);
-        margin: 0;
-        outline: transparent;
-        border: none;
-        border-radius: rem(2px);
-        font-size: rem(14px);
-        font-weight: 600;
-        line-height: rem(28px);
-        white-space: nowrap;
-        text-align: left;
-        text-overflow: ellipsis;
-        color: $Grey160;
-        background-color: transparent;
-        overflow: hidden;
-        cursor: text;
-        animation-name: opacity;
-        animation-duration: 0.267s;
-        animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
-        animation-fill-mode: both;
-    }
-
-    button.header-title {
-        cursor: pointer;
-
-        &:hover {
-            background-color: $Grey30;
-        }
-    }
-
-    .navigation-btn-container {
-        display: flex;
-        align-items: center;
-        align-self: flex-end;
-    }
-
-    .navigation-btn {
-        position: relative;
-        display: block;
-        width: rem(28px);
-        height: rem(28px);
-        min-width: rem(28px);
-        min-height: rem(28px);
-        padding: 0;
-        border-radius: rem(2px);
-        border: none;
-        outline: transparent;
-        font-size: rem(12px);
-        line-height: rem(28px);
-        text-align: center;
-        color: $Grey160;
-        background-color: transparent;
-        overflow: visible;
-        cursor: pointer;
-
-        &:hover {
-            background-color: $Grey30;
-        }
-
-        &:disabled {
-            pointer-events: none;
-            background-color: transparent;
-
-            i {
-                color: $Grey60;
-            }
-        }
-
-        i {
-            display: inline-block;
-            speak: none;
+            color: $Grey160;
+            overflow-wrap: break-word;
             -webkit-font-smoothing: antialiased;
         }
-    }
-}
 
-.divider {
-    top: 0;
-    border-right: rem(1px) solid $Grey30;
-}
-
-.month-picker-wrapper {
-    display: flex;
-    flex-flow: column nowrap;
-    box-shadow: none;
-    margin: em(0px);
-    padding: em(12px);
-    box-sizing: content-box;
-    width: rem(208px);
-    overflow: hidden;
-
-    .grid-container {
-        margin-top: rem(4px);
-        margin-bottom: rem(12px);
-    }
-
-    .btn-row {
-        display: flex;
-        justify-content: space-evenly;
-        margin-bottom: rem(16px);
-
-        button {
+        .dtp-wrapper {
             position: relative;
-            width: rem(56px);
-            max-width: rem(56px);
-            padding: 0 rem(10px);
-            white-space: nowrap;
-            text-overflow: ellipsis;
-            overflow: hidden;
-            outline: transparent;
-            border: none;
+            z-index: 1000;
+
+            .bit-txt-enabled-fluent {
+                div {
+                    div {
+                        cursor: pointer;
+                        color: $Grey130;
+                    }
+                }
+
+                input {
+                    cursor: pointer;
+                }
+            }
+        }
+
+        .dtp-field-grp {
+            position: relative;
+            display: flex;
+            flex-flow: row nowrap;
+            align-items: center;
+            height: rem(32px);
+            margin: 0;
+            padding: 0 rem(8px);
+            box-shadow: none;
             border-radius: rem(2px);
-            font-size: rem(12px);
-            line-height: rem(40px);
-            color: $Grey160;
-            background-color: transparent;
+            border: rem(1px) solid $Grey130;
+            box-sizing: border-box;
+            background-color: $White;
             cursor: pointer;
 
-            &:hover {
+            input {
+                width: 100%;
+                min-width: 0;
+                height: 100%;
+                border: none;
+                border-radius: 0;
+                outline: 0;
+                padding: 0;
+                margin: 0;
+                box-shadow: none;
+                box-sizing: border-box;
+                background: none transparent;
+                font-size: rem(14px);
+                font-weight: 400;
+                color: $Grey160;
+                text-overflow: ellipsis;
+                font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+                -webkit-font-smoothing: antialiased;
+                cursor: pointer;
+            }
+
+            &.editable-input {
+                input {
+                    cursor: default;
+                }
+            }
+        }
+
+        .dtp-callout {
+            position: fixed;
+            top: rem(34px);
+            z-index: 1001;
+            display: none;
+            border-radius: rem(2px);
+            box-shadow: rgba(0,0,0,0.13) 0px 3.2px 7.2px 0px, rgba(0,0,0,0.11) 0px 0.6px 1.8px 0px;
+            outline: transparent;
+            box-sizing: border-box;
+            font-size: rem(14px);
+            font-weight: 400;
+            font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .dtp-callout-main {
+            position: relative;
+            border-radius: rem(2px);
+            outline: none;
+            background-color: $White;
+            overflow: hidden auto;
+        }
+
+        .dtp-group {
+            display: flex;
+            box-shadow: none;
+            outline: none;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            animation-name: fadeIn, slideDown;
+            animation-duration: 167ms;
+            animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
+            animation-fill-mode: both;
+
+            > div:first-child {
+                position: absolute;
+                width: rem(1px);
+                height: 0;
+                border: 0;
+                margin: 0;
+                padding: 0;
+                overflow: hidden;
+            }
+        }
+
+        .day-picker-wrapper {
+            display: flex;
+            flex-flow: column nowrap;
+            min-width: rem(196px);
+            margin: 0;
+            padding: rem(12px);
+            box-shadow: none;
+            box-sizing: content-box;
+
+            table {
+                position: relative;
+                text-align: center;
+                border-collapse: collapse;
+                border-spacing: 0;
+                table-layout: fixed;
+                font-size: inherit;
+                margin-top: rem(4px);
+                margin-bottom: rem(10px);
+            }
+
+            .week-day-label {
+                position: relative;
+                width: rem(28px);
+                height: rem(28px);
+                margin: 0;
+                padding: 0;
+                border: none;
+                font-weight: 400;
+                font-size: rem(12px);
+                line-height: rem(28px);
+                text-align: center;
+                color: $Grey160;
+                cursor: pointer;
+                animation-name: fadeIn;
+                animation-duration: 0.267s;
+                animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
+                animation-fill-mode: both;
+            }
+
+            tr {
+                width: 100%;
+                display: flex;
+                flex-flow: row nowrap;
+            }
+
+            .date-cell {
+                position: relative;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                width: rem(28px);
+                min-width: rem(28px);
+                height: rem(28px);
+                border-radius: rem(2px);
+                border: none;
+                margin: 0;
+                padding: 0;
+                font-size: rem(12px);
+                font-weight: 400;
+                line-height: rem(28px);
+                text-align: center;
+                color: $Grey160;
+                cursor: pointer;
+
+                &:hover {
+                    background-color: $Grey30;
+                }
+            }
+
+            .day-btn {
+                position: relative;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                width: rem(24px);
+                height: rem(24px);
+                border-radius: rem(2px);
+                outline: transparent;
+                border: none;
+                box-sizing: border-box;
+                line-height: rem(24px);
+                font-size: rem(12px);
+                font-weight: inherit;
+                color: inherit;
+                background-color: transparent;
+                overflow: visible;
+                cursor: pointer;
+
+                &:disabled {
+                    pointer-events: none;
+                    background-color: transparent;
+                    color: $Grey60;
+                }
+            }
+
+            .date-cell--outside-month {
+                .day-btn {
+                    color: $Grey130;
+                    font-weight: 400;
+                }
+            }
+
+            .date-cell--today {
+                .day-btn {
+                    border-radius: 50%;
+                    font-weight: 600;
+                    color: $White;
+                    background-color: $CyanBlue10;
+                }
+            }
+
+            .date-cell--selected {
                 background-color: $Grey30;
+
+                &::after {
+                    content: "";
+                    position: absolute;
+                    inset: 0;
+                    border: rem(1px) solid $Grey130;
+                }
+            }
+
+            .week-num-cell {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                width: rem(28px);
+                height: rem(28px);
+                margin: 0;
+                padding: rem(3px) 0 0 0;
+                border-right: rem(1px) solid $Grey30;
+                box-sizing: border-box;
+                font-weight: 400;
+                font-size: rem(12px);
+                color: $Grey130;
+                background-color: $Grey10;
+            }
+        }
+
+        .picker-header {
+            position: relative;
+            display: inline-flex;
+            width: 100%;
+            height: rem(28px);
+            line-height: rem(44px);
+
+            .header-title {
+                position: relative;
+                display: inline-block;
+                align-items: center;
+                flex-grow: 1;
+                padding: 0 rem(4px) 0 rem(10px);
+                margin: 0;
+                outline: transparent;
+                border: none;
+                border-radius: rem(2px);
+                font-size: rem(14px);
+                font-weight: 600;
+                line-height: rem(28px);
+                white-space: nowrap;
+                text-align: left;
+                text-overflow: ellipsis;
+                color: $Grey160;
+                background-color: transparent;
+                overflow: hidden;
+                cursor: text;
+                animation-name: opacity;
+                animation-duration: 0.267s;
+                animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
+                animation-fill-mode: both;
+            }
+
+            button.header-title {
+                cursor: pointer;
+
+                &:hover {
+                    background-color: $Grey30;
+                }
+            }
+
+            .navigation-btn-container {
+                display: flex;
+                align-items: center;
+                align-self: flex-end;
+            }
+
+            .navigation-btn {
+                position: relative;
+                display: block;
+                width: rem(28px);
+                height: rem(28px);
+                min-width: rem(28px);
+                min-height: rem(28px);
+                padding: 0;
+                border-radius: rem(2px);
+                border: none;
+                outline: transparent;
+                font-size: rem(12px);
+                line-height: rem(28px);
+                text-align: center;
+                color: $Grey160;
+                background-color: transparent;
+                overflow: visible;
+                cursor: pointer;
+
+                &:hover {
+                    background-color: $Grey30;
+                }
+
+                &:disabled {
+                    pointer-events: none;
+                    background-color: transparent;
+
+                    i {
+                        color: $Grey60;
+                    }
+                }
+
+                i {
+                    display: inline-block;
+                    speak: none;
+                    -webkit-font-smoothing: antialiased;
+                }
+            }
+        }
+
+        .divider {
+            top: 0;
+            border-right: rem(1px) solid $Grey30;
+        }
+
+        .month-picker-wrapper {
+            display: flex;
+            flex-flow: column nowrap;
+            box-shadow: none;
+            margin: 0;
+            padding: rem(12px);
+            box-sizing: content-box;
+            width: rem(208px);
+            overflow: hidden;
+
+            .grid-container {
+                margin-top: rem(4px);
+                margin-bottom: rem(12px);
+            }
+
+            .btn-row {
+                display: flex;
+                justify-content: space-evenly;
+                margin-bottom: rem(16px);
+
+                button {
+                    position: relative;
+                    width: rem(56px);
+                    max-width: rem(56px);
+                    padding: 0 rem(10px);
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+                    overflow: hidden;
+                    outline: transparent;
+                    border: none;
+                    border-radius: rem(2px);
+                    font-size: rem(12px);
+                    line-height: rem(40px);
+                    color: $Grey160;
+                    background-color: transparent;
+                    cursor: pointer;
+
+                    &:hover {
+                        background-color: $Grey30;
+                    }
+
+                    &:disabled {
+                        pointer-events: none;
+                        background-color: transparent;
+                        color: $Grey60;
+                    }
+                }
+
+                &:last-child {
+                    margin: 0;
+                }
+            }
+        }
+
+        .go-today-btn {
+            position: relative;
+            bottom: rem(-12px);
+            align-self: flex-end;
+            height: rem(30px);
+            padding: 0 rem(4px);
+            margin: rem(3px) rem(4px) 0 0;
+            border: none;
+            outline: transparent;
+            box-sizing: content-box;
+            font-size: rem(12px);
+            line-height: rem(30px);
+            color: $Grey160;
+            background-color: transparent;
+            overflow: visible;
+
+            &:hover {
+                color: $CyanBlue10;
+                background-color: transparent;
+                cursor: pointer;
             }
 
             &:disabled {
-                pointer-events: none;
-                background-color: transparent;
                 color: $Grey60;
+                pointer-events: none;
             }
         }
 
-        &:last-child {
-            margin: 0;
+        .dtp-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 999;
+            display: none;
+            width: 100%;
+            height: 100%;
+            background-color: transparent;
         }
     }
-}
 
-.go-today-btn {
-    position: relative;
-    bottom: 0;
-    align-self: flex-end;
-    height: rem(30px);
-    padding: 0 rem(4px);
-    margin: rem(3px) rem(4px) 0 0;
-    border: none;
-    outline: transparent;
-    box-sizing: content-box;
-    font-size: rem(12px);
-    line-height: rem(30px);
-    color: $Grey160;
-    background-color: transparent;
-    overflow: visible;
+    &.bit-dtp-underlined-fluent {
+        .dtp-wrapper {
+            display: flex;
+            width: 100%;
+            border-bottom: rem(1px) solid;
+            border-bottom-color: $Grey130;
+        }
 
-    &:hover {
-        color: $CyanBlue10;
-        background-color: transparent;
-        cursor: pointer;
+        .dtp-field-grp {
+            border: none;
+            flex: 1 1 0px;
+            text-align: left;
+        }
     }
 
-    &:disabled {
-        color: $Grey60;
-        pointer-events: none;
+    &.bit-dtp-disabled-fluent {
+        .dtp-label {
+            color: $Grey90;
+        }
+
+        .dtp-field-grp {
+            border: rem(1px) solid $Grey20;
+            background: $White;
+            color: $Grey90;
+            cursor: default;
+            border: none $Grey20;
+            background: none $Grey20;
+        }
+
+        input {
+            color: $Grey90;
+        }
+    }
+
+    &.bit-dtp-underlined-disabled-fluent {
+        .dtp-wrapper {
+            display: flex;
+            width: 100%;
+            border-bottom: rem(1px) solid;
+            border-bottom-color: $Grey20;
+        }
+
+        .dtp-field-grp {
+            border: none;
+            flex: 1 1 0px;
+            text-align: left;
+        }
+    }
+
+    &.bit-dtp-focused-fluent {
+        .dtp-field-grp::after {
+            position: absolute;
+            inset: rem(-1px);
+            border: rem(2px) solid $Primary;
+            border-radius: rem(2px);
+            content: "";
+            pointer-events: none;
+        }
+    }
+
+    &.bit-dtp-underlined-focused-fluent {
+        .dtp-wrapper::after {
+            position: absolute;
+            border-bottom: rem(2px) solid $Primary;
+            inset: rem(32px) 0;
+            content: "";
+            pointer-events: none;
+        }
+    }
+
+    &.bit-dtp-no-border-fluent {
+        .dtp-field-grp {
+            border: none;
+        }
+    }
+
+    &.bit-dtp-rtl-fluent {
+        .dtp-group {
+            direction: rtl;
+        }
+
+        .week-num-cell {
+            border-left: rem(1px) solid $Grey30;
+            border-right: none;
+        }
+
+        .header-title {
+            padding: 0 rem(10px) 0 rem(4px);
+            text-align: right;
+        }
+    }
+
+    &.bit-dtp-invalid-fluent {
+        .dtp-field-grp {
+            border-color: $Red20;
+        }
     }
 }
 
@@ -570,39 +565,6 @@
     }
 }
 
-.bit-dtp-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 999;
-    display: none;
-    width: 100%;
-    height: 100%;
-    background-color: transparent;
-}
-
-.bit-dtp-rtl {
-    .bit-dtp-group {
-        direction: rtl;
-    }
-
-    .week-num-cell {
-        border-left: rem(1px) solid $Grey30;
-        border-right: none;
-    }
-
-    .header-title {
-        padding: 0 rem(10px) 0 rem(4px);
-        text-align: right;
-    }
-}
-
-.bit-dtp-invalid-fluent {
-    .bit-dtp-field-grp {
-        border-color: $Red20;
-    }
-}
-
 @keyframes opacity {
     0% {
         opacity: 0;
@@ -610,18 +572,6 @@
 
     100% {
         opacity: 1;
-    }
-}
-
-@keyframes trans {
-    0% {
-        transform: translate3d(0px, -10px, 0px);
-        pointer-events: none;
-    }
-
-    100% {
-        transform: translate3d(0px, 0px, 0px);
-        pointer-events: auto;
     }
 }
 
@@ -644,25 +594,5 @@
 
     100% {
         transform: translate3d(0,0,0);
-    }
-}
-
-@keyframes css-147 {
-    100% {
-        width: 0px;
-        height: 0px;
-        overflow: hidden;
-    }
-
-    99.9% {
-        width: 100%;
-        height: 28px;
-        overflow: visible;
-    }
-
-    0% {
-        width: 100%;
-        height: 28px;
-        overflow: visible;
     }
 }
