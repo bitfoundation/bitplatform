@@ -154,7 +154,7 @@
         box-sizing: border-box;
         border-radius: 0 0 rem(2px) rem(2px);
         box-shadow: rgb(0 0 0 / 13%) 0px 3.2px 7.2px 0px, rgb(0 0 0 / 11%) 0px 0.6px 1.8px 0px;
-        animation-name: splb-opacity, splb-trans-y;
+        animation-name: bit-splb-open-callout-y;
         animation-duration: 0.367s;
         animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
         animation-fill-mode: both;
@@ -167,6 +167,10 @@
             margin: 0;
             padding: 0;
             width: 100%;
+        }
+
+        @media only screen and (max-width: #{em(639px)}) {
+            animation-name: bit-splb-open-callout-x;
         }
     }
 
@@ -216,35 +220,29 @@
     }
 }
 
-@keyframes splb-opacity {
+@keyframes bit-splb-open-callout-y {
     0% {
         opacity: 0;
-    }
-
-    100% {
-        opacity: 1;
-    }
-}
-
-@keyframes splb-trans-y {
-    0% {
         transform: translate3d(0px, -10px, 0px);
         pointer-events: none;
     }
 
     100% {
+        opacity: 1;
         transform: translate3d(0px, 0px, 0px);
         pointer-events: auto;
     }
 }
 
-@keyframes splb-trans-x {
+@keyframes bit-splb-open-callout-x {
     0% {
+        opacity: 0;
         transform: translate3d(40px, 0px, 0px);
         pointer-events: none;
     }
 
     100% {
+        opacity: 1;
         transform: translate3d(0px, 0px, 0px);
         pointer-events: auto;
     }
