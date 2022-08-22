@@ -374,7 +374,7 @@ Veuillez confirmer votre email en cliquant sur le lien.</value>
     <value>Votre mot de passe a été modifié avec succès.</value>
   </data>
   <data name="PrivacyPolicyAgreementMessage" xml:space="preserve">
-    <value>je suis d'accord avec le</value>
+    <value>je suis d'accord avec le </value>
   </data>
   <data name="PrivacyPolicyPageMessage" xml:space="preserve">
     <value>Utilisez cette page pour détailler la politique de confidentialité de votre site.</value>
@@ -621,5 +621,32 @@ Veuillez confirmer votre email en cliquant sur le lien.</value>
   </data>
   <data name="YouHaveToAcceptPrivacyPolicy" xml:space="preserve">
     <value>Vous devez accepter notre politique de confidentialité.</value>
+  </data>
+  <data name="GoToToday" xml:space="preserve">
+    <value>Aller à aujourd'hui</value>
+  </data>
+  <data name="ForgetPasswordMessage" xml:space="preserve">
+    <value>Veuillez saisir l'adresse e-mail avec laquelle vous vous êtes inscrit afin que nous puissions vous envoyer un lien de réinitialisation du mot de passe à votre adresse e-mail.</value>
+  </data>
+  <data name="Gender" xml:space="preserve">
+    <value>Le genre</value>
+  </data>
+  <data name="Privacy" xml:space="preserve">
+    <value>Intimité</value>
+  </data>
+  <data name="SignOutPrompt" xml:space="preserve">
+    <value>Êtes-vous certain de vouloir vous déconnecter?</value>
+  </data>
+  <data name="BirthDate" xml:space="preserve">
+    <value>Date de naissance</value>
+  </data>
+  <data name="CustomGender" xml:space="preserve">
+    <value>Personnalisé</value>
+  </data>
+  <data name="FemaleGender" xml:space="preserve">
+    <value>Femelle</value>
+  </data>
+  <data name="Home" xml:space="preserve">
+    <value>Maison</value>
   </data>
 </root>

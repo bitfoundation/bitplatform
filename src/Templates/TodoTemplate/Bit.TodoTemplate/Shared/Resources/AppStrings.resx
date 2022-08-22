@@ -377,7 +377,7 @@ Please confirm your email by clicking on the link.</value>
     <value>Your password changed successfully.</value>
   </data>
   <data name="PrivacyPolicyAgreementMessage" xml:space="preserve">
-    <value>I agree to the</value>
+    <value>I agree to the </value>
   </data>
   <data name="PrivacyPolicyPageMessage" xml:space="preserve">
     <value>Use this page to detail your site's privacy policy.</value>
@@ -624,5 +624,23 @@ Please confirm your email by clicking on the link.</value>
   </data>
   <data name="YouHaveToAcceptPrivacyPolicy" xml:space="preserve">
     <value>You must agree to our privacy policy.</value>
+  </data>
+  <data name="GoToToday" xml:space="preserve">
+    <value>Go to today</value>
+  </data>
+  <data name="Gender" xml:space="preserve">
+    <value>Gender</value>
+  </data>
+  <data name="Privacy" xml:space="preserve">
+    <value>Privacy</value>
+  </data>
+  <data name="SignOutPrompt" xml:space="preserve">
+    <value>Are you sure you want to Sign out?</value>
+  </data>
+  <data name="BirthDate" xml:space="preserve">
+    <value>Birthdate</value>
+  </data>
+  <data name="Home" xml:space="preserve">
+    <value>Home</value>
   </data>
 </root>

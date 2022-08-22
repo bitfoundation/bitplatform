@@ -21,10 +21,7 @@ public partial class ResetPasswordPage
 
     public string? ResetPasswordMessage { get; set; }
 
-    private bool IsSubmitButtonEnabled =>
-        string.IsNullOrWhiteSpace(ResetPasswordModel.Password) is false &&
-        string.IsNullOrWhiteSpace(ResetPasswordModel.ConfirmPassword) is false && 
-        IsLoading is false;
+    private bool IsSubmitButtonEnabled => IsLoading is false;
 
     private async Task Submit()
     {
