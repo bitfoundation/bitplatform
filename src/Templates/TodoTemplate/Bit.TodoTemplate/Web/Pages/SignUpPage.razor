@@ -7,7 +7,7 @@
 <div class="page-container">
     <EditForm Model="SignUpModel" OnValidSubmit="WrapHandled(DoSignUp)" class="form--white">
 
-        <DataAnnotationsValidator />
+        <AppDataAnnotationsValidator />
 
         @if (string.IsNullOrEmpty(SignUpMessage) is false)
         {
@@ -73,6 +73,7 @@
                 <BitCheckbox Class="form-checkbox" @bind-Value="SignUpModel.IsAcceptPrivacy">
                     @Localizer[nameof(AppStrings.PrivacyPolicyAgreementMessage)]<BitLink Href="/privacy" Target="_blank">@Localizer[nameof(AppStrings.PrivacyPolicyTitle)]</BitLink>
                 </BitCheckbox>
+                <ValidationMessage For="@(() => SignUpModel.IsAcceptPrivacy)" />
             </div>
 
             <BitButton Class="form-submit-button"

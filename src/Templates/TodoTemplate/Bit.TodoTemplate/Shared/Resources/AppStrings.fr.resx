@@ -374,7 +374,7 @@ Veuillez confirmer votre email en cliquant sur le lien.</value>
     <value>Votre mot de passe a été modifié avec succès.</value>
   </data>
   <data name="PrivacyPolicyAgreementMessage" xml:space="preserve">
-    <value>je suis d'accord avec le</value>
+    <value>je suis d'accord avec le </value>
   </data>
   <data name="PrivacyPolicyPageMessage" xml:space="preserve">
     <value>Utilisez cette page pour détailler la politique de confidentialité de votre site.</value>
@@ -637,13 +637,16 @@ Veuillez confirmer votre email en cliquant sur le lien.</value>
   <data name="SignOutPrompt" xml:space="preserve">
     <value>Êtes-vous certain de vouloir vous déconnecter?</value>
   </data>
-  <data name="Birthday" xml:space="preserve">
-    <value>Date d'anniversaire</value>
+  <data name="BirthDate" xml:space="preserve">
+    <value>Date de naissance</value>
   </data>
   <data name="CustomGender" xml:space="preserve">
     <value>Personnalisé</value>
   </data>
   <data name="FemaleGender" xml:space="preserve">
     <value>Femelle</value>
+  </data>
+  <data name="Home" xml:space="preserve">
+    <value>Maison</value>
   </data>
 </root>

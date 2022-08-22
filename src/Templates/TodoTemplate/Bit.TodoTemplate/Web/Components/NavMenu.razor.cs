@@ -43,7 +43,7 @@ public partial class NavMenu
         {
             new BitNavLinkItem
             {
-                Name = Localizer[nameof(AppStrings.HomeTitle)],
+                Name = Localizer[nameof(AppStrings.Home)],
                 Url = "/",
                 IconName = BitIconName.Home,
                 Key = "Home"

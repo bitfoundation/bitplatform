@@ -142,11 +142,11 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Birthday.
+        ///   Looks up a localized string similar to Birthdate.
         /// </summary>
-        public static string Birthday {
+        public static string BirthDate {
             get {
-                return ResourceManager.GetString("Birthday", resourceCulture);
+                return ResourceManager.GetString("BirthDate", resourceCulture);
             }
         }
         
@@ -629,6 +629,15 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Home.
+        /// </summary>
+        public static string Home {
+            get {
+                return ResourceManager.GetString("Home", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Create your multi-mode (WASM, Server, Hybrid, pre-rendering) Blazor app easily in the shortest time ever!.
         /// </summary>
         public static string HomeMessage {
@@ -935,7 +944,7 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to I agree to the.
+        ///   Looks up a localized string similar to I agree to the .
         /// </summary>
         public static string PrivacyPolicyAgreementMessage {
             get {

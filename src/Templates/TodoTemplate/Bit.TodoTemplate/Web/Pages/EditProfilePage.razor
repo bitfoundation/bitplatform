@@ -56,16 +56,21 @@
                 <div class="form-input-error">@ProfileImageError</div>
             </div>
             <EditForm Model="UserToEdit" OnSubmit="WrapHandled(Save)" class="edit-profile-form">
+
+                <AppDataAnnotationsValidator />
+
                 <div class="form-input-container">
                     <BitTextField Label="@Localizer[nameof(AppStrings.FullName)]"
                               @bind-Value="UserToEdit.FullName"
                               Placeholder="@Localizer[nameof(AppStrings.FullName)]" />
+                    <ValidationMessage For="@(() => UserToEdit.FullName)" />
                 </div>
                 <div class="form-input-container">
-                    <BitDatePicker Label="@Localizer[nameof(AppStrings.Birthday)]"
+                    <BitDatePicker Label="@Localizer[nameof(AppStrings.BirthDate)]"
                                Class="edit-profile-dtp"
                                @bind-Value="UserToEdit.BirthDate"
                                Placeholder="@Localizer[nameof(AppStrings.SelectBirthDate)]" GoToToday="@Localizer[nameof(AppStrings.GoToToday)]" />
+                    <ValidationMessage For="@(() => UserToEdit.BirthDate)" />
                 </div>
                 <div class="form-choice-container">
                     <BitRadioButtonGroup Label="@Localizer[nameof(AppStrings.Gender)]" @bind-Value="UserToEdit.GenderAsString">
@@ -73,6 +78,7 @@
                         <BitRadioButtonOption Value="@Gender.Female.ToString()" Text="Famale" AriaLabel="@Localizer[nameof(AppStrings.GenderFemale)]"></BitRadioButtonOption>
                         <BitRadioButtonOption Value="@Gender.Custom.ToString()" Text="Custom" AriaLabel="@Localizer[nameof(AppStrings.GenderCustom)]"></BitRadioButtonOption>
                     </BitRadioButtonGroup>
+                    <ValidationMessage For="@(() => UserToEdit.Gender)" />
                 </div>
                 <BitButton ButtonStyle="BitButtonStyle.Primary"
                        AriaLabel="@Localizer[nameof(AppStrings.Save)]"

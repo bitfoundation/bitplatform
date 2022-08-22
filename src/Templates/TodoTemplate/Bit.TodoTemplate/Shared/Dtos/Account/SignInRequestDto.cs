@@ -1,5 +1,6 @@
 ﻿namespace TodoTemplate.Shared.Dtos.Account;
 
+[DtoResourceType(typeof(AppStrings))]
 public class SignInRequestDto
 {
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError)),
