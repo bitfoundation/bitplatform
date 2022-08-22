@@ -368,8 +368,8 @@
             display: flex;
             flex-flow: column nowrap;
             box-shadow: none;
-            margin: em(0px);
-            padding: em(12px);
+            margin: 0;
+            padding: rem(12px);
             box-sizing: content-box;
             width: rem(208px);
             overflow: hidden;
@@ -420,7 +420,7 @@
 
         .go-today-btn {
             position: relative;
-            bottom: 0;
+            bottom: rem(-12px);
             align-self: flex-end;
             height: rem(30px);
             padding: 0 rem(4px);
