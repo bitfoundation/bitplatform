@@ -228,6 +228,13 @@
                 }
             }
 
+            .date-cell--outside-month {
+                .day-btn {
+                    color: $Grey130;
+                    font-weight: 400;
+                }
+            }
+
             .date-cell--today {
                 .day-btn {
                     border-radius: 50%;
