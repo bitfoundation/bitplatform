@@ -19,27 +19,27 @@
     <ComponentExampleBox Title="SplitButton with Item Disabled" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example2">
         <ExamplePreview>
             <div class="example-desc">You can disable the button item.</div>
-            <div class="example-desc">Clicked item: @examp2e1SelectedItem</div>
-            <BitSplitButton Items="example2Items" ButtonStyle="BitButtonStyle.Standard" OnClick="(e) => examp2e1SelectedItem = e.Text" />
-            <BitSplitButton Items="example2Items" ButtonStyle="BitButtonStyle.Primary" OnClick="(e) => examp2e1SelectedItem = e.Text" />
+            <div class="example-desc">Clicked item: @example2SelectedItem</div>
+            <BitSplitButton Items="example2Items" ButtonStyle="BitButtonStyle.Standard" OnClick="(e) => example2SelectedItem = e.Text" />
+            <BitSplitButton Items="example2Items" ButtonStyle="BitButtonStyle.Primary" OnClick="(e) => example2SelectedItem = e.Text" />
         </ExamplePreview>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="SplitButton with Is Sticky" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example3">
         <ExamplePreview>
             <div class="example-desc">You can first select the button item and then click on it to execute its onclick event.</div>
-            <div class="example-desc">Clicked item: @examp3e1SelectedItem</div>
-            <BitSplitButton Items="example3Items" ButtonStyle="BitButtonStyle.Standard" IsSticky="true" OnClick="(e) => examp3e1SelectedItem = e.Text" />
-            <BitSplitButton Items="example3Items" ButtonStyle="BitButtonStyle.Primary" IsSticky="true" OnClick="(e) => examp3e1SelectedItem = e.Text" />
+            <div class="example-desc">Clicked item: @example3SelectedItem</div>
+            <BitSplitButton Items="example3Items" ButtonStyle="BitButtonStyle.Standard" IsSticky="true" OnClick="(e) => example3SelectedItem = e.Text" />
+            <BitSplitButton Items="example3Items" ButtonStyle="BitButtonStyle.Primary" IsSticky="true" OnClick="(e) => example3SelectedItem = e.Text" />
         </ExamplePreview>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="SplitButton with Item Template" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
         <ExamplePreview>
             <div class="example-desc">You can customize the button item.</div>
-            <div class="example-desc">Clicked item: @examp4e1SelectedItem</div>
-            <BitSplitButton Items="example4Items" ButtonStyle="BitButtonStyle.Standard" IsSticky="true" OnClick="(e) => examp4e1SelectedItem = e.Text" />
-            <BitSplitButton Items="example4Items" ButtonStyle="BitButtonStyle.Primary" IsSticky="true" OnClick="(e) => examp4e1SelectedItem = e.Text" />
+            <div class="example-desc">Clicked item: @example4SelectedItem</div>
+            <BitSplitButton Items="example4Items" ButtonStyle="BitButtonStyle.Standard" IsSticky="true" OnClick="(e) => example4SelectedItem = e.Text" />
+            <BitSplitButton Items="example4Items" ButtonStyle="BitButtonStyle.Primary" IsSticky="true" OnClick="(e) => example4SelectedItem = e.Text" />
         </ExamplePreview>
     </ComponentExampleBox>
 
@@ -47,7 +47,7 @@
 
 @code {
 
-    private string examp4e1SelectedItem;
+    private string example4SelectedItem;
 
     private List<BitSplitButtonItem> example4Items = new()
     {

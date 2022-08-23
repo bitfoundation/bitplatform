@@ -7,8 +7,8 @@ namespace Bit.BlazorUI.Playground.Web.Pages.Components.Buttons;
 public partial class BitSplitButtonDemo
 {
     private string example1SelectedItem;
-    private string examp2e1SelectedItem;
-    private string examp3e1SelectedItem;
+    private string example2SelectedItem;
+    private string example3SelectedItem;
 
     private List<BitSplitButtonItem> example1Items = new()
     {
