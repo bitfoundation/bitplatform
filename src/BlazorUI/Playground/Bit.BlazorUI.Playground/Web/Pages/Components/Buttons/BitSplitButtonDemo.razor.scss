@@ -1,5 +1,11 @@
-﻿
+﻿@import '../../../Styles/abstracts/_functions.scss';
+
 .item-template-box {
   display: flex;
   width: 100%;
+}
+
+.selected-item {
+    margin-top: rem(8px);
+    font-weight: 600;
 }

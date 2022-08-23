@@ -9,6 +9,7 @@ public partial class BitSplitButtonDemo
     private string example1SelectedItem;
     private string example2SelectedItem;
     private string example3SelectedItem;
+    private string example4SelectedItem;
 
     private List<BitSplitButtonItem> example1Items = new()
     {
@@ -34,33 +35,6 @@ public partial class BitSplitButtonDemo
     {
         new BitSplitButtonItem()
         {
-            Text = "Item A",
-            key = "A"
-        },
-        new BitSplitButtonItem()
-        {
-            Text = "Item B",
-            key = "B",
-            IconName = BitIconName.Emoji
-        },
-        new BitSplitButtonItem()
-        {
-            Text = "Item C",
-            key = "C",
-            IconName = BitIconName.Emoji2,
-            IsEnabled = false
-        },
-        new BitSplitButtonItem()
-        {
-            Text = "Item D",
-            key = "D",
-            IconName = BitIconName.Emoji
-        }
-    };
-    private List<BitSplitButtonItem> example3Items = new()
-    {
-        new BitSplitButtonItem()
-        {
             Text = "Add",
             key = "add-key",
             IconName = BitIconName.Add
@@ -76,6 +50,53 @@ public partial class BitSplitButtonDemo
             Text = "Delete",
             key = "delete-key",
             IconName = BitIconName.Delete
+        }
+    };
+    private List<BitSplitButtonItem> example3Items = new()
+    {
+        new BitSplitButtonItem()
+        {
+            Text = "Item A",
+            key = "A",
+            IconName = BitIconName.Emoji,
+            IsEnabled = false
+        },
+        new BitSplitButtonItem()
+        {
+            Text = "Item B",
+            key = "B",
+            IconName = BitIconName.Emoji2
+        },
+        new BitSplitButtonItem()
+        {
+            Text = "Item C",
+            key = "C",
+            IconName = BitIconName.Emoji,
+            IsEnabled = false
+        },
+        new BitSplitButtonItem()
+        {
+            Text = "Item D",
+            key = "D",
+            IconName = BitIconName.Emoji2
+        }
+    };
+    private List<BitSplitButtonItem> example4Items = new()
+    {
+        new BitSplitButtonItem()
+        {
+            Text = "Add",
+            key = "add-key"
+        },
+        new BitSplitButtonItem()
+        {
+            Text = "Edit",
+            key = "edit-key"
+        },
+        new BitSplitButtonItem()
+        {
+            Text = "Delete",
+            key = "delete-key"
         }
     };
 
@@ -128,6 +149,12 @@ public partial class BitSplitButtonDemo
             DefaultValue = "false",
             Description = "If true, the current item is going to be change selected item."
         },
+        new ComponentParameter()
+        {
+            Name = "ItemTemplate",
+            Type = "RenderFragment<BitSplitButtonItem>?",
+            Description = "The content inside the item can be customized.",
+        },
         new ComponentParameter
         {
             Name = "OnClick",
@@ -155,12 +182,6 @@ public partial class BitSplitButtonDemo
                    Type = "bool",
                    DefaultValue = "true",
                    Description = "Whether or not the item is enabled.",
-               },
-               new ComponentParameter()
-               {
-                   Name = "ItemTemplate",
-                   Type = "RenderFragment<BitSplitButtonItem>?",
-                   Description = "The content inside the item can be customized.",
                },
                new ComponentParameter()
                {
@@ -257,21 +278,49 @@ public partial class BitSplitButtonDemo
     };
 
     private readonly string example1HTMLCode = @"
-<BitSplitButton Items=""example1Items"" ButtonStyle=""BitButtonStyle.Standard"" OnClick=""(e) => example1SelectedItem = e.Text"" />
-<BitSplitButton Items=""example1Items"" ButtonStyle=""BitButtonStyle.Primary"" OnClick=""(e) => example1SelectedItem = e.Text"" />
+<BitSplitButton Items=""example1Items""
+                ButtonStyle=""BitButtonStyle.Standard""
+                OnClick=""(item) => example1SelectedItem = item.Text"" />
+
+<BitSplitButton Items=""example1Items""
+                ButtonStyle=""BitButtonStyle.Primary""
+                OnClick=""(item) => example1SelectedItem = item.Text"" />
+
 <BitSplitButton Items=""example1Items"" IsEnabled=""false"" />
 ";
     private readonly string example2HTMLCode = @"
-<BitSplitButton Items=""example2Items"" ButtonStyle=""BitButtonStyle.Standard"" OnClick=""(e) => examp2e1SelectedItem = e.Text"" />
-<BitSplitButton Items=""example2Items"" ButtonStyle=""BitButtonStyle.Primary"" OnClick=""(e) => examp2e1SelectedItem = e.Text"" />
+<BitSplitButton Items=""example2Items""
+                ButtonStyle=""BitButtonStyle.Standard""
+                IsSticky=""true""
+                OnClick=""(item) => example2SelectedItem = item.Text"" />
+
+<BitSplitButton Items=""example2Items""
+                ButtonStyle=""BitButtonStyle.Primary""
+                IsSticky=""true""
+                OnClick=""(item) => example2SelectedItem = item.Text"" />
 ";
     private readonly string example3HTMLCode = @"
-<BitSplitButton Items=""example3Items"" ButtonStyle=""BitButtonStyle.Standard"" IsSticky=""true"" OnClick=""(e) => examp3e1SelectedItem = e.Text"" />
-<BitSplitButton Items=""example3Items"" ButtonStyle=""BitButtonStyle.Primary"" IsSticky=""true"" OnClick=""(e) => examp3e1SelectedItem = e.Text"" />
+<BitSplitButton Items=""example3Items""
+                ButtonStyle=""BitButtonStyle.Standard""
+                OnClick=""(item) => example3SelectedItem = item.Text"" />
+
+<BitSplitButton Items=""example3Items""
+                ButtonStyle=""BitButtonStyle.Primary""
+                IsSticky=""true""
+                OnClick=""(item) => example3SelectedItem = item.Text"" />
 ";
     private readonly string example4HTMLCode = @"
-<BitSplitButton Items=""example4Items"" ButtonStyle=""BitButtonStyle.Standard"" IsSticky=""true"" OnClick=""(e) => examp4e1SelectedItem = e.Text"" />
-<BitSplitButton Items=""example4Items"" ButtonStyle=""BitButtonStyle.Primary"" IsSticky=""true"" OnClick=""(e) => examp4e1SelectedItem = e.Text"" />
+<BitSplitButton Items=""example4Items""
+                ItemTemplate=""(item) => itemTemplate(item)""
+                ButtonStyle=""BitButtonStyle.Standard""
+                IsSticky=""true""
+                OnClick=""(item) => example4SelectedItem = item.Text"" />
+
+<BitSplitButton Items=""example4Items""
+                ItemTemplate=""(item) => itemTemplate(item)""
+                ButtonStyle=""BitButtonStyle.Primary""
+                IsSticky=""true""
+                OnClick=""(item) => example4SelectedItem = item.Text"" />
 ";
 
     private readonly string example1CSharpCode = @"
@@ -299,40 +348,9 @@ private List<BitSplitButtonItem> example1Items = new()
 };
 ";
     private readonly string example2CSharpCode = @"
-private string examp2e1SelectedItem;
+private string example2SelectedItem;
 
 private List<BitSplitButtonItem> example2Items = new()
-{
-    new BitSplitButtonItem()
-    {
-        Text = ""Item A"",
-        key = ""A""
-    },
-    new BitSplitButtonItem()
-    {
-        Text = ""Item B"",
-        key = ""B"",
-        IconName = BitIconName.Emoji
-    },
-    new BitSplitButtonItem()
-    {
-        Text = ""Item C"",
-        key = ""C"",
-        IconName = BitIconName.Emoji2,
-        IsEnabled = false
-    },
-    new BitSplitButtonItem()
-    {
-        Text = ""Item D"",
-        key = ""D"",
-        IconName = BitIconName.Emoji
-    }
-};
-";
-    private readonly string example3CSharpCode = @"
-private string examp3e1SelectedItem;
-
-private List<BitSplitButtonItem> example3Items = new()
 {
     new BitSplitButtonItem()
     {
@@ -354,43 +372,67 @@ private List<BitSplitButtonItem> example3Items = new()
     }
 };
 ";
+    private readonly string example3CSharpCode = @"
+private string example3SelectedItem;
+
+private List<BitSplitButtonItem> example3Items = new()
+{
+    new BitSplitButtonItem()
+    {
+        Text = ""Item A"",
+        key = ""A"",
+        IconName = BitIconName.Emoji,
+        IsEnabled = false
+    },
+    new BitSplitButtonItem()
+    {
+        Text = ""Item B"",
+        key = ""B"",
+        IconName = BitIconName.Emoji2
+    },
+    new BitSplitButtonItem()
+    {
+        Text = ""Item C"",
+        key = ""C"",
+        IconName = BitIconName.Emoji,
+        IsEnabled = false
+    },
+    new BitSplitButtonItem()
+    {
+        Text = ""Item D"",
+        key = ""D"",
+        IconName = BitIconName.Emoji2
+    }
+};
+";
     private readonly string example4CSharpCode = @"
-private string examp4e1SelectedItem;
+private string example4SelectedItem;
+
+private RenderFragment<BitSplitButtonItem> itemTemplate = (item) =>
+(
+    @<div class=""item-template-box"">
+        <span style=""color: @(item.key == ""add-key"" ? ""green"" : item.key == ""edit-key"" ? ""yellow"" : ""red"");"">
+            @item.Text (@item.key)
+        </span>
+    </div>
+);
 
 private List<BitSplitButtonItem> example4Items = new()
 {
     new BitSplitButtonItem()
     {
         Text = ""Add"",
-        key = ""add-key"",
-        ItemTemplate = (item) => 
-        (
-            @<div class=""item-template-box"">
-                <span style=""color: green;"">@item.Text (@item.key)</span>
-            </div>
-        )
+        key = ""add-key""
     },
     new BitSplitButtonItem()
     {
         Text = ""Edit"",
-        key = ""edit-key"",
-        ItemTemplate = (item) =>
-        (
-            @<div class=""item-template-box"">
-                <span style=""color: yellow;"">@item.Text (@item.key)</span>
-            </div>
-        )
+        key = ""edit-key""
     },
     new BitSplitButtonItem()
     {
         Text = ""Delete"",
-        key = ""delete-key"",
-        ItemTemplate = (item) =>
-        (
-            @<div class=""item-template-box"">
-                <span style=""color: red;"">@item.Text (@item.key)</span>
-            </div>
-        )
+        key = ""delete-key""
     }
 };
 ";
