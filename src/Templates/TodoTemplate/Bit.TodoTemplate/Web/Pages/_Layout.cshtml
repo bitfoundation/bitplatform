@@ -60,15 +60,17 @@
             background: #0D2960;
         }
     </style>
+    @if (isDefaultDeploymentType || isPwa)
+    {
+        <component type="typeof(App.Components.LoadingComponent)" param-Color="@("#FFF")" render-mode="@RenderMode.Static" />
+    }
+    <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.min.css" asp-append-version="@shoudAddAspAppendVersion" />
+    <link href="TodoTemplate.App.styles.css" rel="stylesheet" asp-append-version="@shoudAddAspAppendVersion" />
 </head>
 <body>
     <div id="app-container">
-        <component type="typeof(App.Components.LoadingComponent)" param-Color="@("#FFF")" render-mode="@RenderMode.Static" />
         @RenderBody()
     </div>
-
-    <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.min.css" asp-append-version="@shoudAddAspAppendVersion" />
-    <link href="TodoTemplate.App.styles.css" rel="stylesheet" asp-append-version="@shoudAddAspAppendVersion" />
 
     @if (isStatic is false)
     {
