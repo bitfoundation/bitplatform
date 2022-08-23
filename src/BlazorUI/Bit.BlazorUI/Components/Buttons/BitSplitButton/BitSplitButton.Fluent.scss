@@ -140,10 +140,7 @@
         right: rem(32px);
         top: rem(8px);
         bottom: rem(8px);
-
-        &.standard {
-            background-color: $GreyInputBorder;
-        }
+        background-color: $GreyInputBorder;
 
         &.primary {
             background-color: $White;
