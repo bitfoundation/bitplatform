@@ -12,11 +12,16 @@
     }
 
     &.bit-splb-disabled-fluent {
-        background-color: $Grey20;
-        color: $Grey90;
-        cursor: default;
-        pointer-events: none;
-        border-radius: rem(2px);
+        .operator-btn, .Chevron-btn {
+            background-color: $Grey20;
+            color: $Grey90;
+            cursor: default;
+            pointer-events: none;
+        }
+
+        .separator-btn {
+            background-color: $Grey60;
+        }
     }
 
     .overlay {
@@ -56,15 +61,6 @@
             border-left: 1px solid $GreyInputBorder;
             border-bottom: 1px solid $GreyInputBorder;
 
-            &.disabled {
-                background-color: $Grey20;
-                color: $Grey90;
-
-                &:hover {
-                    background-color: $Grey20;
-                }
-            }
-
             &:hover {
                 background-color: $Grey20;
             }
@@ -77,21 +73,20 @@
             border-left: 1px solid $Primary;
             border-bottom: 1px solid $Primary;
 
-            &.disabled {
-                background-color: $BlizzardBlue;
-
-                &:hover {
-                    background-color: $BlizzardBlue;
-                }
-            }
-
             &:hover {
                 background-color: $DarkAlt;
             }
         }
 
         &.disabled {
+            background-color: $Grey20;
+            color: $Grey90;
+            border: none;
             cursor: default;
+
+            &:hover {
+                background-color: $Grey20;
+            }
         }
     }
 
@@ -123,7 +118,7 @@
 
         &.primary {
             color: $White;
-            background: $Primary;
+            background-color: $Primary;
             border-top: 1px solid $Primary;
             border-right: 1px solid $Primary;
             border-bottom: 1px solid $Primary;
@@ -132,9 +127,21 @@
                 background-color: $DarkAlt;
             }
         }
+
+        &.disabled {
+            color: $Grey160;
+            background-color: $White;
+            border-top: 1px solid $GreyInputBorder;
+            border-right: 1px solid $GreyInputBorder;
+            border-bottom: 1px solid $GreyInputBorder;
+
+            &:hover {
+                background-color: $Grey20;
+            }
+        }
     }
 
-    .btn-separator {
+    .separator-btn {
         position: absolute;
         width: rem(1px);
         right: rem(32px);
@@ -144,6 +151,10 @@
 
         &.primary {
             background-color: $White;
+        }
+
+        &.disabled {
+            background-color: $GreyInputBorder;
         }
     }
 

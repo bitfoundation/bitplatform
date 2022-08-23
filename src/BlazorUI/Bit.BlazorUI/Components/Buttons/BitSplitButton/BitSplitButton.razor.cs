@@ -25,16 +25,6 @@ public partial class BitSplitButton
     [Parameter] public bool AriaHidden { get; set; }
 
     /// <summary>
-    /// If true, the current item is going to be change selected item.
-    /// </summary>
-    [Parameter] public bool IsSticky { get; set; }
-
-    /// <summary>
-    ///  List of Item, each of which can be a Button with different action in the SplitButton.
-    /// </summary>
-    [Parameter] public IEnumerable<BitSplitButtonItem> Items { get; set; } = new List<BitSplitButtonItem>();
-
-    /// <summary>
     /// The style of button, Possible values: Primary | Standard
     /// </summary>
     [Parameter] public BitButtonStyle ButtonStyle { get; set; } = BitButtonStyle.Primary;
@@ -48,6 +38,16 @@ public partial class BitSplitButton
     /// The EditContext, which is set if the button is inside an <see cref="EditForm"/>
     /// </summary>
     [CascadingParameter] public EditContext? EditContext { get; set; }
+
+    /// <summary>
+    /// If true, the current item is going to be change selected item.
+    /// </summary>
+    [Parameter] public bool IsSticky { get; set; }
+
+    /// <summary>
+    ///  List of Item, each of which can be a Button with different action in the SplitButton.
+    /// </summary>
+    [Parameter] public IEnumerable<BitSplitButtonItem> Items { get; set; } = new List<BitSplitButtonItem>();
 
     /// <summary>
     /// The callback is called when the button or button item is clicked.
