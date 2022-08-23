@@ -7,30 +7,10 @@
 
 <section class="main-container @(IsMenuOpen ? null : "main-container--closed")">
     <div class="top-container">
-        <div class="user-img-container">
-            @if (User?.ProfileImageName != null)
-            {
-                <img src="@ProfileImageUrl" class="user-img" alt="User profile image" width="48" height="48"/>
-            }
-            else if (string.IsNullOrEmpty(User?.FullName) is false && User?.FullName.Length >= 2)
-            {
-                @User?.FullName?.ToUpper()[..2]
-            }
-            else
-            {
-                @User?.UserName?.ToUpper()[..2]
-            }
-        </div>
-        <div class="user-name">
-            @if(string.IsNullOrEmpty(User?.FullName) is false)
-            {
-                @User?.FullName
-            }
-            else
-            {
-                @User?.UserName
-            }
-        </div>
+        <BitPersona ImageUrl="@ProfileImageUrl"
+                    Size=@BitPersonaSize.Size48
+                    Text="@User?.UserName"
+                    SecondaryText="@User?.FullName" />
         <BitActionButton IconName="BitIconName.Edit"
                          Href="/edit-profile"
                          OnClick=CloseMenu>

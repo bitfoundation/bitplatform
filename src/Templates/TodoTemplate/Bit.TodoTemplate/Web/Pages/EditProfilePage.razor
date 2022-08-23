@@ -26,23 +26,9 @@
         else
         {
             <div class="form-profile-container">
-                <div class="form-profile-img">
-                    @if (User.ProfileImageName != null)
-                    {
-                        <img src="@($"{ProfileImageUrl}&file={User.ProfileImageName}")" class="profile-img" alt="User profile image" />
-                    }
-                    else if (string.IsNullOrEmpty(User.FullName) is false && User.FullName.Length >= 2)
-                    {
-                        @User.FullName?.ToUpper()[..2]
-                    }
-                    else
-                    {
-                        @User.UserName?.ToUpper()[..2]
-                    }
-                </div>
-                <div class="form-profile-email">
-                    @User.UserName
-                </div>
+                <BitPersona ImageUrl="@($"{ProfileImageUrl}&file={User.ProfileImageName}")"
+                        Size=@BitPersonaSize.Size72
+                        Text="@User.UserName" />
             </div>
             <div class="form-input-container">
                 <BitLabel>Profile image</BitLabel>
