@@ -8,8 +8,8 @@
         @if (string.IsNullOrEmpty(EditProfileMessage) is false)
         {
             <BitMessageBar Class="form-message-bar"
-                       MessageBarType="@EditProfileMessageType"
-                       OnDismiss="() => EditProfileMessage = null">
+                           MessageBarType="@EditProfileMessageType"
+                           OnDismiss="() => EditProfileMessage = null">
                 @EditProfileMessage
             </BitMessageBar>
         }
@@ -27,8 +27,8 @@
         {
             <div class="form-profile-container">
                 <BitPersona ImageUrl="@($"{ProfileImageUrl}&file={User.ProfileImageName}")"
-                        Size=@BitPersonaSize.Size72
-                        Text="@User.UserName" />
+                            Size=@BitPersonaSize.Size72
+                            Text="@User.UserName" />
             </div>
             <div class="form-input-container">
                 <BitLabel>Profile image</BitLabel>
