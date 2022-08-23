@@ -30,7 +30,7 @@ public partial class BitSplitButton
     [Parameter] public BitButtonStyle ButtonStyle { get; set; } = BitButtonStyle.Primary;
 
     /// <summary>
-    /// The type of the button
+    ///  List of Item, each of which can be a Button with different action in the SplitButton.
     /// </summary>
     [Parameter] public BitButtonType? ButtonType { get; set; }
 
@@ -38,6 +38,11 @@ public partial class BitSplitButton
     /// The EditContext, which is set if the button is inside an <see cref="EditForm"/>
     /// </summary>
     [CascadingParameter] public EditContext? EditContext { get; set; }
+
+    /// <summary>
+    /// The content inside the item can be customized.
+    /// </summary>
+    [Parameter] public RenderFragment<BitSplitButtonItem>? ItemTemplate { get; set; }
 
     /// <summary>
     /// If true, the current item is going to be change selected item.
