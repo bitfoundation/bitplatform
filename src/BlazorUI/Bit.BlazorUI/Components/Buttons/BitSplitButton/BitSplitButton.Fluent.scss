@@ -12,11 +12,11 @@
     }
 
     &.bit-splb-disabled-fluent {
-        background-color: $Grey20;
-        color: $Grey90;
         cursor: default;
         pointer-events: none;
         border-radius: rem(2px);
+        background-color: $Grey20;
+        color: $Grey90;
     }
 
     .overlay {
@@ -56,12 +56,17 @@
             border-left: 1px solid $GreyInputBorder;
             border-bottom: 1px solid $GreyInputBorder;
 
-            &:hover {
+            &.disabled {
                 background-color: $Grey20;
+                color: $Grey90;
+
+                &:hover {
+                    background-color: $Grey20;
+                }
             }
 
-            &:active {
-                background-color: $Grey30;
+            &:hover {
+                background-color: $Grey20;
             }
         }
 
@@ -72,13 +77,21 @@
             border-left: 1px solid $Primary;
             border-bottom: 1px solid $Primary;
 
+            &.disabled {
+                background-color: $BlizzardBlue;
+
+                &:hover {
+                    background-color: $BlizzardBlue;
+                }
+            }
+
             &:hover {
                 background-color: $DarkAlt;
             }
+        }
 
-            &:active {
-                background-color: $Dark;
-            }
+        &.disabled {
+            cursor: default;
         }
     }
 
@@ -98,17 +111,13 @@
 
         &.standard {
             color: $Grey160;
-            background: $White;
+            background-color: $White;
             border-top: 1px solid $GreyInputBorder;
             border-right: 1px solid $GreyInputBorder;
             border-bottom: 1px solid $GreyInputBorder;
 
             &:hover {
                 background-color: $Grey20;
-            }
-
-            &:active {
-                background-color: $Grey30;
             }
         }
 
@@ -122,10 +131,6 @@
             &:hover {
                 background-color: $DarkAlt;
             }
-
-            &:active {
-                background-color: $Dark;
-            }
         }
     }
 
@@ -135,10 +140,9 @@
         right: rem(32px);
         top: rem(8px);
         bottom: rem(8px);
-        background-color: $Grey60;
 
         &.standard {
-            background-color: $Grey90;
+            background-color: $GreyInputBorder;
         }
 
         &.primary {

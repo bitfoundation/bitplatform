@@ -13,7 +13,7 @@
                 aria-describedby="@AriaDescription"
                 aria-hidden="@AriaHidden"
                 tabindex="@(IsEnabled ? 0 : -1)"
-                class="operator-btn @_buttonStyle"
+                class="operator-btn @_buttonStyle @(_currentItem.IsEnabled is false ? "disabled" : null)"
                 @onclick="() => HandleOnClick(_currentItem)">
             @_currentItem?.Text
         </button>

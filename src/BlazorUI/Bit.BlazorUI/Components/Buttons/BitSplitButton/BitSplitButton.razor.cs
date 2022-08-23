@@ -63,14 +63,14 @@ public partial class BitSplitButton
         _splitButtonCalloutId = $"{RootElementClass}-callout-{UniqueId}";
         _splitButtonOverlayId = $"{RootElementClass}-overlay-{UniqueId}";
 
-         await base.OnInitializedAsync();
+        await base.OnInitializedAsync();
     }
 
     protected override Task OnParametersSetAsync()
     {
         _buttonStyle = IsEnabled
             ? ButtonStyle is BitButtonStyle.Primary ? "primary" : "standard"
-            : string.Empty;
+            : null;
 
         ButtonType ??= EditContext is null
             ? BitButtonType.Button
@@ -97,14 +97,14 @@ public partial class BitSplitButton
 
     private async Task HandleOnItemClick(BitSplitButtonItem item)
     {
-        if (item.IsEnabled is false) return;
-
-        if (IsSticky)
+        if (IsSticky) 
         {
             _currentItem = item;
         }
         else
         {
+            if (item.IsEnabled is false) return;
+
             await OnClick.InvokeAsync(item);
         }
 
