@@ -25,27 +25,12 @@ public partial class BitSplitButton
     [Parameter] public bool AriaHidden { get; set; }
 
     /// <summary>
-    /// If true, the current item is going to be change selected item.
-    /// </summary>
-    [Parameter] public bool IsSticky { get; set; }
-
-    /// <summary>
-    /// The content inside the item can be customized.
-    /// </summary>
-    [Parameter] public RenderFragment<BitSplitButtonItem>? ItemTemplate { get; set; }
-
-    /// <summary>
-    ///  List of Item, each of which can be a Button with different action in the SplitButton.
-    /// </summary>
-    [Parameter] public IEnumerable<BitSplitButtonItem> Items { get; set; } = new List<BitSplitButtonItem>();
-
-    /// <summary>
     /// The style of button, Possible values: Primary | Standard
     /// </summary>
     [Parameter] public BitButtonStyle ButtonStyle { get; set; } = BitButtonStyle.Primary;
 
     /// <summary>
-    /// The type of the button
+    ///  List of Item, each of which can be a Button with different action in the SplitButton.
     /// </summary>
     [Parameter] public BitButtonType? ButtonType { get; set; }
 
@@ -53,6 +38,21 @@ public partial class BitSplitButton
     /// The EditContext, which is set if the button is inside an <see cref="EditForm"/>
     /// </summary>
     [CascadingParameter] public EditContext? EditContext { get; set; }
+
+    /// <summary>
+    /// The content inside the item can be customized.
+    /// </summary>
+    [Parameter] public RenderFragment<BitSplitButtonItem>? ItemTemplate { get; set; }
+
+    /// <summary>
+    /// If true, the current item is going to be change selected item.
+    /// </summary>
+    [Parameter] public bool IsSticky { get; set; }
+
+    /// <summary>
+    ///  List of Item, each of which can be a Button with different action in the SplitButton.
+    /// </summary>
+    [Parameter] public IEnumerable<BitSplitButtonItem> Items { get; set; } = new List<BitSplitButtonItem>();
 
     /// <summary>
     /// The callback is called when the button or button item is clicked.
@@ -68,14 +68,14 @@ public partial class BitSplitButton
         _splitButtonCalloutId = $"{RootElementClass}-callout-{UniqueId}";
         _splitButtonOverlayId = $"{RootElementClass}-overlay-{UniqueId}";
 
-         await base.OnInitializedAsync();
+        await base.OnInitializedAsync();
     }
 
     protected override Task OnParametersSetAsync()
     {
         _buttonStyle = IsEnabled
             ? ButtonStyle is BitButtonStyle.Primary ? "primary" : "standard"
-            : string.Empty;
+            : null;
 
         ButtonType ??= EditContext is null
             ? BitButtonType.Button
@@ -102,14 +102,14 @@ public partial class BitSplitButton
 
     private async Task HandleOnItemClick(BitSplitButtonItem item)
     {
-        if (item.IsEnabled is false) return;
-
-        if (IsSticky)
+        if (IsSticky) 
         {
             _currentItem = item;
         }
         else
         {
+            if (item.IsEnabled is false) return;
+
             await OnClick.InvokeAsync(item);
         }
 

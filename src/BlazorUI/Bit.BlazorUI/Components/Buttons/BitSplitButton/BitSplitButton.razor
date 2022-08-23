@@ -13,17 +13,17 @@
                 aria-describedby="@AriaDescription"
                 aria-hidden="@AriaHidden"
                 tabindex="@(IsEnabled ? 0 : -1)"
-                class="operator-btn @_buttonStyle"
+                class="operator-btn @_buttonStyle @(_currentItem?.IsEnabled is false ? "disabled" : null)"
                 @onclick="() => HandleOnClick(_currentItem)">
             @_currentItem?.Text
         </button>
         <button type="button"
                 tabindex="@(IsEnabled ? 0 : -1)"
-                class="Chevron-btn @_buttonStyle"
+                class="Chevron-btn @_buttonStyle @(_currentItem?.IsEnabled is false ? "disabled" : null)"
                 @onclick="ToggleCallout">
             <i class="bit-icon bit-icon--ChevronDown"></i>
         </button>
-        <span class="btn-separator @_buttonStyle"></span>
+        <span class="separator-btn @_buttonStyle @(_currentItem?.IsEnabled is false ? "disabled" : null)"></span>
     </div>
     <div id="@_splitButtonCalloutId"
          class="items"
@@ -38,7 +38,7 @@
                                 role="menuitem"
                                 aria-disabled="@item.IsEnabled"
                                 tabindex="@(item.IsEnabled ? 0 : -1)"
-                                class="item @(item.IsEnabled is false ? "disabled" : null)"
+                                class="item @(item.IsEnabled ? "" : "disabled")"
                                 @onclick="() => HandleOnItemClick(item)">
                             @if (ItemTemplate is null)
                             {
