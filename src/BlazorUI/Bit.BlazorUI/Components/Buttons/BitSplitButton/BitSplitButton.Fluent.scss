@@ -12,11 +12,11 @@
     }
 
     &.bit-splb-disabled-fluent {
+        background-color: $Grey20;
+        color: $Grey90;
         cursor: default;
         pointer-events: none;
         border-radius: rem(2px);
-        background-color: $Grey20;
-        color: $Grey90;
     }
 
     .overlay {
