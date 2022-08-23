@@ -10,6 +10,7 @@
         <!--/-:msbuild-conditional:noEmit -->
         <ServiceWorkerAssetsManifest Condition="'$(WebAppDeploymentType)' == 'PWA'">service-worker-assets.js</ServiceWorkerAssetsManifest>
         <BlazorCacheBootResources Condition="'$(WebAppDeploymentType)' == 'PWA'">false</BlazorCacheBootResources>
+        <InvariantGlobalization Condition=" '$(MultilingualEnabled)' == 'false' ">true</InvariantGlobalization>
         <!--/+:msbuild-conditional:noEmit -->
     </PropertyGroup>
 
