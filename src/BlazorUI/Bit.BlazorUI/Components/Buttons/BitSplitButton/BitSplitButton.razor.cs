@@ -30,6 +30,11 @@ public partial class BitSplitButton
     [Parameter] public bool IsSticky { get; set; }
 
     /// <summary>
+    /// The content inside the item can be customized.
+    /// </summary>
+    [Parameter] public RenderFragment<BitSplitButtonItem>? ItemTemplate { get; set; }
+
+    /// <summary>
     ///  List of Item, each of which can be a Button with different action in the SplitButton.
     /// </summary>
     [Parameter] public IEnumerable<BitSplitButtonItem> Items { get; set; } = new List<BitSplitButtonItem>();

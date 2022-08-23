@@ -34,14 +34,14 @@
                 @if (item != _currentItem)
                 {
                     <li role="presentation">
-                        @if (item.ItemTemplate is null)
-                        {
-                            <button type="@ButtonType?.GetValue()"
-                                    role="menuitem"
-                                    aria-disabled="@item.IsEnabled"
-                                    tabindex="@(item.IsEnabled ? 0 : -1)"
-                                    class="item @(item.IsEnabled is false ? "disabled" : null)"
-                                    @onclick="() => HandleOnItemClick(item)">
+                        <button type="@ButtonType?.GetValue()"
+                                role="menuitem"
+                                aria-disabled="@item.IsEnabled"
+                                tabindex="@(item.IsEnabled ? 0 : -1)"
+                                class="item @(item.IsEnabled is false ? "disabled" : null)"
+                                @onclick="() => HandleOnItemClick(item)">
+                            @if (ItemTemplate is null)
+                            {
                                 @if (item.IconName.HasValue)
                                 {
                                     <i class="bit-icon bit-icon--@item.IconName.GetName()"></i>
@@ -49,12 +49,12 @@
                                 <span>
                                     @item.Text
                                 </span>
-                            </button>
-                        }
-                        else
-                        {
-                            @item.ItemTemplate(item);
-                        }
+                            }
+                            else
+                            {
+                                @ItemTemplate(item)
+                            }
+                        </button>
                     </li>
                 }
             }

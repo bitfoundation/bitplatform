@@ -19,11 +19,6 @@ public class BitSplitButtonItem
     public string? key { get; set; }
 
     /// <summary>
-    /// The content inside the item can be customized.
-    /// </summary>
-    public RenderFragment<BitSplitButtonItem>? ItemTemplate { get; set; }
-
-    /// <summary>
     /// Whether or not the item is enabled.
     /// </summary>
     public bool IsEnabled { get; set; } = true;
