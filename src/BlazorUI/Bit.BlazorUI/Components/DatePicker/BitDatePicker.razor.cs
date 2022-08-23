@@ -188,7 +188,7 @@ public partial class BitDatePicker
             ? $"{RootElementClass}-disabled-{VisualClassRegistrar()}" : string.Empty);
 
         ClassBuilder.Register(() => Culture.TextInfo.IsRightToLeft
-            ? $"{RootElementClass}-rtl" : string.Empty);
+            ? $"{RootElementClass}-rtl-{VisualClassRegistrar()}" : string.Empty);
 
         ClassBuilder.Register(() => IsUnderlined
             ? $"{RootElementClass}-underlined-{(IsEnabled is false ? "disabled-" : string.Empty)}{VisualClassRegistrar()}" : string.Empty);

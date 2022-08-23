@@ -5,7 +5,6 @@
         <!--If you don't need to use the time zone and your app is in WASM format, you can reduce the output size of the app by disabling the time zone.-->
         <BlazorEnableTimeZoneSupport>true</BlazorEnableTimeZoneSupport>
 		<BlazorWebAssemblyPreserveCollationData>false</BlazorWebAssemblyPreserveCollationData>
-		<InvariantGlobalization Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' ">true</InvariantGlobalization>
 		<RootNamespace>TodoTemplate.App</RootNamespace>
 		<AssemblyName>TodoTemplate.App</AssemblyName>
         <!--/-:msbuild-conditional:noEmit -->
@@ -27,10 +26,10 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.BlazorUI" Version="3.0.0" />
-        <PackageReference Include="Bit.Bswup" Version="3.0.0" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="3.0.0" />
-        <PackageReference Include="Bit.SourceGenerators" Version="3.0.0" />
+        <PackageReference Include="Bit.BlazorUI" Version="3.1.0-pre-01" />
+        <PackageReference Include="Bit.Bswup" Version="3.1.0-pre-01" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="3.1.0-pre-01" />
+        <PackageReference Include="Bit.SourceGenerators" Version="3.1.0-pre-01" />
         <PackageReference Include="BuildWebCompiler2022" Version="1.14.8" />
         <PackageReference Include="jose-jwt" Version="4.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.8" />

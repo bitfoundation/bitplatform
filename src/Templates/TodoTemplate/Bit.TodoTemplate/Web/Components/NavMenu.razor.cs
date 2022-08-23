@@ -15,38 +15,6 @@ public partial class NavMenu
 
     public bool IsSignOutModalOpen { get; set; }
 
-    public NavMenu()
-    {
-        NavLinks = new()
-        {
-            new BitNavLinkItem
-            {
-                Name = "Home",
-                Url = "/",
-                IconName = BitIconName.Home,
-                Key = "Home"
-            },
-            new BitNavLinkItem
-            {
-                Name = "Todo",
-                Url = "/todo",
-                IconName = BitIconName.ToDoLogoOutline,
-                Key = "Todo"
-            },
-            new BitNavLinkItem
-            {
-                Name = "Sign out",
-                OnClick = (item) =>
-                {
-                    IsSignOutModalOpen = true;
-                    StateHasChanged();
-                },
-                IconName = BitIconName.SignOut,
-                Key = "SignOut"
-            }
-        };
-    }
-
     [CascadingParameter]
     public Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
 
@@ -71,6 +39,35 @@ public partial class NavMenu
 
     protected override async Task OnInitAsync()
     {
+        NavLinks = new()
+        {
+            new BitNavLinkItem
+            {
+                Name = Localizer[nameof(AppStrings.Home)],
+                Url = "/",
+                IconName = BitIconName.Home,
+                Key = "Home"
+            },
+            new BitNavLinkItem
+            {
+                Name = Localizer[nameof(AppStrings.TodoTitle)],
+                Url = "/todo",
+                IconName = BitIconName.ToDoLogoOutline,
+                Key = "Todo"
+            },
+            new BitNavLinkItem
+            {
+                Name = Localizer[nameof(AppStrings.SignOut)],
+                OnClick = (item) =>
+                {
+                    IsSignOutModalOpen = true;
+                    StateHasChanged();
+                },
+                IconName = BitIconName.SignOut,
+                Key = "SignOut"
+            }
+        };
+
         User = await StateService.GetValue($"{nameof(NavMenu)}-{nameof(User)}", async () =>
             await HttpClient.GetFromJsonAsync("User/GetCurrentUser", AppJsonContext.Default.UserDto));
 

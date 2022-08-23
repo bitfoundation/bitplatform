@@ -73,7 +73,7 @@ public class BitDatePickerTests : BunitTestContext
                 parameters.Add(p => p.IsEnabled, isEnabled);
             });
 
-        var bitDatePickerInput = component.Find(".bit-dtp-wrapper");
+        var bitDatePickerInput = component.Find(".dtp-wrapper");
         bitDatePickerInput.Click();
 
         Assert.AreEqual(component.Instance.ClickedValue, count);
@@ -159,7 +159,7 @@ public class BitDatePickerTests : BunitTestContext
         Assert.AreEqual(component.Instance.InvalidCount, 1);
 
         //open date picker
-        var datepicker = component.Find(".bit-dtp-wrapper");
+        var datepicker = component.Find(".dtp-wrapper");
         datepicker.Click();
 
         //select today
@@ -193,7 +193,7 @@ public class BitDatePickerTests : BunitTestContext
         Assert.AreEqual(inputDate.GetAttribute("aria-invalid"), "true");
 
         //open date picker
-        var datepicker = component.Find(".bit-dtp-wrapper");
+        var datepicker = component.Find(".dtp-wrapper");
         datepicker.Click();
 
         //select today
@@ -231,7 +231,7 @@ public class BitDatePickerTests : BunitTestContext
         Assert.IsTrue(bitDatePicker.ClassList.Contains($"bit-dtp-invalid-{visualClass}"));
 
         //open date picker
-        var datepicker = component.Find(".bit-dtp-wrapper");
+        var datepicker = component.Find(".dtp-wrapper");
         datepicker.Click();
 
         //select today
