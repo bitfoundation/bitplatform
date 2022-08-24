@@ -10,19 +10,19 @@
         <ExamplePreview>
             <div class="example-desc">To create a multi button you can use a BitSplitButton component.</div>
             <div class="split-btn">
-                <BitLabel>Basic Standard</BitLabel>
+                <BitLabel>Standard</BitLabel>
                 <BitSplitButton Items="example1Items"
                                 ButtonStyle="BitButtonStyle.Standard"
                                 OnClick="(item) => example1SelectedItem = item.Text" />
             </div>
             <div class="split-btn">
-                <BitLabel>Basic Primary</BitLabel>
+                <BitLabel>Primary</BitLabel>
                 <BitSplitButton Items="example1Items"
                                 ButtonStyle="BitButtonStyle.Primary"
                                 OnClick="(item) => example1SelectedItem = item.Text" />
             </div>
             <div class="split-btn">
-                <BitLabel>Basic Disabled</BitLabel>
+                <BitLabel>Disabled</BitLabel>
                 <BitSplitButton Items="example1Items" IsEnabled="false" />
             </div>
             <div class="selected-item">Clicked item: @example1SelectedItem</div>
@@ -33,14 +33,14 @@
         <ExamplePreview>
             <div class="example-desc">You can first select the button item and then click on it to execute its onclick event.</div>
             <div class="split-btn">
-                <BitLabel>Sticky Standard</BitLabel>
+                <BitLabel>Standard</BitLabel>
                 <BitSplitButton Items="example2Items"
                                 ButtonStyle="BitButtonStyle.Standard"
                                 IsSticky="true"
                                 OnClick="(item) => example2SelectedItem = item.Text" />
             </div>
             <div class="split-btn">
-                <BitLabel>Sticky Primary</BitLabel>
+                <BitLabel>Primary</BitLabel>
                 <BitSplitButton Items="example2Items"
                                 ButtonStyle="BitButtonStyle.Primary"
                                 IsSticky="true"
@@ -54,13 +54,13 @@
         <ExamplePreview>
             <div class="example-desc">You can disable the button item.</div>
             <div class="split-btn">
-                <BitLabel>Item Disabled Standard</BitLabel>
+                <BitLabel>Basic Standard</BitLabel>
                 <BitSplitButton Items="example3Items"
                                 ButtonStyle="BitButtonStyle.Standard"
                                 OnClick="(item) => example3SelectedItem = item.Text" />
             </div>
             <div class="split-btn">
-                <BitLabel>Item Disabled Primary</BitLabel>
+                <BitLabel>Sticky Primary</BitLabel>
                 <BitSplitButton Items="example3Items"
                                 ButtonStyle="BitButtonStyle.Primary"
                                 IsSticky="true"
@@ -74,7 +74,7 @@
         <ExamplePreview>
             <div class="example-desc">You can customize the button item.</div>
             <div class="split-btn">
-                <BitLabel>Item Template Standard</BitLabel>
+                <BitLabel>Standard</BitLabel>
                 <BitSplitButton Items="example4Items"
                                 ItemTemplate="(item) => itemTemplate(item)"
                                 ButtonStyle="BitButtonStyle.Standard"
@@ -82,7 +82,7 @@
                                 OnClick="(item) => example4SelectedItem = item.Text" />
             </div>
             <div class="split-btn">
-                <BitLabel>Item Template Primary</BitLabel>
+                <BitLabel>Primary</BitLabel>
                 <BitSplitButton Items="example4Items"
                                 ItemTemplate="(item) => itemTemplate(item)"
                                 ButtonStyle="BitButtonStyle.Primary"
