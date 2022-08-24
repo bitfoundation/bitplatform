@@ -18,7 +18,7 @@
         <EditForm Model="Product" OnValidSubmit="WrapHandled(Save)" style="width: 100%; display: flex; flex-direction: column;
 align-items: center">
 
-            <DataAnnotationsValidator />
+            <AppDataAnnotationsValidator />
             <div class="form-input-container">
                 <BitTextField Label="@(nameof(Product.Name))" @bind-Value="Product.Name" Placeholder="Enter product name" />
                 <ValidationMessage For="() => Product.Name" />

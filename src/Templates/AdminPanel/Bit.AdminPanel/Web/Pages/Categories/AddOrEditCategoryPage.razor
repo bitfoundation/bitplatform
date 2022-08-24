@@ -33,7 +33,7 @@
                 <BitSpinner Size="BitSpinnerSize.Large"></BitSpinner>
             </div>
         }
-        <DataAnnotationsValidator />
+        <AppDataAnnotationsValidator />
         @if (string.IsNullOrEmpty(SaveMessage) is false)
         {
             <BitMessageBar MessageBarType="@SaveMessageType" OnDismiss="() => SaveMessage = null">@SaveMessage</BitMessageBar>

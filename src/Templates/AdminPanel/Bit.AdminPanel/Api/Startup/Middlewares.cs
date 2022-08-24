@@ -10,7 +10,7 @@ public class Middlewares
     public static void Use(IApplicationBuilder app, IHostEnvironment env, IConfiguration configuration)
     {
         app.UseForwardedHeaders();
-        
+
         if (env.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();
@@ -49,7 +49,6 @@ public class Middlewares
             }
         });
 
-        app.UseHttpResponseExceptionHandler();
         app.UseRouting();
 
         // 0.0.0.0 is for the Blazor Hybrid mode (Android, iOS, Windows apps)
@@ -59,6 +58,7 @@ public class Middlewares
         app.UseAuthentication();
         app.UseAuthorization();
 
+#if MultilingualEnabled
         var supportedCultures = new[] { "en", "fr" };
         var localizationOptions = new RequestLocalizationOptions()
             .SetDefaultCulture(supportedCultures[0])
@@ -66,6 +66,9 @@ public class Middlewares
             .AddSupportedUICultures(supportedCultures);
 
         app.UseRequestLocalization(localizationOptions);
+#endif
+
+        app.UseHttpResponseExceptionHandler();
 
         app.UseSwagger();
 

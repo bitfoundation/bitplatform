@@ -15,6 +15,7 @@
 
     <ItemGroup>
         <SupportedPlatform Include="browser" />
+        <Using Include="AdminPanel.Shared.Attributes" />
     </ItemGroup>
 
     <ItemGroup>

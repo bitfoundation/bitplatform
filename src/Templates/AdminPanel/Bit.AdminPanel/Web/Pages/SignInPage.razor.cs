@@ -16,6 +16,8 @@ public partial class SignInPage
     [SupplyParameterFromQuery]
     public string? RedirectUrl { get; set; }
 
+    private bool IsSubmitButtonEnabled => IsLoading is false;
+
     private async Task DoSignIn()
     {
         if (IsLoading)
@@ -43,11 +45,6 @@ public partial class SignInPage
             IsLoading = false;
         }
     }
-
-    private bool IsSubmitButtonEnabled =>
-        string.IsNullOrWhiteSpace(SignInModel.UserName) is false &&
-        string.IsNullOrWhiteSpace(SignInModel.Password) is false && 
-        IsLoading is false;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

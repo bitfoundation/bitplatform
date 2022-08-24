@@ -12,9 +12,7 @@ public partial class ForgotPasswordPage
 
     public string? ForgotPasswordMessage { get; set; }
 
-    private bool IsSubmitButtonEnabled =>
-        string.IsNullOrWhiteSpace(ForgotPasswordModel.Email) is false &&
-        IsLoading is false;
+    private bool IsSubmitButtonEnabled => IsLoading is false;
 
     private async Task Submit()
     {
