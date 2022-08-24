@@ -250,11 +250,9 @@ public partial class BitDatePicker
 
         IsOpen = !isOpen;
 
-        if(IsOpen && CurrentValue != null && (CurrentValue.GetValueOrDefault().Year != currentYear || CurrentValue.GetValueOrDefault().Month != currentMonth))
+        if(IsOpen && CurrentValue != null)
         {
-            currentYear = CurrentValue.GetValueOrDefault().Year;
-            currentMonth = CurrentValue.GetValueOrDefault().Month;
-            CreateMonthCalendar(currentYear, currentMonth);
+            CheckCurrentCalendarMatchesCurrentValue();
         }
 
         displayYear = currentYear;
@@ -767,6 +765,19 @@ public partial class BitDatePicker
             return true;
 
         return false;
+    }
+
+    private void CheckCurrentCalendarMatchesCurrentValue()
+    {
+        var currentValue = CurrentValue.GetValueOrDefault();
+        var currentValueYear = currentValue.Year;
+        var currentValueMonth = currentValue.Month;
+        if (currentValueYear != currentYear || currentValueMonth != currentMonth)
+        {
+            currentYear = currentValueYear;
+            currentMonth = currentValueMonth;
+            CreateMonthCalendar(currentYear, currentMonth);
+        }
     }
 
     /// <inheritdoc />
