@@ -1,15 +1,11 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
-
+﻿
 namespace Bit.BlazorUI;
 
 public partial class BitToggleButton
 {
-    private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
-
-    private int? tabIndex;
-    private bool isChecked;
+    private int? _tabIndex;
+    private bool _isChecked;
+    private bool IsCheckedHasBeenSet;
 
     /// <summary>
     /// Whether the toggle button can have focus in disabled mode.
@@ -27,27 +23,37 @@ public partial class BitToggleButton
     [Parameter] public bool AriaHidden { get; set; }
 
     /// <summary>
+    /// The style of compound button, Possible values: Primary | Standard.
+    /// </summary>
+    [Parameter] public BitButtonStyle ButtonStyle { get; set; } = BitButtonStyle.Primary;
+
+    /// <summary>
+    /// Default value of the IsChecked.
+    /// </summary>
+    [Parameter] public bool? DefaultIsChecked { get; set; }
+
+    /// <summary>
+    /// URL the link points to, if provided, button renders as an anchor.
+    /// </summary>
+    [Parameter] public string? Href { get; set; }
+
+    /// <summary>
     /// Determine if the button is in checked state, default is true.
     /// </summary>        
     [Parameter]
     public bool IsChecked
     {
-        get => isChecked;
+        get => _isChecked;
         set
         {
-            if (value == isChecked) return;
-            isChecked = value;
+            if (value == _isChecked) return;
+            _isChecked = value;
             ClassBuilder.Reset();
             _ = IsCheckedChanged.InvokeAsync(value);
         }
     }
 
     [Parameter] public EventCallback<bool> IsCheckedChanged { get; set; }
-
-    /// <summary>
-    /// Default value of the IsChecked.
-    /// </summary>
-    [Parameter] public bool? DefaultIsChecked { get; set; }
 
     /// <summary>
     /// The icon that shows in the button.
@@ -60,9 +66,14 @@ public partial class BitToggleButton
     [Parameter] public string? Label { get; set; }
 
     /// <summary>
-    /// URL the link points to, if provided, button renders as an anchor.
+    /// Callback that is called when the button is clicked.
     /// </summary>
-    [Parameter] public string? Href { get; set; }
+    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+    /// <summary>
+    /// Callback that is called when the IsChecked value has changed.
+    /// </summary>
+    [Parameter] public EventCallback<bool> OnChange { get; set; }
 
     /// <summary>
     /// If Href provided, specifies how to open the link.
@@ -74,42 +85,22 @@ public partial class BitToggleButton
     /// </summary>
     [Parameter] public string? Title { get; set; }
 
-    /// <summary>
-    /// Callback that is called when the button is clicked.
-    /// </summary>
-    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+    protected override string RootElementClass => "bit-tglb";
 
-    /// <summary>
-    /// Callback that is called when the IsChecked value has changed.
-    /// </summary>
-    [Parameter] public EventCallback<bool> OnChange { get; set; }
-
-    /// <summary>
-    /// The style of compound button, Possible values: Primary | Standard.
-    /// </summary>
-    [Parameter]
-    public BitButtonStyle ButtonStyle
+    protected override async Task OnInitializedAsync()
     {
-        get => buttonStyle;
-        set
+        if (IsEnabled is false)
         {
-            buttonStyle = value;
-            ClassBuilder.Reset();
+            _tabIndex = AllowDisabledFocus ? null : -1;
         }
-    }
-    private bool IsCheckedHasBeenSet;
-    protected virtual async Task HandleOnClick(MouseEventArgs e)
-    {
-        if (IsEnabled)
-        {
-            await OnClick.InvokeAsync(e);
-            if (IsCheckedHasBeenSet && IsCheckedChanged.HasDelegate is false) return;
-            IsChecked = !IsChecked;
-            await OnChange.InvokeAsync(IsChecked);
-        }
-    }
 
-    protected override string RootElementClass => "bit-tgl-btn";
+        if (IsCheckedHasBeenSet is false && DefaultIsChecked.HasValue)
+        {
+            IsChecked = DefaultIsChecked.Value;
+        }
+
+        await base.OnInitializedAsync();
+    }
 
     protected override void RegisterComponentClasses()
     {
@@ -121,25 +112,21 @@ public partial class BitToggleButton
                                        ? "primary"
                                        : "standard");
 
-        ClassBuilder.Register(() => IsChecked is false
-                                        ? string.Empty
-                                        : ButtonStyle == BitButtonStyle.Primary
-                                           ? "primary-checked"
-                                           : "standard-checked");
+        ClassBuilder.Register(() => IsChecked
+                                   ? ButtonStyle == BitButtonStyle.Primary 
+                                       ? "primary-checked" 
+                                       : "standard-checked" 
+                                   : string.Empty);
     }
 
-    protected override async Task OnInitializedAsync()
+    protected virtual async Task HandleOnClick(MouseEventArgs e)
     {
-        if (IsEnabled is false)
+        if (IsEnabled)
         {
-            tabIndex = AllowDisabledFocus ? null : -1;
+            await OnClick.InvokeAsync(e);
+            if (IsCheckedHasBeenSet && IsCheckedChanged.HasDelegate is false) return;
+            IsChecked = !IsChecked;
+            await OnChange.InvokeAsync(IsChecked);
         }
-
-        if (IsCheckedHasBeenSet is false && DefaultIsChecked.HasValue)
-        {
-            IsChecked = DefaultIsChecked.Value;
-        }
-
-        await base.OnInitializedAsync();
     }
 }

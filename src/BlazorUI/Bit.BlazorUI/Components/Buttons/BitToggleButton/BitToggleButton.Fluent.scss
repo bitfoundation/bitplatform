@@ -1,7 +1,7 @@
 ﻿@import "../../../Styles/Fluent/colors.fluent.scss", "../../../Styles/functions.scss";
 
-.bit-tgl-btn {
-    &.bit-tgl-btn-fluent {
+.bit-tglb {
+    &.bit-tglb-fluent {
         font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
         text-align: center;
         border-radius: rem(2px);
@@ -42,7 +42,7 @@
         }
     }
 
-    &.bit-tgl-btn-disabled-fluent {
+    &.bit-tglb-disabled-fluent {
         background: $Grey20;
         border: 1px solid $Grey20;
         cursor: default;
