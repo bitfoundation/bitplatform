@@ -56,6 +56,10 @@
         "inputFile": "Pages/Components/Buttons/BitToggleButtonDemo.razor.scss"
     },
     {
+        "outputFile": "Pages/Components/Buttons/BitSplitButtonDemo.razor.css",
+        "inputFile": "Pages/Components/Buttons/BitSplitButtonDemo.razor.scss"
+    },
+    {
         "outputFile": "Pages/Components/Carousel/BitCarouselDemo.razor.css",
         "inputFile": "Pages/Components/Carousel/BitCarouselDemo.razor.scss"
     },
