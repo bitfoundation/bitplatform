@@ -32,9 +32,7 @@ public class Program
         builder.Services.AddSharedServices();
         builder.Services.AddAppServices();
 
-        var host = builder.Build();
-
-        return host;
+        return builder.Build();
     }
 #elif BlazorServer
     public static WebApplication CreateHostBuilder(string[] args)

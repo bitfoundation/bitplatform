@@ -55,8 +55,8 @@
 #if BlazorWebAssembly && !Maui
     if (args.Path.Contains("some-lazy-loaded-page") && lazyLoadedAssemblies.Any(asm => asm.GetName().Name == "SomeAssembly") is false)
     {
-    var assemblies = await AssemblyLoader.LoadAssembliesAsync(new[] { "SomeAssembly.dll" });
-    lazyLoadedAssemblies.AddRange(assemblies);
+        var assemblies = await AssemblyLoader.LoadAssembliesAsync(new[] { "SomeAssembly.dll" });
+        lazyLoadedAssemblies.AddRange(assemblies);
     }
 #endif
     }
