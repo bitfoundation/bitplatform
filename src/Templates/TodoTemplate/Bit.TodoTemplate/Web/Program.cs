@@ -34,12 +34,6 @@ public class Program
 
         var host = builder.Build();
 
-        var jsInProcessRuntime = (IJSInProcessRuntime)host.Services.GetRequiredService<IJSRuntime>();
-
-        var preferredCulture = jsInProcessRuntime.Invoke<string>("window.App.getPreferredCulture", CultureInfoManager.GetCultureData());
-
-        CultureInfoManager.SetCurrentCulture(preferredCulture, true);
-
         return host;
     }
 #elif BlazorServer

@@ -64,7 +64,7 @@ public class Middlewares
         {
             SupportedCultures = supportedCultures,
             SupportedUICultures = supportedCultures
-        }.SetDefaultCulture("en"));
+        }.SetDefaultCulture(CultureInfoManager.DefaultCulture.code));
 #endif
 
         app.UseHttpResponseExceptionHandler();

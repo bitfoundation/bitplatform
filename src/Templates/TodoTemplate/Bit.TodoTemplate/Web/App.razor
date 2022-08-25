@@ -1,4 +1,4 @@
-﻿
+﻿@using System.Runtime.InteropServices
 <CascadingAuthenticationState>
     <PageTitle>TodoTemplate</PageTitle>
     <LayoutView Layout="@typeof(MainLayout)">
@@ -32,25 +32,31 @@
     [Inject] private Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader AssemblyLoader { get; set; } = default!;
 #endif
 
+    [Inject] private IJSRuntime _jsRuntime { get; set; } = default!;
 
-    protected override void OnInitialized()
-    {
+    // Blazor Server & Pre Rendering use created cultures in UseRequestLocalization middleware
+    // Browser, android, windows and iOS have to set culture programmatically.
+    private bool _shouldSetCultureInfo =
 #if Maui
-        var preferredCulture = TodoTemplate.App.App.GetPreferredCulture();
-
-        CultureInfoManager.SetCurrentCulture(preferredCulture, setGlobally: true);
+    true;
+#else
+    RuntimeInformation.ProcessArchitecture == Architecture.Wasm;
 #endif
-
-        base.OnInitialized();
-    }
 
     private async Task OnNavigateAsync(NavigationContext args)
     {
+        if (_shouldSetCultureInfo)
+        {
+            _shouldSetCultureInfo = false; // This should happen only once
+            var preferredCulture = await _jsRuntime.InvokeAsync<string>("window.App.getPreferredCulture", CultureInfoManager.GetCultureData());
+            CultureInfoManager.SetCurrentCulture(preferredCulture);
+        }
+
 #if BlazorWebAssembly && !Maui
     if (args.Path.Contains("some-lazy-loaded-page") && lazyLoadedAssemblies.Any(asm => asm.GetName().Name == "SomeAssembly") is false)
     {
-        var assemblies = await AssemblyLoader.LoadAssembliesAsync(new[] { "SomeAssembly.dll" });
-        lazyLoadedAssemblies.AddRange(assemblies);
+    var assemblies = await AssemblyLoader.LoadAssembliesAsync(new[] { "SomeAssembly.dll" });
+    lazyLoadedAssemblies.AddRange(assemblies);
     }
 #endif
     }

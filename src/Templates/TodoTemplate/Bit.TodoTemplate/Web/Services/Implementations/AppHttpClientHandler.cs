@@ -11,6 +11,10 @@ public partial class AppHttpClientHandler : HttpClientHandler
     [AutoInject] private IHttpContextAccessor _httpContextAccessor = default!;
 #endif
 
+#if BlazorHybrid
+    [AutoInject] private IJSRuntime _jsRuntime = default!;
+#endif
+
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         if (request.Headers.Authorization is null && RuntimeInformation.ProcessArchitecture != Architecture.Wasm)
@@ -29,11 +33,7 @@ public partial class AppHttpClientHandler : HttpClientHandler
             request.Headers.Add("Cookie", $".AspNetCore.Culture={culture}");
         }
 #elif BlazorHybrid
-        var culture = Preferences.Get(".AspNetCore.Culture", null);
-        if (culture != null)
-        {
-            request.Headers.Add("Cookie", $".AspNetCore.Culture={culture}");
-        }
+        request.Headers.Add("Cookie", $".AspNetCore.Culture={await _jsRuntime.InvokeAsync<string>("window.App.getCookie", ".AspNetCore.Culture")}");
 #endif
 #endif
 

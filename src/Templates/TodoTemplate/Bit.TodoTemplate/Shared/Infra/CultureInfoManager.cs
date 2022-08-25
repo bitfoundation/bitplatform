@@ -35,16 +35,13 @@ public class CultureInfoManager
         return cultureInfo;
     }
 
-    public static void SetCurrentCulture(string cultureInfoId, bool setGlobally)
+    public static void SetCurrentCulture(string cultureInfoId)
     {
         var cultureInfo = CreateCultureInfo(cultureInfoId);
 
         CultureInfo.CurrentCulture = CultureInfo.CurrentUICulture = cultureInfo;
 
-        if (setGlobally)
-        {
-            CultureInfo.DefaultThreadCurrentCulture = CultureInfo.DefaultThreadCurrentUICulture = Thread.CurrentThread.CurrentCulture = Thread.CurrentThread.CurrentUICulture = cultureInfo;
-        }
+        CultureInfo.DefaultThreadCurrentCulture = CultureInfo.DefaultThreadCurrentUICulture = Thread.CurrentThread.CurrentCulture = Thread.CurrentThread.CurrentUICulture = cultureInfo;
     }
 
     public static CultureData GetCultureData()

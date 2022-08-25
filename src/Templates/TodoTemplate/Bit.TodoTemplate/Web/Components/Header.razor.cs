@@ -1,6 +1,4 @@
-﻿using System.Runtime.InteropServices;
-
-namespace TodoTemplate.App.Components;
+﻿namespace TodoTemplate.App.Components;
 
 public partial class Header : IAsyncDisposable
 {
@@ -50,11 +48,7 @@ public partial class Header : IAsyncDisposable
 #if MultilingualEnabled
         if (firstRender)
         {
-#if Maui
-            SelectedCulture = App.GetPreferredCulture();
-#else
             SelectedCulture = await JSRuntime.InvokeAsync<string>("window.App.getPreferredCulture", CultureInfoManager.GetCultureData());
-#endif
             await InvokeAsync(StateHasChanged);
         }
 #endif
@@ -64,20 +58,9 @@ public partial class Header : IAsyncDisposable
 
     async Task OnCultureChanged()
     {
-        // Culture should set globally in Browser
-        bool setCultureGlobally = RuntimeInformation.ProcessArchitecture == Architecture.Wasm;
-#if Maui
-        // Culture should set globally in Android, iOS, Windows
-        setCultureGlobally = true;
-#endif
-
         var culture = $"c={SelectedCulture}|uic={SelectedCulture}";
 
-#if Maui
-        Preferences.Set(".AspNetCore.Culture", culture);
-#else
         await JSRuntime.InvokeVoidAsync("window.App.setCookie", ".AspNetCore.Culture", culture, 30 * 24 * 3600);
-#endif
 
         NavigationManager.Reload();
     }
