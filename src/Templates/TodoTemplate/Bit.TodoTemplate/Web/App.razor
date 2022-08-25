@@ -1,4 +1,5 @@
-﻿<CascadingAuthenticationState>
+﻿
+<CascadingAuthenticationState>
     <PageTitle>TodoTemplate</PageTitle>
     <LayoutView Layout="@typeof(MainLayout)">
         <Router AppAssembly="@GetType().Assembly"
@@ -30,6 +31,18 @@
 #if BlazorWebAssembly && !Maui
     [Inject] private Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader AssemblyLoader { get; set; } = default!;
 #endif
+
+
+    protected override void OnInitialized()
+    {
+#if Maui
+        var preferredCulture = TodoTemplate.App.App.GetPreferredCulture();
+
+        CultureInfoManager.SetCurrentCulture(preferredCulture, setGlobally: true);
+#endif
+
+        base.OnInitialized();
+    }
 
     private async Task OnNavigateAsync(NavigationContext args)
     {

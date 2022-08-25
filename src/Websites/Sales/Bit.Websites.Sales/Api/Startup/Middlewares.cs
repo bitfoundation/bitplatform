@@ -42,7 +42,7 @@ public class Middlewares
         {
             OnPrepareResponse = ctx =>
             {
-                // https://bitplatform.dev/project-templates/todo-template/getting-started#cache-mechanism
+                // https://bitplatform.dev/todo-template/cache-mechanism
                 ctx.Context.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue()
                 {
                     MaxAge = TimeSpan.FromDays(365),

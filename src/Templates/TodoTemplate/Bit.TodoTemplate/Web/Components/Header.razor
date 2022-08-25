@@ -7,6 +7,10 @@
             <BitIconButton Class="header-menu" IconName=BitIconName.CollapseMenu OnClick=ToggleMenu />
         }
         <a class="logo-lnk" href="/"></a>
+        @if(SelectedCulture is not null)
+        {
+            <BitDropDown Items="GetCultures()" @bind-Value="SelectedCulture" OnSelectItem="WrapHandled(OnCultureChanged)" />
+        }
     </div>
     <div class="header-contact">
         <BitLink Class="header-item--privacy" Href="/privacy" Target="_self">@Localizer[nameof(AppStrings.Privacy)]</BitLink>

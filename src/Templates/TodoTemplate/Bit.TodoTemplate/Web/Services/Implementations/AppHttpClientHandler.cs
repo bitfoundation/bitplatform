@@ -7,6 +7,10 @@ public partial class AppHttpClientHandler : HttpClientHandler
 {
     [AutoInject] private IAuthTokenProvider _tokenProvider = default!;
 
+#if BlazorServer
+    [AutoInject] private IHttpContextAccessor _httpContextAccessor = default!;
+#endif
+
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         if (request.Headers.Authorization is null && RuntimeInformation.ProcessArchitecture != Architecture.Wasm)
@@ -17,6 +21,21 @@ public partial class AppHttpClientHandler : HttpClientHandler
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", access_token);
             }
         }
+
+#if MultilingualEnabled
+#if BlazorServer
+        if (_httpContextAccessor.HttpContext is not null && _httpContextAccessor.HttpContext.Request.Cookies.TryGetValue(".AspNetCore.Culture", out string? culture) && culture is not null)
+        {
+            request.Headers.Add("Cookie", $".AspNetCore.Culture={culture}");
+        }
+#elif BlazorHybrid
+        var culture = Preferences.Get(".AspNetCore.Culture", null);
+        if (culture != null)
+        {
+            request.Headers.Add("Cookie", $".AspNetCore.Culture={culture}");
+        }
+#endif
+#endif
 
         var response = await base.SendAsync(request, cancellationToken);
 

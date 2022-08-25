@@ -1,3 +1,3 @@
 # Bit AdminPanel Template
 
-More info at https://bitplatform.dev/project-templates/adminpanel-template/getting-started
+More info at https://bitplatform.dev/adminpanel/getting-started
