@@ -13,7 +13,7 @@
        title="@Title"
        target="@Target"
        href="@Href"
-       tabindex="@tabIndex">
+       tabindex="@_tabIndex">
         <span>
             <i class="bit-icon bit-icon--@IconName.GetName()"></i>
         </span>
@@ -30,7 +30,7 @@ else
             aria-describedby="@AriaDescription"
             aria-hidden="@AriaHidden"
             title="@Title"
-            tabindex="@tabIndex"
+            tabindex="@_tabIndex"
             @onclick="HandleOnClick">
         <span>
             <i class="bit-icon bit-icon--@IconName.GetName()"></i>
