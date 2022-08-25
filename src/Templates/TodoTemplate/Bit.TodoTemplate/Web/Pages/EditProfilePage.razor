@@ -28,7 +28,9 @@
             <div class="form-profile-container">
                 <BitPersona ImageUrl="@($"{ProfileImageUrl}&file={User.ProfileImageName}")"
                             Size=@BitPersonaSize.Size72
-                            Text="@User.UserName" />
+                            Text="@User.FullName"
+                            SecondaryText="@User.UserName"
+                            Presence="BitPersonaPresenceStatus.Online"/>
             </div>
             <div class="form-input-container">
                 <BitLabel>Profile image</BitLabel>

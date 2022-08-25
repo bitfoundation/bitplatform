@@ -9,8 +9,9 @@
     <div class="top-container">
         <BitPersona ImageUrl="@ProfileImageUrl"
                     Size=@BitPersonaSize.Size48
-                    Text="@User?.UserName"
-                    SecondaryText="@User?.FullName" />
+                    Text="@User?.FullName"
+                    SecondaryText="@User?.UserName"
+                    Presence="BitPersonaPresenceStatus.Online" />
         <BitActionButton IconName="BitIconName.Edit"
                          Href="/edit-profile"
                          OnClick=CloseMenu>
