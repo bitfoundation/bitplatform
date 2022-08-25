@@ -32,7 +32,12 @@ public class Program
         builder.Services.AddSharedServices();
         builder.Services.AddAppServices();
 
-        return builder.Build();
+        var host = builder.Build();
+
+        var preferredCulture = ((IJSInProcessRuntime)host.Services.GetRequiredService<IJSRuntime>()).Invoke<string>("window.App.getPreferredCulture", CultureInfoManager.GetCultureData());
+        CultureInfoManager.SetCurrentCulture(preferredCulture);
+
+        return host;
     }
 #elif BlazorServer
     public static WebApplication CreateHostBuilder(string[] args)

@@ -35,12 +35,13 @@
     [Inject] private IJSRuntime _jsRuntime { get; set; } = default!;
 
     // Blazor Server & Pre Rendering use created cultures in UseRequestLocalization middleware
-    // Browser, android, windows and iOS have to set culture programmatically.
+    // Android, windows and iOS have to set culture programmatically.
+    // Browser is gets handled in Web project's Program.cs
     private bool _shouldSetCultureInfo =
 #if Maui
     true;
 #else
-    RuntimeInformation.ProcessArchitecture == Architecture.Wasm;
+    false;
 #endif
 
     private async Task OnNavigateAsync(NavigationContext args)

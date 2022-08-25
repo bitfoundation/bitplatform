@@ -2,7 +2,7 @@
 <Project>
     <!--/-:msbuild-conditional:noEmit -->
     <PropertyGroup>
-        <BlazorMode>BlazorHybrid</BlazorMode>
+        <BlazorMode>BlazorServer</BlazorMode>
         <!-- You can use either BlazorServer or BlazorWebAssembly or BlazorHybrid -->
         <WebAppDeploymentType>DefaultDeploymentType</WebAppDeploymentType>
         <!-- You can choose either Static, DefaultDeploymentType, PWA or SSR -->
@@ -25,7 +25,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         
         <NeutralLanguage>en</NeutralLanguage>
-        <MultilingualEnabled>true</MultilingualEnabled>
+        <MultilingualEnabled>false</MultilingualEnabled>
         <DefineConstants Condition=" '$(MultilingualEnabled)' == 'true' ">$(DefineConstants);MultilingualEnabled</DefineConstants>
 
     </PropertyGroup>
