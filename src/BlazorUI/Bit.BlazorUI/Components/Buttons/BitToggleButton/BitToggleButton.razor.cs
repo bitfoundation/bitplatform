@@ -3,10 +3,11 @@ namespace Bit.BlazorUI;
 
 public partial class BitToggleButton
 {
-    private int? _tabIndex;
-    private bool _isChecked;
     private bool IsCheckedHasBeenSet;
-
+    private bool isChecked;
+    private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
+    private int? _tabIndex;
+    
     /// <summary>
     /// Whether the toggle button can have focus in disabled mode.
     /// </summary>
@@ -25,7 +26,16 @@ public partial class BitToggleButton
     /// <summary>
     /// The style of compound button, Possible values: Primary | Standard.
     /// </summary>
-    [Parameter] public BitButtonStyle ButtonStyle { get; set; } = BitButtonStyle.Primary;
+    [Parameter] 
+    public BitButtonStyle ButtonStyle
+    {
+        get => buttonStyle;
+        set
+        {
+            buttonStyle = value;
+            ClassBuilder.Reset();
+        }
+    }
 
     /// <summary>
     /// Default value of the IsChecked.
@@ -43,11 +53,11 @@ public partial class BitToggleButton
     [Parameter]
     public bool IsChecked
     {
-        get => _isChecked;
+        get => isChecked;
         set
         {
-            if (value == _isChecked) return;
-            _isChecked = value;
+            if (value == isChecked) return;
+            isChecked = value;
             ClassBuilder.Reset();
             _ = IsCheckedChanged.InvokeAsync(value);
         }
