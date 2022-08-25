@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components.Forms;
+﻿using System.Reflection;
+using Microsoft.AspNetCore.Components.Forms;
 
 namespace AdminPanel.App.Components;
 
