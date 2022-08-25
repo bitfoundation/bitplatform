@@ -1,10 +1,5 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
-using Microsoft.JSInterop;
 
 namespace Bit.BlazorUI;
 
@@ -254,6 +249,12 @@ public partial class BitDatePicker
         }
 
         IsOpen = !isOpen;
+
+        if(IsOpen && CurrentValue != null)
+        {
+            CheckCurrentCalendarMatchesCurrentValue();
+        }
+
         displayYear = currentYear;
         await OnClick.InvokeAsync(eventArgs);
     }
@@ -764,6 +765,19 @@ public partial class BitDatePicker
             return true;
 
         return false;
+    }
+
+    private void CheckCurrentCalendarMatchesCurrentValue()
+    {
+        var currentValue = CurrentValue.GetValueOrDefault();
+        var currentValueYear = currentValue.Year;
+        var currentValueMonth = currentValue.Month;
+        if (currentValueYear != currentYear || currentValueMonth != currentMonth)
+        {
+            currentYear = currentValueYear;
+            currentMonth = currentValueMonth;
+            CreateMonthCalendar(currentYear, currentMonth);
+        }
     }
 
     /// <inheritdoc />
