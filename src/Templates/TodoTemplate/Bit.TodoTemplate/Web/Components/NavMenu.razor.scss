@@ -14,10 +14,6 @@
     height: calc(100vh - #{rem(48px)});
     background-color: $Gray3;
 
-    @include lg {
-        width: rem(206px);
-    }
-
     @include lt-lg {
         width: rem(306px);
     }

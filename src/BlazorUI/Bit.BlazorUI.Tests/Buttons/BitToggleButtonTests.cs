@@ -39,14 +39,14 @@ public class BitToggleButtonTests : BunitTestContext
             parameters.Add(p => p.Title, title);
         });
 
-        var bitToggleButton = component.Find(".bit-tgl-btn");
-        var bitIconTag = component.Find(".bit-tgl-btn > span > i");
-        var bitLabelTag = component.Find(".bit-tgl-btn > span > span");
+        var bitToggleButton = component.Find(".bit-tglb");
+        var bitIconTag = component.Find(".bit-tglb > span > i");
+        var bitLabelTag = component.Find(".bit-tglb > span > span");
 
         var isEnabledClass = isEnabled ? "enabled" : "disabled";
         var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
 
-        Assert.IsTrue(bitToggleButton.ClassList.Contains($"bit-tgl-btn-{isEnabledClass}-{visualClass}"));
+        Assert.IsTrue(bitToggleButton.ClassList.Contains($"bit-tglb-{isEnabledClass}-{visualClass}"));
 
         Assert.AreEqual(bitLabelTag.TextContent, label);
 
@@ -68,7 +68,7 @@ public class BitToggleButtonTests : BunitTestContext
             parameters.Add(p => p.OnClick, () => clicked = true);
         });
 
-        var bitToggleButton = component.Find(".bit-tgl-btn");
+        var bitToggleButton = component.Find(".bit-tglb");
 
         bitToggleButton.Click();
 
@@ -89,7 +89,7 @@ public class BitToggleButtonTests : BunitTestContext
             parameters.Add(p => p.IsChecked, isChecked);
         });
 
-        var bitToggleButton = component.Find(".bit-tgl-btn");
+        var bitToggleButton = component.Find(".bit-tglb");
 
         bitToggleButton.Click();
 
@@ -111,12 +111,12 @@ public class BitToggleButtonTests : BunitTestContext
             parameters.Add(p => p.IsChecked, isChecked);
         });
 
-        var bitToggleButton = component.Find(".bit-tgl-btn");
+        var bitToggleButton = component.Find(".bit-tglb");
 
         bitToggleButton.Click();
 
         //TODO: bypassed - BUnit 2-way bound parameters issue
-        //Assert.AreEqual(isEnabled ? !isChecked : isChecked, bitToggleButton.ClassList.Contains("bit-tgl-btn-checked"));
+        //Assert.AreEqual(isEnabled ? !isChecked : isChecked, bitToggleButton.ClassList.Contains("bit-tglb-checked"));
     }
 
     [DataTestMethod,
@@ -133,7 +133,7 @@ public class BitToggleButtonTests : BunitTestContext
             parameters.Add(p => p.AllowDisabledFocus, allowDisabledFocus);
         });
 
-        var bitButton = component.Find(".bit-tgl-btn");
+        var bitButton = component.Find(".bit-tglb");
         var hasTabindexAttr = bitButton.HasAttribute("tabindex");
 
         Assert.AreEqual(!isEnabled && !allowDisabledFocus, hasTabindexAttr);
@@ -152,7 +152,7 @@ public class BitToggleButtonTests : BunitTestContext
             parameters.Add(p => p.AriaDescription, ariaDescription);
         });
 
-        var bitButton = component.Find(".bit-tgl-btn");
+        var bitButton = component.Find(".bit-tglb");
 
         Assert.IsTrue(bitButton.HasAttribute("aria-describedby"));
 
@@ -167,7 +167,7 @@ public class BitToggleButtonTests : BunitTestContext
             parameters.Add(p => p.AriaLabel, ariaLabel);
         });
 
-        var bitButton = component.Find(".bit-tgl-btn");
+        var bitButton = component.Find(".bit-tglb");
 
         Assert.IsTrue(bitButton.HasAttribute("aria-label"));
 
@@ -186,7 +186,7 @@ public class BitToggleButtonTests : BunitTestContext
             parameters.Add(p => p.AriaHidden, ariaHidden);
         });
 
-        var bitButton = component.Find(".bit-tgl-btn");
+        var bitButton = component.Find(".bit-tglb");
 
         Assert.AreEqual(ariaHidden ? true : false, bitButton.HasAttribute("aria-hidden"));
     }
@@ -204,7 +204,7 @@ public class BitToggleButtonTests : BunitTestContext
             parameters.Add(p => p.IsEnabled, isEnabled);
         });
 
-        var bitToggleButton = component.Find(".bit-tgl-btn");
+        var bitToggleButton = component.Find(".bit-tglb");
         var tagName = bitToggleButton.TagName;
         var expectedElement = href.HasValue() && isEnabled ? "a" : "button";
 
@@ -226,7 +226,7 @@ public class BitToggleButtonTests : BunitTestContext
             parameters.Add(p => p.OnChange, (e) => isCheckedAfterOnChange = e);
         });
 
-        var bitToggleButton = component.Find(".bit-tgl-btn");
+        var bitToggleButton = component.Find(".bit-tglb");
 
         bitToggleButton.Click();
 
