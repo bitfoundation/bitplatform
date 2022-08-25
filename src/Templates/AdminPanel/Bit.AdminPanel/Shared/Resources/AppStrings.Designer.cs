@@ -70,7 +70,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Ajouter.
+        ///   Looks up a localized string similar to Add.
         /// </summary>
         public static string Add {
             get {
@@ -97,7 +97,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Toute.
+        ///   Looks up a localized string similar to All.
         /// </summary>
         public static string All {
             get {
@@ -106,7 +106,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Alphabétique.
+        ///   Looks up a localized string similar to Alphabetical.
         /// </summary>
         public static string Alphabetical {
             get {
@@ -115,7 +115,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Vous avez déjà un compte?.
+        ///   Looks up a localized string similar to Already have an account?.
         /// </summary>
         public static string AlreadyHaveAccountMessage {
             get {
@@ -133,7 +133,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to L&apos;argument &apos;{0}&apos; ne peut pas être nul, vide ou contenir uniquement des espaces..
+        ///   Looks up a localized string similar to The argument &apos;{0}&apos; cannot be null, empty or contain only whitespace..
         /// </summary>
         public static string ArgumentIsNullOrWhitespace {
             get {
@@ -142,7 +142,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to AssociatedMetadataTypeTypeDescriptor_MetadataTypeContainsUnknownProperties.
+        ///   Looks up a localized string similar to The associated metadata type for type &apos;{0}&apos; contains the following unknown properties or fields: {1}. Please make sure that the names of these members match the names of the properties on the main type..
         /// </summary>
         public static string AssociatedMetadataTypeTypeDescriptor_MetadataTypeContainsUnknownProperties {
             get {
@@ -151,7 +151,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to AttributeStore_Unknown_Property.
+        ///   Looks up a localized string similar to The type &apos;{0}&apos; does not contain a public property named &apos;{1}&apos;..
         /// </summary>
         public static string AttributeStore_Unknown_Property {
             get {
@@ -160,7 +160,16 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Requête invalide.
+        ///   Looks up a localized string similar to Back.
+        /// </summary>
+        public static string Back {
+            get {
+                return ResourceManager.GetString("Back", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid request.
         /// </summary>
         public static string BadRequestException {
             get {
@@ -169,7 +178,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Date de naissance.
+        ///   Looks up a localized string similar to Birthdate.
         /// </summary>
         public static string BirthDate {
             get {
@@ -178,7 +187,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Annuler.
+        ///   Looks up a localized string similar to Cancel.
         /// </summary>
         public static string Cancel {
             get {
@@ -205,7 +214,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Category could not be found..
+        ///   Looks up a localized string similar to Category entity could not be found.
         /// </summary>
         public static string CategoryCouldNotBeFound {
             get {
@@ -223,7 +232,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Vérifiez votre Spam/Junk, si vous ne le trouvez pas dans la boîte de réception..
+        ///   Looks up a localized string similar to Check your Spam/Junk, if you could not find it in the Inbox..
         /// </summary>
         public static string CheckSpamMailMessage {
             get {
@@ -232,7 +241,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Common_PropertyNotFound.
+        ///   Looks up a localized string similar to The property {0}.{1} could not be found..
         /// </summary>
         public static string Common_PropertyNotFound {
             get {
@@ -241,7 +250,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to CompareAttribute_MustMatch.
+        ///   Looks up a localized string similar to &apos;{0}&apos; and &apos;{1}&apos; do not match..
         /// </summary>
         public static string CompareAttribute_MustMatch {
             get {
@@ -250,7 +259,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to CompareAttribute_UnknownProperty.
+        ///   Looks up a localized string similar to Could not find a property named {0}..
         /// </summary>
         public static string CompareAttribute_UnknownProperty {
             get {
@@ -277,8 +286,8 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Nous avons envoyé un lien de confirmation à votre adresse e-mail.
-        ///Veuillez confirmer votre email en cliquant sur le lien..
+        ///   Looks up a localized string similar to We have sent a confirmation link to your email address.
+        ///Please confirm your email by clicking on the link..
         /// </summary>
         public static string ConfirmEmailMessage {
             get {
@@ -287,7 +296,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to confirmez votre adresse email.
+        ///   Looks up a localized string similar to Confirm Your Email Address.
         /// </summary>
         public static string ConfirmEmailTitle {
             get {
@@ -296,7 +305,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Confirmer le nouveau mot de passe.
+        ///   Looks up a localized string similar to Confirm New Password.
         /// </summary>
         public static string ConfirmNewPassword {
             get {
@@ -305,7 +314,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Échec de la simultanéité optimiste, l&apos;objet a été modifié..
+        ///   Looks up a localized string similar to Request could not be processed because of conflict in the request.
         /// </summary>
         public static string ConflicException {
             get {
@@ -314,7 +323,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Le champ {0} n&apos;est pas un numéro de carte de crédit valide..
+        ///   Looks up a localized string similar to The {0} field is not a valid credit card number..
         /// </summary>
         public static string CreditCardAttribute_Invalid {
             get {
@@ -323,16 +332,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Personnalisé.
-        /// </summary>
-        public static string CustomGender {
-            get {
-                return ResourceManager.GetString("CustomGender", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to La méthode CustomValidationAttribute &apos;{0}&apos; dans le type &apos;{1}&apos; doit renvoyer System.ComponentModel.DataAnnotations.ValidationResult. Utilisez System.ComponentModel.DataAnnotations.ValidationResult.Success pour représenter le succès..
+        ///   Looks up a localized string similar to The CustomValidationAttribute method &apos;{0}&apos; in type &apos;{1}&apos; must return System.ComponentModel.DataAnnotations.ValidationResult.  Use System.ComponentModel.DataAnnotations.ValidationResult.Success to represent success..
         /// </summary>
         public static string CustomValidationAttribute_Method_Must_Return_ValidationResult {
             get {
@@ -341,7 +341,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to La méthode CustomValidationAttribute &apos;{0}&apos; n&apos;existe pas dans le type &apos;{1}&apos; ou n&apos;est pas publique et statique..
+        ///   Looks up a localized string similar to The CustomValidationAttribute method &apos;{0}&apos; does not exist in type &apos;{1}&apos; or is not public and static..
         /// </summary>
         public static string CustomValidationAttribute_Method_Not_Found {
             get {
@@ -350,7 +350,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Le CustomValidationAttribute.Method n&apos;a pas été spécifié..
+        ///   Looks up a localized string similar to The CustomValidationAttribute.Method was not specified..
         /// </summary>
         public static string CustomValidationAttribute_Method_Required {
             get {
@@ -359,7 +359,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to La méthode CustomValidationAttribute &apos;{0}&apos; dans le type &apos;{1}&apos; doit correspondre à la signature attendue : public static ValidationResult {0}(valeur d&apos;objet, contexte ValidationContext). La valeur peut être fortement typée. Le paramètre ValidationContext est facultatif..
+        ///   Looks up a localized string similar to The CustomValidationAttribute method &apos;{0}&apos; in type &apos;{1}&apos; must match the expected signature: public static ValidationResult {0}(object value, ValidationContext context).  The value can be strongly typed.  The ValidationContext parameter is optional..
         /// </summary>
         public static string CustomValidationAttribute_Method_Signature {
             get {
@@ -368,7 +368,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Impossible de convertir la valeur de type &apos;{0}&apos; en &apos;{1}&apos; comme prévu par la méthode {2}.{3}..
+        ///   Looks up a localized string similar to Could not convert the value of type &apos;{0}&apos; to &apos;{1}&apos; as expected by method {2}.{3}..
         /// </summary>
         public static string CustomValidationAttribute_Type_Conversion_Failed {
             get {
@@ -377,7 +377,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Le type de validation personnalisé &apos;{0}&apos; doit être public..
+        ///   Looks up a localized string similar to The custom validation type &apos;{0}&apos; must be public..
         /// </summary>
         public static string CustomValidationAttribute_Type_Must_Be_Public {
             get {
@@ -386,7 +386,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} n&apos;est pas valide..
+        ///   Looks up a localized string similar to {0} is not valid..
         /// </summary>
         public static string CustomValidationAttribute_ValidationError {
             get {
@@ -395,7 +395,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Le CustomValidationAttribute.ValidatorType n&apos;a pas été spécifié..
+        ///   Looks up a localized string similar to The CustomValidationAttribute.ValidatorType was not specified..
         /// </summary>
         public static string CustomValidationAttribute_ValidatorType_Required {
             get {
@@ -404,7 +404,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to La chaîne DataType personnalisée ne peut pas être nulle ou vide..
+        ///   Looks up a localized string similar to The custom DataType string cannot be null or empty..
         /// </summary>
         public static string DataTypeAttribute_EmptyDataTypeString {
             get {
@@ -413,11 +413,20 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Complété.
+        ///   Looks up a localized string similar to Date.
         /// </summary>
         public static string Date {
             get {
                 return ResourceManager.GetString("Date", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Default color picker.
+        /// </summary>
+        public static string DefaultColorPicker {
+            get {
+                return ResourceManager.GetString("DefaultColorPicker", resourceCulture);
             }
         }
         
@@ -431,7 +440,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to La propriété {0} n&apos;a pas été définie. Utilisez la méthode {1} pour obtenir la valeur..
+        ///   Looks up a localized string similar to The {0} property has not been set.  Use the {1} method to get the value..
         /// </summary>
         public static string DisplayAttribute_PropertyNotSet {
             get {
@@ -440,7 +449,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Vous n&apos;avez pas de compte ?.
+        ///   Looks up a localized string similar to Don’t have an account?.
         /// </summary>
         public static string DontHaveAccountMessage {
             get {
@@ -449,7 +458,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to L&apos;e-mail &apos;{0}&apos; est déjà pris..
+        ///   Looks up a localized string similar to Email &apos;{0}&apos; is already taken..
         /// </summary>
         public static string DuplicateEmail {
             get {
@@ -458,7 +467,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Le nom de rôle &apos;{0}&apos; est déjà pris..
+        ///   Looks up a localized string similar to Role name &apos;{0}&apos; is already taken..
         /// </summary>
         public static string DuplicateRoleName {
             get {
@@ -467,7 +476,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Le nom d&apos;utilisateur &apos;{0}&apos; est déjà pris..
+        ///   Looks up a localized string similar to Username &apos;{0}&apos; is already taken..
         /// </summary>
         public static string DuplicateUserName {
             get {
@@ -476,7 +485,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Éditer.
+        ///   Looks up a localized string similar to Edit.
         /// </summary>
         public static string Edit {
             get {
@@ -503,7 +512,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Editer le profil.
+        ///   Looks up a localized string similar to Edit profile.
         /// </summary>
         public static string EditProfileTitle {
             get {
@@ -512,7 +521,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to E-mail.
+        ///   Looks up a localized string similar to Email.
         /// </summary>
         public static string Email {
             get {
@@ -521,7 +530,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Le champ {0} n&apos;est pas une adresse e-mail valide..
+        ///   Looks up a localized string similar to The {0} field is not a valid e-mail address..
         /// </summary>
         public static string EmailAddressAttribute_Invalid {
             get {
@@ -530,7 +539,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Votre email est déjà confirmé..
+        ///   Looks up a localized string similar to Your email is already confirmed..
         /// </summary>
         public static string EmailAlreadyConfirmed {
             get {
@@ -539,7 +548,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Echec de la confirmation par e-mail !.
+        ///   Looks up a localized string similar to Email Confirmation Failed!.
         /// </summary>
         public static string EmailConfirmationFailedMessage {
             get {
@@ -548,7 +557,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to confirmation de l&apos;émail.
+        ///   Looks up a localized string similar to Email Confirmation.
         /// </summary>
         public static string EmailConfirmationTitle {
             get {
@@ -557,7 +566,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to E-mail confirmé avec succès !.
+        ///   Looks up a localized string similar to Email Confirmed Successfully!.
         /// </summary>
         public static string EmailConfirmedSuccessfullyMessage {
             get {
@@ -566,7 +575,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to L&apos;e-mail &apos;{0}&apos; n&apos;est pas confirmé..
+        ///   Looks up a localized string similar to Email &apos;{0}&apos; is not confirmed..
         /// </summary>
         public static string EmailNotConfirmed {
             get {
@@ -575,7 +584,16 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Le type fourni pour EnumDataTypeAttribute ne peut pas être nul..
+        ///   Looks up a localized string similar to Enter category name.
+        /// </summary>
+        public static string EnterCategoryName {
+            get {
+                return ResourceManager.GetString("EnterCategoryName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The type provided for EnumDataTypeAttribute cannot be null..
         /// </summary>
         public static string EnumDataTypeAttribute_TypeCannotBeNull {
             get {
@@ -584,7 +602,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Le type &apos;{0}&apos; doit représenter un type d&apos;énumération..
+        ///   Looks up a localized string similar to The type &apos;{0}&apos; needs to represent an enumeration type..
         /// </summary>
         public static string EnumDataTypeAttribute_TypeNeedsToBeAnEnum {
             get {
@@ -593,7 +611,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Erreur.
+        ///   Looks up a localized string similar to Error.
         /// </summary>
         public static string Error {
             get {
@@ -602,16 +620,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Femelle.
-        /// </summary>
-        public static string FemaleGender {
-            get {
-                return ResourceManager.GetString("FemaleGender", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Le champ {0} n&apos;accepte que les fichiers avec les extensions suivantes : {1}.
+        ///   Looks up a localized string similar to The {0} field only accepts files with the following extensions: {1}.
         /// </summary>
         public static string FileExtensionsAttribute_Invalid {
             get {
@@ -620,7 +629,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Une erreur s&apos;est produite lors de la suppression du fichier.
+        ///   Looks up a localized string similar to An error occurred while removing file.
         /// </summary>
         public static string FileRemoveFailed {
             get {
@@ -629,7 +638,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Une erreur s&apos;est produite lors du téléchargement du fichier.
+        ///   Looks up a localized string similar to An error occurred while uploading file.
         /// </summary>
         public static string FileUploadFailed {
             get {
@@ -638,7 +647,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to L&apos;accès à la ressource demandée est interdit.
+        ///   Looks up a localized string similar to Access to the requested resource is forbidden.
         /// </summary>
         public static string ForbiddenException {
             get {
@@ -647,7 +656,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Veuillez saisir l&apos;adresse e-mail avec laquelle vous vous êtes inscrit afin que nous puissions vous envoyer un lien de réinitialisation du mot de passe à votre adresse e-mail..
+        ///   Looks up a localized string similar to Please enter the email address you have been signed up with so we can send a reset password link to your email address..
         /// </summary>
         public static string ForgetPasswordMessage {
             get {
@@ -656,7 +665,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Mot de passe oublié.
+        ///   Looks up a localized string similar to Forget password.
         /// </summary>
         public static string ForgetPasswordTitle {
             get {
@@ -665,7 +674,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to mot de passe oublié?.
+        ///   Looks up a localized string similar to Forgot password?.
         /// </summary>
         public static string ForgotPasswordLink {
             get {
@@ -692,7 +701,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Nom et prénom.
+        ///   Looks up a localized string similar to Full Name.
         /// </summary>
         public static string FullName {
             get {
@@ -701,7 +710,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Le genre.
+        ///   Looks up a localized string similar to Gender.
         /// </summary>
         public static string Gender {
             get {
@@ -710,7 +719,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Personnalisé.
+        ///   Looks up a localized string similar to Custom.
         /// </summary>
         public static string GenderCustom {
             get {
@@ -719,7 +728,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Femelle.
+        ///   Looks up a localized string similar to Female.
         /// </summary>
         public static string GenderFemale {
             get {
@@ -728,7 +737,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Mâle.
+        ///   Looks up a localized string similar to Male.
         /// </summary>
         public static string GenderMale {
             get {
@@ -737,7 +746,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Dépôt GitHub.
+        ///   Looks up a localized string similar to GitHub Repo.
         /// </summary>
         public static string GitHubRepo {
             get {
@@ -746,7 +755,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Aller à aujourd&apos;hui.
+        ///   Looks up a localized string similar to Go to today.
         /// </summary>
         public static string GoToToday {
             get {
@@ -755,16 +764,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Maison.
-        /// </summary>
-        public static string Home {
-            get {
-                return ResourceManager.GetString("Home", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Créez facilement votre application Blazor multi-mode (WASM, serveur, hybride, pré-rendu) dans les plus brefs délais !.
+        ///   Looks up a localized string similar to Create your multi-mode (WASM, Server, Hybrid, pre-rendering) Blazor admin panel easily in the shortest time ever!.
         /// </summary>
         public static string HomeMessage {
             get {
@@ -773,7 +773,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to TodoTemplate Accueil.
+        ///   Looks up a localized string similar to Bit Admin Panel.
         /// </summary>
         public static string HomeTitle {
             get {
@@ -782,7 +782,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Il semble que le lien de confirmation soit invalide ou ait expiré..
+        ///   Looks up a localized string similar to Looks like the confirmation link either is invalid or has expired..
         /// </summary>
         public static string InvalidConfirmationLinkMessage {
             get {
@@ -791,7 +791,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to L&apos;e-mail &apos;{0}&apos; n&apos;est pas valide..
+        ///   Looks up a localized string similar to Email &apos;{0}&apos; is invalid..
         /// </summary>
         public static string InvalidEmail {
             get {
@@ -800,7 +800,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Le nom de rôle &apos;{0}&apos; n&apos;est pas valide..
+        ///   Looks up a localized string similar to Role name &apos;{0}&apos; is invalid..
         /// </summary>
         public static string InvalidRoleName {
             get {
@@ -809,7 +809,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Jeton invalide..
+        ///   Looks up a localized string similar to Invalid token..
         /// </summary>
         public static string InvalidToken {
             get {
@@ -818,7 +818,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Le nom d&apos;utilisateur &apos;{0}&apos; n&apos;est pas valide, ne peut contenir que des lettres ou des chiffres..
+        ///   Looks up a localized string similar to Username &apos;{0}&apos; is invalid, can only contain letters or digits..
         /// </summary>
         public static string InvalidUserName {
             get {
@@ -827,7 +827,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Accepte-t-il la politique de confidentialité ?.
+        ///   Looks up a localized string similar to Is accept privacy policy?.
         /// </summary>
         public static string IsAcceptPrivacy {
             get {
@@ -836,7 +836,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Erreur connue.
+        ///   Looks up a localized string similar to Known error.
         /// </summary>
         public static string KnownException {
             get {
@@ -863,7 +863,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Le champ de type {0} doit être une chaîne, un tableau ou un type ICollection..
+        ///   Looks up a localized string similar to The field of type {0} must be a string, array or ICollection type..
         /// </summary>
         public static string LengthAttribute_InvalidValueType {
             get {
@@ -872,7 +872,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Impossible de récupérer la propriété &apos;{0}&apos; car la localisation a échoué. Le type &apos;{1}&apos; n&apos;est pas public ou ne contient pas de propriété de chaîne statique publique portant le nom &apos;{2}&apos;..
+        ///   Looks up a localized string similar to Cannot retrieve property &apos;{0}&apos; because localization failed.  Type &apos;{1}&apos; is not public or does not contain a public static string property with the name &apos;{2}&apos;..
         /// </summary>
         public static string LocalizableString_LocalizationFailed {
             get {
@@ -881,7 +881,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Un utilisateur avec ce login existe déjà..
+        ///   Looks up a localized string similar to A user with this login already exists..
         /// </summary>
         public static string LoginAlreadyAssociated {
             get {
@@ -890,7 +890,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to MaxLengthAttribute doit avoir une valeur de longueur supérieure à zéro. Utilisez MaxLength() sans paramètres pour indiquer que la chaîne ou le tableau peut avoir la longueur maximale autorisée..
+        ///   Looks up a localized string similar to MaxLengthAttribute must have a Length value that is greater than zero. Use MaxLength() without parameters to indicate that the string or array can have the maximum allowable length..
         /// </summary>
         public static string MaxLengthAttribute_InvalidMaxLength {
             get {
@@ -899,7 +899,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Le champ {0} doit être une chaîne ou un type de tableau d&apos;une longueur maximale de &apos;{1}&apos;..
+        ///   Looks up a localized string similar to The field {0} must be a string or array type with a maximum length of &apos;{1}&apos;..
         /// </summary>
         public static string MaxLengthAttribute_ValidationError {
             get {
@@ -917,7 +917,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to MinLengthAttribute doit avoir une valeur de longueur égale ou supérieure à zéro..
+        ///   Looks up a localized string similar to MinLengthAttribute must have a Length value that is zero or greater..
         /// </summary>
         public static string MinLengthAttribute_InvalidMinLength {
             get {
@@ -926,7 +926,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Le champ {0} doit être une chaîne ou un type de tableau avec une longueur minimale de &apos;{1}&apos;..
+        ///   Looks up a localized string similar to The field {0} must be a string or array type with a minimum length of &apos;{1}&apos;..
         /// </summary>
         public static string MinLengthAttribute_ValidationError {
             get {
@@ -944,7 +944,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to nouveau mot de passe.
+        ///   Looks up a localized string similar to New Password.
         /// </summary>
         public static string NewPassword {
             get {
@@ -953,7 +953,16 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Vous n&apos;avez pas reçu le mail de confirmation ?.
+        ///   Looks up a localized string similar to No todos yet.
+        /// </summary>
+        public static string NoTodos {
+            get {
+                return ResourceManager.GetString("NoTodos", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Haven’t you received the confirmation email?.
         /// </summary>
         public static string NotReceivedConfirmationEmailMessage {
             get {
@@ -962,7 +971,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Vous n&apos;avez pas reçu le mail de confirmation?.
+        ///   Looks up a localized string similar to Haven’t you received the confirmation email?.
         /// </summary>
         public static string NotReceivedConfirmationEmailMessage1 {
             get {
@@ -971,7 +980,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to OU.
+        ///   Looks up a localized string similar to OR.
         /// </summary>
         public static string Or {
             get {
@@ -980,7 +989,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Mot de passe.
+        ///   Looks up a localized string similar to Password.
         /// </summary>
         public static string Password {
             get {
@@ -989,7 +998,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Votre mot de passe a été modifié avec succès..
+        ///   Looks up a localized string similar to Your password changed successfully..
         /// </summary>
         public static string PasswordChangedSuccessfullyMessage {
             get {
@@ -998,7 +1007,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Mot de passe incorrect..
+        ///   Looks up a localized string similar to Incorrect password..
         /// </summary>
         public static string PasswordMismatch {
             get {
@@ -1007,7 +1016,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Les mots de passe doivent comporter au moins un chiffre (&apos;0&apos;-&apos;9&apos;)..
+        ///   Looks up a localized string similar to Passwords must have at least one digit (&apos;0&apos;-&apos;9&apos;)..
         /// </summary>
         public static string PasswordRequiresDigit {
             get {
@@ -1016,7 +1025,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Les mots de passe doivent avoir au moins une minuscule (&apos;a&apos;-&apos;z&apos;)..
+        ///   Looks up a localized string similar to Passwords must have at least one lowercase (&apos;a&apos;-&apos;z&apos;)..
         /// </summary>
         public static string PasswordRequiresLower {
             get {
@@ -1025,7 +1034,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Les mots de passe doivent comporter au moins un caractère non alphanumérique..
+        ///   Looks up a localized string similar to Passwords must have at least one non alphanumeric character..
         /// </summary>
         public static string PasswordRequiresNonAlphanumeric {
             get {
@@ -1034,7 +1043,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Les mots de passe doivent utiliser au moins {0} caractères différents..
+        ///   Looks up a localized string similar to Passwords must use at least {0} different characters..
         /// </summary>
         public static string PasswordRequiresUniqueChars {
             get {
@@ -1043,7 +1052,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Les mots de passe doivent avoir au moins une majuscule (&apos;A&apos;-&apos;Z&apos;)..
+        ///   Looks up a localized string similar to Passwords must have at least one uppercase (&apos;A&apos;-&apos;Z&apos;)..
         /// </summary>
         public static string PasswordRequiresUpper {
             get {
@@ -1052,7 +1061,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Les mots de passe doivent comporter au moins {0} caractères..
+        ///   Looks up a localized string similar to Passwords must be at least {0} characters..
         /// </summary>
         public static string PasswordTooShort {
             get {
@@ -1061,7 +1070,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Le champ {0} n&apos;est pas un numéro de téléphone valide..
+        ///   Looks up a localized string similar to The {0} field is not a valid phone number..
         /// </summary>
         public static string PhoneAttribute_Invalid {
             get {
@@ -1070,7 +1079,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Numéro de téléphone.
+        ///   Looks up a localized string similar to Phone number.
         /// </summary>
         public static string PhoneNumber {
             get {
@@ -1088,7 +1097,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Intimité.
+        ///   Looks up a localized string similar to Privacy.
         /// </summary>
         public static string Privacy {
             get {
@@ -1097,7 +1106,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to je suis d&apos;accord avec le .
+        ///   Looks up a localized string similar to I agree to the .
         /// </summary>
         public static string PrivacyPolicyAgreementMessage {
             get {
@@ -1106,7 +1115,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Utilisez cette page pour détailler la politique de confidentialité de votre site..
+        ///   Looks up a localized string similar to Use this page to detail your site&apos;s privacy policy..
         /// </summary>
         public static string PrivacyPolicyPageMessage {
             get {
@@ -1115,7 +1124,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Utilisez cette section pour détailler la politique de confidentialité de votre site..
+        ///   Looks up a localized string similar to Use this section to detail your site&apos;s privacy policy..
         /// </summary>
         public static string PrivacyPolicySectionMessage {
             get {
@@ -1124,7 +1133,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Politique de confidentialité.
+        ///   Looks up a localized string similar to Privacy Policy.
         /// </summary>
         public static string PrivacyPolicyTitle {
             get {
@@ -1205,7 +1214,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Mise à jour du profil réussie..
+        ///   Looks up a localized string similar to Profile updated successfully..
         /// </summary>
         public static string ProfileUpdatedSuccessfullyMessage {
             get {
@@ -1214,7 +1223,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Le type {0} doit implémenter {1}..
+        ///   Looks up a localized string similar to The type {0} must implement {1}..
         /// </summary>
         public static string RangeAttribute_ArbitraryTypeNotIComparable {
             get {
@@ -1223,7 +1232,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to La valeur maximale &apos;{0}&apos; doit être supérieure ou égale à la valeur minimale &apos;{1}&apos;..
+        ///   Looks up a localized string similar to The maximum value &apos;{0}&apos; must be greater than or equal to the minimum value &apos;{1}&apos;..
         /// </summary>
         public static string RangeAttribute_MinGreaterThanMax {
             get {
@@ -1232,7 +1241,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Les valeurs minimale et maximale doivent être définies..
+        ///   Looks up a localized string similar to The minimum and maximum values must be set..
         /// </summary>
         public static string RangeAttribute_Must_Set_Min_And_Max {
             get {
@@ -1241,7 +1250,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to L&apos;OperandType doit être défini lorsque des chaînes sont utilisées pour les valeurs minimales et maximales..
+        ///   Looks up a localized string similar to The OperandType must be set when strings are used for minimum and maximum values..
         /// </summary>
         public static string RangeAttribute_Must_Set_Operand_Type {
             get {
@@ -1250,7 +1259,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Le champ {0} doit être compris entre {1} et {2}..
+        ///   Looks up a localized string similar to The field {0} must be between {1} and {2}..
         /// </summary>
         public static string RangeAttribute_ValidationError {
             get {
@@ -1259,7 +1268,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Échec de l&apos;utilisation du code de récupération..
+        ///   Looks up a localized string similar to Recovery code redemption failed..
         /// </summary>
         public static string RecoveryCodeRedemptionFailed {
             get {
@@ -1268,7 +1277,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Le champ {0} doit correspondre à l&apos;expression régulière &apos;{1}&apos;..
+        ///   Looks up a localized string similar to The field {0} must match the regular expression &apos;{1}&apos;..
         /// </summary>
         public static string RegexAttribute_ValidationError {
             get {
@@ -1277,7 +1286,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Le modèle doit être défini sur une expression régulière valide..
+        ///   Looks up a localized string similar to The pattern must be set to a valid regular expression..
         /// </summary>
         public static string RegularExpressionAttribute_Empty_Pattern {
             get {
@@ -1286,7 +1295,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Retirer.
+        ///   Looks up a localized string similar to Remove.
         /// </summary>
         public static string Remove {
             get {
@@ -1295,7 +1304,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Le champ {0} est obligatoire..
+        ///   Looks up a localized string similar to The {0} field is required..
         /// </summary>
         public static string RequiredAttribute_ValidationError {
             get {
@@ -1304,7 +1313,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Le lien de confirmation a été renvoyé à votre adresse e-mail..
+        ///   Looks up a localized string similar to The confirmation link has been re-sent to your email address..
         /// </summary>
         public static string ResendConfirmationLinkMessage {
             get {
@@ -1313,7 +1322,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Ré-envoyer l&apos;email.
+        ///   Looks up a localized string similar to Resend email.
         /// </summary>
         public static string ResendEmail {
             get {
@@ -1322,7 +1331,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Réinitialiser le mot de passe.
+        ///   Looks up a localized string similar to Reset password.
         /// </summary>
         public static string ResetPassword {
             get {
@@ -1331,7 +1340,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Le lien de réinitialisation du mot de passe a été envoyé..
+        ///   Looks up a localized string similar to The reset password link has been sent to your email address..
         /// </summary>
         public static string ResetPasswordLinkSentMessage {
             get {
@@ -1340,7 +1349,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Réinitialiser le mot de passe.
+        ///   Looks up a localized string similar to Reset password.
         /// </summary>
         public static string ResetPasswordTitle {
             get {
@@ -1349,7 +1358,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Ressource introuvable.
+        ///   Looks up a localized string similar to Resource not found.
         /// </summary>
         public static string ResourceNotFoundException {
             get {
@@ -1358,7 +1367,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Les données de la demande ne sont pas valides.
+        ///   Looks up a localized string similar to Request data is not valid.
         /// </summary>
         public static string ResourceValidationException {
             get {
@@ -1367,7 +1376,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Une erreur s&apos;est produite lors de la communication avec le serveur.
+        ///   Looks up a localized string similar to An error occurred while communicating with server.
         /// </summary>
         public static string RestException {
             get {
@@ -1376,7 +1385,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Le rôle {0} n&apos;existe pas..
+        ///   Looks up a localized string similar to Role {0} does not exist..
         /// </summary>
         public static string RoleNotFound {
             get {
@@ -1385,7 +1394,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to sauvegarder.
+        ///   Looks up a localized string similar to Save.
         /// </summary>
         public static string Save {
             get {
@@ -1394,7 +1403,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Sélectionnez votre date de naissance.
+        ///   Looks up a localized string similar to Select your birth date.
         /// </summary>
         public static string SelectBirthDate {
             get {
@@ -1403,7 +1412,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to S&apos;identifier.
+        ///   Looks up a localized string similar to Sign in.
         /// </summary>
         public static string SignIn {
             get {
@@ -1412,7 +1421,16 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to S&apos;identifier.
+        ///   Looks up a localized string similar to Sign in as different user.
+        /// </summary>
+        public static string SignInAsDifferentUser {
+            get {
+                return ResourceManager.GetString("SignInAsDifferentUser", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sign in.
         /// </summary>
         public static string SignInTitle {
             get {
@@ -1421,7 +1439,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Déconnexion.
+        ///   Looks up a localized string similar to Sign out.
         /// </summary>
         public static string SignOut {
             get {
@@ -1430,7 +1448,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Êtes-vous certain de vouloir vous déconnecter?.
+        ///   Looks up a localized string similar to Are you sure you want to Sign out?.
         /// </summary>
         public static string SignOutPrompt {
             get {
@@ -1439,7 +1457,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Chantez.
+        ///   Looks up a localized string similar to Sing up.
         /// </summary>
         public static string SignUp {
             get {
@@ -1448,7 +1466,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Chantez.
+        ///   Looks up a localized string similar to Sign up.
         /// </summary>
         public static string SingUpTitle {
             get {
@@ -1457,7 +1475,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Trier par.
+        ///   Looks up a localized string similar to Sort by.
         /// </summary>
         public static string SortBy {
             get {
@@ -1484,7 +1502,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to La longueur maximale doit être un entier non négatif..
+        ///   Looks up a localized string similar to The maximum length must be a nonnegative integer..
         /// </summary>
         public static string StringLengthAttribute_InvalidMaxLength {
             get {
@@ -1493,7 +1511,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Le champ {0} doit être une chaîne d&apos;une longueur maximale de {1}..
+        ///   Looks up a localized string similar to The field {0} must be a string with a maximum length of {1}..
         /// </summary>
         public static string StringLengthAttribute_ValidationError {
             get {
@@ -1502,7 +1520,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Le champ {0} doit être une chaîne d&apos;une longueur minimale de {2} et d&apos;une longueur maximale de {1}..
+        ///   Looks up a localized string similar to The field {0} must be a string with a minimum length of {2} and a maximum length of {1}..
         /// </summary>
         public static string StringLengthAttribute_ValidationErrorIncludingMinimum {
             get {
@@ -1511,7 +1529,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Soumettre.
+        ///   Looks up a localized string similar to Send reset link.
         /// </summary>
         public static string Submit {
             get {
@@ -1520,34 +1538,16 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Ajouter une tâche.
+        ///   Looks up a localized string similar to To Do item could not be found.
         /// </summary>
-        public static string TodoAddPlaceholder {
+        public static string ToDoItemCouldNotBeFound {
             get {
-                return ResourceManager.GetString("TodoAddPlaceholder", resourceCulture);
+                return ResourceManager.GetString("ToDoItemCouldNotBeFound", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cherchez quelque chose à faire....
-        /// </summary>
-        public static string TodoSearchPlaceholder {
-            get {
-                return ResourceManager.GetString("TodoSearchPlaceholder", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Faire.
-        /// </summary>
-        public static string TodoTitle {
-            get {
-                return ResourceManager.GetString("TodoTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Trop de demandes.
+        ///   Looks up a localized string similar to Too many requests.
         /// </summary>
         public static string TooManyRequestsExceptions {
             get {
@@ -1574,7 +1574,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Le paramètre clé à la position {0} avec la valeur &apos;{1}&apos; n&apos;est pas une chaîne. Chaque paramètre de contrôle clé doit être une chaîne..
+        ///   Looks up a localized string similar to The key parameter at position {0} with value &apos;{1}&apos; is not a string. Every key control parameter must be a string..
         /// </summary>
         public static string UIHintImplementation_ControlParameterKeyIsNotAString {
             get {
@@ -1583,7 +1583,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Le paramètre clé à la position {0} est nul. Chaque paramètre de contrôle clé doit être une chaîne..
+        ///   Looks up a localized string similar to The key parameter at position {0} is null. Every key control parameter must be a string..
         /// </summary>
         public static string UIHintImplementation_ControlParameterKeyIsNull {
             get {
@@ -1592,7 +1592,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Le paramètre clé à la position {0} avec la valeur &apos;{1}&apos; apparaît plus d&apos;une fois..
+        ///   Looks up a localized string similar to The key parameter at position {0} with value &apos;{1}&apos; occurs more than once..
         /// </summary>
         public static string UIHintImplementation_ControlParameterKeyOccursMoreThanOnce {
             get {
@@ -1601,7 +1601,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Le nombre de paramètres de contrôle doit être pair..
+        ///   Looks up a localized string similar to The number of control parameters must be even..
         /// </summary>
         public static string UIHintImplementation_NeedEvenNumberOfControlParameters {
             get {
@@ -1610,7 +1610,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Votre demande ne contient pas d&apos;identifiants d&apos;authentification valides.
+        ///   Looks up a localized string similar to Your request lacks valid authentication credentials.
         /// </summary>
         public static string UnauthorizedException {
             get {
@@ -1619,7 +1619,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Une erreur inconnue s&apos;est produite.
+        ///   Looks up a localized string similar to Unknown error has occurred.
         /// </summary>
         public static string UnknownException {
             get {
@@ -1628,7 +1628,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to L&apos;enregistrement a été modifié par un autre utilisateur après que vous ayez obtenu les données d&apos;origine. l&apos;opération a été annulée..
+        ///   Looks up a localized string similar to The record was modified by another user after you got the original data. the operation was canceled..
         /// </summary>
         public static string UpdateConcurrencyException {
             get {
@@ -1637,7 +1637,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Télécharger une nouvelle image de profil.
+        ///   Looks up a localized string similar to Upload a new profile image.
         /// </summary>
         public static string UploadNewProfileImage {
             get {
@@ -1646,7 +1646,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Le champ {0} n&apos;est pas une URL http, https ou ftp complète valide..
+        ///   Looks up a localized string similar to The {0} field is not a valid fully-qualified http, https, or ftp URL..
         /// </summary>
         public static string UrlAttribute_Invalid {
             get {
@@ -1655,7 +1655,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to L&apos;utilisateur a déjà défini un mot de passe..
+        ///   Looks up a localized string similar to User already has a password set..
         /// </summary>
         public static string UserAlreadyHasPassword {
             get {
@@ -1664,7 +1664,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Utilisateur déjà dans le rôle &apos;{0}&apos;..
+        ///   Looks up a localized string similar to User already in role &apos;{0}&apos;..
         /// </summary>
         public static string UserAlreadyInRole {
             get {
@@ -1673,7 +1673,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to L&apos;image de l&apos;utilisateur est introuvable.
+        ///   Looks up a localized string similar to User image could not be found.
         /// </summary>
         public static string UserImageCouldNotBeFound {
             get {
@@ -1682,7 +1682,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to L&apos;utilisateur est verrouillé. Réessayez dans {0}.
+        ///   Looks up a localized string similar to User is locked out. Try again in {0}.
         /// </summary>
         public static string UserLockedOut {
             get {
@@ -1691,7 +1691,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Nom d&apos;utilisateur.
+        ///   Looks up a localized string similar to Username.
         /// </summary>
         public static string UserName {
             get {
@@ -1700,7 +1700,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to L&apos;utilisateur {0} n&apos;existe pas..
+        ///   Looks up a localized string similar to User {0} does not exist..
         /// </summary>
         public static string UserNameNotFound {
             get {
@@ -1709,7 +1709,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to L&apos;utilisateur n&apos;est pas dans le rôle &apos;{0}&apos;..
+        ///   Looks up a localized string similar to User is not in role &apos;{0}&apos;..
         /// </summary>
         public static string UserNotInRole {
             get {
@@ -1718,7 +1718,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to ErrorMessageString ou ErrorMessageResourceName doivent être définis, mais pas les deux..
+        ///   Looks up a localized string similar to Either ErrorMessageString or ErrorMessageResourceName must be set, but not both..
         /// </summary>
         public static string ValidationAttribute_Cannot_Set_ErrorMessage_And_Resource {
             get {
@@ -1727,7 +1727,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to IsValid(object value) n&apos;a pas été implémenté par cette classe. Le point d&apos;entrée préféré est GetValidationResult() et les classes doivent remplacer IsValid(valeur d&apos;objet, contexte ValidationContext)..
+        ///   Looks up a localized string similar to IsValid(object value) has not been implemented by this class.  The preferred entry point is GetValidationResult() and classes should override IsValid(object value, ValidationContext context)..
         /// </summary>
         public static string ValidationAttribute_IsValid_NotImplemented {
             get {
@@ -1736,7 +1736,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to ErrorMessageResourceType et ErrorMessageResourceName doivent être définis sur cet attribut..
+        ///   Looks up a localized string similar to Both ErrorMessageResourceType and ErrorMessageResourceName need to be set on this attribute..
         /// </summary>
         public static string ValidationAttribute_NeedBothResourceTypeAndResourceName {
             get {
@@ -1745,7 +1745,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to La propriété &apos;{0}&apos; sur le type de ressource &apos;{1}&apos; n&apos;est pas un type de chaîne..
+        ///   Looks up a localized string similar to The property &apos;{0}&apos; on resource type &apos;{1}&apos; is not a string type..
         /// </summary>
         public static string ValidationAttribute_ResourcePropertyNotStringType {
             get {
@@ -1754,7 +1754,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Le type de ressource &apos;{0}&apos; n&apos;a pas de propriété statique accessible nommée &apos;{1}&apos;..
+        ///   Looks up a localized string similar to The resource type &apos;{0}&apos; does not have an accessible static property named &apos;{1}&apos;..
         /// </summary>
         public static string ValidationAttribute_ResourceTypeDoesNotHaveProperty {
             get {
@@ -1763,7 +1763,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Le champ {0} est invalide..
+        ///   Looks up a localized string similar to The field {0} is invalid..
         /// </summary>
         public static string ValidationAttribute_ValidationError {
             get {
@@ -1772,7 +1772,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to L&apos;instance fournie doit correspondre à l&apos;ObjectInstance sur le ValidationContext fourni..
+        ///   Looks up a localized string similar to The instance provided must match the ObjectInstance on the ValidationContext supplied..
         /// </summary>
         public static string Validator_InstanceMustMatchValidationContextInstance {
             get {
@@ -1781,7 +1781,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to La valeur de la propriété &apos;{0}&apos; doit être de type &apos;{1}&apos;..
+        ///   Looks up a localized string similar to The value for property &apos;{0}&apos; must be of type &apos;{1}&apos;..
         /// </summary>
         public static string Validator_Property_Value_Wrong_Type {
             get {
@@ -1790,7 +1790,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Vous avez déjà demandé l&apos;e-mail de confirmation. Réessayez dans {0}.
+        ///   Looks up a localized string similar to You have already requested the confirmation email. Try again in {0}.
         /// </summary>
         public static string WaitForConfirmationEmailResendDelay {
             get {
@@ -1799,7 +1799,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Vous avez déjà demandé l&apos;e-mail de réinitialisation du mot de passe. Réessayez dans {0}.
+        ///   Looks up a localized string similar to You have already requested the reset password email. Try again in {0}.
         /// </summary>
         public static string WaitForResetPasswordEmailResendDelay {
             get {
@@ -1808,7 +1808,25 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Vous devez accepter notre politique de confidentialité..
+        ///   Looks up a localized string similar to You have already requested for the reset password email for &apos;{0}&apos;. Try again later..
+        /// </summary>
+        public static string WaitForResetPasswordEmailResendDelay_ {
+            get {
+                return ResourceManager.GetString("WaitForResetPasswordEmailResendDelay.", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You&apos;re signed in as.
+        /// </summary>
+        public static string YouAreSignInAs {
+            get {
+                return ResourceManager.GetString("YouAreSignInAs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You must agree to our privacy policy..
         /// </summary>
         public static string YouHaveToAcceptPrivacyPolicy {
             get {
