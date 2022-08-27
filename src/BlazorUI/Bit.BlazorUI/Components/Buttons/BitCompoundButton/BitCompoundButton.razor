@@ -13,7 +13,7 @@
        href="@Href"
        target="@Target"
        title="@Title"
-       tabindex="@tabIndex">
+       tabindex="@_tabIndex">
         <span class="no-text-select">
             @if (Text.HasValue())
             {
@@ -39,7 +39,7 @@ else
             aria-label="@AriaLabel"
             aria-describedby="@AriaDescription"
             aria-hidden="@AriaHidden"
-            tabindex="@tabIndex"
+            tabindex="@_tabIndex"
             type="@ButtonType?.GetValue()"
             title="@Title"
             @onclick="HandleOnClick">

@@ -1,7 +1,7 @@
 ﻿@import "../../../Styles/Fluent/colors.fluent.scss", "../../../Styles/functions.scss";
 
-.bit-ico-btn {
-    &.bit-ico-btn-fluent {
+.bit-icob {
+    &.bit-icob-fluent {
         width: rem(32px);
         height: rem(32px);
         font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
@@ -40,7 +40,7 @@
         }
     }
 
-    &.bit-ico-btn-disabled-fluent {
+    &.bit-icob-disabled-fluent {
         background: $Grey20;
         color: $Grey90;
         border: 1px solid $Grey20;

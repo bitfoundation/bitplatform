@@ -1,15 +1,11 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.AspNetCore.Components.Web;
+﻿using Microsoft.AspNetCore.Components.Forms;
 
 namespace Bit.BlazorUI;
 
 public partial class BitCompoundButton
 {
     private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
-
-    private int? tabIndex;
+    private int? _tabIndex;
 
     /// <summary>
     /// Whether the compound button can have focus in disabled mode
@@ -25,31 +21,6 @@ public partial class BitCompoundButton
     /// If true, add an aria-hidden attribute instructing screen readers to ignore the element
     /// </summary>
     [Parameter] public bool AriaHidden { get; set; }
-
-    /// <summary>
-    /// The text of compound button
-    /// </summary>
-    [Parameter] public string? Text { get; set; }
-
-    /// <summary>
-    /// Description of the action compound button takes
-    /// </summary>
-    [Parameter] public string? SecondaryText { get; set; }
-
-    /// <summary>
-    /// URL the link points to, if provided, button renders as an anchor
-    /// </summary>
-    [Parameter] public string? Href { get; set; }
-
-    /// <summary>
-    /// If Href provided, specifies how to open the link
-    /// </summary>
-    [Parameter] public string? Target { get; set; }
-
-    /// <summary>
-    /// The title to show when the mouse is placed on the button
-    /// </summary>
-    [Parameter] public string? Title { get; set; }
 
     /// <summary>
     /// The style of compound button, Possible values: Primary | Standard
@@ -76,11 +47,36 @@ public partial class BitCompoundButton
     [CascadingParameter] public EditContext? EditContext { get; set; }
 
     /// <summary>
+    /// URL the link points to, if provided, button renders as an anchor
+    /// </summary>
+    [Parameter] public string? Href { get; set; }
+
+    /// <summary>
     /// Callback for when the compound button clicked
     /// </summary>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
-    protected override string RootElementClass => "bit-cmp-btn";
+    /// <summary>
+    /// Description of the action compound button takes
+    /// </summary>
+    [Parameter] public string? SecondaryText { get; set; }
+
+    /// <summary>
+    /// The text of compound button
+    /// </summary>
+    [Parameter] public string? Text { get; set; }
+
+    /// <summary>
+    /// If Href provided, specifies how to open the link
+    /// </summary>
+    [Parameter] public string? Target { get; set; }
+
+    /// <summary>
+    /// The title to show when the mouse is placed on the button
+    /// </summary>
+    [Parameter] public string? Title { get; set; }
+
+    protected override string RootElementClass => "bit-cmpb";
 
     protected override void RegisterComponentClasses()
     {
@@ -95,9 +91,9 @@ public partial class BitCompoundButton
 
     protected override async Task OnInitializedAsync()
     {
-        if (!IsEnabled)
+        if (IsEnabled is false)
         {
-            tabIndex = AllowDisabledFocus ? null : -1;
+            _tabIndex = AllowDisabledFocus ? null : -1;
         }
         
         ButtonType ??= EditContext is null ? BitButtonType.Button : BitButtonType.Submit;
