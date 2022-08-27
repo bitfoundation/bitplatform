@@ -112,3 +112,12 @@
     background-image: url('/images/icons/github-icon.svg');
     background-size: rem(11px) rem(12px);
 }
+
+::deep {
+    .culture-drp {
+        position: absolute;
+        left: rem(5px);
+        width: rem(105px);
+        background-color: white;
+    }
+}

@@ -18,6 +18,11 @@ public partial class AppHttpClientHandler : HttpClientHandler
             }
         }
 
+#if MultilingualEnabled && (BlazorServer || BlazorHybrid)
+        string cultureCookie = $"c={CultureInfo.CurrentCulture.Name}|uic={CultureInfo.CurrentCulture.Name}";
+        request.Headers.Add("Cookie", $".AspNetCore.Culture={cultureCookie}");
+#endif
+
         var response = await base.SendAsync(request, cancellationToken);
 
         if (!response.IsSuccessStatusCode && response.Content.Headers.ContentType?.MediaType == "application/json")

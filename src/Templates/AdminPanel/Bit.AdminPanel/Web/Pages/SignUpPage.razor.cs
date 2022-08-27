@@ -85,14 +85,21 @@ public partial class SignUpPage
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await base.OnAfterRenderAsync(firstRender);
-
-        if (firstRender)
+        try
         {
-            if (await AuthenticationStateProvider.IsUserAuthenticated())
+            if (firstRender)
             {
-                NavigationManager.NavigateTo("/");
+                if (await AuthenticationStateProvider.IsUserAuthenticated())
+                {
+                    NavigationManager.NavigateTo("/");
+                }
             }
         }
+        catch (Exception exp)
+        {
+            ExceptionHandler.Handle(exp);
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
     }
 }
