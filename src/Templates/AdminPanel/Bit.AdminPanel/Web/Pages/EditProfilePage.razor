@@ -4,10 +4,10 @@
 <PageTitle>@Localizer[nameof(AppStrings.EditProfileTitle)]</PageTitle>
 
 <div class="page-container">
-        @if (string.IsNullOrEmpty(EditProfileMessage) is false)
-        {
+    @if (string.IsNullOrEmpty(EditProfileMessage) is false)
+    {
         <BitMessageBar MessageBarType="@EditProfileMessageType" OnDismiss="() => EditProfileMessage = null">@EditProfileMessage</BitMessageBar>
-        }
+    }
 
     <div class="page-header">
         <BitIconButton Class="back-btn" OnClick=@GoBack IconName="BitIconName.Back" Title="Back" />
@@ -23,10 +23,10 @@
     {
         <div class="form-profile-container">
             <BitPersona ImageUrl="@($"{ProfileImageUrl}&file={User.ProfileImageName}")"
-                        Size=@BitPersonaSize.Size72
-                        Text="@(string.IsNullOrWhiteSpace(User?.FullName) ? @User?.UserName : User?.FullName)"
-                        SecondaryText="@User?.UserName"
-                        Presence="BitPersonaPresenceStatus.Online" />
+                    Size=@BitPersonaSize.Size72
+                    Text="@(string.IsNullOrWhiteSpace(User?.FullName) ? @User?.UserName : User?.FullName)"
+                    SecondaryText="@User?.UserName"
+                    Presence="BitPersonaPresenceStatus.Online" />
         </div>
         <div class="form-input-container">
             <BitLabel>Profile image</BitLabel>
@@ -40,7 +40,7 @@
                        @onfocus="() => ProfileImageError = null" />
             <div class="form-input-error">@ProfileImageError</div>
         </div>
-        <EditForm Model="UserToEdit" OnSubmit="WrapHandled(Save)">
+        <EditForm Model="UserToEdit" OnSubmit="WrapHandled(Submit)">
             <div class="form-input-container">
                 <BitTextField Label="@Localizer[nameof(AppStrings.FullName)]"
                           @bind-Value="UserToEdit.FullName"
@@ -64,7 +64,7 @@
                    Title="@Localizer[nameof(AppStrings.Save)]"
                    IsEnabled="IsSubmitButtonEnabled"
                    ButtonType="BitButtonType.Submit">
-                @if (IsSavingData)
+                @if (IsLoadingData)
                 {
                     <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
                 }
