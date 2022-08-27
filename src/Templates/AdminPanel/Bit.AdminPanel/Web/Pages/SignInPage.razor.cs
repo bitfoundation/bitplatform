@@ -46,22 +46,14 @@ public partial class SignInPage
         }
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected async override Task OnAfterFirstRenderAsync()
     {
-        try
-        {
-            if (firstRender)
-            {
-                if (await AuthenticationStateProvider.IsUserAuthenticated())
-                    NavigationManager.NavigateTo("/");
-            }
-        }
-        catch (Exception exp)
-        {
-            ExceptionHandler.Handle(exp);
-        }
+        await base.OnAfterFirstRenderAsync();
 
-        await base.OnAfterRenderAsync(firstRender);
+        if (await AuthenticationStateProvider.IsUserAuthenticated())
+        {
+            NavigationManager.NavigateTo("/");
+        }
     }
 }
 

@@ -2,7 +2,8 @@
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-namespace TodoTemplate.Shared.Infra;
+namespace AdminPanel.Shared.Infra;
+
 public class CultureInfoManager
 {
     public static (string name, string code) DefaultCulture { get; } = ("English", "en-US");
