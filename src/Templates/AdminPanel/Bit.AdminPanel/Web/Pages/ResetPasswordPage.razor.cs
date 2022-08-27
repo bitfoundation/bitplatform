@@ -68,24 +68,13 @@ public partial class ResetPasswordPage
         await base.OnInitAsync();
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected async override Task OnAfterFirstRenderAsync()
     {
-        try
-        {
-            if (firstRender)
-            {
-                if (await AuthenticationStateProvider.IsUserAuthenticated())
-                {
-                    NavigationManager.NavigateTo("/");
-                }
-            }
+        await base.OnAfterFirstRenderAsync();
 
-        }
-        catch (Exception exp)
+        if (await AuthenticationStateProvider.IsUserAuthenticated())
         {
-            ExceptionHandler.Handle(exp);
+            NavigationManager.NavigateTo("/");
         }
-
-        await base.OnAfterRenderAsync(firstRender);
     }
 }

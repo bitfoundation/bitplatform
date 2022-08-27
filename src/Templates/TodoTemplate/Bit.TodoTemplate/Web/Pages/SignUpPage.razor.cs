@@ -84,23 +84,13 @@ public partial class SignUpPage
         }
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected async override Task OnAfterFirstRenderAsync()
     {
-        await base.OnAfterRenderAsync(firstRender);
+        await base.OnAfterFirstRenderAsync();
 
-        try
+        if (await AuthenticationStateProvider.IsUserAuthenticated())
         {
-            if (firstRender)
-            {
-                if (await AuthenticationStateProvider.IsUserAuthenticated())
-                {
-                    NavigationManager.NavigateTo("/");
-                }
-            }
-        }
-        catch (Exception exp)
-        {
-            ExceptionHandler.Handle(exp);
+            NavigationManager.NavigateTo("/");
         }
     }
 }

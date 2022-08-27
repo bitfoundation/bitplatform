@@ -48,6 +48,24 @@ public partial class AppComponentBase : ComponentBase
         }
     }
 
+    protected async override Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (firstRender)
+        {
+            try
+            {
+                await OnAfterFirstRenderAsync();
+                await InvokeAsync(StateHasChanged);
+            }
+            catch (Exception exp)
+            {
+                ExceptionHandler.Handle(exp);
+            }
+        }
+    }
+
     /// <summary>
     /// Replacement for <see cref="OnInitializedAsync"/> which catches all possible exceptions in order to prevent app crash.
     /// </summary>
@@ -60,6 +78,14 @@ public partial class AppComponentBase : ComponentBase
     /// Replacement for <see cref="OnParametersSetAsync"/> which catches all possible exceptions in order to prevent app crash.
     /// </summary>
     protected virtual Task OnParamsSetAsync()
+    {
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Method invoked after first time the component has been rendered.
+    /// </summary>
+    protected virtual Task OnAfterFirstRenderAsync()
     {
         return Task.CompletedTask;
     }

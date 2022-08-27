@@ -1,32 +1,21 @@
 ﻿using AdminPanel.App.Extensions;
-using TodoTemplate.Shared.Infra;
 
 namespace AdminPanel.App.Components;
 
 public partial class Footer
 {
-#if MultilingualEnabled
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        await base.OnAfterRenderAsync(firstRender);
+#if MultilingualEnabled || true
 
-        try
-        {
-            if (firstRender)
-            {
+    protected async override Task OnAfterFirstRenderAsync()
+    {
 #if Maui
-                var preferredCultureCookie = Preferences.Get(".AspNetCore.Culture", null);
+        var preferredCultureCookie = Preferences.Get(".AspNetCore.Culture", null);
 #else
-                var preferredCultureCookie = await JsRuntime.InvokeAsync<string?>("window.App.getCookie", ".AspNetCore.Culture");
+        var preferredCultureCookie = await JsRuntime.InvokeAsync<string?>("window.App.getCookie", ".AspNetCore.Culture");
 #endif
-                SelectedCulture = CultureInfoManager.GetCurrentCulture(preferredCultureCookie);
-                await InvokeAsync(StateHasChanged);
-            }
-        }
-        catch (Exception exp)
-        {
-            ExceptionHandler.Handle(exp);
-        }
+        SelectedCulture = CultureInfoManager.GetCurrentCulture(preferredCultureCookie);
+
+        await base.OnAfterFirstRenderAsync();
     }
 #endif
 
