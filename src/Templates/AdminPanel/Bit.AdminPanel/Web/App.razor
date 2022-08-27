@@ -1,4 +1,5 @@
-﻿<CascadingAuthenticationState>
+﻿@using System.Runtime.InteropServices
+<CascadingAuthenticationState>
     <PageTitle>AdminPanel</PageTitle>
     <LayoutView Layout="@typeof(MainLayout)">
         <Router AppAssembly="@GetType().Assembly"
@@ -31,8 +32,24 @@
     [Inject] private Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader AssemblyLoader { get; set; } = default!;
 #endif
 
+    [Inject] private IJSRuntime _jsRuntime { get; set; } = default!;
+
+    private bool _cultureHasNotBeenSet = true;
+
     private async Task OnNavigateAsync(NavigationContext args)
     {
+        // Blazor Server & Pre Rendering use created cultures in UseRequestLocalization middleware
+        // Android, windows and iOS have to set culture programmatically.
+        // Browser is gets handled in Web project's Program.cs
+#if Maui
+    if (_cultureHasNotBeenSet)
+    {
+        _cultureHasNotBeenSet = false;
+        var preferredCultureCookie = Preferences.Get(".AspNetCore.Culture", null);
+        CultureInfoManager.SetCurrentCulture(preferredCultureCookie);
+    }
+#endif
+
 #if BlazorWebAssembly && !Maui
     if ((args.Path is "/" or "") && lazyLoadedAssemblies.Any(asm => asm.GetName().Name == "Newtonsoft.Json") is false)
     {

@@ -2,6 +2,7 @@
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Net.Http.Headers;
+using TodoTemplate.Shared.Infra;
 
 namespace AdminPanel.Api.Startup;
 
@@ -59,13 +60,13 @@ public class Middlewares
         app.UseAuthorization();
 
 #if MultilingualEnabled
-        var supportedCultures = new[] { "en", "fr" };
-        var localizationOptions = new RequestLocalizationOptions()
-            .SetDefaultCulture(supportedCultures[0])
-            .AddSupportedCultures(supportedCultures)
-            .AddSupportedUICultures(supportedCultures);
-
-        app.UseRequestLocalization(localizationOptions);
+        var supportedCultures = CultureInfoManager.SupportedCultures.Select(sc => CultureInfoManager.CreateCultureInfo(sc.code)).ToArray();
+        app.UseRequestLocalization(new RequestLocalizationOptions
+        {
+            SupportedCultures = supportedCultures,
+            SupportedUICultures = supportedCultures,
+            ApplyCurrentCultureToResponseHeaders = true
+        }.SetDefaultCulture(CultureInfoManager.DefaultCulture.code));
 #endif
 
         app.UseHttpResponseExceptionHandler();

@@ -48,10 +48,17 @@ public partial class SignInPage
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        try
         {
-            if (await AuthenticationStateProvider.IsUserAuthenticated())
-                NavigationManager.NavigateTo("/");
+            if (firstRender)
+            {
+                if (await AuthenticationStateProvider.IsUserAuthenticated())
+                    NavigationManager.NavigateTo("/");
+            }
+        }
+        catch (Exception exp)
+        {
+            ExceptionHandler.Handle(exp);
         }
 
         await base.OnAfterRenderAsync(firstRender);

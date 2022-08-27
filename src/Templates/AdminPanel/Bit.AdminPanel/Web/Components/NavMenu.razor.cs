@@ -15,41 +15,6 @@ public partial class NavMenu
 
     public bool IsSignOutModalOpen { get; set; }
 
-    public NavMenu()
-    {
-        NavLinks = new()
-        {
-            new BitNavLinkItem
-            {
-                Name = "Home",
-                Key = "Home",
-                IconName = BitIconName.Home,
-                Url = "/",
-            },
-            new BitNavLinkItem
-            {
-                Name = "Product catolog",
-                Key = "Product catolog",
-                IconName = BitIconName.Tag,
-                Links = new List<BitNavLinkItem>
-                        {
-                            new BitNavLinkItem
-                            {
-                                Name = "Products",
-                                Url = "/products",
-                                Key = "Products"
-                            },
-                            new BitNavLinkItem
-                            {
-                                Name = "Categories",
-                                Url = "/categories",
-                                Key = "Categories"
-                            },
-                        }
-            }
-        };
-    }
-
     [CascadingParameter]
     public Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
 
@@ -82,6 +47,38 @@ public partial class NavMenu
 
     protected override async Task OnInitAsync()
     {
+        NavLinks = new()
+        {
+            new BitNavLinkItem
+            {
+                Name = Localizer[nameof(AppStrings.Home)],
+                Key = "Home",
+                IconName = BitIconName.Home,
+                Url = "/",
+            },
+            new BitNavLinkItem
+            {
+                Name = Localizer[nameof(AppStrings.ProductCategory)],
+                Key = "Product catolog",
+                IconName = BitIconName.Tag,
+                Links = new List<BitNavLinkItem>
+                        {
+                            new BitNavLinkItem
+                            {
+                                Name = Localizer[nameof(AppStrings.Products)],
+                                Url = "/products",
+                                Key = "Products"
+                            },
+                            new BitNavLinkItem
+                            {
+                                Name = Localizer[nameof(AppStrings.Categories)],
+                                Url = "/categories",
+                                Key = "Categories"
+                            },
+                        }
+            }
+        };
+
         User = await StateService.GetValue($"{nameof(NavMenu)}-{nameof(User)}", async () =>
             await HttpClient.GetFromJsonAsync("User/GetCurrentUser", AppJsonContext.Default.UserDto));
 

@@ -39,12 +39,12 @@
             <BitMessageBar MessageBarType="@SaveMessageType" OnDismiss="() => SaveMessage = null">@SaveMessage</BitMessageBar>
         }
         <div class="form-input-container">
-            <BitTextField Label="@(nameof(Category.Name))" @bind-Value="Category!.Name" Placeholder="@Localizer[nameof(AppStrings.EnterCategoryName)]" />
+            <BitTextField Label="@Localizer[nameof(AppStrings.Name)]" @bind-Value="Category!.Name" Placeholder="@Localizer[nameof(AppStrings.EnterCategoryName)]" />
             <ValidationMessage For="() => Category.Name" />
         </div>
 
         <div class="form-input-container">
-            <BitLabel For="catColorInput">Color</BitLabel>
+            <BitLabel For="catColorInput">@Localizer[nameof(AppStrings.Color)]</BitLabel>
             <div class="color-container">
                 <div class="color-btn @(Category!.Color == "#FFCD56" ? "color-btn--active" : null)" style="background-color: #FFCD56" @onclick=@(() => SetCategoryColor("#FFCD56"))></div>
                 <div class="color-btn @(Category!.Color == "#FF6384" ? "color-btn--active" : null)" style="background-color: #FF6384" @onclick=@(() => SetCategoryColor("#FF6384"))></div>

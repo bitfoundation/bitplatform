@@ -28,12 +28,19 @@ public partial class NotAuthorizedComponent
 
     protected override void OnAfterRender(bool firstRender)
     {
-        if (firstRender)
+        try
         {
-            if (User.Identity?.IsAuthenticated is false)
+            if (firstRender)
             {
-                RedirectToSignInPage();
+                if (User.Identity?.IsAuthenticated is false)
+                {
+                    RedirectToSignInPage();
+                }
             }
+        }
+        catch (Exception exp)
+        {
+            ExceptionHandler.Handle(exp);
         }
 
         base.OnAfterRender(firstRender);

@@ -772,4 +772,34 @@ Please confirm your email by clicking on the link.</value>
   <data name="SearchOnName" xml:space="preserve">
     <value>Search on name</value>
   </data>
+  <data name="AddEditCategory" xml:space="preserve">
+    <value>Add/Edit category</value>
+  </data>
+  <data name="Categories" xml:space="preserve">
+    <value>Categories</value>
+  </data>
+  <data name="EditProfile" xml:space="preserve">
+    <value>Edit profile</value>
+  </data>
+  <data name="Home" xml:space="preserve">
+    <value>Home</value>
+  </data>
+  <data name="ProductCategory" xml:space="preserve">
+    <value>Product category</value>
+  </data>
+  <data name="ProductCatologue" xml:space="preserve">
+    <value>Product catologue</value>
+  </data>
+  <data name="Products" xml:space="preserve">
+    <value>Products</value>
+  </data>
+  <data name="Color" xml:space="preserve">
+    <value>Color</value>
+  </data>
+  <data name="Id" xml:space="preserve">
+    <value>Id</value>
+  </data>
+  <data name="ProfileImage" xml:space="preserve">
+    <value>Image profile</value>
+  </data>
 </root>
