@@ -17,7 +17,7 @@ public partial class Footer
 #if Maui
                 var preferredCultureCookie = Preferences.Get(".AspNetCore.Culture", null);
 #else
-                var preferredCultureCookie = await JSRuntime.InvokeAsync<string?>("window.App.getCookie", ".AspNetCore.Culture");
+                var preferredCultureCookie = await JsRuntime.InvokeAsync<string?>("window.App.getCookie", ".AspNetCore.Culture");
 #endif
                 SelectedCulture = CultureInfoManager.GetCurrentCulture(preferredCultureCookie);
                 await InvokeAsync(StateHasChanged);

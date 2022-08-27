@@ -181,10 +181,10 @@
     <value>Dépôt GitHub</value>
   </data>
   <data name="Last30DaysCategoryCount" xml:space="preserve">
-    <value>Last 30 days category count</value>
+    <value>Nombre de catégories des 30 derniers jours</value>
   </data>
   <data name="Last30DaysProductCount" xml:space="preserve">
-    <value>Last 30 days product count</value>
+    <value>Nombre de produits des 30 derniers jours</value>
   </data>
   <data name="NotReceivedConfirmationEmailMessage" xml:space="preserve">
     <value>Vous n'avez pas reçu le mail de confirmation ?</value>
@@ -238,7 +238,7 @@
     <value>Trier par</value>
   </data>
   <data name="StartupPageDescription" xml:space="preserve">
-    <value>Admin Panel is a project template that provides common features such as Sign-up &amp; Sign-in. This template is powered by Bit BlazorUI components.</value>
+    <value>Le panneau d'administration est un modèle de projet qui fournit des fonctionnalités communes telles que l'inscription et la connexion. Ce modèle est alimenté par les composants Bit BlazorUI.</value>
   </data>
   <data name="StartupPageTitle" xml:space="preserve">
     <value>Bit Admin Panel</value>
@@ -287,7 +287,7 @@ Veuillez confirmer votre email en cliquant sur le lien.</value>
     <value>mot de passe oublié?</value>
   </data>
   <data name="ForgotPasswordMessage" xml:space="preserve">
-    <value>Please enter the email address you have been signed up with so we can send a reset password link to your email address.</value>
+    <value>Veuillez saisir l'adresse e-mail avec laquelle vous vous êtes inscrit afin que nous puissions vous envoyer un lien de réinitialisation du mot de passe à votre adresse e-mail.</value>
   </data>
   <data name="ForgotPasswordTitle" xml:space="preserve">
     <value>Mot de passe oublié</value>
@@ -727,43 +727,70 @@ Veuillez confirmer votre email en cliquant sur le lien.</value>
   <data name="Price" xml:space="preserve">
     <value>Prix</value>
   </data>
-    <data name="MadeWith" xml:space="preserve">
+  <data name="MadeWith" xml:space="preserve">
     <value>Fabriqué avec</value>
   </data>
-    <data name="No" xml:space="preserve">
+  <data name="No" xml:space="preserve">
     <value>Non</value>
   </data>
-    <data name="UsingBitPlatform" xml:space="preserve">
+  <data name="UsingBitPlatform" xml:space="preserve">
     <value>Utiliser bitplatform !</value>
   </data>
-    <data name="Yes" xml:space="preserve">
+  <data name="Yes" xml:space="preserve">
     <value>Oui</value>
   </data>
-    <data name="AreYouSureYouWantToSignout" xml:space="preserve">
+  <data name="AreYouSureYouWantToSignout" xml:space="preserve">
     <value>Êtes-vous certain de vouloir vous déconnecter?</value>
   </data>
-    <data name="Close" xml:space="preserve">
+  <data name="Close" xml:space="preserve">
     <value>proche</value>
   </data>
-    <data name="EnterProductName" xml:space="preserve">
+  <data name="EnterProductName" xml:space="preserve">
     <value>Entrez le nom du produit</value>
   </data>
-    <data name="SelectACategory" xml:space="preserve">
+  <data name="SelectACategory" xml:space="preserve">
     <value>choisissez une catégorie</value>
   </data>
-    <data name="SelectCategory" xml:space="preserve">
+  <data name="SelectCategory" xml:space="preserve">
     <value>Choisir une catégorie</value>
   </data>
-    <data name="Action" xml:space="preserve">
+  <data name="Action" xml:space="preserve">
     <value>Action</value>
   </data>
-    <data name="CustomColor" xml:space="preserve">
+  <data name="CustomColor" xml:space="preserve">
     <value>Couleur personnalisée</value>
   </data>
-    <data name="Delete" xml:space="preserve">
+  <data name="Delete" xml:space="preserve">
     <value>Effacer</value>
   </data>
-    <data name="SearchOnName" xml:space="preserve">
+  <data name="SearchOnName" xml:space="preserve">
     <value>Recherche par nom</value>
+  </data>
+  <data name="AddEditCategory" xml:space="preserve">
+    <value>Ajouter/Modifier une catégorie</value>
+  </data>
+  <data name="Categories" xml:space="preserve">
+    <value>Catégories</value>
+  </data>
+  <data name="EditProfile" xml:space="preserve">
+    <value>Editer le profil</value>
+  </data>
+  <data name="ProductCategory" xml:space="preserve">
+    <value>Catégorie de produit</value>
+  </data>
+  <data name="ProductCatologue" xml:space="preserve">
+    <value>Catalogue de produits</value>
+  </data>
+  <data name="Products" xml:space="preserve">
+    <value>Des produits</value>
+  </data>
+  <data name="Id" xml:space="preserve">
+    <value>Id</value>
+  </data>
+  <data name="Color" xml:space="preserve">
+    <value>Couleur</value>
+  </data>
+  <data name="ProfileImage" xml:space="preserve">
+    <value>Profil d'image</value>
   </data>
 </root>

@@ -67,7 +67,16 @@ namespace AdminPanel.Shared.Resources {
             get {
                 return ResourceManager.GetString("Action", resourceCulture);
             }
-        }      
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Active.
+        /// </summary>
+        public static string Active {
+            get {
+                return ResourceManager.GetString("Active", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Add.
@@ -88,13 +97,40 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Add/Edit category.
+        /// </summary>
+        public static string AddEditCategory {
+            get {
+                return ResourceManager.GetString("AddEditCategory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to New product.
         /// </summary>
         public static string AddProduct {
             get {
                 return ResourceManager.GetString("AddProduct", resourceCulture);
             }
-        }          
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to All.
+        /// </summary>
+        public static string All {
+            get {
+                return ResourceManager.GetString("All", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Alphabetical.
+        /// </summary>
+        public static string Alphabetical {
+            get {
+                return ResourceManager.GetString("Alphabetical", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Already have an account?.
@@ -105,6 +141,14 @@ namespace AdminPanel.Shared.Resources {
             }
         }
         
+        /// <summary>
+        ///   Looks up a localized string similar to Admin Panel.
+        /// </summary>
+        public static string AppTitle {
+            get {
+                return ResourceManager.GetString("AppTitle", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Are you sure you want to Sign out?.
@@ -113,7 +157,34 @@ namespace AdminPanel.Shared.Resources {
             get {
                 return ResourceManager.GetString("AreYouSureYouWantToSignout", resourceCulture);
             }
-        }                      
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The argument &apos;{0}&apos; cannot be null, empty or contain only whitespace..
+        /// </summary>
+        public static string ArgumentIsNullOrWhitespace {
+            get {
+                return ResourceManager.GetString("ArgumentIsNullOrWhitespace", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The associated metadata type for type &apos;{0}&apos; contains the following unknown properties or fields: {1}. Please make sure that the names of these members match the names of the properties on the main type..
+        /// </summary>
+        public static string AssociatedMetadataTypeTypeDescriptor_MetadataTypeContainsUnknownProperties {
+            get {
+                return ResourceManager.GetString("AssociatedMetadataTypeTypeDescriptor_MetadataTypeContainsUnknownProperties", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The type &apos;{0}&apos; does not contain a public property named &apos;{1}&apos;..
+        /// </summary>
+        public static string AttributeStore_Unknown_Property {
+            get {
+                return ResourceManager.GetString("AttributeStore_Unknown_Property", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Back.
@@ -148,6 +219,15 @@ namespace AdminPanel.Shared.Resources {
         public static string Cancel {
             get {
                 return ResourceManager.GetString("Cancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Categories.
+        /// </summary>
+        public static string Categories {
+            get {
+                return ResourceManager.GetString("Categories", resourceCulture);
             }
         }
         
@@ -206,6 +286,15 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Color.
+        /// </summary>
+        public static string Color {
+            get {
+                return ResourceManager.GetString("Color", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The property {0}.{1} could not be found..
         /// </summary>
         public static string Common_PropertyNotFound {
@@ -230,7 +319,16 @@ namespace AdminPanel.Shared.Resources {
             get {
                 return ResourceManager.GetString("CompareAttribute_UnknownProperty", resourceCulture);
             }
-        }       
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Completed.
+        /// </summary>
+        public static string Completed {
+            get {
+                return ResourceManager.GetString("Completed", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Optimistic concurrency failure, object has been modified..
@@ -276,7 +374,16 @@ namespace AdminPanel.Shared.Resources {
             get {
                 return ResourceManager.GetString("ConflicException", resourceCulture);
             }
-        }        
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The {0} field is not a valid credit card number..
+        /// </summary>
+        public static string CreditCardAttribute_Invalid {
+            get {
+                return ResourceManager.GetString("CreditCardAttribute_Invalid", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Custom color.
@@ -284,6 +391,15 @@ namespace AdminPanel.Shared.Resources {
         public static string CustomColor {
             get {
                 return ResourceManager.GetString("CustomColor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The CustomValidationAttribute method &apos;{0}&apos; in type &apos;{1}&apos; must return System.ComponentModel.DataAnnotations.ValidationResult.  Use System.ComponentModel.DataAnnotations.ValidationResult.Success to represent success..
+        /// </summary>
+        public static string CustomValidationAttribute_Method_Must_Return_ValidationResult {
+            get {
+                return ResourceManager.GetString("CustomValidationAttribute_Method_Must_Return_ValidationResult", resourceCulture);
             }
         }
         
@@ -357,7 +473,16 @@ namespace AdminPanel.Shared.Resources {
             get {
                 return ResourceManager.GetString("DataTypeAttribute_EmptyDataTypeString", resourceCulture);
             }
-        }       
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Date.
+        /// </summary>
+        public static string Date {
+            get {
+                return ResourceManager.GetString("Date", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Default color picker.
@@ -455,6 +580,15 @@ namespace AdminPanel.Shared.Resources {
         public static string EditProduct {
             get {
                 return ResourceManager.GetString("EditProduct", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Edit profile.
+        /// </summary>
+        public static string EditProfile {
+            get {
+                return ResourceManager.GetString("EditProfile", resourceCulture);
             }
         }
         
@@ -720,6 +854,15 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Home.
+        /// </summary>
+        public static string Home {
+            get {
+                return ResourceManager.GetString("Home", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Create your multi-mode (WASM, Server, Hybrid, pre-rendering) Blazor admin panel easily in the shortest time ever!.
         /// </summary>
         public static string HomeMessage {
@@ -734,6 +877,15 @@ namespace AdminPanel.Shared.Resources {
         public static string HomeTitle {
             get {
                 return ResourceManager.GetString("HomeTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Id.
+        /// </summary>
+        public static string Id {
+            get {
+                return ResourceManager.GetString("Id", resourceCulture);
             }
         }
         
@@ -1116,11 +1268,38 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Product category.
+        /// </summary>
+        public static string ProductCategory {
+            get {
+                return ResourceManager.GetString("ProductCategory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Product catologue.
+        /// </summary>
+        public static string ProductCatologue {
+            get {
+                return ResourceManager.GetString("ProductCatologue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Product entity could not be found.
         /// </summary>
         public static string ProductCouldNotBeFound {
             get {
                 return ResourceManager.GetString("ProductCouldNotBeFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Products.
+        /// </summary>
+        public static string Products {
+            get {
+                return ResourceManager.GetString("Products", resourceCulture);
             }
         }
         
@@ -1184,6 +1363,15 @@ namespace AdminPanel.Shared.Resources {
         public static string ProductsPercentagePerCategoryText {
             get {
                 return ResourceManager.GetString("ProductsPercentagePerCategoryText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Image profile.
+        /// </summary>
+        public static string ProfileImage {
+            get {
+                return ResourceManager.GetString("ProfileImage", resourceCulture);
             }
         }
         

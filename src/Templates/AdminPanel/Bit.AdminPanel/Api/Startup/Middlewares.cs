@@ -2,6 +2,7 @@
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Net.Http.Headers;
+using TodoTemplate.Shared.Infra;
 
 namespace AdminPanel.Api.Startup;
 

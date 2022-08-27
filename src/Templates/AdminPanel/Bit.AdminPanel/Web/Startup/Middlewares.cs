@@ -1,5 +1,7 @@
 ﻿//-:cnd:noEmit
 #if BlazorServer
+using TodoTemplate.Shared.Infra;
+
 namespace AdminPanel.App.Startup;
 
 public class Middlewares

@@ -20,7 +20,7 @@ align-items: center">
 
             <AppDataAnnotationsValidator />
             <div class="form-input-container">
-                <BitTextField Label="@(nameof(Product.Name))" @bind-Value="Product.Name" Placeholder="@Localizer[nameof(AppStrings.EnterProductName)]" />
+                <BitTextField Label="@Localizer[(nameof(AppStrings.Name))]" @bind-Value="Product.Name" Placeholder="@Localizer[nameof(AppStrings.EnterProductName)]" />
                 <ValidationMessage For="() => Product.Name" />
             </div>
 
@@ -34,7 +34,7 @@ align-items: center">
             </div>
 
             <div class="form-input-container">
-                <BitNumericTextField Precision="2" Label="@(nameof(Product.Price))"
+                <BitNumericTextField Precision="2" Label="@Localizer[(nameof(AppStrings.Price))]"
                                      @bind-Value="Product.Price"
                                      Suffix="$"
                                      LabelPosition="@BitNumericTextFieldLabelPosition.Top" />
@@ -42,7 +42,7 @@ align-items: center">
             </div>
 
             <div class="form-input-container">
-                <BitTextField Label="@(nameof(Product.Description))"
+                <BitTextField Label="@Localizer[(nameof(AppStrings.Description))]"
                               IsMultiline="true"
                               Rows="3"
                               @bind-Value="Product.Description" />
