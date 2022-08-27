@@ -19,13 +19,9 @@ public partial class AppHttpClientHandler : HttpClientHandler
             }
         }
 
-#if MultilingualEnabled
+#if MultilingualEnabled && (BlazorServer || BlazorHybrid)
         string cultureCookie = $"c={CultureInfo.CurrentCulture.Name}|uic={CultureInfo.CurrentCulture.Name}";
-#if BlazorServer
         request.Headers.Add("Cookie", $".AspNetCore.Culture={cultureCookie}");
-#elif BlazorHybrid
-        request.Headers.Add("Cookie", $".AspNetCore.Culture={cultureCookie}");
-#endif
 #endif
 
         var response = await base.SendAsync(request, cancellationToken);
