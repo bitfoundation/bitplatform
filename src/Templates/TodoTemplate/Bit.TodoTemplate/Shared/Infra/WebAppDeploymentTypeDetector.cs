@@ -2,7 +2,7 @@
 namespace TodoTemplate.Shared.Infra;
 
 /// <summary>
-/// https://bitplatform.dev/project-templates/todo-template/getting-started#blazor-modes
+/// https://bitplatform.dev/todo-template/hosting-models
 /// </summary>
 public class WebAppDeploymentTypeDetector
 {

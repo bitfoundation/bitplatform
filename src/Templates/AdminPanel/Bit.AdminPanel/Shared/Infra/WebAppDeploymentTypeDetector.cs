@@ -2,7 +2,7 @@
 namespace AdminPanel.Shared.Infra;
 
 /// <summary>
-/// https://bitplatform.dev/project-templates/adminpanel-template/getting-started#blazor-modes
+/// https://bitplatform.dev/adminpanel/hosting-models
 /// </summary>
 public class WebAppDeploymentTypeDetector
 {

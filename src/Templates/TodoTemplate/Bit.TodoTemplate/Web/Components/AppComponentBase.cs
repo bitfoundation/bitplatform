@@ -20,6 +20,8 @@ public partial class AppComponentBase : ComponentBase
 
     [AutoInject] protected IStringLocalizer<AppStrings> Localizer = default!;
 
+    [AutoInject] protected IJSRuntime JSRuntime { get; set; } = default!;
+
     protected async sealed override Task OnInitializedAsync()
     {
         try

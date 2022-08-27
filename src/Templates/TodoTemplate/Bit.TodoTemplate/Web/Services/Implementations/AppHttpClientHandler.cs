@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Headers;
+﻿using System.Globalization;
+using System.Net.Http.Headers;
 using System.Runtime.InteropServices;
 
 namespace TodoTemplate.App.Services.Implementations;
@@ -17,6 +18,11 @@ public partial class AppHttpClientHandler : HttpClientHandler
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", access_token);
             }
         }
+
+#if MultilingualEnabled && (BlazorServer || BlazorHybrid)
+        string cultureCookie = $"c={CultureInfo.CurrentCulture.Name}|uic={CultureInfo.CurrentCulture.Name}";
+        request.Headers.Add("Cookie", $".AspNetCore.Culture={cultureCookie}");
+#endif
 
         var response = await base.SendAsync(request, cancellationToken);
 

@@ -1,7 +1,7 @@
 ﻿namespace Bit.Websites.Sales.Shared.Infra;
 
 /// <summary>
-/// https://bitplatform.dev/project-templates/todo-template/getting-started#blazor-modes
+/// https://bitplatform.dev/todo-template/getting-started
 /// </summary>
 public class WebAppDeploymentTypeDetector
 {
