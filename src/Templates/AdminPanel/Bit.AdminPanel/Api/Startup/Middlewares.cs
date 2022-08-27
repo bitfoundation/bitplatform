@@ -37,7 +37,7 @@ public class Middlewares
         {
             OnPrepareResponse = ctx =>
             {
-                // https://bitplatform.dev/todo-template/cache-mechanism
+                // https://bitplatform.dev/adminpanel/cache-mechanism
                 ctx.Context.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue()
                 {
 #if PWA
