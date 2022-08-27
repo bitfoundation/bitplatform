@@ -1,5 +1,4 @@
-﻿using AdminPanel.Shared.Attributes;
-
+﻿
 namespace AdminPanel.Shared.Dtos.Account;
 
 [DtoResourceType(typeof(AppStrings))]
