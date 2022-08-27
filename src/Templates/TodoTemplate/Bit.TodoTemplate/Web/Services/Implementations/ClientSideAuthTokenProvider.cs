@@ -6,7 +6,7 @@ public partial class ClientSideAuthTokenProvider : IAuthTokenProvider
 
     public async Task<string?> GetAcccessToken()
     {
-#if BlazorHybrid
+#if Maui
         return Preferences.Get("access_token", null);
 #else
         return await _jsRuntime.InvokeAsync<string>("App.getCookie", "access_token");

@@ -5,7 +5,7 @@
         <!-- You can use either BlazorServer or BlazorWebAssembly or BlazorHybrid -->
         <WebAppDeploymentType>DefaultDeploymentType</WebAppDeploymentType>
         <!-- You can choose either Static, DefaultDeploymentType, PWA or SSR -->
-        <!-- Learn more about blazor modes & deployment types at https://bitplatform.dev/project-templates/todo-template/getting-started#blazor-modes -->
+        <!-- Learn more about blazor modes & deployment types at https://bitplatform.dev/todo-template/hosting-models -->
         <DefineConstants Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' ">$(DefineConstants);BlazorWebAssembly</DefineConstants>
         <DefineConstants Condition=" '$(BlazorMode)' == 'BlazorServer' ">$(DefineConstants);BlazorServer</DefineConstants>
         <DefineConstants Condition=" '$(WebAppDeploymentType)' == 'DefaultDeploymentType' ">$(DefineConstants);DefaultDeploymentType</DefineConstants>

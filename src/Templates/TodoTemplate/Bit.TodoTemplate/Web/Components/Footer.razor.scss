@@ -87,3 +87,12 @@
 .text--red {
     color: $Red;
 }
+
+::deep {
+    .culture-drp {
+        position: absolute;
+        left: rem(5px);
+        width: rem(105px);
+        background-color: white;
+    }
+}
