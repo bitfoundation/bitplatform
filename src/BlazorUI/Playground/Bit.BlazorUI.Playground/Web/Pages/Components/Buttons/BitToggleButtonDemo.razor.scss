@@ -10,7 +10,7 @@
     margin-top: rem(20px);
 }
 
-::deep .bit-tgl-btn {
+::deep .bit-tglb {
 
     &.tgl-btn {
         @include sm {
@@ -32,7 +32,7 @@
         }
     }
 
-    &.bit-tgl-btn-fluent {
+    &.bit-tglb-fluent {
         span {
             span {
                 font-weight: normal;
