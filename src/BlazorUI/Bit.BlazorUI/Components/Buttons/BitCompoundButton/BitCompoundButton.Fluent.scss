@@ -1,7 +1,7 @@
 ﻿@import "../../../Styles/Fluent/colors.fluent.scss", "../../../Styles/functions.scss";
 
-.bit-cmp-btn {
-    &.bit-cmp-btn-fluent {
+.bit-cmpb {
+    &.bit-cmpb-fluent {
         font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
         text-align: left;
         border-radius: em(2px);
@@ -21,12 +21,12 @@
             height: 100%;
             min-width: 100%;
 
-            .bit-cmp-btn-text {
+            .bit-cmpb-text {
                 margin: 0px 0px 5px;
                 display: block;
             }
 
-            .bit-cmp-btn-secondary-text {
+            .bit-cmpb-secondary-text {
                 font-size: rem(12px);
                 font-weight: 400;
                 line-height: 100%;
@@ -34,7 +34,7 @@
         }
     }
 
-    &.bit-cmp-btn-disabled-fluent {
+    &.bit-cmpb-disabled-fluent {
         background: $Grey20;
         border: 1px solid $Grey20;
         cursor: default;
