@@ -45,7 +45,7 @@
         if (_cultureHasNotBeenSet)
         {
             _cultureHasNotBeenSet = false;
-            var preferredCultureCookie = await _jsRuntime.InvokeAsync<string?>("window.App.getCookie", ".AspNetCore.Culture");
+            var preferredCultureCookie = Preferences.Get(".AspNetCore.Culture", null);
             CultureInfoManager.SetCurrentCulture(preferredCultureCookie);
         }
 #endif

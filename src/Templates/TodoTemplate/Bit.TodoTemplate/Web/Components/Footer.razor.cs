@@ -11,8 +11,12 @@ public partial class Footer
         {
             if (firstRender)
             {
-                var preferredCulture = await JSRuntime.InvokeAsync<string?>("window.App.getCookie", ".AspNetCore.Culture");
-                SelectedCulture = CultureInfoManager.GetCurrentCulture(preferredCulture);
+#if Maui
+                var preferredCultureCookie = Preferences.Get(".AspNetCore.Culture", null);
+#else
+                var preferredCultureCookie = await JSRuntime.InvokeAsync<string?>("window.App.getCookie", ".AspNetCore.Culture");
+#endif
+                SelectedCulture = CultureInfoManager.GetCurrentCulture(preferredCultureCookie);
                 await InvokeAsync(StateHasChanged);
             }
         }
@@ -23,13 +27,17 @@ public partial class Footer
     }
 #endif
 
-    string? SelectedCulture;
+                string? SelectedCulture;
 
     async Task OnCultureChanged()
     {
         var cultureCookie = $"c={SelectedCulture}|uic={SelectedCulture}";
 
+#if Maui
+        Preferences.Set(".AspNetCore.Culture", cultureCookie);
+#else
         await JSRuntime.InvokeVoidAsync("window.App.setCookie", ".AspNetCore.Culture", cultureCookie, 30 * 24 * 3600);
+#endif
 
         NavigationManager.ForceReload();
     }
