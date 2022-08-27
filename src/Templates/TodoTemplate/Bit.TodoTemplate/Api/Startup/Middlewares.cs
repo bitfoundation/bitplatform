@@ -63,7 +63,8 @@ public class Middlewares
         app.UseRequestLocalization(new RequestLocalizationOptions
         {
             SupportedCultures = supportedCultures,
-            SupportedUICultures = supportedCultures
+            SupportedUICultures = supportedCultures,
+            ApplyCurrentCultureToResponseHeaders = true
         }.SetDefaultCulture(CultureInfoManager.DefaultCulture.code));
 #endif
 

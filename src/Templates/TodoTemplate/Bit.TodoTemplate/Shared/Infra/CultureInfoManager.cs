@@ -5,11 +5,12 @@ using System.Runtime.InteropServices;
 namespace TodoTemplate.Shared.Infra;
 public class CultureInfoManager
 {
-    public static (string name, string code) DefaultCulture { get; } = ("English", "en");
+    public static (string name, string code) DefaultCulture { get; } = ("English", "en-US");
 
     public static (string name, string code)[] SupportedCultures { get; } = new (string name, string code)[]
     {
-        ("English", "en"),
+        ("English US", "en-US"),
+        ("English UK", "en-GB"),
         ("Française", "fr"),
         // ("فارسی", "fa"), // To add more languages, you've to provide resx files. You might also put some efforts to change your app flow direction based on CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft
     };
@@ -37,7 +38,7 @@ public class CultureInfoManager
 
     public static string GetCurrentCulture(string? preferredCultureCookie)
     {
-        string culture = CultureInfo.CurrentUICulture.Name[..2];
+        string culture = CultureInfo.CurrentUICulture.Name;
         if (preferredCultureCookie is not null)
         {
             culture = preferredCultureCookie[(preferredCultureCookie.IndexOf("|uic=") + 5)..];

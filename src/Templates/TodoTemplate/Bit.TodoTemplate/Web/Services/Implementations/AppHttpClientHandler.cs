@@ -20,7 +20,7 @@ public partial class AppHttpClientHandler : HttpClientHandler
         }
 
 #if MultilingualEnabled
-        string cultureCookie = $"c={CultureInfo.CurrentCulture.Name[..2]}|uic={CultureInfo.CurrentCulture.Name[..2]}";
+        string cultureCookie = $"c={CultureInfo.CurrentCulture.Name}|uic={CultureInfo.CurrentCulture.Name}";
 #if BlazorServer
         request.Headers.Add("Cookie", $".AspNetCore.Culture={cultureCookie}");
 #elif BlazorHybrid
