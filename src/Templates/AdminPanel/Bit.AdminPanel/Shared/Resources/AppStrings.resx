@@ -733,4 +733,43 @@ Please confirm your email by clicking on the link.</value>
   <data name="YouAreSignInAs" xml:space="preserve">
     <value>You're signed in as</value>
   </data>
+  <data name="MadeWith" xml:space="preserve">
+    <value>Made with</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="UsingBitPlatform" xml:space="preserve">
+    <value>Using bit platform!</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="AreYouSureYouWantToSignout" xml:space="preserve">
+    <value>Are you sure you want to Sign out?</value>
+  </data>
+  <data name="Close" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="EnterProductName" xml:space="preserve">
+    <value>Enter product name</value>
+  </data>
+  <data name="SelectACategory" xml:space="preserve">
+    <value>Select a category</value>
+  </data>
+  <data name="SelectCategory" xml:space="preserve">
+    <value>Select category</value>
+  </data>
+  <data name="Action" xml:space="preserve">
+    <value>Action</value>
+  </data>
+  <data name="CustomColor" xml:space="preserve">
+    <value>Custom color</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="SearchOnName" xml:space="preserve">
+    <value>Search on name</value>
+  </data>
 </root>

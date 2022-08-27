@@ -727,4 +727,43 @@ Veuillez confirmer votre email en cliquant sur le lien.</value>
   <data name="Price" xml:space="preserve">
     <value>Prix</value>
   </data>
+    <data name="MadeWith" xml:space="preserve">
+    <value>Fabriqué avec</value>
+  </data>
+    <data name="No" xml:space="preserve">
+    <value>Non</value>
+  </data>
+    <data name="UsingBitPlatform" xml:space="preserve">
+    <value>Utiliser bitplatform !</value>
+  </data>
+    <data name="Yes" xml:space="preserve">
+    <value>Oui</value>
+  </data>
+    <data name="AreYouSureYouWantToSignout" xml:space="preserve">
+    <value>Êtes-vous certain de vouloir vous déconnecter?</value>
+  </data>
+    <data name="Close" xml:space="preserve">
+    <value>proche</value>
+  </data>
+    <data name="EnterProductName" xml:space="preserve">
+    <value>Entrez le nom du produit</value>
+  </data>
+    <data name="SelectACategory" xml:space="preserve">
+    <value>choisissez une catégorie</value>
+  </data>
+    <data name="SelectCategory" xml:space="preserve">
+    <value>Choisir une catégorie</value>
+  </data>
+    <data name="Action" xml:space="preserve">
+    <value>Action</value>
+  </data>
+    <data name="CustomColor" xml:space="preserve">
+    <value>Couleur personnalisée</value>
+  </data>
+    <data name="Delete" xml:space="preserve">
+    <value>Effacer</value>
+  </data>
+    <data name="SearchOnName" xml:space="preserve">
+    <value>Recherche par nom</value>
+  </data>
 </root>
