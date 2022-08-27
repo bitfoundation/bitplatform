@@ -1,17 +1,8 @@
-﻿using System.CodeDom.Compiler;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
 namespace TodoTemplate.Shared.Infra;
-
-public class CultureData
-{
-    public string CurrentCulture { get; init; } = default!;
-    public string DefaultCulture { get; init; } = default!;
-    public string[] SupportedCultures { get; init; } = default!;
-}
-
 public class CultureInfoManager
 {
     public static (string name, string code) DefaultCulture { get; } = ("English", "en");
@@ -19,7 +10,7 @@ public class CultureInfoManager
     public static (string name, string code)[] SupportedCultures { get; } = new (string name, string code)[]
     {
         ("English", "en"),
-        ("française", "fr"),
+        ("Française", "fr"),
         // ("فارسی", "fa"), // To add more languages, you've to provide resx files. You might also put some efforts to change your app flow direction based on CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft
     };
 
@@ -35,23 +26,27 @@ public class CultureInfoManager
         return cultureInfo;
     }
 
-    public static void SetCurrentCulture(string cultureInfoId)
+    public static void SetCurrentCulture(string? cultureInfoCookie)
     {
-        var cultureInfo = CreateCultureInfo(cultureInfoId);
+        var currentCulture = GetCurrentCulture(cultureInfoCookie);
 
-        CultureInfo.CurrentCulture = CultureInfo.CurrentUICulture = cultureInfo;
+        var cultureInfo = CreateCultureInfo(currentCulture);
 
-        CultureInfo.DefaultThreadCurrentCulture = CultureInfo.DefaultThreadCurrentUICulture = Thread.CurrentThread.CurrentCulture = Thread.CurrentThread.CurrentUICulture = cultureInfo;
+        CultureInfo.CurrentCulture = CultureInfo.CurrentUICulture = CultureInfo.DefaultThreadCurrentCulture = CultureInfo.DefaultThreadCurrentUICulture = Thread.CurrentThread.CurrentCulture = Thread.CurrentThread.CurrentUICulture = cultureInfo;
     }
 
-    public static CultureData GetCultureData()
+    public static string GetCurrentCulture(string? preferredCultureCookie)
     {
-        return new CultureData
+        string culture = CultureInfo.CurrentUICulture.Name[..2];
+        if (preferredCultureCookie is not null)
         {
-            CurrentCulture = CultureInfo.CurrentUICulture.Name[..2],
-            DefaultCulture = DefaultCulture.code,
-            SupportedCultures = SupportedCultures.Select(sc => sc.code).ToArray()
-        };
+            culture = preferredCultureCookie[(preferredCultureCookie.IndexOf("|uic=") + 5)..];
+        }
+        if (SupportedCultures.Any(sc => sc.code == culture) is false)
+        {
+            culture = DefaultCulture.code;
+        }
+        return culture;
     }
 
     /// <summary>

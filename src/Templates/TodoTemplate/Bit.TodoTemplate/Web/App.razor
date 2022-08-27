@@ -34,31 +34,28 @@
 
     [Inject] private IJSRuntime _jsRuntime { get; set; } = default!;
 
-    // Blazor Server & Pre Rendering use created cultures in UseRequestLocalization middleware
-    // Android, windows and iOS have to set culture programmatically.
-    // Browser is gets handled in Web project's Program.cs
-    private bool _shouldSetCultureInfo =
-#if Maui
-    true;
-#else
-    false;
-#endif
+    private bool _cultureHasNotBeenSet = true;
 
     private async Task OnNavigateAsync(NavigationContext args)
     {
-        if (_shouldSetCultureInfo)
+        // Blazor Server & Pre Rendering use created cultures in UseRequestLocalization middleware
+        // Android, windows and iOS have to set culture programmatically.
+        // Browser is gets handled in Web project's Program.cs
+#if Maui
+        if (_cultureHasNotBeenSet)
         {
-            _shouldSetCultureInfo = false; // This should happen only once
-            var preferredCulture = await _jsRuntime.InvokeAsync<string>("window.App.getPreferredCulture", CultureInfoManager.GetCultureData());
-            CultureInfoManager.SetCurrentCulture(preferredCulture);
+            _cultureHasNotBeenSet = false;
+            var preferredCultureCookie = await _jsRuntime.InvokeAsync<string?>("window.App.getCookie", ".AspNetCore.Culture");
+            CultureInfoManager.SetCurrentCulture(preferredCultureCookie);
         }
+#endif
 
 #if BlazorWebAssembly && !Maui
-    if (args.Path.Contains("some-lazy-loaded-page") && lazyLoadedAssemblies.Any(asm => asm.GetName().Name == "SomeAssembly") is false)
-    {
-        var assemblies = await AssemblyLoader.LoadAssembliesAsync(new[] { "SomeAssembly.dll" });
-        lazyLoadedAssemblies.AddRange(assemblies);
-    }
+        if (args.Path.Contains("some-lazy-loaded-page") && lazyLoadedAssemblies.Any(asm => asm.GetName().Name == "SomeAssembly") is false)
+        {
+            var assemblies = await AssemblyLoader.LoadAssembliesAsync(new[] { "SomeAssembly.dll" });
+            lazyLoadedAssemblies.AddRange(assemblies);
+        }
 #endif
     }
 }

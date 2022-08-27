@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Headers;
+﻿using System.Globalization;
+using System.Net.Http.Headers;
 using System.Runtime.InteropServices;
 
 namespace TodoTemplate.App.Services.Implementations;
@@ -6,14 +7,6 @@ namespace TodoTemplate.App.Services.Implementations;
 public partial class AppHttpClientHandler : HttpClientHandler
 {
     [AutoInject] private IAuthTokenProvider _tokenProvider = default!;
-
-#if BlazorServer
-    [AutoInject] private IHttpContextAccessor _httpContextAccessor = default!;
-#endif
-
-#if BlazorHybrid
-    [AutoInject] private IJSRuntime _jsRuntime = default!;
-#endif
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
@@ -27,13 +20,11 @@ public partial class AppHttpClientHandler : HttpClientHandler
         }
 
 #if MultilingualEnabled
+        string cultureCookie = $"c={CultureInfo.CurrentCulture.Name[..2]}|uic={CultureInfo.CurrentCulture.Name[..2]}";
 #if BlazorServer
-        if (_httpContextAccessor.HttpContext is not null && _httpContextAccessor.HttpContext.Request.Cookies.TryGetValue(".AspNetCore.Culture", out string? culture) && culture is not null)
-        {
-            request.Headers.Add("Cookie", $".AspNetCore.Culture={culture}");
-        }
+        request.Headers.Add("Cookie", $".AspNetCore.Culture={cultureCookie}");
 #elif BlazorHybrid
-        request.Headers.Add("Cookie", $".AspNetCore.Culture={await _jsRuntime.InvokeAsync<string>("window.App.getCookie", ".AspNetCore.Culture")}");
+        request.Headers.Add("Cookie", $".AspNetCore.Culture={cultureCookie}");
 #endif
 #endif
 

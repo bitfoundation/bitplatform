@@ -23,6 +23,7 @@
         <Content Condition=" '$(BlazorMode)' != 'BlazorServer' " Remove="Pages\_Layout.cshtml" />
         <Compile Condition=" '$(BlazorMode)' != 'BlazorServer' " Remove="Services\Implementations\ServerSideAuthTokenProvider.cs" />
         <Compile Condition=" '$(BlazorMode)' != 'BlazorServer' " Remove="Extensions\HttpRequestExtensions.cs" />
+        <Content Condition=" '$(BlazorMode)' != 'BlazorServer' " Remove="appsettings.json" />
         <!--/+:msbuild-conditional:noEmit -->
         <Content Remove="compilerconfig.json" />
         <None Include="compilerconfig.json" />

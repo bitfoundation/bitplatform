@@ -9,6 +9,10 @@
     </div>
 
     <div class="footer-content">
+        @if (SelectedCulture is not null)
+        {
+            <BitDropDown Items="GetCultures()" Class="culture-drp" @bind-Value="SelectedCulture" OnSelectItem="WrapHandled(OnCultureChanged)" />
+        }
         <div class="footer-contact">info@bitplatform.dev</div>
         <div class="footer-copyright">Made with <span class="text--red">♥</span> by bit platform</div>
     </div>

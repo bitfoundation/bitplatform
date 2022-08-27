@@ -14,8 +14,8 @@ public partial class SignUpPage
 
     private bool IsSubmitButtonEnabled =>
         string.IsNullOrWhiteSpace(SignUpModel.UserName) is false &&
-        string.IsNullOrWhiteSpace(SignUpModel.Password) is false && 
-        SignUpModel.IsAcceptPrivacy && 
+        string.IsNullOrWhiteSpace(SignUpModel.Password) is false &&
+        SignUpModel.IsAcceptPrivacy &&
         IsLoading is false;
 
     private async Task DoSignUp()
@@ -88,12 +88,19 @@ public partial class SignUpPage
     {
         await base.OnAfterRenderAsync(firstRender);
 
-        if (firstRender)
+        try
         {
-            if (await AuthenticationStateProvider.IsUserAuthenticated())
+            if (firstRender)
             {
-                NavigationManager.NavigateTo("/");
+                if (await AuthenticationStateProvider.IsUserAuthenticated())
+                {
+                    NavigationManager.NavigateTo("/");
+                }
             }
+        }
+        catch (Exception exp)
+        {
+            ExceptionHandler.Handle(exp);
         }
     }
 }

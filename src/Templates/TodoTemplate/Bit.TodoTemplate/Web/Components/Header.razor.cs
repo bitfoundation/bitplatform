@@ -40,35 +40,4 @@ public partial class Header : IAsyncDisposable
     {
         AuthenticationStateProvider.AuthenticationStateChanged -= VerifyUserIsAuthenticatedOrNot;
     }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        await base.OnAfterRenderAsync(firstRender);
-
-#if MultilingualEnabled
-        if (firstRender)
-        {
-            SelectedCulture = await JSRuntime.InvokeAsync<string>("window.App.getPreferredCulture", CultureInfoManager.GetCultureData());
-            await InvokeAsync(StateHasChanged);
-        }
-#endif
-    }
-
-    string? SelectedCulture;
-
-    async Task OnCultureChanged()
-    {
-        var culture = $"c={SelectedCulture}|uic={SelectedCulture}";
-
-        await JSRuntime.InvokeVoidAsync("window.App.setCookie", ".AspNetCore.Culture", culture, 30 * 24 * 3600);
-
-        NavigationManager.Reload();
-    }
-
-    List<BitDropDownItem> GetCultures()
-    {
-        return CultureInfoManager.SupportedCultures
-            .Select(sc => new BitDropDownItem { Value = sc.code, Text = sc.name })
-            .ToList();
-    }
 }
