@@ -17,7 +17,7 @@
     <section class="page-section">
         <div class="bit-logo--blue"></div>
         <EditForm Model="SignUpModel" OnValidSubmit="WrapHandled(DoSignUp)" class="form">
-            <DataAnnotationsValidator />
+            <AppDataAnnotationsValidator />
             @if (string.IsNullOrEmpty(SignUpMessage) is false)
             {
                 <BitMessageBar MessageBarType="@SignUpMessageType" OnDismiss="() => SignUpMessage = null">@SignUpMessage</BitMessageBar>

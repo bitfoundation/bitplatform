@@ -33,7 +33,7 @@
                 <BitSpinner Size="BitSpinnerSize.Large"></BitSpinner>
             </div>
         }
-        <DataAnnotationsValidator />
+        <AppDataAnnotationsValidator />
         @if (string.IsNullOrEmpty(SaveMessage) is false)
         {
             <BitMessageBar MessageBarType="@SaveMessageType" OnDismiss="() => SaveMessage = null">@SaveMessage</BitMessageBar>
@@ -54,7 +54,7 @@
                 <div class="color-btn @(Category!.Color == "#C7E0F4" ? "color-btn--active" : null)" style="background-color: #C7E0F4" @onclick=@(() => SetCategoryColor("#C7E0F4"))></div>
                 <div class="custom-color-btn" @onclick=@ToggleColorPicker>
                     <div class="btn-color" style="background-color: #F0F0F0"></div>
-                    Custom color
+                    @Localizer[(nameof(AppStrings.CustomColor))]
                 </div>
             </div>
             @if (IsColorPickerOpen)

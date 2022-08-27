@@ -21,7 +21,7 @@
             <BitDataGridPropertyColumn Property="@(c => c.Name)" Sortable="true" Align="BitDataGridAlign.Left">
                 <ColumnOptions>
                     <BitSearchBox @bind-Value="CategoryNameFilter"
-                                  Placeholder="Search on name"
+                                  Placeholder="@Localizer[(nameof(AppStrings.SearchOnName))]"
                                   InputHtmlAttributes="@(new Dictionary<string, object> {{"autofocus", true}})" />
                 </ColumnOptions>
             </BitDataGridPropertyColumn>
@@ -29,8 +29,8 @@
                 <span class="color-box" style="background-color:@(context.Color)"></span>
             </BitDataGridTemplateColumn>
             <BitDataGridTemplateColumn Title="Action" Align="BitDataGridAlign.Center">
-                <BitIconButton Style="color:#605E5C;" IconName="BitIconName.Edit" OnClick="() => EditCategory(context)" Title="Edit"/>
-                <BitIconButton Style="color:#605E5C;" IconName="BitIconName.Delete" OnClick="WrapHandled(() => DeleteCategory(context))" Title="Delete"/>
+                <BitIconButton Style="color:#605E5C;" IconName="BitIconName.Edit" OnClick="() => EditCategory(context)" Title="@Localizer[(nameof(AppStrings.Edit))]"/>
+                <BitIconButton Style="color:#605E5C;" IconName="BitIconName.Delete" OnClick="WrapHandled(() => DeleteCategory(context))" Title="@Localizer[(nameof(AppStrings.Delete))]"/>
             </BitDataGridTemplateColumn>
         </BitDataGrid>
         <BitDataGridPaginator Value="@pagination" />

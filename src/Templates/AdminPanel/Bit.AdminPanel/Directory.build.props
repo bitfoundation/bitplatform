@@ -22,6 +22,9 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <NeutralLanguage>en</NeutralLanguage>
+        <MultilingualEnabled>false</MultilingualEnabled>
+        <DefineConstants Condition=" '$(MultilingualEnabled)' == 'true' ">$(DefineConstants);MultilingualEnabled</DefineConstants>
+        
     </PropertyGroup>
     <!--/+:msbuild-conditional:noEmit -->
     

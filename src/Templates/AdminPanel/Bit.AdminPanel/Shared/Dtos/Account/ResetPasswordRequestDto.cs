@@ -1,19 +1,24 @@
-﻿namespace AdminPanel.Shared.Dtos.Account;
+﻿
+namespace AdminPanel.Shared.Dtos.Account;
 
+[DtoResourceType(typeof(AppStrings))]
 public class ResetPasswordRequestDto
 {
-    [Required]
+    [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
+    [EmailAddress(ErrorMessage = nameof(AppStrings.EmailAddressAttribute_Invalid))]
+    [Display(Name = nameof(AppStrings.Email))]
     public string? Email { get; set; }
 
-    [Required]
+    [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
     public string? Token { get; set; }
 
-    [Required(ErrorMessage = "Please enter your new password.")]
-    [MinLength(6, ErrorMessage = "The password must have at least 6 characters.")]
+    [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
+    [MinLength(6, ErrorMessage = nameof(AppStrings.PasswordTooShort))]
+    [Display(Name = nameof(AppStrings.Password))]
     public string? Password { get; set; }
 
     [NotMapped]
-    [Required(ErrorMessage = "Please enter your confirmation of the new password.")]
-    [Compare(nameof(Password), ErrorMessage = "Password confirmation doesn't match the new password.")]
+    [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
+    [Compare(nameof(Password), ErrorMessage = nameof(AppStrings.CompareAttribute_MustMatch))]
     public string? ConfirmPassword { get; set; }
 }

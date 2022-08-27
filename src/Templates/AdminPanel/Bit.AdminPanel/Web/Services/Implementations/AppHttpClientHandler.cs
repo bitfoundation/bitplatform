@@ -28,14 +28,14 @@ public partial class AppHttpClientHandler : HttpClientHandler
 
                 Type exceptionType = typeof(RestExceptionPayload).Assembly.GetType(restError.ExceptionType) ?? typeof(UnknownException);
 
-                var args = new[] { typeof(KnownException).IsAssignableFrom(exceptionType) ? new LocalizedString(restError.Key!, restError.Message!) as object : restError.Message as object };
+                var args = new List<object> { typeof(KnownException).IsAssignableFrom(exceptionType) ? new LocalizedString(restError.Key!, restError.Message!) : restError.Message };
 
-                Exception exp = (Exception)Activator.CreateInstance(exceptionType, args);
-
-                if (exp is ResourceValidationException resValidationException)
+                if (exceptionType == typeof(ResourceValidationException))
                 {
-                    resValidationException.Details = restError.Details;
+                    args.Add(restError.Details);
                 }
+
+                Exception exp = (Exception)Activator.CreateInstance(exceptionType, args.ToArray());
 
                 throw exp;
             }

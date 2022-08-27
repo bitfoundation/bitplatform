@@ -13,7 +13,7 @@ public partial class EditProfilePage
     public string? ProfileImageUrl { get; set; }
     public string? ProfileImageError { get; set; }
 
-    public bool IsSavingData { get; set; }
+    public bool IsLoading { get; set; }
     public bool IsLoadingData { get; set; }
 
     public BitMessageBarType EditProfileMessageType { get; set; }
@@ -62,25 +62,21 @@ public partial class EditProfilePage
         UserToEdit.Gender = User.Gender;
     }
 
-    private bool IsSubmitButtonEnabled =>
-            ((User.FullName ?? string.Empty) != (UserToEdit.FullName ?? string.Empty)
-            || User.BirthDate != UserToEdit.BirthDate
-            || User.Gender != UserToEdit.Gender)
-            && IsSavingData is false;
+    private bool IsSubmitButtonEnabled => IsLoading is false;
 
     private async Task GoBack()
     {
         await JsRuntime.GoBack();
     }
 
-    private async Task Save()
+    private async Task Submit()
     {
-        if (IsSavingData)
+        if (IsLoading)
         {
             return;
         }
 
-        IsSavingData = true;
+        IsLoading = true;
         EditProfileMessage = null;
 
         try
@@ -103,7 +99,7 @@ public partial class EditProfilePage
         }
         finally
         {
-            IsSavingData = false;
+            IsLoading = false;
         }
     }
 }

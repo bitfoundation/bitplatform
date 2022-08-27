@@ -3,13 +3,13 @@
 <BitModal @bind-IsOpen="IsOpen">
     <div class="main-container">
         <div class="header">
-            <span class="title">Sign out</span>
-            <BitIconButton OnClick="CloseModal" IconName="BitIconName.ChromeClose" Title="Close" />
+            <span class="title">@Localizer[nameof(AppStrings.SignOut)]</span>
+            <BitIconButton OnClick="CloseModal" IconName="BitIconName.ChromeClose" Title="@Localizer[nameof(AppStrings.Close)]" />
         </div>
-        <div class="body">Are you sure you want to Sign out?</div>
+        <div class="body">@Localizer[nameof(AppStrings.AreYouSureYouWantToSignout)]</div>
         <div class="btn-group">
-            <BitButton ButtonStyle="BitButtonStyle.Primary" Style="margin-right: 0.5rem" OnClick="SignOut">Sign out</BitButton>
-            <BitButton ButtonStyle="BitButtonStyle.Standard" OnClick="CloseModal">Cancel</BitButton>
+            <BitButton ButtonStyle="BitButtonStyle.Primary" Style="margin-right: 0.5rem" OnClick="SignOut">@Localizer[nameof(AppStrings.SignOut)]</BitButton>
+            <BitButton ButtonStyle="BitButtonStyle.Standard" OnClick="CloseModal">@Localizer[nameof(AppStrings.Cancel)]</BitButton>
         </div>
     </div>
 </BitModal>

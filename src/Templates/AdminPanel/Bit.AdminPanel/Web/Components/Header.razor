@@ -20,13 +20,13 @@
                 <section class="header-drp-wrapper" @onclick:stopPropagation="true">
                     <div class="user-info-container">
                         <BitPersona ImageUrl="@ProfileImageUrl"
-                                    Size=@BitPersonaSize.Size48
-                                    Text="@(string.IsNullOrWhiteSpace(User?.FullName) ? @User?.UserName : User?.FullName)"
-                                    SecondaryText="@User.UserName"
-                                    Presence="BitPersonaPresenceStatus.Online" />
+                                Size=@BitPersonaSize.Size48
+                                Text="@(string.IsNullOrWhiteSpace(User?.FullName) ? @User?.UserName : User?.FullName)"
+                                SecondaryText="@User.UserName"
+                                Presence="BitPersonaPresenceStatus.Online" />
                     </div>
-                    <BitActionButton Class="edit-profile-btn" IconName="BitIconName.Edit" OnClick=@WrapHandled(OpenEditProfilePage) AriaLabel="EditProfile">Edit profile</BitActionButton>
-                    <BitActionButton Class="sign-out-btn" IconName="BitIconName.OutOfOffice" OnClick=@WrapHandled(OpenSignOutModal) AriaLabel="SignOut">Sign out</BitActionButton>
+                    <BitActionButton Class="edit-profile-btn" IconName="BitIconName.Edit" OnClick=@WrapHandled(OpenEditProfilePage) AriaLabel="EditProfile">@Localizer[nameof(AppStrings.EditProfileTitle)]</BitActionButton>
+                    <BitActionButton Class="sign-out-btn" IconName="BitIconName.OutOfOffice" OnClick=@WrapHandled(OpenSignOutModal) AriaLabel="SignOut">@Localizer[nameof(AppStrings.SignOut)]</BitActionButton>
                 </section>
             }
         </div>

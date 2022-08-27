@@ -22,14 +22,14 @@ namespace AdminPanel.Shared.Resources {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    public class AppStrings {
+    public class AppStrings_f {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
         private static global::System.Globalization.CultureInfo resourceCulture;
         
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        internal AppStrings() {
+        internal AppStrings_f() {
         }
         
         /// <summary>
@@ -39,7 +39,7 @@ namespace AdminPanel.Shared.Resources {
         public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("AdminPanel.Shared.Resources.AppStrings", typeof(AppStrings).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("AdminPanel.Shared.Resources.AppStrings.f", typeof(AppStrings_f).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -61,13 +61,13 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Action.
+        ///   Looks up a localized string similar to Active.
         /// </summary>
-        public static string Action {
+        public static string Active {
             get {
-                return ResourceManager.GetString("Action", resourceCulture);
+                return ResourceManager.GetString("Active", resourceCulture);
             }
-        }      
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Add.
@@ -94,7 +94,25 @@ namespace AdminPanel.Shared.Resources {
             get {
                 return ResourceManager.GetString("AddProduct", resourceCulture);
             }
-        }          
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to All.
+        /// </summary>
+        public static string All {
+            get {
+                return ResourceManager.GetString("All", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Alphabetical.
+        /// </summary>
+        public static string Alphabetical {
+            get {
+                return ResourceManager.GetString("Alphabetical", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Already have an account?.
@@ -105,15 +123,41 @@ namespace AdminPanel.Shared.Resources {
             }
         }
         
+        /// <summary>
+        ///   Looks up a localized string similar to Admin Panel.
+        /// </summary>
+        public static string AppTitle {
+            get {
+                return ResourceManager.GetString("AppTitle", resourceCulture);
+            }
+        }
         
         /// <summary>
-        ///   Looks up a localized string similar to Are you sure you want to Sign out?.
+        ///   Looks up a localized string similar to The argument &apos;{0}&apos; cannot be null, empty or contain only whitespace..
         /// </summary>
-        public static string AreYouSureYouWantToSignout {
+        public static string ArgumentIsNullOrWhitespace {
             get {
-                return ResourceManager.GetString("AreYouSureYouWantToSignout", resourceCulture);
+                return ResourceManager.GetString("ArgumentIsNullOrWhitespace", resourceCulture);
             }
-        }                      
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The associated metadata type for type &apos;{0}&apos; contains the following unknown properties or fields: {1}. Please make sure that the names of these members match the names of the properties on the main type..
+        /// </summary>
+        public static string AssociatedMetadataTypeTypeDescriptor_MetadataTypeContainsUnknownProperties {
+            get {
+                return ResourceManager.GetString("AssociatedMetadataTypeTypeDescriptor_MetadataTypeContainsUnknownProperties", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The type &apos;{0}&apos; does not contain a public property named &apos;{1}&apos;..
+        /// </summary>
+        public static string AttributeStore_Unknown_Property {
+            get {
+                return ResourceManager.GetString("AttributeStore_Unknown_Property", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Back.
@@ -197,15 +241,6 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Close.
-        /// </summary>
-        public static string Close {
-            get {
-                return ResourceManager.GetString("Close", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The property {0}.{1} could not be found..
         /// </summary>
         public static string Common_PropertyNotFound {
@@ -230,7 +265,16 @@ namespace AdminPanel.Shared.Resources {
             get {
                 return ResourceManager.GetString("CompareAttribute_UnknownProperty", resourceCulture);
             }
-        }       
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Completed.
+        /// </summary>
+        public static string Completed {
+            get {
+                return ResourceManager.GetString("Completed", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Optimistic concurrency failure, object has been modified..
@@ -276,14 +320,23 @@ namespace AdminPanel.Shared.Resources {
             get {
                 return ResourceManager.GetString("ConflicException", resourceCulture);
             }
-        }        
+        }
         
         /// <summary>
-        ///   Looks up a localized string similar to Custom color.
+        ///   Looks up a localized string similar to The {0} field is not a valid credit card number..
         /// </summary>
-        public static string CustomColor {
+        public static string CreditCardAttribute_Invalid {
             get {
-                return ResourceManager.GetString("CustomColor", resourceCulture);
+                return ResourceManager.GetString("CreditCardAttribute_Invalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The CustomValidationAttribute method &apos;{0}&apos; in type &apos;{1}&apos; must return System.ComponentModel.DataAnnotations.ValidationResult.  Use System.ComponentModel.DataAnnotations.ValidationResult.Success to represent success..
+        /// </summary>
+        public static string CustomValidationAttribute_Method_Must_Return_ValidationResult {
+            get {
+                return ResourceManager.GetString("CustomValidationAttribute_Method_Must_Return_ValidationResult", resourceCulture);
             }
         }
         
@@ -357,7 +410,16 @@ namespace AdminPanel.Shared.Resources {
             get {
                 return ResourceManager.GetString("DataTypeAttribute_EmptyDataTypeString", resourceCulture);
             }
-        }       
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Date.
+        /// </summary>
+        public static string Date {
+            get {
+                return ResourceManager.GetString("Date", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Default color picker.
@@ -365,15 +427,6 @@ namespace AdminPanel.Shared.Resources {
         public static string DefaultColorPicker {
             get {
                 return ResourceManager.GetString("DefaultColorPicker", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Delete.
-        /// </summary>
-        public static string Delete {
-            get {
-                return ResourceManager.GetString("Delete", resourceCulture);
             }
         }
         
@@ -536,15 +589,6 @@ namespace AdminPanel.Shared.Resources {
         public static string EnterCategoryName {
             get {
                 return ResourceManager.GetString("EnterCategoryName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Enter product name.
-        /// </summary>
-        public static string EnterProductName {
-            get {
-                return ResourceManager.GetString("EnterProductName", resourceCulture);
             }
         }
         
@@ -846,15 +890,6 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Made with.
-        /// </summary>
-        public static string MadeWith {
-            get {
-                return ResourceManager.GetString("MadeWith", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to MaxLengthAttribute must have a Length value that is greater than zero. Use MaxLength() without parameters to indicate that the string or array can have the maximum allowable length..
         /// </summary>
         public static string MaxLengthAttribute_InvalidMaxLength {
@@ -914,15 +949,6 @@ namespace AdminPanel.Shared.Resources {
         public static string NewPassword {
             get {
                 return ResourceManager.GetString("NewPassword", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to No.
-        /// </summary>
-        public static string No {
-            get {
-                return ResourceManager.GetString("No", resourceCulture);
             }
         }
         
@@ -1377,38 +1403,11 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Search on name.
-        /// </summary>
-        public static string SearchOnName {
-            get {
-                return ResourceManager.GetString("SearchOnName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Select a category.
-        /// </summary>
-        public static string SelectACategory {
-            get {
-                return ResourceManager.GetString("SelectACategory", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Select your birth date.
         /// </summary>
         public static string SelectBirthDate {
             get {
                 return ResourceManager.GetString("SelectBirthDate", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Select category.
-        /// </summary>
-        public static string SelectCategory {
-            get {
-                return ResourceManager.GetString("SelectCategory", resourceCulture);
             }
         }
         
@@ -1719,15 +1718,6 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Using bit platform!.
-        /// </summary>
-        public static string UsingBitPlatform {
-            get {
-                return ResourceManager.GetString("UsingBitPlatform", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Either ErrorMessageString or ErrorMessageResourceName must be set, but not both..
         /// </summary>
         public static string ValidationAttribute_Cannot_Set_ErrorMessage_And_Resource {
@@ -1823,15 +1813,6 @@ namespace AdminPanel.Shared.Resources {
         public static string WaitForResetPasswordEmailResendDelay_ {
             get {
                 return ResourceManager.GetString("WaitForResetPasswordEmailResendDelay.", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Yes.
-        /// </summary>
-        public static string Yes {
-            get {
-                return ResourceManager.GetString("Yes", resourceCulture);
             }
         }
         

@@ -18,18 +18,18 @@
         <EditForm Model="Product" OnValidSubmit="WrapHandled(Save)" style="width: 100%; display: flex; flex-direction: column;
 align-items: center">
 
-            <DataAnnotationsValidator />
+            <AppDataAnnotationsValidator />
             <div class="form-input-container">
-                <BitTextField Label="@(nameof(Product.Name))" @bind-Value="Product.Name" Placeholder="Enter product name" />
+                <BitTextField Label="@(nameof(Product.Name))" @bind-Value="Product.Name" Placeholder="@Localizer[nameof(AppStrings.EnterProductName)]" />
                 <ValidationMessage For="() => Product.Name" />
             </div>
 
             <div class="form-input-container">
-                <BitDropDown Label="Select category"
+                <BitDropDown Label="@Localizer[(nameof(AppStrings.SelectCategory))]"
                              Items="AllCategoryList"
                              IsMultiSelect="false"
                              @bind-Value="SelectedCategoyId"
-                             Placeholder="Select a category" />
+                             Placeholder="@Localizer[(nameof(AppStrings.SelectACategory))]" />
                 <ValidationMessage For="@(() => Product.CategoryId)" />
             </div>
 

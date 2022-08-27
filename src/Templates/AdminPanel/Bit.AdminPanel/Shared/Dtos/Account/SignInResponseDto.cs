@@ -1,5 +1,7 @@
-﻿namespace AdminPanel.Shared.Dtos.Account;
+﻿
+namespace AdminPanel.Shared.Dtos.Account;
 
+[DtoResourceType(typeof(AppStrings))]
 public class SignInResponseDto
 {
     public string? AccessToken { get; set; }
