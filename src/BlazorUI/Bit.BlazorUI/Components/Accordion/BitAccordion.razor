@@ -1,0 +1,36 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+<div @ref="RootElement"
+     @attributes="HtmlAttributes"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     aria-label="@AriaLabel">
+
+    @foreach (var item in _items)
+    {
+        var state = item.IsExpanded ? "expand" : "collapse";
+
+        <div class="item @state @(item.IsEnabled ? "" : "disabled")" @onclick="() => HandleOnItemClick(item)">
+
+            <div class="title @state">
+                <div>@item.Title</div>
+                <div>@item.Description</div>
+                <i class="bit-icon bit-icon--ChevronDown"></i>
+            </div>
+
+            <div class="content @state">
+                @if (item.Content is not null)
+                {
+                    @item.Content
+                }
+                else
+                {
+                    @item.Text
+                }
+            </div>
+
+        </div>
+    }
+
+</div>
