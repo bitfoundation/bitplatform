@@ -158,7 +158,7 @@ public partial class BitDatePicker
     /// </summary>
     [Parameter] public int TabIndex { get; set; }
 
-    public string ActiveDescendantId { get; set; } = Guid.NewGuid().ToString();
+    public string ActiveDescendantId => Guid.NewGuid().ToString();
     public string CalloutId => $"DatePicker-Callout{UniqueId}";
     public string FocusClass
     {
