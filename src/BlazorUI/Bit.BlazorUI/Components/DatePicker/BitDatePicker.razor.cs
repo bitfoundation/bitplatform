@@ -37,6 +37,8 @@ public partial class BitDatePicker
         get => isOpen;
         set
         {
+            if (isOpen = value) return;
+
             isOpen = value;
             ClassBuilder.Reset();
         }
@@ -236,7 +238,7 @@ public partial class BitDatePicker
 
         var obj = DotNetObjectReference.Create(this);
 
-        await JSRuntime.InvokeVoidAsync("BitDatePicker.toggleDatePickerCallout", obj, UniqueId, CalloutId, OverlayId, isOpen);
+        await JSRuntime.InvokeVoidAsync("BitDatePicker.toggleDatePickerCallout", obj, UniqueId, CalloutId, OverlayId, IsOpen);
 
         if (showMonthPickerAsOverlayInternal is false)
         {
@@ -248,7 +250,7 @@ public partial class BitDatePicker
             isMonthPickerOverlayOnTop = false;
         }
 
-        IsOpen = !isOpen;
+        IsOpen = !IsOpen;
 
         if (IsOpen && CurrentValue != null)
         {
@@ -317,7 +319,7 @@ public partial class BitDatePicker
         }
 
         var obj = DotNetObjectReference.Create(this);
-        await JSRuntime.InvokeVoidAsync("BitDatePicker.toggleDatePickerCallout", obj, UniqueId, CalloutId, OverlayId, isOpen);
+        await JSRuntime.InvokeVoidAsync("BitDatePicker.toggleDatePickerCallout", obj, UniqueId, CalloutId, OverlayId, IsOpen);
         IsOpen = false;
         displayYear = currentYear;
         currentMonth = selectedMonth;
@@ -548,7 +550,7 @@ public partial class BitDatePicker
     private async Task CloseCallout()
     {
         var obj = DotNetObjectReference.Create(this);
-        await JSRuntime.InvokeVoidAsync("BitDatePicker.toggleDatePickerCallout", obj, UniqueId, CalloutId, OverlayId, isOpen);
+        await JSRuntime.InvokeVoidAsync("BitDatePicker.toggleDatePickerCallout", obj, UniqueId, CalloutId, OverlayId, IsOpen);
         IsOpen = false;
         StateHasChanged();
     }
