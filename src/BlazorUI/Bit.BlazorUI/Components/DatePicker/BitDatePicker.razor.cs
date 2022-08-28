@@ -300,29 +300,26 @@ public partial class BitDatePicker
 
     private async Task HandleFocusIn(FocusEventArgs eventArgs)
     {
-        if (IsEnabled)
-        {
-            FocusClass = "focused";
-            await OnFocusIn.InvokeAsync(eventArgs);
-        }
+        if (IsEnabled is false) return;
+
+        FocusClass = "focused";
+        await OnFocusIn.InvokeAsync(eventArgs);
     }
 
     private async Task HandleFocusOut(FocusEventArgs eventArgs)
     {
-        if (IsEnabled)
-        {
-            FocusClass = string.Empty;
-            await OnFocusOut.InvokeAsync(eventArgs);
-        }
+        if (IsEnabled is false) return;
+
+        FocusClass = string.Empty;
+        await OnFocusOut.InvokeAsync(eventArgs);
     }
 
     private async Task HandleFocus(FocusEventArgs e)
     {
-        if (IsEnabled)
-        {
-            FocusClass = "focused";
-            await OnFocus.InvokeAsync(e);
-        }
+        if (IsEnabled is false) return;
+
+        FocusClass = "focused";
+        await OnFocus.InvokeAsync(e);
     }
 
     private async Task HandleChange(ChangeEventArgs e)
