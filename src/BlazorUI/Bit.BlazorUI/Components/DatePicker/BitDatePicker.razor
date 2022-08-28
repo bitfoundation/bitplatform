@@ -60,7 +60,7 @@
                  role="group"
                  aria-label="">
                 <div aria-live="polite" aria-atomic="true">Selected date @CurrentValueAsString</div>
-                @if ((showMonthPickerAsOverlayInternal && !isMonthPickerOverlayOnTop) || !showMonthPickerAsOverlayInternal)
+                @if ((showMonthPickerAsOverlayInternal && !_isMonthPickerOverlayOnTop) || !showMonthPickerAsOverlayInternal)
                 {
                     <div class="day-picker-wrapper">
                         <div class="picker-header">
@@ -175,7 +175,7 @@
                     <div class="divider"></div>
                 }
 
-                @if ((showMonthPickerAsOverlayInternal && isMonthPickerOverlayOnTop) || !showMonthPickerAsOverlayInternal)
+                @if ((showMonthPickerAsOverlayInternal && _isMonthPickerOverlayOnTop) || !showMonthPickerAsOverlayInternal)
                 {
                     <div class="month-picker-wrapper">
                         @if (showMonthPicker)

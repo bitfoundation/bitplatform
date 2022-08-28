@@ -17,13 +17,13 @@ public partial class BitDatePicker
     private int _currentMonth;
     private int _currentYear;
     private int _displayYear;
+    private bool _isMonthPickerOverlayOnTop;
     private string _monthTitle = string.Empty;
     private int yearRangeFrom;
     private int yearRangeTo;
     private int? selectedDateWeek;
     private int? selectedDateDayOfWeek;
     private bool showMonthPicker = true;
-    private bool isMonthPickerOverlayOnTop;
     private bool showMonthPickerAsOverlayInternal;
     private int monthLength;
     private string focusClass = string.Empty;
@@ -249,7 +249,7 @@ public partial class BitDatePicker
 
         if (showMonthPickerAsOverlayInternal)
         {
-            isMonthPickerOverlayOnTop = false;
+            _isMonthPickerOverlayOnTop = false;
         }
 
         IsOpen = !IsOpen;
@@ -682,7 +682,7 @@ public partial class BitDatePicker
 
     private void ToggleMonthPickerAsOverlay()
     {
-        isMonthPickerOverlayOnTop = !isMonthPickerOverlayOnTop;
+        _isMonthPickerOverlayOnTop = !_isMonthPickerOverlayOnTop;
     }
 
     private int GetValueForComparison(int firstDay)
