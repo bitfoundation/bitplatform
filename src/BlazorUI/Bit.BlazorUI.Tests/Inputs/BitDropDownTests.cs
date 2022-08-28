@@ -919,6 +919,51 @@ public class BitDropDownTests : BunitTestContext
         }
     }
 
+    [DataTestMethod,
+        DataRow(Visual.Fluent, false, false),
+        DataRow(Visual.Fluent, true, false),
+        DataRow(Visual.Fluent, false, true),
+        DataRow(Visual.Fluent, true, true),
+
+        DataRow(Visual.Cupertino, false, false),
+        DataRow(Visual.Cupertino, true, false),
+        DataRow(Visual.Cupertino, false, true),
+        DataRow(Visual.Cupertino, true, true),
+
+        DataRow(Visual.Material, false, false),
+        DataRow(Visual.Material, true, false),
+        DataRow(Visual.Material, false, true),
+        DataRow(Visual.Material, true, true),
+    ]
+    public void BitDropDownVirtualizeTest(Visual visual, bool virtualize, bool isMultiSelect)
+    {
+        var items = GetRawDropdownItems(500);
+        var component = RenderComponent<BitDropDown>(parameters =>
+        {
+            parameters.AddCascadingValue(visual);
+            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Virtualize, virtualize);
+            //https://bunit.dev/docs/test-doubles/emulating-ijsruntime.html#-jsinterop-emulation
+            parameters.Add(p => p.ItemSize, 3000000);
+            parameters.Add(p => p.IsMultiSelect, isMultiSelect);
+            parameters.Add(p => p.Items, items);
+        });
+
+        var bitDropDown = component.Find(".bit-drp-wrapper");
+        bitDropDown.Click();
+
+        var drpItems = component.FindAll(isMultiSelect ? ".bit-drp-chb" : ".bit-drp-item");
+
+        if (virtualize)
+        {
+            Assert.AreEqual(340, drpItems.Count);
+        }
+        else
+        {
+            Assert.AreEqual(items.Count, drpItems.Count);
+        }
+    }
+
     private void HandleValueChanged(string value)
     {
         BitDropDownValue = value;
@@ -1006,5 +1051,15 @@ public class BitDropDownTests : BunitTestContext
         });
 
         return items;
+    }
+
+    private List<BitDropDownItem> GetRawDropdownItems(int count)
+    {
+        return Enumerable.Range(1, count).Select(item => new BitDropDownItem
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Value = item.ToString(),
+            Text = $"Item {item}"
+        }).ToList();
     }
 }
