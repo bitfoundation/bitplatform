@@ -11,9 +11,9 @@
     {
         var state = item.IsExpanded ? "expand" : "collapse";
 
-        <div class="item @state @(item.IsEnabled ? "" : "disabled")" @onclick="() => HandleOnItemClick(item)">
+        <div class="item @state @(item.IsEnabled ? "" : "disabled")">
 
-            <div class="title @state">
+            <div class="title @state" @onclick="() => HandleOnItemClick(item)">
                 <div>@item.Title</div>
                 <div>@item.Description</div>
                 <i class="bit-icon bit-icon--ChevronDown"></i>
