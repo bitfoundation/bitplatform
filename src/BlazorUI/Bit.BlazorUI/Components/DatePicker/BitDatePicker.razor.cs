@@ -338,7 +338,7 @@ public partial class BitDatePicker
 
         if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
-        if (CheckDayForMaxAndMinDate(dayIndex, weekIndex)) return;
+        if (IsDayOutOfMinAndMaxDate(dayIndex, weekIndex)) return;
 
         var currentDay = _currentMonthCalendar[weekIndex, dayIndex];
         int selectedMonth = GetCorrectTargetMonth(weekIndex, dayIndex);
@@ -365,7 +365,7 @@ public partial class BitDatePicker
     private void HandleMonthChange(ChangeDirection direction)
     {
         if (IsEnabled is false) return;
-        if (CheckMonthForMaxAndMinDate(direction)) return;
+        if (IsMonthOutOfMinAndMaxDate(direction)) return;
 
         if (direction == ChangeDirection.Next)
         {
@@ -399,7 +399,7 @@ public partial class BitDatePicker
     private void SelectMonth(int month)
     {
         if (IsEnabled is false) return;
-        if (CheckMonthForMaxAndMinDate(month)) return;
+        if (IsMonthOutOfMinAndMaxDate(month)) return;
 
         _currentMonth = month;
         _currentYear = _displayYear;
@@ -412,7 +412,7 @@ public partial class BitDatePicker
     private void SelectYear(int year)
     {
         if (IsEnabled is false) return;
-        if (CheckYearForMaxAndMinDate(year)) return;
+        if (IsYearOutOfMinAndMaxDate(year)) return;
 
         _currentYear = _displayYear = year;
         ChangeYearRanges(_currentYear - 1);
@@ -431,7 +431,7 @@ public partial class BitDatePicker
     private void HandleYearChange(ChangeDirection direction)
     {
         if (IsEnabled is false) return;
-        if (CheckYearForMaxAndMinDate(direction)) return;
+        if (IsYearOutOfMinAndMaxDate(direction)) return;
 
         if (direction == ChangeDirection.Next)
         {
@@ -448,7 +448,7 @@ public partial class BitDatePicker
     private void HandleYearRangeChange(ChangeDirection direction)
     {
         if (IsEnabled is false) return;
-        if (CheckYearRangeForMaxAndMinDate(direction)) return;
+        if (IsYearRangeOutOfMinAndMaxDate(direction)) return;
 
         var fromYear = direction == ChangeDirection.Next ? _yearRangeFrom + 12 : _yearRangeFrom - 12;
 
@@ -724,7 +724,7 @@ public partial class BitDatePicker
         return firstDay > firstDayOfWeek ? firstDayOfWeek : firstDayOfWeek - 7;
     }
 
-    private bool CheckMonthForMaxAndMinDate(ChangeDirection direction)
+    private bool IsMonthOutOfMinAndMaxDate(ChangeDirection direction)
     {
         if (direction == ChangeDirection.Next && MaxDate.HasValue && MaxDate.Value.Year == _displayYear && MaxDate.Value.Month == _currentMonth)
             return true;
@@ -735,7 +735,7 @@ public partial class BitDatePicker
         return false;
     }
 
-    private bool CheckYearForMaxAndMinDate(ChangeDirection direction)
+    private bool IsYearOutOfMinAndMaxDate(ChangeDirection direction)
     {
         if (direction == ChangeDirection.Next && MaxDate.HasValue && MaxDate.Value.Year == _displayYear)
             return true;
@@ -746,7 +746,7 @@ public partial class BitDatePicker
         return false;
     }
 
-    private bool CheckYearRangeForMaxAndMinDate(ChangeDirection direction)
+    private bool IsYearRangeOutOfMinAndMaxDate(ChangeDirection direction)
     {
         if (direction == ChangeDirection.Next && MaxDate.HasValue && MaxDate.Value.Year < _yearRangeFrom + 12)
             return true;
@@ -757,7 +757,7 @@ public partial class BitDatePicker
         return false;
     }
 
-    private bool CheckDayForMaxAndMinDate(int dayIndex, int weekIndex)
+    private bool IsDayOutOfMinAndMaxDate(int dayIndex, int weekIndex)
     {
         var day = _currentMonthCalendar[weekIndex, dayIndex];
         var month = GetCorrectTargetMonth(weekIndex, dayIndex);
@@ -777,7 +777,7 @@ public partial class BitDatePicker
         return false;
     }
 
-    private bool CheckMonthForMaxAndMinDate(int month)
+    private bool IsMonthOutOfMinAndMaxDate(int month)
     {
         if (MaxDate.HasValue &&
            (_displayYear > MaxDate.Value.Year ||
@@ -792,7 +792,7 @@ public partial class BitDatePicker
         return false;
     }
 
-    private bool CheckYearForMaxAndMinDate(int year)
+    private bool IsYearOutOfMinAndMaxDate(int year)
     {
         if (MaxDate.HasValue && year > MaxDate.Value.Year)
             return true;
