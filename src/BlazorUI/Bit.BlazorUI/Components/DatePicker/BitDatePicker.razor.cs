@@ -5,16 +5,18 @@ namespace Bit.BlazorUI;
 
 public partial class BitDatePicker
 {
-    private const int DEFAULT_WEEK_COUNT = 6;
     private const int DEFAULT_DAY_COUNT_PER_WEEK = 7;
-    private bool isOpen;
+    private const int DEFAULT_WEEK_COUNT = 6;
+
     private CultureInfo culture = CultureInfo.CurrentUICulture;
+    private bool isOpen;
+
 #pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
     private int[,] _currentMonthCalendar = new int[DEFAULT_WEEK_COUNT, DEFAULT_DAY_COUNT_PER_WEEK];
 #pragma warning restore CA1814 // Prefer jagged arrays over multidimensional
+    private int _currentMonth;
     private int _currentYear;
     private int displayYear;
-    private int currentMonth;
     private int yearRangeFrom;
     private int yearRangeTo;
     private string monthTitle = string.Empty;
@@ -308,12 +310,12 @@ public partial class BitDatePicker
 
         var currentDay = _currentMonthCalendar[weekIndex, dayIndex];
         int selectedMonth = GetCorrectTargetMonth(weekIndex, dayIndex);
-        if (selectedMonth < currentMonth && currentMonth == 12 && IsInCurrentMonth(weekIndex, dayIndex) is false)
+        if (selectedMonth < _currentMonth && _currentMonth == 12 && IsInCurrentMonth(weekIndex, dayIndex) is false)
         {
             _currentYear++;
         }
 
-        if (selectedMonth > currentMonth && currentMonth == 1 && IsInCurrentMonth(weekIndex, dayIndex) is false)
+        if (selectedMonth > _currentMonth && _currentMonth == 1 && IsInCurrentMonth(weekIndex, dayIndex) is false)
         {
             _currentYear--;
         }
@@ -322,9 +324,9 @@ public partial class BitDatePicker
         await JSRuntime.InvokeVoidAsync("BitDatePicker.toggleDatePickerCallout", obj, UniqueId, CalloutId, OverlayId, IsOpen);
         IsOpen = false;
         displayYear = _currentYear;
-        currentMonth = selectedMonth;
-        CurrentValue = new DateTimeOffset(Culture.DateTimeFormat.Calendar.ToDateTime(_currentYear, currentMonth, currentDay, 0, 0, 0, 0), DateTimeOffset.Now.Offset);
-        CreateMonthCalendar(_currentYear, currentMonth);
+        _currentMonth = selectedMonth;
+        CurrentValue = new DateTimeOffset(Culture.DateTimeFormat.Calendar.ToDateTime(_currentYear, _currentMonth, currentDay, 0, 0, 0, 0), DateTimeOffset.Now.Offset);
+        CreateMonthCalendar(_currentYear, _currentMonth);
         await OnSelectDate.InvokeAsync(CurrentValue);
     }
 
@@ -335,31 +337,31 @@ public partial class BitDatePicker
 
         if (direction == ChangeDirection.Next)
         {
-            if (currentMonth + 1 == 13)
+            if (_currentMonth + 1 == 13)
             {
                 _currentYear++;
-                currentMonth = 1;
+                _currentMonth = 1;
             }
             else
             {
-                currentMonth++;
+                _currentMonth++;
             }
         }
         else
         {
-            if (currentMonth - 1 == 0)
+            if (_currentMonth - 1 == 0)
             {
                 _currentYear--;
-                currentMonth = 12;
+                _currentMonth = 12;
             }
             else
             {
-                currentMonth--;
+                _currentMonth--;
             }
         }
 
         displayYear = _currentYear;
-        CreateMonthCalendar(_currentYear, currentMonth);
+        CreateMonthCalendar(_currentYear, _currentMonth);
     }
 
     public void SelectMonth(int month)
@@ -367,9 +369,9 @@ public partial class BitDatePicker
         if (IsEnabled is false) return;
         if (CheckMonthForMaxAndMinDate(month)) return;
 
-        currentMonth = month;
+        _currentMonth = month;
         _currentYear = displayYear;
-        CreateMonthCalendar(_currentYear, currentMonth);
+        CreateMonthCalendar(_currentYear, _currentMonth);
         if (showMonthPickerAsOverlayInternal is false) return;
 
         ToggleMonthPickerAsOverlay();
@@ -382,7 +384,7 @@ public partial class BitDatePicker
 
         _currentYear = displayYear = year;
         ChangeYearRanges(_currentYear - 1);
-        CreateMonthCalendar(_currentYear, currentMonth);
+        CreateMonthCalendar(_currentYear, _currentMonth);
 
         ToggleBetweenMonthAndYearPicker();
     }
@@ -408,7 +410,7 @@ public partial class BitDatePicker
             displayYear--;
         }
 
-        CreateMonthCalendar(_currentYear, currentMonth);
+        CreateMonthCalendar(_currentYear, _currentMonth);
     }
 
     public void HandleYearRangeChange(ChangeDirection direction)
@@ -431,12 +433,12 @@ public partial class BitDatePicker
 
     private void CreateMonthCalendar(DateTime dateTime)
     {
-        currentMonth = Culture.DateTimeFormat.Calendar.GetMonth(dateTime);
+        _currentMonth = Culture.DateTimeFormat.Calendar.GetMonth(dateTime);
         _currentYear = Culture.DateTimeFormat.Calendar.GetYear(dateTime);
         displayYear = _currentYear;
         yearRangeFrom = _currentYear - 1;
         yearRangeTo = _currentYear + 10;
-        CreateMonthCalendar(_currentYear, currentMonth);
+        CreateMonthCalendar(_currentYear, _currentMonth);
     }
 
     private void CreateMonthCalendar(int year, int month)
@@ -511,7 +513,7 @@ public partial class BitDatePicker
         var year = Culture.DateTimeFormat.Calendar.GetYear(CurrentValue.Value.DateTime);
         var month = Culture.DateTimeFormat.Calendar.GetMonth(CurrentValue.Value.DateTime);
 
-        if (year == _currentYear && month == currentMonth)
+        if (year == _currentYear && month == _currentMonth)
         {
             var day = Culture.DateTimeFormat.Calendar.GetDayOfMonth(CurrentValue.Value.DateTime);
             var firstDayOfWeek = (int)Culture.DateTimeFormat.FirstDayOfWeek;
@@ -568,7 +570,7 @@ public partial class BitDatePicker
             className += className.Length == 0 ? "date-cell--outside-month" : " date-cell--outside-month";
         }
 
-        if (IsInCurrentMonth(week, day) && todayYear == _currentYear && todayMonth == currentMonth && todayDay == currentDay)
+        if (IsInCurrentMonth(week, day) && todayYear == _currentYear && todayMonth == _currentMonth && todayDay == currentDay)
         {
             className = "date-cell--today";
         }
@@ -590,16 +592,16 @@ public partial class BitDatePicker
 
     private int GetCorrectTargetMonth(int week, int day)
     {
-        int month = currentMonth;
+        int month = _currentMonth;
         if (IsInCurrentMonth(week, day) is false)
         {
             if (week >= 4)
             {
-                month = currentMonth + 1 == 13 ? 1 : currentMonth + 1;
+                month = _currentMonth + 1 == 13 ? 1 : _currentMonth + 1;
             }
             else
             {
-                month = currentMonth - 1 == 0 ? 12 : currentMonth - 1;
+                month = _currentMonth - 1 == 0 ? 12 : _currentMonth - 1;
             }
         }
 
@@ -612,11 +614,11 @@ public partial class BitDatePicker
         int year = _currentYear;
         if (IsInCurrentMonth(week, day) is false)
         {
-            if (currentMonth == 12 && month == 1)
+            if (_currentMonth == 12 && month == 1)
             {
                 year++;
             }
-            else if (currentMonth == 1 && month == 12)
+            else if (_currentMonth == 1 && month == 12)
             {
                 year--;
             }
@@ -627,7 +629,7 @@ public partial class BitDatePicker
 
     private bool IsMonthSelected(int month)
     {
-        return month == currentMonth;
+        return month == _currentMonth;
     }
 
     private bool IsYearSelected(int year)
@@ -642,11 +644,11 @@ public partial class BitDatePicker
 
         if (showMonthPickerAsOverlayInternal)
         {
-            return (yearRangeFrom == todayYear - 1 && yearRangeTo == todayYear + 10 && todayMonth == currentMonth && todayYear == _currentYear);
+            return (yearRangeFrom == todayYear - 1 && yearRangeTo == todayYear + 10 && todayMonth == _currentMonth && todayYear == _currentYear);
         }
         else
         {
-            return (todayMonth == currentMonth && todayYear == _currentYear);
+            return (todayMonth == _currentMonth && todayYear == _currentYear);
         }
     }
 
@@ -663,11 +665,11 @@ public partial class BitDatePicker
         int year = _currentYear;
         if (IsInCurrentMonth(weekIndex, 0) is false)
         {
-            if (currentMonth == 12 && month == 1)
+            if (_currentMonth == 12 && month == 1)
             {
                 year++;
             }
-            else if (currentMonth == 1 && month == 12)
+            else if (_currentMonth == 1 && month == 12)
             {
                 year--;
             }
@@ -692,10 +694,10 @@ public partial class BitDatePicker
 
     private bool CheckMonthForMaxAndMinDate(ChangeDirection direction)
     {
-        if (direction == ChangeDirection.Next && MaxDate.HasValue && MaxDate.Value.Year == displayYear && MaxDate.Value.Month == currentMonth)
+        if (direction == ChangeDirection.Next && MaxDate.HasValue && MaxDate.Value.Year == displayYear && MaxDate.Value.Month == _currentMonth)
             return true;
 
-        if (direction == ChangeDirection.Previous && MinDate.HasValue && MinDate.Value.Year == displayYear && MinDate.Value.Month == currentMonth)
+        if (direction == ChangeDirection.Previous && MinDate.HasValue && MinDate.Value.Year == displayYear && MinDate.Value.Month == _currentMonth)
             return true;
 
         return false;
@@ -774,11 +776,11 @@ public partial class BitDatePicker
         var currentValue = CurrentValue.GetValueOrDefault();
         var currentValueYear = currentValue.Year;
         var currentValueMonth = currentValue.Month;
-        if (currentValueYear != _currentYear || currentValueMonth != currentMonth)
+        if (currentValueYear != _currentYear || currentValueMonth != _currentMonth)
         {
             _currentYear = currentValueYear;
-            currentMonth = currentValueMonth;
-            CreateMonthCalendar(_currentYear, currentMonth);
+            _currentMonth = currentValueMonth;
+            CreateMonthCalendar(_currentYear, _currentMonth);
         }
     }
 
