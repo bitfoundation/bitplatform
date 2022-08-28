@@ -233,7 +233,7 @@ public partial class BitDatePicker
         return base.OnParametersSetAsync();
     }
 
-    public async Task HandleClick(MouseEventArgs eventArgs)
+    private async Task HandleClick(MouseEventArgs eventArgs)
     {
         if (IsEnabled is false) return;
 
@@ -264,7 +264,7 @@ public partial class BitDatePicker
         await OnClick.InvokeAsync(eventArgs);
     }
 
-    public async Task HandleFocusIn(FocusEventArgs eventArgs)
+    private async Task HandleFocusIn(FocusEventArgs eventArgs)
     {
         if (IsEnabled)
         {
@@ -273,7 +273,7 @@ public partial class BitDatePicker
         }
     }
 
-    public async Task HandleFocusOut(FocusEventArgs eventArgs)
+    private async Task HandleFocusOut(FocusEventArgs eventArgs)
     {
         if (IsEnabled)
         {
@@ -301,7 +301,7 @@ public partial class BitDatePicker
         await OnSelectDate.InvokeAsync(CurrentValue);
     }
 
-    public async Task SelectDate(int dayIndex, int weekIndex)
+    private async Task SelectDate(int dayIndex, int weekIndex)
     {
         if (IsEnabled is false) return;
 
@@ -331,7 +331,7 @@ public partial class BitDatePicker
         await OnSelectDate.InvokeAsync(CurrentValue);
     }
 
-    public void HandleMonthChange(ChangeDirection direction)
+    private void HandleMonthChange(ChangeDirection direction)
     {
         if (IsEnabled is false) return;
         if (CheckMonthForMaxAndMinDate(direction)) return;
@@ -365,7 +365,7 @@ public partial class BitDatePicker
         CreateMonthCalendar(_currentYear, _currentMonth);
     }
 
-    public void SelectMonth(int month)
+    private void SelectMonth(int month)
     {
         if (IsEnabled is false) return;
         if (CheckMonthForMaxAndMinDate(month)) return;
@@ -378,7 +378,7 @@ public partial class BitDatePicker
         ToggleMonthPickerAsOverlay();
     }
 
-    public void SelectYear(int year)
+    private void SelectYear(int year)
     {
         if (IsEnabled is false) return;
         if (CheckYearForMaxAndMinDate(year)) return;
@@ -390,14 +390,14 @@ public partial class BitDatePicker
         ToggleBetweenMonthAndYearPicker();
     }
 
-    public void ToggleBetweenMonthAndYearPicker()
+    private void ToggleBetweenMonthAndYearPicker()
     {
         if (IsEnabled is false) return;
 
         _showMonthPicker = !_showMonthPicker;
     }
 
-    public void HandleYearChange(ChangeDirection direction)
+    private void HandleYearChange(ChangeDirection direction)
     {
         if (IsEnabled is false) return;
         if (CheckYearForMaxAndMinDate(direction)) return;
@@ -414,7 +414,7 @@ public partial class BitDatePicker
         CreateMonthCalendar(_currentYear, _currentMonth);
     }
 
-    public void HandleYearRangeChange(ChangeDirection direction)
+    private void HandleYearRangeChange(ChangeDirection direction)
     {
         if (IsEnabled is false) return;
         if (CheckYearRangeForMaxAndMinDate(direction)) return;
@@ -424,7 +424,7 @@ public partial class BitDatePicker
         ChangeYearRanges(fromYear);
     }
 
-    public void HandleGoToToday(MouseEventArgs args)
+    private void HandleGoToToday(MouseEventArgs args)
     {
         if (IsEnabled)
         {
