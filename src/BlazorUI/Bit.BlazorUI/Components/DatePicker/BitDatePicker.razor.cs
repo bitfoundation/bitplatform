@@ -9,6 +9,7 @@ public partial class BitDatePicker
     private const int DEFAULT_WEEK_COUNT = 6;
 
     private CultureInfo culture = CultureInfo.CurrentUICulture;
+    private string focusClass = string.Empty;
     private bool isOpen;
 
 #pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
@@ -20,13 +21,12 @@ public partial class BitDatePicker
     private bool _isMonthPickerOverlayOnTop;
     private int _monthLength;
     private string _monthTitle = string.Empty;
-    private int yearRangeFrom;
-    private int yearRangeTo;
-    private int? selectedDateWeek;
+    private int? _selectedDateWeek;
     private int? selectedDateDayOfWeek;
     private bool showMonthPicker = true;
     private bool showMonthPickerAsOverlayInternal;
-    private string focusClass = string.Empty;
+    private int yearRangeFrom;
+    private int yearRangeTo;
 
     [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
 
@@ -508,7 +508,7 @@ public partial class BitDatePicker
     {
         if (Culture is null) return;
 
-        if (CurrentValue.HasValue is false || (selectedDateWeek.HasValue && selectedDateDayOfWeek.HasValue)) return;
+        if (CurrentValue.HasValue is false || (_selectedDateWeek.HasValue && selectedDateDayOfWeek.HasValue)) return;
 
         var year = Culture.DateTimeFormat.Calendar.GetYear(CurrentValue.Value.DateTime);
         var month = Culture.DateTimeFormat.Calendar.GetMonth(CurrentValue.Value.DateTime);
@@ -521,10 +521,10 @@ public partial class BitDatePicker
             var firstDayOfWeekInMonthIndex = (firstDayOfWeekInMonth - firstDayOfWeek + DEFAULT_DAY_COUNT_PER_WEEK) % DEFAULT_DAY_COUNT_PER_WEEK;
             selectedDateDayOfWeek = ((int)CurrentValue.Value.DayOfWeek - firstDayOfWeek + DEFAULT_DAY_COUNT_PER_WEEK) % DEFAULT_DAY_COUNT_PER_WEEK;
             var days = firstDayOfWeekInMonthIndex + day;
-            selectedDateWeek = days % DEFAULT_DAY_COUNT_PER_WEEK == 0 ? (days / DEFAULT_DAY_COUNT_PER_WEEK) - 1 : days / DEFAULT_DAY_COUNT_PER_WEEK;
+            _selectedDateWeek = days % DEFAULT_DAY_COUNT_PER_WEEK == 0 ? (days / DEFAULT_DAY_COUNT_PER_WEEK) - 1 : days / DEFAULT_DAY_COUNT_PER_WEEK;
             if (firstDayOfWeekInMonthIndex is 0)
             {
-                selectedDateWeek++;
+                _selectedDateWeek++;
             }
         }
     }
@@ -539,7 +539,7 @@ public partial class BitDatePicker
             }
         }
 
-        selectedDateWeek = null;
+        _selectedDateWeek = null;
         selectedDateDayOfWeek = null;
     }
 
@@ -575,7 +575,7 @@ public partial class BitDatePicker
             className = "date-cell--today";
         }
 
-        if (week == selectedDateWeek && day == selectedDateDayOfWeek)
+        if (week == _selectedDateWeek && day == selectedDateDayOfWeek)
         {
             className += className.Length == 0 ? "date-cell--selected" : " date-cell--selected";
         }
