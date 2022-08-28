@@ -60,11 +60,11 @@
                  role="group"
                  aria-label="">
                 <div aria-live="polite" aria-atomic="true">Selected date @CurrentValueAsString</div>
-                @if ((showMonthPickerAsOverlayInternal && !_isMonthPickerOverlayOnTop) || !showMonthPickerAsOverlayInternal)
+                @if ((_showMonthPickerAsOverlayInternal && !_isMonthPickerOverlayOnTop) || !_showMonthPickerAsOverlayInternal)
                 {
                     <div class="day-picker-wrapper">
                         <div class="picker-header">
-                            @if (showMonthPickerAsOverlayInternal)
+                            @if (_showMonthPickerAsOverlayInternal)
                             {
                                 <button class="header-title" aria-label="@($"{_monthTitle}, change month")"
                                         aria-live="polite" aria-atomic="true" tabindex="0" type="button" @onclick="@ToggleMonthPickerAsOverlay">
@@ -142,9 +142,9 @@
                                                 <button class="day-btn"
                                                         role="gridcell"
                                                         type="button"
-                                                        tabindex="@(week == selectedDateWeek && day == selectedDateDayOfWeek ? 0 : -1)"
+                                                        tabindex="@(week == _selectedDateWeek && day == _selectedDateDayOfWeek ? 0 : -1)"
                                                         aria-label="@GetDateAriaLabel(localWeek, localDay)"
-                                                        aria-selected="@(week == selectedDateWeek && day == selectedDateDayOfWeek ? "true" : "false")"
+                                                        aria-selected="@(week == _selectedDateWeek && day == _selectedDateDayOfWeek ? "true" : "false")"
                                                         @onclick="() => SelectDate(localDay, localWeek)"
                                                         aria-readonly="true"
                                                         disabled="@CheckDayForMaxAndMinDate(localDay, localWeek)"
@@ -158,7 +158,7 @@
                             </tbody>
                         </table>
 
-                        @if (showMonthPickerAsOverlayInternal)
+                        @if (_showMonthPickerAsOverlayInternal)
                         {
                             <button class="go-today-btn"
                                     type="button"
@@ -170,15 +170,15 @@
                     </div>
                 }
 
-                @if (showMonthPickerAsOverlayInternal is false)
+                @if (_showMonthPickerAsOverlayInternal is false)
                 {
                     <div class="divider"></div>
                 }
 
-                @if ((showMonthPickerAsOverlayInternal && _isMonthPickerOverlayOnTop) || !showMonthPickerAsOverlayInternal)
+                @if ((_showMonthPickerAsOverlayInternal && _isMonthPickerOverlayOnTop) || !_showMonthPickerAsOverlayInternal)
                 {
                     <div class="month-picker-wrapper">
-                        @if (showMonthPicker)
+                        @if (_showMonthPicker)
                         {
                             <div class="picker-header">
                                 <button class="header-title"

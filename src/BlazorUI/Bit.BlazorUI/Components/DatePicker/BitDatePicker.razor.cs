@@ -23,8 +23,8 @@ public partial class BitDatePicker
     private string _monthTitle = string.Empty;
     private int? _selectedDateWeek;
     private int? _selectedDateDayOfWeek;
-    private bool showMonthPicker = true;
-    private bool showMonthPickerAsOverlayInternal;
+    private bool _showMonthPicker = true;
+    private bool _showMonthPickerAsOverlayInternal;
     private int yearRangeFrom;
     private int yearRangeTo;
 
@@ -236,18 +236,18 @@ public partial class BitDatePicker
     {
         if (IsEnabled is false) return;
 
-        showMonthPickerAsOverlayInternal = ShowMonthPickerAsOverlay;
+        _showMonthPickerAsOverlayInternal = ShowMonthPickerAsOverlay;
 
         var obj = DotNetObjectReference.Create(this);
 
         await JSRuntime.InvokeVoidAsync("BitDatePicker.toggleDatePickerCallout", obj, UniqueId, CalloutId, OverlayId, IsOpen);
 
-        if (showMonthPickerAsOverlayInternal is false)
+        if (_showMonthPickerAsOverlayInternal is false)
         {
-            showMonthPickerAsOverlayInternal = await JSRuntime.InvokeAsync<bool>("BitDatePicker.checkMonthPickerWidth", CalloutId);
+            _showMonthPickerAsOverlayInternal = await JSRuntime.InvokeAsync<bool>("BitDatePicker.checkMonthPickerWidth", CalloutId);
         }
 
-        if (showMonthPickerAsOverlayInternal)
+        if (_showMonthPickerAsOverlayInternal)
         {
             _isMonthPickerOverlayOnTop = false;
         }
@@ -372,7 +372,7 @@ public partial class BitDatePicker
         _currentMonth = month;
         _currentYear = _displayYear;
         CreateMonthCalendar(_currentYear, _currentMonth);
-        if (showMonthPickerAsOverlayInternal is false) return;
+        if (_showMonthPickerAsOverlayInternal is false) return;
 
         ToggleMonthPickerAsOverlay();
     }
@@ -393,7 +393,7 @@ public partial class BitDatePicker
     {
         if (IsEnabled is false) return;
 
-        showMonthPicker = !showMonthPicker;
+        _showMonthPicker = !_showMonthPicker;
     }
 
     public void HandleYearChange(ChangeDirection direction)
@@ -642,7 +642,7 @@ public partial class BitDatePicker
         var todayMonth = Culture.DateTimeFormat.Calendar.GetMonth(DateTime.Now);
         var todayYear = Culture.DateTimeFormat.Calendar.GetYear(DateTime.Now);
 
-        if (showMonthPickerAsOverlayInternal)
+        if (_showMonthPickerAsOverlayInternal)
         {
             return (yearRangeFrom == todayYear - 1 && yearRangeTo == todayYear + 10 && todayMonth == _currentMonth && todayYear == _currentYear);
         }
