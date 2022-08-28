@@ -37,6 +37,11 @@ public partial class BitDatePicker
     [Parameter] public bool AllowTextInput { get; set; }
 
     /// <summary>
+    /// Capture and render additional attributes in addition to the main callout's parameters
+    /// </summary>
+    [Parameter] public Dictionary<string, object> CalloutHtmlAttributes { get; set; } = new Dictionary<string, object>();
+
+    /// <summary>
     /// CultureInfo for the DatePicker
     /// </summary>
     [Parameter]

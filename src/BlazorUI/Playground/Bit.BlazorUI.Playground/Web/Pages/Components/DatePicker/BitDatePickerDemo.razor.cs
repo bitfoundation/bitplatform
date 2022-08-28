@@ -181,6 +181,13 @@ public partial class BitDatePickerDemo
             DefaultValue = "null",
             Description = "Used to customize the label for the DatePicker."
         },
+        new ComponentParameter
+        {
+            Name = "CalloutHtmlAttributes",
+            Type = "Dictionary<string, object>",
+            DefaultValue = "",
+            Description = "Capture and render additional attributes in addition to the main callout's parameters"
+        }
     };
 
     private readonly List<EnumParameter> enumParameters = new()

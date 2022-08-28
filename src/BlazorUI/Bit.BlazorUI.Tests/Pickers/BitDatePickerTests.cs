@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -239,5 +240,25 @@ public class BitDatePickerTests : BunitTestContext
         today.Click();
 
         Assert.IsFalse(bitDatePicker.ClassList.Contains($"bit-dtp-invalid-{visualClass}"));
+    }
+
+    [DataTestMethod]
+    public void BitDatePickerCalloutHtmlAttributesTest()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        var calloutHtmlAttributes = new Dictionary<string, object>
+        {
+            {"style", "color: blue" }
+        };
+
+        var component = RenderComponent<BitDatePickerTest>(parameters =>
+        {
+            parameters.Add(p => p.CalloutHtmlAttributes, calloutHtmlAttributes);
+        });
+
+        var bitDatePickerCallout = component.Find(".dtp-callout-main");
+        var calloutStyle = bitDatePickerCallout.GetAttribute("style");
+
+        Assert.AreEqual("color: blue", calloutStyle);
     }
 }
