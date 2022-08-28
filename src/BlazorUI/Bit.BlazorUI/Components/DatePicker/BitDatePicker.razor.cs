@@ -124,27 +124,32 @@ public partial class BitDatePicker
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
     /// <summary>
-    /// Callback for when focus moves into the input
+    /// Callback for when focus moves into the input.
     /// </summary>
     [Parameter] public EventCallback<FocusEventArgs> OnFocus { get; set; }
 
     /// <summary>
-    /// Callback for when focus moves into the DatePicker input
+    /// Callback for when focus moves into the DatePicker input.
     /// </summary>
     [Parameter] public EventCallback<FocusEventArgs> OnFocusIn { get; set; }
 
     /// <summary>
-    /// Callback for when focus moves out the DatePicker input
+    /// Callback for when focus moves out the DatePicker input.
     /// </summary>
     [Parameter] public EventCallback<FocusEventArgs> OnFocusOut { get; set; }
 
     /// <summary>
-    /// Callback for when the date changes
+    /// Callback for when the date changes.
     /// </summary>
     [Parameter] public EventCallback<DateTimeOffset?> OnSelectDate { get; set; }
 
     /// <summary>
-    /// Placeholder text for the DatePicker
+    /// Aria label for date picker popup for screen reader users.
+    /// </summary>
+    [Parameter] public string PickerAriaLabel { get; set; } = "Calendar";
+
+    /// <summary>
+    /// Placeholder text for the DatePicker.
     /// </summary>
     [Parameter] public string Placeholder { get; set; } = "Select a date...";
 
@@ -154,12 +159,12 @@ public partial class BitDatePicker
     [Parameter] public bool ShowMonthPickerAsOverlay { get; set; }
 
     /// <summary>
-    /// Whether the calendar should show the week number (weeks 1 to 53) before each week row
+    /// Whether the calendar should show the week number (weeks 1 to 53) before each week row.
     /// </summary>
     [Parameter] public bool ShowWeekNumbers { get; set; }
 
     /// <summary>
-    /// The tabIndex of the TextField
+    /// The tabIndex of the TextField.
     /// </summary>
     [Parameter] public int TabIndex { get; set; }
 

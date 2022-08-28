@@ -4,6 +4,7 @@
     <BitDatePicker IsEnabled="IsEnabled"
                    Culture="Culture"
                    CalloutHtmlAttributes="CalloutHtmlAttributes"
+                   PickerAriaLabel="@PickerAriaLabel"
                    @bind-Value="@Value"
                    Placeholder="@Placeholder"
                    GoToToday="@GoToToday"
@@ -26,6 +27,7 @@
     [Parameter] public string GoToToday { get; set; }
     [Parameter] public bool IsOpen { get; set; }
     [Parameter] public RenderFragment LabelFragment { get; set; }
+    [Parameter] public string PickerAriaLabel { get; set; }
 
     public int ClickedValue { get; set; }
     public int SelectedDateValue { get; set; }

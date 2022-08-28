@@ -186,7 +186,14 @@ public partial class BitDatePickerDemo
             Name = "CalloutHtmlAttributes",
             Type = "Dictionary<string, object>",
             DefaultValue = "",
-            Description = "Capture and render additional attributes in addition to the main callout's parameters"
+            Description = "Capture and render additional attributes in addition to the main callout's parameters."
+        },
+        new ComponentParameter
+        {
+            Name = "PickerAriaLabel",
+            Type = "string",
+            DefaultValue = "Calendar",
+            Description = "Aria label for date picker popup for screen reader users."
         }
     };
 

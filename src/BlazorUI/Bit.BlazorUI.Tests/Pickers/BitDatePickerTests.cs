@@ -242,6 +242,23 @@ public class BitDatePickerTests : BunitTestContext
         Assert.IsFalse(bitDatePicker.ClassList.Contains($"bit-dtp-invalid-{visualClass}"));
     }
 
+    [DataTestMethod,
+        DataRow("DatePicker")
+    ]
+    public void BitDatePickerAriaLabelTest(string pickerAriaLabel)
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        var component = RenderComponent<BitDatePickerTest>(parameters =>
+        {
+            parameters.Add(p => p.PickerAriaLabel, pickerAriaLabel);
+        });
+
+        var bitDatePickerCallout = component.Find(".dtp-callout-main");
+        var calloutAriaLabel = bitDatePickerCallout.GetAttribute("aria-label");
+
+        Assert.AreEqual(pickerAriaLabel, calloutAriaLabel);
+    }
+
     [DataTestMethod]
     public void BitDatePickerCalloutHtmlAttributesTest()
     {
