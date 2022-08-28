@@ -22,7 +22,7 @@ public partial class BitDatePicker
     private int _monthLength;
     private string _monthTitle = string.Empty;
     private int? _selectedDateWeek;
-    private int? selectedDateDayOfWeek;
+    private int? _selectedDateDayOfWeek;
     private bool showMonthPicker = true;
     private bool showMonthPickerAsOverlayInternal;
     private int yearRangeFrom;
@@ -508,7 +508,7 @@ public partial class BitDatePicker
     {
         if (Culture is null) return;
 
-        if (CurrentValue.HasValue is false || (_selectedDateWeek.HasValue && selectedDateDayOfWeek.HasValue)) return;
+        if (CurrentValue.HasValue is false || (_selectedDateWeek.HasValue && _selectedDateDayOfWeek.HasValue)) return;
 
         var year = Culture.DateTimeFormat.Calendar.GetYear(CurrentValue.Value.DateTime);
         var month = Culture.DateTimeFormat.Calendar.GetMonth(CurrentValue.Value.DateTime);
@@ -519,7 +519,7 @@ public partial class BitDatePicker
             var firstDayOfWeek = (int)Culture.DateTimeFormat.FirstDayOfWeek;
             var firstDayOfWeekInMonth = (int)Culture.DateTimeFormat.Calendar.ToDateTime(year, month, 1, 0, 0, 0, 0).DayOfWeek;
             var firstDayOfWeekInMonthIndex = (firstDayOfWeekInMonth - firstDayOfWeek + DEFAULT_DAY_COUNT_PER_WEEK) % DEFAULT_DAY_COUNT_PER_WEEK;
-            selectedDateDayOfWeek = ((int)CurrentValue.Value.DayOfWeek - firstDayOfWeek + DEFAULT_DAY_COUNT_PER_WEEK) % DEFAULT_DAY_COUNT_PER_WEEK;
+            _selectedDateDayOfWeek = ((int)CurrentValue.Value.DayOfWeek - firstDayOfWeek + DEFAULT_DAY_COUNT_PER_WEEK) % DEFAULT_DAY_COUNT_PER_WEEK;
             var days = firstDayOfWeekInMonthIndex + day;
             _selectedDateWeek = days % DEFAULT_DAY_COUNT_PER_WEEK == 0 ? (days / DEFAULT_DAY_COUNT_PER_WEEK) - 1 : days / DEFAULT_DAY_COUNT_PER_WEEK;
             if (firstDayOfWeekInMonthIndex is 0)
@@ -540,7 +540,7 @@ public partial class BitDatePicker
         }
 
         _selectedDateWeek = null;
-        selectedDateDayOfWeek = null;
+        _selectedDateDayOfWeek = null;
     }
 
     private void ChangeYearRanges(int fromYear)
@@ -575,7 +575,7 @@ public partial class BitDatePicker
             className = "date-cell--today";
         }
 
-        if (week == _selectedDateWeek && day == selectedDateDayOfWeek)
+        if (week == _selectedDateWeek && day == _selectedDateDayOfWeek)
         {
             className += className.Length == 0 ? "date-cell--selected" : " date-cell--selected";
         }
