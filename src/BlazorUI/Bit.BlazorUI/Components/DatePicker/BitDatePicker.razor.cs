@@ -8,53 +8,32 @@ public partial class BitDatePicker
     private const int DEFAULT_DAY_COUNT_PER_WEEK = 7;
     private const int DEFAULT_WEEK_COUNT = 6;
 
+    private bool isOpen;
     private CultureInfo culture = CultureInfo.CurrentUICulture;
     private string focusClass = string.Empty;
-    private bool isOpen;
 
+    private bool _isMonthPickerOverlayOnTop;
+    private bool _showMonthPicker = true;
+    private bool _showMonthPickerAsOverlayInternal;
 #pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
     private int[,] _currentMonthCalendar = new int[DEFAULT_WEEK_COUNT, DEFAULT_DAY_COUNT_PER_WEEK];
 #pragma warning restore CA1814 // Prefer jagged arrays over multidimensional
     private int _currentMonth;
     private int _currentYear;
     private int _displayYear;
-    private bool _isMonthPickerOverlayOnTop;
     private int _monthLength;
-    private string _monthTitle = string.Empty;
     private int? _selectedDateWeek;
     private int? _selectedDateDayOfWeek;
-    private bool _showMonthPicker = true;
-    private bool _showMonthPickerAsOverlayInternal;
     private int _yearRangeFrom;
     private int _yearRangeTo;
+    private string _monthTitle = string.Empty;
 
     [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
 
     /// <summary>
-    /// Whether or not this DatePicker is open
+    /// Whether the DatePicker allows input a date string directly or not
     /// </summary>
-    [Parameter]
-    public bool IsOpen
-    {
-        get => isOpen;
-        set
-        {
-            if (isOpen == value) return;
-
-            isOpen = value;
-            ClassBuilder.Reset();
-        }
-    }
-
-    /// <summary>
-    /// GoToToday text for the DatePicker
-    /// </summary>
-    [Parameter] public string GoToToday { get; set; } = "Go to today";
-
-    /// <summary>
-    /// Placeholder text for the DatePicker
-    /// </summary>
-    [Parameter] public string Placeholder { get; set; } = "Select a date...";
+    [Parameter] public bool AllowTextInput { get; set; }
 
     /// <summary>
     /// CultureInfo for the DatePicker
@@ -73,44 +52,45 @@ public partial class BitDatePicker
     }
 
     /// <summary>
-    /// MaxDate for the DatePicker
-    /// </summary>
-    [Parameter] public DateTimeOffset? MaxDate { get; set; }
-
-    /// <summary>
-    /// MinDate for the DatePicker
-    /// </summary>
-    [Parameter] public DateTimeOffset? MinDate { get; set; }
-
-    /// <summary>
     /// FormatDate for the DatePicker
     /// </summary>
     [Parameter] public string? FormatDate { get; set; }
 
     /// <summary>
-    /// Callback for when clicking on DatePicker input
+    /// GoToToday text for the DatePicker
     /// </summary>
-    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+    [Parameter] public string GoToToday { get; set; } = "Go to today";
 
     /// <summary>
-    /// Callback for when focus moves into the DatePicker input
+    /// Determines if the DatePicker has a border.
     /// </summary>
-    [Parameter] public EventCallback<FocusEventArgs> OnFocusIn { get; set; }
+    [Parameter] public bool HasBorder { get; set; } = true;
 
     /// <summary>
-    /// Callback for when focus moves out the DatePicker input
+    /// Whether the month picker is shown beside the day picker or hidden.
     /// </summary>
-    [Parameter] public EventCallback<FocusEventArgs> OnFocusOut { get; set; }
+    [Parameter] public bool IsMonthPickerVisible { get; set; } = true;
 
     /// <summary>
-    /// Callback for when focus moves into the input
+    /// Whether or not this DatePicker is open
     /// </summary>
-    [Parameter] public EventCallback<FocusEventArgs> OnFocus { get; set; }
+    [Parameter]
+    public bool IsOpen
+    {
+        get => isOpen;
+        set
+        {
+            if (isOpen == value) return;
+
+            isOpen = value;
+            ClassBuilder.Reset();
+        }
+    }
 
     /// <summary>
-    /// Callback for when the date changes
+    /// Whether or not the Textfield of the DatePicker is underlined.
     /// </summary>
-    [Parameter] public EventCallback<DateTimeOffset?> OnSelectDate { get; set; }
+    [Parameter] public bool IsUnderlined { get; set; }
 
     /// <summary>
     /// Label for the DatePicker
@@ -123,29 +103,44 @@ public partial class BitDatePicker
     [Parameter] public RenderFragment? LabelFragment { get; set; }
 
     /// <summary>
-    /// Determines if the DatePicker has a border.
+    /// MaxDate for the DatePicker
     /// </summary>
-    [Parameter] public bool HasBorder { get; set; } = true;
+    [Parameter] public DateTimeOffset? MaxDate { get; set; }
 
     /// <summary>
-    /// Whether or not the Textfield of the DatePicker is underlined.
+    /// MinDate for the DatePicker
     /// </summary>
-    [Parameter] public bool IsUnderlined { get; set; }
+    [Parameter] public DateTimeOffset? MinDate { get; set; }
 
     /// <summary>
-    /// The tabIndex of the TextField
+    /// Callback for when clicking on DatePicker input
     /// </summary>
-    [Parameter] public int TabIndex { get; set; }
+    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
     /// <summary>
-    /// Whether the DatePicker allows input a date string directly or not
+    /// Callback for when focus moves into the input
     /// </summary>
-    [Parameter] public bool AllowTextInput { get; set; }
+    [Parameter] public EventCallback<FocusEventArgs> OnFocus { get; set; }
 
     /// <summary>
-    /// Whether the month picker is shown beside the day picker or hidden.
+    /// Callback for when focus moves into the DatePicker input
     /// </summary>
-    [Parameter] public bool IsMonthPickerVisible { get; set; } = true;
+    [Parameter] public EventCallback<FocusEventArgs> OnFocusIn { get; set; }
+
+    /// <summary>
+    /// Callback for when focus moves out the DatePicker input
+    /// </summary>
+    [Parameter] public EventCallback<FocusEventArgs> OnFocusOut { get; set; }
+
+    /// <summary>
+    /// Callback for when the date changes
+    /// </summary>
+    [Parameter] public EventCallback<DateTimeOffset?> OnSelectDate { get; set; }
+
+    /// <summary>
+    /// Placeholder text for the DatePicker
+    /// </summary>
+    [Parameter] public string Placeholder { get; set; } = "Select a date...";
 
     /// <summary>
     /// Show month picker on top of date picker when visible.
@@ -157,6 +152,13 @@ public partial class BitDatePicker
     /// </summary>
     [Parameter] public bool ShowWeekNumbers { get; set; }
 
+    /// <summary>
+    /// The tabIndex of the TextField
+    /// </summary>
+    [Parameter] public int TabIndex { get; set; }
+
+    public string ActiveDescendantId { get; set; } = Guid.NewGuid().ToString();
+    public string CalloutId { get; set; } = string.Empty;
     public string FocusClass
     {
         get => focusClass;
@@ -166,14 +168,11 @@ public partial class BitDatePicker
             ClassBuilder.Reset();
         }
     }
-
-    public string CalloutId { get; set; } = string.Empty;
-    public string OverlayId { get; set; } = string.Empty;
-    public string WrapperId { get; set; } = string.Empty;
-    public string MonthAndYearId { get; set; } = Guid.NewGuid().ToString();
-    public string ActiveDescendantId { get; set; } = Guid.NewGuid().ToString();
-    public string TextFieldId { get; set; } = string.Empty;
     public string LabelId { get; set; } = string.Empty;
+    public string MonthAndYearId { get; set; } = Guid.NewGuid().ToString();
+    public string OverlayId { get; set; } = string.Empty;
+    public string TextFieldId { get; set; } = string.Empty;
+    public string WrapperId { get; set; } = string.Empty;
 
     [JSInvokable("CloseCallout")]
     public void CloseCalloutBeforeAnotherCalloutIsOpened()
@@ -207,10 +206,10 @@ public partial class BitDatePicker
     protected override Task OnInitializedAsync()
     {
         CalloutId = $"DatePicker-Callout{UniqueId}";
-        OverlayId = $"DatePicker-Overlay{UniqueId}";
-        WrapperId = $"DatePicker-Wrapper{UniqueId}";
-        TextFieldId = $"DatePicker-TextField{UniqueId}";
         LabelId = $"DatePicker-Label{UniqueId}";
+        OverlayId = $"DatePicker-Overlay{UniqueId}";
+        TextFieldId = $"DatePicker-TextField{UniqueId}";
+        WrapperId = $"DatePicker-Wrapper{UniqueId}";
 
         return base.OnInitializedAsync();
     }
