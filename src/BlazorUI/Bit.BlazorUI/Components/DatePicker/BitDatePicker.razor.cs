@@ -18,6 +18,7 @@ public partial class BitDatePicker
     private int _currentYear;
     private int _displayYear;
     private bool _isMonthPickerOverlayOnTop;
+    private int _monthLength;
     private string _monthTitle = string.Empty;
     private int yearRangeFrom;
     private int yearRangeTo;
@@ -25,7 +26,6 @@ public partial class BitDatePicker
     private int? selectedDateDayOfWeek;
     private bool showMonthPicker = true;
     private bool showMonthPickerAsOverlayInternal;
-    private int monthLength;
     private string focusClass = string.Empty;
 
     [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
@@ -444,7 +444,7 @@ public partial class BitDatePicker
     private void CreateMonthCalendar(int year, int month)
     {
         _monthTitle = $"{Culture.DateTimeFormat.GetMonthName(month)} {year}";
-        monthLength = Culture.DateTimeFormat.Calendar.GetDaysInMonth(year, month);
+        _monthLength = Culture.DateTimeFormat.Calendar.GetDaysInMonth(year, month);
         var firstDay = Culture.DateTimeFormat.Calendar.ToDateTime(year, month, 1, 0, 0, 0, 0);
         var currentDay = 1;
         ResetCalendar();
@@ -482,13 +482,13 @@ public partial class BitDatePicker
                         _currentMonthCalendar[weekIndex, dayIndex] = previousMonthDaysCount + dayIndex - (7 + (int)firstDay.DayOfWeek - 1 - firstDayOfWeek);
                     }
                 }
-                else if (currentDay <= monthLength)
+                else if (currentDay <= _monthLength)
                 {
                     _currentMonthCalendar[weekIndex, dayIndex] = currentDay;
                     currentDay++;
                 }
 
-                if (currentDay > monthLength)
+                if (currentDay > _monthLength)
                 {
                     currentDay = 1;
                     isCalendarEnded = true;
