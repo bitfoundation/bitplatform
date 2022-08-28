@@ -39,7 +39,7 @@ public partial class BitDatePicker
         get => isOpen;
         set
         {
-            if (isOpen = value) return;
+            if (isOpen == value) return;
 
             isOpen = value;
             ClassBuilder.Reset();
@@ -65,6 +65,8 @@ public partial class BitDatePicker
         get => culture;
         set
         {
+            if (culture == value) return;
+
             culture = value;
             ClassBuilder.Reset();
         }
