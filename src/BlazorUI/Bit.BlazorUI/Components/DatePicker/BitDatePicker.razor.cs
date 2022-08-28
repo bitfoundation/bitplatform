@@ -233,6 +233,40 @@ public partial class BitDatePicker
         return base.OnParametersSetAsync();
     }
 
+    /// <inheritdoc />
+    protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out DateTimeOffset? result, [NotNullWhen(false)] out string? validationErrorMessage)
+    {
+        if (value.HasNoValue())
+        {
+            result = null;
+            validationErrorMessage = null;
+            return true;
+        }
+
+        if (DateTime.TryParseExact(value, FormatDate ?? Culture.DateTimeFormat.ShortDatePattern, Culture, DateTimeStyles.None, out DateTime parsedValue))
+        {
+            result = new DateTimeOffset(parsedValue, DateTimeOffset.Now.Offset);
+            validationErrorMessage = null;
+            return true;
+        }
+
+        result = default;
+        validationErrorMessage = $"The {DisplayName ?? FieldIdentifier.FieldName} field is not valid.";
+        return false;
+    }
+
+    protected override string? FormatValueAsString(DateTimeOffset? value)
+    {
+        if (value.HasValue)
+        {
+            return value.Value.ToString(FormatDate ?? Culture.DateTimeFormat.ShortDatePattern, Culture);
+        }
+        else
+        {
+            return null;
+        }
+    }
+
     private async Task HandleClick(MouseEventArgs eventArgs)
     {
         if (IsEnabled is false) return;
@@ -782,40 +816,6 @@ public partial class BitDatePicker
             _currentYear = currentValueYear;
             _currentMonth = currentValueMonth;
             CreateMonthCalendar(_currentYear, _currentMonth);
-        }
-    }
-
-    /// <inheritdoc />
-    protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out DateTimeOffset? result, [NotNullWhen(false)] out string? validationErrorMessage)
-    {
-        if (value.HasNoValue())
-        {
-            result = null;
-            validationErrorMessage = null;
-            return true;
-        }
-
-        if (DateTime.TryParseExact(value, FormatDate ?? Culture.DateTimeFormat.ShortDatePattern, Culture, DateTimeStyles.None, out DateTime parsedValue))
-        {
-            result = new DateTimeOffset(parsedValue, DateTimeOffset.Now.Offset);
-            validationErrorMessage = null;
-            return true;
-        }
-
-        result = default;
-        validationErrorMessage = $"The {DisplayName ?? FieldIdentifier.FieldName} field is not valid.";
-        return false;
-    }
-
-    protected override string? FormatValueAsString(DateTimeOffset? value)
-    {
-        if (value.HasValue)
-        {
-            return value.Value.ToString(FormatDate ?? Culture.DateTimeFormat.ShortDatePattern, Culture);
-        }
-        else
-        {
-            return null;
         }
     }
 }
