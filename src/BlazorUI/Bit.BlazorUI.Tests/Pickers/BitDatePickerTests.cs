@@ -259,6 +259,20 @@ public class BitDatePickerTests : BunitTestContext
         Assert.AreEqual(pickerAriaLabel, calloutAriaLabel);
     }
 
+    [DataTestMethod,
+        DataRow(false)
+    ]
+    public void BitDateShowGoToTodayTest(bool showGoToToday)
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        var component = RenderComponent<BitDatePickerTest>(parameters =>
+        {
+            parameters.Add(p => p.ShowGoToToday, showGoToToday);
+        });
+
+        Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".go-today-btn"));
+    }
+
     [DataTestMethod]
     public void BitDatePickerCalloutHtmlAttributesTest()
     {

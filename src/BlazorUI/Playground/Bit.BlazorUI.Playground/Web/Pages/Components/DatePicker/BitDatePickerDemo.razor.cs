@@ -194,6 +194,13 @@ public partial class BitDatePickerDemo
             Type = "string",
             DefaultValue = "Calendar",
             Description = "Aria label for date picker popup for screen reader users."
+        },
+        new ComponentParameter
+        {
+            Name = "ShowGoToToday",
+            Type = "bool",
+            DefaultValue = "true",
+            Description = "Whether the \"Go to today\" link should be shown or not."
         }
     };
 

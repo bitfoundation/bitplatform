@@ -154,6 +154,11 @@ public partial class BitDatePicker
     [Parameter] public string Placeholder { get; set; } = "Select a date...";
 
     /// <summary>
+    /// Whether the "Go to today" link should be shown or not.
+    /// </summary>
+    [Parameter] public bool ShowGoToToday { get; set; } = true;
+
+    /// <summary>
     /// Show month picker on top of date picker when visible.
     /// </summary>
     [Parameter] public bool ShowMonthPickerAsOverlay { get; set; }

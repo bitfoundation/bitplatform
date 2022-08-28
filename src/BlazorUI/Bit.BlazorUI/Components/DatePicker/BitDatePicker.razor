@@ -166,7 +166,7 @@
                             </tbody>
                         </table>
 
-                        @if (_showMonthPickerAsOverlayInternal)
+                        @if (_showMonthPickerAsOverlayInternal && ShowGoToToday)
                         {
                             <button class="go-today-btn"
                                     type="button"
@@ -294,12 +294,15 @@
                                 }
                             </div>
                         }
-                        <button class="go-today-btn"
-                                type="button"
-                                disabled="@IsGoTodayDisabeld()"
-                                @onclick="HandleGoToToday">
-                            @GoToToday
-                        </button>
+                        
+                        @if (ShowGoToToday) {
+                            <button class="go-today-btn"
+                                    type="button"
+                                    disabled="@IsGoTodayDisabeld()"
+                                    @onclick="HandleGoToToday">
+                                @GoToToday
+                            </button>
+                        }
                     </div>
                 }
             </div>

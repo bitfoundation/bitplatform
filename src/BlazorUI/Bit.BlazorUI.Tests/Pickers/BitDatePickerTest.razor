@@ -9,6 +9,7 @@
                    Placeholder="@Placeholder"
                    GoToToday="@GoToToday"
                    IsOpen="IsOpen"
+                   ShowGoToToday="ShowGoToToday"
                    OnClick="HandleClick"
                    OnSelectDate="HandleSelectDate">
         <LabelFragment>
@@ -28,6 +29,7 @@
     [Parameter] public bool IsOpen { get; set; }
     [Parameter] public RenderFragment LabelFragment { get; set; }
     [Parameter] public string PickerAriaLabel { get; set; }
+    [Parameter] public bool ShowGoToToday { get; set; } = true;
 
     public int ClickedValue { get; set; }
     public int SelectedDateValue { get; set; }
