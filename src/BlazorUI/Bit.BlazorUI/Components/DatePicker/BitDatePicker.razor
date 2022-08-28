@@ -27,9 +27,9 @@
         <div class="dtp-field-grp @(AllowTextInput ? "editable-input" : null)">
             <input @attributes="InputHtmlAttributes"
                    id="@TextFieldId"
-                   disabled=@(!IsEnabled)
+                   disabled=@(IsEnabled is false)
                    role="combobox"
-                   readonly=@(!AllowTextInput)
+                   readonly=@(AllowTextInput is false)
                    type="text"
                    value="@CurrentValueAsString"
                    placeholder="@Placeholder"
@@ -60,47 +60,55 @@
                  role="group"
                  aria-label="">
                 <div aria-live="polite" aria-atomic="true">Selected date @CurrentValueAsString</div>
-                @if ((_showMonthPickerAsOverlayInternal && !_isMonthPickerOverlayOnTop) || !_showMonthPickerAsOverlayInternal)
+                @if ((_showMonthPickerAsOverlayInternal && _isMonthPickerOverlayOnTop is false) || _showMonthPickerAsOverlayInternal is false)
                 {
                     <div class="day-picker-wrapper">
                         <div class="picker-header">
                             @if (_showMonthPickerAsOverlayInternal)
                             {
-                                <button class="header-title" aria-label="@($"{_monthTitle}, change month")"
-                                aria-live="polite" aria-atomic="true" tabindex="0" type="button" @onclick="@ToggleMonthPickerAsOverlay">
+                                <button class="header-title"
+                                        aria-label="@($"{_monthTitle}, change month")"
+                                        aria-live="polite" 
+                                        aria-atomic="true" 
+                                        tabindex="0" 
+                                        type="button" 
+                                        @onclick="@ToggleMonthPickerAsOverlay">
                                     <span id="@MonthAndYearId">@_monthTitle</span>
                                 </button>
                             }
                             else
                             {
-                                <div class="header-title" aria-live="polite" aria-atomic="true" tabindex="-1">
+                                <div class="header-title" 
+                                     aria-live="polite" 
+                                     aria-atomic="true" 
+                                     tabindex="-1">
                                     <span id="@MonthAndYearId">@_monthTitle</span>
                                 </div>
                             }
                             <div class="navigation-btn-container">
                                 <button class="navigation-btn"
-                                    type="button"
-                                    title="@($"Go to previous month")"
-                                    aria-disabled="@IsMonthOutOfMinAndMaxDate(ChangeDirection.Previous)"
-                                    disabled="@IsMonthOutOfMinAndMaxDate(ChangeDirection.Previous)"
-                                    @onclick="() => HandleMonthChange(ChangeDirection.Previous)">
+                                        type="button"
+                                        title="@($"Go to previous month")"
+                                        aria-disabled="@(CanMonthChange(ChangeDirection.Previous) is false)"
+                                        disabled="@(CanMonthChange(ChangeDirection.Previous) is false)"
+                                        @onclick="() => HandleMonthChange(ChangeDirection.Previous)">
                                     <i class="bit-icon" aria-hidden="true"></i>
                                 </button>
                                 <button class="navigation-btn"
-                                    type="button"
-                                    title="@($"Go to next month")"
-                                    aria-disabled="@IsMonthOutOfMinAndMaxDate(ChangeDirection.Next)"
-                                    disabled="@IsMonthOutOfMinAndMaxDate(ChangeDirection.Next)"
-                                    @onclick="() => HandleMonthChange(ChangeDirection.Next)">
+                                        type="button"
+                                        title="@($"Go to next month")"
+                                        aria-disabled="@(CanMonthChange(ChangeDirection.Next) is false)"
+                                        disabled="@(CanMonthChange(ChangeDirection.Next) is false)"
+                                        @onclick="() => HandleMonthChange(ChangeDirection.Next)">
                                     <i class="bit-icon" aria-hidden="true"></i>
                                 </button>
                             </div>
                         </div>
                         <table role="grid"
-                           aria-readonly="true"
-                           aria-multiselectable="false"
-                           aria-labelledby="@MonthAndYearId"
-                           aria-activedescendant="@ActiveDescendantId">
+                               aria-readonly="true"
+                               aria-multiselectable="false"
+                               aria-labelledby="@MonthAndYearId"
+                               aria-activedescendant="@ActiveDescendantId">
                             <tbody>
                                 <tr>
                                     @if (ShowWeekNumbers)
@@ -147,8 +155,8 @@
                                                         aria-selected="@(week == _selectedDateWeek && day == _selectedDateDayOfWeek ? "true" : "false")"
                                                         @onclick="() => SelectDate(localDay, localWeek)"
                                                         aria-readonly="true"
-                                                        disabled="@IsDayOutOfMinAndMaxDate(localDay, localWeek)"
-                                                        aria-disabled="@IsDayOutOfMinAndMaxDate(localDay, localWeek)">
+                                                        disabled="@IsWeekDayOutOfMinAndMaxDate(localDay, localWeek)"
+                                                        aria-disabled="@IsWeekDayOutOfMinAndMaxDate(localDay, localWeek)">
                                                     <span aria-hidden="true">@_currentMonthCalendar[localWeek, localDay]</span>
                                                 </button>
                                             </td>
@@ -175,7 +183,7 @@
                     <div class="divider"></div>
                 }
 
-                @if ((_showMonthPickerAsOverlayInternal && _isMonthPickerOverlayOnTop) || !_showMonthPickerAsOverlayInternal)
+                @if ((_showMonthPickerAsOverlayInternal && _isMonthPickerOverlayOnTop) || _showMonthPickerAsOverlayInternal is false)
                 {
                     <div class="month-picker-wrapper">
                         @if (_showMonthPicker)
@@ -192,20 +200,20 @@
                                 </button>
                                 <div class="navigation-btn-container">
                                     <button class="navigation-btn"
-                                            disabled="@IsYearOutOfMinAndMaxDate(ChangeDirection.Previous)"
-                                            aria-disabled="@IsYearOutOfMinAndMaxDate(ChangeDirection.Previous)"
+                                            disabled="@(CanYearChange(ChangeDirection.Previous) is false)"
+                                            aria-disabled="@(CanYearChange(ChangeDirection.Previous) is false)"
                                             type="button"
                                             title="Go to previous year @(_displayYear - 1)"
                                             @onclick="() => HandleYearChange(ChangeDirection.Previous)">
-                                        <i class="bit-icon" aria-hidden="true"></i>
+                                            <i class="bit-icon" aria-hidden="true"></i>
                                     </button>
                                     <button class="navigation-btn"
-                                            aria-disabled="@IsYearOutOfMinAndMaxDate(ChangeDirection.Next)"
-                                            disabled="@IsYearOutOfMinAndMaxDate(ChangeDirection.Next)"
+                                            aria-disabled="@(CanYearChange(ChangeDirection.Next) is false)"
+                                            disabled="@(CanYearChange(ChangeDirection.Next) is false)"
                                             type="button"
                                             title="Go to next year @(_displayYear + 1)"
                                             @onclick="() => HandleYearChange(ChangeDirection.Next)">
-                                        <i class="bit-icon" aria-hidden="true"></i>
+                                            <i class="bit-icon" aria-hidden="true"></i>
                                     </button>
                                 </div>
                             </div>
@@ -247,20 +255,20 @@
                                 </button>
                                 <div class="navigation-btn-container">
                                     <button class="navigation-btn"
-                                            aria-disabled="@IsYearRangeOutOfMinAndMaxDate(ChangeDirection.Previous)"
-                                            disabled="@IsYearRangeOutOfMinAndMaxDate(ChangeDirection.Previous)"
+                                            aria-disabled="@(CanYearRangeChange(ChangeDirection.Previous) is false)"
+                                            disabled="@(CanYearRangeChange(ChangeDirection.Previous) is false)"
                                             type="button"
                                             title="previous year range @(_yearRangeFrom - 12) - @(_yearRangeFrom - 1)"
                                             @onclick="() => HandleYearRangeChange(ChangeDirection.Previous)">
-                                        <i class="bit-icon" aria-hidden="true"></i>
+                                            <i class="bit-icon" aria-hidden="true"></i>
                                     </button>
                                     <button class="navigation-btn"
                                             type="button"
-                                            aria-disabled="@IsYearRangeOutOfMinAndMaxDate(ChangeDirection.Next)"
-                                            disabled="@IsYearRangeOutOfMinAndMaxDate(ChangeDirection.Next)"
+                                            aria-disabled="@(CanYearRangeChange(ChangeDirection.Next) is false)"
+                                            disabled="@(CanYearRangeChange(ChangeDirection.Next) is false)"
                                             title="next year range @(_yearRangeFrom + 12) - @(_yearRangeTo + 12)"
                                             @onclick="() => HandleYearRangeChange(ChangeDirection.Next)">
-                                        <i class="bit-icon" aria-hidden="true"></i>
+                                            <i class="bit-icon" aria-hidden="true"></i>
                                     </button>
                                 </div>
                             </div>

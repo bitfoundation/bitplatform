@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Xml;
 
 namespace Bit.BlazorUI;
 
@@ -158,7 +159,7 @@ public partial class BitDatePicker
     [Parameter] public int TabIndex { get; set; }
 
     public string ActiveDescendantId { get; set; } = Guid.NewGuid().ToString();
-    public string CalloutId { get; set; } = string.Empty;
+    public string CalloutId => $"DatePicker-Callout{UniqueId}";
     public string FocusClass
     {
         get => focusClass;
@@ -168,11 +169,11 @@ public partial class BitDatePicker
             ClassBuilder.Reset();
         }
     }
-    public string LabelId { get; set; } = string.Empty;
-    public string MonthAndYearId { get; set; } = Guid.NewGuid().ToString();
-    public string OverlayId { get; set; } = string.Empty;
-    public string TextFieldId { get; set; } = string.Empty;
-    public string WrapperId { get; set; } = string.Empty;
+    public string LabelId => $"DatePicker-Label{UniqueId}";
+    public string MonthAndYearId => Guid.NewGuid().ToString();
+    public string OverlayId => $"DatePicker-Overlay{UniqueId}";
+    public string TextFieldId => $"DatePicker-TextField{UniqueId}";
+    public string WrapperId => $"DatePicker-Wrapper{UniqueId}";
 
     [JSInvokable("CloseCallout")]
     public void CloseCalloutBeforeAnotherCalloutIsOpened()
@@ -201,17 +202,6 @@ public partial class BitDatePicker
 
         ClassBuilder.Register(() => ValueInvalid is true
                                    ? $"{RootElementClass}-invalid-{VisualClassRegistrar()}" : string.Empty);
-    }
-
-    protected override Task OnInitializedAsync()
-    {
-        CalloutId = $"DatePicker-Callout{UniqueId}";
-        LabelId = $"DatePicker-Label{UniqueId}";
-        OverlayId = $"DatePicker-Overlay{UniqueId}";
-        TextFieldId = $"DatePicker-TextField{UniqueId}";
-        WrapperId = $"DatePicker-Wrapper{UniqueId}";
-
-        return base.OnInitializedAsync();
     }
 
     protected override Task OnParametersSetAsync()
@@ -338,7 +328,7 @@ public partial class BitDatePicker
 
         if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
-        if (IsDayOutOfMinAndMaxDate(dayIndex, weekIndex)) return;
+        if (IsWeekDayOutOfMinAndMaxDate(dayIndex, weekIndex)) return;
 
         var currentDay = _currentMonthCalendar[weekIndex, dayIndex];
         int selectedMonth = GetCorrectTargetMonth(weekIndex, dayIndex);
@@ -365,7 +355,7 @@ public partial class BitDatePicker
     private void HandleMonthChange(ChangeDirection direction)
     {
         if (IsEnabled is false) return;
-        if (IsMonthOutOfMinAndMaxDate(direction)) return;
+        if (CanMonthChange(direction) is false) return;
 
         if (direction == ChangeDirection.Next)
         {
@@ -431,7 +421,7 @@ public partial class BitDatePicker
     private void HandleYearChange(ChangeDirection direction)
     {
         if (IsEnabled is false) return;
-        if (IsYearOutOfMinAndMaxDate(direction)) return;
+        if (CanYearChange(direction) is false) return;
 
         if (direction == ChangeDirection.Next)
         {
@@ -448,7 +438,7 @@ public partial class BitDatePicker
     private void HandleYearRangeChange(ChangeDirection direction)
     {
         if (IsEnabled is false) return;
-        if (IsYearRangeOutOfMinAndMaxDate(direction)) return;
+        if (CanYearRangeChange(direction) is false) return;
 
         var fromYear = direction == ChangeDirection.Next ? _yearRangeFrom + 12 : _yearRangeFrom - 12;
 
@@ -724,40 +714,40 @@ public partial class BitDatePicker
         return firstDay > firstDayOfWeek ? firstDayOfWeek : firstDayOfWeek - 7;
     }
 
-    private bool IsMonthOutOfMinAndMaxDate(ChangeDirection direction)
+    private bool CanMonthChange(ChangeDirection direction)
     {
         if (direction == ChangeDirection.Next && MaxDate.HasValue && MaxDate.Value.Year == _displayYear && MaxDate.Value.Month == _currentMonth)
-            return true;
+            return false;
 
         if (direction == ChangeDirection.Previous && MinDate.HasValue && MinDate.Value.Year == _displayYear && MinDate.Value.Month == _currentMonth)
-            return true;
+            return false;
 
-        return false;
+        return true;
     }
 
-    private bool IsYearOutOfMinAndMaxDate(ChangeDirection direction)
+    private bool CanYearChange(ChangeDirection direction)
     {
         if (direction == ChangeDirection.Next && MaxDate.HasValue && MaxDate.Value.Year == _displayYear)
-            return true;
+            return false;
 
         if (direction == ChangeDirection.Previous && MinDate.HasValue && MinDate.Value.Year == _displayYear)
-            return true;
+            return false;
 
-        return false;
+        return true;
     }
 
-    private bool IsYearRangeOutOfMinAndMaxDate(ChangeDirection direction)
+    private bool CanYearRangeChange(ChangeDirection direction)
     {
         if (direction == ChangeDirection.Next && MaxDate.HasValue && MaxDate.Value.Year < _yearRangeFrom + 12)
-            return true;
+            return false;
 
         if (direction == ChangeDirection.Previous && MinDate.HasValue && MinDate.Value.Year >= _yearRangeFrom)
-            return true;
+            return false;
 
-        return false;
+        return true;
     }
 
-    private bool IsDayOutOfMinAndMaxDate(int dayIndex, int weekIndex)
+    private bool IsWeekDayOutOfMinAndMaxDate(int dayIndex, int weekIndex)
     {
         var day = _currentMonthCalendar[weekIndex, dayIndex];
         var month = GetCorrectTargetMonth(weekIndex, dayIndex);
