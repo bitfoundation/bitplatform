@@ -154,6 +154,11 @@ public partial class BitDatePicker
     [Parameter] public string Placeholder { get; set; } = "Select a date...";
 
     /// <summary>
+    /// Whether the date picker close button should be shown or not.
+    /// </summary>
+    [Parameter] public bool ShowCloseButton { get; set; }
+
+    /// <summary>
     /// Whether the "Go to today" link should be shown or not.
     /// </summary>
     [Parameter] public bool ShowGoToToday { get; set; } = true;

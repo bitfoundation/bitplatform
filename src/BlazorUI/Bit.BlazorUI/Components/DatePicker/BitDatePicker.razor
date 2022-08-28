@@ -102,6 +102,14 @@
                                         @onclick="() => HandleMonthChange(ChangeDirection.Next)">
                                     <i class="bit-icon" aria-hidden="true"></i>
                                 </button>
+                                @if (ShowCloseButton)
+                                {
+                                    <BitIconButton IconName="BitIconName.ChromeClose" 
+                                                   Class="header-icon-btn"
+                                                   Title="Close date picker"
+                                                   ButtonType="BitButtonType.Button"
+                                                   OnClick="CloseCallout"/>
+                                }
                             </div>
                         </div>
                         <table role="grid"

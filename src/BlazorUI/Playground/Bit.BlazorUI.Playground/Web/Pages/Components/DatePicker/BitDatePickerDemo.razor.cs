@@ -201,6 +201,13 @@ public partial class BitDatePickerDemo
             Type = "bool",
             DefaultValue = "true",
             Description = "Whether the \"Go to today\" link should be shown or not."
+        },
+        new ComponentParameter
+        {
+            Name = "ShowCloseButton",
+            Type = "bool",
+            DefaultValue = "",
+            Description = "Whether the CalendarDay close button should be shown or not."
         }
     };
 

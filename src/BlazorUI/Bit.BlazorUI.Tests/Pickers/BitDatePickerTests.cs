@@ -273,6 +273,29 @@ public class BitDatePickerTests : BunitTestContext
         Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".go-today-btn"));
     }
 
+    [DataTestMethod,
+        DataRow(false),
+        DataRow(true)
+    ]
+    public void BitDateShowCloseButtonTest(bool showCloseButton)
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        var component = RenderComponent<BitDatePickerTest>(parameters =>
+        {
+            parameters.Add(p => p.ShowCloseButton, showCloseButton);
+        });
+
+        if (showCloseButton)
+        {
+            var closeBtn = component.Find(".header-icon-btn");
+            Assert.IsNotNull(closeBtn);
+        }
+        else
+        {
+            Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".header-icon-btn"));
+        }
+    }
+
     [DataTestMethod]
     public void BitDatePickerCalloutHtmlAttributesTest()
     {
