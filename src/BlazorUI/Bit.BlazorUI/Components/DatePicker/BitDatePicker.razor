@@ -66,15 +66,15 @@
                         <div class="picker-header">
                             @if (showMonthPickerAsOverlayInternal)
                             {
-                                <button class="header-title" aria-label="@($"{monthTitle}, change month")"
+                                <button class="header-title" aria-label="@($"{_monthTitle}, change month")"
                                         aria-live="polite" aria-atomic="true" tabindex="0" type="button" @onclick="@ToggleMonthPickerAsOverlay">
-                                    <span id="@MonthAndYearId">@monthTitle</span>
+                                    <span id="@MonthAndYearId">@_monthTitle</span>
                                 </button>
                             }
                             else
                             {
                                 <div class="header-title" aria-live="polite" aria-atomic="true" tabindex="-1">
-                                    <span id="@MonthAndYearId">@monthTitle</span>
+                                    <span id="@MonthAndYearId">@_monthTitle</span>
                                 </div>
                             }
                             <div class="navigation-btn-container">

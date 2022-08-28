@@ -17,9 +17,9 @@ public partial class BitDatePicker
     private int _currentMonth;
     private int _currentYear;
     private int _displayYear;
+    private string _monthTitle = string.Empty;
     private int yearRangeFrom;
     private int yearRangeTo;
-    private string monthTitle = string.Empty;
     private int? selectedDateWeek;
     private int? selectedDateDayOfWeek;
     private bool showMonthPicker = true;
@@ -443,7 +443,7 @@ public partial class BitDatePicker
 
     private void CreateMonthCalendar(int year, int month)
     {
-        monthTitle = $"{Culture.DateTimeFormat.GetMonthName(month)} {year}";
+        _monthTitle = $"{Culture.DateTimeFormat.GetMonthName(month)} {year}";
         monthLength = Culture.DateTimeFormat.Calendar.GetDaysInMonth(year, month);
         var firstDay = Culture.DateTimeFormat.Calendar.ToDateTime(year, month, 1, 0, 0, 0, 0);
         var currentDay = 1;
