@@ -238,19 +238,19 @@
                         {
                             <div class="picker-header">
                                 <button class="header-title"
-                                        aria-label="@($"{yearRangeFrom} - {yearRangeTo}, change month")"
+                                        aria-label="@($"{_yearRangeFrom} - {_yearRangeTo}, change month")"
                                         type="button"
                                         aria-atomic="true"
                                         aria-live="polite"
                                         @onclick="ToggleBetweenMonthAndYearPicker">
-                                    @yearRangeFrom - @yearRangeTo
+                                    @_yearRangeFrom - @_yearRangeTo
                                 </button>
                                 <div class="navigation-btn-container">
                                     <button class="navigation-btn"
                                             aria-disabled="@CheckYearRangeForMaxAndMinDate(ChangeDirection.Previous)"
                                             disabled="@CheckYearRangeForMaxAndMinDate(ChangeDirection.Previous)"
                                             type="button"
-                                            title="previous year range @(yearRangeFrom - 12) - @(yearRangeFrom - 1)"
+                                            title="previous year range @(_yearRangeFrom - 12) - @(_yearRangeFrom - 1)"
                                             @onclick="() => HandleYearRangeChange(ChangeDirection.Previous)">
                                         <i class="bit-icon" aria-hidden="true"></i>
                                     </button>
@@ -258,19 +258,19 @@
                                             type="button"
                                             aria-disabled="@CheckYearRangeForMaxAndMinDate(ChangeDirection.Next)"
                                             disabled="@CheckYearRangeForMaxAndMinDate(ChangeDirection.Next)"
-                                            title="next year range @(yearRangeFrom + 12) - @(yearRangeTo + 12)"
+                                            title="next year range @(_yearRangeFrom + 12) - @(_yearRangeTo + 12)"
                                             @onclick="() => HandleYearRangeChange(ChangeDirection.Next)">
                                         <i class="bit-icon" aria-hidden="true"></i>
                                     </button>
                                 </div>
                             </div>
-                            <div class="grid-container" role="grid" aria-label="@yearRangeFrom - @yearRangeTo">
+                            <div class="grid-container" role="grid" aria-label="@_yearRangeFrom - @_yearRangeTo">
                                 @for (var rowIndex = 0; rowIndex <= 2; rowIndex++)
                                 {
                                     <div class="btn-row" role="row">
                                         @for (var cellIndex = 0; cellIndex <= 3; cellIndex++)
                                         {
-                                            var year = yearRangeFrom + (rowIndex * 4) + cellIndex;
+                                            var year = _yearRangeFrom + (rowIndex * 4) + cellIndex;
                                             <button role="gridcell"
                                                     aria-disabled="@CheckYearForMaxAndMinDate(year)"
                                                     disabled="@CheckYearForMaxAndMinDate(year)"

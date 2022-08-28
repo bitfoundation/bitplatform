@@ -25,8 +25,8 @@ public partial class BitDatePicker
     private int? _selectedDateDayOfWeek;
     private bool _showMonthPicker = true;
     private bool _showMonthPickerAsOverlayInternal;
-    private int yearRangeFrom;
-    private int yearRangeTo;
+    private int _yearRangeFrom;
+    private int _yearRangeTo;
 
     [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
 
@@ -420,7 +420,7 @@ public partial class BitDatePicker
         if (IsEnabled is false) return;
         if (CheckYearRangeForMaxAndMinDate(direction)) return;
 
-        var fromYear = direction == ChangeDirection.Next ? yearRangeFrom + 12 : yearRangeFrom - 12;
+        var fromYear = direction == ChangeDirection.Next ? _yearRangeFrom + 12 : _yearRangeFrom - 12;
 
         ChangeYearRanges(fromYear);
     }
@@ -438,8 +438,8 @@ public partial class BitDatePicker
         _currentMonth = Culture.DateTimeFormat.Calendar.GetMonth(dateTime);
         _currentYear = Culture.DateTimeFormat.Calendar.GetYear(dateTime);
         _displayYear = _currentYear;
-        yearRangeFrom = _currentYear - 1;
-        yearRangeTo = _currentYear + 10;
+        _yearRangeFrom = _currentYear - 1;
+        _yearRangeTo = _currentYear + 10;
         CreateMonthCalendar(_currentYear, _currentMonth);
     }
 
@@ -547,8 +547,8 @@ public partial class BitDatePicker
 
     private void ChangeYearRanges(int fromYear)
     {
-        yearRangeFrom = fromYear;
-        yearRangeTo = fromYear + 11;
+        _yearRangeFrom = fromYear;
+        _yearRangeTo = fromYear + 11;
     }
 
     private async Task CloseCallout()
@@ -646,7 +646,7 @@ public partial class BitDatePicker
 
         if (_showMonthPickerAsOverlayInternal)
         {
-            return (yearRangeFrom == todayYear - 1 && yearRangeTo == todayYear + 10 && todayMonth == _currentMonth && todayYear == _currentYear);
+            return (_yearRangeFrom == todayYear - 1 && _yearRangeTo == todayYear + 10 && todayMonth == _currentMonth && todayYear == _currentYear);
         }
         else
         {
@@ -718,10 +718,10 @@ public partial class BitDatePicker
 
     private bool CheckYearRangeForMaxAndMinDate(ChangeDirection direction)
     {
-        if (direction == ChangeDirection.Next && MaxDate.HasValue && MaxDate.Value.Year < yearRangeFrom + 12)
+        if (direction == ChangeDirection.Next && MaxDate.HasValue && MaxDate.Value.Year < _yearRangeFrom + 12)
             return true;
 
-        if (direction == ChangeDirection.Previous && MinDate.HasValue && MinDate.Value.Year >= yearRangeFrom)
+        if (direction == ChangeDirection.Previous && MinDate.HasValue && MinDate.Value.Year >= _yearRangeFrom)
             return true;
 
         return false;
