@@ -10,7 +10,7 @@ public partial class BitDatePicker
     private bool isOpen;
     private CultureInfo culture = CultureInfo.CurrentUICulture;
 #pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
-    private int[,] currentMonthCalendar = new int[DEFAULT_WEEK_COUNT, DEFAULT_DAY_COUNT_PER_WEEK];
+    private int[,] _currentMonthCalendar = new int[DEFAULT_WEEK_COUNT, DEFAULT_DAY_COUNT_PER_WEEK];
 #pragma warning restore CA1814 // Prefer jagged arrays over multidimensional
     private int currentYear;
     private int displayYear;
@@ -250,7 +250,7 @@ public partial class BitDatePicker
 
         IsOpen = !isOpen;
 
-        if(IsOpen && CurrentValue != null)
+        if (IsOpen && CurrentValue != null)
         {
             CheckCurrentCalendarMatchesCurrentValue();
         }
@@ -304,7 +304,7 @@ public partial class BitDatePicker
 
         if (CheckDayForMaxAndMinDate(dayIndex, weekIndex)) return;
 
-        var currentDay = currentMonthCalendar[weekIndex, dayIndex];
+        var currentDay = _currentMonthCalendar[weekIndex, dayIndex];
         int selectedMonth = GetCorrectTargetMonth(weekIndex, dayIndex);
         if (selectedMonth < currentMonth && currentMonth == 12 && IsInCurrentMonth(weekIndex, dayIndex) is false)
         {
@@ -471,16 +471,16 @@ public partial class BitDatePicker
 
                     if ((int)firstDay.DayOfWeek > firstDayOfWeek)
                     {
-                        currentMonthCalendar[weekIndex, dayIndex] = previousMonthDaysCount + dayIndex - (int)firstDay.DayOfWeek + 1 + firstDayOfWeek;
+                        _currentMonthCalendar[weekIndex, dayIndex] = previousMonthDaysCount + dayIndex - (int)firstDay.DayOfWeek + 1 + firstDayOfWeek;
                     }
                     else
                     {
-                        currentMonthCalendar[weekIndex, dayIndex] = previousMonthDaysCount + dayIndex - (7 + (int)firstDay.DayOfWeek - 1 - firstDayOfWeek);
+                        _currentMonthCalendar[weekIndex, dayIndex] = previousMonthDaysCount + dayIndex - (7 + (int)firstDay.DayOfWeek - 1 - firstDayOfWeek);
                     }
                 }
                 else if (currentDay <= monthLength)
                 {
-                    currentMonthCalendar[weekIndex, dayIndex] = currentDay;
+                    _currentMonthCalendar[weekIndex, dayIndex] = currentDay;
                     currentDay++;
                 }
 
@@ -531,7 +531,7 @@ public partial class BitDatePicker
         {
             for (int dayIndex = 0; dayIndex < DEFAULT_DAY_COUNT_PER_WEEK; dayIndex++)
             {
-                currentMonthCalendar[weekIndex, dayIndex] = 0;
+                _currentMonthCalendar[weekIndex, dayIndex] = 0;
             }
         }
 
@@ -559,7 +559,7 @@ public partial class BitDatePicker
         var todayYear = Culture.DateTimeFormat.Calendar.GetYear(DateTime.Now);
         var todayMonth = Culture.DateTimeFormat.Calendar.GetMonth(DateTime.Now);
         var todayDay = Culture.DateTimeFormat.Calendar.GetDayOfMonth(DateTime.Now);
-        var currentDay = currentMonthCalendar[week, day];
+        var currentDay = _currentMonthCalendar[week, day];
 
         if (IsInCurrentMonth(week, day) is false)
         {
@@ -581,8 +581,8 @@ public partial class BitDatePicker
 
     private bool IsInCurrentMonth(int week, int day)
     {
-        if ((week == 0 || week == 1) && currentMonthCalendar[week, day] > 20) return false;
-        if ((week == 4 || week == 5) && currentMonthCalendar[week, day] < 7) return false;
+        if ((week == 0 || week == 1) && _currentMonthCalendar[week, day] > 20) return false;
+        if ((week == 4 || week == 5) && _currentMonthCalendar[week, day] < 7) return false;
         return true;
     }
 
@@ -620,7 +620,7 @@ public partial class BitDatePicker
             }
         }
 
-        return $"{currentMonthCalendar[week, day]}, {Culture.DateTimeFormat.GetMonthName(month)}, {year}";
+        return $"{_currentMonthCalendar[week, day]}, {Culture.DateTimeFormat.GetMonthName(month)}, {year}";
     }
 
     private bool IsMonthSelected(int month)
@@ -671,7 +671,7 @@ public partial class BitDatePicker
             }
         }
 
-        int day = currentMonthCalendar[weekIndex, 0];
+        int day = _currentMonthCalendar[weekIndex, 0];
         var date = Culture.DateTimeFormat.Calendar.ToDateTime(year, month, day, 0, 0, 0, 0);
         return Culture.DateTimeFormat.Calendar.GetWeekOfYear(date, CalendarWeekRule.FirstFullWeek, Culture.DateTimeFormat.FirstDayOfWeek);
     }
@@ -723,7 +723,7 @@ public partial class BitDatePicker
 
     private bool CheckDayForMaxAndMinDate(int dayIndex, int weekIndex)
     {
-        var day = currentMonthCalendar[weekIndex, dayIndex];
+        var day = _currentMonthCalendar[weekIndex, dayIndex];
         var month = GetCorrectTargetMonth(weekIndex, dayIndex);
 
         if (MaxDate.HasValue &&

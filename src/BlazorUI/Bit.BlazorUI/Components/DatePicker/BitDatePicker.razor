@@ -118,7 +118,7 @@
                                 @for (var week = 0; week < 6; week++)
                                 {
                                     //to ignore the last empty week out of month || to ignore the first whole week out of month
-                                    if (currentMonthCalendar[week, 0] == 0 || (week == 0 && currentMonthCalendar[week, 6] > 20))
+                                    if (_currentMonthCalendar[week, 0] == 0 || (week == 0 && _currentMonthCalendar[week, 6] > 20))
                                     {
                                         continue;
                                     }
@@ -149,7 +149,7 @@
                                                         aria-readonly="true"
                                                         disabled="@CheckDayForMaxAndMinDate(localDay, localWeek)"
                                                         aria-disabled="@CheckDayForMaxAndMinDate(localDay, localWeek)">
-                                                    <span aria-hidden="true">@currentMonthCalendar[localWeek, localDay]</span>
+                                                    <span aria-hidden="true">@_currentMonthCalendar[localWeek, localDay]</span>
                                                 </button>
                                             </td>
                                         }
