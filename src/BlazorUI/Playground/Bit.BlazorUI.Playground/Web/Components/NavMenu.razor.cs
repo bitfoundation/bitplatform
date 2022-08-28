@@ -63,6 +63,7 @@ public partial class NavMenu
             Key = "Lists",
             Links = new List<BitNavLinkItem>
             {
+                new BitNavLinkItem { Name = "Accordion", Key = "Accordion", Url="/components/accordion" },
                 new BitNavLinkItem { Name = "BasicList", Key = "BasicList", Url="/components/basic-list" },
                 new BitNavLinkItem { Name = "DataGrid", Key = "DataGrid", Url="/components/data-grid" },
                 new BitNavLinkItem { Name= "Carousel", Key = "Carousel", Url = "/components/carousel" },
