@@ -182,20 +182,20 @@
                         {
                             <div class="picker-header">
                                 <button class="header-title"
-                                        aria-label="@($"{displayYear}, change year")"
+                                        aria-label="@($"{_displayYear}, change year")"
                                         tabindex="0"
                                         type="button"
                                         aria-atomic="true"
                                         aria-live="polite"
                                         @onclick="ToggleBetweenMonthAndYearPicker">
-                                    @displayYear
+                                    @_displayYear
                                 </button>
                                 <div class="navigation-btn-container">
                                     <button class="navigation-btn"
                                             disabled="@CheckYearForMaxAndMinDate(ChangeDirection.Previous)"
                                             aria-disabled="@CheckYearForMaxAndMinDate(ChangeDirection.Previous)"
                                             type="button"
-                                            title="Go to previous year @(displayYear - 1)"
+                                            title="Go to previous year @(_displayYear - 1)"
                                             @onclick="() => HandleYearChange(ChangeDirection.Previous)">
                                         <i class="bit-icon" aria-hidden="true"></i>
                                     </button>
@@ -203,13 +203,13 @@
                                             aria-disabled="@CheckYearForMaxAndMinDate(ChangeDirection.Next)"
                                             disabled="@CheckYearForMaxAndMinDate(ChangeDirection.Next)"
                                             type="button"
-                                            title="Go to next year @(displayYear + 1)"
+                                            title="Go to next year @(_displayYear + 1)"
                                             @onclick="() => HandleYearChange(ChangeDirection.Next)">
                                         <i class="bit-icon" aria-hidden="true"></i>
                                     </button>
                                 </div>
                             </div>
-                            <div class="grid-container" role="grid" aria-label="@displayYear">
+                            <div class="grid-container" role="grid" aria-label="@_displayYear">
                                 @for (var rowIndex = 0; rowIndex <= 2; rowIndex++)
                                 {
                                     <div class="btn-row" role="row">

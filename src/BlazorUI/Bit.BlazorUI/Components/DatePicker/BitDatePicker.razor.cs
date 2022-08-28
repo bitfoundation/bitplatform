@@ -16,7 +16,7 @@ public partial class BitDatePicker
 #pragma warning restore CA1814 // Prefer jagged arrays over multidimensional
     private int _currentMonth;
     private int _currentYear;
-    private int displayYear;
+    private int _displayYear;
     private int yearRangeFrom;
     private int yearRangeTo;
     private string monthTitle = string.Empty;
@@ -259,7 +259,7 @@ public partial class BitDatePicker
             CheckCurrentCalendarMatchesCurrentValue();
         }
 
-        displayYear = _currentYear;
+        _displayYear = _currentYear;
         await OnClick.InvokeAsync(eventArgs);
     }
 
@@ -323,7 +323,7 @@ public partial class BitDatePicker
         var obj = DotNetObjectReference.Create(this);
         await JSRuntime.InvokeVoidAsync("BitDatePicker.toggleDatePickerCallout", obj, UniqueId, CalloutId, OverlayId, IsOpen);
         IsOpen = false;
-        displayYear = _currentYear;
+        _displayYear = _currentYear;
         _currentMonth = selectedMonth;
         CurrentValue = new DateTimeOffset(Culture.DateTimeFormat.Calendar.ToDateTime(_currentYear, _currentMonth, currentDay, 0, 0, 0, 0), DateTimeOffset.Now.Offset);
         CreateMonthCalendar(_currentYear, _currentMonth);
@@ -360,7 +360,7 @@ public partial class BitDatePicker
             }
         }
 
-        displayYear = _currentYear;
+        _displayYear = _currentYear;
         CreateMonthCalendar(_currentYear, _currentMonth);
     }
 
@@ -370,7 +370,7 @@ public partial class BitDatePicker
         if (CheckMonthForMaxAndMinDate(month)) return;
 
         _currentMonth = month;
-        _currentYear = displayYear;
+        _currentYear = _displayYear;
         CreateMonthCalendar(_currentYear, _currentMonth);
         if (showMonthPickerAsOverlayInternal is false) return;
 
@@ -382,7 +382,7 @@ public partial class BitDatePicker
         if (IsEnabled is false) return;
         if (CheckYearForMaxAndMinDate(year)) return;
 
-        _currentYear = displayYear = year;
+        _currentYear = _displayYear = year;
         ChangeYearRanges(_currentYear - 1);
         CreateMonthCalendar(_currentYear, _currentMonth);
 
@@ -403,11 +403,11 @@ public partial class BitDatePicker
 
         if (direction == ChangeDirection.Next)
         {
-            displayYear++;
+            _displayYear++;
         }
         else
         {
-            displayYear--;
+            _displayYear--;
         }
 
         CreateMonthCalendar(_currentYear, _currentMonth);
@@ -435,7 +435,7 @@ public partial class BitDatePicker
     {
         _currentMonth = Culture.DateTimeFormat.Calendar.GetMonth(dateTime);
         _currentYear = Culture.DateTimeFormat.Calendar.GetYear(dateTime);
-        displayYear = _currentYear;
+        _displayYear = _currentYear;
         yearRangeFrom = _currentYear - 1;
         yearRangeTo = _currentYear + 10;
         CreateMonthCalendar(_currentYear, _currentMonth);
@@ -694,10 +694,10 @@ public partial class BitDatePicker
 
     private bool CheckMonthForMaxAndMinDate(ChangeDirection direction)
     {
-        if (direction == ChangeDirection.Next && MaxDate.HasValue && MaxDate.Value.Year == displayYear && MaxDate.Value.Month == _currentMonth)
+        if (direction == ChangeDirection.Next && MaxDate.HasValue && MaxDate.Value.Year == _displayYear && MaxDate.Value.Month == _currentMonth)
             return true;
 
-        if (direction == ChangeDirection.Previous && MinDate.HasValue && MinDate.Value.Year == displayYear && MinDate.Value.Month == _currentMonth)
+        if (direction == ChangeDirection.Previous && MinDate.HasValue && MinDate.Value.Year == _displayYear && MinDate.Value.Month == _currentMonth)
             return true;
 
         return false;
@@ -705,10 +705,10 @@ public partial class BitDatePicker
 
     private bool CheckYearForMaxAndMinDate(ChangeDirection direction)
     {
-        if (direction == ChangeDirection.Next && MaxDate.HasValue && MaxDate.Value.Year == displayYear)
+        if (direction == ChangeDirection.Next && MaxDate.HasValue && MaxDate.Value.Year == _displayYear)
             return true;
 
-        if (direction == ChangeDirection.Previous && MinDate.HasValue && MinDate.Value.Year == displayYear)
+        if (direction == ChangeDirection.Previous && MinDate.HasValue && MinDate.Value.Year == _displayYear)
             return true;
 
         return false;
@@ -731,15 +731,15 @@ public partial class BitDatePicker
         var month = GetCorrectTargetMonth(weekIndex, dayIndex);
 
         if (MaxDate.HasValue &&
-           (displayYear > MaxDate.Value.Year ||
-           (displayYear == MaxDate.Value.Year && month > MaxDate.Value.Month) ||
-           (displayYear == MaxDate.Value.Year && month == MaxDate.Value.Month && day > MaxDate.Value.Day)))
+           (_displayYear > MaxDate.Value.Year ||
+           (_displayYear == MaxDate.Value.Year && month > MaxDate.Value.Month) ||
+           (_displayYear == MaxDate.Value.Year && month == MaxDate.Value.Month && day > MaxDate.Value.Day)))
             return true;
 
         if (MinDate.HasValue &&
-           (displayYear < MinDate.Value.Year ||
-           (displayYear == MinDate.Value.Year && month < MinDate.Value.Month) ||
-           (displayYear == MinDate.Value.Year && month == MinDate.Value.Month && day < MinDate.Value.Day)))
+           (_displayYear < MinDate.Value.Year ||
+           (_displayYear == MinDate.Value.Year && month < MinDate.Value.Month) ||
+           (_displayYear == MinDate.Value.Year && month == MinDate.Value.Month && day < MinDate.Value.Day)))
             return true;
 
         return false;
@@ -748,13 +748,13 @@ public partial class BitDatePicker
     private bool CheckMonthForMaxAndMinDate(int month)
     {
         if (MaxDate.HasValue &&
-           (displayYear > MaxDate.Value.Year ||
-           (displayYear == MaxDate.Value.Year && month > MaxDate.Value.Month)))
+           (_displayYear > MaxDate.Value.Year ||
+           (_displayYear == MaxDate.Value.Year && month > MaxDate.Value.Month)))
             return true;
 
         if (MinDate.HasValue &&
-           (displayYear < MinDate.Value.Year ||
-           (displayYear == MinDate.Value.Year && month < MinDate.Value.Month)))
+           (_displayYear < MinDate.Value.Year ||
+           (_displayYear == MinDate.Value.Year && month < MinDate.Value.Month)))
             return true;
 
         return false;
