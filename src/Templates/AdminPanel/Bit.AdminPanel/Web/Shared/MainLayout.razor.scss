@@ -26,13 +26,13 @@
 
     .site-content {
         padding: 0 !important;
-        height: 100vh;
+        height: calc(100vh - 49px);
     }
 }
 
 .site-content {
     width: 100%;
-    min-height: calc(100vh - 48px);
+    min-height: calc(100vh - 103px);
     margin-left: auto;
     margin-right: auto;
     padding: 0 rem($LargeScreenPadding);

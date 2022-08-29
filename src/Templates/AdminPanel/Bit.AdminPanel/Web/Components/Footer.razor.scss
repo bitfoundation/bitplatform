@@ -23,7 +23,6 @@
     height: rem($HeaderHeight);
     margin-left: auto;
     margin-right: auto;
-    padding: 0 rem($LargeScreenPadding);
     max-width: rem($LargeScreenMaxWidth);
     box-sizing: border-box;
 
@@ -115,9 +114,6 @@
 
 ::deep {
     .culture-drp {
-        position: absolute;
-        left: rem(220px);
-        width: rem(105px);
         background-color: white;
     }
 }

@@ -170,7 +170,6 @@ public partial class Header : IAsyncDisposable
     {
         SetCurrentUrl();
         SetBreadcrumbItem();
-        Task.Delay(300);
         StateHasChanged();
     }
 

@@ -3,8 +3,6 @@
 <footer class="footer">
     <div class="footer-content">
         <div class="footer-txt-group">
-            <div class="footer-copyright">@Localizer[nameof(AppStrings.MadeWith)] <span class="text--red">♥</span> @Localizer[nameof(AppStrings.UsingBitPlatform)]</div>
-            <div class="footer-email">info@bitplatform.dev</div>
             @if (SelectedCulture is not null)
             {
                 <BitDropDown Items="GetCultures()" Class="culture-drp" @bind-Value="SelectedCulture" OnSelectItem="WrapHandled(OnCultureChanged)" />
