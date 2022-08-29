@@ -1,0 +1,40 @@
+﻿@page "/admin-panel/exception-handling"
+
+<div class="page-container">
+    <h1 class="page-main-title">Exception handling</h1>
+    <div class="page-desc">
+        Bit TodoTemplate provides features to handle all of the exceptions occurring in different locations.
+    </div>
+    <section class="section-card">
+        <h2 class="section-card-title">Server-Side exception handling</h2>
+        <div class="section-card-txt">
+            <ul>
+                <li>
+                    <span class="bold-txt">known and unknown exception</span>: In development When an error occurred if this error is known or unknown, details of the error returned, but in test and production for unknown error details of the error not returned from server.
+                    <ul dir="auto">
+                        <li>known exception inhrites <span class="high-light-text">KnownException</span> class</li>
+                        <li>Unknown exception inhrites <span class="high-light-text">UnknownException</span> class</li>
+                    </ul>
+                </li>
+                <li>
+                    <span class="bold-txt">RestException</span>: It's a class that has an HTTP Response <span class="high-light-text">StatusCode</span> that you to perform a response with status code.
+                </li>
+            </ul>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <h2 class="section-card-title">Client-Side exception handling</h2>
+        <div class="section-card-txt">
+            When an error is raised in App(android, IOS) maybe cause crash app. for avoiding app crash; Bit provides some mechanism for error handling.
+            <ul>
+                <li>inheriting <span class="high-light-text">AppComponentBase</span> in razor pages.</li>
+                <li>Instead of initializing your components in the <span class="high-light-text">OnInitializedAsync</span> method, override the <span class="high-light-text">OnInitAsync</span> method of the <span class="high-light-text">AppComponentBase</span> class.</li>
+                <li>Use <span class="high-light-text">WrapHandle</span> method instead of direct calling events such as <span class="high-light-text">OnClick</span> in the Razor components.</li>
+                <li>Use <span class="high-light-text">try-catch</span> block in <span class="high-light-text">asyn-avoid</span> method and call <span class="high-light-text">StatehasChanged</span> method to handle unexpected errors.</li>
+            </ul>
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="Project structure" PrevUrl="/todo-template/project-structure" Next="Cache mechanism" NextUrl="/todo-template/cache-mechanism"/>
