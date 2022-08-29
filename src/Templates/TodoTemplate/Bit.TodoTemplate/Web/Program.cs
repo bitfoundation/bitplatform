@@ -34,8 +34,10 @@ public class Program
 
         var host = builder.Build();
 
+#if MultilingualEnabled
         var preferredCultureCookie = ((IJSInProcessRuntime)host.Services.GetRequiredService<IJSRuntime>()).Invoke<string?>("window.App.getCookie", ".AspNetCore.Culture");
         CultureInfoManager.SetCurrentCulture(preferredCultureCookie);
+#endif
 
         return host;
     }
@@ -60,4 +62,4 @@ public class Program
         return app;
     }
 #endif
-}
+    }
