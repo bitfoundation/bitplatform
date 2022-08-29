@@ -77,6 +77,11 @@ public partial class BitDatePicker
     [Parameter] public bool HighlightCurrentMonth { get; set; } = false;
 
     /// <summary>
+    /// Whether the month picker should highlight the selected month.
+    /// </summary>
+    [Parameter] public bool HighlightSelectedMonth { get; set; } = false;
+
+    /// <summary>
     /// Whether the month picker is shown beside the day picker or hidden.
     /// </summary>
     [Parameter] public bool IsMonthPickerVisible { get; set; } = true;
@@ -837,6 +842,11 @@ public partial class BitDatePicker
         {
             var todayMonth = Culture.DateTimeFormat.Calendar.GetMonth(DateTime.Now);
             className += todayMonth == monthIndex ? "current-month" : null;
+        }
+
+        if (HighlightSelectedMonth && _currentMonth == monthIndex)
+        {
+            className += className.Length == 0 ? "selected-month" : " selected-month";
         }
 
         return className;

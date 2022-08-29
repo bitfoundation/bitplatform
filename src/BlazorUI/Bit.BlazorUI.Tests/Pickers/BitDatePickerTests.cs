@@ -319,6 +319,29 @@ public class BitDatePickerTests : BunitTestContext
         }
     }
 
+    [DataTestMethod,
+        DataRow(false),
+        DataRow(true)
+    ]
+    public void BitDatePickerHighlightSelectedMonthTest(bool highlightSelectedMonth)
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        var component = RenderComponent<BitDatePickerTest>(parameters =>
+        {
+            parameters.Add(p => p.HighlightSelectedMonth, highlightSelectedMonth);
+        });
+
+        if (highlightSelectedMonth)
+        {
+            var selectedMonth = component.Find(".selected-month");
+            Assert.IsNotNull(selectedMonth);
+        }
+        else
+        {
+            Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".selected-month"));
+        }
+    }
+
     [DataTestMethod]
     public void BitDatePickerCalloutHtmlAttributesTest()
     {

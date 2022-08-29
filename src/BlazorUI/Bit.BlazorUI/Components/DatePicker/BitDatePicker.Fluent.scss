@@ -455,6 +455,17 @@
                         background-color: $Primary;
                     }
                 }
+
+                .selected-month {
+                    color: $Grey160;
+                    background-color: $BlizzardBlue;
+                    font-weight: 600;
+
+                    &:hover {
+                        color: $Grey160;
+                        background-color: $BlizzardBlue;
+                    }
+                }
             }
         }
 

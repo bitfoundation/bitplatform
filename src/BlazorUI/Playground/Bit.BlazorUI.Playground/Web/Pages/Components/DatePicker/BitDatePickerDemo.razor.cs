@@ -215,6 +215,13 @@ public partial class BitDatePickerDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether the month picker should highlight the current month."
+        },
+        new ComponentParameter
+        {
+            Name = "HighlightSelectedMonth",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the month picker should highlight the selected month."
         }
     };
 
