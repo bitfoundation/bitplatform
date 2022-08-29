@@ -20,9 +20,4 @@ public class SignUpRequestDto
     [MinLength(6, ErrorMessage = nameof(AppStrings.PasswordTooShort))]
     [Display(Name = nameof(AppStrings.Password))]
     public string? Password { get; set; }
-
-    [NotMapped]
-    [Range(typeof(bool), "true", "true", ErrorMessage = nameof(AppStrings.YouHaveToAcceptPrivacyPolicy))]
-    [Display(Name = nameof(AppStrings.IsAcceptPrivacy))]
-    public bool IsAcceptPrivacy { get; set; }
 }
