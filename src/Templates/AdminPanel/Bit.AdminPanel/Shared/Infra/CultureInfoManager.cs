@@ -12,15 +12,15 @@ public class CultureInfoManager
     {
         ("English US", "en-US"),
         ("English UK", "en-GB"),
-        ("Française", "fr"),
-        // ("فارسی", "fa"), // To add more languages, you've to provide resx files. You might also put some efforts to change your app flow direction based on CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft
+        ("Française", "fr-FR"),
+        // ("فارسی", "fa-IR"), // To add more languages, you've to provide resx files. You might also put some efforts to change your app flow direction based on CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft
     };
 
     public static CultureInfo CreateCultureInfo(string cultureInfoId)
     {
         var cultureInfo = RuntimeInformation.ProcessArchitecture == Architecture.Wasm ? CultureInfo.CreateSpecificCulture(cultureInfoId) : new CultureInfo(cultureInfoId);
 
-        if (cultureInfoId == "fa")
+        if (cultureInfoId == "fa-IR")
         {
             CustomizeCultureInfoForFaCulture(cultureInfo);
         }
