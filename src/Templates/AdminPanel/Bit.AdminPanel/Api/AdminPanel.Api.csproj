@@ -84,17 +84,15 @@
             <Generator>PublicResXFileCodeGenerator</Generator>
             <LastGenOutput>%(Filename).Designer.cs</LastGenOutput>
         </EmbeddedResource>
+        <EmbeddedResource Update="**\*.*.resx">
+            <Generator></Generator>
+        </EmbeddedResource>
     </ItemGroup>
 
     <ItemGroup>
         <None Update="IdentityCertificate.pfx">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Migrations\" />
-      <Folder Include="Properties\" />
     </ItemGroup>
 
 </Project>

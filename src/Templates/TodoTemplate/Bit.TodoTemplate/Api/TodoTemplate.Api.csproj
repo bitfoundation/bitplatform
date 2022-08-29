@@ -83,6 +83,9 @@
             <Generator>PublicResXFileCodeGenerator</Generator>
             <LastGenOutput>%(Filename).Designer.cs</LastGenOutput>
         </EmbeddedResource>
+        <EmbeddedResource Update="**\*.*.resx">
+            <Generator></Generator>
+        </EmbeddedResource>
     </ItemGroup>
 
     <ItemGroup>
