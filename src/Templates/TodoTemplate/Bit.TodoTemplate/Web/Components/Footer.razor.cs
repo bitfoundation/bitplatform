@@ -12,6 +12,8 @@ public partial class Footer
 #endif
         SelectedCulture = CultureInfoManager.GetCurrentCulture(preferredCultureCookie);
 
+        StateHasChanged();
+
         await base.OnAfterFirstRenderAsync();
     }
 #endif
@@ -32,6 +34,7 @@ public partial class Footer
     }
 
     List<BitDropDownItem> GetCultures()
+
     {
         return CultureInfoManager.SupportedCultures
             .Select(sc => new BitDropDownItem { Value = sc.code, Text = sc.name })

@@ -440,7 +440,7 @@ Veuillez confirmer votre email en cliquant sur le lien.</value>
     <value>Cherchez quelque chose à faire...</value>
   </data>
   <data name="HomeMessage" xml:space="preserve">
-    <value>Créez facilement votre application Blazor multi-mode (WASM, serveur, hybride, pré-rendu) dans les plus brefs délais !</value>
+    <value>Créez facilement votre application Blazor multi-mode (WASM, serveur, hybride, pré-rendu) dans les plus brefs délais!</value>
   </data>
   <data name="HomeTitle" xml:space="preserve">
     <value>TodoTemplate Accueil</value>

@@ -26,8 +26,8 @@ public partial class AppComponentBase : ComponentBase
     {
         try
         {
-            await base.OnInitializedAsync();
             await OnInitAsync();
+            await base.OnInitializedAsync();
         }
         catch (Exception exp)
         {
@@ -39,8 +39,8 @@ public partial class AppComponentBase : ComponentBase
     {
         try
         {
-            await base.OnParametersSetAsync();
             await OnParamsSetAsync();
+            await base.OnParametersSetAsync();
         }
         catch (Exception exp)
         {
@@ -50,20 +50,19 @@ public partial class AppComponentBase : ComponentBase
 
     protected async override Task OnAfterRenderAsync(bool firstRender)
     {
-        await base.OnAfterRenderAsync(firstRender);
-
         if (firstRender)
         {
             try
             {
                 await OnAfterFirstRenderAsync();
-                await InvokeAsync(StateHasChanged);
             }
             catch (Exception exp)
             {
                 ExceptionHandler.Handle(exp);
             }
         }
+
+        await base.OnAfterRenderAsync(firstRender);
     }
 
     /// <summary>
