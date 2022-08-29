@@ -24,11 +24,9 @@ public static class Urls
 
     public const string Video = "#";
 
-    public const string TodoTemplate = "/todo-template/overview";
+    public const string Templates = "/todo-template/overview";
 
-    public const string AdminPanel = "/admin-panel/overview";
-
-    public const string BitBlazorUI = "https://components.bitplatform.dev/";
+    public const string Components = "https://components.bitplatform.dev/";
 
     public const string Bswup = "https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup";
 }
