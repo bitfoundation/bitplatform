@@ -63,9 +63,9 @@ namespace AdminPanel.Api.Resources {
         /// <summary>
         ///   Looks up a localized string similar to AdminPanel.
         /// </summary>
-        public static string AdminPanel {
+        public static string AppName {
             get {
-                return ResourceManager.GetString("AdminPanel", resourceCulture);
+                return ResourceManager.GetString("AppName", resourceCulture);
             }
         }
         
@@ -154,9 +154,9 @@ namespace AdminPanel.Api.Resources {
         /// <summary>
         ///   Looks up a localized string similar to Welcome to AdminPanel!.
         /// </summary>
-        public static string WelcomeToAdminPanel {
+        public static string WelcomeToApp {
             get {
-                return ResourceManager.GetString("WelcomeToAdminPanel", resourceCulture);
+                return ResourceManager.GetString("WelcomeToApp", resourceCulture);
             }
         }
     }
