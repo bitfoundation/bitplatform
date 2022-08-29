@@ -6,31 +6,32 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      aria-label="@AriaLabel">
-
-    @foreach (var item in _items)
-    {
-        var state = item.IsExpanded ? "expand" : "collapse";
-
-        <div class="item @state @(item.IsEnabled ? "" : "disabled")">
-
-            <div class="title @state" @onclick="() => HandleOnItemClick(item)">
-                <div>@item.Title</div>
-                <div>@item.Description</div>
-                <i class="bit-icon bit-icon--ChevronDown"></i>
-            </div>
-
-            <div class="content @state">
-                @if (item.Content is not null)
-                {
-                    @item.Content
-                }
-                else
-                {
-                    @item.Text
-                }
-            </div>
-
-        </div>
-    }
-
+    <div class="header @(_isExpanded ? "expanded" : "collapsed")"
+         role="button"
+         tabindex="@(IsEnabled ? 0 : -1)"
+         aria-expanded="@_isExpanded"
+         @onclick="HandleOnClick">
+        @if (HeaderTemplate is not null)
+        {
+            @HeaderTemplate(_isExpanded)
+        }
+        else
+        {
+            <div class="title">@Title</div>
+            <div class="description">@Description</div>
+            <i class="header-icon bit-icon bit-icon--ChevronDown"></i>
+        }
+    </div>
+    <div class="content @(_isExpanded ? "expanded" : "collapsed")"
+         role="region"
+         tabindex="@(IsEnabled ? 0 : -1)">
+        @if (ContentTemplate is not null)
+        {
+            @ContentTemplate
+        }
+        else
+        {
+            @Text
+        }
+    </div>
 </div>

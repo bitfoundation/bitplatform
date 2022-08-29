@@ -4,51 +4,43 @@
 
     <ComponentExampleBox Title="BitAccordion" ExampleId="example1">
         <ExamplePreview>
-            <BitAccordion Items="@BitAccordionItems" OnlyOneIsExpand="true">
 
-            </BitAccordion>
-        </ExamplePreview>
-    </ComponentExampleBox>
+            <BitAccordion Title="item-1"
+                          Description="@isExpanded_1.ToString()"
+                          Text="hello world!"
+                          DefaultIsExpanded="true"
+                          @bind-IsExpanded="isExpanded_1" />
 
-</ComponentDemo>
+            <div style="margin: 5px 0;"></div>
 
-@code {
-    public List<BitAccordionItem> BitAccordionItems { get; set; } = new List<BitAccordionItem>
-    {
-        new BitAccordionItem
-        {
-            Title = "title-1",
-            Description = "A simple description",
-            Text = "BitDataGrid is a robust way to display an information-rich collection of items, and allow people to sort, and filter the content. Use a data-grid when information density is critical."
-        },
-        new BitAccordionItem
-        {
-            Title = "title-2",
-            Text = "BitDataGrid is a robust way to display an information-rich collection of items, and allow people to sort, and filter the content. Use a data-grid when information density is critical.",
-            IsEnabled = false,
-        },
-        new BitAccordionItem
-        {
-            Title = "title-3",
-            Text = "BitDataGrid is a robust way to display an information-rich collection of items, and allow people to sort, and filter the content. Use a data-grid when information density is critical.",
-            IsExpanded = true
-        },
-        new BitAccordionItem
-        {
-            Title = "title-4",
-            Text = "BitDataGrid is a robust way to display an information-rich collection of items, and allow people to sort, and filter the content. Use a data-grid when information density is critical.",
-            Description = "Html content!",
-            Content = (
-                @<div>
-                    <BitButton>Add</BitButton>
-                    <BitButton>Edit</BitButton>
-                    <BitButton>Delete</BitButton>
+            <BitAccordion Title="item-1"
+                          Description="@isExpanded_1.ToString()"
+                          Text="hello world!"
+                          DefaultIsExpanded="true"
+                          IsEnabled="false" />
 
-                    <div style="margin: 20px 0;"></div>
+            <div style="margin: 5px 0;"></div>
 
-                    <BitCarousel>
+            <BitAccordion @bind-IsExpanded="isExpanded_2">
+                <HeaderTemplate Context="isExpanded">
+                    <div>
+                        @if (isExpanded)
+                        {
+                            <BitIconButton IconName="BitIconName.Sad" />
+                            <span>close me!</span>
+                        }
+                        else
+                        {
+                            <BitIconButton IconName="BitIconName.Accept" />
+                            <span>open me!</span>
+                        }
+                    </div>
+                    <span>@isExpanded_2</span>
+                </HeaderTemplate>
+                <ContentTemplate>
+                    <BitCarousel AnimationDuration="2">
                         <BitCarouselItem>
-                            <img class="image" src="/images/carousel/img1.jpg" />
+                            <img class="image" src="/images/carousel/img1.jpg">
                         </BitCarouselItem>
                         <BitCarouselItem>
                             <img class="image" src="/images/carousel/img2.jpg" />
@@ -60,8 +52,10 @@
                             <img class="image" src="/images/carousel/img4.jpg" />
                         </BitCarouselItem>
                     </BitCarousel>
-                </div>
-            )
-        },
-    };
-}
+                </ContentTemplate>
+            </BitAccordion>
+
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+</ComponentDemo>
