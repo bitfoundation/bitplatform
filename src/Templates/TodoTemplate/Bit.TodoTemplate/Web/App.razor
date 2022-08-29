@@ -41,7 +41,7 @@
         // Blazor Server & Pre Rendering use created cultures in UseRequestLocalization middleware
         // Android, windows and iOS have to set culture programmatically.
         // Browser is gets handled in Web project's Program.cs
-#if Maui
+#if Maui && MultilingualEnabled
         if (_cultureHasNotBeenSet)
         {
             _cultureHasNotBeenSet = false;
