@@ -4,8 +4,6 @@ public static class Urls
 {
     public const string HomePage = "/";
 
-    public const string GettingStarted = "/project-templates/todo-template/getting-started";
-
     public const string Github = "https://github.com/bitfoundation/bitplatform";
 
     public const string GithubRepo = "https://github.com/bitfoundation/bitplatform";
@@ -26,11 +24,11 @@ public static class Urls
 
     public const string Video = "#";
 
-    public const string TodoTemplate = "/project-templates/todo-template/getting-started";
+    public const string TodoTemplate = "/todo-template/overview";
 
-    public const string AdminPanelTemplate = "/project-templates/admin-panel-template/getting-started";
+    public const string AdminPanel = "/admin-panel/overview";
 
-    public const string Components = "https://components.bitplatform.dev/";
+    public const string BitBlazorUI = "https://components.bitplatform.dev/";
 
     public const string Bswup = "https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup";
 }

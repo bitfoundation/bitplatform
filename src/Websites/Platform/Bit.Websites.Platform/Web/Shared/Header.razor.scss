@@ -108,6 +108,14 @@
 }
 
 ::deep .header-link--active {
+
+    a {
+        &:active, 
+        &:focus {
+            color: $B6Color;
+        }
+    }
+
     font-weight: 700;
 }
 
