@@ -1,17 +1,33 @@
-﻿<header class="header">
-    <div class="header-content-container">
-        <div class="header-content">
+﻿<header class="main-header @(CurrentUrl == "/" ? "main-header--full-page" : null)">
+    <div class="header-main-container">
+        <div class="header-content-container">
             @if (CurrentUrl != "/")
             {
                 <BitIconButton Class="header-menu-btn" IconName=BitIconName.CollapseMenu OnClick=@ToggleMenu AriaLabel="Header menu button" />
             }
-            <a class="header-logo" href="/"></a>
+            <a class="header-logo" href="@Urls.HomePage" aria-label="Home page" />
             <BitLink Href="@Urls.HomePage" Class="@GetHeaderLinkClass("Home")">Home</BitLink>
             <BitLink Href="@Urls.Templates" Class="@GetHeaderLinkClass("Templates")">Templates</BitLink>
             <BitLink Href="@Urls.Components" Target="_blank" Class="@GetHeaderLinkClass("")">Components</BitLink>
         </div>
-        <div class="header-content">
-            <a href="https://github.com/bitfoundation/bitplatform" target="_blank" class="header-github-link"></a>
-        </div>
+        <a class="github-btn" target="_blank" aria-label="Github repository" href="@Urls.GithubRepo" />
+    </div>
+
+    <div class="header-second-row">
+        <BitActionButton Class="header-action-button"
+                         IconName=@(IsHeaderMenuOpen ? BitIconName.ChevronDown : BitIconName.ChevronUp)
+                         OnClick=@ToggleHeaderMenu>@GetActiveRouteName()</BitActionButton>
     </div>
 </header>
+
+@if (IsHeaderMenuOpen)
+{
+    <nav class="header-nav">
+        <BitIconButton Class="header-nav-close-btn"
+                   IconName=BitIconName.Cancel
+                   OnClick=@ToggleHeaderMenu />
+        <BitLink Href="@Urls.HomePage" Class="@GetHeaderNavLinkClass("Home")">Home</BitLink>
+        <BitLink Href="@Urls.Templates" Class="@GetHeaderNavLinkClass("Templates")">Templates</BitLink>
+        <BitLink Href="@Urls.Components" Target="_blank" Class="@GetHeaderNavLinkClass("")">Components</BitLink>
+    </nav>
+}

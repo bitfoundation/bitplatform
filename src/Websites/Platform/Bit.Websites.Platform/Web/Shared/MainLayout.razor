@@ -2,12 +2,12 @@
 
 <Header />
 
-<div class="main-container">
+<div class="main @(CurrentUrl == "/" ? "main--full-page" : null)">
     @if (CurrentUrl != "/")
     {
         <NavMenu />
     }
-    <div class="page-content @(CurrentUrl == "/" ? "page-content-home" : null)">
+    <div class="site-content">
         @Body
     </div>
 </div>

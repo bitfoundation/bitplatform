@@ -26,12 +26,6 @@ function toggleBodyOverflow(isMenuOpen: boolean) {
 //    navigator.clipboard.writeText(codeSampleContentForCopy);
 //}
 
-//function highlightSnippet() {
-//    document.querySelectorAll('pre code').forEach((el) => {
-//        hljs.highlightBlock(el);
-//    });
-//}
-
 function RegisterOnScrollToChangeGettingStartedSideRailStyle(element: any) {
     window.addEventListener('scroll', (event) => {
         if (document.documentElement.scrollTop >= 500) {

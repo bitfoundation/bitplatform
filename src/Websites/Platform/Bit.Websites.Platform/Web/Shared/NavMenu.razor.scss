@@ -1,109 +1,78 @@
-﻿@import '../Styles/abstracts/_functions.scss';
+﻿@import '../Styles/abstracts/_colors.scss';
 @import '../Styles/abstracts/_media-queries.scss';
-@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_functions.scss';
 @import '../Styles/abstracts/_vars.scss';
 
-.nav-menu-container {
+.nav-menu {
     position: sticky;
-    z-index: 100;
+    z-index: 1000;
     left: 0;
-    top: 80px;
+    top: rem($HeaderHeight);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    flex: 1 0 auto;
     width: rem($NavMenuWidth);
-    height: calc(100vh - #{rem(80px)});
-    box-sizing: border-box;
+    max-width: rem($NavMenuWidth);
+    height: calc(100vh - rem($HeaderHeight));
+    border-right: rem(1px) solid rgb(231, 235, 240);
+    outline: 0;
+    box-shadow: none;
     background-color: $White;
-    //@include lg {
-    //    top: 72px;
-    //    width: rem(272px);
-    //    height: calc(100vh - #{rem(72px)});
-    //}
+    transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+    overflow-y: auto;
 
-    @include md {
+    @include lt-lg {
+        height: 100vh;
         position: fixed;
-        top: 56px;
-        width: rem(306px);
-        height: calc(100vh - #{rem(56px)});
+        z-index: 1200;
+        top: 0;
+        inset: 0;
     }
 
     @include sm {
-        position: fixed;
-        //width: rem(264px);
-        height: 100vh;
-        top: 0;
-        z-index: 30000;
+        border-radius: 0 rem(10px) rem(10px) 0;
     }
 }
 
-.nav-menu-container--desktop {
-    display: block;
+.nav-menu--desktop {
+    display: flex;
 
     @include lt-lg {
         display: none;
     }
 }
 
-.nav-menu-container--mobile {
+.nav-menu--mobile {
     display: none;
 
     @include lt-lg {
-        display: flex;
+        display: block;
     }
 }
 
 .nav-menu-shadow {
     position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 100;
-    width: 100%;
-    height: 100vh;
-    justify-content: flex-start;
-    align-items: flex-start;
-    background-color: $Gray2;
-    opacity: 0.4;
-
-    @include sm {
-        z-index: 30000;
-    }
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1101;
 }
 
 .search-box-container {
     width: 100%;
-    padding: rem(24px) rem(22px) 0;
-    //border-bottom: rem(1px) solid $B6Color;
+    padding: rem(24px) rem(22px);
     box-sizing: border-box;
-
-    @include lt-xl {
-        padding: rem(24px) rem(16px) 0;
-    }
-
-    @include sm {
-        padding: rem(40px) rem(28px) 0;
-    }
 }
 
 .nav-menu-list {
     width: 100%;
-    height: calc(100% - #{rem(102px)});
-    padding-top: rem(20px);
+    height: calc(100% - #{rem(89px)});
     box-sizing: border-box;
     overflow-y: auto;
     overflow-x: hidden;
 
     &::-webkit-scrollbar {
-        width: rem(10px);
-    }
-
-    &::-webkit-scrollbar:horizontal {
-        height: rem(10px);
-    }
-
-    @include lt-xl {
-        height: calc(100% - #{rem(98px)});
-    }
-
-    @include sm {
-        height: calc(100% - #{rem(110px)});
+        width: rem(6px);
     }
 }
 
@@ -115,200 +84,65 @@
         font-size: rem(14px);
         font-weight: 500;
     }
-    //@include lg {
-    //    height: rem(36px);
-    //}
-
-    @include md {
-        height: rem(36px);
-    }
 }
 
-::deep .nav-menu-demo-link {
-    display: block;
-    width: 100%;
-    height: rem(40px);
-
-    a {
-        display: flex;
-        justify-content: flex-start;
-        align-items: center;
-        width: 100%;
-        height: rem(40px);
-        padding-left: rem(44px);
-        box-sizing: border-box;
-        font-family: Axiforma;
-        font-weight: 500;
-        font-size: rem(16px);
+::deep .side-nav {
+    .link-enabled-nourl {
+        font-weight: 600;
+        font-size: rem(14px);
         line-height: rem(32px);
-        color: $Gray1;
+        color: #323130;
+    }
 
+    .chevron-btn {
         &:hover {
-            background-color: $Gray4;
-            color: $B6Color;
-            text-decoration: none;
+            color: #323130;
         }
-    }
-    //@include lg {
-    //    height: rem(32px);
-    //    a {
-    //        height: rem(32px);
-    //        padding-left: rem(36px);
-    //        font-size: rem(14px);
-    //        line-height: rem(24px);
-    //    }
-    //}
 
-    @include md {
-        height: rem(36px);
+        i {
+            height: 100%;
+            transform: rotate( -90deg);
+        }
 
-        a {
-            height: rem(36px);
-            padding-left: rem(36px);
-            font-size: rem(16px);
-            line-height: rem(24px);
+        .expand {
+            height: 100%;
+            transform: rotate(0deg);
         }
     }
 
-    @include sm {
+    .group-content {
+        margin-bottom: 0;
+    }
+
+    .link-txt {
+        white-space: nowrap;
+    }
+
+    .link-enabled-hasurl {
         height: rem(40px);
-
-        a {
-            height: rem(40px);
-            padding-left: rem(40px);
-            font-size: rem(14px);
-            line-height: rem(24px);
-        }
-    }
-}
-
-::deep .nav-menu-demo-link--active {
-    a {
-        padding-left: rem(40px);
-        background-color: $B5Color;
-        color: $B6Color;
-        border-left: rem(4px) solid $B6Color;
+        box-sizing: border-box;
+        font-size: rem(14px);
+        font-weight: 400;
+        line-height: rem(26px);
+        color: #323130;
 
         &:hover {
-            background-color: $Gray4;
+            color: #323130;
         }
-        //@include lg {
-        //    a {
-        //        padding-left: rem(32px);
-        //    }
-        //}
+    }
 
-        @include md {
-            a {
-                padding-left: rem(32px);
-            }
-        }
+    .selected {
+        font-weight: unset;
+        color: $B6Color;
 
-        @include sm {
-            a {
-                padding-left: rem(36px);
-            }
+        &:after {
+            border-left: rem(4px) solid $B6Color;
         }
     }
 }
 
-::deep .nav-menu {
-
-    .bit-nav {
-        .group-chevron-btn {
-            height: rem(40px);
-            margin: 0;
-            padding-left: rem(44px);
-            border: none;
-            font-weight: 500;
-            font-size: rem(16px);
-            line-height: rem(32px);
-            color: $Gray2;
-
-            &:hover {
-                color: $B6Color;
-            }
-
-            i {
-                height: 100%;
-                left: rem(17px);
-                transform: rotate( -90deg);
-            }
-
-            .expand {
-                height: 100%;
-                left: rem(17px);
-                transform: rotate(0deg);
-            }
-            //@include lg {
-            //    height: rem(32px);
-            //    padding-left: rem(36px);
-            //    font-size: rem(14px);
-            //    line-height: rem(24px);
-            //}
-
-            @include md {
-                height: rem(36px);
-                padding-left: rem(36px);
-                font-size: rem(16px);
-                line-height: rem(24px);
-            }
-
-            @include sm {
-                height: rem(40px);
-                padding-left: rem(40px);
-                font-size: rem(14px);
-                line-height: rem(24px);
-            }
-        }
-
-        .group-content {
-            margin-bottom: 0;
-        }
-
-        .link-txt {
-            white-space: nowrap;
-        }
-
-        .link-enabled-hasurl {
-            height: rem(40px);
-            padding: 0 rem(16px) 0 rem(52px) !important;
-            box-sizing: border-box;
-            font-size: rem(15px);
-            line-height: rem(26px);
-            color: $Gray1;
-
-            &:hover {
-                color: $B6Color;
-            }
-
-            @include lg {
-                //height: rem(32px);
-                //font-size: rem(12px);
-                //line-height: rem(18px);
-            }
-
-            @include md {
-                height: rem(36px);
-                font-size: rem(16px);
-                line-height: rem(24px);
-            }
-
-            @include sm {
-                height: rem(40px);
-                font-weight: 500;
-                //font-size: rem(12px);
-                //line-height: rem(24px);
-            }
-        }
-
-        .selected {
-            font-weight: unset;
-            color: $B6Color;
-
-            &:after {
-                border-left: rem(4px) solid $B6Color;
-            }
-        }
+::deep .searched-side-nav {
+    .link-enabled-hasurl {
+        padding: 0 20px 0 27px !important;
     }
 }

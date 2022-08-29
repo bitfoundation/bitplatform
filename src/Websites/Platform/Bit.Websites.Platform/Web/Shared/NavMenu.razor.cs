@@ -128,5 +128,17 @@ public partial class NavMenu
         await HideMenu();
     }
 
+    private string GetNavMenuClass()
+    {
+        if (string.IsNullOrEmpty(searchText))
+        {
+            return "side-nav";
+        }
+        else
+        {
+            return "side-nav searched-side-nav";
+        }
+    }
+
     private static IEnumerable<BitNavLinkItem> Flatten(IEnumerable<BitNavLinkItem> e) => e.SelectMany(c => Flatten(c.Links)).Concat(e);
 }

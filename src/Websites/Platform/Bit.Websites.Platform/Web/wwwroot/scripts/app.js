@@ -23,11 +23,6 @@ function toggleBodyOverflow(isMenuOpen) {
 //function copyToClipboard(codeSampleContentForCopy: string) {
 //    navigator.clipboard.writeText(codeSampleContentForCopy);
 //}
-//function highlightSnippet() {
-//    document.querySelectorAll('pre code').forEach((el) => {
-//        hljs.highlightBlock(el);
-//    });
-//}
 function RegisterOnScrollToChangeGettingStartedSideRailStyle(element) {
     window.addEventListener('scroll', function (event) {
         if (document.documentElement.scrollTop >= 500) {
