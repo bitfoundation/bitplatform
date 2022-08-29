@@ -15,6 +15,8 @@ public partial class Footer
 #endif
         SelectedCulture = CultureInfoManager.GetCurrentCulture(preferredCultureCookie);
 
+        StateHasChanged();
+
         await base.OnAfterFirstRenderAsync();
     }
 #endif
