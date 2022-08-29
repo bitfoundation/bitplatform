@@ -35,14 +35,26 @@ public partial class NavMenu
                 new BitNavLinkItem { Name= "Contribute", Key = "Contribute", Url = "/todo-template/contribute"},
             }
         },
-        //new BitNavLinkItem
-        //{
-        //    Name = "AdminPanel",
-        //    Key = "AdminPanel",
-        //    Links = new List<BitNavLinkItem>
-        //    {
-        //    }
-        //}
+        new BitNavLinkItem
+        {
+            Name = "AdminPanel",
+            Key = "AdminPanel",
+            Links = new List<BitNavLinkItem>
+            {
+                new BitNavLinkItem { Name= "Overview", Key = "Overview", Url = "/admin-panel/overview"},
+                new BitNavLinkItem { Name= "Development prerequisites", Key = "Development prerequisites", Url = "/admin-panel/development-prerequisites"},
+                new BitNavLinkItem { Name= "Getting Started", Key = "Getting Started", Url = "/admin-panel/getting-started"},
+                new BitNavLinkItem { Name= "Database", Key = "Database", Url = "/admin-panel/database"},
+                new BitNavLinkItem { Name= "Run", Key = "Run", Url = "/admin-panel/run"},
+                new BitNavLinkItem { Name= "Hosting models", Key = "Hosting models", Url = "/admin-panel/hosting-models"},
+                new BitNavLinkItem { Name= "Deployment type", Key = "Deployment type", Url = "/admin-panel/deployment-type"},
+                new BitNavLinkItem { Name= "Settings", Key = "Settings", Url = "/admin-panel/settings"},
+                new BitNavLinkItem { Name= "Project structure", Key = "Project structure", Url = "/admin-panel/project-structure"},
+                new BitNavLinkItem { Name= "Exception handling", Key = "Exception handling", Url = "/admin-panel/exception-handling"},
+                new BitNavLinkItem { Name= "Cache mechanism", Key = "Cache mechanism", Url = "/admin-panel/cache-mechanism"},
+                new BitNavLinkItem { Name= "Contribute", Key = "Contribute", Url = "/admin-panel/contribute"},
+            }
+        }
     };
     private List<BitNavLinkItem> filteredNavLinks;
     private BitNavRenderType renderType = BitNavRenderType.Grouped;
