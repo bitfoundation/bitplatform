@@ -422,22 +422,30 @@
     align-items: center;
     width: 100%;
     padding: rem(24px) rem(40px) rem(24px) rem(104px);
+    margin-bottom: rem(32px);
     border-radius: rem(20px);
     box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.15);
     box-sizing: border-box;
     background-color: $White;
 
+    &:last-child {
+        margin-bottom: 0;
+    }
+
     @include lg {
         padding: rem(40px) rem(32px) rem(40px) rem(88px);
+        margin-bottom: rem(16px);
     }
 
     @include md {
         border-radius: rem(16px);
         padding: rem(40px) rem(32px);
+        margin-bottom: rem(16px);
     }
 
     @include sm {
         padding: rem(24px) rem(16px);
+        margin-bottom: rem(8px);
     }
 
     .template-content-continaer {
