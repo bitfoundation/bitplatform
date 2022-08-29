@@ -54,6 +54,7 @@
 .header-logo {
     width: rem(45px);
     height: rem(30px);
+    margin-right: rem(32px);
     background-image: url('/images/bit-blue-icon.svg');
     background-position: center;
     background-repeat: no-repeat;
@@ -108,7 +109,6 @@
 
 ::deep .header-link--active {
     font-weight: 700;
-    color: $B5Color;
 }
 
 .header-github-link {
