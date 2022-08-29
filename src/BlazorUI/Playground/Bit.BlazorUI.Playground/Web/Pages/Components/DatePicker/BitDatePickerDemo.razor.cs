@@ -208,6 +208,13 @@ public partial class BitDatePickerDemo
             Type = "bool",
             DefaultValue = "",
             Description = "Whether the CalendarDay close button should be shown or not."
+        },
+        new ComponentParameter
+        {
+            Name = "HighlightCurrentMonth",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the month picker should highlight the current month."
         }
     };
 

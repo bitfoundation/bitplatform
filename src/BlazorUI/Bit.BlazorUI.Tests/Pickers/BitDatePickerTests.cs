@@ -277,7 +277,7 @@ public class BitDatePickerTests : BunitTestContext
         DataRow(false),
         DataRow(true)
     ]
-    public void BitDateShowCloseButtonTest(bool showCloseButton)
+    public void BitDatePickerShowCloseButtonTest(bool showCloseButton)
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
         var component = RenderComponent<BitDatePickerTest>(parameters =>
@@ -293,6 +293,29 @@ public class BitDatePickerTests : BunitTestContext
         else
         {
             Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".header-icon-btn"));
+        }
+    }
+
+    [DataTestMethod,
+        DataRow(false),
+        DataRow(true)
+    ]
+    public void BitDatePickerHighlightCurrentMonthTest(bool highlightCurrentMonth)
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        var component = RenderComponent<BitDatePickerTest>(parameters =>
+        {
+            parameters.Add(p => p.HighlightCurrentMonth, highlightCurrentMonth);
+        });
+
+        if (highlightCurrentMonth)
+        {
+            var currentMonth = component.Find(".current-month");
+            Assert.IsNotNull(currentMonth);
+        }
+        else
+        {
+            Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".current-month"));
         }
     }
 

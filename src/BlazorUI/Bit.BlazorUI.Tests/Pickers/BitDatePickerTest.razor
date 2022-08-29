@@ -11,6 +11,7 @@
                    IsOpen="IsOpen"
                    ShowGoToToday="ShowGoToToday"
                    ShowCloseButton="ShowCloseButton"
+                   HighlightCurrentMonth="HighlightCurrentMonth"
                    OnClick="HandleClick"
                    OnSelectDate="HandleSelectDate">
         <LabelFragment>
@@ -32,6 +33,7 @@
     [Parameter] public string PickerAriaLabel { get; set; }
     [Parameter] public bool ShowGoToToday { get; set; } = true;
     [Parameter] public bool ShowCloseButton { get; set; }
+    [Parameter] public bool HighlightCurrentMonth { get; set; } = false;
 
     public int ClickedValue { get; set; }
     public int SelectedDateValue { get; set; }

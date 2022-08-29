@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Xml;
 
 namespace Bit.BlazorUI;
 
@@ -71,6 +70,11 @@ public partial class BitDatePicker
     /// Determines if the DatePicker has a border.
     /// </summary>
     [Parameter] public bool HasBorder { get; set; } = true;
+
+    /// <summary>
+    /// Whether the month picker should highlight the current month.
+    /// </summary>
+    [Parameter] public bool HighlightCurrentMonth { get; set; } = false;
 
     /// <summary>
     /// Whether the month picker is shown beside the day picker or hidden.
@@ -824,5 +828,17 @@ public partial class BitDatePicker
             _currentMonth = currentValueMonth;
             CreateMonthCalendar(_currentYear, _currentMonth);
         }
+    }
+
+    private string GetMonthCellClassName(int monthIndex)
+    {
+        var className = string.Empty;
+        if(HighlightCurrentMonth)
+        {
+            var todayMonth = Culture.DateTimeFormat.Calendar.GetMonth(DateTime.Now);
+            className += todayMonth == monthIndex ? "current-month" : null;
+        }
+
+        return className;
     }
 }

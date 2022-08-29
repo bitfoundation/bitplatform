@@ -234,6 +234,7 @@
                                             var monthIndex = (rowIndex * 4) + cellIndex;
                                             var monthName = Culture.DateTimeFormat.GetMonthName(monthIndex);
                                             <button role="gridcell"
+                                                    class=@GetMonthCellClassName(monthIndex)
                                                     aria-selected="@(IsMonthSelected(monthIndex) ? "true" : "false")"
                                                     aria-readonly="true"
                                                     tabindex="@(IsMonthSelected(monthIndex) ? 0 : -1)"

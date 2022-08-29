@@ -445,6 +445,16 @@
                 &:last-child {
                     margin: 0;
                 }
+
+                .current-month {
+                    color: $White;
+                    background-color: $Primary;
+
+                    &:hover {
+                        color: $Grey160;
+                        background-color: $Primary;
+                    }
+                }
             }
         }
 
