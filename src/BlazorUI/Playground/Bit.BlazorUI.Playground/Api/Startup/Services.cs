@@ -38,8 +38,7 @@ public static class Services
         services.AddCors();
 
         services.AddControllers()
-            .AddOData()
-            .AddJsonOptions(options => options.JsonSerializerOptions.AddContext<AppJsonContext>());
+            .AddOData();
         
         services.AddResponseCompression(opts =>
         {
