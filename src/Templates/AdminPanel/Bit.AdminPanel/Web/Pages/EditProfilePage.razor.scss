@@ -30,10 +30,6 @@
     height: 100%;
 }
 
-::deep .back-btn {
-    color: #212121;
-}
-
 .page-title {
     margin: 0;
     font-weight: 700;
@@ -58,10 +54,6 @@
     width: 100%;
     max-width: rem(388px);
     margin-bottom: rem(30px);
-}
-
-::deep .validation-message {
-    color: $StatusErrorColor;
 }
 
 .form-message-bar {
@@ -139,16 +131,30 @@
     }
 }
 
-::deep .edit-profile-dtp {
-    .bit-dtp-wrapper {
-        z-index: 5;
+::deep {
+    form {
+        width: 100%;
     }
 
-    .bit-dtp-overlay {
-        z-index: 4;
+    .back-btn {
+        color: #212121;
     }
 
-    .bit-dtp-callout {
-        z-index: 6;
+    .validation-message {
+        color: $StatusErrorColor;
+    }
+
+    .edit-profile-dtp {
+        .bit-dtp-wrapper {
+            z-index: 5;
+        }
+
+        .bit-dtp-overlay {
+            z-index: 4;
+        }
+
+        .bit-dtp-callout {
+            z-index: 6;
+        }
     }
 }
