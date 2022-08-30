@@ -19,7 +19,7 @@
     <ItemGroup>
         <ProjectReference Include="..\..\..\Bit.BlazorUI.Charts\Bit.BlazorUI.Charts.csproj" />
         <ProjectReference Include="..\..\..\Bit.BlazorUI.SourceGenerators\Bit.BlazorUI.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
-        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.7.4">
+        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.8.2">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

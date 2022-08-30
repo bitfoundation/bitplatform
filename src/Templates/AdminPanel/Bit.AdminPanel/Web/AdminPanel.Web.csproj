@@ -36,7 +36,7 @@
         <PackageReference Include="Bit.CodeAnalyzers" Version="3.1.0-pre-05" />
         <PackageReference Include="Bit.SourceGenerators" Version="3.1.0-pre-05" />
         <PackageReference Include="BuildWebCompiler2022" Version="1.14.8" />
-        <PackageReference Include="jose-jwt" Version="4.0.0" />
+        <PackageReference Include="jose-jwt" Version="4.0.1" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.8" />
         <!--/-:msbuild-conditional:noEmit -->
         <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.8" />
@@ -47,7 +47,7 @@
     <ItemGroup>
         <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" Condition="'$(WebAppDeploymentType)' == 'PWA'" />
         <PackageReference Include="LibSassBuilder" Version="2.0.2" />
-        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.7.4">
+        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.8.2">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
