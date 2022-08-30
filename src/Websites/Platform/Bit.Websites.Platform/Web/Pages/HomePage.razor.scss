@@ -10,10 +10,6 @@
     width: 100%;
     box-sizing: border-box;
     overflow: hidden;
-    background-image: url('/images/home/home-page-bg.webp');
-    background-position: center;
-    background-size: cover;
-    background-repeat: no-repeat;
 }
 
 .page-section {
@@ -35,6 +31,25 @@
         padding-left: rem(30px);
         padding-right: rem(30px);
     }
+}
+
+.section-title {
+    margin: 0;
+    font-size: clamp(1.5rem, 0.9643rem + 1.4286vw, 2.25rem);
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: rem(40px);
+    color: $B3Color;
+}
+
+.section-desc {
+    font-size: rem(16px);
+    line-height: 1.5;
+    letter-spacing: 0;
+    font-weight: 400;
+    margin-top: rem(10px);
+    margin-bottom: rem(20px);
+    color: $Gray1;
 }
 
 .twitter-link {
@@ -128,95 +143,105 @@
 
     .hero-section-title {
         margin: 0;
-        margin-bottom: rem(16px);
-        font-weight: 700;
-        font-size: rem(50px);
-        line-height: rem(58px);
+        margin-bottom: rem(20px);
+        font-weight: 800;
+        font-size: clamp(2.625rem, 1.2857rem + 3.5714vw, 4rem);
+        line-height: 1;
         color: $White;
-
-        @include lg {
-            font-size: rem(40px);
-            line-height: rem(64px);
-        }
-
-        @include md {
-            margin-bottom: rem(8px);
-            font-weight: 600;
-            font-size: rem(26px);
-            line-height: rem(40px);
-        }
-
-        @include sm {
-            margin-bottom: rem(24px);
-            font-weight: 600;
-            font-size: rem(26px);
-            line-height: rem(40px);
-        }
     }
 
     .hero-section-desc {
-        margin-bottom: rem(112px);
-        font-weight: 700;
-        font-size: rem(18x);
-        line-height: rem(32px);
+        margin-bottom: rem(30px);
+        font-weight: 400;
+        font-size: 1rem;
+        line-height: 1.5;
         color: $Gray4;
-
-        @include lg {
-            margin-bottom: rem(64px);
-            font-size: rem(16x);
-        }
-
-        @include lt-lg {
-            margin-bottom: rem(32px);
-            font-weight: 400;
-            font-size: rem(14px);
-            line-height: rem(28px);
-        }
     }
 
     .hero-section-cta {
-        display: flex;
-        flex-flow: row nowrap;
+        display: inline-flex;
         justify-content: center;
         align-items: center;
-        width: rem(193px);
-        height: rem(64px);
-        border-radius: rem(8px);
+        padding: rem(14px) rem(16px);
+        border-radius: rem(4px);
+        box-shadow: none;
+        cursor: pointer;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        text-decoration: none;
+        transition: background-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,border-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
         background-color: $White;
-        font-weight: 600;
-        font-size: rem(22px);
-        line-height: rem(40px);
         color: $B6Color;
-
-        @include lg {
-            width: rem(186px);
-            font-size: rem(20px);
-            line-height: rem(32px);
-        }
-
-        @include lt-lg {
-            width: rem(143px);
-            height: rem(48px);
-            font-size: rem(16px);
-            line-height: rem(32px);
-        }
+        font-size: rem(16px);
+        line-height: 1.3125;
+        letter-spacing: 0;
+        font-weight: 700;
     }
 
     .hero-section-github-ico {
-        width: rem(40px);
-        height: rem(40px);
+        width: rem(28px);
+        height: rem(28px);
         margin-right: rem(8px);
         background-image: url('/images/github-icon.svg');
         background-position: center;
         background-repeat: no-repeat;
         background-size: cover;
         cursor: pointer;
+    }
+}
+
+.templates-section {
+    padding-top: 5rem;
+    padding-bottom: 5rem;
+}
+
+.components-section {
+    padding-top: 5rem;
+    padding-bottom: 5rem;
+    background-color: #F3F6F9;
+}
+
+.cloud-hosting-section {
+    padding-top: 5rem;
+    padding-bottom: 5rem;
+}
+
+.support-section {
+    padding-top: 5rem;
+    padding-bottom: 5rem;
+    background-color: #132F4C;
+
+    .page-section-contnet {
+        display: flex;
+        flex-flow: column nowrap;
+        align-items: center;
+    }
+
+    .section-title {
+        color: gainsboro;
+    }
+
+    .section-card-group {
+        width: 100%;
+        display: flex;
+        flex-flow: row nowrap;
+        justify-content: space-between;
+        align-items: center;
 
         @include lt-lg {
-            width: rem(28px);
-            height: rem(28px);
+            flex-flow: column nowrap;
+            justify-content: flex-start;
+            align-items: flex-start;
         }
     }
+}
+
+.customer-section {
+    padding-top: 5rem;
+    padding-bottom: 5rem;
+    background: linear-gradient(180deg, #fafafa 0%, #FFFFFF 100%);
 }
 
 .customer-feedback-card {
@@ -365,50 +390,6 @@
                 border-radius: rem(14px);
             }
         }
-    }
-}
-
-.section-title {
-    margin: rem(88px) 0 rem(32px);
-    font-weight: 700;
-    font-size: rem(40px);
-    line-height: rem(56px);
-    color: $B3Color;
-
-    @include lg {
-        font-size: rem(36px);
-    }
-
-    @include md {
-        margin: rem(24px) 0 rem(16px);
-        font-size: rem(24px);
-        line-height: rem(40px);
-    }
-
-    @include sm {
-        margin: rem(32px) 0 rem(12px);
-        font-size: rem(20px);
-        line-height: rem(32px);
-    }
-}
-
-.section-desc {
-    margin-bottom: rem(40px);
-    font-weight: 400;
-    font-size: rem(16px);
-    line-height: rem(32px);
-    color: $Gray1;
-
-    @include md {
-        margin-bottom: rem(32px);
-        font-size: rem(14px);
-        line-height: rem(28px);
-    }
-
-    @include sm {
-        margin-bottom: rem(28px);
-        font-size: rem(14px);
-        line-height: rem(28px);
     }
 }
 
@@ -567,22 +548,6 @@
 
         @include sm {
             display: none;
-        }
-    }
-}
-
-.service-section {
-    .section-card-group {
-        width: 100%;
-        display: flex;
-        flex-flow: row nowrap;
-        justify-content: space-between;
-        align-items: center;
-
-        @include lt-lg {
-            flex-flow: column nowrap;
-            justify-content: flex-start;
-            align-items: flex-start;
         }
     }
 }
