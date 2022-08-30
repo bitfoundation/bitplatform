@@ -23,6 +23,7 @@
     height: rem($HeaderHeight);
     margin-left: auto;
     margin-right: auto;
+    padding: 0 rem($LargeScreenPadding);
     max-width: rem($LargeScreenMaxWidth);
     box-sizing: border-box;
 
