@@ -86,7 +86,7 @@ public partial class BitSplitButton
 
     private async Task HandleOnClick(BitSplitButtonItem? item)
     {
-        if (item?.IsEnabled is false) return;
+        if (IsEnabled is false || item?.IsEnabled is false) return;
 
         await OnClick.InvokeAsync(item);
     }

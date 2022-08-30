@@ -19,7 +19,7 @@
         </button>
         <button type="button"
                 tabindex="@(IsEnabled ? 0 : -1)"
-                class="Chevron-btn @_buttonStyle @(_currentItem?.IsEnabled is false ? "disabled" : null)"
+                class="chevron-btn @_buttonStyle @(_currentItem?.IsEnabled is false ? "disabled" : null)"
                 @onclick="ToggleCallout">
             <i class="bit-icon bit-icon--ChevronDown"></i>
         </button>
