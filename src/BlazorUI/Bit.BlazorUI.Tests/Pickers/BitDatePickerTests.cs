@@ -260,9 +260,10 @@ public class BitDatePickerTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow(false)
+        DataRow(false),
+        DataRow(true)
     ]
-    public void BitDateShowGoToTodayTest(bool showGoToToday)
+    public void BitDatePickerShowGoToTodayTest(bool showGoToToday)
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
         var component = RenderComponent<BitDatePickerTest>(parameters =>
@@ -270,7 +271,16 @@ public class BitDatePickerTests : BunitTestContext
             parameters.Add(p => p.ShowGoToToday, showGoToToday);
         });
 
-        Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".go-today-btn"));
+        var goToTodayBtnElms = component.FindAll(".go-today-btn");
+
+        if (showGoToToday)
+        {
+            Assert.AreEqual(1, goToTodayBtnElms.Count);
+        }
+        else
+        {
+            Assert.AreEqual(0, goToTodayBtnElms.Count);
+        }
     }
 
     [DataTestMethod,
@@ -285,14 +295,15 @@ public class BitDatePickerTests : BunitTestContext
             parameters.Add(p => p.ShowCloseButton, showCloseButton);
         });
 
+        var closeBtnElms = component.FindAll(".header-icon-btn");
+
         if (showCloseButton)
         {
-            var closeBtn = component.Find(".header-icon-btn");
-            Assert.IsNotNull(closeBtn);
+            Assert.AreEqual(1, closeBtnElms.Count);
         }
         else
         {
-            Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".header-icon-btn"));
+            Assert.AreEqual(0, closeBtnElms.Count);
         }
     }
 
@@ -308,14 +319,15 @@ public class BitDatePickerTests : BunitTestContext
             parameters.Add(p => p.HighlightCurrentMonth, highlightCurrentMonth);
         });
 
+        var currentMonthCells = component.FindAll(".current-month");
+
         if (highlightCurrentMonth)
         {
-            var currentMonth = component.Find(".current-month");
-            Assert.IsNotNull(currentMonth);
+            Assert.AreEqual(1, currentMonthCells.Count);
         }
         else
         {
-            Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".current-month"));
+            Assert.AreEqual(0, currentMonthCells.Count);
         }
     }
 
@@ -331,14 +343,16 @@ public class BitDatePickerTests : BunitTestContext
             parameters.Add(p => p.HighlightSelectedMonth, highlightSelectedMonth);
         });
 
+
+        var selectedMonthCells = component.FindAll(".selected-month");
+
         if (highlightSelectedMonth)
         {
-            var selectedMonth = component.Find(".selected-month");
-            Assert.IsNotNull(selectedMonth);
+            Assert.AreEqual(1, selectedMonthCells.Count);
         }
         else
         {
-            Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".selected-month"));
+            Assert.AreEqual(0, selectedMonthCells.Count);
         }
     }
 
