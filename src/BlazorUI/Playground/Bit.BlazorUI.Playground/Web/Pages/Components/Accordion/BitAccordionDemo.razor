@@ -6,36 +6,32 @@
         <ExamplePreview>
 
             <BitAccordion Title="item-1"
-                          Description="@isExpanded_1.ToString()"
-                          Text="hello world!"
+                          Description="Filtering has been entirely disabled for whole web server."
+                          Text="Nulla facilisi. Phasellus sollicitudin nulla et quam mattis feugiat. Aliquam eget maximus est, id dignissim quam."
                           DefaultIsExpanded="true"
-                          @bind-IsExpanded="isExpanded_1" />
+                          @bind-IsExpanded="basicAccordionIsExpanded" />
 
             <div style="margin: 5px 0;"></div>
 
-            <BitAccordion Title="item-1"
-                          Description="@isExpanded_1.ToString()"
-                          Text="hello world!"
-                          DefaultIsExpanded="true"
-                          IsEnabled="false" />
+            <BitAccordion Title="item-2"
+                          Description="Filtering has been entirely disabled for whole web server."
+                          Text="Nulla facilisi. Phasellus sollicitudin nulla et quam mattis feugiat. Aliquam eget maximus est, id dignissim quam."
+                          IsEnabled="@basicAccordionIsExpanded" />
 
             <div style="margin: 5px 0;"></div>
 
-            <BitAccordion @bind-IsExpanded="isExpanded_2">
+            <BitAccordion @bind-IsExpanded="templateedAccordionIsExpanded">
                 <HeaderTemplate Context="isExpanded">
-                    <div>
-                        @if (isExpanded)
-                        {
-                            <BitIconButton IconName="BitIconName.Sad" />
-                            <span>close me!</span>
-                        }
-                        else
-                        {
-                            <BitIconButton IconName="BitIconName.Accept" />
-                            <span>open me!</span>
-                        }
-                    </div>
-                    <span>@isExpanded_2</span>
+                    @if (isExpanded)
+                    {
+                        <BitIconButton IconName="BitIconName.Sad" />
+                        <span>close me!</span>
+                    }
+                    else
+                    {
+                        <BitIconButton IconName="BitIconName.Accept" />
+                        <span>open me!</span>
+                    }
                 </HeaderTemplate>
                 <ContentTemplate>
                     <BitCarousel AnimationDuration="2">

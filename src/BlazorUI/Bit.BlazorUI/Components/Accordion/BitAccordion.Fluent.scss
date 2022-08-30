@@ -8,43 +8,29 @@
         flex-flow: column nowrap;
         width: 100%;
         padding: 0 rem(12px);
-        background-color: $Grey20;
-        color: $Grey190;
-        border-radius: rem(4px);
-        border: 1px solid $GreyInputBorder;
+        background-color: $White;
+        color: $Grey160;
+        border: 1px solid $Grey30;
         box-sizing: border-box;
-        cursor: pointer;
         user-select: none;
+        font-size: rem(14px);
+        font-weight: 400;
     }
 
     &.bit-acd-disabled-fluent {
         background-color: $Grey10;
         color: $Grey90;
 
-        .content, .description {
+        .intro > .description {
             color: $Grey90;
         }
     }
 
     .header {
         display: flex;
-        justify-content: space-between;
+        justify-content: center;
         margin: rem(12px) 0;
-
-        .title {
-            font-size: rem(16px);
-            font-weight: 500;
-            max-width: 33%;
-            word-break: break-word;
-        }
-
-        .description {
-            font-size: rem(14px);
-            font-weight: 400;
-            color: $Grey160;
-            max-width: 57%;
-            word-break: break-word;
-        }
+        cursor: pointer;
 
         &.expanded {
             .header-icon {
@@ -53,22 +39,40 @@
         }
     }
 
-    .content {
-        font-size: rem(14px);
-        font-weight: 400;
-        color: $Grey130;
+    .intro {
+        display: flex;
+        flex-grow: 1;
+        line-height: 1.5;
 
+        .title {
+            font-size: rem(16px);
+            font-weight: 600;
+            min-width: 20%;
+        }
+
+        .description {
+            color: $Grey130;
+        }
+    }
+
+    .header-icon {
+        display: flex;
+        align-items: center;
+        margin: 0 rem(5px);
+    }
+
+    .content {
         &.expanded {
             margin: rem(12px) 0;
             animation-name: bit-acd-expand-content;
-            animation-duration: 300ms;
+            animation-duration: 200ms;
             animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
             animation-fill-mode: both;
         }
 
         &.collapsed {
             animation-name: bit-acd-collapse-content;
-            animation-duration: 300ms;
+            animation-duration: 200ms;
             animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
             animation-fill-mode: both;
         }
