@@ -2,12 +2,14 @@
 @import '../Styles/abstracts/_functions.scss';
 @import '../Styles/abstracts/_colors.scss';
 
-.page {
+.page-container {
     display: flex;
     flex-flow: column nowrap;
     justify-content: flex-start;
     align-items: center;
     width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
     background-image: url('/images/home/home-page-bg.webp');
     background-position: center;
     background-size: cover;
@@ -17,44 +19,35 @@
 .page-section {
     display: flex;
     justify-content: center;
-    align-items: flex-start;
     width: 100%;
-    padding: 0 rem(32px);
+}
+
+.page-section-contnet {
+    width: 100%;
+    max-width: rem(1200px);
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: rem(20px);
+    padding-right: rem(20px);
     box-sizing: border-box;
 
-    @include sm {
-        padding: 0 rem(16px);
+    @include md {
+        padding-left: rem(30px);
+        padding-right: rem(30px);
     }
 }
 
-.section-content-container {
-    width: 100%;
-    max-width: rem(1232px);
-
-    .twitter-link {
-        background-image: url('/images/footer/twitter-icon.svg');
-        width: rem(32px);
-        height: rem(32px);
-        margin: 0 rem(6);
-        background-position: center;
-        background-repeat: no-repeat;
-        background-color: $B7Color;
-        border-radius: 50%;
-        cursor: pointer;
-        background-size: rem(18px);
-    }
-
-    @include lg {
-        max-width: rem(1140px);
-    }
-
-    @include md {
-        max-width: rem(704px);
-    }
-
-    @include sm {
-        max-width: 100%;
-    }
+.twitter-link {
+    background-image: url('/images/footer/twitter-icon.svg');
+    width: rem(32px);
+    height: rem(32px);
+    margin: 0 rem(6);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: $B7Color;
+    border-radius: 50%;
+    cursor: pointer;
+    background-size: rem(18px);
 }
 
 .hero-section {
@@ -63,23 +56,27 @@
     background-repeat: no-repeat;
     background-size: cover;
 
-    .section-content-container {
+    .page-section-contnet {
         display: flex;
         flex-flow: row nowrap;
         justify-content: flex-start;
         align-items: flex-start;
-        padding: rem(240px) 0 rem(108px);
+        padding-top: rem(160px);
+        padding-bottom: rem(108px);
 
         @include lg {
-            padding: rem(152px) 0 rem(52px);
+            padding-top: rem(208px);
+            padding-bottom: rem(63px);
         }
 
         @include md {
-            padding: rem(96px) 0 rem(28px);
+            padding-top: rem(152px);
+            padding-bottom: rem(28px);
         }
 
         @include sm {
-            padding: rem(88px) 0 rem(72px);
+            padding-top: rem(188px);
+            padding-bottom: rem(72px);
         }
     }
 

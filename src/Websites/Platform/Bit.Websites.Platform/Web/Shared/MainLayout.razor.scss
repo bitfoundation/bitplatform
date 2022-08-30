@@ -13,7 +13,7 @@
     justify-content: flex-start;
     width: 100%;
     min-height: 100vh;
-    padding-top: rem(56px);
+    padding-top: $HeaderHeight;
     box-sizing: border-box;
     background: linear-gradient(180deg, #F3F6F9 0%, #FFFFFF 100%);
 
@@ -24,6 +24,11 @@
 
 .main--full-page {
     background: $White;
+    padding-top: 0;
+
+    @include sm {
+        padding-top: 0;
+    }
 
     .site-content {
         max-width: 100%;
