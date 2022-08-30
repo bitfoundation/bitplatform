@@ -8,6 +8,20 @@ namespace Bit.BlazorUI.Tests.Buttons;
 [TestClass]
 public class BitSplitButtonTests : BunitTestContext
 {
+    private List<BitSplitButtonItem> items = new()
+    {
+        new BitSplitButtonItem()
+        {
+            Text = "Item A",
+            key = "A"
+        },
+        new BitSplitButtonItem()
+        {
+            Text = "Item B",
+            key = "B"
+        }
+    };
+
     [DataTestMethod,
         DataRow(Visual.Fluent, true, BitButtonStyle.Primary),
         DataRow(Visual.Fluent, true, BitButtonStyle.Standard),
@@ -26,15 +40,6 @@ public class BitSplitButtonTests : BunitTestContext
     ]
     public void BitSplitButtonTest(Visual visual, bool isEnabled, BitButtonStyle style)
     {
-        List<BitSplitButtonItem> items = new()
-        {
-            new BitSplitButtonItem()
-            {
-                Text = "Item A",
-                key = "A"
-            }
-        };
-
         var com = RenderComponent<BitSplitButton>(parameters =>
         {
             parameters.AddCascadingValue(visual);
@@ -62,14 +67,6 @@ public class BitSplitButtonTests : BunitTestContext
     public void BitSplitButtonShouldBeClickIfEnabled(bool isEnabled)
     {
         BitSplitButtonItem clickedItem = default!;
-        List<BitSplitButtonItem> items = new()
-        {
-            new BitSplitButtonItem()
-            {
-                Text = "Item A",
-                key = "A"
-            }
-        };
 
         var com = RenderComponent<BitSplitButton>(parameters =>
         {
@@ -98,20 +95,8 @@ public class BitSplitButtonTests : BunitTestContext
     public void BitSplitButtonShouldBeItemClickIfEnabled(bool itemIsEnabled)
     {
         BitSplitButtonItem clickedItem = default!;
-        List<BitSplitButtonItem> items = new()
-        {
-            new BitSplitButtonItem()
-            {
-                Text = "Item A",
-                key = "A"
-            },
-            new BitSplitButtonItem()
-            {
-                Text = "Item B",
-                key = "B",
-                IsEnabled = itemIsEnabled
-            }
-        };
+
+        items.Last().IsEnabled = itemIsEnabled;
 
         var com = RenderComponent<BitSplitButton>(parameters =>
         {
@@ -141,19 +126,6 @@ public class BitSplitButtonTests : BunitTestContext
     public void BitSplitButtonIsStickyTest(bool isSticky)
     {
         BitSplitButtonItem clickedItem = default!;
-        List<BitSplitButtonItem> items = new()
-        {
-            new BitSplitButtonItem()
-            {
-                Text = "Item A",
-                key = "A"
-            },
-            new BitSplitButtonItem()
-            {
-                Text = "Item B",
-                key = "B"
-            }
-        };
 
         var com = RenderComponent<BitSplitButton>(parameters =>
         {
