@@ -181,6 +181,48 @@ public partial class BitDatePickerDemo
             DefaultValue = "null",
             Description = "Used to customize the label for the DatePicker."
         },
+        new ComponentParameter
+        {
+            Name = "CalloutHtmlAttributes",
+            Type = "Dictionary<string, object>",
+            DefaultValue = "",
+            Description = "Capture and render additional attributes in addition to the main callout's parameters."
+        },
+        new ComponentParameter
+        {
+            Name = "PickerAriaLabel",
+            Type = "string",
+            DefaultValue = "Calendar",
+            Description = "Aria label for date picker popup for screen reader users."
+        },
+        new ComponentParameter
+        {
+            Name = "ShowGoToToday",
+            Type = "bool",
+            DefaultValue = "true",
+            Description = "Whether the \"Go to today\" link should be shown or not."
+        },
+        new ComponentParameter
+        {
+            Name = "ShowCloseButton",
+            Type = "bool",
+            DefaultValue = "",
+            Description = "Whether the CalendarDay close button should be shown or not."
+        },
+        new ComponentParameter
+        {
+            Name = "HighlightCurrentMonth",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the month picker should highlight the current month."
+        },
+        new ComponentParameter
+        {
+            Name = "HighlightSelectedMonth",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the month picker should highlight the selected month."
+        }
     };
 
     private readonly List<EnumParameter> enumParameters = new()

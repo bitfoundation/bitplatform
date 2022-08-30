@@ -357,6 +357,36 @@
                     -webkit-font-smoothing: antialiased;
                 }
             }
+
+            .header-icon-btn {
+                position: relative;
+                display: block;
+                width: rem(28px);
+                height: rem(28px);
+                min-width: rem(28px);
+                min-height: rem(28px);
+                padding: 0;
+                border-radius: rem(2px);
+                border: none;
+                outline: transparent;
+                font-size: rem(12px);
+                line-height: rem(28px);
+                text-align: center;
+                color: $Grey160;
+                background-color: transparent;
+                overflow: visible;
+                cursor: pointer;
+
+                &:hover {
+                    background-color: $Grey30;
+                }
+
+                span {
+                    i {
+                        font-size: rem(12px);
+                    }
+                }
+            }
         }
 
         .divider {
@@ -414,6 +444,27 @@
 
                 &:last-child {
                     margin: 0;
+                }
+
+                .current-month {
+                    color: $White;
+                    background-color: $Primary;
+
+                    &:hover {
+                        color: $Grey160;
+                        background-color: $Primary;
+                    }
+                }
+
+                .selected-month {
+                    color: $Grey160;
+                    background-color: $BlizzardBlue;
+                    font-weight: 600;
+
+                    &:hover {
+                        color: $Grey160;
+                        background-color: $BlizzardBlue;
+                    }
                 }
             }
         }

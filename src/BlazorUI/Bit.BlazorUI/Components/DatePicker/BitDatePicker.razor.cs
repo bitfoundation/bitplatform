@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Xml;
 
 namespace Bit.BlazorUI;
 
@@ -37,6 +36,11 @@ public partial class BitDatePicker
     [Parameter] public bool AllowTextInput { get; set; }
 
     /// <summary>
+    /// Capture and render additional attributes in addition to the main callout's parameters
+    /// </summary>
+    [Parameter] public Dictionary<string, object> CalloutHtmlAttributes { get; set; } = new Dictionary<string, object>();
+
+    /// <summary>
     /// CultureInfo for the DatePicker
     /// </summary>
     [Parameter]
@@ -66,6 +70,16 @@ public partial class BitDatePicker
     /// Determines if the DatePicker has a border.
     /// </summary>
     [Parameter] public bool HasBorder { get; set; } = true;
+
+    /// <summary>
+    /// Whether the month picker should highlight the current month.
+    /// </summary>
+    [Parameter] public bool HighlightCurrentMonth { get; set; } = false;
+
+    /// <summary>
+    /// Whether the month picker should highlight the selected month.
+    /// </summary>
+    [Parameter] public bool HighlightSelectedMonth { get; set; } = false;
 
     /// <summary>
     /// Whether the month picker is shown beside the day picker or hidden.
@@ -119,29 +133,44 @@ public partial class BitDatePicker
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
     /// <summary>
-    /// Callback for when focus moves into the input
+    /// Callback for when focus moves into the input.
     /// </summary>
     [Parameter] public EventCallback<FocusEventArgs> OnFocus { get; set; }
 
     /// <summary>
-    /// Callback for when focus moves into the DatePicker input
+    /// Callback for when focus moves into the DatePicker input.
     /// </summary>
     [Parameter] public EventCallback<FocusEventArgs> OnFocusIn { get; set; }
 
     /// <summary>
-    /// Callback for when focus moves out the DatePicker input
+    /// Callback for when focus moves out the DatePicker input.
     /// </summary>
     [Parameter] public EventCallback<FocusEventArgs> OnFocusOut { get; set; }
 
     /// <summary>
-    /// Callback for when the date changes
+    /// Callback for when the date changes.
     /// </summary>
     [Parameter] public EventCallback<DateTimeOffset?> OnSelectDate { get; set; }
 
     /// <summary>
-    /// Placeholder text for the DatePicker
+    /// Aria label for date picker popup for screen reader users.
+    /// </summary>
+    [Parameter] public string PickerAriaLabel { get; set; } = "Calendar";
+
+    /// <summary>
+    /// Placeholder text for the DatePicker.
     /// </summary>
     [Parameter] public string Placeholder { get; set; } = "Select a date...";
+
+    /// <summary>
+    /// Whether the date picker close button should be shown or not.
+    /// </summary>
+    [Parameter] public bool ShowCloseButton { get; set; }
+
+    /// <summary>
+    /// Whether the "Go to today" link should be shown or not.
+    /// </summary>
+    [Parameter] public bool ShowGoToToday { get; set; } = true;
 
     /// <summary>
     /// Show month picker on top of date picker when visible.
@@ -149,12 +178,12 @@ public partial class BitDatePicker
     [Parameter] public bool ShowMonthPickerAsOverlay { get; set; }
 
     /// <summary>
-    /// Whether the calendar should show the week number (weeks 1 to 53) before each week row
+    /// Whether the calendar should show the week number (weeks 1 to 53) before each week row.
     /// </summary>
     [Parameter] public bool ShowWeekNumbers { get; set; }
 
     /// <summary>
-    /// The tabIndex of the TextField
+    /// The tabIndex of the TextField.
     /// </summary>
     [Parameter] public int TabIndex { get; set; }
 
@@ -804,5 +833,22 @@ public partial class BitDatePicker
             _currentMonth = currentValueMonth;
             CreateMonthCalendar(_currentYear, _currentMonth);
         }
+    }
+
+    private string GetMonthCellClassName(int monthIndex)
+    {
+        var className = string.Empty;
+        if(HighlightCurrentMonth)
+        {
+            var todayMonth = Culture.DateTimeFormat.Calendar.GetMonth(DateTime.Now);
+            className += todayMonth == monthIndex ? "current-month" : null;
+        }
+
+        if (HighlightSelectedMonth && _currentMonth == monthIndex)
+        {
+            className += className.Length == 0 ? "selected-month" : " selected-month";
+        }
+
+        return className;
     }
 }

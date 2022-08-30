@@ -54,7 +54,7 @@
     </div>
 
     <div class="dtp-callout" id="@CalloutId">
-        <div class="dtp-callout-main" role="dialog">
+        <div class="dtp-callout-main" role="dialog" @attributes=@CalloutHtmlAttributes aria-label="@PickerAriaLabel">
             <div aria-hidden="true" tabindex="0" data-is-visible="true" style="pointer-events: none; position: fixed;"></div>
             <div class="dtp-group"
                  role="group"
@@ -102,6 +102,14 @@
                                         @onclick="() => HandleMonthChange(ChangeDirection.Next)">
                                     <i class="bit-icon" aria-hidden="true"></i>
                                 </button>
+                                @if (ShowCloseButton)
+                                {
+                                    <BitIconButton IconName="BitIconName.ChromeClose" 
+                                                   Class="header-icon-btn"
+                                                   Title="Close date picker"
+                                                   ButtonType="BitButtonType.Button"
+                                                   OnClick="CloseCallout"/>
+                                }
                             </div>
                         </div>
                         <table role="grid"
@@ -166,7 +174,7 @@
                             </tbody>
                         </table>
 
-                        @if (_showMonthPickerAsOverlayInternal)
+                        @if (_showMonthPickerAsOverlayInternal && ShowGoToToday)
                         {
                             <button class="go-today-btn"
                                     type="button"
@@ -226,6 +234,7 @@
                                             var monthIndex = (rowIndex * 4) + cellIndex;
                                             var monthName = Culture.DateTimeFormat.GetMonthName(monthIndex);
                                             <button role="gridcell"
+                                                    class=@GetMonthCellClassName(monthIndex)
                                                     aria-selected="@(IsMonthSelected(monthIndex) ? "true" : "false")"
                                                     aria-readonly="true"
                                                     tabindex="@(IsMonthSelected(monthIndex) ? 0 : -1)"
@@ -294,12 +303,15 @@
                                 }
                             </div>
                         }
-                        <button class="go-today-btn"
-                                type="button"
-                                disabled="@IsGoTodayDisabeld()"
-                                @onclick="HandleGoToToday">
-                            @GoToToday
-                        </button>
+                        
+                        @if (ShowGoToToday) {
+                            <button class="go-today-btn"
+                                    type="button"
+                                    disabled="@IsGoTodayDisabeld()"
+                                    @onclick="HandleGoToToday">
+                                @GoToToday
+                            </button>
+                        }
                     </div>
                 }
             </div>
