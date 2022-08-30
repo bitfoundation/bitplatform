@@ -26,7 +26,11 @@ public static class Urls
 
     public const string Templates = "/templates/overview";
     public const string TodoTemplate = "/todo-template/overview";
+    public const string TodoTemplateSpa = "https://todo.bitplatform.dev/";
+    public const string TodoTemplatePwa = "https://todo-app.bitplatform.dev/";
     public const string AdminPanel = "/admin-panel/overview";
+    public const string AdminPanelSpa = "https://adminpanel.bitplatform.dev/";
+    public const string AdminPanelPwa = "https://adminpanel-app.bitplatform.dev/";
 
     public const string Components = "https://components.bitplatform.dev/";
 
