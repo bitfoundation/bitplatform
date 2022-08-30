@@ -223,18 +223,56 @@
         color: gainsboro;
     }
 
-    .section-card-group {
-        width: 100%;
+    .card-list {
         display: flex;
-        flex-flow: row nowrap;
-        justify-content: space-between;
-        align-items: center;
+        flex-flow: row wrap;
+        justify-content: center;
+        width: calc(100% + 20px);
+        margin-left: -20px;
+    }
 
-        @include lt-lg {
-            flex-flow: column nowrap;
-            justify-content: flex-start;
-            align-items: flex-start;
-        }
+    .support-card {
+        flex-basis: calc((100% / 3) - 20px);
+        flex-grow: 0;
+        max-width: calc((100% / 3) - 20px);
+        min-width: rem(275px);
+        height: 100%;
+        min-height: rem(241px);
+        padding: rem(20px);
+        margin-top: rem(20px);
+        margin-left: rem(20px);
+        border-radius: rem(16px);
+        border: rem(1px) solid #E0E3E7;
+        box-sizing: border-box;
+        color: #1A2027;
+        transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+        background-color: $White;
+    }
+
+    .support-card-title {
+        margin-bottom: rem(10px);
+        font-size: rem(14px);
+        line-height: 1.5;
+        letter-spacing: 0;
+        font-weight: 700;
+        color: #1A2027;
+        padding-left: rem(30px);
+        box-sizing: border-box;
+        background-size: rem(20px);
+        background-position: center left;
+        background-repeat: no-repeat;
+    }
+
+    .support-card-desc {
+        font-size: rem(14px);
+        line-height: 1.5;
+        letter-spacing: 0;
+        font-weight: 400;
+        color: #3E5060;
+    }
+
+    .support-card-icon {
+        background-image: url('/images/home/native-icon.webp');
     }
 }
 
@@ -252,20 +290,16 @@
     align-items: flex-start;
     width: 100%;
     height: 100%;
-    //box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.15);
-    //border-radius: rem(16px);
     padding: rem(46px) rem(40px);
     box-sizing: border-box;
     background-color: $White;
     cursor: pointer;
 
     @include md {
-        //border-radius: rem(14px);
         padding: rem(28px) rem(25px);
     }
 
     @include sm {
-        //border-radius: rem(14px);
         padding: rem(24px);
     }
 
@@ -278,16 +312,6 @@
         border-radius: 50%;
         cursor: pointer;
         background-size: rem(32px);
-        //@include md {
-        //    width: rem(28px);
-        //    height: rem(28px);
-        //    margin-bottom: rem(8px);
-        //}
-        //@include sm {
-        //    width: rem(25px);
-        //    height: rem(25px);
-        //    margin-bottom: rem(4px);
-        //}
     }
 
     .customer-feedback-txt {
@@ -548,226 +572,6 @@
 
         @include sm {
             display: none;
-        }
-    }
-}
-
-.servic-card {
-    position: relative;
-    width: calc(50% - 27px);
-    height: 100%;
-    min-height: rem(296px);
-    background-color: $White;
-    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.15);
-    border-radius: rem(20px);
-    padding: rem(46px) rem(40px);
-    box-sizing: border-box;
-
-    @include lg {
-        min-height: rem(264px);
-        padding: rem(32px) rem(24px);
-    }
-
-    @include md {
-        margin-bottom: rem(12px);
-        width: calc(100% - 38px);
-        min-height: unset;
-        padding: rem(30px) rem(24px);
-    }
-
-    @include sm {
-        margin-bottom: rem(24px);
-        width: 100%;
-        min-height: unset;
-        padding: rem(24px);
-    }
-
-    &:last-child {
-        margin: 0;
-    }
-
-    .service-content-container {
-        display: flex;
-        flex-flow: column nowrap;
-        justify-content: center;
-        align-items: flex-start;
-        width: calc(100% - 186px);
-        //@include lg {
-        //    width: calc(100% - 138px);
-        //}
-
-        @include md {
-            width: calc(100% - 144px);
-        }
-
-        @include sm {
-            width: 100%;
-        }
-    }
-
-    .service-name {
-        margin-bottom: rem(20px);
-        font-weight: 700;
-        font-size: rem(30px);
-        line-height: rem(40px);
-        color: $Black1;
-
-        @include lg {
-            font-size: rem(26px);
-        }
-
-        @include md {
-            margin-bottom: rem(30px);
-            font-size: rem(20px);
-            line-height: rem(32px);
-        }
-
-        @include sm {
-            margin-bottom: rem(16px);
-            font-weight: 600;
-            font-size: rem(18px);
-            line-height: rem(32px);
-        }
-    }
-
-    .service-desc {
-        margin-bottom: rem(16px);
-        font-weight: 400;
-        font-size: rem(16px);
-        line-height: rem(32px);
-        color: $Gray1;
-
-        @include md {
-            margin-bottom: rem(12px);
-            font-size: rem(14px);
-            line-height: rem(20px);
-        }
-
-        @include sm {
-            margin-bottom: rem(16px);
-            font-size: rem(14px);
-            line-height: rem(20px);
-        }
-    }
-
-    .service-link {
-        font-weight: 700;
-        font-size: rem(16px);
-        line-height: rem(32px);
-        color: $B6Color;
-
-        @include md {
-            font-weight: 600;
-        }
-
-        @include sm {
-            font-weight: 600;
-            font-size: rem(12px);
-            line-height: rem(24px);
-        }
-    }
-
-    .download-row {
-        display: none;
-        margin-bottom: rem(20px);
-        padding-left: rem(40px);
-        background-image: url('/images/home/download-blue-icon.svg');
-        background-position: center left;
-        background-repeat: no-repeat;
-        background-size: rem(32px);
-        font-weight: 400;
-        font-size: rem(12px);
-        line-height: rem(24px);
-        color: $Gray1;
-
-        .bold-txt {
-            font-weight: 600;
-            font-size: rem(16px);
-            line-height: rem(32px);
-            color: $Black1;
-        }
-
-        @include sm {
-            display: block;
-        }
-    }
-
-    .service-badge--blue {
-        position: absolute;
-        right: rem(-36px);
-        top: 50%;
-        transform: translateY(-50%);
-        display: flex;
-        flex-flow: column nowrap;
-        justify-content: center;
-        align-items: center;
-        width: rem(192px);
-        height: rem(192px);
-        box-shadow: 0px 4px 20px rgba(0, 101, 239, 0.3);
-        border-radius: rem(20px);
-        background: linear-gradient(225.14deg, #004EBA -11.79%, #0164EC 95.46%);
-
-        @include lg {
-            right: rem(-38px);
-            width: rem(160px);
-            height: rem(160px);
-        }
-
-        @include md {
-            right: rem(-38px);
-            width: rem(156px);
-            height: rem(156px);
-        }
-
-        @include sm {
-            display: none;
-        }
-
-        .badge-icon {
-            width: rem(50px);
-            height: rem(53px);
-            background-image: url('/images/home/download-white-icon.svg');
-            background-position: center;
-            background-repeat: no-repeat;
-            background-size: cover;
-            margin-bottom: rem(21px);
-
-            @include lt-xl {
-                width: rem(44px);
-                height: rem(46px);
-                margin-bottom: rem(12px);
-            }
-        }
-
-        .badge-txt {
-            font-weight: 700;
-            font-size: rem(16px);
-            line-height: rem(32px);
-            color: $Gray4;
-
-            @include md {
-                font-size: rem(14px);
-                line-height: rem(28px);
-            }
-        }
-
-        .badge-main-txt {
-            font-weight: 600;
-            font-size: rem(34px);
-            line-height: rem(48px);
-            color: $White;
-
-            @include lg {
-                font-weight: 700;
-                font-size: rem(26px);
-                line-height: rem(40px);
-            }
-
-            @include md {
-                font-weight: 700;
-                font-size: rem(20px);
-                line-height: rem(32px);
-            }
         }
     }
 }
