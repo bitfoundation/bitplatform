@@ -22,6 +22,7 @@ public partial class NavMenu
             Key = "Templates",
             Links = new List<BitNavLinkItem>
             {
+                new BitNavLinkItem { Name= "Overview", Key = "Overview", Url = "/templates/overview"},
                 new BitNavLinkItem { Name= "TodoTemplate", Key = "TodoTemplate", Url = "/todo-template/overview"},
                 new BitNavLinkItem { Name= "AdminPanel", Key = "AdminPanel", Url = "/admin-panel/overview"},
                 new BitNavLinkItem
