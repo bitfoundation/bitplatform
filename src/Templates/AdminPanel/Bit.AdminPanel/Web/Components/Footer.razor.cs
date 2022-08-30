@@ -4,7 +4,7 @@ namespace AdminPanel.App.Components;
 
 public partial class Footer
 {
-#if MultilingualEnabled || true
+#if MultilingualEnabled
 
     protected async override Task OnAfterFirstRenderAsync()
     {
