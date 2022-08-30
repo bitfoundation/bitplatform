@@ -107,6 +107,7 @@ public partial class NavMenu
             Key = "Surfaces",
             Links = new List<BitNavLinkItem>
             {
+                new BitNavLinkItem { Name = "Accordion", Key = "Accordion", Url="/components/accordion" },
                 new BitNavLinkItem { Name = "Modal", Key = "Modal", Url = "/components/modal" },
             },
         },

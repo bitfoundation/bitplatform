@@ -1,0 +1,57 @@
+﻿@page "/components/accordion"
+
+<ComponentDemo ComponentName="Accordion">
+
+    <ComponentExampleBox Title="BitAccordion" ExampleId="example1">
+        <ExamplePreview>
+
+            <BitAccordion Title="item-1"
+                          Description="Filtering has been entirely disabled for whole web server."
+                          Text="Nulla facilisi. Phasellus sollicitudin nulla et quam mattis feugiat. Aliquam eget maximus est, id dignissim quam."
+                          DefaultIsExpanded="true"
+                          @bind-IsExpanded="basicAccordionIsExpanded" />
+
+            <div style="margin: 5px 0;"></div>
+
+            <BitAccordion Title="item-2"
+                          Description="Filtering has been entirely disabled for whole web server."
+                          Text="Nulla facilisi. Phasellus sollicitudin nulla et quam mattis feugiat. Aliquam eget maximus est, id dignissim quam."
+                          IsEnabled="@basicAccordionIsExpanded" />
+
+            <div style="margin: 5px 0;"></div>
+
+            <BitAccordion @bind-IsExpanded="templateedAccordionIsExpanded">
+                <HeaderTemplate Context="isExpanded">
+                    @if (isExpanded)
+                    {
+                        <BitIconButton IconName="BitIconName.Sad" />
+                        <span>close me!</span>
+                    }
+                    else
+                    {
+                        <BitIconButton IconName="BitIconName.Accept" />
+                        <span>open me!</span>
+                    }
+                </HeaderTemplate>
+                <ContentTemplate>
+                    <BitCarousel AnimationDuration="2">
+                        <BitCarouselItem>
+                            <img class="image" src="/images/carousel/img1.jpg">
+                        </BitCarouselItem>
+                        <BitCarouselItem>
+                            <img class="image" src="/images/carousel/img2.jpg" />
+                        </BitCarouselItem>
+                        <BitCarouselItem>
+                            <img class="image" src="/images/carousel/img3.jpg" />
+                        </BitCarouselItem>
+                        <BitCarouselItem>
+                            <img class="image" src="/images/carousel/img4.jpg" />
+                        </BitCarouselItem>
+                    </BitCarousel>
+                </ContentTemplate>
+            </BitAccordion>
+
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+</ComponentDemo>
