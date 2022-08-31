@@ -5,7 +5,7 @@
     display: flex;
     flex-flow: column nowrap;
     background-color: $Gray4;
-    padding: 20px;
+    padding: rem(20px);
     border-radius: 4px;
 }
 
@@ -21,7 +21,7 @@
     }
 
     .custom-header-desc {
-        margin-left: 20px;
+        margin-left: rem(20px);
         color: $B1Color;
     }
 }
