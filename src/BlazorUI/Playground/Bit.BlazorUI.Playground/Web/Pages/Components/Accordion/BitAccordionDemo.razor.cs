@@ -5,7 +5,9 @@ namespace Bit.BlazorUI.Playground.Web.Pages.Components.Accordion;
 
 public partial class BitAccordionDemo
 {
-    private bool accordionWithDescription;
+    private byte controlledAccordionExpandedItem = 1;
+    private bool AccordionToggleIsEnabled;
+    private bool AccordionToggleIsExpanded;
 
     private readonly List<ComponentParameter> componentParameters = new()
     {
@@ -66,70 +68,118 @@ public partial class BitAccordionDemo
         }
     };
 
-    private readonly string example1CSharpCode = @"
-private bool accordionWithDescription;
-";
-
     private readonly string example1HTMLCode = @"
-<BitAccordion Title=""Basic Accordion ""
-              Text=""Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget.""
-              Style=""margin-bottom: 10px;"" />
+<div class=""accordion-example-box"">
+    <BitAccordion Title=""Accordion 1""
+                    Text=""Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget."" />
+</div>
 
-<BitAccordion Title=""Accordion with Description""
-              Description=""This Accordion is two way bind""
-              Text=""Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget.""
-              Style=""margin-bottom: 10px;""
-              @bind-IsExpanded=""accordionWithDescription"" />
-
-<BitAccordion Title=""Accordion with DefaultIsExpanded""
-              Description=""This Accordion by default is expanded""
-              Text=""Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget.""
-              DefaultIsExpanded=""true""
-              Style=""margin-bottom: 10px;"" />
-
-<BitAccordion Title=""Disabled Accordion""
-              Description=""This Accordion is disable""
-              Text=""Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget.""
-              IsEnabled=""false"" />
+<div class=""example-desc"">You can define multiple accordions together.</div>
+<div class=""accordion-example-box"">
+    <BitAccordion Title=""Accordion 1""
+                    Text=""Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget."" />
+    <BitAccordion Title=""Accordion 2""
+                    Text=""Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget."" />
+    <BitAccordion Title=""Accordion 3""
+                    Text=""Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget."" />
+</div>
 ";
-
     private readonly string example2HTMLCode = @"
-<BitAccordion Class=""custom-acd""
-              Style=""margin-bottom: 10px;""
-              Text=""Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget."">
-    <HeaderTemplate Context=""IsExpanded"">
-        @if (IsExpanded)
-        {
-            <BitIconButton IconName=""BitIconName.ChevronDown"" />
-        }
-        else
-        {
-            <BitIconButton IconName=""BitIconName.ChevronRight"" />
-        }
-        <span class=""custom-header-title"">Accordion with HeaderTemplate</span>
-        <span class=""custom-header-desc"">This Accordion header is customazed</span>
-    </HeaderTemplate>
-</BitAccordion>
-
-<BitAccordion Title=""Accordion with ContentTemplate""
-              Description=""This Accordion content is customazed by the BitCarousel"">
-    <ContentTemplate>
-        <BitCarousel AnimationDuration=""1"">
-            <BitCarouselItem>
-                <img src=""/images/carousel/img1.jpg"">
-            </BitCarouselItem>
-            <BitCarouselItem>
-                <img src=""/images/carousel/img2.jpg"" />
-            </BitCarouselItem>
-            <BitCarouselItem>
-                <img src=""/images/carousel/img3.jpg"" />
-            </BitCarouselItem>
-            <BitCarouselItem>
-                <img src=""/images/carousel/img4.jpg"" />
-            </BitCarouselItem>
-        </BitCarousel>
-    </ContentTemplate>
-</BitAccordion>
+<div class=""accordion-example-box"">
+    <BitAccordion Title=""General settings""
+                    Description=""I am an accordion""
+                    Text=""Nulla facilisi. Phasellus sollicitudin nulla et quam mattis feugiat. Aliquam eget maximus est, id dignissim quam."" />
+    <BitAccordion Title=""Users""
+                    Description=""You are currently not an owner""
+                    Text=""Donec placerat, lectus sed mattis semper, neque lectus feugiat lectus, varius pulvinar diam eros in elit. Pellentesque convallis laoreet laoreet."" />
+    <BitAccordion Title=""Advanced settings""
+                    Description=""Filtering has been entirely disabled for whole web server""
+                    Text=""Nunc vitae orci ultricies, auctor nunc in, volutpat nisl. Integer sit amet egestas eros, vitae egestas augue. Duis vel est augue."" />
+    <BitAccordion Title=""Advanced settings""
+                    Description=""Filtering has been entirely disabled for whole web server""
+                    Text=""Nunc vitae orci ultricies, auctor nunc in, volutpat nisl. Integer sit amet egestas eros, vitae egestas augue. Duis vel est augue."" />
+</div>
 ";
+    private readonly string example3HTMLCode = @"
+<div class=""accordion-example-box"">
+    <BitAccordion Title=""General settings""
+                    Description=""I am an accordion""
+                    Text=""Nulla facilisi. Phasellus sollicitudin nulla et quam mattis feugiat. Aliquam eget maximus est, id dignissim quam.""
+                    OnClick=""() => controlledAccordionExpandedItem = 1""
+                    IsExpanded=""controlledAccordionExpandedItem == 1"" />
+    <BitAccordion Title=""Users""
+                    Description=""You are currently not an owner""
+                    Text=""Donec placerat, lectus sed mattis semper, neque lectus feugiat lectus, varius pulvinar diam eros in elit. Pellentesque convallis laoreet laoreet.""
+                    OnClick=""() => controlledAccordionExpandedItem = 2""
+                    IsExpanded=""controlledAccordionExpandedItem == 2"" />
+    <BitAccordion Title=""Advanced settings""
+                    Description=""Filtering has been entirely disabled for whole web server""
+                    Text=""Nunc vitae orci ultricies, auctor nunc in, volutpat nisl. Integer sit amet egestas eros, vitae egestas augue. Duis vel est augue.""
+                    OnClick=""() => controlledAccordionExpandedItem = 3""
+                    IsExpanded=""controlledAccordionExpandedItem == 3"" />
+</div>
+";
+    private readonly string example4HTMLCode = @"
+<div class=""example-operator-box"">
+    <BitToggle @bind-Value=""AccordionToggleIsEnabled"" OnText=""Enabled"" OffText=""Disabled"" Style=""margin-right: 10px;"" />
+    <BitToggle @bind-Value=""AccordionToggleIsEnabled"" OnText=""Expanded"" OffText=""Collapsed"" />
+</div>
+<div class=""accordion-example-box disabled-example"">
+    <BitAccordion Title=""Accordion 1""
+                    Description=""I am an accordion""
+                    Text=""Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget.""
+                    IsEnabled=""@AccordionToggleIsEnabled""
+                    @bind-IsExpanded=""AccordionToggleIsEnabled"" />
+</div>
+";
+    private readonly string example5HTMLCode = @"
+<div class=""accordion-example-box"">
+    <BitAccordion Class=""custom-acd""
+                    Text=""Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget."">
+        <HeaderTemplate Context=""isExpanded"">
+            @if (isExpanded)
+            {
+                <BitIconButton IconName=""BitIconName.ChevronDown"" />
+            }
+            else
+            {
+                <BitIconButton IconName=""BitIconName.ChevronRight"" />
+            }
+            <div class=""custom-header-intro"">
+                <span class=""custom-header-title"">Accordion 1</span>
+                <span>I am an accordion</span>
+            </div>
+        </HeaderTemplate>
+    </BitAccordion>
+</div>
 
+<div class=""accordion-example-box"">
+    <BitAccordion Title=""Nature""
+                    Description=""I am an accordion"">
+        <ContentTemplate>
+            <BitCarousel AnimationDuration=""1"">
+                <BitCarouselItem>
+                    <img src=""/images/carousel/img1.jpg"">
+                </BitCarouselItem>
+                <BitCarouselItem>
+                    <img src=""/images/carousel/img2.jpg"" />
+                </BitCarouselItem>
+                <BitCarouselItem>
+                    <img src=""/images/carousel/img3.jpg"" />
+                </BitCarouselItem>
+                <BitCarouselItem>
+                    <img src=""/images/carousel/img4.jpg"" />
+                </BitCarouselItem>
+            </BitCarousel>
+        </ContentTemplate>
+    </BitAccordion>
+</div>
+";
+    private readonly string example3CSharpCode = @"
+private byte controlledAccordionExpandedItem = 1;
+";
+    private readonly string example4CSharpCode = @"
+private bool AccordionToggleIsEnabled;
+private bool AccordionToggleIsExpanded;
+";
 }

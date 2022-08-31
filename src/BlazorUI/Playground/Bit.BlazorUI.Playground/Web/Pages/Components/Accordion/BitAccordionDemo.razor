@@ -3,40 +3,94 @@
 <ComponentDemo ComponentName="Accordion"
                ComponentDescription="The Accordion component allows the user to show and hide sections of related content on a page."
                ComponentParameters="componentParameters">
-    <ComponentExampleBox Title="BitAccordion" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
+
+    <ComponentExampleBox Title="Basic Accordion" HTMLSourceCode="@example1HTMLCode" ExampleId="example1">
         <ExamplePreview>
             <div class="accordion-example-box">
-                <BitAccordion Title="Basic Accordion "
-                              Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget."
-                              Style="margin-bottom: 10px;" />
+                <BitAccordion Title="Accordion 1"
+                              Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget." />
+            </div>
 
-                <BitAccordion Title="Accordion with Description"
-                              Description="This Accordion is two way bind"
-                              Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget."
-                              Style="margin-bottom: 10px;"
-                              @bind-IsExpanded="accordionWithDescription" />
-
-                <BitAccordion Title="Accordion with DefaultIsExpanded"
-                              Description="This Accordion by default is expanded"
-                              Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget."
-                              DefaultIsExpanded="true"
-                              Style="margin-bottom: 10px;" />
-
-                <BitAccordion Title="Disabled Accordion"
-                              Description="This Accordion is disable"
-                              Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget."
-                              IsEnabled="false" />
+            <div class="example-desc">You can define multiple accordions together.</div>
+            <div class="accordion-example-box">
+                <BitAccordion Title="Accordion 1"
+                              Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget." />
+                <BitAccordion Title="Accordion 2"
+                              Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget." />
+                <BitAccordion Title="Accordion 3"
+                              Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget." />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
-    <ComponentExampleBox Title="BitAccordion Customization" HTMLSourceCode="@example2HTMLCode" ExampleId="example2">
+
+    <ComponentExampleBox Title="Accordion with Description" HTMLSourceCode="@example2HTMLCode" ExampleId="example2">
         <ExamplePreview>
+            <div class="example-desc">You can set a short description inside the Accordion header.</div>
+            <div class="accordion-example-box">
+                <BitAccordion Title="General settings"
+                              Description="I am an accordion"
+                              Text="Nulla facilisi. Phasellus sollicitudin nulla et quam mattis feugiat. Aliquam eget maximus est, id dignissim quam." />
+                <BitAccordion Title="Users"
+                              Description="You are currently not an owner"
+                              Text="Donec placerat, lectus sed mattis semper, neque lectus feugiat lectus, varius pulvinar diam eros in elit. Pellentesque convallis laoreet laoreet." />
+                <BitAccordion Title="Advanced settings"
+                              Description="Filtering has been entirely disabled for whole web server"
+                              Text="Nunc vitae orci ultricies, auctor nunc in, volutpat nisl. Integer sit amet egestas eros, vitae egestas augue. Duis vel est augue." />
+                <BitAccordion Title="Advanced settings"
+                              Description="Filtering has been entirely disabled for whole web server"
+                              Text="Nunc vitae orci ultricies, auctor nunc in, volutpat nisl. Integer sit amet egestas eros, vitae egestas augue. Duis vel est augue." />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Controlled Accordion" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example3">
+        <ExamplePreview>
+            <div class="example-desc">Only one Accordion can be open.</div>
+            <div class="accordion-example-box">
+                <BitAccordion Title="General settings"
+                              Description="I am an accordion"
+                              Text="Nulla facilisi. Phasellus sollicitudin nulla et quam mattis feugiat. Aliquam eget maximus est, id dignissim quam."
+                              OnClick="() => controlledAccordionExpandedItem = 1"
+                              IsExpanded="controlledAccordionExpandedItem == 1" />
+                <BitAccordion Title="Users"
+                              Description="You are currently not an owner"
+                              Text="Donec placerat, lectus sed mattis semper, neque lectus feugiat lectus, varius pulvinar diam eros in elit. Pellentesque convallis laoreet laoreet."
+                              OnClick="() => controlledAccordionExpandedItem = 2"
+                              IsExpanded="controlledAccordionExpandedItem == 2" />
+                <BitAccordion Title="Advanced settings"
+                              Description="Filtering has been entirely disabled for whole web server"
+                              Text="Nunc vitae orci ultricies, auctor nunc in, volutpat nisl. Integer sit amet egestas eros, vitae egestas augue. Duis vel est augue."
+                              OnClick="() => controlledAccordionExpandedItem = 3"
+                              IsExpanded="controlledAccordionExpandedItem == 3" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Disabled Accordion & Two way binding" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
+        <ExamplePreview>
+            <div class="example-desc">You can bind values ​​with Accordion.</div>
+            <div class="example-operator-box">
+                <BitToggle @bind-Value="AccordionToggleIsEnabled" OnText="Enabled" OffText="Disabled" Style="margin-right: 10px;" />
+                <BitToggle @bind-Value="AccordionToggleIsExpanded" OnText="Expanded" OffText="Collapsed" />
+            </div>
+            <div class="accordion-example-box disabled-example">
+                <BitAccordion Title="Accordion 1"
+                              Description="I am an accordion"
+                              Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget."
+                              IsEnabled="@AccordionToggleIsEnabled"
+                              @bind-IsExpanded="AccordionToggleIsExpanded" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Customazed Accordion" HTMLSourceCode="@example5HTMLCode" ExampleId="example5">
+        <ExamplePreview>
+            <div class="example-desc">This Accordion header is customazed.</div>
             <div class="accordion-example-box">
                 <BitAccordion Class="custom-acd"
-                              Style="margin-bottom: 10px;"
                               Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget.">
-                    <HeaderTemplate Context="IsExpanded">
-                        @if (IsExpanded)
+                    <HeaderTemplate Context="isExpanded">
+                        @if (isExpanded)
                         {
                             <BitIconButton IconName="BitIconName.ChevronDown" />
                         }
@@ -44,13 +98,18 @@
                         {
                             <BitIconButton IconName="BitIconName.ChevronRight" />
                         }
-                        <span class="custom-header-title">Accordion with HeaderTemplate</span>
-                        <span class="custom-header-desc">This Accordion header is customazed</span>
+                        <div class="custom-header-intro">
+                            <span class="custom-header-title">Accordion 1</span>
+                            <span>I am an accordion</span>
+                        </div>
                     </HeaderTemplate>
                 </BitAccordion>
+            </div>
 
-                <BitAccordion Title="Accordion with ContentTemplate"
-                              Description="This Accordion content is customazed by the BitCarousel">
+            <div class="example-desc">This Accordion content is customazed by the BitCarousel.</div>
+            <div class="accordion-example-box">
+                <BitAccordion Title="Nature"
+                              Description="I am an accordion">
                     <ContentTemplate>
                         <BitCarousel AnimationDuration="1">
                             <BitCarouselItem>

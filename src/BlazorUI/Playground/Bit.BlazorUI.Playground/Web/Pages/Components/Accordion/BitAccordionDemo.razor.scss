@@ -1,12 +1,24 @@
 ﻿@import '../../../Styles/abstracts/_colors.scss';
 @import '../../../Styles/abstracts/_functions.scss';
 
+.example-desc {
+    margin-top: rem(20px);
+}
+
+.example-operator-box {
+    margin: rem(15px) 0;
+}
+
 .accordion-example-box {
     display: flex;
     flex-flow: column nowrap;
-    background-color: $Gray4;
-    padding: rem(20px);
-    border-radius: 4px;
+    background-color: $Gray5;
+    padding: rem(30px);
+    border-radius: rem(4px);
+
+    &.disabled-example {
+        background-color: $Gray4;
+    }
 }
 
 ::deep .custom-acd {
@@ -15,13 +27,16 @@
         align-items: center;
     }
 
-    .custom-header-title {
-        font-size: rem(16px);
-        font-weight: 600;
-    }
-
-    .custom-header-desc {
-        margin-left: rem(20px);
+    .custom-header-intro {
+        display: flex;
+        flex-grow: 1;
+        line-height: 1.5;
         color: $B1Color;
+
+        .custom-header-title {
+            font-size: rem(16px);
+            font-weight: 600;
+            width: 25%;
+        }
     }
 }
