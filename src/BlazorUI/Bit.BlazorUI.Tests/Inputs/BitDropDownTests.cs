@@ -1016,13 +1016,14 @@ public class BitDropDownTests : BunitTestContext
             //When virtualize is true, number of rendered items is greater than number of items showm in the list + 2 * overScanCount.
             var expectedRenderedItemCount = Math.Ceiling((decimal)(viewportHeight / component.Instance.ItemSize)) + (2 * component.Instance.OverscanCount);
 
-            if (actualRenderedItemCount >= expectedRenderedItemCount)
+            //When actualRenderedItemCount is smaller than expectedRenderedItemCount, so show all items in viewport then actualRenderedItemCount equals total items count
+            if (actualRenderedItemCount < expectedRenderedItemCount)
             {
-                Assert.AreEqual(expectedRenderedItemCount, actualRenderedItemCount);
+                Assert.AreEqual(items.Count, actualRenderedItemCount);
             }
             else
             {
-                Assert.AreEqual(items.Count, actualRenderedItemCount);
+                Assert.AreEqual(expectedRenderedItemCount, actualRenderedItemCount);
             }
         }
         else
