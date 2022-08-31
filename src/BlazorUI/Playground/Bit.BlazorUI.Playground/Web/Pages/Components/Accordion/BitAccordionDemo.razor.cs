@@ -1,5 +1,4 @@
-﻿using Bit.BlazorUI.Playground.Web.Models;
-using Bit.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
+﻿using Bit.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 using System.Collections.Generic;
 
 namespace Bit.BlazorUI.Playground.Web.Pages.Components.Accordion;
