@@ -174,5 +174,9 @@
     {
         "outputFile": "Pages/Components/NumericTextField/BitNumericTextFieldDemo.razor.css",
         "inputFile": "Pages/Components/NumericTextField/BitNumericTextFieldDemo.razor.scss"
+    },
+    {
+        "outputFile": "Pages/Components/Accordion/BitAccordionDemo.razor.css",
+        "inputFile": "Pages/Components/Accordion/BitAccordionDemo.razor.scss"
     }
 ]

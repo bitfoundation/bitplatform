@@ -1,57 +1,74 @@
 ﻿@page "/components/accordion"
 
-<ComponentDemo ComponentName="Accordion">
-
-    <ComponentExampleBox Title="BitAccordion" ExampleId="example1">
+<ComponentDemo ComponentName="Accordion"
+               ComponentDescription="The Accordion component allows the user to show and hide sections of related content on a page."
+               ComponentParameters="componentParameters">
+    <ComponentExampleBox Title="BitAccordion" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
+            <div class="accordion-example-box">
+                <BitAccordion Title="Basic Accordion "
+                              Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget."
+                              Style="margin-bottom: 10px;" />
 
-            <BitAccordion Title="item-1"
-                          Description="Filtering has been entirely disabled for whole web server."
-                          Text="Nulla facilisi. Phasellus sollicitudin nulla et quam mattis feugiat. Aliquam eget maximus est, id dignissim quam."
-                          DefaultIsExpanded="true"
-                          @bind-IsExpanded="basicAccordionIsExpanded" />
+                <BitAccordion Title="Accordion with Description"
+                              Description="This Accordion is two way bind"
+                              Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget."
+                              Style="margin-bottom: 10px;"
+                              @bind-IsExpanded="accordionWithDescription" />
 
-            <div style="margin: 5px 0;"></div>
+                <BitAccordion Title="Accordion with DefaultIsExpanded"
+                              Description="This Accordion by default is expanded"
+                              Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget."
+                              DefaultIsExpanded="true"
+                              Style="margin-bottom: 10px;" />
 
-            <BitAccordion Title="item-2"
-                          Description="Filtering has been entirely disabled for whole web server."
-                          Text="Nulla facilisi. Phasellus sollicitudin nulla et quam mattis feugiat. Aliquam eget maximus est, id dignissim quam."
-                          IsEnabled="@basicAccordionIsExpanded" />
-
-            <div style="margin: 5px 0;"></div>
-
-            <BitAccordion @bind-IsExpanded="templateedAccordionIsExpanded">
-                <HeaderTemplate Context="isExpanded">
-                    @if (isExpanded)
-                    {
-                        <BitIconButton IconName="BitIconName.Sad" />
-                        <span>close me!</span>
-                    }
-                    else
-                    {
-                        <BitIconButton IconName="BitIconName.Accept" />
-                        <span>open me!</span>
-                    }
-                </HeaderTemplate>
-                <ContentTemplate>
-                    <BitCarousel AnimationDuration="2">
-                        <BitCarouselItem>
-                            <img class="image" src="/images/carousel/img1.jpg">
-                        </BitCarouselItem>
-                        <BitCarouselItem>
-                            <img class="image" src="/images/carousel/img2.jpg" />
-                        </BitCarouselItem>
-                        <BitCarouselItem>
-                            <img class="image" src="/images/carousel/img3.jpg" />
-                        </BitCarouselItem>
-                        <BitCarouselItem>
-                            <img class="image" src="/images/carousel/img4.jpg" />
-                        </BitCarouselItem>
-                    </BitCarousel>
-                </ContentTemplate>
-            </BitAccordion>
-
+                <BitAccordion Title="Disabled Accordion"
+                              Description="This Accordion is disable"
+                              Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget."
+                              IsEnabled="false" />
+            </div>
         </ExamplePreview>
     </ComponentExampleBox>
+    <ComponentExampleBox Title="BitAccordion Customization" HTMLSourceCode="@example2HTMLCode" ExampleId="example2">
+        <ExamplePreview>
+            <div class="accordion-example-box">
+                <BitAccordion Class="custom-acd"
+                              Style="margin-bottom: 10px;"
+                              Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget.">
+                    <HeaderTemplate Context="IsExpanded">
+                        @if (IsExpanded)
+                        {
+                            <BitIconButton IconName="BitIconName.ChevronDown" />
+                        }
+                        else
+                        {
+                            <BitIconButton IconName="BitIconName.ChevronRight" />
+                        }
+                        <span class="custom-header-title">Accordion with HeaderTemplate</span>
+                        <span class="custom-header-desc">This Accordion header is customazed</span>
+                    </HeaderTemplate>
+                </BitAccordion>
 
+                <BitAccordion Title="Accordion with ContentTemplate"
+                              Description="This Accordion content is customazed by the BitCarousel">
+                    <ContentTemplate>
+                        <BitCarousel AnimationDuration="1">
+                            <BitCarouselItem>
+                                <img src="/images/carousel/img1.jpg">
+                            </BitCarouselItem>
+                            <BitCarouselItem>
+                                <img src="/images/carousel/img2.jpg" />
+                            </BitCarouselItem>
+                            <BitCarouselItem>
+                                <img src="/images/carousel/img3.jpg" />
+                            </BitCarouselItem>
+                            <BitCarouselItem>
+                                <img src="/images/carousel/img4.jpg" />
+                            </BitCarouselItem>
+                        </BitCarousel>
+                    </ContentTemplate>
+                </BitAccordion>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
 </ComponentDemo>

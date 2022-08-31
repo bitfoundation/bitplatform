@@ -1,0 +1,27 @@
+﻿@import '../../../Styles/abstracts/_colors.scss';
+@import '../../../Styles/abstracts/_functions.scss';
+
+.accordion-example-box {
+    display: flex;
+    flex-flow: column nowrap;
+    background-color: $Gray4;
+    padding: 20px;
+    border-radius: 4px;
+}
+
+::deep .custom-acd {
+    .header {
+        justify-content: flex-start;
+        align-items: center;
+    }
+
+    .custom-header-title {
+        font-size: rem(16px);
+        font-weight: 600;
+    }
+
+    .custom-header-desc {
+        margin-left: 20px;
+        color: $B1Color;
+    }
+}
