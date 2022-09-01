@@ -6,16 +6,19 @@
                 <BitIconButton Class="header-menu-btn" IconName=BitIconName.CollapseMenu OnClick=@ToggleMenu AriaLabel="Header menu button" />
             }
             <a class="header-logo" href="@Urls.HomePage" aria-label="Home page" />
-            <BitLink Href="@Urls.HomePage" Class="@GetHeaderLinkClass("Home")">Home</BitLink>
-            <BitLink Href="@Urls.Templates" Class="@GetHeaderLinkClass("Templates")">Templates</BitLink>
-            <BitLink Href="@Urls.Components" Target="_blank" Class="@GetHeaderLinkClass("")">Components</BitLink>
+            <a class="header-link @(CurrentUrl == Urls.HomePage ? "header-link--active" : null)" href="@Urls.HomePage">Home</a>
+            <div class="header-link @(IsProductsServicesActive() ? "header-link--active" : null)">Products & Services</div>
+            <a class="header-link @(CurrentUrl == Urls.Pricing ? "header-link--active" : null)" href="@Urls.Pricing">Pricing</a>
+            <a class="header-link @(CurrentUrl == Urls.Blogs ? "header-link--active" : null)" href="@Urls.Blogs">Blogs</a>
+            <a class="header-link @(CurrentUrl == Urls.Videos ? "header-link--active" : null)" href="@Urls.Videos">Videos</a>
+            <a class="header-link @(CurrentUrl == Urls.AboutUs ? "header-link--active" : null)" href="@Urls.AboutUs">About us</a>
+            <a class="header-link @(CurrentUrl == Urls.ContactUs ? "header-link--active" : null)" href="@Urls.ContactUs">Contact us</a>
         </div>
-        <a class="github-btn" target="_blank" aria-label="Github repository" href="@Urls.GithubRepo" />
+        <a class="github-btn" aria-label="Github repository" href="@Urls.GithubRepo" />
     </div>
 
     <div class="header-second-row">
         <BitActionButton Class="header-action-button"
-                         IconName=@(IsHeaderMenuOpen ? BitIconName.ChevronDown : BitIconName.ChevronUp)
                          OnClick=@ToggleHeaderMenu>@GetActiveRouteName()</BitActionButton>
     </div>
 </header>
@@ -26,8 +29,12 @@
         <BitIconButton Class="header-nav-close-btn"
                    IconName=BitIconName.Cancel
                    OnClick=@ToggleHeaderMenu />
-        <BitLink Href="@Urls.HomePage" Class="@GetHeaderNavLinkClass("Home")">Home</BitLink>
-        <BitLink Href="@Urls.Templates" Class="@GetHeaderNavLinkClass("Templates")">Templates</BitLink>
-        <BitLink Href="@Urls.Components" Target="_blank" Class="@GetHeaderNavLinkClass("")">Components</BitLink>
+        <a class="header-nav-link @(CurrentUrl == Urls.HomePage ? "header-nav-link--active" : null)" href="@Urls.HomePage">Home</a>
+        <div class="header-nav-link @(IsProductsServicesActive() ? "header-nav-link--active" : null)">Products & Services</div>
+        <a class="header-nav-link @(CurrentUrl == Urls.Pricing ? "header-nav-link--active" : null)" href="@Urls.Pricing">Pricing</a>
+        <a class="header-nav-link @(CurrentUrl == Urls.Blogs ? "header-nav-link--active" : null)" href="@Urls.Blogs">Blogs</a>
+        <a class="header-nav-link @(CurrentUrl == Urls.Videos ? "header-nav-link--active" : null)" href="@Urls.Videos">Videos</a>
+        <a class="header-nav-link @(CurrentUrl == Urls.AboutUs ? "header-nav-link--active" : null)" href="@Urls.AboutUs">About us</a>
+        <a class="header-nav-link @(CurrentUrl == Urls.ContactUs ? "header-nav-link--active" : null)" href="@Urls.ContactUs">Contact us</a>
     </nav>
 }

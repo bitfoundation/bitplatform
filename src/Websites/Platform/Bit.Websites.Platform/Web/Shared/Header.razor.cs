@@ -31,28 +31,6 @@ public partial class Header : IDisposable
         StateHasChanged();
     }
 
-    private string GetHeaderLinkClass(string link)
-    {
-        var classStr = "header-link";
-        if ((link == "Home" && CurrentUrl == "/") || (link == "Templates" && CurrentUrl.Contains("template")))
-        {
-            classStr += " header-link--active";
-        }
-
-        return classStr;
-    }
-
-    private string GetHeaderNavLinkClass(string link)
-    {
-        var classStr = "header-nav-link";
-        if ((link == "Home" && CurrentUrl == "/") || (link == "Templates" && CurrentUrl.Contains("template")))
-        {
-            classStr += " header-nav-link--active";
-        }
-
-        return classStr;
-    }
-
     private void ToggleMenu()
     {
         _navManuService.ToggleMenu();
@@ -60,15 +38,38 @@ public partial class Header : IDisposable
 
     private string GetActiveRouteName()
     {
-        if (CurrentUrl.Contains("template"))
+        if (CurrentUrl.Contains("admin-panel"))
         {
-            return "Templates";
+            return "Prodocus & Services > AdminPanel";
+        }
+        else if (CurrentUrl.Contains("todo-template"))
+        {
+            return "Prodocus & Services > TodoTemplate";
         }
         else return CurrentUrl switch
         {
-            "/" => "Home",
-            _ => "Templates",
+            Urls.HomePage => "Home",
+            Urls.Components => "Prodocus & Services  >  Components",
+            Urls.CloudHostringSolutins => "Prodocus & Services  >  Cloud hosting solutions",
+            Urls.Support => "Prodocus & Services  >  Dedicated support",
+            Urls.Academy => "Prodocus & Services  >  BitAcademy",
+            Urls.Pricing => "Pricing",
+            Urls.AboutUs => "About us",
+            Urls.ContactUs => "Contact us",
+            Urls.Blogs => "Blogs",
+            Urls.Videos => "Videos",
+            _ => "Prodocus & Services",
         };
+    }
+
+    private bool IsProductsServicesActive()
+    {
+        return (CurrentUrl.Contains("admin-panel") ||
+           CurrentUrl.Contains("todo-template") ||
+           CurrentUrl == Urls.Components ||
+           CurrentUrl == Urls.CloudHostringSolutins ||
+           CurrentUrl == Urls.Support ||
+           CurrentUrl == Urls.Academy);
     }
 
     private async Task ToggleHeaderMenu()

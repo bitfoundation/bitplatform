@@ -39,7 +39,7 @@
         padding-right: rem(30px);
     }
 
-    @include sm {
+    @include lt-lg {
         border-bottom: rem(1px) solid #dfecff;
 
         ::deep .header-link {
@@ -66,32 +66,19 @@
     margin-right: rem(20px);
 }
 
-::deep .header-link {
+.header-link {
     height: 100%;
-    padding: rem(10px);
+    padding: rem(10px) rem(16px);
     box-sizing: border-box;
     font-size: rem(14px);
     line-height: 1.5;
     color: $Gray1;
     text-decoration: none;
     cursor: pointer;
-
-    a {
-        text-decoration: none;
-        color: $Gray1;
-
-        &:active,
-        &:focus {
-            color: $Gray1;
-        }
-    }
 }
 
-::deep .header-link--active {
-
-    a {
-        color: $B6Color;
-    }
+.header-link--active {
+    color: $B6Color;
 }
 
 .github-btn {
@@ -116,7 +103,7 @@
     padding: 0 rem(16px);
     box-sizing: border-box;
 
-    @include sm {
+    @include lt-lg {
         display: flex;
     }
 }
@@ -137,35 +124,17 @@
     background-color: $White;
 }
 
-::deep .header-nav-link {
+.header-nav-link {
     padding: rem(8px) 0;
     margin-bottom: rem(16px);
     font-size: rem(15px);
     line-height: 1.5;
     color: $Gray2;
     text-decoration: none;
-
-    a {
-        color: $Gray2;
-        text-decoration: none;
-
-        &:active,
-        &:focus {
-            color: $Gray2;
-        }
-    }
 }
 
-::deep .header-nav-link--active {
-
-    a {
-        color: $B6Color;
-
-        &:active,
-        &:focus {
-            color: $B6Color;
-        }
-    }
+.header-nav-link--active {
+    color: $B6Color;
 }
 
 ::deep .header-nav-close-btn {
@@ -183,13 +152,6 @@
         font-weight: 600;
         line-height: 1.5;
         color: $Gray1;
-
-        span {
-            i {
-                font-size: rem(12px);
-                color: $Gray1;
-            }
-        }
     }
 }
 
