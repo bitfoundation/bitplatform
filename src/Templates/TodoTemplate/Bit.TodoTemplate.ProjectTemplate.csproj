@@ -9,7 +9,6 @@
         <EnableDefaultItems>false</EnableDefaultItems>
         <NoDefaultExcludes>true</NoDefaultExcludes>
         
-        
         <!-- Nuget Package-->
         <PackageId>Bit.TodoTemplate</PackageId>
         <PackageType>Template</PackageType>
