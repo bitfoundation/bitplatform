@@ -38,21 +38,17 @@ public partial class Header : IDisposable
 
     private string GetActiveRouteName()
     {
-        if (CurrentUrl.Contains("admin-panel"))
+        if (CurrentUrl.Contains("admin-panel") || CurrentUrl.Contains("todo-template"))
         {
-            return "Prodocus & Services > AdminPanel";
-        }
-        else if (CurrentUrl.Contains("todo-template"))
-        {
-            return "Prodocus & Services > TodoTemplate";
+            return "Prodocus & Services";
         }
         else return CurrentUrl switch
         {
             Urls.HomePage => "Home",
-            Urls.Components => "Prodocus & Services  >  Components",
-            Urls.CloudHostringSolutins => "Prodocus & Services  >  Cloud hosting solutions",
-            Urls.Support => "Prodocus & Services  >  Dedicated support",
-            Urls.Academy => "Prodocus & Services  >  BitAcademy",
+            Urls.Components => "Prodocus & Services",
+            Urls.CloudHostringSolutins => "Prodocus & Services",
+            Urls.Support => "Prodocus & Services",
+            Urls.Academy => "Prodocus & Services",
             Urls.Pricing => "Pricing",
             Urls.AboutUs => "About us",
             Urls.ContactUs => "Contact us",

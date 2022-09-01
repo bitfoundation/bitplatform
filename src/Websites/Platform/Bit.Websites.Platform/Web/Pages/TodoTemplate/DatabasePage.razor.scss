@@ -1,4 +1,7 @@
-﻿@import '../Styles/abstracts/_mixins.scss';
+﻿@import '../../Styles/abstracts/_media-queries.scss';
+@import '../../Styles/abstracts/_functions.scss';
+@import '../../Styles/abstracts/_colors.scss';
+@import '../../Styles/abstracts/_mixins.scss';
 
 .page-container {
     @include PageContainer;
@@ -34,4 +37,12 @@
 
 .bold-txt {
     font-weight: bold;
+}
+
+.image-container {
+    @include ImageContainer;
+}
+
+.image {
+    @include Image;
 }

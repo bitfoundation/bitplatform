@@ -152,6 +152,13 @@
         font-weight: 600;
         line-height: 1.5;
         color: $Gray1;
+
+        span {
+            i {
+                font-size: rem(12px);
+                color: $Gray1;
+            }
+        }
     }
 }
 

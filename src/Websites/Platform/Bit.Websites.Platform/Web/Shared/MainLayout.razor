@@ -3,7 +3,7 @@
 <Header />
 
 <div class="main @(CurrentUrl == "/" ? "main--full-page" : null)">
-    @if (CurrentUrl != "/")
+    @if (CurrentUrl.Contains("todo-template") || CurrentUrl.Contains("admin-panel"))
     {
         <NavMenu />
     }

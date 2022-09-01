@@ -14,54 +14,38 @@ namespace Bit.Websites.Platform.Web.Shared;
 public partial class NavMenu
 {
     private bool isNavOpen = false;
-    private readonly List<BitNavLinkItem> allNavLinks = new()
+    private readonly List<BitNavLinkItem> TodoTemplateNavLinks = new()
     {
-        new BitNavLinkItem
-        {
-            Name = "Templates",
-            Key = "Templates",
-            Links = new List<BitNavLinkItem>
-            {
-                new BitNavLinkItem { Name= "Overview", Key = "Overview", Url = "/templates/overview"},
-                new BitNavLinkItem { Name= "TodoTemplate", Key = "TodoTemplate", Url = "/todo-template/overview"},
-                new BitNavLinkItem { Name= "AdminPanel", Key = "AdminPanel", Url = "/admin-panel/overview"},
-                new BitNavLinkItem
-                {
-                    Name = "Getting Started",
-                    Key = "Getting Started",
-                    Links = new List<BitNavLinkItem>
-                    {
-                        new BitNavLinkItem { Name= "Development prerequisites", Key = "Development prerequisites", Url = "/templates/getting-started/development-prerequisites"},
-                        new BitNavLinkItem { Name= "Getting Starteda", Key = "Todo Getting Started", Url = "/templates/getting-started/getting-started"},
-                        new BitNavLinkItem { Name= "Database", Key = "Database", Url = "/templates/getting-started/database"},
-                        new BitNavLinkItem { Name= "Run", Key = "Run", Url = "/templates/getting-started/run"},
-                        new BitNavLinkItem { Name= "Hosting models", Key = "Hosting models", Url = "/templates/getting-started/hosting-models"},
-                        new BitNavLinkItem { Name= "Deployment type", Key = "Deployment type", Url = "/templates/getting-started/deployment-type"},
-                        new BitNavLinkItem { Name= "Settings", Key = "Settings", Url = "/templates/getting-started/settings"},
-                        new BitNavLinkItem { Name= "Project structure", Key = "Project structure", Url = "/templates/getting-started/project-structure"},
-                        new BitNavLinkItem { Name= "Exception handling", Key = "Exception handling", Url = "/templates/getting-started/exception-handling"},
-                        new BitNavLinkItem { Name= "Cache mechanism", Key = "Cache mechanism", Url = "/templates/getting-started/cache-mechanism"},
-                    }
-                }
-            }
-        },
-        new BitNavLinkItem
-        {
-            Name = "Cloud hosting solutions",
-            Key = "Cloud hosting solutions"
-        },
-        new BitNavLinkItem
-        {
-            Name = "Support",
-            Key = "Support"
-        },
-        new BitNavLinkItem
-        {
-            Name = "Contribute",
-            Key = "Contribute",
-            Url = "/contribute"
-        }
+        new BitNavLinkItem { Name= "Overview", Key = "Overview", Url = "/todo-template/overview"},
+        new BitNavLinkItem { Name= "Development prerequisites", Key = "Development prerequisites", Url = "/todo-template/development-prerequisites"},
+        new BitNavLinkItem { Name= "Getting Started", Key = "Getting Started", Url = "/todo-template/getting-started"},
+        new BitNavLinkItem { Name= "Database", Key = "Database", Url = "/todo-template/database"},
+        new BitNavLinkItem { Name= "Run", Key = "Run", Url = "/todo-template/run"},
+        new BitNavLinkItem { Name= "Hosting models", Key = "Hosting models", Url = "/todo-template/hosting-models"},
+        new BitNavLinkItem { Name= "Deployment type", Key = "Deployment type", Url = "/todo-template/deployment-type"},
+        new BitNavLinkItem { Name= "Settings", Key = "Settings", Url = "/todo-template/settings"},
+        new BitNavLinkItem { Name= "Project structure", Key = "Project structure", Url = "/todo-template/project-structure"},
+        new BitNavLinkItem { Name= "Exception handling", Key = "Exception handling", Url = "/todo-template/exception-handling"},
+        new BitNavLinkItem { Name= "Cache mechanism", Key = "Cache mechanism", Url = "/todo-template/cache-mechanism"},
+        new BitNavLinkItem { Name = "Contribute", Key = "Contribute", Url = "/todo-template/contribute"}
     };
+
+    private readonly List<BitNavLinkItem> AdminPanelNavLinks = new()
+    {
+        new BitNavLinkItem { Name= "Overview", Key = "Overview", Url = "/admin-panel/overview"},
+        new BitNavLinkItem { Name= "Development prerequisites", Key = "Development prerequisites", Url = "/admin-panel/development-prerequisites"},
+        new BitNavLinkItem { Name= "Getting Started", Key = "Getting Started", Url = "/admin-panel/getting-started"},
+        new BitNavLinkItem { Name= "Database", Key = "Database", Url = "/admin-panel/database"},
+        new BitNavLinkItem { Name= "Run", Key = "Run", Url = "/admin-panel/run"},
+        new BitNavLinkItem { Name= "Hosting models", Key = "Hosting models", Url = "/admin-panel/hosting-models"},
+        new BitNavLinkItem { Name= "Deployment type", Key = "Deployment type", Url = "/admin-panel/deployment-type"},
+        new BitNavLinkItem { Name= "Settings", Key = "Settings", Url = "/admin-panel/settings"},
+        new BitNavLinkItem { Name= "Project structure", Key = "Project structure", Url = "/admin-panel/project-structure"},
+        new BitNavLinkItem { Name= "Exception handling", Key = "Exception handling", Url = "/admin-panel/exception-handling"},
+        new BitNavLinkItem { Name= "Cache mechanism", Key = "Cache mechanism", Url = "/admin-panel/cache-mechanism"},
+        new BitNavLinkItem { Name = "Contribute", Key = "Contribute", Url = "/admin-panel/contribute"}
+    };
+
     private List<BitNavLinkItem> filteredNavLinks;
     private string searchText = string.Empty;
 
@@ -73,10 +57,10 @@ public partial class NavMenu
 
     protected override void OnInitialized()
     {
-        HandleClear();
         _navManuService.OnToggleMenu += ToggleMenu;
         CurrentUrl = _navigationManager.Uri.Replace(_navigationManager.BaseUri, "/", StringComparison.Ordinal);
         _navigationManager.LocationChanged += OnLocationChanged;
+        HandleClear();
         base.OnInitialized();
     }
 
@@ -110,7 +94,7 @@ public partial class NavMenu
 
     private void HandleClear()
     {
-        filteredNavLinks = allNavLinks;
+        filteredNavLinks = CurrentUrl.Contains("admin-panel") ? AdminPanelNavLinks : TodoTemplateNavLinks;
     }
 
     private void HandleChange(string text)
@@ -119,7 +103,8 @@ public partial class NavMenu
         searchText = text;
         if (string.IsNullOrEmpty(text)) return;
 
-        var flatNavLinkList = Flatten(allNavLinks).ToList().FindAll(link => !string.IsNullOrEmpty(link.Url));
+        var flatNavLinkList = CurrentUrl.Contains("admin-panel") ?
+            Flatten(AdminPanelNavLinks).ToList().FindAll(link => !string.IsNullOrEmpty(link.Url)) : Flatten(TodoTemplateNavLinks).ToList().FindAll(link => !string.IsNullOrEmpty(link.Url));
         filteredNavLinks = flatNavLinkList.FindAll(link => link.Name.Contains(text, StringComparison.InvariantCultureIgnoreCase));
     }
 
