@@ -6,8 +6,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.CodeAnalyzers" Version="3.1.0-pre-06" />
-        <PackageReference Include="Bit.SourceGenerators" Version="3.1.0-pre-06" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="3.1.0-pre-07" />
+        <PackageReference Include="Bit.SourceGenerators" Version="3.1.0-pre-07" />
         <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="6.0.8" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
         <PackageReference Include="Microsoft.Extensions.Localization" Version="6.0.8" />
