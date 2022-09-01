@@ -6,15 +6,18 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.CodeAnalyzers" Version="3.0.0" />
-        <PackageReference Include="Bit.SourceGenerators" Version="3.0.0" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="4.0.0" />
+        <PackageReference Include="Bit.SourceGenerators" Version="4.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="6.0.8" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
         <PackageReference Include="Microsoft.Extensions.Localization" Version="6.0.8" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="6.0.0" />
         <PackageReference Include="System.Text.Json" Version="7.0.0-preview.6.22324.4" />
     </ItemGroup>
 
     <ItemGroup>
         <SupportedPlatform Include="browser" />
+        <Using Include="AdminPanel.Shared.Attributes" />
     </ItemGroup>
 
     <ItemGroup>

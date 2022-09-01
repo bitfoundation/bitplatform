@@ -88,15 +88,15 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.BlazorUI" Version="3.0.0" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="3.0.0" />
-        <PackageReference Include="Bit.SourceGenerators" Version="3.0.0" />
+        <PackageReference Include="Bit.BlazorUI" Version="4.0.0" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="4.0.0" />
+        <PackageReference Include="Bit.SourceGenerators" Version="4.0.0" />
         <PackageReference Include="BuildWebCompiler2022" Version="1.14.8" />
-        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.7.4">
+        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.8.2">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="jose-jwt" Version="4.0.0" />
+        <PackageReference Include="jose-jwt" Version="4.0.1" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.8" />
         <Content Remove="wwwroot\appsettings.json" />
         <EmbeddedResource Include="wwwroot\appsettings.json" />

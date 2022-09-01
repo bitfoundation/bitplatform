@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Headers;
+﻿using System.Globalization;
+using System.Net.Http.Headers;
 using System.Runtime.InteropServices;
 
 namespace AdminPanel.App.Services.Implementations;
@@ -18,6 +19,11 @@ public partial class AppHttpClientHandler : HttpClientHandler
             }
         }
 
+#if MultilingualEnabled && (BlazorServer || BlazorHybrid)
+        string cultureCookie = $"c={CultureInfo.CurrentCulture.Name}|uic={CultureInfo.CurrentCulture.Name}";
+        request.Headers.Add("Cookie", $".AspNetCore.Culture={cultureCookie}");
+#endif
+
         var response = await base.SendAsync(request, cancellationToken);
 
         if (!response.IsSuccessStatusCode && response.Content.Headers.ContentType?.MediaType == "application/json")
@@ -28,12 +34,14 @@ public partial class AppHttpClientHandler : HttpClientHandler
 
                 Type exceptionType = typeof(RestExceptionPayload).Assembly.GetType(restError.ExceptionType) ?? typeof(UnknownException);
 
-                Exception exp = (Exception)Activator.CreateInstance(exceptionType, args: new object[] { restError.Message });
+                var args = new List<object> { typeof(KnownException).IsAssignableFrom(exceptionType) ? new LocalizedString(restError.Key!, restError.Message!) : restError.Message };
 
-                if (exp is ResourceValidationException resValidationException)
+                if (exceptionType == typeof(ResourceValidationException))
                 {
-                    resValidationException.Details = restError.Details;
+                    args.Add(restError.Details);
                 }
+
+                Exception exp = (Exception)Activator.CreateInstance(exceptionType, args.ToArray());
 
                 throw exp;
             }

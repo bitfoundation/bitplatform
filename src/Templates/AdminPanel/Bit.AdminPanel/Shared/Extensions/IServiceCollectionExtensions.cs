@@ -8,6 +8,8 @@ public static class IServiceCollectionExtensions
     {
         services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
 
+        services.AddAuthorizationCore();
+
         services.AddLocalization();
     }
 }

@@ -73,13 +73,13 @@ public partial class AddOrEditCategoryPage
         catch (ResourceValidationException e)
         {
             SaveMessageType = BitMessageBarType.Error;
-            SaveMessage = string.Join(Environment.NewLine, e.Details.SelectMany(d => d.Messages)
-                .Select(e => ErrorStrings.ResourceManager.Translate(e, Category.Name!)));
+            SaveMessage = string.Join(Environment.NewLine, e.Details.SelectMany(d => d.Errors)
+                .Select(e => e.Message));
         }
         catch (KnownException e)
         {
             SaveMessageType = BitMessageBarType.Error;
-            SaveMessage = ErrorStrings.ResourceManager.Translate(e.Message, Category.Name);
+            SaveMessage = e.Message;
         }
         finally
         {

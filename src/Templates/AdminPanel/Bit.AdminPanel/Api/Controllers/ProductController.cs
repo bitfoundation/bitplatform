@@ -20,7 +20,7 @@ public partial class ProductController : AppControllerBase
         var product = await Get(cancellationToken).FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
 
         if (product is null)
-            throw new ResourceNotFoundException(nameof(ErrorStrings.ProductCouldNotBeFound));
+            throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ProductCouldNotBeFound)]);
 
         return product;
     }
@@ -57,7 +57,7 @@ public partial class ProductController : AppControllerBase
         var productToUpdate = await DbContext.Products.FirstOrDefaultAsync(t => t.Id == dto.Id, cancellationToken);
 
         if (productToUpdate is null)
-            throw new ResourceNotFoundException(nameof(ErrorStrings.ProductCouldNotBeFound));
+            throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ProductCouldNotBeFound)]);
 
         var updatedProduct = Mapper.Map(dto, productToUpdate);
 
@@ -74,7 +74,7 @@ public partial class ProductController : AppControllerBase
         var affectedRows = await DbContext.SaveChangesAsync(cancellationToken);
 
         if (affectedRows < 1)
-            throw new ResourceNotFoundException(nameof(ErrorStrings.ProductCouldNotBeFound));
+            throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ProductCouldNotBeFound)]);
     }
 }
 

@@ -1,0 +1,39 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+<div @ref="RootElement"
+     @attributes="HtmlAttributes"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     aria-label="@AriaLabel">
+    <div class="header @(_isExpanded ? "expanded" : "collapsed")"
+         role="button"
+         tabindex="@(IsEnabled ? 0 : -1)"
+         aria-expanded="@_isExpanded"
+         @onclick="HandleOnClick">
+        @if (HeaderTemplate is not null)
+        {
+            @HeaderTemplate(_isExpanded)
+        }
+        else
+        {
+            <div class="intro">
+                <div class="title">@Title</div>
+                <div class="description">@Description</div>
+            </div>
+            <i class="header-icon bit-icon bit-icon--ChevronDown"></i>
+        }
+    </div>
+    <div class="content @(_isExpanded ? "expanded" : "collapsed")"
+         role="region"
+         tabindex="@(IsEnabled ? 0 : -1)">
+        @if (ContentTemplate is not null)
+        {
+            @ContentTemplate
+        }
+        else
+        {
+            @Text
+        }
+    </div>
+</div>

@@ -3,18 +3,18 @@
 <div class="card">
     <div class="card-header">
         <div class="title">
-            @AppStrings.ProductsPercentagePerCategory
+            @Localizer[nameof(AppStrings.ProductsPercentagePerCategory)]
         </div>
-        <div class="subtitle">@AppStrings.ProductsPercentagePerCategoryText</div>
+        <div class="subtitle">@Localizer[nameof(AppStrings.ProductsPercentagePerCategoryText)]</div>
     </div>
     <div class="card-body">
-        @if (IsLoading)
+        @if (_isLoading)
         {
             <BitSpinner Size="BitSpinnerSize.Large"></BitSpinner>
         }
         else
         {
-            <BitChart Config="_config" @ref="_chart" />
+            <BitChart Config="_config" />
         }
     </div>
 </div>

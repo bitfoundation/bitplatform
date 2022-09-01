@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Bit.BlazorUI;
 using Microsoft.AspNetCore.Components;
@@ -12,6 +13,7 @@ internal static class BitFileUploadJsExtension
         return await jsRuntime.InvokeAsync<IJSObjectReference?>("BitFileUpload.setupDropzone", dragDropZoneElement, inputFileElement);
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitFileInfo))]
     internal static async Task<BitFileInfo[]?> InitFileUpload(this IJSRuntime jsRuntime, ElementReference element, DotNetObjectReference<BitFileUpload>? dotnetObjectReference, string uploadAddress, IReadOnlyDictionary<string, string> uploadRequestHttpHeaders)
     {
         if (uploadAddress.HasNoValue() || dotnetObjectReference is null) return null;

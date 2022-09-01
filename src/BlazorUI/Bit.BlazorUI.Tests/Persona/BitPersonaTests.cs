@@ -86,7 +86,7 @@ public class BitPersonaTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow(BitPersonaSize.Size8),
+        DataRow(BitPersonaSize.Size20),
         DataRow(BitPersonaSize.Size32),
         DataRow(BitPersonaSize.Size40),
         DataRow(BitPersonaSize.Size48),

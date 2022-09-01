@@ -20,12 +20,14 @@ public partial class AppComponentBase : ComponentBase
 
     [AutoInject] protected IStringLocalizer<AppStrings> Localizer = default!;
 
+    [AutoInject] protected IJSRuntime JSRuntime { get; set; } = default!;
+
     protected async sealed override Task OnInitializedAsync()
     {
         try
         {
-            await base.OnInitializedAsync();
             await OnInitAsync();
+            await base.OnInitializedAsync();
         }
         catch (Exception exp)
         {
@@ -37,13 +39,30 @@ public partial class AppComponentBase : ComponentBase
     {
         try
         {
-            await base.OnParametersSetAsync();
             await OnParamsSetAsync();
+            await base.OnParametersSetAsync();
         }
         catch (Exception exp)
         {
             ExceptionHandler.Handle(exp);
         }
+    }
+
+    protected async override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                await OnAfterFirstRenderAsync();
+            }
+            catch (Exception exp)
+            {
+                ExceptionHandler.Handle(exp);
+            }
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
     }
 
     /// <summary>
@@ -58,6 +77,14 @@ public partial class AppComponentBase : ComponentBase
     /// Replacement for <see cref="OnParametersSetAsync"/> which catches all possible exceptions in order to prevent app crash.
     /// </summary>
     protected virtual Task OnParamsSetAsync()
+    {
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Method invoked after first time the component has been rendered.
+    /// </summary>
+    protected virtual Task OnAfterFirstRenderAsync()
     {
         return Task.CompletedTask;
     }

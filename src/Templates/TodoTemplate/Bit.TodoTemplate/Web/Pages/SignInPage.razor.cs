@@ -1,4 +1,5 @@
-﻿using TodoTemplate.Shared.Dtos.Account;
+﻿using Microsoft.AspNetCore.Components.Forms;
+using TodoTemplate.Shared.Dtos.Account;
 
 namespace TodoTemplate.App.Pages;
 
@@ -44,20 +45,16 @@ public partial class SignInPage
         }
     }
 
-    private bool IsSubmitButtonEnabled =>
-        string.IsNullOrWhiteSpace(SignInModel.UserName) is false &&
-        string.IsNullOrWhiteSpace(SignInModel.Password) is false && 
-        IsLoading is false;
+    private bool IsSubmitButtonEnabled => IsLoading is false;
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected async override Task OnAfterFirstRenderAsync()
     {
-        if (firstRender)
-        {
-            if (await AuthenticationStateProvider.IsUserAuthenticated())
-                NavigationManager.NavigateTo("/");
-        }
+        await base.OnAfterFirstRenderAsync();
 
-        await base.OnAfterRenderAsync(firstRender);
+        if (await AuthenticationStateProvider.IsUserAuthenticated())
+        {
+            NavigationManager.NavigateTo("/");
+        }
     }
 }
 

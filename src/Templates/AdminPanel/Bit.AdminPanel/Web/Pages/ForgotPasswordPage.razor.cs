@@ -12,9 +12,7 @@ public partial class ForgotPasswordPage
 
     public string? ForgotPasswordMessage { get; set; }
 
-    private bool IsSubmitButtonEnabled =>
-        string.IsNullOrWhiteSpace(ForgotPasswordModel.Email) is false &&
-        IsLoading is false;
+    private bool IsSubmitButtonEnabled => IsLoading is false;
 
     private async Task Submit()
     {
@@ -32,13 +30,13 @@ public partial class ForgotPasswordPage
 
             ForgotPasswordMessageType = BitMessageBarType.Success;
 
-            ForgotPasswordMessage = AuthStrings.ResetPasswordLinkSentMessage;
+            ForgotPasswordMessage = @Localizer[nameof(AppStrings.ResetPasswordLinkSentMessage)];
         }
         catch (KnownException e)
         {
             ForgotPasswordMessageType = BitMessageBarType.Error;
 
-            ForgotPasswordMessage = ErrorStrings.ResourceManager.Translate(e.Message, ForgotPasswordModel.Email!);
+            ForgotPasswordMessage = e.Message;
         }
         finally
         {

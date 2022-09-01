@@ -1,13 +1,10 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.AspNetCore.Components.Web;
+﻿using Microsoft.AspNetCore.Components.Forms;
 
 namespace Bit.BlazorUI;
 
 public partial class BitActionButton
 {
-    private int? tabIndex;
+    private int? _tabIndex;
 
     /// <summary>
     /// Whether the action button can have focus in disabled mode
@@ -25,9 +22,9 @@ public partial class BitActionButton
     [Parameter] public bool AriaHidden { get; set; }
 
     /// <summary>
-    /// The icon name for the icon shown in the action button
+    /// The type of the button
     /// </summary>
-    [Parameter] public BitIconName IconName { get; set; }
+    [Parameter] public BitButtonType? ButtonType { get; set; }
 
     /// <summary>
     /// The content of action button, It can be Any custom tag or a text
@@ -35,9 +32,24 @@ public partial class BitActionButton
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
+    /// The EditContext, which is set if the button is inside an <see cref="EditForm"/>
+    /// </summary>
+    [CascadingParameter] public EditContext? EditContext { get; set; }
+
+    /// <summary>
     /// URL the link points to, if provided, button renders as an anchor
     /// </summary>
     [Parameter] public string? Href { get; set; }
+
+    /// <summary>
+    /// The icon name for the icon shown in the action button
+    /// </summary>
+    [Parameter] public BitIconName IconName { get; set; }
+
+    /// <summary>
+    /// Callback for when the button clicked
+    /// </summary>
+    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
     /// <summary>
     /// If Href provided, specifies how to open the link
@@ -49,30 +61,15 @@ public partial class BitActionButton
     /// </summary>
     [Parameter] public string? Title { get; set; }
 
-    /// <summary>
-    /// The type of the button
-    /// </summary>
-    [Parameter] public BitButtonType? ButtonType { get; set; }
-
-    /// <summary>
-    /// The EditContext, which is set if the button is inside an <see cref="EditForm"/>
-    /// </summary>
-    [CascadingParameter] public EditContext? EditContext { get; set; }
-
-    /// <summary>
-    /// Callback for when the button clicked
-    /// </summary>
-    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
-
-    protected override string RootElementClass => "bit-act-btn";
+    protected override string RootElementClass => "bit-actb";
 
     protected override async Task OnInitializedAsync()
     {
-        if (!IsEnabled)
+        if (IsEnabled is false)
         {
-            tabIndex = AllowDisabledFocus ? null : -1;
+            _tabIndex = AllowDisabledFocus ? null : -1;
         }
-        
+
         ButtonType ??= EditContext is null ? BitButtonType.Button : BitButtonType.Submit;
 
         await base.OnInitializedAsync();

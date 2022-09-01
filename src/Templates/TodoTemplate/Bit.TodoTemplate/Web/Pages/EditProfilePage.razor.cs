@@ -61,11 +61,7 @@ public partial class EditProfilePage
         UserToEdit.Gender = User.Gender;
     }
 
-    private bool IsSubmitButtonEnabled =>
-            ((User.FullName ?? string.Empty) != (UserToEdit.FullName ?? string.Empty)
-            || User.BirthDate != UserToEdit.BirthDate
-            || User.Gender != UserToEdit.Gender)
-            && IsSavingData is false;
+    private bool IsSubmitButtonEnabled => IsSavingData is false;
 
     private async Task Save()
     {

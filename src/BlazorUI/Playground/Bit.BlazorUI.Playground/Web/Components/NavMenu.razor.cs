@@ -28,6 +28,7 @@ public partial class NavMenu
                 new BitNavLinkItem { Name= "CompoundButton", Key = "CompoundButton", Url = "/components/compound-button"},
                 new BitNavLinkItem { Name= "IconButton", Key = "IconButton", Url = "/components/icon-button"},
                 new BitNavLinkItem { Name= "ToggleButton", Key = "ToggleButton", Url = "/components/toggle-button" },
+                new BitNavLinkItem { Name= "SplitButton", Key = "SplitButton", Url = "/components/split-button" },
                 new BitNavLinkItem { Name= "CheckBox", Key = "CheckBox", Url = "/components/check-box" },
                 new BitNavLinkItem { Name= "ChoiceGroup", Key = "ChoiceGroup", Url = "/components/choice-group" },
                 new BitNavLinkItem { Name= "RadioButtonGroup", Key = "RadioButtonGroup", Url = "/components/radio-button-group" },
@@ -106,6 +107,7 @@ public partial class NavMenu
             Key = "Surfaces",
             Links = new List<BitNavLinkItem>
             {
+                new BitNavLinkItem { Name = "Accordion", Key = "Accordion", Url="/components/accordion" },
                 new BitNavLinkItem { Name = "Modal", Key = "Modal", Url = "/components/modal" },
             },
         },

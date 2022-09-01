@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Localization;
-
-namespace AdminPanel.App.Components;
+﻿namespace AdminPanel.App.Components;
 
 public partial class AppComponentBase : ComponentBase
 {
@@ -9,6 +7,8 @@ public partial class AppComponentBase : ComponentBase
     [AutoInject] protected IStateService StateService = default!;
 
     [AutoInject] protected AppAuthenticationStateProvider AuthenticationStateProvider = default!;
+
+    [AutoInject] protected IStringLocalizer<AppStrings> Localizer = default!;
 
     [AutoInject] protected HttpClient HttpClient = default!;
 
@@ -26,8 +26,8 @@ public partial class AppComponentBase : ComponentBase
     {
         try
         {
-            await base.OnInitializedAsync();
             await OnInitAsync();
+            await base.OnInitializedAsync();
         }
         catch (Exception exp)
         {
@@ -39,8 +39,8 @@ public partial class AppComponentBase : ComponentBase
     {
         try
         {
-            await base.OnParametersSetAsync();
             await OnParamsSetAsync();
+            await base.OnParametersSetAsync();
         }
         catch (Exception exp)
         {
@@ -56,6 +56,23 @@ public partial class AppComponentBase : ComponentBase
         return Task.CompletedTask;
     }
 
+    protected async override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                await OnAfterFirstRenderAsync();
+            }
+            catch (Exception exp)
+            {
+                ExceptionHandler.Handle(exp);
+            }
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
     protected sealed override void OnInitialized()
     {
         base.OnInitialized();
@@ -65,6 +82,14 @@ public partial class AppComponentBase : ComponentBase
     /// Replacement for <see cref="OnParametersSetAsync"/> which catches all possible exceptions in order to prevent app crash.
     /// </summary>
     protected virtual Task OnParamsSetAsync()
+    {
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Method invoked after first time the component has been rendered.
+    /// </summary>
+    protected virtual Task OnAfterFirstRenderAsync()
     {
         return Task.CompletedTask;
     }

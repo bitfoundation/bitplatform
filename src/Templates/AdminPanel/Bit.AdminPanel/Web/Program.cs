@@ -33,7 +33,14 @@ public class Program
         builder.Services.AddSharedServices();
         builder.Services.AddAppServices();
 
-        return builder.Build();
+        var host = builder.Build();
+
+#if MultilingualEnabled
+        var preferredCultureCookie = ((IJSInProcessRuntime)host.Services.GetRequiredService<IJSRuntime>()).Invoke<string?>("window.App.getCookie", ".AspNetCore.Culture");
+        CultureInfoManager.SetCurrentCulture(preferredCultureCookie);
+#endif
+
+        return host;
     }
 #elif BlazorServer
     public static WebApplication CreateHostBuilder(string[] args)

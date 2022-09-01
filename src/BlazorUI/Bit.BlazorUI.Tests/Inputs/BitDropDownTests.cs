@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -61,7 +63,7 @@ public class BitDropDownTests : BunitTestContext
 
         var bitDrp = component.Find(".bit-drp");
 
-        if(isResponsiveModeEnabled)
+        if (isResponsiveModeEnabled)
         {
             var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
 
@@ -819,6 +821,217 @@ public class BitDropDownTests : BunitTestContext
         Assert.IsFalse(bitDropDown.ClassList.Contains($"bit-drp-invalid-{visualClass}"));
     }
 
+    [DataTestMethod,
+        DataRow(Visual.Fluent, true, null),
+        DataRow(Visual.Fluent, true, "Search items"),
+        DataRow(Visual.Fluent, false, null),
+        DataRow(Visual.Fluent, false, "Search items"),
+
+        DataRow(Visual.Cupertino, true, null),
+        DataRow(Visual.Cupertino, true, "Search items"),
+        DataRow(Visual.Cupertino, false, null),
+        DataRow(Visual.Cupertino, false, "Search items"),
+
+        DataRow(Visual.Material, true, null),
+        DataRow(Visual.Material, true, "Search items"),
+        DataRow(Visual.Material, false, null),
+        DataRow(Visual.Material, false, "Search items")
+    ]
+    public void BitDropDownShowSearchBoxTest(Visual visual, bool showSearchBox, string searchBoxPlaceholder)
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var items = GetRawDropdownItems();
+        var component = RenderComponent<BitDropDown>(parameters =>
+        {
+            parameters.AddCascadingValue(visual);
+            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.ShowSearchBox, showSearchBox);
+            parameters.Add(p => p.SearchBoxPlaceholder, searchBoxPlaceholder);
+            parameters.Add(p => p.Items, items);
+        });
+
+        var bitDropDown = component.Find(".bit-drp-wrapper");
+        bitDropDown.Click();
+
+        var searchBox = component.FindAll(".bit-drp-items-wrapper .search-box");
+        if (showSearchBox)
+        {
+            Assert.AreEqual(1, searchBox.Count);
+
+            var searchInput = component.Find(".search-input");
+            var inputPlaceholder = searchInput.GetAttribute("placeholder");
+
+            Assert.AreEqual(searchBoxPlaceholder, inputPlaceholder);
+        }
+        else
+        {
+            Assert.AreEqual(0, searchBox.Count);
+        }
+    }
+
+    [DataTestMethod,
+        DataRow(Visual.Fluent, null, false),
+        DataRow(Visual.Fluent, "app", false),
+        DataRow(Visual.Fluent, null, true),
+        DataRow(Visual.Fluent, "app", true),
+
+        DataRow(Visual.Cupertino, null, false),
+        DataRow(Visual.Cupertino, "app", false),
+        DataRow(Visual.Cupertino, null, true),
+        DataRow(Visual.Cupertino, "app", true),
+
+        DataRow(Visual.Material, null, false),
+        DataRow(Visual.Material, "app", false),
+        DataRow(Visual.Material, null, true),
+        DataRow(Visual.Material, "app", true),
+    ]
+    public void BitDropDownSearchItemTest(Visual visual, string search, bool isMultiSelect)
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var items = GetRawDropdownItems();
+        var component = RenderComponent<BitDropDown>(parameters =>
+        {
+            parameters.AddCascadingValue(visual);
+            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.ShowSearchBox, true);
+            parameters.Add(p => p.IsMultiSelect, isMultiSelect);
+            parameters.Add(p => p.Items, items);
+        });
+
+        var bitDropDown = component.Find(".bit-drp-wrapper");
+        bitDropDown.Click();
+
+        var drpItems = component.FindAll(isMultiSelect ? ".bit-drp-chb" : ".bit-drp-item", true);
+
+        Assert.AreEqual(items.Count, drpItems.Count);
+
+        var searchInput = component.Find(".search-input");
+        searchInput.Input(search);
+
+        var itemCount = string.IsNullOrEmpty(search) ? items.Count : items.Count(i => i.Text.Contains(search, StringComparison.OrdinalIgnoreCase));
+        Assert.AreEqual(itemCount, drpItems.Count);
+
+        if (string.IsNullOrEmpty(search) is false)
+        {
+            searchInput.Input(string.Empty);
+            Assert.AreEqual(items.Count, drpItems.Count);
+        }
+    }
+
+    [DataTestMethod,
+        DataRow(Visual.Fluent, false, null, null, false),
+        DataRow(Visual.Fluent, false, 300_0000, null, false),
+        DataRow(Visual.Fluent, false, null, 4, false),
+        DataRow(Visual.Fluent, false, 300_0000, 4, false),
+
+        DataRow(Visual.Fluent, true, null, null, false),
+        DataRow(Visual.Fluent, true, 300_0000, null, false),
+        DataRow(Visual.Fluent, true, null, 4, false),
+        DataRow(Visual.Fluent, true, 300_0000, 4, false),
+
+        DataRow(Visual.Fluent, false, null, null, true),
+        DataRow(Visual.Fluent, false, 300_0000, null, true),
+        DataRow(Visual.Fluent, false, null, 4, true),
+        DataRow(Visual.Fluent, false, 300_0000, 4, true),
+
+        DataRow(Visual.Fluent, true, null, null, true),
+        DataRow(Visual.Fluent, true, 300_0000, null, true),
+        DataRow(Visual.Fluent, true, null, 4, true),
+        DataRow(Visual.Fluent, true, 300_0000, 4, true),
+
+        DataRow(Visual.Cupertino, false, null, null, false),
+        DataRow(Visual.Cupertino, false, 300_0000, null, false),
+        DataRow(Visual.Cupertino, false, null, 4, false),
+        DataRow(Visual.Cupertino, false, 300_0000, 4, false),
+
+        DataRow(Visual.Cupertino, true, null, null, false),
+        DataRow(Visual.Cupertino, true, 300_0000, null, false),
+        DataRow(Visual.Cupertino, true, null, 4, false),
+        DataRow(Visual.Cupertino, true, 300_0000, 4, false),
+
+        DataRow(Visual.Cupertino, false, null, null, true),
+        DataRow(Visual.Cupertino, false, 300_0000, null, true),
+        DataRow(Visual.Cupertino, false, null, 4, true),
+        DataRow(Visual.Cupertino, false, 300_0000, 4, true),
+
+        DataRow(Visual.Cupertino, true, null, null, true),
+        DataRow(Visual.Cupertino, true, 300_0000, null, true),
+        DataRow(Visual.Cupertino, true, null, 4, true),
+        DataRow(Visual.Cupertino, true, 300_0000, 4, true),
+
+        DataRow(Visual.Material, false, null, null, false),
+        DataRow(Visual.Material, false, 300_0000, null, false),
+        DataRow(Visual.Material, false, null, 4, false),
+        DataRow(Visual.Material, false, 300_0000, 4, false),
+
+        DataRow(Visual.Material, true, null, null, false),
+        DataRow(Visual.Material, true, 300_0000, null, false),
+        DataRow(Visual.Material, true, null, 4, false),
+        DataRow(Visual.Material, true, 300_0000, 4, false),
+
+        DataRow(Visual.Material, false, null, null, true),
+        DataRow(Visual.Material, false, 300_0000, null, true),
+        DataRow(Visual.Material, false, null, 4, true),
+        DataRow(Visual.Material, false, 300_0000, 4, true),
+
+        DataRow(Visual.Material, true, null, null, true),
+        DataRow(Visual.Material, true, 300_0000, null, true),
+        DataRow(Visual.Material, true, null, 4, true),
+        DataRow(Visual.Material, true, 300_0000, 4, true),
+    ]
+    public void BitDropDownVirtualizeTest(Visual visual, bool virtualize, int? itemSize, int? overscanCount, bool isMultiSelect)
+    {
+        //https://bunit.dev/docs/test-doubles/emulating-ijsruntime.html#-jsinterop-emulation
+        const double viewportHeight = 1_000_000_000;
+        var items = GetRawDropdownItems(500);
+        var component = RenderComponent<BitDropDown>(parameters =>
+        {
+            parameters.AddCascadingValue(visual);
+            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Virtualize, virtualize);
+            parameters.Add(p => p.IsMultiSelect, isMultiSelect);
+            parameters.Add(p => p.Items, items);
+
+            if (itemSize.HasValue)
+            {
+                parameters.Add(p => p.ItemSize, itemSize.Value);
+            }
+
+            if (overscanCount.HasValue)
+            {
+                parameters.Add(p => p.OverscanCount, overscanCount.Value);
+            }
+        });
+
+        var bitDropDown = component.Find(".bit-drp-wrapper");
+        bitDropDown.Click();
+
+        var drpItems = component.FindAll(isMultiSelect ? ".bit-drp-chb" : ".bit-drp-item");
+        var actualRenderedItemCount = drpItems.Count;
+
+        if (virtualize)
+        {
+            //When virtualize is true, number of rendered items is greater than number of items showm in the list + 2 * overScanCount.
+            var expectedRenderedItemCount = Math.Ceiling((decimal)(viewportHeight / component.Instance.ItemSize)) + (2 * component.Instance.OverscanCount);
+
+            //When actualRenderedItemCount is smaller than expectedRenderedItemCount, so show all items in viewport then actualRenderedItemCount equals total items count
+            if (actualRenderedItemCount < expectedRenderedItemCount)
+            {
+                Assert.AreEqual(items.Count, actualRenderedItemCount);
+            }
+            else
+            {
+                Assert.AreEqual(expectedRenderedItemCount, actualRenderedItemCount);
+            }
+        }
+        else
+        {
+            Assert.AreEqual(items.Count, actualRenderedItemCount);
+        }
+    }
+
     private void HandleValueChanged(string value)
     {
         BitDropDownValue = value;
@@ -906,5 +1119,15 @@ public class BitDropDownTests : BunitTestContext
         });
 
         return items;
+    }
+
+    private List<BitDropDownItem> GetRawDropdownItems(int count)
+    {
+        return Enumerable.Range(1, count).Select(item => new BitDropDownItem
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Value = item.ToString(),
+            Text = $"Item {item}"
+        }).ToList();
     }
 }

@@ -34,6 +34,11 @@ public class HttpResponseExceptionHandlerMiddleware
 
             var statusCode = (int)(exception is RestException restExp ? restExp.StatusCode : HttpStatusCode.InternalServerError);
 
+            if (exception is KnownException && message == key)
+            {
+                message = localizer[message];
+            }
+
             RestExceptionPayload restExceptionPayload = new RestExceptionPayload
             {
                 Key = key,

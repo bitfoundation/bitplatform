@@ -298,6 +298,10 @@ public partial class BitDataGridDemo
   vertical-align: middle;
 }
 
+.grid-container {
+    overflow: auto;
+}
+
 .grid ::deep .column--large {
   width: 220px;
 }
@@ -446,29 +450,32 @@ public partial class BitDataGridDemo
 </style>
 
 <div class=""grid"">
-    <BitDataGrid Items=""@FilteredItems"" ResizableColumns=""true"" Pagination=""@pagination"">                
-        <BitDataGridPropertyColumn Class=""column--large"" Property=""@(c => c.Name)"" Sortable=""true"" IsDefaultSort=""BitDataGridSortDirection.Ascending"">
-            <ColumnOptions>
-                <BitSearchBox @bind-Value=""typicalSampleNameFilter""
-                                Placeholder=""Search on Name""
-                                InputHtmlAttributes=""@(new Dictionary<string, object> {{""autofocus"", true}})"" />
-            </ColumnOptions>
-        </BitDataGridPropertyColumn>
-            <BitDataGridTemplateColumn Title=""Flag"" Align=""BitDataGridAlign.Center"" >
-            <img class=""flag"" src=""images/flags/@(context.Code).png"" />
-        </BitDataGridTemplateColumn>
-        <BitDataGridPropertyColumn Property=""@(c => c.Medals.Gold)"" Sortable=""true"" />
-        <BitDataGridPropertyColumn Property=""@(c => c.Medals.Silver)"" Sortable=""true"" />
-        <BitDataGridPropertyColumn Property=""@(c => c.Medals.Bronze)"" Sortable=""true"" />
-        <BitDataGridPropertyColumn Property=""@(c => c.Medals.Total)"" Sortable=""true"" />
-    </BitDataGrid>
+    <div class=""grid-container"">
+        <BitDataGrid Items=""@FilteredItems"" ResizableColumns=""true"" Pagination=""@pagination"">                
+            <BitDataGridPropertyColumn Class=""column--large"" Property=""@(c => c.Name)"" Sortable=""true"" IsDefaultSort=""BitDataGridSortDirection.Ascending"">
+                <ColumnOptions>
+                    <BitSearchBox @bind-Value=""typicalSampleNameFilter""
+                                    Placeholder=""Search on Name""
+                                    InputHtmlAttributes=""@(new Dictionary<string, object> {{""autofocus"", true}})"" />
+                </ColumnOptions>
+            </BitDataGridPropertyColumn>
+                <BitDataGridTemplateColumn Title=""Flag"" Align=""BitDataGridAlign.Center"" >
+                <img class=""flag"" src=""images/flags/@(context.Code).png"" />
+            </BitDataGridTemplateColumn>
+            <BitDataGridPropertyColumn Property=""@(c => c.Medals.Gold)"" Sortable=""true"" />
+            <BitDataGridPropertyColumn Property=""@(c => c.Medals.Silver)"" Sortable=""true"" />
+            <BitDataGridPropertyColumn Property=""@(c => c.Medals.Bronze)"" Sortable=""true"" />
+            <BitDataGridPropertyColumn Property=""@(c => c.Medals.Total)"" Sortable=""true"" />
+        </BitDataGrid>
+    </div>
     <BitDataGridPaginator Value=""@pagination"" />
 </div>";
     private readonly string example1CSharpCode = @"
 IQueryable<Country> allCountries;
 string typicalSampleNameFilter = string.Empty;
-BitDataGridPaginationState pagination = new() { ItemsPerPage = 15 };
-IQueryable<Country> FilteredItems => items?.Where(x => x.Name.Contains(typicalSampleNameFilter, StringComparison.CurrentCultureIgnoreCase));
+BitDataGridPaginationState pagination = new() { ItemsPerPage = 7 };
+IQueryable<Country> FilteredItems => allCountries?.Where(x => x.Name.Contains(typicalSampleNameFilter, StringComparison.CurrentCultureIgnoreCase));
+string typicalSampleNameFilter = string.Empty;
 
 protected override async Task OnInitializedAsync()
 {
@@ -499,7 +506,6 @@ public class Medals
     public int Gold { get; set; }
     public int Silver { get; set; }
     public int Bronze { get; set; }
-
     public int Total => Gold + Silver + Bronze;
 }
 ";

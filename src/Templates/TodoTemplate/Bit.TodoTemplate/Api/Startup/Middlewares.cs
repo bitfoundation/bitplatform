@@ -10,7 +10,7 @@ public class Middlewares
     public static void Use(IApplicationBuilder app, IHostEnvironment env, IConfiguration configuration)
     {
         app.UseForwardedHeaders();
-        
+
         if (env.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();
@@ -36,7 +36,7 @@ public class Middlewares
         {
             OnPrepareResponse = ctx =>
             {
-                // https://bitplatform.dev/project-templates/todo-template/getting-started#cache-mechanism
+                // https://bitplatform.dev/todo-template/cache-mechanism
                 ctx.Context.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue()
                 {
 #if PWA
@@ -49,7 +49,6 @@ public class Middlewares
             }
         });
 
-        app.UseHttpResponseExceptionHandler();
         app.UseRouting();
 
         // 0.0.0.0 is for the Blazor Hybrid mode (Android, iOS, Windows apps)
@@ -59,13 +58,17 @@ public class Middlewares
         app.UseAuthentication();
         app.UseAuthorization();
 
-        var supportedCultures = new[] { "en", "fr" };
-        var localizationOptions = new RequestLocalizationOptions()
-            .SetDefaultCulture(supportedCultures[0])
-            .AddSupportedCultures(supportedCultures)
-            .AddSupportedUICultures(supportedCultures);
+#if MultilingualEnabled
+        var supportedCultures = CultureInfoManager.SupportedCultures.Select(sc => CultureInfoManager.CreateCultureInfo(sc.code)).ToArray();
+        app.UseRequestLocalization(new RequestLocalizationOptions
+        {
+            SupportedCultures = supportedCultures,
+            SupportedUICultures = supportedCultures,
+            ApplyCurrentCultureToResponseHeaders = true
+        }.SetDefaultCulture(CultureInfoManager.DefaultCulture.code));
+#endif
 
-        app.UseRequestLocalization(localizationOptions);
+        app.UseHttpResponseExceptionHandler();
 
         app.UseSwagger();
 

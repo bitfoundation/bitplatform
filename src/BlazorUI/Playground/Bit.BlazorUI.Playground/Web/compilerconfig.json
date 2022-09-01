@@ -56,6 +56,10 @@
         "inputFile": "Pages/Components/Buttons/BitToggleButtonDemo.razor.scss"
     },
     {
+        "outputFile": "Pages/Components/Buttons/BitSplitButtonDemo.razor.css",
+        "inputFile": "Pages/Components/Buttons/BitSplitButtonDemo.razor.scss"
+    },
+    {
         "outputFile": "Pages/Components/Carousel/BitCarouselDemo.razor.css",
         "inputFile": "Pages/Components/Carousel/BitCarouselDemo.razor.scss"
     },
@@ -166,5 +170,13 @@
     {
         "outputFile": "Pages/OverviewPage.razor.css",
         "inputFile": "Pages/OverviewPage.razor.scss"
+    },
+    {
+        "outputFile": "Pages/Components/NumericTextField/BitNumericTextFieldDemo.razor.css",
+        "inputFile": "Pages/Components/NumericTextField/BitNumericTextFieldDemo.razor.scss"
+    },
+    {
+        "outputFile": "Pages/Components/Accordion/BitAccordionDemo.razor.css",
+        "inputFile": "Pages/Components/Accordion/BitAccordionDemo.razor.scss"
     }
 ]

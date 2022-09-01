@@ -5,14 +5,9 @@
         document.cookie = `${name}=${value};expires=${date.toUTCString()};path=/`;
     }
 
-    public static getCookie(name: string): string | undefined {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].split('=');
-            if (App.trim(cookie[0]) == escape(name)) {
-                return unescape(App.trim(cookie[1]));
-            }
-        }
+    public static getCookie(name: string): string | null {
+        // https://stackoverflow.com/a/25490531/2720104
+        return document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)')?.pop() || null;
     }
 
     public static removeCookie(name: string): void {
@@ -21,14 +16,6 @@
 
     public static goBack(): void {
         window.history.back();
-    }
-
-    public static reloadPage(): void {
-        location.reload();
-    }
-
-    private static trim(value: string): string {
-        return value.replace(/^\s+|\s+$/g, '');
     }
 }
 

@@ -16,7 +16,7 @@ public partial class AuthenticationService : IAuthenticationService
 
         var result = await response.Content.ReadFromJsonAsync(AppJsonContext.Default.SignInResponseDto);
 
-#if BlazorHybrid
+#if Maui
         Preferences.Set("access_token", result!.AccessToken);
 #else
         await _jsRuntime.InvokeVoidAsync("App.setCookie", "access_token", result!.AccessToken, result.ExpiresIn);
@@ -27,7 +27,7 @@ public partial class AuthenticationService : IAuthenticationService
 
     public async Task SignOut()
     {
-#if BlazorHybrid
+#if Maui
         Preferences.Remove("access_token");
 #else
         await _jsRuntime.InvokeVoidAsync("App.removeCookie", "access_token");

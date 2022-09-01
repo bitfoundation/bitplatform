@@ -1,0 +1,108 @@
+﻿@import "../../Styles/Fluent/colors.fluent.scss";
+@import "../../Styles/functions.scss";
+
+.bit-acd {
+    &.bit-acd-fluent {
+        font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+        display: flex;
+        flex-flow: column nowrap;
+        width: 100%;
+        padding: 0 rem(12px);
+        background-color: $White;
+        color: $Grey160;
+        border: 1px solid $Grey30;
+        box-sizing: border-box;
+        user-select: none;
+        font-size: rem(14px);
+        font-weight: 400;
+    }
+
+    &.bit-acd-disabled-fluent {
+        background-color: $Grey10;
+        color: $Grey90;
+
+        .intro > .description {
+            color: $Grey90;
+        }
+    }
+
+    .header {
+        display: flex;
+        justify-content: center;
+        margin: rem(12px) 0;
+        cursor: pointer;
+
+        &.expanded {
+            .header-icon {
+                transform: rotate(-180deg);
+            }
+        }
+    }
+
+    .intro {
+        display: flex;
+        flex-grow: 1;
+        line-height: 1.5;
+
+        .title {
+            font-size: rem(16px);
+            font-weight: 600;
+            width: 30%;
+        }
+
+        .description {
+            color: $Grey130;
+        }
+    }
+
+    .header-icon {
+        display: flex;
+        align-items: center;
+        margin: 0 rem(5px);
+    }
+
+    .content {
+        &.expanded {
+            margin: rem(12px) 0;
+            animation-name: bit-acd-expand-content;
+            animation-duration: 200ms;
+            animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
+            animation-fill-mode: both;
+        }
+
+        &.collapsed {
+            animation-name: bit-acd-collapse-content;
+            animation-duration: 200ms;
+            animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
+            animation-fill-mode: both;
+        }
+    }
+}
+
+@keyframes bit-acd-expand-content {
+    0% {
+        height: 0;
+        overflow: hidden;
+        opacity: 0;
+    }
+
+    100% {
+        height: auto;
+        overflow: auto;
+        opacity: 1;
+    }
+}
+
+@keyframes bit-acd-collapse-content {
+    0% {
+        height: auto;
+        overflow: auto;
+        opacity: 1;
+    }
+
+    100% {
+        height: 0;
+        overflow: hidden;
+        opacity: 0;
+    }
+}

@@ -48,15 +48,31 @@ public static class Services
 
         services
             .AddControllers()
-            .AddOData(options => options.EnableQueryFeatures(maxTopValue: 20))
-            .AddJsonOptions(options => options.JsonSerializerOptions.AddContext<AppJsonContext>());
+            .AddOData()
+            .AddDataAnnotationsLocalization(options => options.DataAnnotationLocalizerProvider = StringLocalizerProvider.ProvideLocalizer)
+            .ConfigureApiBehaviorOptions(options =>
+            {
+                options.InvalidModelStateResponseFactory = context =>
+                {
+                    throw new ResourceValidationException(context.ModelState
+                            .Select(ms => new ResourceValidationExceptionPayload
+                            {
+                                Property = ms.Key,
+                                Errors = ms.Value!.Errors.Select(e => new ResourceValidationExceptionPayloadError
+                                {
+                                    Key = e.ErrorMessage,
+                                    Message = e.ErrorMessage
+                                })
+                            }).ToList());
+                };
+            });
 
         services.Configure<ForwardedHeadersOptions>(options =>
         {
             options.ForwardedHeaders = ForwardedHeaders.All;
             options.ForwardedHostHeaderName = "X-Host";
         });
-        
+
         services.AddResponseCaching();
 
         services.AddHttpContextAccessor();

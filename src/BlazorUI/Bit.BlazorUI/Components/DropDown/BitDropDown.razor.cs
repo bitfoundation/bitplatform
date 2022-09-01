@@ -140,9 +140,9 @@ public partial class BitDropDown
     [Parameter] public string? Placeholder { get; set; }
 
     /// <summary>
-    /// Filter input placeholder text
+    /// Search box input placeholder text
     /// </summary>
-    [Parameter] public string? PlaceholderSearchBox { get; set; }
+    [Parameter] public string? SearchBoxPlaceholder { get; set; }
 
     /// <summary>
     /// the label associated with the dropdown
@@ -203,6 +203,24 @@ public partial class BitDropDown
     /// Search box is enabled for the end user
     /// </summary>
     [Parameter] public bool ShowSearchBox { get; set; }
+
+    /// <summary>
+    /// virtualize rendering the list
+    /// UI rendering to just the parts that are currently visible
+    /// defualt is false
+    /// </summary>
+    [Parameter] public bool Virtualize { get; set; }
+
+    /// <summary>
+    /// determines how many additional items are rendered before and after the visible region
+    /// defualt is 3
+    /// </summary>
+    [Parameter] public int OverscanCount { get; set; } = 3;
+
+    /// <summary>
+    /// The height of each item in pixels, defualt is 35
+    /// </summary>
+    [Parameter] public int ItemSize { get; set; } = 35;
 
     public string? Text { get; set; }
     public string DropDownId { get; set; } = string.Empty;
@@ -458,15 +476,15 @@ public partial class BitDropDown
         searchText = null;
     }
 
-    private IEnumerable<BitDropDownItem> GetItems()
+    private (BitDropDownItem item, int index)[] GetItems()
     {
         if (ShowSearchBox && searchText.HasValue())
         {
-            return Items.Where(i => i.Text.Contains(searchText!, StringComparison.OrdinalIgnoreCase));
+            return Items.Where(i => i.Text.Contains(searchText!, StringComparison.OrdinalIgnoreCase)).Select((item, index) => (item, index)).ToArray();
         }
         else
         {
-            return Items;
+            return Items.Select((item, index) => (item, index)).ToArray();
         }
     }
 

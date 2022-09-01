@@ -52,6 +52,7 @@
 
                     if (navigator.serviceWorker.controller) {
                         info('update finished.');
+                        handle('installed', { reload: () => reload() });
                     } else {
                         info('initialization finished.');
                     }

@@ -48,6 +48,14 @@
         border: 0;
         border-radius: 50%;
         perspective: rem(1px);
+        background-color: $DarkAlt;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .initials {
+        //background-color: $DarkAlt;
     }
 
     .bit-prs-img-overlay {
@@ -218,6 +226,10 @@
         width: rem(24px);
         height: rem(24px);
     }
+
+    .initials {
+        font-size: rem(16px);
+    }
 }
 
 .bit-prs-fluent.bit-prs-32px {
@@ -258,6 +270,10 @@
         right: rem(-10px);
         width: rem(24px);
         height: rem(24px);
+    }
+
+    .initials {
+        font-size: rem(18px);
     }
 }
 
@@ -317,6 +333,10 @@
         width: rem(24px);
         height: rem(24px);
     }
+
+    .initials {
+        font-size: rem(20px);
+    }
 }
 
 .bit-prs-fluent.bit-prs-48px {
@@ -375,6 +395,10 @@
         width: rem(24px);
         height: rem(24px);
     }
+
+    .initials {
+        font-size: rem(22px);
+    }
 }
 
 .bit-prs-fluent.bit-prs-56px {
@@ -432,6 +456,10 @@
         right: rem(-6px);
         width: rem(24px);
         height: rem(24px);
+    }
+
+    .initials {
+        font-size: rem(24px);
     }
 }
 
@@ -493,6 +521,10 @@
         width: rem(26px);
         height: rem(26px);
     }
+
+    .initials {
+        font-size: rem(24px);
+    }
 }
 
 .bit-prs-fluent.bit-prs-100px {
@@ -552,6 +584,10 @@
     .bit-ico-btn-fluent {
         bottom: rem(-2px);
         right: 0px;
+    }
+
+    .initials {
+        font-size: rem(26px);
     }
 }
 
@@ -614,6 +650,10 @@
     .bit-ico-btn-fluent {
         bottom: rem(-2px);
         right: 0px;
+    }
+
+    .initials {
+        font-size: rem(28px);
     }
 }
 

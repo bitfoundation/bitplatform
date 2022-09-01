@@ -4,78 +4,95 @@
                ComponentParameters="componentParameters" EnumParameters="enumParameters">
     <ComponentExampleBox Title="BitSpinButton" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
-            <BitSpinButton @bind-Value="BasicSpinButtonValue"
-                           Min="0"
-                           Max="100"
-                           Step="1"
-                           Label="Basic SpinButton">
-            </BitSpinButton>
-            <BitSpinButton Min="-10"
-                           Max="10"
-                           Step="0.1"
-                           Label="Decimal SpinButton">
-            </BitSpinButton>
-            <BitSpinButton @bind-Value="BasicSpinButtonDisableValue"
-                           Min="0"
-                           Max="100"
-                           Step="1"
-                           Label="Disabled SpinButton"
-                           IsEnabled="false">
-            </BitSpinButton>
+            <div>
+                <BitSpinButton @bind-Value="BasicSpinButtonValue"
+                               Class="bit-spb-wrapped bit-spb-lbl-wrapped"
+                               Min="0"
+                               Max="100"
+                               Step="1"
+                               Label="Basic SpinButton">
+                </BitSpinButton>
+                <BitSpinButton Class="bit-spb-wrapped bit-spb-lbl-wrapped"
+                               Min="-10"
+                               Max="10"
+                               Step="0.1"
+                               Label="Decimal SpinButton">
+                </BitSpinButton>
+                <BitSpinButton @bind-Value="BasicSpinButtonDisableValue"
+                               Class="bit-spb-wrapped bit-spb-lbl-wrapped"
+                               Min="0"
+                               Max="100"
+                               Step="1"
+                               Label="Disabled SpinButton"
+                               IsEnabled="false">
+                </BitSpinButton>
+            </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="SpinButton With Icon" HTMLSourceCode="@example2HTMLCode" ExampleId="example2">
         <ExamplePreview>
-            <BitSpinButton IconName="BitIconName.IncreaseIndentText"
-                           Min="0"
-                           Max="100"
-                           Step="1"
-                           Label="With Icon">
-            </BitSpinButton>
-            <BitSpinButton IconName="BitIconName.IncreaseIndentText"
-                           Min="0"
-                           Max="100"
-                           Step="1"
-                           Label="Disabled With Icon"
-                           IsEnabled="false">
-            </BitSpinButton>
+            <div>
+                <BitSpinButton Class="bit-spb-wrapped bit-spb-lbl-wrapped"
+                               IconName="BitIconName.IncreaseIndentText"
+                               Min="0"
+                               Max="100"
+                               Step="1"
+                               Label="With Icon">
+                </BitSpinButton>
+                <BitSpinButton Class="bit-spb-wrapped bit-spb-lbl-wrapped"
+                               IconName="BitIconName.IncreaseIndentText"
+                               Min="0"
+                               Max="100"
+                               Step="1"
+                               Label="Disabled With Icon"
+                               IsEnabled="false">
+                </BitSpinButton>
+            </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="SpinButton With Suffix" HTMLSourceCode="@example3HTMLCode" ExampleId="example3">
         <ExamplePreview>
             <div class="example-desc">This SpinButton includes a suffix in the value and defines custom onIncrement, onDecrement.</div>
-            <BitSpinButton Suffix="Inch"
-                           Min="0"
-                           Max="100"
-                           Step="1"
-                           Label="With suffix">
-            </BitSpinButton>
+            <div>
+                <BitSpinButton Class="bit-spb-wrapped bit-spb-lbl-wrapped"
+                               Suffix="Inch"
+                               Min="0"
+                               Max="100"
+                               Step="1"
+                               Label="With suffix">
+                </BitSpinButton>
+            </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="SpinButton With Label Above" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
         <ExamplePreview>
-            <BitSpinButton @bind-Value="SpinButtonWithLabelAboveValue"
-                           Suffix="cm"
-                           Min="0"
-                           Max="100"
-                           Step="1"
-                           Label="With Labal Above"
-                           LabelPosition="@BitSpinButtonLabelPosition.Top">
-            </BitSpinButton>
+            <div>
+                <BitSpinButton @bind-Value="SpinButtonWithLabelAboveValue"
+                               Class="bit-spb-wrapped bit-spb-lbl-wrapped"
+                               Suffix="cm"
+                               Min="0"
+                               Max="100"
+                               Step="1"
+                               Label="With Labal Above"
+                               LabelPosition="@BitSpinButtonLabelPosition.Top">
+                </BitSpinButton>
+            </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="Custom Styled SpinButton" HTMLSourceCode="@example5HTMLCode" ExampleId="example5">
         <ExamplePreview>
-            <BitSpinButton Class="custom-spb"
-                           Min="0"
-                           Max="100"
-                           Step="1"
-                           Label="Custom Styled">
-            </BitSpinButton>
+            <div>
+                <BitSpinButton Class="custom-spb bit-spb-wrapped bit-spb-lbl-wrapped"
+                               Min="0"
+                               Max="100"
+                               Step="1"
+                               Label="Custom Styled">
+                </BitSpinButton>
+            </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
@@ -85,19 +102,23 @@
                 A controlled BitSpinButton provides two-way binding using either bind-value or Value parameters. With bind-value all the changes to the value can be seen by its parent
                 but using Value, a custom handler should be implemented to reflect the changes outside the component.
             </div>
-            <BitSpinButton Label="Controlled SpinButton with bind-value"
-                           @bind-Value="BitSpinButtonBindValue"
-                           Min="0"
-                           Max="100"
-                           Step="1">
-            </BitSpinButton>
-            <BitSpinButton Label="Controlled SpinButton with Value"
-                           Value="BitSpinButtonValueChanged"
-                           ValueChanged="HandleControlledSpinButtonValueChange"
-                           Min="0"
-                           Max="100"
-                           Step="1">
-            </BitSpinButton>
+            <div>
+                <BitSpinButton @bind-Value="BitSpinButtonBindValue"
+                               Class="bit-spb-wrapped bit-spb-lbl-wrapped"
+                               Min="0"
+                               Max="100"
+                               Step="1"
+                               Label="Controlled with bind-value">
+                </BitSpinButton>
+                <BitSpinButton Class="bit-spb-wrapped bit-spb-lbl-wrapped"
+                               Value="BitSpinButtonValueChanged"
+                               ValueChanged="HandleControlledSpinButtonValueChange"
+                               Min="0"
+                               Max="100"
+                               Step="1"
+                               Label="Controlled with Value">
+                </BitSpinButton>
+            </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
@@ -113,7 +134,7 @@
                     </div>
 
                     <div>
-                        <BitSpinButton Label="Age" @bind-Value="@ValidationModel.AgeInYears"></BitSpinButton>
+                        <BitSpinButton Class="bit-spb-wrapped bit-spb-lbl-wrapped" Label="Age" @bind-Value="@ValidationModel.AgeInYears"></BitSpinButton>
 
                         <ValidationMessage For="@(() => ValidationModel.AgeInYears)" />
                     </div>

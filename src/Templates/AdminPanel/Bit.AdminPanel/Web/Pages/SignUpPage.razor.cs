@@ -38,13 +38,13 @@ public partial class SignUpPage
         catch (ResourceValidationException e)
         {
             SignUpMessageType = BitMessageBarType.Error;
-            SignUpMessage = string.Join(Environment.NewLine, e.Details.SelectMany(d => d.Messages)
-                .Select(e => ErrorStrings.ResourceManager.Translate(e, SignUpModel.UserName!)));
+            SignUpMessage = string.Join(Environment.NewLine, e.Details.SelectMany(d => d.Errors)
+                .Select(e => e.Message));
         }
         catch (KnownException e)
         {
             SignUpMessageType = BitMessageBarType.Error;
-            SignUpMessage = ErrorStrings.ResourceManager.Translate(e.Message, SignUpModel.UserName);
+            SignUpMessage = e.Message;
         }
         finally
         {
@@ -70,12 +70,12 @@ public partial class SignUpPage
             }, AppJsonContext.Default.SendConfirmationEmailRequestDto);
 
             SignUpMessageType = BitMessageBarType.Success;
-            SignUpMessage = AuthStrings.ResendConfirmationLinkMessage;
+            SignUpMessage = Localizer[nameof(AppStrings.ResendConfirmationLinkMessage)];
         }
         catch (KnownException e)
         {
             SignUpMessageType = BitMessageBarType.Error;
-            SignUpMessage = ErrorStrings.ResourceManager.Translate(e.Message, SignUpModel.Email);
+            SignUpMessage = e.Message;
         }
         finally
         {
@@ -83,16 +83,13 @@ public partial class SignUpPage
         }
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected async override Task OnAfterFirstRenderAsync()
     {
-        await base.OnAfterRenderAsync(firstRender);
+        await base.OnAfterFirstRenderAsync();
 
-        if (firstRender)
+        if (await AuthenticationStateProvider.IsUserAuthenticated())
         {
-            if (await AuthenticationStateProvider.IsUserAuthenticated())
-            {
-                NavigationManager.NavigateTo("/");
-            }
+            NavigationManager.NavigateTo("/");
         }
     }
 }

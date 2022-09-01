@@ -20,10 +20,7 @@ public partial class ResetPasswordPage
 
     public string? ResetPasswordMessage { get; set; }
 
-    private bool IsSubmitButtonEnabled =>
-        string.IsNullOrWhiteSpace(ResetPasswordModel.Password) is false &&
-        string.IsNullOrWhiteSpace(ResetPasswordModel.ConfirmPassword) is false && 
-        IsLoading is false;
+    private bool IsSubmitButtonEnabled => IsLoading is false;
 
     private async Task Submit()
     {
@@ -41,7 +38,7 @@ public partial class ResetPasswordPage
 
             ResetPasswordMessageType = BitMessageBarType.Success;
 
-            ResetPasswordMessage = AuthStrings.PasswordChangedSuccessfullyMessage;
+            ResetPasswordMessage = Localizer[nameof(AppStrings.PasswordChangedSuccessfullyMessage)];
 
             await AuthenticationService.SignIn(new SignInRequestDto
             {
@@ -55,7 +52,7 @@ public partial class ResetPasswordPage
         {
             ResetPasswordMessageType = BitMessageBarType.Error;
 
-            ResetPasswordMessage = ErrorStrings.ResourceManager.Translate(e.Message, Email!);
+            ResetPasswordMessage = e.Message;
         }
         finally
         {
@@ -71,16 +68,13 @@ public partial class ResetPasswordPage
         await base.OnInitAsync();
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected async override Task OnAfterFirstRenderAsync()
     {
-        if (firstRender)
-        {
-            if (await AuthenticationStateProvider.IsUserAuthenticated())
-            {
-                NavigationManager.NavigateTo("/");
-            }
-        }
+        await base.OnAfterFirstRenderAsync();
 
-        await base.OnAfterRenderAsync(firstRender);
+        if (await AuthenticationStateProvider.IsUserAuthenticated())
+        {
+            NavigationManager.NavigateTo("/");
+        }
     }
 }

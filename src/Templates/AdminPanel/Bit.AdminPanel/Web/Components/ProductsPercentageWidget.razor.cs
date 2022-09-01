@@ -4,11 +4,8 @@ namespace AdminPanel.App.Components;
 
 public partial class ProductsPercentageWidget
 {
-    public bool IsLoading { get; set; }
-
     private BitChartPieConfig _config = default!;
-    private BitChart? _chart;
-
+    private bool _isLoading;
 
     protected override async Task OnInitAsync()
     {
@@ -19,18 +16,18 @@ public partial class ProductsPercentageWidget
                 Responsive = true,
             }
         };
-
         await GetData();
-        await base.OnInitAsync();
     }
 
     private async Task GetData()
     {
         try
         {
-            IsLoading = true;
+            _isLoading = true;
 
-            var Data = await StateService.GetValue($"{nameof(HomePage)}-{nameof(ProductsPercentageWidget)}", async () => await HttpClient.GetFromJsonAsync($"Dashboard/GetProductsPercentagePerCategoryStats", AppJsonContext.Default.ListProductPercentagePerCategoryDto));
+            var Data = await StateService.GetValue($"{nameof(HomePage)}-{nameof(ProductsPercentageWidget)}",
+                async () => await HttpClient.GetFromJsonAsync($"Dashboard/GetProductsPercentagePerCategoryStats",
+                                                                AppJsonContext.Default.ListProductPercentagePerCategoryDto));
 
             BitChartPieDataset<float> chartDataSet = new BitChartPieDataset<float>();
             chartDataSet.AddRange(Data!.Select(d => d.ProductPercentage));
@@ -40,7 +37,7 @@ public partial class ProductsPercentageWidget
         }
         finally
         {
-            IsLoading = false;
+            _isLoading = false;
         }
     }
 }

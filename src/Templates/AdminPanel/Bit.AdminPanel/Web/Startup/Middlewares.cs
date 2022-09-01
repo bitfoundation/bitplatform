@@ -1,5 +1,6 @@
 ﻿//-:cnd:noEmit
 #if BlazorServer
+
 namespace AdminPanel.App.Startup;
 
 public class Middlewares
@@ -23,6 +24,16 @@ public class Middlewares
         app.UseStaticFiles();
 
         app.UseRouting();
+
+#if MultilingualEnabled
+        var supportedCultures = CultureInfoManager.SupportedCultures.Select(sc => CultureInfoManager.CreateCultureInfo(sc.code)).ToArray();
+        app.UseRequestLocalization(new RequestLocalizationOptions
+        {
+            SupportedCultures = supportedCultures,
+            SupportedUICultures = supportedCultures,
+            ApplyCurrentCultureToResponseHeaders = true
+        }.SetDefaultCulture(CultureInfoManager.DefaultCulture.code));
+#endif
 
         app.UseEndpoints(endpoints =>
         {

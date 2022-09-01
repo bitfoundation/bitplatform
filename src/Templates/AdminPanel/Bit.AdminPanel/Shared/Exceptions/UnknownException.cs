@@ -6,7 +6,7 @@ namespace AdminPanel.Shared.Exceptions;
 public class UnknownException : ApplicationException
 {
     public UnknownException()
-        : this(nameof(UnknownException))
+        : base(nameof(AppStrings.UnknownException))
     {
     }
 
@@ -25,4 +25,3 @@ public class UnknownException : ApplicationException
     {
     }
 }
-

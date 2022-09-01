@@ -10,7 +10,7 @@ public class Middlewares
     public static void Use(IApplicationBuilder app, IHostEnvironment env, IConfiguration configuration)
     {
         app.UseForwardedHeaders();
-        
+
         if (env.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();
@@ -27,13 +27,6 @@ public class Middlewares
         app.UseBlazorFrameworkFiles();
 #endif
 
-        app.UseSwagger();
-
-        app.UseSwaggerUI(options =>
-        {
-            options.InjectJavascript("/swagger/swagger-utils.js");
-        });
-
         if (env.IsDevelopment() is false)
         {
             app.UseResponseCompression();
@@ -43,7 +36,7 @@ public class Middlewares
         {
             OnPrepareResponse = ctx =>
             {
-                // https://bitplatform.dev/project-templates/adminpanel-template/getting-started#cache-mechanism
+                // https://bitplatform.dev/adminpanel/cache-mechanism
                 ctx.Context.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue()
                 {
 #if PWA
@@ -56,7 +49,6 @@ public class Middlewares
             }
         });
 
-        app.UseHttpResponseExceptionHandler();
         app.UseRouting();
 
         // 0.0.0.0 is for the Blazor Hybrid mode (Android, iOS, Windows apps)
@@ -65,6 +57,25 @@ public class Middlewares
         app.UseResponseCaching();
         app.UseAuthentication();
         app.UseAuthorization();
+
+#if MultilingualEnabled
+        var supportedCultures = CultureInfoManager.SupportedCultures.Select(sc => CultureInfoManager.CreateCultureInfo(sc.code)).ToArray();
+        app.UseRequestLocalization(new RequestLocalizationOptions
+        {
+            SupportedCultures = supportedCultures,
+            SupportedUICultures = supportedCultures,
+            ApplyCurrentCultureToResponseHeaders = true
+        }.SetDefaultCulture(CultureInfoManager.DefaultCulture.code));
+#endif
+
+        app.UseHttpResponseExceptionHandler();
+
+        app.UseSwagger();
+
+        app.UseSwaggerUI(options =>
+        {
+            options.InjectJavascript("/swagger/swagger-utils.js");
+        });
 
         app.UseEndpoints(endpoints =>
         {
