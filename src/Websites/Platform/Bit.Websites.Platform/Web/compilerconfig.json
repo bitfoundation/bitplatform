@@ -122,5 +122,37 @@
   {
     "outputFile": "Pages/AdminPanel/ContributePage.razor.css",
     "inputFile": "Pages/AdminPanel/ContributePage.razor.scss"
+  },
+  {
+    "outputFile": "Pages/PricingPage.razor.css",
+    "inputFile": "Pages/PricingPage.razor.scss"
+  },
+  {
+    "outputFile": "Pages/AboutUsPage.razor.css",
+    "inputFile": "Pages/AboutUsPage.razor.scss"
+  },
+  {
+    "outputFile": "Pages/ContactUsPage.razor.css",
+    "inputFile": "Pages/ContactUsPage.razor.scss"
+  },
+  {
+    "outputFile": "Pages/BlogsPage.razor.css",
+    "inputFile": "Pages/BlogsPage.razor.scss"
+  },
+  {
+    "outputFile": "Pages/SupportPage.razor.css",
+    "inputFile": "Pages/SupportPage.razor.scss"
+  },
+  {
+    "outputFile": "Pages/ComponentsPage.razor.css",
+    "inputFile": "Pages/ComponentsPage.razor.scss"
+  },
+  {
+    "outputFile": "Pages/AcademyPage.razor.css",
+    "inputFile": "Pages/AcademyPage.razor.scss"
+  },
+  {
+    "outputFile": "Pages/CloudHostingSolutionsPage.razor.css",
+    "inputFile": "Pages/CloudHostingSolutionsPage.razor.scss"
   }
 ]

@@ -1,7 +1,7 @@
-﻿<header class="main-header @(CurrentUrl == "/" ? "main-header--full-page" : null)">
+﻿<header class="main-header @((CurrentUrl.Contains("todo-template") is false && CurrentUrl.Contains("admin-panel") is false) ? "main-header--full-page" : null)">
     <div class="header-main-container">
         <div class="header-content-container">
-            @if (CurrentUrl != "/")
+            @if (CurrentUrl.Contains("todo-template") || CurrentUrl.Contains("admin-panel"))
             {
                 <BitIconButton Class="header-menu-btn" IconName=BitIconName.CollapseMenu OnClick=@ToggleMenu AriaLabel="Header menu button" />
             }

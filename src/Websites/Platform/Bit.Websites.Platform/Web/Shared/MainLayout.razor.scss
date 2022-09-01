@@ -17,7 +17,7 @@
     box-sizing: border-box;
     background: linear-gradient(180deg, #F3F6F9 0%, #FFFFFF 100%);
 
-    @include sm {
+    @include lt-lg {
         padding-top: rem(100px);
     }
 }
