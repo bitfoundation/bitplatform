@@ -7,7 +7,41 @@
             }
             <a class="header-logo" href="@Urls.HomePage" aria-label="Home page" />
             <a class="header-link @(CurrentUrl == Urls.HomePage ? "header-link--active" : null)" href="@Urls.HomePage">Home</a>
-            <div class="header-link @(IsProductsServicesActive() ? "header-link--active" : null)">Products & Services</div>
+            <div class="header-link header-ps-btn @(IsProductsServicesActive() ? "header-link--active" : null)">
+                Products & Services
+                <div class="header-menu-popup">
+                    <div class="col">
+                        <div class="col-header">Products</div>
+                        <a class="menu-item" href="@Urls.TodoTemplate">
+                            <div class="item-title">TodoTemplate</div>
+                            <div class="item-desc">Here is the desc of item.</div>
+                        </a>
+                        <a class="menu-item" href="@Urls.AdminPanel">
+                            <div class="item-title">AdminPanel</div>
+                            <div class="item-desc">Here is the desc of item.</div>
+                        </a>
+                        <a class="menu-item" href="@Urls.Components">
+                            <div class="item-title">Components</div>
+                            <div class="item-desc">Here is the desc of item.</div>
+                        </a>
+                    </div>
+                    <div class="col">
+                        <div class="col-header">Services</div>
+                        <a class="menu-item" href="@Urls.CloudHostingSolutins">
+                            <div class="item-title">Cloud hosting solutins</div>
+                            <div class="item-desc">Here is the desc of item.</div>
+                        </a>
+                        <a class="menu-item" href="@Urls.Support">
+                            <div class="item-title">Dedicated sopport</div>
+                            <div class="item-desc">Here is the desc of item.</div>
+                        </a>
+                        <a class="menu-item" href="@Urls.Academy">
+                            <div class="item-title">BitAcademy</div>
+                            <div class="item-desc">Here is the desc of item.</div>
+                        </a>
+                    </div>
+                </div>
+            </div>
             <a class="header-link @(CurrentUrl == Urls.Pricing ? "header-link--active" : null)" href="@Urls.Pricing">Pricing</a>
             <a class="header-link @(CurrentUrl == Urls.Blogs ? "header-link--active" : null)" href="@Urls.Blogs">Blogs</a>
             <a class="header-link @(CurrentUrl == Urls.Videos ? "header-link--active" : null)" href="@Urls.Videos">Videos</a>
@@ -31,7 +65,41 @@
                    IconName=BitIconName.Cancel
                    OnClick=@ToggleHeaderMenu />
         <a class="header-nav-link @(CurrentUrl == Urls.HomePage ? "header-nav-link--active" : null)" href="@Urls.HomePage">Home</a>
-        <div class="header-nav-link @(IsProductsServicesActive() ? "header-nav-link--active" : null)">Products & Services</div>
+        <div class="header-nav-link header-ps-btn @(IsProductsServicesActive() ? "header-nav-link--active" : null)">
+            Products & Services
+            <div class="header-menu-popup">
+                <div class="col">
+                    <div class="col-header">Products</div>
+                    <a class="menu-item" href="@Urls.TodoTemplate">
+                        <div class="item-title">TodoTemplate</div>
+                        <div class="item-desc">Here is the desc of item.</div>
+                    </a>
+                    <a class="menu-item" href="@Urls.AdminPanel">
+                        <div class="item-title">AdminPanel</div>
+                        <div class="item-desc">Here is the desc of item.</div>
+                    </a>
+                    <a class="menu-item" href="@Urls.Components">
+                        <div class="item-title">Components</div>
+                        <div class="item-desc">Here is the desc of item.</div>
+                    </a>
+                </div>
+                <div class="col">
+                    <div class="col-header">Services</div>
+                    <a class="menu-item" href="@Urls.CloudHostingSolutins">
+                        <div class="item-title">Cloud hosting solutins</div>
+                        <div class="item-desc">Here is the desc of item.</div>
+                    </a>
+                    <a class="menu-item" href="@Urls.Support">
+                        <div class="item-title">Dedicated sopport</div>
+                        <div class="item-desc">Here is the desc of item.</div>
+                    </a>
+                    <a class="menu-item" href="@Urls.Academy">
+                        <div class="item-title">BitAcademy</div>
+                        <div class="item-desc">Here is the desc of item.</div>
+                    </a>
+                </div>
+            </div>
+        </div>
         <a class="header-nav-link @(CurrentUrl == Urls.Pricing ? "header-nav-link--active" : null)" href="@Urls.Pricing">Pricing</a>
         <a class="header-nav-link @(CurrentUrl == Urls.Blogs ? "header-nav-link--active" : null)" href="@Urls.Blogs">Blogs</a>
         <a class="header-nav-link @(CurrentUrl == Urls.Videos ? "header-nav-link--active" : null)" href="@Urls.Videos">Videos</a>

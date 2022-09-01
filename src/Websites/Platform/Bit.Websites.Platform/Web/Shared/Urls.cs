@@ -31,7 +31,7 @@ public static class Urls
     public const string Components = "/components";
     public const string ComponentsDocs = "https://components.bitplatform.dev/";
 
-    public const string CloudHostringSolutins = "/cloud-hosting-solutions";
+    public const string CloudHostingSolutins = "/cloud-hosting-solutions";
     public const string Support = "/support";
     public const string Academy = "/academy";
     public const string Pricing = "/pricing";

@@ -46,7 +46,7 @@ public partial class Header : IDisposable
         {
             Urls.HomePage => "Home",
             Urls.Components => "Prodocus & Services",
-            Urls.CloudHostringSolutins => "Prodocus & Services",
+            Urls.CloudHostingSolutins => "Prodocus & Services",
             Urls.Support => "Prodocus & Services",
             Urls.Academy => "Prodocus & Services",
             Urls.Pricing => "Pricing",
@@ -63,7 +63,7 @@ public partial class Header : IDisposable
         return (CurrentUrl.Contains("admin-panel") ||
            CurrentUrl.Contains("todo-template") ||
            CurrentUrl == Urls.Components ||
-           CurrentUrl == Urls.CloudHostringSolutins ||
+           CurrentUrl == Urls.CloudHostingSolutins ||
            CurrentUrl == Urls.Support ||
            CurrentUrl == Urls.Academy);
     }
