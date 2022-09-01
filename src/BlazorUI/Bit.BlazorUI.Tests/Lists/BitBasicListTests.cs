@@ -9,59 +9,56 @@ namespace Bit.BlazorUI.Tests.Lists;
 [TestClass]
 public class BitBasicListTests : BunitTestContext
 {
-
     [DataTestMethod,
-        DataRow(true, 1000, 500, 50, null, 1),
-        DataRow(true, 1000, 500, 50, 50, 1),
-        DataRow(true, 1000, 500, 50, null, null),
-        DataRow(true, 1000, 500, 50, 50, null),
-        DataRow(true, 1000, null, 50, null, 1),
-        DataRow(true, 1000, null, 50, 50, 1),
-        DataRow(true, 1000, null, 50, null, null),
-        DataRow(true, 1000, null, 50, 50, null),
-        DataRow(false, 100, null, null, null, null)
+        DataRow(true, 3_000_000, null),
+        DataRow(true, 3_000_000, 5),
+        DataRow(true, null, 5),
+        DataRow(true, null, null),
+
+        DataRow(false, 3_000_000, null),
+        DataRow(false, 3_000_000, 5),
+        DataRow(false, null, 5),
+        DataRow(false, null, null),
     ]
-    public void BitBasicListShoudRenderExpectedChildElements(
-        bool virtualize,
-        int itemCount,
-        int? listHeight,
-        int? itemHeight,
-        int? itemSize,
-        int? overscanCount)
+    public void BitBasicListShoudRenderExpectedChildElements(bool virtualize, int? itemSize, int? overscanCount)
     {
+        //https://bunit.dev/docs/test-doubles/emulating-ijsruntime.html#-jsinterop-emulation
+        const double viewportHeight = 1_000_000_000;
+
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
 
         var component = RenderComponent<BitBasicListTest>(parameters =>
         {
             parameters.Add(p => p.Virtualize, virtualize);
-            parameters.Add(p => p.Items, GetTestData(itemCount));
-            parameters.Add(p => p.ListStyle, (listHeight is null) ? "height:500px" : $"height:{listHeight}px");
-            parameters.Add(p => p.ItemStyle, (itemHeight is null) ? "height:50px" : $"height:{itemHeight}px");
+            parameters.Add(p => p.Items, GetTestData(500));
             //ItemSize default value is 50.
-            parameters.Add(p => p.ItemSize, (itemSize is null) ? 50 : itemSize.Value);
+            parameters.Add(p => p.ItemSize, itemSize ?? 50);
             //OverscanCount default value is 3.
-            parameters.Add(p => p.OverscanCount, (overscanCount is null) ? 3 : overscanCount.Value);
+            parameters.Add(p => p.OverscanCount, overscanCount ?? 3);
         });
 
         var bitList = component.Find(".bit-bsc-lst");
 
         if (virtualize)
         {
-            listHeight = (listHeight is null) ? 500 : listHeight;
-            itemHeight = (itemHeight is null) ? 50 : itemHeight;
-            overscanCount = (overscanCount is null) ? 3 : overscanCount;
-
             //When virtualize is true, number of rendered items is greater than number of items showm in the list + 2 * overScanCount.
-            var expectedRenderedItemCount = Math.Ceiling((decimal)(listHeight / itemHeight)) + 2 * overscanCount;
+            var expectedRenderedItemCount = Math.Ceiling((decimal)(viewportHeight / component.Instance.ItemSize)) + (2 * component.Instance.OverscanCount);
             var actualRenderedItemCount = bitList.GetElementsByClassName("list-item").Length;
 
-            // due to changes to Virtualize component in the .net 6.0 RC2, this test is not valid anymore!
-            // Assert.IsTrue(actualRenderedItemCount >= expectedRenderedItemCount);
+            //When actualRenderedItemCount is smaller than expectedRenderedItemCount, so show all items in viewport then actualRenderedItemCount equals total items count
+            if (actualRenderedItemCount < expectedRenderedItemCount)
+            {
+                Assert.AreEqual(component.Instance.Items.Count, actualRenderedItemCount);
+            }
+            else
+            {
+                Assert.AreEqual(expectedRenderedItemCount, actualRenderedItemCount);
+            }
         }
         else
         {
             var actualRenderedItemCount = bitList.GetElementsByClassName("list-item").Length;
-            Assert.AreEqual(itemCount, actualRenderedItemCount);
+            Assert.AreEqual(component.Instance.Items.Count, actualRenderedItemCount);
         }
     }
 
