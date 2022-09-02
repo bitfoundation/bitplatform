@@ -111,6 +111,15 @@ public partial class NavMenu
                 new BitNavLinkItem { Name = "Modal", Key = "Modal", Url = "/components/modal" },
             },
         },
+        new BitNavLinkItem
+        {
+            Name = "Utilities",
+            Key = "Utilities",
+            Links = new List<BitNavLinkItem>
+            {
+                new BitNavLinkItem { Name = "Icon", Key = "Icon", Url = "/components/icons" },
+            },
+        },
         new BitNavLinkItem { Name= "Icons", Key = "Icons", Url = "/icons"},
     };
 

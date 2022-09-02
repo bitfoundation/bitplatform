@@ -174,5 +174,9 @@
     {
         "outputFile": "Pages/Components/NumericTextField/BitNumericTextFieldDemo.razor.css",
         "inputFile": "Pages/Components/NumericTextField/BitNumericTextFieldDemo.razor.scss"
+    },
+    {
+        "outputFile": "Pages/Components/Icon/BitIconDemo.razor.css",
+        "inputFile": "Pages/Components/Icon/BitIconDemo.razor.scss"
     }
 ]
