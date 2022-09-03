@@ -4,7 +4,6 @@
     <PageTitle>AdminPanel</PageTitle>
     <LayoutView Layout="@typeof(MainLayout)">
         <Router AppAssembly="@GetType().Assembly"
-                AdditionalAssemblies="@lazyLoadedAssemblies"
                 OnNavigateAsync="@OnNavigateAsync">
             <Found Context="routeData">
                 <AuthorizeRouteView RouteData="@routeData">
@@ -27,10 +26,11 @@
 </CascadingAuthenticationState>
 
 @code {
-    private List<Assembly> lazyLoadedAssemblies = new();
 
-#if BlazorWebAssembly && !Maui
+    #if BlazorWebAssembly && !Maui
+    private List<Assembly> lazyLoadedAssemblies = new();
     [Inject] private Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader AssemblyLoader { get; set; } = default!;
+    [Inject] private AuthenticationStateProvider _authenticationStateProvider { get; set; } = default!;
 #endif
 
     [Inject] private IJSRuntime _jsRuntime { get; set; } = default!;
@@ -54,8 +54,12 @@
 #if BlazorWebAssembly && !Maui
     if ((args.Path is "/" or "") && lazyLoadedAssemblies.Any(asm => asm.GetName().Name == "Newtonsoft.Json") is false)
     {
-        var assemblies = await AssemblyLoader.LoadAssembliesAsync(new[] { "Newtonsoft.Json.dll", "System.Private.Xml.dll", "System.Data.Common.dll" });
-        lazyLoadedAssemblies.AddRange(assemblies);
+        var isAuthenticated = (await _authenticationStateProvider.GetAuthenticationStateAsync()).User?.Identity?.IsAuthenticated is true;
+        if (isAuthenticated)
+        {
+            var assemblies = await AssemblyLoader.LoadAssembliesAsync(new[] { "Newtonsoft.Json.dll", "System.Private.Xml.dll", "System.Data.Common.dll" });
+            lazyLoadedAssemblies.AddRange(assemblies);
+        }
     }
 #endif
     }

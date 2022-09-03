@@ -3,7 +3,6 @@
     <PageTitle>TodoTemplate</PageTitle>
     <LayoutView Layout="@typeof(MainLayout)">
         <Router AppAssembly="@GetType().Assembly"
-                AdditionalAssemblies="@lazyLoadedAssemblies"
                 OnNavigateAsync="@OnNavigateAsync">
             <Found Context="routeData">
                 <AuthorizeRouteView RouteData="@routeData">
@@ -26,9 +25,9 @@
 </CascadingAuthenticationState>
 
 @code {
-    private List<Assembly> lazyLoadedAssemblies = new();
 
 #if BlazorWebAssembly && !Maui
+    private List<Assembly> lazyLoadedAssemblies = new();
     [Inject] private Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader AssemblyLoader { get; set; } = default!;
 #endif
 
