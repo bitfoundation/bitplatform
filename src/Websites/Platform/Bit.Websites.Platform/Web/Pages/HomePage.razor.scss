@@ -333,6 +333,111 @@
     padding-top: 5rem;
     padding-bottom: 5rem;
     background-color: #F3F6F9;
+
+    .flex-container {
+        display: flex;
+        flex-flow: row nowrap;
+        justify-content: space-between;
+        align-items: flex-start;
+
+        @include lt-lg {
+            flex-flow: column nowrap;
+            justify-content: flex-start;
+            align-items: center;
+        }
+    }
+
+    .text-container {
+        max-width: rem(500px);
+
+        @include lt-lg {
+            max-width: 100%;
+        }
+    }
+
+    .com-link {
+        display: flex;
+        flex-flow: row nowrap;
+        align-items: center;
+        font-weight: 700;
+        font-size: rem(14px);
+        line-height: rem(32px);
+        color: $B6Color;
+        cursor: pointer;
+        transition: all 0.2s linear;
+
+        .com-link-arrow {
+            width: rem(16px);
+            height: rem(16px);
+            margin-left: rem(8px);
+            background-image: url('/images/arrow-right-blue-icon.svg');
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
+
+        &:hover {
+            transform: translateX(5px);
+        }
+    }
+
+    .item-list {
+        display: flex;
+        flex-flow: row nowrap;
+        justify-content: space-between;
+        align-items: flex-start;
+        flex-basis: calc(50% + 40px);
+        flex-grow: 0;
+        max-width: calc(50% + 40px);
+        padding-left: rem(30px);
+
+        @include lt-lg {
+            width: calc(100% + 40px);
+            flex-basis: calc(100% + 40px);
+            max-width: calc(100% + 40px);
+            padding-top: rem(30px);
+        }
+    }
+
+    .com-item {
+        display: flex;
+        flex-flow: row nowrap;
+        flex-basis: 50%;
+        flex-grow: 0;
+        max-width: 50%;
+        padding-left: rem(40px);
+
+        @include lt-lg {
+            padding-top: rem(40px);
+        }
+    }
+
+    .com-item-content {
+        height: 100%;
+        padding: rem(5px);
+        padding-left: rem(20px);
+        border-left: rem(2px) solid #173A5E;
+    }
+
+    .com-item-value {
+        margin: 0;
+        font-size: rem(28px);
+        line-height: 1.5;
+        letter-spacing: 0.2px;
+        font-weight: 400;
+        color: $B6Color;
+        font-weight: 700;
+    }
+
+    .com-item-name {
+        margin: 0;
+        font-size: rem(16px);
+        line-height: 1.5;
+        letter-spacing: 0;
+        font-weight: 400;
+        color: #173A5E;
+        white-space: nowrap;
+    }
 }
 
 .cloud-hosting-section {
