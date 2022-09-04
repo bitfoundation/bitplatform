@@ -8,15 +8,15 @@ public partial class BitIcon
     /// <summary>
     /// The icon name for the icon shown in the button
     /// </summary>
-    [Parameter] public BitIconName Icon { get; set; }
+    [Parameter] public BitIconName IconName { get; set; }
 
     protected override string RootElementClass => "bit-ico";
 
     protected override Task OnParametersSetAsync()
     {
-        if (_internalIcon != Icon)
+        if (_internalIcon != IconName)
         {
-            _internalIcon = Icon;
+            _internalIcon = IconName;
             _internalIconName = _internalIcon.GetName()!;
         }
 

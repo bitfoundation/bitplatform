@@ -105,6 +105,6 @@ public partial class BitIconDemo
 
 
     private readonly string example4HTMLCode = @"
-<BitIcon Icon=""_iconName"" AriaLabel=""accept"" Class=""icon-class"" />
+<BitIcon IconName=""_iconName"" AriaLabel=""accept"" Class=""icon-class"" />
 <BitToggleButton IconName=""_iconName"" OnChange=""() => _iconName = _iconName == BitIconName.Accept ? BitIconName.ChromeClose : BitIconName.Accept"" />";
 }
