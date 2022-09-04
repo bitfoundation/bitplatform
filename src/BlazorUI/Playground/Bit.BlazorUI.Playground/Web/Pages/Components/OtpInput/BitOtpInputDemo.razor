@@ -1,0 +1,14 @@
+﻿@page "/components/otp-input"
+
+<ComponentDemo ComponentName="OtpInput">
+
+    <ComponentExampleBox Title="BitOtpInput" ExampleId="example1">
+        <ExamplePreview>
+
+            <BitOtpInput InputCount="4" @bind-Value="value" DefaultIsFirstInputFocused="true" />
+
+            @value
+
+        </ExamplePreview>
+    </ComponentExampleBox>
+</ComponentDemo>

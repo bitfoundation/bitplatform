@@ -1,0 +1,23 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitInputBase<string?>
+
+<div @ref="RootElement"
+     @attributes="HtmlAttributes"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     aria-label="@AriaLabel">
+
+    @for (var i = 0; i < InputCount; i++)
+    {
+        int index = i;
+
+        <input class="otp-input"
+               maxlength="1"
+               @ref="_inputRef[index]"
+               @bind-value:event="oninput"
+               @bind-value="_inputValue[index]"
+               @onkeydown="(e) => HandleOnKeyDown(e, index)"
+               @onpaste="(e) => HandleOnPaste(e, index)" />
+    }
+
+</div>

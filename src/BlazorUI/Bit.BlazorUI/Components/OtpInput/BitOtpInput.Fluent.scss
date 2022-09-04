@@ -1,0 +1,34 @@
+﻿@import "../../Styles/Fluent/colors.fluent.scss", "../../Styles/functions.scss";
+
+.bit-otpi {
+    .bit-otpi-fluent {
+        position: relative;
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        box-shadow: none;
+        font-size: rem(14px);
+        font-weight: 400;
+        font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+    }
+
+    .otp-input {
+        text-align: center;
+        width: 30px;
+        height: 30px;
+        margin-right: 10px;
+        box-sizing: border-box;
+        border-radius: rem(2px);
+        border: rem(1px) solid $Grey130;
+        background-color: $White;
+
+        &:last-child {
+            margin-right: unset;
+        }
+
+        &:focus {
+            outline: none;
+            border: rem(2px) solid $Primary;
+        }
+    }
+}
