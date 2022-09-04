@@ -1,8 +1,11 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
-<i @ref="RootElement"
-   role="img"
-   style="@StyleBuilder.Value"
-   aria-label="@AriaLabel"
-   class="bit-icon bit-icon--@IconName.GetName() @(string.IsNullOrEmpty(ClassBuilder.Value) is false ? $" {ClassBuilder.Value}" : "")"></i>
+<div @ref="RootElement"
+     class="@ClassBuilder.Value"
+     style="@StyleBuilder.Value">
+    <i 
+       role="img"
+       aria-label="@AriaLabel"
+       class="bit-icon bit-icon--@Icon.GetName()"></i>
+</div>

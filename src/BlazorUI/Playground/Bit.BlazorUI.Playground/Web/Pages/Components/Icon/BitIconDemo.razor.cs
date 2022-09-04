@@ -89,6 +89,12 @@ public partial class BitIconDemo
 <BitIcon IconName=""BitIconName.Pinned"" AriaLabel=""pinned"" />";
 
     private readonly string example2HTMLCode = @"
+<style>
+    .icon-class {
+        font-size: 3rem;
+        margin: 1rem 2rem;
+    }
+</style>
 <BitIcon IconName=""BitIconName.Accept"" AriaLabel=""accept"" Class=""icon-class"" />
 <BitIcon IconName=""BitIconName.Bus"" AriaLabel=""bus"" Class=""icon-class"" />
 <BitIcon IconName=""BitIconName.Pinned"" AriaLabel=""pinned"" Class=""icon-class"" />";
