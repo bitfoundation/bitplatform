@@ -189,14 +189,12 @@
     position: absolute;
     z-index: 1302;
     top: rem(42px);
-    display: flex;
+    display: none;
     flex-flow: row nowrap;
     max-height: rem(350px);
     box-shadow: rgb(0 0 0 / 20%) 0px 8px 10px -5px, rgb(0 0 0 / 14%) 0px 16px 24px 2px, rgb(0 0 0 / 12%) 0px 6px 30px 5px;
     border-radius: rem(4px);
     padding: rem(8px) rem(16px);
-    opacity: 0;
-    transition: opacity 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
     cursor: default;
     background-color: $White;
 
@@ -259,7 +257,7 @@
         color: $B6Color;
 
         > .header-menu-popup {
-            opacity: 1;
+            display: flex;
         }
     }
 }
