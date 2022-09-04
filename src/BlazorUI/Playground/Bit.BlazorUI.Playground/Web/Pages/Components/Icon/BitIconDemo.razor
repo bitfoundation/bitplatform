@@ -30,4 +30,12 @@
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
+    <ComponentExampleBox Title="Controlled BitIcon" HTMLSourceCode="@example4HTMLCode" ExampleId="example4">
+        <ExamplePreview>
+            <div>
+                <BitIcon Icon="_iconName" AriaLabel="accept" Class="icon-class" />
+                <BitToggleButton IconName="_iconName" OnChange="() => _iconName = _iconName == BitIconName.Accept ? BitIconName.ChromeClose : BitIconName.Accept" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
 </ComponentDemo>

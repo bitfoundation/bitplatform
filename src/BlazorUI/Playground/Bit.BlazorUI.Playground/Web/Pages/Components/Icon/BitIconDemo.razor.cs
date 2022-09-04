@@ -6,8 +6,7 @@ namespace Bit.BlazorUI.Playground.Web.Pages.Components.Icon;
 
 public partial class BitIconDemo
 {
-    public int PrimaryCounter;
-    public int StandardCounter;
+    private BitIconName _iconName = BitIconName.Accept;
 
     private readonly List<ComponentParameter> componentParameters = new()
     {
@@ -104,4 +103,8 @@ public partial class BitIconDemo
 <BitIcon IconName=""BitIconName.Bus"" AriaLabel=""bus"" Style=""font-size: 2rem; margin: 1rem 2rem; color: green;"" />
 <BitIcon IconName=""BitIconName.Pinned"" AriaLabel=""pinned"" Style=""font-size: 2rem; margin: 1rem 2rem; color: mediumpurple;"" />";
 
+
+    private readonly string example4HTMLCode = @"
+<BitIcon Icon=""_iconName"" AriaLabel=""accept"" Class=""icon-class"" />
+<BitToggleButton IconName=""_iconName"" OnChange=""() => _iconName = _iconName == BitIconName.Accept ? BitIconName.ChromeClose : BitIconName.Accept"" />";
 }
