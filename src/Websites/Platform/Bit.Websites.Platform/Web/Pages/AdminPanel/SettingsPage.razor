@@ -3,13 +3,13 @@
 <div class="page-container">
     <h1 class="page-main-title">Settings</h1>
     <div class="page-desc">
-        Other configurations available in the Bit TodoTemplate are as follows:
+        Other configurations available in the Bit AdminPanel are as follows:
     </div>
 
     <section class="section-card">
         <h2 class="section-card-title">Authentication policies</h2>
         <div class="section-card-txt">
-            Bit TodoTemplate provides authentication with and implements the SignUp and SignIn user interfaces. 
+            Bit AdminPanel provides authentication with and implements the SignUp and SignIn user interfaces.
             You can change the default settings of the Identity Settings according to your needs; 
             These settings are in the <span class="high-light-text">appsettings.json</span> file in the Api project.
         </div>
@@ -32,15 +32,15 @@
     <section class="section-card">
         <h2 class="section-card-title">JWT settings</h2>
         <div class="section-card-txt">
-            Bit TodoTemplate uses JWT to provide token-based authentication and you can change these settings.
+            Bit AdminPanel uses JWT to provide token-based authentication and you can change these settings.
             You can find these settings in the <span class="high-light-text">appsettings.json</span> file in the Api project.
         </div>
         <div class="code-box">
             <pre class="code">
 <code>"JwtSettings": {
     "IdentityCertificatePassword": "P@ssw0rdP@ssw0rd",
-    "Issuer": "TodoTemplate",
-    "Audience": "TodoTemplate",
+    "Issuer": "AdminPanel",
+    "Audience": "AdminPanel",
     "NotBeforeMinutes": "0",
     "ExpirationMinutes": "1440"
 }</code>
@@ -63,7 +63,7 @@
     <section class="section-card">
         <h2 class="section-card-title">Email settings</h2>
         <div class="section-card-txt">
-            Bit TodoTemplate uses <a href="https://github.com/lukencode/FluentEmail">FluentEmail</a> to send emails.
+            Bit AdminPanel uses <a href="https://github.com/lukencode/FluentEmail">FluentEmail</a> to send emails.
             You can change the SMTP provider settings in the <span class="high-light-text">appsettings.json</span> file in the Api project.
         </div>
         <div class="code-box">
@@ -71,8 +71,8 @@
 <code>"EmailSettings": {
     "Host": "LocalFolder", // Local folder means storing emails in bin\sent-emails folder. (Recommended for testing purposes only)
     "Port": "25",
-    "DefaulFromEmail": "info@todo.com",
-    "DefaultFromName": "Todo",
+    "DefaulFromEmail": "info@admin.com",
+    "DefaultFromName": "Admin",
     "UserName": null,
     "Password": null
 }</code>
@@ -86,7 +86,7 @@
     <section class="section-card">
         <h2 class="section-card-title">User profile image setting</h2>
         <div class="section-card-txt">
-            Bit TodoTemplate saves user profile image in <span class="high-light">Attachments\Profiles</span> directory 
+            Bit AdminPanel saves user profile image in <span class="high-light">Attachments\Profiles</span> directory
             of the Api project as default, you can change this path as you need from the <span class="high-light">appsettings.json</span> file in the Api project.
         </div>
         <div class="code-box">
@@ -97,7 +97,7 @@
     <section class="section-card">
         <h2 class="section-card-title">Health check settings</h2>
         <div class="section-card-txt">
-            Bit TodoTemplate supports Health Checks for reporting the health of app infrastructure components. 
+            Bit AdminPanel supports Health Checks for reporting the health of app infrastructure components.
             Health checks APIs are exposed as an HTTP endpoint. You can change the settings of this feature in the 
             <span class="high-light-text">appsettings.json</span> file in the Api project.
         </div>
