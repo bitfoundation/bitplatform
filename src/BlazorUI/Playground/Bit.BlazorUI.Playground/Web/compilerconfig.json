@@ -178,5 +178,9 @@
     {
         "outputFile": "Pages/Components/Accordion/BitAccordionDemo.razor.css",
         "inputFile": "Pages/Components/Accordion/BitAccordionDemo.razor.scss"
+    },
+    {
+        "outputFile": "Pages/Components/Icon/BitIconDemo.razor.css",
+        "inputFile": "Pages/Components/Icon/BitIconDemo.razor.scss"
     }
 ]
