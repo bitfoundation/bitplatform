@@ -154,5 +154,9 @@
   {
     "outputFile": "Pages/CloudHostingSolutionsPage.razor.css",
     "inputFile": "Pages/CloudHostingSolutionsPage.razor.scss"
+  },
+  {
+    "outputFile": "Pages/VideosPage.razor.css",
+    "inputFile": "Pages/VideosPage.razor.scss"
   }
 ]
