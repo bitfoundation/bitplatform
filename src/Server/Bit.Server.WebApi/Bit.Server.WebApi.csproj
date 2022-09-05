@@ -14,15 +14,15 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Autofac.WebApi2" Version="6.1.0" />
-		<PackageReference Include="Autofac.WebApi2.Owin" Version="6.0.0" />
+		<PackageReference Include="Autofac.WebApi2" Version="6.1.1" />
+		<PackageReference Include="Autofac.WebApi2.Owin" Version="6.1.0" />
 		<PackageReference Include="Microsoft.AspNet.WebApi.Owin" Version="5.2.9" />
 		<PackageReference Include="Microsoft.AspNet.WebApi.Core" Version="5.2.9" />
 		<PackageReference Include="Microsoft.AspNet.WebApi.Versioning.ApiExplorer" Version="4.1.1" />
 		<PackageReference Include="Microsoft.AspNet.WebApi.Versioning" Version="4.1.1" />
 		<PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="6.0.0" />
 		<PackageReference Include="Swashbuckle.Core" Version="5.6.0" />
-		<PackageReference Include="Swashbuckle.Examples" Version="3.12.0" />
+		<PackageReference Include="Swashbuckle.Examples" Version="4.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>
