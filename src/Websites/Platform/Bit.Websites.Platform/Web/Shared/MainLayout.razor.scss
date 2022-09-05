@@ -72,6 +72,7 @@
     padding-top: rem(65px);
     padding-bottom: rem(65px);
     margin: 0 auto;
+    overflow: hidden;
 
     @include lt-xl {
         padding-top: rem(35px);
@@ -112,4 +113,8 @@
     background-color: #c8c6c4;
     border-radius: 16px;
     border: 4px solid #c8c6c4;
+}
+
+::deep code {
+    font-family: ui-monospace,SFMono-Regular,SF Mono,Menlo,Consolas,Liberation Mono,monospace;
 }

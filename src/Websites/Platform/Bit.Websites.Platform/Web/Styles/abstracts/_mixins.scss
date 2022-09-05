@@ -114,6 +114,35 @@
         //font-size: rem(12px);
         //line-height: rem(28px);
     }
+
+    &::-webkit-scrollbar {
+        width: rem(8px);
+        background-color: $White;
+    }
+
+    &::-webkit-scrollbar-track {
+        background-color: $White;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background-color: #c8c6c4;
+        border-radius: rem(8px);
+        border: rem(4px) solid #c8c6c4;
+    }
+
+    &::-webkit-scrollbar-button {
+        display: none;
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+        background-color: $Gray2;
+        border-radius: rem(8px);
+        border: rem(4px) solid $Gray2;
+    }
+
+    &::-webkit-scrollbar:horizontal {
+        height: rem(8px);
+    }
 }
 
 @mixin HighLightText {
