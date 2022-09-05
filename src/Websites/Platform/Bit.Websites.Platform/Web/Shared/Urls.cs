@@ -32,7 +32,7 @@ public static class Urls
     public const string AdminPanelPwa = "#";
     public const string AdminPanelAppCenter = "#";
     public const string AdminPanelFigma = "#";
-    public const string AdminPanelNuget = "#";
+    public const string AdminPanelNuget = "https://www.nuget.org/packages/Bit.AdminPanel";
 
     public const string Components = "/components";
     public const string ComponentsDocs = "https://components.bitplatform.dev/";
