@@ -6,10 +6,10 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.Client.Xamarin.Prism" Version="11.0.0" />
-        <PackageReference Include="Bit.Tooling.CodeAnalyzer" Version="11.0.0" />
-        <PackageReference Include="Microsoft.AppCenter.Analytics" Version="4.5.1" />
-        <PackageReference Include="Microsoft.AppCenter.Crashes" Version="4.5.1" />
+        <PackageReference Include="Bit.Client.Xamarin.Prism" Version="12.0.0" />
+        <PackageReference Include="Bit.Tooling.CodeAnalyzer" Version="12.0.0" />
+        <PackageReference Include="Microsoft.AppCenter.Analytics" Version="4.5.3" />
+        <PackageReference Include="Microsoft.AppCenter.Crashes" Version="4.5.3" />
     </ItemGroup>
 
 </Project>
