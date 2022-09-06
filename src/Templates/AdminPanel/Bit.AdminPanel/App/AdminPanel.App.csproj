@@ -108,6 +108,8 @@
         <Content Remove="Properties\launchSettings.json" />
         <Content Remove="sassconfig.json" />
         <None Include="sassconfig.json" />
+
+        <Watch Remove="*.scss" />
     </ItemGroup>
 
     <ItemGroup>
