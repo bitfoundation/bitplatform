@@ -1,7 +1,7 @@
 ﻿@import "../../Styles/Fluent/colors.fluent.scss", "../../Styles/functions.scss";
 
-.bit-otpi {
-    .bit-otpi-fluent {
+.bit-otp {
+    &.bit-otp-fluent {
         position: relative;
         margin: 0;
         padding: 0;
@@ -12,23 +12,84 @@
         font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
     }
 
+    .otp-input-wrapper {
+        outline: none;
+        display: flex;
+
+        &.left-to-right {
+            flex-direction: row;
+
+            .otp-input {
+                margin-right: rem(10px);
+
+                &:last-child {
+                    margin-right: unset;
+                }
+            }
+        }
+
+        &.right-to-left {
+            flex-direction: row-reverse;
+
+            .otp-input {
+                margin-left: rem(10px);
+
+                &:last-child {
+                    margin-left: unset;
+                }
+            }
+        }
+
+        &.top-to-bottom {
+            flex-direction: column;
+
+            .otp-input {
+                margin-bottom: rem(10px);
+
+                &:last-child {
+                    margin-bottom: unset;
+                }
+            }
+        }
+
+        &.bottom-to-top {
+            flex-direction: column-reverse;
+
+            .otp-input {
+                margin-top: rem(10px);
+
+                &:last-child {
+                    margin-top: unset;
+                }
+            }
+        }
+    }
+
     .otp-input {
-        text-align: center;
-        width: 30px;
-        height: 30px;
-        margin-right: 10px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: rem(30px);
+        height: rem(30px);
         box-sizing: border-box;
         border-radius: rem(2px);
         border: rem(1px) solid $Grey130;
         background-color: $White;
+        cursor: pointer;
 
-        &:last-child {
-            margin-right: unset;
-        }
-
-        &:focus {
+        &.focused {
             outline: none;
             border: rem(2px) solid $Primary;
         }
+    }
+
+    .text-input {
+    }
+
+    .paswword-input {
+        width: 3px;
+        height: 3px;
+        border-radius: 50%;
+        background-color: $Black;
     }
 }

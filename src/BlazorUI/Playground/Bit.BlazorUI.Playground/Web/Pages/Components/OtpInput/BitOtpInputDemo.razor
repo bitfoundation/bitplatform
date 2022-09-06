@@ -5,9 +5,18 @@
     <ComponentExampleBox Title="BitOtpInput" ExampleId="example1">
         <ExamplePreview>
 
-            <BitOtpInput InputCount="4" @bind-Value="value" DefaultIsFirstInputFocused="true" />
+            <BitLabel>Password type otp</BitLabel>
+            <BitOtpInput InputCount="6" @bind-Value="value2" InputType="BitOtpInputType.Text" AutoFocus="true" Direction="BitOtpInputDirection.LeftToRight" />
+            <div style="margin: 30px 0;"></div>
+            <BitOtpInput InputCount="6" @bind-Value="value2" InputType="BitOtpInputType.Text" AutoFocus="true" Direction="BitOtpInputDirection.RightToLeft" />
+            <div style="margin: 30px 0;"></div>
+            <BitOtpInput InputCount="6" @bind-Value="value2" InputType="BitOtpInputType.Text" AutoFocus="true" Direction="BitOtpInputDirection.TopToBottom" />
+            <div style="margin: 30px 0;"></div>
+            <BitOtpInput InputCount="6" @bind-Value="value2" InputType="BitOtpInputType.Text" AutoFocus="true" Direction="BitOtpInputDirection.BottomToTop" />
+            <div style="margin: 30px 0;"></div>
+            @value2
 
-            @value
+            <div style="margin: 30px 0;"></div>
 
         </ExamplePreview>
     </ComponentExampleBox>

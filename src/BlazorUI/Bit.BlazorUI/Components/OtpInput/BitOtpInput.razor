@@ -7,17 +7,31 @@
      class="@ClassBuilder.Value"
      aria-label="@AriaLabel">
 
-    @for (var i = 0; i < InputCount; i++)
-    {
-        int index = i;
+    <div class="otp-input-wrapper @_direction"
+         tabindex="@(IsEnabled ? 0 : -1)"
+         @ref="_otpInpt"
+         @onfocusin="HandleOnFocusIn"
+         @onfocusout="HandleOnFocusOut"
+         @onkeydown="HandleOnKeyDown"
+         @onpaste="HandleOnPaste">
 
-        <input class="otp-input"
-               maxlength="1"
-               @ref="_inputRef[index]"
-               @bind-value:event="oninput"
-               @bind-value="_inputValue[index]"
-               @onkeydown="(e) => HandleOnKeyDown(e, index)"
-               @onpaste="(e) => HandleOnPaste(e, index)" />
-    }
+        @for (var i = 0; i < InputCount; i++)
+        {
+            int index = i;
 
+            <div class="otp-input @(_currentIndex != null && _currentIndex.Value == index ? "focused" : "")">
+
+                @if (InputType is BitOtpInputType.Password && @_inputValue[index].HasValue())
+                {
+                    <span class="paswword-input"></span>
+                }
+                else
+                {
+                    <span class="text-input">
+                        @_inputValue[index]
+                    </span>
+                }
+            </div>
+        }
+     </div>
 </div>
