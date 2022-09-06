@@ -1,6 +1,8 @@
 ﻿class BitOtpInput {
-    static getPastedData(e: ClipboardEvent) {
+    static getPastedData() {
 
-        
+        let pastedData = "test";
+
+        return pastedData;
     }
 }

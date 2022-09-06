@@ -30,6 +30,7 @@
 
         &.right-to-left {
             flex-direction: row-reverse;
+            justify-content: flex-end;
 
             .otp-input {
                 margin-left: rem(10px);
@@ -87,8 +88,8 @@
     }
 
     .paswword-input {
-        width: 3px;
-        height: 3px;
+        width: rem(3px);
+        height: rem(3px);
         border-radius: 50%;
         background-color: $Black;
     }

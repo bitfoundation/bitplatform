@@ -81,17 +81,22 @@ public partial class BitOtpInput
             _inputValue[_currentIndex.Value] = key;
             _currentIndex = nextInput;
         }
-        else if (code is "Backspace" || code is "Delete")
+        else if (code is "Backspace")
         {
             _inputValue[_currentIndex.Value] = null;
             _currentIndex = previousInput;
         }
+        else if (code is "Delete")
+        {
+            _inputValue[_currentIndex.Value] = null;
+            _currentIndex = nextInput;
+        }
         else if (code is "ArrowLeft")
         {
-            _currentIndex = Direction is BitOtpInputDirection.LeftToRight 
-                ? previousInput 
-                : Direction is BitOtpInputDirection.RightToLeft 
-                    ? nextInput 
+            _currentIndex = Direction is BitOtpInputDirection.LeftToRight
+                ? previousInput
+                : Direction is BitOtpInputDirection.RightToLeft
+                    ? nextInput
                     : _currentIndex;
 
         }
@@ -137,7 +142,22 @@ public partial class BitOtpInput
 
     private async Task HandleOnPaste(ClipboardEventArgs e)
     {
-        var aa = await _js.GetPastedData();
+        var data = await _js.GetPastedData();
+
+        if (data is not null)
+        {
+            var splitedData = data.ToCharArray();
+
+            for (int i = 0; i < splitedData.Length; i++)
+            {
+                if (i < InputCount)
+                {
+                    _inputValue[i] = splitedData[i].ToString();
+                }
+            }
+
+            CurrentValue = string.Join("", _inputValue);
+        }
 
         await OnPaste.InvokeAsync(e);
     }
