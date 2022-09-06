@@ -34,12 +34,26 @@ public partial class BitDatePickerDemo
             DefaultValue = "false",
             Description = "Whether the DatePicker allows input a date string directly or not.",
         },
+        new ComponentParameter
+        {
+            Name = "CalloutHtmlAttributes",
+            Type = "Dictionary<string, object>",
+            DefaultValue = "",
+            Description = "Capture and render additional attributes in addition to the main callout's parameters."
+        },
         new ComponentParameter()
         {
             Name = "Culture",
             Type = "CultureInfo",
             DefaultValue = "CultureInfo.CurrentUICulture",
             Description = "CultureInfo for the DatePicker."
+        },
+        new ComponentParameter()
+        {
+            Name = "FormatDate",
+            Type = "string",
+            DefaultValue = "",
+            Description = @"Date format like ""yyyy/MM/dd"".",
         },
         new ComponentParameter()
         {
@@ -54,6 +68,20 @@ public partial class BitDatePickerDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Determines if the DatePicker has a border.",
+        },
+        new ComponentParameter
+        {
+            Name = "HighlightCurrentMonth",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the month picker should highlight the current month."
+        },
+        new ComponentParameter
+        {
+            Name = "HighlightSelectedMonth",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the month picker should highlight the selected month."
         },
         new ComponentParameter()
         {
@@ -83,6 +111,27 @@ public partial class BitDatePickerDemo
             DefaultValue = "",
             Description = "Label for the DatePicker.",
         },
+        new ComponentParameter
+        {
+            Name = "LabelFragment",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Used to customize the label for the DatePicker."
+        },
+        new ComponentParameter()
+        {
+            Name = "MaxDate",
+            Type = "DateTimeOffset",
+            DefaultValue = "",
+            Description = "The maximum allowable date.",
+        },
+        new ComponentParameter()
+        {
+            Name = "MinDate",
+            Type = "DateTimeOffset",
+            DefaultValue = "",
+            Description = "The minimum allowable date.",
+        },
         new ComponentParameter()
         {
             Name = "OnClick",
@@ -111,12 +160,12 @@ public partial class BitDatePickerDemo
             DefaultValue = "",
             Description = "Callback for when the on selected date changed.",
         },
-        new ComponentParameter()
+        new ComponentParameter
         {
-            Name = "ValueChanged",
-            Type = "EventCallback<DateTimeOffset?>",
-            DefaultValue = "",
-            Description = "Callback for when the on date value changed.",
+            Name = "PickerAriaLabel",
+            Type = "string",
+            DefaultValue = "Calendar",
+            Description = "Aria label for date picker popup for screen reader users."
         },
         new ComponentParameter()
         {
@@ -125,12 +174,33 @@ public partial class BitDatePickerDemo
             DefaultValue = "Select a date...",
             Description = "Placeholder text for the DatePicker.",
         },
+        new ComponentParameter
+        {
+            Name = "ShowCloseButton",
+            Type = "bool",
+            DefaultValue = "",
+            Description = "Whether the CalendarDay close button should be shown or not."
+        },
+        new ComponentParameter
+        {
+            Name = "ShowGoToToday",
+            Type = "bool",
+            DefaultValue = "true",
+            Description = "Whether the \"Go to today\" link should be shown or not."
+        },
         new ComponentParameter()
         {
             Name = "ShowMonthPickerAsOverlay",
             Type = "bool",
             DefaultValue = "false",
             Description = "Show month picker on top of date picker when visible.",
+        },
+        new ComponentParameter()
+        {
+            Name = "ShowWeekNumbers",
+            Type = "bool",
+            DefaultValue = "",
+            Description = "Show week number in the year.",
         },
         new ComponentParameter()
         {
@@ -148,80 +218,10 @@ public partial class BitDatePickerDemo
         },
         new ComponentParameter()
         {
-            Name = "MaxDate",
-            Type = "DateTimeOffset",
+            Name = "ValueChanged",
+            Type = "EventCallback<DateTimeOffset?>",
             DefaultValue = "",
-            Description = "The maximum allowable date.",
-        },
-        new ComponentParameter()
-        {
-            Name = "MinDate",
-            Type = "DateTimeOffset",
-            DefaultValue = "",
-            Description = "The minimum allowable date.",
-        },
-        new ComponentParameter()
-        {
-            Name = "FormatDate",
-            Type = "string",
-            DefaultValue = "",
-            Description = @"Date format like ""yyyy/MM/dd"".",
-        },
-        new ComponentParameter()
-        {
-            Name = "ShowWeekNumbers",
-            Type = "bool",
-            DefaultValue = "",
-            Description = "Show week number in the year.",
-        },
-        new ComponentParameter
-        {
-            Name = "LabelFragment",
-            Type = "RenderFragment?",
-            DefaultValue = "null",
-            Description = "Used to customize the label for the DatePicker."
-        },
-        new ComponentParameter
-        {
-            Name = "CalloutHtmlAttributes",
-            Type = "Dictionary<string, object>",
-            DefaultValue = "",
-            Description = "Capture and render additional attributes in addition to the main callout's parameters."
-        },
-        new ComponentParameter
-        {
-            Name = "PickerAriaLabel",
-            Type = "string",
-            DefaultValue = "Calendar",
-            Description = "Aria label for date picker popup for screen reader users."
-        },
-        new ComponentParameter
-        {
-            Name = "ShowGoToToday",
-            Type = "bool",
-            DefaultValue = "true",
-            Description = "Whether the \"Go to today\" link should be shown or not."
-        },
-        new ComponentParameter
-        {
-            Name = "ShowCloseButton",
-            Type = "bool",
-            DefaultValue = "",
-            Description = "Whether the CalendarDay close button should be shown or not."
-        },
-        new ComponentParameter
-        {
-            Name = "HighlightCurrentMonth",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Whether the month picker should highlight the current month."
-        },
-        new ComponentParameter
-        {
-            Name = "HighlightSelectedMonth",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Whether the month picker should highlight the selected month."
+            Description = "Callback for when the on date value changed.",
         }
     };
 
@@ -346,7 +346,7 @@ private void HandleInvalidSubmit()
 {
     SuccessMessage = string.Empty;
 }";
-    
+
     private readonly string example9HtmlCode = @"
 <BitDatePicker Options=""Example9Options"">
             <LabelFragment>
