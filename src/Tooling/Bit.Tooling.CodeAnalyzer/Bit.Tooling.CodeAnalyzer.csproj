@@ -14,8 +14,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.2.0" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="4.2.0" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.3.0" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="4.3.0" PrivateAssets="All" />
   </ItemGroup>
 
   <Import Project="..\Bit.Tooling.Core\Bit.Tooling.Core.projitems" Label="Shared" />
