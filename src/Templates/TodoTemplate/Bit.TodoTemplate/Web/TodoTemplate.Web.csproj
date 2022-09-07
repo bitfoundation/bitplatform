@@ -30,10 +30,10 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.BlazorUI" Version="4.0.0" />
-        <PackageReference Include="Bit.Bswup" Version="4.0.0" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="4.0.0" />
-        <PackageReference Include="Bit.SourceGenerators" Version="4.0.0" />
+        <PackageReference Include="Bit.BlazorUI" Version="4.1.0-pre-01" />
+        <PackageReference Include="Bit.Bswup" Version="4.1.0-pre-01" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="4.1.0-pre-01" />
+        <PackageReference Include="Bit.SourceGenerators" Version="4.1.0-pre-01" />
         <PackageReference Include="Abstractions.Sass.CIBuild" Version="1.1.52" />
         <PackageReference Include="jose-jwt" Version="4.0.1" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.8" />
