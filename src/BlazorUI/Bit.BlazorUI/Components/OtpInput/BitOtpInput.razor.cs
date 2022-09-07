@@ -19,7 +19,7 @@ public partial class BitOtpInput
 
     [Parameter] public BitOtpInputDirection Direction { get; set; } = BitOtpInputDirection.LeftToRight;
 
-    [Parameter] public EventCallback<KeyboardEventArgs> OnKeyUp { get; set; }
+    [Parameter] public EventCallback<KeyboardEventArgs> OnKeyDown { get; set; }
 
     [Parameter] public EventCallback<FocusEventArgs> OnFocusIn { get; set; }
 
@@ -61,73 +61,81 @@ public partial class BitOtpInput
         await base.OnAfterRenderAsync(firstRender);
     }
 
-    private async Task HandleOnKeyUp(KeyboardEventArgs e)
+    protected override async Task OnParametersSetAsync()
+    {
+        if (CurrentValue != null && CurrentValue != string.Join("", _inputValue))
+        {
+            SyncCurrentValueWithArray();
+        }
+
+        await base.OnParametersSetAsync();
+    }
+
+    private async Task HandleOnKeyDown(KeyboardEventArgs e)
     {
         if (IsEnabled is false) return;
 
-        if (e.CtrlKey is false && e.AltKey is false)
-        {
-            NavigateInput(e.Code, e.Key);
-        }
+        NavigateInput(e.Code, e.Key);
 
-        CurrentValue = string.Join("", _inputValue);
-
-        await OnKeyUp.InvokeAsync(e);
+        await OnKeyDown.InvokeAsync(e);
     }
 
     private void NavigateInput(string code, string key)
     {
         if (_currentIndex is null) return;
 
-        int nextInput = _currentIndex.Value + 1 >= InputCount ? _currentIndex.Value : _currentIndex.Value + 1;
-        int previousInput = _currentIndex.Value - 1 < 0 ? _currentIndex.Value : _currentIndex.Value - 1;
+        int nextIndex = _currentIndex.Value + 1 >= InputCount ? _currentIndex.Value : _currentIndex.Value + 1;
+        int previousIndex = _currentIndex.Value - 1 < 0 ? _currentIndex.Value : _currentIndex.Value - 1;
 
         if (code.Contains("Digit") || code.Contains("Key") || code.Contains("Numpad"))
         {
             _inputValue[_currentIndex.Value] = key;
-            _currentIndex = nextInput;
+            CurrentValue = string.Join("", _inputValue);
+            _currentIndex = nextIndex;
         }
         else if (code is "Backspace")
         {
             _inputValue[_currentIndex.Value] = null;
-            _currentIndex = previousInput;
+            CurrentValue = string.Join("", _inputValue);
+            _currentIndex = previousIndex;
         }
         else if (code is "Delete")
         {
             _inputValue[_currentIndex.Value] = null;
-            _currentIndex = nextInput;
+            CurrentValue = string.Join("", _inputValue);
+            _currentIndex = nextIndex;
         }
         else if (code is "ArrowLeft")
         {
             _currentIndex = Direction is BitOtpInputDirection.LeftToRight
-                ? previousInput
+                ? previousIndex
                 : Direction is BitOtpInputDirection.RightToLeft
-                    ? nextInput
+                    ? nextIndex
                     : _currentIndex;
 
         }
         else if (code is "ArrowRight")
         {
             _currentIndex = Direction is BitOtpInputDirection.LeftToRight
-                ? nextInput
+                ? nextIndex
                 : Direction is BitOtpInputDirection.RightToLeft
-                    ? previousInput
+                    ? previousIndex
                     : _currentIndex;
         }
         else if (code is "ArrowUp")
         {
             _currentIndex = Direction is BitOtpInputDirection.TopToBottom
-                ? previousInput
+                ? previousIndex
                 : Direction is BitOtpInputDirection.BottomToTop
-                    ? nextInput
+                    ? nextIndex
                     : _currentIndex;
         }
         else if (code is "ArrowDown")
         {
             _currentIndex = Direction is BitOtpInputDirection.TopToBottom
-                ? nextInput
+                ? nextIndex
                 : Direction is BitOtpInputDirection.BottomToTop
-                    ? previousInput
+                    ? previousIndex
                     : _currentIndex;
         }
     }
@@ -154,20 +162,27 @@ public partial class BitOtpInput
     [JSInvokable]
     public async Task SetPastedData(string data)
     {
-        if (data is not null)
+        CurrentValue = data;
+    }
+
+    private void SyncCurrentValueWithArray()
+    {
+        if (CurrentValue is null) return;
+
+        var splitedCurrentValue = CurrentValue.ToCharArray();
+        for (int i = 0; i < InputCount; i++)
         {
-            var splitedData = data.ToCharArray();
-
-            for (int i = 0; i < splitedData.Length; i++)
+            if (splitedCurrentValue.Length > i)
             {
-                if (i < InputCount)
-                {
-                    _inputValue[i] = splitedData[i].ToString();
-                }
+                _inputValue[i] = splitedCurrentValue[i].ToString();
             }
-
-            CurrentValue = string.Join("", _inputValue);
+            else
+            {
+                _inputValue[i] = null;
+            }   
         }
+
+        CurrentValue = string.Join("", _inputValue);
     }
 
     /// <inheritdoc />

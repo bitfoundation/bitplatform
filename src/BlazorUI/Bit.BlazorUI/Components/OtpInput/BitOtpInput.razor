@@ -12,7 +12,8 @@
          @ref="_otpInpt"
          @onfocusin="HandleOnFocusIn"
          @onfocusout="HandleOnFocusOut"
-         @onkeyup="HandleOnKeyUp"
+         @onkeydown="HandleOnKeyDown"
+         @onkeydown:preventDefault="true"
          @onpaste="HandleOnPaste">
 
         @for (var i = 0; i < InputCount; i++)
