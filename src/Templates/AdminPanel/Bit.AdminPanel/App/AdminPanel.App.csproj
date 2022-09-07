@@ -92,7 +92,7 @@
         <PackageReference Include="Bit.BlazorUI.Charts" Version="4.0.0" />
         <PackageReference Include="Bit.CodeAnalyzers" Version="4.0.0" />
         <PackageReference Include="Bit.SourceGenerators" Version="4.0.0" />
-        <PackageReference Include="BuildWebCompiler2022" Version="1.14.8" />
+        <PackageReference Include="Abstractions.Sass.CIBuild" Version="1.1.52" />
         <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.8.2">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -106,8 +106,10 @@
         <Compile Remove="Extensions\HttpRequestExtensions.cs" />
         <Compile Remove="Services\Implementations\ServerSideAuthTokenProvider.cs" />
         <Content Remove="Properties\launchSettings.json" />
-        <Content Remove="compilerconfig.json" />
-        <None Include="compilerconfig.json" />
+        <Content Remove="sassconfig.json" />
+        <None Include="sassconfig.json" />
+
+        <Watch Remove="*.scss" />
     </ItemGroup>
 
     <ItemGroup>
