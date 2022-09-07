@@ -19,7 +19,7 @@ public partial class BitOtpInput
 
     [Parameter] public BitOtpInputDirection Direction { get; set; } = BitOtpInputDirection.LeftToRight;
 
-    [Parameter] public EventCallback<KeyboardEventArgs> OnKeyDown { get; set; }
+    [Parameter] public EventCallback<KeyboardEventArgs> OnKeyUp { get; set; }
 
     [Parameter] public EventCallback<FocusEventArgs> OnFocusIn { get; set; }
 
@@ -53,20 +53,26 @@ public partial class BitOtpInput
             {
                 await _otpInpt.FocusAsync();
             }
+
+            var obj = DotNetObjectReference.Create(this);
+            await _js.SetupOtpInputPaste(obj, _otpInpt);
         }
 
         await base.OnAfterRenderAsync(firstRender);
     }
 
-    private async Task HandleOnKeyDown(KeyboardEventArgs e)
+    private async Task HandleOnKeyUp(KeyboardEventArgs e)
     {
         if (IsEnabled is false) return;
 
-        NavigateInput(e.Code, e.Key);
+        if (e.CtrlKey is false && e.AltKey is false)
+        {
+            NavigateInput(e.Code, e.Key);
+        }
 
         CurrentValue = string.Join("", _inputValue);
 
-        await OnKeyDown.InvokeAsync(e);
+        await OnKeyUp.InvokeAsync(e);
     }
 
     private void NavigateInput(string code, string key)
@@ -142,8 +148,12 @@ public partial class BitOtpInput
 
     private async Task HandleOnPaste(ClipboardEventArgs e)
     {
-        var data = await _js.GetPastedData();
+        await OnPaste.InvokeAsync(e);
+    }
 
+    [JSInvokable]
+    public async Task SetPastedData(string data)
+    {
         if (data is not null)
         {
             var splitedData = data.ToCharArray();
@@ -158,8 +168,6 @@ public partial class BitOtpInput
 
             CurrentValue = string.Join("", _inputValue);
         }
-
-        await OnPaste.InvokeAsync(e);
     }
 
     /// <inheritdoc />

@@ -1,8 +1,10 @@
 ﻿class BitOtpInput {
-    static getPastedData() {
+    static setupOtpInputPaste(dotnetReference: DotNetObject, otpInput: HTMLElement) {
 
-        let pastedData = "test";
-
-        return pastedData;
+        otpInput.addEventListener('paste', async e => {
+            e.preventDefault();
+            let data = e.clipboardData?.getData('Text');
+            await dotnetReference.invokeMethodAsync("SetPastedData", data);
+        });
     }
 }

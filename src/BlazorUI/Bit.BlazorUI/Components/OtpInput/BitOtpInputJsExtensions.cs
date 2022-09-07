@@ -3,8 +3,8 @@ namespace Bit.BlazorUI;
 
 internal static class BitOtpInputJsExtensions
 {
-    internal static async Task<string?> GetPastedData(this IJSRuntime jsRuntime)
+    internal static async Task SetupOtpInputPaste(this IJSRuntime jsRuntime, DotNetObjectReference<BitOtpInput> obj, ElementReference otp)
     {
-        return await jsRuntime.InvokeAsync<string?>("BitOtpInput.getPastedData");
+        await jsRuntime.InvokeVoidAsync("BitOtpInput.setupOtpInputPaste", obj, otp);
     }
 }
