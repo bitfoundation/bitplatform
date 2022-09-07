@@ -1,0 +1,41 @@
+﻿@page "/components/icons"
+
+<ComponentDemo ComponentName="Icon" ComponentDescription="In a user interface, an icon represents concept or meaning for the user. It's used to make better user experience (UX) and user-friendly applications."
+               ComponentParameters="componentParameters" EnumParameters="enumParameters">
+    <ComponentExampleBox Title="BitIcon" HTMLSourceCode="@example1HTMLCode" ExampleId="example1">
+        <ExamplePreview>
+            <div class="example-desc">To create an Icon you can use a BitIcon component.</div>
+            <div>
+                <BitIcon IconName="BitIconName.Accept" AriaLabel="accept" />
+                <BitIcon IconName="BitIconName.Bus" AriaLabel="bus" />
+                <BitIcon IconName="BitIconName.Pinned" AriaLabel="pinned" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+    <ComponentExampleBox Title="With Custom Class" HTMLSourceCode="@example2HTMLCode" ExampleId="example2">
+        <ExamplePreview>
+            <div>
+                <BitIcon IconName="BitIconName.Accept" AriaLabel="accept" Class="icon-class" />
+                <BitIcon IconName="BitIconName.Bus" AriaLabel="bus" Class="icon-class" />
+                <BitIcon IconName="BitIconName.Pinned" AriaLabel="pinned" Class="icon-class" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+    <ComponentExampleBox Title="With Custom Style" HTMLSourceCode="@example3HTMLCode" ExampleId="example2">
+        <ExamplePreview>
+            <div>
+                <BitIcon IconName="BitIconName.Accept" AriaLabel="accept" Style="font-size: 2rem; margin: 1rem 2rem; color: red;" />
+                <BitIcon IconName="BitIconName.Bus" AriaLabel="bus" Style="font-size: 2rem; margin: 1rem 2rem; color: green;" />
+                <BitIcon IconName="BitIconName.Pinned" AriaLabel="pinned" Style="font-size: 2rem; margin: 1rem 2rem; color: mediumpurple;" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+    <ComponentExampleBox Title="Controlled BitIcon" HTMLSourceCode="@example4HTMLCode" ExampleId="example4">
+        <ExamplePreview>
+            <div>
+                <BitIcon IconName="_iconName" AriaLabel="accept" Class="icon-class" />
+                <BitToggleButton IconName="_iconName" OnChange="() => _iconName = _iconName == BitIconName.Accept ? BitIconName.ChromeClose : BitIconName.Accept" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+</ComponentDemo>
