@@ -384,8 +384,6 @@
     .item-list {
         display: flex;
         flex-flow: row nowrap;
-        justify-content: space-between;
-        align-items: flex-start;
         flex-basis: calc(50% + 40px);
         flex-grow: 0;
         max-width: calc(50% + 40px);
@@ -396,6 +394,10 @@
             flex-basis: calc(100% + 40px);
             max-width: calc(100% + 40px);
             padding-top: rem(30px);
+        }
+
+        @include sm {
+            flex-wrap: wrap;
         }
     }
 
@@ -436,7 +438,6 @@
         letter-spacing: 0;
         font-weight: 400;
         color: #173A5E;
-        white-space: nowrap;
     }
 }
 
@@ -473,7 +474,6 @@
         flex-grow: 0;
         max-width: calc((100% / 3) - 20px);
         min-width: rem(275px);
-        height: 100%;
         min-height: rem(241px);
         padding: rem(20px);
         margin-top: rem(20px);

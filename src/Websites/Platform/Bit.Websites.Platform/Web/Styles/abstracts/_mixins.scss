@@ -101,6 +101,10 @@
         margin-bottom: rem(12px);
         font-size: rem(15px);
         line-height: rem(28px);
+
+        ul {
+            padding-left: rem(16px);
+        }
     }
 }
 
@@ -178,6 +182,8 @@
     background-color: $B11Color;
     border-radius: rem(4px);
     padding: rem(4px);
+    margin: rem(2px) 0;
+    word-break: break-word;
 }
 
 @mixin ImageContainer {

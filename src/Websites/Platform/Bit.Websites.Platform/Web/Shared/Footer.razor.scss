@@ -30,6 +30,10 @@
         @include lg {
             grid-template-columns: 1fr 1.75fr;
         }
+
+        @include sm {
+            grid-template-columns: 1fr;
+        }
     }
 
     &:last-child {
