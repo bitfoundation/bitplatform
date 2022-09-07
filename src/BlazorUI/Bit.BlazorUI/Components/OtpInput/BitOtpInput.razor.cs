@@ -11,20 +11,44 @@ public partial class BitOtpInput
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
+    /// <summary>
+    /// Count of input in Otp.
+    /// </summary>
     [Parameter] public int InputCount { get; set; }
 
+    /// <summary>
+    /// If true, the first input is focused.
+    /// </summary>
     [Parameter] public bool AutoFocus { get; set; }
 
+    /// <summary>
+    /// Type of input shown as text, number, and password.
+    /// </summary>
     [Parameter] public BitOtpInputType InputType { get; set; } = BitOtpInputType.Text;
 
+    /// <summary>
+    /// the OtpInput direction in four available directions.
+    /// </summary>
     [Parameter] public BitOtpInputDirection Direction { get; set; } = BitOtpInputDirection.LeftToRight;
 
+    /// <summary>
+    /// Callback for when a keyboard key is pressed.
+    /// </summary>
     [Parameter] public EventCallback<KeyboardEventArgs> OnKeyDown { get; set; }
 
+    /// <summary>
+    /// Callback for when OtpInput is focused in.
+    /// </summary>
     [Parameter] public EventCallback<FocusEventArgs> OnFocusIn { get; set; }
 
+    /// <summary>
+    /// Callback for when OtpInput is focused out.
+    /// </summary>
     [Parameter] public EventCallback<FocusEventArgs> OnFocusOut { get; set; }
 
+    /// <summary>
+    /// Callback for when in the OtpInput paste a content.
+    /// </summary>
     [Parameter] public EventCallback<ClipboardEventArgs> OnPaste { get; set; }
 
     protected override string RootElementClass => "bit-otp";
