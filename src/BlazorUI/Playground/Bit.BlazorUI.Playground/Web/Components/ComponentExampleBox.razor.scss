@@ -27,13 +27,13 @@
     font-weight: 600;
     font-size: rem(20px);
     color: #1a2027;
+    word-break: break-word;
 }
 
 .header-btn-group {
     display: flex;
     align-items: center;
     flex-flow: row nowrap;
-    margin-bottom: -1px;
 }
 
 .box-content {
@@ -61,7 +61,7 @@
 }
 
 .example-container {
-    padding: rem(20px) rem(4px);
+    padding: rem(24px);
 
     &::-webkit-scrollbar {
         width: rem(10px);
