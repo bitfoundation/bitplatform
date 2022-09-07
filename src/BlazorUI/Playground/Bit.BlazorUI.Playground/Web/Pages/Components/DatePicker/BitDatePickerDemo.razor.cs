@@ -171,7 +171,7 @@ public partial class BitDatePickerDemo
         {
             Name = "Placeholder",
             Type = "string",
-            DefaultValue = "Select a date...",
+            DefaultValue = "",
             Description = "Placeholder text for the DatePicker.",
         },
         new ComponentParameter
@@ -264,7 +264,8 @@ public partial class BitDatePickerDemo
     private readonly string example2HTMLCode = @"
 <BitDatePicker IsEnabled=false
                Style=""max-width: 300px""
-               AriaLabel=""Select a date"" />
+               AriaLabel=""Select a date""
+               Placeholder=""Select a date..."" />
 <BitDatePicker IsEnabled=false
                Style=""max-width: 300px""
                Label=""Disabled (with label)""
