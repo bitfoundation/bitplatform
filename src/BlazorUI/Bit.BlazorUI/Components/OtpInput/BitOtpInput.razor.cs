@@ -5,16 +5,11 @@ namespace Bit.BlazorUI;
 public partial class BitOtpInput
 {
     private ElementReference _otpInpt = default!;
-    private string?[] _inputValue = default!;
+    private string[] _inputValue = default!;
     private string _direction = default!;
     private int? _currentIndex;
-
+    private bool _keyDownPreventDefault;
     [Inject] private IJSRuntime _js { get; set; } = default!;
-
-    /// <summary>
-    /// Count of input in Otp.
-    /// </summary>
-    [Parameter] public int InputCount { get; set; }
 
     /// <summary>
     /// If true, the first input is focused.
@@ -22,14 +17,19 @@ public partial class BitOtpInput
     [Parameter] public bool AutoFocus { get; set; }
 
     /// <summary>
+    /// The OtpInput direction in four available directions.
+    /// </summary>
+    [Parameter] public BitOtpInputDirection Direction { get; set; } = BitOtpInputDirection.LeftToRight;
+
+    /// <summary>
     /// Type of input shown as text, number, and password.
     /// </summary>
     [Parameter] public BitOtpInputType InputType { get; set; } = BitOtpInputType.Text;
 
     /// <summary>
-    /// the OtpInput direction in four available directions.
+    /// Count of input in Otp.
     /// </summary>
-    [Parameter] public BitOtpInputDirection Direction { get; set; } = BitOtpInputDirection.LeftToRight;
+    [Parameter] public int InputCount { get; set; }
 
     /// <summary>
     /// Callback for when a keyboard key is pressed.
@@ -78,8 +78,12 @@ public partial class BitOtpInput
                 await _otpInpt.FocusAsync();
             }
 
-            var obj = DotNetObjectReference.Create(this);
-            await _js.SetupOtpInputPaste(obj, _otpInpt);
+            if (IsEnabled)
+            {
+                var obj = DotNetObjectReference.Create(this);
+
+                await _js.SetupOtpInputPaste(obj, _otpInpt);
+            }
         }
 
         await base.OnAfterRenderAsync(firstRender);
@@ -108,10 +112,18 @@ public partial class BitOtpInput
     {
         if (_currentIndex is null) return;
 
+        _keyDownPreventDefault = false;
+
         int nextIndex = _currentIndex.Value + 1 >= InputCount ? _currentIndex.Value : _currentIndex.Value + 1;
         int previousIndex = _currentIndex.Value - 1 < 0 ? _currentIndex.Value : _currentIndex.Value - 1;
 
-        if (code.Contains("Digit") || code.Contains("Key") || code.Contains("Numpad"))
+        if ((code.Contains("Digit") || code.Contains("Numpad") || code.Contains("Key")) && (InputType is BitOtpInputType.Text || InputType is BitOtpInputType.Password))
+        {
+            _inputValue[_currentIndex.Value] = key;
+            CurrentValue = string.Join("", _inputValue);
+            _currentIndex = nextIndex;
+        }
+        else if ((code.Contains("Digit") || code.Contains("Numpad")) && InputType is BitOtpInputType.Number)
         {
             _inputValue[_currentIndex.Value] = key;
             CurrentValue = string.Join("", _inputValue);
@@ -119,13 +131,13 @@ public partial class BitOtpInput
         }
         else if (code is "Backspace")
         {
-            _inputValue[_currentIndex.Value] = null;
+            _inputValue[_currentIndex.Value] = " ";
             CurrentValue = string.Join("", _inputValue);
             _currentIndex = previousIndex;
         }
         else if (code is "Delete")
         {
-            _inputValue[_currentIndex.Value] = null;
+            _inputValue[_currentIndex.Value] = " ";
             CurrentValue = string.Join("", _inputValue);
             _currentIndex = nextIndex;
         }
@@ -148,6 +160,8 @@ public partial class BitOtpInput
         }
         else if (code is "ArrowUp")
         {
+            _keyDownPreventDefault = true;
+
             _currentIndex = Direction is BitOtpInputDirection.TopToBottom
                 ? previousIndex
                 : Direction is BitOtpInputDirection.BottomToTop
@@ -156,6 +170,8 @@ public partial class BitOtpInput
         }
         else if (code is "ArrowDown")
         {
+            _keyDownPreventDefault = true;
+
             _currentIndex = Direction is BitOtpInputDirection.TopToBottom
                 ? nextIndex
                 : Direction is BitOtpInputDirection.BottomToTop
@@ -166,6 +182,8 @@ public partial class BitOtpInput
 
     private async Task HandleOnFocusIn(FocusEventArgs e)
     {
+        if (IsEnabled is false) return;
+
         _currentIndex = 0;
 
         await OnFocusIn.InvokeAsync(e);
@@ -173,6 +191,8 @@ public partial class BitOtpInput
 
     private async Task HandleOnFocusOut(FocusEventArgs e)
     {
+        if (IsEnabled is false) return;
+
         _currentIndex = null;
 
         await OnFocusOut.InvokeAsync(e);
@@ -180,29 +200,35 @@ public partial class BitOtpInput
 
     private async Task HandleOnPaste(ClipboardEventArgs e)
     {
+        if (IsEnabled is false) return;
+
         await OnPaste.InvokeAsync(e);
     }
 
     [JSInvokable]
-    public async Task SetPastedData(string data)
+    public async Task SetPastedData(string pastedValue)
     {
-        CurrentValue = data;
+        SyncCurrentValueWithArray(pastedValue);
     }
 
-    private void SyncCurrentValueWithArray()
+    private void SyncCurrentValueWithArray(string? pastedValue = null)
     {
-        if (CurrentValue is null) return;
+        if (IsEnabled is false) return;
 
-        var splitedCurrentValue = CurrentValue.ToCharArray();
+        var value = pastedValue is null ? CurrentValue : pastedValue;
+
+        if (InputType is BitOtpInputType.Number && int.TryParse(value, out _) is false) return;
+
+        var splitedCurrentValue = value is null ? CurrentValue?.ToCharArray() : value.ToCharArray();
         for (int i = 0; i < InputCount; i++)
         {
-            if (splitedCurrentValue.Length > i)
+            if (splitedCurrentValue?.Length > i)
             {
                 _inputValue[i] = splitedCurrentValue[i].ToString();
             }
             else
             {
-                _inputValue[i] = null;
+                _inputValue[i] = string.Empty;
             }   
         }
 

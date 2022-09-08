@@ -1,21 +1,78 @@
 ﻿@page "/components/otp-input"
 
-<ComponentDemo ComponentName="OtpInput">
+<ComponentDemo ComponentName="OtpInput"
+               ComponentDescription="The OTP input is used for MFA procedure of authenticating users by a one-time password."
+               ComponentParameters="@componentParameters"
+               EnumParameters="@enumParameters">
 
-    <ComponentExampleBox Title="BitOtpInput" ExampleId="example1">
+    <ComponentExampleBox Title="Basic OtpInput" ExampleId="example1">
         <ExamplePreview>
-
-            <BitOtpInput InputCount="6" @bind-Value="value2" InputType="BitOtpInputType.Text" AutoFocus="true" Direction="BitOtpInputDirection.LeftToRight" />
-            <div style="margin: 30px 0;"></div>
-            <BitOtpInput InputCount="6" @bind-Value="value2" InputType="BitOtpInputType.Text" AutoFocus="true" Direction="BitOtpInputDirection.RightToLeft" />
-            <div style="margin: 30px 0;"></div>
-            <BitOtpInput InputCount="6" @bind-Value="value2" InputType="BitOtpInputType.Text" AutoFocus="true" Direction="BitOtpInputDirection.TopToBottom" />
-            <div style="margin: 30px 0;"></div>
-            <BitOtpInput InputCount="6" @bind-Value="value2" InputType="BitOtpInputType.Text" AutoFocus="true" Direction="BitOtpInputDirection.BottomToTop" />
-            <div style="margin: 30px 0;"></div>
-
-            @value2
-
+            <div class="otp-input-box">
+                <BitLabel>OtpInput</BitLabel>
+                <BitOtpInput InputCount="4" />
+            </div>
+            <div class="otp-input-box">
+                <BitLabel>Disabled OtpInput</BitLabel>
+                <BitOtpInput InputCount="6" IsEnabled="false" />
+            </div>
         </ExamplePreview>
     </ComponentExampleBox>
+
+    <ComponentExampleBox Title="OtpInput with AutoFocus" ExampleId="example2">
+        <ExamplePreview>
+            <div class="example-desc">The OtpInput will be focused by default in the first render.</div>
+            <div class="otp-input-box">
+                <BitOtpInput InputCount="4" AutoFocus="true" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="OtpInput with InputType" ExampleId="example3">
+        <ExamplePreview>
+            <div class="otp-input-box">
+                <BitLabel>Text</BitLabel>
+                <BitOtpInput InputCount="4" InputType="BitOtpInputType.Text" />
+            </div>
+            <div class="otp-input-box">
+                <BitLabel>Number</BitLabel>
+                <BitOtpInput InputCount="4" InputType="BitOtpInputType.Number" />
+            </div>
+            <div class="otp-input-box">
+                <BitLabel>Password</BitLabel>
+                <BitOtpInput InputCount="4" InputType="BitOtpInputType.Password" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="OtpInput with Direction" ExampleId="example4">
+        <ExamplePreview>
+            <div class="example-desc">You can choose which side OtpInput starts from.</div>
+            <div class="otp-input-box">
+                <BitLabel>Left to right</BitLabel>
+                <BitOtpInput InputCount="4" Direction="BitOtpInputDirection.LeftToRight" />
+            </div>
+            <div class="otp-input-box">
+                <BitLabel>Right to left</BitLabel>
+                <BitOtpInput InputCount="4" Direction="BitOtpInputDirection.RightToLeft" />
+            </div>
+            <div class="otp-input-box">
+                <BitLabel>Top to bottom</BitLabel>
+                <BitOtpInput InputCount="4" Direction="BitOtpInputDirection.TopToBottom" />
+            </div>
+            <div class="otp-input-box">
+                <BitLabel>Bottom to top</BitLabel>
+                <BitOtpInput InputCount="4" Direction="BitOtpInputDirection.BottomToTop" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="OtpInput with Two-way binding" ExampleId="example5">
+        <ExamplePreview>
+            <div class="otp-input-box">
+                <BitOtpInput InputCount="4" @bind-Value="otpInput" />
+            </div>
+            <div>Output: @otpInput</div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
 </ComponentDemo>

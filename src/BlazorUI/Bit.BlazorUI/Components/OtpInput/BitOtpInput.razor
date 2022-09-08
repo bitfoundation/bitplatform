@@ -13,7 +13,7 @@
          @onfocusin="HandleOnFocusIn"
          @onfocusout="HandleOnFocusOut"
          @onkeydown="HandleOnKeyDown"
-         @onkeydown:preventDefault="true"
+         @onkeydown:preventDefault="_keyDownPreventDefault"
          @onpaste="HandleOnPaste">
 
         @for (var i = 0; i < InputCount; i++)
