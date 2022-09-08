@@ -29,7 +29,7 @@
                         <a class="menu-item" href="@Urls.Components">
                             <span class="menu-item-icon components-item"></span>
                             <div class="menu-item-content">
-                                <div class="item-title">Components</div>
+                                <div class="item-title">BlazorUI</div>
                                 <div class="item-desc">Native Blazor UI components</div>
                             </div>
                         </a>
@@ -39,21 +39,21 @@
                         <a class="menu-item" href="@Urls.CloudHostingSolutins">
                             <span class="menu-item-icon cloud-item"></span>
                             <div class="menu-item-content">
-                                <div class="item-title">Cloud hosting solutins</div>
+                                <div class="item-title">Cloud hosting solutions</div>
                                 <div class="item-desc">Here is the desc of item.</div>
                             </div>
                         </a>
                         <a class="menu-item" href="@Urls.Support">
                             <span class="menu-item-icon support-item"></span>
                             <div class="menu-item-content">
-                                <div class="item-title">Dedicated sopport</div>
+                                <div class="item-title">Dedicated support</div>
                                 <div class="item-desc">Here is the desc of item.</div>
                             </div>
                         </a>
                         <a class="menu-item" href="@Urls.Academy">
                             <span class="menu-item-icon academy-item"></span>
                             <div class="menu-item-content">
-                                <div class="item-title">BitAcademy</div>
+                                <div class="item-title">Bit academy</div>
                                 <div class="item-desc">Here is the desc of item.</div>
                             </div>
                         </a>
@@ -82,64 +82,64 @@
         <BitIconButton Class="header-nav-close-btn"
                    IconName=BitIconName.Cancel
                    OnClick=@ToggleHeaderMenu />
-        <a class="header-nav-link @(CurrentUrl == Urls.HomePage ? "header-nav-link--active" : null)" href="@Urls.HomePage">Home</a>
+        <a class="header-nav-link @(CurrentUrl == Urls.HomePage ? "header-nav-link--active" : null)" href="@Urls.HomePage" @onclick=@ToggleHeaderMenu>Home</a>
         <div class="header-nav-link header-ps-btn @(IsProductsServicesActive() ? "header-nav-link--active" : null)">
             Products & Services
             <div class="header-menu-popup">
                 <div class="col">
                     <div class="col-header">Products</div>
-                    <a class="menu-item" href="@Urls.TodoTemplate">
+                    <a class="menu-item" href="@Urls.TodoTemplate" @onclick=@ToggleHeaderMenu>
                         <span class="menu-item-icon todo-item"></span>
                         <div class="menu-item-content">
                             <div class="item-title">TodoTemplate</div>
                             <div class="item-desc">Simple project template</div>
                         </div>
                     </a>
-                    <a class="menu-item" href="@Urls.AdminPanel">
+                    <a class="menu-item" href="@Urls.AdminPanel" @onclick=@ToggleHeaderMenu>
                         <span class="menu-item-icon admin-item"></span>
                         <div class="menu-item-content">
                             <div class="item-title">AdminPanel</div>
                             <div class="item-desc">Admin & dashboard project template</div>
                         </div>
                     </a>
-                    <a class="menu-item" href="@Urls.Components">
+                    <a class="menu-item" href="@Urls.Components" @onclick=@ToggleHeaderMenu>
                         <span class="menu-item-icon components-item"></span>
                         <div class="menu-item-content">
-                            <div class="item-title">Components</div>
+                            <div class="item-title">BlazorUI</div>
                             <div class="item-desc">Native Blazor UI components</div>
                         </div>
                     </a>
                 </div>
                 <div class="col">
                     <div class="col-header">Services</div>
-                    <a class="menu-item" href="@Urls.CloudHostingSolutins">
+                    <a class="menu-item" href="@Urls.CloudHostingSolutins" @onclick=@ToggleHeaderMenu>
                         <span class="menu-item-icon cloud-item"></span>
                         <div class="menu-item-content">
-                            <div class="item-title">Cloud hosting solutins</div>
+                            <div class="item-title">Cloud hosting solutions</div>
                             <div class="item-desc">Here is the desc of item.</div>
                         </div>
                     </a>
-                    <a class="menu-item" href="@Urls.Support">
+                    <a class="menu-item" href="@Urls.Support" @onclick=@ToggleHeaderMenu>
                         <span class="menu-item-icon support-item"></span>
                         <div class="menu-item-content">
-                            <div class="item-title">Dedicated sopport</div>
+                            <div class="item-title">Dedicated support</div>
                             <div class="item-desc">Here is the desc of item.</div>
                         </div>
                     </a>
-                    <a class="menu-item" href="@Urls.Academy">
+                    <a class="menu-item" href="@Urls.Academy" @onclick=@ToggleHeaderMenu>
                         <span class="menu-item-icon academy-item"></span>
                         <div class="menu-item-content">
-                            <div class="item-title">BitAcademy</div>
+                            <div class="item-title">Bit academy</div>
                             <div class="item-desc">Here is the desc of item.</div>
                         </div>
                     </a>
                 </div>
             </div>
         </div>
-        @*<a class="header-nav-link @(CurrentUrl == Urls.Pricing ? "header-nav-link--active" : null)" href="@Urls.Pricing">Pricing</a>
-        <a class="header-nav-link @(CurrentUrl == Urls.Blogs ? "header-nav-link--active" : null)" href="@Urls.Blogs">Blogs</a>
-        <a class="header-nav-link @(CurrentUrl == Urls.Videos ? "header-nav-link--active" : null)" href="@Urls.Videos">Videos</a>*@
-        <a class="header-nav-link @(CurrentUrl == Urls.AboutUs ? "header-nav-link--active" : null)" href="@Urls.AboutUs">About</a>
-        <a class="header-nav-link @(CurrentUrl == Urls.ContactUs ? "header-nav-link--active" : null)" href="@Urls.ContactUs">Contact us</a>
+        @*<a class="header-nav-link @(CurrentUrl == Urls.Pricing ? "header-nav-link--active" : null)" href="@Urls.Pricing" @onclick=@ToggleHeaderMenu>Pricing</a>
+        <a class="header-nav-link @(CurrentUrl == Urls.Blogs ? "header-nav-link--active" : null)" href="@Urls.Blogs" @onclick=@ToggleHeaderMenu>Blogs</a>
+        <a class="header-nav-link @(CurrentUrl == Urls.Videos ? "header-nav-link--active" : null)" href="@Urls.Videos" @onclick=@ToggleHeaderMenu>Videos</a>*@
+        <a class="header-nav-link @(CurrentUrl == Urls.AboutUs ? "header-nav-link--active" : null)" href="@Urls.AboutUs" @onclick=@ToggleHeaderMenu>About</a>
+        <a class="header-nav-link @(CurrentUrl == Urls.ContactUs ? "header-nav-link--active" : null)" href="@Urls.ContactUs" @onclick=@ToggleHeaderMenu>Contact us</a>
     </nav>
 }
