@@ -24,6 +24,7 @@
 
 .main--full-page {
     padding-top: 0;
+    background-color: $White;
 
     @include sm {
         padding-top: 0;

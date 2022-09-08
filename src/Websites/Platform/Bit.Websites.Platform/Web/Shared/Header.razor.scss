@@ -220,9 +220,9 @@
 
     .menu-item {
         display: flex;
-        flex-flow: column nowrap;
+        flex-flow: row nowrap;
         justify-content: flex-start;
-        align-items: flex-start;
+        align-items: center;
         padding: rem(8px) rem(16px);
         margin: rem(8px) 0;
         border-radius: rem(4px);
@@ -231,7 +231,56 @@
 
         &:hover {
             background-color: rgba(0, 0, 0, 0.06);
+
+            .menu-item-icon {
+                border-color: $Gray4;
+            }
         }
+    }
+
+    .menu-item-icon {
+        width: rem(32px);
+        height: rem(32px);
+        margin-right: rem(16px);
+        border-radius: 50%;
+        border: rem(1px) solid $B11Color;
+        background-color: $White;
+        background-position: center;
+        background-repeat: no-repeat;
+
+        @include sm {
+            display: none;
+        }
+    }
+
+    .todo-item {
+        background-image: url('/images/header/todo-template-icon.webp');
+        background-size: rem(22px);
+    }
+
+    .admin-item {
+        background-image: url('/images/header/admin-panel-icon.webp');
+        background-size: rem(18px);
+    }
+
+    .components-item {
+        background-image: url('/images/header/components-icon.webp');
+        background-size: rem(28px);
+    }
+
+    .cloud-item {
+        background-image: url('/images/header/cloud-icon.webp');
+        background-size: rem(20px);
+    }
+
+    .academy-item {
+        background-image: url('/images/header/academy-icon.webp');
+        background-size: rem(22px);
+    }
+
+    .support-item {
+        background-image: url('/images/header/support-icon.webp');
+        background-size: rem(22px);
     }
 
     .item-title {
