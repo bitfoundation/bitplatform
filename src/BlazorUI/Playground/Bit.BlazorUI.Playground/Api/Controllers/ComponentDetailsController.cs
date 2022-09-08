@@ -15,16 +15,13 @@ public class ComponentDetailsController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<List<ComponentPropertyDetailsDto>>> GetProperties(string name)
     {
-        if (SummariesXmlDocument == null)
-        {
-            SummariesXmlDocument = await LoadSummariesXmlDocumentAsync();
-        }
+        SummariesXmlDocument ??= await LoadSummariesXmlDocumentAsync();
 
         if (string.IsNullOrWhiteSpace(name))
             return BadRequest("Component Name is empty.");
 
         var componentType = ComponentsAssembly.ExportedTypes
-                                              .Where(type =>
+                                              .FirstOrDefault(type =>
                                               {
                                                   if (type.IsGenericType)
                                                   {
@@ -33,10 +30,9 @@ public class ComponentDetailsController : ControllerBase
                                                   }
 
                                                   return type.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase);
-                                              })
-                                              .FirstOrDefault();
+                                              });
 
-        if (componentType == null)
+        if (componentType is null)
             return NotFound("No component type found.");
 
         var concreteComponentType = componentType.IsGenericType ? componentType.MakeGenericType(typeof(string)) : componentType;
@@ -54,8 +50,8 @@ public class ComponentDetailsController : ControllerBase
                               {
                                   var xmlProperty = SummariesXmlDocument?.Descendants()
                                                             .Attributes()
-                                                            .Where(a => a.Value.Contains(componentNamePrefix + prop.Name) || a.Value.Contains(baseComponentNamePrefix + prop.Name))
-                                                            .FirstOrDefault();
+                                                            .FirstOrDefault(a => a.Value.Contains(componentNamePrefix + prop.Name) || a.Value.Contains(baseComponentNamePrefix + prop.Name));
+
                                   var typeName = GetTypeName(prop.PropertyType);
                                   return new
                                   {
@@ -71,7 +67,7 @@ public class ComponentDetailsController : ControllerBase
     {
         string path = Path.Combine(AppContext.BaseDirectory, $"{ComponentsAssembly.GetName().Name}.xml");
 
-        if (System.IO.File.Exists(path) == false) return null;
+        if (System.IO.File.Exists(path) is false) return null;
 
         var stream = System.IO.File.OpenRead(path);
         return await XDocument.LoadAsync(stream, LoadOptions.None, default);
@@ -83,11 +79,32 @@ public class ComponentDetailsController : ControllerBase
         {
             var arguments = string.Join(", ", type.GetGenericArguments().Select(x => x.Name));
             var mainType = type.Name[..type.Name.IndexOf("`")];
-            return $"{mainType}<{arguments}>";
+            return $"{mainType}<{GetTypeNameOrAlias(arguments)}>";
         }
 
-        return type.Name;
+        return GetTypeNameOrAlias(type.Name);
     }
+
+    private static string GetTypeNameOrAlias(string typeName) =>
+                typeName switch
+                {
+                    "Boolean" => "bool",
+                    "Byte" => "byte",
+                    "SByte" => "sbyte",
+                    "Char" => "char",
+                    "Decimal" => "decimal",
+                    "Double" => "double",
+                    "Single" => "float",
+                    "Int16" => "short",
+                    "UInt16" => "ushort",
+                    "Int32" => "int",
+                    "UInt32" => "uint",
+                    "Int64" => "long",
+                    "UInt64" => "ulong",
+                    "Object" => "object",
+                    "String" => "string",
+                    _ => typeName
+                };
 
     private static string GetDefaulValue(PropertyInfo property, object instance, string typeName, Type concreteComponentType)
     {
@@ -102,6 +119,4 @@ public class ComponentDetailsController : ControllerBase
 
         return $"new {typeName}()";
     }
-
 }
-
