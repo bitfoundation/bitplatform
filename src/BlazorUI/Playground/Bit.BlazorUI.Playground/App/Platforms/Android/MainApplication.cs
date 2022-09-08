@@ -1,8 +1,11 @@
 ﻿using Android.App;
 using Android.Runtime;
+using Microsoft.AspNetCore.Components.WebView.Maui;
 using Microsoft.Maui;
 using Microsoft.Maui.Hosting;
 using System;
+
+[assembly: UsesPermission(Android.Manifest.Permission.Internet)]
 
 namespace Bit.BlazorUI.Playground.Web
 {
@@ -16,6 +19,7 @@ namespace Bit.BlazorUI.Playground.Web
         public MainApplication(IntPtr handle, JniHandleOwnership ownership)
             : base(handle, ownership)
         {
+
         }
 
         protected override MauiApp CreateMauiApp() => MauiProgram

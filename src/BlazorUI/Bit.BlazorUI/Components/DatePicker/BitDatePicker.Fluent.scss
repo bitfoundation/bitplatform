@@ -536,10 +536,11 @@
             cursor: default;
             border: none $Grey20;
             background: none $Grey20;
-        }
 
-        input {
-            color: $Grey90;
+            input {
+                color: $Grey90;
+                cursor: default;
+            }
         }
     }
 

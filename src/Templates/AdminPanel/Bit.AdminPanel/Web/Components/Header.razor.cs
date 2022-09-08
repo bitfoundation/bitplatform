@@ -33,26 +33,18 @@ public partial class Header : IAsyncDisposable
 
     protected override async Task OnInitAsync()
     {
-        try
-        {
-            SetBreadcrumbItems();
-            SetCurrentUrl();
-            SetBreadcrumbItem();
-#pragma warning disable CS8622 // Nullability of reference types in type of parameter doesn't match the target delegate (possibly because of nullability attributes).
-            NavigationManager.LocationChanged += OnLocationChanged;
-#pragma warning restore CS8622 // Nullability of reference types in type of parameter doesn't match the target delegate (possibly because of nullability attributes).
+        SetBreadcrumbItems();
+        SetCurrentUrl();
+        SetBreadcrumbItem();
 
-            base.OnInitialized();
-        }
-        catch (Exception exp)
-        {
-            ExceptionHandler.Handle(exp);
-        }
+        NavigationManager.LocationChanged += OnLocationChanged;
 
-        User = await StateService.GetValue($"{nameof(NavMenu)}-{nameof(User)}", async () =>
+        AuthenticationStateProvider.AuthenticationStateChanged += VerifyUserIsAuthenticatedOrNot;
+
+        User = await StateService.GetValue($"{nameof(Header)}-{nameof(User)}", async () =>
             await HttpClient.GetFromJsonAsync("User/GetCurrentUser", AppJsonContext.Default.UserDto));
 
-        var access_token = await StateService.GetValue($"{nameof(NavMenu)}-access_token", async () =>
+        var access_token = await StateService.GetValue($"{nameof(Header)}-access_token", async () =>
             await AuthTokenProvider.GetAcccessToken());
 
         ProfileImageUrl = $"{GetBaseUrl()}Attachment/GetProfileImage?access_token={access_token}&file={User!.ProfileImageName}";

@@ -1,8 +1,8 @@
 ﻿<CascadingValue Value="Visual">
     <BitBasicList Items="Items" Virtualize="Virtualize"
-                  Role="@Role" Style="@ListStyle" ItemSize="ItemSize">
+                  Role="@Role" Style="@ListStyle" ItemSize="ItemSize" OverscanCount="OverscanCount">
         <RowTemplate Context="person">
-            <div class="list-item" style="@ItemStyle">
+            <div class="list-item" style="height:@($"{ItemSize}px")">
                 <p>Id: <strong>@person.Id</strong></p>
                 <p>Full Name: <strong>@person.FirstName @person.LastName</strong></p>
                 <p>Job: <strong>@person.Job</strong></p>
@@ -19,7 +19,6 @@
     [Parameter] public int OverscanCount { get; set; }
     [Parameter] public int ItemSize { get; set; }
     [Parameter] public string ListStyle { get; set; }
-    [Parameter] public string ItemStyle { get; set; }
     [Parameter] public RenderFragment<Person> RowTemplate { get; set; }
 
     public class Person

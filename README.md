@@ -23,15 +23,17 @@ These templates are powered by Bit Blazor components. Bit components are fast(pe
 
 The following websites are developed by Bit Platform and published in Blazor Web Assembly:
 
-* [Bit Components home page](https://components.bitplatform.dev/)
-* [Bit Platform home page](https://bitplatform.dev/)
-* [Todo app with pre rendering](https://todo.bitplatform.dev/)
-* [Todo app PWA](https://todo-app.bitplatform.dev/)
-* [Todo app in App Center](https://install.appcenter.ms/orgs/bitfoundation/apps/todo/distribution_groups/testers)
-* [Bit Blazor UI demo app in App Center](https://install.appcenter.ms/orgs/bitfoundation/apps/bitcomponents/distribution_groups/testers)
-* Todo app in Google Play (Coming soon...)
-* Todo app in Apple Store (Coming soon...)
-* Todo app in Microsoft Store (Coming soon...)
+* [Bit Components web site](https://components.bitplatform.dev/)
+* [Bit Components mobile app](https://install.appcenter.ms/orgs/bitfoundation/apps/bitcomponents/distribution_groups/testers)
+
+* [Bit Platform web site](https://bitplatform.dev/)
+
+* [Todo SSR enabled web app](https://todo.bitplatform.dev/)
+* [Todo PWA](https://todo-app.bitplatform.dev/)
+* [Todo mobile app](https://install.appcenter.ms/orgs/bitfoundation/apps/todo/distribution_groups/testers)
+
+* [Admin panel multilingual web app](https://adminpanel.bitplatform.dev/)
+* [Admin panel multilingual mobile app](https://install.appcenter.ms/orgs/bitfoundation/apps/adminpanel/distribution_groups/testers)
 
 Keep in mind that if a web app is only fast in the Blazor Server mode but slow in Blazor Web Assembly mode, it will also be slow in Blazor Hybrid mode (Android, iOS, and Windows apps).
 

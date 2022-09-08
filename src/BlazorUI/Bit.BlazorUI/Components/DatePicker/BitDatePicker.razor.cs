@@ -160,7 +160,7 @@ public partial class BitDatePicker
     /// <summary>
     /// Placeholder text for the DatePicker.
     /// </summary>
-    [Parameter] public string Placeholder { get; set; } = "Select a date...";
+    [Parameter] public string Placeholder { get; set; } = string.Empty;
 
     /// <summary>
     /// Whether the date picker close button should be shown or not.

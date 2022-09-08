@@ -1214,7 +1214,7 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Sing up.
+        ///   Looks up a localized string similar to Sign up.
         /// </summary>
         public static string SignUp {
             get {

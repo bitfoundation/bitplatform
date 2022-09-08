@@ -16,9 +16,8 @@
     display: flex;
     flex-flow: row nowrap;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-end;
     width: 100%;
-    height: rem(40px);
     box-sizing: border-box;
     border-bottom: rem(1px) solid #a19f9d;
     margin-top: rem(32px);
@@ -28,13 +27,13 @@
     font-weight: 600;
     font-size: rem(20px);
     color: #1a2027;
+    word-break: break-word;
 }
 
 .header-btn-group {
     display: flex;
     align-items: center;
     flex-flow: row nowrap;
-    height: 100%;
 }
 
 .box-content {
@@ -70,18 +69,6 @@
 
     &::-webkit-scrollbar:horizontal {
         height: rem(10px);
-    }
-
-    @include lg {
-        padding: rem(16px);
-    }
-
-    @include md {
-        padding: rem(8px) rem(16px);
-    }
-
-    @include sm {
-        padding: rem(16px) rem(8px);
     }
 }
 
