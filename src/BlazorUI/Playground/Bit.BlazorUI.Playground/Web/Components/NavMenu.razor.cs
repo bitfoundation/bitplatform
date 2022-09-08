@@ -117,7 +117,7 @@ public partial class NavMenu
             Key = "Utilities",
             Links = new List<BitNavLinkItem>
             {
-                new BitNavLinkItem { Name = "Icon", Key = "Icon", Url = "/components/icons" },
+                new BitNavLinkItem { Name = "Icon", Key = "Icon", Url = "/components/icon" },
             },
         },
         new BitNavLinkItem { Name= "Icons", Key = "Icons", Url = "/icons"},
