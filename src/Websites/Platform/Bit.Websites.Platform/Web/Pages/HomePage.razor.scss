@@ -488,17 +488,28 @@
     }
 
     .support-card-title {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
         margin-bottom: rem(10px);
-        font-size: rem(14px);
+        font-size: rem(18px);
         line-height: 1.5;
         letter-spacing: 0;
         font-weight: 700;
+        text-align: center;
         color: #1A2027;
-        padding-left: rem(30px);
         box-sizing: border-box;
-        background-size: rem(20px);
-        background-position: center left;
+    }
+
+    .card-icon {
+        width: rem(32px);
+        height: rem(32px);
+        margin-right: rem(10px);
+        background-position: center;
         background-repeat: no-repeat;
+        border-radius: 50%;
+        background-size: rem(28px);
     }
 
     .support-card-desc {
@@ -509,8 +520,16 @@
         color: #3E5060;
     }
 
-    .support-card-icon {
-        background-image: url('/images/home/native-icon.webp');
+    .tech-support {
+        background-image: url('/images/home/technical-support-icon.webp');
+    }
+
+    .ultimate-support {
+        background-image: url('/images/home/ultimate-support-icon.webp');
+    }
+
+    .periority-support {
+        background-image: url('/images/home/periority-support-icon.webp');
     }
 }
 
