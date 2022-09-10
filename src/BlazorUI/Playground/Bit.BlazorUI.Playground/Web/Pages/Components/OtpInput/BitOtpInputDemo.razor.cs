@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Bit.BlazorUI.Playground.Web.Models;
 using Bit.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
@@ -7,6 +8,8 @@ namespace Bit.BlazorUI.Playground.Web.Pages.Components.OtpInput;
 public partial class BitOtpInputDemo
 {
     private string otpInput;
+    private ValidationOtpInputModel validationOtpInputModel = new();
+    public bool formIsValidSubmit;
 
     private readonly List<ComponentParameter> componentParameters = new()
     {
@@ -66,7 +69,6 @@ public partial class BitOtpInputDemo
             Description = "Callback for when in the OtpInput paste a content.",
         },
     };
-
     private readonly List<EnumParameter> enumParameters = new()
     {
         new EnumParameter()
@@ -128,4 +130,110 @@ public partial class BitOtpInputDemo
             }
         }
     };
+
+    private static readonly string example1HtmlCode = @"
+<BitLabel>OtpInput</BitLabel>
+<BitOtpInput InputCount=""4"" />
+
+<BitLabel>Disabled OtpInput</BitLabel>
+<BitOtpInput InputCount=""6"" IsEnabled=""false"" />
+";
+    private static readonly string example2HtmlCode = @"
+<BitOtpInput InputCount=""4"" AutoFocus=""true"" />
+";
+    private static readonly string example3HtmlCode = @"
+<BitLabel>Text</BitLabel>
+<BitOtpInput InputCount=""4"" InputType=""BitOtpInputType.Text"" />
+
+<BitLabel>Number</BitLabel>
+<BitOtpInput InputCount=""4"" InputType=""BitOtpInputType.Number"" />
+
+<BitLabel>Password</BitLabel>
+<BitOtpInput InputCount=""4"" InputType=""BitOtpInputType.Password"" />
+";
+    private static readonly string example4HtmlCode = @"
+<BitLabel>Left to right</BitLabel>
+<BitOtpInput InputCount=""4"" Direction=""BitOtpInputDirection.LeftToRight"" />
+
+<BitLabel>Right to left</BitLabel>
+<BitOtpInput InputCount=""4"" Direction=""BitOtpInputDirection.RightToLeft"" />
+
+<BitLabel>Top to bottom</BitLabel>
+<BitOtpInput InputCount=""4"" Direction=""BitOtpInputDirection.TopToBottom"" />
+
+<BitLabel>Bottom to top</BitLabel>
+<BitOtpInput InputCount=""4"" Direction=""BitOtpInputDirection.BottomToTop"" />
+";
+    private static readonly string example5HtmlCode = @"
+<BitOtpInput InputCount=""4"" @bind-Value=""otpInput"" />
+
+<div>Output: @otpInput</div>
+";
+    private static readonly string example6HtmlCode = @"
+@if (formIsValidSubmit is false)
+{
+    <EditForm Model=""validationOtpInputModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
+        <DataAnnotationsValidator />
+        <div class=""otp-input-box"">
+            <BitOtpInput InputCount=""6"" @bind-Value=""validationOtpInputModel.OtpValue"" />
+            <ValidationMessage For=""() => validationOtpInputModel.OtpValue"" />
+        </div>
+        <BitButton ButtonType=""BitButtonType.Submit"">
+            Submit
+        </BitButton>
+    </EditForm>
+}
+else
+{
+    <BitMessageBar MessageBarType=""BitMessageBarType.Success"" IsMultiline=""false"">
+        The form is valid to submit successfully.
+    </BitMessageBar>
+}
+";
+    private static readonly string example5CSharpCode = @"
+private string otpInput;
+";
+    private static readonly string example6CSharpCode = @"
+public class ValidationOtpInputModel
+{
+    [Required(ErrorMessage = ""Is required."")]
+    [MinLength(6, ErrorMessage = ""Minimum length is 6."")]
+    public string OtpValue { get; set; }
+}
+
+private ValidationOtpInputModel validationOtpInputModel = new();
+public bool formIsValidSubmit;
+
+private async Task HandleValidSubmit()
+{
+    formIsValidSubmit = true;
+
+    await Task.Delay(3000);
+
+    formIsValidSubmit = false;
+
+    StateHasChanged();
+}
+
+private void HandleInvalidSubmit()
+{
+    formIsValidSubmit = false;
+}
+";
+
+    private async Task HandleValidSubmit()
+    {
+        formIsValidSubmit = true;
+
+        await Task.Delay(3000);
+
+        formIsValidSubmit = false;
+
+        StateHasChanged();
+    }
+
+    private void HandleInvalidSubmit()
+    {
+        formIsValidSubmit = false;
+    }
 }

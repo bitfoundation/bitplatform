@@ -3,3 +3,8 @@
 .otp-input-box {
     margin-bottom: rem(15px);
 }
+
+::deep div.validation-message {
+    color: #A4262C;
+    font-size: 0.75rem;
+}

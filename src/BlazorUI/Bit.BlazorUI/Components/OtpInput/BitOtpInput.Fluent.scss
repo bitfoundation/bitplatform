@@ -18,6 +18,13 @@
         }
     }
 
+    &.bit-otp-invalid-fluent {
+        .otp-input {
+            outline: none;
+            border: rem(2px) solid $Red20;
+        }
+    }
+
     .otp-input-wrapper {
         outline: none;
         display: flex;

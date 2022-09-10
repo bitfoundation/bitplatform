@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Reflection.Emit;
 
 namespace Bit.BlazorUI;
 
@@ -97,6 +98,12 @@ public partial class BitOtpInput
         }
 
         await base.OnParametersSetAsync();
+    }
+
+    protected override void RegisterComponentClasses()
+    {
+        ClassBuilder.Register(() => ValueInvalid is true
+                                   ? $"{RootElementClass}-invalid-{VisualClassRegistrar()}" : string.Empty);
     }
 
     private async Task HandleOnKeyDown(KeyboardEventArgs e)
