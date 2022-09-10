@@ -46,21 +46,25 @@
     <ComponentExampleBox Title="OtpInput with Direction" HTMLSourceCode="@example4HtmlCode" ExampleId="example4">
         <ExamplePreview>
             <div class="example-desc">You can choose which side OtpInput starts from.</div>
-            <div class="otp-input-box">
-                <BitLabel>Left to right</BitLabel>
-                <BitOtpInput InputCount="4" Direction="BitOtpInputDirection.LeftToRight" />
+            <div>
+                <div class="otp-input-box">
+                    <BitLabel>Left to right</BitLabel>
+                    <BitOtpInput InputCount="4" Direction="BitOtpInputDirection.LeftToRight" />
+                </div>
+                <div class="otp-input-box">
+                    <BitLabel>Right to left</BitLabel>
+                    <BitOtpInput InputCount="4" Direction="BitOtpInputDirection.RightToLeft" />
+                </div>
             </div>
-            <div class="otp-input-box">
-                <BitLabel>Right to left</BitLabel>
-                <BitOtpInput InputCount="4" Direction="BitOtpInputDirection.RightToLeft" />
-            </div>
-            <div class="otp-input-box">
-                <BitLabel>Top to bottom</BitLabel>
-                <BitOtpInput InputCount="4" Direction="BitOtpInputDirection.TopToBottom" />
-            </div>
-            <div class="otp-input-box">
-                <BitLabel>Bottom to top</BitLabel>
-                <BitOtpInput InputCount="4" Direction="BitOtpInputDirection.BottomToTop" />
+            <div class="vertical-otp-box">
+                <div class="otp-input-box">
+                    <BitLabel>Top to bottom</BitLabel>
+                    <BitOtpInput InputCount="4" Direction="BitOtpInputDirection.TopToBottom" />
+                </div>
+                <div class="otp-input-box">
+                    <BitLabel>Bottom to top</BitLabel>
+                    <BitOtpInput InputCount="4" Direction="BitOtpInputDirection.BottomToTop" />
+                </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>

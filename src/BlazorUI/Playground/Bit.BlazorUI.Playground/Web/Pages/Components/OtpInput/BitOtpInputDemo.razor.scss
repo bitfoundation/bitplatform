@@ -8,3 +8,12 @@
     color: #A4262C;
     font-size: 0.75rem;
 }
+
+.vertical-otp-box {
+    display: flex;
+
+    .otp-input-box {
+        margin-bottom: unset;
+        margin-right: rem(15px);
+    }
+}
