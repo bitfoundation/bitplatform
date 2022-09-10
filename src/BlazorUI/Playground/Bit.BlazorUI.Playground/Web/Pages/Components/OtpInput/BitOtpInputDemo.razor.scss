@@ -1,0 +1,19 @@
+﻿@import '../../../Styles/abstracts/_functions.scss';
+
+.otp-input-box {
+    margin-bottom: rem(15px);
+}
+
+::deep div.validation-message {
+    color: #A4262C;
+    font-size: 0.75rem;
+}
+
+.vertical-otp-box {
+    display: flex;
+
+    .otp-input-box {
+        margin-bottom: unset;
+        margin-right: rem(15px);
+    }
+}

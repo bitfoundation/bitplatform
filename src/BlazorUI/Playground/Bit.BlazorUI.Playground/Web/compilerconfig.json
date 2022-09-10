@@ -182,5 +182,9 @@
     {
         "outputFile": "Pages/Components/Icon/BitIconDemo.razor.css",
         "inputFile": "Pages/Components/Icon/BitIconDemo.razor.scss"
+    },
+    {
+        "outputFile": "Pages/Components/OtpInput/BitOtpInputDemo.razor.css",
+        "inputFile": "Pages/Components/OtpInput/BitOtpInputDemo.razor.scss"
     }
 ]
