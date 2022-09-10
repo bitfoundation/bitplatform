@@ -270,12 +270,15 @@ public class BitDropDownTests : BunitTestContext
 
         selectedItems.ForEach(i =>
         {
-            if (expectedText.HasValue())
+            if (i.IsSelected && i.ItemType == BitDropDownItemType.Normal)
             {
-                expectedText += component.Instance.MultiSelectDelimiter;
-            }
+                if (expectedText.HasValue())
+                {
+                    expectedText += component.Instance.MultiSelectDelimiter;
+                }
 
-            expectedText += i.Text;
+                expectedText += i.Text;
+            }
         });
 
         Assert.AreEqual(expectedText, textSpan.InnerHtml);
