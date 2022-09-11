@@ -36,11 +36,19 @@
 
 .section-title {
     margin: 0;
-    font-size: clamp(1.5rem, 0.9643rem + 1.4286vw, 2.25rem);
+    font-size: rem(32px);
     font-weight: 800;
     line-height: 1.2;
     margin-bottom: rem(40px);
     color: $B3Color;
+
+    @include lg {
+        font-size: rem(28px);
+    }
+
+    @include lt-lg {
+        font-size: rem(24px);
+    }
 }
 
 .section-desc {
@@ -146,9 +154,17 @@
         margin: 0;
         margin-bottom: rem(20px);
         font-weight: 800;
-        font-size: clamp(2.625rem, 1.2857rem + 3.5714vw, 4rem);
+        font-size: rem(64px);
         line-height: 1;
         color: $White;
+
+        @include lg {
+            font-size: rem(52px);
+        }
+
+        @include lt-lg {
+            font-size: rem(42px);
+        }
     }
 
     .hero-section-desc {

@@ -42,10 +42,18 @@
     margin: 0;
     margin-top: rem(10px);
     margin-bottom: rem(10px);
-    font-size: clamp(1.5rem, 0.9643rem + 1.4286vw, 2.25rem);
+    font-size: rem(32px);
     font-weight: 800;
     line-height: 1.2;
     color: #132F4C;
+
+    @include lg {
+        font-size: rem(28px);
+    }
+
+    @include lt-lg {
+        font-size: rem(24px);
+    }
 }
 
 .vision-section {
@@ -69,7 +77,6 @@
 
     .page-section-contnet {
         justify-content: center;
-        max-width: rem(800px);
         min-height: rem(300px);
         margin-left: auto;
         margin-right: auto;
@@ -80,10 +87,18 @@
         margin: 0;
         margin-top: rem(10px);
         margin-bottom: rem(10px);
-        font-size: clamp(1.5rem, 0.9643rem + 1.4286vw, 2.25rem);
-        font-weight: 800;
+        font-size: rem(52px);
+        font-weight: 700;
         line-height: 1.2;
         color: #132F4C;
+
+        @include lg {
+            font-size: rem(42px);
+        }
+
+        @include lt-lg {
+            font-size: rem(32px);
+        }
     }
 }
 
@@ -180,8 +195,8 @@
     .download-value {
         width: calc(100% - 40px);
         margin: 0;
-        font-size: clamp(1.5rem, 0.9643rem + 1.4286vw, 2.25rem);
         line-height: 1.5;
+        font-size: rem(32px);
         letter-spacing: 0.2px;
         color: rgb(153, 204, 243);
         font-weight: 800;
@@ -189,6 +204,14 @@
         margin-bottom: rem(8px);
         border-bottom: rem(1px) solid rgba(224, 224, 224, 0.4);
         text-align: center;
+
+        @include lg {
+            font-size: rem(28px);
+        }
+
+        @include lt-lg {
+            font-size: rem(24px);
+        }
     }
 
     .download-name {

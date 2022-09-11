@@ -78,15 +78,20 @@
         margin: 0;
         margin-top: rem(10px);
         margin-bottom: rem(40px);
-        font-size: clamp(2.625rem, 1.2857rem + 3.5714vw, 4rem);
+        font-size: rem(64px);
         font-weight: 800;
         line-height: 1.2;
         background: linear-gradient(to right, #007FFF, #0059B2);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
 
+        @include lg {
+            font-size: rem(52px);
+        }
+
         @include lt-lg {
             margin-bottom: rem(28px);
+            font-size: rem(42px);
         }
     }
 
@@ -110,11 +115,19 @@
     margin: 0;
     margin-top: rem(10px);
     margin-bottom: rem(40px);
-    font-size: clamp(1.5rem, 0.9643rem + 1.4286vw, 2.25rem);
+    font-size: rem(32px);
     font-weight: 800;
     line-height: 1.2;
     color: #132F4C;
     text-align: center;
+
+    @include lg {
+        font-size: rem(28px);
+    }
+
+    @include lt-lg {
+        font-size: rem(24px);
+    }
 
     @include sm {
         margin-bottom: rem(20px);
