@@ -130,7 +130,7 @@
                         Context="item"
                         ItemSize="@ItemSize"
                         OverscanCount="@OverscanCount"
-                        Placeholder="PlaceholderVirtualize">
+                        Placeholder="VirtualizePlaceholder">
                         @dropDownItemTemplate!(item)
                     </Virtualize>
                 }
@@ -140,7 +140,7 @@
                         Context="item"
                         OverscanCount="@OverscanCount"
                         ItemsProvider="ProvideVirtualizedItems"
-                        Placeholder="PlaceholderVirtualize">
+                        Placeholder="VirtualizePlaceholder">
                         @dropDownItemTemplate!(item)
                     </Virtualize>
                 }

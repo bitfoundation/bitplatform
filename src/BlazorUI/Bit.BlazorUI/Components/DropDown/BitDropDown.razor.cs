@@ -229,7 +229,7 @@ public partial class BitDropDown
     /// <summary>
     /// The template for items that have not yet been loaded in memory.
     /// </summary>
-    [Parameter] public RenderFragment<PlaceholderContext>? PlaceholderVirtualize { get; set; }
+    [Parameter] public RenderFragment<PlaceholderContext>? VirtualizePlaceholder { get; set; }
 
     public string? Text { get; set; }
     public string DropDownId { get; set; } = string.Empty;
