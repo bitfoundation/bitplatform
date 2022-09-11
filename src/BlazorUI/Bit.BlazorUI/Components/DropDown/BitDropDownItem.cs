@@ -20,7 +20,7 @@ public class BitDropDownItem
     /// <summary>
     /// Whether or not this item is selected
     /// </summary>
-    public bool IsSelected { get; set; }
+    public bool IsSelected { get; internal set; }
 
     /// <summary>
     /// The type of this item, Refers to the dropdown separator
