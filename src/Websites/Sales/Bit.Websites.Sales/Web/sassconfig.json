@@ -48,12 +48,6 @@
     "useNodeSass": false
   },
   {
-    "outputFile": "wwwroot/scripts/app.es5.js",
-    "inputFile": "wwwroot/scripts/app.js",
-    "sourceMap": false,
-    "useNodeSass": false
-  },
-  {
     "outputFile": "Components/Case.razor.css",
     "inputFile": "Components/Case.razor.scss",
     "sourceMap": false,

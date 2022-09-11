@@ -14,8 +14,10 @@
         <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Remove="Pages\_Host.cshtml" />
         <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Remove="Pages\_Layout.cshtml" />
         <Compile Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Remove="Extensions\HttpRequestExtensions.cs" />
-        <Content Remove="compilerconfig.json" />
-        <None Include="compilerconfig.json" />
+        <Content Remove="sassconfig.json" />
+        <None Include="sassconfig.json" />
+
+        <Watch Remove="*.scss" />
     </ItemGroup>
 
     <ItemGroup>
@@ -32,10 +34,7 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="BuildWebCompiler2022" Version="1.14.8">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
+        <PackageReference Include="Abstractions.Sass.CIBuild" Version="1.1.52" />
         <ProjectReference Include="..\Shared\Bit.Websites.Sales.Shared.csproj" />
 
         <Using Include="System.Net.Http.Json" />

@@ -10,8 +10,8 @@ if not exist "Extensions/." mklink /j "Extensions" "../Web/Extensions"
 if not exist tsconfig.json mklink "tsconfig.json" "%cd%/../Web/tsconfig.json"
 if not exist _Imports.razor mklink "_Imports.razor" "%cd%/../Web/_Imports.razor"
 if not exist appsettings.json mklink "appsettings.json" "%cd%/../Web/appsettings.json"
-if not exist compilerconfig.json mklink "compilerconfig.json" "%cd%/../Web/compilerconfig.json"
-if not exist compilerconfig.json.defaults mklink "compilerconfig.json.defaults" "%cd%/../Web/compilerconfig.json.defaults"
+if not exist sassconfig.json mklink "sassconfig.json" "%cd%/../Web/sassconfig.json"
+if not exist sassconfig.json.defaults mklink "sassconfig.json.defaults" "%cd%/../Web/sassconfig.json.defaults"
 
 powershell.exe "& Get-ChildItem | Where-Object { $_.Attributes -match 'ReparsePoint' -and ((Test-Path -Path ('../Web/' + $_.Name)) -eq $false -and $_.Name -ne 'Main.razor') } | Remove-Item -Confirm:$false -Force -Recurse "
 

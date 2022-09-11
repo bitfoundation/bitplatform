@@ -17,6 +17,7 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
+        <PackageReference Include="BuildBundlerMinifier" Version="3.2.449" />
     </ItemGroup>
 
     <ItemGroup>
@@ -25,6 +26,9 @@
             <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
             <CopyToPublishDirectory>Never</CopyToPublishDirectory>
         </Content>
+
+        <Content Remove="bundleconfig.json" />
+        <None Include="bundleconfig.json" />
     </ItemGroup>
 
 </Project>

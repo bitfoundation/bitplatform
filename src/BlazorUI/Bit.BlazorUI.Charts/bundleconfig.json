@@ -1,0 +1,8 @@
+[
+  {
+    "outputFileName": "wwwroot/scripts/bit.blazorui.charts.min.js",
+    "inputFiles": [
+      "wwwroot/scripts/bit.blazorui.charts.js"
+    ]
+  }
+]

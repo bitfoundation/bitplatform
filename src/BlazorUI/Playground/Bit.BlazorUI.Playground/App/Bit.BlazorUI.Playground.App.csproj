@@ -73,9 +73,11 @@
         <Content Remove="Pages\_Layout.cshtml" />
         <Compile Remove="Extensions\HttpRequestExtensions.cs" />
         <Content Remove="Properties\launchSettings.json" />
-        <Content Remove="compilerconfig.json" />
-        <None Include="compilerconfig.json" />
+        <Content Remove="sassconfig.json" />
+        <None Include="sassconfig.json" />
         <EmbeddedResource Include="appsettings.json" />
+
+        <Watch Remove="*.scss" />
     </ItemGroup>
 
     <ItemGroup>
@@ -83,10 +85,7 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="BuildWebCompiler2022" Version="1.14.8">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
+        <PackageReference Include="Abstractions.Sass.CIBuild" Version="1.1.52" />
         <ProjectReference Include="..\..\..\Bit.BlazorUI.Charts\Bit.BlazorUI.Charts.csproj" />
         <ProjectReference Include="..\..\..\Bit.BlazorUI\Bit.BlazorUI.csproj" />
         <ProjectReference Include="..\Shared\Bit.BlazorUI.Playground.Shared.csproj" />
