@@ -81,11 +81,14 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.8.2">
+        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.8.3">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Abstractions.Sass.CIBuild" Version="1.1.52" />
+        <PackageReference Include="Abstractions.Sass.CIBuild" Version="1.1.52">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
         <ProjectReference Include="..\..\..\Bit.BlazorUI.Charts\Bit.BlazorUI.Charts.csproj" />
         <ProjectReference Include="..\..\..\Bit.BlazorUI\Bit.BlazorUI.csproj" />
         <ProjectReference Include="..\Shared\Bit.BlazorUI.Playground.Shared.csproj" />

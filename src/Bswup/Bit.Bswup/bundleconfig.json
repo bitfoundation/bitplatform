@@ -4,5 +4,11 @@
     "inputFiles": [
       "wwwroot/bit-bswup.js"
     ]
+  },
+  {
+    "outputFileName": "wwwroot/bit-bswup.sw.min.js",
+    "inputFiles": [
+      "wwwroot/bit-bswup.sw.js"
+    ]
   }
 ]
