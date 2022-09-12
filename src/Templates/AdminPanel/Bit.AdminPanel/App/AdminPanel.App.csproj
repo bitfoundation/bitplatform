@@ -115,8 +115,8 @@
         <Compile Remove="Extensions\HttpRequestExtensions.cs" />
         <Compile Remove="Services\Implementations\ServerSideAuthTokenProvider.cs" />
         <Content Remove="Properties\launchSettings.json" />
-        <Content Remove="sassconfig.json" />
-        <None Include="sassconfig.json" />
+        <Content Remove="compilerconfig.json" />
+        <None Include="compilerconfig.json" />
 
         <Watch Remove="*.scss" />
     </ItemGroup>

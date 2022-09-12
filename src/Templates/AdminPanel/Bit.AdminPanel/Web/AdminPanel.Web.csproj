@@ -25,8 +25,8 @@
         <Compile Condition=" '$(BlazorMode)' != 'BlazorServer' " Remove="Extensions\HttpRequestExtensions.cs" />
         <Content Condition=" '$(BlazorMode)' != 'BlazorServer' " Remove="appsettings.json" />
         <!--/+:msbuild-conditional:noEmit -->
-        <Content Remove="sassconfig.json" />
-        <None Include="sassconfig.json" />
+        <Content Remove="compilerconfig.json" />
+        <None Include="compilerconfig.json" />
     </ItemGroup>
 
     <ItemGroup>

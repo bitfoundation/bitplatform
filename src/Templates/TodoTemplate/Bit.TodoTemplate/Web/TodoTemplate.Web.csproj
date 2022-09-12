@@ -25,8 +25,8 @@
         <Compile Condition=" '$(BlazorMode)' != 'BlazorServer' " Remove="Extensions\HttpRequestExtensions.cs" />
         <Content Condition=" '$(BlazorMode)' != 'BlazorServer' " Remove="appsettings.json" />
         <!--/+:msbuild-conditional:noEmit -->
-        <Content Remove="sassconfig.json" />
-        <None Include="sassconfig.json" />
+        <Content Remove="compilerconfig.json" />
+        <None Include="compilerconfig.json" />
     </ItemGroup>
 
     <ItemGroup>
@@ -40,11 +40,11 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Abstractions.Sass.CIBuild" Version="1.1.52">
+        <PackageReference Include="jose-jwt" Version="4.0.1" />
+        <PackageReference Include="LibSassBuilder" Version="2.0.2">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="jose-jwt" Version="4.0.1" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.8" />
         <!--/-:msbuild-conditional:noEmit -->
         <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.8" />

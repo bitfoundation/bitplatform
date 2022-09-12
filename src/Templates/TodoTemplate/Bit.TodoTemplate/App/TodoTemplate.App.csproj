@@ -98,11 +98,11 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Abstractions.Sass.CIBuild" Version="1.1.52">
+        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.8.3">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.8.3">
+        <PackageReference Include="LibSassBuilder" Version="2.0.2">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -115,8 +115,8 @@
         <Compile Remove="Extensions\HttpRequestExtensions.cs" />
         <Compile Remove="Services\Implementations\ServerSideAuthTokenProvider.cs" />
         <Content Remove="Properties\launchSettings.json" />
-        <Content Remove="sassconfig.json" />
-        <None Include="sassconfig.json" />
+        <Content Remove="compilerconfig.json" />
+        <None Include="compilerconfig.json" />
     </ItemGroup>
 
     <ItemGroup>
