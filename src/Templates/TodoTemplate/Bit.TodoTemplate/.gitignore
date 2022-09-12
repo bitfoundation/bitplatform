@@ -236,7 +236,7 @@ custom.aprof
 /App/wwwroot/images
 /App/wwwroot/**/*.js
 /App/wwwroot/styles
-/App/sassconfig.*
+/App/compilerconfig.*
 /App/_Imports.razor
 /App/Main.razor
 /App/appsettings.json

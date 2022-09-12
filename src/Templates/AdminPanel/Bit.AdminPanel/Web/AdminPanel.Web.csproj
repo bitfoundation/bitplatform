@@ -25,17 +25,26 @@
         <Compile Condition=" '$(BlazorMode)' != 'BlazorServer' " Remove="Extensions\HttpRequestExtensions.cs" />
         <Content Condition=" '$(BlazorMode)' != 'BlazorServer' " Remove="appsettings.json" />
         <!--/+:msbuild-conditional:noEmit -->
-        <Content Remove="sassconfig.json" />
-        <None Include="sassconfig.json" />
+        <Content Remove="compilerconfig.json" />
+        <None Include="compilerconfig.json" />
     </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="Bit.BlazorUI" Version="4.1.0" />
 		<PackageReference Include="Bit.BlazorUI.Charts" Version="4.1.0" />
         <PackageReference Include="Bit.Bswup" Version="4.1.0" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="4.1.0" />
-        <PackageReference Include="Bit.SourceGenerators" Version="4.1.0" />
-        <PackageReference Include="Abstractions.Sass.CIBuild" Version="1.1.52" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="4.1.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Bit.SourceGenerators" Version="4.1.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="LibSassBuilder" Version="2.0.2" Watch="false">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
         <PackageReference Include="jose-jwt" Version="4.0.1" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.8" />
         <!--/-:msbuild-conditional:noEmit -->
@@ -46,8 +55,7 @@
 
     <ItemGroup>
         <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" Condition="'$(WebAppDeploymentType)' == 'PWA'" />
-        <PackageReference Include="LibSassBuilder" Version="2.0.2" />
-        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.8.2">
+        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.8.3">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

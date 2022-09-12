@@ -6,8 +6,14 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.CodeAnalyzers" Version="4.1.0" />
-        <PackageReference Include="Bit.SourceGenerators" Version="4.1.0" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="4.1.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Bit.SourceGenerators" Version="4.1.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
         <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="6.0.8" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
         <PackageReference Include="Microsoft.Extensions.Localization" Version="6.0.8" />
