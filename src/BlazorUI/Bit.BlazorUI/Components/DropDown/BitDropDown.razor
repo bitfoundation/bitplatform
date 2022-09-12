@@ -124,12 +124,26 @@
         <div id="@DropDownCalloutId" class="scroll-wrapper">
             @if (Virtualize)
             {
-                <Virtualize Items="@GetItems()"
+                if (ItemsProvider is null)
+                {
+                    <Virtualize Items="@GetItems()"
                         Context="item"
                         ItemSize="@ItemSize"
-                        OverscanCount="@OverscanCount">
-                    @dropDownItemTemplate!(item)
-                </Virtualize>
+                        OverscanCount="@OverscanCount"
+                        Placeholder="VirtualizePlaceholder">
+                        @dropDownItemTemplate!(item)
+                    </Virtualize>
+                }
+                else
+                {
+                    <Virtualize @ref="virtualizeElement"
+                        Context="item"
+                        OverscanCount="@OverscanCount"
+                        ItemsProvider="ProvideVirtualizedItems"
+                        Placeholder="VirtualizePlaceholder">
+                        @dropDownItemTemplate!(item)
+                    </Virtualize>
+                }
             }
             else
             {
@@ -142,7 +156,7 @@
 
     </div>
     <select @attributes="InputHtmlAttributes" class="bit-input-hidden" multiple>
-        @foreach (BitDropDownItem item in Items.Where(i => i.ItemType == BitDropDownItemType.Normal && i.IsSelected))
+        @foreach (BitDropDownItem item in SelectedItems)
         {
             <option value="@item.Value" selected>@item.Text</option>
         }
@@ -150,11 +164,11 @@
 </div>
 
 @code {
-    private RenderFragment<(BitDropDownItem item, int index)> dropDownItemTemplate => dropDownItem => __builder =>
+    private RenderFragment<(int? index, BitDropDownItem item)> dropDownItemTemplate => dropDownItem => __builder =>
     {
         if (dropDownItem.item.ItemType == BitDropDownItemType.Header)
         {
-            <div class="@RootElementClass-head-@VisualClassRegistrar()" id="@($"{DropDownId}{dropDownItem.item.Text?.ToLower()}Header")">
+            <div class="@RootElementClass-head-@VisualClassRegistrar()">
                 @dropDownItem.item.Text
             </div>
         }
@@ -163,9 +177,9 @@
             @if (IsMultiSelect)
             {
                 <div style="@(dropDownItem.item.IsHidden ? "display: none" : string.Empty)" class="@GetCssClassForItem(dropDownItem.item)">
-                    <label class="bit-drp-chb-lbl" for="@($"{DropDownId}-list{dropDownItem.index}")" @onclick="@((e) => HandleItemClick(dropDownItem.item))">
+                    <label class="bit-drp-chb-lbl" @onclick="@((e) => HandleItemClick(dropDownItem.item))">
                         <div class="bit-drp-chb-checkbox">
-                            <i class=@($"bit-drp-chb-checkmark bit-icon bit-icon--{BitIconName.Accept.GetName()}")
+                            <i class="bit-drp-chb-checkmark bit-icon bit-icon--Accept"
                                aria-hidden="true"
                                aria-label="@dropDownItem.item.Text"></i>
                         </div>
@@ -187,7 +201,6 @@
             {
                 <button class="bit-drp-item @(dropDownItem.item.IsSelected ? $"{RootElementClass}-slc-{VisualClassRegistrar()}" : string.Empty)"
                         style="@(dropDownItem.item.IsHidden ? "display: none" : string.Empty)"
-                        id="@($"{DropDownId}-list{dropDownItem.index}")"
                         type="button"
                         role="option"
                         data-is-focusable="@(dropDownItem.item.IsEnabled ? "true" : "false")"
@@ -195,7 +208,7 @@
                         data-index="@dropDownItem.index"
                         aria-disabled="@(!dropDownItem.item.IsEnabled)"
                         aria-selected="@(dropDownItem.item.IsSelected ? "true" : "false")"
-                        aria-setsize="@NormalDropDownItems.Count"
+                        aria-setsize="@GetTotalItems()"
                         aria-posinset="@GetItemPosInSet(dropDownItem.item)"
                         tabindex="@(dropDownItem.item.IsEnabled ? 0 : -1)"
                         title="@dropDownItem.item.Title"
