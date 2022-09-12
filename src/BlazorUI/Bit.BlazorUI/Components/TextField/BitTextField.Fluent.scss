@@ -202,8 +202,8 @@
 .bit-txt-underlined-focused-fluent {
     .bit-txt-wrapper::after {
         position: absolute;
+        inset: rem(-1px);
         border-bottom: rem(2px) solid $Primary;
-        inset: rem(32px) 0;
         content: "";
         pointer-events: none;
     }
