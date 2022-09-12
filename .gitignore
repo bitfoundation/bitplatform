@@ -259,8 +259,8 @@ _book
 /src/BlazorUI/Playground/Bit.BlazorUI.Playground/App/tsconfig.json
 /src/BlazorUI/Playground/Bit.BlazorUI.Playground/App/_Imports.razor
 /src/BlazorUI/Playground/Bit.BlazorUI.Playground/App/Main.razor
-/src/BlazorUI/Playground/Bit.BlazorUI.Playground/App/sassconfig.json.defaults
-/src/BlazorUI/Playground/Bit.BlazorUI.Playground/App/sassconfig.json
+/src/BlazorUI/Playground/Bit.BlazorUI.Playground/App/compilerconfig.json.defaults
+/src/BlazorUI/Playground/Bit.BlazorUI.Playground/App/compilerconfig.json
 /src/BlazorUI/Playground/Bit.BlazorUI.Playground/App/appsettings.json
 /src/BlazorUI/Playground/Bit.BlazorUI.Playground/Api/BitFileUploaderFiles
 /src/BlazorUI/Playground/Bit.BlazorUI.Playground/Api/Properties/PublishProfiles/bitcomponents - Web Deploy.pubxml

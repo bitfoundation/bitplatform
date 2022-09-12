@@ -73,8 +73,8 @@
         <Content Remove="Pages\_Layout.cshtml" />
         <Compile Remove="Extensions\HttpRequestExtensions.cs" />
         <Content Remove="Properties\launchSettings.json" />
-        <Content Remove="sassconfig.json" />
-        <None Include="sassconfig.json" />
+        <Content Remove="compilerconfig.json" />
+        <None Include="compilerconfig.json" />
         <EmbeddedResource Include="appsettings.json" />
 
         <Watch Remove="*.scss" />
