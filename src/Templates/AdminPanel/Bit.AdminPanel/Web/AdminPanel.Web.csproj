@@ -30,14 +30,14 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.BlazorUI" Version="4.1.0" />
-		<PackageReference Include="Bit.BlazorUI.Charts" Version="4.1.0" />
-        <PackageReference Include="Bit.Bswup" Version="4.1.0" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="4.1.0">
+        <PackageReference Include="Bit.BlazorUI" Version="4.2.0-pre-01" />
+		<PackageReference Include="Bit.BlazorUI.Charts" Version="4.2.0-pre-01" />
+        <PackageReference Include="Bit.Bswup" Version="4.2.0-pre-01" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="4.2.0-pre-01">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="4.1.0">
+        <PackageReference Include="Bit.SourceGenerators" Version="4.2.0-pre-01">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
