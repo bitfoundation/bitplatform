@@ -25,10 +25,10 @@
 		<PackageProjectUrl>https://github.com/bitfoundation/bitplatform</PackageProjectUrl>
 		<PackageIconUrl>https://avatars.githubusercontent.com/u/22663390</PackageIconUrl>
 
-		<ReleaseVersion>4.1.0</ReleaseVersion>
+		<ReleaseVersion>4.2.0</ReleaseVersion>
 
-		<PackageReleaseNotes>https://github.com/bitfoundation/bitplatform/releases/tag/v-$(ReleaseVersion)</PackageReleaseNotes>
-		<PackageVersion>$(ReleaseVersion)</PackageVersion>
+		<PackageReleaseNotes>https://github.com/bitfoundation/bitplatform/releases/tag/v-$(ReleaseVersion)-pre-01</PackageReleaseNotes>
+		<PackageVersion>$(ReleaseVersion)-pre-01</PackageVersion>
 
 		<!-- Version -->
 		<Version Condition=" '$(Configuration)' == 'Release' ">$(ReleaseVersion).$([System.DateTime]::Now.ToString(HHmm))</Version>
