@@ -362,7 +362,7 @@
         width: 45%;
         height: 100%;
 
-        @include sm {
+        @include lt-lg {
             display: none;
         }
     }
@@ -371,10 +371,9 @@
         background-image: url('/images/home/components-bg.webp');
         background-position: center left;
         background-repeat: no-repeat;
-        background-size: cover;
-        width: 225px;
-        height: 225px;
-        border-radius: 50%;
+        background-size: contain;
+        width: rem(370px);
+        height: rem(245px);
     }
 
     .components-content-container {
@@ -385,11 +384,7 @@
         width: 65%;
         max-width: rem(700px);
 
-        @include md {
-            max-width: rem(500px);
-        }
-
-        @include sm {
+        @include lt-lg {
             flex-flow: column nowrap;
             justify-content: flex-start;
             width: 100%;
