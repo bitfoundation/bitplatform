@@ -158,5 +158,9 @@
   {
     "outputFile": "Pages/VideosPage.razor.css",
     "inputFile": "Pages/VideosPage.razor.scss"
+  },
+  {
+    "outputFile": "Pages/TodoTemplate/ContributePage.razor.css",
+    "inputFile": "Pages/TodoTemplate/ContributePage.razor.scss"
   }
 ]

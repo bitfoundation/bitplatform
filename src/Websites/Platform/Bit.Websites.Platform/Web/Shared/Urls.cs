@@ -28,9 +28,9 @@ public static class Urls
     public const string TodoTemplateNuget = "https://www.nuget.org/packages/Bit.TodoTemplate/";
 
     public const string AdminPanel = "/admin-panel/overview";
-    public const string AdminPanelSpa = "#";
-    public const string AdminPanelPwa = "#";
-    public const string AdminPanelAppCenter = "#";
+    public const string AdminPanelSpa = "https://adminpanel.bitplatform.dev/";
+    public const string AdminPanelPwa = "https://adminpanel-app.bitplatform.dev/";
+    public const string AdminPanelAppCenter = "https://install.appcenter.ms/orgs/bitfoundation/apps/adminpanel/distribution_groups/testers";
     public const string AdminPanelFigma = "#";
     public const string AdminPanelNuget = "https://www.nuget.org/packages/Bit.AdminPanel";
 

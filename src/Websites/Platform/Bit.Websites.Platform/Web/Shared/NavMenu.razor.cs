@@ -67,6 +67,7 @@ public partial class NavMenu
     private void OnLocationChanged(object sender, LocationChangedEventArgs args)
     {
         CurrentUrl = _navigationManager.Uri.Replace(_navigationManager.BaseUri, "/", StringComparison.Ordinal);
+        HandleClear();
         StateHasChanged();
     }
 
