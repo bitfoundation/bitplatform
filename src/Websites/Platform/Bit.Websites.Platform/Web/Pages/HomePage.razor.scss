@@ -61,6 +61,10 @@
     color: $Gray1;
 }
 
+.txt--blue {
+    color: $B6Color;
+}
+
 .twitter-link {
     background-image: url('/images/footer/twitter-icon.svg');
     width: rem(32px);
@@ -206,6 +210,79 @@
         background-repeat: no-repeat;
         background-size: cover;
         cursor: pointer;
+    }
+}
+
+.intro-section {
+    padding-top: 5rem;
+    padding-bottom: 5rem;
+
+    .page-section-contnet {
+        display: flex;
+        flex-flow: column nowrap;
+        align-items: center;
+    }
+
+    .section-desc {
+        max-width: rem(700px);
+        text-align: center;
+    }
+}
+
+
+.tech-section {
+    padding-top: 5rem;
+    padding-bottom: 5rem;
+
+    .page-section-contnet {
+        display: flex;
+        flex-flow: column nowrap;
+        align-items: center;
+    }
+
+    .item-list {
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+    }
+
+    .tech-item {
+        width: rem(70px);
+        height: rem(70px);
+        margin: rem(20px);
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: contain;
+    }
+
+    .blazor-item {
+        background-image: url('/images/home/tech/blazor-logo.webp');
+    }
+
+    .csharp-item {
+        background-image: url('/images/home/tech/csharp-logo.webp');
+    }
+
+    .dotnet-item {
+        background-image: url('/images/home/tech/dotnet-logo.webp');
+    }
+
+    .sass-item {
+        background-image: url('/images/home/tech/sass-logo.webp');
+    }
+
+    .vs-item {
+        background-image: url('/images/home/tech/visual-studio-logo.webp');
+    }
+
+    .git-item {
+        background-image: url('/images/home/tech/git-logo.webp');
+    }
+
+    .github-item {
+        background-image: url('/images/home/tech/github-logo.webp');
     }
 }
 
