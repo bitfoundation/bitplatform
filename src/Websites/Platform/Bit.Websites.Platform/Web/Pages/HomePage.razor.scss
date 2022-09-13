@@ -352,19 +352,47 @@
         display: flex;
         flex-flow: row nowrap;
         justify-content: space-between;
-        align-items: flex-start;
+        align-items: center;
+        width: 100%;
+    }
 
-        @include lt-lg {
-            flex-flow: column nowrap;
-            justify-content: flex-start;
-            align-items: center;
+    .image-container {
+        display: flex;
+        justify-content: center;
+        width: 45%;
+        height: 100%;
+
+        @include sm {
+            display: none;
         }
     }
 
-    .text-container {
-        max-width: rem(500px);
+    .com-image {
+        background-image: url('/images/home/components-bg.webp');
+        background-position: center left;
+        background-repeat: no-repeat;
+        background-size: cover;
+        width: 225px;
+        height: 225px;
+        border-radius: 50%;
+    }
 
-        @include lt-lg {
+    .components-content-container {
+        display: flex;
+        flex-flow: column nowrap;
+        justify-content: space-between;
+        align-items: flex-start;
+        width: 65%;
+        max-width: rem(700px);
+
+        @include md {
+            max-width: rem(500px);
+        }
+
+        @include sm {
+            flex-flow: column nowrap;
+            justify-content: flex-start;
+            width: 100%;
             max-width: 100%;
         }
     }
@@ -398,17 +426,10 @@
     .item-list {
         display: flex;
         flex-flow: row nowrap;
-        flex-basis: calc(50% + 40px);
-        flex-grow: 0;
-        max-width: calc(50% + 40px);
-        padding-left: rem(30px);
-
-        @include lt-lg {
-            width: calc(100% + 40px);
-            flex-basis: calc(100% + 40px);
-            max-width: calc(100% + 40px);
-            padding-top: rem(30px);
-        }
+        width: calc(100% + 40px);
+        flex-basis: calc(100% + 40px);
+        max-width: calc(100% + 40px);
+        padding-bottom: rem(40px);
 
         @include sm {
             flex-wrap: wrap;
@@ -421,11 +442,7 @@
         flex-basis: 50%;
         flex-grow: 0;
         max-width: 50%;
-        padding-left: rem(40px);
-
-        @include lt-lg {
-            padding-top: rem(40px);
-        }
+        padding-top: rem(20px);
     }
 
     .com-item-content {
