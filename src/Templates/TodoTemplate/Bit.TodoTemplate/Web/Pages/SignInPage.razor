@@ -29,6 +29,7 @@
             <BitTextField Label="@Localizer[nameof(AppStrings.Password)]"
                           @bind-Value="SignInModel.Password"
                           Type="BitTextFieldType.Password"
+                          AutoComplete="current-password"
                           CanRevealPassword="true"
                           Placeholder="@Localizer[nameof(AppStrings.Password)]" />
             <ValidationMessage For="@(() => SignInModel.Password)" />
