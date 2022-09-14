@@ -4,7 +4,7 @@
 builder.WebHost.UseUrls("https://localhost:5001", "http://localhost:5000", "https://*:5001", "http://*:5000");
 #endif
 
-Bit.Websites.Platform.Api.Startup.Services.Add(builder.Services);
+Bit.Websites.Platform.Api.Startup.Services.Add(builder.Services, builder.Configuration);
 
 var app = builder.Build();
 

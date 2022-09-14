@@ -10,21 +10,32 @@
             </div>
 
             <div class="flex-container">
-                <form class="form">
+                <EditForm Model="ContactUsModel" OnValidSubmit="SendMessage" class="form">
                     <h2>Have any feedbacks?</h2>
-                    <BitLabel>Email</BitLabel>
-                    <BitTextField Type="BitTextFieldType.Email"
+                    <BitTextField @bind-Value="@ContactUsModel.Email"
+                                  Type="BitTextFieldType.Email"
+                                  Label="Email"
                                   HasBorder=true
                                   Placeholder="Enter your email address" />
 
-                    <BitLabel>Message</BitLabel>
-                    <BitTextField Type="BitTextFieldType.Text"
+                    <BitTextField @bind-Value="@ContactUsModel.Message"
+                                  Type="BitTextFieldType.Text"
+                                  Label="Message"
                                   IsRequired=true
                                   HasBorder=true
                                   IsMultiline=true
                                   Placeholder="Enter your message" />
-                    <BitButton ButtonType="BitButtonType.Submit">Send</BitButton>
-                </form>
+                    <BitButton ButtonType="BitButtonType.Submit" IsEnabled="IsSubmitButtonEnabled">
+                        @if (IsLoading)
+                        {
+                            <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
+                        }
+                        else
+                        {
+                            <span>Send</span>
+                        }
+                    </BitButton>
+                </EditForm>
             </div>
         </div>
     </section>
