@@ -11,6 +11,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".SolutionItems", ".Solution
 		.gitignore = .gitignore
 		commands.json = commands.json
 		Directory.build.props = Directory.build.props
+		global.json = global.json
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminPanel.App", "App\AdminPanel.App.csproj", "{EAC40D2D-3959-4557-9DB2-7DD60E2A6063}"

@@ -63,6 +63,7 @@
             <div class="form-input-container">
             <BitTextField Label="@Localizer[nameof(AppStrings.Password)]"
                           @bind-Value="SignUpModel.Password"
+                          AutoComplete="new-password"
                           Type="BitTextFieldType.Password"
                           CanRevealPassword="true"
                           Placeholder="@Localizer[nameof(AppStrings.Password)]" />
