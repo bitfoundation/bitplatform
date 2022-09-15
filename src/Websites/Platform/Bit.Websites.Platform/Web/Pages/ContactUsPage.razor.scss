@@ -109,7 +109,7 @@
     }
 }
 
-.form {
+::deep .form {
     width: 100%;
     max-width: rem(450px);
     padding: rem(20px);
@@ -126,10 +126,18 @@
     }
 }
 
-::deep .bit-lbl-fluent {
+::deep .bit-txt-fluent {
+    margin-bottom: rem(24px);
     text-align: left;
 }
 
-::deep .bit-txt-fluent {
-    margin-bottom: rem(16px);
+::deep .validation-message {
+    color: #a4262c;
+    margin-top: rem(-20px);
+    font-size: rem(12px);
+    text-align: left;
+}
+
+::deep .bit-btn-fluent {
+    margin-top: rem(16px);
 }
