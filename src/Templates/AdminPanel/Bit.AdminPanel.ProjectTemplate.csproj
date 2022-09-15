@@ -9,11 +9,10 @@
         <EnableDefaultItems>false</EnableDefaultItems>
         <NoDefaultExcludes>true</NoDefaultExcludes>
         
-        
         <!-- Nuget Package-->
-        <PackageId>Bit.AdminPanelTemplate</PackageId>
+        <PackageId>Bit.AdminPanel</PackageId>
         <PackageType>Template</PackageType>
-        <Title>Bit Platform AdminPanelTemplate</Title>
+        <Title>Bit Platform AdminPanel</Title>
         <PackageDescription>A template for creating a AdminPanel app base on the Bit-Platform</PackageDescription>
         <PackageTags>Bit;c#;asp.net;core;template;web;blazor</PackageTags>
         <PackageCopyright>Copyright © Bit Platform 2022</PackageCopyright>

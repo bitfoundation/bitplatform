@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Bunit;
@@ -164,49 +165,6 @@ public class BitDropDownTests : BunitTestContext
         {
             Assert.AreEqual(items.FindAll(i => i.ItemType == BitDropDownItemType.Normal).Count, component.FindAll(".bit-drp-item").Count);
         }
-    }
-
-    [DataTestMethod,
-      DataRow(true, "-"),
-      DataRow(false, null)
-    ]
-    public void BitDropDownTextWithSelectedItemsShouldInitCorrect(bool isMultiSelect, string multiSelectDelimiter)
-    {
-        Context.JSInterop.Mode = JSRuntimeMode.Loose;
-
-        var items = GetDropdownItems();
-        var component = RenderComponent<BitDropDown>(parameters =>
-        {
-            parameters.Add(p => p.Items, items);
-            parameters.Add(p => p.IsMultiSelect, isMultiSelect);
-            parameters.Add(p => p.MultiSelectDelimiter, multiSelectDelimiter);
-        });
-
-        var textSpan = component.Find(".bit-drp-wrapper-txt");
-        var expectedText = "";
-
-        if (isMultiSelect)
-        {
-            items.ForEach(i =>
-            {
-                if (i.IsSelected && i.ItemType == BitDropDownItemType.Normal)
-                {
-                    if (expectedText.HasValue())
-                    {
-                        expectedText += multiSelectDelimiter;
-                    }
-
-                    expectedText += i.Text;
-                }
-            });
-        }
-        else
-        {
-            var firstSelectedItem = items.FirstOrDefault(i => i.IsSelected);
-            expectedText = firstSelectedItem is null ? "" : firstSelectedItem.Text;
-        }
-
-        Assert.AreEqual(expectedText, textSpan.InnerHtml);
     }
 
     [DataTestMethod,
@@ -919,6 +877,118 @@ public class BitDropDownTests : BunitTestContext
         }
     }
 
+    [DataTestMethod,
+        DataRow(Visual.Fluent, false, null, null, false),
+        DataRow(Visual.Fluent, false, 3_000_000, null, false),
+        DataRow(Visual.Fluent, false, null, 4, false),
+        DataRow(Visual.Fluent, false, 3_000_000, 4, false),
+
+        DataRow(Visual.Fluent, true, null, null, false),
+        DataRow(Visual.Fluent, true, 3_000_000, null, false),
+        DataRow(Visual.Fluent, true, null, 4, false),
+        DataRow(Visual.Fluent, true, 3_000_000, 4, false),
+
+        DataRow(Visual.Fluent, false, null, null, true),
+        DataRow(Visual.Fluent, false, 3_000_000, null, true),
+        DataRow(Visual.Fluent, false, null, 4, true),
+        DataRow(Visual.Fluent, false, 3_000_000, 4, true),
+
+        DataRow(Visual.Fluent, true, null, null, true),
+        DataRow(Visual.Fluent, true, 3_000_000, null, true),
+        DataRow(Visual.Fluent, true, null, 4, true),
+        DataRow(Visual.Fluent, true, 3_000_000, 4, true),
+
+        DataRow(Visual.Cupertino, false, null, null, false),
+        DataRow(Visual.Cupertino, false, 3_000_000, null, false),
+        DataRow(Visual.Cupertino, false, null, 4, false),
+        DataRow(Visual.Cupertino, false, 3_000_000, 4, false),
+
+        DataRow(Visual.Cupertino, true, null, null, false),
+        DataRow(Visual.Cupertino, true, 3_000_000, null, false),
+        DataRow(Visual.Cupertino, true, null, 4, false),
+        DataRow(Visual.Cupertino, true, 3_000_000, 4, false),
+
+        DataRow(Visual.Cupertino, false, null, null, true),
+        DataRow(Visual.Cupertino, false, 3_000_000, null, true),
+        DataRow(Visual.Cupertino, false, null, 4, true),
+        DataRow(Visual.Cupertino, false, 3_000_000, 4, true),
+
+        DataRow(Visual.Cupertino, true, null, null, true),
+        DataRow(Visual.Cupertino, true, 3_000_000, null, true),
+        DataRow(Visual.Cupertino, true, null, 4, true),
+        DataRow(Visual.Cupertino, true, 3_000_000, 4, true),
+
+        DataRow(Visual.Material, false, null, null, false),
+        DataRow(Visual.Material, false, 3_000_000, null, false),
+        DataRow(Visual.Material, false, null, 4, false),
+        DataRow(Visual.Material, false, 3_000_000, 4, false),
+
+        DataRow(Visual.Material, true, null, null, false),
+        DataRow(Visual.Material, true, 3_000_000, null, false),
+        DataRow(Visual.Material, true, null, 4, false),
+        DataRow(Visual.Material, true, 3_000_000, 4, false),
+
+        DataRow(Visual.Material, false, null, null, true),
+        DataRow(Visual.Material, false, 3_000_000, null, true),
+        DataRow(Visual.Material, false, null, 4, true),
+        DataRow(Visual.Material, false, 3_000_000, 4, true),
+
+        DataRow(Visual.Material, true, null, null, true),
+        DataRow(Visual.Material, true, 3_000_000, null, true),
+        DataRow(Visual.Material, true, null, 4, true),
+        DataRow(Visual.Material, true, 3_000_000, 4, true),
+    ]
+    public void BitDropDownVirtualizeTest(Visual visual, bool virtualize, int? itemSize, int? overscanCount, bool isMultiSelect)
+    {
+        //https://bunit.dev/docs/test-doubles/emulating-ijsruntime.html#-jsinterop-emulation
+        const double viewportHeight = 1_000_000_000;
+        var items = GetRawDropdownItems(500);
+        var component = RenderComponent<BitDropDown>(parameters =>
+        {
+            parameters.AddCascadingValue(visual);
+            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Virtualize, virtualize);
+            parameters.Add(p => p.IsMultiSelect, isMultiSelect);
+            parameters.Add(p => p.Items, items);
+
+            if (itemSize.HasValue)
+            {
+                parameters.Add(p => p.ItemSize, itemSize.Value);
+            }
+
+            if (overscanCount.HasValue)
+            {
+                parameters.Add(p => p.OverscanCount, overscanCount.Value);
+            }
+        });
+
+        var bitDropDown = component.Find(".bit-drp-wrapper");
+        bitDropDown.Click();
+
+        var drpItems = component.FindAll(isMultiSelect ? ".bit-drp-chb" : ".bit-drp-item");
+        var actualRenderedItemCount = drpItems.Count;
+
+        if (virtualize)
+        {
+            //When virtualize is true, number of rendered items is greater than number of items showm in the list + 2 * overScanCount.
+            var expectedRenderedItemCount = Math.Ceiling((decimal)(viewportHeight / component.Instance.ItemSize)) + (2 * component.Instance.OverscanCount);
+
+            //When actualRenderedItemCount is smaller than expectedRenderedItemCount, so show all items in viewport then actualRenderedItemCount equals total items count
+            if (actualRenderedItemCount < expectedRenderedItemCount)
+            {
+                Assert.AreEqual(items.Count, actualRenderedItemCount);
+            }
+            else
+            {
+                Assert.AreEqual(expectedRenderedItemCount, actualRenderedItemCount);
+            }
+        }
+        else
+        {
+            Assert.AreEqual(items.Count, actualRenderedItemCount);
+        }
+    }
+
     private void HandleValueChanged(string value)
     {
         BitDropDownValue = value;
@@ -948,14 +1018,12 @@ public class BitDropDownTests : BunitTestContext
             ItemType = BitDropDownItemType.Normal,
             Text = "Orange",
             Value = "f-ora",
-            IsEnabled = false
         });
         items.Add(new BitDropDownItem()
         {
             ItemType = BitDropDownItemType.Normal,
             Text = "Banana",
             Value = "f-ban",
-            IsSelected = true
         });
         items.Add(new BitDropDownItem()
         {
@@ -971,7 +1039,6 @@ public class BitDropDownTests : BunitTestContext
             ItemType = BitDropDownItemType.Normal,
             Text = "Broccoli",
             Value = "v-bro",
-            IsSelected = true
         });
 
         return items;
@@ -1006,5 +1073,15 @@ public class BitDropDownTests : BunitTestContext
         });
 
         return items;
+    }
+
+    private List<BitDropDownItem> GetRawDropdownItems(int count)
+    {
+        return Enumerable.Range(1, count).Select(item => new BitDropDownItem
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Value = item.ToString(),
+            Text = $"Item {item}"
+        }).ToList();
     }
 }

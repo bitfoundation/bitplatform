@@ -26,9 +26,5 @@
         "options": {
             "relativeUrls": false
         }
-    },
-    {
-        "outputFile": "wwwroot/scripts/bit.blazorui.charts.min.js",
-        "inputFile": "wwwroot/scripts/bit.blazorui.charts.js"
     }
 ]

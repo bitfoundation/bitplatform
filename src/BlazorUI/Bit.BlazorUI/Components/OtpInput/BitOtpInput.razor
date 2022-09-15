@@ -1,0 +1,36 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitInputBase<string?>
+
+<div @ref="RootElement"
+     @attributes="HtmlAttributes"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     aria-label="@AriaLabel">
+
+    <div class="otp-input-wrapper @_direction"
+         tabindex="@(IsEnabled ? 0 : -1)"
+         @ref="_otpInpt"
+         @onfocusin="HandleOnFocusIn"
+         @onfocusout="HandleOnFocusOut"
+         @onkeydown="HandleOnKeyDown"
+         @onkeydown:preventDefault="_keyDownPreventDefault"
+         @onpaste="HandleOnPaste">
+
+        @for (var i = 0; i < InputCount; i++)
+        {
+            int index = i;
+
+            <div class="otp-input @(_currentIndex != null && _currentIndex.Value == index ? "focused" : "")">
+
+                @if (InputType is BitOtpInputType.Password && @_inputValue[index].HasValue())
+                {
+                    <span class="paswword-input"></span>
+                }
+                else
+                {
+                    <span>@_inputValue[index]</span>
+                }
+            </div>
+        }
+     </div>
+</div>

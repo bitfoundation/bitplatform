@@ -31,6 +31,8 @@
         <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</SupportedOSPlatformVersion>
         <TargetPlatformMinVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</TargetPlatformMinVersion>
         <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
+
+        <CpsExtensionSchemaDirectory Condition="'$(Configuration)' == 'Release'">InvalidPathForLibSassBuilder</CpsExtensionSchemaDirectory>
     </PropertyGroup>
 
     <PropertyGroup Condition="$(TargetFramework.Contains('-android')) and '$(Configuration)' == 'Release'">
@@ -69,6 +71,7 @@
         <Using Include="Bit.BlazorUI" />
         <Using Include="Microsoft.AspNetCore.Authorization" />
 
+        <Watch Remove="*.scss" />
     </ItemGroup>
 
     <ItemGroup>
@@ -88,15 +91,24 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.BlazorUI" Version="3.1.0-pre-04" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="3.1.0-pre-04" />
-        <PackageReference Include="Bit.SourceGenerators" Version="3.1.0-pre-04" />
-        <PackageReference Include="BuildWebCompiler2022" Version="1.14.8" />
-        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.7.4">
+        <PackageReference Include="Bit.BlazorUI" Version="4.2.0-pre-02" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="4.2.0-pre-02">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="jose-jwt" Version="4.0.0" />
+        <PackageReference Include="Bit.SourceGenerators" Version="4.2.0-pre-02">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.8.3">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="LibSassBuilder" Version="2.0.2" Watch="false">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="jose-jwt" Version="4.0.1" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.8" />
         <Content Remove="wwwroot\appsettings.json" />
         <EmbeddedResource Include="wwwroot\appsettings.json" />

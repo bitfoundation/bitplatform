@@ -3,10 +3,16 @@
 <CascadingValue Value="Visual">
     <BitDatePicker IsEnabled="IsEnabled"
                    Culture="Culture"
+                   CalloutHtmlAttributes="CalloutHtmlAttributes"
+                   PickerAriaLabel="@PickerAriaLabel"
                    @bind-Value="@Value"
                    Placeholder="@Placeholder"
                    GoToToday="@GoToToday"
                    IsOpen="IsOpen"
+                   ShowGoToToday="ShowGoToToday"
+                   ShowCloseButton="ShowCloseButton"
+                   HighlightCurrentMonth="HighlightCurrentMonth"
+                   HighlightSelectedMonth="HighlightSelectedMonth"
                    OnClick="HandleClick"
                    OnSelectDate="HandleSelectDate">
         <LabelFragment>
@@ -19,11 +25,17 @@
     [Parameter] public Visual Visual { get; set; }
     [Parameter] public bool IsEnabled { get; set; }
     [Parameter] public CultureInfo Culture { get; set; } = CultureInfo.CurrentUICulture;
+    [Parameter] public Dictionary<string, object> CalloutHtmlAttributes { get; set; } = new Dictionary<string, object>();
     [Parameter] public DateTimeOffset? Value { get; set; }
     [Parameter] public string Placeholder { get; set; }
     [Parameter] public string GoToToday { get; set; }
     [Parameter] public bool IsOpen { get; set; }
     [Parameter] public RenderFragment LabelFragment { get; set; }
+    [Parameter] public string PickerAriaLabel { get; set; }
+    [Parameter] public bool ShowGoToToday { get; set; } = true;
+    [Parameter] public bool ShowCloseButton { get; set; }
+    [Parameter] public bool HighlightCurrentMonth { get; set; } = false;
+    [Parameter] public bool HighlightSelectedMonth { get; set; } = false;
 
     public int ClickedValue { get; set; }
     public int SelectedDateValue { get; set; }

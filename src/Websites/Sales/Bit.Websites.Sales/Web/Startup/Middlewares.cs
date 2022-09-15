@@ -14,9 +14,9 @@ public class Middlewares
             app.UseExceptionHandler("/Error");
         }
 
-        app.UseHttpsRedirection();
         if (env.IsDevelopment() is false)
         {
+            app.UseHttpsRedirection();
             app.UseResponseCompression();
         }
         app.UseStaticFiles();

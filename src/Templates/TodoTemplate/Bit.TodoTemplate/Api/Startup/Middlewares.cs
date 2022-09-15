@@ -29,6 +29,7 @@ public class Middlewares
 
         if (env.IsDevelopment() is false)
         {
+            app.UseHttpsRedirection();
             app.UseResponseCompression();
         }
 

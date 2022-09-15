@@ -43,6 +43,7 @@ public partial class NavMenu
                 new BitNavLinkItem { Name= "SpinButton", Key = "SpinButton", Url = "/components/spin-button"},
                 new BitNavLinkItem { Name= "TextField", Key = "TextField", Url = "/components/text-field" },
                 new BitNavLinkItem { Name= "NumericTextField", Key = "NumericTextField", Url = "/components/numeric-text-field" },
+                new BitNavLinkItem { Name= "OtpInput", Key = "OtpInput", Url = "/components/otp-input" },
                 new BitNavLinkItem { Name= "Toggle (Switch)", Key = "Toggle", Url = "/components/toggle" }
             }
         },
@@ -67,7 +68,7 @@ public partial class NavMenu
                 new BitNavLinkItem { Name = "DataGrid", Key = "DataGrid", Url="/components/data-grid" },
                 new BitNavLinkItem { Name= "Carousel", Key = "Carousel", Url = "/components/carousel" },
                 new BitNavLinkItem { Name= "Swiper", Key = "Swiper", Url = "/components/swiper" },
-                new BitNavLinkItem { Name = "Persona", Key = "Persona", Url="/components/persona" }
+                new BitNavLinkItem { Name = "Persona (AvatarView)", Key = "Persona", Url="/components/persona" }
             }
         },
         new BitNavLinkItem
@@ -97,7 +98,7 @@ public partial class NavMenu
             Links = new List<BitNavLinkItem>
             {
                 new BitNavLinkItem{ Name = "Progressindicator", Key = "ProgressIndicator", Url = "/components/progress-indicator" },
-                new BitNavLinkItem{ Name = "Spinner", Key = "Spinner", Url = "/components/spinner" },
+                new BitNavLinkItem{ Name = "Spinner (BusyIndicator)", Key = "Spinner", Url = "/components/spinner" },
                 new BitNavLinkItem{ Name = "Loading", Key = "Loading", Url = "/components/loading" }
             },
         },
@@ -107,7 +108,17 @@ public partial class NavMenu
             Key = "Surfaces",
             Links = new List<BitNavLinkItem>
             {
+                new BitNavLinkItem { Name = "Accordion (Expander)", Key = "Accordion", Url="/components/accordion" },
                 new BitNavLinkItem { Name = "Modal", Key = "Modal", Url = "/components/modal" },
+            },
+        },
+        new BitNavLinkItem
+        {
+            Name = "Utilities",
+            Key = "Utilities",
+            Links = new List<BitNavLinkItem>
+            {
+                new BitNavLinkItem { Name = "Icon", Key = "Icon", Url = "/components/icon" },
             },
         },
         new BitNavLinkItem { Name= "Icons", Key = "Icons", Url = "/icons"},

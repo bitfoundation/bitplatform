@@ -7,7 +7,7 @@
         "type": "solution"
     },
     "identity": "Bit.TodoTemplate",
-    "name": "Bit Todo Template",
+    "name": "Bit TodoTemplate",
     "shortName": "bit-todo",
     "sourceName": "TodoTemplate",
     "preferNameDirectory": true,

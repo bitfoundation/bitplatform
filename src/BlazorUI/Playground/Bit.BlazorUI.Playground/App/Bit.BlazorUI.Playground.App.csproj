@@ -76,10 +76,12 @@
         <Content Remove="compilerconfig.json" />
         <None Include="compilerconfig.json" />
         <EmbeddedResource Include="appsettings.json" />
+
+        <Watch Remove="*.scss" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.7.4">
+        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.8.3">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

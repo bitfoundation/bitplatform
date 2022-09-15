@@ -14,13 +14,21 @@
         <Compile Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Remove="Extensions\HttpRequestExtensions.cs" />
         <Content Remove="compilerconfig.json" />
         <None Include="compilerconfig.json" />
+
+        <Watch Remove="*.scss" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.BlazorUI" Version="3.1.0-pre-04" />
-        <PackageReference Include="Bit.SourceGenerators" Version="3.1.0-pre-04" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="3.1.0-pre-04" />
-        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.7.4">
+        <PackageReference Include="Bit.BlazorUI" Version="4.2.0-pre-02" />
+        <PackageReference Include="Bit.SourceGenerators" Version="4.2.0-pre-02">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Bit.CodeAnalyzers" Version="4.2.0-pre-02">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.8.3">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

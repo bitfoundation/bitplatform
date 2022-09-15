@@ -7,7 +7,7 @@
         "type": "solution"
     },
     "identity": "Bit.AdminPanel",
-    "name": "Bit AdminPanel Template",
+    "name": "Bit AdminPanel",
     "shortName": "bit-admin",
     "sourceName": "AdminPanel",
     "preferNameDirectory": true,

@@ -5,6 +5,7 @@
 @import "general.fluent.scss";
 
 
+@import "../../Components/Accordion/BitAccordion.Fluent.scss";
 @import "../../Components/Buttons/BitActionButton/BitActionButton.Fluent.scss";
 @import "../../Components/Buttons/BitButton/BitButton.Fluent.scss";
 @import "../../Components/Buttons/BitCompoundButton/BitCompoundButton.Fluent.scss";
@@ -44,3 +45,5 @@
 @import "../../Components/NumericTextField/BitNumericTextField.Fluent.scss";
 @import "../../Components/DataGrid/BitDataGrid.Fluent.scss";
 @import "../../Components/DataGrid/Pagination/BitDataGridPaginator.Fluent.scss";
+@import "../../Components/Icon/BitIcon.razor.scss";
+@import "../../Components/OtpInput/BitOtpInput.Fluent.scss";
