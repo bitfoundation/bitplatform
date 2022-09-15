@@ -9,7 +9,15 @@ public partial class TelegramBotService
     public async Task SendContactUsMessage(string email, string message, CancellationToken cancellationToken)
     {
         var messsageBuilder = new StringBuilder();
-        messsageBuilder.AppendLine($"📥 *Email:* `{email.Trim()}`");
+        if (string.IsNullOrEmpty(email))
+        {
+            messsageBuilder.AppendLine($"📥 *Email:* `-`");
+        }
+        else
+        {
+            messsageBuilder.AppendLine($"📥 *Email:* `{email.Trim()}`");
+        }
+
         messsageBuilder.AppendLine($"📜 *Message*: {message.Trim()}");
 
         await TelegramBotApiClient.SendMessageAsync(messsageBuilder.ToString(), cancellationToken);
