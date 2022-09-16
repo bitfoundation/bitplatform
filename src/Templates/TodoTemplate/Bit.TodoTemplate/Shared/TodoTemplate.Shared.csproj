@@ -24,17 +24,4 @@
         <SupportedPlatform Include="browser" />
         <Using Include="TodoTemplate.Shared.Attributes" />
     </ItemGroup>
-
-    <ItemGroup>
-        <Compile Update="**\*.Designer.cs">
-            <DesignTime>True</DesignTime>
-            <AutoGen>True</AutoGen>
-            <DependentUpon>$([System.String]::Copy('%(Filename)').Replace('.Designer','')).resx</DependentUpon>
-        </Compile>
-        <EmbeddedResource Update="**\*.resx">
-            <Generator>PublicResXFileCodeGenerator</Generator>
-            <LastGenOutput>%(Filename).Designer.cs</LastGenOutput>
-        </EmbeddedResource>
-    </ItemGroup>
-
 </Project>
