@@ -5,8 +5,6 @@
         <!--If you don't need to use the time zone and your app is in WASM format, you can reduce the output size of the app by disabling the time zone.-->
         <BlazorEnableTimeZoneSupport>true</BlazorEnableTimeZoneSupport>
 		<BlazorWebAssemblyPreserveCollationData>false</BlazorWebAssemblyPreserveCollationData>
-		<RootNamespace>TodoTemplate.App</RootNamespace>
-		<AssemblyName>TodoTemplate.App</AssemblyName>
         <!--/-:msbuild-conditional:noEmit -->
         <ServiceWorkerAssetsManifest Condition="'$(WebAppDeploymentType)' == 'PWA'">service-worker-assets.js</ServiceWorkerAssetsManifest>
         <BlazorCacheBootResources Condition="'$(WebAppDeploymentType)' == 'PWA'">false</BlazorCacheBootResources>
@@ -18,19 +16,17 @@
 
     <ItemGroup>
         <!--/-:msbuild-conditional:noEmit -->
+        <Content Condition=" '$(BlazorMode)' != 'BlazorServer' " Remove="appsettings.json" />
+        <!--/+:msbuild-conditional:noEmit -->
+    </ItemGroup>
+
+    <ItemGroup>
         <!-- In the Blazor Web Assembly mode, the API project will host the web client app itself -->
         <Content Condition=" '$(BlazorMode)' != 'BlazorServer' " Remove="Pages\_Host.cshtml" />
         <Content Condition=" '$(BlazorMode)' != 'BlazorServer' " Remove="Pages\_Layout.cshtml" />
         <Compile Condition=" '$(BlazorMode)' != 'BlazorServer' " Remove="Services\Implementations\ServerSideAuthTokenProvider.cs" />
         <Compile Condition=" '$(BlazorMode)' != 'BlazorServer' " Remove="Extensions\HttpRequestExtensions.cs" />
-        <Content Condition=" '$(BlazorMode)' != 'BlazorServer' " Remove="appsettings.json" />
-        <!--/+:msbuild-conditional:noEmit -->
-        <Content Remove="compilerconfig.json" />
-        <None Include="compilerconfig.json" />
-    </ItemGroup>
 
-    <ItemGroup>
-        <PackageReference Include="Bit.BlazorUI" Version="4.2.0-pre-02" />
         <PackageReference Include="Bit.Bswup" Version="4.2.0-pre-02" />
         <PackageReference Include="Bit.CodeAnalyzers" Version="4.2.0-pre-02">
             <PrivateAssets>all</PrivateAssets>
@@ -40,39 +36,20 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="jose-jwt" Version="4.0.1" />
-        <PackageReference Include="LibSassBuilder" Version="2.0.2" Watch="false">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.8" />
         <!--/-:msbuild-conditional:noEmit -->
         <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.8" />
         <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.8" PrivateAssets="all" />
         <!--/+:msbuild-conditional:noEmit -->
+
+        <Using Include="Microsoft.JSInterop" />
+        <Using Include="TodoTemplate.Client.Services.Contracts" />
+        <Using Include="TodoTemplate.Client.Services.Implementations" />
+        <Using Include="TodoTemplate.Client.Components" />
     </ItemGroup>
 
     <ItemGroup>
         <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" Condition="'$(WebAppDeploymentType)' == 'PWA'" />
-        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.8.3">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <ProjectReference Include="..\Shared\TodoTemplate.Shared.csproj" />
-
-        <Using Include="Microsoft.AspNetCore.Components" />
-        <Using Include="TodoTemplate.App.Services.Contracts" />
-        <Using Include="TodoTemplate.App.Services.Implementations" />
-        <Using Include="Microsoft.Extensions.Configuration" />
-        <Using Include="Microsoft.JSInterop" />
-        <Using Include="System.Net.Http.Json" />
-        <Using Include="System.Collections.Concurrent" />
-        <Using Include="Microsoft.AspNetCore.Components.Authorization" />
-        <Using Include="TodoTemplate.App.Components" />
-        <Using Include="Bit.BlazorUI" />
-        <Using Include="Microsoft.AspNetCore.Authorization" />
-
-        <Watch Remove="*.scss" />
+        <ProjectReference Include="..\Client\TodoTemplate.Client.csproj" />
     </ItemGroup>
 
 </Project>

@@ -2,7 +2,7 @@
 using System.Reflection;
 #endif
 
-namespace TodoTemplate.App.Services.Implementations;
+namespace TodoTemplate.Client.Services.Implementations;
 
 #if BlazorServer
 public partial class ServerSideAuthTokenProvider : IAuthTokenProvider

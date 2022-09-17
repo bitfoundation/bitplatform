@@ -225,27 +225,7 @@ profile.arm.json
 /**/*.css
 custom.aprof
 
-/App/Components
-/App/Extensions
-/App/Pages
-/App/Services
-/App/Shared
-/App/Styles
-/App/Scripts
-/App/wwwroot/fonts
-/App/wwwroot/images
-/App/wwwroot/**/*.js
-/App/wwwroot/styles
-/App/compilerconfig.*
-/App/_Imports.razor
-/App/Main.razor
-/App/appsettings.json
-/App/tsconfig.json
-/App/Components
-
 /Api/Attachments/**/*.*
 
-/Web/wwwroot/scripts/app*.js
-/Web/wwwroot/service-worker.published.min.js
+/Client/wwwroot/scripts/app*.js
 /Web/appsettings.json
-/App/wwwroot/appsettings.json

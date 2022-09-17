@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.OData;
 using Microsoft.AspNetCore.ResponseCompression;
 #if BlazorWebAssembly
 using Microsoft.AspNetCore.Components;
-using TodoTemplate.App.Services.Implementations;
+using TodoTemplate.Client.Services.Implementations;
 #endif
 
 namespace TodoTemplate.Api.Startup;

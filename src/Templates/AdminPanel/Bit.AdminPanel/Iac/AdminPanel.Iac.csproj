@@ -9,7 +9,7 @@
 
     <ItemGroup>
         <PackageReference Include="Azure.Storage.Blobs" Version="12.13.1" />
-        <PackageReference Include="Pulumi.AzureNative" Version="1.76.0" />
+        <PackageReference Include="Pulumi.AzureNative" Version="1.78.0" />
     </ItemGroup>
 
     <ItemGroup>

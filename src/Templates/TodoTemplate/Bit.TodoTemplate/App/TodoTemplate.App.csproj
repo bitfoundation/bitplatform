@@ -8,7 +8,6 @@
         <OutputType>Exe</OutputType>
         <UseMaui>true</UseMaui>
         <SingleProject>true</SingleProject>
-        <DefineConstants>$(DefineConstants);Maui</DefineConstants>
         <EnableDefaultCssItems>false</EnableDefaultCssItems>
 
         <!-- Display name -->
@@ -23,16 +22,7 @@
         <ApplicationVersion>1</ApplicationVersion>
 
         <!-- Required for C# Hot Reload -->
-        <UseInterpreter Condition="'$(Configuration)' == 'Debug'">True</UseInterpreter>
-
-        <SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-ios'">14.2</SupportedOSPlatformVersion>
-        <SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-maccatalyst'">14.0</SupportedOSPlatformVersion>
-        <SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-android'">23.0</SupportedOSPlatformVersion>
-        <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</SupportedOSPlatformVersion>
-        <TargetPlatformMinVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</TargetPlatformMinVersion>
-        <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
-
-        <CpsExtensionSchemaDirectory Condition="'$(Configuration)' == 'Release'">InvalidPathForLibSassBuilder</CpsExtensionSchemaDirectory>
+        <UseInterpreter Condition="'$(Configuration)' == 'Debug'">True</UseInterpreter>        
     </PropertyGroup>
 
     <PropertyGroup Condition="$(TargetFramework.Contains('-android')) and '$(Configuration)' == 'Release'">
@@ -53,28 +43,6 @@
     </ItemGroup>
 
     <ItemGroup>
-
-        <Using Include="Microsoft.AspNetCore.Components.WebView.Maui" />
-        <Using Include="Microsoft.Maui" />
-        <Using Include="Microsoft.Maui.Controls.Hosting" />
-
-        <Using Include="Microsoft.AspNetCore.Components" />
-        <Using Include="TodoTemplate.App.Services.Contracts" />
-        <Using Include="TodoTemplate.App.Services.Implementations" />
-        <Using Include="Microsoft.Extensions.Configuration" />
-        <Using Include="Microsoft.JSInterop" />
-        <Using Include="System.Net.Http.Json" />
-        <Using Include="System.Collections.Concurrent" />
-
-        <Using Include="Microsoft.AspNetCore.Components.Authorization" />
-        <Using Include="TodoTemplate.App.Components" />
-        <Using Include="Bit.BlazorUI" />
-        <Using Include="Microsoft.AspNetCore.Authorization" />
-
-        <Watch Remove="*.scss" />
-    </ItemGroup>
-
-    <ItemGroup>
         <!-- App Icon -->
         <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#0D2960" />
 
@@ -88,6 +56,12 @@
 
         <!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
         <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+
+        <Using Include="Microsoft.Extensions.Configuration" />
+        <Using Include="TodoTemplate.Client.Components" />
+        <Using Include="TodoTemplate.Client.Services.Implementations" />
+        <Using Include="TodoTemplate.Client.Services.Contracts" />
+        <Using Include="Microsoft.AspNetCore.Components.WebView.Maui" />
     </ItemGroup>
 
     <ItemGroup>
@@ -100,33 +74,12 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.8.3">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="LibSassBuilder" Version="2.0.2" Watch="false">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="jose-jwt" Version="4.0.1" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.8" />
-        <Content Remove="wwwroot\appsettings.json" />
-        <EmbeddedResource Include="wwwroot\appsettings.json" />
-        <Content Remove="Pages\_Host.cshtml" />
-        <Content Remove="Pages\_Layout.cshtml" />
-        <Compile Remove="Extensions\HttpRequestExtensions.cs" />
-        <Compile Remove="Services\Implementations\ServerSideAuthTokenProvider.cs" />
+        <EmbeddedResource Include="..\Web\wwwroot\appsettings.json" Link="wwwroot\appsettings.json" />
         <Content Remove="Properties\launchSettings.json" />
-        <Content Remove="compilerconfig.json" />
-        <None Include="compilerconfig.json" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Shared\TodoTemplate.Shared.csproj" />
+      <ProjectReference Include="..\Client\TodoTemplate.Client.csproj" />
     </ItemGroup>
-
-    <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-        <Exec Command="call $(ProjectDir)mklink.bat" />
-    </Target>
 
 </Project>
