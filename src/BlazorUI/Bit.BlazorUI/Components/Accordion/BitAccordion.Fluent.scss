@@ -28,7 +28,7 @@
 
     .header {
         display: flex;
-        justify-content: center;
+        justify-content: space-between;
         margin: rem(12px) 0;
         cursor: pointer;
 
@@ -37,28 +37,23 @@
                 transform: rotate(-180deg);
             }
         }
-    }
-
-    .intro {
-        display: flex;
-        flex-grow: 1;
-        line-height: 1.5;
 
         .title {
             font-size: rem(16px);
             font-weight: 600;
-            width: 30%;
+            margin: 0 rem(5px);
         }
 
         .description {
             color: $Grey130;
+            word-break: break-all;
         }
-    }
 
-    .header-icon {
-        display: flex;
-        align-items: center;
-        margin: 0 rem(5px);
+        .icon {
+            display: flex;
+            align-items: center;
+            margin: 0 rem(5px);
+        }
     }
 
     .content {

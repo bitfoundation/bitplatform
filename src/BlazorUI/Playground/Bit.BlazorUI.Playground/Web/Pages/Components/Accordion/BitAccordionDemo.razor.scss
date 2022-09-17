@@ -24,19 +24,23 @@
 ::deep .custom-acd {
     .header {
         justify-content: flex-start;
-        align-items: center;
-    }
 
-    .custom-header-intro {
-        display: flex;
-        flex-grow: 1;
-        line-height: 1.5;
-        color: $B1Color;
+        i {
+            display: flex;
+            align-items: center;
+            margin: 0 rem(5px);
+        }
 
         .custom-header-title {
             font-size: rem(16px);
             font-weight: 600;
-            width: 25%;
+            margin-right: rem(20px);
+            color: $B1Color;
+        }
+
+        .custom-header-description {
+            word-break: break-all;
+            color: $Gray2;
         }
     }
 }
