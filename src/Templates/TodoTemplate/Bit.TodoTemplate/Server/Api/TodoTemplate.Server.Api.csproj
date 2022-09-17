@@ -23,11 +23,11 @@
         <EmbeddedResource Include="Resources\*.cshtml" />
         <PackageReference Include="AutoMapper" Version="11.0.1" />
         <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="11.0.0" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="4.2.0-pre-02">
+        <PackageReference Include="Bit.CodeAnalyzers" Version="4.2.0-pre-03">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="4.2.0-pre-02">
+        <PackageReference Include="Bit.SourceGenerators" Version="4.2.0-pre-03">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
