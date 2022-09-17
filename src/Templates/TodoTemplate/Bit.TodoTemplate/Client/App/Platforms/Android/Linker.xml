@@ -1,0 +1,63 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  This file specifies which parts of the BCL or Blazor packages must not be
+  stripped by the IL Linker even if they aren't referenced by user code.
+-->
+<linker>
+	
+	<assembly fullname="System.Core">
+		<type fullname="System.Linq.Expressions*" />
+		<type fullname="System.Linq.Queryable*" />
+		<type fullname="System.Linq.Enumerable*" />
+		<type fullname="System.Linq.EnumerableRewriter*" />
+	</assembly>
+
+	<assembly fullname="TodoTemplate.Client.App">
+		<type fullname="*" />
+	</assembly>
+        
+    <assembly fullname="TodoTemplate.Shared">
+		<type fullname="*" />
+	</assembly>
+
+	<assembly fullname="Microsoft.Extensions.Logging">
+		<type fullname="*" />
+	</assembly>
+
+	<assembly fullname="Microsoft.Extensions.Options">
+		<type fullname="*" />
+	</assembly>
+
+	<assembly fullname="Microsoft.Extensions.DependencyInjection">
+		<type fullname="*" />
+	</assembly>
+
+	<assembly fullname="Microsoft.Extensions.DependencyInjection.Abstractions">
+		<type fullname="*" />
+	</assembly>
+
+	<assembly fullname="netstandard">
+		<type fullname="*" />
+	</assembly>
+
+    <assembly fullname="Microsoft.Maui.Controls.Xaml">
+        <type fullname="*" />
+    </assembly>
+
+    <assembly fullname="Microsoft.Maui.Controls.Compatibility">
+        <type fullname="*" />
+    </assembly>
+
+    <assembly fullname="Microsoft.Maui.Controls">
+        <type fullname="*" />
+    </assembly>
+
+    <assembly fullname="Microsoft.AspNetCore.Components.WebView.Maui">
+        <type fullname="*" />
+    </assembly>
+
+    <assembly fullname="Microsoft.Maui">
+        <type fullname="*" />
+    </assembly>
+
+</linker>

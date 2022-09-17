@@ -2,12 +2,15 @@
 <Project>
     <!--/-:msbuild-conditional:noEmit -->
     <PropertyGroup>
+        
         <BlazorMode>BlazorServer</BlazorMode>
         <!-- You can use either BlazorServer or BlazorWebAssembly or BlazorHybrid -->
+        
         <WebAppDeploymentType>DefaultDeploymentType</WebAppDeploymentType>
         <!-- You can choose either Static, DefaultDeploymentType, PWA or SSR -->
-        <!-- Learn more about blazor modes & deployment types at https://bitplatform.dev/todo-template/hosting-models -->
         
+        <!-- Learn more about blazor modes & deployment types at https://bitplatform.dev/todo-template/hosting-models -->
+
         <DefineConstants Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' ">$(DefineConstants);BlazorWebAssembly</DefineConstants>
         <DefineConstants Condition=" '$(BlazorMode)' == 'BlazorServer' ">$(DefineConstants);BlazorServer</DefineConstants>
         <DefineConstants Condition=" '$(BlazorMode)' == 'BlazorHybrid' ">$(DefineConstants);BlazorHybrid</DefineConstants>
@@ -19,18 +22,24 @@
         <DefineConstants Condition=" '$(TargetFramework)' == 'net6.0-ios' ">$(DefineConstants);iOS</DefineConstants>
         <DefineConstants Condition=" '$(TargetFramework)' == 'net6.0-windows10.0.19041' ">$(DefineConstants);Windows</DefineConstants>
         <DefineConstants Condition=" '$(TargetFramework)' == 'net6.0-maccatalyst' ">$(DefineConstants);Mac</DefineConstants>
-        
+
         <LangVersion>preview</LangVersion>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
-        
+
         <NeutralLanguage>en</NeutralLanguage>
         <MultilingualEnabled>false</MultilingualEnabled>
         <DefineConstants Condition=" '$(MultilingualEnabled)' == 'true' ">$(DefineConstants);MultilingualEnabled</DefineConstants>
 
+        <SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-ios'">14.2</SupportedOSPlatformVersion>
+        <SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-maccatalyst'">14.0</SupportedOSPlatformVersion>
+        <SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-android'">23.0</SupportedOSPlatformVersion>
+        <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</SupportedOSPlatformVersion>
+        <TargetPlatformMinVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</TargetPlatformMinVersion>
+        <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
     </PropertyGroup>
     <!--/+:msbuild-conditional:noEmit -->
-    
+
     <ItemGroup>
         <Using Include="Microsoft.Extensions.DependencyInjection" />
         <Using Include="System.Net.Http" />

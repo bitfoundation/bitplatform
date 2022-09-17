@@ -128,7 +128,7 @@
     </ItemGroup>
 
     <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-        <Exec Command="call $(ProjectDir)mklink.bat" />
+        <Exec Command="call $(ProjectDir)mklink.bat" Condition="$([MSBuild]::IsOSPlatform('windows')) and '$(MSBuildRuntimeType)' == 'Full'" />
     </Target>
 
 </Project>
