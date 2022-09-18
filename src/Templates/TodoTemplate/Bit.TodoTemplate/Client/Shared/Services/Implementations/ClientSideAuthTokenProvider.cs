@@ -1,4 +1,5 @@
-﻿namespace TodoTemplate.Client.Shared.Services.Implementations;
+﻿//-:cnd:noEmit
+namespace TodoTemplate.Client.Shared.Services.Implementations;
 
 public partial class ClientSideAuthTokenProvider : IAuthTokenProvider
 {

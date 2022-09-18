@@ -1,4 +1,5 @@
-﻿namespace TodoTemplate.Client.App;
+﻿//-:cnd:noEmit
+namespace TodoTemplate.Client.App;
 
 public partial class MainPage
 {

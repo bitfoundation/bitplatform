@@ -1,4 +1,5 @@
-﻿#if BlazorServer
+﻿//-:cnd:noEmit
+#if BlazorServer
 using System.Reflection;
 #endif
 
