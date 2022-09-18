@@ -33,8 +33,8 @@
         cursor: pointer;
 
         &.expanded {
-            .header-icon {
-                transform: rotate(-180deg);
+            .icon {
+                transform: rotate(180deg);
             }
         }
 
@@ -46,13 +46,24 @@
 
         .description {
             color: $Grey130;
-            word-break: break-all;
+            margin: 0 rem(5px);
         }
 
         .icon {
             display: flex;
             align-items: center;
             margin: 0 rem(5px);
+        }
+
+        @media only screen and (max-width: #{em(639px)}) {
+            flex-direction: column;
+
+            &.expanded {
+                .icon {
+                    transform: rotate(180deg);
+                    justify-content: end;
+                }
+            }
         }
     }
 
