@@ -2,16 +2,10 @@
 
     <PropertyGroup>
         <TargetFrameworks>net6.0</TargetFrameworks>
-        <TargetFrameworks Condition=" '$(BlazorMode)' == 'BlazorHybrid' ">net6.0;net6.0-android;net6.0-ios;net6.0-maccatalyst</TargetFrameworks>
-        <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows')) and '$(MSBuildRuntimeType)' == 'Full' and '$(BlazorMode)' == 'BlazorHybrid'">$(TargetFrameworks);net6.0-windows10.0.19041</TargetFrameworks>
-        <!-- Uncomment to also build the tizen app. You will need to install tizen by following this: https://github.com/Samsung/Tizen.NET -->
-        <!-- <TargetFrameworks Condition=" '$(BlazorMode)' == 'BlazorHybrid' ">$(TargetFrameworks);net6.0-tizen</TargetFrameworks> -->
-        <UseMauiEssentials>true</UseMauiEssentials>
-        <SingleProject>true</SingleProject>
+        <UseMauiEssentials Condition=" '$(BlazorMode)' == 'BlazorHybrid' ">true</UseMauiEssentials>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
     </PropertyGroup>
-
 
     <ItemGroup>
         <SupportedPlatform Include="browser" />
