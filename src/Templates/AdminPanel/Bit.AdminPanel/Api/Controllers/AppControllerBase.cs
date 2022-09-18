@@ -2,7 +2,7 @@
 
 public partial class AppControllerBase : ControllerBase
 {
-    [AutoInject] protected IOptionsSnapshot<AppSettings> AppSettings = default!;
+    [AutoInject] protected AppSettings AppSettings = default!;
 
     [AutoInject] protected IMapper Mapper = default!;
 
