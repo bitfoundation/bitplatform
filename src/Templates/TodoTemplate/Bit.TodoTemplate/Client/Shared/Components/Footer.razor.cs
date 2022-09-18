@@ -1,4 +1,5 @@
-﻿namespace TodoTemplate.Client.Shared.Components;
+﻿//-:cnd:noEmit
+namespace TodoTemplate.Client.Shared.Components;
 
 public partial class Footer
 {

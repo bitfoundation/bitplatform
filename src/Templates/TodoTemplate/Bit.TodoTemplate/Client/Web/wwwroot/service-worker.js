@@ -14,8 +14,7 @@ self.assetsExclude = [
     /bit\.blazorui\.fluent\.min\.css$/,
     /bit\.blazorui\.fluent\.css$/,
     /bit\.blazorui\.material\.min\.css$/,
-    /bit\.blazorui\.material\.css$/,
-    /app\.css/
+    /bit\.blazorui\.material\.css$/
 ];
 
 self.externalAssets = [

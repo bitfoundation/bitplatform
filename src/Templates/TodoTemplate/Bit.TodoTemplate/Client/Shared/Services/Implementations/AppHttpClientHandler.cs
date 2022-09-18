@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿//-:cnd:noEmit
+using System.Globalization;
 using System.Net.Http.Headers;
 using System.Runtime.InteropServices;
 

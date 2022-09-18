@@ -1,4 +1,5 @@
-﻿using Android.App;
+﻿//-:cnd:noEmit
+using Android.App;
 using Android.Runtime;
 
 [assembly: UsesPermission(Android.Manifest.Permission.Internet)]
