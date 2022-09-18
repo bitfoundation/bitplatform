@@ -6,11 +6,11 @@ namespace TodoTemplate.Client.Shared;
 public partial class App
 {
 #if BlazorWebAssembly && !BlazorHybrid
-    private List<Assembly> lazyLoadedAssemblies = new();
-    [Inject] private Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader AssemblyLoader { get; set; } = default!;
+    private List<Assembly> _lazyLoadedAssemblies = new();
+    [AutoInject] private Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader _assemblyLoader = default!;
 #endif
 
-    [Inject] private IJSRuntime _jsRuntime { get; set; } = default!;
+    [AutoInject] private IJSRuntime _jsRuntime = default!;
 
     private bool _cultureHasNotBeenSet = true;
 
@@ -29,10 +29,10 @@ public partial class App
 #endif
 
 #if BlazorWebAssembly && !BlazorHybrid
-        if (args.Path.Contains("some-lazy-loaded-page") && lazyLoadedAssemblies.Any(asm => asm.GetName().Name == "SomeAssembly") is false)
+        if (args.Path.Contains("some-lazy-loaded-page") && _lazyLoadedAssemblies.Any(asm => asm.GetName().Name == "SomeAssembly") is false)
         {
-            var assemblies = await AssemblyLoader.LoadAssembliesAsync(new[] { "SomeAssembly.dll" });
-            lazyLoadedAssemblies.AddRange(assemblies);
+            var assemblies = await _assemblyLoader.LoadAssembliesAsync(new[] { "SomeAssembly.dll" });
+            _lazyLoadedAssemblies.AddRange(assemblies);
         }
 #endif
     }
