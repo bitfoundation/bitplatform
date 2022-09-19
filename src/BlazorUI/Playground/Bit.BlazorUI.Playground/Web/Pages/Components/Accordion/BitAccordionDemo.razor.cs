@@ -133,6 +133,31 @@ public partial class BitAccordionDemo
 </div>
 ";
     private readonly string example5HTMLCode = @"
+<style>
+    ::deep .custom-acd {
+        .header {
+            align-items: center;
+        }
+
+        .custom-header-intro {
+            display: flex;
+            flex-grow: 1;
+            line-height: 1.5;
+            color: $B1Color;
+
+            @media only screen and (max-width: #{em(639px)}) {
+                flex-direction: column;
+            }
+
+            .custom-header-title {
+                font-size: rem(16px);
+                font-weight: 600;
+                width: 30%;
+            }
+        }
+    }
+</style>
+
 <div class=""accordion-example-box"">
     <BitAccordion Class=""custom-acd""
                     Text=""Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget."">

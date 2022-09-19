@@ -23,23 +23,23 @@
 
 ::deep .custom-acd {
     .header {
-        justify-content: flex-start;
+        align-items: center;
+    }
 
-        i {
-            display: flex;
-            align-items: center;
-            margin: 0 rem(5px);
+    .custom-header-intro {
+        display: flex;
+        flex-grow: 1;
+        line-height: 1.5;
+        color: $B1Color;
+
+        @media only screen and (max-width: #{em(639px)}) {
+            flex-direction: column;
         }
 
         .custom-header-title {
             font-size: rem(16px);
             font-weight: 600;
-            margin-right: rem(20px);
-            color: $B1Color;
-        }
-
-        .custom-header-description {
-            color: $Gray2;
+            width: 30%;
         }
     }
 }

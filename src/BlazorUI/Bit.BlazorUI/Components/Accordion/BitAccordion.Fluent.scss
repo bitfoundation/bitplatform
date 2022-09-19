@@ -28,43 +28,41 @@
 
     .header {
         display: flex;
-        justify-content: space-between;
+        justify-content: center;
         margin: rem(12px) 0;
         cursor: pointer;
 
         &.expanded {
-            .icon {
-                transform: rotate(180deg);
+            .header-icon {
+                transform: rotate(-180deg);
             }
         }
+    }
+
+    .intro {
+        display: flex;
+        flex-grow: 1;
+        line-height: 1.5;
 
         .title {
             font-size: rem(16px);
             font-weight: 600;
-            margin: 0 rem(5px);
+            width: 30%;
         }
 
         .description {
             color: $Grey130;
-            margin: 0 rem(5px);
-        }
-
-        .icon {
-            display: flex;
-            align-items: center;
-            margin: 0 rem(5px);
         }
 
         @media only screen and (max-width: #{em(639px)}) {
             flex-direction: column;
-
-            &.expanded {
-                .icon {
-                    transform: rotate(180deg);
-                    justify-content: end;
-                }
-            }
         }
+    }
+
+    .header-icon {
+        display: flex;
+        align-items: center;
+        margin: 0 rem(5px);
     }
 
     .content {
