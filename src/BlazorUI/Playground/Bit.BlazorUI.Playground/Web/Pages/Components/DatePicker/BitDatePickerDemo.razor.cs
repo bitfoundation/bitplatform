@@ -50,6 +50,13 @@ public partial class BitDatePickerDemo
         },
         new ComponentParameter()
         {
+            Name = "DayCellTemplate",
+            Type = "RenderFragment<DateTimeOffset>?",
+            DefaultValue = "",
+            Description = "Used to customize how content inside the day cell is rendered."
+        },
+        new ComponentParameter()
+        {
             Name = "FormatDate",
             Type = "string",
             DefaultValue = "",
@@ -131,6 +138,13 @@ public partial class BitDatePickerDemo
             Type = "DateTimeOffset",
             DefaultValue = "",
             Description = "The minimum allowable date.",
+        },
+        new ComponentParameter()
+        {
+            Name = "MonthCellTemplate",
+            Type = "RenderFragment<DateTimeOffset>?",
+            DefaultValue = "",
+            Description = "Used to customize how content inside the month cell is rendered."
         },
         new ComponentParameter()
         {
@@ -222,6 +236,13 @@ public partial class BitDatePickerDemo
             Type = "EventCallback<DateTimeOffset?>",
             DefaultValue = "",
             Description = "Callback for when the on date value changed.",
+        },
+        new ComponentParameter()
+        {
+            Name = "YearCellTemplate",
+            Type = "RenderFragment<int>?",
+            DefaultValue = "",
+            Description = "Used to customize how content inside the year cell is rendered."
         }
     };
 
@@ -384,4 +405,27 @@ private DateTimeOffset? selectedDate = new DateTimeOffset(new DateTime(2020, 1, 
                GoToToday=""Boro be emrouz""
                Style=""max-width: 300px"">
 </BitDatePicker>";
+
+    private readonly string example12HTMLCode = @"
+<BitDatePicker Style=""max-width: 300px""
+               AriaLabel=""Select a date""
+               Placeholder=""Select a date..."">
+    <DayCellTemplate >
+        <span class=""@(context.DayOfWeek == DayOfWeek.Sunday ? ""weekend-cell"" : null)"">
+            @context.Day
+        </span>
+    </DayCellTemplate>
+    <MonthCellTemplate>
+        <span>@context.Month</span>
+    </MonthCellTemplate>
+    <YearCellTemplate>
+        <span aria-label=""@context AC"">@context</span>
+    </YearCellTemplate>
+</BitDatePicker>
+
+<Style>
+.weekend-cell {
+    color: red;
+}
+</Style>";
 }

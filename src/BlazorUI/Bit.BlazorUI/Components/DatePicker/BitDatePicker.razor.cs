@@ -57,6 +57,11 @@ public partial class BitDatePicker
     }
 
     /// <summary>
+    /// Used to customize how content inside the day cell is rendered.
+    /// </summary>
+    [Parameter] public RenderFragment<DateTimeOffset>? DayCellTemplate { get; set; } 
+
+    /// <summary>
     /// FormatDate for the DatePicker
     /// </summary>
     [Parameter] public string? FormatDate { get; set; }
@@ -128,6 +133,11 @@ public partial class BitDatePicker
     [Parameter] public DateTimeOffset? MinDate { get; set; }
 
     /// <summary>
+    /// Used to customize how content inside the month cell is rendered. 
+    /// </summary>
+    [Parameter] public RenderFragment<DateTimeOffset>? MonthCellTemplate { get; set; }
+
+    /// <summary>
     /// Callback for when clicking on DatePicker input
     /// </summary>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
@@ -186,6 +196,11 @@ public partial class BitDatePicker
     /// The tabIndex of the TextField.
     /// </summary>
     [Parameter] public int TabIndex { get; set; }
+
+    /// <summary>
+    /// Used to customize how content inside the year cell is rendered.
+    /// </summary>
+    [Parameter] public RenderFragment<int>? YearCellTemplate { get; set; }
 
     public string ActiveDescendantId => Guid.NewGuid().ToString();
     public string CalloutId => $"DatePicker-Callout{UniqueId}";
@@ -850,5 +865,30 @@ public partial class BitDatePicker
         }
 
         return className;
+    }
+
+    private DateTimeOffset GetDayCellDate(int dayIndex, int weekIndex)
+    {
+        int selectedMonth = GetCorrectTargetMonth(weekIndex, dayIndex);
+        var currentDay = _currentMonthCalendar[weekIndex, dayIndex];
+        var currentYear = _currentYear;
+        if (selectedMonth < _currentMonth && _currentMonth == 12 && IsInCurrentMonth(weekIndex, dayIndex) is false)
+        {
+            currentYear++;
+        }
+
+        if (selectedMonth > _currentMonth && _currentMonth == 1 && IsInCurrentMonth(weekIndex, dayIndex) is false)
+        {
+            currentYear--;
+        }
+
+        var currentDate = new DateTimeOffset(Culture.DateTimeFormat.Calendar.ToDateTime(currentYear, selectedMonth, currentDay, 0, 0, 0, 0), DateTimeOffset.Now.Offset);
+        return currentDate;
+    }
+
+    private DateTimeOffset GetMonthCellDate(int monthIndex)
+    {
+        var currentDate = new DateTimeOffset(Culture.DateTimeFormat.Calendar.ToDateTime(_currentYear, monthIndex, 1, 0, 0, 0, 0), DateTimeOffset.Now.Offset);
+        return currentDate;
     }
 }

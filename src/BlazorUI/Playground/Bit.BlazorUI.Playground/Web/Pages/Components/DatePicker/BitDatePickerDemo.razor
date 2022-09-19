@@ -145,4 +145,24 @@
             <div class="example-desc">Please note to reduce the download size of this page, the sample is not implemented here. In order to use this example, it's required to set InvariantGlobalization to false in the project setting, which causes an extra download size for the website.</div>
         </ExamplePreview>
     </ComponentExampleBox>
+
+    <ComponentExampleBox Title="BitDatePicker with a custom day, month, and year cell" HTMLSourceCode="@example12HTMLCode" ExampleId="example12">
+        <ExamplePreview>
+            <BitDatePicker Style="max-width: 300px"
+                           AriaLabel="Select a date"
+                           Placeholder="Select a date...">
+                <DayCellTemplate >
+                    <span class="@(context.DayOfWeek == DayOfWeek.Sunday ? "weekend-cell" : null)">
+                        @context.Day
+                    </span>
+                </DayCellTemplate>
+                <MonthCellTemplate>
+                    <span>@context.Month</span>
+                </MonthCellTemplate>
+                <YearCellTemplate>
+                    <span aria-label="@context AC">@context</span>
+                </YearCellTemplate>
+            </BitDatePicker>
+        </ExamplePreview>
+    </ComponentExampleBox>
 </ComponentDemo>
