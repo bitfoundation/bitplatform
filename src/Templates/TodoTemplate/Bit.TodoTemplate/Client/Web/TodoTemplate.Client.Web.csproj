@@ -16,23 +16,22 @@
 
     <ItemGroup>
         <!--/-:msbuild-conditional:noEmit -->
-        <Content Condition=" '$(BlazorMode)' != 'BlazorServer' " Remove="appsettings.json" />
-        <!--/+:msbuild-conditional:noEmit -->
-    </ItemGroup>
-
-    <ItemGroup>
         <!-- In the Blazor Web Assembly mode, the API project will host the web client app itself -->
         <Content Condition=" '$(BlazorMode)' != 'BlazorServer' " Remove="Pages\_Host.cshtml" />
         <Content Condition=" '$(BlazorMode)' != 'BlazorServer' " Remove="Pages\_Layout.cshtml" />
         <Compile Condition=" '$(BlazorMode)' != 'BlazorServer' " Remove="Services\Implementations\ServerSideAuthTokenProvider.cs" />
         <Compile Condition=" '$(BlazorMode)' != 'BlazorServer' " Remove="Extensions\HttpRequestExtensions.cs" />
+        <!--/+:msbuild-conditional:noEmit -->
+    </ItemGroup>
 
-        <PackageReference Include="Bit.Bswup" Version="4.2.0-pre-06" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="4.2.0-pre-06">
+    <ItemGroup>
+
+        <PackageReference Include="Bit.Bswup" Version="4.2.0-pre-05" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="4.2.0-pre-05">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="4.2.0-pre-06">
+        <PackageReference Include="Bit.SourceGenerators" Version="4.2.0-pre-05">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

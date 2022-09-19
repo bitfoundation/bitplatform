@@ -5,8 +5,9 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.OData;
 using Microsoft.AspNetCore.ResponseCompression;
 #if BlazorWebAssembly
-using Microsoft.AspNetCore.Components;
+using TodoTemplate.Client.Web.Services.Implementations;
 using TodoTemplate.Client.Shared.Services.Implementations;
+using Microsoft.AspNetCore.Components;
 #endif
 
 namespace TodoTemplate.Server.Api.Startup;
@@ -15,13 +16,15 @@ public static class Services
 {
     public static void Add(IServiceCollection services, IWebHostEnvironment env, IConfiguration configuration)
     {
+        // Services being registered here can get injected into controllers and services in Api project.
+
         var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
 
         services.AddSharedServices();
 
 #if BlazorWebAssembly
         services.AddTransient<IAuthTokenProvider, ServerSideAuthTokenProvider>();
-        services.AddAppServices();
+        services.AddClientSharedServices();
 
         // In the Pre-Rendering mode, the configured HttpClient will use the access_token provided by the cookie in the request, so the pre-rendered content would be fitting for the current user.
         services.AddHttpClient("WebAssemblyPreRenderingHttpClient")

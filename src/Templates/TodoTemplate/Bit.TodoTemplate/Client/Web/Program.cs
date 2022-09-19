@@ -1,4 +1,5 @@
 ﻿//-:cnd:noEmit
+using TodoTemplate.Client.Shared.Shared;
 #if BlazorServer
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
@@ -24,13 +25,15 @@ public class Program
     public static WebAssemblyHost CreateHostBuilder(string[] args)
     {
         var builder = WebAssemblyHostBuilder.CreateDefault();
+        builder.Configuration.AddJsonStream(typeof(MainLayout).Assembly.GetManifestResourceStream("TodoTemplate.Client.Shared.wwwroot.appsettings.json"));
 
         builder.Services.AddSingleton(sp => new HttpClient(sp.GetRequiredService<AppHttpClientHandler>()) { BaseAddress = new Uri($"{builder.HostEnvironment.BaseAddress}api/") });
         builder.Services.AddScoped<Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader>();
         builder.Services.AddTransient<IAuthTokenProvider, ClientSideAuthTokenProvider>();
 
         builder.Services.AddSharedServices();
-        builder.Services.AddAppServices();
+        builder.Services.AddClientSharedServices();
+        builder.Services.AddClientWebServices();
 
         var host = builder.Build();
 
@@ -44,9 +47,8 @@ public class Program
 #elif BlazorServer
     public static WebApplication CreateHostBuilder(string[] args)
     {
-        File.Copy("wwwroot/appsettings.json", "appsettings.json", overwrite: true);
-
         var builder = WebApplication.CreateBuilder(args);
+        builder.Configuration.AddJsonStream(typeof(MainLayout).Assembly.GetManifestResourceStream("TodoTemplate.Client.Shared.wwwroot.appsettings.json"));
 
 #if DEBUG
         if (OperatingSystem.IsWindows())

@@ -2,6 +2,7 @@
 #if BlazorServer
 using System.IO.Compression;
 using Microsoft.AspNetCore.ResponseCompression;
+using TodoTemplate.Client.Web.Services.Implementations;
 
 namespace TodoTemplate.Client.Web.Startup;
 
@@ -34,7 +35,8 @@ public static class Services
         services.AddTransient<IAuthTokenProvider, ServerSideAuthTokenProvider>();
 
         services.AddSharedServices();
-        services.AddAppServices();
+        services.AddClientSharedServices();
+        services.AddClientWebServices();
     }
 }
 #endif

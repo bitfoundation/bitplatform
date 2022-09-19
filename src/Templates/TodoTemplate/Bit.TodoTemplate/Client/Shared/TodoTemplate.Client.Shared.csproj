@@ -13,12 +13,15 @@
         <Content Remove="compilerconfig.json" />
         <None Include="compilerconfig.json" />
 
-        <PackageReference Include="Bit.BlazorUI" Version="4.2.0-pre-06" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="4.2.0-pre-06">
+        <Content Remove="wwwroot\appsettings.json" />
+        <EmbeddedResource Include="wwwroot\appsettings.json" />
+
+        <PackageReference Include="Bit.BlazorUI" Version="4.2.0-pre-05" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="4.2.0-pre-05">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="4.2.0-pre-06">
+        <PackageReference Include="Bit.SourceGenerators" Version="4.2.0-pre-05">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -46,13 +49,39 @@
         <Using Include="TodoTemplate.Client.Shared.Components" />
         <Using Include="Bit.BlazorUI" />
         <Using Include="Microsoft.AspNetCore.Authorization" />
-        <Using Include="Microsoft.Maui.Storage" />
 
         <Watch Remove="*.scss" />
     </ItemGroup>
 
+    <ItemGroup Condition=" '$(BlazorMode)' == 'BlazorHybrid' ">
+        <Using Include="Microsoft.Maui" />
+        <Using Include="Microsoft.Maui.Graphics" />
+        <Using Include="Microsoft.Maui.Accessibility" />
+        <Using Include="Microsoft.Maui.ApplicationModel" />
+        <Using Include="Microsoft.Maui.ApplicationModel.Communication" />
+        <Using Include="Microsoft.Maui.ApplicationModel.DataTransfer" />
+        <Using Include="Microsoft.Maui.Authentication" />
+        <Using Include="Microsoft.Maui.Devices" />
+        <Using Include="Microsoft.Maui.Devices.Sensors" />
+        <Using Include="Microsoft.Maui.Media" />
+        <Using Include="Microsoft.Maui.Networking" />
+        <Using Include="Microsoft.Maui.Storage" />
+    </ItemGroup>
+
     <ItemGroup>
         <ProjectReference Include="..\..\Shared\Shared\TodoTemplate.Shared.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Update="**\*.Designer.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>$([System.String]::Copy('%(Filename)').Replace('.Designer','')).resx</DependentUpon>
+        </Compile>
+        <EmbeddedResource Update="**\*.resx">
+            <Generator>PublicResXFileCodeGenerator</Generator>
+            <LastGenOutput>%(Filename).Designer.cs</LastGenOutput>
+        </EmbeddedResource>
     </ItemGroup>
 
 </Project>
