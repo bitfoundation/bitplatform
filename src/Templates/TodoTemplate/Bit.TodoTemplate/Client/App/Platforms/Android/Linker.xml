@@ -15,7 +15,11 @@
 	<assembly fullname="TodoTemplate.Client.App">
 		<type fullname="*" />
 	</assembly>
-        
+
+    <assembly fullname="TodoTemplate.Client.Shared">
+        <type fullname="*" />
+    </assembly>
+    
     <assembly fullname="TodoTemplate.Shared">
 		<type fullname="*" />
 	</assembly>
