@@ -5,25 +5,29 @@
                ComponentParameters="componentParameters" EnumParameters="enumParameters">
     <ComponentExampleBox Title="BitToggleButton" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
-            <div class="example-desc">BitToggleButton component represents a button as a checkbox and can use in form pages.</div>
+            <div class="example-desc">
+                BitToggleButton component represents a button as a checkbox and can use in form pages.
+                <br />
+                (Unlike the BitToggle component, the BitToggleButton's label & icon should describe the click action or the new state after a click.)
+            </div>
             <div>
                 <BitToggleButton @bind-IsChecked="TogglePrimaryButtonChecked"
                                  Class="tgl-btn"
                                  Label="@(TogglePrimaryButtonChecked ? "Primary Mute":"Primary Unmute")"
-                                 IconName=@(TogglePrimaryButtonChecked ? BitIconName.Microphone : BitIconName.MicOff)
+                                 IconName=@(TogglePrimaryButtonChecked ? BitIconName.MicOff : BitIconName.Microphone)
                                  ButtonStyle="BitButtonStyle.Primary">
                 </BitToggleButton>
                 <BitToggleButton @bind-IsChecked="ToggleStandardButtonChecked"
                                  Class="tgl-btn"
                                  Label="@(ToggleStandardButtonChecked ? "Standard Mute":"Standard Unmute")"
-                                 IconName=@(ToggleStandardButtonChecked ? BitIconName.Microphone : BitIconName.MicOff)
+                                 IconName=@(ToggleStandardButtonChecked ? BitIconName.MicOff : BitIconName.Microphone)
                                  ButtonStyle="BitButtonStyle.Standard">
                 </BitToggleButton>
                 <BitToggleButton @bind-IsChecked="ToggleDisabledButtonChecked"
                                  Class="tgl-btn"
                                  IsEnabled="false"
                                  Label="@(ToggleDisabledButtonChecked ? "Disabled Mute" : "Disabled Unmute")"
-                                 IconName=@(ToggleDisabledButtonChecked ? BitIconName.Microphone : BitIconName.MicOff)>
+                                 IconName=@(ToggleDisabledButtonChecked ? BitIconName.MicOff : BitIconName.Microphone)>
                 </BitToggleButton>
             </div>
         </ExamplePreview>
@@ -35,7 +39,7 @@
             <div class="m-t-20">
                 <BitToggleButton @bind-IsChecked="ToggleButtonForOnChange"
                                  Label="@(ToggleButtonForOnChange ? "Mute" : "Unmute")"
-                                 IconName=@(ToggleButtonForOnChange ? BitIconName.Microphone : BitIconName.MicOff)
+                                 IconName=@(ToggleButtonForOnChange ? BitIconName.MicOff : BitIconName.Microphone)
                                  OnChange="ToggleButtonChanged">
                 </BitToggleButton>
             </div>
@@ -50,7 +54,7 @@
                 <div class="m-t-10">
                     <BitToggleButton @bind-IsChecked="ToggleButtonTwoWayValue"
                                      Label="@(ToggleButtonTwoWayValue ? "Mute" : "Unmute")"
-                                     IconName=@(ToggleButtonTwoWayValue ? BitIconName.Microphone : BitIconName.MicOff)>
+                                     IconName=@(ToggleButtonTwoWayValue ? BitIconName.MicOff : BitIconName.Microphone)>
                     </BitToggleButton>
                 </div>
             </div>
@@ -64,7 +68,7 @@
                 <BitToggleButton OnChange="((e) => ToggleButtonValue = e)"
                                  DefaultIsChecked="true"
                                  Label="@(ToggleButtonValue ? "Mute" : "Unmute")"
-                                 IconName=@(ToggleButtonValue ? BitIconName.Microphone : BitIconName.MicOff)>
+                                 IconName=@(ToggleButtonValue ? BitIconName.MicOff : BitIconName.Microphone)>
                 </BitToggleButton>
             </div>
         </ExamplePreview>
@@ -76,13 +80,13 @@
             <div>
                 <BitToggleButton @bind-IsChecked="ToggleButtonChecked"
                                  Label="@(ToggleButtonChecked ? "Aria Description Mute" : "Aria Description Unmute")"
-                                 IconName="@(ToggleButtonChecked ? BitIconName.Microphone : BitIconName.MicOff)"
+                                 IconName="@(ToggleButtonChecked ? BitIconName.MicOff : BitIconName.Microphone)"
                                  AriaDescription="Detailed description used for screen reader">
                 </BitToggleButton>
                 <BitToggleButton @bind-IsChecked="ToggleButtonChecked"
                                  Class="aria-hidden-tgl-btn"
                                  Label="@(ToggleButtonChecked ? "Aria Hidden Mute" : "Aria Hidden Unmute")"
-                                 IconName="@(ToggleButtonChecked ? BitIconName.Microphone : BitIconName.MicOff)"
+                                 IconName="@(ToggleButtonChecked ? BitIconName.MicOff : BitIconName.Microphone)"
                                  AriaHidden="true">
                 </BitToggleButton>
             </div>
