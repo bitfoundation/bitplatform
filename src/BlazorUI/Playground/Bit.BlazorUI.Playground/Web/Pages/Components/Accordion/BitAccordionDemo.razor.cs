@@ -145,14 +145,18 @@ public partial class BitAccordionDemo
             line-height: 1.5;
             color: $B1Color;
 
-            @media only screen and (max-width: #{em(639px)}) {
-                flex-direction: column;
-            }
-
             .custom-header-title {
                 font-size: rem(16px);
                 font-weight: 600;
                 width: 30%;
+            }
+
+            @media only screen and (max-width: #{em(639px)}) {
+                flex-direction: column;
+
+                .custom-header-title {
+                    width: 100%;
+                }
             }
         }
     }
