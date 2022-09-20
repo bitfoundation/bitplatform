@@ -125,7 +125,7 @@
     <ComponentExampleBox Title="BitDatePicker with value two-way binding" HTMLSourceCode="@example9HTMLCode" CSharpSourceCode="@example9CSharpCode" ExampleId="example9">
         <ExamplePreview>
             <BitDatePicker Style="max-width: 300px"
-                           @bind-Value="@selectedDate" 
+                           @bind-Value="@selectedDate"
                            AriaLabel="Select a date"
                            Placeholder="Select a date..." />
             <BitLabel>Selected date: @selectedDate.ToString()</BitLabel>
@@ -146,23 +146,44 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BitDatePicker with a custom day, month, and year cell" HTMLSourceCode="@example12HTMLCode" ExampleId="example12">
+    <ComponentExampleBox Title="BitDatePicker with a custom style for the day cell" HTMLSourceCode="@example12HTMLCode" ExampleId="example12">
         <ExamplePreview>
+            <div class="example-desc">
+                In this sample, you can see how to implement a custom template for day cells of the BitDatePicker which have some specific style class for the weekend.
+            </div>
             <BitDatePicker Style="max-width: 300px"
                            AriaLabel="Select a date"
                            Placeholder="Select a date...">
-                <DayCellTemplate >
+                <DayCellTemplate>
                     <span class="@(context.DayOfWeek == DayOfWeek.Sunday ? "weekend-cell" : null)">
                         @context.Day
                     </span>
                 </DayCellTemplate>
-                <MonthCellTemplate>
-                    <span>@context.Month</span>
-                </MonthCellTemplate>
-                <YearCellTemplate>
-                    <span aria-label="@context AC">@context</span>
-                </YearCellTemplate>
             </BitDatePicker>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="BitDatePicker with a custom template for the day cell" HTMLSourceCode="@example13HTMLCode" ExampleId="example13">
+        <ExamplePreview>
+            <div class="example-desc">
+                In this sample, you can see how to implement a totally custom template for day cells of the BitDatePicker which will display a discount badge.
+            </div>
+            <div>
+                <BitDatePicker Style="max-width: 300px"
+                               AriaLabel="Select a date"
+                               Placeholder="Select a date...">
+                    <DayCellTemplate>
+                        <span class="custom-day-cell">
+                            @context.Day
+
+                            @if (context.Day % 5 is 0)
+                            {
+                                <span class="discount-badge">off</span>
+                            }
+                        </span>
+                    </DayCellTemplate>
+                </BitDatePicker>
+            </div>
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>

@@ -407,25 +407,68 @@ private DateTimeOffset? selectedDate = new DateTimeOffset(new DateTime(2020, 1, 
 </BitDatePicker>";
 
     private readonly string example12HTMLCode = @"
+<style>
+.weekend-cell {
+    color: red;
+}
+</style>
+
 <BitDatePicker Style=""max-width: 300px""
                AriaLabel=""Select a date""
                Placeholder=""Select a date..."">
-    <DayCellTemplate >
+    <DayCellTemplate>
         <span class=""@(context.DayOfWeek == DayOfWeek.Sunday ? ""weekend-cell"" : null)"">
             @context.Day
         </span>
     </DayCellTemplate>
-    <MonthCellTemplate>
-        <span>@context.Month</span>
-    </MonthCellTemplate>
-    <YearCellTemplate>
-        <span aria-label=""@context AC"">@context</span>
-    </YearCellTemplate>
-</BitDatePicker>
+</BitDatePicker>";
 
-<Style>
-.weekend-cell {
-    color: red;
+    private readonly string example13HTMLCode = @"
+<style>
+.custom-day-cell {
+    position: relative;
+    width: 44px !important;
+    height: 44px !important;
 }
-</Style>";
+
+.discount-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: fit-content !important;
+    height: 16px !important;
+    border-radius: 2px;
+    padding: 0 4px;
+    background-color: red;
+    color: white;
+    font-size: 8px;
+}
+
+::deep .bit-dtp {
+    &.bit-dtp-fluent {
+        .day-picker-wrapper {
+            .week-day-label {
+                width: 44px;
+            }
+        }
+    }
+}
+</style>
+
+<div>
+    <BitDatePicker Style=""max-width: 300px""
+                   AriaLabel=""Select a date""
+                   Placeholder=""Select a date..."">
+        <DayCellTemplate>
+            <span class=""custom-day-cell"">
+                @context.Day
+
+                @if (context.Day % 5 is 0)
+                {
+                    <span class=""discount-badge"">off</span>
+                }
+            </span>
+        </DayCellTemplate>
+    </BitDatePicker>
+</div>";
 }

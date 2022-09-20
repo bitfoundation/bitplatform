@@ -20,3 +20,32 @@
 .weekend-cell {
     color: red;
 }
+
+.custom-day-cell {
+    position: relative;
+    width: 44px !important;
+    height: 44px !important;
+}
+
+.discount-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: fit-content !important;
+    height: 16px !important;
+    border-radius: 2px;
+    padding: 0 4px;
+    background-color: red;
+    color: white;
+    font-size: 8px;
+}
+
+::deep .bit-dtp {
+    &.bit-dtp-fluent {
+        .day-picker-wrapper {
+            .week-day-label {
+                width: 44px;
+            }
+        }
+    }
+}
