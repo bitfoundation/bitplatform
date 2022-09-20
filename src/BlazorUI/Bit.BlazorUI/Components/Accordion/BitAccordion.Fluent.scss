@@ -39,7 +39,7 @@
         }
     }
 
-    .intro {
+    .title-description-wrapper {
         display: flex;
         flex-grow: 1;
         line-height: 1.5;
@@ -52,6 +52,14 @@
 
         .description {
             color: $Grey130;
+        }
+
+        @media only screen and (max-width: #{em(639px)}) {
+            flex-direction: column;
+
+            .title {
+                width: 100%;
+            }
         }
     }
 
