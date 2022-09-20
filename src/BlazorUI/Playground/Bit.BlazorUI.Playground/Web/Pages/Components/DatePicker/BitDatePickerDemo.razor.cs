@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading.Tasks;
 using Bit.BlazorUI.Playground.Web.Models;
 using Bit.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
@@ -11,6 +12,7 @@ public partial class BitDatePickerDemo
     private DateTimeOffset? selectedDate = new DateTimeOffset(new DateTime(2020, 1, 17), DateTimeOffset.Now.Offset);
     private FormValidationDatePickerModel formValidationDatePickerModel = new();
     private string SuccessMessage = string.Empty;
+    private CultureInfo Culture = CultureInfo.CurrentUICulture;
 
     private async Task HandleValidSubmit()
     {
@@ -435,6 +437,8 @@ private DateTimeOffset? selectedDate = new DateTimeOffset(new DateTime(2020, 1, 
     position: absolute;
     top: 0;
     right: 0;
+    display: inline-flex;
+    align-items: center;
     width: fit-content !important;
     height: 16px !important;
     border-radius: 2px;
@@ -444,18 +448,29 @@ private DateTimeOffset? selectedDate = new DateTimeOffset(new DateTime(2020, 1, 
     font-size: 8px;
 }
 
-::deep .bit-dtp {
-    &.bit-dtp-fluent {
-        .day-picker-wrapper {
-            .week-day-label {
-                width: 44px;
+.year-suffix {
+    position: absolute;
+    bottom: 10px;
+    right: -12px;
+    height: 12px;
+    color: gray;
+    font-size: 8px;
+}
+
+.date-picker-wrapper {
+    ::deep .bit-dtp {
+        &.bit-dtp-fluent {
+            .day-picker-wrapper {
+                .week-day-label {
+                    width: 44px;
+                }
             }
         }
     }
 }
 </style>
 
-<div>
+<div class=""date-picker-wrapper"">
     <BitDatePicker Style=""max-width: 300px""
                    AriaLabel=""Select a date""
                    Placeholder=""Select a date..."">
@@ -469,6 +484,25 @@ private DateTimeOffset? selectedDate = new DateTimeOffset(new DateTime(2020, 1, 
                 }
             </span>
         </DayCellTemplate>
+        <MonthCellTemplate>
+            <span>
+                @this.Culture.DateTimeFormat.GetAbbreviatedMonthName(context.Month)
+
+                @if (context.Month == 1)
+                {
+                    <span class=""discount-badge"">Xmas</span>
+                }
+            </span>
+        </MonthCellTemplate>
+        <YearCellTemplate>
+            <span style=""position: relative"">
+                @context
+                <span class=""year-suffix"">AC</span>
+            </span>
+        </YearCellTemplate>
     </BitDatePicker>
 </div>";
+
+    private readonly string example13CSharpCode = @"
+private CultureInfo Culture = CultureInfo.CurrentUICulture;";
 }

@@ -163,12 +163,12 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BitDatePicker with a custom template for the day cell" HTMLSourceCode="@example13HTMLCode" ExampleId="example13">
+    <ComponentExampleBox Title="BitDatePicker with a custom template for the day, month, and year cell" HTMLSourceCode="@example13HTMLCode" CSharpSourceCode="@example13CSharpCode" ExampleId="example13">
         <ExamplePreview>
             <div class="example-desc">
-                In this sample, you can see how to implement a totally custom template for day cells of the BitDatePicker which will display a discount badge.
+                In this sample, you can see how to implement a totally custom template for day, month, and year cells of the BitDatePicker which will display a discount badge for some days, a Xmas badge for the first month of the year, and a AC suffix for years.
             </div>
-            <div>
+            <div class="date-picker-wrapper">
                 <BitDatePicker Style="max-width: 300px"
                                AriaLabel="Select a date"
                                Placeholder="Select a date...">
@@ -182,6 +182,22 @@
                             }
                         </span>
                     </DayCellTemplate>
+                    <MonthCellTemplate>
+                        <span>
+                            @this.Culture.DateTimeFormat.GetAbbreviatedMonthName(context.Month)
+
+                            @if (context.Month == 1)
+                            {
+                                <span class="discount-badge">Xmas</span>
+                            }
+                        </span>
+                    </MonthCellTemplate>
+                    <YearCellTemplate>
+                        <span style="position: relative">
+                            @context
+                            <span class="year-suffix">AC</span>
+                        </span>
+                    </YearCellTemplate>
                 </BitDatePicker>
             </div>
         </ExamplePreview>

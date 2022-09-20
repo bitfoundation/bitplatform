@@ -31,6 +31,8 @@
     position: absolute;
     top: 0;
     right: 0;
+    display: inline-flex;
+    align-items: center;
     width: fit-content !important;
     height: 16px !important;
     border-radius: 2px;
@@ -40,11 +42,22 @@
     font-size: 8px;
 }
 
-::deep .bit-dtp {
-    &.bit-dtp-fluent {
-        .day-picker-wrapper {
-            .week-day-label {
-                width: 44px;
+.year-suffix {
+    position: absolute;
+    bottom: 10px;
+    right: -12px;
+    height: 12px;
+    color: gray;
+    font-size: 8px;
+}
+
+.date-picker-wrapper {
+    ::deep .bit-dtp {
+        &.bit-dtp-fluent {
+            .day-picker-wrapper {
+                .week-day-label {
+                    width: 44px;
+                }
             }
         }
     }
