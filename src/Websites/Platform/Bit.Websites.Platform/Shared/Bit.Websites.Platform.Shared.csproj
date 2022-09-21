@@ -6,8 +6,14 @@
 
 	<ItemGroup>
 		<SupportedPlatform Include="browser" />
-        <PackageReference Include="Bit.SourceGenerators" Version="4.1.0" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="4.1.0" />
+        <PackageReference Include="Bit.SourceGenerators" Version="4.3.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Bit.CodeAnalyzers" Version="4.3.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
 	</ItemGroup>
 
 </Project>

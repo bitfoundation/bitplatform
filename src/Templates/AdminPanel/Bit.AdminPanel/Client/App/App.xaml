@@ -1,0 +1,9 @@
+﻿<Application
+    x:Class="AdminPanel.Client.App.App"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:app="clr-namespace:AdminPanel.Client.App">
+    <Application.MainPage>
+        <app:MainPage />
+    </Application.MainPage>
+</Application>

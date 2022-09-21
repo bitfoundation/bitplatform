@@ -3,7 +3,7 @@
     "compilerOptions": {
         "outDir": "wwwroot",
         "allowJs": true,
-        "target": "ESNext"
+        "lib": [ "DOM", "ESNext" ]
     },
     "include": [ "./Scripts/*.ts" ]
 }

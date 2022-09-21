@@ -23,7 +23,6 @@
 
 ::deep .custom-acd {
     .header {
-        justify-content: flex-start;
         align-items: center;
     }
 
@@ -36,7 +35,15 @@
         .custom-header-title {
             font-size: rem(16px);
             font-weight: 600;
-            width: 25%;
+            width: 30%;
+        }
+
+        @media only screen and (max-width: #{em(639px)}) {
+            flex-direction: column;
+
+            .custom-header-title {
+                width: 100%;
+            }
         }
     }
 }

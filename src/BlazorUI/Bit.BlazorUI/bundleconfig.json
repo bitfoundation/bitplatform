@@ -1,0 +1,8 @@
+[
+  {
+    "outputFileName": "wwwroot/scripts/bit.blazorui.min.js",
+    "inputFiles": [
+      "wwwroot/scripts/bit.blazorui.js"
+    ]
+  }
+]

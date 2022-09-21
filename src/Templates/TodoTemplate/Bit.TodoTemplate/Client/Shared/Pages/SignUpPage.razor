@@ -1,0 +1,102 @@
+﻿@page "/sign-up"
+
+@inherits AppComponentBase;
+
+<PageTitle>@Localizer[nameof(AppStrings.SingUpTitle)]</PageTitle>
+
+<div class="page-container">
+    <EditForm Model="SignUpModel" OnValidSubmit="WrapHandled(DoSignUp)" class="form--white">
+
+        <AppDataAnnotationsValidator />
+
+        @if (string.IsNullOrEmpty(SignUpMessage) is false)
+        {
+            <BitMessageBar Class="form-message-bar"
+                       MessageBarType="@SignUpMessageType"
+                       OnDismiss="() => SignUpMessage = null">
+                @SignUpMessage
+            </BitMessageBar>
+        }
+        @if (IsSignedUp)
+        {
+            <h1 class="form-title">
+                @Localizer[nameof(AppStrings.ConfirmEmailTitle)]
+            </h1>
+            <div class="form-description">
+                @Localizer[nameof(AppStrings.ConfirmEmailMessage)]
+            </div>
+            <div class="form-link">
+                @Localizer[nameof(AppStrings.NotReceivedConfirmationEmailMessage)]
+            </div>
+            <div class="form-note">
+                @Localizer[nameof(AppStrings.CheckSpamMailMessage)]
+                <br />
+                - @Localizer[nameof(AppStrings.Or)] -
+            </div>
+            <BitButton Class="form-submit-button"
+                   ButtonStyle="BitButtonStyle.Primary"
+                   Title="@Localizer[nameof(AppStrings.ResendEmail)]"
+                   AriaLabel="@Localizer[nameof(AppStrings.ResendEmail)]"
+                   OnClick="WrapHandled(ResendLink)">
+                @if (IsLoading)
+                {
+                    <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
+                }
+                else
+                {
+                        <span>@Localizer[nameof(AppStrings.ResendEmail)]</span>
+                }
+            </BitButton>
+        }
+        else
+        {
+            <h1 class="form-title">
+            @Localizer[nameof(AppStrings.SignUp)]
+            </h1>
+            <div class="form-input-container">
+            <BitTextField Label="@Localizer[nameof(AppStrings.Email)]"
+                          Placeholder="@Localizer[nameof(AppStrings.Email)]"
+                          Type="BitTextFieldType.Email"
+                          @bind-Value="SignUpModel.UserName" />
+                <ValidationMessage For="@(() => SignUpModel.UserName)" />
+            </div>
+            <div class="form-input-container">
+            <BitTextField Label="@Localizer[nameof(AppStrings.Password)]"
+                          @bind-Value="SignUpModel.Password"
+                          AutoComplete="new-password"
+                          Type="BitTextFieldType.Password"
+                          CanRevealPassword="true"
+                          Placeholder="@Localizer[nameof(AppStrings.Password)]" />
+                <ValidationMessage For="@(() => SignUpModel.Password)" />
+            </div>
+
+            <div class="form-input-container form-input-container--no-margin">
+                <BitCheckbox Class="form-checkbox" @bind-Value="SignUpModel.IsAcceptPrivacy">
+                    @Localizer[nameof(AppStrings.PrivacyPolicyAgreementMessage)]<BitLink Href="/privacy" Target="_blank">@Localizer[nameof(AppStrings.PrivacyPolicyTitle)]</BitLink>
+                </BitCheckbox>
+                <ValidationMessage For="@(() => SignUpModel.IsAcceptPrivacy)" />
+            </div>
+
+            <BitButton Class="form-submit-button"
+                   ButtonStyle="BitButtonStyle.Primary"
+                   IsEnabled="IsSubmitButtonEnabled"
+                   Title="@Localizer[nameof(AppStrings.SignUp)]"
+                   AriaLabel="@Localizer[nameof(AppStrings.SignUp)]"
+                   ButtonType="BitButtonType.Submit">
+                @if (IsLoading)
+                {
+                    <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
+                }
+                else
+                {
+                    <span>@Localizer[nameof(AppStrings.SignUp)]</span>
+                }
+            </BitButton>
+
+            <div>
+            @Localizer[nameof(AppStrings.AlreadyHaveAccountMessage)] <BitLink Href="/sign-in">@Localizer[nameof(AppStrings.SignIn)]</BitLink>
+            </div>
+        }
+
+    </EditForm>
+</div>

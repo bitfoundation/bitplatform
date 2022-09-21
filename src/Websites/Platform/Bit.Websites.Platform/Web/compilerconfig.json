@@ -1,9 +1,4 @@
 ﻿[
-
-    {
-        "inputFile": "wwwroot/scripts/app.js",
-        "outputFile": "wwwroot/scripts/app.min.js"
-    },
     {
         "outputFile": "Shared/MainLayout.razor.css",
         "inputFile": "Shared/MainLayout.razor.scss"

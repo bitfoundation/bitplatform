@@ -1,0 +1,120 @@
+﻿@import "../Styles/abstracts/_functions.scss";
+@import "../Styles/abstracts/_media-queries.scss";
+@import "../Styles/abstracts/_colors.scss";
+
+.card-container {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+    width: 100%;
+    gap: rem(24px);
+    margin-bottom: rem(56px);
+
+    @include md {
+        margin-bottom: rem(40px);
+    }
+
+    @include sm {
+        gap: rem(16px);
+        margin-bottom: rem(24px);
+    }
+}
+
+.card {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: flex-start;
+    width: calc(25% - 18px);
+    min-height: rem(168px);
+    height: 100%;
+    background-color: $White;
+    border: rem(1px) solid $ThemeLightColor;
+    border-radius: rem(8px);
+    padding: rem(24px);
+    box-sizing: border-box;
+    background-image: url('images/stat-card-bg.svg');
+    background-position: center right;
+    background-repeat: no-repeat;
+    background-size: rem(84px) 100%;
+    transition: 0.3s all linear;
+
+    @include sm {
+        height: 204px;
+    }
+
+    .card-num {
+        margin-bottom: rem(24px);
+        font-weight: 600;
+        font-size: rem(32px);
+        line-height: rem(40px);
+        color: $ThemePrimaryColor;
+        border-bottom: rem(2px) solid #FFE25E;
+
+        @include md {
+            font-size: rem(28px);
+            line-height: rem(36px);
+        }
+
+        @include sm {
+            font-size: rem(28px);
+            line-height: rem(36px);
+        }
+    }
+
+    .no-border {
+        border-bottom: none;
+    }
+
+    .card-title {
+        font-weight: 400;
+        font-size: rem(20px);
+        line-height: rem(28px);
+        color: $Gray160;
+
+        @include md {
+            font-size: rem(18px);
+            line-height: rem(24px);
+        }
+
+        @include sm {
+            font-size: rem(16px);
+            line-height: rem(22px);
+        }
+    }
+
+    &:hover {
+        background-color: $ThemePrimaryColor;
+        background-size: rem(128px) 100%;
+        background-image: url('images/stat-card-bg-hover.svg');
+
+        .card-num {
+            color: $White;
+        }
+
+        .card-title {
+            color: $Gray30;
+        }
+    }
+
+    @include md {
+        padding: rem(24px) rem(16px);
+        min-height: rem(160px);
+        background-position: center right rem(-3px);
+
+        &:hover {
+            background-position: center right rem(-10px);
+        }
+    }
+
+    @include sm {
+        width: calc(50% - 8px);
+        min-height: rem(144px);
+        background-position: center right rem(-7px);
+
+        &:hover {
+            background-position: center right rem(-10px);
+        }
+    }
+}
