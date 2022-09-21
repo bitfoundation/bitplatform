@@ -21,15 +21,14 @@ public static class Urls
     public const string Facebook = "#";
 
     public const string TodoTemplate = "/todo-template/overview";
-    public const string TodoTemplateSpa = "https://todo.bitplatform.dev/";
-    public const string TodoTemplatePwa = "https://todo-app.bitplatform.dev/";
+    public const string TodoTemplateSSR = "https://todo.bitplatform.dev/";
+    public const string TodoTemplatePWA = "https://todo-app.bitplatform.dev/";
     public const string TodoTemplateAppCenter = "https://install.appcenter.ms/orgs/bitfoundation/apps/todo/distribution_groups/testers";
     public const string TodoTemplateFigma = "https://www.figma.com/file/PHDEnipl4PCWIoh5dCRpLd/Todo-Template?node-id=2022%3A5223";
     public const string TodoTemplateNuget = "https://www.nuget.org/packages/Bit.TodoTemplate/";
 
     public const string AdminPanel = "/admin-panel/overview";
-    public const string AdminPanelSpa = "https://adminpanel.bitplatform.dev/";
-    public const string AdminPanelPwa = "https://adminpanel-app.bitplatform.dev/";
+    public const string AdminPanelMultiLingual = "https://adminpanel.bitplatform.dev/";
     public const string AdminPanelAppCenter = "https://install.appcenter.ms/orgs/bitfoundation/apps/adminpanel/distribution_groups/testers";
     public const string AdminPanelFigma = "#";
     public const string AdminPanelNuget = "https://www.nuget.org/packages/Bit.AdminPanel";
