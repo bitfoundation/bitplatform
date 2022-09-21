@@ -1,4 +1,5 @@
-﻿namespace Microsoft.Extensions.DependencyInjection;
+﻿//-:cnd:noEmit
+namespace Microsoft.Extensions.DependencyInjection;
 
 public static class IServiceCollectionExtensions
 {
