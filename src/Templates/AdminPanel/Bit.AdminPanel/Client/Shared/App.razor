@@ -1,0 +1,26 @@
+﻿@using System.Runtime.InteropServices
+
+<CascadingAuthenticationState>
+    <PageTitle>AdminPanel</PageTitle>
+    <LayoutView Layout="@typeof(MainLayout)">
+        <Router AppAssembly="@GetType().Assembly"
+                OnNavigateAsync="@OnNavigateAsync">
+            <Found Context="routeData">
+                <AuthorizeRouteView RouteData="@routeData">
+                    <NotAuthorized>
+                        <NotAuthorizedComponent />
+                    </NotAuthorized>
+                    <Authorizing>
+                        <LoadingComponent Color="#002A66" />
+                    </Authorizing>
+                </AuthorizeRouteView>
+            </Found>
+            <NotFound>
+                <PageNotFound />
+            </NotFound>
+            <Navigating>
+                <LoadingComponent Color="#002A66" />
+            </Navigating>
+        </Router>
+    </LayoutView>
+</CascadingAuthenticationState>

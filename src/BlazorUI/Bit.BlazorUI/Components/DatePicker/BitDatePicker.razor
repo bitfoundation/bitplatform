@@ -165,7 +165,14 @@
                                                         aria-readonly="true"
                                                         disabled="@IsWeekDayOutOfMinAndMaxDate(localDay, localWeek)"
                                                         aria-disabled="@IsWeekDayOutOfMinAndMaxDate(localDay, localWeek)">
-                                                    <span aria-hidden="true">@_currentMonthCalendar[localWeek, localDay]</span>
+                                                    @if (DayCellTemplate is not null)
+                                                    {
+                                                        @DayCellTemplate(GetDayCellDate(localDay, localWeek))
+                                                    }
+                                                    else
+                                                    {
+                                                        <span aria-hidden="true">@_currentMonthCalendar[localWeek, localDay]</span>
+                                                    }
                                                 </button>
                                             </td>
                                         }
@@ -244,7 +251,13 @@
                                                     aria-label="@monthName"
                                                     title="@monthName"
                                                     @onclick="() => SelectMonth(monthIndex)">
-                                                <span aria-hidden="true">@Culture.DateTimeFormat.GetAbbreviatedMonthName(monthIndex)</span>
+                                                @if(MonthCellTemplate is not null) {
+                                                    @MonthCellTemplate(GetMonthCellDate(monthIndex))
+                                                } 
+                                                else
+                                                {
+                                                    <span aria-hidden="true">@Culture.DateTimeFormat.GetAbbreviatedMonthName(monthIndex)</span>
+                                                }
                                             </button>
                                         }
                                     </div>
@@ -296,7 +309,14 @@
                                                     tabindex="@(IsYearSelected(year) ? 0 : -1)"
                                                     type="button"
                                                     @onclick="() => SelectYear(year)">
-                                                <span aria-hidden="true">@year</span>
+                                                @if(YearCellTemplate is not null)
+                                                {
+                                                    @YearCellTemplate(year)
+                                                } 
+                                                else
+                                                {
+                                                    <span aria-hidden="true">@year</span>
+                                                }
                                             </button>
                                         }
                                     </div>

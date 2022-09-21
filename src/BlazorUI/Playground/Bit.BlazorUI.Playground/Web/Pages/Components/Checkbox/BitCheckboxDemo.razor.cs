@@ -235,10 +235,10 @@ private bool IsCheckBoxChecked = false;";
 <BitCheckbox BoxSide=""@BitCheckBoxSide.End"" IsEnabled=""false"">Reversed - Disable Checkbox</BitCheckbox>
 <BitCheckbox BoxSide=""@BitCheckBoxSide.End"" IsEnabled=""false"" Value=""true"">Reversed - Disable Checked Checkbox</BitCheckbox>";
 
-    private readonly string example3HTMLCode = @"<BitCheckbox @bind-IsIndeterminate=""IsCheckBoxIndeterminate"" @bind-Value=""IsCheckBoxChecked"">Indeterminated checkbox</BitCheckbox>
+    private readonly string example3HTMLCode = @"<BitCheckbox @bind-IsIndeterminate=""IsCheckBoxIndeterminate"" @bind-Value=""IsCheckBoxChecked"">Indeterminate checkbox</BitCheckbox>
 <BitCheckbox IsIndeterminate=""true"">Indeterminate checkbox</BitCheckbox>
-<BitCheckbox IsIndeterminate=""true"" IsEnabled=""false"">Disabled indeterminated checkbox</BitCheckbox>
-<BitCheckbox @bind-IsIndeterminate=""IsCheckBoxIndeterminateInCode"" @bind-Value=""IsCheckBoxChecked"">Controlled indeterminated checkbox</BitCheckbox>
+<BitCheckbox IsIndeterminate=""true"" IsEnabled=""false"">Disabled indeterminate checkbox</BitCheckbox>
+<BitCheckbox @bind-IsIndeterminate=""IsCheckBoxIndeterminateInCode"" @bind-Value=""IsCheckBoxChecked"">Controlled indeterminate checkbox</BitCheckbox>
 <BitButton OnClick=""() => IsCheckBoxIndeterminateInCode = true"">Make Checkbox Indeterminate</BitButton>";
 
     private readonly string example3CSharpCode = @"

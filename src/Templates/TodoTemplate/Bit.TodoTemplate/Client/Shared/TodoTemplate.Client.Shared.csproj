@@ -1,0 +1,87 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <PropertyGroup>
+        <TargetFrameworks>net6.0</TargetFrameworks>
+        <UseMauiEssentials Condition=" '$(BlazorMode)' == 'BlazorHybrid' ">true</UseMauiEssentials>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <SupportedPlatform Include="browser" />
+
+        <Content Remove="compilerconfig.json" />
+        <None Include="compilerconfig.json" />
+
+        <Content Remove="wwwroot\appsettings.json" />
+        <EmbeddedResource Include="wwwroot\appsettings.json" />
+
+        <PackageReference Include="Bit.BlazorUI" Version="4.3.1" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="4.3.1">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Bit.SourceGenerators" Version="4.3.1">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="jose-jwt" Version="4.0.1" />
+        <PackageReference Include="LibSassBuilder" Version="2.0.2" Watch="false">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.8" />
+        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.8" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="6.0.8" />
+        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.8.3">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+
+        <Using Include="Microsoft.AspNetCore.Components" />
+        <Using Include="TodoTemplate.Client.Shared.Services.Contracts" />
+        <Using Include="TodoTemplate.Client.Shared.Services.Implementations" />
+        <Using Include="Microsoft.Extensions.Configuration" />
+        <Using Include="Microsoft.JSInterop" />
+        <Using Include="System.Net.Http.Json" />
+        <Using Include="System.Collections.Concurrent" />
+        <Using Include="Microsoft.AspNetCore.Components.Authorization" />
+        <Using Include="TodoTemplate.Client.Shared.Components" />
+        <Using Include="Bit.BlazorUI" />
+        <Using Include="Microsoft.AspNetCore.Authorization" />
+
+        <Watch Remove="*.scss" />
+    </ItemGroup>
+
+    <ItemGroup Condition=" '$(BlazorMode)' == 'BlazorHybrid' ">
+        <Using Include="Microsoft.Maui" />
+        <Using Include="Microsoft.Maui.Graphics" />
+        <Using Include="Microsoft.Maui.Accessibility" />
+        <Using Include="Microsoft.Maui.ApplicationModel" />
+        <Using Include="Microsoft.Maui.ApplicationModel.Communication" />
+        <Using Include="Microsoft.Maui.ApplicationModel.DataTransfer" />
+        <Using Include="Microsoft.Maui.Authentication" />
+        <Using Include="Microsoft.Maui.Devices" />
+        <Using Include="Microsoft.Maui.Devices.Sensors" />
+        <Using Include="Microsoft.Maui.Media" />
+        <Using Include="Microsoft.Maui.Networking" />
+        <Using Include="Microsoft.Maui.Storage" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Shared\Shared\TodoTemplate.Shared.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Update="**\*.Designer.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>$([System.String]::Copy('%(Filename)').Replace('.Designer','')).resx</DependentUpon>
+        </Compile>
+        <EmbeddedResource Update="**\*.resx">
+            <Generator>PublicResXFileCodeGenerator</Generator>
+            <LastGenOutput>%(Filename).Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+    </ItemGroup>
+
+</Project>
