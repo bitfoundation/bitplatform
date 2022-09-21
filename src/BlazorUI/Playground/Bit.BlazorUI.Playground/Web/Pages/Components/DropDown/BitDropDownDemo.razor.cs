@@ -15,6 +15,8 @@ public partial class BitDropDownDemo
     private string SuccessMessage = string.Empty;
     private List<BitDropDownItem> Categories = new();
     private List<BitDropDownItem> Products = new();
+    private List<BitDropDownItem> LargeListOfCategoriesForSingleSelect = new ();
+    private List<BitDropDownItem> LargeListOfCategoriesForMultiSelect = new ();
     private string CurrentCategory;
     private string CurrentProduct;
 
@@ -33,252 +35,236 @@ public partial class BitDropDownDemo
 
     private List<BitDropDownItem> GetCategoryDropdownItems()
     {
-        List<BitDropDownItem> items = new();
-
-        items.Add(new BitDropDownItem()
+        return new()
         {
-            ItemType = BitDropDownItemType.Normal,
-            Text = "Fruits",
-            Value = "f"
-        });
-
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Normal,
-            Text = "Vegetables",
-            Value = "v"
-        });
-
-        return items;
+            new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Normal,
+                Text = "Fruits",
+                Value = "f"
+            },
+            new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Normal,
+                Text = "Vegetables",
+                Value = "v"
+            }
+        };
     }
 
     private List<BitDropDownItem> GetProductDropdownItems()
     {
-        List<BitDropDownItem> items = new();
-
-        items.Add(new BitDropDownItem()
+        return new()
         {
-            ItemType = BitDropDownItemType.Header,
-            Text = "Fruits"
-        });
-
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Normal,
-            Text = "Apple",
-            Value = "f-app"
-        });
-
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Normal,
-            Text = "Orange",
-            Value = "f-ora",
-            IsEnabled = false
-        });
-
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Normal,
-            Text = "Banana",
-            Value = "f-ban",
-        });
-
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Divider,
-        });
-
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Header,
-            Text = "Vegetables"
-        });
-
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Normal,
-            Text = "Broccoli",
-            Value = "v-bro",
-        });
-
-        return items;
+            new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Header,
+                Text = "Fruits"
+            },
+            new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Normal,
+                Text = "Apple",
+                Value = "f-app"
+            },
+            new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Normal,
+                Text = "Orange",
+                Value = "f-ora",
+                IsEnabled = false
+            },
+            new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Normal,
+                Text = "Banana",
+                Value = "f-ban",
+            },
+            new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Divider,
+            },
+            new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Header,
+                Text = "Vegetables"
+            },
+            new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Normal,
+                Text = "Broccoli",
+                Value = "v-bro",
+            }
+        };
     }
 
     private List<BitDropDownItem> GetDropdownItems()
     {
-        List<BitDropDownItem> items = new();
-
-        items.Add(new BitDropDownItem()
+        return new()
         {
-            ItemType = BitDropDownItemType.Header,
-            Text = "Fruits"
-        });
-
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Normal,
-            Text = "Apple",
-            Value = "f-app"
-        });
-
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Normal,
-            Text = "Orange",
-            Value = "f-ora",
-            IsEnabled = false
-        });
-
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Normal,
-            Text = "Banana",
-            Value = "f-ban",
-        });
-
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Divider,
-        });
-
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Header,
-            Text = "Vegetables"
-        });
-
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Normal,
-            Text = "Broccoli",
-            Value = "v-bro",
-        });
-
-        return items;
+            new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Header,
+                Text = "Fruits"
+            },
+            new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Normal,
+                Text = "Apple",
+                Value = "f-app"
+            },
+            new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Normal,
+                Text = "Orange",
+                Value = "f-ora",
+                IsEnabled = false
+            },
+            new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Normal,
+                Text = "Banana",
+                Value = "f-ban",
+            },
+            new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Divider,
+            },
+            new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Header,
+                Text = "Vegetables"
+            },
+            new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Normal,
+                Text = "Broccoli",
+                Value = "v-bro",
+            }
+        };
     }
 
     private List<BitDropDownItem> GetCustomDropdownItems()
     {
-        List<BitDropDownItem> items = new();
-        items.Add(new BitDropDownItem()
+        return new List<BitDropDownItem>()
         {
-            ItemType = BitDropDownItemType.Header,
-            Text = "Options",
-            Value = "Header"
-        });
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Normal,
-            Text = "Option a",
-            Value = "A",
-            Data = new DropDownItemData()
+            new BitDropDownItem()
             {
-                IconName = "Memo"
-            }
-        });
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Normal,
-            Text = "Option b",
-            Value = "B",
-            Data = new DropDownItemData()
+                ItemType = BitDropDownItemType.Header,
+                Text = "Options",
+                Value = "Header"
+            },
+            new BitDropDownItem()
             {
-                IconName = "Print"
-            }
-        });
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Normal,
-            Text = "Option c",
-            Value = "C",
-            Data = new DropDownItemData()
+                ItemType = BitDropDownItemType.Normal,
+                Text = "Option a",
+                Value = "A",
+                Data = new DropDownItemData()
+                {
+                    IconName = "Memo"
+                }
+            },
+            new BitDropDownItem()
             {
-                IconName = "ShoppingCart"
-            }
-        });
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Normal,
-            Text = "Option d",
-            Value = "D",
-            Data = new DropDownItemData()
+                ItemType = BitDropDownItemType.Normal,
+                Text = "Option b",
+                Value = "B",
+                Data = new DropDownItemData()
+                {
+                    IconName = "Print"
+                }
+            },
+            new BitDropDownItem()
             {
-                IconName = "Train"
-            }
-        });
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Normal,
-            Text = "Option e",
-            Value = "E",
-            Data = new DropDownItemData()
+                ItemType = BitDropDownItemType.Normal,
+                Text = "Option c",
+                Value = "C",
+                Data = new DropDownItemData()
+                {
+                    IconName = "ShoppingCart"
+                }
+            },
+            new BitDropDownItem()
             {
-                IconName = "Repair"
-            }
-        });
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Divider
-        });
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Header,
-            Text = "More options",
-            Value = "Header2"
-        });
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Normal,
-            Text = "Option f",
-            Value = "F",
-            Data = new DropDownItemData()
+                ItemType = BitDropDownItemType.Normal,
+                Text = "Option d",
+                Value = "D",
+                Data = new DropDownItemData()
+                {
+                    IconName = "Train"
+                }
+            },
+            new BitDropDownItem()
             {
-                IconName = "Running"
-            }
-        });
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Normal,
-            Text = "Option g",
-            Value = "G",
-            Data = new DropDownItemData()
+                ItemType = BitDropDownItemType.Normal,
+                Text = "Option e",
+                Value = "E",
+                Data = new DropDownItemData()
+                {
+                    IconName = "Repair"
+                }
+            },
+            new BitDropDownItem()
             {
-                IconName = "EmojiNeutral"
-            }
-        });
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Normal,
-            Text = "Option h",
-            Value = "H",
-            Data = new DropDownItemData()
+                ItemType = BitDropDownItemType.Divider
+            },
+            new BitDropDownItem()
             {
-                IconName = "ChatInviteFriend"
-            }
-        });
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Normal,
-            Text = "Option i",
-            Value = "I",
-            Data = new DropDownItemData()
+                ItemType = BitDropDownItemType.Header,
+                Text = "More options",
+                Value = "Header2"
+            },
+            new BitDropDownItem()
             {
-                IconName = "SecurityGroup"
-            }
-        });
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Normal,
-            Text = "Option j",
-            Value = "J",
-            Data = new DropDownItemData()
+                ItemType = BitDropDownItemType.Normal,
+                Text = "Option f",
+                Value = "F",
+                Data = new DropDownItemData()
+                {
+                    IconName = "Running"
+                }
+            },
+            new BitDropDownItem()
             {
-                IconName = "AddGroup"
+                ItemType = BitDropDownItemType.Normal,
+                Text = "Option g",
+                Value = "G",
+                Data = new DropDownItemData()
+                {
+                    IconName = "EmojiNeutral"
+                }
+            },
+            new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Normal,
+                Text = "Option h",
+                Value = "H",
+                Data = new DropDownItemData()
+                {
+                    IconName = "ChatInviteFriend"
+                }
+            },
+            new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Normal,
+                Text = "Option i",
+                Value = "I",
+                Data = new DropDownItemData()
+                {
+                    IconName = "SecurityGroup"
+                }
+            },
+            new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Normal,
+                Text = "Option j",
+                Value = "J",
+                Data = new DropDownItemData()
+                {
+                    IconName = "AddGroup"
+                }
             }
-        });
-
-        return items;
+        };
     }
 
     protected override void OnInitialized()
@@ -295,6 +281,20 @@ public partial class BitDropDownDemo
             ItemType = BitDropDownItemType.Normal,
             Text = $"Product {p}",
             Value = $"{((int)Math.Ceiling((double)p % 7))}-{p}"
+        }).ToList();
+
+        LargeListOfCategoriesForSingleSelect = Enumerable.Range(1, 4000).Select(c => new BitDropDownItem
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Value = c.ToString(),
+            Text = $"Category {c}"
+        }).ToList();
+
+        LargeListOfCategoriesForMultiSelect = Enumerable.Range(1, 4000).Select(c => new BitDropDownItem
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Value = c.ToString(),
+            Text = $"Category {c}"
         }).ToList();
 
         base.OnInitialized();
@@ -464,7 +464,28 @@ public partial class BitDropDownDemo
             Type = "string",
             DefaultValue = "",
             Description = "Search box input placeholder text.",
-        }
+        },
+        new ComponentParameter()
+        {
+            Name = "Virtualize",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "virtualize rendering the list, UI rendering to just the parts that are currently visible.",
+        },
+        new ComponentParameter()
+        {
+            Name = "ItemSize",
+            Type = "int",
+            DefaultValue = "35",
+            Description = "The height of each item in pixels.",
+        },
+        new ComponentParameter()
+        {
+            Name = "OverscanCount",
+            Type = "int",
+            DefaultValue = "3",
+            Description = "determines how many additional items are rendered before and after the visible region.",
+        },
     };
 
     private readonly List<EnumParameter> enumParameters = new()
@@ -522,55 +543,48 @@ public partial class BitDropDownDemo
     private readonly string example1CSharpCode = @"
 private List<BitDropDownItem> GetDropdownItems()
 {
-    List<BitDropDownItem> items = new();
-
-    items.Add(new BitDropDownItem()
+    return new()
     {
-        ItemType = BitDropDownItemType.Header,
-        Text = ""Fruits""
-    });
-
-    items.Add(new BitDropDownItem()
-    {
-        ItemType = BitDropDownItemType.Normal,
-        Text = ""Apple"",
-        Value = ""f-app""
-    });
-
-    items.Add(new BitDropDownItem()
-    {
-        ItemType = BitDropDownItemType.Normal,
-        Text = ""Orange"",
-        Value = ""f-ora"",
-        IsEnabled = false
-    });
-
-    items.Add(new BitDropDownItem()
-    {
-        ItemType = BitDropDownItemType.Normal,
-        Text = ""Banana"",
-        Value = ""f-ban"",
-    });
-
-    items.Add(new BitDropDownItem()
-    {
-        ItemType = BitDropDownItemType.Divider,
-    });
-
-    items.Add(new BitDropDownItem()
-    {
-        ItemType = BitDropDownItemType.Header,
-        Text = ""Vegetables""
-    });
-
-    items.Add(new BitDropDownItem()
-    {
-        ItemType = BitDropDownItemType.Normal,
-        Text = ""Broccoli"",
-        Value = ""v-bro"",
-    });
-
-    return items;
+        new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Header,
+            Text = ""Fruits""
+        },
+        new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Text = ""Apple"",
+            Value = ""f-app""
+        },
+        new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Text = ""Orange"",
+            Value = ""f-ora"",
+            IsEnabled = false
+        },
+        new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Text = ""Banana"",
+            Value = ""f-ban"",
+        },
+        new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Divider,
+        },
+        new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Header,
+            Text = ""Vegetables""
+        },
+        new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Text = ""Broccoli"",
+            Value = ""v-bro"",
+        }
+    };
 }";
 
     #endregion
@@ -587,55 +601,48 @@ private List<BitDropDownItem> GetDropdownItems()
     private readonly string example2CSharpCode = @"private string ControlledValue = ""Apple"";
 private List<BitDropDownItem> GetDropdownItems()
 {
-    List<BitDropDownItem> items = new();
-
-    items.Add(new BitDropDownItem()
+    return new()
     {
-        ItemType = BitDropDownItemType.Header,
-        Text = ""Fruits""
-    });
-
-    items.Add(new BitDropDownItem()
-    {
-        ItemType = BitDropDownItemType.Normal,
-        Text = ""Apple"",
-        Value = ""f-app""
-    });
-
-    items.Add(new BitDropDownItem()
-    {
-        ItemType = BitDropDownItemType.Normal,
-        Text = ""Orange"",
-        Value = ""f-ora"",
-        IsEnabled = false
-    });
-
-    items.Add(new BitDropDownItem()
-    {
-        ItemType = BitDropDownItemType.Normal,
-        Text = ""Banana"",
-        Value = ""f-ban"",
-    });
-
-    items.Add(new BitDropDownItem()
-    {
-        ItemType = BitDropDownItemType.Divider,
-    });
-
-    items.Add(new BitDropDownItem()
-    {
-        ItemType = BitDropDownItemType.Header,
-        Text = ""Vegetables""
-    });
-
-    items.Add(new BitDropDownItem()
-    {
-        ItemType = BitDropDownItemType.Normal,
-        Text = ""Broccoli"",
-        Value = ""v-bro"",
-    });
-
-    return items;
+        new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Header,
+            Text = ""Fruits""
+        },
+        new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Text = ""Apple"",
+            Value = ""f-app""
+        },
+        new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Text = ""Orange"",
+            Value = ""f-ora"",
+            IsEnabled = false
+        },
+        new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Text = ""Banana"",
+            Value = ""f-ban"",
+        },
+        new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Divider,
+        },
+        new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Header,
+            Text = ""Vegetables""
+        },
+        new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Text = ""Broccoli"",
+            Value = ""v-bro"",
+        }
+    };
 }";
 
     #endregion
@@ -653,55 +660,48 @@ private List<BitDropDownItem> GetDropdownItems()
     private readonly string example3CSharpCode = @"private List<string> ControlledValues = new List<string>() { ""Apple"", ""Banana"", ""Grape"" };
 private List<BitDropDownItem> GetDropdownItems()
 {
-    List<BitDropDownItem> items = new();
-
-    items.Add(new BitDropDownItem()
+    return new()
     {
-        ItemType = BitDropDownItemType.Header,
-        Text = ""Fruits""
-    });
-
-    items.Add(new BitDropDownItem()
-    {
-        ItemType = BitDropDownItemType.Normal,
-        Text = ""Apple"",
-        Value = ""f-app""
-    });
-
-    items.Add(new BitDropDownItem()
-    {
-        ItemType = BitDropDownItemType.Normal,
-        Text = ""Orange"",
-        Value = ""f-ora"",
-        IsEnabled = false
-    });
-
-    items.Add(new BitDropDownItem()
-    {
-        ItemType = BitDropDownItemType.Normal,
-        Text = ""Banana"",
-        Value = ""f-ban"",
-    });
-
-    items.Add(new BitDropDownItem()
-    {
-        ItemType = BitDropDownItemType.Divider,
-    });
-
-    items.Add(new BitDropDownItem()
-    {
-        ItemType = BitDropDownItemType.Header,
-        Text = ""Vegetables""
-    });
-
-    items.Add(new BitDropDownItem()
-    {
-        ItemType = BitDropDownItemType.Normal,
-        Text = ""Broccoli"",
-        Value = ""v-bro"",
-    });
-
-    return items;
+        new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Header,
+            Text = ""Fruits""
+        },
+        new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Text = ""Apple"",
+            Value = ""f-app""
+        },
+        new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Text = ""Orange"",
+            Value = ""f-ora"",
+            IsEnabled = false
+        },
+        new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Text = ""Banana"",
+            Value = ""f-ban"",
+        },
+        new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Divider,
+        },
+        new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Header,
+            Text = ""Vegetables""
+        },
+        new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Text = ""Broccoli"",
+            Value = ""v-bro"",
+        }
+    };
 }";
 
     #endregion
@@ -756,125 +756,125 @@ private List<BitDropDownItem> GetDropdownItems()
     private readonly string example4CSharpCode = @"
 private List<BitDropDownItem> GetCustomDropdownItems()
 {
-    List<BitDropDownItem> items = new();
-    items.Add(new BitDropDownItem()
+    return new List<BitDropDownItem>()
     {
-        ItemType = BitDropDownItemType.Header,
-        Text = ""Options"",
-        Value = ""Header""
-    });
-    items.Add(new BitDropDownItem()
-    {
-        ItemType = BitDropDownItemType.Normal,
-        Text = ""Option a"",
-        Value = ""A"",
-        Data = new DropDownItemData()
+        new BitDropDownItem()
         {
-            IconName = ""Memo""
-        }
-    });
-    items.Add(new BitDropDownItem()
-    {
-        ItemType = BitDropDownItemType.Normal,
-        Text = ""Option b"",
-        Value = ""B"",
-        Data = new DropDownItemData()
+            ItemType = BitDropDownItemType.Header,
+            Text = ""Options"",
+            Value = ""Header""
+        },
+        new BitDropDownItem()
         {
-            IconName = ""Print""
-        }
-    });
-    items.Add(new BitDropDownItem()
-    {
-        ItemType = BitDropDownItemType.Normal,
-        Text = ""Option c"",
-        Value = ""C"",
-        Data = new DropDownItemData()
+            ItemType = BitDropDownItemType.Normal,
+            Text = ""Option a"",
+            Value = ""A"",
+            Data = new DropDownItemData()
+            {
+                IconName = ""Memo""
+            }
+        },
+        new BitDropDownItem()
         {
-            IconName = ""ShoppingCart""
-        }
-    });
-    items.Add(new BitDropDownItem()
-    {
-        ItemType = BitDropDownItemType.Normal,
-        Text = ""Option d"",
-        Value = ""D"",
-        Data = new DropDownItemData()
+            ItemType = BitDropDownItemType.Normal,
+            Text = ""Option b"",
+            Value = ""B"",
+            Data = new DropDownItemData()
+            {
+                IconName = ""Print""
+            }
+        },
+        new BitDropDownItem()
         {
-            IconName = ""Train""
-        }
-    });
-    items.Add(new BitDropDownItem()
-    {
-        ItemType = BitDropDownItemType.Normal,
-        Text = ""Option e"",
-        Value = ""E"",
-        Data = new DropDownItemData()
+            ItemType = BitDropDownItemType.Normal,
+            Text = ""Option c"",
+            Value = ""C"",
+            Data = new DropDownItemData()
+            {
+                IconName = ""ShoppingCart""
+            }
+        },
+        new BitDropDownItem()
         {
-            IconName = ""Repair""
-        }
-    });
-    items.Add(new BitDropDownItem()
-    {
-        ItemType = BitDropDownItemType.Divider
-    });
-    items.Add(new BitDropDownItem()
-    {
-        ItemType = BitDropDownItemType.Header,
-        Text = ""More options"",
-        Value = ""Header2""
-    });
-    items.Add(new BitDropDownItem()
-    {
-        ItemType = BitDropDownItemType.Normal,
-        Text = ""Option f"",
-        Value = ""F"",
-        Data = new DropDownItemData()
+            ItemType = BitDropDownItemType.Normal,
+            Text = ""Option d"",
+            Value = ""D"",
+            Data = new DropDownItemData()
+            {
+                IconName = ""Train""
+            }
+        },
+        new BitDropDownItem()
         {
-            IconName = ""Running""
-        }
-    });
-    items.Add(new BitDropDownItem()
-    {
-        ItemType = BitDropDownItemType.Normal,
-        Text = ""Option g"",
-        Value = ""G"",
-        Data = new DropDownItemData()
+            ItemType = BitDropDownItemType.Normal,
+            Text = ""Option e"",
+            Value = ""E"",
+            Data = new DropDownItemData()
+            {
+                IconName = ""Repair""
+            }
+        },
+        new BitDropDownItem()
         {
-            IconName = ""EmojiNeutral""
-        }
-    });
-    items.Add(new BitDropDownItem()
-    {
-        ItemType = BitDropDownItemType.Normal,
-        Text = ""Option h"",
-        Value = ""H"",
-        Data = new DropDownItemData()
+            ItemType = BitDropDownItemType.Divider
+        },
+        new BitDropDownItem()
         {
-            IconName = ""ChatInviteFriend""
-        }
-    });
-    items.Add(new BitDropDownItem()
-    {
-        ItemType = BitDropDownItemType.Normal,
-        Text = ""Option i"",
-        Value = ""I"",
-        Data = new DropDownItemData()
+            ItemType = BitDropDownItemType.Header,
+            Text = ""More options"",
+            Value = ""Header2""
+        },
+        new BitDropDownItem()
         {
-            IconName = ""SecurityGroup""
-        }
-    });
-    items.Add(new BitDropDownItem()
-    {
-        ItemType = BitDropDownItemType.Normal,
-        Text = ""Option j"",
-        Value = ""J"",
-        Data = new DropDownItemData()
+            ItemType = BitDropDownItemType.Normal,
+            Text = ""Option f"",
+            Value = ""F"",
+            Data = new DropDownItemData()
+            {
+                IconName = ""Running""
+            }
+        },
+        new BitDropDownItem()
         {
-            IconName = ""AddGroup""
+            ItemType = BitDropDownItemType.Normal,
+            Text = ""Option g"",
+            Value = ""G"",
+            Data = new DropDownItemData()
+            {
+                IconName = ""EmojiNeutral""
+            }
+        },
+        new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Text = ""Option h"",
+            Value = ""H"",
+            Data = new DropDownItemData()
+            {
+                IconName = ""ChatInviteFriend""
+            }
+        },
+        new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Text = ""Option i"",
+            Value = ""I"",
+            Data = new DropDownItemData()
+            {
+                IconName = ""SecurityGroup""
+            }
+        },
+        new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Text = ""Option j"",
+            Value = ""J"",
+            Data = new DropDownItemData()
+            {
+                IconName = ""AddGroup""
+            }
         }
-    });
-
-    return items;
+    };
 }";
 
     #endregion
@@ -1007,76 +1007,67 @@ private void HandleInvalidSubmit()
 
 private List<BitDropDownItem> GetCategoryDropdownItems()
 {
-    List<BitDropDownItem> items = new();
-
-    items.Add(new BitDropDownItem()
+    return new()
     {
-        ItemType = BitDropDownItemType.Normal,
-        Text = ""Fruits"",
-        Value = ""f""
-    });
-
-    items.Add(new BitDropDownItem()
-    {
-        ItemType = BitDropDownItemType.Normal,
-        Text = ""Vegetables"",
-        Value = ""v""
-    });
-
-    return items;
+        new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Text = ""Fruits"",
+            Value = ""f""
+        },
+        new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Text = ""Vegetables"",
+            Value = ""v""
+        }
+    };
 }
 
 private List<BitDropDownItem> GetProductDropdownItems()
 {
-    List<BitDropDownItem> items = new();
-
-    items.Add(new BitDropDownItem()
+    return new()
     {
-        ItemType = BitDropDownItemType.Header,
-        Text = ""Fruits""
-    });
-
-    items.Add(new BitDropDownItem()
-    {
-        ItemType = BitDropDownItemType.Normal,
-        Text = ""Apple"",
-        Value = ""f-app""
-    });
-
-    items.Add(new BitDropDownItem()
-    {
-        ItemType = BitDropDownItemType.Normal,
-        Text = ""Orange"",
-        Value = ""f-ora"",
-        IsEnabled = false
-    });
-
-    items.Add(new BitDropDownItem()
-    {
-        ItemType = BitDropDownItemType.Normal,
-        Text = ""Banana"",
-        Value = ""f-ban"",
-    });
-
-    items.Add(new BitDropDownItem()
-    {
-        ItemType = BitDropDownItemType.Divider,
-    });
-
-    items.Add(new BitDropDownItem()
-    {
-        ItemType = BitDropDownItemType.Header,
-        Text = ""Vegetables""
-    });
-
-    items.Add(new BitDropDownItem()
-    {
-        ItemType = BitDropDownItemType.Normal,
-        Text = ""Broccoli"",
-        Value = ""v-bro"",
-    });
-
-    return items;
+        new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Header,
+            Text = ""Fruits""
+        },
+        new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Text = ""Apple"",
+            Value = ""f-app""
+        },
+        new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Text = ""Orange"",
+            Value = ""f-ora"",
+            IsEnabled = false
+        },
+        new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Text = ""Banana"",
+            Value = ""f-ban"",
+        },
+        new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Divider,
+        },
+        new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Header,
+            Text = ""Vegetables""
+        },
+        new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Text = ""Broccoli"",
+            Value = ""v-bro"",
+        }
+    };
 }";
 
     #endregion
@@ -1093,60 +1084,53 @@ private List<BitDropDownItem> GetProductDropdownItems()
     private readonly string example7CSharpCode = @"
 private List<BitDropDownItem> GetDropdownItems()
 {
-    List<BitDropDownItem> items = new();
-
-    items.Add(new BitDropDownItem()
+    return new()
     {
-        ItemType = BitDropDownItemType.Header,
-        Text = ""Fruits""
-    });
-
-    items.Add(new BitDropDownItem()
-    {
-        ItemType = BitDropDownItemType.Normal,
-        Text = ""Apple"",
-        Value = ""f-app""
-    });
-
-    items.Add(new BitDropDownItem()
-    {
-        ItemType = BitDropDownItemType.Normal,
-        Text = ""Orange"",
-        Value = ""f-ora"",
-        IsEnabled = false
-    });
-
-    items.Add(new BitDropDownItem()
-    {
-        ItemType = BitDropDownItemType.Normal,
-        Text = ""Banana"",
-        Value = ""f-ban"",
-    });
-
-    items.Add(new BitDropDownItem()
-    {
-        ItemType = BitDropDownItemType.Divider,
-    });
-
-    items.Add(new BitDropDownItem()
-    {
-        ItemType = BitDropDownItemType.Header,
-        Text = ""Vegetables""
-    });
-
-    items.Add(new BitDropDownItem()
-    {
-        ItemType = BitDropDownItemType.Normal,
-        Text = ""Broccoli"",
-        Value = ""v-bro"",
-    });
-
-    return items;
+        new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Header,
+            Text = ""Fruits""
+        },
+        new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Text = ""Apple"",
+            Value = ""f-app""
+        },
+        new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Text = ""Orange"",
+            Value = ""f-ora"",
+            IsEnabled = false
+        },
+        new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Text = ""Banana"",
+            Value = ""f-ban"",
+        },
+        new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Divider,
+        },
+        new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Header,
+            Text = ""Vegetables""
+        },
+        new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Text = ""Broccoli"",
+            Value = ""v-bro"",
+        }
+    };
 }";
 
     #endregion
 
-    #region Example Code 8
+    #region Example Code 9
 
     private readonly string example8HTMLCode = @"<BitDropDown Label=""Single-select Controlled with search box""
                 Items=""GetDropdownItems()""
@@ -1170,55 +1154,94 @@ private List<BitDropDownItem> GetDropdownItems()
     private readonly string example8CSharpCode = @"private string ControlledValue = ""Apple"";
 private List<BitDropDownItem> GetDropdownItems()
 {
-    List<BitDropDownItem> items = new();
-
-    items.Add(new BitDropDownItem()
+    return new()
     {
-        ItemType = BitDropDownItemType.Header,
-        Text = ""Fruits""
-    });
+        new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Header,
+            Text = ""Fruits""
+        },
+        new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Text = ""Apple"",
+            Value = ""f-app""
+        },
+        new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Text = ""Orange"",
+            Value = ""f-ora"",
+            IsEnabled = false
+        },
+        new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Text = ""Banana"",
+            Value = ""f-ban"",
+        },
+        new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Divider,
+        },
+        new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Header,
+            Text = ""Vegetables""
+        },
+        new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Text = ""Broccoli"",
+            Value = ""v-bro"",
+        }
+    };
+}";
 
-    items.Add(new BitDropDownItem()
+    #endregion
+
+    #region Example Code 9
+
+    private readonly string example9HTMLCode = @"<BitDropDown Label=""Single-select Controlled with virtualization""
+                Items=""LargeListOfCategoriesForSingleSelect""
+                Virtualize=""true""
+                Placeholder=""Select an option""
+                IsResponsiveModeEnabled=""true""
+                ShowSearchBox=""true""
+                SearchBoxPlaceholder=""Search item""
+                Style=""width: 290px; margin: 20px 0 20px 0"">
+</BitDropDown>
+
+<BitDropDown Label=""Multi-select controlled with virtualization""
+                Items=""LargeListOfCategoriesForMultiSelect""
+                Virtualize=""true""
+                Placeholder=""Select options""
+                IsMultiSelect=""true""
+                IsResponsiveModeEnabled=""true""
+                ShowSearchBox=""true""
+                SearchBoxPlaceholder=""Search items""
+                Style=""width: 290px; margin: 20px 0 20px 0"">
+</BitDropDown>";
+
+    private readonly string example9CSharpCode = @"private List<BitDropDownItem> LargeListOfCategories = new ();
+
+protected override void OnInitialized()
+{
+    LargeListOfCategoriesForSingleSelect = Enumerable.Range(1, 4000).Select(c => new BitDropDownItem
     {
         ItemType = BitDropDownItemType.Normal,
-        Text = ""Apple"",
-        Value = ""f-app""
-    });
+        Value = c.ToString(),
+        Text = $""Category {c}""
+    }).ToList();
 
-    items.Add(new BitDropDownItem()
+    LargeListOfCategoriesForMultiSelect = Enumerable.Range(1, 4000).Select(c => new BitDropDownItem
     {
         ItemType = BitDropDownItemType.Normal,
-        Text = ""Orange"",
-        Value = ""f-ora"",
-        IsEnabled = false
-    });
+        Value = c.ToString(),
+        Text = $""Category {c}""
+    }).ToList();
 
-    items.Add(new BitDropDownItem()
-    {
-        ItemType = BitDropDownItemType.Normal,
-        Text = ""Banana"",
-        Value = ""f-ban"",
-    });
-
-    items.Add(new BitDropDownItem()
-    {
-        ItemType = BitDropDownItemType.Divider,
-    });
-
-    items.Add(new BitDropDownItem()
-    {
-        ItemType = BitDropDownItemType.Header,
-        Text = ""Vegetables""
-    });
-
-    items.Add(new BitDropDownItem()
-    {
-        ItemType = BitDropDownItemType.Normal,
-        Text = ""Broccoli"",
-        Value = ""v-bro"",
-    });
-
-    return items;
+    base.OnInitialized();
 }";
 
     #endregion

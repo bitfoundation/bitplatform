@@ -1,6 +1,7 @@
 ﻿//-:cnd:noEmit
 using System.Reflection;
 using Microsoft.Extensions.FileProviders;
+using TodoTemplate.Client.Shared.Shared;
 
 namespace TodoTemplate.Client.App;
 
@@ -13,7 +14,7 @@ public static class MauiProgram
 #endif
 
         var builder = MauiApp.CreateBuilder();
-        var assembly = typeof(MauiProgram).GetTypeInfo().Assembly;
+        var assembly = typeof(MainLayout).GetTypeInfo().Assembly;
 
         builder
             .UseMauiApp<App>()
@@ -38,7 +39,8 @@ public static class MauiProgram
 
         services.AddTransient<IAuthTokenProvider, ClientSideAuthTokenProvider>();
         services.AddSharedServices();
-        services.AddAppServices();
+        services.AddClientSharedServices();
+        services.AddClientAppServices();
 
         return builder;
     }

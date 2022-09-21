@@ -5,7 +5,11 @@
                ComponentParameters="componentParameters" EnumParameters="enumParameters">
     <ComponentExampleBox Title="BitToggleButton" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
-            <div class="example-desc">BitToggleButton component represents a button as a checkbox and can use in form pages.</div>
+            <div class="example-desc">
+                BitToggleButton component represents a button as a checkbox and can use in form pages.
+                <br />
+                (Unlike the BitToggle component, the BitToggleButton's label & icon should describe the click action or the new state after a click.)
+            </div>
             <div>
                 <BitToggleButton @bind-IsChecked="TogglePrimaryButtonChecked"
                                  Class="tgl-btn"
