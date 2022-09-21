@@ -19,12 +19,12 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.BlazorUI" Version="4.3.0" />
-        <PackageReference Include="Bit.SourceGenerators" Version="4.3.0">
+        <PackageReference Include="Bit.BlazorUI" Version="4.3.1" />
+        <PackageReference Include="Bit.SourceGenerators" Version="4.3.1">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.CodeAnalyzers" Version="4.3.0">
+        <PackageReference Include="Bit.CodeAnalyzers" Version="4.3.1">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
