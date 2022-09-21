@@ -1,5 +1,263 @@
 ﻿@import '../Styles/abstracts/_mixins.scss';
+@import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_colors.scss';
 
 .page-container {
-    @include PageContainerFull;
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: flex-start;
+    width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.page-section {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.page-section-contnet {
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+    width: 100%;
+    max-width: rem(1200px);
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: rem(20px);
+    padding-right: rem(20px);
+    padding-top: rem(80px);
+    padding-bottom: rem(80px);
+    box-sizing: border-box;
+
+    @include md {
+        padding-left: rem(30px);
+        padding-right: rem(30px);
+    }
+}
+
+.bold-txt {
+    font-weight: bold;
+}
+
+.main-section {
+    .page-section-contnet {
+        padding-top: rem(120px);
+
+        @include lt-lg {
+            padding-top: rem(160px);
+        }
+    }
+
+    .page-main-title {
+        max-width: rem(500px);
+        margin: 0;
+        margin-top: rem(10px);
+        margin-bottom: rem(40px);
+        font-size: rem(64px);
+        font-weight: 800;
+        background: linear-gradient(to right, #007FFF, #0059B2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+
+        @include lg {
+            font-size: rem(52px);
+        }
+
+        @include lt-lg {
+            margin-bottom: rem(28px);
+            font-size: rem(42px);
+        }
+    }
+
+    .page-desc {
+        width: 100%;
+        margin-bottom: rem(32px);
+        max-width: rem(750px);
+        font-size: rem(16px);
+        font-weight: 400;
+        line-height: rem(32px);
+        color: #2E2E2E;
+        text-align: center;
+    }
+}
+
+.mid-section {
+    background: linear-gradient(85deg, rgb(19, 47, 76) 0%, rgb(23, 58, 94) 100%);
+    padding-top: rem(10px);
+    padding-bottom: rem(10px);
+
+    .mid-container {
+        display: flex;
+        flex-flow: column nowrap;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .mid-value {
+        width: calc(100% + 40px);
+        margin: 0;
+        line-height: 1.5;
+        font-size: rem(32px);
+        letter-spacing: 0.2px;
+        color: rgb(153, 204, 243);
+        font-weight: 800;
+        padding-bottom: rem(8px);
+        margin-bottom: rem(8px);
+        border-bottom: rem(1px) solid rgba(224, 224, 224, 0.4);
+        text-align: center;
+
+        @include lg {
+            font-size: rem(28px);
+        }
+
+        @include lt-lg {
+            font-size: rem(24px);
+        }
+    }
+
+    .mid-name {
+        margin: 0;
+        font-size: rem(24px);
+        line-height: 1.5;
+        letter-spacing: 0;
+        font-weight: 400;
+        color: rgb(224, 224, 224);
+    }
+}
+
+.plans-section {
+    .card-list {
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: center;
+        width: calc(100% + 20px);
+        margin-left: -20px;
+    }
+
+    .plan-card {
+        display: flex;
+        flex-flow: column nowrap;
+        justify-content: space-between;
+        align-items: center;
+        flex-basis: calc(25% - 20px);
+        flex-grow: 0;
+        max-width: calc(25% - 20px);
+        min-width: rem(275px);
+        min-height: rem(275px);
+        padding: rem(20px);
+        margin-top: rem(20px);
+        margin-left: rem(20px);
+        border-radius: rem(4px);
+        border: rem(1px) solid #E0E3E7;
+        box-shadow: 0 1.6px 3.6px 0 rgb(0 0 0 / 13%), 0 0.3px 0.9px 0 rgb(0 0 0 / 11%);
+        box-sizing: border-box;
+        color: #1A2027;
+        text-align: center;
+        transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+        background-color: $White;
+    }
+
+    .plan-card-title {
+        margin-bottom: rem(16px);
+        font-size: rem(32px);
+        letter-spacing: 0;
+        font-weight: 700;
+        color: #1A2027;
+    }
+
+    .plan-card-subtitle {
+        margin-bottom: rem(24px);
+        font-size: rem(22px);
+        letter-spacing: 0;
+        font-weight: 700;
+        color: #1A2027;
+
+        .grey-txt {
+            color: $Gray2;
+        }
+    }
+
+    .plan-card-desc {
+        font-size: rem(14px);
+        line-height: 1.5;
+        letter-spacing: 0;
+        font-weight: 400;
+        color: #3E5060;
+    }
+}
+
+::deep .bit-btn {
+    &.bit-btn-fluent {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+::deep .bit-mdl-container {
+    min-width: rem(500px);
+
+    @include sm {
+        min-width: calc(100% - 32px);
+    }
+}
+
+::deep .form {
+    width: 100%;
+    padding: rem(48px) rem(32px);
+    box-sizing: border-box;
+    color: #1A2027;
+    text-align: center;
+
+    .form-title {
+        margin: 0;
+        margin-bottom: rem(16px);
+        font-size: rem(24px);
+        letter-spacing: 0;
+        font-weight: 700;
+        color: #1A2027;
+
+        .blue-txt {
+            color: $B6Color;
+        }
+    }
+
+    .package-name {
+        margin-bottom: rem(24px);
+        font-size: rem(18px);
+        letter-spacing: 0;
+        font-weight: 700;
+        color: #1A2027;
+
+        .grey-txt {
+            color: $Gray2;
+        }
+    }
+}
+
+::deep .bit-btn-fluent {
+    margin-top: rem(16px);
+}
+
+::deep .bit-txt-fluent {
+    margin-bottom: rem(24px);
+    text-align: left;
+}
+
+::deep .validation-message {
+    color: #a4262c;
+    margin-top: rem(-20px);
+    font-size: rem(12px);
+    text-align: left;
+}
+
+::deep .bit-icob {
+    &.bit-icob-fluent {
+        position: absolute;
+        top: rem(16px);
+        right: rem(16px);
+    }
 }

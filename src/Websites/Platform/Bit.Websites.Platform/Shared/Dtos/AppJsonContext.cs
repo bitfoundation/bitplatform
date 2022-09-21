@@ -1,5 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 using Bit.Websites.Platform.Shared.Dtos.ContactUs;
+using Bit.Websites.Platform.Shared.Dtos.SupportPackage;
 
 namespace Bit.Websites.Platform.Shared.Dtos;
 
@@ -8,6 +9,7 @@ namespace Bit.Websites.Platform.Shared.Dtos;
 /// </summary>
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
 [JsonSerializable(typeof(ContactUsDto))]
+[JsonSerializable(typeof(BuyPackageDto))]
 public partial class AppJsonContext : JsonSerializerContext
 {
 }

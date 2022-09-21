@@ -22,4 +22,21 @@ public partial class TelegramBotService
 
         await TelegramBotApiClient.SendMessageAsync(messsageBuilder.ToString(), cancellationToken);
     }
+
+    public async Task SendBuyPackageMessage(string packageTitle, string email, string message, CancellationToken cancellationToken)
+    {
+        var messsageBuilder = new StringBuilder();
+        messsageBuilder.AppendLine($"📥 *Email:* `{email.Trim()}`");
+        messsageBuilder.AppendLine($"💻 *Support pacakge:* `{packageTitle.Trim()}`");
+        if (string.IsNullOrEmpty(message))
+        {
+            messsageBuilder.AppendLine($"📜 *Message:* `-`");
+        }
+        else
+        {
+            messsageBuilder.AppendLine($"📜 *Message*: {message.Trim()}");
+        }
+
+        await TelegramBotApiClient.SendMessageAsync(messsageBuilder.ToString(), cancellationToken);
+    }
 }

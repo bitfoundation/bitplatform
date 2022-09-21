@@ -8,34 +8,6 @@
     height: 100%;
 }
 
-@mixin PageContainerFull {
-    display: flex;
-    flex-flow: column nowrap;
-    justify-content: flex-start;
-    align-items: flex-start;
-    width: 100%;
-    box-sizing: border-box;
-    overflow: hidden;
-    max-width: rem(1200px);
-    margin-left: auto;
-    margin-right: auto;
-    padding-left: rem(20px);
-    padding-right: rem(20px);
-    padding-top: $HeaderHeight + 65px;
-    padding-bottom: rem(65px);
-    box-sizing: border-box;
-
-    @include lt-xl {
-        padding-top: rem(135px);
-        padding-bottom: rem(35px);
-    }
-
-    @include md {
-        padding-left: rem(30px);
-        padding-right: rem(30px);
-    }
-}
-
 @mixin PageMainTitle {
     margin: 0;
     margin-bottom: rem(52px);
