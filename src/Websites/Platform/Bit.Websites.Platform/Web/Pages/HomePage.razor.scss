@@ -233,6 +233,7 @@
 .tech-section {
     padding-top: 5rem;
     padding-bottom: 5rem;
+    background-color: #F3F6F9;
 
     .page-section-contnet {
         display: flex;
@@ -423,7 +424,16 @@
 .components-section {
     padding-top: 5rem;
     padding-bottom: 5rem;
-    background-color: #F3F6F9;
+    background-color: #132F4C;
+
+    .section-title {
+        color: gainsboro;
+    }
+
+    .section-desc {
+        color: $White;
+        font-weight: 600;
+    }
 
     .flex-container {
         display: flex;
@@ -530,7 +540,7 @@
         line-height: 1.5;
         letter-spacing: 0.2px;
         font-weight: 400;
-        color: $B6Color;
+        color: #99CCF3;
         font-weight: 700;
     }
 
@@ -540,98 +550,7 @@
         line-height: 1.5;
         letter-spacing: 0;
         font-weight: 400;
-        color: #173A5E;
-    }
-}
-
-.cloud-hosting-section {
-    padding-top: 5rem;
-    padding-bottom: 5rem;
-}
-
-.support-section {
-    padding-top: 5rem;
-    padding-bottom: 5rem;
-    background-color: #132F4C;
-
-    .page-section-contnet {
-        display: flex;
-        flex-flow: column nowrap;
-        align-items: center;
-    }
-
-    .section-title {
-        color: gainsboro;
-    }
-
-    .card-list {
-        display: flex;
-        flex-flow: row wrap;
-        justify-content: center;
-        width: calc(100% + 20px);
-        margin-left: -20px;
-    }
-
-    .support-card {
-        flex-basis: calc((100% / 3) - 20px);
-        flex-grow: 0;
-        max-width: calc((100% / 3) - 20px);
-        min-width: rem(275px);
-        min-height: rem(241px);
-        padding: rem(20px);
-        margin-top: rem(20px);
-        margin-left: rem(20px);
-        border-radius: rem(16px);
-        border: rem(1px) solid #E0E3E7;
-        box-sizing: border-box;
-        color: #1A2027;
-        transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
-        background-color: $White;
-    }
-
-    .support-card-title {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: 100%;
-        margin-bottom: rem(10px);
-        font-size: rem(18px);
-        line-height: 1.5;
-        letter-spacing: 0;
-        font-weight: 700;
-        text-align: center;
-        color: #1A2027;
-        box-sizing: border-box;
-    }
-
-    .card-icon {
-        width: rem(32px);
-        height: rem(32px);
-        margin-right: rem(10px);
-        background-position: center;
-        background-repeat: no-repeat;
-        border-radius: 50%;
-        background-size: rem(28px);
-    }
-
-    .support-card-desc {
-        font-size: rem(14px);
-        line-height: 1.5;
-        letter-spacing: 0;
-        font-weight: 400;
-        color: #3E5060;
-    }
-
-    .tech-support {
-        background-image: url('/images/home/technical-support-icon.webp');
-    }
-
-    .ultimate-support {
-        background-image: url('/images/home/ultimate-support-icon.webp');
-    }
-
-    .periority-support {
-        background-image: url('/images/home/periority-support-icon.webp');
+        color: #e0e0e0;
     }
 }
 
