@@ -198,8 +198,15 @@
     cursor: default;
     background-color: $White;
 
-    &::-webkit-scrollbar {
-        width: rem(6px);
+    ::-webkit-scrollbar {
+        -webkit-appearance: none;
+        width: 7px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        border-radius: 4px;
+        background-color: rgba(0, 0, 0, .5);
+        box-shadow: 0 0 1px rgba(255, 255, 255, .5);
     }
 
     @include sm {
@@ -234,6 +241,19 @@
 
             .menu-item-icon {
                 border-color: $Gray4;
+            }
+        }
+    }
+
+    .menu-item--disabled {
+        filter: grayscale(70%);
+        cursor: default;
+
+        &:hover {
+            background-color: transparent;
+
+            .menu-item-icon {
+                border-color: $B11Color;
             }
         }
     }

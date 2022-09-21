@@ -36,32 +36,25 @@
                     </div>
                     <div class="col">
                         <div class="col-header">Services</div>
-                        <a class="menu-item" href="@Urls.CloudHostingSolutins">
+                        <a class="menu-item menu-item--disabled">
                             <span class="menu-item-icon cloud-item"></span>
                             <div class="menu-item-content">
                                 <div class="item-title">Cloud hosting solutions</div>
-                                <div class="item-desc">Here is the desc of item.</div>
+                                <div class="item-desc">Comming soon</div>
                             </div>
                         </a>
-                        <a class="menu-item" href="@Urls.Support">
-                            <span class="menu-item-icon support-item"></span>
+                        <a class="menu-item menu-item--disabled">
+                            <span class="menu-item-icon academy-item"></span>
                             <div class="menu-item-content">
-                                <div class="item-title">Dedicated support</div>
-                                <div class="item-desc">Here is the desc of item.</div>
+                                <div class="item-title">Bit academy</div>
+                                <div class="item-desc">Comming soon</div>
                             </div>
                         </a>
-                        @*<a class="menu-item" href="@Urls.Academy">
-                        <span class="menu-item-icon academy-item"></span>
-                        <div class="menu-item-content">
-                        <div class="item-title">Bit academy</div>
-                        <div class="item-desc">Here is the desc of item.</div>
-                        </div>
-                        </a>*@
                     </div>
                 </div>
             </div>
-            @* <a class="header-link @(CurrentUrl == Urls.Pricing ? "header-link--active" : null)" href="@Urls.Pricing">Pricing</a>
-            <a class="header-link @(CurrentUrl == Urls.Blogs ? "header-link--active" : null)" href="@Urls.Blogs">Blogs</a>
+            <a class="header-link @(CurrentUrl == Urls.Pricing ? "header-link--active" : null)" href="@Urls.Pricing">Pricing</a>
+            @* <a class="header-link @(CurrentUrl == Urls.Blogs ? "header-link--active" : null)" href="@Urls.Blogs">Blogs</a>
             <a class="header-link @(CurrentUrl == Urls.Videos ? "header-link--active" : null)" href="@Urls.Videos">Videos</a>*@
             <a class="header-link @(CurrentUrl == Urls.AboutUs ? "header-link--active" : null)" href="@Urls.AboutUs">About</a>
             <a class="header-link @(CurrentUrl == Urls.ContactUs ? "header-link--active" : null)" href="@Urls.ContactUs">Contact us</a>
@@ -112,33 +105,26 @@
                 </div>
                 <div class="col">
                     <div class="col-header">Services</div>
-                    <a class="menu-item" href="@Urls.CloudHostingSolutins" @onclick=@ToggleHeaderMenu>
+                    <a class="menu-item menu-item--disabled">
                         <span class="menu-item-icon cloud-item"></span>
                         <div class="menu-item-content">
                             <div class="item-title">Cloud hosting solutions</div>
-                            <div class="item-desc">Here is the desc of item.</div>
+                            <div class="item-desc">Comming soon</div>
                         </div>
                     </a>
-                    <a class="menu-item" href="@Urls.Support" @onclick=@ToggleHeaderMenu>
-                        <span class="menu-item-icon support-item"></span>
-                        <div class="menu-item-content">
-                            <div class="item-title">Dedicated support</div>
-                            <div class="item-desc">Here is the desc of item.</div>
-                        </div>
-                    </a>
-                    @*<a class="menu-item" href="@Urls.Academy" @onclick=@ToggleHeaderMenu>
+                    <a class="menu-item menu-item--disabled">
                         <span class="menu-item-icon academy-item"></span>
                         <div class="menu-item-content">
                             <div class="item-title">Bit academy</div>
-                            <div class="item-desc">Here is the desc of item.</div>
+                            <div class="item-desc">Comming soon</div>
                         </div>
-                    </a>*@
+                    </a>
                 </div>
             </div>
         </div>
-        @*<a class="header-nav-link @(CurrentUrl == Urls.Pricing ? "header-nav-link--active" : null)" href="@Urls.Pricing" @onclick=@ToggleHeaderMenu>Pricing</a>
-        <a class="header-nav-link @(CurrentUrl == Urls.Blogs ? "header-nav-link--active" : null)" href="@Urls.Blogs" @onclick=@ToggleHeaderMenu>Blogs</a>
-        <a class="header-nav-link @(CurrentUrl == Urls.Videos ? "header-nav-link--active" : null)" href="@Urls.Videos" @onclick=@ToggleHeaderMenu>Videos</a>*@
+        <a class="header-nav-link @(CurrentUrl == Urls.Pricing ? "header-nav-link--active" : null)" href="@Urls.Pricing" @onclick=@ToggleHeaderMenu>Pricing</a>
+        @*<a class="header-nav-link @(CurrentUrl == Urls.Blogs ? "header-nav-link--active" : null)" href="@Urls.Blogs" @onclick=@ToggleHeaderMenu>Blogs</a>
+    <a class="header-nav-link @(CurrentUrl == Urls.Videos ? "header-nav-link--active" : null)" href="@Urls.Videos" @onclick=@ToggleHeaderMenu>Videos</a>*@
         <a class="header-nav-link @(CurrentUrl == Urls.AboutUs ? "header-nav-link--active" : null)" href="@Urls.AboutUs" @onclick=@ToggleHeaderMenu>About</a>
         <a class="header-nav-link @(CurrentUrl == Urls.ContactUs ? "header-nav-link--active" : null)" href="@Urls.ContactUs" @onclick=@ToggleHeaderMenu>Contact us</a>
     </nav>

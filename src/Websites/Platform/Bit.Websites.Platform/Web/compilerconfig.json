@@ -136,28 +136,8 @@
     "inputFile": "Pages/ContactUsPage.razor.scss"
   },
   {
-    "outputFile": "Pages/BlogsPage.razor.css",
-    "inputFile": "Pages/BlogsPage.razor.scss"
-  },
-  {
-    "outputFile": "Pages/SupportPage.razor.css",
-    "inputFile": "Pages/SupportPage.razor.scss"
-  },
-  {
     "outputFile": "Pages/ComponentsPage.razor.css",
     "inputFile": "Pages/ComponentsPage.razor.scss"
-  },
-  {
-    "outputFile": "Pages/AcademyPage.razor.css",
-    "inputFile": "Pages/AcademyPage.razor.scss"
-  },
-  {
-    "outputFile": "Pages/CloudHostingSolutionsPage.razor.css",
-    "inputFile": "Pages/CloudHostingSolutionsPage.razor.scss"
-  },
-  {
-    "outputFile": "Pages/VideosPage.razor.css",
-    "inputFile": "Pages/VideosPage.razor.scss"
   },
   {
     "outputFile": "Pages/TodoTemplate/ContributePage.razor.css",
