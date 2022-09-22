@@ -152,10 +152,8 @@ public class BitDropDownTests : BunitTestContext
             parameters.Add(p => p.Visual, visual);
         });
 
-        var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
-
-        Assert.AreEqual(items.FindAll(i => i.ItemType == BitDropDownItemType.Header).Count, component.FindAll($".bit-drp-head-{visualClass}").Count);
-        Assert.AreEqual(items.FindAll(i => i.ItemType == BitDropDownItemType.Divider).Count, component.FindAll($".bit-drp-div-{visualClass}").Count);
+        Assert.AreEqual(items.FindAll(i => i.ItemType == BitDropDownItemType.Header).Count, component.FindAll(".item-header").Count);
+        Assert.AreEqual(items.FindAll(i => i.ItemType == BitDropDownItemType.Divider).Count, component.FindAll(".item-divider").Count);
 
         if (isMultiSelect)
         {
@@ -426,8 +424,7 @@ public class BitDropDownTests : BunitTestContext
             parameters.Add(p => p.OnSelectItem, () => itemSelecetd = true);
         });
 
-        var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
-        var selectedItem = component.Find($".bit-drp-slc-{visualClass}");
+        var selectedItem = component.Find(".drp-slc");
         selectedItem.Click();
 
         Assert.AreEqual(notifyOnReselect, itemSelecetd);
