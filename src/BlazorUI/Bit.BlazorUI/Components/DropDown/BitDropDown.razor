@@ -6,18 +6,18 @@
      class="@ClassBuilder.Value">
     @if (LabelFragment is not null)
     {
-        <label class="bit-drp-lbl" id="@DropdownLabelId">@LabelFragment</label>
+        <label class="lbl" id="@DropdownLabelId">@LabelFragment</label>
     }
     else if (Label.HasValue())
     {
-        <label class="bit-drp-lbl" id="@DropdownLabelId">@Label</label>
+        <label class="lbl" id="@DropdownLabelId">@Label</label>
     }
 
-    <div class="bit-drp-overlay"
+    <div class="drp-overlay"
          id="@DropDownOverlayId"
          @onclick="CloseCallout"></div>
 
-    <div class="bit-drp-wrapper"
+    <div class="drp-wrapper"
          id="@DropDownId"
          tabindex=@(IsEnabled ? 0 : -1)
          role="combobox"
@@ -30,7 +30,7 @@
          aria-controls="@(IsOpen ? $"{DropDownId}-list" : null)"
          title="@Title"
          @onclick="HandleClick">
-        <span class="bit-drp-wrapper-txt"
+        <span class="drp-wrapper-txt"
               id="@DropDownOptionId"
               aria-live="polite"
               aria-atomic="true"
@@ -58,7 +58,7 @@
                 }
             }
         </span>
-        <span class="bit-drp-wrapper-ic">
+        <span class="drp-wrapper-ic">
             @if (CaretDownFragment is not null)
             {
                 @CaretDownFragment
@@ -70,12 +70,12 @@
         </span>
     </div>
 
-    <div class="bit-drp-items-wrapper"
+    <div class="items-wrapper"
          id="@DropDownCalloutId"
          tabindex="0"
          role="listbox"
          aria-labelledby="@DropdownLabelId">
-        <div class="bit-drp-close-btn-contianer">
+        <div class="close-btn-contianer">
             <button class="close-btn"
                     type="button"
                     aria-label="Close"
@@ -168,7 +168,7 @@
     {
         if (dropDownItem.item.ItemType == BitDropDownItemType.Header)
         {
-            <div class="@RootElementClass-head-@VisualClassRegistrar()">
+            <div class="item-header">
                 @dropDownItem.item.Text
             </div>
         }
@@ -177,14 +177,14 @@
             @if (IsMultiSelect)
             {
                 <div style="@(dropDownItem.item.IsHidden ? "display: none" : string.Empty)" class="@GetCssClassForItem(dropDownItem.item)">
-                    <label class="bit-drp-chb-lbl" @onclick="@((e) => HandleItemClick(dropDownItem.item))">
-                        <div class="bit-drp-chb-checkbox">
-                            <i class="bit-drp-chb-checkmark bit-icon bit-icon--Accept"
+                    <label class="drp-chb-lbl" @onclick="@((e) => HandleItemClick(dropDownItem.item))">
+                        <div class="drp-chb-checkbox">
+                            <i class="drp-chb-checkmark bit-icon bit-icon--Accept"
                                aria-hidden="true"
                                aria-label="@dropDownItem.item.Text"></i>
                         </div>
 
-                        <span class="bit-drp-chb-txt no-text-select">
+                        <span class="drp-chb-txt no-text-select">
                             @if (ItemTemplate is not null)
                             {
                                 @ItemTemplate(dropDownItem.item)
@@ -199,7 +199,7 @@
             }
             else
             {
-                <button class="bit-drp-item @(dropDownItem.item.IsSelected ? $"{RootElementClass}-slc-{VisualClassRegistrar()}" : string.Empty)"
+                <button class="drp-item @(dropDownItem.item.IsSelected ? "drp-slc" : string.Empty)"
                         style="@(dropDownItem.item.IsHidden ? "display: none" : string.Empty)"
                         type="button"
                         role="option"
@@ -227,7 +227,7 @@
         }
         else if (dropDownItem.item.ItemType == BitDropDownItemType.Divider)
         {
-            <div class="@RootElementClass-div-@VisualClassRegistrar()" role="separator"></div>
+            <div class="divider" role="separator"></div>
         }
     };
 }
