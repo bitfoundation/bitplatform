@@ -82,42 +82,15 @@
 }
 
 .github-btn {
-    display: flex;
-    flex-flow: row nowrap;
-    align-items: center;
+    width: rem(34px);
     height: rem(34px);
+    border-radius: 50%;
+    background-image: url('/images/github-icon.svg');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
     cursor: pointer;
     margin-left: rem(10px);
-
-    .github-btn-name {
-        display: inline-flex;
-        align-items: center;
-        justify-content: flex-start;
-        height: 100%;
-        border-radius: rem(4px) 0 0 rem(4px);
-        padding: 0 rem(8px);
-        padding-left: rem(32px);
-        color: $White;
-        font-size: rem(14px);
-        background-color: #4f4f4f;
-        background-image: url('/images/footer/github-icon.svg');
-        background-size: rem(16px);
-        background-repeat: no-repeat;
-        background-position: left rem(8px) center;
-    }
-
-    .github-btn-value {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        height: 100%;
-        padding: 0 rem(8px);
-        border-radius: 0 rem(4px) rem(4px) 0;
-        background-color: $B6Color;
-        color: $White;
-        font-weight: 600;
-        font-size: rem(14px);
-    }
 }
 
 .header-second-row {

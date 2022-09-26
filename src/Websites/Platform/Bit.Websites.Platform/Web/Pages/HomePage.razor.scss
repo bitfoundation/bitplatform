@@ -179,37 +179,39 @@
         color: $Gray4;
     }
 
-    .hero-section-cta {
-        display: inline-flex;
-        justify-content: center;
+    .github-btn {
+        display: flex;
+        flex-flow: row nowrap;
         align-items: center;
-        padding: rem(8px) rem(16px);
-        border-radius: rem(4px);
-        box-shadow: none;
         cursor: pointer;
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
-        text-decoration: none;
-        transition: background-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,border-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
-        background-color: $White;
-        color: $B6Color;
-        font-size: rem(16px);
-        line-height: 1.3125;
-        letter-spacing: 0;
-        font-weight: 700;
-    }
 
-    .hero-section-github-ico {
-        width: rem(28px);
-        height: rem(28px);
-        margin-right: rem(8px);
-        background-image: url('/images/github-icon.svg');
-        background-position: center;
-        background-repeat: no-repeat;
-        background-size: cover;
-        cursor: pointer;
+        .github-btn-name {
+            display: inline-flex;
+            align-items: center;
+            justify-content: flex-start;
+            border-radius: rem(4px) 0 0 rem(4px);
+            padding: rem(8px) rem(16px);
+            padding-left: rem(40px);
+            color: $White;
+            font-size: rem(16px);
+            background-color: #4f4f4f;
+            background-image: url('/images/footer/github-icon.svg');
+            background-size: rem(16px);
+            background-repeat: no-repeat;
+            background-position: left rem(16px) center;
+        }
+
+        .github-btn-value {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: rem(8px) rem(16px);
+            border-radius: 0 rem(4px) rem(4px) 0;
+            background-color: $White;
+            color: $B6Color;
+            font-weight: 600;
+            font-size: rem(16px);
+        }
     }
 }
 
@@ -228,7 +230,6 @@
         text-align: center;
     }
 }
-
 
 .tech-section {
     padding-top: 5rem;

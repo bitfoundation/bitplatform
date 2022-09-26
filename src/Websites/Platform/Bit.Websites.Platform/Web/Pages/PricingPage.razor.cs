@@ -18,21 +18,21 @@ public partial class PricingPage
         {
             Title = "Free",
             Price = 0,
-            Period = "Forever",
+            Period = "forever",
             Description = "This is a description"
         },
         new SupportPackageDto()
         {
             Title = "Professtional",
             Price = 300,
-            Period = "Monthly",
+            Period = "month",
             Description = "This is a description"
         },
         new SupportPackageDto()
         {
             Title = "Ultimate",
             Price = 1200,
-            Period = "Monthly",
+            Period = "month",
             Description = "This is a description"
         },
         new SupportPackageDto()
