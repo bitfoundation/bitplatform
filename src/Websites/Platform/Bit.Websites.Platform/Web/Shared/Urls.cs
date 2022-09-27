@@ -4,8 +4,6 @@ public static class Urls
 {
     public const string HomePage = "/";
 
-    public const string GettingStarted = "/project-templates/todo-template/getting-started";
-
     public const string Github = "https://github.com/bitfoundation/bitplatform";
 
     public const string GithubRepo = "https://github.com/bitfoundation/bitplatform";
@@ -22,15 +20,30 @@ public static class Urls
 
     public const string Facebook = "#";
 
-    public const string Blog = "#";
+    public const string TodoTemplate = "/todo-template/overview";
+    public const string TodoTemplateSSR = "https://todo.bitplatform.dev/";
+    public const string TodoTemplatePWA = "https://todo-app.bitplatform.dev/";
+    public const string TodoTemplateAppCenter = "https://install.appcenter.ms/orgs/bitfoundation/apps/todo/distribution_groups/testers";
+    public const string TodoTemplateFigma = "https://www.figma.com/file/PHDEnipl4PCWIoh5dCRpLd/Todo-Template?node-id=2022%3A5223";
+    public const string TodoTemplateNuget = "https://www.nuget.org/packages/Bit.TodoTemplate/";
 
-    public const string Video = "#";
+    public const string AdminPanel = "/admin-panel/overview";
+    public const string AdminPanelMultiLingual = "https://adminpanel.bitplatform.dev/";
+    public const string AdminPanelAppCenter = "https://install.appcenter.ms/orgs/bitfoundation/apps/adminpanel/distribution_groups/testers";
+    public const string AdminPanelFigma = "#";
+    public const string AdminPanelNuget = "https://www.nuget.org/packages/Bit.AdminPanel";
 
-    public const string TodoTemplate = "/project-templates/todo-template/getting-started";
+    public const string Components = "/components";
+    public const string ComponentsDocs = "https://components.bitplatform.dev/";
 
-    public const string AdminPanelTemplate = "/project-templates/admin-panel-template/getting-started";
-
-    public const string Components = "https://components.bitplatform.dev/";
+    public const string CloudHostingSolutins = "/cloud-hosting-solutions";
+    public const string Support = "/support";
+    public const string Academy = "/academy";
+    public const string Pricing = "/pricing";
+    public const string Blogs = "/blogs";
+    public const string Videos = "/videos";
+    public const string AboutUs = "/about-us";
+    public const string ContactUs = "/contact-us";
 
     public const string Bswup = "https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup";
 }

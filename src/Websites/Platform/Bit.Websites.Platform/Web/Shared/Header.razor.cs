@@ -1,17 +1,21 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Bit.Websites.Platform.Web.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.JSInterop;
 
 namespace Bit.Websites.Platform.Web.Shared;
 
 public partial class Header : IDisposable
 {
     private string CurrentUrl = string.Empty;
+    private bool IsHeaderMenuOpen;
 
     [AutoInject] private NavigationManager _navigationManager = default!;
-    [Inject] public NavManuService NavManuService { get; set; }
+    [AutoInject] public NavManuService _navManuService { get; set; }
+    [AutoInject] public IJSRuntime _jsRuntime { get; set; }
 
     protected override void OnInitialized()
     {
@@ -27,20 +31,48 @@ public partial class Header : IDisposable
         StateHasChanged();
     }
 
-    private string GetHeaderLinkClass(string link)
-    {
-        var classStr = "header-link";
-        if ((link == "Home" && CurrentUrl == "/") || (link == "Templates" && CurrentUrl.Contains("todo-template")))
-        {
-            classStr += " header-link--active";
-        }
-
-        return classStr;
-    }
-
     private void ToggleMenu()
     {
-        NavManuService.ToggleMenu();
+        _navManuService.ToggleMenu();
+    }
+
+    private string GetActiveRouteName()
+    {
+        if (CurrentUrl.Contains("admin-panel") || CurrentUrl.Contains("todo-template"))
+        {
+            return "Prodocus & Services";
+        }
+        else return CurrentUrl switch
+        {
+            Urls.HomePage => "Home",
+            Urls.Components => "Prodocus & Services",
+            Urls.CloudHostingSolutins => "Prodocus & Services",
+            Urls.Support => "Prodocus & Services",
+            Urls.Academy => "Prodocus & Services",
+            Urls.Pricing => "Pricing",
+            Urls.AboutUs => "About us",
+            Urls.ContactUs => "Contact us",
+            Urls.Blogs => "Blogs",
+            Urls.Videos => "Videos",
+            _ => "Prodocus & Services",
+        };
+    }
+
+    private bool IsProductsServicesActive()
+    {
+        return (CurrentUrl.Contains("admin-panel") ||
+           CurrentUrl.Contains("todo-template") ||
+           CurrentUrl == Urls.Components ||
+           CurrentUrl == Urls.CloudHostingSolutins ||
+           CurrentUrl == Urls.Support ||
+           CurrentUrl == Urls.Academy);
+    }
+
+    private async Task ToggleHeaderMenu()
+    {
+        IsHeaderMenuOpen = !IsHeaderMenuOpen;
+        await _jsRuntime.SetToggleBodyOverflow(IsHeaderMenuOpen);
+        StateHasChanged();
     }
 
     public void Dispose()

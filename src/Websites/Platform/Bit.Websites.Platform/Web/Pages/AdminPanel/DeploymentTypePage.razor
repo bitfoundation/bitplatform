@@ -1,0 +1,48 @@
+﻿@page "/admin-panel/deployment-type"
+
+<div class="page-container">
+    <h1 class="page-main-title">WebApp Deployment Type</h1>
+    <div class="page-desc">
+        Supported deployment type are:
+    </div>
+    <section class="section-card">
+        <h2 class="section-card-title">Default Deployment Type</h2>
+        <div class="section-card-txt">It's referring to a Typical single page application(SPA) without pre-rendring.</div>
+    </section>
+
+    <section class="section-card">
+        <h2 class="section-card-title">PWA</h2>
+        <div class="section-card-txt">
+            A Blazor WebAssembly app built as a <a href="https://en.wikipedia.org/wiki/Progressive_web_application" title="PWA" rel="nofollow">Progressive Web App</a> (PWA) uses modern browser APIs to enable many of the capabilities of a native client app, such as working offline, running in its own app window, launching from the host's operating system, receiving push notifications, and automatically updating in the background.
+            <span class="bold-txt">Note</span>: ASP.NET blazor supports <span class="bold-txt">PWA</span> by default, but its update mechanism is unreliable due PWA nature, <span class="bold-txt">Bit</span> allows you to handle it When a new version wants to be updated.
+        </div>
+    </section>
+
+    <section class="section-card">
+        <h2 class="section-card-title">SSR</h2>
+        <div class="section-card-txt">
+            <a href="https://www.educative.io/edpresso/what-is-server-side-rendering" rel="nofollow">Server-side rendering (SSR)</a>, is the ability of an application to contribute by displaying the web-page on the server instead of rendering it in the browser. Server-side sends a fully rendered page to the client; Blazor pre-renders page and sends it as a static page, then later the page becomes an interactive Blazor app. This behavior is intended to serve pages quickly to search engines with time-based positioning.
+            Statically prerender the component along with a marker to indicate the component should later be rendered interactively by the Blazor app. It improve SEO.
+            <br />It's referring to a Typical single page application(SPA) with pre-rendring.
+        </div>
+    </section>
+
+    <section class="section-card">
+        <h2 class="section-card-title">Static</h2>
+        <div class="section-card-txt">
+            Static Statically render the component with the specified parameters. It's recommended when the target is building a static page like a landing page, content page, And like these.
+        </div>
+    </section>
+
+    <section class="section-card">
+        <h2 class="section-card-title">How change WebApp Deployment Type easily?</h2>
+        <div class="section-card-txt">
+            To switch to each mode, easily change value of <span class="high-light-text">@("<WebAppDeploymentType>")</span> on <span class="bold-txt">Directory.build.props</span> file in <span class="bold-txt">Solution Items</span> root folder.
+        </div>
+        <div class="code-box">
+            <pre class="code"><code>@("<WebAppDeploymentType>DefaultDeploymentType</WebAppDeploymentType>")</code></pre>
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="Hosting models" PrevUrl="/admin-panel/hosting-models" Next="Settings" NextUrl="/admin-panel/settings" />

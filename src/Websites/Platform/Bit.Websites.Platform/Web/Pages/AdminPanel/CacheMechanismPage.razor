@@ -1,0 +1,32 @@
+﻿@page "/admin-panel/cache-mechanism"
+
+<div class="page-container">
+    <h1 class="page-main-title">Cache mechanism</h1>
+    <div class="page-desc">
+        Bit AdminPanel provides features in order handle the caching appropriately in different modes.
+    </div>
+    <div class="section-card">
+        <h2 class="section-card-title">PWA</h2>
+        <div class="section-card-txt">
+            In PWA mode, a manifest is generated and all files will be downloaded by PWA with the help of this manifest.
+            In this case, the PWA app can work in offline mode, and for example, we can leverage ef-core and SQLite in the browser,
+            which will work offline, and after going online, it can synchronize the generated data with the server if necessary.
+        </div>
+        <div class="section-card-txt">
+            If a file is changed (such as font, photo, etc.), the latest changes will be automatically downloaded.
+        </div>
+        <div class="section-card-txt">
+            <span class="bold-txt">Note</span>: that if you do not need a file, be sure to delete it so that it is no longer downloaded by PWA.
+        </div>
+    </div>
+    <div class="section-card">
+        <h2 class="section-card-title">SPA</h2>
+        <div class="section-card-txt">
+            In SPA mode, if a js, css, or dll file gets changed, the new version will be automatically requested by the browser through
+            the magic of the asp-append-version in _Layout.cshtml file. But for other file types such as fonts and images, 
+            the file name must also be changed to ensure that the client is updated.
+        </div>
+    </div>
+</div>
+
+<NavigationButtons Prev="Exception handling" PrevUrl="/admin-panel/exception-handling" Next="Contribute" NextUrl="/admin-panel/contribute" />

@@ -3,15 +3,16 @@
 /// https://github.com/Necromancerx/media-queries-scss-mixins
 
 // media aliases and breakpoints
-$screen-xl-min: em(1920px);
+$screen-xl-min: em(1201px);
+$screen-xl-max: em(1920px);
 
-$screen-lg-min: em(1440px);
-$screen-lg-max: em(1919px);
+$screen-lg-min: em(901px);
+$screen-lg-max: em(1200px);
 
-$screen-md-min: em(768px);
-$screen-md-max: em(1339px);
+$screen-md-min: em(601px);
+$screen-md-max: em(900px);
 
-$screen-sm-max: em(767px);
+$screen-sm-max: em(600px);
 
 // media devices
 @mixin sm {

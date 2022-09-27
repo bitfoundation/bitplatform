@@ -1,0 +1,52 @@
+﻿@page "/admin-panel"
+@page "/admin-panel/overview"
+
+<div class="page-container">
+    <h1 class="page-main-title">AdminPanel</h1>
+    <div class="page-flex-container">
+        <div class="page-conent-container">
+            <div class="image-container">
+                <img class="template-img" src="/images/templates/admin-panel.webp" alt="AdminPanel" />
+                <a class="preview-btn-shadow" href="@Urls.AdminPanelMultiLingual" target="_blank">
+                    <div class="preview-btn">Demo</div>
+                </a>
+            </div>
+            <div class="content-title">Description</div>
+            <ul class="description-list">
+                <li class="description-list-item">✔ This is an item.</li>
+                <li class="description-list-item">✔ This is an item.</li>
+                <li class="description-list-item">✔ This is an item.</li>
+                <li class="description-list-item">✔ This is an item.</li>
+                <li class="description-list-item">✔ This is an item.</li>
+                <li class="description-list-item">✔ This is an item.</li>
+                <li class="description-list-item">✔ This is an item.</li>
+            </ul>
+        </div>
+
+        <div class="page-conent-container">
+            <a class="primary-btn" href="@Urls.AdminPanelMultiLingual" target="_blank" title="SPA">Multi-lingual Demo</a>
+            <a class="secondary-btn" href="@Urls.AdminPanelAppCenter" target="_blank" title="App center"><span class="btn-img app-center"></span>Android Demo</a>
+            <a class="secondary-btn" href="@Urls.AdminPanelNuget" target="_blank" title="Nuget"><span class="btn-img nuget"></span>Nuget</a>
+            <a class="secondary-btn" href="@Urls.AdminPanelFigma" target="_blank" title="Figma"><span class="btn-img figma"></span>Figma</a>
+
+            @*<table>
+                <tbody>
+                    <tr>
+                        <td>Version</td>
+                        <td>4.0.0</td>
+                    </tr>
+                    <tr>
+                        <td>Last update</td>
+                        <td>Sep 01, 2022</td>
+                    </tr>
+                    <tr>
+                        <td>Package size</td>
+                        <td>456.58 KB</td>
+                    </tr>
+                </tbody>
+            </table>*@
+        </div>
+    </div>
+</div>
+
+<NavigationButtons Next="Development prerequisites" NextUrl="/admin-panel/development-prerequisites" />

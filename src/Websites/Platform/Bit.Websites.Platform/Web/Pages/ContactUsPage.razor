@@ -1,0 +1,46 @@
+﻿@page "/contact-us"
+
+<div class="page-container">
+    <section class="page-section">
+        <div class="page-section-contnet">
+            <div class="flex-container">
+                <h1 class="page-title">Get in touch</h1>
+                <div class="page-desc">Let's talk about your project. Send us a message and we will be in touch within one work day.</div>
+                <div class="email">Email: <a href="mailto:info@bitplatform.dev" target="_blank" rel="noopener noreferrer">info@bitplatform.dev</a></div>
+            </div>
+
+            <div class="flex-container">
+                <EditForm Model="ContactUsModel" OnValidSubmit="SendMessage" class="form">
+                    <DataAnnotationsValidator />
+
+                    <h2>Have any feedbacks?</h2>
+                    <BitTextField @bind-Value="@ContactUsModel.Email"
+                                  Type="BitTextFieldType.Email"
+                                  Label="Email"
+                                  HasBorder=true
+                                  Placeholder="Enter your email address" />
+                    <ValidationMessage For="() => ContactUsModel.Email" />
+
+                    <BitTextField @bind-Value="@ContactUsModel.Message"
+                                  Type="BitTextFieldType.Text"
+                                  Label="Message"
+                                  IsRequired=true
+                                  HasBorder=true
+                                  IsMultiline=true
+                                  Placeholder="Enter your message" />
+                    <ValidationMessage For="() => ContactUsModel.Message" />
+                    <BitButton ButtonType="BitButtonType.Submit" IsEnabled="IsSubmitButtonEnabled">
+                        @if (IsLoading)
+                        {
+                            <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
+                        }
+                        else
+                        {
+                            <span>Send</span>
+                        }
+                    </BitButton>
+                </EditForm>
+            </div>
+        </div>
+    </section>
+</div>
