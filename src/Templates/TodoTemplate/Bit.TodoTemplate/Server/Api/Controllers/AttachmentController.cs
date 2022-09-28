@@ -30,9 +30,9 @@ public partial class AttachmentController : AppControllerBase
 
         await using var requestStream = file.OpenReadStream();
 
-        Directory.CreateDirectory(AppSettings.Value.UserProfileImagePath);
+        Directory.CreateDirectory(AppSettings.UserProfileImagePath);
 
-        var path = Path.Combine(AppSettings.Value.UserProfileImagePath, fileName);
+        var path = Path.Combine(AppSettings.UserProfileImagePath, fileName);
 
         await using var fileStream = SystemFile.Exists(path) 
             ? SystemFile.Open(path, FileMode.Append) 
@@ -44,7 +44,7 @@ public partial class AttachmentController : AppControllerBase
         {
             try
             {
-                var filePath = Path.Combine(AppSettings.Value.UserProfileImagePath, user.ProfileImageName);
+                var filePath = Path.Combine(AppSettings.UserProfileImagePath, user.ProfileImageName);
 
                 if (SystemFile.Exists(filePath))
                 {
@@ -81,7 +81,7 @@ public partial class AttachmentController : AppControllerBase
         if (user?.ProfileImageName is null)
             throw new ResourceNotFoundException();
 
-        var filePath = Path.Combine(AppSettings.Value.UserProfileImagePath, user.ProfileImageName);
+        var filePath = Path.Combine(AppSettings.UserProfileImagePath, user.ProfileImageName);
 
         if (SystemFile.Exists(filePath) is false)
             throw new ResourceNotFoundException(Localizer[nameof(AppStrings.UserImageCouldNotBeFound)]);
@@ -103,7 +103,7 @@ public partial class AttachmentController : AppControllerBase
         if (user?.ProfileImageName is null)
             throw new ResourceNotFoundException();
 
-        var filePath = Path.Combine(AppSettings.Value.UserProfileImagePath, user.ProfileImageName);
+        var filePath = Path.Combine(AppSettings.UserProfileImagePath, user.ProfileImageName);
 
         if (SystemFile.Exists(filePath) is false)
             return new EmptyResult();

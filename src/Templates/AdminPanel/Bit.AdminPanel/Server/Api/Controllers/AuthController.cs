@@ -69,7 +69,7 @@ public partial class AuthController : AppControllerBase
 
     private async Task SendConfirmationEmail(SendConfirmationEmailRequestDto sendConfirmationEmailRequest, User user, CancellationToken cancellationToken)
     {
-        var resendDelay = (DateTimeOffset.Now - user.ConfirmationEmailRequestedOn) - AppSettings.Value.IdentitySettings.ConfirmationEmailResendDelay;
+        var resendDelay = (DateTimeOffset.Now - user.ConfirmationEmailRequestedOn) - AppSettings.IdentitySettings.ConfirmationEmailResendDelay;
 
         if (resendDelay < TimeSpan.Zero)
             throw new TooManyRequestsExceptions(Localizer.GetString(nameof(AppStrings.WaitForConfirmationEmailResendDelay), resendDelay.Value.ToString("mm\\:ss")));
@@ -113,7 +113,7 @@ public partial class AuthController : AppControllerBase
         if (user is null)
             throw new BadRequestException(Localizer.GetString(nameof(AppStrings.UserNameNotFound), sendResetPasswordEmailRequest.Email!));
 
-        var resendDelay = (DateTimeOffset.Now - user.ResetPasswordEmailRequestedOn) - AppSettings.Value.IdentitySettings.ResetPasswordEmailResendDelay;
+        var resendDelay = (DateTimeOffset.Now - user.ResetPasswordEmailRequestedOn) - AppSettings.IdentitySettings.ResetPasswordEmailResendDelay;
 
         if (resendDelay < TimeSpan.Zero)
             throw new TooManyRequestsExceptions(Localizer.GetString(nameof(AppStrings.WaitForResetPasswordEmailResendDelay), resendDelay.Value.ToString("mm\\:ss")));
@@ -123,7 +123,7 @@ public partial class AuthController : AppControllerBase
         var resetPasswordLink = $"reset-password?email={user.Email}&token={HttpUtility.UrlEncode(token)}";
 
 #if BlazorServer
-        resetPasswordLink = $"{AppSettings.Value.WebServerAddress}{resetPasswordLink}";
+        resetPasswordLink = $"{AppSettings.WebServerAddress}{resetPasswordLink}";
 #else
         resetPasswordLink = $"{new Uri($"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}{HttpContext.Request.PathBase}")}{resetPasswordLink}";
 #endif
@@ -165,7 +165,7 @@ public partial class AuthController : AppControllerBase
         string url = $"email-confirmation?email={email}&email-confirmed={emailConfirmed}";
 
 #if BlazorServer
-        url = $"{AppSettings.Value.WebServerAddress}{url}";
+        url = $"{AppSettings.WebServerAddress}{url}";
 #else
         url = $"/{url}";
 #endif

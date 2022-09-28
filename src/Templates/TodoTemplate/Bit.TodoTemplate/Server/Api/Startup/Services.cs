@@ -101,6 +101,8 @@ public static class Services
 
         services.Configure<AppSettings>(configuration.GetSection(nameof(AppSettings)));
 
+        services.AddScoped(sp => sp.GetRequiredService<IOptionsSnapshot<AppSettings>>().Value);
+
         services.AddEndpointsApiExplorer();
 
         services.AddAutoMapper(typeof(Program).Assembly);
