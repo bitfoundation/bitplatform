@@ -1,22 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http.Json;
 using System.Threading.Tasks;
+using Bit.BlazorUI.Playground.Shared.Dtos;
 using Bit.BlazorUI.Playground.Web.Models;
 using Bit.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
+using Microsoft.AspNetCore.Components;
 
 namespace Bit.BlazorUI.Playground.Web.Pages.Components.DropDown;
 
 public partial class BitDropDownDemo
 {
     private string ControlledValue = "Apple";
-    private List<string> ControlledValues = new List<string>() { "Apple", "Banana", "Grape" };
+    private List<string> ControlledValues = new() { "Apple", "Banana", "Grape" };
     private FormValidationDropDownModel formValidationDropDownModel = new();
     private string SuccessMessage = string.Empty;
     private List<BitDropDownItem> Categories = new();
     private List<BitDropDownItem> Products = new();
-    private List<BitDropDownItem> LargeListOfCategoriesForSingleSelect = new ();
-    private List<BitDropDownItem> LargeListOfCategoriesForMultiSelect = new ();
+    private List<BitDropDownItem> LargeListOfCategoriesForSingleSelect = new();
+    private List<BitDropDownItem> LargeListOfCategoriesForMultiSelect = new();
     private string CurrentCategory;
     private string CurrentProduct;
 
@@ -265,6 +268,45 @@ public partial class BitDropDownDemo
                 }
             }
         };
+    }
+
+    private async ValueTask<BitDropDownItemsProviderResult<BitDropDownItem>> LoadDropdownItems(BitDropDownItemsProviderRequest<BitDropDownItem> request)
+    {
+        try
+        {
+            // https://docs.microsoft.com/en-us/odata/concepts/queryoptions-overview
+
+            var query = new Dictionary<string, object>()
+            {
+                { "$top", request.Count == 0 ? 50 : request.Count },
+                { "$skip", request.StartIndex }
+            };
+
+            if (string.IsNullOrEmpty(request.Search) is false)
+            {
+                query.Add("$filter", $"contains(Name,'{request.Search}')");
+            }
+
+            var url = NavManager.GetUriWithQueryParameters("Products/GetProducts", query);
+
+            var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto);
+
+            var items = data!.Items.Select(i => new BitDropDownItem
+            {
+                Text = i.Name,
+                Value = i.Id.ToString(),
+                Data = i,
+                AriaLabel = i.Name,
+                IsEnabled = true,
+                ItemType = BitDropDownItemType.Normal
+            }).ToList();
+
+            return BitDropDownItemsProviderResult.From(items, data!.TotalCount);
+        }
+        catch
+        {
+            return BitDropDownItemsProviderResult.From(new List<BitDropDownItem>(), 0);
+        }
     }
 
     protected override void OnInitialized()
@@ -657,7 +699,7 @@ private List<BitDropDownItem> GetDropdownItems()
              Style=""width:290px; margin:20px 0 20px 0"">
 </BitDropDown>";
 
-    private readonly string example3CSharpCode = @"private List<string> ControlledValues = new List<string>() { ""Apple"", ""Banana"", ""Grape"" };
+    private readonly string example3CSharpCode = @"private List<string> ControlledValues = new() { ""Apple"", ""Banana"", ""Grape"" };
 private List<BitDropDownItem> GetDropdownItems()
 {
     return new()
@@ -1130,7 +1172,7 @@ private List<BitDropDownItem> GetDropdownItems()
 
     #endregion
 
-    #region Example Code 9
+    #region Example Code 8
 
     private readonly string example8HTMLCode = @"<BitDropDown Label=""Single-select Controlled with search box""
                 Items=""GetDropdownItems()""
@@ -1242,6 +1284,68 @@ protected override void OnInitialized()
     }).ToList();
 
     base.OnInitialized();
+}";
+
+    #endregion
+
+    #region Example Code 10
+
+    private readonly string example10HTMLCode = @"<BitDropDown Label=""Single-select Controlled with virtualization""
+                ItemsProvider=""LoadDropdownItems""
+                Virtualize=""true""
+                Placeholder=""Select an option""
+                IsResponsiveModeEnabled=""true""
+                ShowSearchBox=""true""
+                SearchBoxPlaceholder=""Search item""
+                Style=""width: 290px; margin: 20px 0 20px 0"">
+</BitDropDown>
+
+<BitDropDown Label=""Multi-select controlled with virtualization""
+                ItemsProvider=""LoadDropdownItems""
+                Virtualize=""true""
+                Placeholder=""Select options""
+                IsMultiSelect=""true""
+                IsResponsiveModeEnabled=""true""
+                ShowSearchBox=""true""
+                SearchBoxPlaceholder=""Search items""
+                Style=""width: 290px; margin: 20px 0 20px 0"">
+</BitDropDown>";
+
+    private readonly string example10CSharpCode = @"private async ValueTask<BitDropDownItemsProviderResult<BitDropDownItem>> LoadDropdownItems(BitDropDownItemsProviderRequest<BitDropDownItem> request)
+{
+    try
+    {
+        var query = new Dictionary<string, object>()
+        {
+            { ""$top"", request.Count == 0 ? 50 : request.Count },
+            { ""$skip"", request.StartIndex }
+        };
+
+        if (string.IsNullOrEmpty(request.Search) is false)
+        {
+            query.Add(""$filter"", $""contains(Name,'{request.Search}')"");
+        }
+
+        var url = NavManager.GetUriWithQueryParameters(""Products/GetProducts"", query);
+
+        var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto);
+
+        var items = data!.Items.Select(i => new BitDropDownItem
+        {
+            Text = i.Name,
+            Value = i.Id.ToString(),
+            Data = i,
+            AriaLabel = i.Name,
+            IsEnabled = true,
+            ItemType = BitDropDownItemType.Normal
+        }).ToList();
+
+        return BitDropDownItemsProviderResult.From(items, data!.TotalCount);
+    }
+    catch
+    {
+        return BitDropDownItemsProviderResult.From(new List<BitDropDownItem>(), 0);
+    }
 }";
 
     #endregion

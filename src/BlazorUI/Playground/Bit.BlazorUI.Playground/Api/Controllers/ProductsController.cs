@@ -12,7 +12,7 @@ public class ProductsController : ControllerBase
     private static readonly Random _random = new Random();
 
     private static readonly ProductDto[] _products = Enumerable.Range(1, 500_000)
-        .Select(i => new ProductDto { Id = i, Name = Guid.NewGuid().ToString("N"), Price = _random.Next(1, 100) })
+        .Select(i => new ProductDto { Id = i, Name = $"Product {i}", Price = _random.Next(1, 100) })
         .ToArray();
 
     [HttpGet]
