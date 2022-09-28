@@ -513,27 +513,25 @@ public partial class BitDropDown
 
     private string GetCssClassForItem(BitDropDownItem item)
     {
-        StringBuilder stringBuilder = new StringBuilder("bit-drp-chb");
-        stringBuilder.Append(' ').Append("bit-drp-chb-").Append(VisualClassRegistrar());
+        StringBuilder stringBuilder = new StringBuilder("drp-chb");
+        stringBuilder.Append(' ').Append("drp-chb");
 
         if (item.IsSelected)
         {
             stringBuilder
-                .Append(' ').Append(RootElementClass).Append("-slc-").Append(VisualClassRegistrar())
-                .Append(' ').Append("bit-drp-chb-checked-").Append(VisualClassRegistrar());
+                .Append(' ').Append("drp-slc")
+                .Append(' ').Append("drp-chb-checked");
         }
 
         if (item.IsEnabled is false && item.IsSelected)
         {
             stringBuilder
-                .Append(' ').Append(RootElementClass).Append("-slc-").Append(VisualClassRegistrar())
-                .Append(' ').Append("bit-drp-chb-checked-disabled-").Append(VisualClassRegistrar());
+                .Append(' ').Append("drp-chb-checked-disabled");
         }
 
         stringBuilder
-            .Append(' ').Append("bit-drp-chb-")
-            .Append(item.IsEnabled ? "enabled" : "disabled")
-            .Append('-').Append(VisualClassRegistrar());
+            .Append(' ').Append("drp-chb-")
+            .Append(item.IsEnabled ? "enabled" : "disabled");
 
         return stringBuilder.ToString();
     }
