@@ -120,7 +120,7 @@ public partial class BitOtpInput
 
     private async Task HandleOnKeyDown(KeyboardEventArgs e, int index)
     {
-        if (IsEnabled is false || e is null) return;
+        if (IsEnabled is false || e.Code is null) return;
 
         await NavigateInput(e.Code, e.Key, index);
 
