@@ -11,6 +11,8 @@
 
 .vertical-otp-box {
     display: flex;
+    width: rem(265px);
+    justify-content: space-between;
 
     .otp-input-box {
         margin-bottom: unset;

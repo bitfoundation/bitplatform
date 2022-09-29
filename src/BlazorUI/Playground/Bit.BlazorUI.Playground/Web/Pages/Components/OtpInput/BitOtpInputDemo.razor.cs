@@ -7,7 +7,16 @@ namespace Bit.BlazorUI.Playground.Web.Pages.Components.OtpInput;
 
 public partial class BitOtpInputDemo
 {
-    private string otpInput;
+    private string basicOtpInput;
+    private string autoFocusOtpInput;
+    private string textOtpInput;
+    private string numberOtpInput;
+    private string passwordOtpInput;
+    private string leftToRightOtpInput;
+    private string rightToLeftOtpInput;
+    private string topToBottomOtpInput;
+    private string BottomToTopOtpInput;
+    private string twoWayBindOtpInput;
     private ValidationOtpInputModel validationOtpInputModel = new();
     public bool formIsValidSubmit;
 
@@ -132,42 +141,58 @@ public partial class BitOtpInputDemo
     };
 
     private static readonly string example1HtmlCode = @"
-<BitLabel>OtpInput</BitLabel>
-<BitOtpInput InputCount=""4"" />
-
-<BitLabel>Disabled OtpInput</BitLabel>
-<BitOtpInput InputCount=""6"" IsEnabled=""false"" />
+<div class=""otp-input-box"">
+    <BitLabel>OtpInput</BitLabel>
+    <BitOtpInput InputCount=""4"" @bind-Value=""basicOtpInput"" />
+    <div>Output: [@basicOtpInput]</div>
+</div>
+<div class=""otp-input-box"">
+    <BitLabel>Disabled OtpInput</BitLabel>
+    <BitOtpInput InputCount=""6"" IsEnabled=""false"" />
+</div>
 ";
     private static readonly string example2HtmlCode = @"
-<BitOtpInput InputCount=""4"" AutoFocus=""true"" />
+<BitOtpInput InputCount=""4"" AutoFocus=""true"" @bind-Value=""autoFocusOtpInput"" />
+<div>Output: [@autoFocusOtpInput]</div>
 ";
     private static readonly string example3HtmlCode = @"
-<BitLabel>Text</BitLabel>
-<BitOtpInput InputCount=""4"" InputType=""BitOtpInputType.Text"" />
-
-<BitLabel>Number</BitLabel>
-<BitOtpInput InputCount=""4"" InputType=""BitOtpInputType.Number"" />
-
-<BitLabel>Password</BitLabel>
-<BitOtpInput InputCount=""4"" InputType=""BitOtpInputType.Password"" />
+<div class=""otp-input-box"">
+    <BitLabel>Text</BitLabel>
+    <BitOtpInput InputCount=""4"" InputType=""BitOtpInputType.Text"" @bind-Value=""textOtpInput"" />
+    <div>Output: [@textOtpInput]</div>
+</div>
+<div class=""otp-input-box"">
+    <BitLabel>Number</BitLabel>
+    <BitOtpInput InputCount=""4"" InputType=""BitOtpInputType.Number"" @bind-Value=""numberOtpInput"" />
+    <div>Output: [@numberOtpInput]</div>
+</div>
+<div class=""otp-input-box"">
+    <BitLabel>Password</BitLabel>
+    <BitOtpInput InputCount=""4"" InputType=""BitOtpInputType.Password"" @bind-Value=""passwordOtpInput"" />
+    <div>Output: [@passwordOtpInput]</div>
+</div>
 ";
     private static readonly string example4HtmlCode = @"
 <BitLabel>Left to right</BitLabel>
-<BitOtpInput InputCount=""4"" Direction=""BitOtpInputDirection.LeftToRight"" />
+<BitOtpInput InputCount=""4"" Direction=""BitOtpInputDirection.LeftToRight"" @bind-Value=""leftToRightOtpInput"" />
 
 <BitLabel>Right to left</BitLabel>
-<BitOtpInput InputCount=""4"" Direction=""BitOtpInputDirection.RightToLeft"" />
+<BitOtpInput InputCount=""4"" Direction=""BitOtpInputDirection.RightToLeft"" @bind-Value=""rightToLeftOtpInput"" />
 
 <BitLabel>Top to bottom</BitLabel>
-<BitOtpInput InputCount=""4"" Direction=""BitOtpInputDirection.TopToBottom"" />
+<BitOtpInput InputCount=""4"" Direction=""BitOtpInputDirection.TopToBottom"" @bind-Value=""topToBottomOtpInput"" />
 
 <BitLabel>Bottom to top</BitLabel>
-<BitOtpInput InputCount=""4"" Direction=""BitOtpInputDirection.BottomToTop"" />
+<BitOtpInput InputCount=""4"" Direction=""BitOtpInputDirection.BottomToTop"" @bind-Value=""BottomToTopOtpInput"" />
 ";
     private static readonly string example5HtmlCode = @"
-<BitOtpInput InputCount=""4"" @bind-Value=""otpInput"" />
-
-<div>Output: @otpInput</div>
+<div class=""otp-input-box"">
+    <BitOtpInput InputCount=""4"" @bind-Value=""twoWayBindOtpInput"" />
+</div>
+<div>
+    <BitLabel>Output:</BitLabel>
+    <BitTextField @bind-Value=""twoWayBindOtpInput"" />
+</div>
 ";
     private static readonly string example6HtmlCode = @"
 @if (formIsValidSubmit is false)
@@ -177,6 +202,7 @@ public partial class BitOtpInputDemo
         <div class=""otp-input-box"">
             <BitOtpInput InputCount=""6"" @bind-Value=""validationOtpInputModel.OtpValue"" />
             <ValidationMessage For=""() => validationOtpInputModel.OtpValue"" />
+            <div>Output: [@validationOtpInputModel.OtpValue]</div>
         </div>
         <BitButton ButtonType=""BitButtonType.Submit"">
             Submit
@@ -190,8 +216,22 @@ else
     </BitMessageBar>
 }
 ";
+    private static readonly string example2CSharpCode = @"
+private string autoFocusOtpInput;
+";
+    private static readonly string example3CSharpCode = @"
+private string textOtpInput;
+private string numberOtpInput;
+private string passwordOtpInput;
+";
+    private static readonly string example4CSharpCode = @"
+private string leftToRightOtpInput;
+private string rightToLeftOtpInput;
+private string topToBottomOtpInput;
+private string BottomToTopOtpInput;
+";
     private static readonly string example5CSharpCode = @"
-private string otpInput;
+private string twoWayBindOtpInput;
 ";
     private static readonly string example6CSharpCode = @"
 public class ValidationOtpInputModel
