@@ -5,7 +5,8 @@
         <div class="page-section-contnet">
             <h1 class="page-main-title">Pricing</h1>
             <div class="page-desc">
-                <span class="bold-txt">Bit platform Community is truly free and open source.</span> When you require more, you may choose a package that fits your needs.
+                <div class="bold-txt">Bit platform is open source and using it is truly free.</div>
+                When you require more, you may choose a package that fits your needs.
             </div>
         </div>
     </section>
@@ -22,29 +23,59 @@
     <section class="page-section plans-section">
         <div class="page-section-contnet">
             <div class="card-list">
-                @foreach (var package in SupportPackageList)
-                {
-                    <div class="plan-card">
-                        <div>
-                            <div class="plan-card-title">
-                                @package.Title
-                            </div>
-                            @if (package.Title is not "Custom")
-                            {
-                                <div class="plan-card-subtitle">
-                                    $@package.Price<span class="grey-txt">/@package.Period</span>
-                                </div>
-                            }
-                            <div class="plan-card-desc">
-                                @package.Description
-                            </div>
-                        </div>
-                        @if (package.Title is not "Free")
-                        {
-                            <BitButton OnClick=@(() => SelectPackage(package))>Get the package</BitButton>
-                        }
+                <div class="plan-card">
+                    <div class="plan-card-title">Free</div>
+                    <div class="plan-card-subtitle">$0</div>
+                    <div class="plan-card-desc">
+                        <div>Access to all components</div>
+                        <div>Unlimited apps</div>
+                        <div>Open-source support</div>
+                        <div>(github issues)</div>
                     </div>
-                }
+                </div>
+
+                <div class="plan-card">
+                    <div class="plan-card-title">Pro</div>
+                    <div class="plan-card-subtitle">
+                        $300<span class="grey-txt">/month</span>
+                    </div>
+                    <div class="plan-card-desc">
+                        <div>[per team]</div>
+                        <div>All of Free package</div>
+                        <div>Pro support</div>
+                        <div>Dedicated support</div>
+                        <div>with 48 hours response time</div>
+                    </div>
+                    <BitButton OnClick=@(() => ShowBuyModal("Pro", "300"))>Buy</BitButton>
+                </div>
+
+                <div class="plan-card">
+                    <div class="plan-card-title">Ultimate</div>
+                    <div class="plan-card-subtitle">
+                        $1200<span class="grey-txt">/month</span>
+                    </div>
+                    <div class="plan-card-desc">
+                        <div>[per team]</div>
+                        <div>All of Pro package</div>
+                        <div>Direct support with core dev team</div>
+                        <div>Priority customer support</div>
+                        <div>with 24 hours response time</div>
+                    </div>
+                    <BitButton OnClick=@(() => ShowBuyModal("Ultimate", "1200"))>Buy</BitButton>
+                </div>
+
+                <div class="plan-card">
+                    <div class="plan-card-title">Custom</div>
+                    <div class="plan-card-subtitle">
+                        ?<span class="grey-txt">/month</span>
+                    </div>
+                    <div class="plan-card-desc">
+                        <div>[needs contact]</div>
+                        <div>Everthing from other packages</div>
+                        <div>Customized needs & agreements</div>
+                    </div>
+                    <BitButton OnClick=@(() => ShowBuyModal("Custom", "?"))>Buy</BitButton>
+                </div>
             </div>
         </div>
     </section>
@@ -53,14 +84,11 @@
         <EditForm Model="BuyPackageModel" OnValidSubmit="SendMessage" class="form">
             <DataAnnotationsValidator />
 
-            <h2 class="form-title">Buy <span class="blue-txt">@SelectedPackage.Title</span> Pacakge</h2>
-            @if (SelectedPackage.Title is not "Custom")
-            {
-                <div class="package-name">
-                    $@SelectedPackage.Price<span class="grey-txt">/@SelectedPackage.Period</span>
-                </div>
-            }
-            <BitIconButton OnClick=@CloseModal IconName="BitIconName.ChromeClose"/>
+            <h2 class="form-title">Buy <span class="blue-txt">@_selectedPackageTitle</span> Pacakge</h2>
+            <div class="package-name">
+                $@_selectedPackagePrice<span class="grey-txt">/month</span>
+            </div>
+            <BitIconButton OnClick=@CloseModal IconName="BitIconName.ChromeClose" />
             <BitTextField @bind-Value="@BuyPackageModel.Email"
                           Type="BitTextFieldType.Email"
                           Label="Email"

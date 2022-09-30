@@ -12,38 +12,8 @@ public partial class PricingPage
 {
     [AutoInject] protected HttpClient HttpClient = default!;
 
-    public List<SupportPackageDto> SupportPackageList = new List<SupportPackageDto>()
-    {
-        new SupportPackageDto()
-        {
-            Title = "Free",
-            Price = 0,
-            Period = "forever",
-            Description = "This is a description"
-        },
-        new SupportPackageDto()
-        {
-            Title = "Professtional",
-            Price = 300,
-            Period = "month",
-            Description = "This is a description"
-        },
-        new SupportPackageDto()
-        {
-            Title = "Ultimate",
-            Price = 1200,
-            Period = "month",
-            Description = "This is a description"
-        },
-        new SupportPackageDto()
-        {
-            Title = "Custom",
-            Period = "",
-            Description = "This is a description"
-        }
-    };
-
-    public SupportPackageDto SelectedPackage { get; set; } = new();
+    private string _selectedPackageTitle = string.Empty;
+    private string _selectedPackagePrice = string.Empty;
 
     public BuyPackageDto BuyPackageModel { get; set; } = new();
 
@@ -53,9 +23,10 @@ public partial class PricingPage
 
     public bool IsSubmitButtonEnabled => IsLoading is false;
 
-    private void SelectPackage(SupportPackageDto package) { 
-        SelectedPackage = package;
-        BuyPackageModel.SalePackageTitle = package.Title;
+    private void ShowBuyModal(string title, string price) {
+        _selectedPackageTitle = title;
+        _selectedPackagePrice = price;
+        BuyPackageModel.SalePackageTitle = title;
         IsBuyModalOpen = true;
     }
 
