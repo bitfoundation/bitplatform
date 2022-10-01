@@ -1,4 +1,6 @@
 ﻿@page "/components/drop-down"
+@inject HttpClient HttpClient
+@inject NavigationManager NavManager
 
 <ComponentDemo ComponentName="DropDown" ComponentDescription="A dropdown is a list in which the selected item is always visible while other items are visible on demand by clicking a dropdown button. Dropdowns are typically used for forms."
                ComponentParameters="componentParameters" EnumParameters="enumParameters">
@@ -230,6 +232,31 @@
 
             <BitDropDown Label="Multi-select controlled with virtualization"
                          Items="LargeListOfCategoriesForMultiSelect"
+                         Virtualize="true"
+                         Placeholder="Select options"
+                         IsMultiSelect="true"
+                         IsResponsiveModeEnabled="true"
+                         ShowSearchBox="true"
+                         SearchBoxPlaceholder="Search items"
+                         Style="width: 290px; margin: 20px 0 20px 0">
+            </BitDropDown>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="DropDown with virtualization (ItemsProvider)" HTMLSourceCode="@example10HTMLCode" CSharpSourceCode="@example10CSharpCode" ExampleId="example9">
+        <ExamplePreview>
+            <BitDropDown Label="Single-select Controlled with virtualization"
+                         ItemsProvider="LoadDropdownItems"
+                         Virtualize="true"
+                         Placeholder="Select an option"
+                         IsResponsiveModeEnabled="true"
+                         ShowSearchBox="true"
+                         SearchBoxPlaceholder="Search item"
+                         Style="width: 290px; margin: 20px 0 20px 0">
+            </BitDropDown>
+
+            <BitDropDown Label="Multi-select controlled with virtualization"
+                         ItemsProvider="LoadDropdownItems"
                          Virtualize="true"
                          Placeholder="Select options"
                          IsMultiSelect="true"
