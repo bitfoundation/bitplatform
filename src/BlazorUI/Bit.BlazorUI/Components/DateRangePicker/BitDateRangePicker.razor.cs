@@ -643,7 +643,7 @@ public partial class BitDateRangePicker
 
         if (week == _selectedDateWeek && day == _selectedDateDayOfWeek)
         {
-            className += className.Length == 0 ? "date-cell--selected" : " date-cell--selected";
+            className += className.Length == 0 ? "date-cell--selected-start" : " date-cell--selected-start";
         }
 
         return className;

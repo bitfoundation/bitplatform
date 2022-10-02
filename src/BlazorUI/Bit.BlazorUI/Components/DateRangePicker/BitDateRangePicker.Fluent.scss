@@ -235,15 +235,8 @@
             }
 
             .date-cell--today {
-                .day-btn {
-                    border-radius: 50%;
-                    font-weight: 600;
-                    color: $White;
-                    background-color: $CyanBlue10;
-                }
-            }
-
-            .date-cell--selected {
+                border-radius: 50%;
+                font-weight: 600;
                 background-color: $Grey30;
 
                 &::after {
@@ -251,6 +244,29 @@
                     position: absolute;
                     inset: 0;
                     border: rem(1px) solid $Grey130;
+                    border-radius: 50%;
+                }
+            }
+
+            .date-cell--selected-start {
+                background-color: $CyanBlue10;
+                color: $White;
+                border-radius: rem(8px) 0 0 rem(8px);
+
+                &:hover {
+                    background-color: $CyanBlue10;
+                    color: $White;
+                }
+            }
+
+            .date-cell--selected-end {
+                background-color: $CyanBlue10;
+                color: $White;
+                border-radius: 0 rem(8px) rem(8px) 0;
+
+                &:hover {
+                    background-color: $CyanBlue10;
+                    color: $White;
                 }
             }
 
