@@ -1,5 +1,5 @@
 ﻿@namespace Bit.BlazorUI
-@inherits BitInputBase<DateTimeOffset?>
+@inherits BitInputBase<BitDateRangePickerType>
 
 <div @ref="RootElement"
      @attributes="HtmlAttributes"
@@ -158,9 +158,9 @@
                                                 <button class="day-btn"
                                                         role="gridcell"
                                                         type="button"
-                                                        tabindex="@(week == _selectedDateWeek && day == _selectedDateDayOfWeek ? 0 : -1)"
+                                                        tabindex="@((week == _selectedStartDateWeek && day == _selectedStartDateDayOfWeek) || (week == _selectedEndDateWeek && day == _selectedEndDateDayOfWeek) ? 0 : -1)"
                                                         aria-label="@GetDateAriaLabel(localWeek, localDay)"
-                                                        aria-selected="@(week == _selectedDateWeek && day == _selectedDateDayOfWeek ? "true" : "false")"
+                                                        aria-selected="@((week == _selectedStartDateWeek && day == _selectedStartDateDayOfWeek) || (week == _selectedEndDateWeek && day == _selectedEndDateDayOfWeek) ? "true" : "false")"
                                                         @onclick="() => SelectDate(localDay, localWeek)"
                                                         aria-readonly="true"
                                                         disabled="@IsWeekDayOutOfMinAndMaxDate(localDay, localWeek)"
