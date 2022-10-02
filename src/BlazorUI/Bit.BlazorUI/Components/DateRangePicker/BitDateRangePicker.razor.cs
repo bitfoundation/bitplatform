@@ -25,7 +25,7 @@ public partial class BitDateRangePicker
     private int? _selectedEndDateWeek;
     private int? _selectedEndDateDayOfWeek;
     private int? _selectedStartDateWeek;
-    private int? _selectedStartDateDayOfWeek; 
+    private int? _selectedStartDateDayOfWeek;
     private int _yearRangeFrom;
     private int _yearRangeTo;
     private string _monthTitle = string.Empty;
@@ -577,13 +577,13 @@ public partial class BitDateRangePicker
             }
         }
 
-        SetSelectedStartDateInMonthCalendar(); 
+        SetSelectedStartDateInMonthCalendar();
         SetSelectedEndDateInMonthCalendar();
     }
 
     private void SetSelectedStartDateInMonthCalendar()
     {
-        if (Culture is null) return; 
+        if (Culture is null) return;
         if (CurrentValue is null) return;
         if (CurrentValue.StartDate.HasValue is false || (_selectedStartDateWeek.HasValue && _selectedStartDateDayOfWeek.HasValue)) return;
 
@@ -679,17 +679,45 @@ public partial class BitDateRangePicker
             className = "date-cell--today";
         }
 
-        if (week == _selectedStartDateWeek && day == _selectedStartDateDayOfWeek)
+        if (IsInCurrentMonth(week, day) && week == _selectedStartDateWeek && day == _selectedStartDateDayOfWeek)
         {
             className += className.Length == 0 ? "date-cell--selected-start" : " date-cell--selected-start";
         }
 
-        if (week == _selectedEndDateWeek && day == _selectedEndDateDayOfWeek)
+        if (IsInCurrentMonth(week, day) && week == _selectedEndDateWeek && day == _selectedEndDateDayOfWeek)
         {
             className += className.Length == 0 ? "date-cell--selected-end" : " date-cell--selected-end";
         }
 
+        if (IsInCurrentMonth(week, day) && IsBetweenTwoSelectedDate(day, week))
+        {
+            className += className.Length == 0 ? "date-cell--between-selected" : " date-cell--between-selected";
+        }
+
         return className;
+    }
+
+    private bool IsBetweenTwoSelectedDate(int day, int week)
+    {
+        if (CurrentValue is null) return false;
+        if (CurrentValue.StartDate.HasValue is false || CurrentValue.EndDate.HasValue is false) return false;
+
+        if (_selectedEndDateWeek is null && week >= _selectedStartDateWeek && day > _selectedStartDateDayOfWeek)
+        {
+            return true;
+        }
+        else if (_selectedStartDateWeek is null && week <= _selectedEndDateWeek && day < _selectedEndDateDayOfWeek)
+        {
+            return true;
+        }
+        else if (_selectedEndDateWeek is not null && _selectedStartDateWeek is not null && (week >= _selectedStartDateWeek && day > _selectedStartDateDayOfWeek) && (week <= _selectedEndDateWeek && day < _selectedEndDateDayOfWeek))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     private bool IsInCurrentMonth(int week, int day)
@@ -896,7 +924,7 @@ public partial class BitDateRangePicker
     private string GetMonthCellClassName(int monthIndex)
     {
         var className = string.Empty;
-        if(HighlightCurrentMonth)
+        if (HighlightCurrentMonth)
         {
             var todayMonth = Culture.DateTimeFormat.Calendar.GetMonth(DateTime.Now);
             className += todayMonth == monthIndex ? "current-month" : null;

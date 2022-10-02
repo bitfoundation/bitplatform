@@ -270,6 +270,15 @@
                 }
             }
 
+            .date-cell--between-selected {
+                background-color: $BlizzardBlue;
+                border-radius: 0;
+
+                &:hover {
+                    background-color: $BlizzardBlue;
+                }
+            }
+
             .week-num-cell {
                 display: flex;
                 justify-content: center;
