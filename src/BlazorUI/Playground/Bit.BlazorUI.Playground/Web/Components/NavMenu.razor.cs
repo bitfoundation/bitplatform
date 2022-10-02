@@ -55,6 +55,7 @@ public partial class NavMenu
             {
                 new BitNavLinkItem { Name= "ColorPicker", Key = "ColorPicker", Url = "/components/color-picker" },
                 new BitNavLinkItem { Name = "DatePicker", Key = "DatePicker", Url="/components/date-picker" },
+                new BitNavLinkItem { Name = "DateRangePicker", Key = "DateRangePicker", Url="/components/date-range-picker" },
                 new BitNavLinkItem { Name = "Chart", Key = "Chart", Url="/components/chart" }
             }
         },

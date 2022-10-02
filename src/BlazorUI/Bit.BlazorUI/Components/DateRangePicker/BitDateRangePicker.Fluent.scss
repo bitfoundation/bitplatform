@@ -1,0 +1,649 @@
+﻿@import "../../Styles/Fluent/colors.fluent.scss";
+@import "../../Styles/functions.scss";
+
+.bit-dtrp {
+    &.bit-dtrp-fluent {
+        position: relative;
+        margin: 0;
+        padding: 0;
+        box-shadow: none;
+        box-sizing: border-box;
+        font-size: rem(18px);
+        font-weight: 400;
+        -webkit-font-smoothing: antialiased;
+        font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+
+        .dtrp-label {
+            display: block;
+            padding: rem(5px) 0;
+            margin: 0;
+            box-shadow: none;
+            box-sizing: border-box;
+            font-size: rem(14px);
+            font-weight: 600;
+            color: $Grey160;
+            overflow-wrap: break-word;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .dtrp-wrapper {
+            position: relative;
+            z-index: 1000;
+
+            .bit-txt-enabled-fluent {
+                div {
+                    div {
+                        cursor: pointer;
+                        color: $Grey130;
+                    }
+                }
+
+                input {
+                    cursor: pointer;
+                }
+            }
+        }
+
+        .dtrp-field-grp {
+            position: relative;
+            display: flex;
+            flex-flow: row nowrap;
+            align-items: center;
+            height: rem(32px);
+            margin: 0;
+            padding: 0 rem(8px);
+            box-shadow: none;
+            border-radius: rem(2px);
+            border: rem(1px) solid $Grey130;
+            box-sizing: border-box;
+            background-color: $White;
+            cursor: pointer;
+
+            input {
+                width: 100%;
+                min-width: 0;
+                height: 100%;
+                border: none;
+                border-radius: 0;
+                outline: 0;
+                padding: 0;
+                margin: 0;
+                box-shadow: none;
+                box-sizing: border-box;
+                background: none transparent;
+                font-size: rem(14px);
+                font-weight: 400;
+                color: $Grey160;
+                text-overflow: ellipsis;
+                font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+                -webkit-font-smoothing: antialiased;
+                cursor: pointer;
+            }
+
+            &.editable-input {
+                input {
+                    cursor: default;
+                }
+            }
+        }
+
+        .dtrp-callout {
+            position: fixed;
+            top: rem(34px);
+            z-index: 1001;
+            display: none;
+            border-radius: rem(2px);
+            box-shadow: rgba(0,0,0,0.13) 0px 3.2px 7.2px 0px, rgba(0,0,0,0.11) 0px 0.6px 1.8px 0px;
+            outline: transparent;
+            box-sizing: border-box;
+            font-size: rem(14px);
+            font-weight: 400;
+            font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .dtrp-callout-main {
+            position: relative;
+            border-radius: rem(2px);
+            outline: none;
+            background-color: $White;
+            overflow: hidden auto;
+        }
+
+        .dtrp-group {
+            display: flex;
+            box-shadow: none;
+            outline: none;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            animation-name: fadeIn, slideDown;
+            animation-duration: 167ms;
+            animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
+            animation-fill-mode: both;
+
+            > div:first-child {
+                position: absolute;
+                width: rem(1px);
+                height: 0;
+                border: 0;
+                margin: 0;
+                padding: 0;
+                overflow: hidden;
+            }
+        }
+
+        .day-picker-wrapper {
+            display: flex;
+            flex-flow: column nowrap;
+            min-width: rem(196px);
+            margin: 0;
+            padding: rem(12px);
+            box-shadow: none;
+            box-sizing: content-box;
+
+            table {
+                position: relative;
+                text-align: center;
+                border-collapse: collapse;
+                border-spacing: 0;
+                table-layout: fixed;
+                font-size: inherit;
+                margin-top: rem(4px);
+                margin-bottom: rem(10px);
+            }
+
+            .week-day-label {
+                position: relative;
+                width: rem(28px);
+                height: rem(28px);
+                margin: 0;
+                padding: 0;
+                border: none;
+                font-weight: 400;
+                font-size: rem(12px);
+                line-height: rem(28px);
+                text-align: center;
+                color: $Grey160;
+                cursor: pointer;
+                animation-name: fadeIn;
+                animation-duration: 0.267s;
+                animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
+                animation-fill-mode: both;
+            }
+
+            tr {
+                width: 100%;
+                display: flex;
+                flex-flow: row nowrap;
+            }
+
+            .date-cell {
+                position: relative;
+                border-radius: rem(2px);
+                border: none;
+                margin: 0;
+                padding: 0;
+                font-size: rem(12px);
+                font-weight: 400;
+                line-height: rem(28px);
+                text-align: center;
+                color: $Grey160;
+                cursor: pointer;
+
+                &:hover {
+                    background-color: $Grey30;
+                }
+            }
+
+            .day-btn {
+                position: relative;
+                display: flex;
+                padding: 0;
+                border-radius: rem(2px);
+                outline: transparent;
+                border: none;
+                box-sizing: border-box;
+                line-height: rem(24px);
+                font-size: rem(12px);
+                font-weight: inherit;
+                color: inherit;
+                background-color: transparent;
+                overflow: visible;
+                cursor: pointer;
+
+                &:disabled {
+                    pointer-events: none;
+                    background-color: transparent;
+                    color: $Grey60;
+                }
+
+                span {
+                    display: inline-flex;
+                    justify-content: center;
+                    align-items: center;
+                    width: rem(28px);
+                    height: rem(28px);
+                }
+            }
+
+            .date-cell--outside-month {
+                .day-btn {
+                    color: $Grey130;
+                    font-weight: 400;
+                }
+            }
+
+            .date-cell--today {
+                .day-btn {
+                    border-radius: 50%;
+                    font-weight: 600;
+                    color: $White;
+                    background-color: $CyanBlue10;
+                }
+            }
+
+            .date-cell--selected {
+                background-color: $Grey30;
+
+                &::after {
+                    content: "";
+                    position: absolute;
+                    inset: 0;
+                    border: rem(1px) solid $Grey130;
+                }
+            }
+
+            .week-num-cell {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                width: rem(28px);
+                height: rem(28px);
+                margin: 0;
+                padding: rem(3px) 0 0 0;
+                border-right: rem(1px) solid $Grey30;
+                box-sizing: border-box;
+                font-weight: 400;
+                font-size: rem(12px);
+                color: $Grey130;
+                background-color: $Grey10;
+            }
+        }
+
+        .picker-header {
+            position: relative;
+            display: inline-flex;
+            width: 100%;
+            height: rem(28px);
+            line-height: rem(44px);
+
+            .header-title {
+                position: relative;
+                display: inline-block;
+                align-items: center;
+                flex-grow: 1;
+                padding: 0 rem(4px) 0 rem(10px);
+                margin: 0;
+                outline: transparent;
+                border: none;
+                border-radius: rem(2px);
+                font-size: rem(14px);
+                font-weight: 600;
+                line-height: rem(28px);
+                white-space: nowrap;
+                text-align: left;
+                text-overflow: ellipsis;
+                color: $Grey160;
+                background-color: transparent;
+                overflow: hidden;
+                cursor: text;
+                animation-name: opacity;
+                animation-duration: 0.267s;
+                animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
+                animation-fill-mode: both;
+            }
+
+            button.header-title {
+                cursor: pointer;
+
+                &:hover {
+                    background-color: $Grey30;
+                }
+            }
+
+            .navigation-btn-container {
+                display: flex;
+                align-items: center;
+                align-self: flex-end;
+            }
+
+            .navigation-btn {
+                position: relative;
+                display: block;
+                width: rem(28px);
+                height: rem(28px);
+                min-width: rem(28px);
+                min-height: rem(28px);
+                padding: 0;
+                border-radius: rem(2px);
+                border: none;
+                outline: transparent;
+                font-size: rem(12px);
+                line-height: rem(28px);
+                text-align: center;
+                color: $Grey160;
+                background-color: transparent;
+                overflow: visible;
+                cursor: pointer;
+
+                &:hover {
+                    background-color: $Grey30;
+                }
+
+                &:disabled {
+                    pointer-events: none;
+                    background-color: transparent;
+
+                    i {
+                        color: $Grey60;
+                    }
+                }
+
+                i {
+                    display: inline-block;
+                    speak: none;
+                    -webkit-font-smoothing: antialiased;
+                }
+            }
+
+            .header-icon-btn {
+                position: relative;
+                display: block;
+                width: rem(28px);
+                height: rem(28px);
+                min-width: rem(28px);
+                min-height: rem(28px);
+                padding: 0;
+                border-radius: rem(2px);
+                border: none;
+                outline: transparent;
+                font-size: rem(12px);
+                line-height: rem(28px);
+                text-align: center;
+                color: $Grey160;
+                background-color: transparent;
+                overflow: visible;
+                cursor: pointer;
+
+                &:hover {
+                    background-color: $Grey30;
+                }
+
+                span {
+                    i {
+                        font-size: rem(12px);
+                    }
+                }
+            }
+        }
+
+        .divider {
+            top: 0;
+            border-right: rem(1px) solid $Grey30;
+        }
+
+        .month-picker-wrapper {
+            display: flex;
+            flex-flow: column nowrap;
+            box-shadow: none;
+            margin: 0;
+            padding: rem(12px);
+            box-sizing: content-box;
+            width: rem(208px);
+            overflow: hidden;
+
+            .grid-container {
+                margin-top: rem(4px);
+                margin-bottom: rem(12px);
+            }
+
+            .btn-row {
+                display: flex;
+                justify-content: space-evenly;
+                margin-bottom: rem(16px);
+
+                button {
+                    position: relative;
+                    width: rem(56px);
+                    max-width: rem(56px);
+                    padding: 0 rem(10px);
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+                    overflow: hidden;
+                    outline: transparent;
+                    border: none;
+                    border-radius: rem(2px);
+                    font-size: rem(12px);
+                    line-height: rem(40px);
+                    color: $Grey160;
+                    background-color: transparent;
+                    cursor: pointer;
+
+                    &:hover {
+                        background-color: $Grey30;
+                    }
+
+                    &:disabled {
+                        pointer-events: none;
+                        background-color: transparent;
+                        color: $Grey60;
+                    }
+                }
+
+                &:last-child {
+                    margin: 0;
+                }
+
+                .current-month {
+                    color: $White;
+                    background-color: $Primary;
+
+                    &:hover {
+                        color: $Grey160;
+                        background-color: $Primary;
+                    }
+                }
+
+                .selected-month {
+                    color: $Grey160;
+                    background-color: $BlizzardBlue;
+                    font-weight: 600;
+
+                    &:hover {
+                        color: $Grey160;
+                        background-color: $BlizzardBlue;
+                    }
+                }
+            }
+        }
+
+        .go-today-btn {
+            position: relative;
+            bottom: rem(-12px);
+            align-self: flex-end;
+            height: rem(30px);
+            padding: 0 rem(4px);
+            margin: rem(3px) rem(4px) 0 0;
+            border: none;
+            outline: transparent;
+            box-sizing: content-box;
+            font-size: rem(12px);
+            line-height: rem(30px);
+            color: $Grey160;
+            background-color: transparent;
+            overflow: visible;
+
+            &:hover {
+                color: $CyanBlue10;
+                background-color: transparent;
+                cursor: pointer;
+            }
+
+            &:disabled {
+                color: $Grey60;
+                pointer-events: none;
+            }
+        }
+
+        .dtrp-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 999;
+            display: none;
+            width: 100%;
+            height: 100%;
+            background-color: transparent;
+        }
+    }
+
+    &.bit-dtrp-underlined-fluent {
+        .dtrp-wrapper {
+            display: flex;
+            width: 100%;
+            border-bottom: rem(1px) solid;
+            border-bottom-color: $Grey130;
+        }
+
+        .dtrp-field-grp {
+            border: none;
+            flex: 1 1 0px;
+            text-align: left;
+        }
+    }
+
+    &.bit-dtrp-disabled-fluent {
+        .dtrp-label {
+            color: $Grey90;
+        }
+
+        .dtrp-field-grp {
+            border: rem(1px) solid $Grey20;
+            background: $White;
+            color: $Grey90;
+            cursor: default;
+            border: none $Grey20;
+            background: none $Grey20;
+
+            input {
+                color: $Grey90;
+                cursor: default;
+            }
+        }
+    }
+
+    &.bit-dtrp-underlined-disabled-fluent {
+        .dtrp-wrapper {
+            display: flex;
+            width: 100%;
+            border-bottom: rem(1px) solid;
+            border-bottom-color: $Grey20;
+        }
+
+        .dtrp-field-grp {
+            border: none;
+            flex: 1 1 0px;
+            text-align: left;
+        }
+    }
+
+    &.bit-dtrp-focused-fluent {
+        .dtrp-field-grp::after {
+            position: absolute;
+            inset: rem(-1px);
+            border: rem(2px) solid $Primary;
+            border-radius: rem(2px);
+            content: "";
+            pointer-events: none;
+        }
+    }
+
+    &.bit-dtrp-underlined-focused-fluent {
+        .dtrp-wrapper::after {
+            position: absolute;
+            border-bottom: rem(2px) solid $Primary;
+            inset: rem(32px) 0;
+            content: "";
+            pointer-events: none;
+        }
+    }
+
+    &.bit-dtrp-no-border-fluent {
+        .dtrp-field-grp {
+            border: none;
+        }
+    }
+
+    &.bit-dtrp-rtl-fluent {
+        .dtrp-group {
+            direction: rtl;
+        }
+
+        .week-num-cell {
+            border-left: rem(1px) solid $Grey30;
+            border-right: none;
+        }
+
+        .header-title {
+            padding: 0 rem(10px) 0 rem(4px);
+            text-align: right;
+        }
+    }
+
+    &.bit-dtrp-invalid-fluent {
+        .dtrp-field-grp {
+            border-color: $Red20;
+        }
+    }
+}
+
+.bit-txt-focused-fluent {
+    > div {
+        > div {
+            border-color: $Primary;
+        }
+    }
+}
+
+@keyframes opacity {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+        -webkit-animation-timing-function: cubic-bezier(0.1,0.25,0.75,0.9);
+        animation-timing-function: cubic-bezier(0.1,0.25,0.75,0.9);
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes slideDown {
+    0% {
+        transform: translate3d(0,-10px,0);
+    }
+
+    100% {
+        transform: translate3d(0,0,0);
+    }
+}
