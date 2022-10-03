@@ -55,6 +55,12 @@ public partial class BitOtpInputDemo
         },
         new ComponentParameter()
         {
+            Name = "OnInput",
+            Type = "EventCallback<ChangeEventArgs>",
+            Description = "Callback for when OtpInput value changed.",
+        },
+        new ComponentParameter()
+        {
             Name = "OnKeyDown",
             Type = "EventCallback<KeyboardEventArgs>",
             Description = "Callback for when a keyboard key is pressed.",

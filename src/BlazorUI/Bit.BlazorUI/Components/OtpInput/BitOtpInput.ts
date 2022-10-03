@@ -1,5 +1,9 @@
 ﻿class BitOtpInput {
-    static setupOtpInputPaste(dotnetReference: DotNetObject, otpInput: HTMLElement) {
+    static setupOtpInput(dotnetReference: DotNetObject, otpInput: HTMLInputElement) {
+
+        otpInput.addEventListener('focusin', async e => {
+            otpInput.select();
+        });
 
         otpInput.addEventListener('paste', async e => {
             e.preventDefault();

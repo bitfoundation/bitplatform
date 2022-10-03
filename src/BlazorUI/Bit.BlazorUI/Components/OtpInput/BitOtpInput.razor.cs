@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection.Emit;
 
@@ -7,8 +8,9 @@ namespace Bit.BlazorUI;
 public partial class BitOtpInput
 {
     private ElementReference[] _inputRef = default!;
-    private string[] _inputValue = default!;
+    private string?[] _inputValue = default!;
     private string _inputType = default!;
+    private string _inputMode = default!;
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
@@ -31,6 +33,11 @@ public partial class BitOtpInput
     /// Count of input in Otp.
     /// </summary>
     [Parameter] public int InputCount { get; set; }
+
+    /// <summary>
+    /// Callback for when OtpInput value changed.
+    /// </summary>
+    [Parameter] public EventCallback<ChangeEventArgs> OnInput { get; set; }
 
     /// <summary>
     /// Callback for when a keyboard key is pressed.
@@ -68,6 +75,14 @@ public partial class BitOtpInput
             _ => string.Empty
         };
 
+        _inputMode = InputType switch
+        {
+            BitOtpInputType.Text => "text",
+            BitOtpInputType.Number => "numeric",
+            BitOtpInputType.Password => "text",
+            _ => string.Empty
+        };
+
         await base.OnInitializedAsync();
     }
 
@@ -85,7 +100,7 @@ public partial class BitOtpInput
                 foreach (var inputRef in _inputRef)
                 {
                     var obj = DotNetObjectReference.Create(this);
-                    await _js.SetupOtpInputPaste(obj, inputRef);
+                    await _js.SetupOtpInput(obj, inputRef);
                 }
             }
         }
@@ -97,7 +112,7 @@ public partial class BitOtpInput
     {
         if (CurrentValue != null && CurrentValue != string.Join("", _inputValue))
         {
-            SyncCurrentValueWithArray();
+            await SyncCurrentValueWithArray(CurrentValue);
         }
 
         await base.OnParametersSetAsync();
@@ -118,6 +133,30 @@ public partial class BitOtpInput
         });
     }
 
+    private async Task HandleOnInput(ChangeEventArgs e, int index)
+    {
+        if (IsEnabled is false) return;
+
+        _inputValue[index] = string.Empty;
+        await Task.Delay(TimeSpan.FromMilliseconds(1)); // waiting for input default behavior before setting a new value.
+
+        var value = e.Value!.ToString()!;
+        if (value.HasValue())
+        {
+            int nextIndex = index + 1 >= InputCount ? index : index + 1;
+            await _inputRef[nextIndex].FocusAsync();
+            _inputValue[index] = value;
+        }
+        else
+        {
+            _inputValue[index] = null;
+        }
+
+        await SyncCurrentValueWithArray(string.Join("", _inputValue));
+
+        await OnInput.InvokeAsync(e);
+    }
+
     private async Task HandleOnKeyDown(KeyboardEventArgs e, int index)
     {
         if (IsEnabled is false || e.Code is null) return;
@@ -132,33 +171,9 @@ public partial class BitOtpInput
         int nextIndex = index + 1 >= InputCount ? index : index + 1;
         int previousIndex = index - 1 < 0 ? index : index - 1;
 
-        if ((code.Contains("Digit") || code.Contains("Numpad") || code.Contains("Key")) && (InputType is BitOtpInputType.Text || InputType is BitOtpInputType.Password))
+        if (code is "Backspace" || key is "Backspace")
         {
-            _inputValue[index] = string.Empty;
-            await Task.Delay(TimeSpan.FromMilliseconds(1));
-            _inputValue[index] = key;
-            CurrentValue = string.Join("", _inputValue);
-            await _inputRef[nextIndex].FocusAsync();
-        }
-        else if ((code.Contains("Digit") || code.Contains("Numpad")) && InputType is BitOtpInputType.Number)
-        {
-            _inputValue[index] = string.Empty;
-            await Task.Delay(TimeSpan.FromMilliseconds(1));
-            _inputValue[index] = key;
-            CurrentValue = string.Join("", _inputValue);
-            await _inputRef[nextIndex].FocusAsync();
-        }
-        else if (code is "Backspace")
-        {
-            _inputValue[index] = " ";
-            CurrentValue = string.Join("", _inputValue);
             await _inputRef[previousIndex].FocusAsync();
-        }
-        else if (code is "Delete")
-        {
-            _inputValue[index] = " ";
-            CurrentValue = string.Join("", _inputValue);
-            await _inputRef[nextIndex].FocusAsync();
         }
         else if (code is "ArrowLeft")
         {
@@ -228,18 +243,19 @@ public partial class BitOtpInput
     [JSInvokable]
     public async Task SetPastedData(string pastedValue)
     {
-        SyncCurrentValueWithArray(pastedValue);
+        if (pastedValue.HasNoValue()) return;
+
+        if (InputType is BitOtpInputType.Number && int.TryParse(pastedValue, out _) is false) return;
+
+        await SyncCurrentValueWithArray(pastedValue);
     }
 
-    private void SyncCurrentValueWithArray(string? pastedValue = null)
+    private async Task SyncCurrentValueWithArray(string currentValue)
     {
         if (IsEnabled is false) return;
 
-        var value = pastedValue is null ? CurrentValue : pastedValue;
+        var splitedCurrentValue = currentValue.Replace(" ", "", StringComparison.Ordinal).ToCharArray();
 
-        if (InputType is BitOtpInputType.Number && int.TryParse(value, out _) is false) return;
-
-        var splitedCurrentValue = value is null ? CurrentValue?.ToCharArray() : value.ToCharArray();
         for (int i = 0; i < InputCount; i++)
         {
             if (splitedCurrentValue?.Length > i)
@@ -248,7 +264,7 @@ public partial class BitOtpInput
             }
             else
             {
-                _inputValue[i] = string.Empty;
+                _inputValue[i] = null;
             }
         }
 
