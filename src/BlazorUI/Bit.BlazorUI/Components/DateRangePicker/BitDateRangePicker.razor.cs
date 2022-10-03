@@ -404,9 +404,6 @@ public partial class BitDateRangePicker
             _currentYear--;
         }
 
-        var obj = DotNetObjectReference.Create(this);
-        await JSRuntime.InvokeVoidAsync("BitDateRangePicker.toggleDateRangePickerCallout", obj, UniqueId, CalloutId, OverlayId, IsOpen);
-        IsOpen = false;
         _displayYear = _currentYear;
         _currentMonth = selectedMonth;
 
@@ -418,6 +415,9 @@ public partial class BitDateRangePicker
         else
         {
             CurrentValue.EndDate = selectedDate;
+            var obj = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("BitDateRangePicker.toggleDateRangePickerCallout", obj, UniqueId, CalloutId, OverlayId, IsOpen);
+            IsOpen = false;
         }
 
         if (CurrentValue.StartDate is not null && CurrentValue.EndDate is not null && CurrentValue.StartDate > CurrentValue.EndDate)
