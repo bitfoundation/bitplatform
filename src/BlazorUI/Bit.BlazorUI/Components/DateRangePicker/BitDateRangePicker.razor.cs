@@ -162,7 +162,7 @@ public partial class BitDateRangePicker
     /// <summary>
     /// Callback for when the date changes.
     /// </summary>
-    [Parameter] public EventCallback<DateTimeOffset?> OnSelectDate { get; set; }
+    [Parameter] public EventCallback<BitDateRangePickerType> OnSelectDate { get; set; }
 
     /// <summary>
     /// Aria label for date picker popup for screen reader users.
@@ -368,42 +368,67 @@ public partial class BitDateRangePicker
 
     private async Task HandleChange(ChangeEventArgs e)
     {
-        //if (IsEnabled is false) return;
-        //if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
-        //if (AllowTextInput is false) return;
+        if (IsEnabled is false) return;
+        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+        if (AllowTextInput is false) return;
 
-        //CurrentValueAsString = e.Value?.ToString();
-        //await OnSelectDate.InvokeAsync(CurrentValue);
+        CurrentValueAsString = e.Value?.ToString();
+        await OnSelectDate.InvokeAsync(CurrentValue);
     }
 
     private async Task SelectDate(int dayIndex, int weekIndex)
     {
-        //if (IsEnabled is false) return;
+        if (IsEnabled is false) return;
 
-        //if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
-        //if (IsWeekDayOutOfMinAndMaxDate(dayIndex, weekIndex)) return;
+        if (CurrentValue is null) return;
 
-        //var currentDay = _currentMonthCalendar[weekIndex, dayIndex];
-        //int selectedMonth = GetCorrectTargetMonth(weekIndex, dayIndex);
-        //if (selectedMonth < _currentMonth && _currentMonth == 12 && IsInCurrentMonth(weekIndex, dayIndex) is false)
-        //{
-        //    _currentYear++;
-        //}
+        if (IsWeekDayOutOfMinAndMaxDate(dayIndex, weekIndex)) return;
 
-        //if (selectedMonth > _currentMonth && _currentMonth == 1 && IsInCurrentMonth(weekIndex, dayIndex) is false)
-        //{
-        //    _currentYear--;
-        //}
+        if (CurrentValue.StartDate is not null && CurrentValue.EndDate is not null)
+        {
+            CurrentValue.StartDate = null;
+            CurrentValue.EndDate = null;
+        }
 
-        //var obj = DotNetObjectReference.Create(this);
-        //await JSRuntime.InvokeVoidAsync("BitDateRangePicker.toggleDateRangePickerCallout", obj, UniqueId, CalloutId, OverlayId, IsOpen);
-        //IsOpen = false;
-        //_displayYear = _currentYear;
-        //_currentMonth = selectedMonth;
-        //CurrentValue = new DateTimeOffset(Culture.DateTimeFormat.Calendar.ToDateTime(_currentYear, _currentMonth, currentDay, 0, 0, 0, 0), DateTimeOffset.Now.Offset);
-        //CreateMonthCalendar(_currentYear, _currentMonth);
-        //await OnSelectDate.InvokeAsync(CurrentValue);
+        var currentDay = _currentMonthCalendar[weekIndex, dayIndex];
+        int selectedMonth = GetCorrectTargetMonth(weekIndex, dayIndex);
+        if (selectedMonth < _currentMonth && _currentMonth == 12 && IsInCurrentMonth(weekIndex, dayIndex) is false)
+        {
+            _currentYear++;
+        }
+
+        if (selectedMonth > _currentMonth && _currentMonth == 1 && IsInCurrentMonth(weekIndex, dayIndex) is false)
+        {
+            _currentYear--;
+        }
+
+        var obj = DotNetObjectReference.Create(this);
+        await JSRuntime.InvokeVoidAsync("BitDateRangePicker.toggleDateRangePickerCallout", obj, UniqueId, CalloutId, OverlayId, IsOpen);
+        IsOpen = false;
+        _displayYear = _currentYear;
+        _currentMonth = selectedMonth;
+
+        var selectedDate = new DateTimeOffset(Culture.DateTimeFormat.Calendar.ToDateTime(_currentYear, _currentMonth, currentDay, 0, 0, 0, 0), DateTimeOffset.Now.Offset);
+        if (CurrentValue.StartDate is null)
+        {
+            CurrentValue.StartDate = selectedDate;
+        }
+        else
+        {
+            CurrentValue.EndDate = selectedDate;
+        }
+
+        if (CurrentValue.StartDate is not null && CurrentValue.EndDate is not null && CurrentValue.StartDate > CurrentValue.EndDate)
+        {
+            var tempDate = CurrentValue.StartDate;
+            CurrentValue.StartDate = CurrentValue.EndDate;
+            CurrentValue.EndDate = tempDate;
+        }
+
+        CreateMonthCalendar(_currentYear, _currentMonth);
+        await OnSelectDate.InvokeAsync(CurrentValue);
     }
 
     private void HandleMonthChange(ChangeDirection direction)
@@ -702,15 +727,17 @@ public partial class BitDateRangePicker
         if (CurrentValue is null) return false;
         if (CurrentValue.StartDate.HasValue is false || CurrentValue.EndDate.HasValue is false) return false;
 
-        if (_selectedEndDateWeek is null && week >= _selectedStartDateWeek && day > _selectedStartDateDayOfWeek)
+        if (_selectedEndDateWeek is null && ((week == _selectedStartDateWeek && day > _selectedStartDateDayOfWeek) || week > _selectedStartDateWeek))
         {
             return true;
         }
-        else if (_selectedStartDateWeek is null && week <= _selectedEndDateWeek && day < _selectedEndDateDayOfWeek)
+        else if (_selectedStartDateWeek is null && ((week == _selectedEndDateWeek && day < _selectedEndDateDayOfWeek) || week < _selectedEndDateWeek))
         {
             return true;
         }
-        else if (_selectedEndDateWeek is not null && _selectedStartDateWeek is not null && (week >= _selectedStartDateWeek && day > _selectedStartDateDayOfWeek) && (week <= _selectedEndDateWeek && day < _selectedEndDateDayOfWeek))
+        else if (_selectedEndDateWeek is not null && _selectedStartDateWeek is not null &&
+            ((week == _selectedStartDateWeek && day > _selectedStartDateDayOfWeek) || week > _selectedStartDateWeek) &&
+            ((week == _selectedEndDateWeek && day < _selectedEndDateDayOfWeek) || week < _selectedEndDateWeek))
         {
             return true;
         }
