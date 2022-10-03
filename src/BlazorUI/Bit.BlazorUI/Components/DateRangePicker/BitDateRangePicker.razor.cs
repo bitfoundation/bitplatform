@@ -937,15 +937,17 @@ public partial class BitDateRangePicker
 
     private void CheckCurrentCalendarMatchesCurrentValue()
     {
-        //var currentValue = CurrentValue.GetValueOrDefault();
-        //var currentValueYear = currentValue.Year;
-        //var currentValueMonth = currentValue.Month;
-        //if (currentValueYear != _currentYear || currentValueMonth != _currentMonth)
-        //{
-        //    _currentYear = currentValueYear;
-        //    _currentMonth = currentValueMonth;
-        //    CreateMonthCalendar(_currentYear, _currentMonth);
-        //}
+        if (CurrentValue is null) return;
+
+        var currentValue = CurrentValue.StartDate.GetValueOrDefault();
+        var currentValueYear = currentValue.Year;
+        var currentValueMonth = currentValue.Month;
+        if (currentValueYear != _currentYear || currentValueMonth != _currentMonth)
+        {
+            _currentYear = currentValueYear;
+            _currentMonth = currentValueMonth;
+            CreateMonthCalendar(_currentYear, _currentMonth);
+        }
     }
 
     private string GetMonthCellClassName(int monthIndex)
