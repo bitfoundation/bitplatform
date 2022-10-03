@@ -299,16 +299,23 @@ public partial class BitDateRangePicker
 
     protected override string? FormatValueAsString(BitDateRangePickerType? value)
     {
-        //if (value.HasValue)
-        //{
-        //    return value.Value.ToString(FormatDate ?? Culture.DateTimeFormat.ShortDatePattern, Culture);
-        //}
-        //else
-        //{
-        //    return null;
-        //}
+        if (value is null)
+        {
+            return null;
+        }
 
-        return null;
+        if (value.StartDate is null && value.EndDate is null)
+        {
+            return null;
+        }
+
+        var valueStr = "Start: " + value.StartDate.GetValueOrDefault().ToString(FormatDate ?? Culture.DateTimeFormat.ShortDatePattern, Culture);
+        if (value.EndDate is not null)
+        {
+            valueStr += " - End: " + value.EndDate.GetValueOrDefault().ToString(FormatDate ?? Culture.DateTimeFormat.ShortDatePattern, Culture);
+        }
+
+        return valueStr;
     }
 
     private async Task HandleClick(MouseEventArgs eventArgs)
