@@ -1,73 +1,73 @@
 ﻿@page "/components/date-range-picker"
 
-<ComponentDemo ComponentName="DateRangePicker" ComponentDescription="Picking a date can be tough without context. A BitDateRangePicker offers a drop-down control that’s optimized for picking a single date from a calendar view where contextual information like the day of the week or fullness of the calendar is important.
+<ComponentDemo ComponentName="DateRangePicker" ComponentDescription="Picking a date range can be tough without context. A BitDateRangePicker offers a drop-down control that’s optimized for picking two dates from a calendar view where contextual information like the day of the week or fullness of the calendar is important.
                                                         You can modify the calendar to provide additional context or to limit available dates."
-               ComponentParameters="componentParameters" EnumParameters="enumParameters">
+               ComponentParameters="componentParameters" ComponentSubParameters="componentSubParameters" EnumParameters="enumParameters">
     <ComponentExampleBox Title="Default BitDateRangePicker" HTMLSourceCode="@example1HTMLCode" ExampleId="example1">
         <ExamplePreview>
             <BitDateRangePicker Style="max-width: 300px"
-                           AriaLabel="Select a date"
-                           Placeholder="Select a date..." />
+                                AriaLabel="Select dates"
+                                Placeholder="Select dates..." />
         </ExamplePreview>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="Disabled BitDateRangePicker" HTMLSourceCode="@example2HTMLCode" ExampleId="example2">
         <ExamplePreview>
             <BitDateRangePicker IsEnabled=false
-                           Style="max-width: 300px"
-                           AriaLabel="Select a date"
-                           Placeholder="Select a date..." />
+                                Style="max-width: 300px"
+                                AriaLabel="Select dates"
+                                Placeholder="Select dates..." />
             <BitDateRangePicker IsEnabled=false
-                           Style="max-width: 300px"
-                           Label="Disabled (with label)"
-                           AriaLabel="Select a date"
-                           Placeholder="Select a date..." />
+                                Style="max-width: 300px"
+                                Label="Disabled (with label)"
+                                AriaLabel="Select dates"
+                                Placeholder="Select dates..." />
         </ExamplePreview>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="BitDateRangePicker with week numbers" HTMLSourceCode="@example3HTMLCode" ExampleId="example3">
         <ExamplePreview>
             <BitDateRangePicker Style="max-width: 300px"
-                           ShowWeekNumbers=true
-                           ShowMonthPickerAsOverlay=true
-                           AriaLabel="Select a date"
-                           Placeholder="Select a date..." />
+                                ShowWeekNumbers=true
+                                ShowMonthPickerAsOverlay=true
+                                AriaLabel="Select dates"
+                                Placeholder="Select dates..." />
         </ExamplePreview>
     </ComponentExampleBox>
 
-  @*  <ComponentExampleBox Title="Required BitDateRangePicker" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
-        <ExamplePreview>
-            <div class="example-desc">Validation will happen when the <code>Submit</code> button is clicked.</div>
-            @if (string.IsNullOrEmpty(SuccessMessage))
-            {
-                <EditForm Model="formValidationDateRangePickerModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
-                    <DataAnnotationsValidator />
+    @*  <ComponentExampleBox Title="Required BitDateRangePicker" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
+    <ExamplePreview>
+    <div class="example-desc">Validation will happen when the <code>Submit</code> button is clicked.</div>
+    @if (string.IsNullOrEmpty(SuccessMessage))
+    {
+    <EditForm Model="formValidationDateRangePickerModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
+    <DataAnnotationsValidator />
 
-                    <div class="validation-summary">
-                        <ValidationSummary />
-                    </div>
-                    <div>
-                        <BitDateRangePicker Style="max-width: 300px"
-                                   @bind-Value="formValidationDateRangePickerModel.Date"
-                                   AriaLabel="Select a date"
-                                   Placeholder="Select a date..."
-                                   Label="Date required (with label)" />
+    <div class="validation-summary">
+    <ValidationSummary />
+    </div>
+    <div>
+    <BitDateRangePicker Style="max-width: 300px"
+    @bind-Value="formValidationDateRangePickerModel.Date"
+    AriaLabel="Select a date"
+    Placeholder="Select a date..."
+    Label="Date required (with label)" />
 
-                        <ValidationMessage For="@(() => formValidationDateRangePickerModel.Date)" />
-                    </div>
-                    <br />
-                    <BitButton ButtonType="BitButtonType.Submit">
-                        Submit
-                    </BitButton>
-                </EditForm>
-            }
-            else
-            {
-                <BitMessageBar MessageBarType="BitMessageBarType.Success" IsMultiline="false">
-                    @SuccessMessage
-                </BitMessageBar>
-            }
-        </ExamplePreview>
+    <ValidationMessage For="@(() => formValidationDateRangePickerModel.Date)" />
+    </div>
+    <br />
+    <BitButton ButtonType="BitButtonType.Submit">
+    Submit
+    </BitButton>
+    </EditForm>
+    }
+    else
+    {
+    <BitMessageBar MessageBarType="BitMessageBarType.Success" IsMultiline="false">
+    @SuccessMessage
+    </BitMessageBar>
+    }
+    </ExamplePreview>
     </ComponentExampleBox>*@
 
     <ComponentExampleBox Title="BitDateRangePicker allowing text input" HTMLSourceCode="@example5HTMLCode" ExampleId="example5">
@@ -77,9 +77,9 @@
                 allow text input. Please note to use this feature, you must enter the date in the exact <code>FormatDate</code> provided for the BitDateRangePicker.
             </div>
             <BitDateRangePicker Style="max-width: 300px"
-                           AllowTextInput=true
-                           Label="Start date"
-                           AriaLabel="Select a date" />
+                                AllowTextInput=true
+                                Label="Date range"
+                                AriaLabel="Select dates" />
         </ExamplePreview>
     </ComponentExampleBox>
 
@@ -90,9 +90,9 @@
                 In this example, we are formatting and parsing dates as dd/MM/yy.
             </div>
             <BitDateRangePicker Style="max-width: 300px"
-                           AriaLabel="Select a date. Date format is month slash month slash year."
-                           Placeholder="Select a date..."
-                           FormatDate="dd/MM/yy" />
+                                AriaLabel="Select dates. Date format is month slash month slash year."
+                                Placeholder="Select dates..."
+                                FormatDate="dd/MM/yy" />
         </ExamplePreview>
     </ComponentExampleBox>
 
@@ -103,18 +103,18 @@
                 In this example, the allowed dates are between one year after now and five years before now.
             </div>
             <BitDateRangePicker Style="max-width: 300px"
-                           AriaLabel="Select a date"
-                           Placeholder="Select a date..."
-                           MaxDate="DateTimeOffset.Now.AddYears(1)"
-                           MinDate="DateTimeOffset.Now.AddYears(-5)" />
+                                AriaLabel="Select dates"
+                                Placeholder="Select dates..."
+                                MaxDate="DateTimeOffset.Now.AddYears(1)"
+                                MinDate="DateTimeOffset.Now.AddYears(-5)" />
         </ExamplePreview>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="BitDateRangePicker with a custom label" HTMLSourceCode="@example8HTMLCode" ExampleId="example8">
         <ExamplePreview>
             <BitDateRangePicker Style="max-width: 300px"
-                           AriaLabel="Select a date"
-                           Placeholder="Select a date...">
+                                AriaLabel="Select dates"
+                                Placeholder="Select dates...">
                 <LabelFragment>
                     Custom label <BitIconButton IconName="BitIconName.Calendar"></BitIconButton>
                 </LabelFragment>
@@ -122,15 +122,15 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-@*    <ComponentExampleBox Title="BitDateRangePicker with value two-way binding" HTMLSourceCode="@example9HTMLCode" CSharpSourceCode="@example9CSharpCode" ExampleId="example9">
-        <ExamplePreview>
-            <BitDateRangePicker Style="max-width: 300px"
-                           @bind-Value="@selectedDate"
-                           AriaLabel="Select a date"
-                           Placeholder="Select a date..." />
-            <BitLabel>Selected date: @selectedDate.ToString()</BitLabel>
-        </ExamplePreview>
-    </ComponentExampleBox>*@
+@*    <componentexamplebox title="bitdaterangepicker with value two-way binding" htmlsourcecode="@example9htmlcode" csharpsourcecode="@example9csharpcode" exampleid="example9">
+        <examplepreview>
+            <bitdaterangepicker style="max-width: 300px"
+                                @bind-value="@selectedDateRange"
+                                arialabel="select a date"
+                                placeholder="select a date..." />
+            <bitlabel>selected date: @selectedDateRange.StartDate.tostring()</bitlabel>
+        </examplepreview>
+    </componentexamplebox>*@
 
     <ComponentExampleBox Title="Jalali BitDateRangePicker" HTMLSourceCode="@example10HTMLCode" ExampleId="example10">
         <ExamplePreview>
@@ -152,8 +152,8 @@
                 In this sample, you can see how to implement a custom template for day cells of the BitDateRangePicker which have some specific style class for the weekend.
             </div>
             <BitDateRangePicker Style="max-width: 300px"
-                           AriaLabel="Select a date"
-                           Placeholder="Select a date...">
+                                AriaLabel="Select dates"
+                                Placeholder="Select dates...">
                 <DayCellTemplate>
                     <span class="@(context.DayOfWeek == DayOfWeek.Sunday ? "weekend-cell" : null)">
                         @context.Day
@@ -170,8 +170,8 @@
             </div>
             <div class="date-range-picker-wrapper">
                 <BitDateRangePicker Style="max-width: 300px"
-                               AriaLabel="Select a date"
-                               Placeholder="Select a date...">
+                                    AriaLabel="Select dates"
+                                    Placeholder="Select dates...">
                     <DayCellTemplate>
                         <span class="custom-day-cell">
                             @context.Day

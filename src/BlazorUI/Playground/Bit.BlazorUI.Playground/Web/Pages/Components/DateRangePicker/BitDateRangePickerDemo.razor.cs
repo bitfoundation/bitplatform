@@ -9,23 +9,12 @@ namespace Bit.BlazorUI.Playground.Web.Pages.Components.DateRangePicker;
 
 public partial class BitDateRangePickerDemo
 {
-    private DateTimeOffset? selectedDate = new DateTimeOffset(new DateTime(2020, 1, 17), DateTimeOffset.Now.Offset);
-    private FormValidationDateRangePickerModel formValidationDateRangePickerModel = new();
-    private string SuccessMessage = string.Empty;
+    private BitDateRangePickerType selectedDateRange = new()
+    {
+        StartDate = new DateTimeOffset(new DateTime(2020, 1, 17), DateTimeOffset.Now.Offset),
+        EndDate = new DateTimeOffset(new DateTime(2020, 1, 25), DateTimeOffset.Now.Offset)
+    };
     private CultureInfo Culture = CultureInfo.CurrentUICulture;
-
-    private async Task HandleValidSubmit()
-    {
-        SuccessMessage = "Form Submitted Successfully!";
-        await Task.Delay(3000);
-        SuccessMessage = string.Empty;
-        StateHasChanged();
-    }
-
-    private void HandleInvalidSubmit()
-    {
-        SuccessMessage = string.Empty;
-    }
 
     private readonly List<ComponentParameter> componentParameters = new()
     {
@@ -172,7 +161,9 @@ public partial class BitDateRangePickerDemo
         new ComponentParameter()
         {
             Name = "OnSelectDate",
-            Type = "EventCallback<DateTimeOffset?>",
+            Type = "EventCallback<BitDateRangePickerType?>",
+            LinkType = LinkType.Link,
+            Href = "#dateRangePickerType",
             DefaultValue = "",
             Description = "Callback for when the on selected date changed.",
         },
@@ -228,14 +219,18 @@ public partial class BitDateRangePickerDemo
         new ComponentParameter()
         {
             Name = "Value",
-            Type = "DateTimeOffset",
+            Type = "BitDateRangePickerType",
+            LinkType = LinkType.Link,
+            Href = "#dateRangePickerType",
             DefaultValue = "",
             Description = "The value of DateRangePicker.",
         },
         new ComponentParameter()
         {
             Name = "ValueChanged",
-            Type = "EventCallback<DateTimeOffset?>",
+            Type = "EventCallback<BitDateRangePickerType?>",
+            LinkType = LinkType.Link,
+            Href = "#dateRangePickerType",
             DefaultValue = "",
             Description = "Callback for when the on date value changed.",
         },
@@ -245,6 +240,32 @@ public partial class BitDateRangePickerDemo
             Type = "RenderFragment<int>?",
             DefaultValue = "",
             Description = "Used to customize how content inside the year cell is rendered."
+        }
+    };
+
+    private readonly List<ComponentSubParameter> componentSubParameters = new()
+    {
+        new ComponentSubParameter()
+        {
+            Id = "dateRangePickerType",
+            Title = "BitDateRangePickerType",
+            Parameters = new List<ComponentParameter>()
+            {
+               new ComponentParameter()
+               {
+                   Name = "StartDate",
+                   Type = "DateTimeOffset?",
+                   DefaultValue = "",
+                   Description = "Indicates the beginning of the date range.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "EndDate",
+                   Type = "DateTimeOffset?",
+                   DefaultValue = "",
+                   Description = "Indicates the end of the date range.",
+               }
+            }
         }
     };
 
@@ -281,26 +302,26 @@ public partial class BitDateRangePickerDemo
 
     private readonly string example1HTMLCode = @"
 <BitDateRangePicker Style=""max-width: 300px""
-               AriaLabel=""Select a date""
-               Placeholder=""Select a date..."" />";
+               AriaLabel=""Select dates""
+               Placeholder=""Select dates..."" />";
 
     private readonly string example2HTMLCode = @"
 <BitDateRangePicker IsEnabled=false
                Style=""max-width: 300px""
-               AriaLabel=""Select a date""
-               Placeholder=""Select a date..."" />
+               AriaLabel=""Select dates""
+               Placeholder=""Select dates..."" />
 <BitDateRangePicker IsEnabled=false
                Style=""max-width: 300px""
                Label=""Disabled (with label)""
-               AriaLabel=""Select a date""
-               Placeholder=""Select a date..."" />";
+               AriaLabel=""Select dates""
+               Placeholder=""Select dates..."" />";
 
     private readonly string example3HTMLCode = @"
 <BitDateRangePicker Style=""max-width: 300px""
                ShowWeekNumbers=true
                ShowMonthPickerAsOverlay=true
-               AriaLabel=""Select a date""
-               Placeholder=""Select a date..."" />";
+               AriaLabel=""Select dates""
+               Placeholder=""Select dates..."" />";
 
     private readonly string example4HTMLCode = @"
 @if (string.IsNullOrEmpty(SuccessMessage))
@@ -314,8 +335,8 @@ public partial class BitDateRangePickerDemo
         <div>
             <BitDateRangePicker Style=""max-width: 300px"" 
                            @bind-Value=""formValidationDateRangePickerModel.Date"" 
-                           AriaLabel=""Select a date""
-                           Placeholder=""Select a date...""
+                           AriaLabel=""Select dates""
+                           Placeholder=""Select dates...""
                            Label=""Date required (with label)"" />
 
             <ValidationMessage For=""@(() => formValidationDatePickerModel.Date)"" />
@@ -359,26 +380,26 @@ private void HandleInvalidSubmit()
     private readonly string example5HTMLCode = @"
 <BitDateRangePicker Style=""max-width: 300px""
                AllowTextInput=true
-               Label=""Start date""
-               AriaLabel=""Select a date"" />";
+               Label=""Date range""
+               AriaLabel=""Select dates"" />";
 
     private readonly string example6HTMLCode = @"
 <BitDateRangePicker Style=""max-width: 300px""
-               AriaLabel=""Select a date. Date format is month slash month slash year.""
-               Placeholder=""Select a date...""
+               AriaLabel=""Select dates. Date format is month slash month slash year.""
+               Placeholder=""Select dates...""
                FormatDate=""dd/MM/yy"" />";
 
     private readonly string example7HTMLCode = @"
 <BitDateRangePicker Style=""max-width: 300px""
-               AriaLabel=""Select a date""
-               Placeholder=""Select a date...""
+               AriaLabel=""Select dates""
+               Placeholder=""Select dates...""
                MaxDate=""DateTimeOffset.Now.AddYears(1)""
                MinDate=""DateTimeOffset.Now.AddYears(-5)"" />";
 
     private readonly string example8HTMLCode = @"
 <BitDateRangePicker Style=""max-width: 300px""
-               AriaLabel=""Select a date""
-               Placeholder=""Select a date..."">
+               AriaLabel=""Select dates""
+               Placeholder=""Select dates..."">
     <LabelFragment>
         Custom label <BitIconButton IconName=""BitIconName.Calendar""></BitIconButton>
     </LabelFragment>
@@ -387,8 +408,8 @@ private void HandleInvalidSubmit()
     private readonly string example9HTMLCode = @"
 <BitDateRangePicker Style=""max-width: 300px""
                @bind-Value=""@selectedDate"" 
-               AriaLabel=""Select a date""
-               Placeholder=""Select a date..."" />
+               AriaLabel=""Select dates""
+               Placeholder=""Select dates..."" />
 <BitLabel>Selected date: @selectedDate.ToString()</BitLabel>";
 
     private readonly string example9CSharpCode = @"
@@ -416,8 +437,8 @@ private DateTimeOffset? selectedDate = new DateTimeOffset(new DateTime(2020, 1, 
 </style>
 
 <BitDateRangePicker Style=""max-width: 300px""
-               AriaLabel=""Select a date""
-               Placeholder=""Select a date..."">
+               AriaLabel=""Select dates""
+               Placeholder=""Select dates..."">
     <DayCellTemplate>
         <span class=""@(context.DayOfWeek == DayOfWeek.Sunday ? ""weekend-cell"" : null)"">
             @context.Day
@@ -472,8 +493,8 @@ private DateTimeOffset? selectedDate = new DateTimeOffset(new DateTime(2020, 1, 
 
 <div class=""date-range-picker-wrapper"">
     <BitDateRangePicker Style=""max-width: 300px""
-                   AriaLabel=""Select a date""
-                   Placeholder=""Select a date..."">
+                   AriaLabel=""Select dates""
+                   Placeholder=""Select dates..."">
         <DayCellTemplate>
             <span class=""custom-day-cell"">
                 @context.Day

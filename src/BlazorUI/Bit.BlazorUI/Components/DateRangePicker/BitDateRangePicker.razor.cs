@@ -945,6 +945,7 @@ public partial class BitDateRangePicker
     private void CheckCurrentCalendarMatchesCurrentValue()
     {
         if (CurrentValue is null) return;
+        if (CurrentValue.StartDate is null) return;
 
         var currentValue = CurrentValue.StartDate.GetValueOrDefault();
         var currentValueYear = currentValue.Year;
