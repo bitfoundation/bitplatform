@@ -4,6 +4,7 @@ using System.Net.Mail;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.OData;
 using Microsoft.AspNetCore.ResponseCompression;
+using TodoTemplate.Server.Api.Services.Implementations;
 #if BlazorWebAssembly
 using TodoTemplate.Client.Web.Services.Implementations;
 using TodoTemplate.Client.Shared.Services.Implementations;
@@ -21,6 +22,8 @@ public static class Services
         var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
 
         services.AddSharedServices();
+
+        services.AddScoped<IUserInformationProvider, UserInformationProvider>();
 
 #if BlazorWebAssembly
         services.AddTransient<IAuthTokenProvider, ServerSideAuthTokenProvider>();

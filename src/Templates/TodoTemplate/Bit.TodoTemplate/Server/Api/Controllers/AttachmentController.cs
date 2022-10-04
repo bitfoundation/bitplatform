@@ -19,7 +19,7 @@ public partial class AttachmentController : AppControllerBase
         if (file is null || Request.Headers.TryGetValue("bit_file_id", out StringValues bitFileId) is false)
             throw new BadRequestException();
 
-        var userId = User.GetUserId();
+        var userId = UserInformationProvider.GetUserId();
 
         var user = await _userManager.FindByIdAsync(userId.ToString());
 
@@ -74,7 +74,7 @@ public partial class AttachmentController : AppControllerBase
     [HttpDelete]
     public async Task RemoveProfileImage()
     {
-        var userId = User.GetUserId();
+        var userId = UserInformationProvider.GetUserId();
 
         var user = await _userManager.FindByIdAsync(userId.ToString());
 
@@ -96,7 +96,7 @@ public partial class AttachmentController : AppControllerBase
     [HttpGet]
     public async Task<IActionResult> GetProfileImage()
     {
-        var userId = User.GetUserId();
+        var userId = UserInformationProvider.GetUserId();
 
         var user = await _userManager.FindByIdAsync(userId.ToString());
 

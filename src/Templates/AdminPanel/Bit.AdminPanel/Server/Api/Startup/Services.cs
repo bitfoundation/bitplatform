@@ -1,6 +1,7 @@
 ﻿//-:cnd:noEmit
 using System.IO.Compression;
 using System.Net.Mail;
+using AdminPanel.Server.Api.Services.Implementations;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.OData;
 using Microsoft.AspNetCore.ResponseCompression;
@@ -21,6 +22,8 @@ public static class Services
         var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
 
         services.AddSharedServices();
+
+        services.AddScoped<IUserInformationProvider, UserInformationProvider>();
 
 #if BlazorWebAssembly
         services.AddTransient<IAuthTokenProvider, ServerSideAuthTokenProvider>();
