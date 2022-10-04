@@ -10,8 +10,10 @@ public partial class TodoItemController : AppControllerBase
     [HttpGet, EnableQuery]
     public IQueryable<TodoItemDto> Get(CancellationToken cancellationToken)
     {
+        var userId = UserInformationProvider.GetUserId();
+
         return DbContext.TodoItems
-            .Where(t => t.UserId == User.GetUserId())
+            .Where(t => t.UserId == userId)
             .ProjectTo<TodoItemDto>(Mapper.ConfigurationProvider, cancellationToken);
     }
 
@@ -31,7 +33,7 @@ public partial class TodoItemController : AppControllerBase
     {
         var todoItemToAdd = Mapper.Map<TodoItem>(dto);
 
-        todoItemToAdd.UserId = User.GetUserId();
+        todoItemToAdd.UserId = UserInformationProvider.GetUserId();
 
         await DbContext.TodoItems.AddAsync(todoItemToAdd, cancellationToken);
 

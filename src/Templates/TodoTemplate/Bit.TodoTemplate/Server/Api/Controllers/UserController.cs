@@ -12,7 +12,7 @@ public partial class UserController : AppControllerBase
     [HttpGet]
     public async Task<UserDto> GetCurrentUser(CancellationToken cancellationToken)
     {
-        var userId = User.GetUserId();
+        var userId = UserInformationProvider.GetUserId();
 
         var user = await _userManager.Users.FirstOrDefaultAsync(user => user.Id == userId, cancellationToken);
 
@@ -25,10 +25,7 @@ public partial class UserController : AppControllerBase
     [HttpPut]
     public async Task Update(EditUserDto userDto, CancellationToken cancellationToken)
     {
-        var userId = User.GetUserId();
-
-        if (userId != User.GetUserId())
-            throw new UnauthorizedException();
+        var userId = UserInformationProvider.GetUserId();
 
         var user = await _userManager.Users.FirstOrDefaultAsync(user => user.Id == userId, cancellationToken);
 
