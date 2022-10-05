@@ -252,7 +252,11 @@ public partial class BitDateRangePicker
 
     protected override Task OnParametersSetAsync()
     {
-        CurrentValue = new();
+        if(CurrentValue is null)
+        {
+            CurrentValue = new();
+        }
+
         var startDateTime = CurrentValue.StartDate.GetValueOrDefault(DateTimeOffset.Now).DateTime;
 
         if (MinDate.HasValue && MinDate > new DateTimeOffset(startDateTime))
