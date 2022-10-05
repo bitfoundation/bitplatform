@@ -162,7 +162,7 @@ public partial class BitDateRangePicker
     /// <summary>
     /// Callback for when the date changes.
     /// </summary>
-    [Parameter] public EventCallback<BitDateRangePickerType> OnSelectDate { get; set; }
+    [Parameter] public EventCallback<BitDateRangePickerValue> OnSelectDate { get; set; }
 
     /// <summary>
     /// Aria label for date picker popup for screen reader users.
@@ -280,7 +280,7 @@ public partial class BitDateRangePicker
     }
 
     /// <inheritdoc />
-    protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out BitDateRangePickerType? result, [NotNullWhen(false)] out string? validationErrorMessage)
+    protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out BitDateRangePickerValue? result, [NotNullWhen(false)] out string? validationErrorMessage)
     {
         //if (value.HasNoValue())
         //{
@@ -301,7 +301,7 @@ public partial class BitDateRangePicker
         return false;
     }
 
-    protected override string? FormatValueAsString(BitDateRangePickerType? value)
+    protected override string? FormatValueAsString(BitDateRangePickerValue? value)
     {
         if (value is null)
         {
