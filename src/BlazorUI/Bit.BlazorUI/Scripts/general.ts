@@ -34,5 +34,8 @@ window.addEventListener('scroll', (e: any) => {
 }, true);
 
 window.addEventListener('resize', (e: any) => {
+    const resizeTriggeredByKeyboardOpen = document?.activeElement?.getAttribute('type') === 'text';
+    if (resizeTriggeredByKeyboardOpen) return;
+
     Bit.closeCurrentCalloutIfExists("", "", null);
 }, true);
