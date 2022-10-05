@@ -18,7 +18,7 @@
                disabled="@(IsEnabled is false)"
                autocomplete="@BitAutoCompleteValue.NewPassword"
                @ref="_inputRef[index]" 
-               @onfocusin="(e) => HandleOnFocusIn(e, index)"
+               @onfocusin="HandleOnFocusIn"
                @onfocusout="HandleOnFocusOut"
                @onkeydown="(e) => HandleOnKeyDown(e, index)"
                @oninput="(e) => HandleOnInput(e, index)"

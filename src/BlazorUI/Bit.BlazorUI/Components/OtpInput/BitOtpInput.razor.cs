@@ -221,11 +221,9 @@ public partial class BitOtpInput
         }
     }
 
-    private async Task HandleOnFocusIn(FocusEventArgs e, int index)
+    private async Task HandleOnFocusIn(FocusEventArgs e)
     {
         if (IsEnabled is false) return;
-
-        await _inputRef[index].FocusAsync();
 
         await OnFocusIn.InvokeAsync(e);
     }
