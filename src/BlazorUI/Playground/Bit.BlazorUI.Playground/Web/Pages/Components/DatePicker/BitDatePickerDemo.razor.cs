@@ -10,7 +10,7 @@ namespace Bit.BlazorUI.Playground.Web.Pages.Components.DatePicker;
 public partial class BitDatePickerDemo
 {
     private DateTimeOffset? selectedDate = new DateTimeOffset(new DateTime(2020, 1, 17), DateTimeOffset.Now.Offset);
-    private FormValidationDateRangePickerModel formValidationDatePickerModel = new();
+    private FormValidationDatePickerModel formValidationDatePickerModel = new();
     private string SuccessMessage = string.Empty;
     private CultureInfo Culture = CultureInfo.CurrentUICulture;
 

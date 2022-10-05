@@ -1,5 +1,5 @@
 ﻿namespace Bit.BlazorUI;
-public class BitDateRangePickerType
+public class BitDateRangePickerValue
 {
     /// <summary>
     /// Indicates the beginning of the date range.

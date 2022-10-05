@@ -10,7 +10,7 @@ namespace Bit.BlazorUI.Playground.Web.Pages.Components.DateRangePicker;
 
 public partial class BitDateRangePickerDemo
 {
-    private BitDateRangePickerType selectedDateRange = new()
+    private BitDateRangePickerValue selectedDateRange = new()
     {
         StartDate = new DateTimeOffset(new DateTime(2020, 1, 17), DateTimeOffset.Now.Offset),
         EndDate = new DateTimeOffset(new DateTime(2020, 1, 25), DateTimeOffset.Now.Offset)
@@ -163,7 +163,7 @@ public partial class BitDateRangePickerDemo
         new ComponentParameter()
         {
             Name = "OnSelectDate",
-            Type = "EventCallback<BitDateRangePickerType?>",
+            Type = "EventCallback<BitDateRangePickerValue?>",
             LinkType = LinkType.Link,
             Href = "#dateRangePickerType",
             DefaultValue = "",
@@ -221,7 +221,7 @@ public partial class BitDateRangePickerDemo
         new ComponentParameter()
         {
             Name = "Value",
-            Type = "BitDateRangePickerType",
+            Type = "BitDateRangePickerValue",
             LinkType = LinkType.Link,
             Href = "#dateRangePickerType",
             DefaultValue = "",
@@ -230,7 +230,7 @@ public partial class BitDateRangePickerDemo
         new ComponentParameter()
         {
             Name = "ValueChanged",
-            Type = "EventCallback<BitDateRangePickerType?>",
+            Type = "EventCallback<BitDateRangePickerValue?>",
             LinkType = LinkType.Link,
             Href = "#dateRangePickerType",
             DefaultValue = "",
@@ -250,7 +250,7 @@ public partial class BitDateRangePickerDemo
         new ComponentSubParameter()
         {
             Id = "dateRangePickerType",
-            Title = "BitDateRangePickerType",
+            Title = "BitDateRangePickerValue",
             Parameters = new List<ComponentParameter>()
             {
                new ComponentParameter()
@@ -382,7 +382,7 @@ private async Task OpenCallout(MouseEventArgs eventArgs)
 <BitLabel>selected date: @selectedDateRange.StartDate.ToString() - @selectedDateRange.EndDate.ToString()</BitLabel>";
 
     private readonly string example8CSharpCode = @"
-private BitDateRangePickerType selectedDateRange = new()
+private BitDateRangePickerValue selectedDateRange = new()
 {
     StartDate = new DateTimeOffset(new DateTime(2020, 1, 17), DateTimeOffset.Now.Offset),
     EndDate = new DateTimeOffset(new DateTime(2020, 1, 25), DateTimeOffset.Now.Offset)
