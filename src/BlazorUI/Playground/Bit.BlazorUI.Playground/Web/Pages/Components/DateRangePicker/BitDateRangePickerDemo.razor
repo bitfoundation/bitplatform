@@ -81,13 +81,18 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BitDateRangePicker with a custom label" HTMLSourceCode="@example7HTMLCode" ExampleId="example7">
+    <ComponentExampleBox Title="BitDateRangePicker with a custom label" HTMLSourceCode="@example7HTMLCode" CSharpSourceCode="@example7CSharpCode" ExampleId="example7">
         <ExamplePreview>
-            <BitDateRangePicker Style="max-width: 300px"
+            <div class="example-desc">
+                In this example, the callout of the BitDateRangePicker would be opened and closed using an icon button which is customely located in the label.
+                This functionality has been implemented using a public API provided in the BitDateRangePicker.
+            </div>
+            <BitDateRangePicker @ref="dateRangePicker"
+                                Style="max-width: 300px"
                                 AriaLabel="Select dates"
                                 Placeholder="Select dates...">
                 <LabelFragment>
-                    Custom label <BitIconButton IconName="BitIconName.Calendar"></BitIconButton>
+                    Custom label <BitIconButton IconName="BitIconName.Calendar" OnClick="OpenCallout"></BitIconButton>
                 </LabelFragment>
             </BitDateRangePicker>
         </ExamplePreview>

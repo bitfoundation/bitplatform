@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Threading.Tasks;
 using Bit.BlazorUI.Playground.Web.Models;
 using Bit.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace Bit.BlazorUI.Playground.Web.Pages.Components.DateRangePicker;
 
@@ -15,6 +16,7 @@ public partial class BitDateRangePickerDemo
         EndDate = new DateTimeOffset(new DateTime(2020, 1, 25), DateTimeOffset.Now.Offset)
     };
     private CultureInfo Culture = CultureInfo.CurrentUICulture;
+    private BitDateRangePicker dateRangePicker;
 
     private readonly List<ComponentParameter> componentParameters = new()
     {
@@ -300,6 +302,11 @@ public partial class BitDateRangePickerDemo
         }
     };
 
+    private async Task OpenCallout(MouseEventArgs eventArgs)
+    {
+        await dateRangePicker.OpenCallout(eventArgs);
+    }
+
     private readonly string example1HTMLCode = @"
 <BitDateRangePicker Style=""max-width: 300px""
                     AriaLabel=""Select dates""
@@ -351,13 +358,21 @@ public partial class BitDateRangePickerDemo
                     MinDate=""DateTimeOffset.Now.AddYears(-5)"" />";
 
     private readonly string example7HTMLCode = @"
-<BitDateRangePicker Style=""max-width: 300px""
+<BitDateRangePicker @ref=""dateRangePicker""
+                    Style=""max-width: 300px""
                     AriaLabel=""Select dates""
                     Placeholder=""Select dates..."">
     <LabelFragment>
-        Custom label <BitIconButton IconName=""BitIconName.Calendar""></BitIconButton>
+        Custom label <BitIconButton IconName=""BitIconName.Calendar"" OnClick=""OpenCallout""></BitIconButton>
     </LabelFragment>
 </BitDateRangePicker>";
+
+    private readonly string example7CSharpCode = @"
+private BitDateRangePicker dateRangePicker;
+private async Task OpenCallout(MouseEventArgs eventArgs)
+{
+    await dateRangePicker.OpenCallout(eventArgs);
+}";
 
     private readonly string example8HTMLCode = @"
 <BitDateRangePicker Style=""max-width: 300px""
