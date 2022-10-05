@@ -16,7 +16,6 @@
                inputmode="@_inputMode"
                value="@_inputValue[index]"
                disabled="@(IsEnabled is false)"
-               maxlength="1"
                autocomplete="@BitAutoCompleteValue.NewPassword"
                @ref="_inputRef[index]" 
                @onfocusin="(e) => HandleOnFocusIn(e, index)"

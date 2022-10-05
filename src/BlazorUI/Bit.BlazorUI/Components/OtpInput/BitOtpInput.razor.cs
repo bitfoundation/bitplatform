@@ -143,8 +143,8 @@ public partial class BitOtpInput
         var value = e.Value!.ToString()!;
         if (value.HasValue())
         {
-            int nextIndex = index + 1 >= InputCount ? index : index + 1;
-            await _inputRef[nextIndex].FocusAsync();
+            int nextIndex = index + 1;
+            if (nextIndex < InputCount) await _inputRef[nextIndex].FocusAsync();
             _inputValue[index] = value;
         }
         else
@@ -168,52 +168,56 @@ public partial class BitOtpInput
 
     private async Task NavigateInput(string code, string key, int index)
     {
-        int nextIndex = index + 1 >= InputCount ? index : index + 1;
-        int previousIndex = index - 1 < 0 ? index : index - 1;
+        int nextIndex = index + 1;
+        int previousIndex = index - 1;
 
-        if (code is "Backspace" || key is "Backspace")
+        if ((code is "Backspace" || key is "Backspace") && previousIndex >= 0)
         {
             await _inputRef[previousIndex].FocusAsync();
         }
         else if (code is "ArrowLeft")
         {
-            var leftIndex = Direction is BitOtpInputDirection.LeftToRight
-                ? previousIndex
-                : Direction is BitOtpInputDirection.RightToLeft
-                    ? nextIndex
-                    : index;
-
-            await _inputRef[leftIndex].FocusAsync();
+            if (Direction is BitOtpInputDirection.LeftToRight && previousIndex >= 0)
+            {
+                await _inputRef[previousIndex].FocusAsync();
+            }
+            else if (Direction is BitOtpInputDirection.RightToLeft && nextIndex < InputCount)
+            {
+                await _inputRef[nextIndex].FocusAsync();
+            }
         }
         else if (code is "ArrowRight")
         {
-            var rightIndex = Direction is BitOtpInputDirection.LeftToRight
-                ? nextIndex
-                : Direction is BitOtpInputDirection.RightToLeft
-                    ? previousIndex
-                    : index;
-
-            await _inputRef[rightIndex].FocusAsync();
+            if (Direction is BitOtpInputDirection.LeftToRight && nextIndex < InputCount)
+            {
+                await _inputRef[nextIndex].FocusAsync();
+            }
+            else if(Direction is BitOtpInputDirection.RightToLeft && previousIndex >= 0)
+            {
+                await _inputRef[previousIndex].FocusAsync();
+            }
         }
         else if (code is "ArrowUp")
         {
-            var upIndex = Direction is BitOtpInputDirection.TopToBottom
-                ? previousIndex
-                : Direction is BitOtpInputDirection.BottomToTop
-                    ? nextIndex
-                    : index;
-
-            await _inputRef[upIndex].FocusAsync();
+            if (Direction is BitOtpInputDirection.TopToBottom && previousIndex >= 0)
+            {
+                await _inputRef[previousIndex].FocusAsync();
+            }
+            else if(Direction is BitOtpInputDirection.BottomToTop && nextIndex < InputCount)
+            {
+                await _inputRef[nextIndex].FocusAsync();
+            }
         }
         else if (code is "ArrowDown")
         {
-            var downIndex = Direction is BitOtpInputDirection.TopToBottom
-                ? nextIndex
-                : Direction is BitOtpInputDirection.BottomToTop
-                    ? previousIndex
-                    : index;
-
-            await _inputRef[downIndex].FocusAsync();
+            if (Direction is BitOtpInputDirection.TopToBottom && nextIndex < InputCount)
+            {
+                await _inputRef[nextIndex].FocusAsync();
+            }
+            else if (Direction is BitOtpInputDirection.BottomToTop && previousIndex >= 0)
+            {
+                await _inputRef[previousIndex].FocusAsync();
+            }
         }
     }
 
