@@ -1,0 +1,64 @@
+﻿@import '../../../Styles/abstracts/_colors.scss';
+@import '../../../Styles/abstracts/_functions.scss';
+
+.validation-summary {
+    border-left: rem(5px) solid $Red10;
+    background-color: $ErrorBlockRed;
+    overflow: hidden;
+    margin-bottom: rem(10px);
+
+    .validation-errors {
+        margin: rem(5px);
+    }
+}
+
+::deep div.validation-message {
+    color: $Red20;
+    font-size: rem(12px);
+}
+
+.weekend-cell {
+    color: red;
+}
+
+.custom-day-cell {
+    position: relative;
+    width: 44px !important;
+    height: 44px !important;
+}
+
+.discount-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: inline-flex;
+    align-items: center;
+    width: fit-content !important;
+    height: 16px !important;
+    border-radius: 2px;
+    padding: 0 4px;
+    background-color: red;
+    color: white;
+    font-size: 8px;
+}
+
+.year-suffix {
+    position: absolute;
+    bottom: 10px;
+    right: -12px;
+    height: 12px;
+    color: gray;
+    font-size: 8px;
+}
+
+.date-range-picker-wrapper {
+    ::deep .bit-dtrp {
+        &.bit-dtrp-fluent {
+            .day-picker-wrapper {
+                .week-day-label {
+                    width: 44px;
+                }
+            }
+        }
+    }
+}
