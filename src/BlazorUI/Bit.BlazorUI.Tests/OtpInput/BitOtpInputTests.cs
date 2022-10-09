@@ -35,16 +35,16 @@ public class BitOtpInputTests : BunitTestContext
     DataRow(4),
     DataRow(6)
     ]
-    public void BitOtpInputLengthTest(int inputCount)
+    public void BitOtpInputLengthTest(int length)
     {
         var com = RenderComponent<BitOtpInput>(parameters =>
         {
-            parameters.Add(p => p.Length, inputCount);
+            parameters.Add(p => p.Length, length);
         });
 
         var bitOtpInput = com.Find(".bit-otp");
 
-        Assert.AreEqual(inputCount, bitOtpInput.Children.Length);
+        Assert.AreEqual(length, bitOtpInput.Children.Length);
     }
 
     [DataTestMethod,
@@ -79,15 +79,15 @@ public class BitOtpInputTests : BunitTestContext
     DataRow(BitOtpInputType.Number),
     DataRow(BitOtpInputType.Password)
     ]
-    public void BitOtpInputTypeTest(BitOtpInputType length)
+    public void BitOtpInputTypeTest(BitOtpInputType inputType)
     {
         var com = RenderComponent<BitOtpInput>(parameters =>
         {
             parameters.Add(p => p.Length, 1);
-            parameters.Add(p => p.InputType, length);
+            parameters.Add(p => p.InputType, inputType);
         });
 
-        string inputTypeAttribute = length switch
+        string inputTypeAttribute = inputType switch
         {
             BitOtpInputType.Text => "text",
             BitOtpInputType.Number => "number",
@@ -95,7 +95,7 @@ public class BitOtpInputTests : BunitTestContext
             _ => string.Empty
         };
 
-        string inputModeAttribute = length switch
+        string inputModeAttribute = inputType switch
         {
             BitOtpInputType.Text => "text",
             BitOtpInputType.Number => "numeric",
