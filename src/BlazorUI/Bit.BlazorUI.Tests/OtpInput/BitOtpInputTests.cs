@@ -35,16 +35,16 @@ public class BitOtpInputTests : BunitTestContext
     DataRow(4),
     DataRow(6)
     ]
-    public void BitOtpInputCountTest(int inputCount)
+    public void BitOtpInputLengthTest(int length)
     {
         var com = RenderComponent<BitOtpInput>(parameters =>
         {
-            parameters.Add(p => p.InputCount, inputCount);
+            parameters.Add(p => p.Length, length);
         });
 
         var bitOtpInput = com.Find(".bit-otp");
 
-        Assert.AreEqual(inputCount, bitOtpInput.Children.Length);
+        Assert.AreEqual(length, bitOtpInput.Children.Length);
     }
 
     [DataTestMethod,
@@ -83,7 +83,7 @@ public class BitOtpInputTests : BunitTestContext
     {
         var com = RenderComponent<BitOtpInput>(parameters =>
         {
-            parameters.Add(p => p.InputCount, 1);
+            parameters.Add(p => p.Length, 1);
             parameters.Add(p => p.InputType, inputType);
         });
 
