@@ -30,9 +30,9 @@ public partial class BitOtpInput
     [Parameter] public BitOtpInputType InputType { get; set; } = BitOtpInputType.Text;
 
     /// <summary>
-    /// Count of input in Otp.
+    /// Length of input in Otp.
     /// </summary>
-    [Parameter] public int InputCount { get; set; }
+    [Parameter] public int Length { get; set; }
 
     /// <summary>
     /// Callback for when OtpInput value changed.
@@ -63,9 +63,9 @@ public partial class BitOtpInput
 
     protected override async Task OnInitializedAsync()
     {
-        _inputRef = new ElementReference[InputCount];
+        _inputRef = new ElementReference[Length];
 
-        _inputValue = new string[InputCount];
+        _inputValue = new string[Length];
 
         _inputType = InputType switch
         {
@@ -144,7 +144,7 @@ public partial class BitOtpInput
         if (value.HasValue())
         {
             int nextIndex = index + 1;
-            if (nextIndex < InputCount) await _inputRef[nextIndex].FocusAsync();
+            if (nextIndex < Length) await _inputRef[nextIndex].FocusAsync();
             _inputValue[index] = value;
         }
         else
@@ -181,14 +181,14 @@ public partial class BitOtpInput
             {
                 await _inputRef[previousIndex].FocusAsync();
             }
-            else if (Direction is BitOtpInputDirection.RightToLeft && nextIndex < InputCount)
+            else if (Direction is BitOtpInputDirection.RightToLeft && nextIndex < Length)
             {
                 await _inputRef[nextIndex].FocusAsync();
             }
         }
         else if (code is "ArrowRight")
         {
-            if (Direction is BitOtpInputDirection.LeftToRight && nextIndex < InputCount)
+            if (Direction is BitOtpInputDirection.LeftToRight && nextIndex < Length)
             {
                 await _inputRef[nextIndex].FocusAsync();
             }
@@ -203,14 +203,14 @@ public partial class BitOtpInput
             {
                 await _inputRef[previousIndex].FocusAsync();
             }
-            else if(Direction is BitOtpInputDirection.BottomToTop && nextIndex < InputCount)
+            else if(Direction is BitOtpInputDirection.BottomToTop && nextIndex < Length)
             {
                 await _inputRef[nextIndex].FocusAsync();
             }
         }
         else if (code is "ArrowDown")
         {
-            if (Direction is BitOtpInputDirection.TopToBottom && nextIndex < InputCount)
+            if (Direction is BitOtpInputDirection.TopToBottom && nextIndex < Length)
             {
                 await _inputRef[nextIndex].FocusAsync();
             }
@@ -258,7 +258,7 @@ public partial class BitOtpInput
 
         var splitedCurrentValue = currentValue.Replace(" ", "", StringComparison.Ordinal).ToCharArray();
 
-        for (int i = 0; i < InputCount; i++)
+        for (int i = 0; i < Length; i++)
         {
             if (splitedCurrentValue?.Length > i)
             {

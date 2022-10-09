@@ -8,12 +8,12 @@
         <ExamplePreview>
             <div class="otp-input-box">
                 <BitLabel>OtpInput</BitLabel>
-                <BitOtpInput InputCount="4" @bind-Value="basicOtpInput" />
+                <BitOtpInput Length="4" @bind-Value="basicOtpInput" />
                 <div>Output: [@basicOtpInput]</div>
             </div>
             <div class="otp-input-box">
                 <BitLabel>Disabled OtpInput</BitLabel>
-                <BitOtpInput InputCount="6" IsEnabled="false" />
+                <BitOtpInput Length="6" IsEnabled="false" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -22,7 +22,7 @@
         <ExamplePreview>
             <div class="example-desc">The OtpInput will be focused by default in the first render.</div>
             <div class="otp-input-box">
-                <BitOtpInput InputCount="4" AutoFocus="true" @bind-Value="autoFocusOtpInput" />
+                <BitOtpInput Length="4" AutoFocus="true" @bind-Value="autoFocusOtpInput" />
                 <div>Output: [@autoFocusOtpInput]</div>
             </div>
         </ExamplePreview>
@@ -32,17 +32,17 @@
         <ExamplePreview>
             <div class="otp-input-box">
                 <BitLabel>Text</BitLabel>
-                <BitOtpInput InputCount="4" InputType="BitOtpInputType.Text" @bind-Value="textOtpInput" />
+                <BitOtpInput Length="4" InputType="BitOtpInputType.Text" @bind-Value="textOtpInput" />
                 <div>Output: [@textOtpInput]</div>
             </div>
             <div class="otp-input-box">
                 <BitLabel>Number</BitLabel>
-                <BitOtpInput InputCount="4" InputType="BitOtpInputType.Number" @bind-Value="numberOtpInput" />
+                <BitOtpInput Length="4" InputType="BitOtpInputType.Number" @bind-Value="numberOtpInput" />
                 <div>Output: [@numberOtpInput]</div>
             </div>
             <div class="otp-input-box">
                 <BitLabel>Password</BitLabel>
-                <BitOtpInput InputCount="4" InputType="BitOtpInputType.Password" @bind-Value="passwordOtpInput" />
+                <BitOtpInput Length="4" InputType="BitOtpInputType.Password" @bind-Value="passwordOtpInput" />
                 <div>Output: [@passwordOtpInput]</div>
             </div>
         </ExamplePreview>
@@ -54,24 +54,24 @@
             <div>
                 <div class="otp-input-box">
                     <BitLabel>Left to right</BitLabel>
-                    <BitOtpInput InputCount="4" Direction="BitOtpInputDirection.LeftToRight" @bind-Value="leftToRightOtpInput" />
+                    <BitOtpInput Length="4" Direction="BitOtpInputDirection.LeftToRight" @bind-Value="leftToRightOtpInput" />
                     <div>Output: [@leftToRightOtpInput]</div>
                 </div>
                 <div class="otp-input-box">
                     <BitLabel>Right to left</BitLabel>
-                    <BitOtpInput InputCount="4" Direction="BitOtpInputDirection.RightToLeft" @bind-Value="rightToLeftOtpInput" />
+                    <BitOtpInput Length="4" Direction="BitOtpInputDirection.RightToLeft" @bind-Value="rightToLeftOtpInput" />
                     <div>Output: [@rightToLeftOtpInput]</div>
                 </div>
             </div>
             <div class="vertical-otp-box">
                 <div class="otp-input-box">
                     <BitLabel>Top to bottom</BitLabel>
-                    <BitOtpInput InputCount="4" Direction="BitOtpInputDirection.TopToBottom" @bind-Value="topToBottomOtpInput" />
+                    <BitOtpInput Length="4" Direction="BitOtpInputDirection.TopToBottom" @bind-Value="topToBottomOtpInput" />
                     <div>Output: [@topToBottomOtpInput]</div>
                 </div>
                 <div class="otp-input-box">
                     <BitLabel>Bottom to top</BitLabel>
-                    <BitOtpInput InputCount="4" Direction="BitOtpInputDirection.BottomToTop" @bind-Value="BottomToTopOtpInput" />
+                    <BitOtpInput Length="4" Direction="BitOtpInputDirection.BottomToTop" @bind-Value="BottomToTopOtpInput" />
                     <div>Output: [@BottomToTopOtpInput]</div>
                 </div>
             </div>
@@ -81,7 +81,7 @@
     <ComponentExampleBox Title="OtpInput with Two-way binding" HTMLSourceCode="@example5HtmlCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
         <ExamplePreview>
             <div class="otp-input-box">
-                <BitOtpInput InputCount="4" @bind-Value="twoWayBindOtpInput" />
+                <BitOtpInput Length="4" @bind-Value="twoWayBindOtpInput" />
             </div>
             <div>
                 <BitLabel>Output:</BitLabel>
@@ -97,7 +97,7 @@
                 <EditForm Model="validationOtpInputModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
                     <DataAnnotationsValidator />
                     <div class="otp-input-box">
-                        <BitOtpInput InputCount="6" @bind-Value="validationOtpInputModel.OtpValue" />
+                        <BitOtpInput Length="6" @bind-Value="validationOtpInputModel.OtpValue" />
                         <ValidationMessage For="() => validationOtpInputModel.OtpValue" />
                         <div>Output: [@validationOtpInputModel.OtpValue]</div>
                     </div>
