@@ -34,9 +34,9 @@ window.addEventListener('scroll', (e: any) => {
 }, true);
 
 window.addEventListener('resize', (e: any) => {
-    const minimumHeightForDropDownNormalOpen = 640;
+    const isMobile = window.screen.width < 640;
     const resizeTriggeredByKeyboardOpen = document?.activeElement?.getAttribute('type') === 'text';
-    if (resizeTriggeredByKeyboardOpen && minimumHeightForDropDownNormalOpen > window.screen.width) return;
+    if (isMobile && resizeTriggeredByKeyboardOpen) return;
 
     Bit.closeCurrentCalloutIfExists("", "", null);
 }, true);
