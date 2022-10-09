@@ -1,0 +1,58 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+<div @ref="RootElement"
+     @attributes="HtmlAttributes"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     id="@UniqueId">
+    <div id="@_menuButtonOverlayId" class="overlay" @onclick="CloseCallout"></div>
+    <div id="@_menuButtonId" class="menu-btn-container">
+        <button type="@ButtonType?.GetValue()"
+                aria-label="@AriaLabel"
+                aria-describedby="@AriaDescription"
+                aria-hidden="@AriaHidden"
+                tabindex="@(IsEnabled ? 0 : -1)"
+                class="menu-btn @_buttonStyle @(IsEnabled is false ? "disabled" : null)"
+                @onclick="HandleOnClick">
+            @if (IconName.HasValue)
+            {
+                <i class="bit-icon bit-icon--@IconName.GetName()"></i>
+            }
+            <span class="text">@Text</span>
+            <i class="bit-icon bit-icon--ChevronDown"></i>
+        </button>
+    </div>
+    <div id="@_menuButtonCalloutId"
+         class="items"
+         tabindex="@(IsEnabled ? 0 : -1)">
+        <ul role="presentation">
+            @foreach (BitMenuButtonItem item in Items)
+            {
+                <li role="presentation">
+                    <button type="@ButtonType?.GetValue()"
+                        role="menuitem"
+                        aria-disabled="@item.IsEnabled"
+                        tabindex="@(item.IsEnabled ? 0 : -1)"
+                        class="item @(item.IsEnabled ? "" : "disabled")"
+                        @onclick="() => HandleOnItemClick(item)">
+                        @if (ItemTemplate is null)
+                        {
+                            @if (item.IconName.HasValue)
+                            {
+                                <i class="bit-icon bit-icon--@item.IconName.GetName()"></i>
+                            }
+                            <span>
+                                @item.Text
+                            </span>
+                        }
+                        else
+                        {
+                            @ItemTemplate(item)
+                        }
+                    </button>
+                </li>
+            }
+        </ul>
+    </div>
+</div>
