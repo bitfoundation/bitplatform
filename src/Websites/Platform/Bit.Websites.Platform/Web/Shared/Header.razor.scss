@@ -82,15 +82,12 @@
 }
 
 .github-btn {
-    width: rem(34px);
-    height: rem(34px);
-    border-radius: 50%;
-    background-image: url('/images/github-icon.svg');
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: cover;
-    cursor: pointer;
+    display: flex;
+    width: rem(110px);
+    align-items: center;
+    justify-content: space-between;
     margin-left: rem(10px);
+    cursor: pointer;
 }
 
 .header-second-row {
