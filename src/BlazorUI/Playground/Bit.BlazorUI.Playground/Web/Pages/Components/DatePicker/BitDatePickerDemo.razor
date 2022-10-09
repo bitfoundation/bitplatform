@@ -110,13 +110,18 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BitDatePicker with a custom label" HTMLSourceCode="@example8HTMLCode" ExampleId="example8">
+    <ComponentExampleBox Title="BitDatePicker with a custom label" HTMLSourceCode="@example8HTMLCode" CSharpSourceCode="@example8CSharpCode" ExampleId="example8">
         <ExamplePreview>
-            <BitDatePicker Style="max-width: 300px"
+            <div class="example-desc">
+                In this example, the callout of the BitDatePicker would be opened and closed using an icon button which is customely located in the label.
+                This functionality has been implemented using a public API provided in the BitDatePicker.
+            </div>
+            <BitDatePicker @ref="datePicker"
+                           Style="max-width: 300px"
                            AriaLabel="Select a date"
                            Placeholder="Select a date...">
                 <LabelFragment>
-                    Custom label <BitIconButton IconName="BitIconName.Calendar"></BitIconButton>
+                    Custom label <BitIconButton IconName="BitIconName.Calendar" OnClick="OpenCallout"></BitIconButton>
                 </LabelFragment>
             </BitDatePicker>
         </ExamplePreview>

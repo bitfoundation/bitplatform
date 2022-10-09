@@ -301,6 +301,11 @@ public partial class BitDatePicker
         }
     }
 
+    public async Task OpenCallout(MouseEventArgs eventArgs)
+    {
+        await HandleClick(eventArgs);
+    }
+
     private async Task HandleClick(MouseEventArgs eventArgs)
     {
         if (IsEnabled is false) return;
