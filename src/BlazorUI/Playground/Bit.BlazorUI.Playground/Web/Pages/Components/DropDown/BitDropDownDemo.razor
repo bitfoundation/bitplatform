@@ -11,20 +11,20 @@
                 <BitDropDown Label="Basic Uncontrolled"
                              Items="GetDropdownItems()"
                              Placeholder="Select an option"
-                             Style="width: 290px; margin: 20px 0 20px 0">
+                             Style="width: 100%; max-width: 290px; margin: 20px 0 20px 0">
                 </BitDropDown>
                 <BitDropDown Label="Disabled with defaultValue"
                              Items="GetDropdownItems()"
                              Placeholder="Select an option"
                              IsEnabled="false"
                              DefaultValue="v-bro"
-                             Style="width: 290px; margin-bottom: 20px;">
+                             Style="width: 100%; max-width: 290px; margin-bottom: 20px;">
                 </BitDropDown>
                 <BitDropDown Label="Multi-select uncontrolled"
                              Items="GetDropdownItems()"
                              Placeholder="Select options"
                              IsMultiSelect="true"
-                             Style="width: 290px; margin-bottom: 20px;">
+                             Style="width: 100%; max-width: 290px; margin-bottom: 20px;">
                 </BitDropDown>
             </div>
         </ExamplePreview>
@@ -36,7 +36,7 @@
                          Items="GetDropdownItems()"
                          Placeholder="Select an option"
                          @bind-Value="ControlledValue"
-                         Style="width: 290px; margin: 20px 0 20px 0">
+                         Style="width: 100%; max-width: 290px; margin: 20px 0 20px 0">
             </BitDropDown>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -48,7 +48,7 @@
                          Placeholder="Select options"
                          @bind-Values="ControlledValues"
                          IsMultiSelect="true"
-                         Style="width:290px; margin:20px 0 20px 0">
+                         Style="width: 100%; max-width: 290px; margin:20px 0 20px 0">
             </BitDropDown>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -59,7 +59,7 @@
                          Items="GetCustomDropdownItems()"
                          Placeholder="Select an option"
                          AriaLabel="Custom dropdown"
-                         Style="width:290px; margin:20px 0 20px 0">
+                         Style="width: 100%; max-width: 290px; margin:20px 0 20px 0">
                 <TextTemplate>
                     <div class="dropdown-customized-style">
                         <i class="bit-icon bit-icon--@((context.Items.Find(i => i.Value == context.Value).Data as DropDownItemData).IconName)"
@@ -91,7 +91,7 @@
                          Placeholder="Select an option"
                          Label="Custom Label"
                          AriaLabel="Custom dropdown label "
-                         Style="width:290px">
+                         Style="width: 100%; max-width: 290px;">
                 <LabelFragment>
                     <label>Custom label</label>
                     <button type="button" title="Info" aria-label="Info" class="custom-drp-lbl-ic">
@@ -110,7 +110,7 @@
                                  Items="Categories"
                                  Placeholder="Select options"
                                  @bind-Value="@CurrentCategory"
-                                 Style="width:290px; margin:20px 0 20px 0">
+                                 Style="width: 100%; max-width: 290px; margin:20px 0 20px 0">
                     </BitDropDown>
 
                     <BitDropDown Label="Product"
@@ -118,7 +118,7 @@
                                  Placeholder="Select options"
                                  @bind-Value="@CurrentProduct"
                                  IsEnabled="string.IsNullOrEmpty(CurrentCategory) is false"
-                                 Style="width:290px; margin:20px 0 20px 0">
+                                 Style="width: 100%; max-width: 290px; margin:20px 0 20px 0">
                     </BitDropDown>
                 </div>
 
@@ -147,7 +147,7 @@
                                  IsMultiSelect="false"
                                  @bind-Value="formValidationDropDownModel.Category"
                                  Placeholder="Select an option"
-                                 Style="width: 290px; margin: 20px 0 20px 0" />
+                                 Style="width: 100%; max-width: 290px; margin: 20px 0 20px 0" />
 
                         <ValidationMessage For="@(() => formValidationDropDownModel.Category)" />
                     </div>
@@ -158,7 +158,7 @@
                                  IsMultiSelect="true"
                                  @bind-Values="formValidationDropDownModel.Products"
                                  Placeholder="Select an option"
-                                 Style="width: 290px; margin: 20px 0 20px 0" />
+                                 Style="width: 100%; max-width: 290px; margin: 20px 0 20px 0" />
 
                         <ValidationMessage For="@(() => formValidationDropDownModel.Products)" />
                     </div>
@@ -187,7 +187,7 @@
                              Items="GetDropdownItems()"
                              Placeholder="Select an option"
                              IsResponsiveModeEnabled=true
-                             Style="width: 290px; margin: 20px 0 20px 0">
+                             Style="width: 100%; max-width: 290px; margin: 20px 0 20px 0">
                 </BitDropDown>
             </div>
         </ExamplePreview>
@@ -202,7 +202,7 @@
                              IsResponsiveModeEnabled="true"
                              ShowSearchBox="true"
                              SearchBoxPlaceholder="Search item"
-                             Style="width: 290px; margin: 20px 0 20px 0">
+                             Style="width: 100%; max-width: 290px; margin: 20px 0 20px 0">
                 </BitDropDown>
 
                 <BitDropDown Label="Multi-select controlled with search box"
@@ -212,7 +212,7 @@
                              IsResponsiveModeEnabled="true"
                              ShowSearchBox="true"
                              SearchBoxPlaceholder="Search items"
-                             Style="width: 290px; margin: 20px 0 20px 0">
+                             Style="width: 100%; max-width: 290px; margin: 20px 0 20px 0">
                 </BitDropDown>
             </div>
         </ExamplePreview>
@@ -227,7 +227,7 @@
                          IsResponsiveModeEnabled="true"
                          ShowSearchBox="true"
                          SearchBoxPlaceholder="Search item"
-                         Style="width: 290px; margin: 20px 0 20px 0">
+                         Style="width: 100%; max-width: 290px; margin: 20px 0 20px 0">
             </BitDropDown>
 
             <BitDropDown Label="Multi-select controlled with virtualization"
@@ -238,7 +238,7 @@
                          IsResponsiveModeEnabled="true"
                          ShowSearchBox="true"
                          SearchBoxPlaceholder="Search items"
-                         Style="width: 290px; margin: 20px 0 20px 0">
+                         Style="width: 100%; max-width: 290px; margin: 20px 0 20px 0">
             </BitDropDown>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -252,7 +252,7 @@
                          IsResponsiveModeEnabled="true"
                          ShowSearchBox="true"
                          SearchBoxPlaceholder="Search item"
-                         Style="width: 290px; margin: 20px 0 20px 0">
+                         Style="width: 100%; max-width: 290px; margin: 20px 0 20px 0">
             </BitDropDown>
 
             <BitDropDown Label="Multi-select controlled with virtualization"
@@ -263,7 +263,7 @@
                          IsResponsiveModeEnabled="true"
                          ShowSearchBox="true"
                          SearchBoxPlaceholder="Search items"
-                         Style="width: 290px; margin: 20px 0 20px 0">
+                         Style="width: 100%; max-width: 290px; margin: 20px 0 20px 0">
             </BitDropDown>
         </ExamplePreview>
     </ComponentExampleBox>
