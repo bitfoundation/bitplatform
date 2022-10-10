@@ -1,5 +1,5 @@
 ﻿class BitMenuButton {
-    static toggleSplitButtonCallout(dotnetObjReference: DotNetObject,
+    static toggleMenuButtonCallout(dotnetObjReference: DotNetObject,
         splitButtonWrapperId: string,
         splitButtonId: string,
         splitButtonCalloutId: string,

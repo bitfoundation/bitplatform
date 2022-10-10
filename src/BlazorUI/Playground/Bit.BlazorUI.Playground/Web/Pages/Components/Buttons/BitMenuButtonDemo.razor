@@ -5,17 +5,111 @@
     <ComponentExampleBox Title="BitMenuButton" ExampleId="example1">
         <ExamplePreview>
 
-
-
-            <BitMenuButton Text="New Item"
+            <BitMenuButton Text="Standard Button"
                            IconName="BitIconName.Add"
-                           Items="example1Items"
-                           ButtonStyle="BitButtonStyle.Standard">
-            </BitMenuButton>
+                           ButtonStyle="BitButtonStyle.Standard"
+                           Items="basicMenuButton"
+                           OnItemClick="(e) => basicSelectedItemKey = e" />
+
+            <BitMenuButton Text="Primary Button"
+                           IconName="BitIconName.Add"
+                           ButtonStyle="BitButtonStyle.Primary"
+                           Items="basicMenuButton"
+                           OnItemClick="(e) => basicSelectedItemKey = e" />
+
+            <BitMenuButton Text="Disabled Button"
+                           IconName="BitIconName.Add"
+                           IsEnabled="false" />
+
+            <BitMenuButton Text="Disabled Item Button"
+                           IconName="BitIconName.Add"
+                           ButtonStyle="BitButtonStyle.Primary"
+                           Items="disabledItemMenuButton"
+                           OnItemClick="(e) => basicSelectedItemKey = e" />
+
+            <div class="output-box">Selected Item: @basicSelectedItemKey</div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Style & Class" ExampleId="example2">
+        <ExamplePreview>
+            <div class="example-desc">BitMenuButton can directly get css class or inline style.</div>
+
+            <BitMenuButton Text="Styled Button"
+                           IconName="BitIconName.Add"
+                           Items="basicMenuButton"
+                           OnItemClick="(e) => styledSelectedItemKey = e"
+                           Style="width: 200px; height: 40px;" />
+
+            <BitMenuButton Text="Classed Button"
+                           IconName="BitIconName.Add"
+                           Items="basicMenuButton"
+                           OnItemClick="(e) => styledSelectedItemKey = e"
+                           Class="custom-menu-btn" />
+
+            <div class="output-box">Selected Item: @styledSelectedItemKey</div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Visibility" ExampleId="example3">
+        <ExamplePreview>
+            <div class="example-desc">By setting Visibility attribute, BitButton can be Visible, Hidden or Collapsed.</div>
+
+            <BitMenuButton Text="Visible Button"
+                           IconName="BitIconName.Add"
+                           Items="basicMenuButton"
+                           Visibility="BitComponentVisibility.Visible" />
+
+            <div>
+                Hidden Button: [<BitMenuButton Text="Styled Button"
+                                               IconName="BitIconName.Add"
+                                               Items="basicMenuButton"
+                                               Visibility="BitComponentVisibility.Hidden" />]
+            </div>
 
 
+            <div>
+                Collapsed Button: [<BitMenuButton Text="Styled Button"
+                                                  IconName="BitIconName.Add"
+                                                  Items="basicMenuButton"
+                                                  Visibility="BitComponentVisibility.Collapsed" />]
+            </div>
 
         </ExamplePreview>
     </ComponentExampleBox>
 
+    <ComponentExampleBox Title="MenuButton with Item Template" ExampleId="example4">
+        <ExamplePreview>
+            <div class="output-box">You can customize the button item.</div>
+
+            <BitMenuButton Text="Standard"
+                           IconName="BitIconName.Add"
+                           Items="itemTemplateMenuButton"
+                           OnItemClick="(e) => itemTemplateSelectedItemKey = e"
+                           ItemTemplate="(item) => itemTemplate(item)"
+                           ButtonStyle="BitButtonStyle.Standard" />
+
+            <BitMenuButton Text="Primary"
+                           IconName="BitIconName.Add"
+                           Items="itemTemplateMenuButton"
+                           OnItemClick="(e) => itemTemplateSelectedItemKey = e"
+                           ItemTemplate="(item) => itemTemplate(item)"
+                           ButtonStyle="BitButtonStyle.Primary" />
+
+            <div class="output-box">Selected Item: @itemTemplateSelectedItemKey</div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
 </ComponentDemo>
+
+@code {
+
+    private RenderFragment<BitMenuButtonItem> itemTemplate = (item) =>
+    (
+    @<div class="item-template-box">
+        <span style="color: @(item.key == "add-key" ? "green" : item.key == "edit-key" ? "yellow" : "red");">
+            @item.Text (@item.key)
+        </span>
+    </div>
+    );
+}

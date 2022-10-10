@@ -1,0 +1,23 @@
+﻿@import '../../../Styles/abstracts/_functions.scss';
+@import '../../../Styles/abstracts/_colors.scss';
+
+.item-template-box {
+    display: flex;
+    width: 100%;
+}
+
+.output-box {
+    margin: rem(10px) 0;
+}
+
+::deep .custom-menu-btn {
+    height: rem(40px);
+    width: rem(166px);
+    font-size: rem(16px);
+    background-color: $B1Color;
+    border-color: $B1Color;
+}
+
+::deep .bit-mnb {
+    margin: 10px 0;
+}

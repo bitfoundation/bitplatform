@@ -8,7 +8,7 @@ public partial class BitMenuButton
     private string? _menuButtonId;
     private string? _menuButtonCalloutId;
     private string? _menuButtonOverlayId;
-    private string? _buttonStyle;
+    private BitButtonStyle _buttonStyle = BitButtonStyle.Primary;
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
@@ -25,7 +25,15 @@ public partial class BitMenuButton
     /// <summary>
     /// The style of button, Possible values: Primary | Standard
     /// </summary>
-    [Parameter] public BitButtonStyle ButtonStyle { get; set; } = BitButtonStyle.Primary;
+    [Parameter] public BitButtonStyle ButtonStyle
+    {
+        get => _buttonStyle;
+        set
+        {
+            _buttonStyle = value;
+            ClassBuilder.Reset();
+        }
+    }
 
     /// <summary>
     ///  List of Item, each of which can be a Button with different action in the SplitButton.
@@ -53,10 +61,16 @@ public partial class BitMenuButton
     /// </summary>
     [Parameter] public BitIconName? IconName { get; set; }
 
+
     /// <summary>
     /// 
     /// </summary>
-    [Parameter] public EventCallback OnClick { get; set; }
+    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    [Parameter] public EventCallback<string> OnItemClick { get; set; }
 
     /// <summary>
     /// 
@@ -76,10 +90,6 @@ public partial class BitMenuButton
 
     protected override Task OnParametersSetAsync()
     {
-        _buttonStyle = IsEnabled
-            ? ButtonStyle is BitButtonStyle.Primary ? "primary" : "standard"
-            : null;
-
         ButtonType ??= EditContext is null
             ? BitButtonType.Button
             : BitButtonType.Submit;
@@ -87,28 +97,41 @@ public partial class BitMenuButton
         return base.OnParametersSetAsync();
     }
 
-    private async Task HandleOnClick()
+    protected override void RegisterComponentClasses()
+    {
+        ClassBuilder.Register(() => IsEnabled is false
+                                       ? string.Empty
+                                       : ButtonStyle == BitButtonStyle.Primary
+                                           ? "primary"
+                                           : "standard");
+    }
+
+    private async Task HandleOnClick(MouseEventArgs e)
     {
         if (IsEnabled is false) return;
 
         var obj = DotNetObjectReference.Create(this);
-        await _js.InvokeVoidAsync("BitMenuButton.toggleSplitButtonCallout", obj, UniqueId, _menuButtonId, _menuButtonCalloutId, _menuButtonOverlayId, _isCalloutOpen);
-        _isCalloutOpen = !_isCalloutOpen;
+        await _js.InvokeVoidAsync("BitMenuButton.toggleMenuButtonCallout", obj, UniqueId, _menuButtonId, _menuButtonCalloutId, _menuButtonOverlayId, _isCalloutOpen);
+        _isCalloutOpen = true;
 
-        await OnClick.InvokeAsync();
+        await OnClick.InvokeAsync(e);
     }
 
     private async Task HandleOnItemClick(BitMenuButtonItem item)
     {
-        if (item.IsEnabled is false) return;
+        if (IsEnabled is false || item.IsEnabled is false) return;
 
-        await OnClick.InvokeAsync();
+        var obj = DotNetObjectReference.Create(this);
+        await _js.InvokeVoidAsync("BitMenuButton.toggleMenuButtonCallout", obj, UniqueId, _menuButtonId, _menuButtonCalloutId, _menuButtonOverlayId, _isCalloutOpen);
+        _isCalloutOpen = false;
+
+        await OnItemClick.InvokeAsync(item.key);
     }
 
     private async Task CloseCallout()
     {
         var obj = DotNetObjectReference.Create(this);
-        await _js.InvokeVoidAsync("BitMenuButton.toggleSplitButtonCallout", obj, UniqueId, _menuButtonId, _menuButtonCalloutId, _menuButtonOverlayId, _isCalloutOpen);
+        await _js.InvokeVoidAsync("BitMenuButton.toggleMenuButtonCallout", obj, UniqueId, _menuButtonId, _menuButtonCalloutId, _menuButtonOverlayId, _isCalloutOpen);
         _isCalloutOpen = false;
     }
 }
