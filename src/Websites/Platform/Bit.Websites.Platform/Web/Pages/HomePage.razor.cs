@@ -12,6 +12,9 @@ public partial class HomePage
     {
         await base.OnAfterRenderAsync(firstRender);
 
-        await JSRuntime.InitTrustPilot();
+        if (firstRender)
+        {
+            await JSRuntime.InitTrustPilot();
+        }
     }
 }
