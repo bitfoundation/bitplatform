@@ -30,7 +30,7 @@ public static class Urls
     public const string AdminPanel = "/admin-panel/overview";
     public const string AdminPanelMultiLingual = "https://adminpanel.bitplatform.dev/";
     public const string AdminPanelAppCenter = "https://install.appcenter.ms/orgs/bitfoundation/apps/adminpanel/distribution_groups/testers";
-    public const string AdminPanelFigma = "#";
+    public const string AdminPanelFigma = "https://www.figma.com/community/file/1161030350747233731";
     public const string AdminPanelNuget = "https://www.nuget.org/packages/Bit.AdminPanel";
 
     public const string Components = "/components";

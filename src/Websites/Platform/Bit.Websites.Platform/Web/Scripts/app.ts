@@ -36,3 +36,11 @@ function RegisterOnScrollToChangeGettingStartedSideRailStyle(element: any) {
         }
     });
 }
+
+function initTrustPilot() {
+    const trustpilotWidgetElements = document.getElementsByClassName("trustpilot-widget");
+    const thisGlobal = window as any;
+    for (let i = 0; i < trustpilotWidgetElements.length; i++) {
+        thisGlobal.Trustpilot.loadFromElement(trustpilotWidgetElements[i]);
+    }
+}
