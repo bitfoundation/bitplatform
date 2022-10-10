@@ -29,4 +29,9 @@ public static class WebSiteJsRuntimeExtension
     {
         await jsRuntime.InvokeVoidAsync("RegisterOnScrollToChangeGettingStartedSideRailStyle", element);
     }
+    
+    public static async Task InitTrustPilot(this IJSRuntime jsRuntime)
+    {
+        await jsRuntime.InvokeVoidAsync("initTrustPilot");
+    }
 }
