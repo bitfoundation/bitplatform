@@ -252,7 +252,7 @@ public partial class BitDateRangePicker
 
     protected override Task OnParametersSetAsync()
     {
-        if(CurrentValue is null)
+        if (CurrentValue is null)
         {
             CurrentValue = new();
         }
@@ -730,7 +730,7 @@ public partial class BitDateRangePicker
             className += className.Length == 0 ? "date-cell--selected-end" : " date-cell--selected-end";
         }
 
-        if (IsInCurrentMonth(week, day) && IsBetweenTwoSelectedDate(day, week))
+        if (IsBetweenTwoSelectedDate(day, week))
         {
             className += className.Length == 0 ? "date-cell--between-selected" : " date-cell--between-selected";
         }
@@ -743,17 +743,21 @@ public partial class BitDateRangePicker
         if (CurrentValue is null) return false;
         if (CurrentValue.StartDate.HasValue is false || CurrentValue.EndDate.HasValue is false) return false;
 
-        if (_selectedEndDateWeek is null && ((week == _selectedStartDateWeek && day > _selectedStartDateDayOfWeek) || week > _selectedStartDateWeek))
+        if (_selectedEndDateWeek is null && IsInCurrentMonth(week, day) && ((week == _selectedStartDateWeek && day > _selectedStartDateDayOfWeek) || week > _selectedStartDateWeek))
         {
             return true;
         }
-        else if (_selectedStartDateWeek is null && ((week == _selectedEndDateWeek && day < _selectedEndDateDayOfWeek) || week < _selectedEndDateWeek))
+        else if (_selectedStartDateWeek is null && IsInCurrentMonth(week, day) && ((week == _selectedEndDateWeek && day < _selectedEndDateDayOfWeek) || week < _selectedEndDateWeek))
         {
             return true;
         }
         else if (_selectedEndDateWeek is not null && _selectedStartDateWeek is not null &&
             ((week == _selectedStartDateWeek && day > _selectedStartDateDayOfWeek) || week > _selectedStartDateWeek) &&
             ((week == _selectedEndDateWeek && day < _selectedEndDateDayOfWeek) || week < _selectedEndDateWeek))
+        {
+            return true;
+        }
+        else if (_selectedEndDateWeek is null && _selectedStartDateWeek is null && IsInCurrentMonth(week, day))
         {
             return true;
         }
