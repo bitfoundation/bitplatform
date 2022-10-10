@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Threading.Tasks;
 using Bit.BlazorUI.Playground.Web.Models;
 using Bit.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace Bit.BlazorUI.Playground.Web.Pages.Components.DatePicker;
 
@@ -13,6 +14,12 @@ public partial class BitDatePickerDemo
     private FormValidationDatePickerModel formValidationDatePickerModel = new();
     private string SuccessMessage = string.Empty;
     private CultureInfo Culture = CultureInfo.CurrentUICulture;
+    private BitDatePicker datePicker;
+
+    private async Task OpenCallout(MouseEventArgs eventArgs)
+    {
+        await datePicker.OpenCallout(eventArgs);
+    }
 
     private async Task HandleValidSubmit()
     {
@@ -376,13 +383,21 @@ private void HandleInvalidSubmit()
                MinDate=""DateTimeOffset.Now.AddYears(-5)"" />";
 
     private readonly string example8HTMLCode = @"
-<BitDatePicker Style=""max-width: 300px""
+<BitDatePicker @ref=""datePicker""
+               Style=""max-width: 300px""
                AriaLabel=""Select a date""
                Placeholder=""Select a date..."">
     <LabelFragment>
-        Custom label <BitIconButton IconName=""BitIconName.Calendar""></BitIconButton>
+        Custom label <BitIconButton IconName=""BitIconName.Calendar"" OnClick=""OpenCallout""></BitIconButton>
     </LabelFragment>
 </BitDatePicker>";
+
+    private readonly string example8CSharpCode = @"
+private BitDatePicker datePicker;
+private async Task OpenCallout(MouseEventArgs eventArgs)
+{
+    await datePicker.OpenCallout(eventArgs);
+}";
 
     private readonly string example9HTMLCode = @"
 <BitDatePicker Style=""max-width: 300px""
