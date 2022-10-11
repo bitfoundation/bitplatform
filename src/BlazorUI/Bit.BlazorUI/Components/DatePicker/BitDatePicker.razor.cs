@@ -140,22 +140,22 @@ public partial class BitDatePicker
     /// <summary>
     /// Callback for when clicking on DatePicker input
     /// </summary>
-    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+    [Parameter] public EventCallback OnClick { get; set; }
 
     /// <summary>
     /// Callback for when focus moves into the input.
     /// </summary>
-    [Parameter] public EventCallback<FocusEventArgs> OnFocus { get; set; }
+    [Parameter] public EventCallback OnFocus { get; set; }
 
     /// <summary>
     /// Callback for when focus moves into the DatePicker input.
     /// </summary>
-    [Parameter] public EventCallback<FocusEventArgs> OnFocusIn { get; set; }
+    [Parameter] public EventCallback OnFocusIn { get; set; }
 
     /// <summary>
     /// Callback for when focus moves out the DatePicker input.
     /// </summary>
-    [Parameter] public EventCallback<FocusEventArgs> OnFocusOut { get; set; }
+    [Parameter] public EventCallback OnFocusOut { get; set; }
 
     /// <summary>
     /// Callback for when the date changes.
@@ -301,12 +301,12 @@ public partial class BitDatePicker
         }
     }
 
-    public async Task OpenCallout(MouseEventArgs eventArgs)
+    public async Task OpenCallout()
     {
-        await HandleClick(eventArgs);
+        await HandleClick();
     }
 
-    private async Task HandleClick(MouseEventArgs eventArgs)
+    private async Task HandleClick()
     {
         if (IsEnabled is false) return;
 
@@ -334,31 +334,31 @@ public partial class BitDatePicker
         }
 
         _displayYear = _currentYear;
-        await OnClick.InvokeAsync(eventArgs);
+        await OnClick.InvokeAsync();
     }
 
-    private async Task HandleFocusIn(FocusEventArgs eventArgs)
+    private async Task HandleFocusIn()
     {
         if (IsEnabled is false) return;
 
         FocusClass = "focused";
-        await OnFocusIn.InvokeAsync(eventArgs);
+        await OnFocusIn.InvokeAsync();
     }
 
-    private async Task HandleFocusOut(FocusEventArgs eventArgs)
+    private async Task HandleFocusOut()
     {
         if (IsEnabled is false) return;
 
         FocusClass = string.Empty;
-        await OnFocusOut.InvokeAsync(eventArgs);
+        await OnFocusOut.InvokeAsync();
     }
 
-    private async Task HandleFocus(FocusEventArgs e)
+    private async Task HandleFocus()
     {
         if (IsEnabled is false) return;
 
         FocusClass = "focused";
-        await OnFocus.InvokeAsync(e);
+        await OnFocus.InvokeAsync();
     }
 
     private async Task HandleChange(ChangeEventArgs e)
@@ -494,7 +494,7 @@ public partial class BitDatePicker
         ChangeYearRanges(fromYear);
     }
 
-    private void HandleGoToToday(MouseEventArgs args)
+    private void HandleGoToToday()
     {
         if (IsEnabled)
         {
