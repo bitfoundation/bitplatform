@@ -4,7 +4,6 @@ using System.Globalization;
 using System.Threading.Tasks;
 using Bit.BlazorUI.Playground.Web.Models;
 using Bit.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
-using Microsoft.AspNetCore.Components.Web;
 
 namespace Bit.BlazorUI.Playground.Web.Pages.Components.DatePicker;
 
@@ -16,9 +15,9 @@ public partial class BitDatePickerDemo
     private CultureInfo Culture = CultureInfo.CurrentUICulture;
     private BitDatePicker datePicker;
 
-    private async Task OpenCallout(MouseEventArgs eventArgs)
+    private async Task OpenCallout()
     {
-        await datePicker.OpenCallout(eventArgs);
+        await datePicker.OpenCallout();
     }
 
     private async Task HandleValidSubmit()
@@ -158,21 +157,21 @@ public partial class BitDatePickerDemo
         new ComponentParameter()
         {
             Name = "OnClick",
-            Type = "EventCallback<MouseEventArgs>",
+            Type = "EventCallback",
             DefaultValue = "",
             Description = "Callback for when clicking on DatePicker input.",
         },
         new ComponentParameter()
         {
             Name = "OnFocusIn",
-            Type = "EventCallback<FocusEventArgs>",
+            Type = "EventCallback",
             DefaultValue = "",
             Description = "Callback for when focus moves into the DatePicker input.",
         },
         new ComponentParameter()
         {
             Name = "OnFocusOut",
-            Type = "EventCallback<MouseEventArgs>",
+            Type = "EventCallback",
             DefaultValue = "",
             Description = "Callback for when clicking on DatePicker input.",
         },
@@ -394,9 +393,9 @@ private void HandleInvalidSubmit()
 
     private readonly string example8CSharpCode = @"
 private BitDatePicker datePicker;
-private async Task OpenCallout(MouseEventArgs eventArgs)
+private async Task OpenCallout()
 {
-    await datePicker.OpenCallout(eventArgs);
+    await datePicker.OpenCallout();
 }";
 
     private readonly string example9HTMLCode = @"
