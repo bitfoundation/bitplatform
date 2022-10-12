@@ -142,21 +142,21 @@ public partial class BitDateRangePickerDemo
         new ComponentParameter()
         {
             Name = "OnClick",
-            Type = "EventCallback<MouseEventArgs>",
+            Type = "EventCallback",
             DefaultValue = "",
             Description = "Callback for when clicking on DateRangePicker input.",
         },
         new ComponentParameter()
         {
             Name = "OnFocusIn",
-            Type = "EventCallback<FocusEventArgs>",
+            Type = "EventCallback",
             DefaultValue = "",
             Description = "Callback for when focus moves into the DateRangePicker input.",
         },
         new ComponentParameter()
         {
             Name = "OnFocusOut",
-            Type = "EventCallback<MouseEventArgs>",
+            Type = "EventCallback",
             DefaultValue = "",
             Description = "Callback for when clicking on DateRangePicker input.",
         },
@@ -302,9 +302,9 @@ public partial class BitDateRangePickerDemo
         }
     };
 
-    private async Task OpenCallout(MouseEventArgs eventArgs)
+    private async Task OpenCallout()
     {
-        await dateRangePicker.OpenCallout(eventArgs);
+        await dateRangePicker.OpenCallout();
     }
 
     private readonly string example1HTMLCode = @"
@@ -369,9 +369,9 @@ public partial class BitDateRangePickerDemo
 
     private readonly string example7CSharpCode = @"
 private BitDateRangePicker dateRangePicker;
-private async Task OpenCallout(MouseEventArgs eventArgs)
+private async Task OpenCallout()
 {
-    await dateRangePicker.OpenCallout(eventArgs);
+    await dateRangePicker.OpenCallout();
 }";
 
     private readonly string example8HTMLCode = @"
