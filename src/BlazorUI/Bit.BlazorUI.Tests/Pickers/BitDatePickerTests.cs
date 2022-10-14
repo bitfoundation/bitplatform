@@ -6,7 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Bit.BlazorUI.Tests.Pickers;
 
 [TestClass]
-public class BitDateRangePickerTests : BunitTestContext
+public class BitDatePickerTests : BunitTestContext
 {
     [DataTestMethod, DataRow("<div>This is labelFragment</div>")]
     public void BitDatePickerShouldRenderLabelFragment(string labelFragment)
