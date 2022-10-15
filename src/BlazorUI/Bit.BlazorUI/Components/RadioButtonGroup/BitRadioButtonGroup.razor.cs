@@ -154,7 +154,7 @@ public partial class BitRadioButtonGroup
         if (isComponentRendered is false) return;
 
         var option = AllOptions.FirstOrDefault(i => i.Value == args.Value);
-        if (option is not null && option != SelectedOption)
+        if (option is not null)
         {
             SelectedOption?.SetState(false);
             option.SetState(true);

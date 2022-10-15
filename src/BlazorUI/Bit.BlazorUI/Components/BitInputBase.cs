@@ -52,11 +52,15 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
                 }
             }
 
-            _value = value;
-
-            if (OnValueChanged is not null)
+            var hasChanged = EqualityComparer<TValue>.Default.Equals(value, _value) is false;
+            if (hasChanged)
             {
-                OnValueChanged(this, EventArgs.Empty);
+                _value = value;
+
+                if (OnValueChanged is not null)
+                {
+                    OnValueChanged(this, EventArgs.Empty);
+                }
             }
         }
     }
