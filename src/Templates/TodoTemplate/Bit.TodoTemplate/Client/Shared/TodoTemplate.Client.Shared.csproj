@@ -16,12 +16,12 @@
         <Content Remove="wwwroot\appsettings.json" />
         <EmbeddedResource Include="wwwroot\appsettings.json" />
 
-        <PackageReference Include="Bit.BlazorUI" Version="4.3.2-pre-04" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="4.3.2-pre-04">
+        <PackageReference Include="Bit.BlazorUI" Version="4.4.0-pre-01" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="4.4.0-pre-01">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="4.3.2-pre-04">
+        <PackageReference Include="Bit.SourceGenerators" Version="4.4.0-pre-01">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
