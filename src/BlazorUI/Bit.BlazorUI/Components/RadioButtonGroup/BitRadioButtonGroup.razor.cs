@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
 
 namespace Bit.BlazorUI;
 
@@ -82,7 +77,7 @@ public partial class BitRadioButtonGroup
         CurrentValue ??= DefaultValue;
         LabelId = $"RadioButtonGroupLabel{UniqueId}";
         OnValueChanging += HandleOnValueChanging;
-        OnCurrentValueChanged += HandleOnCurrentValueChanged;
+        OnValueChanged += HandleOnValueChanged;
 
         await base.OnInitializedAsync();
     }
@@ -186,7 +181,7 @@ public partial class BitRadioButtonGroup
         }
     }
 
-    private void HandleOnCurrentValueChanged(object? sender, EventArgs args)
+    private void HandleOnValueChanged(object? sender, EventArgs args)
     {
         SelectOptionByKey(CurrentValue);
     }
@@ -196,7 +191,7 @@ public partial class BitRadioButtonGroup
         if (disposing)
         {
             OnValueChanging -= HandleOnValueChanging;
-            OnCurrentValueChanged -= HandleOnCurrentValueChanged;
+            OnValueChanged -= HandleOnValueChanged;
         }
 
         base.Dispose(disposing);
