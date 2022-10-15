@@ -86,7 +86,7 @@ public partial class BitToggle
     {
         SetTexts();
 
-        OnCurrentValueChanged += HandleOnCurrentValueChanged;
+        OnValueChanged += HandleOnValueChanged;
 
         await base.OnInitializedAsync();
     }
@@ -108,7 +108,7 @@ public partial class BitToggle
         }
     }
 
-    private void HandleOnCurrentValueChanged(object? sender, EventArgs args)
+    private void HandleOnValueChanged(object? sender, EventArgs args)
     {
         SetTexts();
         ClassBuilder.Reset();
@@ -124,7 +124,7 @@ public partial class BitToggle
     {
         if (disposing)
         {
-            OnCurrentValueChanged -= HandleOnCurrentValueChanged;
+            OnValueChanged -= HandleOnValueChanged;
         }
 
         base.Dispose(disposing);

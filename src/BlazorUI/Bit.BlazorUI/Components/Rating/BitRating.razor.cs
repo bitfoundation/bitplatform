@@ -73,7 +73,7 @@ public partial class BitRating
 
     protected override async Task OnInitializedAsync()
     {
-        OnCurrentValueChanged += HandleOnCurrentValueChanged;
+        OnValueChanged += HandleOnValueChanged;
 
         if (CurrentValue == default && DefaultValue.HasValue)
         {
@@ -134,7 +134,7 @@ public partial class BitRating
         await OnChange.InvokeAsync(CurrentValue);
     }
 
-    private void HandleOnCurrentValueChanged(object? sender, EventArgs args) => ClassBuilder.Reset();
+    private void HandleOnValueChanged(object? sender, EventArgs args) => ClassBuilder.Reset();
 
     /// <inheritdoc />
     protected override bool TryParseValueFromString(string? value, out double result, [NotNullWhen(false)] out string? validationErrorMessage)
@@ -155,7 +155,7 @@ public partial class BitRating
     {
         if (disposing)
         {
-            OnCurrentValueChanged -= HandleOnCurrentValueChanged;
+            OnValueChanged -= HandleOnValueChanged;
         }
 
         base.Dispose(disposing);

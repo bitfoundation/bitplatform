@@ -148,7 +148,7 @@ public partial class BitCheckbox
 
     protected override async Task OnInitializedAsync()
     {
-        OnCurrentValueChanged += HandleOnCurrentValueChanged;
+        OnValueChanged += HandleOnValueChanged;
 
         await base.OnInitializedAsync();
     }
@@ -198,7 +198,7 @@ public partial class BitCheckbox
         }
     }
 
-    private void HandleOnCurrentValueChanged(object? sender, EventArgs args)
+    private void HandleOnValueChanged(object? sender, EventArgs args)
     {
         ClassBuilder.Reset();
     }
@@ -213,7 +213,7 @@ public partial class BitCheckbox
     {
         if (disposing)
         {
-            OnCurrentValueChanged -= HandleOnCurrentValueChanged;
+            OnValueChanged -= HandleOnValueChanged;
         }
 
         base.Dispose(disposing);

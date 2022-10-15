@@ -136,7 +136,7 @@ public partial class BitSearchBox
             CurrentValueAsString = DefaultValue;
         }
 
-        OnCurrentValueChanged += HandleOnCurrentValueChanged;
+        OnValueChanged += HandleOnValueChanged;
 
         InputId = $"SearchBox{UniqueId}";
         return base.OnInitializedAsync();
@@ -204,7 +204,7 @@ public partial class BitSearchBox
         }
     }
 
-    private void HandleOnCurrentValueChanged(object? sender, EventArgs args)
+    private void HandleOnValueChanged(object? sender, EventArgs args)
     {
         ClassBuilder.Reset();
     }
@@ -221,7 +221,7 @@ public partial class BitSearchBox
     {
         if (disposing)
         {
-            OnCurrentValueChanged -= HandleOnCurrentValueChanged;
+            OnValueChanged -= HandleOnValueChanged;
         }
 
         base.Dispose(disposing);

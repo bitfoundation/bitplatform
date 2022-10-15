@@ -14,7 +14,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
     private ValidationMessageStore? _parsingValidationMessagesStore;
     private readonly EventHandler<ValidationStateChangedEventArgs> _validationStateChangedHandler;
 
-    protected event EventHandler OnCurrentValueChanged = default!;
+    protected event EventHandler OnValueChanged = default!;
 
     internal event EventHandler<ValueChangingEventArgs<TValue>> OnValueChanging = default!;
 
@@ -53,6 +53,11 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
             }
 
             _value = value;
+
+            if (OnValueChanged is not null)
+            {
+                OnValueChanged(this, EventArgs.Empty);
+            }
         }
     }
 
@@ -97,9 +102,9 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
                 _ = ValueChanged.InvokeAsync(_value);
                 EditContext?.NotifyFieldChanged(FieldIdentifier);
 
-                if (OnCurrentValueChanged is not null)
+                if (OnValueChanged is not null)
                 {
-                    OnCurrentValueChanged(this, EventArgs.Empty);
+                    OnValueChanged(this, EventArgs.Empty);
                 }
             }
         }
