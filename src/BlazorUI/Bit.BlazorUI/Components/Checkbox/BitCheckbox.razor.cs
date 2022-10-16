@@ -128,6 +128,7 @@ public partial class BitCheckbox
     protected override void RegisterComponentClasses()
     {
         ClassBuilder.Register(() => IsIndeterminate ? $"{RootElementClass}-indeterminate-{VisualClassRegistrar()}" : string.Empty);
+
         ClassBuilder.Register(() => CurrentValue ? $"{RootElementClass}-checked-{VisualClassRegistrar()}" : string.Empty);
 
         ClassBuilder.Register(() => BoxSide == BitCheckBoxSide.End
