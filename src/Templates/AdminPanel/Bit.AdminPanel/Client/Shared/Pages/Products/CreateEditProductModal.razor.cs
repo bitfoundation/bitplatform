@@ -7,7 +7,7 @@ public partial class CreateEditProductModal
     [Parameter]
     public ProductDto Product { get; set; }
     [Parameter]
-    public EventCallback<MouseEventArgs> OnClickCallback { get; set; }
+    public EventCallback<MouseEventArgs> OnSave { get; set; }
 
     private bool IsOpen { get; set; }
     public bool IsLoading { get; private set; }
