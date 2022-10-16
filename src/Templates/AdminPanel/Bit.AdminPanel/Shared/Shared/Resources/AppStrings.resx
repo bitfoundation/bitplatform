@@ -802,4 +802,16 @@ Please confirm your email by clicking on the link.</value>
   <data name="ProfileImage" xml:space="preserve">
     <value>Image profile</value>
   </data>
+  <data name="AreYouSureWannaDeleteCategory" xml:space="preserve">
+    <value>Are you sure you want to delete category {0}</value>
+  </data>
+  <data name="AreYouSureWannaDeleteProduct" xml:space="preserve">
+    <value>Are you sure you want to delete product {0}</value>
+  </data>
+  <data name="DeleteCategory" xml:space="preserve">
+    <value>DeleteCategory</value>
+  </data>
+  <data name="DeleteProduct" xml:space="preserve">
+    <value>DeleteProduct</value>
+  </data>
 </root>

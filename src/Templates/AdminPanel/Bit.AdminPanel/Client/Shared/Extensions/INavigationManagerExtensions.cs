@@ -1,4 +1,4 @@
-﻿namespace AdminPanel.Client.Shared.Extensions;
+﻿namespace Microsoft.AspNetCore.Components;
 
 public static class INavigationManagerExtensions
 {

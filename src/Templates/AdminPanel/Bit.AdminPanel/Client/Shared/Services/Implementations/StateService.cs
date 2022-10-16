@@ -1,5 +1,4 @@
 ﻿//-:cnd:noEmit
-using System.Runtime.InteropServices;
 
 namespace AdminPanel.Client.Shared.Services.Implementations;
 
@@ -16,7 +15,7 @@ public class StateService : IStateService, IAsyncDisposable
     {
         _applicationState = applicationState;
 
-        if (RuntimeInformation.ProcessArchitecture != Architecture.Wasm)
+        if (OperatingSystem.IsBrowser() is false)
             _subscription = applicationState.RegisterOnPersisting(PersistAsJson);
     }
 
@@ -31,7 +30,7 @@ public class StateService : IStateService, IAsyncDisposable
 
     void Persist<T>(string key, T value)
     {
-        if (RuntimeInformation.ProcessArchitecture == Architecture.Wasm)
+        if (OperatingSystem.IsBrowser())
             return;
         _values.TryRemove(key, out object? _);
         _values.TryAdd(key, value);
@@ -39,7 +38,7 @@ public class StateService : IStateService, IAsyncDisposable
 
     async Task PersistAsJson()
     {
-        if (RuntimeInformation.ProcessArchitecture == Architecture.Wasm)
+        if (OperatingSystem.IsBrowser())
             return;
         foreach (var item in _values)
             _applicationState.PersistAsJson(item.Key, item.Value);

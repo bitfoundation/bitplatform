@@ -1,5 +1,4 @@
 ﻿//-:cnd:noEmit
-using AdminPanel.Client.Shared.Extensions;
 
 namespace AdminPanel.Client.Shared.Components;
 

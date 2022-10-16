@@ -88,13 +88,13 @@ public partial class CategoriesPage
         NavigationManager.NavigateTo($"add-edit-category/{Category!.Id}");
     }
 
-    private async Task DeleteCategory(CategoryDto Category)
+    private async Task DeleteCategory(CategoryDto category)
     {
-        var confirmed = await ConfirmMessageBox.Show($"Are you sure you want to delete category \"{Category.Name}\"?", "Delete category");
+        var confirmed = await ConfirmMessageBox.Show(Localizer.GetString(nameof(AppStrings.AreYouSureWannaDeleteCategory), category.Name!), Localizer[nameof(AppStrings.DeleteCategory)]);
 
         if (confirmed)
         {
-            await HttpClient.DeleteAsync($"Category/Delete/{Category.Id}");
+            await HttpClient.DeleteAsync($"Category/Delete/{category.Id}");
             await RefreshData();
         }
     }

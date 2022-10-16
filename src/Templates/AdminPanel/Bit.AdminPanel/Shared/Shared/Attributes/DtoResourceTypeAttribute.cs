@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace AdminPanel.Shared.Attributes;
+﻿namespace AdminPanel.Shared.Attributes;
 
 /// <summary>
 /// Gets or sets the resource type to use for error message & localizations lookups.

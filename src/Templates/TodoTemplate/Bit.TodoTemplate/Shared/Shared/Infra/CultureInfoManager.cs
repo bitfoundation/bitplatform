@@ -1,6 +1,5 @@
 ﻿using System.Globalization;
 using System.Reflection;
-using System.Runtime.InteropServices;
 
 namespace TodoTemplate.Shared.Infra;
 public class CultureInfoManager
@@ -17,7 +16,7 @@ public class CultureInfoManager
 
     public static CultureInfo CreateCultureInfo(string cultureInfoId)
     {
-        var cultureInfo = RuntimeInformation.ProcessArchitecture == Architecture.Wasm ? CultureInfo.CreateSpecificCulture(cultureInfoId) : new CultureInfo(cultureInfoId);
+        var cultureInfo = OperatingSystem.IsBrowser() ? CultureInfo.CreateSpecificCulture(cultureInfoId) : new CultureInfo(cultureInfoId);
 
         if (cultureInfoId == "fa-IR")
         {

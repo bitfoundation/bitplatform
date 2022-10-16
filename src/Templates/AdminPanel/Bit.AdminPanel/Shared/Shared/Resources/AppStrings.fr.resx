@@ -793,4 +793,10 @@ Veuillez confirmer votre email en cliquant sur le lien.</value>
   <data name="ProfileImage" xml:space="preserve">
     <value>Profil d'image</value>
   </data>
+  <data name="AreYouSureWannaDeleteCategory" xml:space="preserve">
+    <value>Êtes-vous sûr de vouloir supprimer la catégorie {0}</value>
+  </data>
+  <data name="AreYouSureWannaDeleteProduct" xml:space="preserve">
+    <value>Êtes-vous sûr de vouloir supprimer le produit {0}</value>
+  </data>
 </root>
