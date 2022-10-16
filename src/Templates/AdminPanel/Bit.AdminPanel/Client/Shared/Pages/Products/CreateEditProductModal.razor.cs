@@ -83,7 +83,7 @@ public partial class CreateEditProductModal
         }
         finally
         {
-            await OnClickCallback.InvokeAsync();
+            await OnSave.InvokeAsync();
             IsSaveLoading = false;
         }
     }

@@ -37,5 +37,5 @@
     </div>
 </div>
 
-<CreateEditProductModal @ref="modal" OnClickCallback="@WrapHandled(() => RefreshData())"/>
+<CreateEditProductModal @ref="modal" OnSave="@WrapHandled(() => RefreshData())"/>
 <ConfirmMessageBox />
