@@ -27,6 +27,7 @@ public partial class NavMenu
         new BitNavLinkItem { Name= "Project structure", Key = "Project structure", Url = "/todo-template/project-structure"},
         new BitNavLinkItem { Name= "Exception handling", Key = "Exception handling", Url = "/todo-template/exception-handling"},
         new BitNavLinkItem { Name= "Cache mechanism", Key = "Cache mechanism", Url = "/todo-template/cache-mechanism"},
+        new BitNavLinkItem { Name= "Multilingualism", Key = "Multilingualism", Url = "/todo-template/multilingualism"},
         new BitNavLinkItem { Name = "Contribute", Key = "Contribute", Url = "/todo-template/contribute"}
     };
 
@@ -43,6 +44,7 @@ public partial class NavMenu
         new BitNavLinkItem { Name= "Project structure", Key = "Project structure", Url = "/admin-panel/project-structure"},
         new BitNavLinkItem { Name= "Exception handling", Key = "Exception handling", Url = "/admin-panel/exception-handling"},
         new BitNavLinkItem { Name= "Cache mechanism", Key = "Cache mechanism", Url = "/admin-panel/cache-mechanism"},
+        new BitNavLinkItem { Name= "Multilingualism", Key = "Multilingualism", Url = "/admin-panel/multilingualism"},
         new BitNavLinkItem { Name = "Contribute", Key = "Contribute", Url = "/admin-panel/contribute"}
     };
 
