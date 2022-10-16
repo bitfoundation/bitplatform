@@ -10,13 +10,14 @@ namespace Bit.BlazorUI;
 
 public partial class BitCheckbox
 {
-    private bool isIndeterminate;
     private bool IsIndeterminateHasBeenSet;
-    private BitCheckBoxSide boxSide;
-
-    [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
+    private bool _isIndeterminate;
+    private BitCheckBoxSide _boxSide;
 
     public ElementReference CheckboxElement { get; set; }
+    public string InputId { get; set; } = string.Empty;
+
+    [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
 
     /// <summary>
     /// Detailed description of the checkbox input for the benefit of screen readers
@@ -39,20 +40,19 @@ public partial class BitCheckbox
     [Parameter] public int? AriaSetSize { get; set; }
 
     /// <summary>
-    /// Name for the checkbox input. This is intended for use with forms and NOT displayed in the UI
+    /// Determines whether the checkbox should be shown before the label (start) or after (end)
     /// </summary>
-    [Parameter] public string? Name { get; set; }
-
-    /// <summary>
-    /// Title text applied to the root element and the hidden checkbox input
-    /// </summary>
-    [Parameter] public string? Title { get; set; }
-
-    /// <summary>
-    /// Default checkbox state
-    /// Use this if you want an uncontrolled component, meaning the Checkbox instance maintains its own state.
-    /// </summary>
-    [Parameter] public bool? DefaultValue { get; set; }
+    [Parameter]
+    public BitCheckBoxSide BoxSide
+    {
+        get => _boxSide;
+        set
+        {
+            if (value == _boxSide) return;
+            _boxSide = value;
+            ClassBuilder.Reset();
+        }
+    }
 
     /// <summary>
     /// Custom icon for the check mark rendered by the checkbox instade of default check mark icon
@@ -65,19 +65,15 @@ public partial class BitCheckbox
     [Parameter] public string? CheckmarkIconAriaLabel { get; set; }
 
     /// <summary>
-    /// Determines whether the checkbox should be shown before the label (start) or after (end)
+    /// The content of checkbox, It can be Any custom tag or a text
     /// </summary>
-    [Parameter]
-    public BitCheckBoxSide BoxSide
-    {
-        get => boxSide;
-        set
-        {
-            if (value == boxSide) return;
-            boxSide = value;
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Default checkbox state
+    /// Use this if you want an uncontrolled component, meaning the Checkbox instance maintains its own state.
+    /// </summary>
+    [Parameter] public bool? DefaultValue { get; set; }
 
     /// <summary>
     /// Default indeterminate visual state for checkbox
@@ -91,11 +87,11 @@ public partial class BitCheckbox
     [Parameter]
     public bool IsIndeterminate
     {
-        get => isIndeterminate;
+        get => _isIndeterminate;
         set
         {
-            if (value == isIndeterminate) return;
-            isIndeterminate = value;
+            if (value == _isIndeterminate) return;
+            _isIndeterminate = value;
             _ = JSRuntime.SetProperty(CheckboxElement, "indeterminate", value);
             ClassBuilder.Reset();
             _ = IsIndeterminateChanged.InvokeAsync(value);
@@ -108,21 +104,24 @@ public partial class BitCheckbox
     [Parameter] public EventCallback<bool> IsIndeterminateChanged { get; set; }
 
     /// <summary>
+    /// Name for the checkbox input. This is intended for use with forms and NOT displayed in the UI
+    /// </summary>
+    [Parameter] public string? Name { get; set; }
+
+    /// <summary>
     ///  Callback that is called when the check box is cliced
     /// </summary>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
-
-    /// <summary>
-    /// The content of checkbox, It can be Any custom tag or a text
-    /// </summary>
-    [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
     /// Callback that is called when the checked value has changed
     /// </summary>
     [Parameter] public EventCallback<bool> OnChange { get; set; }
 
-    public string InputId { get; set; } = string.Empty;
+    /// <summary>
+    /// Title text applied to the root element and the hidden checkbox input
+    /// </summary>
+    [Parameter] public string? Title { get; set; }
 
     protected override string RootElementClass => "bit-chb";
 

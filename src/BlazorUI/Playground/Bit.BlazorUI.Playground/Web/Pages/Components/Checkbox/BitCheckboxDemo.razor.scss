@@ -17,8 +17,8 @@
     font-size: rem(12px);
 }
 
-::deep .chk-box {
-    .bit-chb-lbl {
+.chk-box {
+    ::deep .bit-chb-lbl {
         margin-bottom: rem(10px);
     }
 }
