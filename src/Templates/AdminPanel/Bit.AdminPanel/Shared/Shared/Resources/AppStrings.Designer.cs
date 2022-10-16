@@ -151,6 +151,24 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Are you sure you want to delete category {0}.
+        /// </summary>
+        public static string AreYouSureWannaDeleteCategory {
+            get {
+                return ResourceManager.GetString("AreYouSureWannaDeleteCategory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Are you sure you want to delete product {0}.
+        /// </summary>
+        public static string AreYouSureWannaDeleteProduct {
+            get {
+                return ResourceManager.GetString("AreYouSureWannaDeleteProduct", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Are you sure you want to Sign out?.
         /// </summary>
         public static string AreYouSureYouWantToSignout {
@@ -499,6 +517,24 @@ namespace AdminPanel.Shared.Resources {
         public static string Delete {
             get {
                 return ResourceManager.GetString("Delete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DeleteCategory.
+        /// </summary>
+        public static string DeleteCategory {
+            get {
+                return ResourceManager.GetString("DeleteCategory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DeleteProduct.
+        /// </summary>
+        public static string DeleteProduct {
+            get {
+                return ResourceManager.GetString("DeleteProduct", resourceCulture);
             }
         }
         

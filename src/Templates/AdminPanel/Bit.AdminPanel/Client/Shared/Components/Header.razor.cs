@@ -179,24 +179,14 @@ public partial class Header : IAsyncDisposable
         }
         else
         {
-            switch (CurrentUrl)
+            BreadcrumbItems = CurrentUrl switch
             {
-                case "/":
-                    BreadcrumbItems = HomeBreadcrumbItems;
-                    break;
-                case "/products":
-                    BreadcrumbItems = ProductsBreadcrumbItems;
-                    break;
-                case "/categories":
-                    BreadcrumbItems = CategoriesBreadcrumbItems;
-                    break;
-                case "/edit-profile":
-                    BreadcrumbItems = ProfileBreadcrumbItems;
-                    break;
-                default:
-                    BreadcrumbItems = new List<BitBreadcrumbItem>();
-                    break;
-            }
+                "/" => HomeBreadcrumbItems,
+                "/products" => ProductsBreadcrumbItems,
+                "/categories" => CategoriesBreadcrumbItems,
+                "/edit-profile" => ProfileBreadcrumbItems,
+                _ => new List<BitBreadcrumbItem>(),
+            };
         }
     }
 

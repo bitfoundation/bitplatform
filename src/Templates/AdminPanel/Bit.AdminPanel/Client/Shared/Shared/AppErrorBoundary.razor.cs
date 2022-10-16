@@ -1,4 +1,5 @@
 ﻿//-:cnd:noEmit
+
 namespace AdminPanel.Client.Shared.Shared;
 
 public partial class AppErrorBoundary
@@ -23,7 +24,7 @@ public partial class AppErrorBoundary
 
     private void Refresh()
     {
-        _navigationManager.NavigateTo(_navigationManager.Uri, true);
+        _navigationManager.ForceReload();
     }
 
     private void GoHome()

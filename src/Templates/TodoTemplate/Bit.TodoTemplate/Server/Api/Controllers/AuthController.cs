@@ -1,6 +1,5 @@
 ﻿//-:cnd:noEmit
 using System.Web;
-using Microsoft.AspNetCore.Hosting.Server;
 using FluentEmail.Core;
 using TodoTemplate.Server.Api.Resources;
 using TodoTemplate.Server.Api.Models.Account;

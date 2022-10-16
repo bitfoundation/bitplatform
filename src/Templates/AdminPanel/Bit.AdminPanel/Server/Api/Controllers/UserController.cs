@@ -27,9 +27,6 @@ public partial class UserController : AppControllerBase
     {
         var userId = User.GetUserId();
 
-        if (userId != User.GetUserId())
-            throw new UnauthorizedException();
-
         var user = await _userManager.Users.FirstOrDefaultAsync(user => user.Id == userId, cancellationToken);
 
         if (user is null)

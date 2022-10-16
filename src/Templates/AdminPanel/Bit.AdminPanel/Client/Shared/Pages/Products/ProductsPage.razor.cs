@@ -14,7 +14,6 @@ public partial class ProductsPage
     BitDataGrid<ProductDto>? dataGrid;
     BitDataGridItemsProvider<ProductDto> productsProvider;
 
-    long TotalCount;
     string _productNameFilter = string.Empty;
     string ProductNameFilter
     {
@@ -22,7 +21,7 @@ public partial class ProductsPage
         set
         {
             _productNameFilter = value;
-            _ = dataGrid.RefreshDataAsync();
+            _ = dataGrid!.RefreshDataAsync();
         }
     }
 
@@ -60,13 +59,11 @@ public partial class ProductsPage
 
                 var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto);
 
-                TotalCount = data!.TotalCount;
-
                 return BitDataGridItemsProviderResult.From(data!.Items, (int)data!.TotalCount);
             }
             catch
             {
-                return BitDataGridItemsProviderResult.From<ProductDto>(new List<ProductDto> { }, 0);
+                return BitDataGridItemsProviderResult.From(new List<ProductDto> { }, 0);
             }
             finally
             {
@@ -93,7 +90,7 @@ public partial class ProductsPage
 
     private async Task DeleteProduct(ProductDto product)
     {
-        var confirmed = await ConfirmMessageBox.Show($"Are you sure you want to delete product \"{product.Name}\"?", "Delete product");
+        var confirmed = await ConfirmMessageBox.Show(Localizer.GetString(nameof(AppStrings.AreYouSureWannaDeleteProduct), product.Name!), Localizer[nameof(AppStrings.DeleteProduct)]);
 
         if (confirmed)
         {

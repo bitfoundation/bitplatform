@@ -1,7 +1,6 @@
 ﻿//-:cnd:noEmit
 using System.Globalization;
 using System.Net.Http.Headers;
-using System.Runtime.InteropServices;
 
 namespace TodoTemplate.Client.Shared.Services.Implementations;
 
@@ -11,7 +10,7 @@ public partial class AppHttpClientHandler : HttpClientHandler
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        if (request.Headers.Authorization is null && RuntimeInformation.ProcessArchitecture != Architecture.Wasm)
+        if (request.Headers.Authorization is null && OperatingSystem.IsBrowser() is false)
         {
             var access_token = await _tokenProvider.GetAcccessToken();
             if (access_token is not null)
