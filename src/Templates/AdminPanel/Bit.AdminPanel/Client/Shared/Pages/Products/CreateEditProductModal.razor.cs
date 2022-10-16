@@ -6,6 +6,8 @@ public partial class CreateEditProductModal
 {
     [Parameter]
     public ProductDto Product { get; set; }
+    [Parameter]
+    public EventCallback OnSave { get; set; }
 
     private bool IsOpen { get; set; }
     public bool IsLoading { get; private set; }
@@ -81,6 +83,7 @@ public partial class CreateEditProductModal
         }
         finally
         {
+            await OnSave.InvokeAsync();
             IsSaveLoading = false;
         }
     }
