@@ -1,0 +1,39 @@
+﻿@page "/admin-panel/multilingualism"
+
+<div class="page-container">
+    <h1 class="page-main-title">Multilingualism</h1>
+    <div class="page-desc">
+        Bit AdminPanel provides features in order add support for Multilingualism.
+    </div>
+    <div class="section-card">
+        <h2 class="section-card-title">Enable Multilingualism</h2>
+        <div class="section-card-txt">
+            To activate the Multilingual feature of the app, set the <span class="high-light-text">EnableMultilingual</span> to true in the <span class="high-light-text">Directory.Build.props</span> file.
+        </div>
+        <div class="section-card-txt">
+            To add a new Culture, add it to the list of SupportedCultures in the <span class="high-light-text">CultureInfoManager</span> class and add the corresponding translations in a new AppStrings.[culture-name].resx file named based on the new culture's name (e.g AppStrings.fr.resx for French).
+        </div>
+        <div class="section-card-txt">
+            You also can customize the details of each culture in the <span class="high-light-text">CreateCultureInfo</span> method, and the implementations of the Bit Platform templates will apply these changes in all of the supported platforms: Web, Windows, iOS, Android, and even in Pre-Rendering.
+        </div>
+        <div class="section-card-txt">
+            The required translations of the DTO's Validation Annotations will come from the values inside the AppStrings.resx file by default. But you can add separate .resx files and use them instead by adding the <span class="high-light-text">DtoResourceTypeAttribute</span> on the DTO classes. For example, to use a custom .resx file named CustomersManagement.resx for a specific DTO, the attribute used on that DTO should look like this:
+        </div>
+        <div class="code-box">
+            <pre><code>[DtoResourceType(typeof(CustomersManagement)]
+public class CustomerDto
+{
+    ...
+}</code></pre>
+        </div>
+        <div class="section-card-txt">
+            You can also inject the specific <span class="high-light-text">StringLocalizer</span> of this custom .resx file like this:
+        </div>
+        <div class="code-box">@("[AutoInject] private IStrignLocalizer<CustomersManagement> _customersManagementLocalizer;")</div>
+        <div class="section-card-txt">
+            And use it to access the translations inside that page.
+        </div>
+    </div>
+</div>
+
+<NavigationButtons Prev="Cache mechanism" PrevUrl="/admin-panel/cache-mechanism" Next="Contribute" NextUrl="/admin-panel/contribute" />
