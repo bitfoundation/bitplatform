@@ -7,10 +7,10 @@
      class="@ClassBuilder.Value"
      role="group"
      aria-label="@GetRootElAriaLabel()">
-    <div class="bit-clr-pkr-panel">
+    <div class="clr-pkr-panel">
         <div @ref="SaturationPickerRef"
              @onpointerdown="OnSaturationPickerMouseDown"
-             class="bit-clr-pkr-rectangle"
+             class="clr-pkr-rectangle"
              style=@($"background-color: {saturationPickerBackgroundRgbCss}")
              role="slider"
              tabindex="0"
@@ -20,16 +20,16 @@
              aria-valuemax="100"
              aria-label="Saturation and brightness"
              aria-describedby="@ColorRectangleDescriptionId">
-            <div class="description" id="@ColorRectangleDescriptionId">Use left and right arrow keys to set saturation. Use up and down arrow keys to set brightness.</div>
-            <div class="bit-clr-pkr-light"></div>
-            <div class="bit-clr-pkr-dark"></div>
-            <div class="bit-clr-pkr-thumb" style=@($"top: {saturationPickerThumbPosition?.Top}px; left: {saturationPickerThumbPosition?.Left}px; background: {Rgb};")>
+            <div class="clr-pkr-description" id="@ColorRectangleDescriptionId">Use left and right arrow keys to set saturation. Use up and down arrow keys to set brightness.</div>
+            <div class="clr-pkr-light"></div>
+            <div class="clr-pkr-dark"></div>
+            <div class="clr-pkr-thumb" style=@($"top: {saturationPickerThumbPosition?.Top}px; left: {saturationPickerThumbPosition?.Left}px; background: {Rgb};")>
             </div>
         </div>
 
-        <div class="bit-clr-pkr-flex-container">
-            <div class="bit-clr-pkr-slider-container">
-                <div class="bit-clr-pkr-slider hue-slider">
+        <div class="clr-pkr-flex-container">
+            <div class="clr-pkr-slider-container">
+                <div class="clr-pkr-slider hue-slider">
                     <input type="range"
                            role="slider"
                            tabindex="0"
@@ -47,7 +47,7 @@
 
                 @if (ShowAlphaSlider)
                 {
-                    <div class="bit-clr-pkr-slider alpha-slider" style=@($"background: linear-gradient(to left,{Rgb} 0%, transparent 100%), url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAJUlEQVQYV2N89erVfwY0ICYmxoguxjgUFKI7GsTH5m4M3w1ChQC1/Ca8i2n1WgAAAABJRU5ErkJggg==);")>
+                    <div class="clr-pkr-slider alpha-slider" style=@($"background: linear-gradient(to left,{Rgb} 0%, transparent 100%), url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAJUlEQVQYV2N89erVfwY0ICYmxoguxjgUFKI7GsTH5m4M3w1ChQC1/Ca8i2n1WgAAAABJRU5ErkJggg==);")>
                         <input type="range"
                            role="slider"
                            tabindex="0"
