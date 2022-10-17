@@ -1,4 +1,5 @@
-﻿@import "../../Styles/Fluent/colors.fluent.scss", "../../Styles/functions.scss";
+﻿@import "../../Styles/Fluent/colors.fluent.scss";
+@import "../../Styles/functions.scss";
 
 .bit-clr-pkr {
     touch-action: none;
@@ -15,6 +16,61 @@
         .clr-pkr-panel {
             padding: rem(12px);
             user-select: none;
+        }
+
+        .clr-pkr-rectangle {
+            position: relative;
+            min-width: rem(220px);
+            min-height: rem(220px);
+            height: rem(268px);
+            margin-bottom: rem(8px);
+            border: rem(1px) solid $Grey20;
+            border-radius: rem(2px);
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        .clr-pkr-description {
+            position: absolute;
+            width: rem(1px);
+            height: rem(1px);
+            margin: rem(-1px);
+            padding: 0;
+            border: 0;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .clr-pkr-dark {
+            position: absolute;
+            inset: 0px;
+            background: linear-gradient(transparent 0px, rgb(0, 0, 0) 100%);
+        }
+
+        .clr-pkr-light {
+            position: absolute;
+            inset: 0px;
+            background: linear-gradient(to right, white 0%, transparent 100%);
+        }
+
+        .clr-pkr-thumb {
+            position: absolute;
+            width: rem(20px);
+            height: rem(20px);
+            border: rem(1px) solid $GreyInputBorder;
+            border-radius: 50%;
+            box-shadow: rgb(0 0 0 / 13%) 0px 3.2px 7.2px 0px, rgb(0 0 0 / 11%) 0px 0.6px 1.8px 0px;
+            transform: translate(-50%,-50%);
+            background: $White;
+
+            &::before {
+                position: absolute;
+                inset: 0px;
+                border: rem(2px) solid $White;
+                border-radius: 50%;
+                box-sizing: border-box;
+                content: "";
+            }
         }
 
         .clr-pkr-flex-container {
@@ -77,55 +133,6 @@
             height: rem(48px);
             margin-left: rem(8px);
             border: rem(1px) solid $Grey60;
-        }
-
-        .clr-pkr-rectangle {
-            position: relative;
-            min-width: rem(220px);
-            min-height: rem(220px);
-            height: rem(268px);
-            margin-bottom: rem(8px);
-            border: rem(1px) solid $Grey20;
-            border-radius: rem(2px);
-            outline: none;
-            box-sizing: border-box;
-        }
-
-        .clr-pkr-description {
-            position: absolute;
-            width: rem(1px);
-            height: rem(1px);
-            margin: rem(-1px);
-            padding: 0;
-            border: 0;
-            overflow: hidden;
-            white-space: nowrap;
-        }
-
-        .clr-pkr-dark {
-            position: absolute;
-            inset: 0px;
-            background: linear-gradient(transparent 0px, rgb(0, 0, 0) 100%);
-        }
-
-        .clr-pkr-light {
-            position: absolute;
-            inset: 0px;
-            background: linear-gradient(to right, white 0%, transparent 100%);
-        }
-
-        .clr-pkr-thumb {
-            position: absolute;
-            z-index: 1;
-            inset: 0px;
-            width: rem(20px);
-            height: rem(20px);
-            border: rem(2px) solid $White;
-            border-radius: 50%;
-            box-shadow: 0 0px 0px 1px $GreyInputBorder;
-            box-sizing: border-box;
-            background-color: $White;
-            transform: translate(-50%,-50%);
         }
     }
 }
