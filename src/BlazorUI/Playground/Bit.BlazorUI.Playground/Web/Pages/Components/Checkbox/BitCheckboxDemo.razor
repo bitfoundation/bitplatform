@@ -41,28 +41,28 @@
     <ComponentExampleBox Title="Controlled BitCheckbox" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
         <ExamplePreview>
             <div class="chk-box controlled-box">
+                <BitCheckbox Value="IsChecked_OneWay">One-way Controlled Checkbox</BitCheckbox>
                 <BitButton OnClick="() => IsChecked_OneWay = !IsChecked_OneWay">
                     @(IsChecked_OneWay ? "Remove" : "Make") Checked
                 </BitButton>
-                <BitCheckbox Value="IsChecked_OneWay">One-way Controlled Checkbox</BitCheckbox>
             </div>
             <div class="chk-box controlled-box">
+                <BitCheckbox @bind-Value="IsChecked_TwoWay">Two-way Controlled Checkbox</BitCheckbox>
                 <BitButton OnClick="() => IsChecked_TwoWay = !IsChecked_TwoWay">
                     @(IsChecked_TwoWay ? "Remove" : "Make") Checked
                 </BitButton>
-                <BitCheckbox @bind-Value="IsChecked_TwoWay">Two-way Controlled Checkbox</BitCheckbox>
             </div>
             <div class="chk-box controlled-box">
+                <BitCheckbox IsIndeterminate="IsIndeterminated_OneWay">One-way Controlled indeterminate checkbox</BitCheckbox>
                 <BitButton OnClick="() => IsIndeterminated_OneWay = !IsIndeterminated_OneWay">
                     @(IsIndeterminated_OneWay ? "Remove" : "Make") Indeterminate
                 </BitButton>
-                <BitCheckbox IsIndeterminate="IsIndeterminated_OneWay">One-way Controlled indeterminate checkbox</BitCheckbox>
             </div>
             <div class="chk-box controlled-box">
+                <BitCheckbox @bind-IsIndeterminate="IsIndeterminated_TwoWay">Two-way Controlled indeterminate checkbox</BitCheckbox>
                 <BitButton OnClick="() => IsIndeterminated_TwoWay = !IsIndeterminated_TwoWay">
                     @(IsIndeterminated_TwoWay ? "Remove" : "Make") Indeterminate
                 </BitButton>
-                <BitCheckbox @bind-IsIndeterminate="IsIndeterminated_TwoWay">Two-way Controlled indeterminate checkbox</BitCheckbox>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>

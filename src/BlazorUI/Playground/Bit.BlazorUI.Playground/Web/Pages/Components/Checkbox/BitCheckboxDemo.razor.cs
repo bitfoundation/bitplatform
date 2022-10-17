@@ -224,25 +224,25 @@ public partial class BitCheckboxDemo
 <BitCheckbox IsIndeterminate=""true"">One-way indeterminate Checkbox (Fixed)</BitCheckbox>
 <BitCheckbox IsIndeterminate=""true"" IsEnabled=""false"">Disabled indeterminate checkbox</BitCheckbox>";
     private readonly string example4HTMLCode = @"
+<BitCheckbox Value=""IsChecked_OneWay"">One-way Controlled Checkbox</BitCheckbox>
 <BitButton OnClick=""() => IsChecked_OneWay = !IsChecked_OneWay"">
     @(IsChecked_OneWay ? ""Remove"" : ""Make"") Checked
 </BitButton>
-<BitCheckbox Value=""IsChecked_OneWay"">One-way Controlled Checkbox</BitCheckbox>
 
+<BitCheckbox @bind-Value=""IsChecked_TwoWay"">Two-way Controlled Checkbox</BitCheckbox>
 <BitButton OnClick=""() => IsChecked_TwoWay = !IsChecked_TwoWay"">
     @(IsChecked_TwoWay ? ""Remove"" : ""Make"") Checked
 </BitButton>
-<BitCheckbox @bind-Value=""IsChecked_TwoWay"">Two-way Controlled Checkbox</BitCheckbox>
 
+<BitCheckbox IsIndeterminate=""IsIndeterminated_OneWay"">One-way Controlled indeterminate checkbox</BitCheckbox>
 <BitButton OnClick=""() => IsIndeterminated_OneWay = !IsIndeterminated_OneWay"">
     @(IsIndeterminated_OneWay ? ""Remove"" : ""Make"") Indeterminate
 </BitButton>
-<BitCheckbox IsIndeterminate=""IsIndeterminated_OneWay"">One-way Controlled indeterminate checkbox</BitCheckbox>
 
+<BitCheckbox @bind-IsIndeterminate=""IsIndeterminated_TwoWay"">Two-way Controlled indeterminate checkbox</BitCheckbox>
 <BitButton OnClick=""() => IsIndeterminated_TwoWay = !IsIndeterminated_TwoWay"">
     @(IsIndeterminated_TwoWay ? ""Remove"" : ""Make"") Indeterminate
 </BitButton>
-<BitCheckbox @bind-IsIndeterminate=""IsIndeterminated_TwoWay"">Two-way Controlled indeterminate checkbox</BitCheckbox>
 ";
     private readonly string example5HTMLCode = @"
 <BitCheckbox>
