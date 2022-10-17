@@ -1,13 +1,15 @@
 ﻿@page "/components/check-box"
 
-<ComponentDemo ComponentName="CheckBox" ComponentDescription="BitCheckbox is component that permits the user to make a binary choice, a choice between one of two possible mutually exclusive options. For example, the user may have to answer 'yes' or 'no' on a simple yes/no question. Checkboxes are shown as ☐ when unchecked, or ☑ when checked."
-               ComponentParameters="componentParameters" EnumParameters="enumParameters">
-    <ComponentExampleBox Title="BitCheckbox" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
+<ComponentDemo ComponentName="CheckBox"
+               ComponentDescription="BitCheckbox is component that permits the user to make a binary choice, a choice between one of two possible mutually exclusive options. For example, the user may have to answer 'yes' or 'no' on a simple yes/no question. Checkboxes are shown as ☐ when unchecked, or ☑ when checked."
+               ComponentParameters="componentParameters"
+               EnumParameters="enumParameters">
+    <ComponentExampleBox Title="BitCheckbox" HTMLSourceCode="@example1HTMLCode" ExampleId="example1">
         <ExamplePreview>
             <div class="example-desc">To create a checkbox you can use a BitCheckbox component.</div>
             <div class="chk-box">
-                <BitCheckbox @bind-Value="IsCheckBoxChecked">Basic Checkbox</BitCheckbox>
-                <BitCheckbox Value="true">Checked Checkbox</BitCheckbox>
+                <BitCheckbox>Basic Checkbox</BitCheckbox>
+                <BitCheckbox Value="true">One-way Checked Checkbox (Fixed)</BitCheckbox>
                 <BitCheckbox IsEnabled="false">Disable Checkbox</BitCheckbox>
                 <BitCheckbox IsEnabled="false" Value="true">Disable Checked Checkbox</BitCheckbox>
                 <BitCheckbox CheckmarkIconName="BitIconName.Heart">Custom checkmark Checkbox</BitCheckbox>
@@ -19,7 +21,7 @@
         <ExamplePreview>
             <div class="chk-box">
                 <BitCheckbox BoxSide="@BitCheckBoxSide.End">Reversed - Basic Checkbox</BitCheckbox>
-                <BitCheckbox BoxSide="@BitCheckBoxSide.End" Value="true">Reversed - Checked Checkbox</BitCheckbox>
+                <BitCheckbox BoxSide="@BitCheckBoxSide.End" Value="true">Reversed - One-way Checked Checkbox (Fixed)</BitCheckbox>
                 <BitCheckbox BoxSide="@BitCheckBoxSide.End" IsEnabled="false">Reversed - Disable Checkbox</BitCheckbox>
                 <BitCheckbox BoxSide="@BitCheckBoxSide.End" IsEnabled="false" Value="true">Reversed - Disable Checked Checkbox</BitCheckbox>
             </div>
@@ -29,16 +31,43 @@
     <ComponentExampleBox Title="Indeterminate" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example3">
         <ExamplePreview>
             <div class="chk-box">
-                <BitCheckbox @bind-IsIndeterminate="IsCheckBoxIndeterminate" @bind-Value="IsCheckBoxChecked">Indeterminate checkbox</BitCheckbox>
-                <BitCheckbox IsIndeterminate="true">Indeterminate checkbox</BitCheckbox>
+                <BitCheckbox @bind-IsIndeterminate="IsIndeterminated">Indeterminate checkbox</BitCheckbox>
+                <BitCheckbox IsIndeterminate="true">One-way indeterminate Checkbox (Fixed)</BitCheckbox>
                 <BitCheckbox IsIndeterminate="true" IsEnabled="false">Disabled indeterminate checkbox</BitCheckbox>
-                <BitCheckbox @bind-IsIndeterminate="IsCheckBoxIndeterminateInCode" @bind-Value="IsCheckBoxChecked">Controlled indeterminate checkbox</BitCheckbox>
-                <BitButton OnClick="() => IsCheckBoxIndeterminateInCode = true">Make Checkbox Indeterminate</BitButton>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Custom Label" HTMLSourceCode="@example4HTMLCode" ExampleId="example4">
+    <ComponentExampleBox Title="Controlled BitCheckbox" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
+        <ExamplePreview>
+            <div class="chk-box controlled-box">
+                <BitCheckbox Value="IsChecked_OneWay">One-way Controlled Checkbox</BitCheckbox>
+                <BitButton OnClick="() => IsChecked_OneWay = !IsChecked_OneWay">
+                    @(IsChecked_OneWay ? "Remove" : "Make") Checked
+                </BitButton>
+            </div>
+            <div class="chk-box controlled-box">
+                <BitCheckbox @bind-Value="IsChecked_TwoWay">Two-way Controlled Checkbox</BitCheckbox>
+                <BitButton OnClick="() => IsChecked_TwoWay = !IsChecked_TwoWay">
+                    @(IsChecked_TwoWay ? "Remove" : "Make") Checked
+                </BitButton>
+            </div>
+            <div class="chk-box controlled-box">
+                <BitCheckbox IsIndeterminate="IsIndeterminated_OneWay">One-way Controlled indeterminate checkbox</BitCheckbox>
+                <BitButton OnClick="() => IsIndeterminated_OneWay = !IsIndeterminated_OneWay">
+                    @(IsIndeterminated_OneWay ? "Remove" : "Make") Indeterminate
+                </BitButton>
+            </div>
+            <div class="chk-box controlled-box">
+                <BitCheckbox @bind-IsIndeterminate="IsIndeterminated_TwoWay">Two-way Controlled indeterminate checkbox</BitCheckbox>
+                <BitButton OnClick="() => IsIndeterminated_TwoWay = !IsIndeterminated_TwoWay">
+                    @(IsIndeterminated_TwoWay ? "Remove" : "Make") Indeterminate
+                </BitButton>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Custom Label" HTMLSourceCode="@example5HTMLCode" ExampleId="example5">
         <ExamplePreview>
             <div>
                 <BitCheckbox>
@@ -51,7 +80,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Checkbox validation" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
+    <ComponentExampleBox Title="Checkbox validation" HTMLSourceCode="@example6HTMLCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example6">
         <ExamplePreview>
             <div>
                 @if (string.IsNullOrEmpty(SuccessMessage))

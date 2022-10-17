@@ -12,7 +12,7 @@
            checked="@CurrentValueAsString"
            value="@CurrentValueAsString"
            disabled="@(IsEnabled is false)"
-           aria-disabled="@(IsEnabled ? null : "true")"
+           aria-disabled="@(IsEnabled is false)"
            aria-label="@AriaLabel"
            aria-describedby="@AriaDescription"
            aria-labelledby="@AriaLabelledby"
@@ -25,9 +25,9 @@
         <div class="bit-chb-checkbox">
             <i class=@($"{RootElementClass}-checkmark bit-icon bit-icon--{CheckmarkIconName.GetName()}")
                aria-hidden="true"
-               aria-label="@CheckmarkIconAriaLabel"></i>
+               aria-label="@CheckmarkIconAriaLabel">
+            </i>
         </div>
-
         <span class="bit-chb-txt no-text-select">
             @(ChildContent)
         </span>
