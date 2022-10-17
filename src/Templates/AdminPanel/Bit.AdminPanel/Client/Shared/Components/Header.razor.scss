@@ -12,6 +12,7 @@
     width: calc(100% - #{$NavMenuWidth});
     border-bottom: rem(1px) solid $Gray10;
     backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     box-shadow: inset 0px -1px 1px #e7ebf0;
     background-color: rgba(255, 255, 255, 0.72);
 
