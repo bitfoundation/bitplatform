@@ -443,6 +443,7 @@ public partial class BitDateRangePicker
             CurrentValue.EndDate = tempDate;
         }
 
+        CurrentValue = new BitDateRangePickerValue { StartDate = CurrentValue.StartDate, EndDate = CurrentValue.EndDate };
         CreateMonthCalendar(_currentYear, _currentMonth);
         await OnSelectDate.InvokeAsync(CurrentValue);
     }
