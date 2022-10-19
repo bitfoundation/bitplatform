@@ -41,9 +41,9 @@ public class BitChoiceGroupTests : BunitTestContext
                 });
             });
 
-        var bitChoiceGroupOption = component.Find(".bit-chgo");
-
         var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
+
+        var bitChoiceGroupOption = component.Find($".bit-chgo-{visualClass}");
 
         if (groupIsEnabled is false || optionIsEnabled is false)
         {
@@ -75,7 +75,7 @@ public class BitChoiceGroupTests : BunitTestContext
                });
            });
 
-        var bitChoiceGroupOption = component.Find(".bit-chgo");
+        var bitChoiceGroupOption = component.Find(".bit-chgo-fluent");
 
         Assert.IsTrue(bitChoiceGroupOption.ClassList.Contains($"bit-chgo-checked-fluent"));
     }
@@ -134,7 +134,7 @@ public class BitChoiceGroupTests : BunitTestContext
                  });
              });
 
-        var bitChoiceGroupOption = component.Find(".bit-chgo");
+        var bitChoiceGroupOption = component.Find(".bit-chgo-fluent");
         Assert.IsTrue(bitChoiceGroupOption.ClassList.Contains($"bit-chgo-with-img-fluent"));
 
         var image = component.Find(".bit-chgo-img img");
