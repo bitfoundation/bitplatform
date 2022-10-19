@@ -730,6 +730,11 @@ public partial class BitDateRangePicker
             className += className.Length == 0 ? "date-cell--selected-end" : " date-cell--selected-end";
         }
 
+        if (IsInCurrentMonth(week, day) && week == _selectedEndDateWeek && day == _selectedEndDateDayOfWeek && week == _selectedStartDateWeek && day == _selectedStartDateDayOfWeek)
+        {
+            className += className.Length == 0 ? "date-cell--selected-same-start-end" : " date-cell--selected-same-start-end";
+        }
+
         if (IsBetweenTwoSelectedDate(day, week))
         {
             className += className.Length == 0 ? "date-cell--between-selected" : " date-cell--between-selected";

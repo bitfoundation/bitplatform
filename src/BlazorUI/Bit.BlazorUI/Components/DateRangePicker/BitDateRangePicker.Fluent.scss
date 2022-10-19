@@ -270,6 +270,10 @@
                 }
             }
 
+            .date-cell--selected-same-start-end {
+                border-radius: rem(8px);
+            }
+
             .date-cell--between-selected {
                 background-color: $BlizzardBlue;
                 border-radius: 0;
