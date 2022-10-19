@@ -198,6 +198,7 @@
 
             .day-btn {
                 position: relative;
+                z-index: 1;
                 display: flex;
                 padding: 0;
                 border-radius: rem(2px);
