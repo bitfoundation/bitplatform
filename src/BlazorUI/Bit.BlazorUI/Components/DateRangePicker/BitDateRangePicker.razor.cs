@@ -733,7 +733,7 @@ public partial class BitDateRangePicker
 
         if (IsInCurrentMonth(week, day) && week == _selectedEndDateWeek && day == _selectedEndDateDayOfWeek && week == _selectedStartDateWeek && day == _selectedStartDateDayOfWeek)
         {
-            className.Append("date-cell--selected-same-start-end")
+            className.Append("date-cell--selected-same-start-end");
         }
 
         if (IsBetweenTwoSelectedDate(day, week))
@@ -741,7 +741,7 @@ public partial class BitDateRangePicker
             className.Append("date-cell--between-selected");
         }
 
-        return className;
+        return className.ToString();
     }
 
     private bool IsBetweenTwoSelectedDate(int day, int week)
