@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Text;
 
 namespace Bit.BlazorUI;
 
@@ -704,7 +705,7 @@ public partial class BitDateRangePicker
 
     private string GetDateElClass(int day, int week)
     {
-        var className = string.Empty;
+        StringBuilder className = new StringBuilder("date-cell ");
         var todayYear = Culture.DateTimeFormat.Calendar.GetYear(DateTime.Now);
         var todayMonth = Culture.DateTimeFormat.Calendar.GetMonth(DateTime.Now);
         var todayDay = Culture.DateTimeFormat.Calendar.GetDayOfMonth(DateTime.Now);
@@ -712,32 +713,32 @@ public partial class BitDateRangePicker
 
         if (IsInCurrentMonth(week, day) is false)
         {
-            className += className.Length == 0 ? "date-cell--outside-month" : " date-cell--outside-month";
+            className.Append("date-cell--outside-month");
         }
 
         if (IsInCurrentMonth(week, day) && todayYear == _currentYear && todayMonth == _currentMonth && todayDay == currentDay)
         {
-            className = "date-cell--today";
+            className.Append("date-cell--today ");
         }
 
         if (IsInCurrentMonth(week, day) && week == _selectedStartDateWeek && day == _selectedStartDateDayOfWeek)
         {
-            className += className.Length == 0 ? "date-cell--selected-start" : " date-cell--selected-start";
+            className.Append("date-cell--selected-start ");
         }
 
         if (IsInCurrentMonth(week, day) && week == _selectedEndDateWeek && day == _selectedEndDateDayOfWeek)
         {
-            className += className.Length == 0 ? "date-cell--selected-end" : " date-cell--selected-end";
+            className.Append("date-cell--selected-end ");
         }
 
         if (IsInCurrentMonth(week, day) && week == _selectedEndDateWeek && day == _selectedEndDateDayOfWeek && week == _selectedStartDateWeek && day == _selectedStartDateDayOfWeek)
         {
-            className += className.Length == 0 ? "date-cell--selected-same-start-end" : " date-cell--selected-same-start-end";
+            className.Append("date-cell--selected-same-start-end")
         }
 
         if (IsBetweenTwoSelectedDate(day, week))
         {
-            className += className.Length == 0 ? "date-cell--between-selected" : " date-cell--between-selected";
+            className.Append("date-cell--between-selected");
         }
 
         return className;
