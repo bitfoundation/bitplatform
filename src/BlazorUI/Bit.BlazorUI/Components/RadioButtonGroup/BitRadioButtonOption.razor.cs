@@ -74,6 +74,11 @@ public partial class BitRadioButtonOption : IDisposable
     [Parameter] public EventCallback<bool> IsCheckedChanged { get; set; }
 
     /// <summary>
+    /// Used to customize the label for the RadioButtonOption.
+    /// </summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
     /// Callback for when the RadioButtonOption clicked
     /// </summary>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
@@ -120,7 +125,7 @@ public partial class BitRadioButtonOption : IDisposable
 
     protected override void RegisterComponentClasses()
     {
-        ClassBuilder.Register(() => ImageSrc.HasValue() || IconName.HasValue
+        ClassBuilder.Register(() => (ImageSrc.HasValue() || IconName.HasValue) && ChildContent is null
                                  ? $"{RootElementClass}-with-img-{VisualClassRegistrar()}" : string.Empty);
 
         ClassBuilder.Register(() => IsChecked
@@ -141,7 +146,7 @@ public partial class BitRadioButtonOption : IDisposable
 
     private string GetLabelClassNameStr()
     {
-        var className = ImageSrc.HasValue() || IconName.HasValue ? "bit-rbo-lbl-with-img" : "bit-rbo-lbl";
+        var className = (ImageSrc.HasValue() || IconName.HasValue) && ChildContent is null ? "bit-rbo-lbl-with-img" : "bit-rbo-lbl";
         return className;
     }
 

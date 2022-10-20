@@ -54,7 +54,37 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="RadioButtonGroup with validation" CSharpSourceCode="@example5CSharpCode" HTMLSourceCode="@example5HTMLCode" ExampleId="example5">
+    <ComponentExampleBox Title="RadioButtonGroup with custom Option" CSharpSourceCode="@example5CSharpCode" HTMLSourceCode="@example5HTMLCode" ExampleId="example5">
+        <ExamplePreview>
+            <div>
+                <BitRadioButtonGroup Name="Group1" Label="Pick one option" @bind-Value="CustomOptionValue">
+                    <BitRadioButtonOption Value="Day">
+                        <div class="custom-option @(CustomOptionValue is "Day" ? "selected-option" : "")">
+                            <div class="radio-pointer"></div>
+                            <BitIcon IconName="BitIconName.CalendarDay" />
+                            <span>Day</span>
+                        </div>
+                    </BitRadioButtonOption>
+                    <BitRadioButtonOption Value="Week">
+                        <div class="custom-option @(CustomOptionValue is "Week" ? "selected-option" : "")">
+                            <div class="radio-pointer"></div>
+                            <BitIcon IconName="BitIconName.CalendarWeek" />
+                            <span>Week</span>
+                        </div>
+                    </BitRadioButtonOption>
+                    <BitRadioButtonOption Value="Month">
+                        <div class="custom-option @(CustomOptionValue is "Month" ? "selected-option" : "")">
+                            <div class="radio-pointer"></div>
+                            <BitIcon IconName="BitIconName.Calendar" />
+                            <span>Month</span>
+                        </div>
+                    </BitRadioButtonOption>
+                </BitRadioButtonGroup>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="RadioButtonGroup with validation" CSharpSourceCode="@example6CSharpCode" HTMLSourceCode="@example6HTMLCode" ExampleId="example6">
         <ExamplePreview>
             @if (string.IsNullOrEmpty(SuccessMessage))
             {
