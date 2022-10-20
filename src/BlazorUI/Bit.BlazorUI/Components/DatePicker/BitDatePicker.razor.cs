@@ -375,9 +375,8 @@ public partial class BitDatePicker
             CheckCurrentCalendarMatchesCurrentValue();
             if (CurrentValue.Value.Year != oldValue.Value.Year)
             {
-                _currentYear = _displayYear = CurrentValue.Value.Year;
+                _displayYear = CurrentValue.Value.Year;
                 ChangeYearRanges(_currentYear - 1);
-                CreateMonthCalendar(_currentYear, _currentMonth);
             }
         }
 
