@@ -28,15 +28,14 @@
     <PropertyGroup Condition="$(TargetFramework.Contains('-android')) and '$(Configuration)' == 'Release'">
         <EnableLLVM>true</EnableLLVM>
         <AndroidPackageFormat>apk</AndroidPackageFormat>
-        <RuntimeIdentifiers>android-arm</RuntimeIdentifiers>
+        <RuntimeIdentifiers Condition="'$(AndroidPackageFormat)' == 'apk'">android-arm</RuntimeIdentifiers>
         <MauiUseDefaultAotProfile Condition="Exists('custom.aprof')">false</MauiUseDefaultAotProfile>
     </PropertyGroup>
 
     <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
-        <LinkDescription Include="Platforms\Android\Linker.xml" />
         <AndroidAotProfile Condition="Exists('custom.aprof')" Include="custom.aprof" />
         <!-- Run the following commands to create custom.aprof file which improves the Android app performance -->
-        <!-- dotnet add package Mono.AotProfiler.Android -->
+        <!-- dotnet add package Mono.AotProfiler.Android -v 7.0.0-preview1 -->
         <!-- dotnet build -t:BuildAndStartAotProfiling -f net7.0-android /p:UseInterpreter=false -->
         <!-- dotnet build -t:FinishAotProfiling -f net7.0-android -->
         <!-- dotnet remove package Mono.AotProfiler.Android -->
