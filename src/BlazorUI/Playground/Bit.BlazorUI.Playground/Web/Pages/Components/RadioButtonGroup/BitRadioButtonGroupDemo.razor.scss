@@ -22,3 +22,37 @@
         margin-bottom: rem(25px);
     }
 }
+
+.custom-option {
+    display: flex;
+    align-items: center;
+    gap: rem(10px);
+    cursor: pointer;
+
+    .radio-pointer {
+        width: rem(20px);
+        height: rem(20px);
+        border: 1px solid;
+        border-radius: rem(10px);
+    }
+
+    &:hover {
+        .radio-pointer {
+            border-top: rem(5px) solid #C66;
+            border-bottom: rem(5px) solid #6C6;
+            border-left: rem(5px) solid #66C;
+            border-right: rem(5px) solid #CC6;
+        }
+    }
+
+    &.selected-option {
+        color: #C66;
+
+        .radio-pointer {
+            border-top: rem(10px) solid #C66;
+            border-bottom: rem(10px) solid #6C6;
+            border-left: rem(10px) solid #66C;
+            border-right: rem(10px) solid #CC6;
+        }
+    }
+}
