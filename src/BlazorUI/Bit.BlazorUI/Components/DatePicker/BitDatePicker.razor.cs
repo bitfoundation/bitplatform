@@ -370,9 +370,15 @@ public partial class BitDatePicker
 
         var oldValue = CurrentValue;
         CurrentValueAsString = e.Value?.ToString();
-        if(IsOpen && oldValue != CurrentValue)
+        if (IsOpen && oldValue != CurrentValue)
         {
             CheckCurrentCalendarMatchesCurrentValue();
+
+            if (CurrentValue.Value.Year != oldValue.Value.Year)
+            {
+                SelectYear(CurrentValue.Value.Year);
+                _showMonthPicker = true;
+            }
         }
 
         await OnSelectDate.InvokeAsync(CurrentValue);
