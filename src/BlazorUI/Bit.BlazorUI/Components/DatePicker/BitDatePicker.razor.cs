@@ -18,6 +18,7 @@ public partial class BitDatePicker
 #pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
     private int[,] _currentMonthCalendar = new int[DEFAULT_WEEK_COUNT, DEFAULT_DAY_COUNT_PER_WEEK];
 #pragma warning restore CA1814 // Prefer jagged arrays over multidimensional
+    private int _currentDay;
     private int _currentMonth;
     private int _currentYear;
     private int _displayYear;
@@ -59,7 +60,7 @@ public partial class BitDatePicker
     /// <summary>
     /// Used to customize how content inside the day cell is rendered.
     /// </summary>
-    [Parameter] public RenderFragment<DateTimeOffset>? DayCellTemplate { get; set; } 
+    [Parameter] public RenderFragment<DateTimeOffset>? DayCellTemplate { get; set; }
 
     /// <summary>
     /// FormatDate for the DatePicker
@@ -367,7 +368,13 @@ public partial class BitDatePicker
         if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
         if (AllowTextInput is false) return;
 
+        var oldValue = CurrentValue;
         CurrentValueAsString = e.Value?.ToString();
+        if(IsOpen && oldValue != CurrentValue)
+        {
+            CheckCurrentCalendarMatchesCurrentValue();
+        }
+
         await OnSelectDate.InvokeAsync(CurrentValue);
     }
 
@@ -379,7 +386,7 @@ public partial class BitDatePicker
 
         if (IsWeekDayOutOfMinAndMaxDate(dayIndex, weekIndex)) return;
 
-        var currentDay = _currentMonthCalendar[weekIndex, dayIndex];
+        _currentDay = _currentMonthCalendar[weekIndex, dayIndex];
         int selectedMonth = GetCorrectTargetMonth(weekIndex, dayIndex);
         if (selectedMonth < _currentMonth && _currentMonth == 12 && IsInCurrentMonth(weekIndex, dayIndex) is false)
         {
@@ -396,7 +403,7 @@ public partial class BitDatePicker
         IsOpen = false;
         _displayYear = _currentYear;
         _currentMonth = selectedMonth;
-        CurrentValue = new DateTimeOffset(Culture.DateTimeFormat.Calendar.ToDateTime(_currentYear, _currentMonth, currentDay, 0, 0, 0, 0), DateTimeOffset.Now.Offset);
+        CurrentValue = new DateTimeOffset(Culture.DateTimeFormat.Calendar.ToDateTime(_currentYear, _currentMonth, _currentDay, 0, 0, 0, 0), DateTimeOffset.Now.Offset);
         CreateMonthCalendar(_currentYear, _currentMonth);
         await OnSelectDate.InvokeAsync(CurrentValue);
     }
@@ -847,7 +854,8 @@ public partial class BitDatePicker
         var currentValue = CurrentValue.GetValueOrDefault();
         var currentValueYear = currentValue.Year;
         var currentValueMonth = currentValue.Month;
-        if (currentValueYear != _currentYear || currentValueMonth != _currentMonth)
+        var currentValueDay = currentValue.Day;
+        if (currentValueYear != _currentYear || currentValueMonth != _currentMonth || (AllowTextInput && currentValueDay != _currentDay))
         {
             _currentYear = currentValueYear;
             _currentMonth = currentValueMonth;
@@ -858,7 +866,7 @@ public partial class BitDatePicker
     private string GetMonthCellClassName(int monthIndex)
     {
         var className = string.Empty;
-        if(HighlightCurrentMonth)
+        if (HighlightCurrentMonth)
         {
             var todayMonth = Culture.DateTimeFormat.Calendar.GetMonth(DateTime.Now);
             className += todayMonth == monthIndex ? "current-month" : null;
