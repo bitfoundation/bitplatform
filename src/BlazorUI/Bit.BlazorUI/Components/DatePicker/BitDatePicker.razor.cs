@@ -373,11 +373,11 @@ public partial class BitDatePicker
         if (IsOpen && oldValue != CurrentValue)
         {
             CheckCurrentCalendarMatchesCurrentValue();
-
             if (CurrentValue.Value.Year != oldValue.Value.Year)
             {
-                SelectYear(CurrentValue.Value.Year);
-                _showMonthPicker = true;
+                _currentYear = _displayYear = CurrentValue.Value.Year;
+                ChangeYearRanges(_currentYear - 1);
+                CreateMonthCalendar(_currentYear, _currentMonth);
             }
         }
 
