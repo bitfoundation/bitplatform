@@ -367,6 +367,7 @@ private void HandleInvalidSubmit()
     private readonly string example6HTMLCode = @"
 <BitDatePicker Style=""max-width: 300px""
                AllowTextInput=true
+               HighlightSelectedMonth=true
                Label=""Start date""
                AriaLabel=""Select a date"" />";
 
