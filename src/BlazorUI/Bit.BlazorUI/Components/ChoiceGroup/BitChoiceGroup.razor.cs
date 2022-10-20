@@ -10,33 +10,12 @@ namespace Bit.BlazorUI;
 
 public partial class BitChoiceGroup
 {
-    private bool isRequired;
+    private bool _isRequired;
 
     /// <summary>
-    /// If true, an option must be selected in the ChoiceGroup.
+    /// ID of an element to use as the aria label for this ChoiceGroup.
     /// </summary>
-    [Parameter]
-    public bool IsRequired
-    {
-        get => isRequired;
-        set
-        {
-            isRequired = value;
-            ClassBuilder.Reset();
-        }
-    }
-
-    /// <summary>
-    /// List of options, each of which is a selection in the ChoiceGroup.
-    /// </summary>
-#pragma warning disable CA2227 // Collection properties should be read only
-    [Parameter] public IList<BitChoiceGroupOption> Options { get; set; } = new List<BitChoiceGroupOption>();
-#pragma warning restore CA2227 // Collection properties should be read only
-
-    /// <summary>
-    /// Name of ChoiceGroup, this name is used to group each option into the same logical ChoiceGroup.
-    /// </summary>
-    [Parameter] public string Name { get; set; } = Guid.NewGuid().ToString();
+    [Parameter] public string? AriaLabelledBy { get; set; }
 
     /// <summary>
     /// Default selected key for ChoiceGroup.
@@ -44,9 +23,18 @@ public partial class BitChoiceGroup
     [Parameter] public string? DefaultValue { get; set; }
 
     /// <summary>
-    /// ID of an element to use as the aria label for this ChoiceGroup.
+    /// If true, an option must be selected in the ChoiceGroup.
     /// </summary>
-    [Parameter] public string? AriaLabelledBy { get; set; }
+    [Parameter]
+    public bool IsRequired
+    {
+        get => _isRequired;
+        set
+        {
+            _isRequired = value;
+            ClassBuilder.Reset();
+        }
+    }
 
     /// <summary>
     /// Descriptive label for the ChoiceGroup.
@@ -57,6 +45,18 @@ public partial class BitChoiceGroup
     /// Used to customize the label for the ChoiceGroup.
     /// </summary>
     [Parameter] public RenderFragment? LabelFragment { get; set; }
+
+    /// <summary>
+    /// Name of ChoiceGroup, this name is used to group each option into the same logical ChoiceGroup.
+    /// </summary>
+    [Parameter] public string Name { get; set; } = Guid.NewGuid().ToString();
+
+    /// <summary>
+    /// List of options, each of which is a selection in the ChoiceGroup.
+    /// </summary>
+#pragma warning disable CA2227 // Collection properties should be read only
+    [Parameter] public IEnumerable<BitChoiceGroupOption> Options { get; set; } = new List<BitChoiceGroupOption>();
+#pragma warning restore CA2227 // Collection properties should be read only
 
     protected override string RootElementClass => "bit-chg";
 
@@ -112,7 +112,7 @@ public partial class BitChoiceGroup
     private string GetOptionDivClassName(BitChoiceGroupOption option)
     {
         const string itemRootElementClass = "bit-chgo";
-        StringBuilder cssClass = new(itemRootElementClass);
+        StringBuilder cssClass = new($"{itemRootElementClass}-{VisualClassRegistrar()}");
 
         if (option.IsEnabled is false || IsEnabled is false)
         {

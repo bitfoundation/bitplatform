@@ -35,7 +35,10 @@
             dropDownCallout.style.display = "block";
             dropDownOverlay.style.display = "block";
 
-            const dropDownWrapperWidth = dropDownWrapper.offsetWidth;
+            let dropDownWrapperWidth = dropDownWrapper.offsetWidth;
+            if (isResponsiveModeEnabled && dropDownWrapperWidth < 320)
+                dropDownWrapperWidth = window.innerWidth > 320 ? 320 : window.innerWidth;
+
             dropDownCallout.style.width = dropDownWrapperWidth + 'px';
 
             const dropDownCalloutHeight = dropDownCallout.offsetHeight;

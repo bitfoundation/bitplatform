@@ -198,6 +198,7 @@
 
             .day-btn {
                 position: relative;
+                z-index: 1;
                 display: flex;
                 padding: 0;
                 border-radius: rem(2px);
@@ -268,6 +269,10 @@
                     background-color: $CyanBlue10;
                     color: $White;
                 }
+            }
+
+            .date-cell--selected-same-start-end {
+                border-radius: rem(8px);
             }
 
             .date-cell--between-selected {
