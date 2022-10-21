@@ -9,6 +9,11 @@ public partial class MainPage
 
         BlazorWebViewHandler.BlazorWebViewMapper.AppendToMapping("CustomBlazorWebViewMapper", (handler, view) =>
         {
+#if IOS
+            handler.PlatformView.BackgroundColor = UIKit.UIColor.Clear;
+            handler.PlatformView.Opaque = false;
+#endif
+
 #if ANDROID
             Android.Webkit.WebSettings settings = handler.PlatformView.Settings;
 
