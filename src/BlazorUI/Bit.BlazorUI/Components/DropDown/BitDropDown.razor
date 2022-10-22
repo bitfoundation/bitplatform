@@ -94,7 +94,8 @@
                 <div class="icon-container" aria-hidden="true">
                     <i class="bit-icon bit-icon--Search" aria-hidden="true"></i>
                 </div>
-                <input class="search-input"
+                <input @ref="searchInputElement"
+                   class="search-input"
                    type="text"
                    aria-label="Search text"
                    placeholder="@SearchBoxPlaceholder"

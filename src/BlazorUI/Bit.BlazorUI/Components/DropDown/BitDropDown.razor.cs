@@ -17,6 +17,7 @@ public partial class BitDropDown
     private string? searchText;
     private int? totalItems;
     private Virtualize<(int index, BitDropDownItem item)>? virtualizeElement;
+    private ElementReference searchInputElement;
 
     [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
 
@@ -199,6 +200,11 @@ public partial class BitDropDown
     [Parameter] public bool ShowSearchBox { get; set; }
 
     /// <summary>
+    /// Focus on search box
+    /// </summary>
+    [Parameter] public bool ShouldFocusOnSearchBox { get; set; }
+
+    /// <summary>
     /// Callback for when the search box input value changes
     /// </summary>
     [Parameter] public EventCallback<string?> OnSearch { get; set; }
@@ -334,6 +340,7 @@ public partial class BitDropDown
         await JSRuntime.InvokeVoidAsync("BitDropDown.toggleDropDownCallout", obj, UniqueId, DropDownId, DropDownCalloutId, DropDownOverlayId, isOpen, isResponsiveModeEnabled);
         isOpen = !isOpen;
         await OnClick.InvokeAsync(e);
+        await FocusOnSearchBox();
     }
 
     private async Task HandleItemClick(BitDropDownItem selectedItem)
@@ -476,6 +483,16 @@ public partial class BitDropDown
             await OnSearch.InvokeAsync(searchText);
             await SearchVirtualized();
         }
+    }
+
+    private async ValueTask FocusOnSearchBox()
+    {
+        if (IsEnabled is false) return;
+        if (ShowSearchBox is false) return;
+        if (ShouldFocusOnSearchBox is false) return;
+        if (IsOpen is false) return;
+
+        await searchInputElement.FocusAsync();
     }
 
     private (int index, BitDropDownItem item)[] GetItems()
