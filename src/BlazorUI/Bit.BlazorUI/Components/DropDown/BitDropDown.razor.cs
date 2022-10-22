@@ -200,9 +200,9 @@ public partial class BitDropDown
     [Parameter] public bool ShowSearchBox { get; set; }
 
     /// <summary>
-    /// Focus on search box
+    /// Auto focus on search box when dropdown is open
     /// </summary>
-    [Parameter] public bool ShouldFocusOnSearchBox { get; set; }
+    [Parameter] public bool AutoFocusSearchBox { get; set; }
 
     /// <summary>
     /// Callback for when the search box input value changes
@@ -489,7 +489,7 @@ public partial class BitDropDown
     {
         if (IsEnabled is false) return;
         if (ShowSearchBox is false) return;
-        if (ShouldFocusOnSearchBox is false) return;
+        if (AutoFocusSearchBox is false) return;
         if (IsOpen is false) return;
 
         await searchInputElement.FocusAsync();
