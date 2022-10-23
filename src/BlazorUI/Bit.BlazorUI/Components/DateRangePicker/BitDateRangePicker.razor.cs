@@ -968,8 +968,8 @@ public partial class BitDateRangePicker
         if (CurrentValue.StartDate is null) return;
 
         var currentValue = CurrentValue.StartDate.GetValueOrDefault();
-        var currentValueYear = currentValue.Year;
-        var currentValueMonth = currentValue.Month;
+        var currentValueYear = Culture.DateTimeFormat.Calendar.GetYear(currentValue.DateTime);
+        var currentValueMonth = Culture.DateTimeFormat.Calendar.GetMonth(currentValue.DateTime);
         if (currentValueYear != _currentYear || currentValueMonth != _currentMonth)
         {
             _currentYear = currentValueYear;
