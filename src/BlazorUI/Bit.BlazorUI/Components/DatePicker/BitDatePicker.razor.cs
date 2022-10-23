@@ -857,9 +857,9 @@ public partial class BitDatePicker
     private void CheckCurrentCalendarMatchesCurrentValue()
     {
         var currentValue = CurrentValue.GetValueOrDefault();
-        var currentValueYear = currentValue.Year;
-        var currentValueMonth = currentValue.Month;
-        var currentValueDay = currentValue.Day;
+        var currentValueYear = Culture.DateTimeFormat.Calendar.GetYear(currentValue.DateTime);
+        var currentValueMonth = Culture.DateTimeFormat.Calendar.GetMonth(currentValue.DateTime);
+        var currentValueDay = Culture.DateTimeFormat.Calendar.GetDayOfMonth(currentValue.DateTime);
         if (currentValueYear != _currentYear || currentValueMonth != _currentMonth || (AllowTextInput && currentValueDay != _currentDay))
         {
             _currentYear = currentValueYear;
