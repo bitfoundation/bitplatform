@@ -16,7 +16,10 @@ on:
 jobs:
   build-publish:
     name: build & publish
-    runs-on: windows-latest
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout source code
       uses: actions/checkout@v2

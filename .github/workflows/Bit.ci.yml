@@ -8,7 +8,10 @@ jobs:
   build-release:
     if: startsWith(github.event.pull_request.title, 'Prerelease') || startsWith(github.event.pull_request.title, 'Release') || startsWith(github.event.pull_request.title, 'Version')
     name: build and test for release
-    runs-on: windows-latest
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout source code
       uses: actions/checkout@v2
@@ -39,7 +42,10 @@ jobs:
   build:
     if: startsWith(github.event.pull_request.title, 'Prerelease') != true && startsWith(github.event.pull_request.title, 'Release') != true && startsWith(github.event.pull_request.title, 'Version') != true
     name: build and test
-    runs-on: windows-latest
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout source code
       uses: actions/checkout@v2
