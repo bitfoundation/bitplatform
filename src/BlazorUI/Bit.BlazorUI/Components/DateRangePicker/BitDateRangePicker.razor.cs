@@ -750,6 +750,8 @@ public partial class BitDateRangePicker
         if (CurrentValue is null) return false;
         if (CurrentValue.StartDate.HasValue is false || CurrentValue.EndDate.HasValue is false) return false;
 
+        var startDate = CurrentValue.StartDate.GetValueOrDefault();
+        var endDate = CurrentValue.EndDate.GetValueOrDefault();
         if (_selectedEndDateWeek is null && IsInCurrentMonth(week, day) && ((week == _selectedStartDateWeek && day > _selectedStartDateDayOfWeek) || week > _selectedStartDateWeek))
         {
             return true;
@@ -764,7 +766,11 @@ public partial class BitDateRangePicker
         {
             return true;
         }
-        else if (_selectedEndDateWeek is null && _selectedStartDateWeek is null && IsInCurrentMonth(week, day))
+        else if (_selectedEndDateWeek is null && _selectedStartDateWeek is null && IsInCurrentMonth(week, day) &&
+            startDate.Month < _currentMonth &&
+            endDate.Month > _currentMonth &&
+            endDate.Year >= _currentYear &&
+            startDate.Year <= _currentYear)
         {
             return true;
         }
