@@ -8,7 +8,7 @@
     -webkit-font-smoothing: antialiased;
 }
 
-.bit-chg-label-fluent {
+.bit-chg-label {
     display: block;
     margin: 0;
     padding: rem(5px) 0;
@@ -22,7 +22,7 @@
 }
 
 .bit-chg-required-fluent {
-    .bit-chg-label-fluent {
+    .bit-chg-label {
         &::after {
             content: " *";
             padding-right: rem(12px);
@@ -33,7 +33,7 @@
 
 /*--- ChoiceGroup Option styles ---*/
 
-.bit-chgo-fluent {
+.bit-chgo {
     position: relative;
     display: flex;
     align-items: center;
@@ -139,7 +139,7 @@
     }
 }
 
-.bit-chgo-disabled-fluent {
+.bit-chgo-disabled {
     .bit-chgo-lbl {
         cursor: default;
         pointer-events: none;
@@ -187,7 +187,7 @@
         }
     }
 
-    &.bit-chgo-checked-fluent {
+    &.bit-chgo-checked {
         .bit-chgo-lbl-with-img {
             &:after {
                 border: rem(5px) solid $Grey60;
@@ -211,7 +211,7 @@
     }
 }
 
-.bit-chgo-with-img-fluent {
+.bit-chgo-with-img {
     display: inline-flex;
     height: 100%;
     margin: 0 rem(4px) rem(4px) 0;
@@ -220,7 +220,7 @@
     background-color: $Grey20;
 }
 
-.bit-chgo-checked-fluent {
+.bit-chgo-checked {
     .bit-chgo-lbl {
         border-color: $Primary;
 

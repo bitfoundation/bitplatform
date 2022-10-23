@@ -6,7 +6,7 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
     <div role="radiogroup" aria-labelledby="@GetGroupAriaLabelledBy()">
-        <label class="bit-chg-label-@(VisualClassRegistrar())" id="@GetGroupLabelId()" disabled="@(IsEnabled is false)">
+        <label class="bit-chg-label" id="@GetGroupLabelId()" disabled="@(IsEnabled is false)">
             @if (LabelFragment is not null)
             {
                 @LabelFragment
@@ -22,17 +22,17 @@
                 <div class="@GetOptionDivClassName(option)">
                     <div class="bit-chgo-wrapper">
                         <input @attributes="InputHtmlAttributes"
-                           id="@GetOptionInputId(option)"
-                           class="bit-chgo-input"
-                           aria-label="@GetOptionAriaLabel(option)"
-                           type="radio"
-                           checked="@GetOptionIsChecked(option)"
-                           name="@Name"
-                           value="@option.Value"
-                           hidden="hidden"
-                           required="@IsRequired"
-                           disabled="@(option.IsEnabled is false)"
-                           @onchange="() => HandleOptionChange(option)" />
+                               id="@GetOptionInputId(option)"
+                               class="bit-chgo-input"
+                               aria-label="@GetOptionAriaLabel(option)"
+                               type="radio"
+                               checked="@GetOptionIsChecked(option)"
+                               name="@Name"
+                               value="@option.Value"
+                               hidden="hidden"
+                               required="@IsRequired"
+                               disabled="@(option.IsEnabled is false)"
+                               @onchange="() => HandleOptionChange(option)" />
                         @if (option.LabelTemplate is null)
                         {
                             <label for="@GetOptionInputId(option)" class="@GetOptionLabelClassName(option)" id="@GetOptionLabelId(option)">
