@@ -629,6 +629,16 @@
             padding: 0 rem(10px) 0 rem(4px);
             text-align: right;
         }
+
+        .day-picker-wrapper {
+            .date-cell--selected-start {
+                border-radius: 0 rem(8px) rem(8px) 0;
+            }
+
+            .date-cell--selected-end {
+                border-radius: rem(8px) 0 0 rem(8px);
+            }
+        }
     }
 
     &.bit-dtrp-invalid-fluent {
