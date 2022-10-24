@@ -112,15 +112,14 @@ public partial class BitChoiceGroup
     private string GetOptionDivClassName(BitChoiceGroupOption option)
     {
         const string itemRootElementClass = "bit-chgo";
-        StringBuilder cssClass = new($"{itemRootElementClass}-{VisualClassRegistrar()}");
+        StringBuilder cssClass = new(itemRootElementClass);
 
         if (option.IsEnabled is false || IsEnabled is false)
         {
             cssClass
                .Append(' ')
                .Append(itemRootElementClass)
-               .Append("-disabled-")
-               .Append(VisualClassRegistrar());
+               .Append("-disabled");
         }
 
         if (option.ImageSrc.HasValue() || option.IconName is not null)
@@ -128,8 +127,7 @@ public partial class BitChoiceGroup
             cssClass
                 .Append(' ')
                 .Append(itemRootElementClass)
-                .Append("-with-img-")
-                .Append(VisualClassRegistrar());
+                .Append("-with-img");
         }
 
         if (GetOptionIsChecked(option))
@@ -137,8 +135,7 @@ public partial class BitChoiceGroup
             cssClass
                 .Append(' ')
                 .Append(itemRootElementClass)
-                .Append("-checked-")
-                .Append(VisualClassRegistrar());
+                .Append("-checked");
         }
 
         return cssClass.ToString();
