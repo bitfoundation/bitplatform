@@ -502,6 +502,13 @@ public partial class BitDropDownDemo
         },
         new ComponentParameter()
         {
+            Name = "AutoFocusSearchBox",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Auto focus on search box when dropdown is open.",
+        },
+        new ComponentParameter()
+        {
             Name = "SearchBoxPlaceholder",
             Type = "string",
             DefaultValue = "",
@@ -527,6 +534,34 @@ public partial class BitDropDownDemo
             Type = "int",
             DefaultValue = "3",
             Description = "determines how many additional items are rendered before and after the visible region.",
+        },
+        new ComponentParameter()
+        {
+            Name = "SelectedItems",
+            Type = "List<BitDropDownItem>",
+            DefaultValue = "",
+            Description = "The selected items for multiSelect scenarios.",
+        },
+        new ComponentParameter()
+        {
+            Name = "SelectedItemsChanged",
+            Type = "EventCallback<List<BitDropDownItem>>",
+            DefaultValue = "",
+            Description = "Callback for when the SelectedItems changed.",
+        },
+        new ComponentParameter()
+        {
+            Name = "SelectedItem",
+            Type = "BitDropDownItem",
+            DefaultValue = "",
+            Description = "The selected item for singleSelect scenarios.",
+        },
+        new ComponentParameter()
+        {
+            Name = "SelectedItemChanged",
+            Type = "EventCallback<BitDropDownItem>",
+            DefaultValue = "",
+            Description = "Callback for when the SelectedItem changed.",
         },
     };
 
