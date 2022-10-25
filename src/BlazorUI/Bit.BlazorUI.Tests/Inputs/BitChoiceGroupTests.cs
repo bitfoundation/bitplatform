@@ -168,7 +168,7 @@ public class BitChoiceGroupTests : BunitTestContext
         DataRow(false, true),
         DataRow(false, false)
     ]
-    public void BitChoiceGroupOtionOnChangeShouldWorkIfIsEnabled(bool groupIsEnabled, bool optionIsEnabled)
+    public void BitChoiceGroupOnChangeShouldWorkIfIsEnabled(bool groupIsEnabled, bool optionIsEnabled)
     {
         bool optionOnChangeValue = false;
 
@@ -180,8 +180,7 @@ public class BitChoiceGroupTests : BunitTestContext
                 new()
                 {
                     Value = "key1",
-                    IsEnabled = optionIsEnabled,
-                    OnChange = () => optionOnChangeValue = true
+                    IsEnabled = optionIsEnabled
                 }
             });
         });

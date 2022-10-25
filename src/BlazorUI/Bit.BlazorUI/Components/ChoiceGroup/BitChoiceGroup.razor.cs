@@ -44,7 +44,7 @@ public partial class BitChoiceGroup
     /// <summary>
     /// Used to customize the label for the ChoiceGroup.
     /// </summary>
-    [Parameter] public RenderFragment? LabelFragment { get; set; }
+    [Parameter] public RenderFragment? LabelTemplate { get; set; }
 
     /// <summary>
     /// Name of ChoiceGroup, this name is used to group each option into the same logical ChoiceGroup.
@@ -54,9 +54,17 @@ public partial class BitChoiceGroup
     /// <summary>
     /// List of options, each of which is a selection in the ChoiceGroup.
     /// </summary>
-#pragma warning disable CA2227 // Collection properties should be read only
     [Parameter] public IEnumerable<BitChoiceGroupOption> Options { get; set; } = new List<BitChoiceGroupOption>();
-#pragma warning restore CA2227 // Collection properties should be read only
+
+    /// <summary>
+    /// Used to customize the Option for the ChoiceGroup.
+    /// </summary>
+    [Parameter] public RenderFragment<BitChoiceGroupOption>? OptionTemplate { get; set; }
+
+    /// <summary>
+    /// Callback that is called when the ChoiceGroup value has changed.
+    /// </summary>
+    [Parameter] public EventCallback<BitChoiceGroupOption> OnChange { get; set; }
 
     protected override string RootElementClass => "bit-chg";
 
@@ -86,9 +94,6 @@ public partial class BitChoiceGroup
     private string GetOptionInputId(BitChoiceGroupOption option) =>
         option.Id ?? $"ChoiceGroupOptionInput{UniqueId}-{option.Value}";
 
-    private string GetOptionLabelId(BitChoiceGroupOption option) =>
-        option.LabelId ?? $"ChoiceGroupOptionLabel{UniqueId}-{option.Value}";
-
     private string GetOptionAriaLabel(BitChoiceGroupOption option) =>
       option.AriaLabel ?? AriaLabel ?? string.Empty;
 
@@ -113,6 +118,8 @@ public partial class BitChoiceGroup
     {
         const string itemRootElementClass = "bit-chgo";
         StringBuilder cssClass = new(itemRootElementClass);
+
+        if (OptionTemplate is not null) return cssClass.ToString();
 
         if (option.IsEnabled is false || IsEnabled is false)
         {
@@ -141,16 +148,13 @@ public partial class BitChoiceGroup
         return cssClass.ToString();
     }
 
-    private void HandleOptionChange(BitChoiceGroupOption option)
+    private async void HandleOptionChange(BitChoiceGroupOption option)
     {
         if (option.IsEnabled is false || IsEnabled is false) return;
 
         CurrentValue = option.Value;
 
-        if (option.OnChange is not null)
-        {
-            option.OnChange.Invoke();
-        }
+        await OnChange.InvokeAsync(option);
     }
 
     /// <inheritdoc />

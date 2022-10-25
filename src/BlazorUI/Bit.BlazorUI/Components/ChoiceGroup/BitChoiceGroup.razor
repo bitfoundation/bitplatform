@@ -6,74 +6,77 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
     <div role="radiogroup" aria-labelledby="@GetGroupAriaLabelledBy()">
-        <label class="bit-chg-label" id="@GetGroupLabelId()" disabled="@(IsEnabled is false)">
-            @if (LabelFragment is not null)
-            {
-                @LabelFragment
-            }
-            else
-            {
+        @if (LabelTemplate is not null)
+        {
+            @LabelTemplate
+        }
+        else
+        {
+            <label class="bit-chg-label" id="@GetGroupLabelId()" disabled="@(IsEnabled is false)">
                 @Label
-            }
-        </label>
+            </label>
+        }
         <div class="choice-field-group">
             @foreach (var option in Options)
             {
                 <div class="@GetOptionDivClassName(option)">
                     <div class="bit-chgo-wrapper">
                         <input @attributes="InputHtmlAttributes"
-                               id="@GetOptionInputId(option)"
-                               class="bit-chgo-input"
-                               aria-label="@GetOptionAriaLabel(option)"
-                               type="radio"
-                               checked="@GetOptionIsChecked(option)"
-                               name="@Name"
-                               value="@option.Value"
-                               hidden="hidden"
-                               required="@IsRequired"
-                               disabled="@(option.IsEnabled is false)"
-                               @onchange="() => HandleOptionChange(option)" />
-                        @if (option.LabelTemplate is null)
-                        {
-                            <label for="@GetOptionInputId(option)" class="@GetOptionLabelClassName(option)" id="@GetOptionLabelId(option)">
-                                @if (option.ImageSrc.HasValue())
-                                {
-                                    <div class="bit-chgo-img-inner-field">
-                                        <div class="bit-chgo-img-wrapper">
-                                            <div class="bit-chgo-img" style="@GetOptionImageSizeStyle(option)">
-                                                <img src="@GetOptionImageSrc(option)" alt="@option.ImageAlt">
+                           id="@GetOptionInputId(option)"
+                           class="bit-chgo-input"
+                           aria-label="@GetOptionAriaLabel(option)"
+                           type="radio"
+                           checked="@GetOptionIsChecked(option)"
+                           name="@Name"
+                           value="@option.Value"
+                           hidden="hidden"
+                           required="@IsRequired"
+                           disabled="@(IsEnabled is false || option.IsEnabled is false)"
+                           @onchange="() => HandleOptionChange(option)" />
+
+                        <label for="@GetOptionInputId(option)">
+                            @if (OptionTemplate is not null)
+                            {
+                                @OptionTemplate(option)
+                            }
+                            else
+                            {
+                                <div class="@GetOptionLabelClassName(option)">
+                                    @if (option.ImageSrc.HasValue())
+                                    {
+                                        <div class="bit-chgo-img-inner-field">
+                                            <div class="bit-chgo-img-wrapper">
+                                                <div class="bit-chgo-img" style="@GetOptionImageSizeStyle(option)">
+                                                    <img src="@GetOptionImageSrc(option)" alt="@option.ImageAlt">
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                }
-                                @if (option.IconName is not null)
-                                {
-                                    <div class="bit-chgo-icon-inner-field">
-                                        <div class="bit-chgo-icon-wrapper">
-                                            <i aria-hidden="true" class="bit-icon bit-icon--@option.IconName.GetName()"></i>
+                                    }
+                                    @if (option.IconName is not null)
+                                    {
+                                        <div class="bit-chgo-icon-inner-field">
+                                            <div class="bit-chgo-icon-wrapper">
+                                                <i aria-hidden="true" class="bit-icon bit-icon--@option.IconName.GetName()"></i>
+                                            </div>
                                         </div>
-                                    </div>
-                                }
-                                @if (option.ImageSrc.HasValue() || option.IconName is not null)
-                                {
-                                    <div class="bit-chgo-txt-wrapper">
+                                    }
+                                    @if (option.ImageSrc.HasValue() || option.IconName is not null)
+                                    {
+                                        <div class="bit-chgo-txt-wrapper">
+                                            <span class="bit-chgo-txt">
+                                                @option.Text
+                                            </span>
+                                        </div>
+                                    }
+                                    else
+                                    {
                                         <span class="bit-chgo-txt">
                                             @option.Text
                                         </span>
-                                    </div>
-                                }
-                                else
-                                {
-                                    <span class="bit-chgo-txt">
-                                        @option.Text
-                                    </span>
-                                }
-                            </label>
-                        }
-                        else
-                        {
-                            @option.LabelTemplate(option)
-                        }
+                                    }
+                                </div>
+                            }
+                        </label>
                     </div>
                 </div>
             }
