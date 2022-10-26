@@ -169,15 +169,7 @@ public partial class BitChoiceGroup
     {
         var option = Options.FirstOrDefault(i => i.Value == args.Value);
 
-        if (option is not null)
-        {
-            CurrentValue = option.Value;
-
-            if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
-
-            _ = OnChange.InvokeAsync(option);
-        }
-        else
+        if (option is null)
         {
             args.ShouldChange = false;
 
@@ -187,7 +179,6 @@ public partial class BitChoiceGroup
             if (Value == args.Value) return;
 
             _ = ValueChanged.InvokeAsync(Value);
-            _ = OnChange.InvokeAsync(option);
         }
     }
 
