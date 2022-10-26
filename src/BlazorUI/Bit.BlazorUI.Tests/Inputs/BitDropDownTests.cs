@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection.Emit;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -818,7 +816,7 @@ public class BitDropDownTests : BunitTestContext
         var items = GetRawDropdownItems();
         var component = RenderComponent<BitDropDownValidationTest>(parameters =>
         {
-            parameters.AddCascadingValue(visual);
+            parameters.Add(p => p.Visual, visual);
             parameters.Add(p => p.IsEnabled, true);
             parameters.Add(p => p.Items, items);
             parameters.Add(p => p.TestModel, new BitDropDownTestModel { Value = value });
