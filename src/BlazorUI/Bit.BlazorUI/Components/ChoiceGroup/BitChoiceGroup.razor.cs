@@ -61,6 +61,8 @@ public partial class BitChoiceGroup
     /// </summary>
     [Parameter] public RenderFragment<BitChoiceGroupOption>? OptionTemplate { get; set; }
 
+    [Parameter] public RenderFragment<BitChoiceGroupOption>? OptionLabelTemplate { get; set; }
+
     /// <summary>
     /// Callback that is called when the ChoiceGroup value has changed.
     /// </summary>
@@ -84,6 +86,8 @@ public partial class BitChoiceGroup
             CurrentValue = DefaultValue;
         }
 
+        OnValueChanging += HandleOnValueChanging;
+
         await base.OnInitializedAsync();
     }
 
@@ -105,8 +109,8 @@ public partial class BitChoiceGroup
         ? option.SelectedImageSrc
         : option.ImageSrc;
 
-    private static string GetOptionLabelClassName(BitChoiceGroupOption option) =>
-        option.ImageSrc.HasValue() || option.IconName is not null
+    private string GetOptionLabelClassName(BitChoiceGroupOption option) =>
+        (option.ImageSrc.HasValue() || option.IconName is not null) && OptionLabelTemplate is null
         ? "bit-chgo-lbl-with-img"
         : "bit-chgo-lbl";
 
@@ -120,6 +124,16 @@ public partial class BitChoiceGroup
         StringBuilder cssClass = new(itemRootElementClass);
 
         if (OptionTemplate is not null) return cssClass.ToString();
+
+        if (GetOptionIsChecked(option))
+        {
+            cssClass
+                .Append(' ')
+                .Append(itemRootElementClass)
+                .Append("-checked");
+        }
+
+        if (OptionLabelTemplate is not null) return cssClass.ToString();
 
         if (option.IsEnabled is false || IsEnabled is false)
         {
@@ -137,14 +151,6 @@ public partial class BitChoiceGroup
                 .Append("-with-img");
         }
 
-        if (GetOptionIsChecked(option))
-        {
-            cssClass
-                .Append(' ')
-                .Append(itemRootElementClass)
-                .Append("-checked");
-        }
-
         return cssClass.ToString();
     }
 
@@ -152,9 +158,37 @@ public partial class BitChoiceGroup
     {
         if (option.IsEnabled is false || IsEnabled is false) return;
 
+        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+
         CurrentValue = option.Value;
 
         await OnChange.InvokeAsync(option);
+    }
+
+    private void HandleOnValueChanging(object? sender, ValueChangingEventArgs<string?> args)
+    {
+        var option = Options.FirstOrDefault(i => i.Value == args.Value);
+
+        if (option is not null)
+        {
+            CurrentValue = option.Value;
+
+            if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+
+            _ = OnChange.InvokeAsync(option);
+        }
+        else
+        {
+            args.ShouldChange = false;
+
+            CurrentValue = null;
+
+            if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+            if (Value == args.Value) return;
+
+            _ = ValueChanged.InvokeAsync(Value);
+            _ = OnChange.InvokeAsync(option);
+        }
     }
 
     /// <inheritdoc />

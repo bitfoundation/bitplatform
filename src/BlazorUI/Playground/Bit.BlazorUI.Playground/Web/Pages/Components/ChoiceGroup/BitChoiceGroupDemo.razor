@@ -8,7 +8,7 @@
     <ComponentExampleBox Title="Basic ChoiceGroup" HTMLSourceCode="@example1HtmlCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
             <div class="example-desc">To create a ChoiceGroup you can use a BitChoiceGroup component</div>
-            <BitChoiceGroup Label="Pick one" Options="ChoiceGroupBasicOption" />
+            <BitChoiceGroup Label="Pick one" Options="ChoiceGroupBasicOption" DefaultValue="A" />
         </ExamplePreview>
     </ComponentExampleBox>
 
@@ -16,8 +16,8 @@
         <ExamplePreview>
             <div class="example-desc">you can disable ChoiceGroup or ChoiceGroupOption.</div>
             <div class="chg-box">
-                <BitChoiceGroup Label="Disabled ChoiceGroup" Options="ChoiceGroupBasicOption" IsEnabled="false" />
-                <BitChoiceGroup Label="ChoiceGroup with Disabled Option" Options="ChoiceGroupWithDisabledOption" />
+                <BitChoiceGroup Label="Disabled ChoiceGroup" Options="ChoiceGroupBasicOption" IsEnabled="false" DefaultValue="A" />
+                <BitChoiceGroup Label="ChoiceGroup with Disabled Option" Options="ChoiceGroupWithDisabledOption" DefaultValue="A" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -28,21 +28,21 @@
                 ChoiceGroup with images also you can set the selected image src for selected mode.
                 in addition, image size style and img tag alt attribute are settable.
             </div>
-            <BitChoiceGroup Label="Pick one image" Options="ChoiceGroupWithImage" />
+            <BitChoiceGroup Label="Pick one image" Options="ChoiceGroupWithImage" DefaultValue="Bar" />
         </ExamplePreview>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="ChoiceGroup with icons" HTMLSourceCode="@example4HtmlCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
         <ExamplePreview>
             <div class="example-desc">by BitIconName Interface you can select an icon name for showing in your option.</div>
-            <BitChoiceGroup Label="Pick one icon" Options="ChoiceGroupWithIcon" />
+            <BitChoiceGroup Label="Pick one icon" Options="ChoiceGroupWithIcon" DefaultValue="Day" />
         </ExamplePreview>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="ChoiceGroup with LabelTemplate" HTMLSourceCode="@example5HtmlCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
         <ExamplePreview>
             <div class="example-desc">Customize the ChoiceGroup Label content.</div>
-            <BitChoiceGroup Options="ChoiceGroupBasicOption">
+            <BitChoiceGroup Options="ChoiceGroupBasicOption" DefaultValue="A">
                 <LabelTemplate>
                     <div class="custom-label">
                         Custom label <BitIcon IconName="BitIconName.Filter" />
@@ -52,18 +52,28 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="ChoiceGroup with OptionTemplate" HTMLSourceCode="@example6HtmlCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example6">
+    <ComponentExampleBox Title="ChoiceGroup with Option Templates" HTMLSourceCode="@example6HtmlCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example6">
         <ExamplePreview>
             <div class="example-desc">Customize the ChoiceGroup Option content.</div>
-            <BitChoiceGroup Label="Pick one" Options="ChoiceGroupWithOptionTemplate" @bind-Value="ChoiceGroupWithOptionTemplateValue" DefaultValue="Day">
-                <OptionTemplate Context="option">
-                    <div class="custom-option @(ChoiceGroupWithOptionTemplateValue == option.Value ? "selected-option" : "")">
-                        <div class="option-pointer"></div>
-                        <BitIcon IconName="@option.IconName.Value" />
-                        <span>@option.Text</span>
-                    </div>
-                </OptionTemplate>
-            </BitChoiceGroup>
+            <div class="chg-box">
+                <BitChoiceGroup Label="Option Template" Options="ChoiceGroupWithOptionTemplate" @bind-Value="ChoiceGroupWithOptionTemplateValue" DefaultValue="Day">
+                    <OptionTemplate Context="option">
+                        <div class="custom-option @(ChoiceGroupWithOptionTemplateValue == option.Value ? "selected-option" : "")">
+                            <div class="option-pointer"></div>
+                            <BitIcon IconName="@option.IconName.Value" />
+                            <span>@option.Text</span>
+                        </div>
+                    </OptionTemplate>
+                </BitChoiceGroup>
+                <BitChoiceGroup Label="Option Label Template" Options="ChoiceGroupWithOptionTemplate" @bind-Value="ChoiceGroupWithOptionLabelTemplateValue" DefaultValue="Day">
+                    <OptionLabelTemplate Context="option">
+                        <div style="margin-left: 27px;" class="custom-option @(ChoiceGroupWithOptionLabelTemplateValue == option.Value ? "selected-option" : "")">
+                            <BitIcon IconName="@option.IconName.Value" />
+                            <span>@option.Text</span>
+                        </div>
+                    </OptionLabelTemplate>
+                </BitChoiceGroup>
+            </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
@@ -71,12 +81,16 @@
         <ExamplePreview>
             <div class="chg-box">
                 <div>
-                    <BitChoiceGroup Label="Two-way Bind" Options="ChoiceGroupBasicOption" @bind-Value="ChoiceGroupBindValue" />
-                    <div class="chg-output">Output: <BitTextField @bind-Value="ChoiceGroupBindValue" /></div>
+                    <BitChoiceGroup Label="One-way" Options="ChoiceGroupBasicOption" Value="@ChoiceGroupOneWayValue" DefaultValue="A" />
+                    <div class="chg-output">
+                        <BitTextField Placeholder="A..." @bind-Value="ChoiceGroupOneWayValue" />
+                    </div>
                 </div>
                 <div>
-                    <BitChoiceGroup Label="Bind with OnChange(One-way)" Options="ChoiceGroupBasicOption" OnChange="(option) => ChoiceGroupOnChangeValue = option.Value" />
-                    <div class="chg-output">Output: @ChoiceGroupOnChangeValue</div>
+                    <BitChoiceGroup Label="Two-way" Options="ChoiceGroupBasicOption" @bind-Value="ChoiceGroupTwoWayValue" DefaultValue="A" />
+                    <div class="chg-output">
+                        <BitTextField @bind-Value="ChoiceGroupTwoWayValue" />
+                    </div>
                 </div>
             </div>
         </ExamplePreview>

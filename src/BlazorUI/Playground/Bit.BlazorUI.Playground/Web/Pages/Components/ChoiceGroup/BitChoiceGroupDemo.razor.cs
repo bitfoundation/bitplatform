@@ -8,8 +8,9 @@ namespace Bit.BlazorUI.Playground.Web.Pages.Components.ChoiceGroup;
 public partial class BitChoiceGroupDemo
 {
     private string ChoiceGroupWithOptionTemplateValue;
-    private string ChoiceGroupBindValue;
-    private string ChoiceGroupOnChangeValue;
+    private string ChoiceGroupWithOptionLabelTemplateValue;
+    private string ChoiceGroupOneWayValue;
+    private string ChoiceGroupTwoWayValue;
     public ChoiceGroupValidationModel ValidationModel = new();
     public string SuccessMessage;
 
@@ -269,7 +270,7 @@ public partial class BitChoiceGroupDemo
     #region Example Code 1
 
     private readonly string example1HtmlCode = @"
- <BitChoiceGroup Label=""Pick one"" Options=""ChoiceGroupBasicOption"" />
+ <BitChoiceGroup Label=""Pick one"" Options=""ChoiceGroupBasicOption"" DefaultValue=""A"" />
 ";
 
     private readonly string example1CSharpCode = @"
@@ -303,9 +304,9 @@ private List<BitChoiceGroupOption> ChoiceGroupBasicOption = new()
     #region Example Code 2
 
     private readonly string example2HtmlCode = @"
-<BitChoiceGroup Label=""Disabled ChoiceGroup"" Options=""ChoiceGroupBasicOption"" IsEnabled=""false"" />
+<BitChoiceGroup Label=""Disabled ChoiceGroup"" Options=""ChoiceGroupBasicOption"" IsEnabled=""false"" DefaultValue=""A"" />
 
-<BitChoiceGroup Label=""ChoiceGroup with Disabled Option"" Options=""ChoiceGroupWithDisabledOption"" />
+<BitChoiceGroup Label=""ChoiceGroup with Disabled Option"" Options=""ChoiceGroupWithDisabledOption"" DefaultValue=""A"" />
 ";
 
     private readonly string example2CSharpCode = @"
@@ -364,7 +365,7 @@ private List<BitChoiceGroupOption> ChoiceGroupWithDisabledOption = new()
     #region Example Code 3
 
     private readonly string example3HtmlCode = @"
-<BitChoiceGroup Label=""Pick one image"" Options=""ChoiceGroupWithImage"" />
+<BitChoiceGroup Label=""Pick one image"" Options=""ChoiceGroupWithImage"" DefaultValue=""Bar"" />
 ";
 
     private readonly string example3CSharpCode = @"
@@ -396,7 +397,7 @@ private List<BitChoiceGroupOption> ChoiceGroupWithImage = new()
     #region Example Code 4
 
     private readonly string example4HtmlCode = @"
-<BitChoiceGroup Label=""Pick one icon"" Options=""ChoiceGroupWithIcon"" />
+<BitChoiceGroup Label=""Pick one icon"" Options=""ChoiceGroupWithIcon"" DefaultValue=""Day"" />
 ";
 
     private readonly string example4CSharpCode = @"
@@ -436,7 +437,7 @@ private List<BitChoiceGroupOption> ChoiceGroupWithIcon = new()
     }
 </style>
 
-<BitChoiceGroup Options=""ChoiceGroupBasicOption"">
+<BitChoiceGroup Options=""ChoiceGroupBasicOption"" DefaultValue=""A"">
     <LabelTemplate>
         <div class=""custom-label"">
             Custom label <BitIcon IconName=""BitIconName.Filter"" />
@@ -521,10 +522,21 @@ private List<BitChoiceGroupOption> ChoiceGroupBasicOption = new()
         </div>
     </OptionTemplate>
 </BitChoiceGroup>
+
+<BitChoiceGroup Label=""Option Label Template"" Options=""ChoiceGroupWithOptionTemplate"" @bind-Value=""ChoiceGroupWithOptionLabelTemplateValue"" DefaultValue=""Day"">
+    <OptionLabelTemplate Context=""option"">
+        <div style=""margin-left: 27px;"" class=""custom-option @(ChoiceGroupWithOptionLabelTemplateValue == option.Value ? ""selected-option"" : """")"">
+            <BitIcon IconName=""@option.IconName.Value"" />
+            <span>@option.Text</span>
+        </div>
+    </OptionLabelTemplate>
+</BitChoiceGroup>
 ";
 
     private readonly string example6CSharpCode = @"
 private string ChoiceGroupWithOptionTemplateValue;
+
+private string ChoiceGroupWithOptionLabelTemplateValue;
 
 private List<BitChoiceGroupOption> ChoiceGroupWithOptionTemplate = new()
 {
@@ -554,14 +566,14 @@ private List<BitChoiceGroupOption> ChoiceGroupWithOptionTemplate = new()
     #region Example Code 7
 
     private readonly string example7HtmlCode = @"
-<BitChoiceGroup Label=""Two-way Bind"" Options=""ChoiceGroupBasicOption"" @bind-Value=""ChoiceGroupBindValue"" />
+<BitChoiceGroup Label=""One-way"" Options=""ChoiceGroupBasicOption"" Value=""@ChoiceGroupOneWayValue"" DefaultValue=""A"" />
 
-<BitChoiceGroup Label=""Bind with OnChange(One-way)"" Options=""ChoiceGroupBasicOption"" OnChange=""(option) => ChoiceGroupOnChangeValue = option.Value"" />
+<BitChoiceGroup Label=""Two-way"" Options=""ChoiceGroupBasicOption"" @bind-Value=""ChoiceGroupTwoWayValue"" DefaultValue=""A"" />
 ";
 
     private readonly string example7CSharpCode = @"
-private string ChoiceGroupBindValue;
-private string ChoiceGroupOnChangeValue;
+private string ChoiceGroupOneWayValue;
+private string ChoiceGroupTwoWayValue;
 
 private List<BitChoiceGroupOption> ChoiceGroupBasicOption = new()
 {
