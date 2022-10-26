@@ -75,19 +75,30 @@
          tabindex="0"
          role="listbox"
          aria-labelledby="@DropdownLabelId">
-        <div class="close-btn-contianer">
-            <button class="close-btn"
+        @if (IsResponsiveModeEnabled)
+        {
+            <div class="responsive-label-contianer">
+                @if (LabelFragment is not null)
+                {
+                    <label class="lbl">@LabelFragment</label>
+                }
+                else if (Label.HasValue())
+                {
+                    <label class="lbl">@Label</label>
+                }
+                <button class="close-btn"
                     type="button"
                     aria-label="Close"
                     aria-describedby="Close"
                     aria-hidden="Close"
                     title="Close"
                     @onclick="CloseCallout">
-                <span>
-                    <i class="bit-icon bit-icon--ChromeClose"></i>
-                </span>
-            </button>
-        </div>
+                    <span>
+                        <i class="bit-icon bit-icon--ChromeClose"></i>
+                    </span>
+                </button>
+            </div>
+        }
         @if (ShowSearchBox)
         {
             <div class="@GetSearchBoxClasses()">

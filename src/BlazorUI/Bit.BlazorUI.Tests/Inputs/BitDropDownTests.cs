@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Emit;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -29,7 +30,7 @@ public class BitDropDownTests : BunitTestContext
 
         var component = RenderComponent<BitDropDown>(parameters =>
         {
-            parameters.Add(p => p.Visual, visual);
+            parameters.AddCascadingValue(visual);
             parameters.Add(p => p.IsEnabled, isEnabled);
         });
 
@@ -51,13 +52,13 @@ public class BitDropDownTests : BunitTestContext
       DataRow(Visual.Material, true),
       DataRow(Visual.Material, false)
     ]
-    public void ResponsiveDropDownShouldTakeCorrectClassName(Visual visual, bool isResponsiveModeEnabled)
+    public void ResponsiveDropDownShouldTakeCorrectClassNameAndRenderElements(Visual visual, bool isResponsiveModeEnabled)
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
 
         var component = RenderComponent<BitDropDown>(parameters =>
         {
-            parameters.Add(p => p.Visual, visual);
+            parameters.AddCascadingValue(visual);
             parameters.Add(p => p.IsResponsiveModeEnabled, isResponsiveModeEnabled);
         });
 
@@ -68,6 +69,80 @@ public class BitDropDownTests : BunitTestContext
             var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
 
             Assert.IsTrue(bitDrp.ClassList.Contains($"bit-drp-responsive-{visualClass}"));
+
+            var lblContianer = component.Find(".responsive-label-contianer");
+            Assert.IsNotNull(lblContianer);
+        }
+        else
+        {
+            Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".responsive-label-contianer"));
+        }
+    }
+
+    [DataTestMethod,
+      DataRow(Visual.Fluent, null),
+      DataRow(Visual.Fluent, "BitDeop"),
+
+      DataRow(Visual.Cupertino, null),
+      DataRow(Visual.Cupertino, "BitDeop"),
+
+      DataRow(Visual.Material, null),
+      DataRow(Visual.Material, "BitDeop")
+    ]
+    public void ResponsiveDropDownShouldRenderLabal(Visual visual, string labelFragment)
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropDown>(parameters =>
+        {
+            parameters.AddCascadingValue(visual);
+            parameters.Add(p => p.IsResponsiveModeEnabled, true);
+            parameters.Add(p => p.Label, labelFragment);
+        });
+
+        if (string.IsNullOrEmpty(labelFragment))
+        {
+            Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".responsive-label-contianer > label"));
+        }
+        else
+        {
+            Assert.AreEqual(labelFragment, component.Find(".responsive-label-contianer > label").InnerHtml);
+        }
+    }
+
+    [DataTestMethod,
+      DataRow(Visual.Fluent, null),
+      DataRow(Visual.Fluent, "<div>This is labelFragment</div>"),
+
+      DataRow(Visual.Cupertino, null),
+      DataRow(Visual.Cupertino, "<div>This is labelFragment</div>"),
+
+      DataRow(Visual.Material, null),
+      DataRow(Visual.Material, "<div>This is labelFragment</div>")
+    ]
+    public void ResponsiveDropDownShouldRenderLabelFragment(Visual visual, string labelFragment)
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropDown>(parameters =>
+        {
+            parameters.AddCascadingValue(visual);
+            parameters.Add(p => p.IsResponsiveModeEnabled, true);
+
+            if (string.IsNullOrEmpty(labelFragment) is false)
+            {
+                parameters.Add(p => p.LabelFragment, labelFragment);
+            }
+        });
+
+        if (string.IsNullOrEmpty(labelFragment))
+        {
+            Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".responsive-label-contianer > label"));
+        }
+        else
+        {
+            var labelChild = component.Find(".responsive-label-contianer > label").ChildNodes;
+            labelChild.MarkupMatches(labelFragment);
         }
     }
 
@@ -146,10 +221,10 @@ public class BitDropDownTests : BunitTestContext
         var items = GetDropdownItems();
         var component = RenderComponent<BitDropDown>(parameters =>
         {
+            parameters.AddCascadingValue(visual);
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.Items, items);
             parameters.Add(p => p.IsMultiSelect, isMultiSelect);
-            parameters.Add(p => p.Visual, visual);
         });
 
         Assert.AreEqual(items.FindAll(i => i.ItemType == BitDropDownItemType.Header).Count, component.FindAll(".item-header").Count);
@@ -743,7 +818,7 @@ public class BitDropDownTests : BunitTestContext
         var items = GetRawDropdownItems();
         var component = RenderComponent<BitDropDownValidationTest>(parameters =>
         {
-            parameters.Add(p => p.Visual, visual);
+            parameters.AddCascadingValue(visual);
             parameters.Add(p => p.IsEnabled, true);
             parameters.Add(p => p.Items, items);
             parameters.Add(p => p.TestModel, new BitDropDownTestModel { Value = value });

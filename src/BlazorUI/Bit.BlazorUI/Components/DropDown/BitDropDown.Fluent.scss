@@ -203,6 +203,7 @@
         box-sizing: border-box;
         display: inline-block;
         text-decoration: none;
+        margin-left: auto;
 
         & > span {
             display: flex;
@@ -585,7 +586,7 @@
         }
     }
 
-    .close-btn-contianer {
+    .responsive-label-contianer {
         width: 100%;
         display: none;
 
@@ -692,9 +693,9 @@
                 animation-fill-mode: both;
             }
 
-            .close-btn-contianer {
+            .responsive-label-contianer {
                 display: flex;
-                justify-content: flex-end;
+                justify-content: space-between;
             }
 
             .drp-overlay {
