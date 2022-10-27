@@ -156,8 +156,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{82F7
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{43732843-728E-4D46-911C-C464DA4243E1}"
 	ProjectSection(SolutionItems) = preProject
-		Templates\TodoTemplate\Bit.TodoTemplate\.github\workflows\cd.yml = Templates\TodoTemplate\Bit.TodoTemplate\.github\workflows\cd.yml
-		Templates\TodoTemplate\Bit.TodoTemplate\.github\workflows\ci.yml = Templates\TodoTemplate\Bit.TodoTemplate\.github\workflows\ci.yml
+		Templates\AdminPanel\Bit.AdminPanel\.github\workflows\cd.yml = Templates\AdminPanel\Bit.AdminPanel\.github\workflows\cd.yml
+		Templates\AdminPanel\Bit.AdminPanel\.github\workflows\ci.yml = Templates\AdminPanel\Bit.AdminPanel\.github\workflows\ci.yml
 	EndProjectSection
 EndProject
 Global
