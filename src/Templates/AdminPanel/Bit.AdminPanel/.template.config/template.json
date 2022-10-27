@@ -59,7 +59,7 @@
         {
             "modifiers": [
                 {
-                    "copyOnly": [ "global.json", "**.Web/Pages/Home.razor", "**/*.scss", "**/*.svg", "**/*.png" ],
+                    "copyOnly": [ "src/global.json", "**.Web/Pages/Home.razor", "**/*.scss", "**/*.svg", "**/*.png" ],
                     "exclude": [
                         ".vs/**",
                         "**/[Bb]in/**",

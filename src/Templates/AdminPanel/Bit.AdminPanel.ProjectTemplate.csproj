@@ -26,7 +26,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Include="Bit.AdminPanel\Client\Web\wwwroot\images\icons\bit-icon-512.png">
+        <None Include="Bit.AdminPanel\src\Client\Web\wwwroot\images\icons\bit-icon-512.png">
             <Pack>True</Pack>
             <PackagePath>\</PackagePath>
         </None>
