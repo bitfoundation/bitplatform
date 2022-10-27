@@ -1,5 +1,6 @@
 ﻿@import '../../../Styles/abstracts/_colors.scss';
 @import '../../../Styles/abstracts/_functions.scss';
+@import '../../../Styles/abstracts/_media-queries.scss';
 
 .validation-summary {
     border-left: rem(5px) solid $Red10;
@@ -15,4 +16,61 @@
 ::deep div.validation-message {
     color: $Red20;
     font-size: rem(12px);
+}
+
+.chg-box {
+    display: flex;
+    gap: rem(30px);
+
+    @include sm {
+        flex-direction: column;
+    }
+
+    .chg-output {
+        display: flex;
+        align-items: center;
+        gap: rem(5px);
+        margin-top: rem(20px);
+        font-weight: 600;
+        font-size: rem(16px);
+    }
+}
+
+.custom-label {
+    font-weight: bold;
+    color: $Red20;
+}
+
+.custom-option {
+    display: flex;
+    align-items: center;
+    gap: rem(10px);
+    cursor: pointer;
+
+    .option-pointer {
+        width: rem(20px);
+        height: rem(20px);
+        border: 1px solid;
+        border-radius: rem(10px);
+    }
+
+    &:hover {
+        .option-pointer {
+            border-top: rem(5px) solid #C66;
+            border-bottom: rem(5px) solid #6C6;
+            border-left: rem(5px) solid #66C;
+            border-right: rem(5px) solid #CC6;
+        }
+    }
+
+    &.selected-option {
+        color: #C66;
+
+        .option-pointer {
+            border-top: rem(10px) solid #C66;
+            border-bottom: rem(10px) solid #6C6;
+            border-left: rem(10px) solid #66C;
+            border-right: rem(10px) solid #CC6;
+        }
+    }
 }

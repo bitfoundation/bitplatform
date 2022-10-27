@@ -2,21 +2,23 @@
 
 <ComponentDemo ComponentName="ChoiceGroup"
                ComponentDescription="ChoiceGroup let people select a single option from two or more choices."
-               ComponentParameters="componentParameters">
+               ComponentParameters="componentParameters"
+               ComponentSubParameters="@componentSubParameters">
 
     <ComponentExampleBox Title="Basic ChoiceGroup" HTMLSourceCode="@example1HtmlCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
             <div class="example-desc">To create a ChoiceGroup you can use a BitChoiceGroup component</div>
-            <BitChoiceGroup Label="Pick one" Options="Example1Options">
-            </BitChoiceGroup>
+            <BitChoiceGroup Label="Pick one" Options="ChoiceGroupBasicOption" DefaultValue="A" />
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="ChoiceGroup with disabled option and default selected key" HTMLSourceCode="@example2HtmlCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example2">
+    <ComponentExampleBox Title="Disabled" HTMLSourceCode="@example2HtmlCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example2">
         <ExamplePreview>
-            <div class="example-desc">you can disable an option and set default selected key when initially</div>
-            <BitChoiceGroup Label="Pick one" Options="Example2Options" DefaultValue="B">
-            </BitChoiceGroup>
+            <div class="example-desc">you can disable ChoiceGroup or ChoiceGroupOption.</div>
+            <div class="chg-box">
+                <BitChoiceGroup Label="Disabled ChoiceGroup" Options="ChoiceGroupBasicOption" IsEnabled="false" DefaultValue="A" />
+                <BitChoiceGroup Label="ChoiceGroup with Disabled Option" Options="ChoiceGroupWithDisabledOption" DefaultValue="A" />
+            </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
@@ -26,31 +28,75 @@
                 ChoiceGroup with images also you can set the selected image src for selected mode.
                 in addition, image size style and img tag alt attribute are settable.
             </div>
-            <BitChoiceGroup Label="Pick one image" Options="Example3Options">
-            </BitChoiceGroup>
+            <BitChoiceGroup Label="Pick one image" Options="ChoiceGroupWithImage" DefaultValue="Bar" />
         </ExamplePreview>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="ChoiceGroup with icons" HTMLSourceCode="@example4HtmlCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
         <ExamplePreview>
-            <div class="example-desc">by BitIconName Interface you can select an icon name for showing in your option. </div>
-            <BitChoiceGroup Label="Pick one icon" Options="Example4Options">
-            </BitChoiceGroup>
+            <div class="example-desc">by BitIconName Interface you can select an icon name for showing in your option.</div>
+            <BitChoiceGroup Label="Pick one icon" Options="ChoiceGroupWithIcon" DefaultValue="Day" />
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="ChoiceGroup with a custom label" HTMLSourceCode="@example5HtmlCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
+    <ComponentExampleBox Title="ChoiceGroup with LabelTemplate" HTMLSourceCode="@example5HtmlCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
         <ExamplePreview>
-            <div class="example-desc">Customize the ChoiceGroup label</div>
-            <BitChoiceGroup Options="Example5Options">
-                <LabelFragment>
-                    Custom label <BitIconButton IconName="BitIconName.Filter"></BitIconButton>
-                </LabelFragment>
+            <div class="example-desc">Customize the ChoiceGroup Label content.</div>
+            <BitChoiceGroup Options="ChoiceGroupBasicOption" DefaultValue="A">
+                <LabelTemplate>
+                    <div class="custom-label">
+                        Custom label <BitIcon IconName="BitIconName.Filter" />
+                    </div>
+                </LabelTemplate>
             </BitChoiceGroup>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="ChoiceGroup validation" HTMLSourceCode="@example6HtmlCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example6">
+    <ComponentExampleBox Title="ChoiceGroup with Option Templates" HTMLSourceCode="@example6HtmlCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example6">
+        <ExamplePreview>
+            <div class="example-desc">Customize the ChoiceGroup Option content.</div>
+            <div class="chg-box">
+                <BitChoiceGroup Label="Option Template" Options="ChoiceGroupWithOptionTemplate" @bind-Value="ChoiceGroupWithOptionTemplateValue" DefaultValue="Day">
+                    <OptionTemplate Context="option">
+                        <div class="custom-option @(ChoiceGroupWithOptionTemplateValue == option.Value ? "selected-option" : "")">
+                            <div class="option-pointer"></div>
+                            <BitIcon IconName="@option.IconName.Value" />
+                            <span>@option.Text</span>
+                        </div>
+                    </OptionTemplate>
+                </BitChoiceGroup>
+                <BitChoiceGroup Label="Option Label Template" Options="ChoiceGroupWithOptionTemplate" @bind-Value="ChoiceGroupWithOptionLabelTemplateValue" DefaultValue="Day">
+                    <OptionLabelTemplate Context="option">
+                        <div style="margin-left: 27px;" class="custom-option @(ChoiceGroupWithOptionLabelTemplateValue == option.Value ? "selected-option" : "")">
+                            <BitIcon IconName="@option.IconName.Value" />
+                            <span>@option.Text</span>
+                        </div>
+                    </OptionLabelTemplate>
+                </BitChoiceGroup>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="ChoiceGroup Binding" HTMLSourceCode="@example7HtmlCode" CSharpSourceCode="@example7CSharpCode" ExampleId="example7">
+        <ExamplePreview>
+            <div class="chg-box">
+                <div>
+                    <BitChoiceGroup Label="One-way" Options="ChoiceGroupBasicOption" Value="@ChoiceGroupOneWayValue" DefaultValue="A" />
+                    <div class="chg-output">
+                        <BitTextField Placeholder="A..." @bind-Value="ChoiceGroupOneWayValue" />
+                    </div>
+                </div>
+                <div>
+                    <BitChoiceGroup Label="Two-way" Options="ChoiceGroupBasicOption" @bind-Value="ChoiceGroupTwoWayValue" DefaultValue="A" />
+                    <div class="chg-output">
+                        <BitTextField @bind-Value="ChoiceGroupTwoWayValue" />
+                    </div>
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="ChoiceGroup validation" HTMLSourceCode="@example8HtmlCode" CSharpSourceCode="@example8CSharpCode" ExampleId="example8">
         <ExamplePreview>
             <div class="example-desc">ChoiceGroup validation in form (Required pick one)</div>
             @if (string.IsNullOrEmpty(SuccessMessage))
@@ -61,11 +107,10 @@
                         <ValidationSummary />
                     </div>
                     <div>
-                        <BitChoiceGroup Options="Example6Options" @bind-Value="ValidationModel.Value">
-                        </BitChoiceGroup>
+                        <BitChoiceGroup Options="ChoiceGroupBasicOption" @bind-Value="ValidationModel.Value" />
                         <ValidationMessage For="@(() => ValidationModel.Value)" />
                     </div>
-                    <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
+                    <BitButton Style="margin-top: 10px;" ButtonType="BitButtonType.Submit">Submit</BitButton>
                 </EditForm>
             }
             else
@@ -77,70 +122,4 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="ChoiceGroup with Option OnChange event" HTMLSourceCode="@example7HtmlCode" CSharpSourceCode="@example7CSharpCode" ExampleId="example7">
-        <ExamplePreview>
-            <div class="example-desc">Option OnChange Event: @OnChangeValue</div>
-            <BitChoiceGroup Label="Pick one" Options="example7Options">
-            </BitChoiceGroup>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-
-    <ComponentExampleBox Title="ChoiceGroup with custom options" HTMLSourceCode="@example8HtmlCode" CSharpSourceCode="@example8CSharpCode" ExampleId="example8">
-        <ExamplePreview>
-            <div class="example-desc">ChoiceGroup options are customized by LabelTemplate property in the ChoiceGroupOption class</div>
-            <BitChoiceGroup Label="Pick one" Options="Example8Options">
-            </BitChoiceGroup>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
 </ComponentDemo>
-
-
-@code {
-
-    // example 8
-
-    public static RenderFragment<BitChoiceGroupOption> LabelTemplateSample { get; set; }
-
-    private List<BitChoiceGroupOption> Example8Options { get; set; } = new()
-    {
-        new BitChoiceGroupOption()
-        {
-            Value = "A",
-            Text = "Option A",
-            LabelTemplate = LabelTemplateSample
-        },
-        new BitChoiceGroupOption()
-        {
-            Value = "B",
-            Text = "Option B",
-            LabelTemplate = LabelTemplateSample
-        },
-        new BitChoiceGroupOption()
-        {
-            Value = "C",
-            Text = "Option C",
-            LabelTemplate = LabelTemplateSample
-        },
-        new BitChoiceGroupOption()
-        {
-            Value = "D",
-            Text = "Option D",
-            LabelTemplate = LabelTemplateSample
-        }
-    };
-
-    protected override void OnInitialized()
-    {
-        LabelTemplateSample = (option) => (
-            @<div style="border: 1px solid;">
-                <input type="radio" name="input-name" id="input-id-@option.Value">
-                <label for="input-id-@option.Value">@option.Text</label>
-            </div>
-        );
-
-        base.OnInitialized();
-    }
-
-}

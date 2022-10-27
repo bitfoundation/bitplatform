@@ -152,6 +152,10 @@
         "inputFile": "Pages/Components/DateRangePicker/BitDateRangePickerDemo.razor.scss"
     },
     {
+        "outputFile": "Pages/Components/ChoiceGroup/BitChoiceGroupDemo.razor.css",
+        "inputFile": "Pages/Components/ChoiceGroup/BitChoiceGroupDemo.razor.scss"
+    },
+    {
         "outputFile": "Pages/Components/Checkbox/BitCheckboxDemo.razor.css",
         "inputFile": "Pages/Components/Checkbox/BitCheckboxDemo.razor.scss"
     },
