@@ -1,7 +1,24 @@
 name: AdminPanel CD
 
+# Getting started:
+
+# Note that _BASE64 secrets are files that are encoded into base64 format so you can store them in GitHub actions secrets easily.
+
+# Provide API_IDENTITY_CERTIFICATE_PASSWORD and API_IDENTITY_CERTIFICATE_BASE64 secrets that can gets created by following powershell command:
+
+# $cert = New-SelfSignedCertificate -CertStoreLocation Cert:\LocalMachine\My -Subject "IdentityCN" -Provider "Microsoft Strong Cryptographic Provider" -HashAlgorithm "SHA512" -NotAfter (Get-Date).AddYears(5)
+# Export-PfxCertificate -cert ('Cert:\LocalMachine\My\' + $cert.thumbprint) -FilePath PATH_TO_YOUR_IdentityCertificate.pfx -Password (ConvertTo-SecureString -String "YOUR_PASSWORD" -Force -AsPlainText)
+
+# Provide WEB_APP_DEPLOYMENT_TYPE, You can choose either Static, DefaultDeploymentType, PWA or SSR.
+
+# Provide API_SERVER_ADDRESS so clients (Android, iOS, Windows, Mac) get connect to it.
+
+# Provide ANDROID_RELEASE_KEYSTORE_BASE64, ANDROID_RELEASE_KEYSTORE_PASSWORD, ANDROID_RELEASE_SIGNING_PASSWORD (Create keystore and store it as base64 encoded string in GitHub actions secrets)
+
+# Provide iOS_BUILD_CERTIFICATE_BASE64, iOS_P12_PASSWORD, iOS_BUILD_PROVISION_PROFILE_BASE64, iOS_KEYCHAIN_PASSWORD based on https://docs.github.com/en/actions/deployment/deploying-xcode-applications/installing-an-apple-certificate-on-macos-runners-for-xcode-development
+
 env:
-  WEB_APP_DEPLOYMENT_TYPE: 'DefaultDeploymentType' # You can choose either Static, DefaultDeploymentType, PWA or SSR
+  WEB_APP_DEPLOYMENT_TYPE: 'DefaultDeploymentType'
   API_SERVER_ADDRESS: 'https://adminpanel.bitplatform.dev/api/'
 
 on:
@@ -60,143 +77,141 @@ jobs:
   build-blazor-hybrid-windows:
     name: build blazor hybrid (windows)
     runs-on: windows-latest
-
+  
     steps:
-    
+     
     - name: Checkout source code
       uses: actions/checkout@v3
-    
+     
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
         global-json-file: src/global.json
-
+  
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
       with:
         files: 'src/Client/Shared/wwwroot/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
-
+  
     - name: Restore workloads
       run: dotnet workload restore src/Client/App/AdminPanel.Client.App.csproj /P:BlazorMode=BlazorHybrid -f net7.0-windows10.0.19041.0
-
+  
     - name: Build (To generate CSS/JS files)
       run: dotnet build src/Client/App/AdminPanel.Client.App.csproj /P:BlazorMode=BlazorHybrid /P:Configuration=Release /P:WindowsPackageType=None /P:SelfContained=true /P:WindowsAppSDKSelfContained=true /P:GenerateAppxPackageOnBuild=false /p:RuntimeIdentifier=win10-x86 -f net7.0-windows10.0.19041.0
-
+  
     - name: Build exe
       run: dotnet build src/Client/App/AdminPanel.Client.App.csproj /P:BlazorMode=BlazorHybrid /P:Configuration=Release /P:WindowsPackageType=None /P:SelfContained=true /P:WindowsAppSDKSelfContained=true /P:GenerateAppxPackageOnBuild=false /p:RuntimeIdentifier=win10-x86 -f net7.0-windows10.0.19041.0
-
+  
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
         name: win-exe
         path: src/Client/App/bin/release/net7.0-windows10.0.19041.0/win10-x86
-
+  
   build-blazor-hybrid-android:
     name: build blazor hybrid (android)
     runs-on: windows-latest
-
+  
     steps:
-    
+     
     - name: Checkout source code
       uses: actions/checkout@v3
-    
+     
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
         global-json-file: src/global.json
-
+  
     - name: Extract Android signing key from env
       uses: timheuer/base64-to-file@v1
       with:
           fileDir: './src/Client/App/'
           fileName: 'AdminPanel.keystore'
-          encodedString: ${{ secrets.ANDROID_RELEASE_KEYSTORE }}
-
+          encodedString: ${{ secrets.ANDROID_RELEASE_KEYSTORE_BASE64 }}
+  
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
       with:
         files: 'src/Client/Shared/wwwroot/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
-
+  
     - name: Restore workloads
       run: dotnet workload restore src/Client/App/AdminPanel.Client.App.csproj /P:BlazorMode=BlazorHybrid -f net7.0-android
-
+  
     - name: Build (To generate CSS/JS files)
       run: dotnet build src/Client/App/AdminPanel.Client.App.csproj /P:BlazorMode=BlazorHybrid /P:Configuration=Release /P:RunAOTCompilation=false -f net7.0-android
-
+  
     - name: Build aab
       run: dotnet build src/Client/App/AdminPanel.Client.App.csproj /P:BlazorMode=BlazorHybrid /P:Configuration=Release /P:AndroidPackageFormat=aab /P:AndroidKeyStore=true /P:AndroidSigningKeyStore="AdminPanel.keystore" /P:AndroidSigningKeyAlias=AdminPanel /P:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" /P:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -f net7.0-android
-
+  
     - name: Build apk
       run: dotnet build src/Client/App/AdminPanel.Client.App.csproj /P:BlazorMode=BlazorHybrid /P:Configuration=Release /P:AndroidKeyStore=true /P:AndroidSigningKeyStore="AdminPanel.keystore" /P:AndroidSigningKeyAlias=AdminPanel /P:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" /P:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -f net7.0-android
-
+  
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
         name: android-bundles
         path: src/Client/App/bin/release/net7.0-android/*-Signed.*
-
+  
   build-blazor-hybrid-maccatalyst:
-    name: build blazor hybrid (maccatalyst)
-    runs-on: macos-latest
-
-    steps:
-    
-    - name: Checkout source code
-      uses: actions/checkout@v3
-    
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v3
-      with:
-        global-json-file: src/global.json
-
-    - name: Update appsettings.json api server address
-      uses: microsoft/variable-substitution@v1 
-      with:
-        files: 'src/Client/Shared/wwwroot/appsettings.json'
-      env:
-        ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
-
-    - name: Restore workloads
-      run: dotnet workload restore src/Client/App/AdminPanel.Client.App.csproj /P:BlazorMode=BlazorHybrid -f net7.0-maccatalyst
-
-    - name: Build (To generate CSS/JS files)
-      run: dotnet build src/Client/App/AdminPanel.Client.App.csproj /P:BlazorMode=BlazorHybrid /P:Configuration=Release /P:CreatePackage=true -f net7.0-maccatalyst
-
-    - name: Build pkg
-      run: dotnet build src/Client/App/AdminPanel.Client.App.csproj /P:BlazorMode=BlazorHybrid /P:Configuration=Release /P:CreatePackage=true -f net7.0-maccatalyst
-
-    - name: Upload artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: mac-pkg
-        path: src/Client/App/bin/release/net7.0-maccatalyst/*.pkg
-
+     name: build blazor hybrid (maccatalyst)
+     runs-on: macos-latest
+   
+     steps:
+      
+     - name: Checkout source code
+       uses: actions/checkout@v3
+      
+     - name: Setup .NET
+       uses: actions/setup-dotnet@v3
+       with:
+         global-json-file: src/global.json
+   
+     - name: Update appsettings.json api server address
+       uses: microsoft/variable-substitution@v1 
+       with:
+         files: 'src/Client/Shared/wwwroot/appsettings.json'
+       env:
+         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
+   
+     - name: Restore workloads
+       run: dotnet workload restore src/Client/App/AdminPanel.Client.App.csproj /P:BlazorMode=BlazorHybrid -f net7.0-maccatalyst
+   
+     - name: Build (To generate CSS/JS files)
+       run: dotnet build src/Client/App/AdminPanel.Client.App.csproj /P:BlazorMode=BlazorHybrid /P:Configuration=Release /P:CreatePackage=true -f net7.0-maccatalyst
+   
+     - name: Build pkg
+       run: dotnet build src/Client/App/AdminPanel.Client.App.csproj /P:BlazorMode=BlazorHybrid /P:Configuration=Release /P:CreatePackage=true -f net7.0-maccatalyst
+   
+     - name: Upload artifact
+       uses: actions/upload-artifact@v2
+       with:
+         name: mac-pkg
+         path: src/Client/App/bin/release/net7.0-maccatalyst/*.pkg
+  
   build-blazor-hybrid-iOS:
     name: build blazor hybrid (iOS)
     runs-on: macos-12
-
+  
     steps:
-    
+     
     - name: Checkout source code
       uses: actions/checkout@v3
-    
+     
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
         global-json-file: src/global.json
-
+  
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
       with:
         files: 'src/Client/Shared/wwwroot/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
-
-# https://docs.github.com/en/actions/deployment/deploying-xcode-applications/installing-an-apple-certificate-on-macos-runners-for-xcode-development
 
     - name: Install the Apple certificate and provisioning profile
       env:
@@ -222,16 +237,16 @@ jobs:
           # apply provisioning profile
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
-
+  
     - name: Restore workloads
       run: dotnet workload restore src/Client/App/AdminPanel.Client.App.csproj /P:BlazorMode=BlazorHybrid -f net7.0-ios
-
+  
     - name: Build (To generate CSS/JS files)
       run: dotnet build src/Client/App/AdminPanel.Client.App.csproj /P:BlazorMode=BlazorHybrid /P:Configuration=Release /P:RuntimeIdentifier=ios-arm64 -f net7.0-ios
-
+  
     - name: Build ipa
       run: dotnet build src/Client/App/AdminPanel.Client.App.csproj /P:BlazorMode=BlazorHybrid /P:Configuration=Release /P:RuntimeIdentifier=ios-arm64 /P:ArchiveOnBuild=true -f net7.0-ios
-
+  
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
