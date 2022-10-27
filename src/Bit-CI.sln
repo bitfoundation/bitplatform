@@ -89,11 +89,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{08E339
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infra", "Infra", "{BAAE14DA-AB42-4FD7-96C7-2745FDDF60AF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Iac", "Templates\TodoTemplate\Bit.TodoTemplate\Infra\Iac\TodoTemplate.Iac.csproj", "{6476D5F0-2976-4131-B602-509F2C663D11}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Iac", "Templates\TodoTemplate\Bit.TodoTemplate\src\Infra\Iac\TodoTemplate.Iac.csproj", "{6476D5F0-2976-4131-B602-509F2C663D11}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Server.Api", "Templates\TodoTemplate\Bit.TodoTemplate\Server\Api\TodoTemplate.Server.Api.csproj", "{5D0A0FB8-22BD-4035-8D27-D1EA76B3E826}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Server.Api", "Templates\TodoTemplate\Bit.TodoTemplate\src\Server\Api\TodoTemplate.Server.Api.csproj", "{5D0A0FB8-22BD-4035-8D27-D1EA76B3E826}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Shared", "Templates\TodoTemplate\Bit.TodoTemplate\Shared\Shared\TodoTemplate.Shared.csproj", "{64C0A483-7BE3-4CB6-891F-9AFA942357DD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Shared", "Templates\TodoTemplate\Bit.TodoTemplate\src\Shared\Shared\TodoTemplate.Shared.csproj", "{64C0A483-7BE3-4CB6-891F-9AFA942357DD}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infra", "Infra", "{97B6AB01-19FF-4D94-8530-17F3C90AE6B2}"
 EndProject
@@ -101,11 +101,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Server", "Server", "{9BF299
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{199F5358-B1F7-4A54-A35B-C614461ED6A6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminPanel.Iac", "Templates\AdminPanel\Bit.AdminPanel\Infra\Iac\AdminPanel.Iac.csproj", "{86592AD1-7419-4BF6-A129-D8BBAB6FA285}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminPanel.Iac", "Templates\AdminPanel\Bit.AdminPanel\src\Infra\Iac\AdminPanel.Iac.csproj", "{86592AD1-7419-4BF6-A129-D8BBAB6FA285}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminPanel.Server.Api", "Templates\AdminPanel\Bit.AdminPanel\Server\Api\AdminPanel.Server.Api.csproj", "{3A36AF8C-5D1E-4710-8747-9508ABAAA95A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminPanel.Server.Api", "Templates\AdminPanel\Bit.AdminPanel\src\Server\Api\AdminPanel.Server.Api.csproj", "{3A36AF8C-5D1E-4710-8747-9508ABAAA95A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminPanel.Shared", "Templates\AdminPanel\Bit.AdminPanel\Shared\Shared\AdminPanel.Shared.csproj", "{55BF5D67-27FE-477F-B94F-141AE860D548}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminPanel.Shared", "Templates\AdminPanel\Bit.AdminPanel\src\Shared\Shared\AdminPanel.Shared.csproj", "{55BF5D67-27FE-477F-B94F-141AE860D548}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

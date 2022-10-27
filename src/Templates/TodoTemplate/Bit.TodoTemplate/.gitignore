@@ -225,7 +225,7 @@ profile.arm.json
 /**/*.css
 custom.aprof
 
-/Server/Api/Attachments/**/*.*
+/src/Server/Api/Attachments/**/*.*
 
-/Client/Shared/wwwroot/scripts/app*.js
-/Client/Web/appsettings.json
+/src/Client/Shared/wwwroot/scripts/app*.js
+/src/Client/Web/appsettings.json
