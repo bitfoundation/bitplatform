@@ -144,22 +144,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminPanel.Server.Api", "Te
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminPanel.Iac", "Templates\AdminPanel\Bit.AdminPanel\src\Infra\Iac\AdminPanel.Iac.csproj", "{E2049840-C454-498C-A0E2-F61DCAA541F5}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{7E7EEC61-5A8F-4BF9-8F9E-D5F186D58CF8}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{EC3D0FA1-D2F8-42EB-86C5-D507A0DA0D9C}"
-	ProjectSection(SolutionItems) = preProject
-		Templates\AdminPanel\Bit.AdminPanel\.github\workflows\cd.yml = Templates\AdminPanel\Bit.AdminPanel\.github\workflows\cd.yml
-		Templates\AdminPanel\Bit.AdminPanel\.github\workflows\ci.yml = Templates\AdminPanel\Bit.AdminPanel\.github\workflows\ci.yml
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{82F7BABE-0C95-48A8-A84E-BE187791CA02}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{43732843-728E-4D46-911C-C464DA4243E1}"
-	ProjectSection(SolutionItems) = preProject
-		Templates\AdminPanel\Bit.AdminPanel\.github\workflows\cd.yml = Templates\AdminPanel\Bit.AdminPanel\.github\workflows\cd.yml
-		Templates\AdminPanel\Bit.AdminPanel\.github\workflows\ci.yml = Templates\AdminPanel\Bit.AdminPanel\.github\workflows\ci.yml
-	EndProjectSection
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -803,10 +787,6 @@ Global
 		{B8A51AA3-C935-4F2D-9519-237135D92765} = {4CF28309-F7DD-46E2-97A9-5799772183E0}
 		{429EE2EB-FB9C-4484-AF84-8E92D60D97A3} = {ABBE5F60-8648-4874-8EBF-33C90CB1FBBE}
 		{E2049840-C454-498C-A0E2-F61DCAA541F5} = {BC83A78A-29B9-4F00-96E3-547EBEA190B7}
-		{7E7EEC61-5A8F-4BF9-8F9E-D5F186D58CF8} = {5CDE0A2E-FB17-47F0-AEDC-A74A6C10B1BD}
-		{EC3D0FA1-D2F8-42EB-86C5-D507A0DA0D9C} = {7E7EEC61-5A8F-4BF9-8F9E-D5F186D58CF8}
-		{82F7BABE-0C95-48A8-A84E-BE187791CA02} = {C236F999-4F4A-4D87-A49D-8F5977185F7B}
-		{43732843-728E-4D46-911C-C464DA4243E1} = {82F7BABE-0C95-48A8-A84E-BE187791CA02}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DA107107-478F-477A-872B-787CEA7DD9B8}
