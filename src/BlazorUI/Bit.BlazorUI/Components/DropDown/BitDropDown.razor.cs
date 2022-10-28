@@ -193,6 +193,11 @@ public partial class BitDropDown
     [Parameter] public RenderFragment? CaretDownFragment { get; set; }
 
     /// <summary>
+    /// Optional chevron icon
+    /// </summary>
+    [Parameter] public BitIconName CaretDownIconName { get; set; } = BitIconName.ChevronDown;
+
+    /// <summary>
     /// Optional custom template for drop-down item
     /// </summary>
     [Parameter] public RenderFragment<BitDropDownItem>? ItemTemplate { get; set; }
