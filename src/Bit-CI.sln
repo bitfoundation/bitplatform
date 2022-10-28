@@ -7,7 +7,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BlazorUI", "BlazorUI", "{DC
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Playground", "Playground", "{23426B1A-CC46-4D11-B233-208A57B2BCA2}"
 	ProjectSection(SolutionItems) = preProject
-		BlazorUI\Playground\Directory.build.props = BlazorUI\Playground\Directory.build.props
+		BlazorUI\Playground\Directory.Build.props = BlazorUI\Playground\Directory.Build.props
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Websites", "Websites", "{293480D2-1505-4C9F-B2B9-D78CA5573866}"
@@ -38,7 +38,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Templates", "Templates", "{
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TodoTemplate", "TodoTemplate", "{C236F999-4F4A-4D87-A49D-8F5977185F7B}"
 	ProjectSection(SolutionItems) = preProject
-		Templates\TodoTemplate\Bit.TodoTemplate\Directory.build.props = Templates\TodoTemplate\Bit.TodoTemplate\Directory.build.props
+		Templates\TodoTemplate\Bit.TodoTemplate\Directory.Build.props = Templates\TodoTemplate\Bit.TodoTemplate\Directory.Build.props
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CodeAnalyzers", "CodeAnalyzers", "{FC89582F-DC03-428C-A908-E90B3BC9C82F}"
@@ -53,7 +53,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.BlazorUI.SourceGenerato
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AdminPanel", "AdminPanel", "{5CDE0A2E-FB17-47F0-AEDC-A74A6C10B1BD}"
 	ProjectSection(SolutionItems) = preProject
-		Templates\AdminPanel\Bit.AdminPanel\Directory.build.props = Templates\AdminPanel\Bit.AdminPanel\Directory.build.props
+		Templates\AdminPanel\Bit.AdminPanel\Directory.Build.props = Templates\AdminPanel\Bit.AdminPanel\Directory.Build.props
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.BlazorUI.Charts", "BlazorUI\Bit.BlazorUI.Charts\Bit.BlazorUI.Charts.csproj", "{61CE924E-8061-41A3-BCD3-FD578CB55DBD}"
@@ -66,7 +66,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Bswup.Demo.Server", "Bs
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Platform", "Platform", "{CD99950F-8E06-40A4-A0AE-7DF07402E4E9}"
 	ProjectSection(SolutionItems) = preProject
-		Websites\Platform\Directory.build.props = Websites\Platform\Directory.build.props
+		Websites\Platform\Directory.Build.props = Websites\Platform\Directory.Build.props
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sales", "Sales", "{677C32D1-769F-4FA7-BA5E-360D034E3BC4}"
