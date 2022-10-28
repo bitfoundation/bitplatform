@@ -4,7 +4,9 @@ name: AdminPanel CD
 
 # Note that _BASE64 secrets are files that are encoded into base64 format so you can store them in GitHub actions secrets easily.
 
-# Provide API_IDENTITY_CERTIFICATE_PASSWORD and API_IDENTITY_CERTIFICATE_BASE64 secrets. You can create certificate by following powershell commnad:
+# Provide API_IDENTITY_CERTIFICATE_PASSWORD, API_IDENTITY_CERTIFICATE_BASE64 and API_CONNECTION_STRING secrets.
+
+# You can create certificate by following powershell commnad:
 
 # $cert = New-SelfSignedCertificate -CertStoreLocation Cert:\LocalMachine\My -Subject "IdentityCN" -Provider "Microsoft Strong Cryptographic Provider" -HashAlgorithm "SHA512" -NotAfter (Get-Date).AddYears(5)
 # Export-PfxCertificate -cert ('Cert:\LocalMachine\My\' + $cert.thumbprint) -FilePath PATH_TO_YOUR_IdentityCertificate.pfx -Password (ConvertTo-SecureString -String "YOUR_PASSWORD" -Force -AsPlainText)
@@ -71,8 +73,51 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: api-web
+        name: api-web-bundle
         path: ${{env.DOTNET_ROOT}}/api-web
+
+  deploy-blazor-api-wasm:
+    name: deploy blazor api + web assembly
+    needs: build-blazor-api-wasm
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Retrieve api-web bundle
+        uses: actions/download-artifact@v2
+        with:
+          name: api-web-bundle
+
+      - name: Retrieve migrations bundle
+        uses: actions/download-artifact@v2
+        with:
+          name: migrations-bundle
+
+      - name: Update appsettings.json
+        uses: microsoft/variable-substitution@v1 
+        with:
+          files: 'appsettings.json'
+        env:
+          ConnectionStrings.SqlServerConnectionString: ${{ secrets.API_CONNECTION_STRING }}
+          AppSettings.JwtSettings.IdentityCertificatePassword: ${{ secrets.API_IDENTITY_CERTIFICATE_PASSWORD }}
+
+      - name: Delete IdentityCertificate.pfx
+        run: |
+            rm IdentityCertificate.pfx
+      - name: Extract identity certificate from env
+        uses: timheuer/base64-to-file@v1
+        with:
+            fileDir: './'
+            fileName: 'IdentityCertificate.pfx'
+            encodedString: ${{ secrets.API_IDENTITY_CERTIFICATE_BASE64 }}
+
+      - name: Run migrations
+        run: |
+            chmod +x efbundle
+            ./efbundle --connection "${{ secrets.API_CONNECTION_STRING }}" --verbose
+            rm efbundle
+
+      # Deploy to Azure App Service
 
   build-blazor-hybrid-windows:
     name: build blazor hybrid (windows)
@@ -107,7 +152,7 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
-        name: win-exe
+        name: win-exe-bundle
         path: src/Client/App/bin/release/net7.0-windows10.0.19041.0/win10-x86
   
   build-blazor-hybrid-android:
@@ -153,7 +198,7 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
-        name: android-bundles
+        name: android-bundle
         path: src/Client/App/bin/release/net7.0-android/*-Signed.*
   
   build-blazor-hybrid-maccatalyst:
@@ -189,7 +234,7 @@ jobs:
      - name: Upload artifact
        uses: actions/upload-artifact@v2
        with:
-         name: mac-pkg
+         name: mac-pkg-bundle
          path: src/Client/App/bin/release/net7.0-maccatalyst/*.pkg
   
   build-blazor-hybrid-iOS:
@@ -250,5 +295,5 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
-        name: iOS-bundles
+        name: iOS-bundle
         path: src/Client/App/bin/release/net7.0-ios
