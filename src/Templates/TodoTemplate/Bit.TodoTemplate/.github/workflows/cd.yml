@@ -2,7 +2,7 @@ name: TodoTemplate CD
 
 # Getting started:
 
-# Note that _BASE64 secrets are files that are encoded into base64 format so you can store them in GitHub actions secrets easily.
+# Provide API_IDENTITY_CERTIFICATE_PASSWORD and API_IDENTITY_CERTIFICATE_BASE64 secrets. You can create certificate by following powershell commnad:
 
 # Provide API_IDENTITY_CERTIFICATE_PASSWORD and API_IDENTITY_CERTIFICATE_BASE64 secrets that can gets created by following powershell command:
 
@@ -13,7 +13,7 @@ name: TodoTemplate CD
 
 # Provide API_SERVER_ADDRESS so clients (Android, iOS, Windows, Mac) get connect to it.
 
-# Provide ANDROID_RELEASE_KEYSTORE_BASE64, ANDROID_RELEASE_KEYSTORE_PASSWORD, ANDROID_RELEASE_SIGNING_PASSWORD (Create keystore and store it as base64 encoded string in GitHub actions secrets)
+# Provide ANDROID_RELEASE_KEYSTORE_BASE64, ANDROID_RELEASE_KEYSTORE_PASSWORD, ANDROID_RELEASE_SIGNING_PASSWORD.
 
 # Provide iOS_BUILD_CERTIFICATE_BASE64, iOS_P12_PASSWORD, iOS_BUILD_PROVISION_PROFILE_BASE64, iOS_KEYCHAIN_PASSWORD based on https://docs.github.com/en/actions/deployment/deploying-xcode-applications/installing-an-apple-certificate-on-macos-runners-for-xcode-development
 
