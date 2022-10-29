@@ -83,6 +83,20 @@ public partial class BitDateRangePickerDemo
             DefaultValue = "false",
             Description = "Whether the month picker should highlight the selected month."
         },
+        new ComponentParameter
+        {
+            Name = "IconFragment",
+            Type = "RenderFragment?",
+            DefaultValue = "",
+            Description = "Custom DateRangePicker icon template."
+        },
+        new ComponentParameter
+        {
+            Name = "IconName",
+            Type = "BitIconName",
+            DefaultValue = "BitIconName.CalendarMirrored",
+            Description = "Optional DateRangePicker icon."
+        },
         new ComponentParameter()
         {
             Name = "IsMonthPickerVisible",
@@ -499,4 +513,20 @@ private BitDateRangePickerValue selectedDateRange = new()
 
     private readonly string example12CSharpCode = @"
 private CultureInfo Culture = CultureInfo.CurrentUICulture;";
+
+    private readonly string example13HTMLCode = @"
+<BitDateRangePicker Style=""max-width: 300px""
+                    AriaLabel=""Select dates""
+                    FormatValue=""Dep: {0}, Arr: {1}""
+                    Placeholder=""Select dates..."" />";
+
+    private readonly string example14HTMLCode = @"
+<BitDateRangePicker Style=""max-width: 300px""
+                    AriaLabel=""Select dates""
+                    IconLocation=""BitIconLocation.Left""
+                    Placeholder=""Select dates..."">
+    <IconFragment>
+        <i class=""bit-icon bit-icon--@BitIconName.Airplane.GetName()""></i>
+    </IconFragment>
+</BitDateRangePicker>";
 }

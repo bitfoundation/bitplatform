@@ -178,4 +178,26 @@
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
+
+    <ComponentExampleBox Title="BitDateRangePicker with custom value formatting" HTMLSourceCode="@example13HTMLCode" ExampleId="example13">
+        <ExamplePreview>
+            <BitDateRangePicker Style="max-width: 300px"
+                                AriaLabel="Select dates"
+                                FormatValue="Dep: {0}, Arr: {1}"
+                                Placeholder="Select dates..." />
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="BitDateRangePicker with custom left-handed icon" HTMLSourceCode="@example14HTMLCode" ExampleId="example14">
+        <ExamplePreview>
+            <BitDateRangePicker Style="max-width: 300px"
+                                AriaLabel="Select dates"
+                                IconLocation="BitIconLocation.Left"
+                                Placeholder="Select dates...">
+                <IconFragment>
+                    <i class="bit-icon bit-icon--@BitIconName.Airplane.GetName()"></i>
+                </IconFragment>
+            </BitDateRangePicker>
+        </ExamplePreview>
+    </ComponentExampleBox>
 </ComponentDemo>
