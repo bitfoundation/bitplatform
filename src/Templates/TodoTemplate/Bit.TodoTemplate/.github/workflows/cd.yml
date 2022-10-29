@@ -5,6 +5,7 @@ name: TodoTemplate CD
 env:
   WEB_APP_DEPLOYMENT_TYPE: 'DefaultDeploymentType'
   API_SERVER_ADDRESS: 'https://todo.bitplatform.dev/api/'
+  APP_SERVICE_NAME: 'app-service-td-test'
 
 on:
   workflow_dispatch:
