@@ -570,6 +570,13 @@ public partial class BitDropDownDemo
             DefaultValue = "",
             Description = "Callback for when the SelectedItem changed.",
         },
+        new ComponentParameter()
+        {
+            Name = "IsRtl",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Change direction to RTL.",
+        },
     };
 
     private readonly List<EnumParameter> enumParameters = new()

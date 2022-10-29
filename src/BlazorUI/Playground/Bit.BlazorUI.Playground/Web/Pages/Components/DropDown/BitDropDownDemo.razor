@@ -267,4 +267,28 @@
             </BitDropDown>
         </ExamplePreview>
     </ComponentExampleBox>
+
+    <ComponentExampleBox Title="BitDropDown enable IsRtl" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
+        <ExamplePreview>
+            <BitDropDown Label="Single-select with Rtl direction"
+                         Items="GetDropdownItems()"
+                         Placeholder="Select an option"
+                         IsResponsiveModeEnabled="true"
+                         IsRtl="true"
+                         ShowSearchBox="true"
+                         SearchBoxPlaceholder="Search items"
+                         Style="width: 100%; max-width: 290px; margin: 20px 0 20px 0">
+            </BitDropDown>
+            <BitDropDown Label="Multi-select with Rtl direction"
+                         Items="GetDropdownItems()"
+                         Placeholder="Select options"
+                         IsMultiSelect="true"
+                         IsResponsiveModeEnabled="true"
+                         IsRtl="true"
+                         ShowSearchBox="true"
+                         SearchBoxPlaceholder="Search items"
+                         Style="width: 100%; max-width: 290px; margin-bottom: 20px;">
+            </BitDropDown>
+        </ExamplePreview>
+    </ComponentExampleBox>
 </ComponentDemo>

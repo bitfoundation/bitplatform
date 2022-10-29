@@ -291,6 +291,11 @@ public partial class BitDropDown
     /// </summary>
     [Parameter] public EventCallback<BitDropDownItem?> SelectedItemChanged { get; set; }
 
+    /// <summary>
+    /// Change direction to RTL
+    /// </summary>
+    [Parameter] public bool IsRtl { get; set; }
+
     public string? Text { get; set; }
     public string DropDownId { get; set; } = string.Empty;
     public string DropdownLabelId { get; set; } = string.Empty;
@@ -326,6 +331,10 @@ public partial class BitDropDown
 
         ClassBuilder.Register(() => ValueInvalid is true
             ? $"{RootElementClass}-invalid-{VisualClassRegistrar()}"
+            : string.Empty);
+
+        ClassBuilder.Register(() => IsRtl
+            ? $"rtl"
             : string.Empty);
     }
 
