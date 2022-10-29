@@ -353,6 +353,13 @@ public partial class BitDropDownDemo
         },
         new ComponentParameter()
         {
+            Name = "CaretDownIconName",
+            Type = "BitIconName",
+            DefaultValue = "BitIconName.ChevronDown",
+            Description = "Optional chevron icon.",
+        },
+        new ComponentParameter()
+        {
             Name = "DefaultValue",
             Type = "string",
             DefaultValue = "",

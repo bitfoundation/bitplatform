@@ -1059,6 +1059,56 @@ public class BitDropDownTests : BunitTestContext
         }
     }
 
+    [DataTestMethod,
+        DataRow(BitIconName.WindowsLogo),
+        DataRow(BitIconName.ChevronUp),
+        DataRow(null)
+    ]
+    public void BitDropDownCaretDownIconNameTest(BitIconName? iconName)
+    {
+        var component = RenderComponent<BitDropDown>(parameters =>
+        {
+            if (iconName.HasValue)
+            {
+                parameters.Add(p => p.CaretDownIconName, iconName.Value);
+            }
+        });
+
+        if (iconName.HasValue)
+        {
+            Assert.IsTrue(component.Find(".drp-wrapper-ic > i").ClassList.Contains($"bit-icon--{iconName.GetDisplayName()}"));
+        }
+        else
+        {
+            Assert.IsTrue(component.Find(".drp-wrapper-ic > i").ClassList.Contains($"bit-icon--{BitIconName.ChevronDown.GetDisplayName()}"));
+        }
+    }
+
+    [DataTestMethod,
+        DataRow("<i>This is CaretDownFragment</div>"),
+        DataRow(null)
+    ]
+    public void BitDropDownCaretDownFragmentTest(string iconFragment)
+    {
+        var component = RenderComponent<BitDropDown>(parameters =>
+        {
+            if (string.IsNullOrEmpty(iconFragment) is false)
+            {
+                parameters.Add(p => p.CaretDownFragment, iconFragment);
+            }
+        });
+
+        if (string.IsNullOrEmpty(iconFragment))
+        {
+            Assert.IsTrue(component.Find(".drp-wrapper-ic > i").ClassList.Contains($"bit-icon--{BitIconName.ChevronDown.GetDisplayName()}"));
+        }
+        else
+        {
+            var drpCaretDownChild = component.Find(".drp-wrapper-ic").ChildNodes;
+            drpCaretDownChild.MarkupMatches(iconFragment);
+        }
+    }
+
     private void HandleValueChanged(string value)
     {
         BitDropDownValue = value;
