@@ -11,13 +11,13 @@ name: TodoTemplate CD
 # $cert = New-SelfSignedCertificate -CertStoreLocation Cert:\LocalMachine\My -Subject "IdentityCN" -Provider "Microsoft Strong Cryptographic Provider" -HashAlgorithm "SHA512" -NotAfter (Get-Date).AddYears(5)
 # Export-PfxCertificate -cert ('Cert:\LocalMachine\My\' + $cert.thumbprint) -FilePath PATH_TO_YOUR_IdentityCertificate.pfx -Password (ConvertTo-SecureString -String "YOUR_PASSWORD" -Force -AsPlainText)
 
-# Provide WEB_APP_DEPLOYMENT_TYPE, You can choose either Static, DefaultDeploymentType, PWA or SSR.
+# Provide WEB_APP_DEPLOYMENT_TYPE variable, You can choose either Static, DefaultDeploymentType, PWA or SSR.
 
-# Provide API_SERVER_ADDRESS so clients (Android, iOS, Windows, Mac) get connect to it.
+# Provide API_SERVER_ADDRESS variable so clients (Android, iOS, Windows, Mac) get connect to it.
 
-# Provide ANDROID_RELEASE_KEYSTORE_BASE64, ANDROID_RELEASE_KEYSTORE_PASSWORD, ANDROID_RELEASE_SIGNING_PASSWORD.
+# Provide ANDROID_RELEASE_KEYSTORE_BASE64, ANDROID_RELEASE_KEYSTORE_PASSWORD, ANDROID_RELEASE_SIGNING_PASSWORD secrets.
 
-# Provide iOS_BUILD_CERTIFICATE_BASE64, iOS_P12_PASSWORD, iOS_BUILD_PROVISION_PROFILE_BASE64, iOS_KEYCHAIN_PASSWORD based on https://docs.github.com/en/actions/deployment/deploying-xcode-applications/installing-an-apple-certificate-on-macos-runners-for-xcode-development
+# Provide iOS_BUILD_CERTIFICATE_BASE64, iOS_P12_PASSWORD, iOS_BUILD_PROVISION_PROFILE_BASE64, iOS_KEYCHAIN_PASSWORD secrets based on https://docs.github.com/en/actions/deployment/deploying-xcode-applications/installing-an-apple-certificate-on-macos-runners-for-xcode-development
 
 env:
   WEB_APP_DEPLOYMENT_TYPE: 'DefaultDeploymentType'
@@ -47,6 +47,9 @@ jobs:
       with:
         global-json-file: src/global.json
 
+    - name: Install wasm-tools
+      run: dotnet workload install wasm-tools
+
     - name: Switch to blazor web assembly
       run:  sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' src/Client/Web/TodoTemplate.Client.Web.csproj
 
@@ -57,7 +60,7 @@ jobs:
       run: dotnet build src/Server/Api/TodoTemplate.Server.Api.csproj /P:BlazorMode=BlazorWebAssembly /P:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" /P:Configuration=Release
 
     - name: Publish
-      run: dotnet publish src/Server/Api/TodoTemplate.Server.Api.csproj /P:BlazorMode=BlazorWebAssembly /P:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" /P:Configuration=Release -o ${{env.DOTNET_ROOT}}/api-web
+      run: dotnet publish src/Server/Api/TodoTemplate.Server.Api.csproj /P:BlazorMode=BlazorWebAssembly /P:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" /P:Configuration=Release --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/api-web
 
     - name: Build migrations bundle
       run: |
@@ -80,6 +83,9 @@ jobs:
     name: deploy blazor api + web assembly
     needs: build-blazor-api-wasm
     runs-on: ubuntu-latest
+    environment:
+      name: 'production'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
 
@@ -117,7 +123,14 @@ jobs:
             ./efbundle --connection "${{ secrets.API_CONNECTION_STRING }}" --verbose
             rm efbundle
 
-      # Deploy to Azure App Service
+      - name: Deploy to Azure Web App
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ env.APP_SERVICE_NAME }}
+          slot-name: 'production'
+          publish-profile: ${{ secrets.AZURE_APP_SERVICE_PUBLISH_PROFILE }}
+          package: .
 
   build-blazor-hybrid-windows:
     name: build blazor hybrid (windows)
