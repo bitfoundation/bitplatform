@@ -1,0 +1,83 @@
+﻿@page "/admin-panel/dev-ops"
+
+<div class="page-container">
+    <h1 class="page-main-title">DevOps</h1>
+    <div class="page-desc">
+        Bit AdminPanel provides features in order add support for DevOps using GitHub actions.
+    </div>
+    <div class="section-card">
+        <h2 class="section-card-title">Getting started</h2>
+        <div class="section-card-txt">
+            <span class="high-light-text">CI</span> pipeline which is located in <span class="high-light-text">.github/workflows/ci.yml</span> ensures that every changes that is commited into <span class="high-light-text">develop branch</span> won't broke project build in following modes:
+        </div>
+        <div class="section-card-txt">
+            <ul>
+                <li>Blazor Server</li>
+                <li>Blazor Web Assembly</li>
+                <li>Blazor Hybrid - Android</li>
+                <li>Blazor Hybrid - iOS</li>
+                <li>Blazor Hybrid - Windows</li>
+                <li>Blazor Hybrid - Mac</li>
+            </ul>
+        </div>
+        <div class="section-card-txt">
+            You can change its trigger or delete jobs that are irrelevant to your project.
+        </div>
+        <div class="section-card-txt">
+            CI pipeline only has one variable called <span class="high-light-text">WEB_APP_DEPLOYMENT_TYPE</span> that you can read more about it <a href="admin-panel/deployment-type" target="_blank">here</a>
+        </div>
+        <div class="section-card-txt">
+            <span class="high-light-text">CD</span> pipeline which is located in <span class="high-light-text">.github/workflows/cd.yml</span> builds and deploy every changes that is commited into <span class="high-light-text">main branch</span> into production.
+        </div>
+        <div class="section-card-txt">
+            You can change its trigger or delete jobs that are irrelevant to your project.
+        </div>
+        <div class="section-card-txt">
+            By default, CD pipeline produces .aab and .apk for android, .ipa for iOS, .exe for Windows and .pkg for macOS. It also creates zip folder that contains API+WebAssembly projects and a <a href="https://learn.microsoft.com/en-us/ef/core/managing-schemas/migrations/applying?tabs=dotnet-core-cli#bundles" target="_blank">migrations bundle</a> and upload all of these into GitHub artifacts.
+        </div>
+        <div class="section-card-txt">
+            You can manually deploy the artifacts into corresponding locations manually (App Stores, Virtual Private Servers), or you can write more scripts to automate things even more. For example we've created deploy phase for API+WebAssembly that updates database using migrations bundle and optionally deploy artificats to azure web apps.
+        </div>
+        <div class="section-card-txt">
+            It includes following variables
+        </div>
+        <div class="code-box">
+            <pre><code>env:
+  WEB_APP_DEPLOYMENT_TYPE: 'DefaultDeploymentType'
+  API_SERVER_ADDRESS: 'https://todo.bitplatform.dev/api/' # The Api backend url that clients use to get connect to the server.
+  APP_SERVICE_NAME: 'app-service-td-test' # Azure Web App name (If you wish to deploy your project to the Azure Web App)
+</code></pre>
+        </div>
+        <div class="section-card-txt">
+            And it also includes following <a href="https://docs.github.com/en/rest/actions/secrets" target="_blank">GitHub actions secrets</a>: (Secrets with name ending with _Base64 are files that are based64 encoded so you can store them in GitHub actions secrets easily)
+        </div>
+        <div class="code-box">
+            <pre><code># IdentityCertificate.pfx (See JWT settings section of https://bitplatform.dev/admin-panel/settings)
+API_IDENTITY_CERTIFICATE_BASE64
+API_IDENTITY_CERTIFICATE_PASSWORD
+-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-
+# Database
+API_CONNECTION_STRING
+-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-
+# Azure App Service (Optional)
+AZURE_APP_SERVICE_PUBLISH_PROFILE
+-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-
+# Android
+ANDROID_RELEASE_KEYSTORE_BASE64
+ANDROID_RELEASE_SIGNING_PASSWORD
+ANDROID_RELEASE_KEYSTORE_PASSWORD
+-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-
+# iOS
+iOS_BUILD_CERTIFICATE_BASE64
+iOS_P12_PASSWORD
+iOS_BUILD_PROVISION_PROFILE_BASE64
+iOS_KEYCHAIN_PASSWORD
+-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-</code></pre>
+        </div>
+        <div class="section-card-txt">
+            We do have a plan to automated deployment of .ipa and .aab files to Apple Store & Google Play so stay tuned!
+        </div>
+    </div>
+</div>
+
+<NavigationButtons Prev="Multilingualism" PrevUrl="/admin-panel/multilingualism" Next="Contribute" NextUrl="/admin-panel/contribute" />
