@@ -28,7 +28,7 @@ public partial class NavMenu
         new BitNavLinkItem { Name= "Exception handling", Key = "Exception handling", Url = "/todo-template/exception-handling"},
         new BitNavLinkItem { Name= "Cache mechanism", Key = "Cache mechanism", Url = "/todo-template/cache-mechanism"},
         new BitNavLinkItem { Name= "Multilingualism", Key = "Multilingualism", Url = "/todo-template/multilingualism"},
-        new BitNavLinkItem { Name= "DevOps", Key = "DevOps", Url = "/admin-panel/dev-ops"},
+        new BitNavLinkItem { Name= "DevOps", Key = "DevOps", Url = "/todo-template/dev-ops"},
         new BitNavLinkItem { Name = "Contribute", Key = "Contribute", Url = "/todo-template/contribute"}
     };
 

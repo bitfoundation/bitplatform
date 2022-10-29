@@ -1,7 +1,9 @@
 name: TodoTemplate CI
 
+# https://bitplatform.dev/todo-template/dev-ops
+
 env:
-  WEB_APP_DEPLOYMENT_TYPE: 'DefaultDeploymentType' # You can choose either Static, DefaultDeploymentType, PWA or SSR
+  WEB_APP_DEPLOYMENT_TYPE: 'DefaultDeploymentType'
 
 on:
   workflow_dispatch:

@@ -3,12 +3,12 @@
 <div class="page-container">
     <h1 class="page-main-title">DevOps</h1>
     <div class="page-desc">
-        Bit AdminPanel provides features in order add support for DevOps using GitHub actions.
+        Bit AdminPanel provides features to add support for DevOps using GitHub actions.
     </div>
     <div class="section-card">
-        <h2 class="section-card-title">Getting started</h2>
+        <h2 class="section-card-title">CI</h2>
         <div class="section-card-txt">
-            <span class="high-light-text">CI</span> pipeline which is located in <span class="high-light-text">.github/workflows/ci.yml</span> ensures that every changes that is commited into <span class="high-light-text">develop branch</span> won't broke project build in following modes:
+            <span class="high-light-text">CI</span> pipeline which is located in <span class="high-light-text">.github/workflows/ci.yml</span> ensures that every change that is committed into <span class="high-light-text">develop branch</span> won't break projects build in the following modes:
         </div>
         <div class="section-card-txt">
             <ul>
@@ -21,39 +21,40 @@
             </ul>
         </div>
         <div class="section-card-txt">
-            You can change its trigger or delete jobs that are irrelevant to your project.
+            The CI pipeline only has one variable called <span class="high-light-text">WEB_APP_DEPLOYMENT_TYPE</span> that you can read more about it <a href="admin-panel/deployment-type" target="_blank">here</a>
+        </div>
+    </div>
+
+
+    <div class="section-card">
+        <h2 class="section-card-title">CD</h2>
+
+        <div class="section-card-txt">
+            <span class="high-light-text">CD</span> pipeline located in <span class="high-light-text">.github/workflows/cd.yml</span> builds and deploys every change committed in the<span class="high-light-text">main branch</span> into production.
         </div>
         <div class="section-card-txt">
-            CI pipeline only has one variable called <span class="high-light-text">WEB_APP_DEPLOYMENT_TYPE</span> that you can read more about it <a href="admin-panel/deployment-type" target="_blank">here</a>
+            By default, the CD pipeline produces <span class="high-light-text">.aab</span> and <span class="high-light-text">.apk</span> for android, <span class="high-light-text">.ipa</span> for iOS, <span class="high-light-text">.exe</span> for Windows and, <span class="high-light-text">.pkg</span> for macOS. It also creates a zip folder that contains API+WebAssembly projects and an <a href="https://learn.microsoft.com/en-us/ef/core/managing-schemas/migrations/applying?tabs=dotnet-core-cli#bundles" target="_blank">EF core migrations bundle</a> to migrate your database. This pipeline also uploads all of the produced artifacts to the GitHub Actions artifacts.
         </div>
         <div class="section-card-txt">
-            <span class="high-light-text">CD</span> pipeline which is located in <span class="high-light-text">.github/workflows/cd.yml</span> builds and deploy every changes that is commited into <span class="high-light-text">main branch</span> into production.
+            You can manually deploy the artifacts into corresponding locations (App Stores, Virtual Private Servers), or you can write more scripts to automate these processes. For example, we've created a deploy phase for API+WebAssembly that updates the database using the migrations bundle and optionally deploy artifacts to azure web apps.
         </div>
         <div class="section-card-txt">
-            You can change its trigger or delete jobs that are irrelevant to your project.
-        </div>
-        <div class="section-card-txt">
-            By default, CD pipeline produces .aab and .apk for android, .ipa for iOS, .exe for Windows and .pkg for macOS. It also creates zip folder that contains API+WebAssembly projects and a <a href="https://learn.microsoft.com/en-us/ef/core/managing-schemas/migrations/applying?tabs=dotnet-core-cli#bundles" target="_blank">migrations bundle</a> and upload all of these into GitHub artifacts.
-        </div>
-        <div class="section-card-txt">
-            You can manually deploy the artifacts into corresponding locations manually (App Stores, Virtual Private Servers), or you can write more scripts to automate things even more. For example we've created deploy phase for API+WebAssembly that updates database using migrations bundle and optionally deploy artificats to azure web apps.
-        </div>
-        <div class="section-card-txt">
-            It includes following variables
+            The CD pipeline includes the following variables:
         </div>
         <div class="code-box">
             <pre><code>env:
   WEB_APP_DEPLOYMENT_TYPE: 'DefaultDeploymentType'
-  API_SERVER_ADDRESS: 'https://todo.bitplatform.dev/api/' # The Api backend url that clients use to get connect to the server.
-  APP_SERVICE_NAME: 'app-service-td-test' # Azure Web App name (If you wish to deploy your project to the Azure Web App)
+  API_SERVER_ADDRESS: 'https://adminpanel.bitplatform.dev/api/' # The API backend URL that clients use to connect to the server.
+  APP_SERVICE_NAME: 'app-service-td-test' # Azure Web App name (If you want to deploy your project to the Azure Web App)
 </code></pre>
         </div>
         <div class="section-card-txt">
-            And it also includes following <a href="https://docs.github.com/en/rest/actions/secrets" target="_blank">GitHub actions secrets</a>: (Secrets with name ending with _Base64 are files that are based64 encoded so you can store them in GitHub actions secrets easily)
+            And it also includes the following <a href="https://docs.github.com/en/rest/actions/secrets" target="_blank">GitHub actions secrets</a>. It's important to mention that since the GitHub Actions secrets does not support storing files,
+            to store secret files (such as pfx files), you need to convert the files' content to base64 and store the encoded result value as secret values.
         </div>
         <div class="code-box">
             <pre><code># IdentityCertificate.pfx (See JWT settings section of https://bitplatform.dev/admin-panel/settings)
-API_IDENTITY_CERTIFICATE_BASE64
+API_IDENTITY_CERTIFICATE_FILE_BASE64
 API_IDENTITY_CERTIFICATE_PASSWORD
 -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-
 # Database
@@ -63,21 +64,22 @@ API_CONNECTION_STRING
 AZURE_APP_SERVICE_PUBLISH_PROFILE
 -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-
 # Android
-ANDROID_RELEASE_KEYSTORE_BASE64
+ANDROID_RELEASE_KEYSTORE_FILE_BASE64
 ANDROID_RELEASE_SIGNING_PASSWORD
 ANDROID_RELEASE_KEYSTORE_PASSWORD
 -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-
-# iOS
-iOS_BUILD_CERTIFICATE_BASE64
+# iOS https://docs.github.com/en/actions/deployment/deploying-xcode-applications/installing-an-apple-certificate-on-macos-runners-for-xcode-development
+iOS_BUILD_CERTIFICATE_FILE_BASE64
 iOS_P12_PASSWORD
-iOS_BUILD_PROVISION_PROFILE_BASE64
+iOS_BUILD_PROVISION_PROFILE_FILE_BASE64
 iOS_KEYCHAIN_PASSWORD
 -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-</code></pre>
         </div>
         <div class="section-card-txt">
-            We do have a plan to automated deployment of .ipa and .aab files to Apple Store & Google Play so stay tuned!
+            We have a plan to automate the deployment of <span class="high-light-text">.ipa</span> and <span class="high-light-text">.aab</span> files to the Apple Store & Google Play in the near future. So stay tuned!
         </div>
     </div>
+
 </div>
 
 <NavigationButtons Prev="Multilingualism" PrevUrl="/admin-panel/multilingualism" Next="Contribute" NextUrl="/admin-panel/contribute" />

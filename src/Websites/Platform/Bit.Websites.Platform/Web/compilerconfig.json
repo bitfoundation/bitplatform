@@ -154,5 +154,9 @@
   {
     "outputFile": "Pages/AdminPanel/DevOpsPage.razor.css",
     "inputFile": "Pages/AdminPanel/DevOpsPage.razor.scss"
+  },
+  {
+    "outputFile": "Pages/TodoTemplate/DevOpsPage.razor.css",
+    "inputFile": "Pages/TodoTemplate/DevOpsPage.razor.scss"
   }
 ]
