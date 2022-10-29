@@ -5,6 +5,7 @@ name: AdminPanel CD
 env:
   WEB_APP_DEPLOYMENT_TYPE: 'DefaultDeploymentType'
   API_SERVER_ADDRESS: 'https://adminpanel.bitplatform.dev/api/'
+  APP_SERVICE_NAME: 'app-service-ad-test'
 
 on:
   workflow_dispatch:
