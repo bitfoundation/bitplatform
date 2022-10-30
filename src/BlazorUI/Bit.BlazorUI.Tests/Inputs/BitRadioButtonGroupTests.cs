@@ -74,7 +74,7 @@ public class BitRadioButtonGroupTests : BunitTestContext
                 parameters.Add(p => p.Label, label);
             });
 
-        var bitRadioButtonGroupLabel = component.Find(".bit-rbg-label-fluent");
+        var bitRadioButtonGroupLabel = component.Find(".bit-rbg-label");
 
         Assert.AreEqual(label, bitRadioButtonGroupLabel.TextContent);
     }
