@@ -354,7 +354,6 @@
             color: $Primary;
             background: none transparent;
             cursor: default;
-            text-align: left;
             user-select: none;
             -webkit-font-smoothing: antialiased;
         }
@@ -448,6 +447,7 @@
         .drp-chb {
             .drp-chb-lbl {
                 display: flex;
+                gap: rem(8px);
                 align-items: center;
                 font-size: rem(14px);
                 font-weight: 400;
@@ -466,7 +466,6 @@
                 height: rem(20px);
                 border: rem(1px) solid $Grey160;
                 border-radius: rem(2px);
-                margin: 0 rem(4px) 0 0;
                 box-sizing: border-box;
                 transition-property: background, border, border-color;
                 transition-duration: 200ms;
@@ -492,7 +491,6 @@
             .drp-chb-txt {
                 color: $Grey190;
                 line-height: rem(20px);
-                margin: 0 0 0 rem(4px);
             }
 
             &:hover {
@@ -727,22 +725,6 @@
             .drp-wrapper-ic {
                 right: unset;
                 left: rem(8px);
-            }
-        }
-
-        .items-wrapper {
-            .item-header {
-                text-align: right;
-            }
-
-            .drp-chb {
-                .drp-chb-checkbox {
-                    margin: 0 0 0 rem(4px);
-                }
-
-                .drp-chb-txt {
-                    margin: 0 rem(4px) 0 0;
-                }
             }
         }
 
