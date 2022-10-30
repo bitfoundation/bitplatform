@@ -4,7 +4,7 @@ namespace Bit.BlazorUI;
 
 public partial class BitRadioButtonOption : IDisposable
 {
-    private bool _isChecked;
+    private bool isChecked;
     private string? _imageSizeStyle;
     public string _inputId = default!;
     public string _textId = default!;
@@ -21,11 +21,11 @@ public partial class BitRadioButtonOption : IDisposable
     [Parameter]
     public bool IsChecked
     {
-        get => _isChecked;
+        get => isChecked;
         set
         {
-            if (value == _isChecked) return;
-            _isChecked = value;
+            if (value == isChecked) return;
+            isChecked = value;
             ClassBuilder.Reset();
             _ = IsCheckedChanged.InvokeAsync(value);
         }

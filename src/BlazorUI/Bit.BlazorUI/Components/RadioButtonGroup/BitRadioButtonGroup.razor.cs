@@ -5,10 +5,10 @@ namespace Bit.BlazorUI;
 
 public partial class BitRadioButtonGroup
 {
-    private bool _isComponentRendered;
-    private bool _isRequired;
-    private BitRadioButtonOption? _selectedOption;
-    private List<BitRadioButtonOption> _allOptions = new();
+    private bool isComponentRendered;
+    private bool isRequired;
+    private BitRadioButtonOption? selectedOption;
+    private List<BitRadioButtonOption> allOptions = new();
     public string _labelId = default!;
 
     /// <summary>
@@ -32,10 +32,10 @@ public partial class BitRadioButtonGroup
     [Parameter]
     public bool IsRequired
     {
-        get => _isRequired;
+        get => isRequired;
         set
         {
-            _isRequired = value;
+            isRequired = value;
             ClassBuilder.Reset();
         }
     }
@@ -85,8 +85,8 @@ public partial class BitRadioButtonGroup
     {
         if (firstRender)
         {
-            _isComponentRendered = true;
-            if (_allOptions.Any(option => option.Value == Value) is false)
+            isComponentRendered = true;
+            if (allOptions.Any(option => option.Value == Value) is false)
             {
                 ResetValue();
                 if (ValueHasBeenSet && ValueChanged.HasDelegate)
@@ -103,10 +103,10 @@ public partial class BitRadioButtonGroup
     {
         if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
-        _selectedOption?.SetState(false);
+        selectedOption?.SetState(false);
         option.SetState(true);
 
-        _selectedOption = option;
+        selectedOption = option;
         CurrentValue = option.Value;
 
         await OnValueChange.InvokeAsync(CurrentValue);
@@ -116,28 +116,28 @@ public partial class BitRadioButtonGroup
     {
         if (option.Value.HasNoValue())
         {
-            option.Value = _allOptions.Count.ToString(CultureInfo.InvariantCulture);
+            option.Value = allOptions.Count.ToString(CultureInfo.InvariantCulture);
         }
 
         if (CurrentValue == option.Value)
         {
             option.SetState(true);
-            _selectedOption = option;
+            selectedOption = option;
         }
 
-        _allOptions.Add(option);
+        allOptions.Add(option);
     }
 
     internal void UnregisterOption(BitRadioButtonOption option)
     {
-        _allOptions.Remove(option);
+        allOptions.Remove(option);
     }
 
     private void SelectOptionByKey(string? value)
     {
-        var newOption = _allOptions.FirstOrDefault(i => i.Value == value);
+        var newOption = allOptions.FirstOrDefault(i => i.Value == value);
 
-        if (newOption is null || newOption == _selectedOption || newOption.IsEnabled is false)
+        if (newOption is null || newOption == selectedOption || newOption.IsEnabled is false)
         {
             _ = ValueChanged.InvokeAsync(Value);
             return;
@@ -150,14 +150,14 @@ public partial class BitRadioButtonGroup
 
     private void HandleOnValueChanging(object? sender, ValueChangingEventArgs<string?> args)
     {
-        if (_isComponentRendered is false) return;
+        if (isComponentRendered is false) return;
 
-        var option = _allOptions.FirstOrDefault(i => i.Value == args.Value);
+        var option = allOptions.FirstOrDefault(i => i.Value == args.Value);
         if (option is not null)
         {
-            _selectedOption?.SetState(false);
+            selectedOption?.SetState(false);
             option.SetState(true);
-            _selectedOption = option;
+            selectedOption = option;
 
             if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
@@ -169,8 +169,8 @@ public partial class BitRadioButtonGroup
 
             if (Value.HasNoValue())
             {
-                _selectedOption?.SetState(false);
-                _selectedOption = null;
+                selectedOption?.SetState(false);
+                selectedOption = null;
             }
 
             if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
