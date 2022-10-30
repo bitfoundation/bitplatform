@@ -7,7 +7,7 @@
      class="@ClassBuilder.Value">
     <div class="bit-rbo-wrapper">
         <input @attributes="RadioButtonGroup?.InputHtmlAttributes"
-               id="@InputId"
+               id="@_inputId"
                class="bit-rbo-input"
                aria-label="@AriaLabel"
                type="radio"
@@ -15,11 +15,11 @@
                name="@Name"
                value="@Value"
                hidden
-               required="@(RadioButtonGroup?.IsRequired ?? false)"
+               required="@(RadioButtonGroup?.IsRequired)"
                @onclick="@HandleClick"
                @onchange="@HandleChange" />
 
-        <label for="@InputId">
+        <label for="@_inputId">
             @if (ChildContent is not null)
             {
                 @ChildContent
@@ -27,13 +27,12 @@
             else
             {
                 <div class="@GetLabelClassNameStr()">
-
                     @if (ImageSrc.HasValue())
                     {
                         <div class="bit-rbo-img-inner-field">
                             <div class="bit-rbo-img-wrapper">
-                                <div class="bit-rbo-img" style="@imageSizeStyle">
-                                    <img src="@(isChecked ? SelectedImageSrc : ImageSrc)" alt="@ImageAlt">
+                                <div class="bit-rbo-img" style="@_imageSizeStyle">
+                                    <img src="@(_isChecked ? SelectedImageSrc : ImageSrc)" alt="@ImageAlt">
                                 </div>
                             </div>
                         </div>
@@ -51,14 +50,14 @@
                     @if (ImageSrc.HasValue() || IconName.HasValue)
                     {
                         <div class="bit-rbo-txt-wrapper">
-                            <span class="bit-rbo-txt" id="@TextId">
+                            <span class="bit-rbo-txt" id="@_textId">
                                 @Text
                             </span>
                         </div>
                     }
                     else
                     {
-                        <span class="bit-rbo-txt" id="@TextId">
+                        <span class="bit-rbo-txt" id="@_textId">
                             @Text
                         </span>
                     }

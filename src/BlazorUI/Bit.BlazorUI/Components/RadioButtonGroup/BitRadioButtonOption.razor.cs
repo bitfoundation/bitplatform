@@ -8,14 +8,37 @@ namespace Bit.BlazorUI;
 
 public partial class BitRadioButtonOption : IDisposable
 {
-    private bool isChecked;
-    private string? imageSizeStyle;
+    private bool _isChecked;
+    private string? _imageSizeStyle;
+    public string _inputId = default!;
+    public string _textId = default!;
     private bool IsCheckedHasBeenSet;
 
     /// <summary>
-    /// RadioButtonOption content, It can be a text
+    /// Used to customize the label for the RadioButtonOption.
     /// </summary>
-    [Parameter] public string? Text { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Whether or not the option is checked
+    /// </summary>
+    [Parameter]
+    public bool IsChecked
+    {
+        get => _isChecked;
+        set
+        {
+            if (value == _isChecked) return;
+            _isChecked = value;
+            ClassBuilder.Reset();
+            _ = IsCheckedChanged.InvokeAsync(value);
+        }
+    }
+
+    /// <summary>
+    /// Callback for when the option IsChecked changes
+    /// </summary>
+    [Parameter] public EventCallback<bool> IsCheckedChanged { get; set; }
 
     /// <summary>
     /// Icon to display with this option.
@@ -26,11 +49,6 @@ public partial class BitRadioButtonOption : IDisposable
     /// Image src to display with this option.
     /// </summary>
     [Parameter] public string? ImageSrc { get; set; }
-
-    /// <summary>
-    /// The src of image for choice field which is selected.
-    /// </summary>
-    [Parameter] public string? SelectedImageSrc { get; set; }
 
     /// <summary>
     /// Alt text if the option is an image. default is an empty string
@@ -48,35 +66,19 @@ public partial class BitRadioButtonOption : IDisposable
     [Parameter] public string? Name { get; set; }
 
     /// <summary>
+    /// RadioButtonOption content, It can be a text
+    /// </summary>
+    [Parameter] public string? Text { get; set; }
+
+    /// <summary>
+    /// The src of image for choice field which is selected.
+    /// </summary>
+    [Parameter] public string? SelectedImageSrc { get; set; }
+
+    /// <summary>
     /// Value of selected RadioButtonOption
     /// </summary>
     [Parameter] public string? Value { get; set; }
-
-    /// <summary>
-    /// Whether or not the option is checked
-    /// </summary>
-    [Parameter]
-    public bool IsChecked
-    {
-        get => isChecked;
-        set
-        {
-            if (value == isChecked) return;
-            isChecked = value;
-            ClassBuilder.Reset();
-            _ = IsCheckedChanged.InvokeAsync(value);
-        }
-    }
-
-    /// <summary>
-    /// Callback for when the option IsChecked changes
-    /// </summary>
-    [Parameter] public EventCallback<bool> IsCheckedChanged { get; set; }
-
-    /// <summary>
-    /// Used to customize the label for the RadioButtonOption.
-    /// </summary>
-    [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
     /// Callback for when the RadioButtonOption clicked
@@ -90,9 +92,6 @@ public partial class BitRadioButtonOption : IDisposable
 
     [CascadingParameter] protected BitRadioButtonGroup? RadioButtonGroup { get; set; }
 
-    public string InputId { get; set; } = string.Empty;
-    public string TextId { get; set; } = string.Empty;
-
     protected override Task OnInitializedAsync()
     {
         if (RadioButtonGroup is not null)
@@ -104,8 +103,8 @@ public partial class BitRadioButtonOption : IDisposable
 
             RadioButtonGroup.RegisterOption(this);
 
-            InputId = $"RadioButtonGroup{RadioButtonGroup.UniqueId}-{Value}";
-            TextId = $"RadioButtonGroupLabel{RadioButtonGroup.UniqueId}-{Value}";
+            _inputId = $"RadioButtonGroup{RadioButtonGroup.UniqueId}-{Value}";
+            _textId = $"RadioButtonGroupLabel{RadioButtonGroup.UniqueId}-{Value}";
         }
 
         return base.OnInitializedAsync();
@@ -115,7 +114,7 @@ public partial class BitRadioButtonOption : IDisposable
     {
         if (ImageSize is not null)
         {
-            imageSizeStyle = $" width:{ImageSize.Value.Width}px; height:{ImageSize.Value.Height}px;";
+            _imageSizeStyle = $" width:{ImageSize.Value.Width}px; height:{ImageSize.Value.Height}px;";
         }
 
         return base.OnParametersSetAsync();

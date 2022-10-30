@@ -1,32 +1,34 @@
 ﻿@import "../../Styles/Fluent/colors.fluent.scss", "../../Styles/functions.scss";
 
-.bit-rbg-fluent {
-    display: block;
-    font-size: rem(14px);
-    font-weight: 400;
-    font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
-    -webkit-font-smoothing: antialiased;
-}
+.bit-rgb {
+    &.bit-rbg-fluent {
+        display: block;
+        font-size: rem(14px);
+        font-weight: 400;
+        font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+        -webkit-font-smoothing: antialiased;
+    }
 
-.bit-rbg-label-fluent {
-    display: block;
-    margin: 0;
-    padding: rem(5px) 0;
-    box-shadow: none;
-    box-sizing: border-box;
-    font-size: rem(14px);
-    font-weight: 600;
-    color: $Grey160;
-    overflow-wrap: break-word;
-    -webkit-font-smoothing: antialiased;
-}
-
-.bit-rbg-required-fluent {
-    .bit-rbg-label-fluent {
-        &::after {
-            content: " *";
-            padding-right: rem(12px);
-            color: $Red20;
+    &.bit-rbg-required-fluent {
+        .bit-rbg-label {
+            &::after {
+                content: " *";
+                padding-right: rem(12px);
+                color: $Red20;
+            }
         }
+    }
+
+    .bit-rbg-label {
+        display: block;
+        margin: 0;
+        padding: rem(5px) 0;
+        box-shadow: none;
+        box-sizing: border-box;
+        font-size: rem(14px);
+        font-weight: 600;
+        color: $Grey160;
+        overflow-wrap: break-word;
+        -webkit-font-smoothing: antialiased;
     }
 }
