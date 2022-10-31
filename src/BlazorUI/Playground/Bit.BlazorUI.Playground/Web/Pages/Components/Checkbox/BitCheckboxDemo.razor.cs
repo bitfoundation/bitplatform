@@ -7,25 +7,13 @@ namespace Bit.BlazorUI.Playground.Web.Pages.Components.Checkbox;
 
 public partial class BitCheckboxDemo
 {
-    private bool IsCheckBoxChecked;
-    private bool IsCheckBoxIndeterminate = true;
-    private bool IsCheckBoxIndeterminateInCode = true;
-
+    private bool IsIndeterminated = true;
+    private bool IsChecked_OneWay;
+    private bool IsChecked_TwoWay;
+    private bool IsIndeterminated_OneWay = true;
+    private bool IsIndeterminated_TwoWay = true;
     private BitCheckboxValidationModel ValidationForm = new();
     private string SuccessMessage = string.Empty;
-
-    private async Task HandleValidSubmit()
-    {
-        SuccessMessage = "Form Submitted Successfully!";
-        await Task.Delay(3000);
-        SuccessMessage = string.Empty;
-        StateHasChanged();
-    }
-
-    private void HandleInvalidSubmit()
-    {
-        SuccessMessage = string.Empty;
-    }
 
     private readonly List<ComponentParameter> componentParameters = new()
     {
@@ -168,7 +156,6 @@ public partial class BitCheckboxDemo
             Description = "Whether the component is Visible,Hidden,Collapsed.",
         },
     };
-
     private readonly List<EnumParameter> enumParameters = new()
     {
         new EnumParameter()
@@ -221,38 +208,51 @@ public partial class BitCheckboxDemo
         }
     };
 
-    private readonly string example1HTMLCode = @"<BitCheckbox @bind-Value=""IsCheckBoxChecked"">Basic Checkbox</BitCheckbox>
-<BitCheckbox Value=""true"">Checked Checkbox</BitCheckbox>
+    private readonly string example1HTMLCode = @"
+<BitCheckbox>Basic Checkbox</BitCheckbox>
+<BitCheckbox Value=""true"">One-way Checked Checkbox (Fixed)</BitCheckbox>
 <BitCheckbox IsEnabled=""false"">Disable Checkbox</BitCheckbox>
 <BitCheckbox IsEnabled=""false"" Value=""true"">Disable Checked Checkbox</BitCheckbox>
 <BitCheckbox CheckmarkIconName=""BitIconName.Heart"">Custom checkmark Checkbox</BitCheckbox>";
-
-    private readonly string example1CSharpCode = @"
-private bool IsCheckBoxChecked = false;";
-
-    private readonly string example2TMLCode = @"<BitCheckbox BoxSide=""@BitCheckBoxSide.End"">Reversed - Basic Checkbox</BitCheckbox>
-<BitCheckbox BoxSide=""@BitCheckBoxSide.End"" Value=""true"">Reversed - Checked Checkbox</BitCheckbox>
+    private readonly string example2TMLCode = @"
+<BitCheckbox BoxSide=""@BitCheckBoxSide.End"">Reversed - Basic Checkbox</BitCheckbox>
+<BitCheckbox BoxSide=""@BitCheckBoxSide.End"" Value=""true"">Reversed - One-way Checked Checkbox (Fixed)</BitCheckbox>
 <BitCheckbox BoxSide=""@BitCheckBoxSide.End"" IsEnabled=""false"">Reversed - Disable Checkbox</BitCheckbox>
 <BitCheckbox BoxSide=""@BitCheckBoxSide.End"" IsEnabled=""false"" Value=""true"">Reversed - Disable Checked Checkbox</BitCheckbox>";
+    private readonly string example3HTMLCode = @"
+<BitCheckbox @bind-IsIndeterminate=""IsIndeterminated"">Indeterminate checkbox</BitCheckbox>
+<BitCheckbox IsIndeterminate=""true"">One-way indeterminate Checkbox (Fixed)</BitCheckbox>
+<BitCheckbox IsIndeterminate=""true"" IsEnabled=""false"">Disabled indeterminate checkbox</BitCheckbox>";
+    private readonly string example4HTMLCode = @"
+<BitCheckbox Value=""IsChecked_OneWay"">One-way Controlled Checkbox</BitCheckbox>
+<BitButton OnClick=""() => IsChecked_OneWay = !IsChecked_OneWay"">
+    @(IsChecked_OneWay ? ""Remove"" : ""Make"") Checked
+</BitButton>
 
-    private readonly string example3HTMLCode = @"<BitCheckbox @bind-IsIndeterminate=""IsCheckBoxIndeterminate"" @bind-Value=""IsCheckBoxChecked"">Indeterminate checkbox</BitCheckbox>
-<BitCheckbox IsIndeterminate=""true"">Indeterminate checkbox</BitCheckbox>
-<BitCheckbox IsIndeterminate=""true"" IsEnabled=""false"">Disabled indeterminate checkbox</BitCheckbox>
-<BitCheckbox @bind-IsIndeterminate=""IsCheckBoxIndeterminateInCode"" @bind-Value=""IsCheckBoxChecked"">Controlled indeterminate checkbox</BitCheckbox>
-<BitButton OnClick=""() => IsCheckBoxIndeterminateInCode = true"">Make Checkbox Indeterminate</BitButton>";
+<BitCheckbox @bind-Value=""IsChecked_TwoWay"">Two-way Controlled Checkbox</BitCheckbox>
+<BitButton OnClick=""() => IsChecked_TwoWay = !IsChecked_TwoWay"">
+    @(IsChecked_TwoWay ? ""Remove"" : ""Make"") Checked
+</BitButton>
 
-    private readonly string example3CSharpCode = @"
-private bool IsCheckBoxIndeterminate = true;
-private bool IsCheckBoxIndeterminateInCode = true;";
+<BitCheckbox IsIndeterminate=""IsIndeterminated_OneWay"">One-way Controlled indeterminate checkbox</BitCheckbox>
+<BitButton OnClick=""() => IsIndeterminated_OneWay = !IsIndeterminated_OneWay"">
+    @(IsIndeterminated_OneWay ? ""Remove"" : ""Make"") Indeterminate
+</BitButton>
 
-    private readonly string example4HTMLCode = @"<BitCheckbox>
+<BitCheckbox @bind-IsIndeterminate=""IsIndeterminated_TwoWay"">Two-way Controlled indeterminate checkbox</BitCheckbox>
+<BitButton OnClick=""() => IsIndeterminated_TwoWay = !IsIndeterminated_TwoWay"">
+    @(IsIndeterminated_TwoWay ? ""Remove"" : ""Make"") Indeterminate
+</BitButton>
+";
+    private readonly string example5HTMLCode = @"
+<BitCheckbox>
     Custom-rendered label with a link go to
     <a href=""https://github.com/bitfoundation/bitplatform"">
         Bit Platform repository page
     </a>
 </BitCheckbox>";
-
-    private readonly string example5HTMLCode = @"@if (string.IsNullOrEmpty(SuccessMessage))
+    private readonly string example6HTMLCode = @"
+@if (string.IsNullOrEmpty(SuccessMessage))
 {
     <EditForm Model=""ValidationForm"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
         <DataAnnotationsValidator />
@@ -283,7 +283,14 @@ else
     </BitMessageBar>
 }";
 
-    private readonly string example5CSharpCode = @"
+    private readonly string example3CSharpCode = @"
+private bool IsIndeterminated = true;";
+    private readonly string example4CSharpCode = @"
+private bool IsChecked_OneWay;
+private bool IsChecked_TwoWay;
+private bool IsIndeterminated_OneWay = true;
+private bool IsIndeterminated_TwoWay = true;";
+    private readonly string example6CSharpCode = @"
 private BitCheckboxValidationModel ValidationForm = new();
 private string SuccessMessage = string.Empty;
 
@@ -305,4 +312,17 @@ private void HandleInvalidSubmit()
 {
     SuccessMessage = string.Empty;
 }";
+
+    private async Task HandleValidSubmit()
+    {
+        SuccessMessage = "Form Submitted Successfully!";
+        await Task.Delay(3000);
+        SuccessMessage = string.Empty;
+        StateHasChanged();
+    }
+
+    private void HandleInvalidSubmit()
+    {
+        SuccessMessage = string.Empty;
+    }
 }

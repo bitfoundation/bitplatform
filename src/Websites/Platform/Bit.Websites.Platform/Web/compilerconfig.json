@@ -1,78 +1,162 @@
 ﻿[
-    {
-        "outputFile": "Shared/MainLayout.razor.css",
-        "inputFile": "Shared/MainLayout.razor.scss"
-    },
-    {
-        "outputFile": "Shared/Header.razor.css",
-        "inputFile": "Shared/Header.razor.scss"
-    },
-    {
-        "outputFile": "Shared/Footer.razor.css",
-        "inputFile": "Shared/Footer.razor.scss"
-    },
-    {
-        "outputFile": "Shared/NavigationButtons.razor.css",
-        "inputFile": "Shared/NavigationButtons.razor.scss"
-    },
-    {
-        "outputFile": "Shared/NavMenu.razor.css",
-        "inputFile": "Shared/NavMenu.razor.scss"
-    },
-    {
-        "outputFile": "Shared/NotFoundComponent.razor.css",
-        "inputFile": "Shared/NotFoundComponent.razor.scss"
-    },
-    {
-        "outputFile": "Pages/HomePage.razor.css",
-        "inputFile": "Pages/HomePage.razor.scss"
-    },
-    {
-        "outputFile": "Pages/TodoTemplate/CacheMechanismPage.razor.css",
-        "inputFile": "Pages/TodoTemplate/CacheMechanismPage.razor.scss"
-    },
-    {
-        "outputFile": "Pages/TodoTemplate/ContributePage.razor.css",
-        "inputFile": "Pages/TodoTemplate/ContributePage.razor.scss"
-    },
-    {
-        "outputFile": "Pages/TodoTemplate/DatabasePage.razor.css",
-        "inputFile": "Pages/TodoTemplate/DatabasePage.razor.scss"
-    },
-    {
-        "outputFile": "Pages/TodoTemplate/DeploymentTypePage.razor.css",
-        "inputFile": "Pages/TodoTemplate/DeploymentTypePage.razor.scss"
-    },
-    {
-        "outputFile": "Pages/TodoTemplate/DevelopmentPrerequisitesPage.razor.css",
-        "inputFile": "Pages/TodoTemplate/DevelopmentPrerequisitesPage.razor.scss"
-    },
-    {
-        "outputFile": "Pages/TodoTemplate/ExceptionHandlingPage.razor.css",
-        "inputFile": "Pages/TodoTemplate/ExceptionHandlingPage.razor.scss"
-    },
-    {
-        "outputFile": "Pages/TodoTemplate/GettingStartedPage.razor.css",
-        "inputFile": "Pages/TodoTemplate/GettingStartedPage.razor.scss"
-    },
-    {
-        "outputFile": "Pages/TodoTemplate/HostingModelsPage.razor.css",
-        "inputFile": "Pages/TodoTemplate/HostingModelsPage.razor.scss"
-    },
-    {
-        "outputFile": "Pages/TodoTemplate/OverviewPage.razor.css",
-        "inputFile": "Pages/TodoTemplate/OverviewPage.razor.scss"
-    },
-    {
-        "outputFile": "Pages/TodoTemplate/ProjectStructurePage.razor.css",
-        "inputFile": "Pages/TodoTemplate/ProjectStructurePage.razor.scss"
-    },
-    {
-        "outputFile": "Pages/TodoTemplate/RunPage.razor.css",
-        "inputFile": "Pages/TodoTemplate/RunPage.razor.scss"
-    },
-    {
-        "outputFile": "Pages/TodoTemplate/SettingsPage.razor.css",
-        "inputFile": "Pages/TodoTemplate/SettingsPage.razor.scss"
-    }
+  {
+    "outputFile": "wwwroot/scripts/app.min.js",
+    "inputFile": "wwwroot/scripts/app.js"
+  },
+  {
+    "outputFile": "Shared/MainLayout.razor.css",
+    "inputFile": "Shared/MainLayout.razor.scss"
+  },
+  {
+    "outputFile": "Shared/Header.razor.css",
+    "inputFile": "Shared/Header.razor.scss"
+  },
+  {
+    "outputFile": "Shared/Footer.razor.css",
+    "inputFile": "Shared/Footer.razor.scss"
+  },
+  {
+    "outputFile": "Shared/NavigationButtons.razor.css",
+    "inputFile": "Shared/NavigationButtons.razor.scss"
+  },
+  {
+    "outputFile": "Shared/NavMenu.razor.css",
+    "inputFile": "Shared/NavMenu.razor.scss"
+  },
+  {
+    "outputFile": "Shared/NotFoundComponent.razor.css",
+    "inputFile": "Shared/NotFoundComponent.razor.scss"
+  },
+  {
+    "outputFile": "Pages/HomePage.razor.css",
+    "inputFile": "Pages/HomePage.razor.scss"
+  },
+  {
+    "outputFile": "Pages/AdminPanel/CacheMechanismPage.razor.css",
+    "inputFile": "Pages/AdminPanel/CacheMechanismPage.razor.scss"
+  },
+  {
+    "outputFile": "Pages/AdminPanel/MultilingualismPage.razor.css",
+    "inputFile": "Pages/AdminPanel/MultilingualismPage.razor.scss"
+  },
+  {
+    "outputFile": "Pages/AdminPanel/DatabasePage.razor.css",
+    "inputFile": "Pages/AdminPanel/DatabasePage.razor.scss"
+  },
+  {
+    "outputFile": "Pages/AdminPanel/DeploymentTypePage.razor.css",
+    "inputFile": "Pages/AdminPanel/DeploymentTypePage.razor.scss"
+  },
+  {
+    "outputFile": "Pages/AdminPanel/DevelopmentPrerequisitesPage.razor.css",
+    "inputFile": "Pages/AdminPanel/DevelopmentPrerequisitesPage.razor.scss"
+  },
+  {
+    "outputFile": "Pages/AdminPanel/ExceptionHandlingPage.razor.css",
+    "inputFile": "Pages/AdminPanel/ExceptionHandlingPage.razor.scss"
+  },
+  {
+    "outputFile": "Pages/AdminPanel/GettingStartedPage.razor.css",
+    "inputFile": "Pages/AdminPanel/GettingStartedPage.razor.scss"
+  },
+  {
+    "outputFile": "Pages/AdminPanel/HostingModelsPage.razor.css",
+    "inputFile": "Pages/AdminPanel/HostingModelsPage.razor.scss"
+  },
+  {
+    "outputFile": "Pages/AdminPanel/OverviewPage.razor.css",
+    "inputFile": "Pages/AdminPanel/OverviewPage.razor.scss"
+  },
+  {
+    "outputFile": "Pages/AdminPanel/ProjectStructurePage.razor.css",
+    "inputFile": "Pages/AdminPanel/ProjectStructurePage.razor.scss"
+  },
+  {
+    "outputFile": "Pages/AdminPanel/RunPage.razor.css",
+    "inputFile": "Pages/AdminPanel/RunPage.razor.scss"
+  },
+  {
+    "outputFile": "Pages/AdminPanel/SettingsPage.razor.css",
+    "inputFile": "Pages/AdminPanel/SettingsPage.razor.scss"
+  },
+  {
+    "outputFile": "Pages/TodoTemplate/CacheMechanismPage.razor.css",
+    "inputFile": "Pages/TodoTemplate/CacheMechanismPage.razor.scss"
+  },
+  {
+    "outputFile": "Pages/TodoTemplate/MultilingualismPage.razor.css",
+    "inputFile": "Pages/TodoTemplate/MultilingualismPage.razor.scss"
+  },
+  {
+    "outputFile": "Pages/TodoTemplate/DatabasePage.razor.css",
+    "inputFile": "Pages/TodoTemplate/DatabasePage.razor.scss"
+  },
+  {
+    "outputFile": "Pages/TodoTemplate/DeploymentTypePage.razor.css",
+    "inputFile": "Pages/TodoTemplate/DeploymentTypePage.razor.scss"
+  },
+  {
+    "outputFile": "Pages/TodoTemplate/DevelopmentPrerequisitesPage.razor.css",
+    "inputFile": "Pages/TodoTemplate/DevelopmentPrerequisitesPage.razor.scss"
+  },
+  {
+    "outputFile": "Pages/TodoTemplate/ExceptionHandlingPage.razor.css",
+    "inputFile": "Pages/TodoTemplate/ExceptionHandlingPage.razor.scss"
+  },
+  {
+    "outputFile": "Pages/TodoTemplate/GettingStartedPage.razor.css",
+    "inputFile": "Pages/TodoTemplate/GettingStartedPage.razor.scss"
+  },
+  {
+    "outputFile": "Pages/TodoTemplate/HostingModelsPage.razor.css",
+    "inputFile": "Pages/TodoTemplate/HostingModelsPage.razor.scss"
+  },
+  {
+    "outputFile": "Pages/TodoTemplate/OverviewPage.razor.css",
+    "inputFile": "Pages/TodoTemplate/OverviewPage.razor.scss"
+  },
+  {
+    "outputFile": "Pages/TodoTemplate/ProjectStructurePage.razor.css",
+    "inputFile": "Pages/TodoTemplate/ProjectStructurePage.razor.scss"
+  },
+  {
+    "outputFile": "Pages/TodoTemplate/RunPage.razor.css",
+    "inputFile": "Pages/TodoTemplate/RunPage.razor.scss"
+  },
+  {
+    "outputFile": "Pages/TodoTemplate/SettingsPage.razor.css",
+    "inputFile": "Pages/TodoTemplate/SettingsPage.razor.scss"
+  },
+  {
+    "outputFile": "Pages/AdminPanel/ContributePage.razor.css",
+    "inputFile": "Pages/AdminPanel/ContributePage.razor.scss"
+  },
+  {
+    "outputFile": "Pages/PricingPage.razor.css",
+    "inputFile": "Pages/PricingPage.razor.scss"
+  },
+  {
+    "outputFile": "Pages/AboutUsPage.razor.css",
+    "inputFile": "Pages/AboutUsPage.razor.scss"
+  },
+  {
+    "outputFile": "Pages/ContactUsPage.razor.css",
+    "inputFile": "Pages/ContactUsPage.razor.scss"
+  },
+  {
+    "outputFile": "Pages/ComponentsPage.razor.css",
+    "inputFile": "Pages/ComponentsPage.razor.scss"
+  },
+  {
+    "outputFile": "Pages/TodoTemplate/ContributePage.razor.css",
+    "inputFile": "Pages/TodoTemplate/ContributePage.razor.scss"
+  },
+  {
+    "outputFile": "Pages/AdminPanel/DevOpsPage.razor.css",
+    "inputFile": "Pages/AdminPanel/DevOpsPage.razor.scss"
+  },
+  {
+    "outputFile": "Pages/TodoTemplate/DevOpsPage.razor.css",
+    "inputFile": "Pages/TodoTemplate/DevOpsPage.razor.scss"
+  }
 ]

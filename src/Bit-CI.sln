@@ -7,7 +7,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BlazorUI", "BlazorUI", "{DC
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Playground", "Playground", "{23426B1A-CC46-4D11-B233-208A57B2BCA2}"
 	ProjectSection(SolutionItems) = preProject
-		BlazorUI\Playground\Directory.build.props = BlazorUI\Playground\Directory.build.props
+		BlazorUI\Playground\Directory.Build.props = BlazorUI\Playground\Directory.Build.props
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Websites", "Websites", "{293480D2-1505-4C9F-B2B9-D78CA5573866}"
@@ -38,7 +38,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Templates", "Templates", "{
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TodoTemplate", "TodoTemplate", "{C236F999-4F4A-4D87-A49D-8F5977185F7B}"
 	ProjectSection(SolutionItems) = preProject
-		Templates\TodoTemplate\Bit.TodoTemplate\Directory.build.props = Templates\TodoTemplate\Bit.TodoTemplate\Directory.build.props
+		Templates\TodoTemplate\Bit.TodoTemplate\Directory.Build.props = Templates\TodoTemplate\Bit.TodoTemplate\Directory.Build.props
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CodeAnalyzers", "CodeAnalyzers", "{FC89582F-DC03-428C-A908-E90B3BC9C82F}"
@@ -53,7 +53,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.BlazorUI.SourceGenerato
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AdminPanel", "AdminPanel", "{5CDE0A2E-FB17-47F0-AEDC-A74A6C10B1BD}"
 	ProjectSection(SolutionItems) = preProject
-		Templates\AdminPanel\Bit.AdminPanel\Directory.build.props = Templates\AdminPanel\Bit.AdminPanel\Directory.build.props
+		Templates\AdminPanel\Bit.AdminPanel\Directory.Build.props = Templates\AdminPanel\Bit.AdminPanel\Directory.Build.props
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.BlazorUI.Charts", "BlazorUI\Bit.BlazorUI.Charts\Bit.BlazorUI.Charts.csproj", "{61CE924E-8061-41A3-BCD3-FD578CB55DBD}"
@@ -66,7 +66,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Bswup.Demo.Server", "Bs
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Platform", "Platform", "{CD99950F-8E06-40A4-A0AE-7DF07402E4E9}"
 	ProjectSection(SolutionItems) = preProject
-		Websites\Platform\Directory.build.props = Websites\Platform\Directory.build.props
+		Websites\Platform\Directory.Build.props = Websites\Platform\Directory.Build.props
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sales", "Sales", "{677C32D1-769F-4FA7-BA5E-360D034E3BC4}"
@@ -89,11 +89,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{08E339
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infra", "Infra", "{BAAE14DA-AB42-4FD7-96C7-2745FDDF60AF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Iac", "Templates\TodoTemplate\Bit.TodoTemplate\Infra\Iac\TodoTemplate.Iac.csproj", "{6476D5F0-2976-4131-B602-509F2C663D11}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Iac", "Templates\TodoTemplate\Bit.TodoTemplate\src\Infra\Iac\TodoTemplate.Iac.csproj", "{6476D5F0-2976-4131-B602-509F2C663D11}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Server.Api", "Templates\TodoTemplate\Bit.TodoTemplate\Server\Api\TodoTemplate.Server.Api.csproj", "{5D0A0FB8-22BD-4035-8D27-D1EA76B3E826}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Server.Api", "Templates\TodoTemplate\Bit.TodoTemplate\src\Server\Api\TodoTemplate.Server.Api.csproj", "{5D0A0FB8-22BD-4035-8D27-D1EA76B3E826}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Shared", "Templates\TodoTemplate\Bit.TodoTemplate\Shared\Shared\TodoTemplate.Shared.csproj", "{64C0A483-7BE3-4CB6-891F-9AFA942357DD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Shared", "Templates\TodoTemplate\Bit.TodoTemplate\src\Shared\Shared\TodoTemplate.Shared.csproj", "{64C0A483-7BE3-4CB6-891F-9AFA942357DD}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infra", "Infra", "{97B6AB01-19FF-4D94-8530-17F3C90AE6B2}"
 EndProject
@@ -101,11 +101,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Server", "Server", "{9BF299
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{199F5358-B1F7-4A54-A35B-C614461ED6A6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminPanel.Iac", "Templates\AdminPanel\Bit.AdminPanel\Infra\Iac\AdminPanel.Iac.csproj", "{86592AD1-7419-4BF6-A129-D8BBAB6FA285}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminPanel.Iac", "Templates\AdminPanel\Bit.AdminPanel\src\Infra\Iac\AdminPanel.Iac.csproj", "{86592AD1-7419-4BF6-A129-D8BBAB6FA285}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminPanel.Server.Api", "Templates\AdminPanel\Bit.AdminPanel\Server\Api\AdminPanel.Server.Api.csproj", "{3A36AF8C-5D1E-4710-8747-9508ABAAA95A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminPanel.Server.Api", "Templates\AdminPanel\Bit.AdminPanel\src\Server\Api\AdminPanel.Server.Api.csproj", "{3A36AF8C-5D1E-4710-8747-9508ABAAA95A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminPanel.Shared", "Templates\AdminPanel\Bit.AdminPanel\Shared\Shared\AdminPanel.Shared.csproj", "{55BF5D67-27FE-477F-B94F-141AE860D548}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminPanel.Shared", "Templates\AdminPanel\Bit.AdminPanel\src\Shared\Shared\AdminPanel.Shared.csproj", "{55BF5D67-27FE-477F-B94F-141AE860D548}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

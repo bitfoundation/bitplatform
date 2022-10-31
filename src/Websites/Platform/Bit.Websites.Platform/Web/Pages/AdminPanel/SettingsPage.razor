@@ -1,0 +1,115 @@
+﻿@page "/admin-panel/settings"
+
+<div class="page-container">
+    <h1 class="page-main-title">Settings</h1>
+    <div class="page-desc">
+        Other configurations available in the Bit AdminPanel are as follows:
+    </div>
+
+    <section class="section-card">
+        <h2 class="section-card-title">Authentication policies</h2>
+        <div class="section-card-txt">
+            Bit AdminPanel provides authentication with and implements the SignUp and SignIn user interfaces.
+            You can change the default settings of the Identity Settings according to your needs; 
+            These settings are in the <span class="high-light-text">appsettings.json</span> file in the Api project.
+        </div>
+        <div class="code-box">
+            <pre>
+<code>"IdentitySettings": {
+    "PasswordRequireDigit": "false",
+    "PasswordRequiredLength": "6",
+    "PasswordRequireNonAlphanumeric": "false",
+    "PasswordRequireUppercase": "false",
+    "PasswordRequireLowercase": "false",
+    "RequireUniqueEmail": "true",
+    "ConfirmationEmailResendDelay": "0.00:02:00", //Format: D.HH:mm:nn
+    "ResetPasswordEmailResendDelay": "0.00:02:00" //Format: D.HH:mm:nn
+}</code>
+            </pre>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <h2 class="section-card-title">JWT settings</h2>
+        <div class="section-card-txt">
+            Bit AdminPanel uses JWT to provide token-based authentication and you can change these settings.
+            You can find these settings in the <span class="high-light-text">appsettings.json</span> file in the Api project.
+        </div>
+        <div class="code-box">
+            <pre class="code">
+<code>"JwtSettings": {
+    "IdentityCertificatePassword": "P@ssw0rdP@ssw0rd",
+    "Issuer": "AdminPanel",
+    "Audience": "AdminPanel",
+    "NotBeforeMinutes": "0",
+    "ExpirationMinutes": "1440"
+}</code>
+            </pre>
+        </div>
+        <div class="section-card-txt">
+            <span class="bold-txt">Note</span>: IdentityCertificatePassword referring to the password of the 
+            <span class="high-light-text">IdentityCertificate.pfx</span> file in the Api project that used as certificate file 
+            for store the public key and etc for validating incoming JWT tokens. 
+            To create PFX file run the following commands in PowerShell with the desired password and file path for your pfx file.
+        </div>
+        <div class="code-box">
+            <pre class="code">
+<code>> $cert = New-SelfSignedCertificate -CertStoreLocation Cert:\LocalMachine\My -Subject "IdentityServerCN" -Provider "Microsoft Strong Cryptographic Provider" -HashAlgorithm "SHA512" -NotAfter (Get-Date).AddYears(5)
+> Export-PfxCertificate -cert ('Cert:\LocalMachine\My\' + $cert.thumbprint) -FilePath PATH_TO_YOUR_IdentityServerCertificate.pfx -Password (ConvertTo-SecureString -String "YOUR_PASSWORD" -Force -AsPlainText)</code>
+        </pre>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <h2 class="section-card-title">Email settings</h2>
+        <div class="section-card-txt">
+            Bit AdminPanel uses <a href="https://github.com/lukencode/FluentEmail">FluentEmail</a> to send emails.
+            You can change the SMTP provider settings in the <span class="high-light-text">appsettings.json</span> file in the Api project.
+        </div>
+        <div class="code-box">
+            <pre class="code">
+<code>"EmailSettings": {
+    "Host": "LocalFolder", // Local folder means storing emails in bin\sent-emails folder. (Recommended for testing purposes only)
+    "Port": "25",
+    "DefaulFromEmail": "info@admin.com",
+    "DefaultFromName": "Admin",
+    "UserName": null,
+    "Password": null
+}</code>
+        </pre>
+        </div>
+        <div class="section-card-txt">
+            <span class="bold-txt">Note</span>: You can find email templates used for email confirmation and reset password in the <span class="high-light-text">Resources</span> directory of the Api project.
+        </div>
+    </section>
+
+    <section class="section-card">
+        <h2 class="section-card-title">User profile image setting</h2>
+        <div class="section-card-txt">
+            Bit AdminPanel saves user profile image in <span class="high-light">Attachments\Profiles</span> directory
+            of the Api project as default, you can change this path as you need from the <span class="high-light">appsettings.json</span> file in the Api project.
+        </div>
+        <div class="code-box">
+            <pre class="code"><code>"UserProfileImagePath": "./Attachments/Profiles/"</code></pre>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <h2 class="section-card-title">Health check settings</h2>
+        <div class="section-card-txt">
+            Bit AdminPanel supports Health Checks for reporting the health of app infrastructure components.
+            Health checks APIs are exposed as an HTTP endpoint. You can change the settings of this feature in the 
+            <span class="high-light-text">appsettings.json</span> file in the Api project.
+        </div>
+        <div class="code-box">
+            <pre class="code"><code>"HealthCheckSettings": {
+    "EnableHealthChecks": true
+}</code></pre>
+        </div>
+        <div class="section-card-txt">
+            <span class="bold-txt">Note</span>: You can find Health Checks dashboard from <span class="high-light-text">https://localhost:5001/healthchecks-ui</span> by default.
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="Deployment type" PrevUrl="/admin-panel/deployment-type" Next="Project structure" NextUrl="/admin-panel/project-structure" />

@@ -1,0 +1,96 @@
+﻿@page "/admin-panel/hosting-models"
+
+<div class="page-container">
+    <h1 class="page-main-title">Hosting models (Blazor Mode)</h1>
+    <div class="page-desc">
+        Bit AdminPanel uses Blazor for building UI. Blazor is a web framework for building web UI components 
+        (<a href="https://docs.microsoft.com/en-us/aspnet/core/blazor" title="ASP.NET Core Blazor" rel="nofollow">ASP.NET Core Blazor</a>)
+        that uses modern technologies to host different models. Blazor can be hosted on server-side in ASP.NET Core (Blazor Server) and on 
+        client-side in the browser on a <a href="https://webassembly.org/" rel="nofollow">WebAssembly</a>-based .NET runtime 
+        (Blazor WebAssembly, Blazor WASM). You can also host Blazor apps in native mobile and desktop apps that render to an embedded 
+        Web View control (Blazor Hybrid). Regardless of the hosting model, the approach and tools you build Blazor apps with are the same. 
+        The same Blazor source code can be used for any of the hosting models. 
+        (<a href="https://docs.microsoft.com/en-us/aspnet/core/blazor/hosting-models" rel="nofollow">Read more About ASP.NET Core Blazor hosting models</a>).
+        <br />
+        <br />
+        <span class="bold-txt">Note</span>: Bit AdminPanel supports all three modes as following:
+    </div>
+    <section class="section-card">
+        <h2 class="section-card-title">Blazor Server</h2>
+        <div class="section-card-txt">
+            With the Blazor Server hosting model, the app is executed on the server from within an ASP.NET Core app. UI updates, event handling, and JavaScript calls are handled over a SignalR connection using the WebSockets protocol.
+            <br />To switch to Blazor server mode:
+        </div>
+        <div class="section-card-txt">
+            1. Change value of <span class="bold-txt"> @("<BlazorMode>")</span> on <span class="high-light-text">Directory.build.props </span>  file in <span class="bold-txt">Solution Items</span> root folder.
+        </div>
+        <div class="code-box">
+            <pre class="code"><code>@("<BlazorMode>BlazorServer</BlazorMode>")</code></pre>
+        </div>
+
+        <div class="section-card-txt">
+            2. Set solution on Multi-startup project, by right click on solution name and selecting properties from right-click menu (change the action of the Api, Web projects to start)
+        </div>
+        <div class="image-container">
+            <img class="image" alt="Multi-startup solution" width="696" height="241" src="/images/demo/multi-startup.webp" />
+        </div>
+        <div class="section-card-txt">
+            3. Make sure the first line in the <span class="high-light-text">AdminPanel.Web.csproj</span> file contains the following value.
+        </div>
+        <div class="code-box">
+            <pre class="code"><code>@("<Project Sdk=\"Microsoft.NET.Sdk.Web\">")</code></pre>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <h2 class="section-card-title">Blazor WebAssembly</h2>
+        <div class="section-card-txt">
+            Blazor WebAssembly (WASM) apps run client-side in the browser on a WebAssembly-based .NET runtime. The Blazor app, its dependencies, and the .NET runtime are downloaded to the browser. The app is executed directly on the browser UI thread. UI updates and event handling occur within the same process. The app's assets are deployed as static files to a web server or service capable of serving static content to clients.
+            <br />To switch to Blazor WebAssembly mode:
+        </div>
+        <div class="section-card-txt">
+            1. Change value of <span class="bold-txt">@("<BlazorMode>")</span> on <span class="high-light-text">Directory.build.props </span> file in <span class="bold-txt">Solution Items</span> root folder.
+        </div>
+        <div class="code-box">
+            <pre class="code"><code>@("<BlazorMode>BlazorWebAssembly</BlazorMode>")</code></pre>
+        </div>
+        <div class="section-card-txt">
+            2. Set <span class="bold-txt">Api</span> project as startup project.
+        </div>
+        <div class="section-card-txt">
+            3. Make sure the first line in the <span class="high-light-text">AdminPanel.Web.csproj</span> file contains the following value.
+        </div>
+        <div class="code-box">
+            <pre class="code"><code>@("<Project Sdk=\"Microsoft.NET.Sdk.BlazorWebAssembly\">")</code></pre>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <h2 class="section-card-title">Blazor Hybrid</h2>
+        <div class="section-card-txt">
+            Blazor can also be used to build native client apps using a hybrid approach. Hybrid apps are native apps that leverage web technologies for their functionality. In a Blazor Hybrid app, Razor components run directly in the native app (not on WebAssembly) along with any other .NET code and render web UI based on HTML and CSS to an embedded Web View control through a local interop channel.
+            <br />To switch to Blazor Hybrid mode:
+        </div>
+        <div class="section-card-txt">
+            1. Change value of <span class="bold-txt">@("<BlazorMode>")</span> on <span class="high-light-text">Directory.build.props </span> file in <span class="bold-txt">Solution Items</span> root folder.
+        </div>
+        <div class="code-box">
+            <pre class="code"><code>@("<BlazorMode>BlazorHybrid</BlazorMode>")</code></pre>
+        </div>
+        <div class="section-card-txt">
+            2. Set <span class="bold-txt">App</span> as the startup project, choose either Android, IOS, or Windows, then select your Physical device or Emulator as Debug-Target.
+        </div>
+        <div class="image-container">
+            <img class="image" alt="Debug target" width="1014" height="350" src="/images/demo/debug-target.webp" />
+        </div>
+        <div>
+            3. Change <span class="bold-txt">ApiServerAddress</span> in Client/Shared/wwwroot/appsettings.json to make sure your Android / iOS device can reach the server.
+        </div>
+        <br />
+        <div>
+            4. Set solution on Multi-startup project, by right click on solution name and selecting properties from right-click menu (change the action of the Api, App projects to start)
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="Run" PrevUrl="/admin-panel/run" Next="Deployment type" NextUrl="/admin-panel/deployment-type" />

@@ -6,23 +6,23 @@
      class="@ClassBuilder.Value">
     @if (LabelFragment is not null)
     {
-        <label class="bit-drp-lbl" id="@DropdownLabelId">@LabelFragment</label>
+        <label class="lbl" id="@DropdownLabelId">@LabelFragment</label>
     }
     else if (Label.HasValue())
     {
-        <label class="bit-drp-lbl" id="@DropdownLabelId">@Label</label>
+        <label class="lbl" id="@DropdownLabelId">@Label</label>
     }
 
-    <div class="bit-drp-overlay"
+    <div class="drp-overlay"
          id="@DropDownOverlayId"
          @onclick="CloseCallout"></div>
 
-    <div class="bit-drp-wrapper"
+    <div class="drp-wrapper"
          id="@DropDownId"
          tabindex=@(IsEnabled ? 0 : -1)
          role="combobox"
          data-is-focusable="true"
-         aria-expanded=@(isOpen ? "true" : "false")
+         aria-expanded=@(_isOpen ? "true" : "false")
          aria-labelledby="@GetDropdownAriaLabelledby"
          aria-required="@IsRequired"
          aria-disabled="@(IsEnabled is false)"
@@ -30,7 +30,7 @@
          aria-controls="@(IsOpen ? $"{DropDownId}-list" : null)"
          title="@Title"
          @onclick="HandleClick">
-        <span class="bit-drp-wrapper-txt"
+        <span class="drp-wrapper-txt"
               id="@DropDownOptionId"
               aria-live="polite"
               aria-atomic="true"
@@ -58,59 +58,71 @@
                 }
             }
         </span>
-        <span class="bit-drp-wrapper-ic">
+        <span class="drp-wrapper-ic">
             @if (CaretDownFragment is not null)
             {
                 @CaretDownFragment
             }
             else
             {
-                <i class="bit-icon" aria-hidden="true"></i>
+                <i class="@($"bit-icon bit-icon--{CaretDownIconName.GetName()}")" aria-hidden="true"></i>
             }
         </span>
     </div>
 
-    <div class="bit-drp-items-wrapper"
+    <div class="items-wrapper"
          id="@DropDownCalloutId"
          tabindex="0"
          role="listbox"
          aria-labelledby="@DropdownLabelId">
-        <div class="bit-drp-close-btn-contianer">
-            <button class="close-btn"
+        @if (IsResponsiveModeEnabled)
+        {
+            <div class="responsive-label-contianer">
+                @if (LabelFragment is not null)
+                {
+                    <label class="lbl">@LabelFragment</label>
+                }
+                else if (Label.HasValue())
+                {
+                    <label class="lbl">@Label</label>
+                }
+                <button class="close-btn"
                     type="button"
                     aria-label="Close"
                     aria-describedby="Close"
                     aria-hidden="Close"
                     title="Close"
                     @onclick="CloseCallout">
-                <span>
-                    <i class="bit-icon bit-icon--ChromeClose"></i>
-                </span>
-            </button>
-        </div>
+                    <span>
+                        <i class="bit-icon bit-icon--ChromeClose"></i>
+                    </span>
+                </button>
+            </div>
+        }
         @if (ShowSearchBox)
         {
             <div class="@GetSearchBoxClasses()">
                 <div class="icon-container" aria-hidden="true">
                     <i class="bit-icon bit-icon--Search" aria-hidden="true"></i>
                 </div>
-                <input class="search-input"
+                <input @ref="_searchInputElement"
+                   class="search-input"
                    type="text"
                    aria-label="Search text"
                    placeholder="@SearchBoxPlaceholder"
                    role="searchbox"
-                   value="@searchText"
+                   value="@_searchText"
                    @onfocusin="HandleSearchBoxFocusIn"
                    @onfocusout="HandleSearchBoxFocusOut"
                    @oninput="@HandleFilterChange" />
-                @if (searchText.HasValue())
+                @if (_searchText.HasValue())
                 {
                     <div class="search-clear-btn-container">
                         <button class="search-clear-btn"
                         type="button"
                         aria-label="Clear text"
                         aria-hidden="true"
-                        disabled="@(searchText.HasNoValue())"
+                        disabled="@(_searchText.HasNoValue())"
                         @onclick="HandleSearchBoxOnClear">
                             <span>
                                 <i class="bit-icon bit-icon--Clear" aria-hidden="true"></i>
@@ -136,7 +148,7 @@
                 }
                 else
                 {
-                    <Virtualize @ref="virtualizeElement"
+                    <Virtualize @ref="_virtualizeElement"
                         Context="item"
                         OverscanCount="@OverscanCount"
                         ItemsProvider="ProvideVirtualizedItems"
@@ -156,7 +168,7 @@
 
     </div>
     <select @attributes="InputHtmlAttributes" class="bit-input-hidden" multiple>
-        @foreach (BitDropDownItem item in SelectedItems)
+        @foreach (BitDropDownItem item in _selectedItems)
         {
             <option value="@item.Value" selected>@item.Text</option>
         }
@@ -168,7 +180,7 @@
     {
         if (dropDownItem.item.ItemType == BitDropDownItemType.Header)
         {
-            <div class="@RootElementClass-head-@VisualClassRegistrar()">
+            <div class="item-header">
                 @dropDownItem.item.Text
             </div>
         }
@@ -177,14 +189,14 @@
             @if (IsMultiSelect)
             {
                 <div style="@(dropDownItem.item.IsHidden ? "display: none" : string.Empty)" class="@GetCssClassForItem(dropDownItem.item)">
-                    <label class="bit-drp-chb-lbl" @onclick="@((e) => HandleItemClick(dropDownItem.item))">
-                        <div class="bit-drp-chb-checkbox">
-                            <i class="bit-drp-chb-checkmark bit-icon bit-icon--Accept"
+                    <label class="drp-chb-lbl" @onclick="@((e) => HandleItemClick(dropDownItem.item))">
+                        <div class="drp-chb-checkbox">
+                            <i class="drp-chb-checkmark bit-icon bit-icon--Accept"
                                aria-hidden="true"
                                aria-label="@dropDownItem.item.Text"></i>
                         </div>
 
-                        <span class="bit-drp-chb-txt no-text-select">
+                        <span class="drp-chb-txt no-text-select">
                             @if (ItemTemplate is not null)
                             {
                                 @ItemTemplate(dropDownItem.item)
@@ -199,7 +211,7 @@
             }
             else
             {
-                <button class="bit-drp-item @(dropDownItem.item.IsSelected ? $"{RootElementClass}-slc-{VisualClassRegistrar()}" : string.Empty)"
+                <button class="drp-item @(dropDownItem.item.IsSelected ? "drp-slc" : string.Empty)"
                         style="@(dropDownItem.item.IsHidden ? "display: none" : string.Empty)"
                         type="button"
                         role="option"
@@ -227,7 +239,7 @@
         }
         else if (dropDownItem.item.ItemType == BitDropDownItemType.Divider)
         {
-            <div class="@RootElementClass-div-@VisualClassRegistrar()" role="separator"></div>
+            <div class="item-divider" role="separator"></div>
         }
     };
 }

@@ -1,0 +1,38 @@
+﻿@import '../../../Styles/abstracts/_functions.scss';
+@import '../../../Styles/abstracts/_colors.scss';
+@import '../../../Styles/abstracts/_media-queries.scss';
+
+.item-template-box {
+    display: flex;
+    width: 100%;
+}
+
+.selected-item {
+    margin-top: rem(8px);
+    font-weight: 600;
+}
+
+::deep .custom-menu-btn {
+    height: rem(40px);
+    width: rem(166px);
+    background-color: #515151;
+    border-color: black;
+
+    &:hover {
+        background-color: #515151;
+    }
+}
+
+.example-content {
+    display: flex;
+    gap: rem(10px);
+    width: fit-content;
+
+    &.column {
+        flex-direction: column;
+    }
+
+    @include sm {
+        flex-direction: column;
+    }
+}

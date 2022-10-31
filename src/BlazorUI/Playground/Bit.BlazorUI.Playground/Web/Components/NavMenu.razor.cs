@@ -28,6 +28,7 @@ public partial class NavMenu
                 new BitNavLinkItem { Name= "CompoundButton", Key = "CompoundButton", Url = "/components/compound-button"},
                 new BitNavLinkItem { Name= "IconButton", Key = "IconButton", Url = "/components/icon-button"},
                 new BitNavLinkItem { Name= "ToggleButton", Key = "ToggleButton", Url = "/components/toggle-button" },
+                new BitNavLinkItem { Name= "MenuButton", Key = "MenuButton", Url = "/components/menu-button" },
                 new BitNavLinkItem { Name= "SplitButton", Key = "SplitButton", Url = "/components/split-button" },
                 new BitNavLinkItem { Name= "CheckBox", Key = "CheckBox", Url = "/components/check-box" },
                 new BitNavLinkItem { Name= "ChoiceGroup", Key = "ChoiceGroup", Url = "/components/choice-group" },
@@ -55,6 +56,7 @@ public partial class NavMenu
             {
                 new BitNavLinkItem { Name= "ColorPicker", Key = "ColorPicker", Url = "/components/color-picker" },
                 new BitNavLinkItem { Name = "DatePicker", Key = "DatePicker", Url="/components/date-picker" },
+                new BitNavLinkItem { Name = "DateRangePicker", Key = "DateRangePicker", Url="/components/date-range-picker" },
                 new BitNavLinkItem { Name = "Chart", Key = "Chart", Url="/components/chart" }
             }
         },

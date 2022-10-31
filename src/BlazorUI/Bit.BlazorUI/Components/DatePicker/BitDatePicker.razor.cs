@@ -18,6 +18,7 @@ public partial class BitDatePicker
 #pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
     private int[,] _currentMonthCalendar = new int[DEFAULT_WEEK_COUNT, DEFAULT_DAY_COUNT_PER_WEEK];
 #pragma warning restore CA1814 // Prefer jagged arrays over multidimensional
+    private int _currentDay;
     private int _currentMonth;
     private int _currentYear;
     private int _displayYear;
@@ -59,7 +60,7 @@ public partial class BitDatePicker
     /// <summary>
     /// Used to customize how content inside the day cell is rendered.
     /// </summary>
-    [Parameter] public RenderFragment<DateTimeOffset>? DayCellTemplate { get; set; } 
+    [Parameter] public RenderFragment<DateTimeOffset>? DayCellTemplate { get; set; }
 
     /// <summary>
     /// FormatDate for the DatePicker
@@ -140,22 +141,22 @@ public partial class BitDatePicker
     /// <summary>
     /// Callback for when clicking on DatePicker input
     /// </summary>
-    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+    [Parameter] public EventCallback OnClick { get; set; }
 
     /// <summary>
     /// Callback for when focus moves into the input.
     /// </summary>
-    [Parameter] public EventCallback<FocusEventArgs> OnFocus { get; set; }
+    [Parameter] public EventCallback OnFocus { get; set; }
 
     /// <summary>
     /// Callback for when focus moves into the DatePicker input.
     /// </summary>
-    [Parameter] public EventCallback<FocusEventArgs> OnFocusIn { get; set; }
+    [Parameter] public EventCallback OnFocusIn { get; set; }
 
     /// <summary>
     /// Callback for when focus moves out the DatePicker input.
     /// </summary>
-    [Parameter] public EventCallback<FocusEventArgs> OnFocusOut { get; set; }
+    [Parameter] public EventCallback OnFocusOut { get; set; }
 
     /// <summary>
     /// Callback for when the date changes.
@@ -301,7 +302,12 @@ public partial class BitDatePicker
         }
     }
 
-    private async Task HandleClick(MouseEventArgs eventArgs)
+    public async Task OpenCallout()
+    {
+        await HandleClick();
+    }
+
+    private async Task HandleClick()
     {
         if (IsEnabled is false) return;
 
@@ -329,31 +335,31 @@ public partial class BitDatePicker
         }
 
         _displayYear = _currentYear;
-        await OnClick.InvokeAsync(eventArgs);
+        await OnClick.InvokeAsync();
     }
 
-    private async Task HandleFocusIn(FocusEventArgs eventArgs)
+    private async Task HandleFocusIn()
     {
         if (IsEnabled is false) return;
 
         FocusClass = "focused";
-        await OnFocusIn.InvokeAsync(eventArgs);
+        await OnFocusIn.InvokeAsync();
     }
 
-    private async Task HandleFocusOut(FocusEventArgs eventArgs)
+    private async Task HandleFocusOut()
     {
         if (IsEnabled is false) return;
 
         FocusClass = string.Empty;
-        await OnFocusOut.InvokeAsync(eventArgs);
+        await OnFocusOut.InvokeAsync();
     }
 
-    private async Task HandleFocus(FocusEventArgs e)
+    private async Task HandleFocus()
     {
         if (IsEnabled is false) return;
 
         FocusClass = "focused";
-        await OnFocus.InvokeAsync(e);
+        await OnFocus.InvokeAsync();
     }
 
     private async Task HandleChange(ChangeEventArgs e)
@@ -362,7 +368,18 @@ public partial class BitDatePicker
         if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
         if (AllowTextInput is false) return;
 
+        var oldValue = CurrentValue;
         CurrentValueAsString = e.Value?.ToString();
+        if (IsOpen && oldValue != CurrentValue)
+        {
+            CheckCurrentCalendarMatchesCurrentValue();
+            if (CurrentValue.GetValueOrDefault().Year != oldValue.GetValueOrDefault().Year)
+            {
+                _displayYear = CurrentValue.GetValueOrDefault().Year;
+                ChangeYearRanges(_currentYear - 1);
+            }
+        }
+
         await OnSelectDate.InvokeAsync(CurrentValue);
     }
 
@@ -374,7 +391,7 @@ public partial class BitDatePicker
 
         if (IsWeekDayOutOfMinAndMaxDate(dayIndex, weekIndex)) return;
 
-        var currentDay = _currentMonthCalendar[weekIndex, dayIndex];
+        _currentDay = _currentMonthCalendar[weekIndex, dayIndex];
         int selectedMonth = GetCorrectTargetMonth(weekIndex, dayIndex);
         if (selectedMonth < _currentMonth && _currentMonth == 12 && IsInCurrentMonth(weekIndex, dayIndex) is false)
         {
@@ -391,7 +408,7 @@ public partial class BitDatePicker
         IsOpen = false;
         _displayYear = _currentYear;
         _currentMonth = selectedMonth;
-        CurrentValue = new DateTimeOffset(Culture.DateTimeFormat.Calendar.ToDateTime(_currentYear, _currentMonth, currentDay, 0, 0, 0, 0), DateTimeOffset.Now.Offset);
+        CurrentValue = new DateTimeOffset(Culture.DateTimeFormat.Calendar.ToDateTime(_currentYear, _currentMonth, _currentDay, 0, 0, 0, 0), DateTimeOffset.Now.Offset);
         CreateMonthCalendar(_currentYear, _currentMonth);
         await OnSelectDate.InvokeAsync(CurrentValue);
     }
@@ -489,7 +506,7 @@ public partial class BitDatePicker
         ChangeYearRanges(fromYear);
     }
 
-    private void HandleGoToToday(MouseEventArgs args)
+    private void HandleGoToToday()
     {
         if (IsEnabled)
         {
@@ -840,9 +857,10 @@ public partial class BitDatePicker
     private void CheckCurrentCalendarMatchesCurrentValue()
     {
         var currentValue = CurrentValue.GetValueOrDefault();
-        var currentValueYear = currentValue.Year;
-        var currentValueMonth = currentValue.Month;
-        if (currentValueYear != _currentYear || currentValueMonth != _currentMonth)
+        var currentValueYear = Culture.DateTimeFormat.Calendar.GetYear(currentValue.DateTime);
+        var currentValueMonth = Culture.DateTimeFormat.Calendar.GetMonth(currentValue.DateTime);
+        var currentValueDay = Culture.DateTimeFormat.Calendar.GetDayOfMonth(currentValue.DateTime);
+        if (currentValueYear != _currentYear || currentValueMonth != _currentMonth || (AllowTextInput && currentValueDay != _currentDay))
         {
             _currentYear = currentValueYear;
             _currentMonth = currentValueMonth;
@@ -853,7 +871,7 @@ public partial class BitDatePicker
     private string GetMonthCellClassName(int monthIndex)
     {
         var className = string.Empty;
-        if(HighlightCurrentMonth)
+        if (HighlightCurrentMonth)
         {
             var todayMonth = Culture.DateTimeFormat.Calendar.GetMonth(DateTime.Now);
             className += todayMonth == monthIndex ? "current-month" : null;

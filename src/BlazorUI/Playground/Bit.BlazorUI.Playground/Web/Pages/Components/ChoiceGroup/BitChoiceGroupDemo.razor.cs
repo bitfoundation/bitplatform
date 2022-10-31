@@ -7,43 +7,14 @@ namespace Bit.BlazorUI.Playground.Web.Pages.Components.ChoiceGroup;
 
 public partial class BitChoiceGroupDemo
 {
-    private List<BitChoiceGroupOption> example7Options;
+    private string ChoiceGroupWithOptionTemplateValue;
+    private string ChoiceGroupWithOptionLabelTemplateValue;
+    private string ChoiceGroupOneWayValue;
+    private string ChoiceGroupTwoWayValue;
+    public ChoiceGroupValidationModel ValidationModel = new();
+    public string SuccessMessage;
 
-    /// <summary>
-    /// BitChoiceGroupDemo class constructure
-    /// </summary>
-    public BitChoiceGroupDemo()
-    {
-        example7Options = new()
-        {
-            new BitChoiceGroupOption()
-            {
-               Text = "Option A",
-               Value = "A",
-               OnChange = () => OptionOnChange("A")
-            },
-            new BitChoiceGroupOption()
-            {
-                Text = "Option B",
-                Value = "B",
-                OnChange = () => OptionOnChange("B")
-            },
-            new BitChoiceGroupOption()
-            {
-               Text = "Option C",
-               Value = "C",
-               OnChange = () => OptionOnChange("C")
-            },
-            new BitChoiceGroupOption()
-            {
-               Text = "Option D",
-               Value = "D",
-               OnChange = () => OptionOnChange("D")
-            }
-        };
-    }
-
-    private List<BitChoiceGroupOption> Example1Options { get; set; } = new()
+    private List<BitChoiceGroupOption> ChoiceGroupBasicOption = new()
     {
         new BitChoiceGroupOption()
         {
@@ -66,8 +37,7 @@ public partial class BitChoiceGroupDemo
             Value = "D"
         }
     };
-
-    private List<BitChoiceGroupOption> Example2Options { get; set; } = new()
+    private List<BitChoiceGroupOption> ChoiceGroupWithDisabledOption = new()
     {
         new BitChoiceGroupOption()
         {
@@ -91,8 +61,7 @@ public partial class BitChoiceGroupDemo
             Value = "D"
         }
     };
-
-    private List<BitChoiceGroupOption> Example3Options { get; set; } = new()
+    private List<BitChoiceGroupOption> ChoiceGroupWithImage = new()
     {
         new BitChoiceGroupOption()
         {
@@ -113,8 +82,7 @@ public partial class BitChoiceGroupDemo
             ImageSize = new Size(32, 32)
         }
     };
-
-    private List<BitChoiceGroupOption> Example4Options { get; set; } = new()
+    private List<BitChoiceGroupOption> ChoiceGroupWithIcon = new()
     {
         new BitChoiceGroupOption()
         {
@@ -136,69 +104,60 @@ public partial class BitChoiceGroupDemo
             IsEnabled = false
         }
     };
-
-    private List<BitChoiceGroupOption> Example5Options { get; set; } = new()
+    private List<BitChoiceGroupOption> ChoiceGroupWithOptionTemplate = new()
     {
         new BitChoiceGroupOption()
         {
-            Text = "Option A",
-            Value = "A"
+            Text = "Day",
+            Value = "Day",
+            IconName = BitIconName.CalendarDay
         },
         new BitChoiceGroupOption()
         {
-            Text = "Option B",
-            Value = "B"
+            Text = "Week",
+            Value = "Week",
+            IconName = BitIconName.CalendarWeek
         },
         new BitChoiceGroupOption()
         {
-            Text = "Option C",
-            Value = "C"
-        },
-        new BitChoiceGroupOption()
-        {
-            Text = "Option D",
-            Value = "D"
+            Text = "Month",
+            Value = "Month",
+            IconName = BitIconName.Calendar
         }
     };
-
-    private List<BitChoiceGroupOption> Example6Options { get; set; } = new()
-    {
-        new BitChoiceGroupOption()
-        {
-            Text = "Option A",
-            Value = "A"
-        },
-        new BitChoiceGroupOption()
-        {
-            Text = "Option B",
-            Value = "B"
-        },
-        new BitChoiceGroupOption()
-        {
-            Text = "Option C",
-            Value = "C"
-        },
-        new BitChoiceGroupOption()
-        {
-            Text = "Option D",
-            Value = "D"
-        }
-    };
-
-    public ChoiceGroupValidationModel ValidationModel = new();
-
-    public string SuccessMessage { get; set; } = string.Empty;
-
-    public string OnChangeValue { get; set; } = string.Empty;
 
     private readonly List<ComponentParameter> componentParameters = new()
     {
         new ComponentParameter
         {
-            Name = "Options",
-            Type = "List<BitChoiceGroupOption>",
-            DefaultValue = "new List<BitChoiceGroupOption>()",
-            Description = "List of options, each of which is a selection in the ChoiceGroup."
+            Name = "AriaLabelledBy",
+            Type = "string?",
+            Description = "ID of an element to use as the aria label for this ChoiceGroup."
+        },
+        new ComponentParameter
+        {
+            Name = "DefaultValue",
+            Type = "string?",
+            Description = "Default selected Value for ChoiceGroup."
+        },
+        new ComponentParameter
+        {
+            Name = "IsRequired",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "If true, an option must be selected in the ChoiceGroup."
+        },
+        new ComponentParameter
+        {
+            Name = "Label",
+            Type = "string?",
+            Description = "Descriptive label for the ChoiceGroup."
+        },
+        new ComponentParameter
+        {
+            Name = "LabelTemplate",
+            Type = "RenderFragment?",
+            Description = "Used to customize the label for the ChoiceGroup."
         },
         new ComponentParameter
         {
@@ -209,56 +168,113 @@ public partial class BitChoiceGroupDemo
         },
         new ComponentParameter
         {
-            Name = "DefaultValue",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "Default selected Value for ChoiceGroup."
+            Name = "Options",
+            Type = "List<BitChoiceGroupOption>",
+            DefaultValue = "new List<BitChoiceGroupOption>()",
+            Description = "List of options, each of which is a selection in the ChoiceGroup.",
+            LinkType = LinkType.Link,
+            Href = "#choice-group-option"
         },
         new ComponentParameter
         {
-            Name = "AriaLabelledBy",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "ID of an element to use as the aria label for this ChoiceGroup."
-        },
-        new ComponentParameter
-        {
-            Name = "Label",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "Descriptive label for the ChoiceGroup."
-        },
-        new ComponentParameter
-        {
-            Name = "LabelFragment",
-            Type = "RenderFragment?",
-            DefaultValue = "null",
-            Description = "Used to customize the label for the ChoiceGroup."
+            Name = "OptionTemplate",
+            Type = "RenderFragment<BitChoiceGroupOption>?",
+            Description = "Used to customize the Option for the ChoiceGroup."
         },
         new ComponentParameter()
         {
-            Name = "ValueChanged",
-            Type = "EventCallback<string?>",
-            DefaultValue = "",
-            Description = "Callback for when the option has been changed.",
-        },
-        new ComponentParameter()
+            Name = "OnChange",
+            Type = "EventCallback<BitChoiceGroupOption>",
+            Description = "Callback that is called when the ChoiceGroup value has changed.",
+        }
+    };
+    private readonly List<ComponentSubParameter> componentSubParameters = new()
+    {
+        new ComponentSubParameter()
         {
-            Name = "Value",
-            Type = "string?",
-            DefaultValue = "",
-            Description = "Value of ChoiceGroup, the value of selected ChoiceGroupOption set on it.",
+            Id = "choice-group-option",
+            Title = "BitChoiceGroupOption",
+            Parameters = new List<ComponentParameter>()
+            {
+               new ComponentParameter()
+               {
+                   Name = "AriaLabel",
+                   Type = "string?",
+                   Description = "AriaLabel attribute for the GroupOption Option input.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "IsEnabled",
+                   Type = "bool",
+                   DefaultValue = "true",
+                   Description = "Whether or not the GroupOption Option is enabled.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "IconName",
+                   Type = "BitIconName?",
+                   Description = "The icon to show as Option content.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "ImageSrc",
+                   Type = "string?",
+                   Description = "The image address to show as Option content.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "ImageAlt",
+                   Type = "string?",
+                   Description = "Provides alternative information for the Option image.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "ImageSize",
+                   Type = "Size?",
+                   Description = "Provides Height and Width for the Option image.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "Id",
+                   Type = "string?",
+                   Description = "Set attribute of Id for the GroupOption Option input.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "LabelId",
+                   Type = "string?",
+                   Description = "Set attribute of Id for the GroupOption Option label.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "SelectedImageSrc",
+                   Type = "string?",
+                   Description = "Provides a new image for the selected Option in the Image-GroupOption.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "Text",
+                   Type = "string?",
+                   Description = "Text to show as content of GroupOption Option.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "Value",
+                   Type = "string?",
+                   Description = "This value is returned when GroupOption Option is Clicked.",
+               }
+            }
         }
     };
 
     #region Example Code 1
 
     private readonly string example1HtmlCode = @"
-<BitChoiceGroup Label=""Pick one"" Options=""Example1Options"">
-</BitChoiceGroup>";
+ <BitChoiceGroup Label=""Pick one"" Options=""ChoiceGroupBasicOption"" DefaultValue=""A"" />
+";
 
     private readonly string example1CSharpCode = @"
-public List<BitChoiceGroupOption> Example1Options { get; set; } = new()
+private List<BitChoiceGroupOption> ChoiceGroupBasicOption = new()
 {
     new BitChoiceGroupOption()
     {
@@ -280,15 +296,45 @@ public List<BitChoiceGroupOption> Example1Options { get; set; } = new()
         Text = ""Option D"",
         Value = ""D""
     }
-}; 
+};
 ";
 
     #endregion
 
     #region Example Code 2
 
+    private readonly string example2HtmlCode = @"
+<BitChoiceGroup Label=""Disabled ChoiceGroup"" Options=""ChoiceGroupBasicOption"" IsEnabled=""false"" DefaultValue=""A"" />
+
+<BitChoiceGroup Label=""ChoiceGroup with Disabled Option"" Options=""ChoiceGroupWithDisabledOption"" DefaultValue=""A"" />
+";
+
     private readonly string example2CSharpCode = @"
-public List<BitChoiceGroupOption> Example2Options { get; set; } = new()
+private List<BitChoiceGroupOption> ChoiceGroupBasicOption = new()
+{
+    new BitChoiceGroupOption()
+    {
+        Text = ""Option A"",
+        Value = ""A""
+    },
+    new BitChoiceGroupOption()
+    {
+        Text = ""Option B"",
+        Value = ""B""
+    },
+    new BitChoiceGroupOption()
+    {
+        Text = ""Option C"",
+        Value = ""C""
+    },
+    new BitChoiceGroupOption()
+    {
+        Text = ""Option D"",
+        Value = ""D""
+    }
+};
+
+private List<BitChoiceGroupOption> ChoiceGroupWithDisabledOption = new()
 {
     new BitChoiceGroupOption()
     {
@@ -314,16 +360,16 @@ public List<BitChoiceGroupOption> Example2Options { get; set; } = new()
 };
 ";
 
-    private readonly string example2HtmlCode = @"
-<BitChoiceGroup Label=""Pick one"" Options=""Example2Options"" DefaultValue=""B"">
-</BitChoiceGroup>";
-
     #endregion
 
     #region Example Code 3
 
+    private readonly string example3HtmlCode = @"
+<BitChoiceGroup Label=""Pick one image"" Options=""ChoiceGroupWithImage"" DefaultValue=""Bar"" />
+";
+
     private readonly string example3CSharpCode = @"
-public List<BitChoiceGroupOption> Example3Options { get; set; } = new()
+private List<BitChoiceGroupOption> ChoiceGroupWithImage = new()
 {
     new BitChoiceGroupOption()
     {
@@ -338,7 +384,7 @@ public List<BitChoiceGroupOption> Example3Options { get; set; } = new()
     {
         Text = ""Pie"",
         Value = ""Pie"",
-        ImageSrc = ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-unselected.png"",
+        ImageSrc= ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-unselected.png"",
         SelectedImageSrc = ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-selected.png"",
         ImageAlt = ""alt for Pie image"",
         ImageSize = new Size(32, 32)
@@ -346,16 +392,16 @@ public List<BitChoiceGroupOption> Example3Options { get; set; } = new()
 };
 ";
 
-    private readonly string example3HtmlCode = @"
-<BitChoiceGroup Label=""Pick one image"" Options=""Example3Options"">
-</BitChoiceGroup>";
-
     #endregion
 
     #region Example Code 4
 
+    private readonly string example4HtmlCode = @"
+<BitChoiceGroup Label=""Pick one icon"" Options=""ChoiceGroupWithIcon"" DefaultValue=""Day"" />
+";
+
     private readonly string example4CSharpCode = @"
-public List<BitChoiceGroupOption> Example4Options { get; set; } = new()
+private List<BitChoiceGroupOption> ChoiceGroupWithIcon = new()
 {
     new BitChoiceGroupOption()
     {
@@ -379,53 +425,29 @@ public List<BitChoiceGroupOption> Example4Options { get; set; } = new()
 };
 ";
 
-    private readonly string example4HtmlCode = @"
-<BitChoiceGroup Label=""Pick one icon"" Options=""Example4Options"">
-</BitChoiceGroup>";
-
     #endregion
 
     #region Example Code 5
 
     private readonly string example5HtmlCode = @"
-<BitChoiceGroup Options=""Example5Options"">
-    <LabelFragment>
-        Custom label <BitIconButton IconName= ""BitIconName.Filter""></BitIconButton>
-    </LabelFragment>
-</BitChoiceGroup>";
-
-    private readonly string example5CSharpCode = @"
-public List<BitChoiceGroupOption> Example5Options { get; set; } = new()
-{
-    new BitChoiceGroupOption()
-    {
-        Text = ""Option A"",
-        Value = ""A""
-    },
-    new BitChoiceGroupOption()
-    {
-        Text = ""Option B"",
-        Value = ""B""
-    },
-    new BitChoiceGroupOption()
-    {
-        Text = ""Option C"",
-        Value = ""C""
-    },
-    new BitChoiceGroupOption()
-    {
-        Text = ""Option D"",
-        Value = ""D""
+<style>
+    .custom-label {
+        font-weight: bold;
+        color: red;
     }
-}; 
+</style>
+
+<BitChoiceGroup Options=""ChoiceGroupBasicOption"" DefaultValue=""A"">
+    <LabelTemplate>
+        <div class=""custom-label"">
+            Custom label <BitIcon IconName=""BitIconName.Filter"" />
+        </div>
+    </LabelTemplate>
+</BitChoiceGroup>
 ";
 
-    #endregion
-
-    #region Example Code 6
-
-    private readonly string example6CSharpCode = @"
-public List<BitChoiceGroupOption> Example6Options { get; set; } = new()
+    private readonly string example5CSharpCode = @"
+private List<BitChoiceGroupOption> ChoiceGroupBasicOption = new()
 {
     new BitChoiceGroupOption()
     {
@@ -448,16 +470,172 @@ public List<BitChoiceGroupOption> Example6Options { get; set; } = new()
         Value = ""D""
     }
 };
+";
 
-public ChoiceGroupValidationModel ValidationModel = new();
+    #endregion
 
-public string SuccessMessage { get; set; } = string.Empty;
+    #region Example Code 6
 
+    private readonly string example6HtmlCode = @"
+<style>
+    .custom-option {
+        display: flex;
+        align-items: center;
+        gap: rem(10px);
+        cursor: pointer;
+
+        .option-pointer {
+            width: rem(20px);
+            height: rem(20px);
+            border: 1px solid;
+            border-radius: rem(10px);
+        }
+
+        &:hover {
+            .option-pointer {
+                border-top: rem(5px) solid #C66;
+                border-bottom: rem(5px) solid #6C6;
+                border-left: rem(5px) solid #66C;
+                border-right: rem(5px) solid #CC6;
+            }
+        }
+
+        &.selected-option {
+            color: #C66;
+
+            .option-pointer {
+                border-top: rem(10px) solid #C66;
+                border-bottom: rem(10px) solid #6C6;
+                border-left: rem(10px) solid #66C;
+                border-right: rem(10px) solid #CC6;
+            }
+        }
+    }
+</style>
+
+<BitChoiceGroup Label=""Pick one"" Options=""ChoiceGroupWithOptionTemplate"" @bind-Value=""ChoiceGroupWithOptionTemplateValue"" DefaultValue=""Day"">
+    <OptionTemplate Context=""option"">
+        <div class=""custom-option @(ChoiceGroupWithOptionTemplateValue == option.Value ? ""selected-option"" : """")"">
+            <div class=""option-pointer""></div>
+            <BitIcon IconName=""@option.IconName.Value"" />
+            <span>@option.Text</span>
+        </div>
+    </OptionTemplate>
+</BitChoiceGroup>
+
+<BitChoiceGroup Label=""Option Label Template"" Options=""ChoiceGroupWithOptionTemplate"" @bind-Value=""ChoiceGroupWithOptionLabelTemplateValue"" DefaultValue=""Day"">
+    <OptionLabelTemplate Context=""option"">
+        <div style=""margin-left: 27px;"" class=""custom-option @(ChoiceGroupWithOptionLabelTemplateValue == option.Value ? ""selected-option"" : """")"">
+            <BitIcon IconName=""@option.IconName.Value"" />
+            <span>@option.Text</span>
+        </div>
+    </OptionLabelTemplate>
+</BitChoiceGroup>
+";
+
+    private readonly string example6CSharpCode = @"
+private string ChoiceGroupWithOptionTemplateValue;
+
+private string ChoiceGroupWithOptionLabelTemplateValue;
+
+private List<BitChoiceGroupOption> ChoiceGroupWithOptionTemplate = new()
+{
+    new BitChoiceGroupOption()
+    {
+        Text = ""Day"",
+        Value = ""Day"",
+        IconName = BitIconName.CalendarDay
+    },
+    new BitChoiceGroupOption()
+    {
+        Text = ""Week"",
+        Value = ""Week"",
+        IconName = BitIconName.CalendarWeek
+    },
+    new BitChoiceGroupOption()
+    {
+        Text = ""Month"",
+        Value = ""Month"",
+        IconName = BitIconName.Calendar
+    }
+};
+";
+
+    #endregion
+
+    #region Example Code 7
+
+    private readonly string example7HtmlCode = @"
+<BitChoiceGroup Label=""One-way"" Options=""ChoiceGroupBasicOption"" Value=""@ChoiceGroupOneWayValue"" DefaultValue=""A"" />
+
+<BitChoiceGroup Label=""Two-way"" Options=""ChoiceGroupBasicOption"" @bind-Value=""ChoiceGroupTwoWayValue"" DefaultValue=""A"" />
+";
+
+    private readonly string example7CSharpCode = @"
+private string ChoiceGroupOneWayValue;
+private string ChoiceGroupTwoWayValue;
+
+private List<BitChoiceGroupOption> ChoiceGroupBasicOption = new()
+{
+    new BitChoiceGroupOption()
+    {
+        Text = ""Option A"",
+        Value = ""A""
+    },
+    new BitChoiceGroupOption()
+    {
+        Text = ""Option B"",
+        Value = ""B""
+    },
+    new BitChoiceGroupOption()
+    {
+        Text = ""Option C"",
+        Value = ""C""
+    },
+    new BitChoiceGroupOption()
+    {
+        Text = ""Option D"",
+        Value = ""D""
+    }
+};
+";
+
+    #endregion
+
+    #region Example Code 8
+
+    private readonly string example8HtmlCode = @"
+@if (string.IsNullOrEmpty(SuccessMessage))
+{
+    <EditForm Model=""@ValidationModel"" OnValidSubmit=""@HandleValidSubmit"" OnInvalidSubmit=""@HandleInvalidSubmit"">
+        <DataAnnotationsValidator />
+        <div class=""validation-summary"">
+            <ValidationSummary />
+        </div>
+        <div>
+            <BitChoiceGroup Options=""ChoiceGroupBasicOption"" @bind-Value=""ValidationModel.Value"" />
+            <ValidationMessage For=""@(() => ValidationModel.Value)"" />
+        </div>
+        <BitButton Style=""margin-top: 10px;"" ButtonType=""BitButtonType.Submit"">Submit</BitButton>
+    </EditForm>
+}
+else
+{
+    <BitMessageBar MessageBarType=""BitMessageBarType.Success"" IsMultiline=""false"">
+        @SuccessMessage
+    </BitMessageBar>
+}
+";
+
+    private readonly string example8CSharpCode = @"
 public class ChoiceGroupValidationModel
 {
     [Required(ErrorMessage = ""Pick one"")]
     public string Value { get; set; }
 }
+
+public ChoiceGroupValidationModel ValidationModel = new();
+public string SuccessMessage;
 
 private async Task HandleValidSubmit()
 {
@@ -473,133 +651,6 @@ private void HandleInvalidSubmit()
 }
 ";
 
-    private readonly string example6HtmlCode = @"
-@if (string.IsNullOrEmpty(SuccessMessage))
-{
-    <EditForm Model=""@ValidationModel"" OnValidSubmit=""@HandleValidSubmit"" OnInvalidSubmit=""@HandleInvalidSubmit"">
-        <DataAnnotationsValidator />
-        <div class=""validation-summary"">
-            <ValidationSummary />
-        </div>
-        <div>
-            <BitChoiceGroup Options = ""Example1Options"" @bind-Value=""ValidationModel.Value"">
-            </BitChoiceGroup>
-            <ValidationMessage For = ""@(() => ValidationModel.Value)"" />
-        </div>
-        <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
-    </EditForm>
-}
-else
-{
-    <BitMessageBar MessageBarType = ""BitMessageBarType.Success"" IsMultiline=""false"">
-        @SuccessMessage
-    </BitMessageBar>
-}";
-
-    #endregion
-
-    #region Example Code 7
-
-    private readonly string example7CSharpCode = @"
-private List<BitChoiceGroupOption> example7Options;
-
-/// <summary>
-/// class constructure
-/// </summary>
-public BitChoiceGroupDemo()
-{
-    example7Options = new()
-    {
-        new BitChoiceGroupOption()
-        {
-            Text = ""Option A"",
-            Value = ""A"",
-            OnChange = () => OptionOnChange(""A"")
-        },
-        new BitChoiceGroupOption()
-        {
-            Text = ""Option B"",
-            Value = ""B"",
-            OnChange = () => OptionOnChange(""B"")
-        },
-        new BitChoiceGroupOption()
-        {
-            Text = ""Option C"",
-            Value = ""C"",
-            OnChange = () => OptionOnChange(""C"")
-        },
-        new BitChoiceGroupOption()
-        {
-            Text = ""Option D"",
-            Value = ""D"",
-            OnChange = () => OptionOnChange(""D"")
-        }
-    };
-}
-
-private void OptionOnChange(string value)
-{
-    OnChangeValue = value;
-    StateHasChanged();
-}
-";
-
-    private readonly string example7HtmlCode = @"
-<BitChoiceGroup Label=""Pick one"" Options=""example7Options"">
-</BitChoiceGroup>";
-
-    #endregion
-
-    #region Example Code 8
-
-    private readonly string example8CSharpCode = @"
-public static RenderFragment<BitChoiceGroupOption> LabelTemplateSample { get; set; }
-
-private List<BitChoiceGroupOption> Example8Options { get; set; } = new()
-{
-    new BitChoiceGroupOption()
-    {
-        Value = ""A"",
-        Text = ""Option A"",
-        LabelTemplate = LabelTemplateSample
-    },
-    new BitChoiceGroupOption()
-    {
-        Value = ""B"",
-        Text = ""Option B"",
-        LabelTemplate = LabelTemplateSample
-    },
-    new BitChoiceGroupOption()
-    {
-        Value = ""C"",
-        Text = ""Option C"",
-        LabelTemplate = LabelTemplateSample
-    },
-    new BitChoiceGroupOption()
-    {
-        Value = ""D"",
-        Text = ""Option D"",
-        LabelTemplate = LabelTemplateSample
-    }
-};
-
-protected override void OnInitialized()
-{
-    LabelTemplateSample = (option) => (
-        @<div style=""border: 1px solid;"">
-            <input type=""radio"" name=""input-name"" id=""input-id-@option.Value"">
-            <label for=""input-id-@option.Value"">@option.Text</label>
-        </div>
-    );
-
-    base.OnInitialized();
-}
-";
-
-    private readonly string example8HtmlCode = @"
-<BitChoiceGroup Label=""Pick one"" Options=""example8Options"">
-</BitChoiceGroup>";
-
     #endregion
 
     private async Task HandleValidSubmit()
@@ -613,11 +664,5 @@ protected override void OnInitialized()
     private void HandleInvalidSubmit()
     {
         SuccessMessage = string.Empty;
-    }
-
-    private void OptionOnChange(string value)
-    {
-        OnChangeValue = value;
-        StateHasChanged();
     }
 }

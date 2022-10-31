@@ -1,0 +1,29 @@
+﻿@page "/admin-panel/getting-started"
+
+<div class="page-container">
+    <h1 class="page-main-title">Getting started</h1>
+    <div class="page-desc">
+        Install the necessary packages to start building with the Bit AdminPanel.
+    </div>
+    <section class="section-card">
+        <h2 class="section-card-title">Create project</h2>
+        <div class="section-card-txt">
+            1. Install the AdminPanel Template from the NuGet package manager.
+        </div>
+        <div class="code-box">dotnet new install Bit.AdminPanel</div>
+        <div class="section-card-txt">
+            2. Create a new project using the Template installed
+        </div>
+        <div class="code-box">dotnet new bit-admin</div>
+        <div class="section-card-txt">
+            Or create a new project with the Visual Studio.
+        </div>
+        <div class="image-container">
+            <img class="image" alt="Create new project" width="1265" height="834" src="/images/demo/create-project-admin.webp" />
+        </div>
+        <div class="section-card-txt"><span class="bold-txt">Note</span>: By default, the current folder name will be considered as the solution name. If you want to choose another name, use the switch -n as below.</div>
+        <div class="code-box">dotnet new Bit.AdminPanel -n [YourSolutionName]</div>
+    </section>
+</div>
+
+<NavigationButtons Prev="Development prerequisites" PrevUrl="/admin-panel/development-prerequisites" Next="Database" NextUrl="/admin-panel/database" />

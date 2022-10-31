@@ -1,16 +1,134 @@
-﻿<header class="header">
-    <div class="header-content-container">
-        <div class="header-content">
-            @if (CurrentUrl != "/")
+﻿<header class="main-header @((CurrentUrl.Contains("todo-template") is false && CurrentUrl.Contains("admin-panel") is false) ? "main-header--full-page" : null)">
+    <div class="header-main-container">
+        <div class="header-content-container">
+            @if (CurrentUrl.Contains("todo-template") || CurrentUrl.Contains("admin-panel"))
             {
                 <BitIconButton Class="header-menu-btn" IconName=BitIconName.CollapseMenu OnClick=@ToggleMenu AriaLabel="Header menu button" />
             }
-            <a class="header-logo" href="/"></a>
+            <a class="header-logo" href="@Urls.HomePage" aria-label="Home page" />
+            <a class="header-link @(CurrentUrl == Urls.HomePage ? "header-link--active" : null)" href="@Urls.HomePage">Home</a>
+            <div class="header-link header-ps-btn @(IsProductsServicesActive() ? "header-link--active" : null)">
+                Products & Services
+                <div class="header-menu-popup">
+                    <div class="col">
+                        <div class="col-header">Products</div>
+                        <a class="menu-item" href="@Urls.TodoTemplate">
+                            <span class="menu-item-icon todo-item"></span>
+                            <div class="menu-item-content">
+                                <div class="item-title">TodoTemplate</div>
+                                <div class="item-desc">Simple project template</div>
+                            </div>
+                        </a>
+                        <a class="menu-item" href="@Urls.AdminPanel">
+                            <span class="menu-item-icon admin-item"></span>
+                            <div class="menu-item-content">
+                                <div class="item-title">AdminPanel</div>
+                                <div class="item-desc">Admin & dashboard project template</div>
+                            </div>
+                        </a>
+                        <a class="menu-item" href="@Urls.Components">
+                            <span class="menu-item-icon components-item"></span>
+                            <div class="menu-item-content">
+                                <div class="item-title">BlazorUI</div>
+                                <div class="item-desc">Native Blazor UI components</div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col">
+                        <div class="col-header">Services</div>
+                        <a class="menu-item menu-item--disabled">
+                            <span class="menu-item-icon cloud-item"></span>
+                            <div class="menu-item-content">
+                                <div class="item-title">Cloud hosting solutions</div>
+                                <div class="item-desc">Comming soon</div>
+                            </div>
+                        </a>
+                        <a class="menu-item menu-item--disabled">
+                            <span class="menu-item-icon academy-item"></span>
+                            <div class="menu-item-content">
+                                <div class="item-title">Bit academy</div>
+                                <div class="item-desc">Comming soon</div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <a class="header-link @(CurrentUrl == Urls.Pricing ? "header-link--active" : null)" href="@Urls.Pricing">Pricing</a>
+            @* <a class="header-link @(CurrentUrl == Urls.Blogs ? "header-link--active" : null)" href="@Urls.Blogs">Blogs</a>
+            <a class="header-link @(CurrentUrl == Urls.Videos ? "header-link--active" : null)" href="@Urls.Videos">Videos</a>*@
+            <a class="header-link @(CurrentUrl == Urls.AboutUs ? "header-link--active" : null)" href="@Urls.AboutUs">About</a>
+            <a class="header-link @(CurrentUrl == Urls.ContactUs ? "header-link--active" : null)" href="@Urls.ContactUs">Contact us</a>
         </div>
-        <div class="header-content">
-            <BitLink Href="/" Class="@GetHeaderLinkClass("Home")">Home</BitLink>
-            <BitLink Href="/todo-template/overview" Class="@GetHeaderLinkClass("Templates")">Templates</BitLink>
-            <a href="https://github.com/bitfoundation/bitplatform" target="_blank" class="header-github-link"></a>
-        </div>
+        <a class="github-btn" aria-label="Github repository" href="@Urls.GithubRepo" target="_blank">
+            <img class="github-icon" src='/images/github-icon.svg' alt="github repo" />
+            <img src="https://img.shields.io/github/stars/bitfoundation/bitplatform.svg" alt="github stars" />
+        </a>
+    </div>
+
+    <div class="header-second-row">
+        <BitActionButton Class="header-action-button"
+                         IconName="BitIconName.ChevronDown"
+                         OnClick=@ToggleHeaderMenu>@GetActiveRouteName()</BitActionButton>
     </div>
 </header>
+
+@if (IsHeaderMenuOpen)
+{
+    <nav class="header-nav">
+        <BitIconButton Class="header-nav-close-btn"
+                   IconName=BitIconName.Cancel
+                   OnClick=@ToggleHeaderMenu />
+        <a class="header-nav-link @(CurrentUrl == Urls.HomePage ? "header-nav-link--active" : null)" href="@Urls.HomePage" @onclick=@ToggleHeaderMenu>Home</a>
+        <div class="header-nav-link header-ps-btn @(IsProductsServicesActive() ? "header-nav-link--active" : null)">
+            Products & Services
+            <div class="header-menu-popup">
+                <div class="col">
+                    <div class="col-header">Products</div>
+                    <a class="menu-item" href="@Urls.TodoTemplate" @onclick=@ToggleHeaderMenu>
+                        <span class="menu-item-icon todo-item"></span>
+                        <div class="menu-item-content">
+                            <div class="item-title">TodoTemplate</div>
+                            <div class="item-desc">Simple project template</div>
+                        </div>
+                    </a>
+                    <a class="menu-item" href="@Urls.AdminPanel" @onclick=@ToggleHeaderMenu>
+                        <span class="menu-item-icon admin-item"></span>
+                        <div class="menu-item-content">
+                            <div class="item-title">AdminPanel</div>
+                            <div class="item-desc">Admin & dashboard project template</div>
+                        </div>
+                    </a>
+                    <a class="menu-item" href="@Urls.Components" @onclick=@ToggleHeaderMenu>
+                        <span class="menu-item-icon components-item"></span>
+                        <div class="menu-item-content">
+                            <div class="item-title">BlazorUI</div>
+                            <div class="item-desc">Native Blazor UI components</div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col">
+                    <div class="col-header">Services</div>
+                    <a class="menu-item menu-item--disabled">
+                        <span class="menu-item-icon cloud-item"></span>
+                        <div class="menu-item-content">
+                            <div class="item-title">Cloud hosting solutions</div>
+                            <div class="item-desc">Comming soon</div>
+                        </div>
+                    </a>
+                    <a class="menu-item menu-item--disabled">
+                        <span class="menu-item-icon academy-item"></span>
+                        <div class="menu-item-content">
+                            <div class="item-title">Bit academy</div>
+                            <div class="item-desc">Comming soon</div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <a class="header-nav-link @(CurrentUrl == Urls.Pricing ? "header-nav-link--active" : null)" href="@Urls.Pricing" @onclick=@ToggleHeaderMenu>Pricing</a>
+        @*<a class="header-nav-link @(CurrentUrl == Urls.Blogs ? "header-nav-link--active" : null)" href="@Urls.Blogs" @onclick=@ToggleHeaderMenu>Blogs</a>
+    <a class="header-nav-link @(CurrentUrl == Urls.Videos ? "header-nav-link--active" : null)" href="@Urls.Videos" @onclick=@ToggleHeaderMenu>Videos</a>*@
+        <a class="header-nav-link @(CurrentUrl == Urls.AboutUs ? "header-nav-link--active" : null)" href="@Urls.AboutUs" @onclick=@ToggleHeaderMenu>About</a>
+        <a class="header-nav-link @(CurrentUrl == Urls.ContactUs ? "header-nav-link--active" : null)" href="@Urls.ContactUs" @onclick=@ToggleHeaderMenu>Contact us</a>
+    </nav>
+}

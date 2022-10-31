@@ -10,33 +10,12 @@ namespace Bit.BlazorUI;
 
 public partial class BitChoiceGroup
 {
-    private bool isRequired;
+    private bool _isRequired;
 
     /// <summary>
-    /// If true, an option must be selected in the ChoiceGroup.
+    /// ID of an element to use as the aria label for this ChoiceGroup.
     /// </summary>
-    [Parameter]
-    public bool IsRequired
-    {
-        get => isRequired;
-        set
-        {
-            isRequired = value;
-            ClassBuilder.Reset();
-        }
-    }
-
-    /// <summary>
-    /// List of options, each of which is a selection in the ChoiceGroup.
-    /// </summary>
-#pragma warning disable CA2227 // Collection properties should be read only
-    [Parameter] public IList<BitChoiceGroupOption> Options { get; set; } = new List<BitChoiceGroupOption>();
-#pragma warning restore CA2227 // Collection properties should be read only
-
-    /// <summary>
-    /// Name of ChoiceGroup, this name is used to group each option into the same logical ChoiceGroup.
-    /// </summary>
-    [Parameter] public string Name { get; set; } = Guid.NewGuid().ToString();
+    [Parameter] public string? AriaLabelledBy { get; set; }
 
     /// <summary>
     /// Default selected key for ChoiceGroup.
@@ -44,9 +23,18 @@ public partial class BitChoiceGroup
     [Parameter] public string? DefaultValue { get; set; }
 
     /// <summary>
-    /// ID of an element to use as the aria label for this ChoiceGroup.
+    /// If true, an option must be selected in the ChoiceGroup.
     /// </summary>
-    [Parameter] public string? AriaLabelledBy { get; set; }
+    [Parameter]
+    public bool IsRequired
+    {
+        get => _isRequired;
+        set
+        {
+            _isRequired = value;
+            ClassBuilder.Reset();
+        }
+    }
 
     /// <summary>
     /// Descriptive label for the ChoiceGroup.
@@ -56,7 +44,29 @@ public partial class BitChoiceGroup
     /// <summary>
     /// Used to customize the label for the ChoiceGroup.
     /// </summary>
-    [Parameter] public RenderFragment? LabelFragment { get; set; }
+    [Parameter] public RenderFragment? LabelTemplate { get; set; }
+
+    /// <summary>
+    /// Name of ChoiceGroup, this name is used to group each option into the same logical ChoiceGroup.
+    /// </summary>
+    [Parameter] public string Name { get; set; } = Guid.NewGuid().ToString();
+
+    /// <summary>
+    /// List of options, each of which is a selection in the ChoiceGroup.
+    /// </summary>
+    [Parameter] public IEnumerable<BitChoiceGroupOption> Options { get; set; } = new List<BitChoiceGroupOption>();
+
+    /// <summary>
+    /// Used to customize the Option for the ChoiceGroup.
+    /// </summary>
+    [Parameter] public RenderFragment<BitChoiceGroupOption>? OptionTemplate { get; set; }
+
+    [Parameter] public RenderFragment<BitChoiceGroupOption>? OptionLabelTemplate { get; set; }
+
+    /// <summary>
+    /// Callback that is called when the ChoiceGroup value has changed.
+    /// </summary>
+    [Parameter] public EventCallback<BitChoiceGroupOption> OnChange { get; set; }
 
     protected override string RootElementClass => "bit-chg";
 
@@ -76,6 +86,8 @@ public partial class BitChoiceGroup
             CurrentValue = DefaultValue;
         }
 
+        OnValueChanging += HandleOnValueChanging;
+
         await base.OnInitializedAsync();
     }
 
@@ -85,9 +97,6 @@ public partial class BitChoiceGroup
 
     private string GetOptionInputId(BitChoiceGroupOption option) =>
         option.Id ?? $"ChoiceGroupOptionInput{UniqueId}-{option.Value}";
-
-    private string GetOptionLabelId(BitChoiceGroupOption option) =>
-        option.LabelId ?? $"ChoiceGroupOptionLabel{UniqueId}-{option.Value}";
 
     private string GetOptionAriaLabel(BitChoiceGroupOption option) =>
       option.AriaLabel ?? AriaLabel ?? string.Empty;
@@ -100,8 +109,8 @@ public partial class BitChoiceGroup
         ? option.SelectedImageSrc
         : option.ImageSrc;
 
-    private static string GetOptionLabelClassName(BitChoiceGroupOption option) =>
-        option.ImageSrc.HasValue() || option.IconName is not null
+    private string GetOptionLabelClassName(BitChoiceGroupOption option) =>
+        (option.ImageSrc.HasValue() || option.IconName is not null) && OptionLabelTemplate is null
         ? "bit-chgo-lbl-with-img"
         : "bit-chgo-lbl";
 
@@ -114,13 +123,24 @@ public partial class BitChoiceGroup
         const string itemRootElementClass = "bit-chgo";
         StringBuilder cssClass = new(itemRootElementClass);
 
+        if (OptionTemplate is not null) return cssClass.ToString();
+
+        if (GetOptionIsChecked(option))
+        {
+            cssClass
+                .Append(' ')
+                .Append(itemRootElementClass)
+                .Append("-checked");
+        }
+
+        if (OptionLabelTemplate is not null) return cssClass.ToString();
+
         if (option.IsEnabled is false || IsEnabled is false)
         {
             cssClass
                .Append(' ')
                .Append(itemRootElementClass)
-               .Append("-disabled-")
-               .Append(VisualClassRegistrar());
+               .Append("-disabled");
         }
 
         if (option.ImageSrc.HasValue() || option.IconName is not null)
@@ -128,31 +148,37 @@ public partial class BitChoiceGroup
             cssClass
                 .Append(' ')
                 .Append(itemRootElementClass)
-                .Append("-with-img-")
-                .Append(VisualClassRegistrar());
-        }
-
-        if (GetOptionIsChecked(option))
-        {
-            cssClass
-                .Append(' ')
-                .Append(itemRootElementClass)
-                .Append("-checked-")
-                .Append(VisualClassRegistrar());
+                .Append("-with-img");
         }
 
         return cssClass.ToString();
     }
 
-    private void HandleOptionChange(BitChoiceGroupOption option)
+    private async void HandleOptionChange(BitChoiceGroupOption option)
     {
         if (option.IsEnabled is false || IsEnabled is false) return;
 
+        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+
         CurrentValue = option.Value;
 
-        if (option.OnChange is not null)
+        await OnChange.InvokeAsync(option);
+    }
+
+    private void HandleOnValueChanging(object? sender, ValueChangingEventArgs<string?> args)
+    {
+        var option = Options.FirstOrDefault(i => i.Value == args.Value);
+
+        if (option is null)
         {
-            option.OnChange.Invoke();
+            args.ShouldChange = false;
+
+            CurrentValue = null;
+
+            if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+            if (Value == args.Value) return;
+
+            _ = ValueChanged.InvokeAsync(Value);
         }
     }
 

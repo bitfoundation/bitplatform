@@ -5,10 +5,10 @@ namespace Microsoft.JSInterop;
 
 public static class WebSiteJsRuntimeExtension
 {
-    //public static async Task SetToggleBodyOverflow(this IJSRuntime jsRuntime, bool isNavOpen)
-    //{
-    //    await jsRuntime.InvokeVoidAsync("toggleBodyOverflow", isNavOpen);
-    //}
+    public static async Task SetToggleBodyOverflow(this IJSRuntime jsRuntime, bool isNavOpen)
+    {
+        await jsRuntime.InvokeVoidAsync("toggleBodyOverflow", isNavOpen);
+    }
 
     //public static async Task ScrollToElement(this IJSRuntime jsRuntime, string targetElementId)
     //{
@@ -28,5 +28,10 @@ public static class WebSiteJsRuntimeExtension
     public static async Task RegisterOnScrollToChangeGettingStartedSideRailStyle(this IJSRuntime jsRuntime, ElementReference element)
     {
         await jsRuntime.InvokeVoidAsync("RegisterOnScrollToChangeGettingStartedSideRailStyle", element);
+    }
+    
+    public static async Task InitTrustPilot(this IJSRuntime jsRuntime)
+    {
+        await jsRuntime.InvokeVoidAsync("initTrustPilot");
     }
 }

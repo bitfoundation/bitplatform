@@ -3,33 +3,29 @@
 
 <div class="page-container">
     <h1 class="page-main-title">TodoTemplate</h1>
-    <div class="page-desc">
-        The TodoTemplate is a project template that includes work packages and actions that you know you will frequently apply to various projects.
-        This document aimed to create and run a Bit-Platform (Bit) project in a short period. It is assumed that you, as the developer, are familiar with the <a href="todo-template/development-prerequisites">development prerequisites</a>.
-        <br />Here you can see the demos of the TodoTemplate in different platforms:
-    </div>
-    <div class="demo-card-group">
-        <a class="demo-card" href="https://todo-app.bitplatform.dev/" target="_blank" title="PWA">
-            <span class="demo-logo pwa" />
-            PWA
-        </a>
-        <a class="demo-card" href="https://install.appcenter.ms/orgs/bitfoundation/apps/todo/distribution_groups/testers" target="_blank" title="App center">
-            <span class="demo-logo app-center" />
-            App center
-        </a>
-        <a class="demo-card" href="https://www.nuget.org/packages/Bit.TodoTemplate/" target="_blank" title="Nuget">
-            <span class="demo-logo nuget" />
-            Nuget
-        </a>
-        <a class="demo-card" href="https://www.figma.com/file/PHDEnipl4PCWIoh5dCRpLd/Todo-Template?node-id=2022%3A5223" target="_blank" title="Figma">
-            <span class="demo-logo figma" />
-            Figma
-        </a>
-        <a class="demo-card" href="https://todo.bitplatform.dev/" target="_blank" title="SPA">
-            <span class="demo-logo spa" />
-            SPA
-        </a>
+    <div class="page-flex-container">
+        <div class="page-conent-container">
+            <div class="image-container">
+                <img class="template-img" src="/images/templates/todo-template.webp" alt="TodoTemplate" />
+                <a class="preview-btn-shadow" href="@Urls.TodoTemplateSSR" target="_blank">
+                    <div class="preview-btn">Demo</div>
+                </a>
+            </div>
+            <div class="content-title">Description</div>
+            <div>
+                The TodoTemplate is a project template that includes work packages and actions that you know you will frequently apply to various projects.
+                This document aimed to create and run a Bit Platform todo project in a short period.
+            </div>
+        </div>
+
+        <div class="page-conent-container">
+            <a class="primary-btn" href="@Urls.TodoTemplateSSR" target="_blank" title="SPA">SSR enabled Demo</a>
+            <a class="primary-btn" href="@Urls.TodoTemplatePWA" target="_blank" title="PWA">PWA Demo</a>
+            <a class="secondary-btn" href="@Urls.TodoTemplateAppCenter" target="_blank" title="App center"><span class="btn-img app-center"></span>Android Demo</a>
+            <a class="secondary-btn" href="@Urls.TodoTemplateNuget" target="_blank" title="Nuget"><span class="btn-img nuget"></span>Nuget</a>
+            <a class="secondary-btn" href="@Urls.TodoTemplateFigma" target="_blank" title="Figma"><span class="btn-img figma"></span>Figma</a>
+        </div>
     </div>
 </div>
 
-<NavigationButtons Prev="" Next="Development prerequisites" NextUrl="/todo-template/development-prerequisites" />
+<NavigationButtons Next="Development prerequisites" NextUrl="/todo-template/development-prerequisites" />

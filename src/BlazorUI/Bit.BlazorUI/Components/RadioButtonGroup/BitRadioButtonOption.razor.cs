@@ -1,56 +1,19 @@
-﻿using System;
-using System.Drawing;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
+﻿using System.Drawing;
 
 namespace Bit.BlazorUI;
 
 public partial class BitRadioButtonOption : IDisposable
 {
     private bool isChecked;
-    private string? imageSizeStyle;
+    private string? _imageSizeStyle;
+    public string _inputId = default!;
+    public string _textId = default!;
     private bool IsCheckedHasBeenSet;
 
     /// <summary>
-    /// RadioButtonOption content, It can be a text
+    /// Used to customize the label for the RadioButtonOption.
     /// </summary>
-    [Parameter] public string? Text { get; set; }
-
-    /// <summary>
-    /// Icon to display with this option.
-    /// </summary>
-    [Parameter] public BitIconName? IconName { get; set; }
-
-    /// <summary>
-    /// Image src to display with this option.
-    /// </summary>
-    [Parameter] public string? ImageSrc { get; set; }
-
-    /// <summary>
-    /// The src of image for choice field which is selected.
-    /// </summary>
-    [Parameter] public string? SelectedImageSrc { get; set; }
-
-    /// <summary>
-    /// Alt text if the option is an image. default is an empty string
-    /// </summary>
-    [Parameter] public string? ImageAlt { get; set; }
-
-    /// <summary>
-    /// The width and height of the image in px for choice field.
-    /// </summary>
-    [Parameter] public Size? ImageSize { get; set; }
-
-    /// <summary>
-    /// This value is used to group each RadioButtonGroupOption into the same logical RadioButtonGroup
-    /// </summary>
-    [Parameter] public string? Name { get; set; }
-
-    /// <summary>
-    /// Value of selected RadioButtonOption
-    /// </summary>
-    [Parameter] public string? Value { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
     /// Whether or not the option is checked
@@ -74,6 +37,46 @@ public partial class BitRadioButtonOption : IDisposable
     [Parameter] public EventCallback<bool> IsCheckedChanged { get; set; }
 
     /// <summary>
+    /// Icon to display with this option.
+    /// </summary>
+    [Parameter] public BitIconName? IconName { get; set; }
+
+    /// <summary>
+    /// Image src to display with this option.
+    /// </summary>
+    [Parameter] public string? ImageSrc { get; set; }
+
+    /// <summary>
+    /// Alt text if the option is an image. default is an empty string
+    /// </summary>
+    [Parameter] public string? ImageAlt { get; set; }
+
+    /// <summary>
+    /// The width and height of the image in px for choice field.
+    /// </summary>
+    [Parameter] public Size? ImageSize { get; set; }
+
+    /// <summary>
+    /// This value is used to group each RadioButtonGroupOption into the same logical RadioButtonGroup
+    /// </summary>
+    [Parameter] public string? Name { get; set; }
+
+    /// <summary>
+    /// RadioButtonOption content, It can be a text
+    /// </summary>
+    [Parameter] public string? Text { get; set; }
+
+    /// <summary>
+    /// The src of image for choice field which is selected.
+    /// </summary>
+    [Parameter] public string? SelectedImageSrc { get; set; }
+
+    /// <summary>
+    /// Value of selected RadioButtonOption
+    /// </summary>
+    [Parameter] public string? Value { get; set; }
+
+    /// <summary>
     /// Callback for when the RadioButtonOption clicked
     /// </summary>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
@@ -84,9 +87,6 @@ public partial class BitRadioButtonOption : IDisposable
     [Parameter] public EventCallback<bool> OnChange { get; set; }
 
     [CascadingParameter] protected BitRadioButtonGroup? RadioButtonGroup { get; set; }
-
-    public string InputId { get; set; } = string.Empty;
-    public string TextId { get; set; } = string.Empty;
 
     protected override Task OnInitializedAsync()
     {
@@ -99,8 +99,8 @@ public partial class BitRadioButtonOption : IDisposable
 
             RadioButtonGroup.RegisterOption(this);
 
-            InputId = $"RadioButtonGroup{RadioButtonGroup.UniqueId}-{Value}";
-            TextId = $"RadioButtonGroupLabel{RadioButtonGroup.UniqueId}-{Value}";
+            _inputId = $"RadioButtonGroup{RadioButtonGroup.UniqueId}-{Value}";
+            _textId = $"RadioButtonGroupLabel{RadioButtonGroup.UniqueId}-{Value}";
         }
 
         return base.OnInitializedAsync();
@@ -110,7 +110,7 @@ public partial class BitRadioButtonOption : IDisposable
     {
         if (ImageSize is not null)
         {
-            imageSizeStyle = $" width:{ImageSize.Value.Width}px; height:{ImageSize.Value.Height}px;";
+            _imageSizeStyle = $" width:{ImageSize.Value.Width}px; height:{ImageSize.Value.Height}px;";
         }
 
         return base.OnParametersSetAsync();
@@ -120,7 +120,7 @@ public partial class BitRadioButtonOption : IDisposable
 
     protected override void RegisterComponentClasses()
     {
-        ClassBuilder.Register(() => ImageSrc.HasValue() || IconName.HasValue
+        ClassBuilder.Register(() => (ImageSrc.HasValue() || IconName.HasValue) && ChildContent is null
                                  ? $"{RootElementClass}-with-img-{VisualClassRegistrar()}" : string.Empty);
 
         ClassBuilder.Register(() => IsChecked
@@ -141,7 +141,7 @@ public partial class BitRadioButtonOption : IDisposable
 
     private string GetLabelClassNameStr()
     {
-        var className = ImageSrc.HasValue() || IconName.HasValue ? "bit-rbo-lbl-with-img" : "bit-rbo-lbl";
+        var className = (ImageSrc.HasValue() || IconName.HasValue) && ChildContent is null ? "bit-rbo-lbl-with-img" : "bit-rbo-lbl";
         return className;
     }
 

@@ -17,15 +17,20 @@
                            Style="max-width: 300px"
                            AriaLabel="Select a date"
                            Placeholder="Select a date..." />
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Disabled BitDatePicker with label" HTMLSourceCode="@example3HTMLCode" ExampleId="example3">
+        <ExamplePreview>
             <BitDatePicker IsEnabled=false
                            Style="max-width: 300px"
-                           Label="Disabled (with label)"
+                           Label="Start date"
                            AriaLabel="Select a date"
                            Placeholder="Select a date..." />
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BitDatePicker with week numbers" HTMLSourceCode="@example3HTMLCode" ExampleId="example3">
+    <ComponentExampleBox Title="BitDatePicker with week numbers" HTMLSourceCode="@example4HTMLCode" ExampleId="example4">
         <ExamplePreview>
             <BitDatePicker Style="max-width: 300px"
                            ShowWeekNumbers=true
@@ -35,7 +40,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Required BitDatePicker" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
+    <ComponentExampleBox Title="Required BitDatePicker" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
         <ExamplePreview>
             <div class="example-desc">Validation will happen when the <code>Submit</code> button is clicked.</div>
             @if (string.IsNullOrEmpty(SuccessMessage))
@@ -70,7 +75,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BitDatePicker allowing text input" HTMLSourceCode="@example5HTMLCode" ExampleId="example5">
+    <ComponentExampleBox Title="BitDatePicker allowing text input" HTMLSourceCode="@example6HTMLCode" ExampleId="example6">
         <ExamplePreview>
             <div class="example-desc">
                 The input field will open the BitDatePicker, and clicking the field again will dismiss the BitDatePicker and
@@ -78,30 +83,49 @@
             </div>
             <BitDatePicker Style="max-width: 300px"
                            AllowTextInput=true
+                           HighlightSelectedMonth=true
                            Label="Start date"
                            AriaLabel="Select a date" />
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BitDatePicker with custom date formatting" HTMLSourceCode="@example6HTMLCode" ExampleId="example6">
+    <ComponentExampleBox Title="BitDatePicker with custom date formatting" HTMLSourceCode="@example7HTMLCode" ExampleId="example7">
         <ExamplePreview>
             <div class="example-desc">
                 Applications can customize how dates are formatted and parsed. Formatted dates can be ambiguous, so the control will avoid parsing the formatted strings of dates selected using the UI when text input is allowed.
-                In this example, we are formatting and parsing dates as dd/MM/yy.
+                In this example, we are formatting and parsing dates as dd=MM(yy).
             </div>
             <BitDatePicker Style="max-width: 300px"
-                           AriaLabel="Select a date. Date format is month slash month slash year."
+                           AriaLabel="Select a date."
                            Placeholder="Select a date..."
-                           FormatDate="dd/MM/yy" />
+                           FormatDate="dd=MM(yy)" />
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BitDatePicker with date boundaries" HTMLSourceCode="@example7HTMLCode" ExampleId="example7">
+    <ComponentExampleBox Title="BitDatePicker with date boundaries" HTMLSourceCode="@example8HTMLCode" ExampleId="example8">
         <ExamplePreview>
             <div class="example-desc">
                 When date boundaries are set (via MinDate and MaxDate params) the BitDatePicker will not allow out-of-bounds dates to be picked or entered.
-                In this example, the allowed dates are between one year after now and five years before now.
+                <br />
+                In the first example, the allowed dates are between 5 days after now and 5 days before now.
+                <br />
+                In the second example, the allowed dates are between 1 month after now and 2 months before now.
+                <br />
+                In the third example, the allowed dates are between 1 year after now and 5 years before now.
+                <br />
             </div>
+            <BitDatePicker Style="max-width: 300px"
+                           AriaLabel="Select a date"
+                           Placeholder="Select a date..."
+                           MaxDate="DateTimeOffset.Now.AddDays(5)"
+                           MinDate="DateTimeOffset.Now.AddDays(-5)" />
+            <br />
+            <BitDatePicker Style="max-width: 300px"
+                           AriaLabel="Select a date"
+                           Placeholder="Select a date..."
+                           MaxDate="DateTimeOffset.Now.AddMonths(1)"
+                           MinDate="DateTimeOffset.Now.AddMonths(-2)" />
+            <br />
             <BitDatePicker Style="max-width: 300px"
                            AriaLabel="Select a date"
                            Placeholder="Select a date..."
@@ -110,19 +134,24 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BitDatePicker with a custom label" HTMLSourceCode="@example8HTMLCode" ExampleId="example8">
+    <ComponentExampleBox Title="BitDatePicker with a custom label" HTMLSourceCode="@example9HTMLCode" CSharpSourceCode="@example9CSharpCode" ExampleId="example9">
         <ExamplePreview>
-            <BitDatePicker Style="max-width: 300px"
+            <div class="example-desc">
+                In this example, the callout of the BitDatePicker would be opened and closed using an icon button which is customely located in the label.
+                This functionality has been implemented using a public API provided in the BitDatePicker.
+            </div>
+            <BitDatePicker @ref="datePicker"
+                           Style="max-width: 300px"
                            AriaLabel="Select a date"
                            Placeholder="Select a date...">
                 <LabelFragment>
-                    Custom label <BitIconButton IconName="BitIconName.Calendar"></BitIconButton>
+                    Custom label <BitIconButton IconName="BitIconName.Calendar" OnClick="OpenCallout"></BitIconButton>
                 </LabelFragment>
             </BitDatePicker>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BitDatePicker with value two-way binding" HTMLSourceCode="@example9HTMLCode" CSharpSourceCode="@example9CSharpCode" ExampleId="example9">
+    <ComponentExampleBox Title="BitDatePicker with value two-way binding" HTMLSourceCode="@example10HTMLCode" CSharpSourceCode="@example10CSharpCode" ExampleId="example10">
         <ExamplePreview>
             <BitDatePicker Style="max-width: 300px"
                            @bind-Value="@selectedDate"
@@ -132,21 +161,21 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Jalali BitDatePicker" HTMLSourceCode="@example10HTMLCode" ExampleId="example10">
+    <ComponentExampleBox Title="Jalali BitDatePicker" HTMLSourceCode="@example11HTMLCode" ExampleId="example11">
         <ExamplePreview>
             <div class="example-desc">In this sample, you can see the usage of CultureInfoHelper class to specify a particular format for the BitDatePicker. You can also provide your own class for any custom culture of your interest. For more information, you can visit <a href="https://github.com/bitfoundation/bitplatform/blob/develop/src/BlazorUI/Bit.BlazorUI/Utils/CultureInfoHelper.cs">here</a>.</div>
             <div class="example-desc">Please note to reduce the download size of this page, the sample is not implemented here. In order to use this example, it's required to set InvariantGlobalization to false in the project setting, which causes an extra download size for the website.</div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Jalali BitDatePicker with Finglish names" HTMLSourceCode="@example11HTMLCode" ExampleId="example11">
+    <ComponentExampleBox Title="Jalali BitDatePicker with Finglish names" HTMLSourceCode="@example12HTMLCode" ExampleId="example12">
         <ExamplePreview>
             <div class="example-desc">In this sample, you can see the usage of CultureInfoHelper class to specify a particular format for the BitDatePicker. You can also provide your own class for any custom culture of your interest. For more information, you can visit <a href="https://github.com/bitfoundation/bitplatform/blob/develop/src/BlazorUI/Bit.BlazorUI/Utils/CultureInfoHelper.cs">here</a>.</div>
             <div class="example-desc">Please note to reduce the download size of this page, the sample is not implemented here. In order to use this example, it's required to set InvariantGlobalization to false in the project setting, which causes an extra download size for the website.</div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BitDatePicker with a custom style for the day cell" HTMLSourceCode="@example12HTMLCode" ExampleId="example12">
+    <ComponentExampleBox Title="BitDatePicker with a custom style for the day cell" HTMLSourceCode="@example13HTMLCode" ExampleId="example13">
         <ExamplePreview>
             <div class="example-desc">
                 In this sample, you can see how to implement a custom template for day cells of the BitDatePicker which have some specific style class for the weekend.
@@ -163,7 +192,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BitDatePicker with a custom template for the day, month, and year cell" HTMLSourceCode="@example13HTMLCode" CSharpSourceCode="@example13CSharpCode" ExampleId="example13">
+    <ComponentExampleBox Title="BitDatePicker with a custom template for the day, month, and year cell" HTMLSourceCode="@example14HTMLCode" CSharpSourceCode="@example14CSharpCode" ExampleId="example14">
         <ExamplePreview>
             <div class="example-desc">
                 In this sample, you can see how to implement a totally custom template for day, month, and year cells of the BitDatePicker which will display a discount badge for some days, a Xmas badge for the first month of the year, and a AC suffix for years.

@@ -2,12 +2,12 @@
 
 <Header />
 
-<div class="main-container">
-    @if (CurrentUrl != "/")
+<div class="main @((CurrentUrl.Contains("todo-template") is false && CurrentUrl.Contains("admin-panel") is false) ? "main--full-page" : null)">
+    @if (CurrentUrl.Contains("todo-template") || CurrentUrl.Contains("admin-panel"))
     {
         <NavMenu />
     }
-    <div class="page-content @(CurrentUrl == "/" ? "page-content-home" : null)">
+    <div class="site-content">
         @Body
     </div>
 </div>

@@ -1,0 +1,89 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <PropertyGroup>
+        <TargetFrameworks>net7.0-android;net7.0-ios;net7.0-maccatalyst</TargetFrameworks>
+        <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net7.0-windows10.0.19041.0</TargetFrameworks>
+        <!-- Uncomment to also build the tizen app. You will need to install tizen by following this: https://github.com/Samsung/Tizen.NET -->
+        <!-- <TargetFrameworks>$(TargetFrameworks);net7.0-tizen</TargetFrameworks> -->
+        <OutputType>Exe</OutputType>
+        <UseMaui>true</UseMaui>
+        <SingleProject>true</SingleProject>
+        <EnableDefaultCssItems>false</EnableDefaultCssItems>
+
+        <!-- Display name -->
+        <ApplicationTitle>AdminPanel</ApplicationTitle>
+
+        <!-- App Identifier -->
+        <ApplicationId>com.bitplatform.AdminPanel.Template</ApplicationId>
+        <ApplicationIdGuid>AC87AA5B-4B37-4E52-8468-2D5DF24AF256</ApplicationIdGuid>
+
+        <!-- Versions -->
+        <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+        <ApplicationVersion>1</ApplicationVersion>
+
+        <!-- Required for C# Hot Reload -->
+        <UseInterpreter Condition="'$(Configuration)' == 'Debug'">True</UseInterpreter>
+
+        <NoWarn>$(NoWarn);ClassWithoutModifierAnalyzer</NoWarn>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="$(TargetFramework.Contains('-android')) and '$(Configuration)' == 'Release'">
+        <EnableLLVM>true</EnableLLVM>
+        <AndroidPackageFormat>apk</AndroidPackageFormat>
+        <RuntimeIdentifiers Condition="'$(AndroidPackageFormat)' == 'apk'">android-arm</RuntimeIdentifiers>
+        <MauiUseDefaultAotProfile Condition="Exists('custom.aprof')">false</MauiUseDefaultAotProfile>
+    </PropertyGroup>
+
+    <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
+        <AndroidAotProfile Condition="Exists('custom.aprof')" Include="custom.aprof" />
+        <!-- Run the following commands to create custom.aprof file which improves the Android app performance -->
+        <!-- dotnet add package Mono.AotProfiler.Android -v 7.0.0-preview1 -->
+        <!-- dotnet build -t:BuildAndStartAotProfiling -f net7.0-android /p:UseInterpreter=false -->
+        <!-- dotnet build -t:FinishAotProfiling -f net7.0-android -->
+        <!-- dotnet remove package Mono.AotProfiler.Android -->
+    </ItemGroup>
+
+    <ItemGroup>
+
+        <Using Include="Microsoft.Extensions.Configuration" />
+        <Using Include="AdminPanel.Client.Shared.Components" />
+        <Using Include="AdminPanel.Client.Shared.Services.Implementations" />
+        <Using Include="AdminPanel.Client.Shared.Services.Contracts" />
+        <Using Include="Microsoft.AspNetCore.Components.WebView.Maui" />
+
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- App Icon -->
+        <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#002A66" />
+
+        <!-- Splash Screen -->
+        <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#002A66" BaseSize="128,128" />
+
+        <!-- Images -->
+        <MauiImage Include="Resources\Images\*" />
+
+        <MauiFont Include="Resources\Fonts\*" />
+
+        <!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
+        <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Bit.BlazorUI" Version="4.7.0" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="4.7.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Bit.SourceGenerators" Version="4.7.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <Content Remove="Properties\launchSettings.json" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Shared\AdminPanel.Client.Shared.csproj" />
+    </ItemGroup>
+
+</Project>

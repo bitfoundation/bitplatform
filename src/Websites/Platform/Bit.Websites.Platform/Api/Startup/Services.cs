@@ -1,4 +1,5 @@
 ﻿using System.IO.Compression;
+using Bit.Websites.Platform.Api.Services;
 using Microsoft.AspNetCore.ResponseCompression;
 #if BlazorWebAssembly
 using Microsoft.AspNetCore.Components;
@@ -8,7 +9,7 @@ namespace Bit.Websites.Platform.Api.Startup;
 
 public static class Services
 {
-    public static void Add(IServiceCollection services)
+    public static void Add(IServiceCollection services, IConfiguration configuration)
     {
         services.AddHttpContextAccessor();
 #if BlazorWebAssembly
@@ -23,6 +24,9 @@ public static class Services
         services.AddRazorPages();
         services.AddPlaygroundServices();
 #endif
+        services.AddHttpClient<TelegramBotApiClient>();
+        services.AddScoped<TelegramBotService>();
+
         services.AddSwaggerGen();
 
         services.AddCors();
@@ -37,5 +41,7 @@ public static class Services
         })
             .Configure<BrotliCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest)
             .Configure<GzipCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest);
+
+        services.Configure<AppSettings>(configuration.GetSection(nameof(AppSettings)));
     }
 }

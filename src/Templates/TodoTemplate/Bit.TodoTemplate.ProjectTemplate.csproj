@@ -3,7 +3,7 @@
     <Import Project="../../Bit.Build.props" />
     
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
+        <TargetFramework>net7.0</TargetFramework>
         <IncludeBuildOutput>false</IncludeBuildOutput>
         <ContentTargetFolders>content</ContentTargetFolders>
         <EnableDefaultItems>false</EnableDefaultItems>
@@ -26,7 +26,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Include="Bit.TodoTemplate\Client\Web\wwwroot\images\icons\bit-icon-512.png">
+        <None Include="Bit.TodoTemplate\src\Client\Web\wwwroot\images\icons\bit-icon-512.png">
             <Pack>True</Pack>
             <PackagePath>\</PackagePath>
         </None>

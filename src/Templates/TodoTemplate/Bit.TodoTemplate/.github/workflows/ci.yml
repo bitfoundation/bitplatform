@@ -1,0 +1,133 @@
+name: TodoTemplate CI
+
+# https://bitplatform.dev/todo-template/dev-ops
+
+env:
+  WEB_APP_DEPLOYMENT_TYPE: 'DefaultDeploymentType'
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "develop" ]
+
+jobs:
+
+  build_blazor_server:
+    name: build blazor server
+    runs-on: ubuntu-latest
+
+    steps:
+    
+    - name: Checkout source code
+      uses: actions/checkout@v3
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        global-json-file: src/global.json
+      
+    - name: Build
+      run: dotnet build src/Client/Web/TodoTemplate.Client.Web.csproj -p:Configuration=Release -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}"
+
+  build_blazor_hybrid_android:
+    name: build blazor hybrid (android)
+    runs-on: windows-latest
+
+    steps:
+    
+    - name: Checkout source code
+      uses: actions/checkout@v3
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        global-json-file: src/global.json
+
+    - name: Restore workloads
+      run: dotnet workload restore src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-android
+
+    - name: Build
+      run: dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:RunAOTCompilation=false -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net7.0-android
+
+  build_blazor_hybrid_windows:
+    name: build blazor hybrid (windows)
+    runs-on: windows-latest
+
+    steps:
+    
+    - name: Checkout source code
+      uses: actions/checkout@v3
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        global-json-file: src/global.json
+
+    - name: Restore workloads
+      run: dotnet workload restore src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-windows10.0.19041.0
+
+    - name: Build
+      run: dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net7.0-windows10.0.19041.0
+
+  build_blazor_hybrid_iOS:
+    name: build blazor hybrid (iOS)
+    runs-on: macos-12
+
+    steps:
+    
+    - name: Checkout source code
+      uses: actions/checkout@v3
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        global-json-file: src/global.json
+
+    - name: Restore workloads
+      run: dotnet workload restore src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-ios
+
+    - name: Build
+      run: dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net7.0-ios
+
+  build_blazor_hybrid_maccatalyst:
+    name: build blazor hybrid (maccatalyst)
+    runs-on: macos-latest
+
+    steps:
+    
+    - name: Checkout source code
+      uses: actions/checkout@v3
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        global-json-file: src/global.json
+
+    - name: Restore workloads
+      run: dotnet workload restore src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-maccatalyst
+      
+    - name: Build
+      run: dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net7.0-maccatalyst
+
+  build_blazor_api_wasm:
+    name: build blazor api + web assembly
+    runs-on: ubuntu-latest
+
+    steps:
+    
+    - name: Checkout source code
+      uses: actions/checkout@v3
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        global-json-file: src/global.json
+
+    - name: Switch to blazor wasm
+      run:  sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' src/Client/Web/TodoTemplate.Client.Web.csproj
+
+    - name: Restore workloads
+      run: dotnet workload restore src/Client/Web/TodoTemplate.Client.Web.csproj -p:BlazorMode=BlazorWebAssembly
+      
+    - name: Build
+      run: dotnet build src/Server/Api/TodoTemplate.Server.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:Configuration=Release -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}"

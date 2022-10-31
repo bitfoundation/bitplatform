@@ -1,0 +1,34 @@
+<Project>
+
+    <PropertyGroup>
+        <BlazorMode>BlazorServer</BlazorMode>
+        <!-- You can use either BlazorServer or BlazorWebAssembly or BlazorHybrid -->
+        <WebAppDeploymentType>DefaultDeploymentType</WebAppDeploymentType>
+        <!-- You can choose either Static, DefaultDeploymentType, PWA or SSR -->
+        <!-- Learn more about blazor modes & deployment types at https://bitplatform.dev/todo-template/hosting-models -->
+        <DefineConstants Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' ">$(DefineConstants);BlazorWebAssembly</DefineConstants>
+        <DefineConstants Condition=" '$(BlazorMode)' == 'BlazorServer' ">$(DefineConstants);BlazorServer</DefineConstants>
+        <DefineConstants Condition=" '$(WebAppDeploymentType)' == 'DefaultDeploymentType' ">$(DefineConstants);DefaultDeploymentType</DefineConstants>
+        <DefineConstants Condition=" '$(WebAppDeploymentType)' == 'SSR' ">$(DefineConstants);SSR</DefineConstants>
+        <DefineConstants Condition=" '$(WebAppDeploymentType)' == 'Static' ">$(DefineConstants);Static</DefineConstants>
+        <LangVersion>preview</LangVersion>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Using Include="Microsoft.Extensions.DependencyInjection" />
+        <Using Include="System.Net.Http" />
+        <Using Include="System.Resources" />
+        <Using Include="System.ComponentModel.DataAnnotations" />
+        <Using Include="Bit.Websites.Sales.Shared.Services.Contracts" />
+        <Using Include="System.Security.Claims" />
+        <Using Include="Bit.Websites.Sales" />
+        <Using Include="System.ComponentModel.DataAnnotations.Schema" />
+        <Using Include="System.Text.Json.Serialization" />
+        <Using Include="Bit.Websites.Sales.Shared.Dtos" />
+        <Using Include="Bit.Websites.Sales.Shared.Exceptions" />
+        <Using Include="Bit.Websites.Sales.Shared.Resources" />
+    </ItemGroup>
+
+</Project>

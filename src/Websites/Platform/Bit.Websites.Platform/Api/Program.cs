@@ -7,7 +7,7 @@ if (OperatingSystem.IsWindows())
 }
 #endif
 
-Bit.Websites.Platform.Api.Startup.Services.Add(builder.Services);
+Bit.Websites.Platform.Api.Startup.Services.Add(builder.Services, builder.Configuration);
 
 var app = builder.Build();
 

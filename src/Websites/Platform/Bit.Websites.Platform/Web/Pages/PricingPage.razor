@@ -1,0 +1,118 @@
+﻿@page "/pricing"
+
+<div class="page-container">
+    <section class="page-section main-section">
+        <div class="page-section-contnet">
+            <h1 class="page-main-title">Pricing</h1>
+            <div class="page-desc">
+                <div class="bold-txt">Bit platform is open source and using it is truly free.</div>
+                When you require more, you may choose a package that fits your needs.
+            </div>
+        </div>
+    </section>
+
+    <section class="page-section mid-section">
+        <div class="page-section-contnet">
+            <div class="mid-container">
+                <div class="mid-value">Get the features and support you need today!</div>
+                <div class="mid-name">Easily upgrade as your needs grow.</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="page-section plans-section">
+        <div class="page-section-contnet">
+            <div class="card-list">
+                <div class="plan-card">
+                    <div class="plan-card-title">Free</div>
+                    <div class="plan-card-subtitle">$0</div>
+                    <div class="plan-card-desc">
+                        <div>Access to all components</div>
+                        <div>Unlimited apps</div>
+                        <div>Open-source support</div>
+                        <div>(github issues)</div>
+                    </div>
+                </div>
+
+                <div class="plan-card">
+                    <div class="plan-card-title">Pro</div>
+                    <div class="plan-card-subtitle">
+                        $300<span class="grey-txt">/month</span>
+                    </div>
+                    <div class="plan-card-desc">
+                        <div>[per team]</div>
+                        <div>All of Free package</div>
+                        <div>Pro support</div>
+                        <div>with 48 hours response time</div>
+                    </div>
+                    <BitButton OnClick=@(() => ShowBuyModal("Pro", "300"))>Buy</BitButton>
+                </div>
+
+                <div class="plan-card">
+                    <div class="plan-card-title">Ultimate</div>
+                    <div class="plan-card-subtitle">
+                        $1200<span class="grey-txt">/month</span>
+                    </div>
+                    <div class="plan-card-desc">
+                        <div>[per team]</div>
+                        <div>All of Pro package</div>
+                        <div>Direct support with core dev team</div>
+                        <div>Priority customer support</div>
+                        <div>with 24 hours response time</div>
+                    </div>
+                    <BitButton OnClick=@(() => ShowBuyModal("Ultimate", "1200"))>Buy</BitButton>
+                </div>
+
+                <div class="plan-card">
+                    <div class="plan-card-title">Custom</div>
+                    <div class="plan-card-subtitle">
+                        ?<span class="grey-txt">/month</span>
+                    </div>
+                    <div class="plan-card-desc">
+                        <div>[needs contact]</div>
+                        <div>Everthing from other packages</div>
+                        <div>Customized needs & agreements</div>
+                    </div>
+                    <BitButton OnClick=@(() => ShowBuyModal("Custom", "?"))>Buy</BitButton>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <BitModal IsOpen=@IsBuyModalOpen>
+        <EditForm Model="BuyPackageModel" OnValidSubmit="SendMessage" class="form">
+            <DataAnnotationsValidator />
+
+            <h2 class="form-title">Buy <span class="blue-txt">@_selectedPackageTitle</span> Pacakge</h2>
+            <div class="package-name">
+                $@_selectedPackagePrice<span class="grey-txt">/month</span>
+            </div>
+            <BitIconButton OnClick=@CloseModal IconName="BitIconName.ChromeClose" />
+            <BitTextField @bind-Value="@BuyPackageModel.Email"
+                          Type="BitTextFieldType.Email"
+                          Label="Email"
+                          IsRequired=true
+                          HasBorder=true
+                          Placeholder="Enter your email address" />
+            <ValidationMessage For="() => BuyPackageModel.Email" />
+
+            <BitTextField @bind-Value="@BuyPackageModel.Message"
+                          Type="BitTextFieldType.Text"
+                          Label="Message"
+                          HasBorder=true
+                          IsMultiline=true
+                          Placeholder="Enter your message" />
+            <ValidationMessage For="() => BuyPackageModel.Message" />
+            <BitButton ButtonType="BitButtonType.Submit" IsEnabled="IsSubmitButtonEnabled">
+                @if (IsLoading)
+                {
+                    <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
+                }
+                else
+                {
+                    <span>Buy</span>
+                }
+            </BitButton>
+        </EditForm>
+    </BitModal>
+</div>

@@ -14,7 +14,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".Solution Items", ".Solutio
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Playground", "Playground", "{23426B1A-CC46-4D11-B233-208A57B2BCA2}"
 	ProjectSection(SolutionItems) = preProject
-		Playground\Directory.build.props = Playground\Directory.build.props
+		Playground\Directory.Build.props = Playground\Directory.Build.props
 		Playground\README.md = Playground\README.md
 	EndProjectSection
 EndProject

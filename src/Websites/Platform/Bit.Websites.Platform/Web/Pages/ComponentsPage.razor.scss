@@ -1,0 +1,203 @@
+﻿@import '../Styles/abstracts/_mixins.scss';
+@import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_colors.scss';
+
+.page-container {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: flex-start;
+    width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+    background-color: $White;
+}
+
+.page-section {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.page-section-contnet {
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+    width: 100%;
+    max-width: rem(1200px);
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: rem(20px);
+    padding-right: rem(20px);
+    padding-top: rem(80px);
+    padding-bottom: rem(80px);
+    box-sizing: border-box;
+
+    @include md {
+        padding-left: rem(30px);
+        padding-right: rem(30px);
+    }
+}
+
+.main-section {
+    .page-section-contnet {
+        padding-top: rem(120px);
+
+        @include lt-lg {
+            padding-top: rem(160px);
+        }
+    }
+
+    .primary-btn {
+        display: inline-flex;
+        justify-content: center;
+        padding: rem(14px) rem(16px);
+        border-radius: rem(4px);
+        box-shadow: none;
+        cursor: pointer;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        text-decoration: none;
+        transition: background-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,border-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+        background-color: $B6Color;
+        color: $White;
+        font-size: rem(16px);
+        line-height: 1.3125;
+        letter-spacing: 0;
+        font-weight: 700;
+
+        &:hover {
+            background-color: $B5Color;
+        }
+    }
+
+    .page-main-title {
+        max-width: rem(500px);
+        margin: 0;
+        margin-top: rem(10px);
+        margin-bottom: rem(40px);
+        font-size: rem(64px);
+        font-weight: 800;
+        line-height: 1.2;
+        background: linear-gradient(to right, #007FFF, #0059B2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+
+        @include lg {
+            font-size: rem(52px);
+        }
+
+        @include lt-lg {
+            margin-bottom: rem(28px);
+            font-size: rem(42px);
+        }
+    }
+
+    .page-desc {
+        width: 100%;
+        margin-bottom: rem(32px);
+        max-width: rem(750px);
+        font-size: rem(16px);
+        font-weight: 400;
+        line-height: rem(32px);
+        color: #2E2E2E;
+        text-align: center;
+    }
+}
+
+.advantages-section {
+    background: linear-gradient(180deg, #F3F6F9 0%, #FFFFFF 100%);
+}
+
+.section-title {
+    margin: 0;
+    margin-top: rem(10px);
+    margin-bottom: rem(40px);
+    font-size: rem(32px);
+    font-weight: 800;
+    line-height: 1.2;
+    color: #132F4C;
+    text-align: center;
+
+    @include lg {
+        font-size: rem(28px);
+    }
+
+    @include lt-lg {
+        font-size: rem(24px);
+    }
+
+    @include sm {
+        margin-bottom: rem(20px);
+    }
+}
+
+.card-list {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: center;
+    width: calc(100% + 20px);
+    margin-left: -20px;
+}
+
+.benefit-card {
+    flex-basis: calc(25% - 20px);
+    flex-grow: 0;
+    max-width: calc(25% - 20px);
+    min-width: rem(275px);
+    min-height: rem(241px);
+    padding: rem(20px);
+    margin-top: rem(20px);
+    margin-left: rem(20px);
+    border-radius: rem(4px);
+    border: rem(1px) solid #E0E3E7;
+    box-shadow: 0 1.6px 3.6px 0 rgb(0 0 0 / 13%), 0 0.3px 0.9px 0 rgb(0 0 0 / 11%);
+    box-sizing: border-box;
+    color: #1A2027;
+    transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+    background-color: $White;
+}
+
+.benefit-card-title {
+    margin-bottom: rem(10px);
+    font-size: rem(14px);
+    line-height: 1.5;
+    letter-spacing: 0;
+    font-weight: 700;
+    color: #1A2027;
+    padding-left: rem(30px);
+    box-sizing: border-box;
+    background-size: rem(20px);
+    background-position: center left;
+    background-repeat: no-repeat;
+}
+
+.benefit-card-desc {
+    font-size: rem(14px);
+    line-height: 1.5;
+    letter-spacing: 0;
+    font-weight: 400;
+    color: #3E5060;
+}
+
+.native-icon {
+    background-image: url('/images/components/native-icon.webp');
+}
+
+.open-source-icon {
+    background-image: url('/images/components/open-source-icon.webp');
+}
+
+.customize-icon {
+    background-image: url('/images/components/customize-icon.webp');
+}
+
+.special-components-icon {
+    background-image: url('/images/components/special-components-icon.webp');
+}
+
+.design-system-icon {
+    background-image: url('/images/components/design-system-icon.webp');
+}

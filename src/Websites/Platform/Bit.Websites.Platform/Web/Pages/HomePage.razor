@@ -1,145 +1,133 @@
 ﻿@page "/"
 
-<div class="page">
+<div class="page-container">
     <section class="page-section hero-section">
-        <div class="section-content-container">
+        <div class="page-section-contnet">
             <div class="hero-section-content">
-                <h1 class="hero-section-main-title">bit platform:</h1>
-                <h2 class="hero-section-title">
+                @*<h1 class="hero-section-main-title">bit platform:</h1>*@
+                <h1 class="hero-section-title">
                     Home for .NET<br />
                     Developers
-                </h2>
+                </h1>
                 <div class="hero-section-desc">
-                    bit is a platform for .NET developers to easily Code, Build & Deploy their projects across multiple platforms.<br />
-                    Our mission is to make development easier.
+                    Easy to use, full featured, and cross platform project templates and high performance components!
                 </div>
-                <a class="hero-section-cta" href="https://github.com/bitfoundation/bitplatform" target="_blank">
-                    <span class="hero-section-github-ico"></span>
-                    GitHub
-                </a>
             </div>
         </div>
     </section>
 
-    <section class="page-section template-section">
-        <div class="section-content-container">
+    <section class="page-section intro-section">
+        <div class="page-section-contnet">
+            <h2 class="section-title">What is <span class="txt--blue">Bit Platform</span>?</h2>
+            <div class="section-desc">
+                bit is a platform for .NET developers to easily Code, Build & Deploy their projects across multiple platforms.<br />
+                Our mission is to make development easier.
+            </div>
+        </div>
+    </section>
+
+    <section class="page-section tech-section">
+        <div class="page-section-contnet">
+            <h2 class="section-title">The <span class="txt--blue">Tools</span> we use</h2>
+            <div class="item-list">
+                <div class="tech-item blazor-item"></div>
+                <div class="tech-item dotnet-item"></div>
+                <div class="tech-item csharp-item"></div>
+                <div class="tech-item vs-item"></div>
+                <div class="tech-item git-item"></div>
+                <div class="tech-item github-item"></div>
+                <div class="tech-item sass-item"></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="page-section templates-section">
+        <div class="page-section-contnet">
             <h2 class="section-title">
                 Project<br />
                 Templates
             </h2>
             <div class="section-desc">Coding templates based on .Net MAUI / Blazor that enables high quality speedy cross-platform development for web, android and iOS and also has pixel-perfect, ready to use UIs.</div>
-            <div class="template-card">
-                <div class="template-content-continaer">
+            <div class="card-list">
+                <div class="template-card">
+                    <div class="template-img-container">
+                        <a href="@Urls.TodoTemplate">
+                            <img class="template-img" src="/images/templates/todo-template.webp" alt="TodoTemplate" />
+                        </a>
+                    </div>
                     <div class="template-name">TodoTemplate</div>
                     <div class="template-desc">
                         TodoTemplate is based on ASP.NET core, identity, web api and ef core for the server side + blazor at client side.<br />
                         It allows you building Android, iOS, Windows, Web applications from single code base.
                     </div>
-                    <a class="template-link" href="/todo-template/overview">Read more about TodoTemplate <span class="template-link-arrow"></span></a>
+                    <div class="flex-container">
+                        <a class="template-link" href="@Urls.TodoTemplate">Read more about TodoTemplate <span class="template-link-arrow"></span></a>
+                        <a class="demo-btn" href="@Urls.TodoTemplateSSR" target="_blank">Demo</a>
+                    </div>
                 </div>
-                <div class="template-img"></div>
+                <div class="template-card">
+                    <div class="template-img-container">
+                        <a href="@Urls.AdminPanel">
+                            <img class="template-img" src="/images/templates/admin-panel.webp" alt="AdminPanel" />
+                        </a>
+                    </div>
+                    <div class="template-name">AdminPanel</div>
+                    <div class="template-desc">
+                        AdminPanel is based on ASP.NET core, identity, web api and ef core for the server side + blazor at client side.<br />
+                        It allows you building Android, iOS, Windows, Web applications from single code base.
+                    </div>
+                    <div class="flex-container">
+                        <a class="template-link" href="@Urls.AdminPanel">Read more about AdminPanel <span class="template-link-arrow"></span></a>
+                        <a class="demo-btn" href="@Urls.AdminPanelMultiLingual" target="_blank">Demo</a>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
 
-    <section class="page-section service-section">
-        <div class="section-content-container">
+    <section class="page-section components-section">
+        <div class="page-section-contnet">
             <h2 class="section-title">
-                Products<br />
-                & Services
+                Components
             </h2>
-            <div class="section-card-group">
-                <div class="servic-card">
-                    <div class="service-content-container">
-                        <div class="service-name">Bit BlazorUI</div>
-                        <div class="download-row"><span class="bold-txt">48 (Daily)</span> Downloads</div>
-                        <div class="service-desc">Easy to use, easy to customize, native, high performance Blazor components that significantly speed up coding.</div>
-                        <a class="service-link" href="https://components.bitplatform.dev/" target="_blank">Read more about Bit BlazorUI</a>
+            <div class="flex-container">
+                <div class="components-content-container">
+                    <div class="section-desc">Bit BlazorUI is an easy to use, easy to customize, native, and high performance component library that significantly speed up coding.</div>
+                    <div class="item-list">
+                        <div class="com-item">
+                            <div class="com-item-content">
+                                <div class="com-item-value">37</div>
+                                <div class="com-item-name">Number of components</div>
+                            </div>
+                        </div>
+                        <div class="com-item">
+                            <div class="com-item-content">
+                                <div class="com-item-value">49</div>
+                                <div class="com-item-name">Open-source contributers</div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="service-badge--blue">
-                        <span class="badge-icon"></span>
-                        <span class="badge-txt">Downloads</span>
-                        <span class="badge-main-txt">48 (Daily)</span>
-                    </div>
+                    <a class="com-link" href="@Urls.Components">Read more about BlazorUI <span class="com-link-arrow"></span></a>
                 </div>
-                <div class="servic-card">
-                    <div class="service-content-container">
-                        <div class="service-name">Dedicated Support</div>
-                        <div class="service-desc">Community support will be free forever. Dedicated end-to-end support is available to purchase.</div>
-                    </div>
+                <div class="image-container">
+                    <div class="com-image"></div>
                 </div>
             </div>
         </div>
     </section>
 
     <section class="page-section customer-section">
-        <div class="section-content-container">
-            <h2 class="section-title">
-                Our customers love <br />
-                what we do
-            </h2>
-            <BitCarousel Class="customer-feedback-carousel" ShowNextPrev="false">
-                <BitCarouselItem>
-                    <a class="customer-feedback-card" href="https://twitter.com/mehrandvd/status/1553142453091401729" target="_blank">
-                        <span class="qoute-mark"></span>
-                        <div class="customer-feedback-txt">
-                            I'm more than happy for the decision we made to use <span style="color:#004099">#BitPlatform</span> in our #dotnet products at
-                            @@MelkRadar and #BeyondTeam and all other teams I'm consulting. It's so promising,
-                            robust and reliable for scale...
-                        </div>
-                        @*<div class="fade-bar"></div>*@
-                        <div class="author-container">
-                            <img class="image" src="images/home/twitter/1.webp" />
-                            <div class="customer-feedback-name">uɒɹɥəɯ</div>
-                        </div>
-                    </a>
-                </BitCarouselItem>
-                <BitCarouselItem>
-                    <a class="customer-feedback-card" href="https://twitter.com/hootanht/status/1553199172957995008" target="_blank">
-                        <span class="qoute-mark"></span>
-                        <div class="customer-feedback-txt">
-                            We're excited too. <span style="color:#004099">#BitPlatform</span> helps us to achieve more flexibility and
-                            opportunities in our projects than we think.😍🌹🙏
-                        </div>
-                        @*<div class="fade-bar"></div>*@
-                        <div class="author-container">
-                            <img class="image" src="images/home/twitter/4.webp" />
-                            <div class="customer-feedback-name">Hootan HT</div>
-                        </div>
-                    </a>
-                </BitCarouselItem>
-                <BitCarouselItem>
-                    <a class="customer-feedback-card" href="https://twitter.com/HamedHajiloo96/status/1541649567644614656" target="_blank">
-                        <span class="qoute-mark"></span>
-                        <div class="customer-feedback-txt">
-                            We want to launch a website that works entirely with .NET <br />
-                            Thanks to <span style="color:#004099">#BitPlatform</span> we can have a well-performance public website with #Blazor
-                        </div>
-                        @*<div class="fade-bar"></div>*@
-                        <div class="author-container">
-                            <img class="image" src="images/home/twitter/2.webp" />
-                            <div class="customer-feedback-name">Hamed Hajiloo</div>
-                        </div>
-                    </a>
-                </BitCarouselItem>
-                <BitCarouselItem>
-                    <a class="customer-feedback-card" href="https://twitter.com/mhrastegari77/status/1553252183973453824" target="_blank">
-                        <span class="qoute-mark"></span>
-                        <div class="customer-feedback-txt">
-                            Man! <span style="color:#004099">#BitPlatform</span> team is really awesome and powerful!!! <br />
-                            Yesterday I requested a draggable Carousel component for #Blazor and
-                            they literally published a pre release of it today. 🔥
-                        </div>
-                        @*<div class="fade-bar"></div>*@
-                        <div class="author-container">
-                            <img class="image" src="images/home/twitter/3.webp" />
-                            <div class="customer-feedback-name">MH Rastegari</div>
-                        </div>
-                    </a>
-                </BitCarouselItem>
-            </BitCarousel>
+        <div class="page-section-contnet">
 
-            @*<a class="twitter-link" href="twitter.com"></a>*@
+            <!-- TrustBox widget - Micro Review Count -->
+            <div class="trustpilot-widget" data-locale="en-US" data-template-id="5419b6a8b0d04a076446a9ad" data-businessunit-id="633c868bc3c26f911394fa13" data-style-height="24px" data-style-width="100%" data-theme="light" data-min-review-count="10" data-without-reviews-preferred-string-id="1" data-style-alignment="center">
+                <a href="https://www.trustpilot.com/review/bitplatform.dev" target="_blank" rel="noopener">Trustpilot</a>
+            </div>
+            <br/>
+            <div class="trustpilot-widget" data-locale="en-US" data-template-id="56278e9abfbbba0bdcd568bc" data-businessunit-id="633c868bc3c26f911394fa13" data-style-height="52px" data-style-width="100%">
+                <a href="https://www.trustpilot.com/review/bitplatform.dev" target="_blank" rel="noopener">Trustpilot</a>
+            </div>
+            <!-- End TrustBox widget -->
         </div>
     </section>
 </div>

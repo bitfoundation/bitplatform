@@ -26,12 +26,6 @@ function toggleBodyOverflow(isMenuOpen: boolean) {
 //    navigator.clipboard.writeText(codeSampleContentForCopy);
 //}
 
-//function highlightSnippet() {
-//    document.querySelectorAll('pre code').forEach((el) => {
-//        hljs.highlightBlock(el);
-//    });
-//}
-
 function RegisterOnScrollToChangeGettingStartedSideRailStyle(element: any) {
     window.addEventListener('scroll', (event) => {
         if (document.documentElement.scrollTop >= 500) {
@@ -41,4 +35,12 @@ function RegisterOnScrollToChangeGettingStartedSideRailStyle(element: any) {
             element.classList.remove("fixed-getting-started-side-rail-section");
         }
     });
+}
+
+function initTrustPilot() {
+    const trustpilotWidgetElements = document.getElementsByClassName("trustpilot-widget");
+    const thisGlobal = window as any;
+    for (let i = 0; i < trustpilotWidgetElements.length; i++) {
+        thisGlobal.Trustpilot.loadFromElement(trustpilotWidgetElements[i]);
+    }
 }

@@ -2,59 +2,80 @@
 @import '../Styles/abstracts/_functions.scss';
 @import '../Styles/abstracts/_colors.scss';
 
-.page {
+.page-container {
     display: flex;
     flex-flow: column nowrap;
     justify-content: flex-start;
-    align-items: center;
+    align-items: flex-start;
     width: 100%;
-    background-image: url('/images/home/home-page-bg.webp');
-    background-position: center;
-    background-size: cover;
-    background-repeat: no-repeat;
+    box-sizing: border-box;
+    overflow: hidden;
+    background-color: $White;
 }
 
 .page-section {
     display: flex;
     justify-content: center;
-    align-items: flex-start;
     width: 100%;
-    padding: 0 rem(32px);
+}
+
+.page-section-contnet {
+    width: 100%;
+    max-width: rem(1200px);
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: rem(20px);
+    padding-right: rem(20px);
     box-sizing: border-box;
 
-    @include sm {
-        padding: 0 rem(16px);
+    @include md {
+        padding-left: rem(30px);
+        padding-right: rem(30px);
     }
 }
 
-.section-content-container {
-    width: 100%;
-    max-width: rem(1232px);
-
-    .twitter-link {
-        background-image: url('/images/footer/twitter-icon.svg');
-        width: rem(32px);
-        height: rem(32px);
-        margin: 0 rem(6);
-        background-position: center;
-        background-repeat: no-repeat;
-        background-color: $B7Color;
-        border-radius: 50%;
-        cursor: pointer;
-        background-size: rem(18px);
-    }
+.section-title {
+    margin: 0;
+    font-size: rem(32px);
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: rem(40px);
+    color: $B3Color;
 
     @include lg {
-        max-width: rem(1140px);
+        font-size: rem(28px);
     }
 
-    @include md {
-        max-width: rem(704px);
+    @include lt-lg {
+        font-size: rem(24px);
     }
+}
 
-    @include sm {
-        max-width: 100%;
-    }
+.section-desc {
+    font-size: rem(16px);
+    line-height: 1.5;
+    letter-spacing: 0;
+    font-weight: 400;
+    margin-top: rem(10px);
+    margin-bottom: rem(20px);
+    color: $Gray1;
+}
+
+.txt--blue {
+    color: $B6Color;
+}
+
+.twitter-link {
+    background-image: url('/images/footer/twitter-icon.svg');
+    width: rem(32px);
+    height: rem(32px);
+    margin: 0 rem(6);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: $B7Color;
+    border-radius: 50%;
+    cursor: pointer;
+    background-size: rem(18px);
 }
 
 .hero-section {
@@ -63,23 +84,27 @@
     background-repeat: no-repeat;
     background-size: cover;
 
-    .section-content-container {
+    .page-section-contnet {
         display: flex;
         flex-flow: row nowrap;
         justify-content: flex-start;
         align-items: flex-start;
-        padding: rem(240px) 0 rem(108px);
+        padding-top: rem(160px);
+        padding-bottom: rem(108px);
 
         @include lg {
-            padding: rem(152px) 0 rem(52px);
+            padding-top: rem(208px);
+            padding-bottom: rem(63px);
         }
 
         @include md {
-            padding: rem(96px) 0 rem(28px);
+            padding-top: rem(152px);
+            padding-bottom: rem(28px);
         }
 
         @include sm {
-            padding: rem(88px) 0 rem(72px);
+            padding-top: rem(188px);
+            padding-bottom: rem(72px);
         }
     }
 
@@ -131,95 +156,408 @@
 
     .hero-section-title {
         margin: 0;
-        margin-bottom: rem(16px);
-        font-weight: 700;
-        font-size: rem(50px);
-        line-height: rem(58px);
+        margin-bottom: rem(20px);
+        font-weight: 800;
+        font-size: rem(64px);
+        line-height: 1;
         color: $White;
 
         @include lg {
-            font-size: rem(40px);
-            line-height: rem(64px);
+            font-size: rem(52px);
         }
 
-        @include md {
-            margin-bottom: rem(8px);
-            font-weight: 600;
-            font-size: rem(26px);
-            line-height: rem(40px);
-        }
-
-        @include sm {
-            margin-bottom: rem(24px);
-            font-weight: 600;
-            font-size: rem(26px);
-            line-height: rem(40px);
+        @include lt-lg {
+            font-size: rem(42px);
         }
     }
 
     .hero-section-desc {
-        margin-bottom: rem(112px);
-        font-weight: 700;
-        font-size: rem(18x);
-        line-height: rem(32px);
+        margin-bottom: rem(30px);
+        font-weight: 400;
+        font-size: 1rem;
+        line-height: 1.5;
         color: $Gray4;
-
-        @include lg {
-            margin-bottom: rem(64px);
-            font-size: rem(16x);
-        }
-
-        @include lt-lg {
-            margin-bottom: rem(32px);
-            font-weight: 400;
-            font-size: rem(14px);
-            line-height: rem(28px);
-        }
     }
 
-    .hero-section-cta {
+    .github-btn {
         display: flex;
         flex-flow: row nowrap;
-        justify-content: center;
         align-items: center;
-        width: rem(193px);
-        height: rem(64px);
-        border-radius: rem(8px);
-        background-color: $White;
-        font-weight: 600;
-        font-size: rem(22px);
-        line-height: rem(40px);
-        color: $B6Color;
-
-        @include lg {
-            width: rem(186px);
-            font-size: rem(20px);
-            line-height: rem(32px);
-        }
-
-        @include lt-lg {
-            width: rem(143px);
-            height: rem(48px);
-            font-size: rem(16px);
-            line-height: rem(32px);
-        }
-    }
-
-    .hero-section-github-ico {
-        width: rem(40px);
-        height: rem(40px);
-        margin-right: rem(8px);
-        background-image: url('/images/github-icon.svg');
-        background-position: center;
-        background-repeat: no-repeat;
-        background-size: cover;
         cursor: pointer;
 
-        @include lt-lg {
-            width: rem(28px);
-            height: rem(28px);
+        .github-btn-name {
+            display: inline-flex;
+            align-items: center;
+            justify-content: flex-start;
+            border-radius: rem(4px) 0 0 rem(4px);
+            padding: rem(8px) rem(16px);
+            padding-left: rem(40px);
+            color: $White;
+            font-size: rem(16px);
+            background-color: #4f4f4f;
+            background-image: url('/images/footer/github-icon.svg');
+            background-size: rem(16px);
+            background-repeat: no-repeat;
+            background-position: left rem(16px) center;
+        }
+
+        .github-btn-value {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: rem(8px) rem(16px);
+            border-radius: 0 rem(4px) rem(4px) 0;
+            background-color: $White;
+            color: $B6Color;
+            font-weight: 600;
+            font-size: rem(16px);
         }
     }
+}
+
+.intro-section {
+    padding-top: 5rem;
+    padding-bottom: 5rem;
+
+    .page-section-contnet {
+        display: flex;
+        flex-flow: column nowrap;
+        align-items: center;
+    }
+
+    .section-desc {
+        text-align: center;
+    }
+}
+
+.tech-section {
+    padding-top: 5rem;
+    padding-bottom: 5rem;
+    background-color: #F3F6F9;
+
+    .page-section-contnet {
+        display: flex;
+        flex-flow: column nowrap;
+        align-items: center;
+    }
+
+    .item-list {
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+    }
+
+    .tech-item {
+        width: rem(70px);
+        height: rem(70px);
+        margin: rem(20px);
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: contain;
+    }
+
+    .blazor-item {
+        background-image: url('/images/home/tech/blazor-logo.webp');
+    }
+
+    .csharp-item {
+        background-image: url('/images/home/tech/csharp-logo.webp');
+    }
+
+    .dotnet-item {
+        background-image: url('/images/home/tech/dotnet-logo.webp');
+    }
+
+    .sass-item {
+        background-image: url('/images/home/tech/sass-logo.webp');
+    }
+
+    .vs-item {
+        background-image: url('/images/home/tech/visual-studio-logo.webp');
+    }
+
+    .git-item {
+        background-image: url('/images/home/tech/git-logo.webp');
+    }
+
+    .github-item {
+        background-image: url('/images/home/tech/github-logo.webp');
+    }
+}
+
+.templates-section {
+    padding-top: 5rem;
+    padding-bottom: 5rem;
+
+    .card-list {
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: center;
+        width: calc(100% + 20px);
+        margin-left: rem(-20px);
+
+        @media all and (max-width: #{em(750px)}) {
+            width: 100%;
+            margin-left: 0;
+        }
+    }
+
+    .template-card {
+        flex-basis: calc(50% - 20px);
+        flex-grow: 0;
+        max-width: calc(50% - 20px);
+        min-width: rem(275px);
+        min-height: rem(241px);
+        padding: rem(20px);
+        margin-top: rem(20px);
+        margin-left: rem(20px);
+        border-radius: rem(4px);
+        border: rem(1px) solid #E0E3E7;
+        box-sizing: border-box;
+        color: #1A2027;
+        transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+        box-shadow: 0 1.6px 3.6px 0 rgb(0 0 0 / 13%), 0 0.3px 0.9px 0 rgb(0 0 0 / 11%);
+        background-color: $White;
+
+        @media all and (max-width: #{em(750px)}) {
+            flex-basis: 100%;
+            max-width: rem(500px);
+            margin-left: 0;
+        }
+    }
+
+    .template-name {
+        font-weight: 700;
+        font-size: 1rem;
+        line-height: 1.5;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        margin-bottom: 1rem;
+    }
+
+    .template-desc {
+        font-weight: 300;
+        font-size: rem(15px);
+        line-height: 1.57;
+        color: $Gray1;
+    }
+
+    .template-link {
+        display: flex;
+        flex-flow: row nowrap;
+        align-items: center;
+        font-weight: 700;
+        font-size: rem(14px);
+        line-height: rem(32px);
+        color: $B6Color;
+        cursor: pointer;
+        transition: all 0.2s linear;
+
+        .template-link-arrow {
+            width: rem(16px);
+            height: rem(16px);
+            margin-left: rem(8px);
+            background-image: url('/images/arrow-right-blue-icon.svg');
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
+
+        &:hover {
+            transform: translateX(5px);
+        }
+    }
+
+    .demo-btn {
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        min-width: rem(64px);
+        outline: 0;
+        border: 0;
+        margin: 0;
+        padding: rem(8px) rem(16px);
+        border-radius: rem(4px);
+        box-sizing: border-box;
+        cursor: pointer;
+        user-select: none;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: rem(14px);
+        line-height: 1.2;
+        color: $White;
+        background-color: $B6Color;
+        transition: opacity 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+
+        &:hover {
+            text-decoration: none;
+            background-color: #0052cc;
+        }
+    }
+
+    .template-img-container {
+        position: relative;
+        padding: 55% 0 0 0;
+        margin-bottom: rem(14px);
+        cursor: pointer;
+    }
+
+    .template-img {
+        position: absolute;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        border-radius: rem(6px);
+    }
+
+    .flex-container {
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: space-between;
+        margin-top: rem(4px);
+    }
+}
+
+.components-section {
+    padding-top: 5rem;
+    padding-bottom: 5rem;
+    background-color: #132F4C;
+
+    .section-title {
+        color: gainsboro;
+    }
+
+    .section-desc {
+        color: $White;
+        font-weight: 600;
+    }
+
+    .flex-container {
+        display: flex;
+        flex-flow: row nowrap;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+    }
+
+    .image-container {
+        display: flex;
+        justify-content: center;
+        width: 45%;
+        height: 100%;
+
+        @include lt-lg {
+            display: none;
+        }
+    }
+
+    .com-image {
+        background-image: url('/images/home/components-bg.webp');
+        background-position: center left;
+        background-repeat: no-repeat;
+        background-size: contain;
+        width: rem(370px);
+        height: rem(245px);
+    }
+
+    .components-content-container {
+        display: flex;
+        flex-flow: column nowrap;
+        justify-content: space-between;
+        align-items: flex-start;
+        width: 65%;
+        max-width: rem(700px);
+
+        @include lt-lg {
+            flex-flow: column nowrap;
+            justify-content: flex-start;
+            width: 100%;
+            max-width: 100%;
+        }
+    }
+
+    .com-link {
+        display: flex;
+        flex-flow: row nowrap;
+        align-items: center;
+        font-weight: 700;
+        font-size: rem(14px);
+        line-height: rem(32px);
+        color: $B6Color;
+        cursor: pointer;
+        transition: all 0.2s linear;
+
+        .com-link-arrow {
+            width: rem(16px);
+            height: rem(16px);
+            margin-left: rem(8px);
+            background-image: url('/images/arrow-right-blue-icon.svg');
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
+
+        &:hover {
+            transform: translateX(5px);
+        }
+    }
+
+    .item-list {
+        display: flex;
+        flex-flow: row nowrap;
+        width: calc(100% + 40px);
+        flex-basis: calc(100% + 40px);
+        max-width: calc(100% + 40px);
+        padding-bottom: rem(40px);
+
+        @include sm {
+            flex-wrap: wrap;
+        }
+    }
+
+    .com-item {
+        display: flex;
+        flex-flow: row nowrap;
+        flex-basis: 50%;
+        flex-grow: 0;
+        max-width: 50%;
+        padding-top: rem(20px);
+    }
+
+    .com-item-content {
+        height: 100%;
+        padding: rem(5px);
+        padding-left: rem(20px);
+        border-left: rem(2px) solid #173A5E;
+    }
+
+    .com-item-value {
+        margin: 0;
+        font-size: rem(28px);
+        line-height: 1.5;
+        letter-spacing: 0.2px;
+        font-weight: 400;
+        color: #99CCF3;
+        font-weight: 700;
+    }
+
+    .com-item-name {
+        margin: 0;
+        font-size: rem(16px);
+        line-height: 1.5;
+        letter-spacing: 0;
+        font-weight: 400;
+        color: #e0e0e0;
+    }
+}
+
+.customer-section {
+    padding-top: 5rem;
+    padding-bottom: 5rem;
+    background: linear-gradient(180deg, #fafafa 0%, #FFFFFF 100%);
 }
 
 .customer-feedback-card {
@@ -230,20 +568,16 @@
     align-items: flex-start;
     width: 100%;
     height: 100%;
-    //box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.15);
-    //border-radius: rem(16px);
     padding: rem(46px) rem(40px);
     box-sizing: border-box;
     background-color: $White;
     cursor: pointer;
 
     @include md {
-        //border-radius: rem(14px);
         padding: rem(28px) rem(25px);
     }
 
     @include sm {
-        //border-radius: rem(14px);
         padding: rem(24px);
     }
 
@@ -256,16 +590,6 @@
         border-radius: 50%;
         cursor: pointer;
         background-size: rem(32px);
-        //@include md {
-        //    width: rem(28px);
-        //    height: rem(28px);
-        //    margin-bottom: rem(8px);
-        //}
-        //@include sm {
-        //    width: rem(25px);
-        //    height: rem(25px);
-        //    margin-bottom: rem(4px);
-        //}
     }
 
     .customer-feedback-txt {
@@ -366,437 +690,6 @@
 
             @include sm {
                 border-radius: rem(14px);
-            }
-        }
-    }
-}
-
-.section-title {
-    margin: rem(88px) 0 rem(32px);
-    font-weight: 700;
-    font-size: rem(40px);
-    line-height: rem(56px);
-    color: $B3Color;
-
-    @include lg {
-        font-size: rem(36px);
-    }
-
-    @include md {
-        margin: rem(24px) 0 rem(16px);
-        font-size: rem(24px);
-        line-height: rem(40px);
-    }
-
-    @include sm {
-        margin: rem(32px) 0 rem(12px);
-        font-size: rem(20px);
-        line-height: rem(32px);
-    }
-}
-
-.section-desc {
-    margin-bottom: rem(40px);
-    font-weight: 400;
-    font-size: rem(16px);
-    line-height: rem(32px);
-    color: $Gray1;
-
-    @include md {
-        margin-bottom: rem(32px);
-        font-size: rem(14px);
-        line-height: rem(28px);
-    }
-
-    @include sm {
-        margin-bottom: rem(28px);
-        font-size: rem(14px);
-        line-height: rem(28px);
-    }
-}
-
-.template-card {
-    display: flex;
-    flex-flow: row nowrap;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    padding: rem(24px) rem(40px) rem(24px) rem(104px);
-    border-radius: rem(20px);
-    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.15);
-    box-sizing: border-box;
-    background-color: $White;
-
-    @include lg {
-        padding: rem(40px) rem(32px) rem(40px) rem(88px);
-    }
-
-    @include md {
-        border-radius: rem(16px);
-        padding: rem(40px) rem(32px);
-    }
-
-    @include sm {
-        padding: rem(24px) rem(16px);
-    }
-
-    .template-content-continaer {
-        display: flex;
-        flex-flow: column nowrap;
-        justify-content: center;
-        align-items: flex-start;
-        width: 100%;
-        max-width: rem(394px);
-        margin-right: rem(5px);
-
-        @include md {
-            max-width: rem(336px);
-        }
-
-        @include sm {
-            max-width: 100%;
-            margin-right: 0;
-        }
-    }
-
-    .template-name {
-        margin-bottom: rem(32px);
-        font-weight: 700;
-        font-size: rem(30px);
-        line-height: rem(40px);
-        color: $Black1;
-
-        @include lg {
-            font-size: rem(26px);
-        }
-
-        @include md {
-            margin-bottom: rem(8px);
-            font-size: rem(20px);
-            line-height: rem(32px);
-        }
-
-        @include sm {
-            margin-bottom: rem(16px);
-            font-weight: 600;
-            font-size: rem(18px);
-            line-height: rem(32px);
-        }
-    }
-
-    .template-desc {
-        margin-bottom: rem(24px);
-        font-weight: 400;
-        font-size: rem(16px);
-        line-height: rem(32px);
-        color: $Gray1;
-
-        @include md {
-            margin-bottom: rem(8px);
-            font-size: rem(14px);
-            line-height: rem(28px);
-        }
-
-        @include sm {
-            margin-bottom: rem(32px);
-            font-size: rem(12px);
-            line-height: rem(24px);
-        }
-    }
-
-    .template-link {
-        display: flex;
-        flex-flow: row nowrap;
-        align-items: center;
-        font-weight: 700;
-        font-size: rem(16px);
-        line-height: rem(32px);
-        color: $B6Color;
-        cursor: pointer;
-
-        @include md {
-            font-size: rem(12px);
-            line-height: rem(24px);
-        }
-
-        @include sm {
-            font-weight: 600;
-            font-size: rem(12px);
-            line-height: rem(24px);
-        }
-    }
-
-    .template-link-arrow {
-        width: rem(20px);
-        height: rem(20px);
-        margin-left: rem(8px);
-        background-image: url('/images/arrow-right-blue-icon.svg');
-        background-position: center;
-        background-repeat: no-repeat;
-        background-size: cover;
-
-        @include sm {
-            width: rem(18px);
-            height: rem(18px);
-            margin-left: rem(2px);
-        }
-    }
-
-    .template-img {
-        width: rem(564px);
-        height: rem(376px);
-        background-image: url('/images/home/project-template.webp');
-        background-position: center;
-        background-repeat: no-repeat;
-        background-size: cover;
-
-        @include lg {
-            width: rem(498px);
-            height: rem(332px);
-        }
-
-        @include md {
-            width: rem(300px);
-            height: rem(200px);
-        }
-
-        @include sm {
-            display: none;
-        }
-    }
-}
-
-.service-section {
-    .section-card-group {
-        width: 100%;
-        display: flex;
-        flex-flow: row nowrap;
-        justify-content: space-between;
-        align-items: center;
-
-        @include lt-lg {
-            flex-flow: column nowrap;
-            justify-content: flex-start;
-            align-items: flex-start;
-        }
-    }
-}
-
-.servic-card {
-    position: relative;
-    width: calc(50% - 27px);
-    height: 100%;
-    min-height: rem(296px);
-    background-color: $White;
-    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.15);
-    border-radius: rem(20px);
-    padding: rem(46px) rem(40px);
-    box-sizing: border-box;
-
-    @include lg {
-        min-height: rem(264px);
-        padding: rem(32px) rem(24px);
-    }
-
-    @include md {
-        margin-bottom: rem(12px);
-        width: calc(100% - 38px);
-        min-height: unset;
-        padding: rem(30px) rem(24px);
-    }
-
-    @include sm {
-        margin-bottom: rem(24px);
-        width: 100%;
-        min-height: unset;
-        padding: rem(24px);
-    }
-
-    &:last-child {
-        margin: 0;
-    }
-
-    .service-content-container {
-        display: flex;
-        flex-flow: column nowrap;
-        justify-content: center;
-        align-items: flex-start;
-        width: calc(100% - 186px);
-        //@include lg {
-        //    width: calc(100% - 138px);
-        //}
-
-        @include md {
-            width: calc(100% - 144px);
-        }
-
-        @include sm {
-            width: 100%;
-        }
-    }
-
-    .service-name {
-        margin-bottom: rem(20px);
-        font-weight: 700;
-        font-size: rem(30px);
-        line-height: rem(40px);
-        color: $Black1;
-
-        @include lg {
-            font-size: rem(26px);
-        }
-
-        @include md {
-            margin-bottom: rem(30px);
-            font-size: rem(20px);
-            line-height: rem(32px);
-        }
-
-        @include sm {
-            margin-bottom: rem(16px);
-            font-weight: 600;
-            font-size: rem(18px);
-            line-height: rem(32px);
-        }
-    }
-
-    .service-desc {
-        margin-bottom: rem(16px);
-        font-weight: 400;
-        font-size: rem(16px);
-        line-height: rem(32px);
-        color: $Gray1;
-
-        @include md {
-            margin-bottom: rem(12px);
-            font-size: rem(14px);
-            line-height: rem(20px);
-        }
-
-        @include sm {
-            margin-bottom: rem(16px);
-            font-size: rem(14px);
-            line-height: rem(20px);
-        }
-    }
-
-    .service-link {
-        font-weight: 700;
-        font-size: rem(16px);
-        line-height: rem(32px);
-        color: $B6Color;
-
-        @include md {
-            font-weight: 600;
-        }
-
-        @include sm {
-            font-weight: 600;
-            font-size: rem(12px);
-            line-height: rem(24px);
-        }
-    }
-
-    .download-row {
-        display: none;
-        margin-bottom: rem(20px);
-        padding-left: rem(40px);
-        background-image: url('/images/home/download-blue-icon.svg');
-        background-position: center left;
-        background-repeat: no-repeat;
-        background-size: rem(32px);
-        font-weight: 400;
-        font-size: rem(12px);
-        line-height: rem(24px);
-        color: $Gray1;
-
-        .bold-txt {
-            font-weight: 600;
-            font-size: rem(16px);
-            line-height: rem(32px);
-            color: $Black1;
-        }
-
-        @include sm {
-            display: block;
-        }
-    }
-
-    .service-badge--blue {
-        position: absolute;
-        right: rem(-36px);
-        top: 50%;
-        transform: translateY(-50%);
-        display: flex;
-        flex-flow: column nowrap;
-        justify-content: center;
-        align-items: center;
-        width: rem(192px);
-        height: rem(192px);
-        box-shadow: 0px 4px 20px rgba(0, 101, 239, 0.3);
-        border-radius: rem(20px);
-        background: linear-gradient(225.14deg, #004EBA -11.79%, #0164EC 95.46%);
-
-        @include lg {
-            right: rem(-38px);
-            width: rem(160px);
-            height: rem(160px);
-        }
-
-        @include md {
-            right: rem(-38px);
-            width: rem(156px);
-            height: rem(156px);
-        }
-
-        @include sm {
-            display: none;
-        }
-
-        .badge-icon {
-            width: rem(50px);
-            height: rem(53px);
-            background-image: url('/images/home/download-white-icon.svg');
-            background-position: center;
-            background-repeat: no-repeat;
-            background-size: cover;
-            margin-bottom: rem(21px);
-
-            @include lt-xl {
-                width: rem(44px);
-                height: rem(46px);
-                margin-bottom: rem(12px);
-            }
-        }
-
-        .badge-txt {
-            font-weight: 700;
-            font-size: rem(16px);
-            line-height: rem(32px);
-            color: $Gray4;
-
-            @include md {
-                font-size: rem(14px);
-                line-height: rem(28px);
-            }
-        }
-
-        .badge-main-txt {
-            font-weight: 600;
-            font-size: rem(34px);
-            line-height: rem(48px);
-            color: $White;
-
-            @include lg {
-                font-weight: 700;
-                font-size: rem(26px);
-                line-height: rem(40px);
-            }
-
-            @include md {
-                font-weight: 700;
-                font-size: rem(20px);
-                line-height: rem(32px);
             }
         }
     }

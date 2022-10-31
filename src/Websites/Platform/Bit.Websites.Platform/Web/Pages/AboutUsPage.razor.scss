@@ -1,0 +1,358 @@
+﻿@import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_media-queries.scss';
+
+.page-container {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: flex-start;
+    width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+    //background-color: $White;
+}
+
+.page-section {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.page-section-contnet {
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+    width: 100%;
+    max-width: rem(1200px);
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: rem(20px);
+    padding-right: rem(20px);
+    box-sizing: border-box;
+}
+
+.text--gradiant {
+    background: linear-gradient(to right, #007FFF, #0059B2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.section-title {
+    margin: 0;
+    margin-top: rem(10px);
+    margin-bottom: rem(10px);
+    font-size: rem(32px);
+    font-weight: 800;
+    line-height: 1.2;
+    color: #132F4C;
+
+    @include lg {
+        font-size: rem(28px);
+    }
+
+    @include lt-lg {
+        font-size: rem(24px);
+    }
+}
+
+.vision-section {
+    padding-top: rem(160px);
+    padding-bottom: rem(60px);
+
+    @include lg {
+        padding-top: rem(208px);
+        padding-bottom: rem(60px);
+    }
+
+    @include md {
+        padding-top: rem(152px);
+        padding-bottom: rem(30px);
+    }
+
+    @include sm {
+        padding-top: rem(188px);
+        padding-bottom: rem(30px);
+    }
+
+    .page-section-contnet {
+        justify-content: center;
+        min-height: rem(300px);
+        margin-left: auto;
+        margin-right: auto;
+        text-align: center;
+    }
+
+    .vision-title {
+        margin: 0;
+        margin-top: rem(10px);
+        margin-bottom: rem(10px);
+        font-size: rem(52px);
+        font-weight: 700;
+        line-height: 1.2;
+        color: #132F4C;
+
+        @include lg {
+            font-size: rem(42px);
+        }
+
+        @include lt-lg {
+            font-size: rem(32px);
+        }
+    }
+}
+
+.values-section {
+    padding-top: rem(60px);
+    padding-bottom: rem(60px);
+
+    @include lt-lg {
+        padding-top: rem(30px);
+        padding-bottom: rem(30px);
+    }
+
+    .card-list {
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: center;
+        width: calc(100% + 20px);
+        margin-left: -20px;
+        margin-top: rem(30px);
+        margin-bottom: rem(30px);
+    }
+
+    .value-card {
+        flex-basis: calc((100% / 3) - 20px);
+        flex-grow: 0;
+        max-width: calc((100% / 3) - 20px);
+        min-width: rem(275px);
+        padding: rem(20px);
+        margin-top: rem(20px);
+        margin-left: rem(20px);
+        border-radius: rem(4px);
+        border: rem(1px) solid #E0E3E7;
+        box-shadow: 0 1.6px 3.6px 0 rgb(0 0 0 / 13%), 0 0.3px 0.9px 0 rgb(0 0 0 / 11%);
+        box-sizing: border-box;
+        color: #1A2027;
+        transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+        background-color: $White;
+    }
+
+    .value-card-title {
+        margin-bottom: rem(10px);
+        font-size: rem(20px);
+        line-height: 1.5;
+        letter-spacing: 0;
+        font-weight: 700;
+        color: #1A2027;
+        padding-left: rem(40px);
+        box-sizing: border-box;
+        background-position: center left;
+        background-repeat: no-repeat;
+    }
+
+    .value-card-desc {
+        font-size: rem(16px);
+        line-height: 1.5;
+        letter-spacing: 0;
+        font-weight: 400;
+        color: #3E5060;
+    }
+
+    .quality-icon {
+        background-image: url('/images/about-us/quality-icon.webp');
+        background-size: rem(28px);
+    }
+
+    .integrity-icon {
+        background-image: url('/images/about-us/integrity-icon.webp');
+        background-size: rem(30px);
+    }
+
+    .transparency-icon {
+        background-image: url('/images/about-us/transparency-icon.webp');
+        background-size: rem(28px);
+    }
+}
+
+.download-section {
+    background: linear-gradient(85deg, rgb(19, 47, 76) 0%, rgb(23, 58, 94) 100%);
+    padding-top: rem(80px);
+    padding-bottom: rem(80px);
+
+    @include lt-lg {
+        padding-top: rem(40px);
+        padding-bottom: rem(40px);
+    }
+
+    .download-container {
+        display: flex;
+        flex-flow: column nowrap;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .download-value {
+        width: calc(100% - 40px);
+        margin: 0;
+        line-height: 1.5;
+        font-size: rem(32px);
+        letter-spacing: 0.2px;
+        color: rgb(153, 204, 243);
+        font-weight: 800;
+        padding-bottom: rem(8px);
+        margin-bottom: rem(8px);
+        border-bottom: rem(1px) solid rgba(224, 224, 224, 0.4);
+        text-align: center;
+
+        @include lg {
+            font-size: rem(28px);
+        }
+
+        @include lt-lg {
+            font-size: rem(24px);
+        }
+    }
+
+    .download-name {
+        margin: 0;
+        font-size: rem(24px);
+        line-height: 1.5;
+        letter-spacing: 0;
+        font-weight: 400;
+        color: rgb(224, 224, 224);
+    }
+}
+
+.team-section {
+    padding-top: rem(80px);
+    padding-bottom: rem(80px);
+
+    @include lt-lg {
+        padding-top: rem(40px);
+        padding-bottom: rem(40px);
+    }
+
+    .card-list {
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: flex-start;
+        width: calc(100% + 20px);
+        margin-left: -20px;
+        margin-top: rem(30px);
+        margin-bottom: rem(30px);
+    }
+
+    .member-card {
+        flex-basis: calc(25% - 20px);
+        flex-grow: 0;
+        max-width: calc(25% - 20px);
+        padding: rem(20px);
+        margin-top: rem(20px);
+        margin-left: rem(20px);
+        border-radius: rem(4px);
+        border: rem(1px) solid #E0E3E7;
+        box-shadow: 0 1.6px 3.6px 0 rgb(0 0 0 / 13%), 0 0.3px 0.9px 0 rgb(0 0 0 / 11%);
+        box-sizing: border-box;
+        color: #1A2027;
+        transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+        background-color: $White;
+
+        @include md {
+            flex-basis: calc(50% - 20px);
+            flex-grow: 0;
+            max-width: calc(50% - 20px);
+        }
+
+        @include sm {
+            flex-basis: 100%;
+            flex-grow: 0;
+            max-width: 100%;
+        }
+    }
+
+    .flex-container {
+        display: flex;
+        flex-flow: row nowrap;
+        justify-content: space-between;
+        width: 100%;
+    }
+
+    .member-img {
+        width: rem(70px);
+        height: rem(70px);
+        border-radius: rem(10px);
+        overflow: hidden;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        background-color: #C2E0FF;
+        object-fit: cover;
+        color: transparent;
+        text-indent: 10000px;
+    }
+
+    .contact-grp {
+        display: flex;
+        flex-flow: row nowrap;
+    }
+
+    .contact-lnk {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: rem(36px);
+        height: rem(36px);
+        box-sizing: border-box;
+        background-color: transparent;
+        outline: 0;
+        border: 0;
+        cursor: pointer;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        text-decoration: none;
+        flex: 0 0 auto;
+        padding: rem(8px);
+        border-radius: 50%;
+        overflow: visible;
+        color: rgba(0, 0, 0, 0.54);
+        transition: background-color 150ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: rem(20px);
+
+        &:hover {
+            background-color: rgba(0, 0, 0, 0.04);
+        }
+    }
+
+    .github {
+        background-image: url('/images/about-us/github-icon.webp');
+    }
+
+    .twitter {
+        background-image: url('/images/about-us/twitter-icon.webp');
+    }
+
+    .member-name {
+        margin: 0;
+        font-size: rem(14px);
+        line-height: 1.5;
+        letter-spacing: 0;
+        font-weight: 700;
+        margin-top: rem(20px);
+        margin-bottom: rem(5px);
+    }
+
+    .member-position {
+        margin: 0;
+        font-size: rem(14px);
+        line-height: 1.5;
+        letter-spacing: 0;
+        font-weight: 400;
+        color: #3E5060;
+    }
+}

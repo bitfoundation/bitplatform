@@ -1,11 +1,13 @@
 ﻿@import "../../Styles/Fluent/colors.fluent.scss", "../../Styles/functions.scss";
 
-.bit-drp-fluent {
-    position: relative;
-    width: 100%;
-    font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+.bit-drp {
+    &.bit-drp-fluent {
+        position: relative;
+        width: 100%;
+        font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+    }
 
-    .bit-drp-lbl {
+    .lbl {
         font-size: rem(14px);
         font-weight: 600;
         color: $Grey160;
@@ -201,6 +203,7 @@
         box-sizing: border-box;
         display: inline-block;
         text-decoration: none;
+        margin-left: auto;
 
         & > span {
             display: flex;
@@ -224,489 +227,511 @@
             background-color: $Grey20;
         }
     }
-}
 
-.bit-drp-overlay {
-    display: none;
-    width: 100%;
-    height: 100%;
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 999;
-    background-color: transparent;
-}
-
-.bit-drp-wrapper {
-    position: relative;
-    outline: none;
-    box-sizing: border-box;
-    cursor: pointer;
-    user-select: none;
-    -webkit-font-smoothing: antialiased;
-
-    &:hover {
-        .bit-drp-wrapper-txt {
-            color: $Grey160;
-            border: 1px solid $Grey160;
-        }
-    }
-
-    &:active {
-        .bit-drp-wrapper-txt {
-            border-color: $CyanBlue10;
-            color: $Grey190;
-        }
-    }
-
-    &:focus {
-        .bit-drp-wrapper-txt {
-            color: $Grey160;
-        }
-    }
-
-    &:focus::after {
-        pointer-events: none;
-        content: "";
-        position: absolute;
-        box-sizing: border-box;
-        top: 0px;
-        left: 0px;
+    .drp-overlay {
+        display: none;
         width: 100%;
         height: 100%;
-        border: 2px solid $Primary;
-        border-radius: 2px;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 999;
+        background-color: transparent;
     }
 
-    .bit-drp-wrapper-txt {
-        height: 32px;
-        font-size: rem(14px);
-        font-weight: 400;
-        color: $Grey130;
+    .drp-wrapper {
         position: relative;
-        margin: 0;
-        padding: 0 rem(28px) 0 rem(8px);
-        box-sizing: border-box;
-        display: block;
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        line-height: rem(30px);
         outline: none;
-        border: 1px solid $Grey130;
-        border-radius: rem(2px);
-    }
-
-    .bit-drp-wrapper-ic {
-        position: absolute;
-        top: rem(1px);
-        right: rem(8px);
-        height: rem(32px);
-        line-height: rem(30px);
+        box-sizing: border-box;
         cursor: pointer;
+        user-select: none;
+        -webkit-font-smoothing: antialiased;
 
-        i {
-            display: inline-block;
-            width: unset;
-            -webkit-font-smoothing: antialiased;
-            font-size: rem(12px);
-            color: $Grey130;
-            speak: none;
+        &:hover {
+            .drp-wrapper-txt {
+                color: $Grey160;
+                border: 1px solid $Grey160;
+            }
+        }
+
+        &:active {
+            .drp-wrapper-txt {
+                border-color: $CyanBlue10;
+                color: $Grey190;
+            }
+        }
+
+        &:focus {
+            .drp-wrapper-txt {
+                color: $Grey160;
+            }
+        }
+
+        &:focus::after {
             pointer-events: none;
-        }
-    }
-}
-
-.bit-drp-invalid-fluent {
-    .bit-drp-wrapper {
-        &:hover {
-            .bit-drp-wrapper-txt {
-                border-color: $PinkRed10;
-            }
-        }
-
-        &:active {
-            .bit-drp-wrapper-txt {
-                border-color: $PinkRed10;
-            }
-        }
-
-        &:focus::after {
-            border-color: $PinkRed10;
-        }
-
-        .bit-drp-wrapper-txt {
-            border-color: $Red20;
-        }
-    }
-}
-
-.bit-drp-disabled-fluent {
-    .bit-drp-wrapper {
-        background-color: $Grey20;
-        cursor: default;
-
-        .bit-drp-wrapper-txt {
-            color: $Grey90;
-            border-color: $Grey20;
-        }
-
-        &:hover {
-            .bit-drp-wrapper-txt {
-                color: $Grey90;
-                border-color: $Grey20;
-            }
-        }
-
-        &:active {
-            .bit-drp-wrapper-txt {
-                color: $Grey90;
-                border-color: $Grey20;
-            }
-        }
-
-        &:focus::after {
-            width: 0;
-            height: 0;
-            border: none;
-        }
-
-        .bit-drp-wrapper-ic {
-            i:first-child {
-                color: $Grey90;
-            }
-        }
-    }
-
-    .bit-drp-lbl {
-        color: $Grey90;
-    }
-}
-
-.bit-drp-disabled-fluent.bit-drp-has-value-fluent {
-    .bit-drp-wrapper {
-        .bit-drp-wrapper-txt {
-            color: $Grey90;
-        }
-    }
-}
-
-.bit-drp-has-value-fluent {
-    .bit-drp-wrapper {
-        .bit-drp-wrapper-txt {
-            color: $Grey190;
-        }
-    }
-}
-
-.bit-drp-responsive-fluent {
-    @media only screen and (max-width: #{em(639px)}) {
-        .bit-drp-items-wrapper {
-            position: fixed;
-            z-index: 10000;
-            height: 100%;
-            max-height: unset;
-            width: rem(272px);
-            padding: em(24px) em(20px);
-            box-shadow: rgba(0, 0, 0, 0.22) 0 25.6px 57.6px 0, rgba(0, 0, 0, 0.18) 0 4.8px 14.4px 0;
-            animation-name: opacity, trans-x;
-            animation-duration: 0.367s;
-            animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
-            animation-fill-mode: both;
-        }
-
-        .bit-drp-close-btn-contianer {
-            display: flex;
-            justify-content: flex-end;
-        }
-
-        .bit-drp-overlay {
-            background: rgba(255, 255, 255, 0.4);
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 100%;
+            content: "";
+            position: absolute;
+            box-sizing: border-box;
+            top: 0px;
+            left: 0px;
             width: 100%;
-            z-index: 10000;
-            pointer-events: auto;
-            cursor: pointer;
+            height: 100%;
+            border: 2px solid $Primary;
+            border-radius: 2px;
         }
-    }
-}
 
-.bit-drp-items-wrapper {
-    display: none;
-    position: fixed;
-    max-height: rem(744px);
-    font-size: rem(14px);
-    font-weight: 400;
-    box-sizing: border-box;
-    border-radius: 0 0 rem(2px) rem(2px);
-    box-shadow: rgba(0,0,0,0.13) 0px 3.2px 7.2px 0px, rgba(0,0,0,0.11) 0px 0.6px 1.8px 0px;
-    animation-name: opacity, trans-y;
-    animation-duration: 0.367s;
-    animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
-    animation-fill-mode: both;
-    background-color: $White;
-    z-index: 1001;
-    overflow: hidden;
-    -webkit-font-smoothing: antialiased;
-
-    .scroll-wrapper {
-        height: 100%;
-        max-height: rem(711px);
-        overflow: hidden auto;
-    }
-
-    .bit-drp-head-fluent {
-        width: 100%;
-        height: 36px;
-        padding: 0 rem(8px);
-        box-sizing: border-box;
-        font-size: rem(15px);
-        font-weight: 600;
-        line-height: 36px;
-        color: $Primary;
-        background: none transparent;
-        cursor: default;
-        text-align: left;
-        user-select: none;
-        -webkit-font-smoothing: antialiased;
-    }
-
-    .bit-drp-item {
-        width: 100%;
-        height: 36px;
-        display: flex;
-        align-items: center;
-        position: relative;
-        font-size: rem(15px);
-        text-align: left;
-        line-height: rem(20px);
-        font-weight: 400;
-        box-sizing: border-box;
-        outline: transparent;
-        border: 1px solid transparent;
-        text-decoration: none;
-        padding: 0 rem(8px);
-        color: $Grey160;
-        background-color: transparent;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        cursor: pointer;
-        user-select: none;
-        -webkit-font-smoothing: antialiased;
-
-        &:hover {
-            background-color: $Grey20;
-        }
-    }
-
-    .bit-drp-item[disabled] {
-        cursor: default;
-        color: $Grey90;
-
-        &:hover {
-            background-color: transparent;
-        }
-    }
-
-    .bit-drp-slc-fluent {
-        background-color: $Grey30;
-
-        &:hover {
-            background-color: $Grey30;
-        }
-    }
-
-    .bit-drp-div-fluent {
-        width: 100%;
-        height: 1px;
-        background-color: $Grey30;
-    }
-
-    .bit-drp-chb-fluent {
-        width: 100%;
-        height: 36px;
-        display: flex;
-        align-items: center;
-        box-sizing: border-box;
-        padding: 0 rem(8px);
-        margin: 0;
-        line-height: rem(20px);
-        border: 1px solid transparent;
-        text-align: left;
-        color: $Grey190;
-        background-color: transparent;
-        cursor: pointer;
-        position: relative;
-
-        > div {
-            width: 100%;
-            align-items: center;
-
-            > div:nth-child(2) {
-                width: 100%;
-            }
-        }
-    }
-
-    .bit-drp-chb-fluent.bit-drp-slc-fluent {
-        background-color: $Grey30;
-
-        &:hover {
-            background-color: $Grey30;
-        }
-    }
-
-    .bit-drp-chb-fluent {
-        .bit-drp-chb-lbl {
-            display: flex;
-            align-items: center;
+        .drp-wrapper-txt {
+            height: 32px;
             font-size: rem(14px);
             font-weight: 400;
+            color: $Grey130;
+            position: relative;
+            margin: 0;
+            padding: 0 rem(28px) 0 rem(8px);
+            box-sizing: border-box;
+            display: block;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            line-height: rem(30px);
+            outline: none;
+            border: 1px solid $Grey130;
+            border-radius: rem(2px);
+        }
+
+        .drp-wrapper-ic {
+            position: absolute;
+            top: rem(1px);
+            right: rem(8px);
+            height: rem(32px);
+            line-height: rem(30px);
+            cursor: pointer;
+
+            i {
+                display: inline-block;
+                width: unset;
+                -webkit-font-smoothing: antialiased;
+                font-size: rem(12px);
+                color: $Grey130;
+                speak: none;
+                pointer-events: none;
+            }
+        }
+    }
+
+    .items-wrapper {
+        display: none;
+        position: fixed;
+        max-height: rem(744px);
+        font-size: rem(14px);
+        font-weight: 400;
+        box-sizing: border-box;
+        border-radius: 0 0 rem(2px) rem(2px);
+        box-shadow: rgba(0,0,0,0.13) 0px 3.2px 7.2px 0px, rgba(0,0,0,0.11) 0px 0.6px 1.8px 0px;
+        animation-name: opacity, trans-y;
+        animation-duration: 0.367s;
+        animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
+        animation-fill-mode: both;
+        background-color: $White;
+        z-index: 1001;
+        overflow: hidden;
+        -webkit-font-smoothing: antialiased;
+
+        .scroll-wrapper {
+            height: 100%;
+            max-height: rem(711px);
+            overflow: hidden auto;
+        }
+
+        .item-header {
+            width: 100%;
+            height: 36px;
+            padding: 0 rem(8px);
+            box-sizing: border-box;
+            font-size: rem(15px);
+            font-weight: 600;
+            line-height: 36px;
+            color: $Primary;
+            background: none transparent;
+            cursor: default;
+            user-select: none;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .drp-item {
+            width: 100%;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            position: relative;
+            font-size: rem(15px);
+            text-align: left;
+            line-height: rem(20px);
+            font-weight: 400;
+            box-sizing: border-box;
+            outline: transparent;
+            border: 1px solid transparent;
+            text-decoration: none;
+            padding: 0 rem(8px);
+            color: $Grey160;
+            background-color: transparent;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            cursor: pointer;
+            user-select: none;
+            -webkit-font-smoothing: antialiased;
+
+            &:hover {
+                background-color: $Grey20;
+            }
+        }
+
+        .drp-item[disabled] {
+            cursor: default;
+            color: $Grey90;
+
+            &:hover {
+                background-color: transparent;
+            }
+        }
+
+        .drp-slc {
+            background-color: $Grey30;
+
+            &:hover {
+                background-color: $Grey30;
+            }
+        }
+
+        .item-divider {
+            width: 100%;
+            height: 1px;
+            background-color: $Grey30;
+        }
+
+        .drp-chb {
+            width: 100%;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            box-sizing: border-box;
+            padding: 0 rem(8px);
+            margin: 0;
+            line-height: rem(20px);
+            border: 1px solid transparent;
+            text-align: left;
+            color: $Grey190;
+            background-color: transparent;
             cursor: pointer;
             position: relative;
-            user-select: none;
-            width: 100%;
-            height: 100%;
-        }
 
-        .bit-drp-chb-checkbox {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: rem(20px);
-            height: rem(20px);
-            border: rem(1px) solid $Grey160;
-            border-radius: rem(2px);
-            margin: 0 rem(4px) 0 0;
-            box-sizing: border-box;
-            transition-property: background, border, border-color;
-            transition-duration: 200ms;
-            transition-timing-function: cubic-bezier(0.4, 0, 0.23, 1);
-            overflow: hidden;
-            position: relative;
-        }
+            > div {
+                width: 100%;
+                align-items: center;
 
-        .bit-drp-chb-checkmark {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: $White;
-            font-size: 11px;
-            transition: 0.1s;
-            font-family: 'Fabric MDL2 Assets';
-            -webkit-font-smoothing: antialiased;
-            opacity: 0;
-        }
-
-        .bit-drp-chb-txt {
-            color: $Grey190;
-            line-height: rem(20px);
-            margin: 0 0 0 rem(4px);
-        }
-
-        &:hover {
-            .bit-drp-chb-checkmark {
-                opacity: 1;
-                color: $Grey120;
+                > div:nth-child(2) {
+                    width: 100%;
+                }
             }
         }
-    }
 
-    .bit-drp-chb-checked-fluent {
-        .bit-drp-chb-checkbox {
-            border-color: $Primary;
-            background-color: $Primary;
+        .drp-chb.drp-slc {
+            background-color: $Grey30;
+
+            &:hover {
+                background-color: $Grey30;
+            }
         }
 
-        .bit-drp-chb-checkmark {
-            color: $White;
-            opacity: 1;
-        }
-
-        &:hover {
-            .bit-drp-chb-checkbox {
-                border-color: $Dark;
-                background-color: $Dark;
+        .drp-chb {
+            .drp-chb-lbl {
+                display: flex;
+                gap: rem(8px);
+                align-items: center;
+                font-size: rem(14px);
+                font-weight: 400;
+                cursor: pointer;
+                position: relative;
+                user-select: none;
+                width: 100%;
+                height: 100%;
             }
 
-            .bit-drp-chb-checkmark {
+            .drp-chb-checkbox {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: rem(20px);
+                height: rem(20px);
+                border: rem(1px) solid $Grey160;
+                border-radius: rem(2px);
+                box-sizing: border-box;
+                transition-property: background, border, border-color;
+                transition-duration: 200ms;
+                transition-timing-function: cubic-bezier(0.4, 0, 0.23, 1);
+                overflow: hidden;
+                position: relative;
+            }
+
+            .drp-chb-checkmark {
+                width: 100%;
+                height: 100%;
+                display: flex;
+                justify-content: center;
+                align-items: center;
                 color: $White;
-            }
-        }
-    }
-
-    .bit-drp-chb-disabled-fluent {
-        pointer-events: none;
-
-        .bit-drp-chb-lbl {
-            cursor: default;
-        }
-
-        .bit-drp-chb-checkbox {
-            border-color: $Grey60;
-            background-color: $White;
-        }
-
-        .bit-drp-chb-checkmark {
-            opacity: 1;
-            color: $White;
-            background-color: $White;
-        }
-
-        .bit-drp-chb-txt {
-            color: $Grey60;
-        }
-
-        &:hover {
-            .bit-drp-chb-checkbox {
-                border-color: $Grey60;
-            }
-
-            .bit-drp-chb-checkmark {
+                font-size: 11px;
+                transition: 0.1s;
+                font-family: 'Fabric MDL2 Assets';
+                -webkit-font-smoothing: antialiased;
                 opacity: 0;
             }
-        }
-    }
 
-    .bit-drp-chb-checked-disabled-fluent {
-        .bit-drp-chb-checkbox {
-            border-color: $Grey60;
-            background-color: $Grey60;
+            .drp-chb-txt {
+                color: $Grey190;
+                line-height: rem(20px);
+            }
+
+            &:hover {
+                .bit-drp-chb-checkmark {
+                    opacity: 1;
+                    color: $Grey120;
+                }
+            }
         }
 
-        .bit-drp-chb-checkmark {
-            color: $White;
-            background-color: $Grey60;
-            opacity: 1;
+        .drp-chb-checked {
+            .drp-chb-checkbox {
+                border-color: $Primary;
+                background-color: $Primary;
+            }
+
+            .drp-chb-checkmark {
+                color: $White;
+                opacity: 1;
+            }
+
+            &:hover {
+                .drp-chb-checkbox {
+                    border-color: $Dark;
+                    background-color: $Dark;
+                }
+
+                .drp-chb-checkmark {
+                    color: $White;
+                }
+            }
         }
 
-        &:hover {
-            .bit-drp-chb-checkbox {
+        .drp-chb-disabled {
+            pointer-events: none;
+
+            .drp-chb-lbl {
+                cursor: default;
+            }
+
+            .drp-chb-checkbox {
+                border-color: $Grey60;
+                background-color: $White;
+            }
+
+            .drp-chb-checkmark {
+                opacity: 1;
+                color: $White;
+                background-color: $White;
+            }
+
+            .drp-chb-txt {
+                color: $Grey60;
+            }
+
+            &:hover {
+                .drp-chb-checkbox {
+                    border-color: $Grey60;
+                }
+
+                .drp-chb-checkmark {
+                    opacity: 0;
+                }
+            }
+        }
+
+        .drp-chb-checked-disabled {
+            .drp-chb-checkbox {
                 border-color: $Grey60;
                 background-color: $Grey60;
             }
 
-            .bit-drp-chb-checkmark {
+            .drp-chb-checkmark {
                 color: $White;
                 background-color: $Grey60;
                 opacity: 1;
             }
+
+            &:hover {
+                .drp-chb-checkbox {
+                    border-color: $Grey60;
+                    background-color: $Grey60;
+                }
+
+                .drp-chb-checkmark {
+                    color: $White;
+                    background-color: $Grey60;
+                    opacity: 1;
+                }
+            }
         }
     }
-}
 
-.bit-drp-close-btn-contianer {
-    width: 100%;
-    display: none;
+    .responsive-label-contianer {
+        width: 100%;
+        display: none;
 
-    button {
-        color: $Grey130;
+        button {
+            color: $Grey130;
+        }
+    }
+
+    &.bit-drp-invalid-fluent {
+        .drp-wrapper {
+            &:hover {
+                .drp-wrapper-txt {
+                    border-color: $PinkRed10;
+                }
+            }
+
+            &:active {
+                .drp-wrapper-txt {
+                    border-color: $PinkRed10;
+                }
+            }
+
+            &:focus::after {
+                border-color: $PinkRed10;
+            }
+
+            .drp-wrapper-txt {
+                border-color: $Red20;
+            }
+        }
+    }
+
+    &.bit-drp-disabled-fluent {
+        .drp-wrapper {
+            background-color: $Grey20;
+            cursor: default;
+
+            .drp-wrapper-txt {
+                color: $Grey90;
+                border-color: $Grey20;
+            }
+
+            &:hover {
+                .bit-drp-wrapper-txt {
+                    color: $Grey90;
+                    border-color: $Grey20;
+                }
+            }
+
+            &:active {
+                .bit-drp-wrapper-txt {
+                    color: $Grey90;
+                    border-color: $Grey20;
+                }
+            }
+
+            &:focus::after {
+                width: 0;
+                height: 0;
+                border: none;
+            }
+
+            .drp-wrapper-ic {
+                i:first-child {
+                    color: $Grey90;
+                }
+            }
+        }
+
+        .lbl {
+            color: $Grey90;
+        }
+    }
+
+    &.bit-drp-disabled-fluent.bit-drp-has-value-fluent {
+        .drp-wrapper {
+            .drp-wrapper-txt {
+                color: $Grey90;
+            }
+        }
+    }
+
+    &.bit-drp-has-value-fluent {
+        .drp-wrapper {
+            .drp-wrapper-txt {
+                color: $Grey190;
+            }
+        }
+    }
+
+    &.bit-drp-responsive-fluent {
+        @media only screen and (max-width: #{em(639px)}) {
+            .items-wrapper {
+                position: fixed;
+                z-index: 10000;
+                height: 100%;
+                max-height: unset;
+                width: rem(272px);
+                padding: em(24px) em(20px);
+                box-shadow: rgba(0, 0, 0, 0.22) 0 25.6px 57.6px 0, rgba(0, 0, 0, 0.18) 0 4.8px 14.4px 0;
+                animation-name: opacity, trans-x;
+                animation-duration: 0.367s;
+                animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
+                animation-fill-mode: both;
+            }
+
+            .responsive-label-contianer {
+                display: flex;
+                justify-content: space-between;
+            }
+
+            .drp-overlay {
+                background: rgba(255, 255, 255, 0.4);
+                position: fixed;
+                top: 0;
+                left: 0;
+                height: 100%;
+                width: 100%;
+                z-index: 10000;
+                pointer-events: auto;
+                cursor: pointer;
+            }
+        }
+    }
+
+    &.rtl {
+        direction: rtl;
+
+        .search-box {
+            padding: rem(1px) rem(8px) rem(1px) 0;
+        }
+
+        .drp-wrapper {
+            .drp-wrapper-txt {
+                padding: 0 rem(8px) 0 rem(28px);
+            }
+
+            .drp-wrapper-ic {
+                right: unset;
+                left: rem(8px);
+            }
+        }
+
+        .close-btn {
+            margin-left: unset;
+            margin-right: auto;
+        }
     }
 }
 

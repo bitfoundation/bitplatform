@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Bunit;
@@ -29,7 +28,7 @@ public class BitDropDownTests : BunitTestContext
 
         var component = RenderComponent<BitDropDown>(parameters =>
         {
-            parameters.Add(p => p.Visual, visual);
+            parameters.AddCascadingValue(visual);
             parameters.Add(p => p.IsEnabled, isEnabled);
         });
 
@@ -51,13 +50,13 @@ public class BitDropDownTests : BunitTestContext
       DataRow(Visual.Material, true),
       DataRow(Visual.Material, false)
     ]
-    public void ResponsiveDropDownShouldTakeCorrectClassName(Visual visual, bool isResponsiveModeEnabled)
+    public void ResponsiveDropDownShouldTakeCorrectClassNameAndRenderElements(Visual visual, bool isResponsiveModeEnabled)
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
 
         var component = RenderComponent<BitDropDown>(parameters =>
         {
-            parameters.Add(p => p.Visual, visual);
+            parameters.AddCascadingValue(visual);
             parameters.Add(p => p.IsResponsiveModeEnabled, isResponsiveModeEnabled);
         });
 
@@ -68,6 +67,80 @@ public class BitDropDownTests : BunitTestContext
             var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
 
             Assert.IsTrue(bitDrp.ClassList.Contains($"bit-drp-responsive-{visualClass}"));
+
+            var lblContianer = component.Find(".responsive-label-contianer");
+            Assert.IsNotNull(lblContianer);
+        }
+        else
+        {
+            Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".responsive-label-contianer"));
+        }
+    }
+
+    [DataTestMethod,
+      DataRow(Visual.Fluent, null),
+      DataRow(Visual.Fluent, "BitDeop"),
+
+      DataRow(Visual.Cupertino, null),
+      DataRow(Visual.Cupertino, "BitDeop"),
+
+      DataRow(Visual.Material, null),
+      DataRow(Visual.Material, "BitDeop")
+    ]
+    public void ResponsiveDropDownShouldRenderLabal(Visual visual, string labelFragment)
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropDown>(parameters =>
+        {
+            parameters.AddCascadingValue(visual);
+            parameters.Add(p => p.IsResponsiveModeEnabled, true);
+            parameters.Add(p => p.Label, labelFragment);
+        });
+
+        if (string.IsNullOrEmpty(labelFragment))
+        {
+            Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".responsive-label-contianer > label"));
+        }
+        else
+        {
+            Assert.AreEqual(labelFragment, component.Find(".responsive-label-contianer > label").InnerHtml);
+        }
+    }
+
+    [DataTestMethod,
+      DataRow(Visual.Fluent, null),
+      DataRow(Visual.Fluent, "<div>This is labelFragment</div>"),
+
+      DataRow(Visual.Cupertino, null),
+      DataRow(Visual.Cupertino, "<div>This is labelFragment</div>"),
+
+      DataRow(Visual.Material, null),
+      DataRow(Visual.Material, "<div>This is labelFragment</div>")
+    ]
+    public void ResponsiveDropDownShouldRenderLabelFragment(Visual visual, string labelFragment)
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropDown>(parameters =>
+        {
+            parameters.AddCascadingValue(visual);
+            parameters.Add(p => p.IsResponsiveModeEnabled, true);
+
+            if (string.IsNullOrEmpty(labelFragment) is false)
+            {
+                parameters.Add(p => p.LabelFragment, labelFragment);
+            }
+        });
+
+        if (string.IsNullOrEmpty(labelFragment))
+        {
+            Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".responsive-label-contianer > label"));
+        }
+        else
+        {
+            var labelChild = component.Find(".responsive-label-contianer > label").ChildNodes;
+            labelChild.MarkupMatches(labelFragment);
         }
     }
 
@@ -85,7 +158,7 @@ public class BitDropDownTests : BunitTestContext
             parameters.Add(p => p.OnClick, () => clicked = true);
         });
 
-        var bitDrpWrapper = component.Find(".bit-drp-wrapper");
+        var bitDrpWrapper = component.Find(".drp-wrapper");
         bitDrpWrapper.Click();
 
         Assert.AreEqual(isEnabled, clicked);
@@ -121,11 +194,11 @@ public class BitDropDownTests : BunitTestContext
         if (isMultiSelect)
         {
             Assert.IsTrue(bitDrp.ClassList.Contains($"bit-drp-{multiSelectCalss}{visualClass}"));
-            Assert.AreEqual(items.FindAll(i => i.ItemType == BitDropDownItemType.Normal).Count, component.FindAll(".bit-drp-chb").Count);
+            Assert.AreEqual(items.FindAll(i => i.ItemType == BitDropDownItemType.Normal).Count, component.FindAll(".drp-chb").Count);
         }
         else
         {
-            Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".bit-drp-chb"));
+            Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".drp-chb"));
         }
     }
 
@@ -146,24 +219,22 @@ public class BitDropDownTests : BunitTestContext
         var items = GetDropdownItems();
         var component = RenderComponent<BitDropDown>(parameters =>
         {
+            parameters.AddCascadingValue(visual);
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.Items, items);
             parameters.Add(p => p.IsMultiSelect, isMultiSelect);
-            parameters.Add(p => p.Visual, visual);
         });
 
-        var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
-
-        Assert.AreEqual(items.FindAll(i => i.ItemType == BitDropDownItemType.Header).Count, component.FindAll($".bit-drp-head-{visualClass}").Count);
-        Assert.AreEqual(items.FindAll(i => i.ItemType == BitDropDownItemType.Divider).Count, component.FindAll($".bit-drp-div-{visualClass}").Count);
+        Assert.AreEqual(items.FindAll(i => i.ItemType == BitDropDownItemType.Header).Count, component.FindAll(".item-header").Count);
+        Assert.AreEqual(items.FindAll(i => i.ItemType == BitDropDownItemType.Divider).Count, component.FindAll(".item-divider").Count);
 
         if (isMultiSelect)
         {
-            Assert.AreEqual(items.FindAll(i => i.ItemType == BitDropDownItemType.Normal).Count, component.FindAll(".bit-drp-chb").Count);
+            Assert.AreEqual(items.FindAll(i => i.ItemType == BitDropDownItemType.Normal).Count, component.FindAll(".drp-chb").Count);
         }
         else
         {
-            Assert.AreEqual(items.FindAll(i => i.ItemType == BitDropDownItemType.Normal).Count, component.FindAll(".bit-drp-item").Count);
+            Assert.AreEqual(items.FindAll(i => i.ItemType == BitDropDownItemType.Normal).Count, component.FindAll(".drp-item").Count);
         }
     }
 
@@ -182,7 +253,7 @@ public class BitDropDownTests : BunitTestContext
             parameters.Add(p => p.DefaultValue, defaultValue);
         });
 
-        var textSpan = component.Find(".bit-drp-wrapper-txt");
+        var textSpan = component.Find(".drp-wrapper-txt");
         var expectedText = items.Find(i => i.Value == defaultValue && i.ItemType == BitDropDownItemType.Normal).Text;
 
         Assert.AreEqual(expectedText, textSpan.InnerHtml);
@@ -205,7 +276,7 @@ public class BitDropDownTests : BunitTestContext
             parameters.Add(p => p.DefaultValues, defaultSelectedMultipleValueList);
         });
 
-        var textSpan = component.Find(".bit-drp-wrapper-txt");
+        var textSpan = component.Find(".drp-wrapper-txt");
         var defaultSelectedItems = items.FindAll(i => defaultSelectedMultipleValueList.Contains(i.Value) && i.ItemType == BitDropDownItemType.Normal);
         var expectedText = "";
 
@@ -241,7 +312,7 @@ public class BitDropDownTests : BunitTestContext
             parameters.Add(p => p.Value, value);
         });
 
-        var textSpan = component.Find(".bit-drp-wrapper-txt");
+        var textSpan = component.Find(".drp-wrapper-txt");
         var expectedText = items.Find(i => i.Value == value && i.ItemType == BitDropDownItemType.Normal).Text;
 
         Assert.AreEqual(expectedText, textSpan.InnerHtml);
@@ -264,7 +335,7 @@ public class BitDropDownTests : BunitTestContext
             parameters.Add(p => p.Values, selectedMultipleValueList);
         });
 
-        var textSpan = component.Find(".bit-drp-wrapper-txt");
+        var textSpan = component.Find(".drp-wrapper-txt");
         var selectedItems = items.FindAll(i => selectedMultipleValueList.Contains(i.Value) && i.ItemType == BitDropDownItemType.Normal);
         var expectedText = "";
 
@@ -305,7 +376,7 @@ public class BitDropDownTests : BunitTestContext
             parameters.Add(p => p.Placeholder, placeholder);
         });
 
-        var targetSpan = component.Find(".bit-drp-wrapper-txt");
+        var targetSpan = component.Find(".drp-wrapper-txt");
         var expectedText = "";
 
         if (isMultiSelect)
@@ -395,7 +466,7 @@ public class BitDropDownTests : BunitTestContext
             parameters.Add(p => p.Title, title);
         });
 
-        var drpWrapper = component.Find(".bit-drp-wrapper");
+        var drpWrapper = component.Find(".drp-wrapper");
 
         Assert.AreEqual(title, drpWrapper.GetAttribute("title"));
     }
@@ -426,8 +497,7 @@ public class BitDropDownTests : BunitTestContext
             parameters.Add(p => p.OnSelectItem, () => itemSelecetd = true);
         });
 
-        var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
-        var selectedItem = component.Find($".bit-drp-slc-{visualClass}");
+        var selectedItem = component.Find(".drp-slc");
         selectedItem.Click();
 
         Assert.AreEqual(notifyOnReselect, itemSelecetd);
@@ -461,7 +531,7 @@ public class BitDropDownTests : BunitTestContext
 
         if (isMultiSelect)
         {
-            var drpItems = component.FindAll(".bit-drp-chb", true);
+            var drpItems = component.FindAll(".drp-chb", true);
             drpItems[0].GetElementsByTagName("label").First().Click();
             drpItems[1].GetElementsByTagName("label").First().Click();
             var expectedResult = itemIsEnabled ? 2 : 0;
@@ -469,7 +539,7 @@ public class BitDropDownTests : BunitTestContext
         }
         else
         {
-            var drpItems = component.FindAll(".bit-drp-item");
+            var drpItems = component.FindAll(".drp-item");
             drpItems[0].Click();
             var expectedResult = itemIsEnabled ? 1 : 0;
             Assert.AreEqual(expectedResult, itemsSelected);
@@ -496,7 +566,7 @@ public class BitDropDownTests : BunitTestContext
             parameters.Add(p => p.ValueChanged, HandleValueChanged);
         });
 
-        var drpItems = component.FindAll(".bit-drp-item");
+        var drpItems = component.FindAll(".drp-item");
         drpItems[3].Click();
 
         var expectedValue = items[3].Value;
@@ -525,7 +595,7 @@ public class BitDropDownTests : BunitTestContext
             parameters.Add(p => p.ValuesChanged, HandleValuesChanged);
         });
 
-        var drpItems = component.FindAll(".bit-drp-chb");
+        var drpItems = component.FindAll(".drp-chb");
         drpItems[3].Children[0].Children[0].Click();
 
         int expectedResult;
@@ -569,11 +639,11 @@ public class BitDropDownTests : BunitTestContext
         if (isValid is false)
         {
             // open dropdown
-            var drp = component.Find(".bit-drp-wrapper");
+            var drp = component.Find(".drp-wrapper");
             drp.Click();
 
             // select item
-            var drpItems = component.FindAll(".bit-drp-item");
+            var drpItems = component.FindAll(".drp-item");
             drpItems.First().Click();
 
             form.Submit();
@@ -614,14 +684,14 @@ public class BitDropDownTests : BunitTestContext
         if (isValid is false)
         {
             // open dropdown
-            var drp = component.Find(".bit-drp-wrapper");
+            var drp = component.Find(".drp-wrapper");
             drp.Click();
 
             // select items
-            //var drpItemFirst = component.Find(".bit-drp-chb:first-child");
+            //var drpItemFirst = component.Find(".drp-chb:first-child");
             //drpItemFirst.Children[0].Click();
 
-            //var drpItemLast = component.Find(".bit-drp-chb:last-child");
+            //var drpItemLast = component.Find(".drp-chb:last-child");
             //drpItemLast.Children[0].Click();
 
             form.Submit();
@@ -667,11 +737,11 @@ public class BitDropDownTests : BunitTestContext
         if (isInvalid)
         {
             // open dropdown
-            var drp = component.Find(".bit-drp-wrapper");
+            var drp = component.Find(".drp-wrapper");
             drp.Click();
 
             // select item
-            var drpItems = component.FindAll(".bit-drp-item");
+            var drpItems = component.FindAll(".drp-item");
             drpItems.First().Click();
 
             Assert.IsFalse(selectTag.HasAttribute("aria-invalid"));
@@ -714,14 +784,14 @@ public class BitDropDownTests : BunitTestContext
         if (isInvalid)
         {
             // open dropdown
-            var drp = component.Find(".bit-drp-wrapper");
+            var drp = component.Find(".drp-wrapper");
             drp.Click();
 
             // select items
-            //var drpItemFirst = component.Find(".bit-drp-chb:first-child");
+            //var drpItemFirst = component.Find(".drp-chb:first-child");
             //drpItemFirst.Children[0].Click();
 
-            //var drpItemLast = component.Find(".bit-drp-chb:last-child");
+            //var drpItemLast = component.Find(".drp-chb:last-child");
             //drpItemLast.Children[0].Click();
 
             form.Submit();
@@ -767,11 +837,11 @@ public class BitDropDownTests : BunitTestContext
         if (isInvalid)
         {
             // open dropdown
-            var drp = component.Find(".bit-drp-wrapper");
+            var drp = component.Find(".drp-wrapper");
             drp.Click();
 
             // select item
-            var drpItems = component.FindAll(".bit-drp-item");
+            var drpItems = component.FindAll(".drp-item");
             drpItems.First().Click();
         }
 
@@ -808,10 +878,10 @@ public class BitDropDownTests : BunitTestContext
             parameters.Add(p => p.Items, items);
         });
 
-        var bitDropDown = component.Find(".bit-drp-wrapper");
+        var bitDropDown = component.Find(".drp-wrapper");
         bitDropDown.Click();
 
-        var searchBox = component.FindAll(".bit-drp-items-wrapper .search-box");
+        var searchBox = component.FindAll(".items-wrapper .search-box");
         if (showSearchBox)
         {
             Assert.AreEqual(1, searchBox.Count);
@@ -857,10 +927,10 @@ public class BitDropDownTests : BunitTestContext
             parameters.Add(p => p.Items, items);
         });
 
-        var bitDropDown = component.Find(".bit-drp-wrapper");
+        var bitDropDown = component.Find(".drp-wrapper");
         bitDropDown.Click();
 
-        var drpItems = component.FindAll(isMultiSelect ? ".bit-drp-chb" : ".bit-drp-item", true);
+        var drpItems = component.FindAll(isMultiSelect ? ".drp-chb" : ".drp-item", true);
 
         Assert.AreEqual(items.Count, drpItems.Count);
 
@@ -962,10 +1032,10 @@ public class BitDropDownTests : BunitTestContext
             }
         });
 
-        var bitDropDown = component.Find(".bit-drp-wrapper");
+        var bitDropDown = component.Find(".drp-wrapper");
         bitDropDown.Click();
 
-        var drpItems = component.FindAll(isMultiSelect ? ".bit-drp-chb" : ".bit-drp-item");
+        var drpItems = component.FindAll(isMultiSelect ? ".drp-chb" : ".drp-item");
         var actualRenderedItemCount = drpItems.Count;
 
         if (virtualize)
@@ -989,6 +1059,79 @@ public class BitDropDownTests : BunitTestContext
         }
     }
 
+    [DataTestMethod,
+        DataRow(BitIconName.WindowsLogo),
+        DataRow(BitIconName.ChevronUp),
+        DataRow(null)
+    ]
+    public void BitDropDownCaretDownIconNameTest(BitIconName? iconName)
+    {
+        var component = RenderComponent<BitDropDown>(parameters =>
+        {
+            if (iconName.HasValue)
+            {
+                parameters.Add(p => p.CaretDownIconName, iconName.Value);
+            }
+        });
+
+        if (iconName.HasValue)
+        {
+            Assert.IsTrue(component.Find(".drp-wrapper-ic > i").ClassList.Contains($"bit-icon--{iconName.GetDisplayName()}"));
+        }
+        else
+        {
+            Assert.IsTrue(component.Find(".drp-wrapper-ic > i").ClassList.Contains($"bit-icon--{BitIconName.ChevronDown.GetDisplayName()}"));
+        }
+    }
+
+    [DataTestMethod,
+        DataRow("<i>This is CaretDownFragment</div>"),
+        DataRow(null)
+    ]
+    public void BitDropDownCaretDownFragmentTest(string iconFragment)
+    {
+        var component = RenderComponent<BitDropDown>(parameters =>
+        {
+            if (string.IsNullOrEmpty(iconFragment) is false)
+            {
+                parameters.Add(p => p.CaretDownFragment, iconFragment);
+            }
+        });
+
+        if (string.IsNullOrEmpty(iconFragment))
+        {
+            Assert.IsTrue(component.Find(".drp-wrapper-ic > i").ClassList.Contains($"bit-icon--{BitIconName.ChevronDown.GetDisplayName()}"));
+        }
+        else
+        {
+            var drpCaretDownChild = component.Find(".drp-wrapper-ic").ChildNodes;
+            drpCaretDownChild.MarkupMatches(iconFragment);
+        }
+    }
+
+    [DataTestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitDropDownIsRtlTest(bool isRtl)
+    {
+        var component = RenderComponent<BitDropDown>(parameters =>
+        {
+            parameters.Add(p => p.IsRtl, isRtl);
+        });
+
+        var bitDrp = component.Find(".bit-drp");
+
+        if (isRtl)
+        {
+            Assert.IsTrue(bitDrp.ClassList.Contains("rtl"));
+        }
+        else
+        {
+            Assert.IsFalse(bitDrp.ClassList.Contains("rtl"));
+        }
+    }
+
     private void HandleValueChanged(string value)
     {
         BitDropDownValue = value;
@@ -1001,78 +1144,78 @@ public class BitDropDownTests : BunitTestContext
 
     private List<BitDropDownItem> GetDropdownItems()
     {
-        List<BitDropDownItem> items = new();
-        items.Add(new BitDropDownItem()
+        return new()
         {
-            ItemType = BitDropDownItemType.Header,
-            Text = "Fruits"
-        });
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Normal,
-            Text = "Apple",
-            Value = "f-app"
-        });
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Normal,
-            Text = "Orange",
-            Value = "f-ora",
-        });
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Normal,
-            Text = "Banana",
-            Value = "f-ban",
-        });
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Divider,
-        });
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Header,
-            Text = "Vegetables"
-        });
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Normal,
-            Text = "Broccoli",
-            Value = "v-bro",
-        });
-
-        return items;
+            new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Header,
+                Text = "Fruits"
+            },
+            new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Normal,
+                Text = "Apple",
+                Value = "f-app"
+            },
+            new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Normal,
+                Text = "Orange",
+                Value = "f-ora",
+            },
+            new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Normal,
+                Text = "Banana",
+                Value = "f-ban",
+            },
+            new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Divider,
+            },
+            new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Header,
+                Text = "Vegetables"
+            },
+            new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Normal,
+                Text = "Broccoli",
+                Value = "v-bro",
+            }
+        };
     }
 
     private List<BitDropDownItem> GetRawDropdownItems()
     {
-        List<BitDropDownItem> items = new();
-        items.Add(new BitDropDownItem()
+        return new()
         {
-            ItemType = BitDropDownItemType.Normal,
-            Text = "Apple",
-            Value = "f-app"
-        });
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Normal,
-            Text = "Orange",
-            Value = "f-ora"
-        });
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Normal,
-            Text = "Banana",
-            Value = "f-ban"
-        });
-        items.Add(new BitDropDownItem()
-        {
-            ItemType = BitDropDownItemType.Normal,
-            Text = "Broccoli",
-            Value = "v-bro"
-        });
-
-        return items;
+            new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Normal,
+                Text = "Apple",
+                Value = "f-app"
+            },
+            new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Normal,
+                Text = "Orange",
+                Value = "f-ora"
+            },
+            new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Normal,
+                Text = "Banana",
+                Value = "f-ban"
+            },
+            new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Normal,
+                Text = "Broccoli",
+                Value = "v-bro"
+            }
+        };
     }
 
     private List<BitDropDownItem> GetRawDropdownItems(int count)

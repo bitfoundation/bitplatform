@@ -2,6 +2,7 @@
 
 .bit-otp {
     &.bit-otp-fluent {
+        display: flex;
         position: relative;
         margin: 0;
         padding: 0;
@@ -25,56 +26,51 @@
         }
     }
 
-    .otp-input-wrapper {
-        outline: none;
-        display: flex;
+    &.left-to-right {
+        flex-direction: row;
 
-        &.left-to-right {
-            flex-direction: row;
+        .otp-input {
+            margin-right: rem(10px);
 
-            .otp-input {
-                margin-right: rem(10px);
-
-                &:last-child {
-                    margin-right: unset;
-                }
+            &:last-child {
+                margin-right: unset;
             }
         }
+    }
 
-        &.right-to-left {
-            flex-direction: row-reverse;
-            justify-content: flex-end;
+    &.right-to-left {
+        flex-direction: row-reverse;
+        justify-content: flex-end;
 
-            .otp-input {
-                margin-left: rem(10px);
+        .otp-input {
+            margin-left: rem(10px);
 
-                &:last-child {
-                    margin-left: unset;
-                }
+            &:last-child {
+                margin-left: unset;
             }
         }
+    }
 
-        &.top-to-bottom {
-            flex-direction: column;
+    &.top-to-bottom {
+        flex-direction: column;
 
-            .otp-input {
-                margin-bottom: rem(10px);
+        .otp-input {
+            margin-bottom: rem(10px);
 
-                &:last-child {
-                    margin-bottom: unset;
-                }
+            &:last-child {
+                margin-bottom: unset;
             }
         }
+    }
 
-        &.bottom-to-top {
-            flex-direction: column-reverse;
+    &.bottom-to-top {
+        flex-direction: column-reverse;
 
-            .otp-input {
-                margin-top: rem(10px);
+        .otp-input {
+            margin-top: rem(10px);
 
-                &:last-child {
-                    margin-top: unset;
-                }
+            &:last-child {
+                margin-top: unset;
             }
         }
     }
@@ -90,17 +86,15 @@
         border: rem(1px) solid $Grey130;
         background-color: $White;
         cursor: pointer;
+        text-align: center;
 
-        &.focused {
+        &:focus {
             outline: none;
             border: rem(2px) solid $Primary;
         }
-    }
 
-    .paswword-input {
-        width: rem(3px);
-        height: rem(3px);
-        border-radius: 50%;
-        background-color: $Black;
+        &::-webkit-inner-spin-button, &::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+        }
     }
 }
