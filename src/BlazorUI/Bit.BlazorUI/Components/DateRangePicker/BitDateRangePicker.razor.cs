@@ -68,9 +68,9 @@ public partial class BitDateRangePicker
     [Parameter] public RenderFragment<DateTimeOffset>? DayCellTemplate { get; set; }
 
     /// <summary>
-    /// FormatDate for the DateRangePicker
+    /// DateFormat for the DateRangePicker
     /// </summary>
-    [Parameter] public string? FormatDate { get; set; }
+    [Parameter] public string? DateFormat { get; set; }
 
     /// <summary>
     /// GoToToday text for the DateRangePicker
@@ -230,9 +230,9 @@ public partial class BitDateRangePicker
     [Parameter] public int TabIndex { get; set; }
 
     /// <summary>
-    /// FormatValue for the DateRangePicker
+    /// ValueFormat for the DateRangePicker
     /// </summary>
-    [Parameter] public string FormatValue { get; set; } = "Start: {0} - End: {1}";
+    [Parameter] public string ValueFormat { get; set; } = "Start: {0} - End: {1}";
 
     /// <summary>
     /// Used to customize how content inside the year cell is rendered.
@@ -327,7 +327,7 @@ public partial class BitDateRangePicker
         //    return true;
         //}
 
-        //if (DateTime.TryParseExact(value, FormatDate ?? Culture.DateTimeFormat.ShortDatePattern, Culture, DateTimeStyles.None, out DateTime parsedValue))
+        //if (DateTime.TryParseExact(value, DateFormat ?? Culture.DateTimeFormat.ShortDatePattern, Culture, DateTimeStyles.None, out DateTime parsedValue))
         //{
         //    result = new DateTimeOffset(parsedValue, DateTimeOffset.Now.Offset);
         //    validationErrorMessage = null;
@@ -351,10 +351,10 @@ public partial class BitDateRangePicker
             return null;
         }
 
-        var valueStr = String.Format(FormatValue, value.StartDate.GetValueOrDefault().ToString(FormatDate ?? Culture.DateTimeFormat.ShortDatePattern, Culture), "--");
+        var valueStr = String.Format(ValueFormat, value.StartDate.GetValueOrDefault().ToString(DateFormat ?? Culture.DateTimeFormat.ShortDatePattern, Culture), "---");
         if (value.EndDate is not null)
         {
-            valueStr = String.Format(FormatValue, value.StartDate.GetValueOrDefault().ToString(FormatDate ?? Culture.DateTimeFormat.ShortDatePattern, Culture), value.EndDate.GetValueOrDefault().ToString(FormatDate ?? Culture.DateTimeFormat.ShortDatePattern, Culture));
+            valueStr = String.Format(ValueFormat, value.StartDate.GetValueOrDefault().ToString(DateFormat ?? Culture.DateTimeFormat.ShortDatePattern, Culture), value.EndDate.GetValueOrDefault().ToString(DateFormat ?? Culture.DateTimeFormat.ShortDatePattern, Culture));
         }
 
         return valueStr;
