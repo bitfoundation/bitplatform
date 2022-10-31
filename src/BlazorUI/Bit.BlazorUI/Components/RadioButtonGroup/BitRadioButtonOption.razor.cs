@@ -16,7 +16,7 @@ public partial class BitRadioButtonOption : IDisposable
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// Whether or not the option is checked
+    /// Whether or not the option is checked.
     /// </summary>
     [Parameter]
     public bool IsChecked
@@ -32,7 +32,7 @@ public partial class BitRadioButtonOption : IDisposable
     }
 
     /// <summary>
-    /// Callback for when the option IsChecked changes
+    /// Callback for when the option IsChecked changes.
     /// </summary>
     [Parameter] public EventCallback<bool> IsCheckedChanged { get; set; }
 
@@ -47,7 +47,7 @@ public partial class BitRadioButtonOption : IDisposable
     [Parameter] public string? ImageSrc { get; set; }
 
     /// <summary>
-    /// Alt text if the option is an image. default is an empty string
+    /// Alt text if the option is an image. default is an empty string.
     /// </summary>
     [Parameter] public string? ImageAlt { get; set; }
 
@@ -57,14 +57,24 @@ public partial class BitRadioButtonOption : IDisposable
     [Parameter] public Size? ImageSize { get; set; }
 
     /// <summary>
-    /// This value is used to group each RadioButtonGroupOption into the same logical RadioButtonGroup
+    /// Used to customize the label for the RadioButtonGroupOption.
+    /// </summary>
+    [Parameter] public RenderFragment? LabelTemplate { get; set; }
+
+    /// <summary>
+    /// This value is used to group each RadioButtonGroupOption into the same logical RadioButtonGroup.
     /// </summary>
     [Parameter] public string? Name { get; set; }
 
     /// <summary>
-    /// RadioButtonOption content, It can be a text
+    /// Callback for when the RadioButtonOption clicked.
     /// </summary>
-    [Parameter] public string? Text { get; set; }
+    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+    /// <summary>
+    /// Callback for when the option has been changed.
+    /// </summary>
+    [Parameter] public EventCallback<bool> OnChange { get; set; }
 
     /// <summary>
     /// The src of image for choice field which is selected.
@@ -72,21 +82,18 @@ public partial class BitRadioButtonOption : IDisposable
     [Parameter] public string? SelectedImageSrc { get; set; }
 
     /// <summary>
-    /// Value of selected RadioButtonOption
+    /// RadioButtonOption content, It can be a text.
+    /// </summary>
+    [Parameter] public string? Text { get; set; }
+
+    /// <summary>
+    /// Value of selected RadioButtonOption.
     /// </summary>
     [Parameter] public string? Value { get; set; }
 
-    /// <summary>
-    /// Callback for when the RadioButtonOption clicked
-    /// </summary>
-    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
-
-    /// <summary>
-    /// Callback for when the option has been changed
-    /// </summary>
-    [Parameter] public EventCallback<bool> OnChange { get; set; }
-
     [CascadingParameter] protected BitRadioButtonGroup? RadioButtonGroup { get; set; }
+
+    protected override string RootElementClass => "bit-rbo";
 
     protected override Task OnInitializedAsync()
     {
@@ -116,8 +123,6 @@ public partial class BitRadioButtonOption : IDisposable
         return base.OnParametersSetAsync();
     }
 
-    protected override string RootElementClass => "bit-rbo";
-
     protected override void RegisterComponentClasses()
     {
         ClassBuilder.Register(() => (ImageSrc.HasValue() || IconName.HasValue) && ChildContent is null
@@ -141,7 +146,7 @@ public partial class BitRadioButtonOption : IDisposable
 
     private string GetLabelClassNameStr()
     {
-        var className = (ImageSrc.HasValue() || IconName.HasValue) && ChildContent is null ? "bit-rbo-lbl-with-img" : "bit-rbo-lbl";
+        var className = (ImageSrc.HasValue() || IconName.HasValue) && ChildContent is null && LabelTemplate is null ? "bit-rbo-lbl-with-img" : "bit-rbo-lbl";
         return className;
     }
 
