@@ -25,12 +25,12 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.Bswup" Version="4.7.0-pre-03" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="4.7.0-pre-03">
+        <PackageReference Include="Bit.Bswup" Version="4.7.0-pre-04" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="4.7.0-pre-04">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="4.7.0-pre-03">
+        <PackageReference Include="Bit.SourceGenerators" Version="4.7.0-pre-04">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
