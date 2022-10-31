@@ -1,30 +1,35 @@
 ﻿@page "/components/radio-button-group"
 
-<ComponentDemo ComponentName="RadioButtonGroup" ComponentDescription="Radio buttons (RadioButtonGroup) let people select a single option from two or more choices."
-               ComponentParameters="componentParameters" EnumParameters="enumParameters">
-    <ComponentExampleBox Title="BitRadioButtonGroup" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
+<ComponentDemo ComponentName="RadioButtonGroup"
+               ComponentDescription="Radio buttons (RadioButtonGroup) let people select a single option from two or more choices."
+               ComponentParameters="componentParameters"
+               ComponentSubParameters="componentSubParameters">
+
+    <ComponentExampleBox Title="Basic RadioButtonGroup" HTMLSourceCode="@example1HTMLCode" ExampleId="example1">
         <ExamplePreview>
-            <div class="example-desc">To create a RadioButtonGroup you can use a BitRadioButtonGroup component</div>
-            <div class="ch-group">
-                <BitLabel>Selected Key is : @MyValue</BitLabel>
-                <BitTextField @bind-Value="MyValue" Placeholder="Select one of A, B or C"></BitTextField>
-                <BitRadioButtonGroup Name="Group1" Label="Pick one" IsRequired="true" @bind-Value="MyValue">
-                    <BitRadioButtonOption Text="Option A" Value="A"></BitRadioButtonOption>
-                    <BitRadioButtonOption Text="Option B" Value="B"></BitRadioButtonOption>
-                    <BitRadioButtonOption Text="Disabled option C" Value="C" IsEnabled="false"></BitRadioButtonOption>
-                </BitRadioButtonGroup>
-            </div>
+            <div class="example-desc">To create a RadioButtonGroup you can use a BitRadioButtonGroup component.</div>
+            <BitRadioButtonGroup Name="Group1" Label="Pick one" DefaultValue="A">
+                <BitRadioButtonOption Text="Option A" Value="A" />
+                <BitRadioButtonOption Text="Option B" Value="B" />
+                <BitRadioButtonOption Text="Option C" Value="C" />
+            </BitRadioButtonGroup>
         </ExamplePreview>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="Disabled" HTMLSourceCode="@example2HTMLCode" ExampleId="example2">
         <ExamplePreview>
-            <div class="example-desc">BitRadioButtonGroup in disabled mode.</div>
-            <div>
-                <BitRadioButtonGroup Name="Group2" IsEnabled="false" Label="Pick one" DefaultValue="C">
-                    <BitRadioButtonOption Text="Option A" Value="A"></BitRadioButtonOption>
-                    <BitRadioButtonOption Text="Option2 B" Value="B"></BitRadioButtonOption>
-                    <BitRadioButtonOption Text="Disabled option C" Value="C" IsEnabled="false"></BitRadioButtonOption>
+            <div class="example-desc">you can disable RadioButtonGroup or RadioButtonOption.</div>
+            <div class="rbg-box">
+                <BitRadioButtonGroup Name="Group1" Label="Disabled RadioButtonGroup" IsEnabled="false" DefaultValue="A">
+                    <BitRadioButtonOption Text="Option A" Value="A" />
+                    <BitRadioButtonOption Text="Option B" Value="B" />
+                    <BitRadioButtonOption Text="Option C" Value="C" />
+                </BitRadioButtonGroup>
+
+                <BitRadioButtonGroup Name="Group1" Label="Disabled RadioButtonOption" DefaultValue="A">
+                    <BitRadioButtonOption Text="Option A" Value="A" />
+                    <BitRadioButtonOption Text="Option B" Value="B" IsEnabled="false" />
+                    <BitRadioButtonOption Text="Option C" Value="C" />
                 </BitRadioButtonGroup>
             </div>
         </ExamplePreview>
@@ -32,82 +37,157 @@
 
     <ComponentExampleBox Title="RadioButtonGroup with images" HTMLSourceCode="@example3HTMLCode" ExampleId="example3">
         <ExamplePreview>
-            <div>
-                <BitRadioButtonGroup Name="Group1" Label="Pick one image" DefaultValue="pie">
-                    <BitRadioButtonOption Text="Clustered bar chart" Value="bar" ImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png" ImageAlt="alt for image Option 1" SelectedImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png" ImageSize="new System.Drawing.Size( width: 32, height: 32)"></BitRadioButtonOption>
-                    <BitRadioButtonOption Text="Pie chart" Value="pie" ImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png" ImageAlt="alt for image Option 2" SelectedImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png" ImageSize="new System.Drawing.Size( width: 32, height: 32)"></BitRadioButtonOption>
-                    <BitRadioButtonOption Text="Disabeled" IsEnabled="false" Value="disabeled_option" ImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png" ImageAlt="alt for image Option 2" SelectedImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png" ImageSize="new System.Drawing.Size( width: 32, height: 32)"></BitRadioButtonOption>
-                </BitRadioButtonGroup>
-            </div>
+            <div class="example-desc">RadioButtonGroup with images also you can set the selected image src for selected mode. in addition, image size style and img tag alt attribute are settable.</div>
+            <BitRadioButtonGroup Name="Group1" Label="Pick one image" DefaultValue="bar">
+                <BitRadioButtonOption Text="Clustered bar chart"
+                                      Value="bar"
+                                      ImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png"
+                                      ImageAlt="alt for image Option 1"
+                                      SelectedImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png"
+                                      ImageSize="new System.Drawing.Size( width: 32, height: 32)" />
+                <BitRadioButtonOption Text="Pie chart"
+                                      Value="pie"
+                                      ImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png"
+                                      ImageAlt="alt for image Option 2"
+                                      SelectedImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png"
+                                      ImageSize="new System.Drawing.Size( width: 32, height: 32)" />
+            </BitRadioButtonGroup>
         </ExamplePreview>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="RadioButtonGroup with icons" HTMLSourceCode="@example4HTMLCode" ExampleId="example4">
         <ExamplePreview>
-            <div>
-                <BitRadioButtonGroup Name="Group1" Label="Pick one icon">
-                    <BitRadioButtonOption Text="Day" Value="day" IconName="BitIconName.CalendarDay"></BitRadioButtonOption>
-                    <BitRadioButtonOption Text="Week" Value="week" IconName="BitIconName.CalendarWeek"></BitRadioButtonOption>
-                    <BitRadioButtonOption Text="Month" Value="month" IconName="BitIconName.Calendar" IsEnabled="false"></BitRadioButtonOption>
-                </BitRadioButtonGroup>
-            </div>
+            <div class="example-desc">by BitIconName Interface you can select an icon name for showing in your option.</div>
+            <BitRadioButtonGroup Name="Group1" Label="Pick one icon" DefaultValue="Day">
+                <BitRadioButtonOption Text="Day" Value="Day" IconName="BitIconName.CalendarDay" />
+                <BitRadioButtonOption Text="Week" Value="Week" IconName="BitIconName.CalendarWeek" />
+                <BitRadioButtonOption Text="Month" Value="Month" IconName="BitIconName.Calendar" IsEnabled="false" />
+            </BitRadioButtonGroup>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="RadioButtonGroup with custom Option" CSharpSourceCode="@example5CSharpCode" HTMLSourceCode="@example5HTMLCode" ExampleId="example5">
+    <ComponentExampleBox Title="RadioButtonGroup with LabelTemplate" HTMLSourceCode="@example5HTMLCode" ExampleId="example5">
         <ExamplePreview>
-            <div>
-                <BitRadioButtonGroup Name="Group1" Label="Pick one option" @bind-Value="CustomOptionValue">
+            <div class="example-desc">Customize the RadioButtonGroup Label content.</div>
+            <BitRadioButtonGroup Name="Group1" DefaultValue="A">
+                <LabelTemplate>
+                    <div class="custom-label">
+                        Custom label <BitIcon IconName="BitIconName.Filter" />
+                    </div>
+                </LabelTemplate>
+                <ChildContent>
+                    <BitRadioButtonOption Text="Option A" Value="A" />
+                    <BitRadioButtonOption Text="Option B" Value="B" />
+                    <BitRadioButtonOption Text="Option C" Value="C" />
+                </ChildContent>
+            </BitRadioButtonGroup>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="RadioButtonGroup with custom Option" HTMLSourceCode="@example6HTMLCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example6">
+        <ExamplePreview>
+            <div class="example-desc">Customize the RadioButtonGroup Option content.</div>
+            <div class="rbg-box">
+                <BitRadioButtonGroup Name="Group1" Label="Option Template" @bind-Value="OptionTemplateValue" DefaultValue="Day">
                     <BitRadioButtonOption Value="Day">
-                        <div class="custom-option @(CustomOptionValue is "Day" ? "selected-option" : "")">
+                        <div class="custom-option @(OptionTemplateValue is "Day" ? "selected-option" : "")">
                             <div class="radio-pointer"></div>
                             <BitIcon IconName="BitIconName.CalendarDay" />
                             <span>Day</span>
                         </div>
                     </BitRadioButtonOption>
                     <BitRadioButtonOption Value="Week">
-                        <div class="custom-option @(CustomOptionValue is "Week" ? "selected-option" : "")">
+                        <div class="custom-option @(OptionTemplateValue is "Week" ? "selected-option" : "")">
                             <div class="radio-pointer"></div>
                             <BitIcon IconName="BitIconName.CalendarWeek" />
                             <span>Week</span>
                         </div>
                     </BitRadioButtonOption>
                     <BitRadioButtonOption Value="Month">
-                        <div class="custom-option @(CustomOptionValue is "Month" ? "selected-option" : "")">
+                        <div class="custom-option @(OptionTemplateValue is "Month" ? "selected-option" : "")">
                             <div class="radio-pointer"></div>
                             <BitIcon IconName="BitIconName.Calendar" />
                             <span>Month</span>
                         </div>
                     </BitRadioButtonOption>
                 </BitRadioButtonGroup>
+
+                <BitRadioButtonGroup Name="Group1" Label="Option Label Template" @bind-Value="OptionLabelTemplateValue" DefaultValue="Day">
+                    <BitRadioButtonOption Value="Day">
+                       <LabelTemplate>
+                            <div style="margin-left: 27px;" class="custom-option @(OptionLabelTemplateValue == "Day" ? "selected-option" : "")">
+                                <BitIcon IconName="BitIconName.CalendarDay" />
+                                <span>Day</span>
+                            </div>
+                       </LabelTemplate>
+                    </BitRadioButtonOption>
+                    <BitRadioButtonOption Value="Week">
+                        <LabelTemplate>
+                            <div style="margin-left: 27px;" class="custom-option @(OptionLabelTemplateValue is "Week" ? "selected-option" : "")">
+                                <BitIcon IconName="BitIconName.CalendarWeek" />
+                                <span>Week</span>
+                            </div>
+                        </LabelTemplate>
+                    </BitRadioButtonOption>
+                    <BitRadioButtonOption Value="Month">
+                        <LabelTemplate>
+                            <div style="margin-left: 27px;" class="custom-option @(OptionLabelTemplateValue is "Month" ? "selected-option" : "")">
+                                <BitIcon IconName="BitIconName.Calendar" />
+                                <span>Month</span>
+                            </div>
+                        </LabelTemplate>
+                    </BitRadioButtonOption>
+                </BitRadioButtonGroup>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="RadioButtonGroup with validation" CSharpSourceCode="@example6CSharpCode" HTMLSourceCode="@example6HTMLCode" ExampleId="example6">
+    <ComponentExampleBox Title="RadioButtonGroup Binding" HTMLSourceCode="@example7HTMLCode" CSharpSourceCode="@example7CSharpCode" ExampleId="example7">
         <ExamplePreview>
+            <div class="rbg-box">
+                <div>
+                    <BitRadioButtonGroup Name="Group1" Label="One-way" Value="@ChoiceGroupOneWayValue" DefaultValue="A">
+                        <BitRadioButtonOption Text="Option A" Value="A" />
+                        <BitRadioButtonOption Text="Option B" Value="B" />
+                        <BitRadioButtonOption Text="Option C" Value="C" />
+                    </BitRadioButtonGroup>
+                    <div class="rbg-output">
+                        <BitTextField Placeholder="A..." @bind-Value="ChoiceGroupOneWayValue" />
+                    </div>
+                </div>
+                <div>
+                    <BitRadioButtonGroup Name="Group1" Label="Two-way" @bind-Value="ChoiceGroupTwoWayValue" DefaultValue="A">
+                        <BitRadioButtonOption Text="Option A" Value="A" />
+                        <BitRadioButtonOption Text="Option B" Value="B" />
+                        <BitRadioButtonOption Text="Option C" Value="C" />
+                    </BitRadioButtonGroup>
+                    <div class="rbg-output">
+                        <BitTextField @bind-Value="ChoiceGroupTwoWayValue" />
+                    </div>
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="RadioButtonGroup with validation" HTMLSourceCode="@example8HTMLCode" CSharpSourceCode="@example8CSharpCode" ExampleId="example8">
+        <ExamplePreview>
+            <div class="example-desc">RadioButtonGroup validation in form (Required pick one)</div>
             @if (string.IsNullOrEmpty(SuccessMessage))
             {
                 <EditForm Model="FormValidationModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
                     <DataAnnotationsValidator />
-
                     <div class="validation-summary">
                         <ValidationSummary />
                     </div>
-
                     <div>
                         <BitRadioButtonGroup Name="Group1" Label="Pick one" @bind-Value="@FormValidationModel.Option">
                             <BitRadioButtonOption Text="Option A" Value="A"></BitRadioButtonOption>
                             <BitRadioButtonOption Text="Option B" Value="B"></BitRadioButtonOption>
                             <BitRadioButtonOption Text="Disabled option C" Value="C" IsEnabled="false"></BitRadioButtonOption>
                         </BitRadioButtonGroup>
-
                         <ValidationMessage For="@(() => FormValidationModel.Option)" />
                     </div>
-
-                    <BitButton ButtonType="BitButtonType.Submit">
-                        Submit
-                    </BitButton>
+                    <BitButton Style="margin-top: 10px;" ButtonType="BitButtonType.Submit">Submit</BitButton>
                 </EditForm>
             }
             else
