@@ -4,7 +4,7 @@ VisualStudioVersion = 17.0.31611.283
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".SolutionItems", ".SolutionItems", "{5CF43F76-BB71-4B5B-B4DF-1C753E042A8F}"
 	ProjectSection(SolutionItems) = preProject
-		.gitignore = .gitignore
+		..\.gitignore = ..\.gitignore
 		Directory.Build.props = Directory.Build.props
 		global.json = global.json
 	EndProjectSection
@@ -35,6 +35,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 	ProjectSection(SolutionItems) = preProject
 		..\.github\workflows\cd.yml = ..\.github\workflows\cd.yml
 		..\.github\workflows\ci.yml = ..\.github\workflows\ci.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".azure-devops", ".azure-devops", "{AEE266C3-9E0B-4C41-A491-54D339708C06}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{28C56D1E-528C-4C7F-8A14-A540B6FCB20F}"
+	ProjectSection(SolutionItems) = preProject
+		..\.azure-devops\workflows\cd.yml = ..\.azure-devops\workflows\cd.yml
+		..\.azure-devops\workflows\ci.yml = ..\.azure-devops\workflows\ci.yml
 	EndProjectSection
 EndProject
 Global
@@ -82,6 +90,8 @@ Global
 		{22816913-64D5-4AE8-9B34-6F188B71FAD1} = {248D8229-BABD-4F0A-A9C6-0417B464507B}
 		{D66B7377-367F-4D57-B176-6F172DFD9ABC} = {5CF43F76-BB71-4B5B-B4DF-1C753E042A8F}
 		{423403B0-D47A-49BF-91EA-4A1280DD8608} = {D66B7377-367F-4D57-B176-6F172DFD9ABC}
+		{AEE266C3-9E0B-4C41-A491-54D339708C06} = {5CF43F76-BB71-4B5B-B4DF-1C753E042A8F}
+		{28C56D1E-528C-4C7F-8A14-A540B6FCB20F} = {AEE266C3-9E0B-4C41-A491-54D339708C06}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {61F7FB11-1E47-470C-91E2-47F8143E1572}

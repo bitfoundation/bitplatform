@@ -8,7 +8,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Azure.Storage.Blobs" Version="12.14.0" />
         <PackageReference Include="Pulumi.AzureNative" Version="1.81.0" />
     </ItemGroup>
 

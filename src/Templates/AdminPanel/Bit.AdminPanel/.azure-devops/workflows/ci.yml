@@ -1,0 +1,186 @@
+trigger:
+- develop
+
+variables:
+  WEB_APP_DEPLOYMENT_TYPE: 'DefaultDeploymentType'
+
+jobs:
+- job: build_blazor_server
+  displayName: 'build blazor server'
+
+  pool:
+    vmImage: 'ubuntu-latest'
+
+  steps:
+  - task: UseDotNet@2
+    displayName: 'Setup .NET'
+    inputs:
+      useGlobalJson: true
+      workingDirectory: 'src'
+
+  - task: UseDotNet@2
+    displayName: 'Use dotnet sdk 6.x for LibSassBuilder'
+    inputs:
+      version: 6.x
+  
+  - task: Bash@3
+    displayName: 'Build'
+    inputs:
+      targetType: 'inline'
+      script: 'dotnet build src/Client/Web/AdminPanel.Client.Web.csproj -p:Configuration=Release -p:WebAppDeploymentType="${{ variables.WEB_APP_DEPLOYMENT_TYPE }}"'
+
+- job: build_blazor_hybrid_android
+  displayName: 'build blazor hybrid (android)'
+
+  pool:
+    vmImage: 'windows-latest'
+
+  steps:
+  - task: UseDotNet@2
+    displayName: 'Setup .NET'
+    inputs:
+      useGlobalJson: true
+      workingDirectory: 'src'
+
+  - task: UseDotNet@2
+    displayName: 'Use dotnet sdk 6.x for LibSassBuilder'
+    inputs:
+      version: 6.x
+
+  - task: Bash@3
+    displayName: 'Restore workloads'
+    inputs:
+      targetType: 'inline'
+      script: 'dotnet workload restore src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-android'
+  
+  - task: Bash@3
+    displayName: 'Build'
+    inputs:
+      targetType: 'inline'
+      script: 'dotnet build src/Client/App/AdminPanel.Client.App.csproj -p:RunAOTCompilation=false -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net7.0-android'
+
+- job: build_blazor_hybrid_windows
+  displayName: 'build blazor hybrid (windows)'
+
+  pool:
+    vmImage: 'windows-latest'
+
+  steps:
+  - task: UseDotNet@2
+    displayName: 'Setup .NET'
+    inputs:
+      useGlobalJson: true
+      workingDirectory: 'src'
+
+  - task: UseDotNet@2
+    displayName: 'Use dotnet sdk 6.x for LibSassBuilder'
+    inputs:
+      version: 6.x
+
+  - task: Bash@3
+    displayName: 'Restore workloads'
+    inputs:
+      targetType: 'inline'
+      script: 'dotnet workload restore src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-windows10.0.19041.0'
+  
+  - task: Bash@3
+    displayName: 'Build'
+    inputs:
+      targetType: 'inline'
+      script: 'dotnet build src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net7.0-windows10.0.19041.0'
+
+- job: build_blazor_hybrid_iOS
+  displayName: 'build blazor hybrid (iOS)'
+
+  pool:
+    vmImage: 'macos-12'
+
+  steps:
+  - task: UseDotNet@2
+    displayName: 'Setup .NET'
+    inputs:
+      useGlobalJson: true
+      workingDirectory: 'src'
+
+  - task: UseDotNet@2
+    displayName: 'Use dotnet sdk 6.x for LibSassBuilder'
+    inputs:
+      version: 6.x
+
+  - task: Bash@3
+    displayName: 'Restore workloads'
+    inputs:
+      targetType: 'inline'
+      script: 'dotnet workload restore src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-ios'
+  
+  - task: Bash@3
+    displayName: 'Build'
+    inputs:
+      targetType: 'inline'
+      script: 'dotnet build src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net7.0-ios'
+
+- job: build_blazor_hybrid_maccatalyst
+  displayName: 'build blazor hybrid (maccatalyst)'
+
+  pool:
+    vmImage: 'macos-latest'
+
+  steps:
+  - task: UseDotNet@2
+    displayName: 'Setup .NET'
+    inputs:
+      useGlobalJson: true
+      workingDirectory: 'src'
+
+  - task: UseDotNet@2
+    displayName: 'Use dotnet sdk 6.x for LibSassBuilder'
+    inputs:
+      version: 6.x
+
+  - task: Bash@3
+    displayName: 'Restore workloads'
+    inputs:
+      targetType: 'inline'
+      script: 'dotnet workload restore src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-maccatalyst'
+  
+  - task: Bash@3
+    displayName: 'Build'
+    inputs:
+      targetType: 'inline'
+      script: 'dotnet build src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net7.0-maccatalyst'
+
+- job: build_blazor_api_wasm
+  displayName: 'build blazor api + web assembly'
+
+  pool:
+    vmImage: 'ubuntu-latest'
+
+  steps:
+  - task: UseDotNet@2
+    displayName: 'Setup .NET'
+    inputs:
+      useGlobalJson: true
+      workingDirectory: 'src'
+
+  - task: UseDotNet@2
+    displayName: 'Use dotnet sdk 6.x for LibSassBuilder'
+    inputs:
+      version: 6.x
+
+  - task: Bash@3
+    displayName: 'Restore workloads'
+    inputs:
+      targetType: 'inline'
+      script: 'dotnet workload restore src/Client/Web/AdminPanel.Client.Web.csproj -p:BlazorMode=BlazorWebAssembly'
+
+  - task: Bash@3
+    displayName: 'Switch to blazor web assembly'
+    inputs:
+      targetType: 'inline'
+      script: sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' src/Client/Web/AdminPanel.Client.Web.csproj
+
+  - task: Bash@3
+    displayName: 'Build'
+    inputs:
+      targetType: 'inline'
+      script: 'dotnet build src/Client/Web/AdminPanel.Client.Web.csproj -p:Configuration=Release -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ variables.WEB_APP_DEPLOYMENT_TYPE }}"'
