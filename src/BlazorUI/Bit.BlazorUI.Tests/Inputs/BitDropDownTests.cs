@@ -1109,6 +1109,29 @@ public class BitDropDownTests : BunitTestContext
         }
     }
 
+    [DataTestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitDropDownIsRtlTest(bool isRtl)
+    {
+        var component = RenderComponent<BitDropDown>(parameters =>
+        {
+            parameters.Add(p => p.IsRtl, isRtl);
+        });
+
+        var bitDrp = component.Find(".bit-drp");
+
+        if (isRtl)
+        {
+            Assert.IsTrue(bitDrp.ClassList.Contains("rtl"));
+        }
+        else
+        {
+            Assert.IsFalse(bitDrp.ClassList.Contains("rtl"));
+        }
+    }
+
     private void HandleValueChanged(string value)
     {
         BitDropDownValue = value;

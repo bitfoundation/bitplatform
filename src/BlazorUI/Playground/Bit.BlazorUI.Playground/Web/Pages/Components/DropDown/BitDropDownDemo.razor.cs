@@ -147,6 +147,52 @@ public partial class BitDropDownDemo
         };
     }
 
+    private List<BitDropDownItem> GetArabicDropdownItems()
+    {
+        return new()
+        {
+            new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Header,
+                Text = "الفاكهة"
+            },
+            new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Normal,
+                Text = "تفاحة",
+                Value = "f-app"
+            },
+            new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Normal,
+                Text = "البرتقالي",
+                Value = "f-ora",
+                IsEnabled = false
+            },
+            new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Normal,
+                Text = "موز",
+                Value = "f-ban",
+            },
+            new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Divider,
+            },
+            new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Header,
+                Text = "خضروات"
+            },
+            new BitDropDownItem()
+            {
+                ItemType = BitDropDownItemType.Normal,
+                Text = "بروكلي",
+                Value = "v-bro",
+            }
+        };
+    }
+
     private List<BitDropDownItem> GetCustomDropdownItems()
     {
         return new List<BitDropDownItem>()
@@ -569,6 +615,13 @@ public partial class BitDropDownDemo
             Type = "EventCallback<BitDropDownItem>",
             DefaultValue = "",
             Description = "Callback for when the SelectedItem changed.",
+        },
+        new ComponentParameter()
+        {
+            Name = "IsRtl",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Change direction to RTL.",
         },
     };
 
@@ -1388,6 +1441,76 @@ protected override void OnInitialized()
     {
         return BitDropDownItemsProviderResult.From(new List<BitDropDownItem>(), 0);
     }
+}";
+
+    #endregion
+
+    #region Example Code 11
+
+    private readonly string example11HTMLCode = @"<BitDropDown Label=""Single-select with Rtl direction""
+                Items=""GetArabicDropdownItems()""
+                Placeholder=""حدد اختيارا""
+                IsResponsiveModeEnabled=""true""
+                IsRtl=""true""
+                ShowSearchBox=""true""
+                SearchBoxPlaceholder=""عناصر البحث""
+                Style=""width: 100%; max-width: 290px; margin: 20px 0 20px 0"">
+</BitDropDown>
+<BitDropDown Label=""Multi-select with Rtl direction""
+                Items=""GetArabicDropdownItems()""
+                Placeholder=""اشر على الخيارات""
+                IsMultiSelect=""true""
+                IsResponsiveModeEnabled=""true""
+                IsRtl=""true""
+                ShowSearchBox=""true""
+                SearchBoxPlaceholder=""عناصر البحث""
+                Style=""width: 100%; max-width: 290px; margin-bottom: 20px;"">
+</BitDropDown>";
+
+    private readonly string example11CSharpCode = @"private List<BitDropDownItem> GetArabicDropdownItems()
+{
+    return new()
+    {
+        new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Header,
+            Text = ""الفاكهة""
+        },
+        new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Text = ""تفاحة"",
+            Value = ""f-app""
+        },
+        new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Text = ""البرتقالي"",
+            Value = ""f-ora"",
+            IsEnabled = false
+        },
+        new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Text = ""موز"",
+            Value = ""f-ban"",
+        },
+        new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Divider,
+        },
+        new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Header,
+            Text = ""خضروات""
+        },
+        new BitDropDownItem()
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Text = ""بروكلي"",
+            Value = ""v-bro"",
+        }
+    };
 }";
 
     #endregion
