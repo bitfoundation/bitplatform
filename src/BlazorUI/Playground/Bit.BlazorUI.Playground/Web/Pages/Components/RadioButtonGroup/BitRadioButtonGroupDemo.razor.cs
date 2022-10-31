@@ -175,7 +175,7 @@ public partial class BitRadioButtonGroupDemo
     #region Example Code 1
 
     private readonly string example1HTMLCode = @"
-<BitRadioButtonGroup Name=""Group1"" Label=""Pick one"">
+<BitRadioButtonGroup Name=""Group1"" Label=""Pick one"" DefaultValue=""A"">
     <BitRadioButtonOption Text=""Option A"" Value=""A"" />
     <BitRadioButtonOption Text=""Option B"" Value=""B"" />
     <BitRadioButtonOption Text=""Option C"" Value=""C"" />
@@ -187,13 +187,13 @@ public partial class BitRadioButtonGroupDemo
     #region Example Code 2
 
     private readonly string example2HTMLCode = @"
-<BitRadioButtonGroup Name=""Group1"" Label=""Disabled RadioButtonGroup"" IsEnabled=""false"">
+<BitRadioButtonGroup Name=""Group1"" Label=""Disabled RadioButtonGroup"" IsEnabled=""false"" DefaultValue=""A"">
     <BitRadioButtonOption Text=""Option A"" Value=""A"" />
     <BitRadioButtonOption Text=""Option B"" Value=""B"" />
     <BitRadioButtonOption Text=""Option C"" Value=""C"" />
 </BitRadioButtonGroup>
 
-<BitRadioButtonGroup Name=""Group1"" Label=""Disabled RadioButtonOption"">
+<BitRadioButtonGroup Name=""Group1"" Label=""Disabled RadioButtonOption"" DefaultValue=""A"">
     <BitRadioButtonOption Text=""Option A"" Value=""A"" />
     <BitRadioButtonOption Text=""Option B"" Value=""B"" IsEnabled=""false"" />
     <BitRadioButtonOption Text=""Option C"" Value=""C"" />
@@ -226,10 +226,10 @@ public partial class BitRadioButtonGroupDemo
     #region Example Code 4
 
     private readonly string example4HTMLCode = @"
-<BitRadioButtonGroup Name=""Group1"" Label=""Pick one icon"">
-    <BitRadioButtonOption Text=""Day"" Value=""day"" IconName=""BitIconName.CalendarDay"" />
-    <BitRadioButtonOption Text=""Week"" Value=""week"" IconName=""BitIconName.CalendarWeek"" />
-    <BitRadioButtonOption Text=""Month"" Value=""month"" IconName=""BitIconName.Calendar"" IsEnabled=""false"" />
+<BitRadioButtonGroup Name=""Group1"" Label=""Pick one icon"" DefaultValue=""Day"">
+    <BitRadioButtonOption Text=""Day"" Value=""Day"" IconName=""BitIconName.CalendarDay"" />
+    <BitRadioButtonOption Text=""Week"" Value=""Week"" IconName=""BitIconName.CalendarWeek"" />
+    <BitRadioButtonOption Text=""Month"" Value=""Month"" IconName=""BitIconName.Calendar"" IsEnabled=""false"" />
 </BitRadioButtonGroup>
 ";
 
@@ -245,7 +245,7 @@ public partial class BitRadioButtonGroupDemo
     }
 </style>
 
-<BitRadioButtonGroup Name=""Group1"">
+<BitRadioButtonGroup Name=""Group1"" DefaultValue=""A"">
     <LabelTemplate>
         <div class=""custom-label"">
             Custom label <BitIcon IconName=""BitIconName.Filter"" />
@@ -362,14 +362,14 @@ private string OptionLabelTemplateValue;
     #region Example Code 7
 
     private readonly string example7HTMLCode = @"
-<BitRadioButtonGroup Name=""Group1"" Label=""One-way"" Value=""@ChoiceGroupOneWayValue"">
+<BitRadioButtonGroup Name=""Group1"" Label=""One-way"" Value=""@ChoiceGroupOneWayValue"" DefaultValue=""A"">
     <BitRadioButtonOption Text=""Option A"" Value=""A"" />
     <BitRadioButtonOption Text=""Option B"" Value=""B"" />
     <BitRadioButtonOption Text=""Option C"" Value=""C"" />
 </BitRadioButtonGroup>
 <BitTextField Placeholder=""A..."" @bind-Value=""ChoiceGroupOneWayValue"" />
 
-<BitRadioButtonGroup Name=""Group1"" Label=""Two-way"" @bind-Value=""ChoiceGroupTwoWayValue"">
+<BitRadioButtonGroup Name=""Group1"" Label=""Two-way"" @bind-Value=""ChoiceGroupTwoWayValue"" DefaultValue=""A"">
     <BitRadioButtonOption Text=""Option A"" Value=""A"" />
     <BitRadioButtonOption Text=""Option B"" Value=""B"" />
     <BitRadioButtonOption Text=""Option C"" Value=""C"" />

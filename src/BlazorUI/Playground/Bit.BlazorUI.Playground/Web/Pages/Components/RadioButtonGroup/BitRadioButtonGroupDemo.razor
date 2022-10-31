@@ -8,7 +8,7 @@
     <ComponentExampleBox Title="Basic RadioButtonGroup" HTMLSourceCode="@example1HTMLCode" ExampleId="example1">
         <ExamplePreview>
             <div class="example-desc">To create a RadioButtonGroup you can use a BitRadioButtonGroup component.</div>
-            <BitRadioButtonGroup Name="Group1" Label="Pick one">
+            <BitRadioButtonGroup Name="Group1" Label="Pick one" DefaultValue="A">
                 <BitRadioButtonOption Text="Option A" Value="A" />
                 <BitRadioButtonOption Text="Option B" Value="B" />
                 <BitRadioButtonOption Text="Option C" Value="C" />
@@ -20,13 +20,13 @@
         <ExamplePreview>
             <div class="example-desc">you can disable RadioButtonGroup or RadioButtonOption.</div>
             <div class="rbg-box">
-                <BitRadioButtonGroup Name="Group1" Label="Disabled RadioButtonGroup" IsEnabled="false">
+                <BitRadioButtonGroup Name="Group1" Label="Disabled RadioButtonGroup" IsEnabled="false" DefaultValue="A">
                     <BitRadioButtonOption Text="Option A" Value="A" />
                     <BitRadioButtonOption Text="Option B" Value="B" />
                     <BitRadioButtonOption Text="Option C" Value="C" />
                 </BitRadioButtonGroup>
 
-                <BitRadioButtonGroup Name="Group1" Label="Disabled RadioButtonOption">
+                <BitRadioButtonGroup Name="Group1" Label="Disabled RadioButtonOption" DefaultValue="A">
                     <BitRadioButtonOption Text="Option A" Value="A" />
                     <BitRadioButtonOption Text="Option B" Value="B" IsEnabled="false" />
                     <BitRadioButtonOption Text="Option C" Value="C" />
@@ -58,10 +58,10 @@
     <ComponentExampleBox Title="RadioButtonGroup with icons" HTMLSourceCode="@example4HTMLCode" ExampleId="example4">
         <ExamplePreview>
             <div class="example-desc">by BitIconName Interface you can select an icon name for showing in your option.</div>
-            <BitRadioButtonGroup Name="Group1" Label="Pick one icon">
-                <BitRadioButtonOption Text="Day" Value="day" IconName="BitIconName.CalendarDay" />
-                <BitRadioButtonOption Text="Week" Value="week" IconName="BitIconName.CalendarWeek" />
-                <BitRadioButtonOption Text="Month" Value="month" IconName="BitIconName.Calendar" IsEnabled="false" />
+            <BitRadioButtonGroup Name="Group1" Label="Pick one icon" DefaultValue="Day">
+                <BitRadioButtonOption Text="Day" Value="Day" IconName="BitIconName.CalendarDay" />
+                <BitRadioButtonOption Text="Week" Value="Week" IconName="BitIconName.CalendarWeek" />
+                <BitRadioButtonOption Text="Month" Value="Month" IconName="BitIconName.Calendar" IsEnabled="false" />
             </BitRadioButtonGroup>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -69,7 +69,7 @@
     <ComponentExampleBox Title="RadioButtonGroup with LabelTemplate" HTMLSourceCode="@example5HTMLCode" ExampleId="example5">
         <ExamplePreview>
             <div class="example-desc">Customize the RadioButtonGroup Label content.</div>
-            <BitRadioButtonGroup Name="Group1">
+            <BitRadioButtonGroup Name="Group1" DefaultValue="A">
                 <LabelTemplate>
                     <div class="custom-label">
                         Custom label <BitIcon IconName="BitIconName.Filter" />
@@ -146,7 +146,7 @@
         <ExamplePreview>
             <div class="rbg-box">
                 <div>
-                    <BitRadioButtonGroup Name="Group1" Label="One-way" Value="@ChoiceGroupOneWayValue">
+                    <BitRadioButtonGroup Name="Group1" Label="One-way" Value="@ChoiceGroupOneWayValue" DefaultValue="A">
                         <BitRadioButtonOption Text="Option A" Value="A" />
                         <BitRadioButtonOption Text="Option B" Value="B" />
                         <BitRadioButtonOption Text="Option C" Value="C" />
@@ -156,7 +156,7 @@
                     </div>
                 </div>
                 <div>
-                    <BitRadioButtonGroup Name="Group1" Label="Two-way" @bind-Value="ChoiceGroupTwoWayValue">
+                    <BitRadioButtonGroup Name="Group1" Label="Two-way" @bind-Value="ChoiceGroupTwoWayValue" DefaultValue="A">
                         <BitRadioButtonOption Text="Option A" Value="A" />
                         <BitRadioButtonOption Text="Option B" Value="B" />
                         <BitRadioButtonOption Text="Option C" Value="C" />
