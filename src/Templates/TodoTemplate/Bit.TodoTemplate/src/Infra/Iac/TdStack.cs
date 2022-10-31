@@ -42,7 +42,7 @@ public class TdStack : Stack
         ResourceGroup resourceGroup = new($"td-{stackName}", new ResourceGroupArgs
         {
             ResourceGroupName = $"td-{stackName}"
-        }, options: new() { ImportId = $"/subscriptions/{GetClientConfig.InvokeAsync().GetAwaiter().GetResult().SubscriptionId}/resourceGroups/td-test" });
+        }, options: new() { ImportId = $"/subscriptions/{GetClientConfig.InvokeAsync().GetAwaiter().GetResult().SubscriptionId}/resourceGroups/td-prod" });
 
         Workspace appInsightsWorkspace = new($"insights-wkspc-td-{stackName}", new()
         {

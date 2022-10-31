@@ -1,8 +1,8 @@
 ﻿**Overview**
 
-Iac projects creates prod environment using [pulumi](https://www.pulumi.com/)
+Iac project creates a prod environment using [pulumi](https://www.pulumi.com/)
 
-Prod environment has sql server database, app insights and app service.
+The Prod environment has SQL server database, app insights, and app service.
 
 **Getting started:**
 
@@ -32,7 +32,7 @@ az group create --name ad-prod --location eastus
 ```
 
 Notes:
-* `ad` stands for adminpanel, you can replace it with your own.
+* `ad` is an abbreviation for Admin, use the acronym of your choice and replace ad with that (for example abc) using exact match - case sensitive find and replace in this file and AdStack.cs.
 * You can use any location supported by azure cloud (run `az account list-locations -o table` to see full list of locations)
 
 3- Create [service principals](https://docs.microsoft.com/en-us/azure/active-directory/develop/app-objects-and-service-principals) for prod using followings:
@@ -44,9 +44,9 @@ az ad sp create-for-rbac -n "ad-prod" --role Contributor --scopes /subscriptions
 Notes:
 
 * Replace `{subscriptionId}` with [your own subscription id](https://docs.microsoft.com/en-us/azure/media-services/latest/setup-azure-subscription-how-to)
-* Running `az ad sp` will return a json like response which contains `appId`l, `password` and `tenant`. Store them somewhere safe.
+* Running `az ad sp` will return a json like response that contains `appId`l, `password` and `tenant`. Store them somewhere safe.
 
-4- Create stacks folder first, then create `prod` folder in `stacks` folder.
+4- Create the stacks folder first, then create `prod` folder in the `stacks` folder.
 
 5- Create random/strong password for `prod` pulumi stack and store it somewhere safe.
 
@@ -64,7 +64,7 @@ Windows PowerShell sample:
 $env:PULUMI_CONFIG_PASSPHRASE = 'YOUR_PASSWORD'
 ```
 
-7- Run followings to create `prod` stack:
+7- Run following to create `prod` stack:
 ```
 pulumi login file://.\Stacks\prod
 pulumi stack init prod
@@ -73,30 +73,30 @@ pulumi stack init prod
 8- Provide valid configs and secrets for the first time for prod:
 
 ```
-# clientId would be service principal's appId.
+# clientId would be the service principal's appId.
 pulumi config set azure-native:clientId 
 
-# secret would be service principal's password.
+# secret would be the service principal's password.
 pulumi config set azure-native:clientSecret --secret
 
-# tenantId would be service principal's tenant.
+# tenantId would be the service principal's tenant.
 pulumi config set azure-native:tenantId 
 
 # Provide azure subscription id
 pulumi config set azure-native:subscriptionId
 
-# Provide sql server's admin user / pass
+# Provide SQL server's admin user/pass
 pulumi config set AdminPanel.Iac:sql-server-ad-db-admin-id
 pulumi config set AdminPanel.Iac:sql-server-ad-db-admin-password --secret
 
-# Provide smtp server's host, port, user, pass and default email sender.
+# Provide SMTP server's host, port, user, pass and default email sender.
 pulumi config set AdminPanel.Iac:default-email-from
 pulumi config set AdminPanel.Iac:email-server-host
 pulumi config set AdminPanel.Iac:email-server-port
 pulumi config set AdminPanel.Iac:email-server-userName
 pulumi config set AdminPanel.Iac:email-server-password --secret
 
-# Create and provide identity certificate password
+# Create and provide an identity certificate password
 pulumi config set AdminPanel.Iac:identity-certificate-password --secret
 ```
 
@@ -106,4 +106,4 @@ pulumi config set AdminPanel.Iac:identity-certificate-password --secret
 pulumi up --stack prod --skip-preview
 ```
 
-11- Commit / Push changes in stacks folder to the source controller.
+11- Commit / Push changes in the stacks folder to the source controller.

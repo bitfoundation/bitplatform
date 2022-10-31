@@ -5,7 +5,7 @@ variables:
   WEB_APP_DEPLOYMENT_TYPE: 'DefaultDeploymentType'
   APP_SERVICE_NAME: 'app-service-td-test'
   AZURE_SUBSCRIPTION: 'td-test-service-connection' # https://learn.microsoft.com/en-us/azure/devops/pipelines/library/service-endpoints?view=azure-devops&tabs=yaml#azure-resource-manager-service-connection
-  ConnectionStrings.SqlServerConnectionString: $(API_CONNECTION_STRING)
+  ConnectionStrings.SqlServerConnectionString: $(DB_CONNECTION_STRING)
   AppSettings.JwtSettings.IdentityCertificatePassword: $(API_IDENTITY_CERTIFICATE_PASSWORD)
   ApiServerAddress: 'https://todo.bitplatform.dev/api/'
 

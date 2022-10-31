@@ -42,7 +42,7 @@ public class AdStack : Stack
         ResourceGroup resourceGroup = new($"ad-{stackName}", new ResourceGroupArgs
         {
             ResourceGroupName = $"ad-{stackName}"
-        }, options: new() { ImportId = $"/subscriptions/{GetClientConfig.InvokeAsync().GetAwaiter().GetResult().SubscriptionId}/resourceGroups/ad-test" });
+        }, options: new() { ImportId = $"/subscriptions/{GetClientConfig.InvokeAsync().GetAwaiter().GetResult().SubscriptionId}/resourceGroups/ad-prod" });
 
         Workspace appInsightsWorkspace = new($"insights-wkspc-ad-{stackName}", new()
         {
