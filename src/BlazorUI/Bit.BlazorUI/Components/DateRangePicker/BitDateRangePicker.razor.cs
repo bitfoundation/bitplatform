@@ -9,10 +9,13 @@ public partial class BitDateRangePicker
     private const int DEFAULT_DAY_COUNT_PER_WEEK = 7;
     private const int DEFAULT_WEEK_COUNT = 6;
 
+
+    private BitIconLocation iconLocation = BitIconLocation.Right;
     private bool isOpen;
     private CultureInfo culture = CultureInfo.CurrentUICulture;
     private string focusClass = string.Empty;
 
+    private BitIconLocation _iconLocation;
     private bool _isMonthPickerOverlayOnTop;
     private bool _showMonthPicker = true;
     private bool _showMonthPickerAsOverlayInternal;
@@ -65,9 +68,9 @@ public partial class BitDateRangePicker
     [Parameter] public RenderFragment<DateTimeOffset>? DayCellTemplate { get; set; }
 
     /// <summary>
-    /// FormatDate for the DateRangePicker
+    /// DateFormat for the DateRangePicker
     /// </summary>
-    [Parameter] public string? FormatDate { get; set; }
+    [Parameter] public string? DateFormat { get; set; }
 
     /// <summary>
     /// GoToToday text for the DateRangePicker
@@ -88,6 +91,31 @@ public partial class BitDateRangePicker
     /// Whether the month picker should highlight the selected month.
     /// </summary>
     [Parameter] public bool HighlightSelectedMonth { get; set; } = false;
+
+    /// <summary>
+    /// Custom DateRangePicker icon template
+    /// </summary>
+    [Parameter] public RenderFragment? IconFragment { get; set; }
+
+    /// <summary>
+    /// DateRangePicker icon location
+    /// </summary>
+    [Parameter] public BitIconLocation IconLocation
+    {
+        get => iconLocation;
+        set
+        {
+            if (iconLocation == value) return;
+
+            iconLocation = value;
+            ClassBuilder.Reset();
+        }
+    }
+
+    /// <summary>
+    /// Optional DateRangePicker icon
+    /// </summary>
+    [Parameter] public BitIconName IconName { get; set; } = BitIconName.CalendarMirrored;
 
     /// <summary>
     /// Whether the month picker is shown beside the day picker or hidden.
@@ -119,6 +147,7 @@ public partial class BitDateRangePicker
     /// Label for the DateRangePicker
     /// </summary>
     [Parameter] public string? Label { get; set; }
+
 
     /// <summary>
     /// Shows the custom label for text field
@@ -201,6 +230,11 @@ public partial class BitDateRangePicker
     [Parameter] public int TabIndex { get; set; }
 
     /// <summary>
+    /// ValueFormat for the DateRangePicker
+    /// </summary>
+    [Parameter] public string ValueFormat { get; set; } = "Start: {0} - End: {1}";
+
+    /// <summary>
     /// Used to customize how content inside the year cell is rendered.
     /// </summary>
     [Parameter] public RenderFragment<int>? YearCellTemplate { get; set; }
@@ -237,6 +271,9 @@ public partial class BitDateRangePicker
 
         ClassBuilder.Register(() => Culture.TextInfo.IsRightToLeft
             ? $"{RootElementClass}-rtl-{VisualClassRegistrar()}" : string.Empty);
+
+        ClassBuilder.Register(() => IconLocation is BitIconLocation.Left
+            ? $"{RootElementClass}-left-icon-{VisualClassRegistrar()}" : string.Empty);
 
         ClassBuilder.Register(() => IsUnderlined
             ? $"{RootElementClass}-underlined-{(IsEnabled is false ? "disabled-" : string.Empty)}{VisualClassRegistrar()}" : string.Empty);
@@ -290,7 +327,7 @@ public partial class BitDateRangePicker
         //    return true;
         //}
 
-        //if (DateTime.TryParseExact(value, FormatDate ?? Culture.DateTimeFormat.ShortDatePattern, Culture, DateTimeStyles.None, out DateTime parsedValue))
+        //if (DateTime.TryParseExact(value, DateFormat ?? Culture.DateTimeFormat.ShortDatePattern, Culture, DateTimeStyles.None, out DateTime parsedValue))
         //{
         //    result = new DateTimeOffset(parsedValue, DateTimeOffset.Now.Offset);
         //    validationErrorMessage = null;
@@ -314,10 +351,10 @@ public partial class BitDateRangePicker
             return null;
         }
 
-        var valueStr = "Start: " + value.StartDate.GetValueOrDefault().ToString(FormatDate ?? Culture.DateTimeFormat.ShortDatePattern, Culture);
+        var valueStr = String.Format(ValueFormat, value.StartDate.GetValueOrDefault().ToString(DateFormat ?? Culture.DateTimeFormat.ShortDatePattern, Culture), "---");
         if (value.EndDate is not null)
         {
-            valueStr += " - End: " + value.EndDate.GetValueOrDefault().ToString(FormatDate ?? Culture.DateTimeFormat.ShortDatePattern, Culture);
+            valueStr = String.Format(ValueFormat, value.StartDate.GetValueOrDefault().ToString(DateFormat ?? Culture.DateTimeFormat.ShortDatePattern, Culture), value.EndDate.GetValueOrDefault().ToString(DateFormat ?? Culture.DateTimeFormat.ShortDatePattern, Culture));
         }
 
         return valueStr;
