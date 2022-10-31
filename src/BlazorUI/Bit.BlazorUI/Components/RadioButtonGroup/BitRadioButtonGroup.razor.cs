@@ -7,8 +7,19 @@ public partial class BitRadioButtonGroup
 {
     private bool isComponentRendered;
     private bool isRequired;
-    private BitRadioButtonOption? SelectedOption;
-    private List<BitRadioButtonOption> AllOptions = new();
+    private BitRadioButtonOption? selectedOption;
+    private List<BitRadioButtonOption> allOptions = new();
+    public string _labelId = default!;
+
+    /// <summary>
+    /// ID of an element to use as the aria label for this RadioButtonGroup.
+    /// </summary>
+    [Parameter] public string AriaLabelledBy { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The content of RadioButtonGroup, common values are RadioButtonGroup component 
+    /// </summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
     /// Default value for RadioButtonGroup.
@@ -35,11 +46,6 @@ public partial class BitRadioButtonGroup
     [Parameter] public string? Label { get; set; }
 
     /// <summary>
-    /// ID of an element to use as the aria label for this RadioButtonGroup.
-    /// </summary>
-    [Parameter] public string AriaLabelledBy { get; set; } = string.Empty;
-
-    /// <summary>
     /// Used to customize the label for the RadioButtonGroup.
     /// </summary>
     [Parameter] public RenderFragment? LabelFragment { get; set; }
@@ -50,16 +56,9 @@ public partial class BitRadioButtonGroup
     [Parameter] public string Name { get; set; } = Guid.NewGuid().ToString();
 
     /// <summary>
-    /// The content of RadioButtonGroup, common values are RadioButtonGroup component 
-    /// </summary>
-    [Parameter] public RenderFragment? ChildContent { get; set; }
-
-    /// <summary>
     /// Callback that is called when the value parameter is changed
     /// </summary>
     [Parameter] public EventCallback<string> OnValueChange { get; set; }
-
-    public string LabelId { get; set; } = string.Empty;
 
     protected override string RootElementClass => "bit-rbg";
 
@@ -75,7 +74,7 @@ public partial class BitRadioButtonGroup
     protected override async Task OnInitializedAsync()
     {
         CurrentValue ??= DefaultValue;
-        LabelId = $"RadioButtonGroupLabel{UniqueId}";
+        _labelId = $"RadioButtonGroupLabel{UniqueId}";
         OnValueChanging += HandleOnValueChanging;
         OnValueChanged += HandleOnValueChanged;
 
@@ -87,7 +86,7 @@ public partial class BitRadioButtonGroup
         if (firstRender)
         {
             isComponentRendered = true;
-            if (AllOptions.Any(option => option.Value == Value) is false)
+            if (allOptions.Any(option => option.Value == Value) is false)
             {
                 ResetValue();
                 if (ValueHasBeenSet && ValueChanged.HasDelegate)
@@ -104,10 +103,10 @@ public partial class BitRadioButtonGroup
     {
         if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
-        SelectedOption?.SetState(false);
+        selectedOption?.SetState(false);
         option.SetState(true);
 
-        SelectedOption = option;
+        selectedOption = option;
         CurrentValue = option.Value;
 
         await OnValueChange.InvokeAsync(CurrentValue);
@@ -117,28 +116,28 @@ public partial class BitRadioButtonGroup
     {
         if (option.Value.HasNoValue())
         {
-            option.Value = AllOptions.Count.ToString(CultureInfo.InvariantCulture);
+            option.Value = allOptions.Count.ToString(CultureInfo.InvariantCulture);
         }
 
         if (CurrentValue == option.Value)
         {
             option.SetState(true);
-            SelectedOption = option;
+            selectedOption = option;
         }
 
-        AllOptions.Add(option);
+        allOptions.Add(option);
     }
 
     internal void UnregisterOption(BitRadioButtonOption option)
     {
-        AllOptions.Remove(option);
+        allOptions.Remove(option);
     }
 
     private void SelectOptionByKey(string? value)
     {
-        var newOption = AllOptions.FirstOrDefault(i => i.Value == value);
+        var newOption = allOptions.FirstOrDefault(i => i.Value == value);
 
-        if (newOption is null || newOption == SelectedOption || newOption.IsEnabled is false)
+        if (newOption is null || newOption == selectedOption || newOption.IsEnabled is false)
         {
             _ = ValueChanged.InvokeAsync(Value);
             return;
@@ -147,18 +146,18 @@ public partial class BitRadioButtonGroup
         _ = SelectOption(newOption);
     }
 
-    private string GetAriaLabelledBy() => Label.HasValue() || LabelFragment is not null ? LabelId : AriaLabelledBy;
+    private string GetAriaLabelledBy() => Label.HasValue() || LabelFragment is not null ? _labelId : AriaLabelledBy;
 
     private void HandleOnValueChanging(object? sender, ValueChangingEventArgs<string?> args)
     {
         if (isComponentRendered is false) return;
 
-        var option = AllOptions.FirstOrDefault(i => i.Value == args.Value);
+        var option = allOptions.FirstOrDefault(i => i.Value == args.Value);
         if (option is not null)
         {
-            SelectedOption?.SetState(false);
+            selectedOption?.SetState(false);
             option.SetState(true);
-            SelectedOption = option;
+            selectedOption = option;
 
             if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
@@ -170,8 +169,8 @@ public partial class BitRadioButtonGroup
 
             if (Value.HasNoValue())
             {
-                SelectedOption?.SetState(false);
-                SelectedOption = null;
+                selectedOption?.SetState(false);
+                selectedOption = null;
             }
 
             if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;

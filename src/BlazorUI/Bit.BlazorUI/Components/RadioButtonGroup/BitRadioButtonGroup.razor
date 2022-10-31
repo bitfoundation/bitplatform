@@ -6,15 +6,15 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
     <div role="radiogroup" aria-labelledby="@GetAriaLabelledBy()">
-        @if (LabelFragment != null)
+        @if (LabelFragment is not null)
         {
-            <label class="bit-rbg-label-@(VisualClassRegistrar())" id="@LabelId" disabled="@(IsEnabled is false)">
+            <label class="bit-rbg-label" id="@_labelId" disabled="@(IsEnabled is false)">
                 @LabelFragment
             </label>
         }
         else if (Label.HasValue())
         {
-            <label class="bit-rbg-label-@(VisualClassRegistrar())" id="@LabelId" disabled="@(IsEnabled is false)">
+            <label class="bit-rbg-label" id="@_labelId" disabled="@(IsEnabled is false)">
                 @Label
             </label>
         }
