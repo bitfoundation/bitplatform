@@ -1,12 +1,9 @@
-﻿using Azure.Storage;
-using Azure.Storage.Sas;
-using Pulumi;
+﻿using Pulumi;
 using Pulumi.AzureNative.Authorization;
 using Pulumi.AzureNative.KeyVault;
 using Pulumi.AzureNative.KeyVault.Inputs;
 using Pulumi.AzureNative.OperationalInsights;
 using Pulumi.AzureNative.Resources;
-using Pulumi.AzureNative.Storage;
 using Pulumi.AzureNative.Web;
 using Pulumi.AzureNative.Web.Inputs;
 using AppInsights = Pulumi.AzureNative.Insights.V20200202Preview.Component;
@@ -17,16 +14,13 @@ using SqlDatabase = Pulumi.AzureNative.Sql.Database;
 using SqlDatabaseSkuArgs = Pulumi.AzureNative.Sql.Inputs.SkuArgs;
 using SqlServer = Pulumi.AzureNative.Sql.Server;
 using SqlServerFirewallRule = Pulumi.AzureNative.Sql.FirewallRule;
-using StorageAccountSkuArgs = Pulumi.AzureNative.Storage.Inputs.SkuArgs;
-using StorageKind = Pulumi.AzureNative.Storage.Kind;
-using StorageSkuName = Pulumi.AzureNative.Storage.SkuName;
 using VaultSkuArgs = Pulumi.AzureNative.KeyVault.Inputs.SkuArgs;
 using VaultSkuName = Pulumi.AzureNative.KeyVault.SkuName;
 using WebAppManagedServiceIdentityArgs = Pulumi.AzureNative.Web.Inputs.ManagedServiceIdentityArgs;
 
 namespace AdminPanel.Iac;
 
-public class AdStack
+public class AdStack : Stack
 {
     public AdStack()
     {
@@ -37,23 +31,18 @@ public class AdStack
         var sqlDatabaseDbAdminId = pulumiConfig.Require("sql-server-ad-db-admin-id");
         var sqlDatabaseDbAdminPassword = pulumiConfig.RequireSecret("sql-server-ad-db-admin-password");
 
-        var sqlDatabaseDbUserId = pulumiConfig.Require("sql-server-ad-db-user-id");
-        var sqlDatabaseDbUserPassword = pulumiConfig.RequireSecret("sql-server-ad-db-user-password");
-
         var defaultEmailFrom = pulumiConfig.Require("default-email-from");
         var emailServerHost = pulumiConfig.Require("email-server-host");
         var emailServerPort = pulumiConfig.Require("email-server-port");
         var emailServerUserName = pulumiConfig.Require("email-server-userName");
         var emailServerPassword = pulumiConfig.RequireSecret("email-server-password");
 
-        var jwtSecretKey = pulumiConfig.RequireSecret("jwt-secret-key");
-
-        var azureDevOpsAgentVMIPAddress = pulumiConfig.Require("azure-dev-ops-agent-vm-ip");
+        var identityCertificatePassword = pulumiConfig.RequireSecret("identity-certificate-password");
 
         ResourceGroup resourceGroup = new($"ad-{stackName}", new ResourceGroupArgs
         {
             ResourceGroupName = $"ad-{stackName}"
-        }, options: new() { ImportId = $"/subscriptions/{GetClientConfig.InvokeAsync().GetAwaiter().GetResult().SubscriptionId}/resourceGroups/ad-test" });
+        }, options: new() { ImportId = $"/subscriptions/{GetClientConfig.InvokeAsync().GetAwaiter().GetResult().SubscriptionId}/resourceGroups/ad-prod" });
 
         Workspace appInsightsWorkspace = new($"insights-wkspc-ad-{stackName}", new()
         {
@@ -121,9 +110,8 @@ public class AdStack
 
         string vaultName = $"vault-ad-{stackName}";
         string sqlDatabaseConnectionStringSecretName = $"sql-connection-secret";
-        string blobStorageConnectionStringSecretName = $"blob-connection-secret";
         string emailServerPasswordSecretName = "email-server-password-secret";
-        string jwtSecretKeySecretName = "jwt-secret-key-secret";
+        string identityCertificatePasswordSecretName = "identity-certificate-password-secret";
 
         WebApp webApp = new($"app-service-ad-{stackName}", new()
         {
@@ -140,9 +128,9 @@ public class AdStack
                 AlwaysOn = true,
                 Http20Enabled = true,
                 WebSocketsEnabled = true,
-                NetFrameworkVersion = "v6.0",
+                NetFrameworkVersion = "v7.0",
                 FtpsState = FtpsState.Disabled,
-                LinuxFxVersion = "DOTNETCORE|6.0",
+                LinuxFxVersion = "DOTNETCORE|7.0",
                 AppCommandLine = "dotnet AdminPanel.Server.Api.dll",
                 AppSettings = new()
                 {
@@ -169,8 +157,8 @@ public class AdStack
                     },
                     new NameValuePairArgs
                     {
-                        Name = "AppSettings__JwtSettings__SecretKey",
-                        Value = $"@Microsoft.KeyVault(VaultName={vaultName};SecretName={jwtSecretKeySecretName})"
+                        Name = "AppSettings__JwtSettings__IdentityCertificatePassword",
+                        Value = $"@Microsoft.KeyVault(VaultName={vaultName};SecretName={identityCertificatePasswordSecretName})"
                     },
                 },
                 ConnectionStrings = new()
@@ -180,46 +168,9 @@ public class AdStack
                         Name = "SqlServerConnectionString",
                         Type = ConnectionStringType.SQLAzure,
                         ConnectionString = $"@Microsoft.KeyVault(VaultName={vaultName};SecretName={sqlDatabaseConnectionStringSecretName})"
-                    },
-                    new ConnStringInfoArgs
-                    {
-                        Name = "AzureBlobStorageConnectionString",
-                        Type = ConnectionStringType.Custom,
-                        ConnectionString = $"@Microsoft.KeyVault(VaultName={vaultName};SecretName={blobStorageConnectionStringSecretName})"
                     }
                 }
             }
-        });
-
-        StorageAccount blobStorageAccount = new($"storageaccad{stackName}", new()
-        {
-            AccountName = $"storageaccad{stackName}",
-            ResourceGroupName = resourceGroup.Name,
-            Location = resourceGroup.Location,
-            AccessTier = AccessTier.Hot,
-            Kind = StorageKind.BlobStorage,
-            Sku = new StorageAccountSkuArgs
-            {
-                Name = StorageSkuName.Standard_LRS
-            }
-        });
-
-        BlobContainer attachmentsContainer = new("attachments", new()
-        {
-            ResourceGroupName = resourceGroup.Name,
-            AccountName = blobStorageAccount.Name,
-            ContainerName = $"attachments",
-            PublicAccess = PublicAccess.None
-        });
-
-        new SqlServerFirewallRule($"fw-{stackName}-azure-dev-ops-agent-vm-ip", new()
-        {
-            Name = $"fw-{stackName}-azure-dev-ops-agent-vm-ip",
-            FirewallRuleName = $"fw-{stackName}-azure-dev-ops-agent-vm-ip",
-            EndIpAddress = azureDevOpsAgentVMIPAddress,
-            ResourceGroupName = resourceGroup.Name,
-            ServerName = sqlServer.Name,
-            StartIpAddress = azureDevOpsAgentVMIPAddress
         });
 
         Output.Tuple(resourceGroup.Name, webApp.Name).Apply(t =>
@@ -285,14 +236,14 @@ public class AdStack
             }
         });
 
-        Secret jwtSecretKeySecret = new(jwtSecretKeySecretName, new()
+        Secret identityCertificatePasswordSecret = new(identityCertificatePasswordSecretName, new()
         {
             ResourceGroupName = resourceGroup.Name,
             VaultName = vault.Name,
-            SecretName = jwtSecretKeySecretName,
+            SecretName = identityCertificatePasswordSecretName,
             Properties = new SecretPropertiesArgs
             {
-                Value = jwtSecretKey
+                Value = identityCertificatePassword
             }
         });
 
@@ -314,61 +265,12 @@ public class AdStack
             SecretName = sqlDatabaseConnectionStringSecretName,
             Properties = new SecretPropertiesArgs
             {
-                Value = Output.Tuple(sqlServer.Name, sqlDatabase.Name, sqlDatabaseDbUserPassword).Apply(t =>
+                Value = Output.Tuple(sqlServer.Name, sqlDatabase.Name, sqlDatabaseDbAdminPassword).Apply(t =>
                 {
                     (string _sqlServer, string _sqlDatabase, string _sqlDatabasePassword) = t;
-                    return $"Data Source=tcp:{_sqlServer}.database.windows.net;Initial Catalog={_sqlDatabase};User ID={sqlDatabaseDbUserId};Password={_sqlDatabasePassword};Application Name=AdminPanel;Encrypt=True;";
+                    return $"Data Source=tcp:{_sqlServer}.database.windows.net;Initial Catalog={_sqlDatabase};User ID={sqlDatabaseDbAdminId};Password={_sqlDatabasePassword};Application Name=AdminPanel;Encrypt=True;";
                 })
             }
         });
-
-        var attachmentsContainerConnectionString = Output.Tuple(resourceGroup.Name, blobStorageAccount.Name, attachmentsContainer.Name)
-             .Apply(t =>
-             {
-                 (string resourceGroupName, string blobStorageAccountName, string attachmentsContainerName) = t;
-
-                 var result = Output.Create(GetStorageAccountPrimaryKey(resourceGroupName, blobStorageAccountName))
-                    .Apply(blobStorageAccountKey =>
-                    {
-                        BlobSasBuilder blobSasBuilder = new BlobSasBuilder
-                        {
-                            BlobContainerName = attachmentsContainerName,
-                            Protocol = SasProtocol.Https,
-                            StartsOn = DateTimeOffset.Parse("2022-01-01T22:00:00Z"),
-                            ExpiresOn = DateTimeOffset.Parse("2032-01-01T22:00:00Z"),
-                            Resource = "c"
-                        };
-
-                        blobSasBuilder.SetPermissions(BlobSasPermissions.Read | BlobSasPermissions.Create | BlobSasPermissions.Delete);
-
-                        var blobStorageConnectionString = $"https://{blobStorageAccountName}.blob.core.windows.net/{attachmentsContainerName}?{blobSasBuilder.ToSasQueryParameters(new StorageSharedKeyCredential(blobStorageAccountName, blobStorageAccountKey))}";
-
-                        return blobStorageConnectionString;
-                    });
-
-                 return result;
-             });
-
-        Secret blobStorageConnectionStringSecret = new(blobStorageConnectionStringSecretName, new()
-        {
-            ResourceGroupName = resourceGroup.Name,
-            VaultName = vault.Name,
-            SecretName = blobStorageConnectionStringSecretName,
-            Properties = new SecretPropertiesArgs
-            {
-                Value = attachmentsContainerConnectionString
-            }
-        });
-    }
-
-    async Task<string> GetStorageAccountPrimaryKey(string resourceGroupName, string blobStorageAccountName)
-    {
-        var accountKeys = await ListStorageAccountKeys.InvokeAsync(new()
-        {
-            ResourceGroupName = resourceGroupName,
-            AccountName = blobStorageAccountName
-        });
-
-        return accountKeys.Keys[0].Value;
     }
 }

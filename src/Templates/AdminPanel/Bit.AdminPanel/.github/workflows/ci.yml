@@ -27,7 +27,7 @@ jobs:
         global-json-file: src/global.json
       
     - name: Build
-      run: dotnet build src/Client/Web/AdminPanel.Client.Web.csproj /P:Configuration=Release /P:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}"
+      run: dotnet build src/Client/Web/AdminPanel.Client.Web.csproj -p:Configuration=Release -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}"
 
   build-blazor-hybrid-android:
     name: build blazor hybrid (android)
@@ -44,10 +44,10 @@ jobs:
         global-json-file: src/global.json
 
     - name: Restore workloads
-      run: dotnet workload restore src/Client/App/AdminPanel.Client.App.csproj /P:BlazorMode=BlazorHybrid -f net7.0-android
+      run: dotnet workload restore src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-android
 
     - name: Build
-      run: dotnet build src/Client/App/AdminPanel.Client.App.csproj /P:RunAOTCompilation=false /P:BlazorMode=BlazorHybrid /P:Configuration=Release -f net7.0-android
+      run: dotnet build src/Client/App/AdminPanel.Client.App.csproj -p:RunAOTCompilation=false -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net7.0-android
 
   build-blazor-hybrid-windows:
     name: build blazor hybrid (windows)
@@ -64,10 +64,10 @@ jobs:
         global-json-file: src/global.json
 
     - name: Restore workloads
-      run: dotnet workload restore src/Client/App/AdminPanel.Client.App.csproj /P:BlazorMode=BlazorHybrid -f net7.0-windows10.0.19041.0
+      run: dotnet workload restore src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-windows10.0.19041.0
 
     - name: Build
-      run: dotnet build src/Client/App/AdminPanel.Client.App.csproj /P:BlazorMode=BlazorHybrid /P:Configuration=Release -f net7.0-windows10.0.19041.0
+      run: dotnet build src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net7.0-windows10.0.19041.0
 
   build-blazor-hybrid-iOS:
     name: build blazor hybrid (iOS)
@@ -84,10 +84,10 @@ jobs:
         global-json-file: src/global.json
 
     - name: Restore workloads
-      run: dotnet workload restore src/Client/App/AdminPanel.Client.App.csproj /P:BlazorMode=BlazorHybrid -f net7.0-ios
+      run: dotnet workload restore src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-ios
 
     - name: Build
-      run: dotnet build src/Client/App/AdminPanel.Client.App.csproj /P:BlazorMode=BlazorHybrid /P:Configuration=Release -f net7.0-ios
+      run: dotnet build src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net7.0-ios
 
   build-blazor-hybrid-maccatalyst:
     name: build blazor hybrid (maccatalyst)
@@ -104,10 +104,10 @@ jobs:
         global-json-file: src/global.json
 
     - name: Restore workloads
-      run: dotnet workload restore src/Client/App/AdminPanel.Client.App.csproj /P:BlazorMode=BlazorHybrid -f net7.0-maccatalyst
+      run: dotnet workload restore src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-maccatalyst
       
     - name: Build
-      run: dotnet build src/Client/App/AdminPanel.Client.App.csproj /P:BlazorMode=BlazorHybrid /P:Configuration=Release -f net7.0-maccatalyst
+      run: dotnet build src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net7.0-maccatalyst
 
   build-blazor-api-wasm:
     name: build blazor api + web assembly
@@ -127,7 +127,7 @@ jobs:
       run:  sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' src/Client/Web/AdminPanel.Client.Web.csproj
 
     - name: Restore workloads
-      run: dotnet workload restore src/Client/Web/AdminPanel.Client.Web.csproj /P:BlazorMode=BlazorWebAssembly
+      run: dotnet workload restore src/Client/Web/AdminPanel.Client.Web.csproj -p:BlazorMode=BlazorWebAssembly
       
     - name: Build
-      run: dotnet build src/Server/Api/AdminPanel.Server.Api.csproj /P:BlazorMode=BlazorWebAssembly /P:Configuration=Release /P:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}"
+      run: dotnet build src/Server/Api/AdminPanel.Server.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:Configuration=Release -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}"
