@@ -563,7 +563,7 @@ private CultureInfo Culture = CultureInfo.CurrentUICulture;";
                     IconLocation=""BitIconLocation.Left""
                     Placeholder=""Select dates..."">
     <IconFragment>
-        <i class=""bit-icon bit-icon--@BitIconName.Airplane.GetName()""></i>
+        <img src=""https://img.icons8.com/fluency/2x/calendar-13.png"" width=""24"" height=""24""/>
     </IconFragment>
 </BitDateRangePicker>";
 
