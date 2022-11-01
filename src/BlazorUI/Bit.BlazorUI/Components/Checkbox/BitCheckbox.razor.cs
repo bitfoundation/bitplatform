@@ -8,8 +8,8 @@ public partial class BitCheckbox
     private bool IsIndeterminateHasBeenSet;
     private bool isIndeterminate;
     private BitCheckBoxSide boxSide;
-    public string _inputId = string.Empty;
-    public ElementReference _checkboxElement { get; set; }
+    private string _inputId = default!;
+    private ElementReference _checkboxElement;
 
     [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
 
