@@ -5,8 +5,8 @@ namespace Bit.BlazorUI;
 
 public partial class BitSplitButton
 {
+    private bool isCalloutOpen;
     private BitSplitButtonItem? _currentItem;
-    private bool _isCalloutOpen;
     private string? _splitButtonId;
     private string? _splitButtonCalloutId;
     private string? _splitButtonOverlayId;
@@ -96,8 +96,8 @@ public partial class BitSplitButton
         if (IsEnabled is false) return;
 
         var obj = DotNetObjectReference.Create(this);
-        await _js.InvokeVoidAsync("BitSplitButton.toggleSplitButtonCallout", obj, UniqueId, _splitButtonId, _splitButtonCalloutId, _splitButtonOverlayId, _isCalloutOpen);
-        _isCalloutOpen = !_isCalloutOpen;
+        await _js.InvokeVoidAsync("BitSplitButton.toggleSplitButtonCallout", obj, UniqueId, _splitButtonId, _splitButtonCalloutId, _splitButtonOverlayId, isCalloutOpen);
+        isCalloutOpen = !isCalloutOpen;
     }
 
     private async Task HandleOnItemClick(BitSplitButtonItem item)
@@ -114,14 +114,14 @@ public partial class BitSplitButton
         }
 
         var obj = DotNetObjectReference.Create(this);
-        await _js.InvokeVoidAsync("BitSplitButton.toggleSplitButtonCallout", obj, UniqueId, _splitButtonId, _splitButtonCalloutId, _splitButtonOverlayId, _isCalloutOpen);
-        _isCalloutOpen = false;
+        await _js.InvokeVoidAsync("BitSplitButton.toggleSplitButtonCallout", obj, UniqueId, _splitButtonId, _splitButtonCalloutId, _splitButtonOverlayId, isCalloutOpen);
+        isCalloutOpen = false;
     }
 
     private async Task CloseCallout()
     {
         var obj = DotNetObjectReference.Create(this);
-        await _js.InvokeVoidAsync("BitSplitButton.toggleSplitButtonCallout", obj, UniqueId, _splitButtonId, _splitButtonCalloutId, _splitButtonOverlayId, _isCalloutOpen);
-        _isCalloutOpen = false;
+        await _js.InvokeVoidAsync("BitSplitButton.toggleSplitButtonCallout", obj, UniqueId, _splitButtonId, _splitButtonCalloutId, _splitButtonOverlayId, isCalloutOpen);
+        isCalloutOpen = false;
     }
 }
