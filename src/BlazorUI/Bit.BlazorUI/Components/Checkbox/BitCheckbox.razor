@@ -5,9 +5,9 @@
      @attributes="HtmlAttributes"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
-    <input @ref="CheckboxElement"
+    <input @ref="_checkboxElement"
            @attributes="InputHtmlAttributes"
-           id="@InputId"
+           id="@_inputId"
            type="checkbox"
            checked="@CurrentValueAsString"
            value="@CurrentValueAsString"
@@ -21,7 +21,7 @@
            name="@Name"
            title="@Title"
            hidden />
-    <label class="bit-chb-lbl" for="@InputId" @onclick="@HandleCheckboxClick">
+    <label class="bit-chb-lbl" for="@_inputId" @onclick="@HandleCheckboxClick">
         <div class="bit-chb-checkbox">
             <i class=@($"{RootElementClass}-checkmark bit-icon bit-icon--{CheckmarkIconName.GetName()}")
                aria-hidden="true"

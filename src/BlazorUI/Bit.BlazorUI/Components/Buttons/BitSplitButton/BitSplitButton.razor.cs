@@ -5,8 +5,8 @@ namespace Bit.BlazorUI;
 
 public partial class BitSplitButton
 {
-    private BitSplitButtonItem? _currentItem;
     private bool _isCalloutOpen;
+    private BitSplitButtonItem? _currentItem;
     private string? _splitButtonId;
     private string? _splitButtonCalloutId;
     private string? _splitButtonOverlayId;

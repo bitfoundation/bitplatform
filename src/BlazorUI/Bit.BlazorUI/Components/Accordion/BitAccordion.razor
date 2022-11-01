@@ -6,14 +6,14 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      aria-label="@AriaLabel">
-    <div class="header @(_isExpanded ? "expanded" : "collapsed")"
+    <div class="header @(IsExpanded ? "expanded" : "collapsed")"
          role="button"
          tabindex="@(IsEnabled ? 0 : -1)"
-         aria-expanded="@_isExpanded"
+         aria-expanded="@IsExpanded"
          @onclick="HandleOnClick">
         @if (HeaderTemplate is not null)
         {
-            @HeaderTemplate(_isExpanded)
+            @HeaderTemplate(IsExpanded)
         }
         else
         {
@@ -24,7 +24,7 @@
             <i class="header-icon bit-icon bit-icon--ChevronDown"></i>
         }
     </div>
-    <div class="content @(_isExpanded ? "expanded" : "collapsed")"
+    <div class="content @(IsExpanded ? "expanded" : "collapsed")"
          role="region"
          tabindex="@(IsEnabled ? 0 : -1)">
         @if (ContentTemplate is not null)

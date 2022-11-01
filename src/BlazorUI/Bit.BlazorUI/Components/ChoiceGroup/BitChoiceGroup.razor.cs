@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Text;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
 
 namespace Bit.BlazorUI;
 
 public partial class BitChoiceGroup
 {
-    private bool _isRequired;
+    private bool isRequired;
 
     /// <summary>
     /// ID of an element to use as the aria label for this ChoiceGroup.
@@ -28,10 +23,10 @@ public partial class BitChoiceGroup
     [Parameter]
     public bool IsRequired
     {
-        get => _isRequired;
+        get => isRequired;
         set
         {
-            _isRequired = value;
+            isRequired = value;
             ClassBuilder.Reset();
         }
     }

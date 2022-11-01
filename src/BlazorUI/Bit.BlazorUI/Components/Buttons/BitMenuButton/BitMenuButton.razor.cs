@@ -4,11 +4,11 @@ namespace Bit.BlazorUI;
 
 public partial class BitMenuButton
 {
+    private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
     private bool _isCalloutOpen;
     private string? _menuButtonId;
     private string? _menuButtonCalloutId;
     private string? _menuButtonOverlayId;
-    private BitButtonStyle _buttonStyle = BitButtonStyle.Primary;
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
@@ -27,10 +27,10 @@ public partial class BitMenuButton
     /// </summary>
     [Parameter] public BitButtonStyle ButtonStyle
     {
-        get => _buttonStyle;
+        get => buttonStyle;
         set
         {
-            _buttonStyle = value;
+            buttonStyle = value;
             ClassBuilder.Reset();
         }
     }

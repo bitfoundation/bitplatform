@@ -1,21 +1,15 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
-using Microsoft.JSInterop;
 
 namespace Bit.BlazorUI;
 
 public partial class BitCheckbox
 {
     private bool IsIndeterminateHasBeenSet;
-    private bool _isIndeterminate;
-    private BitCheckBoxSide _boxSide;
-
-    public ElementReference CheckboxElement { get; set; }
-    public string InputId { get; set; } = string.Empty;
+    private bool isIndeterminate;
+    private BitCheckBoxSide boxSide;
+    private string _inputId = string.Empty;
+    private ElementReference _checkboxElement;
 
     [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
 
@@ -45,11 +39,11 @@ public partial class BitCheckbox
     [Parameter]
     public BitCheckBoxSide BoxSide
     {
-        get => _boxSide;
+        get => boxSide;
         set
         {
-            if (value == _boxSide) return;
-            _boxSide = value;
+            if (value == boxSide) return;
+            boxSide = value;
             ClassBuilder.Reset();
         }
     }
@@ -87,12 +81,12 @@ public partial class BitCheckbox
     [Parameter]
     public bool IsIndeterminate
     {
-        get => _isIndeterminate;
+        get => isIndeterminate;
         set
         {
-            if (value == _isIndeterminate) return;
-            _isIndeterminate = value;
-            _ = JSRuntime.SetProperty(CheckboxElement, "indeterminate", value);
+            if (value == isIndeterminate) return;
+            isIndeterminate = value;
+            _ = JSRuntime.SetProperty(_checkboxElement, "indeterminate", value);
             ClassBuilder.Reset();
             _ = IsIndeterminateChanged.InvokeAsync(value);
         }
@@ -157,7 +151,7 @@ public partial class BitCheckbox
     {
         if (firstRender)
         {
-            _ = JSRuntime.SetProperty(CheckboxElement, "indeterminate", IsIndeterminate);
+            _ = JSRuntime.SetProperty(_checkboxElement, "indeterminate", IsIndeterminate);
         }
 
         await base.OnAfterRenderAsync(firstRender);
@@ -175,7 +169,7 @@ public partial class BitCheckbox
             IsIndeterminate = DefaultIsIndeterminate.Value;
         }
 
-        InputId = $"checkbox-{UniqueId}";
+        _inputId = $"checkbox-{UniqueId}";
         await base.OnParametersSetAsync();
     }
 
