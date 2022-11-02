@@ -16,7 +16,7 @@
                         ImageSize="ImageSize"
                         IsRequired="IsRequired"
                         Visibility="Visibility"
-                        LabelFragment="LabelFragment"
+                        LabelTemplate="LabelTemplate"
                         IsEnabled="IsEnabled">
     </BitRadioButtonList>
 </CascadingValue>
@@ -40,6 +40,6 @@
     [Parameter] public string ImageAltField { get; set; } = "ImageAlt";
     [Parameter] public string SelectedImageSrcField { get; set; } = "SelectedImageSrc";
     [Parameter] public System.Drawing.Size ImageSize { get; set; }
-    [Parameter] public RenderFragment? LabelFragment { get; set; }
+    [Parameter] public RenderFragment? LabelTemplate { get; set; }
     [Parameter] public bool IsRequired { get; set; }
 }
