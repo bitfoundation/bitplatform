@@ -9,7 +9,7 @@ public partial class BitRadioButtonList<TItem, TValue>
 {
     private bool isRequired;
     private string? _imageSizeStyle;
-    public string _labelId = default!;
+    public string _labelId = string.Empty;
 
     /// <summary>
     /// ID of an element to use as the aria label for this RadioButtonList.
@@ -22,12 +22,12 @@ public partial class BitRadioButtonList<TItem, TValue>
     [Parameter] public IEnumerable<TItem> Items { get; set; } = new List<TItem>();
 
     /// <summary>
-    /// 
+    /// Used to customize the label for the Item content.
     /// </summary>
     [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
 
     /// <summary>
-    /// 
+    /// Used to customize the label for the Item Label content.
     /// </summary>
     [Parameter] public RenderFragment<TItem>? ItemLabelTemplate { get; set; }
 
@@ -101,17 +101,17 @@ public partial class BitRadioButtonList<TItem, TValue>
     [Parameter] public RenderFragment? LabelTemplate { get; set; }
 
     /// <summary>
-    /// Name of RadioButtonList, this name is used to group each item into the same logical RadioButtonList
+    /// Name of RadioButtonList, this name is used to group each item into the same logical RadioButtonList.
     /// </summary>
     [Parameter] public string Name { get; set; } = Guid.NewGuid().ToString();
 
     /// <summary>
-    /// Callback for when the option clicked
+    /// Callback for when the option clicked.
     /// </summary>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
     /// <summary>
-    /// Callback for when the option has been changed
+    /// Callback for when the option has been changed.
     /// </summary>
     [Parameter] public EventCallback<ChangeEventArgs> OnChange { get; set; }
 
@@ -270,6 +270,18 @@ public partial class BitRadioButtonList<TItem, TValue>
         const string itemRootElementClass = "bit-rbli";
         StringBuilder cssClass = new(itemRootElementClass);
 
+        if (ItemTemplate is not null) return cssClass.ToString();
+
+        if (GetIsCheckedItem(item))
+        {
+            cssClass
+                .Append(' ')
+                .Append(itemRootElementClass)
+                .Append("-checked");
+        }
+
+        if (ItemLabelTemplate is not null) return cssClass.ToString();
+
         if (IsEnabled is false || GetIsEnabledItem(item) is false)
         {
             cssClass
@@ -286,18 +298,10 @@ public partial class BitRadioButtonList<TItem, TValue>
                 .Append("-with-img");
         }
 
-        if (GetIsCheckedItem(item))
-        {
-            cssClass
-                .Append(' ')
-                .Append(itemRootElementClass)
-                .Append("-checked");
-        }
-
         return cssClass.ToString();
     }
 
-    private string GetLabelClassNameItem(TItem item) => GetImageSrcItem(item).HasValue() || GetIconNameItem(item).HasValue ? "bit-rbli-lbl-with-img" : "bit-rbli-lbl";
+    private string GetLabelClassNameItem(TItem item) => (GetImageSrcItem(item).HasValue() || GetIconNameItem(item).HasValue) && ItemLabelTemplate is null ? "bit-rbli-lbl-with-img" : "bit-rbli-lbl";
 
     /// <inheritdoc />
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? validationErrorMessage)

@@ -28,18 +28,18 @@
                 <div class="@GetDivClassNameItem(item)">
                     <div class="bit-rbli-wrapper">
                         <input @attributes="InputHtmlAttributes"
-                           id="@GetInputIdItem(item)"
-                           class="bit-rbli-input"
-                           aria-label="@AriaLabel"
-                           type="radio"
-                           checked=@GetIsCheckedItem(item)
-                           name="@Name"
-                           value="@localValue?.ToString()"
-                           hidden
-                           required="@IsRequired"
-                           disabled="@(GetIsEnabledItem(item) is false)"
-                           @onclick="@HandleClick"
-                           @onchange="@(() => HandleChange(new ChangeEventArgs { Value = localValue }))" />
+                               id="@GetInputIdItem(item)"
+                               class="bit-rbli-input"
+                               aria-label="@AriaLabel"
+                               type="radio"
+                               checked=@GetIsCheckedItem(item)
+                               name="@Name"
+                               value="@localValue?.ToString()"
+                               required="@IsRequired"
+                               disabled="@(GetIsEnabledItem(item) is false)"
+                               hidden
+                               @onclick="@HandleClick"
+                               @onchange="@(() => HandleChange(new ChangeEventArgs { Value = localValue }))" />
 
                         <label for="@GetInputIdItem(item)">
                             @if (ItemTemplate is not null)
