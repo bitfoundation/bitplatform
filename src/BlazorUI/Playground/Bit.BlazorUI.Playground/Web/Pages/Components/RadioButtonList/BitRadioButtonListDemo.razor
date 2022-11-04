@@ -4,35 +4,53 @@
                ComponentDescription="RadiobuttonList let people select a single option from two or more choices."
                ComponentParameters="componentParameters">
 
-    <ComponentExampleBox Title="BitRadioButtonList" CSharpSourceCode="@example1CSharpCode" HTMLSourceCode="@example1HTMLCode" ExampleId="example1">
+    <ComponentExampleBox Title="Basic RadioButtonList" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
-            <div class="example-desc">To create a RadioButtonList you can use a BitRadioButtonList component</div>
-            <div>Chosen gender: @(ChosenGenderExample1 == 0 ? "no selection yet" : ChosenGenderExample1.ToString())</div>
-            <BitRadioButtonList @bind-Value="@ChosenGenderExample1"
-                                TextField="@nameof(GenderModel.GenderText)"
-                                ValueField="@nameof(GenderModel.GenderId)"
-                                Items="GenderOptionsExample1" />
+            <div class="example-desc">To create a RadioButtonList you can use a BitRadioButtonList component with two different approaches.</div>
+            <div class="rbl-box">
+                <BitRadioButtonList @bind-Value="@example1FieldApproacheValue"
+                                    Label="Field parameter"
+                                    Items="BasicGenderItems"
+                                    TextField="@nameof(GenderModel.GenderText)"
+                                    ValueField="@nameof(GenderModel.GenderId)" />
+
+                <BitRadioButtonList @bind-Value="@example1SelectorApproacheValue"
+                                    Label="Selector parameter"
+                                    Items="BasicGenderItems"
+                                    TextSelector="item => item.GenderText"
+                                    ValueSelector="item => item.GenderId" />
+            </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Disabled" CSharpSourceCode="@example2CSharpCode" HTMLSourceCode="@example2HTMLCode" ExampleId="example2">
+    <ComponentExampleBox Title="Disabled" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example2">
         <ExamplePreview>
-            <div class="example-desc">BitRadioButtonList in disabled mode.</div>
-            <BitRadioButtonList @bind-Value="@ChosenGenderExample2"
-                                TextField="@nameof(GenderModel.GenderText)"
-                                ValueField="@nameof(GenderModel.GenderId)"
-                                Items="GenderOptionsExample2"
-                                IsEnabled="false" />
+            <div class="example-desc">You can disable All RadioButton items or specific items.</div>
+            <div class="rbl-box">
+                <BitRadioButtonList @bind-Value="@example2DisableItemsValue"
+                                    Label="All item disabled"
+                                    Items="BasicGenderItems"
+                                    TextField="@nameof(GenderModel.GenderText)"
+                                    ValueField="@nameof(GenderModel.GenderId)"
+                                    IsEnabled="false" />
+
+                <BitRadioButtonList @bind-Value="@example2DisableItemValue"
+                                    Label="Specific item disabled"
+                                    Items="DisabledGenderItems"
+                                    TextField="@nameof(GenderModel.GenderText)"
+                                    ValueField="@nameof(GenderModel.GenderId)"
+                                    IsEnabledField="@nameof(GenderModel.IsEnabled)" />
+            </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BitRadioButtonList with images" CSharpSourceCode="@example3CSharpCode" HTMLSourceCode="@example3HTMLCode" ExampleId="example3">
+    <ComponentExampleBox Title="RadioButtonList with images" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example3">
         <ExamplePreview>
-            <div class="example-desc">BitRadioButtonList with icon use the Field parameter approach to binding with model</div>
-            <BitRadioButtonList @bind-Value="@ChosenGenderExample3"
+            <div class="example-desc">BitRadioButtonList with image.</div>
+            <BitRadioButtonList @bind-Value="@example3Value"
+                                Items="ImageGenderItems"
                                 TextField="@nameof(GenderModel.GenderText)"
                                 ValueField="@nameof(GenderModel.GenderId)"
-                                Items="GenderOptionsExample3"
                                 ImageSrcField="@nameof(GenderModel.ImageName)"
                                 ImageAltField="alt for image"
                                 SelectedImageSrcField="@nameof(GenderModel.ImageName)"
@@ -40,38 +58,81 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BitRadioButtonList with icons" CSharpSourceCode="@example4CSharpCode" HTMLSourceCode="@example4HTMLCode" ExampleId="example4">
+    <ComponentExampleBox Title="RadioButtonList with icons" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
         <ExamplePreview>
-            <div class="example-desc">BitRadioButtonList with icon use the Selector parameter approach to binding with model</div>
-            <BitRadioButtonList @bind-Value="@ChosenGenderExample4"
-                                Items="GenderOptionsExample4"
+            <div class="example-desc">BitRadioButtonList with icon.</div>
+            <BitRadioButtonList @bind-Value="@example4Value"
+                                Items="IconGenderItems"
                                 TextSelector="item => item.GenderText"
                                 ValueSelector="item => item.GenderId"
                                 IconNameSelector="item => (BitIconName)item.IconName" />
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BitRadioButtonList validation" CSharpSourceCode="@example5CSharpCode" HTMLSourceCode="@example5HTMLCode" ExampleId="example5">
+    <ComponentExampleBox Title="RadioButtonList with LabelTemplate" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
+        <ExamplePreview>
+            <div class="example-desc">Customize the RadioButtonList Label content.</div>
+            <BitRadioButtonList @bind-Value="@example5Value"
+                                Items="BasicGenderItems"
+                                TextField="@nameof(GenderModel.GenderText)"
+                                ValueField="@nameof(GenderModel.GenderId)">
+                <LabelTemplate>
+                    <div class="custom-label">
+                        Custom label <BitIcon IconName="BitIconName.Filter" />
+                    </div>
+                </LabelTemplate>
+            </BitRadioButtonList>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="RadioButtonList with ItemTemplate" HTMLSourceCode="@example6HTMLCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example6">
+        <ExamplePreview>
+            <div class="example-desc">Customize the RadioButtonList Item content.</div>
+            <div class="rbl-box">
+                <BitRadioButtonList @bind-Value="@example6ItemTemplateValue"
+                                    Label="Item Template"
+                                    Items="IconGenderItems"
+                                    ValueField="@nameof(GenderModel.GenderId)">
+                    <ItemTemplate Context="item">
+                        <div class="custom-item @(example6ItemTemplateValue == item.GenderId ? "selected-item" : "")">
+                            <div class="radio-pointer"></div>
+                            <BitIcon IconName="@((BitIconName)item.IconName)" />
+                            <span>@item.GenderText</span>
+                        </div>
+                    </ItemTemplate>
+                </BitRadioButtonList>
+                <BitRadioButtonList @bind-Value="@example6ItemLabelTemplateValue"
+                                    Label="Item Label Template"
+                                    Items="IconGenderItems"
+                                    ValueField="@nameof(GenderModel.GenderId)">
+                    <ItemLabelTemplate Context="item">
+                        <div style="margin-left: 27px;" class="custom-item @(example6ItemLabelTemplateValue == item.GenderId ? "selected-item" : "")">
+                            <BitIcon IconName="@((BitIconName)item.IconName)" />
+                            <span>@item.GenderText</span>
+                        </div>
+                    </ItemLabelTemplate>
+                </BitRadioButtonList>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="BitRadioButtonList validation" HTMLSourceCode="@example7HTMLCode" CSharpSourceCode="@example7CSharpCode" ExampleId="example7">
         <ExamplePreview>
             @if (string.IsNullOrEmpty(SuccessMessage))
             {
                 <EditForm Model="FormValidationModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
                     <DataAnnotationsValidator />
-
                     <div class="validation-summary">
                         <ValidationSummary />
                     </div>
-
                     <div>
                         <BitRadioButtonList @bind-Value="@FormValidationModel.GenderId"
-                                        TextField="@nameof(GenderModel.GenderText)"
-                                        ValueField="@nameof(GenderModel.GenderId)"
-                                        Items="GenderOptionsExample5" />
-
+                                            Items="BasicGenderItems"
+                                            TextField="@nameof(GenderModel.GenderText)"
+                                            ValueField="@nameof(GenderModel.GenderId)" />
                         <ValidationMessage For="@(() => FormValidationModel.GenderId)" />
                     </div>
-
-                    <BitButton ButtonType="BitButtonType.Submit">
+                    <BitButton Style="margin-top: 10px;" ButtonType="BitButtonType.Submit">
                         Submit
                     </BitButton>
                 </EditForm>
@@ -84,5 +145,4 @@
             }
         </ExamplePreview>
     </ComponentExampleBox>
-
 </ComponentDemo>

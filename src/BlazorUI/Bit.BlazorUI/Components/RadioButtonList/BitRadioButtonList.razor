@@ -8,15 +8,15 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
     <div role="radiogroup" aria-labelledby="@GetAriaLabelledBy()">
-        @if (LabelFragment != null)
+        @if (LabelTemplate is not null)
         {
-            <label class="bit-rbl-label-@(VisualClassRegistrar())" id="@LabelId" disabled="@(IsEnabled is false)">
-                @LabelFragment
+            <label class="bit-rbl-label" id="@_labelId" disabled="@(IsEnabled is false)">
+                @LabelTemplate
             </label>
         }
         else if (Label.HasValue())
         {
-            <label class="bit-rbl-label-@(VisualClassRegistrar())" id="@LabelId" disabled="@(IsEnabled is false)">
+            <label class="bit-rbl-label" id="@_labelId" disabled="@(IsEnabled is false)">
                 @Label
             </label>
         }
@@ -28,53 +28,68 @@
                 <div class="@GetDivClassNameItem(item)">
                     <div class="bit-rbli-wrapper">
                         <input @attributes="InputHtmlAttributes"
-                           id="@GetInputIdItem(item)"
-                           class="bit-rbli-input"
-                           aria-label="@AriaLabel"
-                           type="radio"
-                           checked=@GetIsCheckedItem(item)
-                           name="@Name"
-                           value="@localValue?.ToString()"
-                           hidden
-                           required="@IsRequired"
-                           @onclick="@HandleClick"
-                           @onchange="@(() => HandleChange(new ChangeEventArgs { Value = localValue }))"
-                           disabled="@(GetIsEnabledItem(item) is false)" />
+                               id="@GetInputIdItem(item)"
+                               class="bit-rbli-input"
+                               aria-label="@AriaLabel"
+                               type="radio"
+                               checked=@GetIsCheckedItem(item)
+                               name="@Name"
+                               value="@localValue?.ToString()"
+                               required="@IsRequired"
+                               disabled="@(GetIsEnabledItem(item) is false)"
+                               hidden
+                               @onclick="@HandleClick"
+                               @onchange="@(() => HandleChange(new ChangeEventArgs { Value = localValue }))" />
 
-                        <label for="@GetInputIdItem(item)" class="@GetLabelClassNameItem(item)">
-                            @if (GetImageSrcItem(item).HasValue())
+                        <label for="@GetInputIdItem(item)">
+                            @if (ItemTemplate is not null)
                             {
-                                <div class="bit-rbli-img-inner-field">
-                                    <div class="bit-rbli-img-wrapper">
-                                        <div class="bit-rbli-img" style="@imageSizeStyle">
-                                            <img src="@(GetIsCheckedItem(item) ? GetSelectedImageSrcItem(item) : GetImageSrcItem(item))" alt="@GetImageAltItem(item)">
-                                        </div>
-                                    </div>
-                                </div>
-                            }
-
-                            @if (GetIconNameItem(item).HasValue)
-                            {
-                                <div class="bit-rbli-icon-inner-field">
-                                    <div class="bit-rbli-icon-wrapper">
-                                        <i aria-hidden="true" class="bit-icon bit-icon--@GetIconNameItem(item).GetName()"></i>
-                                    </div>
-                                </div>
-                            }
-
-                            @if (GetImageSrcItem(item).HasValue() || GetIconNameItem(item).HasValue)
-                            {
-                                <div class="bit-rbli-txt-wrapper">
-                                    <span class="bit-rbli-txt" id="@GetTextIdItem(item)">
-                                        @GetTextItem(item)
-                                    </span>
-                                </div>
+                                @ItemTemplate(item)
                             }
                             else
                             {
-                                <span class="bit-rbli-txt" id="@GetTextIdItem(item)">
-                                    @GetTextItem(item)
-                                </span>
+                                <div class="@GetLabelClassNameItem(item)">
+
+                                    @if (ItemLabelTemplate is not null)
+                                    {
+                                        @ItemLabelTemplate(item)
+                                    }
+                                    else
+                                    {
+                                        @if (GetImageSrcItem(item).HasValue())
+                                        {
+                                            <div class="bit-rbli-img-inner-field">
+                                                <div class="bit-rbli-img-wrapper">
+                                                    <div class="bit-rbli-img" style="@_imageSizeStyle">
+                                                        <img src="@(GetIsCheckedItem(item) ? GetSelectedImageSrcItem(item) : GetImageSrcItem(item))" alt="@GetImageAltItem(item)">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                        @if (GetIconNameItem(item).HasValue)
+                                        {
+                                            <div class="bit-rbli-icon-inner-field">
+                                                <div class="bit-rbli-icon-wrapper">
+                                                    <i aria-hidden="true" class="bit-icon bit-icon--@GetIconNameItem(item).GetName()"></i>
+                                                </div>
+                                            </div>
+                                        }
+                                        @if (GetImageSrcItem(item).HasValue() || GetIconNameItem(item).HasValue)
+                                        {
+                                            <div class="bit-rbli-txt-wrapper">
+                                                <span class="bit-rbli-txt" id="@GetTextIdItem(item)">
+                                                    @GetTextItem(item)
+                                                </span>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="bit-rbli-txt" id="@GetTextIdItem(item)">
+                                                @GetTextItem(item)
+                                            </span>
+                                        }
+                                    }
+                                </div>
                             }
                         </label>
                     </div>

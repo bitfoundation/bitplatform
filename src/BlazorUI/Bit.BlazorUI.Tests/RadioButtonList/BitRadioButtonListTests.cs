@@ -116,11 +116,11 @@ public class BitRadioButtonListTests : BunitTestContext
                 bitRadioButtonListInput.Click();
 
                 // TODO: bypassed - BUnit 2-way bound parameters issue
-                // Assert.IsTrue(element.ClassList.Contains($"bit-rbli-checked-{visualClass}"));
+                // Assert.IsTrue(element.ClassList.Contains($"bit-rbli-checked"));
             }
             else
             {
-                Assert.IsTrue(element.ClassList.Contains($"bit-rbli-disabled-{visualClass}"));
+                Assert.IsTrue(element.ClassList.Contains($"bit-rbli-disabled"));
             }
         }
     }
@@ -208,7 +208,7 @@ public class BitRadioButtonListTests : BunitTestContext
             parameters.Add(p => p.Items, GetRadioButtonListItems());
             parameters.Add(p => p.TextField, nameof(Gender.GenderText));
             parameters.Add(p => p.ValueField, nameof(Gender.GenderId));
-            parameters.Add(p => p.LabelFragment, labelContent);
+            parameters.Add(p => p.LabelTemplate, labelContent);
         });
 
         var bitRadioButtonListLabelContent = component.Find(".bit-rbl label").ChildNodes;
