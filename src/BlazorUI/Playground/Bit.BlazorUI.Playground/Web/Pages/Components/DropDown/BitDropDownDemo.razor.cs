@@ -880,14 +880,22 @@ private List<BitDropDownItem> GetDropdownItems()
 <BitDropDown Items=""GetCustomDropdownItems()""
              Placeholder=""Select an option""
              Label=""Custom Label""
-             AriaLabel=""Custom dropdown label ""
-             Style=""width: 100%; max-width: 290px"">
+             AriaLabel=""Custom dropdown label""
+             Style=""width: 100%; max-width: 290px; margin:0 0 20px 0"">
     <LabelFragment>
         <label>Custom label</label>
         <button type=""button"" title=""Info"" aria-label=""Info"" class=""custom-drp-lbl-ic"">
             <i class=""bit-icon bit-icon--Info""></i>
         </button>
     </LabelFragment>
+</BitDropDown>
+
+<BitDropDown Items=""GetCustomDropdownItems()""
+             Placeholder=""Select an option""
+             Label=""Custom CaretDownIconName""
+             AriaLabel=""Custom dropdown chevron icon with icon name""
+             CaretDownIconName=""BitIconName.ScrollUpDown""
+             Style=""width: 100%; max-width: 290px"">
 </BitDropDown>";
 
     private readonly string example4CSharpCode = @"
