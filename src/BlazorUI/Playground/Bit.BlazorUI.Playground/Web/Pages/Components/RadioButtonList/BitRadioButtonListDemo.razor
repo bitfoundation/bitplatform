@@ -69,10 +69,22 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="RadioButtonList with LabelTemplate" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
+    <ComponentExampleBox Title="RadioButtonList with LayoutFlow" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
+        <ExamplePreview>
+            <div class="example-desc">You can define the RadioButtonList in Horizontal or Vertical mode.</div>
+            <BitRadioButtonList @bind-Value="@example5Value"
+                                Items="IconGenderItems"
+                                TextSelector="item => item.GenderText"
+                                ValueSelector="item => item.GenderId"
+                                IconNameSelector="item => (BitIconName)item.IconName"
+                                LayoutFlow="BitLayuotFlow.Horizontal" />
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="RadioButtonList with LabelTemplate" HTMLSourceCode="@example6HTMLCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example6">
         <ExamplePreview>
             <div class="example-desc">Customize the RadioButtonList Label content.</div>
-            <BitRadioButtonList @bind-Value="@example5Value"
+            <BitRadioButtonList @bind-Value="@example6Value"
                                 Items="BasicGenderItems"
                                 TextField="@nameof(GenderModel.GenderText)"
                                 ValueField="@nameof(GenderModel.GenderId)">
@@ -85,28 +97,28 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="RadioButtonList with ItemTemplate" HTMLSourceCode="@example6HTMLCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example6">
+    <ComponentExampleBox Title="RadioButtonList with ItemTemplate" HTMLSourceCode="@example7HTMLCode" CSharpSourceCode="@example7CSharpCode" ExampleId="example7">
         <ExamplePreview>
             <div class="example-desc">Customize the RadioButtonList Item content.</div>
             <div class="rbl-box">
-                <BitRadioButtonList @bind-Value="@example6ItemTemplateValue"
+                <BitRadioButtonList @bind-Value="@example7ItemTemplateValue"
                                     Label="Item Template"
                                     Items="IconGenderItems"
                                     ValueField="@nameof(GenderModel.GenderId)">
                     <ItemTemplate Context="item">
-                        <div class="custom-item @(example6ItemTemplateValue == item.GenderId ? "selected-item" : "")">
+                        <div class="custom-item @(example7ItemTemplateValue == item.GenderId ? "selected-item" : "")">
                             <div class="radio-pointer"></div>
                             <BitIcon IconName="@((BitIconName)item.IconName)" />
                             <span>@item.GenderText</span>
                         </div>
                     </ItemTemplate>
                 </BitRadioButtonList>
-                <BitRadioButtonList @bind-Value="@example6ItemLabelTemplateValue"
+                <BitRadioButtonList @bind-Value="@example7ItemLabelTemplateValue"
                                     Label="Item Label Template"
                                     Items="IconGenderItems"
                                     ValueField="@nameof(GenderModel.GenderId)">
                     <ItemLabelTemplate Context="item">
-                        <div style="margin-left: 27px;" class="custom-item @(example6ItemLabelTemplateValue == item.GenderId ? "selected-item" : "")">
+                        <div style="margin-left: 27px;" class="custom-item @(example7ItemLabelTemplateValue == item.GenderId ? "selected-item" : "")">
                             <BitIcon IconName="@((BitIconName)item.IconName)" />
                             <span>@item.GenderText</span>
                         </div>
@@ -116,7 +128,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BitRadioButtonList validation" HTMLSourceCode="@example7HTMLCode" CSharpSourceCode="@example7CSharpCode" ExampleId="example7">
+    <ComponentExampleBox Title="BitRadioButtonList validation" HTMLSourceCode="@example8HTMLCode" CSharpSourceCode="@example8CSharpCode" ExampleId="example8">
         <ExamplePreview>
             @if (string.IsNullOrEmpty(SuccessMessage))
             {

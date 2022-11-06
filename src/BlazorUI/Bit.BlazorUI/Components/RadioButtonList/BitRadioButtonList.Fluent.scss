@@ -76,7 +76,6 @@
             }
         }
     }
-    /*--- Radio button list item styles ---*/
 
     .bit-rbl-label {
         display: block;
@@ -91,19 +90,39 @@
         -webkit-font-smoothing: antialiased;
     }
 
+    .choice-field-group {
+        display: flex;
+        flex-flow: column nowrap;
+
+        &.Horizontal {
+            flex-flow: row wrap;
+        }
+    }
+
+    /*--- Radio button list item styles ---*/
     .bit-rbli {
         position: relative;
         display: flex;
         align-items: center;
         min-height: rem(26px);
-        margin-top: rem(8px);
         border: none;
         box-sizing: border-box;
         font-size: rem(14px);
         font-weight: 400;
+        margin-top: rem(8px);
+        margin-right: rem(8px);
         color: $Grey160;
         font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
         -webkit-font-smoothing: antialiased;
+    }
+
+    .bit-rbli-with-img {
+        display: inline-flex;
+        width: fit-content;
+        height: 100%;
+        padding-left: 0;
+        font-size: 0px;
+        background-color: $Grey20;
     }
 
     .bit-rbli-input {
@@ -175,15 +194,6 @@
                 border-color: $Grey160;
             }
         }
-    }
-
-    .bit-rbli-with-img {
-        display: inline-flex;
-        height: 100%;
-        margin: 0 rem(4px) rem(4px) 0;
-        padding-left: 0;
-        font-size: 0px;
-        background-color: $Grey20;
     }
 
     .bit-rbli-lbl-with-img {
