@@ -11,8 +11,6 @@ public class BitDropDownTests : BunitTestContext
 {
     private string BitDropDownValue;
     private List<string> BitDropDownValues;
-    private BitDropDownItem? BitDropDownSelectedItem;
-    private List<BitDropDownItem>? BitDropDownSelectedItems;
 
     [DataTestMethod,
       DataRow(Visual.Fluent, true),
@@ -619,9 +617,10 @@ public class BitDropDownTests : BunitTestContext
         DataRow("Banana", "f-ban"),
         DataRow("Broccoli", "v-bro")
     ]
-    public void BitDropDownTwoWayBoundWithCustomHandlerForSelectedItem(string text, string value)
+    public void BitDropDownTwoWayBoundWithForSelectedItem(string text, string value)
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        BitDropDownItem? selectedItem = null;
 
         var items = GetRawDropdownItems();
         var component = RenderComponent<BitDropDown>(parameters =>
@@ -629,23 +628,17 @@ public class BitDropDownTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.IsEnabled, true);
             parameters.Add(p => p.Items, items);
-            parameters.Add(p => p.SelectedItemChanged, HandleSelectedItemChanged);
+            parameters.Add(p => p.SelectedItem, selectedItem);
+            parameters.Add(p => p.SelectedItemChanged, (value) => selectedItem = value);
         });
 
         var drpItems = component.FindAll(".drp-item");
         drpItems.Single(i => i.TextContent.Contains(text)).Click();
 
-        Assert.IsNotNull(BitDropDownSelectedItem);
-        Assert.AreEqual(value, BitDropDownSelectedItem.Value);
-        Assert.AreEqual(text, BitDropDownSelectedItem.Text);
-        Assert.IsTrue(BitDropDownSelectedItem.IsSelected);
-
-        Assert.IsNotNull(component.Instance.SelectedItem);
-        Assert.AreEqual(value, component.Instance.SelectedItem.Value);
-        Assert.AreEqual(text, component.Instance.SelectedItem.Text);
-        Assert.IsTrue(component.Instance.SelectedItem.IsSelected);
-
-        Assert.AreEqual(BitDropDownSelectedItem, component.Instance.SelectedItem);
+        Assert.IsNotNull(selectedItem);
+        Assert.AreEqual(value, selectedItem.Value);
+        Assert.AreEqual(text, selectedItem.Text);
+        Assert.IsTrue(selectedItem.IsSelected);
     }
 
     [DataTestMethod,
@@ -653,9 +646,10 @@ public class BitDropDownTests : BunitTestContext
         DataRow("Orange", "f-ora"),
         DataRow("Orange,Apple,Banana", "f-ora,f-app,f-ban")
     ]
-    public void BitDropDownMultiSelectTwoWayBoundWithCustomHandlerForSelectedItems(string text, string value)
+    public void BitDropDownMultiSelectTwoWayBoundForSelectedItems(string text, string value)
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        List<BitDropDownItem>? selectedItems = null;
 
         var items = GetRawDropdownItems();
         var component = RenderComponent<BitDropDown>(parameters =>
@@ -664,7 +658,8 @@ public class BitDropDownTests : BunitTestContext
             parameters.Add(p => p.IsEnabled, true);
             parameters.Add(p => p.IsMultiSelect, true);
             parameters.Add(p => p.Items, items);
-            parameters.Add(p => p.SelectedItemsChanged, HandleSelectedItemsChanged);
+            parameters.Add(p => p.SelectedItems, selectedItems);
+            parameters.Add(p => p.SelectedItemsChanged, (values) => selectedItems = values);
         });
 
         var textList = text.Split(",").ToList();
@@ -676,19 +671,11 @@ public class BitDropDownTests : BunitTestContext
 
         var valueList = value.Split(",").ToList();
 
-        Assert.IsNotNull(BitDropDownSelectedItems);
-        Assert.AreEqual(valueList.Count, BitDropDownSelectedItems.Count);
-        Assert.IsTrue(BitDropDownSelectedItems.Select(i => i.Value).OrderBy(o => o).SequenceEqual(valueList.OrderBy(o => o)));
-        Assert.IsTrue(BitDropDownSelectedItems.Select(i => i.Text).OrderBy(o => o).SequenceEqual(textList.OrderBy(o => o)));
-        Assert.IsFalse(BitDropDownSelectedItems.Any(i => i.IsSelected is false));
-
-        Assert.IsNotNull(component.Instance.SelectedItems);
-        Assert.AreEqual(valueList.Count, component.Instance.SelectedItems.Count);
-        Assert.IsTrue(component.Instance.SelectedItems.Select(i => i.Value).OrderBy(o => o).SequenceEqual(valueList.OrderBy(o => o)));
-        Assert.IsTrue(component.Instance.SelectedItems.Select(i => i.Text).OrderBy(o => o).SequenceEqual(textList.OrderBy(o => o)));
-        Assert.IsFalse(component.Instance.SelectedItems.Any(i => i.IsSelected is false));
-
-        Assert.AreEqual(BitDropDownSelectedItems, component.Instance.SelectedItems);
+        Assert.IsNotNull(selectedItems);
+        Assert.AreEqual(valueList.Count, selectedItems.Count);
+        Assert.IsTrue(selectedItems.Select(i => i.Value).OrderBy(o => o).SequenceEqual(valueList.OrderBy(o => o)));
+        Assert.IsTrue(selectedItems.Select(i => i.Text).OrderBy(o => o).SequenceEqual(textList.OrderBy(o => o)));
+        Assert.IsFalse(selectedItems.Any(i => i.IsSelected is false));
     }
 
     [DataTestMethod,
@@ -1220,16 +1207,6 @@ public class BitDropDownTests : BunitTestContext
     private void HandleValuesChanged(List<string> values)
     {
         BitDropDownValues = values;
-    }
-
-    private void HandleSelectedItemChanged(BitDropDownItem selectedItem)
-    {
-        BitDropDownSelectedItem = selectedItem;
-    }
-
-    private void HandleSelectedItemsChanged(List<BitDropDownItem> selectedItems)
-    {
-        BitDropDownSelectedItems = selectedItems;
     }
 
     private List<BitDropDownItem> GetDropdownItems()
