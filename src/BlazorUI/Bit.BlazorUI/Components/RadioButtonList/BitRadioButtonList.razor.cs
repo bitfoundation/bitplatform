@@ -103,7 +103,7 @@ public partial class BitRadioButtonList<TItem, TValue>
     /// <summary>
     /// You can define the RadioButtonList in Horizontal or Vertical mode.
     /// </summary>
-    [Parameter] public BitLayuotFlow? LayoutFlow { get; set; }
+    [Parameter] public BitLayoutFlow? LayoutFlow { get; set; }
 
     /// <summary>
     /// Name of RadioButtonList, this name is used to group each item into the same logical RadioButtonList.

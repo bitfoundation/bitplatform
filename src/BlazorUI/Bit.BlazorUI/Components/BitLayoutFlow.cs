@@ -1,7 +1,7 @@
 ﻿
 namespace Bit.BlazorUI;
 
-public enum BitLayuotFlow
+public enum BitLayoutFlow
 {
     Vertical,
     Horizontal
