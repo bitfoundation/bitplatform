@@ -27,6 +27,10 @@
         flex-direction: column;
     }
 
+    &.column {
+        flex-direction: column;
+    }
+
     .rbl-output {
         display: flex;
         align-items: center;

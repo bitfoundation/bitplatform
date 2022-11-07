@@ -15,6 +15,12 @@ public partial class BitRadioButtonListDemo
     private int example5Value;
     private int example6ItemTemplateValue;
     private int example6ItemLabelTemplateValue;
+    private int example7Basic;
+    private int example7Disabled;
+    private int example7Image;
+    private int example7Icon;
+    private int example7LabelTemplate;
+    private int example7ItemTemplate;
     private string SuccessMessage = string.Empty;
     private FormValidationModel FormValidationModel = new();
 
@@ -163,6 +169,12 @@ public partial class BitRadioButtonListDemo
             Name = "LabelTemplate",
             Type = "RenderFragment?",
             Description = "Used to customize the label for the radio button list.",
+        },
+        new ComponentParameter()
+        {
+            Name = "LayoutFlow",
+            Type = "BitLayoutFlow?",
+            Description = "You can define the RadioButtonList in Horizontal or Vertical mode.",
         },
         new ComponentParameter()
         {
@@ -520,6 +532,163 @@ private List<GenderModel> IconGenderItems = new()
     #region Example Code 7
 
     private readonly string example7HTMLCode = @"
+<style>
+    .custom-label {
+        font-weight: bold;
+        color: $Red20;
+    }
+
+    .custom-item {
+        display: flex;
+        align-items: center;
+        gap: rem(10px);
+        cursor: pointer;
+
+        .radio-pointer {
+            width: rem(20px);
+            height: rem(20px);
+            border: 1px solid;
+            border-radius: rem(10px);
+        }
+
+        &:hover {
+            .radio-pointer {
+                border-top: rem(5px) solid #C66;
+                border-bottom: rem(5px) solid #6C6;
+                border-left: rem(5px) solid #66C;
+                border-right: rem(5px) solid #CC6;
+            }
+        }
+
+        &.selected-item {
+            color: #C66;
+
+            .radio-pointer {
+                border-top: rem(10px) solid #C66;
+                border-bottom: rem(10px) solid #6C6;
+                border-left: rem(10px) solid #66C;
+                border-right: rem(10px) solid #CC6;
+            }
+        }
+    }
+</style>
+
+<BitRadioButtonList @bind-Value=""@example7Basic""
+                    Label=""Basic""
+                    Items=""BasicGenderItems""
+                    TextField=""@nameof(GenderModel.GenderText)""
+                    ValueField=""@nameof(GenderModel.GenderId)""
+                    LayoutFlow=""BitLayoutFlow.Horizontal"" />
+
+<BitRadioButtonList @bind-Value=""@example7Disabled""
+                    Label=""Disabled""
+                    Items=""BasicGenderItems""
+                    TextField=""@nameof(GenderModel.GenderText)""
+                    ValueField=""@nameof(GenderModel.GenderId)""
+                    IsEnabled=""false""
+                    LayoutFlow=""BitLayoutFlow.Horizontal"" />
+
+<BitRadioButtonList @bind-Value=""@example7Image""
+                    Label=""Image""
+                    Items=""ImageGenderItems""
+                    TextField=""@nameof(GenderModel.GenderText)""
+                    ValueField=""@nameof(GenderModel.GenderId)""
+                    ImageSrcField=""@nameof(GenderModel.ImageName)""
+                    ImageAltField=""alt for image""
+                    SelectedImageSrcField=""@nameof(GenderModel.ImageName)""
+                    ImageSize=""new System.Drawing.Size( width: 32, height: 32)""
+                    LayoutFlow=""BitLayoutFlow.Horizontal"" />
+
+<BitRadioButtonList @bind-Value=""@example7Icon""
+                    Label=""Icon""
+                    Items=""IconGenderItems""
+                    TextField=""@nameof(GenderModel.GenderText)""
+                    ValueField=""@nameof(GenderModel.GenderId)""
+                    IconNameField=""@nameof(GenderModel.IconName)""
+                    LayoutFlow=""BitLayoutFlow.Horizontal"" />
+
+<BitRadioButtonList @bind-Value=""@example7LabelTemplate""
+                    Items=""BasicGenderItems""
+                    TextField=""@nameof(GenderModel.GenderText)""
+                    ValueField=""@nameof(GenderModel.GenderId)""
+                    LayoutFlow=""BitLayoutFlow.Horizontal"">
+    <LabelTemplate>
+        <div class=""custom-label"">
+            Label Template <BitIcon IconName=""BitIconName.Filter"" />
+        </div>
+    </LabelTemplate>
+</BitRadioButtonList>
+
+<BitRadioButtonList @bind-Value=""@example7ItemTemplate""
+                    Label=""Item Template""
+                    Items=""IconGenderItems""
+                    ValueField=""@nameof(GenderModel.GenderId)""
+                    LayoutFlow=""BitLayoutFlow.Horizontal"">
+    <ItemTemplate Context=""item"">
+        <div class=""custom-item @(example7ItemTemplate == item.GenderId ? ""selected-item"" : """")"">
+            <div class=""radio-pointer""></div>
+            <BitIcon IconName=""@((BitIconName)item.IconName)"" />
+            <span>@item.GenderText</span>
+        </div>
+    </ItemTemplate>
+</BitRadioButtonList>
+";
+
+    private readonly string example7CSharpCode = @"
+private int example7Basic;
+private int example7Disabled;
+private int example7Image;
+private int example7Icon;
+private int example7LabelTemplate;
+private int example7ItemTemplate;
+
+public class GenderModel
+{
+    public int GenderId { get; set; }
+    public string GenderText { get; set; }
+    public string ImageName { get; set; }
+    public BitIconName? IconName { get; set; }
+    public bool IsEnabled { get; set; } = true;
+}
+
+private List<GenderModel> BasicGenderItems = new()
+{
+    new GenderModel { GenderId = 1, GenderText = ""Female"" },
+    new GenderModel { GenderId = 2, GenderText = ""Male"" },
+    new GenderModel { GenderId = 3, GenderText = ""Other"" },
+    new GenderModel { GenderId = 4, GenderText = ""Prefer not to say"" },
+};
+
+private List<GenderModel> DisabledGenderItems = new()
+{
+    new GenderModel { GenderId = 1, GenderText = ""Female"" },
+    new GenderModel { GenderId = 2, GenderText = ""Male"" },
+    new GenderModel { GenderId = 3, GenderText = ""Other"" },
+    new GenderModel { GenderId = 4, GenderText = ""Prefer not to say"", IsEnabled = false },
+};
+
+private List<GenderModel> ImageGenderItems = new()
+{
+    new GenderModel { GenderId = 1, GenderText = ""Female"", ImageName = ""https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Female_icon.svg/920px-Female_icon.svg.png"" },
+    new GenderModel { GenderId = 2, GenderText = ""Male"", ImageName = ""https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Map_icons_by_Scott_de_Jonge_-_male.svg/1024px-Map_icons_by_Scott_de_Jonge_-_male.svg.png"" },
+    new GenderModel { GenderId = 3, GenderText = ""Other"", ImageName = ""https://cdn1.iconfinder.com/data/icons/robots-avatars-set/354/Robot_bot___robot_robo_bot_artificial_intelligence-512.png"" },
+    new GenderModel { GenderId = 4, GenderText = ""Prefer not to say"", ImageName = ""https://cdn3.iconfinder.com/data/icons/emoticon-2022/100/Zipper-Mouth_Face-512.png"" },
+};
+
+private List<GenderModel> IconGenderItems = new()
+{
+    new GenderModel { GenderId = 1, GenderText = ""Female"", IconName = BitIconName.People },
+    new GenderModel { GenderId = 2, GenderText = ""Male"", IconName = BitIconName.People },
+    new GenderModel { GenderId = 3, GenderText = ""Other"", IconName = BitIconName.PeopleBlock },
+    new GenderModel { GenderId = 4, GenderText = ""Prefer not to say"", IconName = BitIconName.Emoji2 },
+};
+";
+
+    #endregion
+
+    #region Example Code 8
+
+    private readonly string example8HTMLCode = @"
 @if (string.IsNullOrEmpty(SuccessMessage))
 {
     <EditForm Model=""FormValidationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
@@ -547,7 +716,7 @@ else
 }
 ";
 
-    private readonly string example7CSharpCode = @"
+    private readonly string example8CSharpCode = @"
 public class FormValidationModel
 {
     [Required]
