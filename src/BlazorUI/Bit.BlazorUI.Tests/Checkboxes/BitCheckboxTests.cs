@@ -183,7 +183,7 @@ public class BitCheckboxTests : BunitTestContext
             parameters.Add(p => p.Title, title);
         });
 
-        var chbInput = component.Find("input");
+        var chbInput = component.Find("label");
 
         if (title is not null)
         {
