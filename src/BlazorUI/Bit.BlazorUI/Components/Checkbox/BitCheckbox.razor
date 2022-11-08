@@ -19,10 +19,10 @@
            aria-setsize="@AriaSetSize"
            aria-posinset="@AriaPositionInSet"
            name="@Name"
-           title="@Title"
            hidden
            @onclick="@HandleCheckboxClick" />
-    <label for="@_inputId">
+
+    <label title="@Title" for="@_inputId">
         @if (ChildContent is not null)
         {
             @ChildContent
