@@ -65,6 +65,20 @@
         if (datePickerCallout == null)
             return;
 
-        return datePickerCallout.offsetWidth > window.innerWidth;
+        const datePickerCalloutWidth = datePickerCallout.offsetWidth;
+        const bodyWidth = document.body.offsetWidth;
+        if (datePickerCalloutWidth > bodyWidth) {
+            return true;
+        } else {
+            const calloutLeft = datePickerCallout.getBoundingClientRect().x;
+            if (datePickerCalloutWidth + calloutLeft > bodyWidth) {
+                datePickerCallout.style.left = "0";
+                datePickerCallout.style.right = "0";
+                datePickerCallout.style.margin = "auto";
+                datePickerCallout.style.width = "fit-content";
+            }
+
+            return false;
+        }
     }
 }
