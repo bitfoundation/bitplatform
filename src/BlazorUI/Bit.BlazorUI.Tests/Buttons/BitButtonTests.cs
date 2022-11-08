@@ -71,8 +71,8 @@ public class BitButtonTests : BunitTestContext
         });
 
         var bitButton = com.Find(".bit-btn"); 
-        var sizeClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
-        var visualClass = size == BitButtonSize.Small ? "sm" : size == BitButtonSize.Medium ? "md" : "lg";
+        var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
+        var sizeClass = size == BitButtonSize.Small ? "sm" : size == BitButtonSize.Medium ? "md" : "lg";
 
         Assert.IsTrue(bitButton.ClassList.Contains($"bit-btn-{sizeClass}-{visualClass}"));
     }
