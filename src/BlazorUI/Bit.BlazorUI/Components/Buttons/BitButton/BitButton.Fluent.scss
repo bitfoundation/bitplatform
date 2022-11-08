@@ -2,37 +2,34 @@
 
 .bit-btn {
     &.bit-btn-fluent {
-        font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
-        text-align: center;
-        border-radius: rem(2px);
-        padding: rem(6px) rem(20px);
-        font-size: rem(14px);
-        font-weight: 400;
-        line-height: rem(20px);
-        cursor: pointer;
-        height: rem(32px);
-        text-decoration: none;
         position: relative;
-        min-width: rem(80px);
+        min-width: rem(64px);
+        border-radius: rem(4px);
         box-sizing: border-box;
+        font-weight: 500;
+        text-align: center;
+        line-height: 1.75;
+        text-decoration: none;
+        font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+        cursor: pointer;
     }
 
     &.bit-btn-disabled-fluent {
-        background: $Grey20;
+        border: rem(1px) solid $Grey20;
         color: $Grey90;
-        border: 1px solid $Grey20;
+        background: $Grey20;
         cursor: default;
         pointer-events: none;
     }
 
     &.standard {
+        border: rem(1px) solid $GreyInputBorder;
         color: $Grey160;
         background: $White;
-        border: 1px solid $GreyInputBorder;
 
         &:hover {
-            background-color: $Grey20;
             border-color: $Grey160;
+            background-color: $Grey20;
         }
 
         &:active {
@@ -41,9 +38,9 @@
     }
 
     &.primary {
+        border: rem(1px) solid $Primary;
         color: $White;
         background: $Primary;
-        border: 1px solid $Primary;
 
         &:hover {
             background-color: $DarkAlt;
@@ -52,5 +49,20 @@
         &:active {
             background-color: $Dark;
         }
+    }
+
+    &.bit-btn-sm-fluent {
+        padding: rem(4px) rem(10px);
+        font-size: rem(13px);
+    }
+
+    &.bit-btn-md-fluent {
+        padding: rem(6px) rem(16px);
+        font-size: rem(14px);
+    }
+
+    &.bit-btn-lg-fluent {
+        padding: rem(8px) rem(22px);
+        font-size: rem(15px);
     }
 }

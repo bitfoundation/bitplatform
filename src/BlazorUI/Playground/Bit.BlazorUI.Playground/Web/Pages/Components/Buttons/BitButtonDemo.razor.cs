@@ -34,6 +34,15 @@ public partial class BitButtonDemo
         },
         new ComponentParameter()
         {
+            Name = "ButtonSize",
+            Type = "BitButtonSize",
+            LinkType = LinkType.Link,
+            Href = "#button-size-enum",
+            DefaultValue = "BitButtonSize.Medium",
+            Description = "The size of button, Possible values: Small | Medium | Large.",
+        },
+        new ComponentParameter()
+        {
             Name = "ButtonStyle",
             Type = "BitButtonStyle",
             LinkType = LinkType.Link,
@@ -98,6 +107,33 @@ public partial class BitButtonDemo
 
     private readonly List<EnumParameter> enumParameters = new()
     {
+        new EnumParameter()
+        {
+            Id = "button-size-enum",
+            Title = "BitButtonSize Enum",
+            Description = "",
+            EnumList = new List<EnumItem>()
+            {
+                new EnumItem()
+                {
+                    Name= "Small",
+                    Description="The button size is small.",
+                    Value="0",
+                },
+                new EnumItem()
+                {
+                    Name= "Medium",
+                    Description="The button size is medium.",
+                    Value="1",
+                },
+                new EnumItem()
+                {
+                    Name= "Large",
+                    Description="The button size is large.",
+                    Value="2",
+                }
+            }
+        },
         new EnumParameter()
         {
             Id = "button-style-enum",
@@ -224,4 +260,70 @@ public int StandardCounter;";
 <BitButton Class=""disable-btn"" Target=""_self"" Href=""https://github.com/bitfoundation/bitplatform"" IsEnabled=""false"">
     <span>Bit Platform From Span</span>
 </BitButton>";
+
+    private readonly string example6HTMLCode = @"
+<div>
+    <BitLabel>Small size</BitLabel>
+    <BitButton Style=""margin-bottom: 8px""
+               ButtonSize=""BitButtonSize.Small"">Button</BitButton>
+</div>
+<div>
+    <BitLabel>Medium size</BitLabel>
+    <BitButton Style=""margin-bottom: 8px""
+               ButtonSize=""BitButtonSize.Medium"">Button</BitButton>
+</div>
+<div>
+    <BitLabel>Large size</BitLabel>
+    <BitButton Style=""margin-bottom: 8px""
+               ButtonSize=""BitButtonSize.Large"">Button</BitButton>
+</div>";
+
+    private readonly string example7HTMLCode = @"
+<style>
+    ::deep .custom-btn-sm {
+        &.bit-btn-sm-fluent {
+            padding: 5px 10px;
+            font-size: 12px;
+            line-height: 1.5;
+            border-radius: 3px;
+        }
+    }
+    
+    ::deep .custom-btn-md {
+        &.bit-btn-md-fluent {
+            padding: 6px 12px;
+            font-size: 14px;
+            line-height: 1.4;
+            border-radius: 4px;
+        }
+    }
+    
+    ::deep .custom-btn-lg {
+        &.bit-btn-lg-fluent {
+            padding: 10px 16px;
+            font-size: 18px;
+            line-height: 1.33;
+            border-radius: 6px;
+        }
+    }
+</style>
+
+<div>
+    <BitLabel>Small size</BitLabel>
+    <BitButton Style=""margin-bottom: 8px""
+               Class=""custom-btn-sm""
+               ButtonSize=""BitButtonSize.Small"">Button</BitButton>
+</div>
+<div>
+    <BitLabel>Medium size</BitLabel>
+    <BitButton Style=""margin-bottom: 8px""
+               Class=""custom-btn-md""
+               ButtonSize=""BitButtonSize.Medium"">Button</BitButton>
+</div>
+<div>
+    <BitLabel>Large size</BitLabel>
+    <BitButton Style=""margin-bottom: 8px""
+               Class=""custom-btn-lg""
+               ButtonSize=""BitButtonSize.Large"">Button</BitButton>
+</div>";
 }

@@ -50,6 +50,34 @@ public class BitButtonTests : BunitTestContext
     }
 
     [DataTestMethod,
+        DataRow(Visual.Fluent, true, BitButtonSize.Small),
+        DataRow(Visual.Fluent, true, BitButtonSize.Medium),
+        DataRow(Visual.Fluent, false, BitButtonSize.Large),
+
+        DataRow(Visual.Cupertino, true, BitButtonSize.Small),
+        DataRow(Visual.Cupertino, true, BitButtonSize.Medium),
+        DataRow(Visual.Cupertino, false, BitButtonSize.Large),
+
+        DataRow(Visual.Material, true, BitButtonSize.Small),
+        DataRow(Visual.Material, true, BitButtonSize.Medium),
+        DataRow(Visual.Material, false, BitButtonSize.Large)
+    ]
+    public void BitButtonSizeTest(Visual visual, BitButtonSize size)
+    {
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.AddCascadingValue(visual);
+            parameters.Add(p => p.ButtonSize, size);
+        });
+
+        var bitButton = com.Find(".bit-btn"); 
+        var sizeClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
+        var visualClass = size == BitButtonSize.Small ? "sm" : size == BitButtonSize.Medium ? "md" : "lg";
+
+        Assert.IsTrue(bitButton.ClassList.Contains($"bit-btn-{sizeClass}-{visualClass}"));
+    }
+
+    [DataTestMethod,
         DataRow(true, BitButtonStyle.Primary, false, false),
         DataRow(true, BitButtonStyle.Standard, true, false),
         DataRow(false, BitButtonStyle.Primary, false, true),
