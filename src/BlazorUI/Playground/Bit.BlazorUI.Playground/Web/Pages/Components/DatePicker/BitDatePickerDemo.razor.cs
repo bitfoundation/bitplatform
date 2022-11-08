@@ -58,17 +58,17 @@ public partial class BitDatePickerDemo
         },
         new ComponentParameter()
         {
+            Name = "DateFormat",
+            Type = "string",
+            DefaultValue = "",
+            Description = @"The format of the date in the DatePicker like ""yyyy/MM/dd"".",
+        },
+        new ComponentParameter()
+        {
             Name = "DayCellTemplate",
             Type = "RenderFragment<DateTimeOffset>?",
             DefaultValue = "",
             Description = "Used to customize how content inside the day cell is rendered."
-        },
-        new ComponentParameter()
-        {
-            Name = "FormatDate",
-            Type = "string",
-            DefaultValue = "",
-            Description = @"Date format like ""yyyy/MM/dd"".",
         },
         new ComponentParameter()
         {
@@ -375,7 +375,7 @@ private void HandleInvalidSubmit()
 <BitDatePicker Style=""max-width: 300px""
                AriaLabel=""Select a date.""
                Placeholder=""Select a date...""
-               FormatDate=""dd=MM(yy)"" />";
+               DateFormat=""dd=MM(yy)"" />";
 
     private readonly string example8HTMLCode = @"
 <BitDatePicker Style=""max-width: 300px""

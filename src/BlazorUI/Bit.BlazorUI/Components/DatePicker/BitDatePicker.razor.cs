@@ -57,15 +57,16 @@ public partial class BitDatePicker
         }
     }
 
+
+    /// <summary>
+    /// The format of the date in the DatePicker
+    /// </summary>
+    [Parameter] public string? DateFormat { get; set; }
+
     /// <summary>
     /// Used to customize how content inside the day cell is rendered.
     /// </summary>
     [Parameter] public RenderFragment<DateTimeOffset>? DayCellTemplate { get; set; }
-
-    /// <summary>
-    /// FormatDate for the DatePicker
-    /// </summary>
-    [Parameter] public string? FormatDate { get; set; }
 
     /// <summary>
     /// GoToToday text for the DatePicker
@@ -278,7 +279,7 @@ public partial class BitDatePicker
             return true;
         }
 
-        if (DateTime.TryParseExact(value, FormatDate ?? Culture.DateTimeFormat.ShortDatePattern, Culture, DateTimeStyles.None, out DateTime parsedValue))
+        if (DateTime.TryParseExact(value, DateFormat ?? Culture.DateTimeFormat.ShortDatePattern, Culture, DateTimeStyles.None, out DateTime parsedValue))
         {
             result = new DateTimeOffset(parsedValue, DateTimeOffset.Now.Offset);
             validationErrorMessage = null;
@@ -294,7 +295,7 @@ public partial class BitDatePicker
     {
         if (value.HasValue)
         {
-            return value.Value.ToString(FormatDate ?? Culture.DateTimeFormat.ShortDatePattern, Culture);
+            return value.Value.ToString(DateFormat ?? Culture.DateTimeFormat.ShortDatePattern, Culture);
         }
         else
         {
