@@ -51,6 +51,11 @@ public partial class BitRadioButtonGroup
     [Parameter] public RenderFragment? LabelTemplate { get; set; }
 
     /// <summary>
+    /// You can define the RadioButtonGroup in Horizontal or Vertical mode.
+    /// </summary>
+    [Parameter] public BitLayoutFlow? LayoutFlow { get; set; }
+
+    /// <summary>
     /// Name of RadioButtonGroup, this name is used to group each RadioButtonGroup into the same logical RadioButtonGroup.
     /// </summary>
     [Parameter] public string Name { get; set; } = Guid.NewGuid().ToString();

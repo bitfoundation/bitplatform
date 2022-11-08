@@ -26,6 +26,10 @@
         flex-direction: column;
     }
 
+    &.column {
+        flex-direction: column;
+    }
+
     .rbg-output {
         display: flex;
         align-items: center;
