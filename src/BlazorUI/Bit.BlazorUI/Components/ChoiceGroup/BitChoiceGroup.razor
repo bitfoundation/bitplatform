@@ -16,7 +16,7 @@
                 @Label
             </label>
         }
-        <div class="choice-field-group">
+        <div class="choice-field-group @LayoutFlow?.GetDisplayName()">
             @foreach (var option in Options)
             {
                 <div class="@GetOptionDivClassName(option)">
