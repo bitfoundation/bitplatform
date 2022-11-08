@@ -42,6 +42,11 @@ public partial class BitChoiceGroup
     [Parameter] public RenderFragment? LabelTemplate { get; set; }
 
     /// <summary>
+    /// You can define the ChoiceGroup in Horizontal or Vertical mode.
+    /// </summary>
+    [Parameter] public BitLayoutFlow? LayoutFlow { get; set; }
+
+    /// <summary>
     /// Name of ChoiceGroup, this name is used to group each option into the same logical ChoiceGroup.
     /// </summary>
     [Parameter] public string Name { get; set; } = Guid.NewGuid().ToString();
