@@ -80,7 +80,30 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Checkbox validation" HTMLSourceCode="@example6HTMLCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example6">
+    <ComponentExampleBox Title="Checkbox with CheckmarkTemplate" HTMLSourceCode="@example6HTMLCode" ExampleId="example6">
+        <ExamplePreview>
+            <div class="example-desc">You can customize the Checkmark shape.</div>
+            <div>
+                <BitCheckbox @bind-Value="IsCheckedCheckmarkTemplate">
+                   <CheckmarkTemplate>
+                        @if (IsCheckedCheckmarkTemplate)
+                        {
+                            <BitIconButton Style="border: 1px solid;" IconName="BitIconName.Accept" />
+                        }
+                        else
+                        {
+                            <BitIconButton Style="border: 1px solid;" IconName="BitIconName.Cancel" />
+                        }
+                   </CheckmarkTemplate>
+                   <ChildContent>
+                        Checkmark Template
+                   </ChildContent>
+                </BitCheckbox>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Checkbox validation" HTMLSourceCode="@example7HTMLCode" CSharpSourceCode="@example7CSharpCode" ExampleId="example7">
         <ExamplePreview>
             <div>
                 @if (string.IsNullOrEmpty(SuccessMessage))

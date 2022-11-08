@@ -12,6 +12,7 @@ public partial class BitCheckboxDemo
     private bool IsChecked_TwoWay;
     private bool IsIndeterminated_OneWay = true;
     private bool IsIndeterminated_TwoWay = true;
+    private bool IsCheckedCheckmarkTemplate;
     private BitCheckboxValidationModel ValidationForm = new();
     private string SuccessMessage = string.Empty;
 
@@ -21,28 +22,24 @@ public partial class BitCheckboxDemo
         {
             Name = "AriaDescription",
             Type = "string",
-            DefaultValue = "",
             Description = "Detailed description of the checkbox for the benefit of screen readers.",
         },
         new ComponentParameter()
         {
             Name = "AriaLabelledby",
             Type = "string",
-            DefaultValue = "",
             Description = "ID for element that contains label information for the checkbox.",
         },
         new ComponentParameter()
         {
             Name = "AriaPositionInSet",
             Type = "string",
-            DefaultValue = "",
             Description = "The position in the parent set (if in a set) for aria-posinset.",
         },
         new ComponentParameter()
         {
             Name = "AriaSetSize",
             Type = "string",
-            DefaultValue = "",
             Description = "The total size of the parent set (if in a set) for aria-setsize.",
         },
         new ComponentParameter()
@@ -58,77 +55,72 @@ public partial class BitCheckboxDemo
         {
             Name = "CheckmarkIconName",
             Type = "BitIcon",
-            DefaultValue = "",
             Description = "Custom icon for the check mark rendered by the checkbox instade of default check mark icon.",
         },
         new ComponentParameter()
         {
             Name = "CheckmarkIconAriaLabel",
             Type = "string",
-            DefaultValue = "",
             Description = "The aria label of the icon for the benefit of screen readers.",
+        },
+        new ComponentParameter()
+        {
+            Name = "CheckmarkTemplate",
+            Type = "RenderFragment?",
+            Description = "Used to customize the Checkmark for the checkbox.",
         },
         new ComponentParameter()
         {
             Name = "ChildContent",
             Type = "RenderFragment",
-            DefaultValue = "",
             Description = "The content of checkbox, It can be Any custom tag or a text.",
         },
         new ComponentParameter()
         {
             Name = "DefaultIsIndeterminate",
             Type = "bool",
-            DefaultValue = "",
             Description = "Default indeterminate visual state for checkbox.",
         },
         new ComponentParameter()
         {
             Name = "DefaultValue",
             Type = "bool",
-            DefaultValue = "",
             Description = "Use this if you want an uncontrolled component, meaning the Checkbox instance maintains its own state.",
         },
         new ComponentParameter()
         {
             Name = "IsIndeterminate",
             Type = "bool",
-            DefaultValue = "",
             Description = "Callback that is called when the IsIndeterminate parameter changed.",
         },
         new ComponentParameter()
         {
             Name = "IsIndeterminateChanged",
             Type = "EventCallback<bool>",
-            DefaultValue = "",
             Description = "An indeterminate visual state for checkbox. Setting indeterminate state takes visual precedence over checked given but does not affect on Value state.",
         },
         new ComponentParameter()
         {
             Name = "Name",
             Type = "string",
-            DefaultValue = "",
             Description = "Name for the checkbox input. This is intended for use with forms and NOT displayed in the UI.",
         },
         new ComponentParameter()
         {
             Name = "OnChange",
             Type = "EventCallback<bool>",
-            DefaultValue = "",
             Description = "Callback that is called when the checked value has changed.",
         },
         new ComponentParameter()
         {
             Name = "OnClick",
             Type = "EventCallback<MouseEventArgs>",
-            DefaultValue = "",
             Description = "Callback for when the checkbox clicked.",
         },
         new ComponentParameter()
         {
             Name = "Title",
             Type = "string",
-            DefaultValue = "",
             Description = "Title text applied to the root element and the hidden checkbox input.",
         },
 
@@ -136,14 +128,12 @@ public partial class BitCheckboxDemo
         {
             Name = "Value",
             Type = "bool",
-            DefaultValue = "",
             Description = "Checkbox state, control the checked state at a higher level.",
         },
         new ComponentParameter()
         {
             Name = "ValueChanged",
             Type = "EventCallback<bool>",
-            DefaultValue = "",
             Description = "Callback that is called when the Value parameter changed.",
         },
         new ComponentParameter()
@@ -252,6 +242,23 @@ public partial class BitCheckboxDemo
     </a>
 </BitCheckbox>";
     private readonly string example6HTMLCode = @"
+<BitCheckbox @bind-Value=""IsCheckedCheckmarkTemplate"">
+    <CheckmarkTemplate>
+        @if (IsCheckedCheckmarkTemplate)
+        {
+            <BitIconButton Style=""border: 1px solid;"" IconName=""BitIconName.Accept"" />
+        }
+        else
+        {
+            <BitIconButton Style=""border: 1px solid;"" IconName=""BitIconName.Cancel"" />
+        }
+    </CheckmarkTemplate>
+    <ChildContent>
+        Checkmark Template
+    </ChildContent>
+</BitCheckbox>
+";
+    private readonly string example7HTMLCode = @"
 @if (string.IsNullOrEmpty(SuccessMessage))
 {
     <EditForm Model=""ValidationForm"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
@@ -290,7 +297,7 @@ private bool IsChecked_OneWay;
 private bool IsChecked_TwoWay;
 private bool IsIndeterminated_OneWay = true;
 private bool IsIndeterminated_TwoWay = true;";
-    private readonly string example6CSharpCode = @"
+    private readonly string example7CSharpCode = @"
 private BitCheckboxValidationModel ValidationForm = new();
 private string SuccessMessage = string.Empty;
 

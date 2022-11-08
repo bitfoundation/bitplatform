@@ -59,6 +59,11 @@ public partial class BitCheckbox
     [Parameter] public string? CheckmarkIconAriaLabel { get; set; }
 
     /// <summary>
+    /// Used to customize the Checkmark for the checkbox.
+    /// </summary>
+    [Parameter] public RenderFragment? CheckmarkTemplate { get; set; }
+
+    /// <summary>
     /// The content of checkbox, It can be Any custom tag or a text
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
