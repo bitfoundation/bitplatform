@@ -50,17 +50,17 @@ public class BitButtonTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow(Visual.Fluent, true, BitButtonSize.Small),
-        DataRow(Visual.Fluent, true, BitButtonSize.Medium),
-        DataRow(Visual.Fluent, false, BitButtonSize.Large),
+        DataRow(Visual.Fluent, BitButtonSize.Small),
+        DataRow(Visual.Fluent, BitButtonSize.Medium),
+        DataRow(Visual.Fluent, BitButtonSize.Large),
 
-        DataRow(Visual.Cupertino, true, BitButtonSize.Small),
-        DataRow(Visual.Cupertino, true, BitButtonSize.Medium),
-        DataRow(Visual.Cupertino, false, BitButtonSize.Large),
+        DataRow(Visual.Cupertino, BitButtonSize.Small),
+        DataRow(Visual.Cupertino, BitButtonSize.Medium),
+        DataRow(Visual.Cupertino, BitButtonSize.Large),
 
-        DataRow(Visual.Material, true, BitButtonSize.Small),
-        DataRow(Visual.Material, true, BitButtonSize.Medium),
-        DataRow(Visual.Material, false, BitButtonSize.Large)
+        DataRow(Visual.Material, BitButtonSize.Small),
+        DataRow(Visual.Material, BitButtonSize.Medium),
+        DataRow(Visual.Material, BitButtonSize.Large)
     ]
     public void BitButtonSizeTest(Visual visual, BitButtonSize size)
     {
