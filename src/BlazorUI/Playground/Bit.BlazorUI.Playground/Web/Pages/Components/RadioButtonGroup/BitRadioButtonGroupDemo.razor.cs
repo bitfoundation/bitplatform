@@ -70,6 +70,12 @@ public partial class BitRadioButtonGroupDemo
         },
         new ComponentParameter()
         {
+            Name = "LayoutFlow",
+            Type = "BitLayoutFlow?",
+            Description = "You can define the RadioButtonGroup in Horizontal or Vertical mode.",
+        },
+        new ComponentParameter()
+        {
             Name = "Name",
             Type = "string",
             DefaultValue = "a Guid",
