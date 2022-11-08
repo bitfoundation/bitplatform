@@ -19,9 +19,8 @@
            aria-setsize="@AriaSetSize"
            aria-posinset="@AriaPositionInSet"
            name="@Name"
-           title="@Title"
            hidden />
-    <label class="bit-chb-lbl" for="@_inputId" @onclick="@HandleCheckboxClick">
+    <label title="@Title" class="bit-chb-lbl" for="@_inputId" @onclick="@HandleCheckboxClick">
         <div class="bit-chb-checkbox">
             <i class=@($"{RootElementClass}-checkmark bit-icon bit-icon--{CheckmarkIconName.GetName()}")
                aria-hidden="true"
