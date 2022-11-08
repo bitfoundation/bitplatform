@@ -44,7 +44,14 @@
                    @onfocus="@HandleFocus"
                    @oninput="@HandleChange" />
 
-            <i class="bit-icon bit-icon--@BitIconName.CalendarMirrored.GetName()" aria-hidden="true"></i>
+            @if (IconFragment is not null)
+            {
+                @IconFragment
+            }
+            else
+            {
+                <i class="bit-icon bit-icon--@IconName.GetName()" aria-hidden="true"></i>
+            }
         </div>
     </div>
 
