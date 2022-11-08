@@ -59,12 +59,7 @@ public partial class BitCheckbox
     [Parameter] public string? CheckmarkIconAriaLabel { get; set; }
 
     /// <summary>
-    /// Used to customize the Checkmark for the checkbox.
-    /// </summary>
-    [Parameter] public RenderFragment? CheckmarkTemplate { get; set; }
-
-    /// <summary>
-    /// The content of checkbox, It can be Any custom tag or a text
+    /// Used to customize the content of checkbox(Label and Box).
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
@@ -97,10 +92,17 @@ public partial class BitCheckbox
         }
     }
 
-    /// <summary>
-    ///  Callback that is called when the IsIndeterminate parameter changed
-    /// </summary>
     [Parameter] public EventCallback<bool> IsIndeterminateChanged { get; set; }
+
+    /// <summary>
+    /// Descriptive label for the checkbox.
+    /// </summary>
+    [Parameter] public string? Label { get; set; }
+
+    /// <summary>
+    /// Used to customize the label for the checkbox.
+    /// </summary>
+    [Parameter] public RenderFragment? LabelTemplate { get; set; }
 
     /// <summary>
     /// Name for the checkbox input. This is intended for use with forms and NOT displayed in the UI

@@ -19,7 +19,7 @@
 }
 
 .chk-box {
-    ::deep .bit-chb-lbl {
+    ::deep .bit-chb {
         margin-bottom: rem(10px);
     }
 }
@@ -33,5 +33,17 @@
 
     @include sm {
         flex-direction: column;
+    }
+}
+
+.custom-checkbox {
+    display: flex;
+    justify-content: center;
+    cursor: pointer;
+    user-select: none;
+
+    ::deep .checked-box {
+        border: 1px solid;
+        margin-right: rem(5px);
     }
 }

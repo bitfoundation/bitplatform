@@ -21,22 +21,32 @@
            name="@Name"
            title="@Title"
            hidden />
-    <label class="bit-chb-lbl" for="@_inputId" @onclick="@HandleCheckboxClick">
-        @if (CheckmarkTemplate is not null)
+    <label for="@_inputId" @onclick="@HandleCheckboxClick">
+        @if (ChildContent is not null)
         {
-            @CheckmarkTemplate
+            @ChildContent
         }
         else
         {
-            <div class="bit-chb-checkbox">
-                <i class=@($"{RootElementClass}-checkmark bit-icon bit-icon--{CheckmarkIconName.GetName()}")
-               aria-hidden="true"
-               aria-label="@CheckmarkIconAriaLabel">
-                </i>
+            <div class="bit-chb-lbl">
+                <div class="bit-chb-checkbox">
+                    <i class=@($"{RootElementClass}-checkmark bit-icon bit-icon--{CheckmarkIconName.GetName()}")
+                   aria-hidden="true"
+                   aria-label="@CheckmarkIconAriaLabel">
+                    </i>
+                </div>
+
+                @if (LabelTemplate is not null)
+                {
+                    @LabelTemplate
+                }
+                else if (Label.HasValue())
+                {
+                    <span class="bit-chb-txt no-text-select">
+                        @Label
+                    </span>
+                }
             </div>
         }
-        <span class="bit-chb-txt no-text-select">
-            @ChildContent
-        </span>
     </label>
 </div>
