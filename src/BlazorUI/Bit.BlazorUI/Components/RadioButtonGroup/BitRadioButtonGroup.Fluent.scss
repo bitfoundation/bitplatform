@@ -31,4 +31,13 @@
         overflow-wrap: break-word;
         -webkit-font-smoothing: antialiased;
     }
+
+    .choice-field-group {
+        display: flex;
+        flex-flow: column nowrap;
+
+        &.Horizontal {
+            flex-flow: row wrap;
+        }
+    }
 }
