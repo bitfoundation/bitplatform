@@ -98,6 +98,29 @@ public partial class BitDatePickerDemo
             DefaultValue = "false",
             Description = "Whether the month picker should highlight the selected month."
         },
+        new ComponentParameter
+        {
+            Name = "IconFragment",
+            Type = "RenderFragment?",
+            DefaultValue = "",
+            Description = "Custom DatePicker icon template."
+        },
+        new ComponentParameter
+        {
+            Name = "IconLocation",
+            Type = "BitIconLocation",
+            LinkType = LinkType.Link,
+            Href = "#icon-location-enum",
+            DefaultValue = "BitIconLocation.Left",
+            Description = "DatePicker icon location"
+        },
+        new ComponentParameter
+        {
+            Name = "IconName",
+            Type = "BitIconName",
+            DefaultValue = "BitIconName.CalendarMirrored",
+            Description = "Optional DatePicker icon."
+        },
         new ComponentParameter()
         {
             Name = "IsMonthPickerVisible",
@@ -280,6 +303,27 @@ public partial class BitDatePickerDemo
                     Name= "Collapsed",
                     Description="Hide content of the component,though the space it takes on the page gone.",
                     Value="2",
+                }
+            }
+        },
+        new EnumParameter()
+        {
+            Id = "icon-location-enum",
+            Title = "BitIconLocation Enum",
+            Description = "",
+            EnumList = new List<EnumItem>()
+            {
+                new EnumItem()
+                {
+                    Name= "Left",
+                    Description="Show the icon at the left side.",
+                    Value="0",
+                },
+                new EnumItem()
+                {
+                    Name= "Right",
+                    Description="Show the icon at the right side.",
+                    Value="1",
                 }
             }
         }
@@ -534,4 +578,20 @@ private DateTimeOffset? selectedDate = new DateTimeOffset(new DateTime(2020, 1, 
 
     private readonly string example14CSharpCode = @"
 private CultureInfo Culture = CultureInfo.CurrentUICulture;";
+
+    private readonly string example15HTMLCode = @"
+<BitDatePicker Style=""max-width: 300px""
+                    AriaLabel=""Select a date""
+                    IconLocation=""BitIconLocation.Left""
+                    Placeholder=""Select a date..."">
+    <IconFragment>
+        <img src=""https://img.icons8.com/fluency/2x/calendar-13.png"" width=""24"" height=""24"" />
+    </IconFragment>
+</BitDatePicker>";
+
+    private readonly string example16HTMLCode = @"
+<BitDatePicker Style=""max-width: 300px""
+               AriaLabel=""Select a date""
+               IconName=""BitIconName.Airplane""
+               Placeholder=""Select a date..."" />";
 }

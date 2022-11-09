@@ -8,6 +8,7 @@ public partial class BitDatePicker
     private const int DEFAULT_DAY_COUNT_PER_WEEK = 7;
     private const int DEFAULT_WEEK_COUNT = 6;
 
+    private BitIconLocation iconLocation = BitIconLocation.Right;
     private bool isOpen;
     private CultureInfo culture = CultureInfo.CurrentUICulture;
     private string focusClass = string.Empty;
@@ -87,6 +88,32 @@ public partial class BitDatePicker
     /// Whether the month picker should highlight the selected month.
     /// </summary>
     [Parameter] public bool HighlightSelectedMonth { get; set; } = false;
+
+    /// <summary>
+    /// Custom DatePicker icon template
+    /// </summary>
+    [Parameter] public RenderFragment? IconFragment { get; set; }
+
+    /// <summary>
+    /// DatePicker icon location
+    /// </summary>
+    [Parameter]
+    public BitIconLocation IconLocation
+    {
+        get => iconLocation;
+        set
+        {
+            if (iconLocation == value) return;
+
+            iconLocation = value;
+            ClassBuilder.Reset();
+        }
+    }
+
+    /// <summary>
+    /// Optional DatePicker icon
+    /// </summary>
+    [Parameter] public BitIconName IconName { get; set; } = BitIconName.CalendarMirrored;
 
     /// <summary>
     /// Whether the month picker is shown beside the day picker or hidden.
@@ -236,6 +263,9 @@ public partial class BitDatePicker
 
         ClassBuilder.Register(() => Culture.TextInfo.IsRightToLeft
             ? $"{RootElementClass}-rtl-{VisualClassRegistrar()}" : string.Empty);
+
+        ClassBuilder.Register(() => IconLocation is BitIconLocation.Left
+            ? $"{RootElementClass}-left-icon-{VisualClassRegistrar()}" : string.Empty);
 
         ClassBuilder.Register(() => IsUnderlined
             ? $"{RootElementClass}-underlined-{(IsEnabled is false ? "disabled-" : string.Empty)}{VisualClassRegistrar()}" : string.Empty);
