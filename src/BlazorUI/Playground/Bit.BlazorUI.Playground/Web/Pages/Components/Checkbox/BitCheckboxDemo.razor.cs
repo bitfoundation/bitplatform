@@ -310,7 +310,7 @@ private bool IsCheckedLabelTemplate;
     <div class=""custom-checkbox"">
         <BitIconButton Class=""checked-box"" IconName=""@(IsCheckedCustomCheckBox ? BitIconName.Accept : BitIconName.NotSet)"" />
         <span>
-            Customized the Basic Checkbox
+            Customized Basic Checkbox
         </span>
     </div>
 </BitCheckbox>
@@ -326,7 +326,7 @@ private bool IsCheckedLabelTemplate;
             <BitIconButton Class=""checked-box"" IconName=""@(IsCheckedCustomIndeterminateCheckBox ? BitIconName.Accept : BitIconName.NotSet)"" />
         }
         <span>
-            Customized the Indeterminate checkbox
+            Customized Indeterminate checkbox
         </span>
     </div>
 </BitCheckbox>
