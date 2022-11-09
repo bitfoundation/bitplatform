@@ -1,0 +1,16 @@
+﻿@import '../../../Styles/abstracts/_functions.scss';
+@import '../../../Styles/abstracts/_media-queries.scss';
+
+.example-box {
+    display: flex;
+    gap: rem(10px);
+    width: fit-content;
+
+    &.column {
+        flex-direction: column;
+    }
+
+    @include sm {
+        flex-direction: column;
+    }
+}

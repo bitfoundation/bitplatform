@@ -1,0 +1,32 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+<button @ref="RootElement"
+        @attributes="HtmlAttributes"
+        style="@StyleBuilder.Value"
+        class="@ClassBuilder.Value"
+        aria-label="@AriaLabel"
+        aria-describedby="@AriaDescription"
+        aria-hidden="@AriaHidden"
+        tabindex="@_tabIndex"
+        type="@ButtonType?.GetValue()"
+        title="@Title"
+        @onclick="HandleOnClick">
+
+    @if (isLoading)
+    {
+        <div class="loading @GetClassLoadingSpinnerPosition() @GetClassLoadingSize() @GetClassLoadingStyle()">
+            <div class="spinner"></div>
+            @if (LoadingLabel.HasValue())
+            {
+                <div class="label">
+                    @LoadingLabel
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        @ChildContent
+    }
+</button>
