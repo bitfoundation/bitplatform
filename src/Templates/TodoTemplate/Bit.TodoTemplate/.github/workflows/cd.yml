@@ -48,7 +48,7 @@ jobs:
 
     - name: Build migrations bundle
       run: |
-        dotnet tool install --global dotnet-ef --version 7.0.0-rc.2.22472.11
+        dotnet tool install --global dotnet-ef --version 7.0.0
         dotnet ef migrations bundle --self-contained -r linux-x64 --project src/Server/Api/TodoTemplate.Server.Api.csproj
 
     - name: Upload ef migrations bundle
