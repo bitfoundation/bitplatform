@@ -1,7 +1,7 @@
 ﻿@import "../../../Styles/Fluent/colors.fluent.scss", "../../../Styles/functions.scss";
 
-.bit-lodb {
-    &.bit-lodb-fluent {
+.bit-lbtn {
+    &.bit-lbtn-fluent {
         font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
         position: relative;
         border-radius: rem(2px);
@@ -19,7 +19,7 @@
         overflow: hidden;
     }
 
-    &.bit-lodb-disabled-fluent {
+    &.bit-lbtn-disabled-fluent {
         background: $Grey20;
         color: $Grey90;
         border: 1px solid $Grey20;

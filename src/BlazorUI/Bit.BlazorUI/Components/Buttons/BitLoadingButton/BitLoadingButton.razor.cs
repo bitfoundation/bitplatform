@@ -87,7 +87,7 @@ public partial class BitLoadingButton
     /// </summary>
     [Parameter] public string? Title { get; set; }
 
-    protected override string RootElementClass => "bit-lodb";
+    protected override string RootElementClass => "bit-lbtn";
 
     protected override async Task OnInitializedAsync()
     {
