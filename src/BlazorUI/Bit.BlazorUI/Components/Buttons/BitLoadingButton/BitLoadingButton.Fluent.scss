@@ -27,6 +27,21 @@
         pointer-events: none;
     }
 
+    &.bit-lbtn-sm-fluent {
+        padding: rem(4px) rem(10px);
+        font-size: rem(13px);
+    }
+
+    &.bit-lbtn-md-fluent {
+        padding: rem(6px) rem(16px);
+        font-size: rem(14px);
+    }
+
+    &.bit-lbtn-lg-fluent {
+        padding: rem(8px) rem(22px);
+        font-size: rem(15px);
+    }
+
     &.standard {
         color: $Grey160;
         background: $White;

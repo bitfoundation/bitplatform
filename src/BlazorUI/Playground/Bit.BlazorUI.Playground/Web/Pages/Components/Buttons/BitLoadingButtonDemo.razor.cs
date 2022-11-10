@@ -265,6 +265,15 @@ public partial class BitLoadingButtonDemo
         },
         new ComponentParameter
         {
+            Name = "ButtonSize",
+            Type = "BitButtonSize",
+            DefaultValue = "BitButtonSize.Medium",
+            Description = "The size of button, Possible values: Small | Medium | Large.",
+            LinkType = LinkType.Link,
+            Href = "#button-size-enum"
+        },
+        new ComponentParameter
+        {
             Name = "ChildContent",
             Type = "RenderFragment?",
             Description = "The content of button, It can be Any custom tag or a text."
@@ -323,27 +332,6 @@ public partial class BitLoadingButtonDemo
     {
         new EnumParameter()
         {
-            Id = "button-style-enum",
-            Title = "BitButtonStyle Enum",
-            Description = "",
-            EnumList = new List<EnumItem>()
-            {
-                new EnumItem()
-                {
-                    Name= "Primary",
-                    Description="The button with white text on a blue background.",
-                    Value="0",
-                },
-                new EnumItem()
-                {
-                    Name= "Standard",
-                    Description="The button with black text on a white background.",
-                    Value="1",
-                }
-            }
-        },
-        new EnumParameter()
-        {
             Id = "button-type-enum",
             Title = "BitButtonType Enum",
             Description = "",
@@ -365,6 +353,54 @@ public partial class BitLoadingButtonDemo
                 {
                     Name= "Reset",
                     Description="The button is a reset button (resets the form-data to its initial values).",
+                    Value="2",
+                }
+            }
+        },
+        new EnumParameter()
+        {
+            Id = "button-style-enum",
+            Title = "BitButtonStyle Enum",
+            Description = "",
+            EnumList = new List<EnumItem>()
+            {
+                new EnumItem()
+                {
+                    Name= "Primary",
+                    Description="The button with white text on a blue background.",
+                    Value="0",
+                },
+                new EnumItem()
+                {
+                    Name= "Standard",
+                    Description="The button with black text on a white background.",
+                    Value="1",
+                }
+            }
+        },
+        new EnumParameter()
+        {
+            Id = "button-size-enum",
+            Title = "BitButtonSize Enum",
+            Description = "",
+            EnumList = new List<EnumItem>()
+            {
+               new EnumItem()
+                {
+                    Name= "Small",
+                    Description="The button size is small.",
+                    Value="0",
+                },
+                new EnumItem()
+                {
+                    Name= "Medium",
+                    Description="The button size is medium.",
+                    Value="1",
+                },
+                new EnumItem()
+                {
+                    Name= "Large",
+                    Description="The button size is large.",
                     Value="2",
                 }
             }

@@ -5,6 +5,7 @@ namespace Bit.BlazorUI;
 public partial class BitLoadingButton
 {
     private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
+    private BitButtonSize buttonSize = BitButtonSize.Medium;
     private int? _tabIndex;
 
     /// <summary>
@@ -37,6 +38,20 @@ public partial class BitLoadingButton
         set
         {
             buttonStyle = value;
+            ClassBuilder.Reset();
+        }
+    }
+
+    /// <summary>
+    /// The size of button, Possible values: Small | Medium | Large.
+    /// </summary>
+    [Parameter]
+    public BitButtonSize ButtonSize
+    {
+        get => buttonSize;
+        set
+        {
+            buttonSize = value;
             ClassBuilder.Reset();
         }
     }
@@ -108,6 +123,12 @@ public partial class BitLoadingButton
                                        : ButtonStyle == BitButtonStyle.Primary
                                            ? "primary"
                                            : "standard");
+
+        ClassBuilder.Register(() => ButtonSize == BitButtonSize.Small
+                               ? $"{RootElementClass}-sm-{VisualClassRegistrar()}"
+                               : ButtonSize == BitButtonSize.Medium
+                                   ? $"{RootElementClass}-md-{VisualClassRegistrar()}"
+                                   : $"{RootElementClass}-lg-{VisualClassRegistrar()}");
     }
 
     private string GetClassLoadingSize()
