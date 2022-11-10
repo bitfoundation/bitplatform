@@ -7,6 +7,48 @@ namespace Bit.BlazorUI.Playground.Web.Pages.Components.Buttons;
 
 public partial class BitLoadingButtonDemo
 {
+    private bool Example1Toggle;
+    private bool Example2Toggle;
+    private bool Example3Toggle;
+    private bool Example4Toggle;
+    private bool Example5Toggle;
+
+    private void Example1ToggleOnChange()
+    {
+        BasicPrimaryIsLoading = !BasicPrimaryIsLoading;
+        BasicStandardIsLoading = !BasicStandardIsLoading;
+    }
+
+    private void Example2ToggleOnChange()
+    {
+        LoadingLabelPrimaryIsLoading = !LoadingLabelPrimaryIsLoading;
+        LoadingLabelStandardIsLoading = !LoadingLabelStandardIsLoading;
+    }
+
+    private void Example3ToggleOnChange()
+    {
+        TopPositionIsLoading = !TopPositionIsLoading;
+        RightPositionIsLoading = !RightPositionIsLoading;
+        BottomPositionIsLoading = !BottomPositionIsLoading;
+        LeftPositionIsLoading = !LeftPositionIsLoading;
+    }
+
+    private void Example4ToggleOnChange()
+    {
+        XSmallIsLoading = !XSmallIsLoading;
+        SmallIsLoading = !SmallIsLoading;
+        MediumIsLoading = !MediumIsLoading;
+        LargeIsLoading = !LargeIsLoading;
+    }
+
+    private void Example5ToggleOnChange()
+    {
+        EllipsisIsLoading = !EllipsisIsLoading;
+        GridIsLoading = !GridIsLoading;
+        RollerIsLoading = !RollerIsLoading;
+        SpinnerIsLoading = !SpinnerIsLoading;
+    }
+
     #region Basic
 
     private bool BasicPrimaryIsLoading;
@@ -147,6 +189,43 @@ public partial class BitLoadingButtonDemo
 
     #endregion
 
+    #region LoadingTemplate
+
+    private bool EllipsisIsLoading;
+    private bool GridIsLoading;
+    private bool RollerIsLoading;
+    private bool SpinnerIsLoading;
+
+    private async Task EllipsisOnClick()
+    {
+        EllipsisIsLoading = true;
+        await Task.Delay(1000);
+        EllipsisIsLoading = false;
+    }
+
+    private async Task GridOnClick()
+    {
+        GridIsLoading = true;
+        await Task.Delay(1000);
+        GridIsLoading = false;
+    }
+
+    private async Task RollerOnClick()
+    {
+        RollerIsLoading = true;
+        await Task.Delay(1000);
+        RollerIsLoading = false;
+    }
+
+    private async Task SpinnerOnClick()
+    {
+        SpinnerIsLoading = true;
+        await Task.Delay(1000);
+        SpinnerIsLoading = false;
+    }
+
+    #endregion
+
     private readonly List<ComponentParameter> componentParameters = new()
     {
         new ComponentParameter
@@ -219,6 +298,12 @@ public partial class BitLoadingButtonDemo
             Description = "The position of the loading Label in regards to the spinner animation.",
             LinkType = LinkType.Link,
             Href = "#spinner-position-enum"
+        },
+        new ComponentParameter
+        {
+            Name = "LoadingTemplate",
+            Type = "RenderFragment?",
+            Description = "Used to customize the content inside the Button in the Loading state.",
         },
         new ComponentParameter
         {
@@ -352,18 +437,18 @@ public partial class BitLoadingButtonDemo
         },
     };
 
-    #region Example1Code
+    #region Example Code 1
 
     private readonly string example1HTMLCode = @"
-<BitLoadingButton @bind-IsLoading=""BasicPrimaryIsLoading""
-                    ButtonStyle=""BitButtonStyle.Primary""
-                    OnClick=""BasicPrimaryOnClick"">
+<BitLoadingButton IsLoading=""BasicPrimaryIsLoading""
+                  ButtonStyle=""BitButtonStyle.Primary""
+                  OnClick=""BasicPrimaryOnClick"">
     Primary (@BasicPrimaryCounter)
 </BitLoadingButton>
 
-<BitLoadingButton @bind-IsLoading=""BasicStandardIsLoading""
-                    ButtonStyle=""BitButtonStyle.Standard""
-                    OnClick=""BasicStandardOnClick"">
+<BitLoadingButton IsLoading=""BasicStandardIsLoading""
+                  ButtonStyle=""BitButtonStyle.Standard""
+                  OnClick=""BasicStandardOnClick"">
     Standard (@BasicStandardCounter)
 </BitLoadingButton>
 
@@ -397,20 +482,20 @@ private async Task BasicStandardOnClick()
 
     #endregion
 
-    #region Example2Code
+    #region Example Code 2
 
     private readonly string example2HTMLCode = @"
-<BitLoadingButton @bind-IsLoading=""LoadingLabelPrimaryIsLoading""
-                    LoadingLabel=""Loading...""
-                    ButtonStyle=""BitButtonStyle.Primary""
-                    OnClick=""LoadingLabelPrimaryOnClick"">
+<BitLoadingButton IsLoading=""LoadingLabelPrimaryIsLoading""
+                  LoadingLabel=""Loading...""
+                  ButtonStyle=""BitButtonStyle.Primary""
+                  OnClick=""LoadingLabelPrimaryOnClick"">
     Primary (@LoadingLabelPrimaryCounter)
 </BitLoadingButton>
 
-<BitLoadingButton @bind-IsLoading=""LoadingLabelStandardIsLoading""
-                    LoadingLabel=""Loading...""
-                    ButtonStyle=""BitButtonStyle.Standard""
-                    OnClick=""LoadingLabelStandardOnClick"">
+<BitLoadingButton IsLoading=""LoadingLabelStandardIsLoading""
+                  LoadingLabel=""Loading...""
+                  ButtonStyle=""BitButtonStyle.Standard""
+                  OnClick=""LoadingLabelStandardOnClick"">
     Standard (@LoadingLabelStandardCounter)
 </BitLoadingButton>
 ";
@@ -440,34 +525,36 @@ private async Task LoadingLabelStandardOnClick()
 
     #endregion
 
-    #region Example3Code
+    #region Example Code 3
 
     private readonly string example3HTMLCode = @"
-<BitLoadingButton @bind-IsLoading=""TopPositionIsLoading""
-                    LoadingLabel=""Loading...""
-                    LoadingLabelPosition=""BitSpinnerLabelPosition.Top""
-                    OnClick=""TopPositionOnClick"">
+<BitLoadingButton IsLoading=""TopPositionIsLoading""
+                  LoadingLabel=""Loading...""
+                  LoadingLabelPosition=""BitSpinnerLabelPosition.Top""
+                  OnClick=""TopPositionOnClick"">
     Top (@TopPositionCounter)
 </BitLoadingButton>
 
-<BitLoadingButton @bind-IsLoading=""RightPositionIsLoading""
-                    LoadingLabel=""Loading...""
-                    LoadingLabelPosition=""BitSpinnerLabelPosition.Right""
-                    OnClick=""RightPositionOnClick"">
+<BitLoadingButton IsLoading=""RightPositionIsLoading""
+                  LoadingLabel=""Loading...""
+                  LoadingLabelPosition=""BitSpinnerLabelPosition.Right""
+                  OnClick=""RightPositionOnClick"">
     Right (@RightPositionCounter)
 </BitLoadingButton>
 
-<BitLoadingButton @bind-IsLoading=""BottomPositionIsLoading""
-                    LoadingLabel=""Loading...""
-                    LoadingLabelPosition=""BitSpinnerLabelPosition.Bottom""
-                    OnClick=""BottomPositionOnClick"">
+<BitLoadingButton IsLoading=""BottomPositionIsLoading""
+                  ButtonStyle=""BitButtonStyle.Standard""
+                  LoadingLabel=""Loading...""
+                  LoadingLabelPosition=""BitSpinnerLabelPosition.Bottom""
+                  OnClick=""BottomPositionOnClick"">
     Bottom (@BottomPositionCounter)
 </BitLoadingButton>
 
-<BitLoadingButton @bind-IsLoading=""LeftPositionIsLoading""
-                    LoadingLabel=""Loading...""
-                    LoadingLabelPosition=""BitSpinnerLabelPosition.Left""
-                    OnClick=""LeftPositionOnClick"">
+<BitLoadingButton IsLoading=""LeftPositionIsLoading""
+                  ButtonStyle=""BitButtonStyle.Standard""
+                  LoadingLabel=""Loading...""
+                  LoadingLabelPosition=""BitSpinnerLabelPosition.Left""
+                  OnClick=""LeftPositionOnClick"">
     Left (@LeftPositionCounter)
 </BitLoadingButton>
 ";
@@ -517,30 +604,32 @@ private async Task LeftPositionOnClick()
 
     #endregion
 
-    #region Example4Code
+    #region Example Code 4
 
     private readonly string example4HTMLCode = @"
-<BitLoadingButton @bind-IsLoading=""XSmallIsLoading""
-                    LoadingSpinnerSize=""BitSpinnerSize.XSmall""
-                    OnClick=""XSmallOnClick"">
+<BitLoadingButton IsLoading=""XSmallIsLoading""
+                  LoadingSpinnerSize=""BitSpinnerSize.XSmall""
+                  OnClick=""XSmallOnClick"">
     XSmall (@XSmallCounter)
 </BitLoadingButton>
 
-<BitLoadingButton @bind-IsLoading=""SmallIsLoading""
-                    LoadingSpinnerSize=""BitSpinnerSize.Small""
-                    OnClick=""SmallOnClick"">
+<BitLoadingButton IsLoading=""SmallIsLoading""
+                  LoadingSpinnerSize=""BitSpinnerSize.Small""
+                  OnClick=""SmallOnClick"">
     Small (@SmallCounter)
 </BitLoadingButton>
 
-<BitLoadingButton @bind-IsLoading=""MediumIsLoading""
-                    LoadingSpinnerSize=""BitSpinnerSize.Medium""
-                    OnClick=""MediumOnClick"">
+<BitLoadingButton IsLoading=""MediumIsLoading""
+                  ButtonStyle=""BitButtonStyle.Standard""
+                  LoadingSpinnerSize=""BitSpinnerSize.Medium""
+                  OnClick=""MediumOnClick"">
     Medium (@MediumCounter)
 </BitLoadingButton>
 
-<BitLoadingButton @bind-IsLoading=""LargeIsLoading""
-                    LoadingSpinnerSize=""BitSpinnerSize.Large""
-                    OnClick=""LargeOnClick"">
+<BitLoadingButton IsLoading=""LargeIsLoading""
+                  ButtonStyle=""BitButtonStyle.Standard""
+                  LoadingSpinnerSize=""BitSpinnerSize.Large""
+                  OnClick=""LargeOnClick"">
     Large (@LargeCounter)
 </BitLoadingButton>
 ";
@@ -585,6 +674,114 @@ private async Task LargeOnClick()
     await Task.Delay(1000);
     LargeCounter++;
     LargeIsLoading = false;
+}
+";
+
+    #endregion
+
+    #region Example Code 5
+
+    private readonly string example5HTMLCode = @"
+<style>
+    .custom-loading {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: rem(5px);
+    }
+</style>
+
+<BitLoadingButton IsLoading=""EllipsisIsLoading""
+                  Title=""Ellipsis Loading""
+                  OnClick=""EllipsisOnClick"">
+    <LoadingTemplate>
+        <div class=""custom-loading"">
+            <BitEllipsisLoading Size=""20"" />
+            <span>wait...</span>
+        </div>
+    </LoadingTemplate>
+    <ChildContent>
+        Ellipsis Loading
+    </ChildContent>
+</BitLoadingButton>
+
+<BitLoadingButton IsLoading=""GridIsLoading""
+                  Title=""Grid Loading""
+                  OnClick=""GridOnClick"">
+    <LoadingTemplate>
+        <div class=""custom-loading"">
+            <BitGridLoading Size=""20"" />
+            <span>wait...</span>
+        </div>
+    </LoadingTemplate>
+    <ChildContent>
+        Grid Loading
+    </ChildContent>
+</BitLoadingButton>
+
+<BitLoadingButton IsLoading=""RollerIsLoading""
+                  ButtonStyle=""BitButtonStyle.Standard""
+                  Title=""Roller Loading""
+                  OnClick=""RollerOnClick"">
+    <LoadingTemplate>
+        <div class=""custom-loading"">
+            <BitRollerLoading Size=""20"" Color=""royalblue"" />
+            <span>wait...</span>
+        </div>
+    </LoadingTemplate>
+    <ChildContent>
+        Roller Loading
+    </ChildContent>
+</BitLoadingButton>
+
+<BitLoadingButton IsLoading=""SpinnerIsLoading""
+                  ButtonStyle=""BitButtonStyle.Standard""
+                  Title=""Spinner Loading""
+                  OnClick=""SpinnerOnClick"">
+    <LoadingTemplate>
+        <div class=""custom-loading"">
+            <BitSpinnerLoading Size=""20"" Color=""royalblue"" />
+            <span>wait...</span>
+        </div>
+    </LoadingTemplate>
+    <ChildContent>
+        Spinner Loading
+    </ChildContent>
+</BitLoadingButton>
+";
+
+    private readonly string example5CSharpCode = @"
+private bool EllipsisIsLoading;
+private bool GridIsLoading;
+private bool RollerIsLoading;
+private bool SpinnerIsLoading;
+
+private async Task EllipsisOnClick()
+{
+    EllipsisIsLoading = true;
+    await Task.Delay(1000);
+    EllipsisIsLoading = false;
+}
+
+private async Task GridOnClick()
+{
+    GridIsLoading = true;
+    await Task.Delay(1000);
+    GridIsLoading = false;
+}
+
+private async Task RollerOnClick()
+{
+    RollerIsLoading = true;
+    await Task.Delay(1000);
+    RollerIsLoading = false;
+}
+
+private async Task SpinnerOnClick()
+{
+    SpinnerIsLoading = true;
+    await Task.Delay(1000);
+    SpinnerIsLoading = false;
 }
 ";
 

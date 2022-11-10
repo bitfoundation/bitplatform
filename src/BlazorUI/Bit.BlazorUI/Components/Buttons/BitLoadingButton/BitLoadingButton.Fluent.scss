@@ -3,19 +3,20 @@
 .bit-lodb {
     &.bit-lodb-fluent {
         font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
-        text-align: center;
+        position: relative;
         border-radius: rem(2px);
         padding: rem(6px) rem(20px);
         font-size: rem(14px);
         font-weight: 400;
-        line-height: rem(20px);
         cursor: pointer;
-        height: fit-content;
         text-decoration: none;
-        position: relative;
-        min-width: rem(80px);
+        width: rem(120px);
         min-height: rem(32px);
+        max-width: rem(120px);
         box-sizing: border-box;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
     }
 
     &.bit-lodb-disabled-fluent {
@@ -54,7 +55,7 @@
             background-color: $Dark;
         }
     }
-    
+
     .loading {
         display: flex;
         justify-content: center;
@@ -157,14 +158,14 @@
             }
         }
     }
-}
 
-@keyframes spinner-key-frame {
-    0% {
-        transform: rotate(0deg);
-    }
+    @keyframes spinner-key-frame {
+        0% {
+            transform: rotate(0deg);
+        }
 
-    100% {
-        transform: rotate(360deg);
+        100% {
+            transform: rotate(360deg);
+        }
     }
 }

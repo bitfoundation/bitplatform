@@ -13,17 +13,24 @@
         title="@Title"
         @onclick="HandleOnClick">
 
-    @if (isLoading)
+    @if (IsLoading)
     {
-        <div class="loading @GetClassLoadingSpinnerPosition() @GetClassLoadingSize() @GetClassLoadingStyle()">
-            <div class="spinner"></div>
-            @if (LoadingLabel.HasValue())
-            {
-                <div class="label">
-                    @LoadingLabel
-                </div>
-            }
-        </div>
+        if (LoadingTemplate is not null)
+        {
+            @LoadingTemplate
+        }
+        else
+        {
+            <div class="loading @GetClassLoadingLabelPosition() @GetClassLoadingSize() @GetClassLoadingStyle()">
+                <div class="spinner"></div>
+                @if (LoadingLabel.HasValue())
+                {
+                    <div class="label">
+                        @LoadingLabel
+                    </div>
+                }
+            </div>
+        }
     }
     else
     {

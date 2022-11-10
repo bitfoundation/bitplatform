@@ -4,9 +4,7 @@ namespace Bit.BlazorUI;
 
 public partial class BitLoadingButton
 {
-    private bool IsLoadingHasBeenSet;
     private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
-    private bool isLoading;
     private int? _tabIndex;
 
     /// <summary>
@@ -57,19 +55,7 @@ public partial class BitLoadingButton
     /// Determine whether the button is in loading mode or not.
     /// </summary>        
     [Parameter]
-    public bool IsLoading
-    {
-        get => isLoading;
-        set
-        {
-            if (value == isLoading) return;
-            isLoading = value;
-            ClassBuilder.Reset();
-            _ = IsLoadingChanged.InvokeAsync(value);
-        }
-    }
-
-    [Parameter] public EventCallback<bool> IsLoadingChanged { get; set; }
+    public bool IsLoading { get; set; }
 
     /// <summary>
     /// The loading label to show next to the spinner.
@@ -85,6 +71,11 @@ public partial class BitLoadingButton
     /// The position of the loading Label in regards to the spinner animation.
     /// </summary>
     [Parameter] public BitSpinnerLabelPosition LoadingLabelPosition { get; set; } = BitSpinnerLabelPosition.Right;
+
+    /// <summary>
+    /// Used to customize the content inside the Button in the Loading state.
+    /// </summary>
+    [Parameter] public RenderFragment? LoadingTemplate { get; set; }
 
     /// <summary>
     /// Callback for when the button clicked.
@@ -133,7 +124,7 @@ public partial class BitLoadingButton
         return classSize;
     }
 
-    private string GetClassLoadingSpinnerPosition()
+    private string GetClassLoadingLabelPosition()
     {
         string classLabelPosition = LoadingLabelPosition switch
         {

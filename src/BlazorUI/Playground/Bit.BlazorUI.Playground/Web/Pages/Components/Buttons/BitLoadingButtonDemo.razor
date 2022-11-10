@@ -8,13 +8,13 @@
     <ComponentExampleBox Title="Basic BitLoadingButton" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
             <div class="example-box">
-                <BitLoadingButton @bind-IsLoading="BasicPrimaryIsLoading"
+                <BitLoadingButton IsLoading="BasicPrimaryIsLoading"
                                   ButtonStyle="BitButtonStyle.Primary"
                                   OnClick="BasicPrimaryOnClick">
                     Primary (@BasicPrimaryCounter)
                 </BitLoadingButton>
 
-                <BitLoadingButton @bind-IsLoading="BasicStandardIsLoading"
+                <BitLoadingButton IsLoading="BasicStandardIsLoading"
                                   ButtonStyle="BitButtonStyle.Standard"
                                   OnClick="BasicStandardOnClick">
                     Standard (@BasicStandardCounter)
@@ -23,90 +23,172 @@
                 <BitLoadingButton IsEnabled="false">
                     Disabled
                 </BitLoadingButton>
+
+                <BitToggle @bind-Value="Example1Toggle" OnChange="Example1ToggleOnChange" OnText="Stop Loading" OffText="Start Loading" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="BitLoadingButton with LoadingLabel" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example2">
         <ExamplePreview>
+            <div class="example-desc">You can set a label to be displayed next to the loading.</div>
             <div class="example-box">
-                <BitLoadingButton @bind-IsLoading="LoadingLabelPrimaryIsLoading"
+                <BitLoadingButton IsLoading="LoadingLabelPrimaryIsLoading"
                                   LoadingLabel="Loading..."
                                   ButtonStyle="BitButtonStyle.Primary"
                                   OnClick="LoadingLabelPrimaryOnClick">
                     Primary (@LoadingLabelPrimaryCounter)
                 </BitLoadingButton>
 
-                <BitLoadingButton @bind-IsLoading="LoadingLabelStandardIsLoading"
+                <BitLoadingButton IsLoading="LoadingLabelStandardIsLoading"
                                   LoadingLabel="Loading..."
                                   ButtonStyle="BitButtonStyle.Standard"
                                   OnClick="LoadingLabelStandardOnClick">
                     Standard (@LoadingLabelStandardCounter)
                 </BitLoadingButton>
+
+                <BitToggle @bind-Value="Example2Toggle" OnChange="Example2ToggleOnChange" OnText="Stop Loading" OffText="Start Loading" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="BitLoadingButton with LoadingLabelPosition" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example3">
         <ExamplePreview>
+            <div class="example-desc">You can change the position of your label in four directions.</div>
             <div class="example-box">
-                <BitLoadingButton @bind-IsLoading="TopPositionIsLoading"
+                <BitLoadingButton IsLoading="TopPositionIsLoading"
                                   LoadingLabel="Loading..."
                                   LoadingLabelPosition="BitSpinnerLabelPosition.Top"
                                   OnClick="TopPositionOnClick">
                     Top (@TopPositionCounter)
                 </BitLoadingButton>
 
-                <BitLoadingButton @bind-IsLoading="RightPositionIsLoading"
+                <BitLoadingButton IsLoading="RightPositionIsLoading"
                                   LoadingLabel="Loading..."
                                   LoadingLabelPosition="BitSpinnerLabelPosition.Right"
                                   OnClick="RightPositionOnClick">
                     Right (@RightPositionCounter)
                 </BitLoadingButton>
 
-                <BitLoadingButton @bind-IsLoading="BottomPositionIsLoading"
+                <BitLoadingButton IsLoading="BottomPositionIsLoading"
+                                  ButtonStyle="BitButtonStyle.Standard"
                                   LoadingLabel="Loading..."
                                   LoadingLabelPosition="BitSpinnerLabelPosition.Bottom"
                                   OnClick="BottomPositionOnClick">
                     Bottom (@BottomPositionCounter)
                 </BitLoadingButton>
 
-                <BitLoadingButton @bind-IsLoading="LeftPositionIsLoading"
+                <BitLoadingButton IsLoading="LeftPositionIsLoading"
+                                  ButtonStyle="BitButtonStyle.Standard"
                                   LoadingLabel="Loading..."
                                   LoadingLabelPosition="BitSpinnerLabelPosition.Left"
                                   OnClick="LeftPositionOnClick">
                     Left (@LeftPositionCounter)
                 </BitLoadingButton>
+
+                <BitToggle @bind-Value="Example3Toggle" OnChange="Example3ToggleOnChange" OnText="Stop Loading" OffText="Start Loading" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="BitLoadingButton with LoadingSpinnerSize" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
         <ExamplePreview>
+            <div class="example-desc">You can change the size of your spinner loading.</div>
             <div class="example-box">
-                <BitLoadingButton @bind-IsLoading="XSmallIsLoading"
+                <BitLoadingButton IsLoading="XSmallIsLoading"
                                   LoadingSpinnerSize="BitSpinnerSize.XSmall"
                                   OnClick="XSmallOnClick">
                     XSmall (@XSmallCounter)
                 </BitLoadingButton>
 
-                <BitLoadingButton @bind-IsLoading="SmallIsLoading"
+                <BitLoadingButton IsLoading="SmallIsLoading"
                                   LoadingSpinnerSize="BitSpinnerSize.Small"
                                   OnClick="SmallOnClick">
                     Small (@SmallCounter)
                 </BitLoadingButton>
 
-                <BitLoadingButton @bind-IsLoading="MediumIsLoading"
+                <BitLoadingButton IsLoading="MediumIsLoading"
+                                  ButtonStyle="BitButtonStyle.Standard"
                                   LoadingSpinnerSize="BitSpinnerSize.Medium"
                                   OnClick="MediumOnClick">
                     Medium (@MediumCounter)
                 </BitLoadingButton>
 
-                <BitLoadingButton @bind-IsLoading="LargeIsLoading"
+                <BitLoadingButton IsLoading="LargeIsLoading"
+                                  ButtonStyle="BitButtonStyle.Standard"
                                   LoadingSpinnerSize="BitSpinnerSize.Large"
                                   OnClick="LargeOnClick">
                     Large (@LargeCounter)
                 </BitLoadingButton>
+
+                <BitToggle @bind-Value="Example4Toggle" OnChange="Example4ToggleOnChange" OnText="Stop Loading" OffText="Start Loading" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="BitLoadingButton with LoadingTemplate" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
+        <ExamplePreview>
+            <div class="example-desc">The BitLoadingButton component in default mode is a spinner loading. You can change it with other BitLoading components or something else you want.</div>
+            <div class="example-box">
+                <BitLoadingButton IsLoading="EllipsisIsLoading"
+                                  Title="Ellipsis Loading"
+                                  OnClick="EllipsisOnClick">
+                    <LoadingTemplate>
+                        <div class="custom-loading">
+                            <BitEllipsisLoading Size="20" />
+                            <span>wait...</span>
+                        </div>
+                    </LoadingTemplate>
+                    <ChildContent>
+                        Ellipsis Loading
+                    </ChildContent>
+                </BitLoadingButton>
+
+                <BitLoadingButton IsLoading="GridIsLoading"
+                                  Title="Grid Loading"
+                                  OnClick="GridOnClick">
+                    <LoadingTemplate>
+                        <div class="custom-loading">
+                            <BitGridLoading Size="20" />
+                            <span>wait...</span>
+                        </div>
+                    </LoadingTemplate>
+                    <ChildContent>
+                        Grid Loading
+                    </ChildContent>
+                </BitLoadingButton>
+
+                <BitLoadingButton IsLoading="RollerIsLoading"
+                                  ButtonStyle="BitButtonStyle.Standard"
+                                  Title="Roller Loading"
+                                  OnClick="RollerOnClick">
+                    <LoadingTemplate>
+                        <div class="custom-loading">
+                            <BitRollerLoading Size="20" Color="royalblue" />
+                            <span>wait...</span>
+                        </div>
+                    </LoadingTemplate>
+                    <ChildContent>
+                        Roller Loading
+                    </ChildContent>
+                </BitLoadingButton>
+
+                <BitLoadingButton IsLoading="SpinnerIsLoading"
+                                  ButtonStyle="BitButtonStyle.Standard"
+                                  Title="Spinner Loading"
+                                  OnClick="SpinnerOnClick">
+                    <LoadingTemplate>
+                        <div class="custom-loading">
+                            <BitSpinnerLoading Size="20" Color="royalblue" />
+                            <span>wait...</span>
+                        </div>
+                    </LoadingTemplate>
+                    <ChildContent>
+                        Spinner Loading
+                    </ChildContent>
+                </BitLoadingButton>
+
+                <BitToggle @bind-Value="Example5Toggle" OnChange="Example5ToggleOnChange" OnText="Stop Loading" OffText="Start Loading" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
