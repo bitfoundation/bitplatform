@@ -47,3 +47,30 @@
         margin: 0 0 rem(10px) 0;
     }
 }
+
+::deep .custom-btn-sm {
+    &.bit-btn-sm-fluent {
+        padding: 5px 10px;
+        font-size: 12px;
+        line-height: 1.5;
+        border-radius: 3px;
+    }
+}
+
+::deep .custom-btn-md {
+    &.bit-btn-md-fluent {
+        padding: 6px 12px;
+        font-size: 14px;
+        line-height: 1.4;
+        border-radius: 4px;
+    }
+}
+
+::deep .custom-btn-lg {
+    &.bit-btn-lg-fluent {
+        padding: 10px 16px;
+        font-size: 18px;
+        line-height: 1.33;
+        border-radius: 6px;
+    }
+}

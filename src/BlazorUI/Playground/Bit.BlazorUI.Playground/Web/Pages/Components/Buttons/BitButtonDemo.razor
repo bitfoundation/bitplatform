@@ -76,4 +76,49 @@
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
+
+    <ComponentExampleBox Title="BitButton in different sizes" HTMLSourceCode="@example6HTMLCode" ExampleId="example6">
+        <ExamplePreview>
+            <div class="example-desc">BitButton can get different sizes using the <code>ButtonSize</code> parameter.</div>
+            <div>
+                <BitLabel>Small size</BitLabel>
+                <BitButton Style="margin-bottom: 8px"
+                           ButtonSize="BitButtonSize.Small">Button</BitButton>
+            </div>
+            <div>
+                <BitLabel>Medium size</BitLabel>
+                <BitButton Style="margin-bottom: 8px"
+                           ButtonSize="BitButtonSize.Medium">Button</BitButton>
+            </div>
+            <div>
+                <BitLabel>Large size</BitLabel>
+                <BitButton Style="margin-bottom: 8px"
+                           ButtonSize="BitButtonSize.Large">Button</BitButton>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Customized BitButton in different sizes" HTMLSourceCode="@example7HTMLCode" ExampleId="example7">
+        <ExamplePreview>
+            <div class="example-desc">BitButton can be customized easily in different sizes by overriding a certain CSS class.</div>
+            <div>
+                <BitLabel>Small size</BitLabel>
+                <BitButton Style="margin-bottom: 8px"
+                           Class="custom-btn-sm"
+                           ButtonSize="BitButtonSize.Small">Button</BitButton>
+            </div>
+            <div>
+                <BitLabel>Medium size</BitLabel>
+                <BitButton Style="margin-bottom: 8px"
+                           Class="custom-btn-md"
+                           ButtonSize="BitButtonSize.Medium">Button</BitButton>
+            </div>
+            <div>
+                <BitLabel>Large size</BitLabel>
+                <BitButton Style="margin-bottom: 8px"
+                           Class="custom-btn-lg"
+                           ButtonSize="BitButtonSize.Large">Button</BitButton>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
 </ComponentDemo>

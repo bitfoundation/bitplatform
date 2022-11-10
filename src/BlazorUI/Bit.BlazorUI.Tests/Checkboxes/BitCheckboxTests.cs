@@ -39,7 +39,7 @@ public class BitCheckboxTests : BunitTestContext
         });
 
         var chb = component.Find(".bit-chb");
-        var chbCheckbox = component.Find(".bit-chb-checkbox");
+        var chbCheckbox = component.Find("input");
         var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
 
         Assert.AreEqual(defaultValue, chb.ClassList.Contains($"bit-chb-checked-{visualClass}"));
@@ -94,7 +94,7 @@ public class BitCheckboxTests : BunitTestContext
         });
 
         var chb = component.Find(".bit-chb");
-        var chbCheckbox = component.Find(".bit-chb-checkbox");
+        var chbCheckbox = component.Find("input");
         chbCheckbox.Click();
 
         if (isEnabled)
@@ -183,7 +183,7 @@ public class BitCheckboxTests : BunitTestContext
             parameters.Add(p => p.Title, title);
         });
 
-        var chbInput = component.Find("input");
+        var chbInput = component.Find("label");
 
         if (title is not null)
         {
@@ -313,7 +313,7 @@ public class BitCheckboxTests : BunitTestContext
             parameters.Add(p => p.ChildContent, childContent);
         });
 
-        var chbChildContent = component.Find(".bit-chb-txt").ChildNodes;
+        var chbChildContent = component.Find("label").ChildNodes;
         chbChildContent.MarkupMatches(childContent);
     }
 
@@ -331,7 +331,7 @@ public class BitCheckboxTests : BunitTestContext
             parameters.Add(p => p.ValueChanged, HandleValueChanged);
         });
 
-        var chb = component.Find(".bit-chb-checkbox");
+        var chb = component.Find("input");
         chb.Click();
 
         var expectedValue = !value;
@@ -348,7 +348,7 @@ public class BitCheckboxTests : BunitTestContext
             parameters.Add(p => p.IsIndeterminateChanged, HandleIsIndeterminateChanged);
         });
 
-        var chb = component.Find(".bit-chb-checkbox");
+        var chb = component.Find("input");
         chb.Click();
 
         Assert.IsFalse(BitCheckBoxIsIndeterminate);
@@ -372,7 +372,7 @@ public class BitCheckboxTests : BunitTestContext
         Assert.AreEqual(component.Instance.ValidCount, value ? 0 : 1);
         Assert.AreEqual(component.Instance.InvalidCount, value ? 1 : 0);
 
-        var checkbox = component.Find(".bit-chb-checkbox");
+        var checkbox = component.Find("input");
         checkbox.Click();
         form.Submit();
 
@@ -405,7 +405,7 @@ public class BitCheckboxTests : BunitTestContext
             Assert.AreEqual(checkBoxInput.GetAttribute("aria-invalid"), "true");
         }
 
-        var checkBox = component.Find(".bit-chb-checkbox");
+        var checkBox = component.Find("input");
         checkBox.Click();
 
         Assert.AreEqual(checkBoxInput.HasAttribute("aria-invalid"), !value);
@@ -438,7 +438,7 @@ public class BitCheckboxTests : BunitTestContext
 
         Assert.AreEqual(bitCheckBox.ClassList.Contains($"bit-chb-invalid-{visualClass}"), value);
 
-        var checkBox = component.Find(".bit-chb-checkbox");
+        var checkBox = component.Find("input");
         checkBox.Click();
 
         Assert.AreEqual(bitCheckBox.ClassList.Contains($"bit-chb-invalid-{visualClass}"), !value);

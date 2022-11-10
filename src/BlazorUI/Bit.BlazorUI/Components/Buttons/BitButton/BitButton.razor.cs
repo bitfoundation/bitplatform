@@ -1,12 +1,10 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.AspNetCore.Components.Web;
+﻿using Microsoft.AspNetCore.Components.Forms;
 
 namespace Bit.BlazorUI;
 
 public partial class BitButton
 {
+    private BitButtonSize buttonSize = BitButtonSize.Medium;
     private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
     private int? _tabIndex;
 
@@ -24,6 +22,20 @@ public partial class BitButton
     /// If true, add an aria-hidden attribute instructing screen readers to ignore the element
     /// </summary>
     [Parameter] public bool AriaHidden { get; set; }
+
+    /// <summary>
+    /// The size of button, Possible values: Small | Medium | Large
+    /// </summary>
+    [Parameter]
+    public BitButtonSize ButtonSize
+    {
+        get => buttonSize;
+        set
+        {
+            buttonSize = value;
+            ClassBuilder.Reset();
+        }
+    }
 
     /// <summary>
     /// The style of button, Possible values: Primary | Standard
@@ -83,6 +95,12 @@ public partial class BitButton
                                        : ButtonStyle == BitButtonStyle.Primary
                                            ? "primary"
                                            : "standard");
+
+        ClassBuilder.Register(() => ButtonSize == BitButtonSize.Small
+                                       ? $"{RootElementClass}-sm-{VisualClassRegistrar()}"
+                                       : ButtonSize == BitButtonSize.Medium
+                                           ? $"{RootElementClass}-md-{VisualClassRegistrar()}"
+                                           : $"{RootElementClass}-lg-{VisualClassRegistrar()}");
     }
 
     protected override async Task OnInitializedAsync()
