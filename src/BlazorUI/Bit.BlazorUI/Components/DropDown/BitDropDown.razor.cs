@@ -18,6 +18,7 @@ public partial class BitDropDown
     private int? _totalItems;
     private Virtualize<(int index, BitDropDownItem item)>? _virtualizeElement;
     private ElementReference _searchInputElement;
+    private ElementReference _scrollWrapperElement;
     private bool SelectedItemHasBeenSet;
     private bool SelectedItemsHasBeenSet;
     private List<BitDropDownItem> _selectedItems = new();
@@ -296,6 +297,11 @@ public partial class BitDropDown
     /// </summary>
     [Parameter] public bool IsRtl { get; set; }
 
+    /// <summary>
+    /// Darpdown opening direction
+    /// </summary>
+    [Parameter] public BitDropDirection DropDirection { get; set; } = BitDropDirection.TopAndBottom;
+
     public string? Text { get; set; }
     public string DropDownId { get; set; } = string.Empty;
     public string DropdownLabelId { get; set; } = string.Empty;
@@ -411,7 +417,7 @@ public partial class BitDropDown
     private async Task CloseCallout()
     {
         var obj = DotNetObjectReference.Create(this);
-        await JSRuntime.InvokeVoidAsync("BitDropDown.toggleDropDownCallout", obj, UniqueId, DropDownId, DropDownCalloutId, DropDownOverlayId, _isOpen, _isResponsiveModeEnabled);
+        await JSRuntime.InvokeVoidAsync("BitDropDown.toggleDropDownCallout", obj, UniqueId, DropDownId, DropDownCalloutId, DropDownOverlayId, _scrollWrapperElement, DropDirection, _isOpen, _isResponsiveModeEnabled);
         IsOpen = false;
         StateHasChanged();
     }
@@ -421,7 +427,7 @@ public partial class BitDropDown
         if (IsEnabled is false) return;
 
         var obj = DotNetObjectReference.Create(this);
-        await JSRuntime.InvokeVoidAsync("BitDropDown.toggleDropDownCallout", obj, UniqueId, DropDownId, DropDownCalloutId, DropDownOverlayId, _isOpen, _isResponsiveModeEnabled);
+        await JSRuntime.InvokeVoidAsync("BitDropDown.toggleDropDownCallout", obj, UniqueId, DropDownId, DropDownCalloutId, DropDownOverlayId, _scrollWrapperElement, DropDirection, _isOpen, _isResponsiveModeEnabled);
         _isOpen = !_isOpen;
         await OnClick.InvokeAsync(e);
         await FocusOnSearchBox();
@@ -478,7 +484,7 @@ public partial class BitDropDown
             Text = selectedItem.Text;
             CurrentValueAsString = selectedItem.Value;
             var obj = DotNetObjectReference.Create(this);
-            await JSRuntime.InvokeVoidAsync("BitDropDown.toggleDropDownCallout", obj, UniqueId, DropDownId, DropDownCalloutId, DropDownOverlayId, _isOpen, _isResponsiveModeEnabled);
+            await JSRuntime.InvokeVoidAsync("BitDropDown.toggleDropDownCallout", obj, UniqueId, DropDownId, DropDownCalloutId, DropDownOverlayId, _scrollWrapperElement, DropDirection, _isOpen, _isResponsiveModeEnabled);
             _isOpen = false;
             await ClearSearchBox();
 
