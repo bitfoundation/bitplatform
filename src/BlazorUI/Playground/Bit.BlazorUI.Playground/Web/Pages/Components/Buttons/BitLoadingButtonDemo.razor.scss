@@ -1,0 +1,24 @@
+﻿@import '../../../Styles/abstracts/_functions.scss';
+@import '../../../Styles/abstracts/_media-queries.scss';
+
+.example-box {
+    display: flex;
+    gap: rem(10px);
+    width: fit-content;
+    align-items: center;
+
+    &.column {
+        flex-direction: column;
+    }
+
+    @include sm {
+        flex-direction: column;
+    }
+}
+
+.custom-loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: rem(5px);
+}
