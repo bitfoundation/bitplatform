@@ -4,6 +4,8 @@
         dropDownId: string,
         dropDownCalloutId: string,
         dropDownOverlayId: string,
+        scrollWrapper: HTMLElement,
+        dropDirection: BitDropDirection,
         isOpen: boolean,
         isResponsiveModeEnabled: boolean) {
 
@@ -52,32 +54,57 @@
             const dropDownWrapperRight = window.innerWidth - (dropDownWrapperWidth + dropDownWrapperX);
             const minimumWidthForDropDownNormalOpen = 640;
 
+            //clear last style
+            dropDownCallout.style.top = "";
+            dropDownCallout.style.left = "";
+            dropDownCallout.style.right = "";
+            dropDownCallout.style.bottom = "";
+            dropDownCallout.style.height = "";
+            dropDownCallout.style.maxHeight = "";
+            scrollWrapper.style.height = "";
+            scrollWrapper.style.maxHeight = "";
+
             if (window.innerWidth < minimumWidthForDropDownNormalOpen && isResponsiveModeEnabled) {
                 dropDownCallout.style.top = "0";
-                dropDownCallout.style.left = "unset";
                 dropDownCallout.style.right = "0";
-                dropDownCallout.style.bottom = "unset";
-            } else if (dropDownWrapperBottom >= dropDownCalloutHeight) {
-                dropDownCallout.style.top = dropDownWrapperY + dropDownWrapperHeight + 1 + "px";
+                dropDownCallout.style.maxHeight = window.innerHeight + "px";
+                scrollWrapper.style.maxHeight = (window.innerHeight - scrollWrapper.getBoundingClientRect().y) + "px";
+                scrollWrapper.style.height = scrollWrapper.style.maxHeight;
+            } else if (dropDirection == BitDropDirection.TopAndBottom) {
                 dropDownCallout.style.left = dropDownWrapperX + "px";
-                dropDownCallout.style.right = "unset";
-                dropDownCallout.style.bottom = "unset";
-            } else if (dropDownTop >= dropDownCalloutHeight) {
-                dropDownCallout.style.bottom = dropDownWrapperBottom + dropDownHeight + 1 + "px";
-                dropDownCallout.style.left = dropDownWrapperX + "px";
-                dropDownCallout.style.right = "unset";
-                dropDownCallout.style.top = "unset";
-            } else if (dropDownWrapperRight >= dropDownCalloutWidth) {
-                dropDownCallout.style.left = dropDownWrapperX + dropDownWrapperWidth + 1 + "px";
-                dropDownCallout.style.bottom = "2px";
-                dropDownCallout.style.right = "unset";
-                dropDownCallout.style.top = "unset";
+
+                if (dropDownCalloutHeight <= dropDownWrapperBottom || dropDownWrapperBottom >= dropDownTop) {
+                    dropDownCallout.style.top = dropDownWrapperY + dropDownWrapperHeight + 1 + "px";
+                    dropDownCallout.style.maxHeight = (dropDownWrapperBottom - 10) + "px";
+                }
+                else {
+                    dropDownCallout.style.bottom = dropDownWrapperBottom + dropDownHeight + 1 + "px";
+                    dropDownCallout.style.maxHeight = (dropDownTop - 10) + "px";
+                }
             } else {
-                dropDownCallout.style.left = dropDownWrapperX - dropDownCalloutWidth - 1 + "px";
-                dropDownCallout.style.bottom = "2px";
-                dropDownCallout.style.top = "unset";
-                dropDownCallout.style.right = "unset";
+                if (dropDownWrapperBottom >= dropDownCalloutHeight) {
+                    dropDownCallout.style.top = dropDownWrapperY + dropDownWrapperHeight + 1 + "px";
+                    dropDownCallout.style.left = dropDownWrapperX + "px";
+                    dropDownCallout.style.maxHeight = (dropDownWrapperBottom - 10) + "px";
+                } else if (dropDownTop >= dropDownCalloutHeight) {
+                    dropDownCallout.style.bottom = dropDownWrapperBottom + dropDownHeight + 1 + "px";
+                    dropDownCallout.style.left = dropDownWrapperX + "px";
+                    dropDownCallout.style.maxHeight = (dropDownTop - 10) + "px";
+                } else if (dropDownWrapperRight >= dropDownCalloutWidth) {
+                    dropDownCallout.style.left = dropDownWrapperX + dropDownWrapperWidth + 1 + "px";
+                    dropDownCallout.style.bottom = "2px";
+                    dropDownCallout.style.maxHeight = (window.innerHeight - 10) + "px";
+                } else {
+                    dropDownCallout.style.left = dropDownWrapperX - dropDownCalloutWidth - 1 + "px";
+                    dropDownCallout.style.bottom = "2px";
+                    dropDownCallout.style.maxHeight = (window.innerHeight - 10) + "px";
+                }
             }
         }
     }
+}
+
+enum BitDropDirection {
+    Auto,
+    TopAndBottom
 }

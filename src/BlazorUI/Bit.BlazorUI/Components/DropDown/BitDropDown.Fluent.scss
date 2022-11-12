@@ -14,8 +14,6 @@
         box-sizing: border-box;
         margin: 0;
         padding: rem(5px) 0;
-        z-index: 999;
-        position: relative;
         display: block;
     }
 
@@ -322,7 +320,6 @@
     .items-wrapper {
         display: none;
         position: fixed;
-        max-height: rem(744px);
         font-size: rem(14px);
         font-weight: 400;
         box-sizing: border-box;
