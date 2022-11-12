@@ -35,6 +35,9 @@ public partial class BitLoadingButtonDemo
 
     private void Example4ToggleOnChange()
     {
+        SmallButtonIsLoading = !SmallButtonIsLoading;
+        MediumButtonIsLoading = !MediumButtonIsLoading;
+        LargeButtonIsLoading = !LargeButtonIsLoading;
         XSmallIsLoading = !XSmallIsLoading;
         SmallIsLoading = !SmallIsLoading;
         MediumIsLoading = !MediumIsLoading;
@@ -144,8 +147,14 @@ public partial class BitLoadingButtonDemo
 
     #endregion
 
-    #region SpinnerSize
+    #region Size
 
+    private bool SmallButtonIsLoading;
+    private int SmallButtonCounter;
+    private bool MediumButtonIsLoading;
+    private int MediumButtonCounter;
+    private bool LargeButtonIsLoading;
+    private int LargeButtonCounter;
     private bool XSmallIsLoading;
     private int XSmallCounter;
     private bool SmallIsLoading;
@@ -154,6 +163,30 @@ public partial class BitLoadingButtonDemo
     private int MediumCounter;
     private bool LargeIsLoading;
     private int LargeCounter;
+
+    private async Task SmallButtonOnClick()
+    {
+        SmallButtonIsLoading = true;
+        await Task.Delay(1000);
+        SmallButtonCounter++;
+        SmallButtonIsLoading = false;
+    }
+
+    private async Task MediumButtonOnClick()
+    {
+        MediumButtonIsLoading = true;
+        await Task.Delay(1000);
+        MediumButtonCounter++;
+        MediumButtonIsLoading = false;
+    }
+
+    private async Task LargeButtonOnClick()
+    {
+        LargeButtonIsLoading = true;
+        await Task.Delay(1000);
+        LargeButtonCounter++;
+        LargeButtonIsLoading = false;
+    }
 
     private async Task XSmallOnClick()
     {
@@ -643,6 +676,26 @@ private async Task LeftPositionOnClick()
     #region Example Code 4
 
     private readonly string example4HTMLCode = @"
+<BitLoadingButton IsLoading=""SmallButtonIsLoading""
+                  ButtonSize=""BitButtonSize.Small""
+                  OnClick=""SmallButtonOnClick"">
+    Small (@SmallButtonCounter)
+</BitLoadingButton>
+
+<BitLoadingButton IsLoading=""MediumButtonIsLoading""
+                  ButtonSize=""BitButtonSize.Medium""
+                  OnClick=""MediumButtonOnClick"">
+    Medium (@MediumButtonCounter)
+</BitLoadingButton>
+
+<BitLoadingButton IsLoading=""LargeButtonIsLoading""
+                  ButtonStyle=""BitButtonStyle.Standard""
+                  ButtonSize=""BitButtonSize.Large""
+                  OnClick=""LargeButtonOnClick"">
+    Large (@LargeButtonCounter)
+</BitLoadingButton>
+
+
 <BitLoadingButton IsLoading=""XSmallIsLoading""
                   LoadingSpinnerSize=""BitSpinnerSize.XSmall""
                   OnClick=""XSmallOnClick"">
@@ -671,6 +724,13 @@ private async Task LeftPositionOnClick()
 ";
 
     private readonly string example4CSharpCode = @"
+private bool SmallButtonIsLoading;
+private int SmallButtonCounter;
+private bool MediumButtonIsLoading;
+private int MediumButtonCounter;
+private bool LargeButtonIsLoading;
+private int LargeButtonCounter;
+
 private bool XSmallIsLoading;
 private int XSmallCounter;
 private bool SmallIsLoading;
@@ -679,6 +739,30 @@ private bool MediumIsLoading;
 private int MediumCounter;
 private bool LargeIsLoading;
 private int LargeCounter;
+
+private async Task SmallButtonOnClick()
+{
+    SmallButtonIsLoading = true;
+    await Task.Delay(1000);
+    SmallButtonCounter++;
+    SmallButtonIsLoading = false;
+}
+
+private async Task MediumButtonOnClick()
+{
+    MediumButtonIsLoading = true;
+    await Task.Delay(1000);
+    MediumButtonCounter++;
+    MediumButtonIsLoading = false;
+}
+
+private async Task LargeButtonOnClick()
+{
+    LargeButtonIsLoading = true;
+    await Task.Delay(1000);
+    LargeButtonCounter++;
+    LargeButtonIsLoading = false;
+}
 
 private async Task XSmallOnClick()
 {

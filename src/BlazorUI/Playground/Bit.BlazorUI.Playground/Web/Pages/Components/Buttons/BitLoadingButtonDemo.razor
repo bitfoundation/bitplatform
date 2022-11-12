@@ -91,9 +91,33 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BitLoadingButton with LoadingSpinnerSize" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
+    <ComponentExampleBox Title="BitLoadingButton with Size" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
         <ExamplePreview>
-            <div class="example-desc">You can change the size of your spinner loading.</div>
+            <div class="example-desc">You can change the size of your Button Text or Spinner.</div>
+
+            <BitLabel>Text Size:</BitLabel>
+            <div class="example-box">
+                <BitLoadingButton IsLoading="SmallButtonIsLoading"
+                                  ButtonSize="BitButtonSize.Small"
+                                  OnClick="SmallButtonOnClick">
+                    Small (@SmallButtonCounter)
+                </BitLoadingButton>
+
+                <BitLoadingButton IsLoading="MediumButtonIsLoading"
+                                  ButtonSize="BitButtonSize.Medium"
+                                  OnClick="MediumButtonOnClick">
+                    Medium (@MediumButtonCounter)
+                </BitLoadingButton>
+
+                <BitLoadingButton IsLoading="LargeButtonIsLoading"
+                                  ButtonStyle="BitButtonStyle.Standard"
+                                  ButtonSize="BitButtonSize.Large"
+                                  OnClick="LargeButtonOnClick">
+                    Large (@LargeButtonCounter)
+                </BitLoadingButton>
+            </div>
+
+            <BitLabel>Spinner Size:</BitLabel>
             <div class="example-box">
                 <BitLoadingButton IsLoading="XSmallIsLoading"
                                   LoadingSpinnerSize="BitSpinnerSize.XSmall"
@@ -120,9 +144,9 @@
                                   OnClick="LargeOnClick">
                     Large (@LargeCounter)
                 </BitLoadingButton>
-
-                <BitToggle @bind-Value="Example4Toggle" OnChange="Example4ToggleOnChange" OnText="Turn Loading Off" OffText="Turn Loading On" />
             </div>
+
+            <BitToggle @bind-Value="Example4Toggle" Style="margin-top: 20px;" OnChange="Example4ToggleOnChange" OnText="Turn Loading Off" OffText="Turn Loading On" />
         </ExamplePreview>
     </ComponentExampleBox>
 
