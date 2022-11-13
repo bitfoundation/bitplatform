@@ -25,8 +25,8 @@
 
 ::deep .custom-btn-sm {
     &.bit-btn-sm-fluent {
-        padding: 5px 10px;
-        font-size: 12px;
+        padding: rem(5px) rem(10px);
+        font-size: rem(12px);
         line-height: 1.5;
         border-radius: 3px;
     }
@@ -34,8 +34,8 @@
 
 ::deep .custom-btn-md {
     &.bit-btn-md-fluent {
-        padding: 6px 12px;
-        font-size: 14px;
+        padding: rem(6px) rem(12px);
+        font-size: rem(14px);
         line-height: 1.4;
         border-radius: 4px;
     }
@@ -43,8 +43,8 @@
 
 ::deep .custom-btn-lg {
     &.bit-btn-lg-fluent {
-        padding: 10px 16px;
-        font-size: 18px;
+        padding: rem(10px) rem(16px);
+        font-size: rem(18px);
         line-height: 1.33;
         border-radius: 6px;
     }
