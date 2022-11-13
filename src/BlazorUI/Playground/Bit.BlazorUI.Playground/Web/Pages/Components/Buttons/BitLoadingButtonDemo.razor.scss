@@ -24,27 +24,33 @@
 }
 
 ::deep .custom-btn-sm {
-    &.bit-btn-sm-fluent {
-        padding: rem(5px) rem(10px);
-        font-size: rem(12px);
+    &.bit-lbtn-sm-fluent {
+        max-width: rem(100px);
+        width: rem(100px);
+        padding: rem(15px) rem(20px);
+        font-size: rem(15px);
         line-height: 1.5;
         border-radius: 3px;
     }
 }
 
 ::deep .custom-btn-md {
-    &.bit-btn-md-fluent {
-        padding: rem(6px) rem(12px);
-        font-size: rem(14px);
+    &.bit-lbtn-md-fluent {
+        max-width: rem(150px);
+        width: rem(150px);
+        padding: rem(18px) rem(23px);
+        font-size: rem(18px);
         line-height: 1.4;
         border-radius: 4px;
     }
 }
 
 ::deep .custom-btn-lg {
-    &.bit-btn-lg-fluent {
-        padding: rem(10px) rem(16px);
-        font-size: rem(18px);
+    &.bit-lbtn-lg-fluent {
+        max-width: rem(200px);
+        width: rem(200px);
+        padding: rem(21px) rem(26px);
+        font-size: rem(21px);
         line-height: 1.33;
         border-radius: 6px;
     }

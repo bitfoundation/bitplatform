@@ -972,27 +972,33 @@ private async Task LargeButtonOnClick()
     private readonly string example7HTMLCode = @"
 <style>
     ::deep .custom-btn-sm {
-        &.bit-btn-sm-fluent {
-            padding: 5px 10px;
-            font-size: 12px;
+        &.bit-lbtn-sm-fluent {
+            max-width: 100px;
+            width: 100px;
+            padding: 15px 20px;
+            font-size: 15px;
             line-height: 1.5;
             border-radius: 3px;
         }
     }
-    
+
     ::deep .custom-btn-md {
-        &.bit-btn-md-fluent {
-            padding: 6px 12px;
-            font-size: 14px;
+        &.bit-lbtn-md-fluent {
+            max-width: 150px;
+            width: 150px;
+            padding: 18px 23px;
+            font-size: 18px;
             line-height: 1.4;
             border-radius: 4px;
         }
     }
-    
+
     ::deep .custom-btn-lg {
-        &.bit-btn-lg-fluent {
-            padding: 10px 16px;
-            font-size: 18px;
+        &.bit-lbtn-lg-fluent {
+            max-width: 200px;
+            width: 200px;
+            padding: 21px 26px;
+            font-size: 21px;
             line-height: 1.33;
             border-radius: 6px;
         }
