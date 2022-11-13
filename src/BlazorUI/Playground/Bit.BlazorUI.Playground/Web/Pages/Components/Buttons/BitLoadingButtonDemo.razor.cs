@@ -12,6 +12,8 @@ public partial class BitLoadingButtonDemo
     private bool Example3Toggle;
     private bool Example4Toggle;
     private bool Example5Toggle;
+    private bool Example6Toggle;
+    private bool Example7Toggle;
 
     private void Example1ToggleOnChange()
     {
@@ -35,9 +37,6 @@ public partial class BitLoadingButtonDemo
 
     private void Example4ToggleOnChange()
     {
-        SmallButtonIsLoading = !SmallButtonIsLoading;
-        MediumButtonIsLoading = !MediumButtonIsLoading;
-        LargeButtonIsLoading = !LargeButtonIsLoading;
         XSmallIsLoading = !XSmallIsLoading;
         SmallIsLoading = !SmallIsLoading;
         MediumIsLoading = !MediumIsLoading;
@@ -50,6 +49,20 @@ public partial class BitLoadingButtonDemo
         GridIsLoading = !GridIsLoading;
         RollerIsLoading = !RollerIsLoading;
         SpinnerIsLoading = !SpinnerIsLoading;
+    }
+
+    private void Example6ToggleOnChange()
+    {
+        SmallButtonIsLoading = !SmallButtonIsLoading;
+        MediumButtonIsLoading = !MediumButtonIsLoading;
+        LargeButtonIsLoading = !LargeButtonIsLoading;
+    }
+
+    private void Example7ToggleOnChange()
+    {
+        CustomizedSmallButtonIsLoading = !CustomizedSmallButtonIsLoading;
+        CustomizedMediumButtonIsLoading = !CustomizedMediumButtonIsLoading;
+        CustomizedLargeButtonIsLoading = !CustomizedLargeButtonIsLoading;
     }
 
     #region Basic
@@ -147,14 +160,8 @@ public partial class BitLoadingButtonDemo
 
     #endregion
 
-    #region Size
+    #region SpinnerSize
 
-    private bool SmallButtonIsLoading;
-    private int SmallButtonCounter;
-    private bool MediumButtonIsLoading;
-    private int MediumButtonCounter;
-    private bool LargeButtonIsLoading;
-    private int LargeButtonCounter;
     private bool XSmallIsLoading;
     private int XSmallCounter;
     private bool SmallIsLoading;
@@ -163,30 +170,6 @@ public partial class BitLoadingButtonDemo
     private int MediumCounter;
     private bool LargeIsLoading;
     private int LargeCounter;
-
-    private async Task SmallButtonOnClick()
-    {
-        SmallButtonIsLoading = true;
-        await Task.Delay(1000);
-        SmallButtonCounter++;
-        SmallButtonIsLoading = false;
-    }
-
-    private async Task MediumButtonOnClick()
-    {
-        MediumButtonIsLoading = true;
-        await Task.Delay(1000);
-        MediumButtonCounter++;
-        MediumButtonIsLoading = false;
-    }
-
-    private async Task LargeButtonOnClick()
-    {
-        LargeButtonIsLoading = true;
-        await Task.Delay(1000);
-        LargeButtonCounter++;
-        LargeButtonIsLoading = false;
-    }
 
     private async Task XSmallOnClick()
     {
@@ -255,6 +238,76 @@ public partial class BitLoadingButtonDemo
         SpinnerIsLoading = true;
         await Task.Delay(1000);
         SpinnerIsLoading = false;
+    }
+
+    #endregion
+
+    #region Size
+
+    private bool SmallButtonIsLoading;
+    private int SmallButtonCounter;
+    private bool MediumButtonIsLoading;
+    private int MediumButtonCounter;
+    private bool LargeButtonIsLoading;
+    private int LargeButtonCounter;
+
+    private async Task SmallButtonOnClick()
+    {
+        SmallButtonIsLoading = true;
+        await Task.Delay(1000);
+        SmallButtonCounter++;
+        SmallButtonIsLoading = false;
+    }
+
+    private async Task MediumButtonOnClick()
+    {
+        MediumButtonIsLoading = true;
+        await Task.Delay(1000);
+        MediumButtonCounter++;
+        MediumButtonIsLoading = false;
+    }
+
+    private async Task LargeButtonOnClick()
+    {
+        LargeButtonIsLoading = true;
+        await Task.Delay(1000);
+        LargeButtonCounter++;
+        LargeButtonIsLoading = false;
+    }
+
+    #endregion
+
+    #region Customized Size
+
+    private bool CustomizedSmallButtonIsLoading;
+    private int CustomizedSmallButtonCounter;
+    private bool CustomizedMediumButtonIsLoading;
+    private int CustomizedMediumButtonCounter;
+    private bool CustomizedLargeButtonIsLoading;
+    private int CustomizedLargeButtonCounter;
+
+    private async Task CustomizedSmallButtonOnClick()
+    {
+        CustomizedSmallButtonIsLoading = true;
+        await Task.Delay(1000);
+        CustomizedSmallButtonCounter++;
+        CustomizedSmallButtonIsLoading = false;
+    }
+
+    private async Task CustomizedMediumButtonOnClick()
+    {
+        CustomizedMediumButtonIsLoading = true;
+        await Task.Delay(1000);
+        CustomizedMediumButtonCounter++;
+        CustomizedMediumButtonIsLoading = false;
+    }
+
+    private async Task CustomizedLargeButtonOnClick()
+    {
+        CustomizedLargeButtonIsLoading = true;
+        await Task.Delay(1000);
+        CustomizedLargeButtonCounter++;
+        CustomizedLargeButtonIsLoading = false;
     }
 
     #endregion
@@ -676,26 +729,6 @@ private async Task LeftPositionOnClick()
     #region Example Code 4
 
     private readonly string example4HTMLCode = @"
-<BitLoadingButton IsLoading=""SmallButtonIsLoading""
-                  ButtonSize=""BitButtonSize.Small""
-                  OnClick=""SmallButtonOnClick"">
-    Small (@SmallButtonCounter)
-</BitLoadingButton>
-
-<BitLoadingButton IsLoading=""MediumButtonIsLoading""
-                  ButtonSize=""BitButtonSize.Medium""
-                  OnClick=""MediumButtonOnClick"">
-    Medium (@MediumButtonCounter)
-</BitLoadingButton>
-
-<BitLoadingButton IsLoading=""LargeButtonIsLoading""
-                  ButtonStyle=""BitButtonStyle.Standard""
-                  ButtonSize=""BitButtonSize.Large""
-                  OnClick=""LargeButtonOnClick"">
-    Large (@LargeButtonCounter)
-</BitLoadingButton>
-
-
 <BitLoadingButton IsLoading=""XSmallIsLoading""
                   LoadingSpinnerSize=""BitSpinnerSize.XSmall""
                   OnClick=""XSmallOnClick"">
@@ -724,13 +757,6 @@ private async Task LeftPositionOnClick()
 ";
 
     private readonly string example4CSharpCode = @"
-private bool SmallButtonIsLoading;
-private int SmallButtonCounter;
-private bool MediumButtonIsLoading;
-private int MediumButtonCounter;
-private bool LargeButtonIsLoading;
-private int LargeButtonCounter;
-
 private bool XSmallIsLoading;
 private int XSmallCounter;
 private bool SmallIsLoading;
@@ -739,30 +765,6 @@ private bool MediumIsLoading;
 private int MediumCounter;
 private bool LargeIsLoading;
 private int LargeCounter;
-
-private async Task SmallButtonOnClick()
-{
-    SmallButtonIsLoading = true;
-    await Task.Delay(1000);
-    SmallButtonCounter++;
-    SmallButtonIsLoading = false;
-}
-
-private async Task MediumButtonOnClick()
-{
-    MediumButtonIsLoading = true;
-    await Task.Delay(1000);
-    MediumButtonCounter++;
-    MediumButtonIsLoading = false;
-}
-
-private async Task LargeButtonOnClick()
-{
-    LargeButtonIsLoading = true;
-    await Task.Delay(1000);
-    LargeButtonCounter++;
-    LargeButtonIsLoading = false;
-}
 
 private async Task XSmallOnClick()
 {
@@ -902,6 +904,154 @@ private async Task SpinnerOnClick()
     SpinnerIsLoading = true;
     await Task.Delay(1000);
     SpinnerIsLoading = false;
+}
+";
+
+    #endregion
+
+    #region Example Code 6
+
+    private readonly string example6HTMLCode = @"
+<BitLoadingButton IsLoading=""SmallButtonIsLoading""
+                  ButtonSize=""BitButtonSize.Small""
+                  OnClick=""SmallButtonOnClick"">
+    Small (@SmallButtonCounter)
+</BitLoadingButton>
+
+<BitLoadingButton IsLoading=""MediumButtonIsLoading""
+                  ButtonSize=""BitButtonSize.Medium""
+                  OnClick=""MediumButtonOnClick"">
+    Medium (@MediumButtonCounter)
+</BitLoadingButton>
+
+<BitLoadingButton IsLoading=""LargeButtonIsLoading""
+                  ButtonStyle=""BitButtonStyle.Standard""
+                  ButtonSize=""BitButtonSize.Large""
+                  OnClick=""LargeButtonOnClick"">
+    Large (@LargeButtonCounter)
+</BitLoadingButton>
+";
+
+    private readonly string example6CSharpCode = @"
+private bool SmallButtonIsLoading;
+private int SmallButtonCounter;
+private bool MediumButtonIsLoading;
+private int MediumButtonCounter;
+private bool LargeButtonIsLoading;
+private int LargeButtonCounter;
+
+private async Task SmallButtonOnClick()
+{
+    SmallButtonIsLoading = true;
+    await Task.Delay(1000);
+    SmallButtonCounter++;
+    SmallButtonIsLoading = false;
+}
+
+private async Task MediumButtonOnClick()
+{
+    MediumButtonIsLoading = true;
+    await Task.Delay(1000);
+    MediumButtonCounter++;
+    MediumButtonIsLoading = false;
+}
+
+private async Task LargeButtonOnClick()
+{
+    LargeButtonIsLoading = true;
+    await Task.Delay(1000);
+    LargeButtonCounter++;
+    LargeButtonIsLoading = false;
+}
+";
+
+    #endregion
+
+    #region Example Code 7
+
+    private readonly string example7HTMLCode = @"
+<style>
+    ::deep .custom-btn-sm {
+        &.bit-btn-sm-fluent {
+            padding: 5px 10px;
+            font-size: 12px;
+            line-height: 1.5;
+            border-radius: 3px;
+        }
+    }
+    
+    ::deep .custom-btn-md {
+        &.bit-btn-md-fluent {
+            padding: 6px 12px;
+            font-size: 14px;
+            line-height: 1.4;
+            border-radius: 4px;
+        }
+    }
+    
+    ::deep .custom-btn-lg {
+        &.bit-btn-lg-fluent {
+            padding: 10px 16px;
+            font-size: 18px;
+            line-height: 1.33;
+            border-radius: 6px;
+        }
+    }
+</style>
+
+<BitLoadingButton Class=""custom-btn-sm""
+                  ButtonSize=""BitButtonSize.Small""
+                  IsLoading=""CustomizedSmallButtonIsLoading""
+                  OnClick=""CustomizedSmallButtonOnClick"">
+    Small (@CustomizedSmallButtonCounter)
+</BitLoadingButton>
+
+<BitLoadingButton Class=""custom-btn-md""
+                  ButtonSize=""BitButtonSize.Medium""
+                  IsLoading=""CustomizedMediumButtonIsLoading""
+                  OnClick=""CustomizedMediumButtonOnClick"">
+    Medium (@CustomizedMediumButtonCounter)
+</BitLoadingButton>
+
+<BitLoadingButton Class=""custom-btn-lg""
+                  ButtonSize=""BitButtonSize.Large""
+                  IsLoading=""CustomizedLargeButtonIsLoading""
+                  ButtonStyle=""BitButtonStyle.Standard""
+                  OnClick=""CustomizedLargeButtonOnClick"">
+    Large (@CustomizedLargeButtonCounter)
+</BitLoadingButton>
+";
+
+    private readonly string example7CSharpCode = @"
+private bool CustomizedSmallButtonIsLoading;
+private int CustomizedSmallButtonCounter;
+private bool CustomizedMediumButtonIsLoading;
+private int CustomizedMediumButtonCounter;
+private bool CustomizedLargeButtonIsLoading;
+private int CustomizedLargeButtonCounter;
+
+private async Task CustomizedSmallButtonOnClick()
+{
+    CustomizedSmallButtonIsLoading = true;
+    await Task.Delay(1000);
+    CustomizedSmallButtonCounter++;
+    CustomizedSmallButtonIsLoading = false;
+}
+
+private async Task CustomizedMediumButtonOnClick()
+{
+    CustomizedMediumButtonIsLoading = true;
+    await Task.Delay(1000);
+    CustomizedMediumButtonCounter++;
+    CustomizedMediumButtonIsLoading = false;
+}
+
+private async Task CustomizedLargeButtonOnClick()
+{
+    CustomizedLargeButtonIsLoading = true;
+    await Task.Delay(1000);
+    CustomizedLargeButtonCounter++;
+    CustomizedLargeButtonIsLoading = false;
 }
 ";
 

@@ -91,33 +91,9 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BitLoadingButton Size" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
+    <ComponentExampleBox Title="BitLoadingButton with LoadingSpinnerSize" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
         <ExamplePreview>
-            <div class="example-desc">You can change the size of your Button Text or Spinner.</div>
-
-            <BitLabel>Text Size:</BitLabel>
-            <div class="example-box">
-                <BitLoadingButton IsLoading="SmallButtonIsLoading"
-                                  ButtonSize="BitButtonSize.Small"
-                                  OnClick="SmallButtonOnClick">
-                    Small (@SmallButtonCounter)
-                </BitLoadingButton>
-
-                <BitLoadingButton IsLoading="MediumButtonIsLoading"
-                                  ButtonSize="BitButtonSize.Medium"
-                                  OnClick="MediumButtonOnClick">
-                    Medium (@MediumButtonCounter)
-                </BitLoadingButton>
-
-                <BitLoadingButton IsLoading="LargeButtonIsLoading"
-                                  ButtonStyle="BitButtonStyle.Standard"
-                                  ButtonSize="BitButtonSize.Large"
-                                  OnClick="LargeButtonOnClick">
-                    Large (@LargeButtonCounter)
-                </BitLoadingButton>
-            </div>
-
-            <BitLabel>Spinner Size:</BitLabel>
+            <div class="example-desc">You can change the size of your Button Spinner.</div>
             <div class="example-box">
                 <BitLoadingButton IsLoading="XSmallIsLoading"
                                   LoadingSpinnerSize="BitSpinnerSize.XSmall"
@@ -144,9 +120,9 @@
                                   OnClick="LargeOnClick">
                     Large (@LargeCounter)
                 </BitLoadingButton>
-            </div>
 
-            <BitToggle @bind-Value="Example4Toggle" Style="margin-top: 20px;" OnChange="Example4ToggleOnChange" OnText="Turn Loading Off" OffText="Turn Loading On" />
+                <BitToggle @bind-Value="Example4Toggle" OnChange="Example4ToggleOnChange" OnText="Turn Loading Off" OffText="Turn Loading On" />
+            </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
@@ -217,4 +193,62 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
+    <ComponentExampleBox Title="BitLoadingButton in different sizes" HTMLSourceCode="@example6HTMLCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example6">
+        <ExamplePreview>
+            <div class="example-desc">BitLoadingButton can get different sizes using the ButtonSize parameter.</div>
+            <div class="example-box">
+                <BitLoadingButton IsLoading="SmallButtonIsLoading"
+                                  ButtonSize="BitButtonSize.Small"
+                                  OnClick="SmallButtonOnClick">
+                    Small (@SmallButtonCounter)
+                </BitLoadingButton>
+
+                <BitLoadingButton IsLoading="MediumButtonIsLoading"
+                                  ButtonSize="BitButtonSize.Medium"
+                                  OnClick="MediumButtonOnClick">
+                    Medium (@MediumButtonCounter)
+                </BitLoadingButton>
+
+                <BitLoadingButton IsLoading="LargeButtonIsLoading"
+                                  ButtonStyle="BitButtonStyle.Standard"
+                                  ButtonSize="BitButtonSize.Large"
+                                  OnClick="LargeButtonOnClick">
+                    Large (@LargeButtonCounter)
+                </BitLoadingButton>
+
+                <BitToggle @bind-Value="Example6Toggle" OnChange="Example6ToggleOnChange" OnText="Turn Loading Off" OffText="Turn Loading On" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Customized BitLoadingButton in different sizes" HTMLSourceCode="@example7HTMLCode" CSharpSourceCode="@example7CSharpCode" ExampleId="example7">
+        <ExamplePreview>
+            <div class="example-desc">BitLoadingButton can be customized easily in different sizes by overriding a certain CSS class.</div>
+            <div class="example-box">
+                <BitLoadingButton Class="custom-btn-sm"
+                                  ButtonSize="BitButtonSize.Small"
+                                  IsLoading="CustomizedSmallButtonIsLoading"
+                                  OnClick="CustomizedSmallButtonOnClick">
+                    Small (@CustomizedSmallButtonCounter)
+                </BitLoadingButton>
+
+                <BitLoadingButton Class="custom-btn-md"
+                                  ButtonSize="BitButtonSize.Medium"
+                                  IsLoading="CustomizedMediumButtonIsLoading"
+                                  OnClick="CustomizedMediumButtonOnClick">
+                    Medium (@CustomizedMediumButtonCounter)
+                </BitLoadingButton>
+
+                <BitLoadingButton Class="custom-btn-lg"
+                                  ButtonSize="BitButtonSize.Large"
+                                  IsLoading="CustomizedLargeButtonIsLoading"
+                                  ButtonStyle="BitButtonStyle.Standard"
+                                  OnClick="CustomizedLargeButtonOnClick">
+                    Large (@CustomizedLargeButtonCounter)
+                </BitLoadingButton>
+
+                <BitToggle @bind-Value="Example7Toggle" OnChange="Example7ToggleOnChange" OnText="Turn Loading Off" OffText="Turn Loading On" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
 </ComponentDemo>
