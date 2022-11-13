@@ -299,4 +299,30 @@
             </BitDropDown>
         </ExamplePreview>
     </ComponentExampleBox>
+
+    <ComponentExampleBox Title="BitDropDown Drop Direction" HTMLSourceCode="@example12HTMLCode" CSharpSourceCode="@example12CSharpCode" ExampleId="example12">
+        <ExamplePreview>
+            <BitDropDown Label="Single-select Controlled with auto drop direction"
+                         Items="LargeListOfCategoriesDropDirection"
+                         Virtualize="true"
+                         Placeholder="Select an option"
+                         IsResponsiveModeEnabled="true"
+                         ShowSearchBox="true"
+                         SearchBoxPlaceholder="Search item"
+                         DropDirection="BitDropDirection.Auto"
+                         Style="width: 100%; max-width: 290px; margin: 20px 0 20px 0">
+            </BitDropDown>
+
+            <BitDropDown Label="Single-select Controlled with top and bottom drop direction"
+                         Items="LargeListOfCategoriesDropDirection"
+                         Virtualize="true"
+                         Placeholder="Select an option"
+                         IsResponsiveModeEnabled="true"
+                         ShowSearchBox="true"
+                         SearchBoxPlaceholder="Search item"
+                         DropDirection="BitDropDirection.TopAndBottom"
+                         Style="width: 100%; max-width: 290px; margin: 20px 0 20px 0">
+            </BitDropDown>
+        </ExamplePreview>
+    </ComponentExampleBox>
 </ComponentDemo>
