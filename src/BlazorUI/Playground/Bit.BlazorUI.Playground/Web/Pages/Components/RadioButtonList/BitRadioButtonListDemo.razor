@@ -183,7 +183,49 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BitRadioButtonList validation" HTMLSourceCode="@example8HTMLCode" CSharpSourceCode="@example8CSharpCode" ExampleId="example8">
+    <ComponentExampleBox Title="RTL Direction" HTMLSourceCode="@example8HTMLCode" CSharpSourceCode="@example8CSharpCode" ExampleId="example8">
+        <ExamplePreview>
+            <div class="rbl-box column">
+                <BitRadioButtonList @bind-Value="@example8Basic"
+                                    Label="Basic"
+                                    Items="BasicGenderItems"
+                                    TextField="@nameof(GenderModel.GenderText)"
+                                    ValueField="@nameof(GenderModel.GenderId)"
+                                    IsRtl="true" />
+
+                <BitRadioButtonList @bind-Value="@example8Disabled"
+                                    Label="Disabled"
+                                    Items="BasicGenderItems"
+                                    TextField="@nameof(GenderModel.GenderText)"
+                                    ValueField="@nameof(GenderModel.GenderId)"
+                                    IsEnabled="false"
+                                    IsRtl="true" />
+
+                <BitRadioButtonList @bind-Value="@example8Image"
+                                    Label="Image"
+                                    Items="ImageGenderItems"
+                                    TextField="@nameof(GenderModel.GenderText)"
+                                    ValueField="@nameof(GenderModel.GenderId)"
+                                    ImageSrcField="@nameof(GenderModel.ImageName)"
+                                    ImageAltField="alt for image"
+                                    SelectedImageSrcField="@nameof(GenderModel.ImageName)"
+                                    ImageSize="new System.Drawing.Size( width: 32, height: 32)"
+                                    LayoutFlow="BitLayoutFlow.Horizontal"
+                                    IsRtl="true" />
+
+                <BitRadioButtonList @bind-Value="@example8Icon"
+                                    Label="Icon"
+                                    Items="IconGenderItems"
+                                    TextField="@nameof(GenderModel.GenderText)"
+                                    ValueField="@nameof(GenderModel.GenderId)"
+                                    IconNameField="@nameof(GenderModel.IconName)"
+                                    LayoutFlow="BitLayoutFlow.Horizontal"
+                                    IsRtl="true" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="BitRadioButtonList validation" HTMLSourceCode="@example9HTMLCode" CSharpSourceCode="@example9CSharpCode" ExampleId="example9">
         <ExamplePreview>
             @if (string.IsNullOrEmpty(SuccessMessage))
             {

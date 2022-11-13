@@ -91,6 +91,11 @@ public partial class BitRadioButtonList<TItem, TValue>
     [Parameter] public Size? ImageSize { get; set; }
 
     /// <summary>
+    /// Change direction to RTL.
+    /// </summary>
+    [Parameter] public bool IsRtl { get; set; }
+
+    /// <summary>
     /// Descriptive label for the radio button list.
     /// </summary>
     [Parameter] public string? Label { get; set; }
@@ -159,6 +164,9 @@ public partial class BitRadioButtonList<TItem, TValue>
 
         ClassBuilder.Register(() => ValueInvalid is true
                                    ? $"{RootElementClass}-invalid-{VisualClassRegistrar()}" : string.Empty);
+
+        ClassBuilder.Register(() => IsRtl
+                                   ? $"{RootElementClass}-rtl-{VisualClassRegistrar()}" : string.Empty);
     }
 
     protected override Task OnInitializedAsync()

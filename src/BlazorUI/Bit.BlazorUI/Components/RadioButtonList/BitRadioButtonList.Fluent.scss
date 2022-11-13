@@ -77,6 +77,41 @@
         }
     }
 
+    &.bit-rbl-rtl-fluent {
+        direction: rtl;
+
+        .bit-rbli {
+            margin-left: rem(8px);
+            margin-right: 0;
+        }
+
+        .bit-rbli-lbl {
+
+            &::before {
+                right: 0;
+            }
+
+            &:hover {
+                &:after {
+                    right: rem(5px);
+                }
+            }
+
+            .bit-rbli-txt {
+                padding-right: rem(26px);
+                padding-left: 0;
+            }
+        }
+
+        .bit-rbli-checked {
+            .bit-rbli-lbl {
+                &::after {
+                    right: rem(5px);
+                }
+            }
+        }
+    }
+
     .bit-rbl-label {
         display: block;
         margin: 0;
@@ -98,7 +133,6 @@
             flex-flow: row wrap;
         }
     }
-
     /*--- Radio button list item styles ---*/
     .bit-rbli {
         position: relative;
