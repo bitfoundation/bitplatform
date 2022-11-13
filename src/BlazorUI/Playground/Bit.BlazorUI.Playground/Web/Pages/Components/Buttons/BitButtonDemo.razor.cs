@@ -282,8 +282,8 @@ public int StandardCounter;";
 <style>
     ::deep .custom-btn-sm {
         &.bit-btn-sm-fluent {
-            padding: 5px 10px;
-            font-size: 12px;
+            padding: 4px 8px;
+            font-size: 8px;
             line-height: 1.5;
             border-radius: 3px;
         }
@@ -291,8 +291,8 @@ public int StandardCounter;";
     
     ::deep .custom-btn-md {
         &.bit-btn-md-fluent {
-            padding: 6px 12px;
-            font-size: 14px;
+            padding: 12px 24px;
+            font-size: 16px;
             line-height: 1.4;
             border-radius: 4px;
         }
@@ -300,8 +300,8 @@ public int StandardCounter;";
     
     ::deep .custom-btn-lg {
         &.bit-btn-lg-fluent {
-            padding: 10px 16px;
-            font-size: 18px;
+            padding: 20px 32px;
+            font-size: 32px;
             line-height: 1.33;
             border-radius: 6px;
         }
