@@ -1,14 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <AssemblyName>WebApiSample</AssemblyName>
     <RootNamespace>WebApiSample</RootNamespace>
     <UserSecretsId>075bb9c1-05ff-404a-ac1f-5670bb5bd331</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Bit.Server.WebApi" Version="12.0.0" />
-    <PackageReference Include="Bit.Tooling.CodeAnalyzer" Version="12.0.0" />
-    <PackageReference Include="Bit.Universal.AutoMapper" Version="12.0.0" />
+    <PackageReference Include="Bit.Server.WebApi" Version="13.0.0" />
+    <PackageReference Include="Bit.Tooling.CodeAnalyzer" Version="13.0.0" />
+    <PackageReference Include="Bit.Universal.AutoMapper" Version="13.0.0" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="environments.json">

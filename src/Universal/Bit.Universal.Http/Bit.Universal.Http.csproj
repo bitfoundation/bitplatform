@@ -3,18 +3,18 @@
     <Import Project="../../Bit.Build.props" />
 
     <PropertyGroup>
-        <TargetFrameworks>net6.0;monoandroid12.0;Xamarin.iOS10;uap10.0.17763;netstandard2.0;netstandard2.1;net6.0-ios;net6.0-android;net6.0-maccatalyst;net6.0-windows10.0.19041;</TargetFrameworks>
+        <TargetFrameworks>net7.0;monoandroid12.0;Xamarin.iOS10;uap10.0.17763;netstandard2.0;netstandard2.1;net7.0-ios;net7.0-android;net7.0-maccatalyst;net7.0-windows10.0.19041;</TargetFrameworks>
         <PackageTags>$(PackageTags) Http Rest Refit</PackageTags>
         <RootNamespace>Bit.Http</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="6.0.8" />
+        <PackageReference Include="Microsoft.Extensions.Http" Version="7.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="7.0.0" />
         <PackageReference Include="Refit" Version="6.3.2" />
-        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.22.1" />
+        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.25.0" />
         <PackageReference Include="System.Net.Http" Version="4.3.4" />
-        <PackageReference Include="System.Text.Json" Version="6.0.5" />
+        <PackageReference Include="System.Text.Json" Version="7.0.0" />
         <ProjectReference Include="..\Bit.Universal.Model\Bit.Universal.Model.csproj" />
     </ItemGroup>
 

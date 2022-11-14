@@ -10,7 +10,7 @@
     "Configs": [
       {
         "Key": "AppConnectionString",
-        "Value": "Data Source=.;Initial Catalog=MyAppDb;Integrated Security=True;"
+        "Value": "Data Source=.;Initial Catalog=MyAppDb;Integrated Security=True;TrustServerCertificate=True;"
       }
     ]
   }

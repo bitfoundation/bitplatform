@@ -3,15 +3,15 @@
 	<Import Project="../../Bit.Build.props" />
 
 	<PropertyGroup>
-		<TargetFrameworks>net6.0;monoandroid12.0;Xamarin.iOS10;uap10.0.17763;netstandard2.0;netstandard2.1;net6.0-ios;net6.0-android;net6.0-maccatalyst;net6.0-windows10.0.19041;</TargetFrameworks>
+		<TargetFrameworks>net7.0;monoandroid12.0;Xamarin.iOS10;uap10.0.17763;netstandard2.0;netstandard2.1;net7.0-ios;net7.0-android;net7.0-maccatalyst;net7.0-windows10.0.19041;</TargetFrameworks>
 		<RootNamespace>Bit.Core</RootNamespace>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-		<PackageReference Include="System.ComponentModel.Annotations" Version="6.0.0-preview.4.21253.7" />
-		<PackageReference Include="Autofac" Version="6.4.0" />
+        <PackageReference Include="System.ComponentModel.Annotations" Version="6.0.0-preview.4.21253.7" Condition=" '$(TargetFramework)' != 'net7.0' " />
+        <PackageReference Include="Autofac" Version="6.4.0" />
 		<PackageReference Include="Autofac.Extensions.DependencyInjection" Version="8.0.0" />
 		<PackageReference Condition=" '$(TargetFramework)' == 'monoandroid12.0' OR '$(TargetFramework)' == 'Xamarin.iOS10' OR '$(TargetFramework)' == 'uap10.0.17763' " Include="Xamarin.Essentials" Version="1.7.3" />
 		<PackageReference Include="Prism.Core" Version="8.1.97" />

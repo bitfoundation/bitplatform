@@ -3,7 +3,7 @@
   <Import Project="../../Bit.Build.props" />
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <PackageTags>$(PackageTags) Hangfire AspNet OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Scheduler Threading Queues Jobs</PackageTags>
     <RootNamespace>Bit.Hangfire</RootNamespace>
   </PropertyGroup>
@@ -16,7 +16,7 @@
     <PackageReference Include="Hangfire.AspNetCore" Version="1.7.31" />
     <PackageReference Include="Hangfire.Core" Version="1.7.31" />
     <PackageReference Include="Hangfire.MemoryStorage" Version="1.7.0" />
-    <PackageReference Include="HangFire.Redis.StackExchange" Version="1.8.5" />
+    <PackageReference Include="HangFire.Redis.StackExchange" Version="1.8.6" />
     <PackageReference Include="Hangfire.SqlServer" Version="1.7.31" />
   </ItemGroup>
 

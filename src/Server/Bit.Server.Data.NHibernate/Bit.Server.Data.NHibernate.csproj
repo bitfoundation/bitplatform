@@ -3,14 +3,14 @@
   <Import Project="../../Bit.Build.props" />
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <PackageTags>$(PackageTags) Hangfire AspNet OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Scheduler Threading Queues Jobs</PackageTags>
     <RootNamespace>Bit.NHibernate</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Bit.Server.Data\Bit.Server.Data.csproj" />
-    <PackageReference Include="NHibernate" Version="5.3.13" />
+    <PackageReference Include="NHibernate" Version="5.3.14" />
   </ItemGroup>
 
 </Project>

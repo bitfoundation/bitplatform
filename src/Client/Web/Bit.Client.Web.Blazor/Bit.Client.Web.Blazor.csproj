@@ -3,12 +3,12 @@
     <Import Project="../../../Bit.Build.props" />
 
     <PropertyGroup>
-        <TargetFrameworks>net6.0;net6.0-ios;net6.0-android;net6.0-maccatalyst;net6.0-windows10.0.19041;</TargetFrameworks>
+        <TargetFrameworks>net7.0;net7.0-ios;net7.0-android;net7.0-maccatalyst;net7.0-windows10.0.19041;</TargetFrameworks>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Components" Version="6.0.8" />
-        <PackageReference Include="Microsoft.JSInterop" Version="6.0.8" />
+        <PackageReference Include="Microsoft.AspNetCore.Components" Version="7.0.0" />
+        <PackageReference Include="Microsoft.JSInterop" Version="7.0.0" />
     </ItemGroup>
 
     <ItemGroup>

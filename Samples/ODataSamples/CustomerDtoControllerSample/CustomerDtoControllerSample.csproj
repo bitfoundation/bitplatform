@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
 	<PropertyGroup>
-		<TargetFramework>net6.0</TargetFramework>
+		<TargetFramework>net7.0</TargetFramework>
 		<DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
 	</PropertyGroup>
 
@@ -11,10 +11,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Bit.Server.Data.EntityFramework" Version="12.0.0" />
-		<PackageReference Include="Bit.Server.OData" Version="12.0.0" />
-		<PackageReference Include="Bit.Tooling.CodeAnalyzer" Version="12.0.0" />
-		<PackageReference Include="Bit.Universal.AutoMapper" Version="12.0.0" />
+		<PackageReference Include="Bit.Server.Data.EntityFramework" Version="13.0.0" />
+		<PackageReference Include="Bit.Server.OData" Version="13.0.0" />
+		<PackageReference Include="Bit.Tooling.CodeAnalyzer" Version="13.0.0" />
+		<PackageReference Include="Bit.Universal.AutoMapper" Version="13.0.0" />
 	</ItemGroup>
 
 </Project>

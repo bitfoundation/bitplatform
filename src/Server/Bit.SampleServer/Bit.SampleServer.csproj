@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
 	<PropertyGroup>
-		<TargetFramework>net6.0</TargetFramework>
+		<TargetFramework>net7.0</TargetFramework>
 		<Nullable>disable</Nullable>
 	</PropertyGroup>
 
@@ -11,7 +11,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.21.0" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="6.0.8" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="7.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -10,11 +10,11 @@
 
         <Reference Include="System.Data" />
 
-        <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="6.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="7.0.0" />
 
-        <PackageReference Include="PropertyChanged.Fody" Version="4.0.1" />
-        <PackageReference Include="System.ComponentModel.Annotations" Version="6.0.0-preview.4.21253.7" />
-        <PackageReference Include="System.Net.Http.Json" Version="6.0.0" />
+        <PackageReference Include="PropertyChanged.Fody" Version="4.1.0" />
+        <PackageReference Include="System.ComponentModel.Annotations" Version="6.0.0-preview.4.21253.7" Condition=" '$(TargetFramework)' != 'net7.0' " />
+        <PackageReference Include="System.Net.Http.Json" Version="7.0.0" />
         <PackageReference Include="Xamarin.Forms" Version="5.0.0.2515" />
 
         <PackageReference Include="Xamarin.Essentials" Version="1.7.3" />

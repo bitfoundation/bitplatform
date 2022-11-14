@@ -3,7 +3,7 @@
   <Import Project="../../Bit.Build.props" />
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <PackageTags>$(PackageTags) Data</PackageTags>
     <RootNamespace>Bit.Data</RootNamespace>
   </PropertyGroup>

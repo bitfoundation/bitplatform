@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using AutoMapper.Internal;
 using Bit.Model.Contracts;
 using System;
 using System.Collections;
@@ -21,7 +22,12 @@ namespace Bit.Data.EntityFramework.Implementations
                        && typeof(IDto).IsAssignableFrom(p.DestinationMember.ReflectedType);
             }
 
-            mapperConfigExpression.ForAllPropertyMaps(MapperPropConfigurationCondition, (p, member) =>
+#if DotNetStandard2_0 || UAP10_0_17763
+            mapperConfigExpression.ForAllPropertyMaps(
+#else
+            mapperConfigExpression.Internal().ForAllPropertyMaps(
+#endif
+                MapperPropConfigurationCondition, (p, member) =>
             {
                 p.Ignored = true;
             });

@@ -21,17 +21,16 @@ But when you apply those configurations, most repositories won't work properly a
 You're free to use your preferred repository, but let's take a look at some benchmarks: [You can find codes here](https://github.com/bitfoundation/bitplatform/tree/master/docs/src/EntityFrameworkOptimizedForNTierScenarios)
 
 ```text
-BenchmarkDotNet=v0.13.0, OS=Windows 10.0.19043.1110 (21H1/May2021Update)
 Intel Core i7-7700K CPU 4.20GHz (Kaby Lake), 1 CPU, 8 logical and 4 physical cores
-.NET SDK=6.0.100-preview.6.21355.2
-  [Host] : .NET 6.0.0 (6.0.21.35212), X64 RyuJIT
+.NET SDK=7.0.100
+  [Host] : .NET 7.0.0 (7.0.22.51805), X64 RyuJIT AVX2
 ```
 
-|          Method |         Mean |       Error |       StdDev |       Median |
-|---------------- |-------------:|------------:|-------------:|-------------:|
-|   BitRepository |  92,457.4 us | 4,600.56 us | 13,125.65 us |  85,366.1 us |
-| SharpRepository | 108,802.0 us | 2,174.62 us |  4,292.48 us | 107,737.9 us |
-|       EmptyList |     205.7 us |     4.10 us |     11.69 us |     202.9 us |
+|          Method |        Mean |       Error |      StdDev |
+|---------------- |------------:|------------:|------------:|
+|   BitRepository | 53,829.7 us | 1,036.41 us | 1,996.80 us |
+| SharpRepository | 54,342.4 us | 1,075.09 us | 1,359.64 us |
+|       EmptyList |    195.4 us |     0.67 us |     0.62 us |
 
 [This script](https://github.com/bitfoundation/bitplatform/blob/master/docs/src/EntityFrameworkOptimizedForNTierScenarios/CreateTestDatabaseScript.sql) creates a database which has 10.000 customers, and each customer has 3 orders. As you can see in benchmarks, returning empty list is very fast. It's all about **micro seconds**. BitRepository has Mean with value \(20.00 ms\) which is acceptable as it's returning whole 10.000 customers in every request. And finally, you see Sharp repository's result which is about seconds! "It's not because of SharpRepository itself", it is because of the default configuration of entity framework.
 

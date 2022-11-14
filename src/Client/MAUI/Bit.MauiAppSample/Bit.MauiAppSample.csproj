@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <PropertyGroup>
-        <TargetFrameworks>net6.0-ios;net6.0-android;net6.0-maccatalyst;net6.0-windows10.0.19041</TargetFrameworks>
+        <TargetFrameworks>net7.0-ios;net7.0-android;net7.0-maccatalyst;net7.0-windows10.0.19041</TargetFrameworks>
         <OutputType>Exe</OutputType>
         <RootNamespace>Bit.MauiAppSample</RootNamespace>
         <UseMaui>true</UseMaui>
@@ -20,9 +20,9 @@
         <!-- Required for C# Hot Reload -->
         <UseInterpreter Condition="'$(Configuration)' == 'Debug'">True</UseInterpreter>
 
-        <SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-ios'">12.0</SupportedOSPlatformVersion>
-        <SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-maccatalyst'">14.0</SupportedOSPlatformVersion>
-        <SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-android'">21.0</SupportedOSPlatformVersion>
+        <SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net7.0-ios'">12.0</SupportedOSPlatformVersion>
+        <SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net7.0-maccatalyst'">14.0</SupportedOSPlatformVersion>
+        <SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net7.0-android'">21.0</SupportedOSPlatformVersion>
         <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</SupportedOSPlatformVersion>
         <TargetPlatformMinVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</TargetPlatformMinVersion>
     </PropertyGroup>
@@ -57,7 +57,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.8" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="7.0.0" />
     </ItemGroup>
 
     <ItemGroup>

@@ -3,7 +3,7 @@
     <Import Project="../../Bit.Build.props" />
 
     <PropertyGroup>
-        <TargetFrameworks>net6.0;monoandroid12.0;Xamarin.iOS10;uap10.0.17763;netstandard2.0;netstandard2.1;net6.0-ios;net6.0-android;net6.0-maccatalyst;net6.0-windows10.0.19041;</TargetFrameworks>
+        <TargetFrameworks>net7.0;monoandroid12.0;Xamarin.iOS10;uap10.0.17763;netstandard2.0;netstandard2.1;net7.0-ios;net7.0-android;net7.0-maccatalyst;net7.0-windows10.0.19041;</TargetFrameworks>
         <PackageTags>$(PackageTags) Model Dto Entity</PackageTags>
         <RootNamespace>Bit.Model</RootNamespace>
     </PropertyGroup>

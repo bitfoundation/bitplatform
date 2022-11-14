@@ -3,7 +3,7 @@
   <Import Project="../../Bit.Build.props" />
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <PackageTags>$(PackageTags) Entity-Framework EF Database Microsoft Data O/RM ADO.NET</PackageTags>
     <RootNamespace>Bit.Data.EntityFramework</RootNamespace>
   </PropertyGroup>

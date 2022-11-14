@@ -1,32 +1,32 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="../../Bit.Build.props" />
+    <Import Project="../../Bit.Build.props" />
 
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <PackageTags>$(PackageTags) OAuth2 OAuth OpenID Security Connect Identity IdentityServer</PackageTags>
-    <RootNamespace>Bit.IdentityServer</RootNamespace>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <PackageTags>$(PackageTags) OAuth2 OAuth OpenID Security Connect Identity IdentityServer</PackageTags>
+        <RootNamespace>Bit.IdentityServer</RootNamespace>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="AntiXSS" Version="4.3.0" />
-    <PackageReference Include="Bit.IdSrv3" Version="0.0.4" />
-    <PackageReference Include="IdentityModel" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Owin.Security.Facebook" Version="4.2.2" />
-    <PackageReference Include="Microsoft.Owin.Security.Google" Version="4.2.2" />
-    <PackageReference Include="Microsoft.Owin.Security.MicrosoftAccount" Version="4.2.2" />
-    <PackageReference Include="Microsoft.Owin.Security.Twitter" Version="4.2.2" />
-    <PackageReference Include="Microsoft.Owin.StaticFiles" Version="4.2.2" />
-    <PackageReference Include="Owin.Security.Providers.LinkedIn" Version="2.26.0" />
-    <PackageReference Include="System.DirectoryServices.AccountManagement" Version="6.0.0" />
-    <PackageReference Include="Microsoft.AspNet.WebApi.Tracing" Version="5.2.9" />
-    <PackageReference Include="Microsoft.Owin.Cors" Version="4.2.2" />
-    <PackageReference Include="Microsoft.Owin.Security.Cookies" Version="4.2.2" />
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.22.1" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="AntiXSS" Version="4.3.0" />
+        <PackageReference Include="Bit.IdSrv3" Version="0.0.4" />
+        <PackageReference Include="IdentityModel" Version="6.0.0" />
+        <PackageReference Include="Microsoft.Owin.Security.Facebook" Version="4.2.2" />
+        <PackageReference Include="Microsoft.Owin.Security.Google" Version="4.2.2" />
+        <PackageReference Include="Microsoft.Owin.Security.MicrosoftAccount" Version="4.2.2" />
+        <PackageReference Include="Microsoft.Owin.Security.Twitter" Version="4.2.2" />
+        <PackageReference Include="Microsoft.Owin.StaticFiles" Version="4.2.2" />
+        <PackageReference Include="Owin.Security.Providers.LinkedIn" Version="2.26.0" />
+        <PackageReference Include="System.DirectoryServices.AccountManagement" Version="7.0.0" />
+        <PackageReference Include="Microsoft.AspNet.WebApi.Tracing" Version="5.2.9" />
+        <PackageReference Include="Microsoft.Owin.Cors" Version="4.2.2" />
+        <PackageReference Include="Microsoft.Owin.Security.Cookies" Version="4.2.2" />
+        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.25.0" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Bit.Server.Owin\Bit.Server.Owin.csproj" />
-  </ItemGroup>
-	
+    <ItemGroup>
+        <ProjectReference Include="..\Bit.Server.Owin\Bit.Server.Owin.csproj" />
+    </ItemGroup>
+
 </Project>

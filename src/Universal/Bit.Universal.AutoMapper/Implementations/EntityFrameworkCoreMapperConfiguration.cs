@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using AutoMapper.Internal;
 using Bit.Model.Contracts;
 using System;
 using System.Collections;
@@ -13,7 +14,11 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
             if (mapperConfigExpression == null)
                 throw new ArgumentNullException(nameof(mapperConfigExpression));
 
+#if DotNetStandard2_0 || UAP10_0_17763
             mapperConfigExpression.ForAllPropertyMaps(p =>
+#else
+            mapperConfigExpression.Internal().ForAllPropertyMaps(p =>
+#endif
             {
                 var type = p.DestinationType;
 
