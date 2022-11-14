@@ -41,6 +41,11 @@ public partial class BitRadioButtonGroup
     }
 
     /// <summary>
+    /// Change direction to RTL.
+    /// </summary>
+    [Parameter] public bool IsRtl { get; set; }
+
+    /// <summary>
     /// Descriptive label for the RadioButtonGroup.
     /// </summary>
     [Parameter] public string? Label { get; set; }
@@ -74,6 +79,9 @@ public partial class BitRadioButtonGroup
 
         ClassBuilder.Register(() => ValueInvalid is true
                                    ? $"{RootElementClass}-invalid-{VisualClassRegistrar()}" : string.Empty);
+
+        ClassBuilder.Register(() => IsRtl
+                                   ? $"{RootElementClass}-rtl-{VisualClassRegistrar()}" : string.Empty);
     }
 
     protected override async Task OnInitializedAsync()

@@ -114,12 +114,12 @@
 
                 <BitRadioButtonGroup Name="Group1" Label="Option Label Template" @bind-Value="OptionLabelTemplateValue" DefaultValue="Day">
                     <BitRadioButtonOption Value="Day">
-                       <LabelTemplate>
+                        <LabelTemplate>
                             <div style="margin-left: 27px;" class="custom-option @(OptionLabelTemplateValue == "Day" ? "selected-option" : "")">
                                 <BitIcon IconName="BitIconName.CalendarDay" />
                                 <span>Day</span>
                             </div>
-                       </LabelTemplate>
+                        </LabelTemplate>
                     </BitRadioButtonOption>
                     <BitRadioButtonOption Value="Week">
                         <LabelTemplate>
@@ -246,7 +246,87 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="RadioButtonGroup with validation" HTMLSourceCode="@example9HTMLCode" CSharpSourceCode="@example9CSharpCode" ExampleId="example9">
+    <ComponentExampleBox Title="RTL Direction" HTMLSourceCode="@example9HTMLCode" CSharpSourceCode="@example9CSharpCode" ExampleId="example9">
+        <ExamplePreview>
+            <div class="rbg-box column">
+                <BitRadioButtonGroup Name="Group1" Label="Basic" DefaultValue="A" IsRtl="true">
+                    <BitRadioButtonOption Text="Option A" Value="A" />
+                    <BitRadioButtonOption Text="Option B" Value="B" />
+                    <BitRadioButtonOption Text="Option C" Value="C" />
+                </BitRadioButtonGroup>
+
+                <BitRadioButtonGroup Name="Group1" Label="Disabled" IsEnabled="false" DefaultValue="A" IsRtl="true">
+                    <BitRadioButtonOption Text="Option A" Value="A" />
+                    <BitRadioButtonOption Text="Option B" Value="B" />
+                    <BitRadioButtonOption Text="Option C" Value="C" />
+                </BitRadioButtonGroup>
+
+                <BitRadioButtonGroup Name="Group1" Label="Image" DefaultValue="bar" LayoutFlow="BitLayoutFlow.Horizontal" IsRtl="true">
+                    <BitRadioButtonOption Text="Clustered bar chart"
+                                          Value="bar"
+                                          ImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png"
+                                          ImageAlt="alt for image Option 1"
+                                          SelectedImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png"
+                                          ImageSize="new System.Drawing.Size( width: 32, height: 32)" />
+                    <BitRadioButtonOption Text="Pie chart"
+                                          Value="pie"
+                                          ImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png"
+                                          ImageAlt="alt for image Option 2"
+                                          SelectedImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png"
+                                          ImageSize="new System.Drawing.Size( width: 32, height: 32)" />
+                </BitRadioButtonGroup>
+
+                <BitRadioButtonGroup Name="Group1" Label="Icon" DefaultValue="Day" LayoutFlow="BitLayoutFlow.Horizontal" IsRtl="true">
+                    <BitRadioButtonOption Text="Day" Value="Day" IconName="BitIconName.CalendarDay" />
+                    <BitRadioButtonOption Text="Week" Value="Week" IconName="BitIconName.CalendarWeek" />
+                    <BitRadioButtonOption Text="Month" Value="Month" IconName="BitIconName.Calendar" IsEnabled="false" />
+                </BitRadioButtonGroup>
+
+                <BitRadioButtonGroup Name="Group1" DefaultValue="A" LayoutFlow="BitLayoutFlow.Horizontal" IsRtl="true">
+                    <LabelTemplate>
+                        <div class="custom-label">
+                            Label Template <BitIcon IconName="BitIconName.Filter" />
+                        </div>
+                    </LabelTemplate>
+                    <ChildContent>
+                        <BitRadioButtonOption Text="Option A" Value="A" />
+                        <BitRadioButtonOption Text="Option B" Value="B" />
+                        <BitRadioButtonOption Text="Option C" Value="C" />
+                    </ChildContent>
+                </BitRadioButtonGroup>
+
+                <BitRadioButtonGroup @bind-Value="RtlOptionTemplateValue"
+                                     Name="Group1" Label="Option Template"
+                                     DefaultValue="Day"
+                                     LayoutFlow="BitLayoutFlow.Horizontal"
+                                     IsRtl="true">
+                    <BitRadioButtonOption Value="Day">
+                        <div class="custom-option @(RtlOptionTemplateValue is "Day" ? "selected-option" : "")">
+                            <div class="radio-pointer"></div>
+                            <BitIcon IconName="BitIconName.CalendarDay" />
+                            <span>Day</span>
+                        </div>
+                    </BitRadioButtonOption>
+                    <BitRadioButtonOption Value="Week">
+                        <div class="custom-option @(RtlOptionTemplateValue is "Week" ? "selected-option" : "")">
+                            <div class="radio-pointer"></div>
+                            <BitIcon IconName="BitIconName.CalendarWeek" />
+                            <span>Week</span>
+                        </div>
+                    </BitRadioButtonOption>
+                    <BitRadioButtonOption Value="Month">
+                        <div class="custom-option @(RtlOptionTemplateValue is "Month" ? "selected-option" : "")">
+                            <div class="radio-pointer"></div>
+                            <BitIcon IconName="BitIconName.Calendar" />
+                            <span>Month</span>
+                        </div>
+                    </BitRadioButtonOption>
+                </BitRadioButtonGroup>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="RadioButtonGroup with validation" HTMLSourceCode="@example10HTMLCode" CSharpSourceCode="@example10CSharpCode" ExampleId="example10">
         <ExamplePreview>
             <div class="example-desc">RadioButtonGroup validation in form (Required pick one)</div>
             @if (string.IsNullOrEmpty(SuccessMessage))
