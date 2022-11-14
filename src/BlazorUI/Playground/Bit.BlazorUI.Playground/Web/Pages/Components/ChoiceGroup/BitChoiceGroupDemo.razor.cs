@@ -12,6 +12,7 @@ public partial class BitChoiceGroupDemo
     private string ChoiceGroupOneWayValue;
     private string ChoiceGroupTwoWayValue;
     private string ChoiceGroupLayoutFlowWithOptionTemplateValue;
+    private string ChoiceGroupRtlWithOptionTemplateValue;
     public ChoiceGroupValidationModel ValidationModel = new();
     public string SuccessMessage;
 
@@ -147,6 +148,13 @@ public partial class BitChoiceGroupDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "If true, an option must be selected in the ChoiceGroup."
+        },
+        new ComponentParameter
+        {
+            Name = "IsRtl",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Change direction to RTL."
         },
         new ComponentParameter
         {
@@ -784,6 +792,179 @@ private List<BitChoiceGroupOption> ChoiceGroupWithOptionTemplate = new()
     #region Example Code 9
 
     private readonly string example9HtmlCode = @"
+<style>
+    .custom-label {
+        font-weight: bold;
+        color: red;
+    }
+
+    .custom-option {
+        display: flex;
+        align-items: center;
+        gap: rem(10px);
+        cursor: pointer;
+
+        .option-pointer {
+            width: rem(20px);
+            height: rem(20px);
+            border: 1px solid;
+            border-radius: rem(10px);
+        }
+
+        &:hover {
+            .option-pointer {
+                border-top: rem(5px) solid #C66;
+                border-bottom: rem(5px) solid #6C6;
+                border-left: rem(5px) solid #66C;
+                border-right: rem(5px) solid #CC6;
+            }
+        }
+
+        &.selected-option {
+            color: #C66;
+
+            .option-pointer {
+                border-top: rem(10px) solid #C66;
+                border-bottom: rem(10px) solid #6C6;
+                border-left: rem(10px) solid #66C;
+                border-right: rem(10px) solid #CC6;
+            }
+        }
+    }
+</style>
+
+<BitChoiceGroup Label=""Basic"" Options=""ChoiceGroupBasicOption"" DefaultValue=""A"" IsRtl=""true"" />
+
+<BitChoiceGroup Label=""Disabled"" Options=""ChoiceGroupBasicOption"" IsEnabled=""false"" DefaultValue=""A"" IsRtl=""true"" />
+
+<BitChoiceGroup Label=""Image"" Options=""ChoiceGroupWithImage"" DefaultValue=""Bar"" LayoutFlow=""BitLayoutFlow.Horizontal"" IsRtl=""true"" />
+
+<BitChoiceGroup Label=""Icon"" Options=""ChoiceGroupWithIcon"" DefaultValue=""Day"" LayoutFlow=""BitLayoutFlow.Horizontal"" IsRtl=""true"" />
+
+<BitChoiceGroup Options=""ChoiceGroupBasicOption"" DefaultValue=""A"" LayoutFlow=""BitLayoutFlow.Horizontal"" IsRtl=""true"">
+    <LabelTemplate>
+        <div class=""custom-label"">
+            Label Template <BitIcon IconName=""BitIconName.Filter"" />
+        </div>
+    </LabelTemplate>
+</BitChoiceGroup>
+
+<BitChoiceGroup @bind-Value=""ChoiceGroupRtlWithOptionTemplateValue""
+                Label=""Option Template""
+                Options=""ChoiceGroupWithOptionTemplate""
+                DefaultValue=""Day""
+                LayoutFlow=""BitLayoutFlow.Horizontal""
+                IsRtl=""true"">
+    <OptionTemplate Context=""option"">
+        <div class=""custom-option @(ChoiceGroupLayoutFlowWithOptionTemplateValue == option.Value ? ""selected-option"" : """")"">
+            <div class=""option-pointer""></div>
+            <BitIcon IconName=""@option.IconName.Value"" />
+            <span>@option.Text</span>
+        </div>
+    </OptionTemplate>
+</BitChoiceGroup>
+";
+
+    private readonly string example9CSharpCode = @"
+private string ChoiceGroupRtlWithOptionTemplateValue;
+
+private List<BitChoiceGroupOption> ChoiceGroupBasicOption = new()
+{
+    new BitChoiceGroupOption()
+    {
+        Text = ""Option A"",
+        Value = ""A""
+    },
+    new BitChoiceGroupOption()
+    {
+        Text = ""Option B"",
+        Value = ""B""
+    },
+    new BitChoiceGroupOption()
+    {
+        Text = ""Option C"",
+        Value = ""C""
+    },
+    new BitChoiceGroupOption()
+    {
+        Text = ""Option D"",
+        Value = ""D""
+    }
+};
+
+private List<BitChoiceGroupOption> ChoiceGroupWithImage = new()
+{
+    new BitChoiceGroupOption()
+    {
+        Text = ""Bar"",
+        Value = ""Bar"",
+        ImageSrc= ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png"",
+        SelectedImageSrc = ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png"",
+        ImageAlt = ""alt for Bar image"",
+        ImageSize = new Size(32, 32)
+    },
+    new BitChoiceGroupOption()
+    {
+        Text = ""Pie"",
+        Value = ""Pie"",
+        ImageSrc= ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-unselected.png"",
+        SelectedImageSrc = ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-selected.png"",
+        ImageAlt = ""alt for Pie image"",
+        ImageSize = new Size(32, 32)
+    }
+};
+
+private List<BitChoiceGroupOption> ChoiceGroupWithIcon = new()
+{
+    new BitChoiceGroupOption()
+    {
+        Text = ""Day"",
+        Value = ""Day"",
+        IconName = BitIconName.CalendarDay
+    },
+    new BitChoiceGroupOption()
+    {
+        Text = ""Week"",
+        Value = ""Week"",
+        IconName = BitIconName.CalendarWeek
+    },
+    new BitChoiceGroupOption()
+    {
+        Text = ""Month"",
+        Value = ""Month"",
+        IconName = BitIconName.Calendar,
+        IsEnabled = false
+    }
+};
+
+private List<BitChoiceGroupOption> ChoiceGroupWithOptionTemplate = new()
+{
+    new BitChoiceGroupOption()
+    {
+        Text = ""Day"",
+        Value = ""Day"",
+        IconName = BitIconName.CalendarDay
+    },
+    new BitChoiceGroupOption()
+    {
+        Text = ""Week"",
+        Value = ""Week"",
+        IconName = BitIconName.CalendarWeek
+    },
+    new BitChoiceGroupOption()
+    {
+        Text = ""Month"",
+        Value = ""Month"",
+        IconName = BitIconName.Calendar
+    }
+};
+";
+
+    #endregion
+
+    #region Example Code 10
+
+    private readonly string example10HtmlCode = @"
 @if (string.IsNullOrEmpty(SuccessMessage))
 {
     <EditForm Model=""@ValidationModel"" OnValidSubmit=""@HandleValidSubmit"" OnInvalidSubmit=""@HandleInvalidSubmit"">
@@ -806,7 +987,7 @@ else
 }
 ";
 
-    private readonly string example9CSharpCode = @"
+    private readonly string example10CSharpCode = @"
 public class ChoiceGroupValidationModel
 {
     [Required(ErrorMessage = ""Pick one"")]

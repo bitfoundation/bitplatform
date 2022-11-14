@@ -77,6 +77,41 @@
         }
     }
 
+    &.bit-chg-rtl-fluent {
+        direction: rtl;
+
+        .bit-chgo {
+            margin-left: rem(8px);
+            margin-right: 0;
+        }
+
+        .bit-chgo-lbl {
+
+            &::before {
+                right: 0;
+            }
+
+            &:hover {
+                &:after {
+                    right: rem(5px);
+                }
+            }
+
+            .bit-chgo-txt {
+                padding-right: rem(26px);
+                padding-left: 0;
+            }
+        }
+
+        .bit-chgo-checked {
+            .bit-chgo-lbl {
+                &::after {
+                    right: rem(5px);
+                }
+            }
+        }
+    }
+
     .bit-chg-label {
         display: block;
         margin: 0;
@@ -98,7 +133,6 @@
             flex-flow: row wrap;
         }
     }
-
     /*--- ChoiceGroup Option styles ---*/
 
     .bit-chgo {
