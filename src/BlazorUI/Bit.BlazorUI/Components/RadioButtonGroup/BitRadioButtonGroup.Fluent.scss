@@ -19,6 +19,10 @@
         }
     }
 
+    &.bit-rbg-rtl-fluent{
+        direction: rtl;
+    } 
+    
     .bit-rbg-label {
         display: block;
         margin: 0;
