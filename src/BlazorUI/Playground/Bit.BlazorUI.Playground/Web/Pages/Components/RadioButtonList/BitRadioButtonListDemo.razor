@@ -221,6 +221,34 @@
                                     IconNameField="@nameof(GenderModel.IconName)"
                                     LayoutFlow="BitLayoutFlow.Horizontal"
                                     IsRtl="true" />
+
+                <BitRadioButtonList @bind-Value="@example8LabelTemplate"
+                                    Items="BasicGenderItems"
+                                    TextField="@nameof(GenderModel.GenderText)"
+                                    ValueField="@nameof(GenderModel.GenderId)"
+                                    LayoutFlow="BitLayoutFlow.Horizontal"
+                                    IsRtl="true">
+                    <LabelTemplate>
+                        <div class="custom-label">
+                            Label Template <BitIcon IconName="BitIconName.Filter" />
+                        </div>
+                    </LabelTemplate>
+                </BitRadioButtonList>
+
+                <BitRadioButtonList @bind-Value="@example8ItemTemplate"
+                                    Label="Item Template"
+                                    Items="IconGenderItems"
+                                    ValueField="@nameof(GenderModel.GenderId)"
+                                    LayoutFlow="BitLayoutFlow.Horizontal"
+                                    IsRtl="true">
+                    <ItemTemplate Context="item">
+                        <div class="custom-item @(example8ItemTemplate == item.GenderId ? "selected-item" : "")">
+                            <div class="radio-pointer"></div>
+                            <BitIcon IconName="@((BitIconName)item.IconName)" />
+                            <span>@item.GenderText</span>
+                        </div>
+                    </ItemTemplate>
+                </BitRadioButtonList>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>

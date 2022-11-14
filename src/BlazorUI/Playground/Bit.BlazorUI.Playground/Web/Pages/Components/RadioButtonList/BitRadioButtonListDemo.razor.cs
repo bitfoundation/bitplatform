@@ -25,6 +25,8 @@ public partial class BitRadioButtonListDemo
     private int example8Disabled;
     private int example8Image;
     private int example8Icon;
+    private int example8LabelTemplate;
+    private int example8ItemTemplate;
     private string SuccessMessage = string.Empty;
     private FormValidationModel FormValidationModel = new();
 
@@ -692,6 +694,47 @@ private List<GenderModel> IconGenderItems = new()
     #region Example Code 8
 
     private readonly string example8HTMLCode = @"
+<style>
+    .custom-label {
+        font-weight: bold;
+        color: $Red20;
+    }
+
+    .custom-item {
+        display: flex;
+        align-items: center;
+        gap: rem(10px);
+        cursor: pointer;
+
+        .radio-pointer {
+            width: rem(20px);
+            height: rem(20px);
+            border: 1px solid;
+            border-radius: rem(10px);
+        }
+
+        &:hover {
+            .radio-pointer {
+                border-top: rem(5px) solid #C66;
+                border-bottom: rem(5px) solid #6C6;
+                border-left: rem(5px) solid #66C;
+                border-right: rem(5px) solid #CC6;
+            }
+        }
+
+        &.selected-item {
+            color: #C66;
+
+            .radio-pointer {
+                border-top: rem(10px) solid #C66;
+                border-bottom: rem(10px) solid #6C6;
+                border-left: rem(10px) solid #66C;
+                border-right: rem(10px) solid #CC6;
+            }
+        }
+    }
+</style>
+
 <BitRadioButtonList @bind-Value=""@example8Basic""
                     Label=""Basic""
                     Items=""BasicGenderItems""
@@ -727,6 +770,34 @@ private List<GenderModel> IconGenderItems = new()
                     IconNameField=""@nameof(GenderModel.IconName)""
                     LayoutFlow=""BitLayoutFlow.Horizontal""
                     IsRtl=""true"" />
+
+<BitRadioButtonList @bind-Value=""@example8LabelTemplate""
+                    Items=""BasicGenderItems""
+                    TextField=""@nameof(GenderModel.GenderText)""
+                    ValueField=""@nameof(GenderModel.GenderId)""
+                    LayoutFlow=""BitLayoutFlow.Horizontal""
+                    IsRtl=""true"">
+    <LabelTemplate>
+        <div class=""custom-label"">
+            Label Template <BitIcon IconName=""BitIconName.Filter"" />
+        </div>
+    </LabelTemplate>
+</BitRadioButtonList>
+
+<BitRadioButtonList @bind-Value=""@example8ItemTemplate""
+                    Label=""Item Template""
+                    Items=""IconGenderItems""
+                    ValueField=""@nameof(GenderModel.GenderId)""
+                    LayoutFlow=""BitLayoutFlow.Horizontal""
+                    IsRtl=""true"">
+    <ItemTemplate Context=""item"">
+        <div class=""custom-item @(example8ItemTemplate == item.GenderId ? ""selected-item"" : """")"">
+            <div class=""radio-pointer""></div>
+            <BitIcon IconName=""@((BitIconName)item.IconName)"" />
+            <span>@item.GenderText</span>
+        </div>
+    </ItemTemplate>
+</BitRadioButtonList>
 ";
 
     private readonly string example8CSharpCode = @"
@@ -734,6 +805,8 @@ private int example8Basic;
 private int example8Disabled;
 private int example8Image;
 private int example8Icon;
+private int example8LabelTemplate;
+private int example8ItemTemplate;
 
 public class GenderModel
 {
