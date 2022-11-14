@@ -32,6 +32,11 @@ public partial class BitChoiceGroup
     }
 
     /// <summary>
+    /// Change direction to RTL.
+    /// </summary>
+    [Parameter] public bool IsRtl { get; set; }
+
+    /// <summary>
     /// Descriptive label for the ChoiceGroup.
     /// </summary>
     [Parameter] public string? Label { get; set; }
@@ -77,6 +82,9 @@ public partial class BitChoiceGroup
 
         ClassBuilder.Register(() => ValueInvalid is true
                                    ? $"{RootElementClass}-invalid-{VisualClassRegistrar()}" : string.Empty);
+
+        ClassBuilder.Register(() => IsRtl
+                                   ? $"{RootElementClass}-rtl-{VisualClassRegistrar()}" : string.Empty);
     }
 
     protected override async Task OnInitializedAsync()
