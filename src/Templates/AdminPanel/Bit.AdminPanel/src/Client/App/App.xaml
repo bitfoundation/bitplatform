@@ -4,6 +4,10 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:app="clr-namespace:AdminPanel.Client.App">
     <Application.MainPage>
-        <app:MainPage />
+        <NavigationPage>
+            <x:Arguments>
+                <app:MainPage />
+            </x:Arguments>
+        </NavigationPage>
     </Application.MainPage>
 </Application>

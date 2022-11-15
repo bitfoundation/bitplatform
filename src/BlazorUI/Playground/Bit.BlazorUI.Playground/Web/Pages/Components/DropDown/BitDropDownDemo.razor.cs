@@ -20,6 +20,7 @@ public partial class BitDropDownDemo
     private List<BitDropDownItem> Products = new();
     private List<BitDropDownItem> LargeListOfCategoriesForSingleSelect = new();
     private List<BitDropDownItem> LargeListOfCategoriesForMultiSelect = new();
+    private List<BitDropDownItem> LargeListOfCategoriesDropDirection = new();
     private string CurrentCategory;
     private string CurrentProduct;
 
@@ -385,6 +386,13 @@ public partial class BitDropDownDemo
             Text = $"Category {c}"
         }).ToList();
 
+        LargeListOfCategoriesDropDirection = Enumerable.Range(1, 60).Select(c => new BitDropDownItem
+        {
+            ItemType = BitDropDownItemType.Normal,
+            Value = c.ToString(),
+            Text = $"Category {c}"
+        }).ToList();
+
         base.OnInitialized();
     }
 
@@ -622,6 +630,13 @@ public partial class BitDropDownDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Change direction to RTL.",
+        },
+        new ComponentParameter()
+        {
+            Name = "DropDirection",
+            Type = "BitDropDirection",
+            DefaultValue = "BitDropDirection.TopAndBottom",
+            Description = "Darpdown opening direction.",
         },
     };
 
@@ -880,14 +895,22 @@ private List<BitDropDownItem> GetDropdownItems()
 <BitDropDown Items=""GetCustomDropdownItems()""
              Placeholder=""Select an option""
              Label=""Custom Label""
-             AriaLabel=""Custom dropdown label ""
-             Style=""width: 100%; max-width: 290px"">
+             AriaLabel=""Custom dropdown label""
+             Style=""width: 100%; max-width: 290px; margin:0 0 20px 0"">
     <LabelFragment>
         <label>Custom label</label>
         <button type=""button"" title=""Info"" aria-label=""Info"" class=""custom-drp-lbl-ic"">
             <i class=""bit-icon bit-icon--Info""></i>
         </button>
     </LabelFragment>
+</BitDropDown>
+
+<BitDropDown Items=""GetCustomDropdownItems()""
+             Placeholder=""Select an option""
+             Label=""Custom CaretDownIconName""
+             AriaLabel=""Custom dropdown chevron icon with icon name""
+             CaretDownIconName=""BitIconName.ScrollUpDown""
+             Style=""width: 100%; max-width: 290px"">
 </BitDropDown>";
 
     private readonly string example4CSharpCode = @"
@@ -1511,6 +1534,46 @@ protected override void OnInitialized()
             Value = ""v-bro"",
         }
     };
+}";
+
+    #endregion
+
+    #region Example Code 12
+
+    private readonly string example12HTMLCode = @"<BitDropDown Label=""Single-select Controlled with auto drop direction""
+                Items=""LargeListOfCategoriesDropDirection""
+                Virtualize=""true""
+                Placeholder=""Select an option""
+                IsResponsiveModeEnabled=""true""
+                ShowSearchBox=""true""
+                SearchBoxPlaceholder=""Search item""
+                DropDirection=""BitDropDirection.Auto""
+                Style=""width: 100%; max-width: 290px; margin: 20px 0 20px 0"">
+</BitDropDown>
+
+<BitDropDown Label=""Single-select Controlled with top and bottom drop direction""
+                Items=""LargeListOfCategoriesDropDirection""
+                Virtualize=""true""
+                Placeholder=""Select an option""
+                IsResponsiveModeEnabled=""true""
+                ShowSearchBox=""true""
+                SearchBoxPlaceholder=""Search item""
+                DropDirection=""BitDropDirection.TopAndBottom""
+                Style=""width: 100%; max-width: 290px; margin: 20px 0 20px 0"">
+</BitDropDown>";
+
+    private readonly string example12CSharpCode = @"private List<BitDropDownItem> LargeListOfCategoriesDropDirection = new();
+
+protected override void OnInitialized()
+{
+    LargeListOfCategoriesDropDirection = Enumerable.Range(1, 60).Select(c => new BitDropDownItem
+    {
+        ItemType = BitDropDownItemType.Normal,
+        Value = c.ToString(),
+        Text = $""Category {c}""
+    }).ToList();
+
+    base.OnInitialized();
 }";
 
     #endregion

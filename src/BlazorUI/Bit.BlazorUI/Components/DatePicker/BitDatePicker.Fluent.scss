@@ -601,6 +601,12 @@
         }
     }
 
+    &.bit-dtp-left-icon-fluent {
+        .dtp-field-grp {
+            flex-direction: row-reverse;
+        }
+    }
+
     &.bit-dtp-invalid-fluent {
         .dtp-field-grp {
             border-color: $Red20;

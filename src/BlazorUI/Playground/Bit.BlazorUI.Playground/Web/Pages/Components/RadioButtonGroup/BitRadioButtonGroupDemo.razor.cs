@@ -1,14 +1,17 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Bit.BlazorUI.Playground.Web.Models;
 using Bit.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
 namespace Bit.BlazorUI.Playground.Web.Pages.Components.RadioButtonGroup;
 
 public partial class BitRadioButtonGroupDemo
 {
-    private string MyValue = "B";
-    private string CustomOptionValue = "Day";
+    private string OptionTemplateValue;
+    private string OptionLabelTemplateValue;
+    private string ChoiceGroupOneWayValue;
+    private string ChoiceGroupTwoWayValue;
+    private string LayoutFlowOptionTemplateValue;
+    private string RtlOptionTemplateValue;
     private string SuccessMessage = string.Empty;
     private FormValidationModel FormValidationModel = new();
 
@@ -29,112 +32,156 @@ public partial class BitRadioButtonGroupDemo
     {
         new ComponentParameter()
         {
+            Name = "AriaLabelledBy",
+            Type = "string",
+            DefaultValue = "string.Empty",
+            Description = "ID of an element to use as the aria label for this RadioButtonGroup.",
+        },
+        new ComponentParameter()
+        {
             Name = "ChildContent",
-            Type = "RenderFragment",
-            DefaultValue = "",
-            Description = "The content of action button, It can be Any custom tag or a text.",
+            Type = "RenderFragment?",
+            Description = "The content of RadioButtonGroup, common values are RadioButtonGroup component.",
+            LinkType = LinkType.Link,
+            Href = "#radio-button-option"
         },
         new ComponentParameter()
         {
             Name = "DefaultValue",
-            Type = "string",
-            DefaultValue = "",
+            Type = "string?",
             Description = "Default value for RadioButtonGroup.",
         },
         new ComponentParameter()
         {
             Name = "IsRequired",
             Type = "bool",
-            DefaultValue = "false",
             Description = "If true, an option must be selected in the RadioButtonGroup.",
         },
         new ComponentParameter()
         {
+            Name = "IsRtl",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Change direction to RTL.",
+        },
+        new ComponentParameter()
+        {
             Name = "Label",
-            Type = "string",
-            DefaultValue = "",
+            Type = "string?",
             Description = "Descriptive label for the RadioButtonGroup.",
         },
         new ComponentParameter()
         {
-            Name = "LabelFragment",
-            Type = "RenderFragment",
-            DefaultValue = "",
+            Name = "LabelTemplate",
+            Type = "RenderFragment?",
             Description = "Used to customize the label for the RadioButtonGroup.",
+        },
+        new ComponentParameter()
+        {
+            Name = "LayoutFlow",
+            Type = "BitLayoutFlow?",
+            Description = "You can define the RadioButtonGroup in Horizontal or Vertical mode.",
         },
         new ComponentParameter()
         {
             Name = "Name",
             Type = "string",
-            DefaultValue = "",
-            Description = "Name of RadioButtonGroup, this name is used to group each RadioButtonOption into the same logical RadioButtonGroup.",
-        },
-        new ComponentParameter()
-        {
-            Name = "OnClick",
-            Type = "EventCallback<MouseEventArgs>",
-            DefaultValue = "",
-            Description = "Callback for when the action button clicked.",
+            DefaultValue = "a Guid",
+            Description = "Name of RadioButtonGroup, this name is used to group each RadioButtonGroup into the same logical RadioButtonGroup.",
         },
         new ComponentParameter()
         {
             Name = "OnValueChange",
             Type = "EventCallback<string>",
-            DefaultValue = "",
             Description = "Callback that is called when the value parameter is changed.",
-        },
-        new ComponentParameter()
-        {
-            Name = "Value",
-            Type = "string",
-            DefaultValue = "",
-            Description = "Value of RadioButtonGroup, the value of selected RadioButtonOption set on it.",
-        },
-        new ComponentParameter()
-        {
-            Name = "ValueChanged",
-            Type = "EventCallback<string>",
-            DefaultValue = "",
-            Description = "Callback for when the selected value changed.",
-        },
-        new ComponentParameter()
-        {
-            Name = "Visibility",
-            Type = "BitComponentVisibility",
-            LinkType = LinkType.Link,
-            Href = "#component-visibility-enum",
-            DefaultValue = "BitComponentVisibility.Visible",
-            Description = "Whether the component is Visible,Hidden,Collapsed.",
-        },
+        }
     };
-
-    private readonly List<EnumParameter> enumParameters = new()
+    private readonly List<ComponentSubParameter> componentSubParameters = new()
     {
-        new EnumParameter()
+        new ComponentSubParameter()
         {
-            Id = "component-visibility-enum",
-            Title = "BitComponentVisibility Enum",
-            Description = "",
-            EnumList = new List<EnumItem>()
+            Id = "radio-button-option",
+            Title = "BitRadioButtonOption",
+            Parameters = new List<ComponentParameter>()
             {
-                new EnumItem()
-                {
-                    Name= "Visible",
-                    Description="Show content of the component.",
-                    Value="0",
-                },
-                new EnumItem()
-                {
-                    Name= "Hidden",
-                    Description="Hide content of the component,though the space it takes on the page remains.",
-                    Value="1",
-                },
-                new EnumItem()
-                {
-                    Name= "Collapsed",
-                    Description="Hide content of the component,though the space it takes on the page gone.",
-                    Value="2",
-                }
+               new ComponentParameter()
+               {
+                   Name = "ChildContent",
+                   Type = "RenderFragment?",
+                   Description = "Used to customize the label for the RadioButtonOption.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "IsChecked",
+                   Type = "bool",
+                   Description = "Whether or not the option is checked.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "IconName",
+                   Type = "BitIconName?",
+                   Description = "Icon to display with this option.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "ImageSrc",
+                   Type = "string?",
+                   Description = "Image src to display with this option.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "ImageAlt",
+                   Type = "string?",
+                   Description = "Alt text if the option is an image. default is an empty string.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "ImageSize",
+                   Type = "Size?",
+                   Description = "The width and height of the image in px for choice field.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "LabelTemplate",
+                   Type = "RenderFragment?",
+                   Description = "Used to customize the label for the RadioButtonGroupOption.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "Name",
+                   Type = "string?",
+                   Description = "This value is used to group each RadioButtonGroupOption into the same logical RadioButtonGroup.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "OnClick",
+                   Type = "EventCallback<MouseEventArgs>",
+                   Description = "Callback for when the RadioButtonOption clicked.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "OnChange",
+                   Type = "EventCallback<bool>",
+                   Description = "Callback for when the option has been changed.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "SelectedImageSrc",
+                   Type = "string?",
+                   Description = "The src of image for choice field which is selected.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "Text",
+                   Type = "string?",
+                   Description = "RadioButtonOption content, It can be a text.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "Value",
+                   Type = "string?",
+                   Description = "Value of selected RadioButtonOption.",
+               }
             }
         }
     };
@@ -142,55 +189,95 @@ public partial class BitRadioButtonGroupDemo
     #region Example Code 1
 
     private readonly string example1HTMLCode = @"
-<BitLabel>Selected Key is : @MyValue</BitLabel>
-<BitTextField @bind-Value=""MyValue"" Placeholder=""Select one of A, B or C""></BitTextField>
-<BitRadioButtonGroup Name=""Group1"" Label=""Pick one"" IsRequired=""true"" @bind-Value=""MyValue"">
-    <BitRadioButtonOption Text=""Option A"" Value=""A""></BitRadioButtonOption>
-    <BitRadioButtonOption Text=""Option B"" Value=""B""></BitRadioButtonOption>
-    <BitRadioButtonOption Text=""Disabled option C"" Value=""C"" IsEnabled=""false""></BitRadioButtonOption>
-</BitRadioButtonGroup>";
-
-    private readonly string example1CSharpCode = @"
-private string MyValue = ""B"";";
+<BitRadioButtonGroup Name=""Group1"" Label=""Pick one"" DefaultValue=""A"">
+    <BitRadioButtonOption Text=""Option A"" Value=""A"" />
+    <BitRadioButtonOption Text=""Option B"" Value=""B"" />
+    <BitRadioButtonOption Text=""Option C"" Value=""C"" />
+</BitRadioButtonGroup>
+";
 
     #endregion
 
     #region Example Code 2
 
     private readonly string example2HTMLCode = @"
-<BitRadioButtonGroup Name=""Group2"" IsEnabled=""false"" Label=""Pick one"" DefaultValue=""C"">
-    <BitRadioButtonOption Text=""Option A"" Value=""A""></BitRadioButtonOption>
-    <BitRadioButtonOption Text=""Option2 B"" Value=""B""></BitRadioButtonOption>
-    <BitRadioButtonOption Text=""Disabled option C"" Value=""C"" IsEnabled=""false""></BitRadioButtonOption>
-</BitRadioButtonGroup>";
+<BitRadioButtonGroup Name=""Group1"" Label=""Disabled RadioButtonGroup"" IsEnabled=""false"" DefaultValue=""A"">
+    <BitRadioButtonOption Text=""Option A"" Value=""A"" />
+    <BitRadioButtonOption Text=""Option B"" Value=""B"" />
+    <BitRadioButtonOption Text=""Option C"" Value=""C"" />
+</BitRadioButtonGroup>
+
+<BitRadioButtonGroup Name=""Group1"" Label=""Disabled RadioButtonOption"" DefaultValue=""A"">
+    <BitRadioButtonOption Text=""Option A"" Value=""A"" />
+    <BitRadioButtonOption Text=""Option B"" Value=""B"" IsEnabled=""false"" />
+    <BitRadioButtonOption Text=""Option C"" Value=""C"" />
+</BitRadioButtonGroup>
+";
 
     #endregion
 
     #region Example Code 3
 
     private readonly string example3HTMLCode = @"
-<BitRadioButtonGroup Name=""Group1"" Label=""Pick one image"" DefaultValue=""pie"">
-    <BitRadioButtonOption Text=""Clustered bar chart"" Value=""bar"" ImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png"" ImageAlt=""alt for image Option 1"" SelectedImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png"" ImageSize=""new System.Drawing.Size( width: 32, height: 32)""></BitRadioButtonOption>
-    <BitRadioButtonOption Text=""Pie chart"" Value=""pie"" ImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png"" ImageAlt=""alt for image Option 2"" SelectedImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png"" ImageSize=""new System.Drawing.Size( width: 32, height: 32)""></BitRadioButtonOption>
-    <BitRadioButtonOption Text=""Disabeled"" IsEnabled=""false"" Value=""disabeled_option"" ImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png"" ImageAlt=""alt for image Option 2"" SelectedImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png"" ImageSize=""new System.Drawing.Size( width: 32, height: 32)""></BitRadioButtonOption>
-</BitRadioButtonGroup>";
+<BitRadioButtonGroup Name=""Group1"" Label=""Pick one image"" DefaultValue=""bar"">
+    <BitRadioButtonOption Text=""Clustered bar chart""
+                            Value=""bar""
+                            ImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png""
+                            ImageAlt=""alt for image Option 1""
+                            SelectedImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png""
+                            ImageSize=""new System.Drawing.Size( width: 32, height: 32)"" />
+    <BitRadioButtonOption Text=""Pie chart""
+                            Value=""pie""
+                            ImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png""
+                            ImageAlt=""alt for image Option 2""
+                            SelectedImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png""
+                            ImageSize=""new System.Drawing.Size( width: 32, height: 32)"" />
+</BitRadioButtonGroup>
+";
 
     #endregion
 
     #region Example Code 4
 
     private readonly string example4HTMLCode = @"
-<BitRadioButtonGroup Name=""Group1"" Label=""Pick one icon"">
-    <BitRadioButtonOption Text=""Day"" Value=""day"" IconName=""BitIconName.CalendarDay""></BitRadioButtonOption>
-    <BitRadioButtonOption Text=""Week"" Value=""week"" IconName=""BitIconName.CalendarWeek""></BitRadioButtonOption>
-    <BitRadioButtonOption Text=""Month"" Value=""month"" IconName=""BitIconName.Calendar"" IsEnabled=""false""></BitRadioButtonOption>
-</BitRadioButtonGroup>";
+<BitRadioButtonGroup Name=""Group1"" Label=""Pick one icon"" DefaultValue=""Day"">
+    <BitRadioButtonOption Text=""Day"" Value=""Day"" IconName=""BitIconName.CalendarDay"" />
+    <BitRadioButtonOption Text=""Week"" Value=""Week"" IconName=""BitIconName.CalendarWeek"" />
+    <BitRadioButtonOption Text=""Month"" Value=""Month"" IconName=""BitIconName.Calendar"" IsEnabled=""false"" />
+</BitRadioButtonGroup>
+";
 
     #endregion
 
     #region Example Code 5
 
     private readonly string example5HTMLCode = @"
+<style>
+    .custom-label {
+        font-weight: bold;
+        color: $Red20;
+    }
+</style>
+
+<BitRadioButtonGroup Name=""Group1"" DefaultValue=""A"">
+    <LabelTemplate>
+        <div class=""custom-label"">
+            Custom label <BitIcon IconName=""BitIconName.Filter"" />
+        </div>
+    </LabelTemplate>
+    <ChildContent>
+        <BitRadioButtonOption Text=""Option A"" Value=""A"" />
+        <BitRadioButtonOption Text=""Option B"" Value=""B"" />
+        <BitRadioButtonOption Text=""Option C"" Value=""C"" />
+    </ChildContent>
+</BitRadioButtonGroup>
+";
+
+    #endregion
+
+    #region Example Code 6
+
+    private readonly string example6HTMLCode = @"
 <style>
     .custom-option {
         display: flex;
@@ -227,60 +314,355 @@ private string MyValue = ""B"";";
     }
 </style>
 
-<BitRadioButtonGroup Name=""Group1"" Label=""Pick one option"" @bind-Value=""CustomOptionValue"">
+<BitRadioButtonGroup Name=""Group1"" Label=""Option Template"" @bind-Value=""OptionTemplateValue"" DefaultValue=""Day"">
     <BitRadioButtonOption Value=""Day"">
-        <div class=""custom-option @(CustomOptionValue is ""Day"" ? ""selected-option"" : """")"">
+        <div class=""custom-option @(OptionTemplateValue is ""Day"" ? ""selected-option"" : """")"">
             <div class=""radio-pointer""></div>
             <BitIcon IconName=""BitIconName.CalendarDay"" />
             <span>Day</span>
         </div>
     </BitRadioButtonOption>
     <BitRadioButtonOption Value=""Week"">
-        <div class=""custom-option @(CustomOptionValue is ""Week"" ? ""selected-option"" : """")"">
+        <div class=""custom-option @(OptionTemplateValue is ""Week"" ? ""selected-option"" : """")"">
             <div class=""radio-pointer""></div>
             <BitIcon IconName=""BitIconName.CalendarWeek"" />
             <span>Week</span>
         </div>
     </BitRadioButtonOption>
     <BitRadioButtonOption Value=""Month"">
-        <div class=""custom-option @(CustomOptionValue is ""Month"" ? ""selected-option"" : """")"">
+        <div class=""custom-option @(OptionTemplateValue is ""Month"" ? ""selected-option"" : """")"">
             <div class=""radio-pointer""></div>
             <BitIcon IconName=""BitIconName.Calendar"" />
             <span>Month</span>
         </div>
     </BitRadioButtonOption>
-</BitRadioButtonGroup>";
+</BitRadioButtonGroup>
 
-    private readonly string example5CSharpCode = @"
-private string CustomOptionValue = ""Day"";";
+<BitRadioButtonGroup Name=""Group1"" Label=""Option Label Template"" @bind-Value=""OptionLabelTemplateValue"" DefaultValue=""Day"">
+    <BitRadioButtonOption Value=""Day"">
+        <LabelTemplate>
+            <div style=""margin-left: 27px;"" class=""custom-option @(OptionLabelTemplateValue == ""Day"" ? ""selected-option"" : """")"">
+                <BitIcon IconName=""BitIconName.CalendarDay"" />
+                <span>Day</span>
+            </div>
+        </LabelTemplate>
+    </BitRadioButtonOption>
+    <BitRadioButtonOption Value=""Week"">
+        <LabelTemplate>
+            <div style=""margin-left: 27px;"" class=""custom-option @(OptionLabelTemplateValue is ""Week"" ? ""selected-option"" : """")"">
+                <BitIcon IconName=""BitIconName.CalendarWeek"" />
+                <span>Week</span>
+            </div>
+        </LabelTemplate>
+    </BitRadioButtonOption>
+    <BitRadioButtonOption Value=""Month"">
+        <LabelTemplate>
+            <div style=""margin-left: 27px;"" class=""custom-option @(OptionLabelTemplateValue is ""Month"" ? ""selected-option"" : """")"">
+                <BitIcon IconName=""BitIconName.Calendar"" />
+                <span>Month</span>
+            </div>
+        </LabelTemplate>
+    </BitRadioButtonOption>
+</BitRadioButtonGroup>
+";
+
+    private readonly string example6CSharpCode = @"
+private string OptionTemplateValue;
+private string OptionLabelTemplateValue;
+";
 
     #endregion
 
-    #region Example Code 6
+    #region Example Code 7
 
-    private readonly string example6HTMLCode = @"
+    private readonly string example7HTMLCode = @"
+<BitRadioButtonGroup Name=""Group1"" Label=""One-way"" Value=""@ChoiceGroupOneWayValue"" DefaultValue=""A"">
+    <BitRadioButtonOption Text=""Option A"" Value=""A"" />
+    <BitRadioButtonOption Text=""Option B"" Value=""B"" />
+    <BitRadioButtonOption Text=""Option C"" Value=""C"" />
+</BitRadioButtonGroup>
+<BitTextField Placeholder=""A..."" @bind-Value=""ChoiceGroupOneWayValue"" />
+
+<BitRadioButtonGroup Name=""Group1"" Label=""Two-way"" @bind-Value=""ChoiceGroupTwoWayValue"" DefaultValue=""A"">
+    <BitRadioButtonOption Text=""Option A"" Value=""A"" />
+    <BitRadioButtonOption Text=""Option B"" Value=""B"" />
+    <BitRadioButtonOption Text=""Option C"" Value=""C"" />
+</BitRadioButtonGroup>
+<BitTextField @bind-Value=""ChoiceGroupTwoWayValue"" />
+";
+
+    private readonly string example7CSharpCode = @"
+private string ChoiceGroupOneWayValue;
+private string ChoiceGroupTwoWayValue;
+";
+
+    #endregion
+
+    #region Example Code 8
+
+    private readonly string example8HTMLCode = @"
+<style>
+    .custom-label {
+        font-weight: bold;
+        color: $Red20;
+    }
+
+    .custom-option {
+        display: flex;
+        align-items: center;
+        gap: rem(10px);
+        cursor: pointer;
+
+        .radio-pointer {
+            width: rem(20px);
+            height: rem(20px);
+            border: 1px solid;
+            border-radius: rem(10px);
+        }
+
+        &:hover {
+            .radio-pointer {
+                border-top: rem(5px) solid #C66;
+                border-bottom: rem(5px) solid #6C6;
+                border-left: rem(5px) solid #66C;
+                border-right: rem(5px) solid #CC6;
+            }
+        }
+
+        &.selected-option {
+            color: #C66;
+
+            .radio-pointer {
+                border-top: rem(10px) solid #C66;
+                border-bottom: rem(10px) solid #6C6;
+                border-left: rem(10px) solid #66C;
+                border-right: rem(10px) solid #CC6;
+            }
+        }
+    }
+</style>
+
+<BitRadioButtonGroup Name=""Group1"" Label=""Basic"" DefaultValue=""A"" LayoutFlow=""BitLayoutFlow.Horizontal"">
+    <BitRadioButtonOption Text=""Option A"" Value=""A"" />
+    <BitRadioButtonOption Text=""Option B"" Value=""B"" />
+    <BitRadioButtonOption Text=""Option C"" Value=""C"" />
+</BitRadioButtonGroup>
+
+<BitRadioButtonGroup Name=""Group1"" Label=""Disabled"" IsEnabled=""false"" DefaultValue=""A"" LayoutFlow=""BitLayoutFlow.Horizontal"">
+    <BitRadioButtonOption Text=""Option A"" Value=""A"" />
+    <BitRadioButtonOption Text=""Option B"" Value=""B"" />
+    <BitRadioButtonOption Text=""Option C"" Value=""C"" />
+</BitRadioButtonGroup>
+
+<BitRadioButtonGroup Name=""Group1"" Label=""Image"" DefaultValue=""bar"" LayoutFlow=""BitLayoutFlow.Horizontal"">
+    <BitRadioButtonOption Text=""Clustered bar chart""
+                            Value=""bar""
+                            ImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png""
+                            ImageAlt=""alt for image Option 1""
+                            SelectedImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png""
+                            ImageSize=""new System.Drawing.Size( width: 32, height: 32)"" />
+    <BitRadioButtonOption Text=""Pie chart""
+                            Value=""pie""
+                            ImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png""
+                            ImageAlt=""alt for image Option 2""
+                            SelectedImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png""
+                            ImageSize=""new System.Drawing.Size( width: 32, height: 32)"" />
+</BitRadioButtonGroup>
+
+<BitRadioButtonGroup Name=""Group1"" Label=""Icon"" DefaultValue=""Day"" LayoutFlow=""BitLayoutFlow.Horizontal"">
+    <BitRadioButtonOption Text=""Day"" Value=""Day"" IconName=""BitIconName.CalendarDay"" />
+    <BitRadioButtonOption Text=""Week"" Value=""Week"" IconName=""BitIconName.CalendarWeek"" />
+    <BitRadioButtonOption Text=""Month"" Value=""Month"" IconName=""BitIconName.Calendar"" IsEnabled=""false"" />
+</BitRadioButtonGroup>
+
+<BitRadioButtonGroup Name=""Group1"" DefaultValue=""A"" LayoutFlow=""BitLayoutFlow.Horizontal"">
+    <LabelTemplate>
+        <div class=""custom-label"">
+            Label Template <BitIcon IconName=""BitIconName.Filter"" />
+        </div>
+    </LabelTemplate>
+    <ChildContent>
+        <BitRadioButtonOption Text=""Option A"" Value=""A"" />
+        <BitRadioButtonOption Text=""Option B"" Value=""B"" />
+        <BitRadioButtonOption Text=""Option C"" Value=""C"" />
+    </ChildContent>
+</BitRadioButtonGroup>
+
+<BitRadioButtonGroup Name=""Group1"" Label=""Option Template"" @bind-Value=""LayoutFlowOptionTemplateValue"" DefaultValue=""Day"" LayoutFlow=""BitLayoutFlow.Horizontal"">
+    <BitRadioButtonOption Value=""Day"">
+        <div class=""custom-option @(LayoutFlowOptionTemplateValue is ""Day"" ? ""selected-option"" : """")"">
+            <div class=""radio-pointer""></div>
+            <BitIcon IconName=""BitIconName.CalendarDay"" />
+            <span>Day</span>
+        </div>
+    </BitRadioButtonOption>
+    <BitRadioButtonOption Value=""Week"">
+        <div class=""custom-option @(LayoutFlowOptionTemplateValue is ""Week"" ? ""selected-option"" : """")"">
+            <div class=""radio-pointer""></div>
+            <BitIcon IconName=""BitIconName.CalendarWeek"" />
+            <span>Week</span>
+        </div>
+    </BitRadioButtonOption>
+    <BitRadioButtonOption Value=""Month"">
+        <div class=""custom-option @(LayoutFlowOptionTemplateValue is ""Month"" ? ""selected-option"" : """")"">
+            <div class=""radio-pointer""></div>
+            <BitIcon IconName=""BitIconName.Calendar"" />
+            <span>Month</span>
+        </div>
+    </BitRadioButtonOption>
+</BitRadioButtonGroup>
+";
+
+    private readonly string example8CSharpCode = @"
+private string LayoutFlowOptionTemplateValue;
+";
+
+    #endregion
+
+    #region Example Code 9
+
+    private readonly string example9HTMLCode = @"
+<style>
+    .custom-label {
+        font-weight: bold;
+        color: $Red20;
+    }
+
+    .custom-option {
+        display: flex;
+        align-items: center;
+        gap: rem(10px);
+        cursor: pointer;
+
+        .radio-pointer {
+            width: rem(20px);
+            height: rem(20px);
+            border: 1px solid;
+            border-radius: rem(10px);
+        }
+
+        &:hover {
+            .radio-pointer {
+                border-top: rem(5px) solid #C66;
+                border-bottom: rem(5px) solid #6C6;
+                border-left: rem(5px) solid #66C;
+                border-right: rem(5px) solid #CC6;
+            }
+        }
+
+        &.selected-option {
+            color: #C66;
+
+            .radio-pointer {
+                border-top: rem(10px) solid #C66;
+                border-bottom: rem(10px) solid #6C6;
+                border-left: rem(10px) solid #66C;
+                border-right: rem(10px) solid #CC6;
+            }
+        }
+    }
+</style>
+
+<BitRadioButtonGroup Name=""Group1"" Label=""Basic"" DefaultValue=""A"" IsRtl=""true"">
+    <BitRadioButtonOption Text=""Option A"" Value=""A"" />
+    <BitRadioButtonOption Text=""Option B"" Value=""B"" />
+    <BitRadioButtonOption Text=""Option C"" Value=""C"" />
+</BitRadioButtonGroup>
+
+<BitRadioButtonGroup Name=""Group1"" Label=""Disabled"" IsEnabled=""false"" DefaultValue=""A"" IsRtl=""true"">
+    <BitRadioButtonOption Text=""Option A"" Value=""A"" />
+    <BitRadioButtonOption Text=""Option B"" Value=""B"" />
+    <BitRadioButtonOption Text=""Option C"" Value=""C"" />
+</BitRadioButtonGroup>
+
+<BitRadioButtonGroup Name=""Group1"" Label=""Image"" DefaultValue=""bar"" LayoutFlow=""BitLayoutFlow.Horizontal"" IsRtl=""true"">
+    <BitRadioButtonOption Text=""Clustered bar chart""
+                            Value=""bar""
+                            ImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png""
+                            ImageAlt=""alt for image Option 1""
+                            SelectedImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png""
+                            ImageSize=""new System.Drawing.Size( width: 32, height: 32)"" />
+    <BitRadioButtonOption Text=""Pie chart""
+                            Value=""pie""
+                            ImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png""
+                            ImageAlt=""alt for image Option 2""
+                            SelectedImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png""
+                            ImageSize=""new System.Drawing.Size( width: 32, height: 32)"" />
+</BitRadioButtonGroup>
+
+<BitRadioButtonGroup Name=""Group1"" Label=""Icon"" DefaultValue=""Day"" LayoutFlow=""BitLayoutFlow.Horizontal"" IsRtl=""true"">
+    <BitRadioButtonOption Text=""Day"" Value=""Day"" IconName=""BitIconName.CalendarDay"" />
+    <BitRadioButtonOption Text=""Week"" Value=""Week"" IconName=""BitIconName.CalendarWeek"" />
+    <BitRadioButtonOption Text=""Month"" Value=""Month"" IconName=""BitIconName.Calendar"" IsEnabled=""false"" />
+</BitRadioButtonGroup>
+
+<BitRadioButtonGroup Name=""Group1"" DefaultValue=""A"" LayoutFlow=""BitLayoutFlow.Horizontal"" IsRtl=""true"">
+    <LabelTemplate>
+        <div class=""custom-label"">
+            Label Template <BitIcon IconName=""BitIconName.Filter"" />
+        </div>
+    </LabelTemplate>
+    <ChildContent>
+        <BitRadioButtonOption Text=""Option A"" Value=""A"" />
+        <BitRadioButtonOption Text=""Option B"" Value=""B"" />
+        <BitRadioButtonOption Text=""Option C"" Value=""C"" />
+    </ChildContent>
+</BitRadioButtonGroup>
+
+<BitRadioButtonGroup @bind-Value=""RtlOptionTemplateValue""
+                        Name=""Group1"" Label=""Option Template""
+                        DefaultValue=""Day""
+                        LayoutFlow=""BitLayoutFlow.Horizontal""
+                        IsRtl=""true"">
+    <BitRadioButtonOption Value=""Day"">
+        <div class=""custom-option @(RtlOptionTemplateValue is ""Day"" ? ""selected-option"" : """")"">
+            <div class=""radio-pointer""></div>
+            <BitIcon IconName=""BitIconName.CalendarDay"" />
+            <span>Day</span>
+        </div>
+    </BitRadioButtonOption>
+    <BitRadioButtonOption Value=""Week"">
+        <div class=""custom-option @(RtlOptionTemplateValue is ""Week"" ? ""selected-option"" : """")"">
+            <div class=""radio-pointer""></div>
+            <BitIcon IconName=""BitIconName.CalendarWeek"" />
+            <span>Week</span>
+        </div>
+    </BitRadioButtonOption>
+    <BitRadioButtonOption Value=""Month"">
+        <div class=""custom-option @(RtlOptionTemplateValue is ""Month"" ? ""selected-option"" : """")"">
+            <div class=""radio-pointer""></div>
+            <BitIcon IconName=""BitIconName.Calendar"" />
+            <span>Month</span>
+        </div>
+    </BitRadioButtonOption>
+</BitRadioButtonGroup>
+";
+
+    private readonly string example9CSharpCode = @"
+private string RtlOptionTemplateValue;
+";
+
+    #endregion
+
+    #region Example Code 10
+
+    private readonly string example10HTMLCode = @"
 @if (string.IsNullOrEmpty(SuccessMessage))
 {
     <EditForm Model=""FormValidationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
         <DataAnnotationsValidator />
-
         <div class=""validation-summary"">
             <ValidationSummary />
         </div>
-
         <div>
             <BitRadioButtonGroup Name=""Group1"" Label=""Pick one"" @bind-Value=""@FormValidationModel.Option"">
                 <BitRadioButtonOption Text=""Option A"" Value=""A""></BitRadioButtonOption>
                 <BitRadioButtonOption Text=""Option B"" Value=""B""></BitRadioButtonOption>
                 <BitRadioButtonOption Text=""Disabled option C"" Value=""C"" IsEnabled=""false""></BitRadioButtonOption>
             </BitRadioButtonGroup>
-
             <ValidationMessage For=""@(() => FormValidationModel.Option)"" />
         </div>
-
-        <BitButton ButtonType=""BitButtonType.Submit"">
-            Submit
-        </BitButton>
+        <BitButton Style=""margin-top: 10px;"" ButtonType=""BitButtonType.Submit"">Submit</BitButton>
     </EditForm>
 }
 else
@@ -288,14 +670,16 @@ else
     <BitMessageBar MessageBarType=""BitMessageBarType.Success"" IsMultiline=""false"">
         @SuccessMessage
     </BitMessageBar>
-}";
+}
+";
 
-    private readonly string example6CSharpCode = @"
+    private readonly string example10CSharpCode = @"
 public class FormValidationModel
 {
     [Required]
     public string Option { get; set; }
 }
+
 private string SuccessMessage = string.Empty;
 private FormValidationModel FormValidationModel = new();
 
@@ -310,7 +694,8 @@ private async Task HandleValidSubmit()
 private void HandleInvalidSubmit()
 {
     SuccessMessage = string.Empty;
-}";
+}
+";
 
     #endregion
 }

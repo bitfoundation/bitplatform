@@ -17,7 +17,7 @@ public partial class BitRadioButtonGroup
     [Parameter] public string AriaLabelledBy { get; set; } = string.Empty;
 
     /// <summary>
-    /// The content of RadioButtonGroup, common values are RadioButtonGroup component 
+    /// The content of RadioButtonGroup, common values are RadioButtonGroup component.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
@@ -41,6 +41,11 @@ public partial class BitRadioButtonGroup
     }
 
     /// <summary>
+    /// Change direction to RTL.
+    /// </summary>
+    [Parameter] public bool IsRtl { get; set; }
+
+    /// <summary>
     /// Descriptive label for the RadioButtonGroup.
     /// </summary>
     [Parameter] public string? Label { get; set; }
@@ -48,15 +53,20 @@ public partial class BitRadioButtonGroup
     /// <summary>
     /// Used to customize the label for the RadioButtonGroup.
     /// </summary>
-    [Parameter] public RenderFragment? LabelFragment { get; set; }
+    [Parameter] public RenderFragment? LabelTemplate { get; set; }
 
     /// <summary>
-    /// Name of RadioButtonGroup, this name is used to group each RadioButtonGroup into the same logical RadioButtonGroup
+    /// You can define the RadioButtonGroup in Horizontal or Vertical mode.
+    /// </summary>
+    [Parameter] public BitLayoutFlow? LayoutFlow { get; set; }
+
+    /// <summary>
+    /// Name of RadioButtonGroup, this name is used to group each RadioButtonGroup into the same logical RadioButtonGroup.
     /// </summary>
     [Parameter] public string Name { get; set; } = Guid.NewGuid().ToString();
 
     /// <summary>
-    /// Callback that is called when the value parameter is changed
+    /// Callback that is called when the value parameter is changed.
     /// </summary>
     [Parameter] public EventCallback<string> OnValueChange { get; set; }
 
@@ -69,6 +79,9 @@ public partial class BitRadioButtonGroup
 
         ClassBuilder.Register(() => ValueInvalid is true
                                    ? $"{RootElementClass}-invalid-{VisualClassRegistrar()}" : string.Empty);
+
+        ClassBuilder.Register(() => IsRtl
+                                   ? $"{RootElementClass}-rtl-{VisualClassRegistrar()}" : string.Empty);
     }
 
     protected override async Task OnInitializedAsync()
@@ -146,7 +159,7 @@ public partial class BitRadioButtonGroup
         _ = SelectOption(newOption);
     }
 
-    private string GetAriaLabelledBy() => Label.HasValue() || LabelFragment is not null ? _labelId : AriaLabelledBy;
+    private string GetAriaLabelledBy() => Label.HasValue() || LabelTemplate is not null ? _labelId : AriaLabelledBy;
 
     private void HandleOnValueChanging(object? sender, ValueChangingEventArgs<string?> args)
     {

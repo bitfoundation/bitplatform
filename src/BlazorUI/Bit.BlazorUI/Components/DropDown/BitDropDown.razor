@@ -133,7 +133,7 @@
             </div>
         }
 
-        <div id="@DropDownCalloutId" class="scroll-wrapper">
+        <div @ref="_scrollWrapperElement" id="@DropDownCalloutId" class="scroll-wrapper">
             @if (Virtualize)
             {
                 if (ItemsProvider is null)

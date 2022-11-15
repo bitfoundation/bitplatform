@@ -44,7 +44,14 @@
                    @onfocus="@HandleFocus"
                    @onchange="@HandleChange" />
 
-            <i class="bit-icon bit-icon--@BitIconName.CalendarMirrored.GetName()" aria-hidden="true"></i>
+            @if (IconFragment is not null)
+            {
+                @IconFragment
+            }
+            else
+            {
+                <i class="bit-icon bit-icon--@IconName.GetName()" aria-hidden="true"></i>
+            }
         </div>
     </div>
 
@@ -68,19 +75,19 @@
                             {
                                 <button class="header-title"
                                         aria-label="@($"{_monthTitle}, change month")"
-                                        aria-live="polite" 
-                                        aria-atomic="true" 
-                                        tabindex="0" 
-                                        type="button" 
+                                        aria-live="polite"
+                                        aria-atomic="true"
+                                        tabindex="0"
+                                        type="button"
                                         @onclick="@ToggleMonthPickerAsOverlay">
                                     <span id="@MonthAndYearId">@_monthTitle</span>
                                 </button>
                             }
                             else
                             {
-                                <div class="header-title" 
-                                     aria-live="polite" 
-                                     aria-atomic="true" 
+                                <div class="header-title"
+                                     aria-live="polite"
+                                     aria-atomic="true"
                                      tabindex="-1">
                                     <span id="@MonthAndYearId">@_monthTitle</span>
                                 </div>
@@ -104,11 +111,11 @@
                                 </button>
                                 @if (ShowCloseButton)
                                 {
-                                    <BitIconButton IconName="BitIconName.ChromeClose" 
-                                                   Class="header-icon-btn"
-                                                   Title="Close date picker"
-                                                   ButtonType="BitButtonType.Button"
-                                                   OnClick="CloseCallout"/>
+                                    <BitIconButton IconName="BitIconName.ChromeClose"
+                                           Class="header-icon-btn"
+                                           Title="Close date picker"
+                                           ButtonType="BitButtonType.Button"
+                                           OnClick="CloseCallout" />
                                 }
                             </div>
                         </div>
@@ -220,7 +227,7 @@
                                             type="button"
                                             title="Go to previous year @(_displayYear - 1)"
                                             @onclick="() => HandleYearChange(ChangeDirection.Previous)">
-                                            <i class="bit-icon" aria-hidden="true"></i>
+                                        <i class="bit-icon" aria-hidden="true"></i>
                                     </button>
                                     <button class="navigation-btn"
                                             aria-disabled="@(CanYearChange(ChangeDirection.Next) is false)"
@@ -228,7 +235,7 @@
                                             type="button"
                                             title="Go to next year @(_displayYear + 1)"
                                             @onclick="() => HandleYearChange(ChangeDirection.Next)">
-                                            <i class="bit-icon" aria-hidden="true"></i>
+                                        <i class="bit-icon" aria-hidden="true"></i>
                                     </button>
                                 </div>
                             </div>
@@ -251,9 +258,10 @@
                                                     aria-label="@monthName"
                                                     title="@monthName"
                                                     @onclick="() => SelectMonth(monthIndex)">
-                                                @if(MonthCellTemplate is not null) {
+                                                @if (MonthCellTemplate is not null)
+                                                {
                                                     @MonthCellTemplate(GetMonthCellDate(monthIndex))
-                                                } 
+                                                }
                                                 else
                                                 {
                                                     <span aria-hidden="true">@Culture.DateTimeFormat.GetAbbreviatedMonthName(monthIndex)</span>
@@ -282,7 +290,7 @@
                                             type="button"
                                             title="previous year range @(_yearRangeFrom - 12) - @(_yearRangeFrom - 1)"
                                             @onclick="() => HandleYearRangeChange(ChangeDirection.Previous)">
-                                            <i class="bit-icon" aria-hidden="true"></i>
+                                        <i class="bit-icon" aria-hidden="true"></i>
                                     </button>
                                     <button class="navigation-btn"
                                             type="button"
@@ -290,7 +298,7 @@
                                             disabled="@(CanYearRangeChange(ChangeDirection.Next) is false)"
                                             title="next year range @(_yearRangeFrom + 12) - @(_yearRangeTo + 12)"
                                             @onclick="() => HandleYearRangeChange(ChangeDirection.Next)">
-                                            <i class="bit-icon" aria-hidden="true"></i>
+                                        <i class="bit-icon" aria-hidden="true"></i>
                                     </button>
                                 </div>
                             </div>
@@ -309,10 +317,10 @@
                                                     tabindex="@(IsYearSelected(year) ? 0 : -1)"
                                                     type="button"
                                                     @onclick="() => SelectYear(year)">
-                                                @if(YearCellTemplate is not null)
+                                                @if (YearCellTemplate is not null)
                                                 {
                                                     @YearCellTemplate(year)
-                                                } 
+                                                }
                                                 else
                                                 {
                                                     <span aria-hidden="true">@year</span>
@@ -323,8 +331,9 @@
                                 }
                             </div>
                         }
-                        
-                        @if (ShowGoToToday) {
+
+                        @if (ShowGoToToday)
+                        {
                             <button class="go-today-btn"
                                     type="button"
                                     disabled="@IsGoTodayDisabeld()"

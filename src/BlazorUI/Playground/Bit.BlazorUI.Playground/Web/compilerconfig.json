@@ -52,6 +52,10 @@
         "inputFile": "Pages/Components/Buttons/BitIconButtonDemo.razor.scss"
     },
     {
+        "outputFile": "Pages/Components/Buttons/BitLoadingButtonDemo.razor.css",
+        "inputFile": "Pages/Components/Buttons/BitLoadingButtonDemo.razor.scss"
+    },
+    {
         "outputFile": "Pages/Components/Buttons/BitToggleButtonDemo.razor.css",
         "inputFile": "Pages/Components/Buttons/BitToggleButtonDemo.razor.scss"
     },

@@ -6,4 +6,5 @@ public class GenderModel
     public string GenderText { get; set; }
     public string ImageName { get; set; }
     public BitIconName? IconName { get; set; }
+    public bool IsEnabled { get; set; } = true;
 }

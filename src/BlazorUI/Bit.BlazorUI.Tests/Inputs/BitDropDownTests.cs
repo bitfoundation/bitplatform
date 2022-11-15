@@ -612,6 +612,73 @@ public class BitDropDownTests : BunitTestContext
     }
 
     [DataTestMethod,
+        DataRow("Apple", "f-app"),
+        DataRow("Orange", "f-ora"),
+        DataRow("Banana", "f-ban"),
+        DataRow("Broccoli", "v-bro")
+    ]
+    public void BitDropDownTwoWayBoundWithForSelectedItem(string text, string value)
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        BitDropDownItem? selectedItem = null;
+
+        var items = GetRawDropdownItems();
+        var component = RenderComponent<BitDropDown>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.SelectedItem, selectedItem);
+            parameters.Add(p => p.SelectedItemChanged, (value) => selectedItem = value);
+        });
+
+        var drpItems = component.FindAll(".drp-item");
+        drpItems.Single(i => i.TextContent.Contains(text)).Click();
+
+        Assert.IsNotNull(selectedItem);
+        Assert.AreEqual(value, selectedItem.Value);
+        Assert.AreEqual(text, selectedItem.Text);
+        Assert.IsTrue(selectedItem.IsSelected);
+    }
+
+    [DataTestMethod,
+        DataRow("Banana,Broccoli", "f-ban,v-bro"),
+        DataRow("Orange", "f-ora"),
+        DataRow("Orange,Apple,Banana", "f-ora,f-app,f-ban")
+    ]
+    public void BitDropDownMultiSelectTwoWayBoundForSelectedItems(string text, string value)
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        List<BitDropDownItem>? selectedItems = null;
+
+        var items = GetRawDropdownItems();
+        var component = RenderComponent<BitDropDown>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.IsMultiSelect, true);
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.SelectedItems, selectedItems);
+            parameters.Add(p => p.SelectedItemsChanged, (values) => selectedItems = values);
+        });
+
+        var textList = text.Split(",").ToList();
+        var drpItems = component.FindAll(".drp-chb", enableAutoRefresh: true);
+        foreach (var txt in textList)
+        {
+            drpItems.Single(i => i.Children[0].Children[1].TextContent.Contains(txt)).Children[0].Click();
+        }
+
+        var valueList = value.Split(",").ToList();
+
+        Assert.IsNotNull(selectedItems);
+        Assert.AreEqual(valueList.Count, selectedItems.Count);
+        Assert.IsTrue(selectedItems.Select(i => i.Value).OrderBy(o => o).SequenceEqual(valueList.OrderBy(o => o)));
+        Assert.IsTrue(selectedItems.Select(i => i.Text).OrderBy(o => o).SequenceEqual(textList.OrderBy(o => o)));
+        Assert.IsFalse(selectedItems.Any(i => i.IsSelected is false));
+    }
+
+    [DataTestMethod,
         DataRow(null),
         DataRow("f-ora")
     ]

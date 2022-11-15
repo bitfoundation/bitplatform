@@ -1,0 +1,186 @@
+﻿@import "../../../Styles/Fluent/colors.fluent.scss", "../../../Styles/functions.scss";
+
+.bit-lbtn {
+    &.bit-lbtn-fluent {
+        font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+        position: relative;
+        border-radius: rem(2px);
+        padding: rem(6px) rem(20px);
+        font-size: rem(14px);
+        font-weight: 400;
+        cursor: pointer;
+        text-decoration: none;
+        width: rem(120px);
+        min-height: rem(32px);
+        max-width: rem(120px);
+        box-sizing: border-box;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
+    }
+
+    &.bit-lbtn-disabled-fluent {
+        background: $Grey20;
+        color: $Grey90;
+        border: 1px solid $Grey20;
+        cursor: default;
+        pointer-events: none;
+    }
+
+    &.bit-lbtn-sm-fluent {
+        padding: rem(4px) rem(10px);
+        font-size: rem(13px);
+    }
+
+    &.bit-lbtn-md-fluent {
+        padding: rem(6px) rem(16px);
+        font-size: rem(14px);
+    }
+
+    &.bit-lbtn-lg-fluent {
+        padding: rem(8px) rem(22px);
+        font-size: rem(15px);
+    }
+
+    &.standard {
+        color: $Grey160;
+        background: $White;
+        border: 1px solid $GreyInputBorder;
+
+        &:hover {
+            background-color: $Grey20;
+            border-color: $Grey160;
+        }
+
+        &:active {
+            background-color: $Grey30;
+        }
+    }
+
+    &.primary {
+        color: $White;
+        background: $Primary;
+        border: 1px solid $Primary;
+
+        &:hover {
+            background-color: $DarkAlt;
+        }
+
+        &:active {
+            background-color: $Dark;
+        }
+    }
+
+    .loading {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        .spinner {
+            animation: spinner-key-frame 1.3s linear infinite;
+            animation-timing-function: cubic-bezier(0.53, 0.21, 0.29, 0.67);
+        }
+
+        .label {
+            font-size: rem(12px);
+            margin: rem(2px) rem(8px);
+            text-align: center;
+        }
+
+        &.top {
+            flex-direction: column-reverse;
+
+            .label {
+                margin: 0 0 rem(8px);
+            }
+        }
+
+        &.bottom {
+            flex-direction: column;
+
+            .label {
+                margin: rem(8px) 0 0;
+            }
+        }
+
+        &.right {
+            flex-direction: row;
+
+            .label {
+                margin: 0 0 0 rem(8px);
+            }
+        }
+
+        &.left {
+            flex-direction: row-reverse;
+
+            .label {
+                margin: 0 rem(8px) 0 0;
+            }
+        }
+
+        &.large {
+            .spinner {
+                height: rem(28px);
+                width: rem(28px);
+            }
+        }
+
+        &.medium {
+            .spinner {
+                height: rem(20px);
+                width: rem(20px);
+            }
+        }
+
+        &.small {
+            .spinner {
+                height: rem(16px);
+                width: rem(16px);
+            }
+        }
+
+        &.xSmall {
+            .spinner {
+                height: rem(12px);
+                width: rem(12px);
+            }
+        }
+
+        &.primary {
+            .spinner {
+                border: rem(16px) solid $Grey60;
+                border-top: rem(16px) solid $White;
+                border-radius: 50%;
+                border-width: rem(1.7px);
+            }
+
+            .label {
+                color: $White;
+            }
+        }
+
+        &.standard {
+            .spinner {
+                border: rem(16px) solid $Grey60;
+                border-top: rem(16px) solid $Primary;
+                border-radius: 50%;
+                border-width: rem(1.5px);
+            }
+
+            .label {
+                color: $Primary;
+            }
+        }
+    }
+
+    @keyframes spinner-key-frame {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+}

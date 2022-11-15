@@ -27,6 +27,7 @@ public partial class NavMenu
                 new BitNavLinkItem { Name= "ActionButton", Key = "ActionButton", Url = "/components/action-button"},
                 new BitNavLinkItem { Name= "CompoundButton", Key = "CompoundButton", Url = "/components/compound-button"},
                 new BitNavLinkItem { Name= "IconButton", Key = "IconButton", Url = "/components/icon-button"},
+                new BitNavLinkItem { Name= "LoadingButton", Key = "LoadingButton", Url = "/components/loading-button"},
                 new BitNavLinkItem { Name= "ToggleButton", Key = "ToggleButton", Url = "/components/toggle-button" },
                 new BitNavLinkItem { Name= "MenuButton", Key = "MenuButton", Url = "/components/menu-button" },
                 new BitNavLinkItem { Name= "SplitButton", Key = "SplitButton", Url = "/components/split-button" },

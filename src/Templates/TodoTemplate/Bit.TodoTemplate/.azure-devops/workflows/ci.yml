@@ -183,4 +183,4 @@ jobs:
     displayName: 'Build'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build src/Client/Web/TodoTemplate.Client.Web.csproj -p:Configuration=Release -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ variables.WEB_APP_DEPLOYMENT_TYPE }}"'
+      script: 'dotnet build src/Server/Api/TodoTemplate.Server.Api.csproj -p:Configuration=Release -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ variables.WEB_APP_DEPLOYMENT_TYPE }}"'

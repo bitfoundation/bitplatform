@@ -4,7 +4,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:client="clr-namespace:TodoTemplate.Client.Shared;assembly=TodoTemplate.Client.Shared"
     xmlns:b="clr-namespace:Microsoft.AspNetCore.Components.WebView.Maui;assembly=Microsoft.AspNetCore.Components.WebView.Maui"
-    BackgroundColor="{DynamicResource PageBackgroundColor}">
+    BackgroundColor="{DynamicResource PageBackgroundColor}"
+    NavigationPage.HasNavigationBar="False">
 
     <b:BlazorWebView BackgroundColor="#0D2960" HostPage="wwwroot/index.html">
         <b:BlazorWebView.RootComponents>

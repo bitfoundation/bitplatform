@@ -4,7 +4,7 @@ namespace Bit.BlazorUI;
 public partial class BitAccordion
 {
     private bool IsExpandedHasBeenSet;
-    private bool _isExpanded;
+    private bool isExpanded;
 
     /// <summary>
     /// Default value of the IsExpanded.
@@ -32,11 +32,11 @@ public partial class BitAccordion
     [Parameter]
     public bool IsExpanded
     {
-        get => _isExpanded;
+        get => isExpanded;
         set
         {
-            if (value == _isExpanded) return;
-            _isExpanded = value;
+            if (value == isExpanded) return;
+            isExpanded = value;
             _ = IsExpandedChanged.InvokeAsync(value);
         }
     }

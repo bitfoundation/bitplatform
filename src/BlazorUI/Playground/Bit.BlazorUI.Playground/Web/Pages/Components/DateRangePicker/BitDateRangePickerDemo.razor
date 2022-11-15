@@ -49,7 +49,7 @@
             <BitDateRangePicker Style="max-width: 300px"
                                 AriaLabel="Select dates"
                                 Placeholder="Select dates..."
-                                FormatDate="dd=MM(yy)" />
+                                DateFormat="dd=MM(yy)" />
         </ExamplePreview>
     </ComponentExampleBox>
 
@@ -176,6 +176,38 @@
                     </YearCellTemplate>
                 </BitDateRangePicker>
             </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="BitDateRangePicker with custom value formatting" HTMLSourceCode="@example13HTMLCode" ExampleId="example13">
+        <ExamplePreview>
+            <BitDateRangePicker Style="max-width: 300px"
+                                AriaLabel="Select dates"
+                                ValueFormat="Dep: {0}, Arr: {1}"
+                                DateFormat="dd=MM(yy)"
+                                Placeholder="Select dates..." />
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="BitDateRangePicker with custom left-handed icon" HTMLSourceCode="@example14HTMLCode" ExampleId="example14">
+        <ExamplePreview>
+            <BitDateRangePicker Style="max-width: 300px"
+                                AriaLabel="Select dates"
+                                IconLocation="BitIconLocation.Left"
+                                Placeholder="Select dates...">
+                <IconFragment>
+                    <img src="https://img.icons8.com/fluency/2x/calendar-13.png" width="24" height="24"/>
+                </IconFragment>
+            </BitDateRangePicker>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="BitDateRangePicker with custom icon name" HTMLSourceCode="@example15HTMLCode" ExampleId="example15">
+        <ExamplePreview>
+            <BitDateRangePicker Style="max-width: 300px"
+                                AriaLabel="Select dates"
+                                IconName="BitIconName.Airplane"
+                                Placeholder="Select dates..." />
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>

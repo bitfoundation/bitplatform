@@ -5,9 +5,9 @@
      @attributes="HtmlAttributes"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
-    <input @ref="CheckboxElement"
+    <input @ref="_checkboxElement"
            @attributes="InputHtmlAttributes"
-           id="@InputId"
+           id="@_inputId"
            type="checkbox"
            checked="@CurrentValueAsString"
            value="@CurrentValueAsString"
@@ -19,17 +19,35 @@
            aria-setsize="@AriaSetSize"
            aria-posinset="@AriaPositionInSet"
            name="@Name"
-           title="@Title"
-           hidden />
-    <label class="bit-chb-lbl" for="@InputId" @onclick="@HandleCheckboxClick">
-        <div class="bit-chb-checkbox">
-            <i class=@($"{RootElementClass}-checkmark bit-icon bit-icon--{CheckmarkIconName.GetName()}")
-               aria-hidden="true"
-               aria-label="@CheckmarkIconAriaLabel">
-            </i>
-        </div>
-        <span class="bit-chb-txt no-text-select">
-            @(ChildContent)
-        </span>
+           hidden
+           @onclick="@HandleCheckboxClick" />
+
+    <label title="@Title" for="@_inputId">
+        @if (ChildContent is not null)
+        {
+            @ChildContent
+        }
+        else
+        {
+            <div class="bit-chb-lbl">
+                <div class="bit-chb-checkbox">
+                    <i class=@($"{RootElementClass}-checkmark bit-icon bit-icon--{CheckmarkIconName.GetName()}")
+                   aria-hidden="true"
+                   aria-label="@CheckmarkIconAriaLabel">
+                    </i>
+                </div>
+
+                @if (LabelTemplate is not null)
+                {
+                    @LabelTemplate
+                }
+                else if (Label.HasValue())
+                {
+                    <span class="bit-chb-txt no-text-select">
+                        @Label
+                    </span>
+                }
+            </div>
+        }
     </label>
 </div>

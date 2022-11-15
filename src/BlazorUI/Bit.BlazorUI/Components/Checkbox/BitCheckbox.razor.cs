@@ -1,21 +1,15 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
-using Microsoft.JSInterop;
 
 namespace Bit.BlazorUI;
 
 public partial class BitCheckbox
 {
     private bool IsIndeterminateHasBeenSet;
-    private bool _isIndeterminate;
-    private BitCheckBoxSide _boxSide;
-
-    public ElementReference CheckboxElement { get; set; }
-    public string InputId { get; set; } = string.Empty;
+    private bool isIndeterminate;
+    private BitCheckBoxSide boxSide;
+    private string _inputId = string.Empty;
+    private ElementReference _checkboxElement;
 
     [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
 
@@ -45,11 +39,11 @@ public partial class BitCheckbox
     [Parameter]
     public BitCheckBoxSide BoxSide
     {
-        get => _boxSide;
+        get => boxSide;
         set
         {
-            if (value == _boxSide) return;
-            _boxSide = value;
+            if (value == boxSide) return;
+            boxSide = value;
             ClassBuilder.Reset();
         }
     }
@@ -65,7 +59,7 @@ public partial class BitCheckbox
     [Parameter] public string? CheckmarkIconAriaLabel { get; set; }
 
     /// <summary>
-    /// The content of checkbox, It can be Any custom tag or a text
+    /// Used to customize the content of checkbox(Label and Box).
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
@@ -87,21 +81,28 @@ public partial class BitCheckbox
     [Parameter]
     public bool IsIndeterminate
     {
-        get => _isIndeterminate;
+        get => isIndeterminate;
         set
         {
-            if (value == _isIndeterminate) return;
-            _isIndeterminate = value;
-            _ = JSRuntime.SetProperty(CheckboxElement, "indeterminate", value);
+            if (value == isIndeterminate) return;
+            isIndeterminate = value;
+            _ = JSRuntime.SetProperty(_checkboxElement, "indeterminate", value);
             ClassBuilder.Reset();
             _ = IsIndeterminateChanged.InvokeAsync(value);
         }
     }
 
-    /// <summary>
-    ///  Callback that is called when the IsIndeterminate parameter changed
-    /// </summary>
     [Parameter] public EventCallback<bool> IsIndeterminateChanged { get; set; }
+
+    /// <summary>
+    /// Descriptive label for the checkbox.
+    /// </summary>
+    [Parameter] public string? Label { get; set; }
+
+    /// <summary>
+    /// Used to customize the label for the checkbox.
+    /// </summary>
+    [Parameter] public RenderFragment? LabelTemplate { get; set; }
 
     /// <summary>
     /// Name for the checkbox input. This is intended for use with forms and NOT displayed in the UI
@@ -157,7 +158,7 @@ public partial class BitCheckbox
     {
         if (firstRender)
         {
-            _ = JSRuntime.SetProperty(CheckboxElement, "indeterminate", IsIndeterminate);
+            _ = JSRuntime.SetProperty(_checkboxElement, "indeterminate", IsIndeterminate);
         }
 
         await base.OnAfterRenderAsync(firstRender);
@@ -175,7 +176,7 @@ public partial class BitCheckbox
             IsIndeterminate = DefaultIsIndeterminate.Value;
         }
 
-        InputId = $"checkbox-{UniqueId}";
+        _inputId = $"checkbox-{UniqueId}";
         await base.OnParametersSetAsync();
     }
 

@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Text;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
 
 namespace Bit.BlazorUI;
 
 public partial class BitChoiceGroup
 {
-    private bool _isRequired;
+    private bool isRequired;
 
     /// <summary>
     /// ID of an element to use as the aria label for this ChoiceGroup.
@@ -28,13 +23,18 @@ public partial class BitChoiceGroup
     [Parameter]
     public bool IsRequired
     {
-        get => _isRequired;
+        get => isRequired;
         set
         {
-            _isRequired = value;
+            isRequired = value;
             ClassBuilder.Reset();
         }
     }
+
+    /// <summary>
+    /// Change direction to RTL.
+    /// </summary>
+    [Parameter] public bool IsRtl { get; set; }
 
     /// <summary>
     /// Descriptive label for the ChoiceGroup.
@@ -45,6 +45,11 @@ public partial class BitChoiceGroup
     /// Used to customize the label for the ChoiceGroup.
     /// </summary>
     [Parameter] public RenderFragment? LabelTemplate { get; set; }
+
+    /// <summary>
+    /// You can define the ChoiceGroup in Horizontal or Vertical mode.
+    /// </summary>
+    [Parameter] public BitLayoutFlow? LayoutFlow { get; set; }
 
     /// <summary>
     /// Name of ChoiceGroup, this name is used to group each option into the same logical ChoiceGroup.
@@ -77,6 +82,9 @@ public partial class BitChoiceGroup
 
         ClassBuilder.Register(() => ValueInvalid is true
                                    ? $"{RootElementClass}-invalid-{VisualClassRegistrar()}" : string.Empty);
+
+        ClassBuilder.Register(() => IsRtl
+                                   ? $"{RootElementClass}-rtl-{VisualClassRegistrar()}" : string.Empty);
     }
 
     protected override async Task OnInitializedAsync()

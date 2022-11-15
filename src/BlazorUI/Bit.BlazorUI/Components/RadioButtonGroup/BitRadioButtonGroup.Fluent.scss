@@ -1,6 +1,6 @@
 ﻿@import "../../Styles/Fluent/colors.fluent.scss", "../../Styles/functions.scss";
 
-.bit-rgb {
+.bit-rbg {
     &.bit-rbg-fluent {
         display: block;
         font-size: rem(14px);
@@ -19,6 +19,10 @@
         }
     }
 
+    &.bit-rbg-rtl-fluent{
+        direction: rtl;
+    } 
+    
     .bit-rbg-label {
         display: block;
         margin: 0;
@@ -30,5 +34,14 @@
         color: $Grey160;
         overflow-wrap: break-word;
         -webkit-font-smoothing: antialiased;
+    }
+
+    .choice-field-group {
+        display: flex;
+        flex-flow: column nowrap;
+
+        &.Horizontal {
+            flex-flow: row wrap;
+        }
     }
 }

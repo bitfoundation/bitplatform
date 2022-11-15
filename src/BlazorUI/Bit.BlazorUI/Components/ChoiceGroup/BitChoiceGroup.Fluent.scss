@@ -77,6 +77,41 @@
         }
     }
 
+    &.bit-chg-rtl-fluent {
+        direction: rtl;
+
+        .bit-chgo {
+            margin-left: rem(8px);
+            margin-right: 0;
+        }
+
+        .bit-chgo-lbl {
+
+            &::before {
+                right: 0;
+            }
+
+            &:hover {
+                &:after {
+                    right: rem(5px);
+                }
+            }
+
+            .bit-chgo-txt {
+                padding-right: rem(26px);
+                padding-left: 0;
+            }
+        }
+
+        .bit-chgo-checked {
+            .bit-chgo-lbl {
+                &::after {
+                    right: rem(5px);
+                }
+            }
+        }
+    }
+
     .bit-chg-label {
         display: block;
         margin: 0;
@@ -90,6 +125,14 @@
         -webkit-font-smoothing: antialiased;
     }
 
+    .choice-field-group {
+        display: flex;
+        flex-flow: column nowrap;
+
+        &.Horizontal {
+            flex-flow: row wrap;
+        }
+    }
     /*--- ChoiceGroup Option styles ---*/
 
     .bit-chgo {
@@ -98,6 +141,7 @@
         align-items: center;
         min-height: rem(26px);
         margin-top: rem(8px);
+        margin-right: rem(8px);
         border: none;
         box-sizing: border-box;
         font-size: rem(14px);
@@ -272,8 +316,8 @@
 
     .bit-chgo-with-img {
         display: inline-flex;
+        width: fit-content;
         height: 100%;
-        margin: 0 rem(4px) rem(4px) 0;
         padding-left: 0;
         font-size: 0px;
         background-color: $Grey20;

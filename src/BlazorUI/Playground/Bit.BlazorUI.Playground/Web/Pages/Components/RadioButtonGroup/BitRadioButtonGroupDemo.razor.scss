@@ -1,5 +1,6 @@
 ﻿@import '../../../Styles/abstracts/_colors.scss';
 @import '../../../Styles/abstracts/_functions.scss';
+@import '../../../Styles/abstracts/_media-queries.scss';
 
 .validation-summary {
     border-left: rem(5px) solid $Red10;
@@ -17,10 +18,31 @@
     font-size: rem(12px);
 }
 
-::deep .ch-group {
-    .bit-txt {
-        margin-bottom: rem(25px);
+.rbg-box {
+    display: flex;
+    gap: rem(30px);
+
+    @include sm {
+        flex-direction: column;
     }
+
+    &.column {
+        flex-direction: column;
+    }
+
+    .rbg-output {
+        display: flex;
+        align-items: center;
+        gap: rem(5px);
+        margin-top: rem(20px);
+        font-weight: 600;
+        font-size: rem(16px);
+    }
+}
+
+.custom-label {
+    font-weight: bold;
+    color: $Red20;
 }
 
 .custom-option {

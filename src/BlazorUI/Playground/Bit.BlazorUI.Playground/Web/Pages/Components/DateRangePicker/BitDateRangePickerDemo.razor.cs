@@ -4,7 +4,6 @@ using System.Globalization;
 using System.Threading.Tasks;
 using Bit.BlazorUI.Playground.Web.Models;
 using Bit.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
-using Microsoft.AspNetCore.Components.Web;
 
 namespace Bit.BlazorUI.Playground.Web.Pages.Components.DateRangePicker;
 
@@ -50,7 +49,7 @@ public partial class BitDateRangePickerDemo
         },
         new ComponentParameter()
         {
-            Name = "FormatDate",
+            Name = "DateFormat",
             Type = "string",
             DefaultValue = "",
             Description = @"Date format like ""yyyy/MM/dd"".",
@@ -82,6 +81,29 @@ public partial class BitDateRangePickerDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether the month picker should highlight the selected month."
+        },
+        new ComponentParameter
+        {
+            Name = "IconFragment",
+            Type = "RenderFragment?",
+            DefaultValue = "",
+            Description = "Custom DateRangePicker icon template."
+        },
+        new ComponentParameter
+        {
+            Name = "IconLocation",
+            Type = "BitIconLocation",
+            LinkType = LinkType.Link,
+            Href = "#icon-location-enum",
+            DefaultValue = "BitIconLocation.Left",
+            Description = "DateRangePicker icon location"
+        },
+        new ComponentParameter
+        {
+            Name = "IconName",
+            Type = "BitIconName",
+            DefaultValue = "BitIconName.CalendarMirrored",
+            Description = "Optional DateRangePicker icon."
         },
         new ComponentParameter()
         {
@@ -165,7 +187,7 @@ public partial class BitDateRangePickerDemo
             Name = "OnSelectDate",
             Type = "EventCallback<BitDateRangePickerValue?>",
             LinkType = LinkType.Link,
-            Href = "#dateRangePickerType",
+            Href = "#dateRangePickerValue",
             DefaultValue = "",
             Description = "Callback for when the on selected date changed.",
         },
@@ -223,7 +245,7 @@ public partial class BitDateRangePickerDemo
             Name = "Value",
             Type = "BitDateRangePickerValue",
             LinkType = LinkType.Link,
-            Href = "#dateRangePickerType",
+            Href = "#dateRangePickerValue",
             DefaultValue = "",
             Description = "The value of DateRangePicker.",
         },
@@ -232,9 +254,16 @@ public partial class BitDateRangePickerDemo
             Name = "ValueChanged",
             Type = "EventCallback<BitDateRangePickerValue?>",
             LinkType = LinkType.Link,
-            Href = "#dateRangePickerType",
+            Href = "#dateRangePickerValue",
             DefaultValue = "",
             Description = "Callback for when the on date value changed.",
+        },
+        new ComponentParameter()
+        {
+            Name = "ValueFormat",
+            Type = "string",
+            DefaultValue = "Start: {0} - End: {1}",
+            Description = "ValueFormat for the DateRangePicker.",
         },
         new ComponentParameter()
         {
@@ -249,7 +278,7 @@ public partial class BitDateRangePickerDemo
     {
         new ComponentSubParameter()
         {
-            Id = "dateRangePickerType",
+            Id = "dateRangePickerValue",
             Title = "BitDateRangePickerValue",
             Parameters = new List<ComponentParameter>()
             {
@@ -299,6 +328,27 @@ public partial class BitDateRangePickerDemo
                     Value="2",
                 }
             }
+        },
+        new EnumParameter()
+        {
+            Id = "icon-location-enum",
+            Title = "BitIconLocation Enum",
+            Description = "",
+            EnumList = new List<EnumItem>()
+            {
+                new EnumItem()
+                {
+                    Name= "Left",
+                    Description="Show the icon at the left side.",
+                    Value="0",
+                },
+                new EnumItem()
+                {
+                    Name= "Right",
+                    Description="Show the icon at the right side.",
+                    Value="1",
+                }
+            }
         }
     };
 
@@ -336,7 +386,7 @@ public partial class BitDateRangePickerDemo
 <BitDateRangePicker Style=""max-width: 300px""
                     AriaLabel=""Select dates""
                     Placeholder=""Select dates...""
-                    FormatDate=""dd=MM(yy)"" />";
+                    DateFormat=""dd=MM(yy)"" />";
 
     private readonly string example6HTMLCode = @"
 <BitDateRangePicker Style=""max-width: 300px""
@@ -389,14 +439,14 @@ private BitDateRangePickerValue selectedDateRange = new()
 };";
 
     private readonly string example9HTMLCode = @"
-<BitDateRangePicker FormatDate=""yyyy/MM/dd hh:mm tt"" 
+<BitDateRangePicker DateFormat=""yyyy/MM/dd hh:mm tt"" 
                Culture=""CultureInfoHelper.GetFaIrCultureByFarsiNames()""
                GoToToday=""برو به امروز""
                Style=""max-width: 300px"">
 </BitDateRangePicker>";
 
     private readonly string example10HTMLCode = @"
-<BitDateRangePicker FormatDate=""yyyy/MM/dd hh:mm tt"" 
+<BitDateRangePicker DateFormat=""yyyy/MM/dd hh:mm tt"" 
                Culture=""CultureInfoHelper.GetFaIrCultureByFingilishNames()""
                GoToToday=""Boro be emrouz""
                Style=""max-width: 300px"">
@@ -499,4 +549,27 @@ private BitDateRangePickerValue selectedDateRange = new()
 
     private readonly string example12CSharpCode = @"
 private CultureInfo Culture = CultureInfo.CurrentUICulture;";
+
+    private readonly string example13HTMLCode = @"
+<BitDateRangePicker Style=""max-width: 300px""
+                    AriaLabel=""Select dates""
+                    ValueFormat=""Dep: {0}, Arr: {1}""
+                    DateFormat=""dd=MM(yy)""
+                    Placeholder=""Select dates..."" />";
+
+    private readonly string example14HTMLCode = @"
+<BitDateRangePicker Style=""max-width: 300px""
+                    AriaLabel=""Select dates""
+                    IconLocation=""BitIconLocation.Left""
+                    Placeholder=""Select dates..."">
+    <IconFragment>
+        <img src=""https://img.icons8.com/fluency/2x/calendar-13.png"" width=""24"" height=""24""/>
+    </IconFragment>
+</BitDateRangePicker>";
+
+    private readonly string example15HTMLCode = @"
+<BitDateRangePicker Style=""max-width: 300px""
+                    AriaLabel=""Select dates""
+                    IconName=""BitIconName.Airplane""
+                    Placeholder=""Select dates..."" />";
 }

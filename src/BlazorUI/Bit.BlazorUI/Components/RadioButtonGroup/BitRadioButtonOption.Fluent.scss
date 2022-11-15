@@ -1,5 +1,147 @@
 ﻿@import "../../Styles/Fluent/colors.fluent.scss", "../../Styles/functions.scss";
 
+.bit-rbg-invalid-fluent {
+    .bit-rbo {
+        .bit-rbo-lbl {
+            color: $Red20;
+
+            &:before {
+                border-color: $Red20;
+            }
+
+            &:after {
+                border-color: $Red20;
+                background-color: $Red20;
+            }
+
+            &:hover {
+                .bit-rbo-txt {
+                    color: $PinkRed10;
+                }
+
+                &:after {
+                    background-color: $PinkRed10;
+                    border-color: $PinkRed10;
+                }
+
+                &:before {
+                    border-color: $PinkRed10;
+                }
+            }
+        }
+
+        .bit-rbo-lbl-with-img {
+            color: $Red20;
+            border-color: $Red20;
+
+            &:before {
+                border-color: $Red20;
+            }
+
+            &:after {
+                border-color: $Red20;
+                background-color: $Red20;
+            }
+
+            &:hover {
+                border-color: $Red20;
+
+                &:before {
+                    border-color: $PinkRed10;
+                    opacity: 1;
+                }
+
+                &:after {
+                    border-color: $PinkRed10;
+                    background-color: $PinkRed10;
+                }
+            }
+        }
+
+        .bit-rbo-checked-fluent {
+            .bit-rbo-lbl {
+                border-color: $Red20;
+
+                &:before {
+                    border-color: $Red20;
+                }
+
+                &:after {
+                    border-color: $Red20;
+                    background-color: $Red20;
+                }
+
+                &:hover {
+                    &:before {
+                        border-color: $PinkRed10;
+                    }
+
+                    &:after {
+                        border-color: $PinkRed10;
+                        background-color: $PinkRed10;
+                    }
+                }
+            }
+
+            .bit-rbo-lbl-with-img {
+                border-color: $Red20;
+
+                &:before {
+                    border-color: $Red20;
+                }
+
+                &:after {
+                    border-color: $Red20;
+                    background-color: $Red20;
+                }
+
+                &:hover {
+                    border-color: $PinkRed10;
+
+                    &:before {
+                        border-color: $PinkRed10;
+                    }
+
+                    &:after {
+                        background-color: $PinkRed10;
+                        border-color: $PinkRed10;
+                    }
+                }
+            }
+        }
+    }
+}
+
+.bit-rbg-rtl-fluent {
+    .bit-rbo {
+        .bit-rbo-lbl {
+
+            &::before {
+                right: 0;
+            }
+
+            &:hover {
+                &:after {
+                    right: rem(5px);
+                }
+            }
+
+            .bit-rbo-txt {
+                padding-right: rem(26px);
+                padding-left: 0;
+            }
+        }
+
+        &.bit-rbo-checked-fluent {
+            .bit-rbo-lbl {
+                &::after {
+                    right: rem(5px);
+                }
+            }
+        }
+    }
+}
+
 .bit-rbo {
     &.bit-rbo-fluent {
         position: relative;
@@ -7,6 +149,7 @@
         align-items: center;
         min-height: rem(26px);
         margin-top: rem(8px);
+        margin-right: rem(8px);
         border: none;
         box-sizing: border-box;
         font-size: rem(14px);
@@ -18,8 +161,8 @@
 
     &.bit-rbo-with-img-fluent {
         display: inline-flex;
+        width: fit-content;
         height: 100%;
-        margin: 0 rem(4px) rem(4px) 0;
         padding-left: 0;
         font-size: 0px;
         background-color: $Grey20;
@@ -140,116 +283,6 @@
 
             i {
                 color: $Grey90;
-            }
-        }
-    }
-
-    &.bit-rbg-invalid-fluent {
-        .bit-rbo-lbl {
-            color: $Red20;
-
-            &:before {
-                border-color: $Red20;
-            }
-
-            &:after {
-                border-color: $Red20;
-                background-color: $Red20;
-            }
-
-            &:hover {
-                .bit-rbo-txt {
-                    color: $PinkRed10;
-                }
-
-                &:after {
-                    background-color: $PinkRed10;
-                    border-color: $PinkRed10;
-                }
-
-                &:before {
-                    border-color: $PinkRed10;
-                }
-            }
-        }
-
-        .bit-rbo-lbl-with-img {
-            color: $Red20;
-            border-color: $Red20;
-
-            &:before {
-                border-color: $Red20;
-            }
-
-            &:after {
-                border-color: $Red20;
-                background-color: $Red20;
-            }
-
-            &:hover {
-                border-color: $Red20;
-
-                &:before {
-                    border-color: $PinkRed10;
-                    opacity: 1;
-                }
-
-                &:after {
-                    border-color: $PinkRed10;
-                    background-color: $PinkRed10;
-                }
-            }
-        }
-
-        .bit-rbo-checked-fluent {
-            .bit-rbo-lbl {
-                border-color: $Red20;
-
-                &:before {
-                    border-color: $Red20;
-                }
-
-                &:after {
-                    border-color: $Red20;
-                    background-color: $Red20;
-                }
-
-                &:hover {
-                    &:before {
-                        border-color: $PinkRed10;
-                    }
-
-                    &:after {
-                        border-color: $PinkRed10;
-                        background-color: $PinkRed10;
-                    }
-                }
-            }
-
-            .bit-rbo-lbl-with-img {
-                border-color: $Red20;
-
-                &:before {
-                    border-color: $Red20;
-                }
-
-                &:after {
-                    border-color: $Red20;
-                    background-color: $Red20;
-                }
-
-                &:hover {
-                    border-color: $PinkRed10;
-
-                    &:before {
-                        border-color: $PinkRed10;
-                    }
-
-                    &:after {
-                        background-color: $PinkRed10;
-                        border-color: $PinkRed10;
-                    }
-                }
             }
         }
     }

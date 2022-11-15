@@ -49,6 +49,7 @@
             display: flex;
             flex-flow: row nowrap;
             align-items: center;
+            gap: rem(8px);
             height: rem(32px);
             margin: 0;
             padding: 0 rem(8px);
@@ -638,6 +639,12 @@
             .date-cell--selected-end {
                 border-radius: rem(8px) 0 0 rem(8px);
             }
+        }
+    }
+
+    &.bit-dtrp-left-icon-fluent {
+        .dtrp-field-grp {
+            flex-direction: row-reverse;
         }
     }
 

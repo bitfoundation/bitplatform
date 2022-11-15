@@ -1,0 +1,57 @@
+﻿@import '../../../Styles/abstracts/_functions.scss';
+@import '../../../Styles/abstracts/_media-queries.scss';
+
+.example-box {
+    display: flex;
+    gap: rem(10px);
+    width: fit-content;
+    align-items: center;
+
+    &.column {
+        flex-direction: column;
+    }
+
+    @include sm {
+        flex-direction: column;
+    }
+}
+
+.custom-loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: rem(5px);
+}
+
+::deep .custom-btn-sm {
+    &.bit-lbtn-sm-fluent {
+        max-width: rem(100px);
+        width: rem(100px);
+        padding: rem(15px) rem(20px);
+        font-size: rem(15px);
+        line-height: 1.5;
+        border-radius: 3px;
+    }
+}
+
+::deep .custom-btn-md {
+    &.bit-lbtn-md-fluent {
+        max-width: rem(150px);
+        width: rem(150px);
+        padding: rem(18px) rem(23px);
+        font-size: rem(18px);
+        line-height: 1.4;
+        border-radius: 4px;
+    }
+}
+
+::deep .custom-btn-lg {
+    &.bit-lbtn-lg-fluent {
+        max-width: rem(200px);
+        width: rem(200px);
+        padding: rem(21px) rem(26px);
+        font-size: rem(21px);
+        line-height: 1.33;
+        border-radius: 6px;
+    }
+}

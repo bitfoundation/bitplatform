@@ -1,19 +1,35 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Linq.Expressions;
 using System.Text;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 
 namespace Bit.BlazorUI;
 
 public partial class BitRadioButtonList<TItem, TValue>
 {
     private bool isRequired;
-    private string? imageSizeStyle;
+    private string? _imageSizeStyle;
+    public string _labelId = string.Empty;
+
+    /// <summary>
+    /// ID of an element to use as the aria label for this RadioButtonList.
+    /// </summary>
+    [Parameter] public string AriaLabelledBy { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Sets the data source that populates the items of the list.
+    /// </summary>
+    [Parameter] public IEnumerable<TItem> Items { get; set; } = new List<TItem>();
+
+    /// <summary>
+    /// Used to customize the label for the Item content.
+    /// </summary>
+    [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
+
+    /// <summary>
+    /// Used to customize the label for the Item Label content.
+    /// </summary>
+    [Parameter] public RenderFragment<TItem>? ItemLabelTemplate { get; set; }
 
     /// <summary>
     /// If true, an option must be selected in the RadioButtonList.
@@ -30,39 +46,14 @@ public partial class BitRadioButtonList<TItem, TValue>
     }
 
     /// <summary>
-    /// Descriptive label for the radio button list.
+    /// The name of the field from the model that will be enable item.
     /// </summary>
-    [Parameter] public string? Label { get; set; }
+    [Parameter] public string IsEnabledField { get; set; } = "IsEnabled";
 
     /// <summary>
-    /// ID of an element to use as the aria label for this RadioButtonList.
+    /// The field from the model that will be enable item.
     /// </summary>
-    [Parameter] public string AriaLabelledBy { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Used to customize the label for the radio button list.
-    /// </summary>
-    [Parameter] public RenderFragment? LabelFragment { get; set; }
-
-    /// <summary>
-    /// Name of RadioButtonList, this name is used to group each item into the same logical RadioButtonList
-    /// </summary>
-    [Parameter] public string Name { get; set; } = Guid.NewGuid().ToString();
-
-    /// <summary>
-    /// Sets the data source that populates the items of the list.
-    /// </summary>
-    [Parameter] public IEnumerable<TItem> Items { get; set; } = new List<TItem>();
-
-    /// <summary>
-    /// The name of the field from the model that will be shown to the user.
-    /// </summary>
-    [Parameter] public string TextField { get; set; } = "Text";
-
-    /// <summary>
-    /// The name of the field from the model that will be the underlying value.
-    /// </summary>
-    [Parameter] public string ValueField { get; set; } = "Value";
+    [Parameter] public Expression<Func<TItem, bool>>? IsEnabledSelector { get; set; }
 
     /// <summary>
     /// The name of the field from the model that will be the BitIconName.
@@ -75,29 +66,9 @@ public partial class BitRadioButtonList<TItem, TValue>
     [Parameter] public string ImageSrcField { get; set; } = "ImageSrc";
 
     /// <summary>
-    /// The name of the field from the model that will be the selected image src.
-    /// </summary>
-    [Parameter] public string SelectedImageSrcField { get; set; } = "SelectedImageSrc";
-
-    /// <summary>
     /// The name of the field from the model that will be the image alternate text.
     /// </summary>
     [Parameter] public string ImageAltField { get; set; } = "ImageAlt";
-
-    /// <summary>
-    /// The name of the field from the model that will be enable item.
-    /// </summary>
-    [Parameter] public string IsEnabledField { get; set; } = "IsEnabled";
-
-    /// <summary>
-    /// The field from the model that will be shown to the user.
-    /// </summary>
-    [Parameter] public Expression<Func<TItem, object>>? TextSelector { get; set; }
-
-    /// <summary>
-    /// The field from the model that will be the underlying value.
-    /// </summary>
-    [Parameter] public Expression<Func<TItem, object>>? ValueSelector { get; set; }
 
     /// <summary>
     /// The field from the model that will be the BitIconName.
@@ -110,19 +81,9 @@ public partial class BitRadioButtonList<TItem, TValue>
     [Parameter] public Expression<Func<TItem, object>>? ImageSrcSelector { get; set; }
 
     /// <summary>
-    /// The field from the model that will be the selected image src.
-    /// </summary>
-    [Parameter] public Expression<Func<TItem, object>>? SelectedImageSrcSelector { get; set; }
-
-    /// <summary>
     /// The field from the model that will be the image alternate text.
     /// </summary>
     [Parameter] public Expression<Func<TItem, object>>? ImageAltSelector { get; set; }
-
-    /// <summary>
-    /// The field from the model that will be enable item.
-    /// </summary>
-    [Parameter] public Expression<Func<TItem, bool>>? IsEnabledSelector { get; set; }
 
     /// <summary>
     /// The width and height of the image in px for item field.
@@ -130,16 +91,69 @@ public partial class BitRadioButtonList<TItem, TValue>
     [Parameter] public Size? ImageSize { get; set; }
 
     /// <summary>
-    /// Callback for when the option clicked
+    /// Change direction to RTL.
+    /// </summary>
+    [Parameter] public bool IsRtl { get; set; }
+
+    /// <summary>
+    /// Descriptive label for the radio button list.
+    /// </summary>
+    [Parameter] public string? Label { get; set; }
+
+    /// <summary>
+    /// Used to customize the label for the radio button list.
+    /// </summary>
+    [Parameter] public RenderFragment? LabelTemplate { get; set; }
+
+    /// <summary>
+    /// You can define the RadioButtonList in Horizontal or Vertical mode.
+    /// </summary>
+    [Parameter] public BitLayoutFlow? LayoutFlow { get; set; }
+
+    /// <summary>
+    /// Name of RadioButtonList, this name is used to group each item into the same logical RadioButtonList.
+    /// </summary>
+    [Parameter] public string Name { get; set; } = Guid.NewGuid().ToString();
+
+    /// <summary>
+    /// Callback for when the option clicked.
     /// </summary>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
     /// <summary>
-    /// Callback for when the option has been changed
+    /// Callback for when the option has been changed.
     /// </summary>
     [Parameter] public EventCallback<ChangeEventArgs> OnChange { get; set; }
 
-    public string LabelId { get; set; } = string.Empty;
+    /// <summary>
+    /// The name of the field from the model that will be the selected image src.
+    /// </summary>
+    [Parameter] public string SelectedImageSrcField { get; set; } = "SelectedImageSrc";
+
+    /// <summary>
+    /// The field from the model that will be the selected image src.
+    /// </summary>
+    [Parameter] public Expression<Func<TItem, object>>? SelectedImageSrcSelector { get; set; }
+
+    /// <summary>
+    /// The name of the field from the model that will be shown to the user.
+    /// </summary>
+    [Parameter] public string TextField { get; set; } = "Text";
+
+    /// <summary>
+    /// The field from the model that will be shown to the user.
+    /// </summary>
+    [Parameter] public Expression<Func<TItem, object>>? TextSelector { get; set; }
+
+    /// <summary>
+    /// The name of the field from the model that will be the underlying value.
+    /// </summary>
+    [Parameter] public string ValueField { get; set; } = "Value";
+
+    /// <summary>
+    /// The field from the model that will be the underlying value.
+    /// </summary>
+    [Parameter] public Expression<Func<TItem, object>>? ValueSelector { get; set; }
 
     protected override string RootElementClass => "bit-rbl";
 
@@ -150,11 +164,14 @@ public partial class BitRadioButtonList<TItem, TValue>
 
         ClassBuilder.Register(() => ValueInvalid is true
                                    ? $"{RootElementClass}-invalid-{VisualClassRegistrar()}" : string.Empty);
+
+        ClassBuilder.Register(() => IsRtl
+                                   ? $"{RootElementClass}-rtl-{VisualClassRegistrar()}" : string.Empty);
     }
 
     protected override Task OnInitializedAsync()
     {
-        LabelId = $"RadioButtonListLabel{UniqueId}";
+        _labelId = $"RadioButtonListLabel{UniqueId}";
 
         if (TextSelector is not null)
         {
@@ -198,7 +215,7 @@ public partial class BitRadioButtonList<TItem, TValue>
     {
         if (ImageSize is not null)
         {
-            imageSizeStyle = $" width:{ImageSize.Value.Width}px; height:{ImageSize.Value.Height}px;";
+            _imageSizeStyle = $" width:{ImageSize.Value.Width}px; height:{ImageSize.Value.Height}px;";
         }
 
         return base.OnParametersSetAsync();
@@ -220,7 +237,7 @@ public partial class BitRadioButtonList<TItem, TValue>
         await OnChange.InvokeAsync(e);
     }
 
-    private string GetAriaLabelledBy() => Label.HasValue() || LabelFragment is not null ? LabelId : AriaLabelledBy;
+    private string GetAriaLabelledBy() => Label.HasValue() || LabelTemplate is not null ? _labelId : AriaLabelledBy;
 
     private string? GetTextItem(TItem item) => item.GetValueAsObjectFromProperty(TextField)?.ToString();
 
@@ -266,13 +283,24 @@ public partial class BitRadioButtonList<TItem, TValue>
         const string itemRootElementClass = "bit-rbli";
         StringBuilder cssClass = new(itemRootElementClass);
 
+        if (ItemTemplate is not null) return cssClass.ToString();
+
+        if (GetIsCheckedItem(item))
+        {
+            cssClass
+                .Append(' ')
+                .Append(itemRootElementClass)
+                .Append("-checked");
+        }
+
+        if (ItemLabelTemplate is not null) return cssClass.ToString();
+
         if (IsEnabled is false || GetIsEnabledItem(item) is false)
         {
             cssClass
                .Append(' ')
                .Append(itemRootElementClass)
-               .Append("-disabled-")
-               .Append(VisualClassRegistrar());
+               .Append("-disabled");
         }
 
         if (GetImageSrcItem(item).HasValue() || GetIconNameItem(item).HasValue)
@@ -280,23 +308,13 @@ public partial class BitRadioButtonList<TItem, TValue>
             cssClass
                 .Append(' ')
                 .Append(itemRootElementClass)
-                .Append("-with-img-")
-                .Append(VisualClassRegistrar());
-        }
-
-        if (GetIsCheckedItem(item))
-        {
-            cssClass
-                .Append(' ')
-                .Append(itemRootElementClass)
-                .Append("-checked-")
-                .Append(VisualClassRegistrar());
+                .Append("-with-img");
         }
 
         return cssClass.ToString();
     }
 
-    private string GetLabelClassNameItem(TItem item) => GetImageSrcItem(item).HasValue() || GetIconNameItem(item).HasValue ? "bit-rbli-lbl-with-img" : "bit-rbli-lbl";
+    private string GetLabelClassNameItem(TItem item) => (GetImageSrcItem(item).HasValue() || GetIconNameItem(item).HasValue) && ItemLabelTemplate is null ? "bit-rbli-lbl-with-img" : "bit-rbli-lbl";
 
     /// <inheritdoc />
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? validationErrorMessage)
