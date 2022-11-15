@@ -379,8 +379,8 @@ public partial class BitLoadingButtonDemo
         new ComponentParameter
         {
             Name = "LoadingSpinnerSize",
-            Type = "BitSpinnerSize",
-            DefaultValue = "BitSpinnerSize.Small",
+            Type = "BitElementSize",
+            DefaultValue = "BitElementSize.Small",
             Description = "The size of loading spinner to render.",
             LinkType = LinkType.Link,
             Href = "#spinner-size-enum"
@@ -388,8 +388,8 @@ public partial class BitLoadingButtonDemo
         new ComponentParameter
         {
             Name = "LoadingLabelPosition",
-            Type = "BitSpinnerLabelPosition",
-            DefaultValue = "BitSpinnerLabelPosition.Right",
+            Type = "BitLabelPosition",
+            DefaultValue = "BitLabelPosition.Right",
             Description = "The position of the loading Label in regards to the spinner animation.",
             LinkType = LinkType.Link,
             Href = "#spinner-position-enum"
@@ -494,7 +494,7 @@ public partial class BitLoadingButtonDemo
         new EnumParameter()
         {
             Id = "spinner-size-enum",
-            Title = "BitSpinnerLabelPosition Enum",
+            Title = "BitLabelPosition Enum",
             Description = "",
             EnumList = new List<EnumItem>()
             {
@@ -527,7 +527,7 @@ public partial class BitLoadingButtonDemo
         new EnumParameter()
         {
             Id = "spinner-position-enum",
-            Title = "BitSpinnerSize Enum",
+            Title = "BitElementSize Enum",
             Description = "",
             EnumList = new List<EnumItem>()
             {
@@ -652,14 +652,14 @@ private async Task LoadingLabelStandardOnClick()
     private readonly string example3HTMLCode = @"
 <BitLoadingButton IsLoading=""TopPositionIsLoading""
                   LoadingLabel=""Loading...""
-                  LoadingLabelPosition=""BitSpinnerLabelPosition.Top""
+                  LoadingLabelPosition=""BitLabelPosition.Top""
                   OnClick=""TopPositionOnClick"">
     Top (@TopPositionCounter)
 </BitLoadingButton>
 
 <BitLoadingButton IsLoading=""RightPositionIsLoading""
                   LoadingLabel=""Loading...""
-                  LoadingLabelPosition=""BitSpinnerLabelPosition.Right""
+                  LoadingLabelPosition=""BitLabelPosition.Right""
                   OnClick=""RightPositionOnClick"">
     Right (@RightPositionCounter)
 </BitLoadingButton>
@@ -667,7 +667,7 @@ private async Task LoadingLabelStandardOnClick()
 <BitLoadingButton IsLoading=""BottomPositionIsLoading""
                   ButtonStyle=""BitButtonStyle.Standard""
                   LoadingLabel=""Loading...""
-                  LoadingLabelPosition=""BitSpinnerLabelPosition.Bottom""
+                  LoadingLabelPosition=""BitLabelPosition.Bottom""
                   OnClick=""BottomPositionOnClick"">
     Bottom (@BottomPositionCounter)
 </BitLoadingButton>
@@ -675,7 +675,7 @@ private async Task LoadingLabelStandardOnClick()
 <BitLoadingButton IsLoading=""LeftPositionIsLoading""
                   ButtonStyle=""BitButtonStyle.Standard""
                   LoadingLabel=""Loading...""
-                  LoadingLabelPosition=""BitSpinnerLabelPosition.Left""
+                  LoadingLabelPosition=""BitLabelPosition.Left""
                   OnClick=""LeftPositionOnClick"">
     Left (@LeftPositionCounter)
 </BitLoadingButton>
@@ -730,27 +730,27 @@ private async Task LeftPositionOnClick()
 
     private readonly string example4HTMLCode = @"
 <BitLoadingButton IsLoading=""XSmallIsLoading""
-                  LoadingSpinnerSize=""BitSpinnerSize.XSmall""
+                  LoadingSpinnerSize=""BitElementSize.XSmall""
                   OnClick=""XSmallOnClick"">
     XSmall (@XSmallCounter)
 </BitLoadingButton>
 
 <BitLoadingButton IsLoading=""SmallIsLoading""
-                  LoadingSpinnerSize=""BitSpinnerSize.Small""
+                  LoadingSpinnerSize=""BitElementSize.Small""
                   OnClick=""SmallOnClick"">
     Small (@SmallCounter)
 </BitLoadingButton>
 
 <BitLoadingButton IsLoading=""MediumIsLoading""
                   ButtonStyle=""BitButtonStyle.Standard""
-                  LoadingSpinnerSize=""BitSpinnerSize.Medium""
+                  LoadingSpinnerSize=""BitElementSize.Medium""
                   OnClick=""MediumOnClick"">
     Medium (@MediumCounter)
 </BitLoadingButton>
 
 <BitLoadingButton IsLoading=""LargeIsLoading""
                   ButtonStyle=""BitButtonStyle.Standard""
-                  LoadingSpinnerSize=""BitSpinnerSize.Large""
+                  LoadingSpinnerSize=""BitElementSize.Large""
                   OnClick=""LargeOnClick"">
     Large (@LargeCounter)
 </BitLoadingButton>

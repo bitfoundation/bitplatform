@@ -27,19 +27,19 @@ public partial class BitSpinnerDemo
         new ComponentParameter()
         {
             Name = "LabelPosition",
-            Type = "BitSpinnerLabelPosition",
+            Type = "BitLabelPosition",
             LinkType = LinkType.Link,
             Href = "#spinnerLabelPosition-enum",
-            DefaultValue = "BitSpinnerLabelPosition.Top",
+            DefaultValue = "BitLabelPosition.Top",
             Description = "The position of the label in regards to the spinner animation.",
         },
         new ComponentParameter()
         {
             Name = "Size",
-            Type = "BitSpinnerSize",
+            Type = "BitElementSize",
             LinkType = LinkType.Link,
             Href = "#spinnerSize-enum",
-            DefaultValue = "BitSpinnerSize.Medium",
+            DefaultValue = "BitElementSize.Medium",
             Description = "The size of spinner to render.",
         },
         new ComponentParameter()
@@ -85,7 +85,7 @@ public partial class BitSpinnerDemo
         new EnumParameter()
         {
             Id = "spinnerLabelPosition-enum",
-            Title = "BitSpinnerLabelPosition Enum",
+            Title = "BitLabelPosition Enum",
             Description = "",
             EnumList = new List<EnumItem>()
             {
@@ -118,7 +118,7 @@ public partial class BitSpinnerDemo
         new EnumParameter()
         {
             Id = "spinnerSize-enum",
-            Title = "BitSpinnerSize Enum",
+            Title = "BitElementSize Enum",
             Description = "",
             EnumList = new List<EnumItem>()
             {
@@ -177,13 +177,13 @@ public partial class BitSpinnerDemo
         }
     };
 
-    private readonly string example1HTMLCode = @"<BitSpinner Size=""BitSpinnerSize.XSmall"" />
-<BitSpinner Size=""BitSpinnerSize.Small"" />
-<BitSpinner Size=""BitSpinnerSize.Medium"" />
-<BitSpinner Size=""BitSpinnerSize.Large"" />";
+    private readonly string example1HTMLCode = @"<BitSpinner Size=""BitElementSize.XSmall"" />
+<BitSpinner Size=""BitElementSize.Small"" />
+<BitSpinner Size=""BitElementSize.Medium"" />
+<BitSpinner Size=""BitElementSize.Large"" />";
 
-    private readonly string example2HTMLCode = @"<BitSpinner LabelPosition=""BitSpinnerLabelPosition.Top"" Label=""I am definitely loading..."" />
-<BitSpinner LabelPosition=""BitSpinnerLabelPosition.Bottom"" Label=""Seriously, still loading..."" />
-<BitSpinner LabelPosition=""BitSpinnerLabelPosition.Left"" Label=""Wait, wait..."" />
-<BitSpinner LabelPosition=""BitSpinnerLabelPosition.Right"" Label=""Nope, still loading..."" />";
+    private readonly string example2HTMLCode = @"<BitSpinner LabelPosition=""BitLabelPosition.Top"" Label=""I am definitely loading..."" />
+<BitSpinner LabelPosition=""BitLabelPosition.Bottom"" Label=""Seriously, still loading..."" />
+<BitSpinner LabelPosition=""BitLabelPosition.Left"" Label=""Wait, wait..."" />
+<BitSpinner LabelPosition=""BitLabelPosition.Right"" Label=""Nope, still loading..."" />";
 }

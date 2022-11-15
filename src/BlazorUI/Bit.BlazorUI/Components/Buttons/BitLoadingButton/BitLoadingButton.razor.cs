@@ -80,12 +80,12 @@ public partial class BitLoadingButton
     /// <summary>
     /// The size of loading spinner to render.
     /// </summary>
-    [Parameter] public BitSpinnerSize LoadingSpinnerSize { get; set; } = BitSpinnerSize.Small;
+    [Parameter] public BitElementSize LoadingSpinnerSize { get; set; } = BitElementSize.Small;
 
     /// <summary>
     /// The position of the loading Label in regards to the spinner animation.
     /// </summary>
-    [Parameter] public BitSpinnerLabelPosition LoadingLabelPosition { get; set; } = BitSpinnerLabelPosition.Right;
+    [Parameter] public BitLabelPosition LoadingLabelPosition { get; set; } = BitLabelPosition.Right;
 
     /// <summary>
     /// Used to customize the content inside the Button in the Loading state.
@@ -135,10 +135,10 @@ public partial class BitLoadingButton
     {
         string classSize = LoadingSpinnerSize switch
         {
-            BitSpinnerSize.XSmall => "xSmall",
-            BitSpinnerSize.Small => "small",
-            BitSpinnerSize.Medium => "medium",
-            BitSpinnerSize.Large => "large",
+            BitElementSize.XSmall => "xSmall",
+            BitElementSize.Small => "small",
+            BitElementSize.Medium => "medium",
+            BitElementSize.Large => "large",
             _ => "small"
         };
 
@@ -149,10 +149,10 @@ public partial class BitLoadingButton
     {
         string classLabelPosition = LoadingLabelPosition switch
         {
-            BitSpinnerLabelPosition.Top => "top",
-            BitSpinnerLabelPosition.Right => "right",
-            BitSpinnerLabelPosition.Bottom => "bottom",
-            BitSpinnerLabelPosition.Left => "left",
+            BitLabelPosition.Top => "top",
+            BitLabelPosition.Right => "right",
+            BitLabelPosition.Bottom => "bottom",
+            BitLabelPosition.Left => "left",
             _ => "right"
         };
 
