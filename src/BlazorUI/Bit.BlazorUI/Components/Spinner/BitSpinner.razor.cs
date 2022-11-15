@@ -12,12 +12,12 @@ public partial class BitSpinner
     /// <summary>
     /// The position of the label in regards to the spinner animation
     /// </summary>
-    [Parameter] public BitSpinnerLabelPosition LabelPosition { get; set; }
+    [Parameter] public BitLabelPosition LabelPosition { get; set; }
 
     /// <summary>
     /// The size of spinner to render
     /// </summary>
-    [Parameter] public BitSpinnerSize Size { get; set; }
+    [Parameter] public BitElementSize Size { get; set; }
 
     /// <summary>
     /// The label to show next to the spinner. Label updates will be announced to the screen readers
@@ -38,19 +38,19 @@ public partial class BitSpinner
 
         switch (Size)
         {
-            case BitSpinnerSize.XSmall:
+            case BitElementSize.XSmall:
                 classSize = "xSmall";
                 break;
 
-            case BitSpinnerSize.Small:
+            case BitElementSize.Small:
                 classSize = "small";
                 break;
 
-            case BitSpinnerSize.Medium:
+            case BitElementSize.Medium:
                 classSize = "medium";
                 break;
 
-            case BitSpinnerSize.Large:
+            case BitElementSize.Large:
                 classSize = "large";
                 break;
         }
@@ -63,19 +63,19 @@ public partial class BitSpinner
         string classLabelPosition = string.Empty;
         switch (LabelPosition)
         {
-            case BitSpinnerLabelPosition.Top:
+            case BitLabelPosition.Top:
                 classLabelPosition = "top";
                 break;
 
-            case BitSpinnerLabelPosition.Left:
+            case BitLabelPosition.Left:
                 classLabelPosition = "left";
                 break;
 
-            case BitSpinnerLabelPosition.Right:
+            case BitLabelPosition.Right:
                 classLabelPosition = "right";
                 break;
 
-            case BitSpinnerLabelPosition.Bottom:
+            case BitLabelPosition.Bottom:
                 classLabelPosition = "bottom";
                 break;
         }
