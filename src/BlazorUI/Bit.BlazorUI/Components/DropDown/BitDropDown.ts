@@ -7,7 +7,8 @@
         scrollWrapper: HTMLElement,
         dropDirection: BitDropDirection,
         isOpen: boolean,
-        isResponsiveModeEnabled: boolean) {
+        isResponsiveModeEnabled: boolean,
+        isRtl: boolean) {
 
         const dropDownWrapper = document.getElementById(dropDownWrapperId);
         if (dropDownWrapper == null)
@@ -66,10 +67,16 @@
 
             if (window.innerWidth < minimumWidthForDropDownNormalOpen && isResponsiveModeEnabled) {
                 dropDownCallout.style.top = "0";
-                dropDownCallout.style.right = "0";
                 dropDownCallout.style.maxHeight = window.innerHeight + "px";
                 scrollWrapper.style.maxHeight = (window.innerHeight - scrollWrapper.getBoundingClientRect().y) + "px";
                 scrollWrapper.style.height = scrollWrapper.style.maxHeight;
+
+                if (isRtl) {
+                    dropDownCallout.style.left = "0";
+                }
+                else {
+                    dropDownCallout.style.right = "0";
+                }
             } else if (dropDirection == BitDropDirection.TopAndBottom) {
                 dropDownCallout.style.left = dropDownWrapperX + "px";
 
