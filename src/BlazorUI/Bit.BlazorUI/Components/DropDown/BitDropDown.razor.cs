@@ -417,7 +417,7 @@ public partial class BitDropDown
     private async Task CloseCallout()
     {
         var obj = DotNetObjectReference.Create(this);
-        await JSRuntime.InvokeVoidAsync("BitDropDown.toggleDropDownCallout", obj, UniqueId, DropDownId, DropDownCalloutId, DropDownOverlayId, _scrollWrapperElement, DropDirection, _isOpen, _isResponsiveModeEnabled);
+        await JSRuntime.InvokeVoidAsync("BitDropDown.toggleDropDownCallout", obj, UniqueId, DropDownId, DropDownCalloutId, DropDownOverlayId, _scrollWrapperElement, DropDirection, _isOpen, _isResponsiveModeEnabled, IsRtl);
         IsOpen = false;
         StateHasChanged();
     }
@@ -427,7 +427,7 @@ public partial class BitDropDown
         if (IsEnabled is false) return;
 
         var obj = DotNetObjectReference.Create(this);
-        await JSRuntime.InvokeVoidAsync("BitDropDown.toggleDropDownCallout", obj, UniqueId, DropDownId, DropDownCalloutId, DropDownOverlayId, _scrollWrapperElement, DropDirection, _isOpen, _isResponsiveModeEnabled);
+        await JSRuntime.InvokeVoidAsync("BitDropDown.toggleDropDownCallout", obj, UniqueId, DropDownId, DropDownCalloutId, DropDownOverlayId, _scrollWrapperElement, DropDirection, _isOpen, _isResponsiveModeEnabled, IsRtl);
         _isOpen = !_isOpen;
         await OnClick.InvokeAsync(e);
         await FocusOnSearchBox();
@@ -484,7 +484,7 @@ public partial class BitDropDown
             Text = selectedItem.Text;
             CurrentValueAsString = selectedItem.Value;
             var obj = DotNetObjectReference.Create(this);
-            await JSRuntime.InvokeVoidAsync("BitDropDown.toggleDropDownCallout", obj, UniqueId, DropDownId, DropDownCalloutId, DropDownOverlayId, _scrollWrapperElement, DropDirection, _isOpen, _isResponsiveModeEnabled);
+            await JSRuntime.InvokeVoidAsync("BitDropDown.toggleDropDownCallout", obj, UniqueId, DropDownId, DropDownCalloutId, DropDownOverlayId, _scrollWrapperElement, DropDirection, _isOpen, _isResponsiveModeEnabled, IsRtl);
             _isOpen = false;
             await ClearSearchBox();
 
