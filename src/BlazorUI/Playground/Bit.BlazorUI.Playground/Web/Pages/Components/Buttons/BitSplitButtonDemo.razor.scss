@@ -1,16 +1,32 @@
 ﻿@import '../../../Styles/abstracts/_functions.scss';
+@import '../../../Styles/abstracts/_media-queries.scss';
+@import '../../../Styles/abstracts/_colors.scss';
 
 .item-template-box {
   display: flex;
   width: 100%;
 }
 
-.split-btn {
-    display: inline-block;
-    margin: 0 rem(10px);
-}
-
 .selected-item {
     margin-top: rem(8px);
     font-weight: 600;
+    color: $Gray2;
+}
+
+.example-box {
+    display: flex;
+    gap: rem(20px);
+    width: fit-content;
+   
+    &.column {
+        flex-direction: column;
+    }
+
+    @include sm {
+        flex-direction: column;
+    }
+}
+
+.example{
+    width: rem(160px);
 }
