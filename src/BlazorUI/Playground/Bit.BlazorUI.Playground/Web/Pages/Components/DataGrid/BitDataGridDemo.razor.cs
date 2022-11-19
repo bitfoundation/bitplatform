@@ -8,9 +8,8 @@ public partial class BitDataGridDemo
 {
     private readonly List<ComponentParameter> componentParameters = new()
     {
-
          new ComponentParameter()
-        {
+         {
             Name = "Items",
             Type = "IQueryable<TGridItem>",
             DefaultValue = "",
@@ -18,73 +17,63 @@ public partial class BitDataGridDemo
                             This could be in-memory data converted to queryable using the
                             System.Linq.Queryable.AsQueryable(System.Collections.IEnumerable) extension method,
                             or an EntityFramework DataSet or an IQueryable derived from it.
-                            You should supply either Items or ItemsProvider, but not both.
-                            ",
-        },
+                            You should supply either Items or ItemsProvider, but not both.",
+         },
          new ComponentParameter()
-        {
+         {
             Name = "ItemsProvider",
             Type = "BitDataGridItemsProvider<TGridItem>",
             DefaultValue = "",
             Description = @"A callback that supplies data for the rid.
-                            You should supply either Items or ItemsProvider, but not both.
-                           ",
-        },
-
-          new ComponentParameter()
-        {
+                            You should supply either Items or ItemsProvider, but not both.",
+         },
+         new ComponentParameter()
+         {
             Name = "Class",
             Type = "string",
             DefaultValue = "",
             Description = "An optional CSS class name. If given, this will be included in the class attribute of the rendered table.",
-        },
-
-          new ComponentParameter()
-        {
+         },
+         new ComponentParameter()
+         {
             Name = "Theme",
             Type = "IQueryable<TGridItem>",
             DefaultValue = "default",
             Description = @"A theme name, with default value ""default"". This affects which styling rules match the table.",
-        },
-
-        new ComponentParameter()
-        {
+         },
+         new ComponentParameter()
+         {
             Name = "ChildContent",
             Type = "RenderFragment",
             DefaultValue = "",
             Description = "Defines the child components of this instance. For example, you may define columns by adding components derived from the BitDataGridColumnBase<TGridItem>",
-        },
-
+         },
          new ComponentParameter()
-        {
+         {
             Name = "Virtualize",
             Type = "bool",
             DefaultValue = "false",
             Description = @"If true, the grid will be rendered with virtualization. This is normally used in conjunction with
                             scrolling and causes the grid to fetch and render only the data around the current scroll viewport.
                             This can greatly improve the performance when scrolling through large data sets.",
-        },
-
+         },
          new ComponentParameter()
-        {
+         {
             Name = "ItemSize",
             Type = "float",
             DefaultValue = "50",
             Description = @"This is applicable only when using Virtualize. It defines an expected height in pixels for
                             each row, allowing the virtualization mechanism to fetch the correct number of items to match the display
                             size and to ensure accurate scrolling.",
-        },
-
+         },
          new ComponentParameter()
-        {
+         {
             Name = "ResizableColumns",
             Type = "bool",
             DefaultValue = "",
             Description = @"If true, renders draggable handles around the column headers, allowing the user to resize the columns
-                            manually. Size changes are not persisted.
-                           ",
+                            manually. Size changes are not persisted.",
         },
-
         new ComponentParameter()
         {
             Name = "ItemKey",
@@ -96,7 +85,6 @@ public partial class BitDataGridDemo
                             unique identifiers, even when the TGridItem instances are replaced by new copies (for example, after a new query against the underlying data store).
                             If not set, the @key will be the TGridItem instance itself.",
         },
-
         new ComponentParameter()
         {
             Name = "Pagination",
@@ -106,51 +94,47 @@ public partial class BitDataGridDemo
                             causing the grid to fetch and render only the current page of data.
                             This is normally used in conjunction with a Paginator component or some other UI logic
                             that displays and updates the supplied BitDataGridPaginationState instance.",
-        },
-
-
+        }
     };
+
     private readonly List<ComponentSubParameter> componentSubParameter = new()
     {
          new ComponentSubParameter()
-        {
-            Id="BitDataGridColumnBase",
+         {
+            Id = "BitDataGridColumnBase",
             Title = "BitDataGridColumnBase",
             Parameters=new List<ComponentParameter>()
             {
+                new ComponentParameter()
+                {
+                    Name = "Title",
+                    Type = "string",
+                    DefaultValue = "",
+                    Description = "Title text for the column. This is rendered automatically if HeaderTemplate is not used.",
+                },
+                new ComponentParameter()
+                {
+                    Name = "Class",
+                    Type = "string",
+                    DefaultValue = "",
+                    Description = "An optional CSS class name. If specified, this is included in the class attribute of table header and body cells for this column.",
+                },
+                new ComponentParameter()
+                {
+                    Name = "Align",
+                    Type = "BitDataGridAlign",
+                    DefaultValue = "",
+                    Description = "If specified, controls the justification of table header and body cells for this column.",
+                 },
                  new ComponentParameter()
-                    {
-                        Name = "Title",
-                        Type = "string",
-                        DefaultValue = "",
-                        Description = @"Title text for the column. This is rendered automatically if HeaderTemplate is not used.",
-                    },
-                 new ComponentParameter()
-                    {
-                        Name = "Class",
-                        Type = "string",
-                        DefaultValue = "",
-                        Description = @"An optional CSS class name. If specified, this is included in the class attribute of table header and body cells
-                                        for this column.
-                                        ",
-                    },
-                 new ComponentParameter()
-                    {
-                        Name = "Align",
-                        Type = "BitDataGridAlign",
-                        DefaultValue = "",
-                        Description = @"If specified, controls the justification of table header and body cells for this column.",
-                    },
-                  new ComponentParameter()
                     {
                         Name = "HeaderTemplate",
                         Type = "RenderFragment<BitDataGridColumnBase<TGridItem>>",
                         DefaultValue = "",
                         Description = @"An optional template for this column's header cell. If not specified, the default header template
-                                        includes the Title along with any applicable sort indicators and options buttons.
-                                        ",
+                                        includes the Title along with any applicable sort indicators and options buttons.",
                     },
-                   new ComponentParameter()
+                    new ComponentParameter()
                     {
                         Name = "ColumnOptions",
                         Type = "RenderFragment<BitDataGridColumnBase<TGridItem>>",
@@ -158,94 +142,84 @@ public partial class BitDataGridDemo
                         Description = @"If specified, indicates that this column has this associated options UI. A button to display this
                                         UI will be included in the header cell by default.
                                         If HeaderTemplate is used, it is left up to that template to render any relevant
-                                        ""show options"" UI and invoke the grid's BitDataGrid<TGridItem>.ShowColumnOptions(BitDataGridColumnBase<TGridItem>)).
-                                        ",
+                                        ""show options"" UI and invoke the grid's BitDataGrid<TGridItem>.ShowColumnOptions(BitDataGridColumnBase<TGridItem>)).",
                     },
-                   new ComponentParameter()
+                    new ComponentParameter()
                     {
                         Name = "Sortable",
                         Type = "bool",
                         DefaultValue = "",
                         Description = @"Indicates whether the data should be sortable by this column.
                                         The default value may vary according to the column type (for example, a BitDataGridTemplateColumn<TGridItem>
-                                        is sortable by default if any BitDataGridTemplateColumn<TGridItem>.SortBy parameter is specified).
-                                        ",
+                                        is sortable by default if any BitDataGridTemplateColumn<TGridItem>.SortBy parameter is specified).",
                     },
-                   new ComponentParameter()
+                    new ComponentParameter()
                     {
                         Name = "IsDefaultSort",
                         Type = "BitDataGridSortDirection",
                         DefaultValue = "",
-                        Description = @"If specified and not null, indicates that this column represents the initial sort order
-                                        for the grid. The supplied value controls the default sort direction.
-                                        ",
+                        Description = "If specified and not null, indicates that this column represents the initial sort order for the grid. The supplied value controls the default sort direction.",
                     },
-                   new ComponentParameter()
+                    new ComponentParameter()
                     {
                         Name = "PlaceholderTemplate",
                         Type = "RenderFragment<PlaceholderContext>",
                         DefaultValue = "",
-                        Description = @"If specified, virtualized grids will use this template to render cells whose data has not yet been loaded.",
-                    },
+                        Description = "If specified, virtualized grids will use this template to render cells whose data has not yet been loaded.",
+                    }
             },
-            Description=@"BitDataGrid has two built-in column types, BitDataGridPropertyColumn and BitDataGridTemplateColumn. You can also create your own column types by subclassing ColumnBase
-                          The BitDataGridColumnBase type, which all column must derive from, offers some common parameters",
+            Description = @"BitDataGrid has two built-in column types, BitDataGridPropertyColumn and BitDataGridTemplateColumn. You can also create your own column types by subclassing ColumnBase
+                            The BitDataGridColumnBase type, which all column must derive from, offers some common parameters",
 
         },
-
-         new ComponentSubParameter()
+        new ComponentSubParameter()
         {
             Id="BitDataGridPropertyColumn",
             Title = "BitDataGridPropertyColumn",
             Parameters=new List<ComponentParameter>()
             {
-                 new ComponentParameter()
-                    {
-                        Name = "Property",
-                        Type = "Expression<Func<TGridItem, TProp>>",
-                        DefaultValue="",
-                        Description = @"Defines the value to be displayed in this column's cells.",
-                    },
-                  new ComponentParameter()
-                    {
-                        Name = "Format",
-                        Type = "string",
-                        DefaultValue="",
-                        Description = @"Optionally specifies a format string for the value.
-                                        Using this requires the TProp type to implement IFormattable.
-                                       ",
-                    },
+                new ComponentParameter()
+                {
+                    Name = "Property",
+                    Type = "Expression<Func<TGridItem, TProp>>",
+                    DefaultValue = "",
+                    Description = "Defines the value to be displayed in this column's cells.",
+                },
+                new ComponentParameter()
+                {
+                    Name = "Format",
+                    Type = "string",
+                    DefaultValue = "",
+                    Description = "Optionally specifies a format string for the value. Using this requires the TProp type to implement IFormattable.",
+                },
             },
-            Description=@"It is for displaying a single value specified by the parameter Property. This column infers sorting rules automatically,
-                          and uses the property's name as its title if not otherwise set.",
-
+            Description = "It is for displaying a single value specified by the parameter Property. This column infers sorting rules automatically, and uses the property's name as its title if not otherwise set.",
         },
-
-         new ComponentSubParameter()
+        new ComponentSubParameter()
         {
-            Id="BitDataGridTemplateColumn",
+            Id = "BitDataGridTemplateColumn",
             Title = "BitDataGridTemplateColumn",
-            Parameters=new List<ComponentParameter>()
+            Parameters = new List<ComponentParameter>()
             {
                  new ComponentParameter()
-                    {
-                        Name = "ChildContent",
-                        Type = "RenderFragment<TGridItem>",
-                        DefaultValue="",
-                        Description = @"Specifies the content to be rendered for each row in the table.",
-                    },
-                  new ComponentParameter()
-                    {
-                        Name = "SortBy",
-                        Type = "BitDataGridSort<TGridItem>",
-                        DefaultValue="",
-                        Description = @"Optionally specifies sorting rules for this column.",
-                    },
+                 {
+                    Name = "ChildContent",
+                    Type = "RenderFragment<TGridItem>",
+                    DefaultValue= "",
+                    Description = @"Specifies the content to be rendered for each row in the table.",
+                 },
+                 new ComponentParameter()
+                 {
+                    Name = "SortBy",
+                    Type = "BitDataGridSort<TGridItem>",
+                    DefaultValue = "",
+                    Description = "Optionally specifies sorting rules for this column.",
+                 },
             },
-            Description=@"It uses arbitrary Razor fragments to supply contents for its cells.
-                          It can't infer the column's title or sort order automatically. 
-                          also it's possible to add arbitrary Blazor components to your table cells.
-                          Remember that rendering many components, or many event handlers, can impact the performance of your grid. One way to mitigate this issue is by paginating or virtualizing your grid",
+            Description = @"It uses arbitrary Razor fragments to supply contents for its cells.
+                            It can't infer the column's title or sort order automatically. 
+                            also it's possible to add arbitrary Blazor components to your table cells.
+                            Remember that rendering many components, or many event handlers, can impact the performance of your grid. One way to mitigate this issue is by paginating or virtualizing your grid",
 
         },
 
@@ -254,199 +228,284 @@ public partial class BitDataGridDemo
     {
         new EnumParameter()
         {
-             Id="BitDataGridAlign",
-             Title="BitDataGridAlign Enum",
-             Description="Describes alignment for a BitDataGrid<TGridItem> column.",
-             EnumList=new List<EnumItem>()
+             Id = "BitDataGridAlign",
+             Title = "BitDataGridAlign Enum",
+             Description = "Describes alignment for a BitDataGrid<TGridItem> column.",
+             EnumList = new List<EnumItem>()
              {
                  new EnumItem()
                  {
-                      Name="Left",
-                      Value="0",
-                      Description="Justifies the content against the start of the container."
+                      Name = "Left",
+                      Value = "0",
+                      Description = "Justifies the content against the start of the container."
                  },
                  new EnumItem()
                  {
-                      Name="Center",
-                      Value="1",
-                      Description="Justifies the content at the center of the container."
+                      Name = "Center",
+                      Value = "1",
+                      Description = "Justifies the content at the center of the container."
                  },
                  new EnumItem()
                  {
-                      Name="Right",
-                      Value="2",
-                      Description="Justifies the content at the end of the container."
+                      Name = "Right",
+                      Value = "2",
+                      Description = "Justifies the content at the end of the container."
                  },
 
              }
         },
     };
 
+    private readonly static CountryModel[] _countries = new[]
+    {
+        new CountryModel { Code = "AR", Name = "Argentina", Medals = new MedalsModel { Gold = 0, Silver = 1, Bronze = 2 } },
+        new CountryModel { Code = "AM", Name = "Armenia", Medals = new MedalsModel { Gold = 0, Silver = 2, Bronze = 2 } },
+        new CountryModel { Code = "AU", Name = "Australia", Medals = new MedalsModel { Gold = 17, Silver = 7, Bronze = 22 } },
+        new CountryModel { Code = "AT", Name = "Austria", Medals = new MedalsModel { Gold = 1, Silver = 1, Bronze = 5 } },
+        new CountryModel { Code = "AZ", Name = "Azerbaijan", Medals = new MedalsModel { Gold = 0, Silver = 3, Bronze = 4 } },
+        new CountryModel { Code = "BS", Name = "Bahamas", Medals = new MedalsModel { Gold = 2, Silver = 0, Bronze = 0 } },
+        new CountryModel { Code = "BH", Name = "Bahrain", Medals = new MedalsModel { Gold = 0, Silver = 1, Bronze = 0 } },
+        new CountryModel { Code = "BY", Name = "Belarus", Medals = new MedalsModel { Gold = 1, Silver = 3, Bronze = 3 } },
+        new CountryModel { Code = "BE", Name = "Belgium", Medals = new MedalsModel { Gold = 3, Silver = 1, Bronze = 3 } },
+        new CountryModel { Code = "BM", Name = "Bermuda", Medals = new MedalsModel { Gold = 1, Silver = 0, Bronze = 0 } },
+        new CountryModel { Code = "BW", Name = "Botswana", Medals = new MedalsModel { Gold = 0, Silver = 0, Bronze = 1 } },
+        new CountryModel { Code = "BR", Name = "Brazil", Medals = new MedalsModel { Gold = 7, Silver = 6, Bronze = 8 } },
+        new CountryModel { Code = "BF", Name = "Burkina Faso", Medals = new MedalsModel { Gold = 0, Silver = 0, Bronze = 1 } },
+        new CountryModel { Code = "CA", Name = "Canada", Medals = new MedalsModel { Gold = 7, Silver = 6, Bronze = 11 } },
+        new CountryModel { Code = "TW", Name = "Chinese Taipei", Medals = new MedalsModel { Gold = 2, Silver = 4, Bronze = 6 } },
+        new CountryModel { Code = "CO", Name = "Colombia", Medals = new MedalsModel { Gold = 0, Silver = 4, Bronze = 1 } },
+        new CountryModel { Code = "CI", Name = "Côte d'Ivoire", Medals = new MedalsModel { Gold = 0, Silver = 0, Bronze = 1 } },
+        new CountryModel { Code = "HR", Name = "Croatia", Medals = new MedalsModel { Gold = 3, Silver = 3, Bronze = 2 } },
+        new CountryModel { Code = "CU", Name = "Cuba", Medals = new MedalsModel { Gold = 7, Silver = 3, Bronze = 5 } },
+        new CountryModel { Code = "CZ", Name = "Czech Republic", Medals = new MedalsModel { Gold = 4, Silver = 4, Bronze = 3 } },
+        new CountryModel { Code = "DK", Name = "Denmark", Medals = new MedalsModel { Gold = 3, Silver = 4, Bronze = 4 } },
+        new CountryModel { Code = "DO", Name = "Dominican Republic", Medals = new MedalsModel { Gold = 0, Silver = 3, Bronze = 2 } },
+        new CountryModel { Code = "EC", Name = "Ecuador", Medals = new MedalsModel { Gold = 2, Silver = 1, Bronze = 0 } },
+        new CountryModel { Code = "EE", Name = "Estonia", Medals = new MedalsModel { Gold = 1, Silver = 0, Bronze = 1 } },
+        new CountryModel { Code = "ET", Name = "Ethiopia", Medals = new MedalsModel { Gold = 1, Silver = 1, Bronze = 2 } },
+        new CountryModel { Code = "FJ", Name = "Fiji", Medals = new MedalsModel { Gold = 1, Silver = 0, Bronze = 1 } },
+        new CountryModel { Code = "FI", Name = "Finland", Medals = new MedalsModel { Gold = 0, Silver = 0, Bronze = 2 } },
+        new CountryModel { Code = "FR", Name = "France", Medals = new MedalsModel { Gold = 10, Silver = 12, Bronze = 11 } },
+        new CountryModel { Code = "GE", Name = "Georgia", Medals = new MedalsModel { Gold = 2, Silver = 5, Bronze = 1 } },
+        new CountryModel { Code = "DE", Name = "Germany", Medals = new MedalsModel { Gold = 10, Silver = 11, Bronze = 16 } },
+        new CountryModel { Code = "GH", Name = "Ghana", Medals = new MedalsModel { Gold = 0, Silver = 0, Bronze = 1 } },
+        new CountryModel { Code = "GB", Name = "Great Britain", Medals = new MedalsModel { Gold = 22, Silver = 21, Bronze = 22 } },
+        new CountryModel { Code = "GR", Name = "Greece", Medals = new MedalsModel { Gold = 2, Silver = 1, Bronze = 1 } },
+        new CountryModel { Code = "GD", Name = "Grenada", Medals = new MedalsModel { Gold = 0, Silver = 0, Bronze = 1 } },
+        new CountryModel { Code = "HK", Name = "Hong Kong, China", Medals = new MedalsModel { Gold = 1, Silver = 2, Bronze = 3 } },
+        new CountryModel { Code = "HU", Name = "Hungary", Medals = new MedalsModel { Gold = 6, Silver = 7, Bronze = 7 } },
+        new CountryModel { Code = "ID", Name = "Indonesia", Medals = new MedalsModel { Gold = 1, Silver = 1, Bronze = 3 } },
+        new CountryModel { Code = "IE", Name = "Ireland", Medals = new MedalsModel { Gold = 2, Silver = 0, Bronze = 2 } },
+        new CountryModel { Code = "IR", Name = "Iran", Medals = new MedalsModel { Gold = 3, Silver = 2, Bronze = 2 } },
+        new CountryModel { Code = "IL", Name = "Israel", Medals = new MedalsModel { Gold = 2, Silver = 0, Bronze = 2 } },
+        new CountryModel { Code = "IT", Name = "Italy", Medals = new MedalsModel { Gold = 10, Silver = 10, Bronze = 20 } },
+        new CountryModel { Code = "JM", Name = "Jamaica", Medals = new MedalsModel { Gold = 4, Silver = 1, Bronze = 4 } },
+        new CountryModel { Code = "JO", Name = "Jordan", Medals = new MedalsModel { Gold = 0, Silver = 1, Bronze = 1 } },
+        new CountryModel { Code = "KZ", Name = "Kazakhstan", Medals = new MedalsModel { Gold = 0, Silver = 0, Bronze = 8 } },
+        new CountryModel { Code = "KE", Name = "Kenya", Medals = new MedalsModel { Gold = 4, Silver = 4, Bronze = 2 } },
+        new CountryModel { Code = "XK", Name = "Kosovo", Medals = new MedalsModel { Gold = 2, Silver = 0, Bronze = 0 } },
+        new CountryModel { Code = "KW", Name = "Kuwait", Medals = new MedalsModel { Gold = 0, Silver = 0, Bronze = 1 } },
+        new CountryModel { Code = "LV", Name = "Latvia", Medals = new MedalsModel { Gold = 1, Silver = 0, Bronze = 1 } },
+        new CountryModel { Code = "LT", Name = "Lithuania", Medals = new MedalsModel { Gold = 0, Silver = 1, Bronze = 0 } },
+        new CountryModel { Code = "MY", Name = "Malaysia", Medals = new MedalsModel { Gold = 0, Silver = 1, Bronze = 1 } },
+        new CountryModel { Code = "MX", Name = "Mexico", Medals = new MedalsModel { Gold = 0, Silver = 0, Bronze = 4 } },
+        new CountryModel { Code = "MA", Name = "Morocco", Medals = new MedalsModel { Gold = 1, Silver = 0, Bronze = 0 } },
+        new CountryModel { Code = "NA", Name = "Namibia", Medals = new MedalsModel { Gold = 0, Silver = 1, Bronze = 0 } },
+        new CountryModel { Code = "NL", Name = "Netherlands", Medals = new MedalsModel { Gold = 10, Silver = 12, Bronze = 14 } },
+        new CountryModel { Code = "NZ", Name = "New Zealand", Medals = new MedalsModel { Gold = 7, Silver = 6, Bronze = 7 } },
+        new CountryModel { Code = "MK", Name = "North Macedonia", Medals = new MedalsModel { Gold = 0, Silver = 1, Bronze = 0 } },
+        new CountryModel { Code = "NO", Name = "Norway", Medals = new MedalsModel { Gold = 4, Silver = 2, Bronze = 2 } },
+        new CountryModel { Code = "PH", Name = "Philippines", Medals = new MedalsModel { Gold = 1, Silver = 2, Bronze = 1 } },
+        new CountryModel { Code = "PL", Name = "Poland", Medals = new MedalsModel { Gold = 4, Silver = 5, Bronze = 5 } },
+        new CountryModel { Code = "PT", Name = "Portugal", Medals = new MedalsModel { Gold = 1, Silver = 1, Bronze = 2 } },
+        new CountryModel { Code = "PR", Name = "Puerto Rico", Medals = new MedalsModel { Gold = 1, Silver = 0, Bronze = 0 } },
+        new CountryModel { Code = "QA", Name = "Qatar", Medals = new MedalsModel { Gold = 2, Silver = 0, Bronze = 1 } },
+        new CountryModel { Code = "KR", Name = "Republic of Korea", Medals = new MedalsModel { Gold = 6, Silver = 4, Bronze = 10 } },
+        new CountryModel { Code = "MD", Name = "Republic of Moldova", Medals = new MedalsModel { Gold = 0, Silver = 0, Bronze = 1 } },
+        new CountryModel { Code = "RO", Name = "Romania", Medals = new MedalsModel { Gold = 1, Silver = 3, Bronze = 0 } },
+        new CountryModel { Code = "SM", Name = "San Marino", Medals = new MedalsModel { Gold = 0, Silver = 1, Bronze = 2 } },
+        new CountryModel { Code = "SA", Name = "Saudi Arabia", Medals = new MedalsModel { Gold = 0, Silver = 1, Bronze = 0 } },
+        new CountryModel { Code = "RS", Name = "Serbia", Medals = new MedalsModel { Gold = 3, Silver = 1, Bronze = 5 } },
+        new CountryModel { Code = "SK", Name = "Slovakia", Medals = new MedalsModel { Gold = 1, Silver = 2, Bronze = 1 } },
+        new CountryModel { Code = "SI", Name = "Slovenia", Medals = new MedalsModel { Gold = 3, Silver = 1, Bronze = 1 } },
+        new CountryModel { Code = "ZA", Name = "South Africa", Medals = new MedalsModel { Gold = 1, Silver = 2, Bronze = 0 } },
+        new CountryModel { Code = "ES", Name = "Spain", Medals = new MedalsModel { Gold = 3, Silver = 8, Bronze = 6 } },
+        new CountryModel { Code = "SE", Name = "Sweden", Medals = new MedalsModel { Gold = 3, Silver = 6, Bronze = 0 } },
+        new CountryModel { Code = "CH", Name = "Switzerland", Medals = new MedalsModel { Gold = 3, Silver = 4, Bronze = 6 } },
+        new CountryModel { Code = "SY", Name = "Syrian Arab Republic", Medals = new MedalsModel { Gold = 0, Silver = 0, Bronze = 1 } },
+        new CountryModel { Code = "TH", Name = "Thailand", Medals = new MedalsModel { Gold = 1, Silver = 0, Bronze = 1 } },
+        new CountryModel { Code = "TR", Name = "Turkey", Medals = new MedalsModel { Gold = 2, Silver = 2, Bronze = 9 } },
+        new CountryModel { Code = "TM", Name = "Turkmenistan", Medals = new MedalsModel { Gold = 0, Silver = 1, Bronze = 0 } },
+        new CountryModel { Code = "UA", Name = "Ukraine", Medals = new MedalsModel { Gold = 1, Silver = 6, Bronze = 12 } },
+        new CountryModel { Code = "US", Name = "United States of America", Medals = new MedalsModel { Gold = 39, Silver = 41, Bronze = 33 } },
+        new CountryModel { Code = "UZ", Name = "Uzbekistan", Medals = new MedalsModel { Gold = 3, Silver = 0, Bronze = 2 } },
+        new CountryModel { Code = "VE", Name = "Venezuela", Medals = new MedalsModel { Gold = 1, Silver = 3, Bronze = 0 } },
+    };
+
+    #region Example Code 1
     private readonly string example1HTMLCode = @"
 <style scoped>
+    .grid {
+        display: inline-flex;
+        flex-direction: column;
+        width: 100%;
+        border: 1px solid #e9eaed;
+    }
 
- .grid {
-  display: inline-flex;
-  flex-direction: column;
-  width: 100%;
-  border: 1px solid #e9eaed;
-}
+        .grid .flag {
+            width: 32px;
+            height: 16px;
+            vertical-align: middle;
+        }
 
-.grid .flag {
-  width: 32px;
-  height: 16px;
-  vertical-align: middle;
-}
+    .grid-container {
+        overflow: auto;
+    }
 
-.grid-container {
-    overflow: auto;
-}
+    .grid ::deep .column--large {
+        width: 220px;
+    }
 
-.grid ::deep .column--large {
-  width: 220px;
-}
+    .grid ::deep th:nth-child(1) .col-options-button {
+        background-image: none;
+        cursor: pointer;
+    }
 
-.grid ::deep th:nth-child(1) .col-options-button {
-  background-image: none;
-  cursor: pointer;
-}
+        .grid ::deep th:nth-child(1) .col-options-button:before {
+            display: inline-block;
+            font-family: ""Fabric MDL2 Assets"";
+            font-style: normal;
+            font-weight: normal;
+            content: ""\e721"";
+            position: relative;
+            top: 2px;
+        }
 
-.grid ::deep th:nth-child(1) .col-options-button:before {
-  display: inline-block;
-  font-family: ""Fabric MDL2 Assets"";
-  font-style: normal;
-  font-weight: normal;
-  content: ""\e721"";
-  position: relative;
-  top: 2px;
-}
+    .grid ::deep th:not(.col-sort-asc):not(.col-sort-desc) .sort-indicator:before {
+        display: inline-block;
+        font-family: ""Fabric MDL2 Assets"";
+        font-style: normal;
+        font-weight: normal;
+        content: ""⇅"";
+        position: relative;
+        top: -2px;
+    }
 
-.grid ::deep th:not(.col-sort-asc):not(.col-sort-desc) .sort-indicator:before {
-  display: inline-block;
-  font-family: ""Fabric MDL2 Assets"";
-  font-style: normal;
-  font-weight: normal;
-  content: ""⇅"";
-  position: relative;
-  top: -2px;
-}
+    .grid ::deep .bitdatagrid-paginator {
+        padding: 0.5rem;
+    }
 
-.grid ::deep .bitdatagrid-paginator {
-  padding: 0.5rem;
-}
+        .grid ::deep .bitdatagrid-paginator .pagination-text {
+            padding-top: 3px;
+        }
 
-.grid ::deep .bitdatagrid-paginator .pagination-text {
-  padding-top: 3px;
-}
+        .grid ::deep .bitdatagrid-paginator nav button {
+            border-radius: 0.25rem;
+        }
 
-.grid ::deep .bitdatagrid-paginator nav button {
-  border-radius: 0.25rem;
-}
+            .grid ::deep .bitdatagrid-paginator nav button:before {
+                vertical-align: middle;
+            }
 
-.grid ::deep .bitdatagrid-paginator nav button:before {
-  vertical-align: middle;
-}
+            .grid ::deep .bitdatagrid-paginator nav button:not([disabled]) {
+                background-color: #eee;
+            }
 
-.grid ::deep .bitdatagrid-paginator nav button:not([disabled]) {
-  background-color: #eee;
-}
+                .grid ::deep .bitdatagrid-paginator nav button:not([disabled]):hover {
+                    background-color: #d0d1d5;
+                }
 
-.grid ::deep .bitdatagrid-paginator nav button:not([disabled]):hover {
-  background-color: #d0d1d5;
-}
+    .grid ::deep table {
+        position: relative;
+        min-width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        text-indent: initial;
+    }
 
-.grid ::deep table {
-  position: relative;
-  min-width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  text-indent: initial;
-}
+    .grid ::deep thead th:not(:last-child) {
+        border-right: 1px solid #e9eaed;
+    }
 
-.grid ::deep thead th:not(:last-child) {
-  border-right: 1px solid #e9eaed;
-}
+    .grid ::deep thead .col-width-draghandle {
+        cursor: col-resize;
+        width: 3px;
+    }
 
-.grid ::deep thead .col-width-draghandle {
-  cursor: col-resize;
-  width: 3px;
-}
+        .grid ::deep thead .col-width-draghandle:active {
+            background: unset;
+        }
 
-.grid ::deep thead .col-width-draghandle:active {
-  background: unset;
-}
+        .grid ::deep thead .col-width-draghandle :after {
+            left: 3px;
+            border-left: unset;
+        }
 
-.grid ::deep thead .col-width-draghandle :after {
-  left: 3px;
-  border-left: unset;
-}
+        .grid ::deep thead .col-width-draghandle:hover {
+            background: unset;
+        }
 
-.grid ::deep thead .col-width-draghandle:hover {
-  background: unset;
-}
+    .grid ::deep th {
+        background-color: #f4f5f9;
+        padding: 0.5rem;
+        display: table-cell;
+        vertical-align: inherit;
+        font-weight: bold;
+        border-bottom: 1px solid #e9eaed;
+    }
 
-.grid ::deep th {
-  background-color: #f4f5f9;
-  padding: 0.5rem;
-  display: table-cell;
-  vertical-align: inherit;
-  font-weight: bold;
-  border-bottom: 1px solid #e9eaed;
-}
+    .grid ::deep tr {
+        height: 1.8rem;
+    }
 
-.grid ::deep tr {
-  height: 1.8rem;
-}
+        .grid ::deep tr:nth-child(even) {
+            background: #f4f5f9;
+        }
 
-.grid ::deep tr:nth-child(even) {
-  background: #f4f5f9;
-}
+        .grid ::deep tr:nth-child(odd) {
+            background: #FFF;
+        }
 
-.grid ::deep tr:nth-child(odd) {
-  background: #FFF;
-}
+        .grid ::deep tr:last-child > td {
+            border-bottom: none;
+        }
 
-.grid ::deep tr:last-child > td {
-  border-bottom: none;
-}
+    .grid ::deep td {
+        border-bottom: 1px solid #e9eaed;
+        color: #4f4f50;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        padding: 0.25rem 0.5rem;
+    }
 
-.grid ::deep td {
-  border-bottom: 1px solid #e9eaed;
-  color: #4f4f50;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  padding: 0.25rem 0.5rem;
-}
+        .grid ::deep td:not(:last-child) {
+            border-right: 1px solid #e9eaed;
+        }
 
-.grid ::deep td:not(:last-child) {
-  border-right: 1px solid #e9eaed;
-}
+    .grid ::deep .sort-indicator {
+        margin-left: auto;
+    }
 
-.grid ::deep .sort-indicator {
-  margin-left: auto;
-}
+    .grid ::deep .col-width-draghandle:after {
+        border-left: unset;
+    }
 
-.grid ::deep .col-width-draghandle:after {
-  border-left: unset;
-}
+    .grid ::deep .col-title-text {
+        color: #262526;
+    }
 
-.grid ::deep .col-title-text {
-  color: #262526;
-}
+    .grid ::deep .col-header-content {
+        padding-right: 0px;
+    }
 
-.grid ::deep .col-header-content {
-  padding-right: 0px;
-}
+    .grid ::deep button.col-title:active, .grid ::deep .col-options-button:active {
+        background-color: unset;
+    }
 
-.grid ::deep button.col-title:active, .grid ::deep .col-options-button:active {
-  background-color: unset;
-}
-
-.grid ::deep button.col-title:hover, .grid ::deep .col-options-button:hover {
-  background-color: unset;
-}
-
+    .grid ::deep button.col-title:hover, .grid ::deep .col-options-button:hover {
+        background-color: unset;
+    }
 </style>
 
 <div class=""grid"">
@@ -462,19 +521,19 @@ public partial class BitDataGridDemo
                 <BitDataGridTemplateColumn Title=""Flag"" Align=""BitDataGridAlign.Center"" >
                 <img class=""flag"" src=""images/flags/@(context.Code).png"" />
             </BitDataGridTemplateColumn>
-            <BitDataGridPropertyColumn Property=""@(c => c.Medals.Gold)"" Sortable=""true"" />
-            <BitDataGridPropertyColumn Property=""@(c => c.Medals.Silver)"" Sortable=""true"" />
-            <BitDataGridPropertyColumn Property=""@(c => c.Medals.Bronze)"" Sortable=""true"" />
-            <BitDataGridPropertyColumn Property=""@(c => c.Medals.Total)"" Sortable=""true"" />
+            <BitDataGridPropertyColumn Property=""@(c => c.MedalsModel.Gold)"" Sortable=""true"" />
+            <BitDataGridPropertyColumn Property=""@(c => c.MedalsModel.Silver)"" Sortable=""true"" />
+            <BitDataGridPropertyColumn Property=""@(c => c.MedalsModel.Bronze)"" Sortable=""true"" />
+            <BitDataGridPropertyColumn Property=""@(c => c.MedalsModel.Total)"" Sortable=""true"" />
         </BitDataGrid>
     </div>
     <BitDataGridPaginator Value=""@pagination"" />
 </div>";
     private readonly string example1CSharpCode = @"
-IQueryable<Country> allCountries;
+IQueryable<CountryModel> allCountries;
 string typicalSampleNameFilter = string.Empty;
 BitDataGridPaginationState pagination = new() { ItemsPerPage = 7 };
-IQueryable<Country> FilteredItems => allCountries?.Where(x => x.Name.Contains(typicalSampleNameFilter, StringComparison.CurrentCultureIgnoreCase));
+IQueryable<CountryModel> FilteredItems => allCountries?.Where(x => x.Name.Contains(typicalSampleNameFilter, StringComparison.CurrentCultureIgnoreCase));
 string typicalSampleNameFilter = string.Empty;
 
 protected override async Task OnInitializedAsync()
@@ -482,26 +541,26 @@ protected override async Task OnInitializedAsync()
     allCountries = _countries.AsQueryable();
 }
 
-private readonly static Country[] _countries = new[]
+private readonly static CountryModel[] _countries = new[]
 {
-    new Country { Code = ""AR"", Name=""Argentina"", Medals = new Medals { Gold = 0, Silver = 1, Bronze = 2 } },
-    new Country { Code = ""AM"", Name=""Armenia"", Medals = new Medals { Gold = 0, Silver = 2, Bronze = 2 } },
-    new Country { Code = ""AU"", Name = ""Australia"", Medals = new Medals { Gold = 17, Silver = 7, Bronze = 22 } },
-    new Country { Code = ""AT"", Name = ""Austria"", Medals = new Medals { Gold = 1, Silver = 1, Bronze = 5 } },
-    new Country { Code = ""AZ"", Name = ""Azerbaijan"", Medals = new Medals { Gold = 0, Silver = 3, Bronze = 4 } },
-    new Country { Code = ""BS"", Name = ""Bahamas"", Medals = new Medals { Gold = 2, Silver = 0, Bronze = 0 } },
-    new Country { Code = ""BH"", Name = ""Bahrain"", Medals = new Medals { Gold = 0, Silver = 1, Bronze = 0 } },
+    new CountryModel { Code = ""AR"", Name = ""Argentina"", MedalsModel = new MedalsModel { Gold = 0, Silver = 1, Bronze = 2 } },
+    new CountryModel { Code = ""AM"", Name = ""Armenia"", MedalsModel = new MedalsModel { Gold = 0, Silver = 2, Bronze = 2 } },
+    new CountryModel { Code = ""AU"", Name = ""Australia"", MedalsModel = new MedalsModel { Gold = 17, Silver = 7, Bronze = 22 } },
+    new CountryModel { Code = ""AT"", Name = ""Austria"", MedalsModel = new MedalsModel { Gold = 1, Silver = 1, Bronze = 5 } },
+    new CountryModel { Code = ""AZ"", Name = ""Azerbaijan"", MedalsModel = new MedalsModel { Gold = 0, Silver = 3, Bronze = 4 } },
+    new CountryModel { Code = ""BS"", Name = ""Bahamas"", MedalsModel = new MedalsModel { Gold = 2, Silver = 0, Bronze = 0 } },
+    new CountryModel { Code = ""BH"", Name = ""Bahrain"", MedalsModel = new MedalsModel { Gold = 0, Silver = 1, Bronze = 0 } },
     // ...
 };
 
-public class Country
+public class CountryModel
 {
     public string Code { get; set; }
     public string Name { get; set; }
-    public Medals Medals { get; set; }
+    public MedalsModel MedalsModel { get; set; }
 }
 
-public class Medals
+public class MedalsModel
 {
     public int Gold { get; set; }
     public int Silver { get; set; }
@@ -509,40 +568,43 @@ public class Medals
     public int Total => Gold + Silver + Bronze;
 }
 ";
+    #endregion Example Code 1
+
+    #region Example Code 2
 
     private readonly string example2HTMLCode = @"
 @using System.Text.Json;
 @inject HttpClient HttpClient
 
 <style scoped>
-.grid {
-    height: 25rem;
-    overflow-y: auto;
-}
+    .grid {
+        height: 25rem;
+        overflow-y: auto;
+    }
 
-.grid ::deep table {
-    min-width: 100%;
-}
+        .grid ::deep table {
+            min-width: 100%;
+        }
 
-.grid ::deep thead {
-    position: sticky;
-    top: 0;
-    background-color: #d8d8d8;
-    outline: 1px solid gray;
-    z-index: 1;
-}
+        .grid ::deep thead {
+            position: sticky;
+            top: 0;
+            background-color: #d8d8d8;
+            outline: 1px solid gray;
+            z-index: 1;
+        }
 
-.grid ::deep tr {
-    height: 30px;
-    border-bottom: 0.5px solid silver;
-}
+        .grid ::deep tr {
+            height: 30px;
+            border-bottom: 0.5px solid silver;
+        }
 
-.grid ::deep tbody td {
-    white-space: nowrap;
-    overflow: hidden;
-    max-width: 0;
-    text-overflow: ellipsis;
-}
+        .grid ::deep tbody td {
+            white-space: nowrap;
+            overflow: hidden;
+            max-width: 0;
+            text-overflow: ellipsis;
+        }
 </style>
 
 <div class=""grid"">
@@ -557,8 +619,7 @@ public class Medals
 </div>
 <div class=""search-panel"">
      <div class=""inline-block"">
-        <BitSearchBox @bind-Value=""virtualSampleNameFilter"" Width=""250px""
-                                    Placeholder=""Search on Company""/>
+        <BitSearchBox @bind-Value=""virtualSampleNameFilter"" Width=""250px"" Placeholder=""Search on Company""/>
      </div>
 </div>
 ";
@@ -659,7 +720,7 @@ public class Meta
 public class FoodRecall
 {
     [JsonPropertyName(""country"")]
-    public string Country { get; set; }
+    public string CountryModel { get; set; }
 
     [JsonPropertyName(""city"")]
     public string City { get; set; }
@@ -748,40 +809,43 @@ public class Openfda
 }
 ";
 
+    #endregion Example Code 2
+
+    #region Example Code 3
     private readonly string example3HTMLCode = @"
 @using System.Text.Json;
 @inject HttpClient HttpClient
 @inject NavigationManager NavManager
 
 <style scoped>
-.grid {
-    height: 25rem;
-    overflow-y: auto;
-}
+    .grid {
+        height: 25rem;
+        overflow-y: auto;
+    }
 
-.grid ::deep table {
-    min-width: 100%;
-}
+        .grid ::deep table {
+            min-width: 100%;
+        }
 
-.grid ::deep thead {
-    position: sticky;
-    top: 0;
-    background-color: #d8d8d8;
-    outline: 1px solid gray;
-    z-index: 1;
-}
+        .grid ::deep thead {
+            position: sticky;
+            top: 0;
+            background-color: #d8d8d8;
+            outline: 1px solid gray;
+            z-index: 1;
+        }
 
-.grid ::deep tr {
-    height: 30px;
-    border-bottom: 0.5px solid silver;
-}
+        .grid ::deep tr {
+            height: 30px;
+            border-bottom: 0.5px solid silver;
+        }
 
-.grid ::deep tbody td {
-    white-space: nowrap;
-    overflow: hidden;
-    max-width: 0;
-    text-overflow: ellipsis;
-}
+        .grid ::deep tbody td {
+            white-space: nowrap;
+            overflow: hidden;
+            max-width: 0;
+            text-overflow: ellipsis;
+        }
 </style>
 
 <div class=""grid"">
@@ -793,8 +857,7 @@ public class Openfda
 </div>
 <div class=""search-panel"">
      <div class=""inline-block"">
-        <BitSearchBox @bind-Value=""ODataSampleNameFilter"" Width=""250px""
-                                  Placeholder=""Search on Name"" />
+        <BitSearchBox @bind-Value=""ODataSampleNameFilter"" Width=""250px"" Placeholder=""Search on Name"" />
      </div>
 </div>
 ";
@@ -917,103 +980,5 @@ public class PagedResult<T>
 }
 ";
 
-    public readonly static Country[] _countries = new[]
-    {
-        new Country { Code = "AR", Name="Argentina", Medals = new Medals { Gold = 0, Silver = 1, Bronze = 2 } },
-        new Country { Code = "AM", Name="Armenia", Medals = new Medals { Gold = 0, Silver = 2, Bronze = 2 } },
-        new Country { Code = "AU", Name="Australia", Medals = new Medals { Gold = 17, Silver = 7, Bronze = 22 } },
-        new Country { Code = "AT", Name="Austria", Medals = new Medals { Gold = 1, Silver = 1, Bronze = 5 } },
-        new Country { Code = "AZ", Name="Azerbaijan", Medals = new Medals { Gold = 0, Silver = 3, Bronze = 4 } },
-        new Country { Code = "BS", Name="Bahamas", Medals = new Medals { Gold = 2, Silver = 0, Bronze = 0 } },
-        new Country { Code = "BH", Name="Bahrain", Medals = new Medals { Gold = 0, Silver = 1, Bronze = 0 } },
-        new Country { Code = "BY", Name="Belarus", Medals = new Medals { Gold = 1, Silver = 3, Bronze = 3 } },
-        new Country { Code = "BE", Name="Belgium", Medals = new Medals { Gold = 3, Silver = 1, Bronze = 3 } },
-        new Country { Code = "BM", Name="Bermuda", Medals = new Medals { Gold = 1, Silver = 0, Bronze = 0 } },
-        new Country { Code = "BW", Name="Botswana", Medals = new Medals { Gold = 0, Silver = 0, Bronze = 1 } },
-        new Country { Code = "BR", Name="Brazil", Medals = new Medals { Gold = 7, Silver = 6, Bronze = 8 } },
-        new Country { Code = "BF", Name="Burkina Faso", Medals = new Medals { Gold = 0, Silver = 0, Bronze = 1 } },
-        new Country { Code = "CA", Name="Canada", Medals = new Medals { Gold = 7, Silver = 6, Bronze = 11 } },
-        new Country { Code = "TW", Name="Chinese Taipei", Medals = new Medals { Gold = 2, Silver = 4, Bronze = 6 } },
-        new Country { Code = "CO", Name="Colombia", Medals = new Medals { Gold = 0, Silver = 4, Bronze = 1 } },
-        new Country { Code = "CI", Name="Côte d'Ivoire", Medals = new Medals { Gold = 0, Silver = 0, Bronze = 1 } },
-        new Country { Code = "HR", Name="Croatia", Medals = new Medals { Gold = 3, Silver = 3, Bronze = 2 } },
-        new Country { Code = "CU", Name="Cuba", Medals = new Medals { Gold = 7, Silver = 3, Bronze = 5 } },
-        new Country { Code = "CZ", Name="Czech Republic", Medals = new Medals { Gold = 4, Silver = 4, Bronze = 3 } },
-        new Country { Code = "DK", Name="Denmark", Medals = new Medals { Gold = 3, Silver = 4, Bronze = 4 } },
-        new Country { Code = "DO", Name="Dominican Republic", Medals = new Medals { Gold = 0, Silver = 3, Bronze = 2 } },
-        new Country { Code = "EC", Name="Ecuador", Medals = new Medals { Gold = 2, Silver = 1, Bronze = 0 } },
-        new Country { Code = "EE", Name="Estonia", Medals = new Medals { Gold = 1, Silver = 0, Bronze = 1 } },
-        new Country { Code = "ET", Name="Ethiopia", Medals = new Medals { Gold = 1, Silver = 1, Bronze = 2 } },
-        new Country { Code = "FJ", Name="Fiji", Medals = new Medals { Gold = 1, Silver = 0, Bronze = 1 } },
-        new Country { Code = "FI", Name="Finland", Medals = new Medals { Gold = 0, Silver = 0, Bronze = 2 } },
-        new Country { Code = "FR", Name="France", Medals = new Medals { Gold = 10, Silver = 12, Bronze = 11 } },
-        new Country { Code = "GE", Name="Georgia", Medals = new Medals { Gold = 2, Silver = 5, Bronze = 1 } },
-        new Country { Code = "DE", Name="Germany", Medals = new Medals { Gold = 10, Silver = 11, Bronze = 16 } },
-        new Country { Code = "GH", Name="Ghana", Medals = new Medals { Gold = 0, Silver = 0, Bronze = 1 } },
-        new Country { Code = "GB", Name="Great Britain", Medals = new Medals { Gold = 22, Silver = 21, Bronze = 22 } },
-        new Country { Code = "GR", Name="Greece", Medals = new Medals { Gold = 2, Silver = 1, Bronze = 1 } },
-        new Country { Code = "GD", Name="Grenada", Medals = new Medals { Gold = 0, Silver = 0, Bronze = 1 } },
-        new Country { Code = "HK", Name="Hong Kong, China", Medals = new Medals { Gold = 1, Silver = 2, Bronze = 3 } },
-        new Country { Code = "HU", Name="Hungary", Medals = new Medals { Gold = 6, Silver = 7, Bronze = 7 } },
-        new Country { Code = "ID", Name="Indonesia", Medals = new Medals { Gold = 1, Silver = 1, Bronze = 3 } },
-        new Country { Code = "IE", Name="Ireland", Medals = new Medals { Gold = 2, Silver = 0, Bronze = 2 } },
-        new Country { Code = "IR", Name="Iran", Medals = new Medals { Gold = 3, Silver = 2, Bronze = 2 } },
-        new Country { Code = "IL", Name="Israel", Medals = new Medals { Gold = 2, Silver = 0, Bronze = 2 } },
-        new Country { Code = "IT", Name="Italy", Medals = new Medals { Gold = 10, Silver = 10, Bronze = 20 } },
-        new Country { Code = "JM", Name="Jamaica", Medals = new Medals { Gold = 4, Silver = 1, Bronze = 4 } },
-        new Country { Code = "JO", Name="Jordan", Medals = new Medals { Gold = 0, Silver = 1, Bronze = 1 } },
-        new Country { Code = "KZ", Name="Kazakhstan", Medals = new Medals { Gold = 0, Silver = 0, Bronze = 8 } },
-        new Country { Code = "KE", Name="Kenya", Medals = new Medals { Gold = 4, Silver = 4, Bronze = 2 } },
-        new Country { Code = "XK", Name="Kosovo", Medals = new Medals { Gold = 2, Silver = 0, Bronze = 0 } },
-        new Country { Code = "KW", Name="Kuwait", Medals = new Medals { Gold = 0, Silver = 0, Bronze = 1 } },
-        new Country { Code = "LV", Name="Latvia", Medals = new Medals { Gold = 1, Silver = 0, Bronze = 1 } },
-        new Country { Code = "LT", Name="Lithuania", Medals = new Medals { Gold = 0, Silver = 1, Bronze = 0 } },
-        new Country { Code = "MY", Name="Malaysia", Medals = new Medals { Gold = 0, Silver = 1, Bronze = 1 } },
-        new Country { Code = "MX", Name="Mexico", Medals = new Medals { Gold = 0, Silver = 0, Bronze = 4 } },
-        new Country { Code = "MA", Name="Morocco", Medals = new Medals { Gold = 1, Silver = 0, Bronze = 0 } },
-        new Country { Code = "NA", Name="Namibia", Medals = new Medals { Gold = 0, Silver = 1, Bronze = 0 } },
-        new Country { Code = "NL", Name="Netherlands", Medals = new Medals { Gold = 10, Silver = 12, Bronze = 14 } },
-        new Country { Code = "NZ", Name="New Zealand", Medals = new Medals { Gold = 7, Silver = 6, Bronze = 7 } },
-        new Country { Code = "MK", Name="North Macedonia", Medals = new Medals { Gold = 0, Silver = 1, Bronze = 0 } },
-        new Country { Code = "NO", Name="Norway", Medals = new Medals { Gold = 4, Silver = 2, Bronze = 2 } },
-        new Country { Code = "PH", Name="Philippines", Medals = new Medals { Gold = 1, Silver = 2, Bronze = 1 } },
-        new Country { Code = "PL", Name="Poland", Medals = new Medals { Gold = 4, Silver = 5, Bronze = 5 } },
-        new Country { Code = "PT", Name="Portugal", Medals = new Medals { Gold = 1, Silver = 1, Bronze = 2 } },
-        new Country { Code = "PR", Name="Puerto Rico", Medals = new Medals { Gold = 1, Silver = 0, Bronze = 0 } },
-        new Country { Code = "QA", Name="Qatar", Medals = new Medals { Gold = 2, Silver = 0, Bronze = 1 } },
-        new Country { Code = "KR", Name="Republic of Korea", Medals = new Medals { Gold = 6, Silver = 4, Bronze = 10 } },
-        new Country { Code = "MD", Name="Republic of Moldova", Medals = new Medals { Gold = 0, Silver = 0, Bronze = 1 } },
-        new Country { Code = "RO", Name="Romania", Medals = new Medals { Gold = 1, Silver = 3, Bronze = 0 } },
-        new Country { Code = "SM", Name="San Marino", Medals = new Medals { Gold = 0, Silver = 1, Bronze = 2 } },
-        new Country { Code = "SA", Name="Saudi Arabia", Medals = new Medals { Gold = 0, Silver = 1, Bronze = 0 } },
-        new Country { Code = "RS", Name="Serbia", Medals = new Medals { Gold = 3, Silver = 1, Bronze = 5 } },
-        new Country { Code = "SK", Name="Slovakia", Medals = new Medals { Gold = 1, Silver = 2, Bronze = 1 } },
-        new Country { Code = "SI", Name="Slovenia", Medals = new Medals { Gold = 3, Silver = 1, Bronze = 1 } },
-        new Country { Code = "ZA", Name="South Africa", Medals = new Medals { Gold = 1, Silver = 2, Bronze = 0 } },
-        new Country { Code = "ES", Name="Spain", Medals = new Medals { Gold = 3, Silver = 8, Bronze = 6 } },
-        new Country { Code = "SE", Name="Sweden", Medals = new Medals { Gold = 3, Silver = 6, Bronze = 0 } },
-        new Country { Code = "CH", Name="Switzerland", Medals = new Medals { Gold = 3, Silver = 4, Bronze = 6 } },
-        new Country { Code = "SY", Name="Syrian Arab Republic", Medals = new Medals { Gold = 0, Silver = 0, Bronze = 1 } },
-        new Country { Code = "TH", Name="Thailand", Medals = new Medals { Gold = 1, Silver = 0, Bronze = 1 } },
-        new Country { Code = "TR", Name="Turkey", Medals = new Medals { Gold = 2, Silver = 2, Bronze = 9 } },
-        new Country { Code = "TM", Name="Turkmenistan", Medals = new Medals { Gold = 0, Silver = 1, Bronze = 0 } },
-        new Country { Code = "UA", Name="Ukraine", Medals = new Medals { Gold = 1, Silver = 6, Bronze = 12 } },
-        new Country { Code = "US", Name="United States of America", Medals = new Medals { Gold = 39, Silver = 41, Bronze = 33 } },
-        new Country { Code = "UZ", Name="Uzbekistan", Medals = new Medals { Gold = 3, Silver = 0, Bronze = 2 } },
-        new Country { Code = "VE", Name="Venezuela", Medals = new Medals { Gold = 1, Silver = 3, Bronze = 0 } },
-    };
-}
-public class Country
-{
-    public string Code { get; set; }
-    public string Name { get; set; }
-    public Medals Medals { get; set; }
-}
-public class Medals
-{
-    public int Gold { get; set; }
-    public int Silver { get; set; }
-    public int Bronze { get; set; }
-
-    public int Total => Gold + Silver + Bronze;
+    #endregion Example Code 3
 }

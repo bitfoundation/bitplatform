@@ -49,8 +49,7 @@
             </div>
             <div class="search-panel">
                 <div class="inline-block">
-                    <BitSearchBox @bind-Value="VirtualSampleNameFilter" Width="250px"
-                                  Placeholder="Search on Company" />
+                    <BitSearchBox @bind-Value="VirtualSampleNameFilter" Width="250px" Placeholder="Search on Company" />
                 </div>
             </div>
         </ExamplePreview>
@@ -67,8 +66,7 @@
             </div>
             <div class="search-panel">
                 <div class="inline-block">
-                    <BitSearchBox @bind-Value="ODataSampleNameFilter" Width="250px"
-                                  Placeholder="Search on Name" />
+                    <BitSearchBox @bind-Value="ODataSampleNameFilter" Width="250px" Placeholder="Search on Name" />
                 </div>
             </div>
         </ExamplePreview>
@@ -77,14 +75,13 @@
 </ComponentDemo>
 
 @code {
-
-    IQueryable<Country> allCountries;
+    IQueryable<CountryModel> allCountries;
     BitDataGrid<FoodRecall> dataGrid;
     BitDataGrid<ProductDto> productsDataGrid;
     BitDataGridItemsProvider<FoodRecall> foodRecallProvider;
     BitDataGridItemsProvider<ProductDto> productsItemsProvider;
     BitDataGridPaginationState pagination = new() { ItemsPerPage = 7 };
-    IQueryable<Country> FilteredItems => allCountries?.Where(x => x.Name.Contains(typicalSampleNameFilter, StringComparison.CurrentCultureIgnoreCase));
+    IQueryable<CountryModel> FilteredItems => allCountries?.Where(x => x.Name.Contains(typicalSampleNameFilter, StringComparison.CurrentCultureIgnoreCase));
 
     string typicalSampleNameFilter = string.Empty;
     string _virtualSampleNameFilter = string.Empty;
