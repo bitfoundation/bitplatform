@@ -315,16 +315,30 @@ public partial class BitSplitButtonDemo
 ";
     private readonly string example4HTMLCode = @"
 <BitSplitButton Items=""example4Items""
-                ItemTemplate=""(item) => itemTemplate(item)""
                 ButtonStyle=""BitButtonStyle.Primary""
                 IsSticky=""true""
-                OnClick=""(item) => TemplatePrimarySelectedItem = item.Text"" />
+                OnClick=""(item) => TemplatePrimarySelectedItem = item.Text"">
+    <ItemTemplate Context=""item"">
+        <div class=""item-template-box"">
+            <span style=""color: @(item.key == ""add-key"" ? ""green"" : item.key == ""edit-key"" ? ""yellow"" : ""red"");"">
+                @item.Text (@item.key)
+            </span>
+        </div>
+    </ItemTemplate>
+</BitSplitButton>
 
 <BitSplitButton Items=""example4Items""
-                ItemTemplate=""(item) => itemTemplate(item)""
                 ButtonStyle=""BitButtonStyle.Standard""
                 IsSticky=""true""
-                OnClick=""(item) => TemplateStandardSelectedItem = item.Text"" />
+                OnClick=""(item) => TemplateStandardSelectedItem = item.Text"">
+    <ItemTemplate Context=""item"">
+        <div class=""item-template-box"">
+            <span style=""color: @(item.key == ""add-key"" ? ""green"" : item.key == ""edit-key"" ? ""yellow"" : ""red"");"">
+                @item.Text (@item.key)
+            </span>
+        </div>
+    </ItemTemplate>
+</BitSplitButton>
 ";
 
     private readonly string example1CSharpCode = @"
@@ -415,15 +429,6 @@ private List<BitSplitButtonItem> example3Items = new()
     private readonly string example4CSharpCode = @"
 private string TemplatePrimarySelectedItem;
 private string TemplateStandardSelectedItem;
-
-private RenderFragment<BitSplitButtonItem> itemTemplate = (item) =>
-(
-    @<div class=""item-template-box"">
-        <span style=""color: @(item.key == ""add-key"" ? ""green"" : item.key == ""edit-key"" ? ""yellow"" : ""red"");"">
-            @item.Text (@item.key)
-        </span>
-    </div>
-);
 
 private List<BitSplitButtonItem> example4Items = new()
 {

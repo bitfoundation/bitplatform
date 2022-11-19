@@ -86,19 +86,33 @@
                 <div class="example">
                     <BitLabel>Primary</BitLabel>
                     <BitSplitButton Items="example4Items"
-                                    ItemTemplate="(item) => itemTemplate(item)"
                                     ButtonStyle="BitButtonStyle.Primary"
                                     IsSticky="true"
-                                    OnClick="(item) => TemplatePrimarySelectedItem = item.Text" />
+                                    OnClick="(item) => TemplatePrimarySelectedItem = item.Text">
+                        <ItemTemplate Context="item">
+                            <div class="item-template-box">
+                                <span style="color: @(item.key == "add-key" ? "green" : item.key == "edit-key" ? "yellow" : "red");">
+                                    @item.Text (@item.key)
+                                </span>
+                            </div>
+                        </ItemTemplate>
+                    </BitSplitButton>
                     <div class="selected-item">Clicked item: @TemplatePrimarySelectedItem</div>
                 </div>
                 <div class="example">
                     <BitLabel>Standard</BitLabel>
                     <BitSplitButton Items="example4Items"
-                                    ItemTemplate="(item) => itemTemplate(item)"
                                     ButtonStyle="BitButtonStyle.Standard"
                                     IsSticky="true"
-                                    OnClick="(item) => TemplateStandardSelectedItem = item.Text" />
+                                    OnClick="(item) => TemplateStandardSelectedItem = item.Text">
+                        <ItemTemplate Context="item">
+                            <div class="item-template-box">
+                                <span style="color: @(item.key == "add-key" ? "green" : item.key == "edit-key" ? "yellow" : "red");">
+                                    @item.Text (@item.key)
+                                </span>
+                            </div>
+                        </ItemTemplate>
+                    </BitSplitButton>
                     <div class="selected-item">Clicked item: @TemplateStandardSelectedItem</div>
                 </div>
             </div>
@@ -106,15 +120,3 @@
     </ComponentExampleBox>
 
 </ComponentDemo>
-
-@code {
-
-    private RenderFragment<BitSplitButtonItem> itemTemplate = (item) =>
-        (
-    @<div class="item-template-box">
-        <span style="color: @(item.key == "add-key" ? "green" : item.key == "edit-key" ? "yellow" : "red");">
-            @item.Text (@item.key)
-        </span>
-    </div>
-    );
-}
