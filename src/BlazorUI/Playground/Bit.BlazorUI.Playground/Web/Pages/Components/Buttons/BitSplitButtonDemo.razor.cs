@@ -332,11 +332,33 @@ public partial class BitSplitButtonDemo
                 IsSticky=""true""
                 OnClick=""(item) => TemplateStandardSelectedItem = item.Text"">
     <ItemTemplate Context=""item"">
-        <div class=""item-template-box"">
-            <span style=""color: @(item.key == ""add-key"" ? ""green"" : item.key == ""edit-key"" ? ""yellow"" : ""red"");"">
-                @item.Text (@item.key)
-            </span>
-        </div>
+        @if (item.key == ""add-key"")
+        {
+            <div class=""item-template-box"">
+                <BitIcon IconName=""BitIconName.Add"" />
+                <span style=""color: green;"">
+                    @item.Text (@item.key)
+                </span>
+            </div>
+        }
+        else if (item.key == ""edit-key"")
+        {
+            <div class=""item-template-box"">
+                <BitIcon IconName=""BitIconName.Edit"" />
+                <span style=""color: yellow;"">
+                    @item.Text (@item.key)
+                </span>
+            </div>
+        }
+        else if (item.key == ""delete-key"")
+        {
+            <div class=""item-template-box"">
+                <BitIcon IconName=""BitIconName.Delete"" />
+                <span style=""color: red;"">
+                    @item.Text (@item.key)
+                </span>
+            </div>
+        }
     </ItemTemplate>
 </BitSplitButton>
 ";
