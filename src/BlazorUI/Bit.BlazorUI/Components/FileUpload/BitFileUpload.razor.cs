@@ -393,25 +393,33 @@ public partial class BitFileUpload : IAsyncDisposable
     [JSInvokable("HandleFileUpload")]
     public async Task HandleFileUpload(int fileIndex, int responseStatus, string responseText)
     {
-        if (Files is null ||
-            UploadStatus == BitFileUploadStatus.Paused ||
-            Files[fileIndex].Status != BitFileUploadStatus.InProgress) return;
+        if (Files is null || UploadStatus == BitFileUploadStatus.Paused) return;
 
-        Files[fileIndex].TotalSizeOfUploaded += EnableChunkedUpload ? internalChunkSize : Files[fileIndex].Size;
-        Files[fileIndex].SizeOfLastChunkUploaded = 0;
+        var file = Files[fileIndex];
+        if (file.Status != BitFileUploadStatus.InProgress) return;
+
+        file.TotalSizeOfUploaded += EnableChunkedUpload ? internalChunkSize : file.Size;
+        file.SizeOfLastChunkUploaded = 0;
 
         UpdateChunkSize(fileIndex);
 
-        if (Files[fileIndex].TotalSizeOfUploaded < Files[fileIndex].Size)
+        if (file.TotalSizeOfUploaded < file.Size)
         {
             await Upload(index: fileIndex);
         }
         else
         {
-            Files[fileIndex].Message = responseText;
-            await UpdateStatus(GetUploadStatus(responseStatus), fileIndex);
-            var allFilesUploaded = Files.All(c => c.Status is BitFileUploadStatus.Completed or BitFileUploadStatus.Failed);
+            file.Message = responseText;
+            if (responseStatus is >= 200 and <= 299)
+            {
+                await UpdateStatus(BitFileUploadStatus.Completed, fileIndex);
+            }
+            else if (responseStatus is 0 && (file.Status is BitFileUploadStatus.Paused or BitFileUploadStatus.Canceled) is false)
+            {
+                await UpdateStatus(BitFileUploadStatus.Failed, fileIndex);
+            }
 
+            var allFilesUploaded = Files.All(c => c.Status is BitFileUploadStatus.Completed or BitFileUploadStatus.Failed);
             if (allFilesUploaded)
             {
                 UploadStatus = BitFileUploadStatus.Completed;
@@ -527,13 +535,6 @@ public partial class BitFileUpload : IAsyncDisposable
 
             _ => string.Empty
         };
-    }
-
-    private static BitFileUploadStatus GetUploadStatus(int responseStatus)
-    {
-        return responseStatus is >= 200 and <= 299 ?
-                BitFileUploadStatus.Completed :
-                (responseStatus == 0 ? BitFileUploadStatus.Paused : BitFileUploadStatus.Failed);
     }
 
     private async Task CancelUpload(int index)
