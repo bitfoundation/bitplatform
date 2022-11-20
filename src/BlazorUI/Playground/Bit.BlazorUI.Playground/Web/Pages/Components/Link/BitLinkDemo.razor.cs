@@ -1,11 +1,13 @@
 ﻿using System.Collections.Generic;
-using Bit.BlazorUI.Playground.Web.Models;
 using Bit.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
+using Microsoft.AspNetCore.Components;
 
 namespace Bit.BlazorUI.Playground.Web.Pages.Components.Link;
 
 public partial class BitLinkDemo
 {
+    [Inject] private NavigationManager Navigation { get; set; } = default!;
+
     private readonly List<ComponentParameter> componentParameters = new()
     {
         new ComponentParameter()
@@ -20,7 +22,7 @@ public partial class BitLinkDemo
             Name = "HasUnderline",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether the link is styled with an underline or not. Should be used when the link is placed alongside other text content.",
+            Description = "Whether the link is styled with an underline or not.",
         },
         new ComponentParameter()
         {
@@ -50,51 +52,31 @@ public partial class BitLinkDemo
             DefaultValue = "",
             Description = "The title to show when the mouse is placed on the action button.",
         },
-        new ComponentParameter()
-        {
-            Name = "Visibility",
-            Type = "BitComponentVisibility",
-            LinkType = LinkType.Link,
-            Href = "#component-visibility-enum",
-            DefaultValue = "BitComponentVisibility.Visible",
-            Description = "Whether the component is Visible,Hidden,Collapsed.",
-        },
     };
 
-    private readonly List<EnumParameter> enumParameters = new()
+    private void LinkOnClick()
     {
-        new EnumParameter()
-        {
-            Id = "component-visibility-enum",
-            Title = "BitComponentVisibility Enum",
-            Description = "",
-            EnumList = new List<EnumItem>()
-            {
-                new EnumItem()
-                {
-                    Name= "Visible",
-                    Description="Show content of the component.",
-                    Value="0",
-                },
-                new EnumItem()
-                {
-                    Name= "Hidden",
-                    Description="Hide content of the component,though the space it takes on the page remains.",
-                    Value="1",
-                },
-                new EnumItem()
-                {
-                    Name= "Collapsed",
-                    Description="Hide content of the component,though the space it takes on the page gone.",
-                    Value="2",
-                }
-            }
-        }
-    };
+        // Here you can do something else...
 
-    private readonly string example1HTMLCode = @"<p>
-    When a link has an href, <BitLink Href=""https://github.com/bitfoundation/bitplatform"" Target=""_blank"" HasUnderline=""true"">it renders as an anchor tag</BitLink>. Without an href, <BitLink HasUnderline=""true"">the link is rendered as a button</BitLink>.
-    You can also use the disabled attribute to create a <BitLink Href=""https://github.com/bitfoundation/bitplatform"" IsEnabled=""false"" HasUnderline=""true"">disabled link</BitLink>. It's not recommended to use Links with imgs because
-    Links are meant to render textual inline content. Buttons are inline-block or in the case of imgs, block. However, it is possible to create a linked image button by making a button with an unstyled variant and adding the img content and href source to that.
-</p>";
+        Navigation.NavigateTo("https://github.com/bitfoundation/bitplatform");
+    }
+
+    private readonly string example1HTMLCode = @"
+<BitLink Href=""https://github.com/bitfoundation/bitplatform"">Basic Link</BitLink>
+<BitLink Href=""https://github.com/bitfoundation/bitplatform"" IsEnabled=""false"">Disabled Link</BitLink>
+<BitLink Href=""https://github.com/bitfoundation/bitplatform"" Target=""_blank"">Blank Target Link</BitLink>
+<BitLink Href=""https://github.com/bitfoundation/bitplatform"" HasUnderline=""true"">Underlined link</BitLink>
+<BitLink OnClick=""LinkOnClick"">Link with OnClick</BitLink>
+";
+
+    private readonly string example1CSharpCode = @"
+@inject NavigationManager Navigation
+
+private void LinkOnClick()
+{
+    // Here you can do something else...
+
+    Navigation.NavigateTo(""https://github.com/bitfoundation/bitplatform"");
+}
+";
 }

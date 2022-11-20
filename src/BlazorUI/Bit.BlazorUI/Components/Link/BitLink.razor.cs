@@ -25,7 +25,7 @@ public partial class BitLink
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// Whether the link is styled with an underline or not. Should be used when the link is placed alongside other text content
+    /// Whether the link is styled with an underline or not.
     /// </summary>
     [Parameter] public bool HasUnderline { get; set; } = false;
 
@@ -36,12 +36,16 @@ public partial class BitLink
 
     protected override string RootElementClass => "bit-lnk";
 
+    protected override void RegisterComponentClasses()
+    {
+        ClassBuilder.Register(() => HasUnderline ? "underlined" : string.Empty);
+    }
+
     protected virtual async Task HandleClick(MouseEventArgs e)
     {
-        if (IsEnabled)
-        {
-            await OnClick.InvokeAsync(e);
-        }
+        if (IsEnabled is false) return;
+
+        await OnClick.InvokeAsync(e);
     }
 
     private async Task ScrollIntoView()
