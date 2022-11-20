@@ -37,5 +37,4 @@ public partial class BitLabelDemo
 <BitLabel For=""labels-container__input"">A Label for An Input</BitLabel>
 <input type=""text"" name=""labels-container__input"" id=""labels-container__input"" />
 ";
-
 }
