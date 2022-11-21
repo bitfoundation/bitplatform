@@ -414,7 +414,7 @@ public partial class BitFileUpload : IAsyncDisposable
             {
                 await UpdateStatus(BitFileUploadStatus.Completed, fileIndex);
             }
-            else if (responseStatus is 0 && (file.Status is not BitFileUploadStatus.Paused or BitFileUploadStatus.Canceled))
+            else if ((responseStatus is 0 && (file.Status is BitFileUploadStatus.Paused or BitFileUploadStatus.Canceled)) is false)
             {
                 await UpdateStatus(BitFileUploadStatus.Failed, fileIndex);
             }
