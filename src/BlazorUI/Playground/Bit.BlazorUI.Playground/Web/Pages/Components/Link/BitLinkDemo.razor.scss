@@ -1,0 +1,8 @@
+﻿@import '../../../Styles/abstracts/_functions.scss';
+
+.example-box {
+    display: flex;
+    gap: rem(20px);
+    width: fit-content;
+    flex-direction: column;
+}

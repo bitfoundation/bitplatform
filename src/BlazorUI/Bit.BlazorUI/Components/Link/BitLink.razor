@@ -1,59 +1,53 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
-<span @ref="RootElement"
-      @attributes="HtmlAttributes"
-      style="@StyleBuilder.Value"
-      class="@ClassBuilder.Value">
-
-    @if (Href.HasValue())
+@if (Href.HasValue())
+{
+    @if (IsEnabled)
     {
-        @if (IsEnabled)
+        if (Href!.StartsWith("#"))
         {
-            if (Href!.StartsWith("#"))
-            {
-               <a class="@(HasUnderline ? "underlined" : "")"
-                  @onclick="ScrollIntoView"
-                  @onclick:preventDefault="true">
-                   @ChildContent
-               </a>
-            }
-            else
-            {
-               <a class="@(HasUnderline ? "underlined" : "")"
-                  href="@Href"
-                  target="@Target">
-                   @ChildContent
-               </a>
-            }
+            <a @ref="RootElement"
+               @attributes="HtmlAttributes"
+               style="@StyleBuilder.Value"
+               class="@ClassBuilder.Value"
+               @onclick="ScrollIntoView"
+               @onclick:preventDefault>
+                @ChildContent
+            </a>
         }
         else
         {
-           <a class="@(HasUnderline ? "underlined" : "")"
-              aria-disabled="true">
-               @ChildContent
-           </a>
+            <a @ref="RootElement"
+               @attributes="HtmlAttributes"
+               style="@StyleBuilder.Value"
+               class="@ClassBuilder.Value"
+               href="@Href"
+               target="@Target">
+                @ChildContent
+            </a>
         }
     }
     else
     {
-        @if (IsEnabled)
-        {
-           <button class="@(HasUnderline ? "underlined" : "")"
-                   type="button"
-                   @onclick="HandleClick"
-                   @onclick:preventDefault="true">
-               @ChildContent
-           </button>
-        }
-        else
-        {
-           <button class="@(HasUnderline ? "underlined" : "")"
-                   type="button"
-                   aria-disabled="true"
-                   disabled>
-               @ChildContent
-           </button>
-        }
+        <a @ref="RootElement"
+           @attributes="HtmlAttributes"
+           style="@StyleBuilder.Value"
+           class="@ClassBuilder.Value">
+            @ChildContent
+        </a>
     }
-</span>
+}
+else
+{
+    <button @ref="RootElement"
+            @attributes="HtmlAttributes"
+            style="@StyleBuilder.Value"
+            class="@ClassBuilder.Value"
+            type="button"
+            aria-disabled="@(IsEnabled is false)"
+            disabled="@(IsEnabled is false)"
+            @onclick="HandleClick">
+        @ChildContent
+    </button>
+}

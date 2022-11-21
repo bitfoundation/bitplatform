@@ -1,7 +1,7 @@
 ﻿@import "../../Styles/Fluent/colors.fluent.scss", "../../Styles/functions.scss";
 
-.bit-lnk-fluent {
-    > a {
+.bit-lnk {
+    &.bit-lnk-fluent {
         font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
         -webkit-font-smoothing: antialiased;
         font-size: inherit;
@@ -9,35 +9,10 @@
         color: $Primary;
         outline: none;
         text-decoration: none;
-
-        &:hover, &:active, &:focus {
-            color: $ThemeDarker;
-        }
-
-        &:active, &:hover {
-            text-decoration: underline;
-        }
-    }
-
-    > button {
-        color: $Primary;
-        font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
-        font-size: inherit;
-        background: none transparent;
-        border-top: none;
-        border-right: none;
-        border-left: none;
-        border-image: initial;
+        margin: 0;
+        padding: 0;
+        background-color: transparent;
         cursor: pointer;
-        display: inline;
-        margin: 0px;
-        overflow: inherit;
-        padding: 0px;
-        text-align: left;
-        text-overflow: inherit;
-        border-bottom: 1px solid transparent;
-        user-select: text;
-        text-decoration: none;
 
         &:hover, &:active, &:focus {
             color: $ThemeDarker;
@@ -47,10 +22,8 @@
             text-decoration: underline;
         }
     }
-}
 
-.bit-lnk-disabled-fluent {
-    > a, > button {
+    &.bit-lnk-disabled-fluent {
         color: $Grey90;
         cursor: default;
 
@@ -62,12 +35,12 @@
             text-decoration: none;
         }
     }
-}
 
-a.underlined, button.underlined {
-    text-decoration: underline;
-
-    &:hover, &:active, &:focus {
+    &.underlined {
         text-decoration: underline;
+
+        &:hover, &:active, &:focus {
+            text-decoration: underline;
+        }
     }
 }
