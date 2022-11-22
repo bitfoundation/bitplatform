@@ -3,39 +3,45 @@
 
 <div @ref="RootElement"
      @attributes="HtmlAttributes"
-     aria-label="@AriaLabel"
-     aria-readonly=@(IsReadOnly ? "true" : null)
      class="@ClassBuilder.Value"
-     id="@($"Rating{@UniqueId}")"
-     role=@(!IsReadOnly ? "radiogroup" : null)
-     style="@StyleBuilder.Value">
-     
+     style="@StyleBuilder.Value"
+     aria-label="@AriaLabel"
+     aria-readonly="@IsReadOnly"
+     role=@(IsReadOnly is false ? "radiogroup" : null)>
+
     @for (int item = 1; item <= Max; item++)
     {
         var index = item;
         var percentage = GetPercentageOf(index);
 
-        <button aria-checked="@(index == CurrentValue ? "true" : "false")"
-                aria-hidden=@(IsReadOnly ? "true" : null)
-                data-is-current="@(index == CurrentValue ? "true" : null)"
-                disabled=@(!IsEnabled|| IsReadOnly)
-                id="@($"Rating{UniqueId}-star-{index}")"
+        <button type="button"
                 role="radio"
-                tabindex=@(IsReadOnly ? null : (index == CurrentValue ? "0" : "-1" ))
-                type="button"
+                class="rate-btn"
+                aria-hidden="@IsReadOnly"
+                aria-checked="@(index == CurrentValue)"
+                data-is-current="@(index == CurrentValue)"
+                disabled=@(IsEnabled is false || IsReadOnly)
+                tabindex=@(index == CurrentValue ? "0" : "-1" )
                 @onclick="() => HandleClick(index)">
 
-            <span id="@($"RatingLabel{UniqueId}-{index }"))">@(AriaLabelFormat.HasValue() ? string.Format(AriaLabelFormat!, index , Max) : string.Empty)</span>
-            <div>
-                <i aria-hidden="true"
-                   class="@($" bit-icon bit-icon--{(percentage == 100 ? Icon : UnselectedIcon).GetName()} {(IsEnabled ? "ratingStar-back":"ratingStar-back--disabled"  )}")"></i>
+            @if (AriaLabelFormat.HasValue())
+            {
+                <span class="aria-reader">
+                    @(string.Format(AriaLabelFormat!, index, Max))
+                </span>
+            }
 
+            <div class="rate-icon">
                 <i aria-hidden="true"
-                   class="@($"bit-icon bit-icon--{(percentage > 0 ? Icon : UnselectedIcon).GetName()} ratingStar-front") "
+                   class="@($"bit-icon bit-icon--{(percentage == 100 ? Icon : UnselectedIcon).GetName()} rate-icon-back")">
+                </i>
+                <i aria-hidden="true"
+                   class="@($"bit-icon bit-icon--{(percentage > 0 ? Icon : UnselectedIcon).GetName()} rate-icon-front")"
                    Style=@($"width:{percentage}%;")>
                 </i>
             </div>
         </button>
     }
-    <input @attributes="InputHtmlAttributes" type="number" min="@(AllowZeroStars ? 0 : 1)" max="@Max" value="@CurrentValueAsString" class="bit-input-hidden" />
+
+    <input @attributes="InputHtmlAttributes" type="number" min="@_min" max="@Max" value="@CurrentValueAsString" class="bit-input-hidden" />
 </div>
