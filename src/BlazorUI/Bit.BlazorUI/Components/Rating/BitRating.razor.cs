@@ -5,7 +5,6 @@ namespace Bit.BlazorUI;
 public partial class BitRating
 {
     private bool isReadOnly;
-    private double _min;
 
     /// <summary>
     /// Allow the initial rating value be 0. Note that a value of 0 still won't be selectable by mouse or keyboard
@@ -73,11 +72,11 @@ public partial class BitRating
     {
         OnValueChanged += HandleOnValueChanged;
 
-        _min = AllowZeroStars ? 0 : 1;
+        var min = AllowZeroStars ? 0 : 1;
 
         if (CurrentValue == default && DefaultValue.HasValue)
         {
-            CurrentValue = DefaultValue.Value > Max ? Max : DefaultValue.Value < _min ? _min : DefaultValue.Value;
+            CurrentValue = DefaultValue.Value > Max ? Max : DefaultValue.Value < min ? min : DefaultValue.Value;
         }
 
         await base.OnInitializedAsync();
@@ -124,7 +123,7 @@ public partial class BitRating
     private async Task HandleClick(int index)
     {
         if (index > Max ||
-            index < _min ||
+            index < (AllowZeroStars ? 0 : 1) ||
             IsReadOnly is true ||
             IsEnabled is false ||
             ValueChanged.HasDelegate is false) return;
