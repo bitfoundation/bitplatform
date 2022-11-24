@@ -95,11 +95,7 @@
                 <div>
                     <BitLabel>One-way:</BitLabel>
                     <BitRating AllowZeroStars="true" Value="RatingControlledValue1" />
-                    <span>Rate: @RatingControlledValue1</span>
-                    <div>
-                        <BitButton OnClick="() => RatingControlledValue1 = 5">Star All</BitButton>
-                        <BitButton OnClick="() => RatingControlledValue1 = 0">Unstar all</BitButton>
-                    </div>
+                    <BitToggleButton OnChange="(v) =>  RatingControlledValue1 = v ? 5 : 0" Label="@(RatingControlledValue1 == 5 ? "Unstar All" : "Star All")" />
                 </div>
                 <div>
                     <BitLabel>Two-way:</BitLabel>
