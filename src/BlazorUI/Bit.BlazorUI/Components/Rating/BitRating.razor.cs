@@ -7,7 +7,7 @@ public partial class BitRating
     private bool isReadOnly;
 
     /// <summary>
-    /// Allow the initial rating value be 0. Note that a value of 0 still won't be selectable by mouse or keyboard
+    /// Allow the initial rating value be 0. Note that a value of 0 still won't be selectable by mouse or keyboard.
     /// </summary>
     [Parameter] public bool AllowZeroStars { get; set; }
 
@@ -30,7 +30,7 @@ public partial class BitRating
     [Parameter] public Func<double, double, string>? GetAriaLabel { get; set; }
 
     /// <summary>
-    /// A flag to mark rating control as readOnly
+    /// A flag to mark rating control as readOnly.
     /// </summary>
     [Parameter]
     public bool IsReadOnly
@@ -44,27 +44,27 @@ public partial class BitRating
     }
 
     /// <summary>
-    /// Custom icon name for selected rating elements, If unset, default will be the FavoriteStarFill icon
+    /// Custom icon name for selected rating elements, If unset, default will be the FavoriteStarFill icon.
     /// </summary>
     [Parameter] public BitIconName Icon { get; set; } = BitIconName.FavoriteStarFill;
 
     /// <summary>
-    /// Maximum rating. Must be >= Min (0 if AllowZeroStars is true, 1 otherwise)
+    /// Maximum rating. Must be >= Min (0 if AllowZeroStars is true, 1 otherwise).
     /// </summary>
     [Parameter] public int Max { get; set; } = 5;
 
     /// <summary>
-    /// Callback that is called when the rating has changed
+    /// Callback that is called when the rating has changed.
     /// </summary>
     [Parameter] public EventCallback<double> OnChange { get; set; }
 
     /// <summary>
-    /// Size of rating
+    /// Size of rating.
     /// </summary>
     [Parameter] public BitRatingSize Size { get; set; }
 
     /// <summary>
-    /// Custom icon name for unselected rating elements, If unset, default will be the FavoriteStar icon
+    /// Custom icon name for unselected rating elements, If unset, default will be the FavoriteStar icon.
     /// </summary>
     [Parameter] public BitIconName UnselectedIcon { get; set; } = BitIconName.FavoriteStar;
 
