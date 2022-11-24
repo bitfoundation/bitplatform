@@ -2,7 +2,7 @@
     static setupOtpInput(dotnetReference: DotNetObject, otpInput: HTMLInputElement) {
 
         otpInput.addEventListener('focusin', async e => {
-            otpInput.select();
+            setTimeout(() => otpInput.select());
         });
 
         otpInput.addEventListener('paste', async e => {

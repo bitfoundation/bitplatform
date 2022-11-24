@@ -112,7 +112,7 @@ public partial class BitOtpInput
     {
         if (CurrentValue != null && CurrentValue != string.Join("", _inputValue))
         {
-            await SyncCurrentValueWithArray(CurrentValue);
+            SyncCurrentValueWithArray(CurrentValue);
         }
 
         await base.OnParametersSetAsync();
@@ -138,9 +138,11 @@ public partial class BitOtpInput
         if (IsEnabled is false) return;
 
         _inputValue[index] = string.Empty;
-        await Task.Delay(TimeSpan.FromMilliseconds(1)); // waiting for input default behavior before setting a new value.
+
+        await Task.Delay(1); // waiting for input default behavior before setting a new value.
 
         var value = e.Value!.ToString()!;
+
         if (value.HasValue())
         {
             int nextIndex = index + 1;
@@ -152,7 +154,7 @@ public partial class BitOtpInput
             _inputValue[index] = null;
         }
 
-        await SyncCurrentValueWithArray(string.Join("", _inputValue));
+        SyncCurrentValueWithArray(string.Join("", _inputValue));
 
         await OnInput.InvokeAsync(e);
     }
@@ -243,32 +245,32 @@ public partial class BitOtpInput
     }
 
     [JSInvokable]
-    public async Task SetPastedData(string pastedValue)
+    public void SetPastedData(string pastedValue)
     {
         if (pastedValue.HasNoValue()) return;
 
         if (InputType is BitOtpInputType.Number && int.TryParse(pastedValue, out _) is false) return;
 
-        await SyncCurrentValueWithArray(pastedValue);
-    }
-
-    private async Task SyncCurrentValueWithArray(string currentValue)
-    {
-        if (IsEnabled is false) return;
-
-        var splitedCurrentValue = currentValue.Replace(" ", "", StringComparison.Ordinal).ToCharArray();
+        var splitedPastedValue = pastedValue.Replace(" ", "", StringComparison.Ordinal).ToCharArray();
 
         for (int i = 0; i < Length; i++)
         {
-            if (splitedCurrentValue?.Length > i)
+            if (splitedPastedValue?.Length > i)
             {
-                _inputValue[i] = splitedCurrentValue[i].ToString();
+                _inputValue[i] = splitedPastedValue[i].ToString();
             }
             else
             {
                 _inputValue[i] = null;
             }
         }
+
+        SyncCurrentValueWithArray(pastedValue);
+    }
+
+    private void SyncCurrentValueWithArray(string currentValue)
+    {
+        if (IsEnabled is false) return;
 
         CurrentValue = string.Join("", _inputValue);
     }
