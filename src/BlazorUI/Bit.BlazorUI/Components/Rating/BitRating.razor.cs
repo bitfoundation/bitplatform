@@ -1,4 +1,6 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 
 namespace Bit.BlazorUI;
 
@@ -72,6 +74,8 @@ public partial class BitRating
     {
         OnValueChanged += HandleOnValueChanged;
 
+        OnValueChanging += HandleOnValueChanging;
+
         if (CurrentValue == default && DefaultValue.HasValue)
         {
             CurrentValue = DefaultValue.Value;
@@ -101,6 +105,18 @@ public partial class BitRating
 
     private void HandleOnValueChanged(object? sender, EventArgs args) => ClassBuilder.Reset();
 
+    private void HandleOnValueChanging(object? sender, ValueChangingEventArgs<double> args)
+    {
+        if (args.Value > Max || args.Value < (AllowZeroStars ? 0 : 1))
+        {
+            args.ShouldChange = false;
+
+            if (ValueChanged.HasDelegate is false && OnChange.HasDelegate is false) return;
+
+            _ = ValueChanged.InvokeAsync(Value);
+        }
+    }
+
     private double GetPercentageOf(int index)
     {
         double fullRating = Math.Ceiling(CurrentValue);
@@ -111,7 +127,7 @@ public partial class BitRating
         {
             fullStar = 100;
         }
-        else if(index == fullRating)
+        else if (index == fullRating)
         {
             var decimalValue = CurrentValue % 1;
             fullStar = decimalValue == 0 ? 100 : (decimalValue * 100);
@@ -153,6 +169,7 @@ public partial class BitRating
         if (disposing)
         {
             OnValueChanged -= HandleOnValueChanged;
+            OnValueChanging -= HandleOnValueChanging;
         }
 
         base.Dispose(disposing);
