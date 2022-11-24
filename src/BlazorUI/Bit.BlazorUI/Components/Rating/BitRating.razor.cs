@@ -72,12 +72,12 @@ public partial class BitRating
     {
         OnValueChanged += HandleOnValueChanged;
 
-        var min = AllowZeroStars ? 0 : 1;
-
         if (CurrentValue == default && DefaultValue.HasValue)
         {
-            CurrentValue = DefaultValue.Value > Max ? Max : DefaultValue.Value < min ? min : DefaultValue.Value;
+            CurrentValue = DefaultValue.Value;
         }
+
+        CurrentValue = Math.Min(Math.Max(CurrentValue, (AllowZeroStars ? 0 : 1)), Max);
 
         await base.OnInitializedAsync();
     }
@@ -126,7 +126,7 @@ public partial class BitRating
             index < (AllowZeroStars ? 0 : 1) ||
             IsReadOnly is true ||
             IsEnabled is false ||
-            ValueChanged.HasDelegate is false) return;
+            (ValueChanged.HasDelegate is false && OnChange.HasDelegate is false)) return;
 
         CurrentValue = index;
 

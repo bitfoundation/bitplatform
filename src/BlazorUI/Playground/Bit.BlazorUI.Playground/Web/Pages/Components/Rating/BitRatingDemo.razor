@@ -9,18 +9,18 @@
         <ExamplePreview>
             <div class="example-box">
                 <div>
-                    <BitLabel>Basic</BitLabel>
+                    <BitLabel>Basic:</BitLabel>
                     <BitRating @bind-Value="RatingBasicValue" />
                     <span>Rate: @RatingBasicValue</span>
                 </div>
                 <div>
-                    <BitLabel>Disabled</BitLabel>
-                    <BitRating DefaultValue="2" IsEnabled="false" @bind-Value="RatingDisabledValue" />
+                    <BitLabel>Disabled:</BitLabel>
+                    <BitRating IsEnabled="false" @bind-Value="RatingDisabledValue" />
                     <span>Rate: @RatingDisabledValue</span>
                 </div>
                 <div>
-                    <BitLabel>Readonly</BitLabel>
-                    <BitRating DefaultValue="3.5" IsReadOnly="true" @bind-Value="RatingReadonlyValue" />
+                    <BitLabel>Readonly:</BitLabel>
+                    <BitRating IsReadOnly="true" @bind-Value="RatingReadonlyValue" />
                     <span>Rate: @RatingReadonlyValue</span>
                 </div>
             </div>
@@ -32,17 +32,17 @@
             <div class="example-box">
                 <div>
                     <BitLabel>Max is 6</BitLabel>
-                    <BitRating Max="6" DefaultValue="2.5" @bind-Value="RatingMaxValue1" />
+                    <BitRating Max="6" @bind-Value="RatingMaxValue1" />
                     <span>Rate: @RatingMaxValue1</span>
                 </div>
                 <div>
                     <BitLabel>Max is 10</BitLabel>
-                    <BitRating Max="10" DefaultValue="5" @bind-Value="RatingMaxValue2" />
+                    <BitRating Max="10" @bind-Value="RatingMaxValue2" />
                     <span>Rate: @RatingMaxValue2</span>
                 </div>
                 <div style="width: 200px;">
                     <BitLabel>Max is 100</BitLabel>
-                    <BitRating Max="100" DefaultValue="15" @bind-Value="RatingMaxValue3" />
+                    <BitRating Max="100" @bind-Value="RatingMaxValue3" />
                     <span>Rate: @RatingMaxValue3</span>
                 </div>
             </div>
@@ -53,18 +53,18 @@
         <ExamplePreview>
             <div class="example-box">
                 <div>
-                    <BitLabel>Heart</BitLabel>
-                    <BitRating Icon="BitIconName.HeartFill" UnselectedIcon="BitIconName.Heart" DefaultValue="1.5" @bind-Value="RatingCustomIconValue1" />
+                    <BitLabel>Heart:</BitLabel>
+                    <BitRating Icon="BitIconName.HeartFill" UnselectedIcon="BitIconName.Heart" @bind-Value="RatingCustomIconValue1" />
                     <span>Rate: @RatingCustomIconValue1</span>
                 </div>
                 <div>
-                    <BitLabel>Checkbox</BitLabel>
-                    <BitRating Icon="BitIconName.CheckboxCompositeReversed" UnselectedIcon="BitIconName.Checkbox" DefaultValue="2" @bind-Value="RatingCustomIconValue2" />
+                    <BitLabel>Checkbox:</BitLabel>
+                    <BitRating Icon="BitIconName.CheckboxCompositeReversed" UnselectedIcon="BitIconName.Checkbox" @bind-Value="RatingCustomIconValue2" />
                     <span>Rate: @RatingCustomIconValue2</span>
                 </div>
                 <div>
-                    <BitLabel>Like</BitLabel>
-                    <BitRating Icon="BitIconName.LikeSolid" UnselectedIcon="BitIconName.Dislike" DefaultValue="3" @bind-Value="RatingCustomIconValue3" />
+                    <BitLabel>Like:</BitLabel>
+                    <BitRating Icon="BitIconName.LikeSolid" UnselectedIcon="BitIconName.Dislike" @bind-Value="RatingCustomIconValue3" />
                     <span>Rate: @RatingCustomIconValue3</span>
                 </div>
             </div>
@@ -75,13 +75,13 @@
         <ExamplePreview>
             <div class="example-box">
                 <div>
-                    <BitLabel>Small</BitLabel>
-                    <BitRating Size="BitRatingSize.Small" DefaultValue="3" @bind-Value="RatingSmallValue" />
+                    <BitLabel>Small:</BitLabel>
+                    <BitRating Size="BitRatingSize.Small" @bind-Value="RatingSmallValue" />
                     <span>Rate: @RatingSmallValue</span>
                 </div>
                 <div>
-                    <BitLabel>Large</BitLabel>
-                    <BitRating Size="BitRatingSize.Large" DefaultValue="3" @bind-Value="RatingLargeValue" />
+                    <BitLabel>Large:</BitLabel>
+                    <BitRating Size="BitRatingSize.Large" @bind-Value="RatingLargeValue" />
                     <span>Rate: @RatingLargeValue</span>
                 </div>
             </div>
@@ -93,12 +93,23 @@
             <div class="example-desc">BitRating component support two-way binding as well.</div>
             <div class="example-box">
                 <div>
-                    <BitRating @bind-Value="RatingControlledValue" />
-                    <span>Rate: @RatingControlledValue</span>
+                    <BitLabel>One-way:</BitLabel>
+                    <BitRating AllowZeroStars="true" Value="RatingControlledValue1" />
+                    <span>Rate: @RatingControlledValue1</span>
+                    <div>
+                        <BitButton OnClick="() => RatingControlledValue1 = 5">Star All</BitButton>
+                        <BitButton OnClick="() => RatingControlledValue1 = 0">Unstar all</BitButton>
+                    </div>
                 </div>
                 <div>
-                    <BitButton OnClick="() => RatingControlledValue = 5">Star All</BitButton>
-                    <BitButton OnClick="() => RatingControlledValue = 0">Unstar all</BitButton>
+                    <BitLabel>Two-way:</BitLabel>
+                    <BitRating AllowZeroStars="true" Max="6" @bind-Value="RatingControlledValue2" />
+                    <BitNumericTextField @bind-Value="RatingControlledValue2" />
+                </div>
+                <div>
+                    <BitLabel>OnChange:</BitLabel>
+                    <BitRating DefaultValue="2" OnChange="(v) => RatingControlledValue3 = v" />
+                    <span>Rate: @RatingControlledValue3</span>
                 </div>
             </div>
         </ExamplePreview>
