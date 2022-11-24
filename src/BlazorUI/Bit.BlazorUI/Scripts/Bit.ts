@@ -1,11 +1,29 @@
-﻿class Bit {
+﻿class BitCalloutComponent {
+    calloutId: string;
+    overlayId: string;
+    objRef: DotNetObject | null;
+
+    constructor() {
+        this.calloutId = "";
+        this.overlayId = "";
+        this.objRef = null;
+    }
+
+    update(calloutId: string, overlayId: string, obj: DotNetObject | null) {
+        this.calloutId = calloutId;
+        this.overlayId = overlayId;
+        this.objRef = obj;
+    }
+}
+
+class Bit {
     static currentDropDownCalloutId = "";
-    static currentCallout: BitCalloutComponent;
+    static currentCallout: BitCalloutComponent = new BitCalloutComponent();
     static currentDropDownCalloutResponsiveModeIsEnabled = false;
 
-    static init() {
-        Bit.currentCallout = new BitCalloutComponent();
-    }
+    //static init() {
+    //    Bit.currentCallout = new BitCalloutComponent();
+    //}
 
     static setProperty(element: Record<string, any>, property: string, value: any): void {
         element[property] = value;
