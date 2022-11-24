@@ -168,6 +168,10 @@
         "inputFile": "Pages/Components/RadioButtonList/BitRadioButtonListDemo.razor.scss"
     },
     {
+        "outputFile": "Pages/Components/Rating/BitRatingDemo.razor.css",
+        "inputFile": "Pages/Components/Rating/BitRatingDemo.razor.scss"
+    },
+    {
         "outputFile": "Pages/Components/DropDown/BitDropDownDemo.razor.css",
         "inputFile": "Pages/Components/DropDown/BitDropDownDemo.razor.scss"
     },

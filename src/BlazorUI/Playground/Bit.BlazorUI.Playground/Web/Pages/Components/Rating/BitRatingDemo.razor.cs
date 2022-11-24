@@ -7,29 +7,34 @@ namespace Bit.BlazorUI.Playground.Web.Pages.Components.Rating;
 
 public partial class BitRatingDemo
 {
-    private string SuccessMessage = string.Empty;
-    public BitRatingDemoFormModel ValidationForm { get; set; }
+    private double RatingBasicValue;
+    private double RatingDisabledValue = 2;
+    private double RatingReadonlyValue = 3.5;
 
-    private string RatingChangedText = string.Empty;
+    private double RatingMaxValue1 = 2.5;
+    private double RatingMaxValue2 = 5;
+    private double RatingMaxValue3 = 15;
 
-    private double RatingBoundValue = 2;
+    private double RatingCustomIconValue1 = 1.5;
+    private double RatingCustomIconValue2 = 2;
+    private double RatingCustomIconValue3 = 3;
+
+    private double RatingSmallValue = 3;
     private double RatingLargeValue = 3;
-    private double RatingSmallValue = 0;
-    private double RatingReadOnlyValue = 2.5;
-    private double RatingCustomIconValue = 2.5;
-    private double RatingOutsideValue = 0;
 
-    protected override void OnInitialized()
-    {
-        ValidationForm = new BitRatingDemoFormModel();
-    }
+    private double RatingControlledValue1 = 0;
+    private double RatingControlledValue2 = 3;
+    private double RatingControlledValue3;
+
+    public BitRatingDemoFormModel ValidationModel = new();
+    public string SuccessMessage;
 
     private async Task HandleValidSubmit()
     {
         SuccessMessage = "Form Submitted Successfully!";
-        await Task.Delay(3000);
+        await Task.Delay(2000);
         SuccessMessage = string.Empty;
-        ValidationForm.Value = default;
+        ValidationModel.Value = default;
         StateHasChanged();
     }
 
@@ -105,13 +110,6 @@ public partial class BitRatingDemo
         },
         new ComponentParameter()
         {
-            Name = "ValueChanged",
-            Type = "EventCallback<double>",
-            DefaultValue = "",
-            Description = "Callback that is called when the rating value changed.",
-        },
-        new ComponentParameter()
-        {
             Name = "Size",
             Type = "BitRatingSize",
             DefaultValue = "BitRatingSize.small",
@@ -121,13 +119,11 @@ public partial class BitRatingDemo
         },
         new ComponentParameter()
         {
-            Name = "Visibility",
-            Type = "BitComponentVisibility",
-            LinkType = LinkType.Link,
-            Href = "#component-visibility-enum",
-            DefaultValue = "BitComponentVisibility.Visible",
-            Description = "Whether the component is Visible,Hidden,Collapsed.",
-        },
+            Name = "UnselectedIcon",
+            Type = "BitIconName",
+            DefaultValue = "BitIconName.FavoriteStar",
+            Description = "Custom icon name for unselected rating elements, If unset, default will be the FavoriteStar icon.",
+        }
     };
 
     private readonly List<EnumParameter> enumParameters = new()
@@ -141,127 +137,205 @@ public partial class BitRatingDemo
             {
                 new EnumItem()
                 {
-                    Name= "Small",
-                    Description="Display rating icon using small size.",
-                    Value="0",
+                    Name = "Small",
+                    Description = "Display rating icon using small size.",
+                    Value = "0",
                 },
                 new EnumItem()
                 {
-                    Name= "Large",
-                    Description=" Display rating icon using large size.",
-                    Value="1",
+                    Name = "Large",
+                    Description = " Display rating icon using large size.",
+                    Value = "1",
                 },
-            }
-        },
-        new EnumParameter()
-        {
-            Id = "component-visibility-enum",
-            Title = "BitComponentVisibility Enum",
-            Description = "",
-            EnumList = new List<EnumItem>()
-            {
-                new EnumItem()
-                {
-                    Name= "Visible",
-                    Description="Show content of the component.",
-                    Value="0",
-                },
-                new EnumItem()
-                {
-                    Name= "Hidden",
-                    Description="Hide content of the component,though the space it takes on the page remains.",
-                    Value="1",
-                },
-                new EnumItem()
-                {
-                    Name= "Collapsed",
-                    Description="Hide content of the component,though the space it takes on the page gone.",
-                    Value="2",
-                }
             }
         }
     };
 
-    private readonly string example1HTMLCode = @"<div>Large stars</div>
-<BitRating Size=""BitRatingSize.Large"" @bind-Rating=""RatingLargeValue"" AriaLabelFormat=""Select {0} of {1} stars"" />
-<div>Small stars, with 0 stars allowed</div>
-<BitRating AllowZeroStars=""true"" @bind-Rating=""RatingSmallValue"" />
-<div>10 small stars</div>
+    #region Example Code 1
+
+    private readonly string example1HTMLCode = @"
 <div>
-    <BitRating Max=""10"" OnChange=""@(v => RatingChangedText = $""Rating value changed to {v}"")"" @bind-Rating=""RatingBoundValue"" />
-    <div>
-        <span>@RatingChangedText</span>
-    </div>
-    <div>Disabled</div>
-    <BitRating IsEnabled=""false"" @bind-Rating=""RatingReadOnlyValue"" />
-    <div>Half star in readOnly mode</div>
-    <BitRating IsReadOnly=""true"" @bind-Rating=""RatingReadOnlyValue"" GetAriaLabel=""@((value, max) => $""Half star in readOnly mode rating value is {value.ToString()} of {max.ToString()}"")"" />
-    <div>Custom icons</div>
-    <BitRating Icon=""BitIconName.HeartFill"" UnselectedIcon=""BitIconName.Heart"" AllowZeroStars=""true"" @bind-Rating=""RatingCustomIconValue"" />
-</div>";
+    <BitLabel>Basic:</BitLabel>
+    <BitRating @bind-Value=""RatingBasicValue"" />
+    <span>Rate: @RatingBasicValue</span>
+</div>
+<div>
+    <BitLabel>Disabled:</BitLabel>
+    <BitRating IsEnabled=""false"" @bind-Value=""RatingDisabledValue"" />
+    <span>Rate: @RatingDisabledValue</span>
+</div>
+<div>
+    <BitLabel>Readonly:</BitLabel>
+    <BitRating IsReadOnly=""true"" @bind-Value=""RatingReadonlyValue"" />
+    <span>Rate: @RatingReadonlyValue</span>
+</div>
+";
 
     private readonly string example1CSharpCode = @"
-private string RatingChangedText = string.Empty;
-private double RatingBoundValue = 2;
-private double RatingLargeValue = 3;
-private double RatingSmallValue = 0;
-private double RatingReadOnlyValue = 2.5;
-private double RatingCustomIconValue = 2.5;";
+private double RatingBasicValue;
+private double RatingDisabledValue = 2;
+private double RatingReadonlyValue = 3.5;
+";
 
-    private readonly string example2HTMLCode = @"<div>
-    <BitRating Icon=""BitIconName.Emoji2"" UnselectedIcon=""BitIconName.EmojiNeutral"" AllowZeroStars=""true"" @bind-Rating=""RatingOutsideValue"" />
-    <div>
-        <span>RatingOutsideValue: @RatingOutsideValue</span>
-    </div>
-    <div>
-        <BitButton OnClick=""() => RatingOutsideValue = 5"">Fully satisfied</BitButton>
-        <BitButton OnClick=""() => RatingOutsideValue = 0"">Have no idea</BitButton>
-    </div>
-</div>";
+    #endregion
+
+    #region Example Code 2
+
+    private readonly string example2HTMLCode = @"
+<div>
+    <BitLabel>Max is 6</BitLabel>
+    <BitRating Max=""6"" @bind-Value=""RatingMaxValue1"" />
+    <span>Rate: @RatingMaxValue1</span>
+</div>
+<div>
+    <BitLabel>Max is 10</BitLabel>
+    <BitRating Max=""10"" @bind-Value=""RatingMaxValue2"" />
+    <span>Rate: @RatingMaxValue2</span>
+</div>
+<div style=""width: 200px;"">
+    <BitLabel>Max is 100</BitLabel>
+    <BitRating Max=""100"" @bind-Value=""RatingMaxValue3"" />
+    <span>Rate: @RatingMaxValue3</span>
+</div>
+";
 
     private readonly string example2CSharpCode = @"
-private double RatingOutsideValue = 0; ";
+private double RatingMaxValue1 = 2.5;
+private double RatingMaxValue2 = 5;
+private double RatingMaxValue3 = 15;
+";
 
-    private readonly string example3HTMLCode = @"@if (string.IsNullOrEmpty(SuccessMessage))
-                {
-                    <EditForm Model=""ValidationForm"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
-        <DataAnnotationsValidator/>
+    #endregion
 
-        <BitRating AllowZeroStars=""true"" @bind-Value=""ValidationForm.Value""/>
-        <ValidationMessage For=""@(() => ValidationForm.Value)"" />
+    #region Example Code 3
 
-            <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
-        </EditForm>
-    }
-    else
-    {
-        <BitMessageBar MessageBarType=""BitMessageBarType.Success"" IsMultiline=""false"">
-            @SuccessMessage
-            </BitMessageBar>
-    }";
+    private readonly string example3HTMLCode = @"
+<div>
+    <BitLabel>Heart:</BitLabel>
+    <BitRating Icon=""BitIconName.HeartFill"" UnselectedIcon=""BitIconName.Heart"" @bind-Value=""RatingCustomIconValue1"" />
+    <span>Rate: @RatingCustomIconValue1</span>
+</div>
+<div>
+    <BitLabel>Checkbox:</BitLabel>
+    <BitRating Icon=""BitIconName.CheckboxCompositeReversed"" UnselectedIcon=""BitIconName.Checkbox"" @bind-Value=""RatingCustomIconValue2"" />
+    <span>Rate: @RatingCustomIconValue2</span>
+</div>
+<div>
+    <BitLabel>Like:</BitLabel>
+    <BitRating Icon=""BitIconName.LikeSolid"" UnselectedIcon=""BitIconName.Dislike"" @bind-Value=""RatingCustomIconValue3"" />
+    <span>Rate: @RatingCustomIconValue3</span>
+</div>
+";
 
-    private readonly string example3CSharpCode = @"private string SuccessMessage = string.Empty;
-        public BitRatingDemoFormModel ValidationForm { get; set; }
+    private readonly string example3CSharpCode = @"
+private double RatingCustomIconValue1 = 1.5;
+private double RatingCustomIconValue2 = 2;
+private double RatingCustomIconValue3 = 3;
+";
 
-        public class BitRatingDemoFormModel
-        {
-            [Range(typeof(double), ""1"", ""5"", ErrorMessage=""Your rate must be between {1}
-        and {0}
-        "")]
-        public double Value { get; set; }
-    }
+    #endregion
 
-    protected override void OnInitialized()
-    {
-        ValidationForm = new BitRatingDemoFormModel();
-    }
+    #region Example Code 4
 
-    private async Task HandleValidSubmit()
-    {
-        SuccessMessage = ""Form Submitted Successfully!"";
-        await Task.Delay(3000);
-        SuccessMessage = string.Empty;
-        ValidationForm.Value = default;
-        StateHasChanged();
-    }";
+    private readonly string example4HTMLCode = @"
+<div>
+    <BitLabel>Small:</BitLabel>
+    <BitRating Size=""BitRatingSize.Small"" @bind-Value=""RatingSmallValue"" />
+    <span>Rate: @RatingSmallValue</span>
+</div>
+<div>
+    <BitLabel>Large:</BitLabel>
+    <BitRating Size=""BitRatingSize.Large"" @bind-Value=""RatingLargeValue"" />
+    <span>Rate: @RatingLargeValue</span>
+</div>
+";
+
+    private readonly string example4CSharpCode = @"
+private double RatingSmallValue = 3;
+private double RatingLargeValue = 3;
+";
+
+    #endregion
+
+    #region Example Code 5
+
+    private readonly string example5HTMLCode = @"
+<div>
+    <BitLabel>One-way:</BitLabel>
+    <BitRating AllowZeroStars=""true"" Value=""RatingControlledValue1"" />
+    <BitToggleButton OnChange=""(v) =>  RatingControlledValue1 = v ? 5 : 0"" Label=""@(RatingControlledValue1 == 5 ? ""Unstar All"" : ""Star All"")"" />
+</div>
+<div>
+    <BitLabel>Two-way:</BitLabel>
+    <BitRating Max=""6"" @bind-Value=""RatingControlledValue2"" />
+    <BitSpinButton Step=""0.1"" @bind-Value=""RatingControlledValue2"" />
+</div>
+<div>
+    <BitLabel>OnChange:</BitLabel>
+    <BitRating DefaultValue=""2"" OnChange=""(v) => RatingControlledValue3 = v"" />
+    <span>Rate: @RatingControlledValue3</span>
+</div>
+";
+
+    private readonly string example5CSharpCode = @"
+private double RatingControlledValue1 = 0;
+private double RatingControlledValue2 = 3;
+private double RatingControlledValue3;
+";
+
+    #endregion
+
+    #region Example Code 6
+
+    private readonly string example6HTMLCode = @"
+@if (string.IsNullOrEmpty(SuccessMessage))
+{
+    <EditForm Model=""ValidationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
+
+        <DataAnnotationsValidator />
+
+        <div class=""validation-summary"">
+            <ValidationSummary />
+        </div>
+
+        <BitRating AllowZeroStars=""true"" @bind-Value=""ValidationModel.Value"" />
+        <ValidationMessage For=""@(() => ValidationModel.Value)"" />
+
+        <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
+    </EditForm>
+}
+else
+{
+    <BitMessageBar MessageBarType=""BitMessageBarType.Success"" IsMultiline=""false"">
+        @SuccessMessage
+    </BitMessageBar>
+}
+";
+
+    private readonly string example6CSharpCode = @"
+public class BitRatingDemoFormModel
+{
+    [Range(typeof(double), ""1"", ""5"", ErrorMessage = ""Your rate must be between {1} and {2}"")]
+    public double Value { get; set; }
+}
+
+public BitRatingDemoFormModel ValidationModel = new();
+public string SuccessMessage;
+
+private async Task HandleValidSubmit()
+{
+    SuccessMessage = ""Form Submitted Successfully!"";
+    await Task.Delay(2000);
+    SuccessMessage = string.Empty;
+    ValidationModel.Value = default;
+    StateHasChanged();
+}
+
+private void HandleInvalidSubmit()
+{
+    SuccessMessage = string.Empty;
+}
+";
+
+    #endregion
 }
