@@ -2,6 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection.Emit;
+using System.Text.RegularExpressions;
 
 namespace Bit.BlazorUI;
 
@@ -86,6 +87,16 @@ public partial class BitOtpInput
         await base.OnInitializedAsync();
     }
 
+    protected override async Task OnParametersSetAsync()
+    {
+        if (CurrentValue != null && CurrentValue != string.Join("", _inputValue))
+        {
+            SetInputValue(CurrentValue);
+        }
+
+        await base.OnParametersSetAsync();
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -108,16 +119,6 @@ public partial class BitOtpInput
         await base.OnAfterRenderAsync(firstRender);
     }
 
-    protected override async Task OnParametersSetAsync()
-    {
-        if (CurrentValue != null && CurrentValue != string.Join("", _inputValue))
-        {
-            SyncCurrentValueWithArray(CurrentValue);
-        }
-
-        await base.OnParametersSetAsync();
-    }
-
     protected override void RegisterComponentClasses()
     {
         ClassBuilder.Register(() => ValueInvalid is true
@@ -137,24 +138,27 @@ public partial class BitOtpInput
     {
         if (IsEnabled is false) return;
 
+        var oldValue = _inputValue[index] ?? string.Empty;
         _inputValue[index] = string.Empty;
 
         await Task.Delay(1); // waiting for input default behavior before setting a new value.
 
-        var value = e.Value!.ToString()!;
+        var newValue = e.Value!.ToString()!;
 
-        if (value.HasValue())
+        if (newValue.HasValue())
         {
+            var diff = DiffValues(oldValue, newValue);
+            _inputValue[index] = diff;
+
             int nextIndex = index + 1;
             if (nextIndex < Length) await _inputRef[nextIndex].FocusAsync();
-            _inputValue[index] = value;
         }
         else
         {
             _inputValue[index] = null;
         }
 
-        SyncCurrentValueWithArray(string.Join("", _inputValue));
+        CurrentValue = string.Join("", _inputValue);
 
         await OnInput.InvokeAsync(e);
     }
@@ -194,7 +198,7 @@ public partial class BitOtpInput
             {
                 await _inputRef[nextIndex].FocusAsync();
             }
-            else if(Direction is BitOtpInputDirection.RightToLeft && previousIndex >= 0)
+            else if (Direction is BitOtpInputDirection.RightToLeft && previousIndex >= 0)
             {
                 await _inputRef[previousIndex].FocusAsync();
             }
@@ -205,7 +209,7 @@ public partial class BitOtpInput
             {
                 await _inputRef[previousIndex].FocusAsync();
             }
-            else if(Direction is BitOtpInputDirection.BottomToTop && nextIndex < Length)
+            else if (Direction is BitOtpInputDirection.BottomToTop && nextIndex < Length)
             {
                 await _inputRef[nextIndex].FocusAsync();
             }
@@ -251,28 +255,35 @@ public partial class BitOtpInput
 
         if (InputType is BitOtpInputType.Number && int.TryParse(pastedValue, out _) is false) return;
 
-        var splitedPastedValue = pastedValue.Replace(" ", "", StringComparison.Ordinal).ToCharArray();
+        SetInputValue(pastedValue);
+
+        CurrentValue = string.Join("", _inputValue);
+    }
+
+    private void SetInputValue(string value)
+    {
+        var chars = value.Replace(" ", "", StringComparison.Ordinal).ToCharArray();
 
         for (int i = 0; i < Length; i++)
         {
-            if (splitedPastedValue?.Length > i)
-            {
-                _inputValue[i] = splitedPastedValue[i].ToString();
-            }
-            else
-            {
-                _inputValue[i] = null;
-            }
+            _inputValue[i] = chars.Length > i ? chars[i].ToString() : null;
         }
-
-        SyncCurrentValueWithArray(pastedValue);
     }
 
-    private void SyncCurrentValueWithArray(string currentValue)
+    private string DiffValues(string oldValue, string newValue)
     {
-        if (IsEnabled is false) return;
+        if (newValue.Length < oldValue.Length) return newValue;
+        if (newValue.Length == 1) return newValue;
 
-        CurrentValue = string.Join("", _inputValue);
+        var regex = new Regex($"({oldValue})", RegexOptions.IgnoreCase);
+        var parts = regex.Split(newValue);
+
+        foreach (var part in parts)
+        {
+            if (string.IsNullOrEmpty(part) is false && part != oldValue) return part;
+        }
+
+        return newValue;
     }
 
     /// <inheritdoc />
