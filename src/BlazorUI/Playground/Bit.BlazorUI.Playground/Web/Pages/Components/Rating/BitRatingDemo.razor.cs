@@ -271,8 +271,8 @@ private double RatingLargeValue = 3;
 </div>
 <div>
     <BitLabel>Two-way:</BitLabel>
-    <BitRating AllowZeroStars=""true"" Max=""6"" @bind-Value=""RatingControlledValue2"" />
-    <BitNumericTextField @bind-Value=""RatingControlledValue2"" />
+    <BitRating Max=""6"" @bind-Value=""RatingControlledValue2"" />
+    <BitSpinButton @bind-Value=""RatingControlledValue2"" />
 </div>
 <div>
     <BitLabel>OnChange:</BitLabel>
