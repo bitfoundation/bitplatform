@@ -3,27 +3,9 @@
     invokeMethodAsync<T>(methodIdentifier: string, ...args: any[]): Promise<T>;
 }
 
-class BitCalloutComponent {
-    calloutId: string;
-    overlayId: string;
-    objRef: DotNetObject | null;
-
-    constructor() {
-        this.calloutId = "";
-        this.overlayId = "";
-        this.objRef = null;
-    }
-
-    update(calloutId: string, overlayId: string, obj: DotNetObject | null) {
-        this.calloutId = calloutId;
-        this.overlayId = overlayId;
-        this.objRef = obj;
-    }
-}
-
-window.addEventListener('load', e => {
-    Bit.init();
-})
+//window.addEventListener('load', e => {
+//    Bit.init();
+//})
 
 window.addEventListener('scroll', (e: any) => {
     const minimumWidthForDropDownNormalOpen = 640;
