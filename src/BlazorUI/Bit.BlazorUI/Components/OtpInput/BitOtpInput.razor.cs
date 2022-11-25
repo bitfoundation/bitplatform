@@ -272,16 +272,19 @@ public partial class BitOtpInput
 
     private string DiffValues(string oldValue, string newValue)
     {
-        if (newValue.Length < oldValue.Length) return newValue;
         if (newValue.Length == 1) return newValue;
+        if (newValue.Length < oldValue.Length) return newValue;
 
-        var regex = new Regex($"({oldValue})", RegexOptions.IgnoreCase);
-        var parts = regex.Split(newValue);
+        if (newValue[..^1] == oldValue) return newValue[^1].ToString();
+        if (newValue[1..] == oldValue) return newValue[0].ToString();
 
-        foreach (var part in parts)
-        {
-            if (string.IsNullOrEmpty(part) is false && part != oldValue) return part;
-        }
+        //var regex = new Regex($"({oldValue})", RegexOptions.IgnoreCase);
+        //var parts = regex.Split(newValue);
+
+        //foreach (var part in parts)
+        //{
+        //    if (string.IsNullOrEmpty(part) is false && part != oldValue) return part;
+        //}
 
         return newValue;
     }
