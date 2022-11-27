@@ -5,12 +5,12 @@
      @attributes="HtmlAttributes"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
-    <div class="bit-srch-box-icon-container" aria-hidden="true">
+    <div class="icon-container" aria-hidden="true">
         <i class="bit-icon bit-icon--@IconName.GetName()" aria-hidden="true"></i>
     </div>
     <input @attributes="InputHtmlAttributes"
-           class="srch-box-input"
-           id="@InputId"
+           class="search-box-input"
+           id="@_inputId"
            type="text"
            aria-label="@AriaLabel"
            disabled="@(IsEnabled is false)"
@@ -18,15 +18,15 @@
            role="searchbox"
            value="@CurrentValue"
            autocomplete="@Autocomplete"
-           @ref="InputRef"
+           @ref="_inputRef"
            @onkeydown="@((k) => HandleOnKeyDown(k))"
            @onfocusin="HandleInputFocusIn"
            @onfocusout="HandleInputFocusOut"
-           @oninput="@HandleChange" />
+    @oninput="@HandleOnChange" />
     @if (CurrentValue.HasValue())
     {
-        <div class="srch-box-clear-btn-container">
-            <button class="srch-box-clear-btn"
+        <div class="clear-btn-container">
+            <button class="clear-btn"
                 type="button"
                 aria-label="Clear text"
                 aria-hidden="true"
