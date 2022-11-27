@@ -11,7 +11,6 @@ public partial class BitSearchBox
     private bool isUnderlined;
     private bool inputHasFocus;
     private bool showIcon;
-    private string? width;
 
     private bool InputHasFocus
     {
@@ -26,7 +25,7 @@ public partial class BitSearchBox
     [Inject] public IJSRuntime _js { get; set; } = default!;
 
     /// <summary>
-    /// Specifies the value of the autocomplete attribute of the input component
+    /// Specifies the value of the autocomplete attribute of the input component.
     /// </summary>
     [Parameter] public string? Autocomplete { get; set; }
 
@@ -36,7 +35,7 @@ public partial class BitSearchBox
     [Parameter] public string? DefaultValue { get; set; }
 
     /// <summary>
-    /// Whether or not to animate the search box icon on focus
+    /// Whether or not to animate the search box icon on focus.
     /// </summary>
     [Parameter]
     public bool DisableAnimation
@@ -50,7 +49,7 @@ public partial class BitSearchBox
     }
 
     /// <summary>
-    /// Whether or not the SearchBox is underlined
+    /// Whether or not the SearchBox is underlined.
     /// </summary>
     [Parameter]
     public bool IsUnderlined
@@ -64,12 +63,32 @@ public partial class BitSearchBox
     }
 
     /// <summary>
-    /// The icon name for the icon shown at the beginning of the search box
+    /// The icon name for the icon shown at the beginning of the search box.
     /// </summary>
     [Parameter] public BitIconName IconName { get; set; } = BitIconName.Search;
 
     /// <summary>
-    /// Placeholder for the search box
+    /// Callback for when the input value changes.
+    /// </summary>
+    [Parameter] public EventCallback<string?> OnChange { get; set; }
+
+    /// <summary>
+    /// Callback executed when the user presses escape in the search box.
+    /// </summary>
+    [Parameter] public EventCallback OnEscape { get; set; }
+
+    /// <summary>
+    /// Callback executed when the user clears the search box by either clicking 'X' or hitting escape.
+    /// </summary>
+    [Parameter] public EventCallback OnClear { get; set; }
+
+    /// <summary>
+    /// Callback executed when the user presses enter in the search box.
+    /// </summary>
+    [Parameter] public EventCallback<string> OnSearch { get; set; }
+
+    /// <summary>
+    /// Placeholder for the search box.
     /// </summary>
     [Parameter] public string? Placeholder { get; set; }
 
@@ -84,41 +103,6 @@ public partial class BitSearchBox
         {
             showIcon = value;
             ClassBuilder.Reset();
-        }
-    }
-
-    /// <summary>
-    /// Callback for when the input value changes
-    /// </summary>
-    [Parameter] public EventCallback<string?> OnChange { get; set; }
-
-    /// <summary>
-    /// Callback executed when the user presses escape in the search box.
-    /// </summary>
-    [Parameter] public EventCallback OnEscape { get; set; }
-
-
-    /// <summary>
-    /// Callback executed when the user clears the search box by either clicking 'X' or hitting escape
-    /// </summary>
-    [Parameter] public EventCallback OnClear { get; set; }
-
-    /// <summary>
-    /// Callback executed when the user presses enter in the search box
-    /// </summary>
-    [Parameter] public EventCallback<string> OnSearch { get; set; }
-
-    /// <summary>
-    /// Specifies the width of the search box
-    /// </summary>
-    [Parameter]
-    public string? Width
-    {
-        get => width;
-        set
-        {
-            width = value;
-            StyleBuilder.Reset();
         }
     }
 
@@ -162,11 +146,6 @@ public partial class BitSearchBox
     }
 
     private void HandleOnValueChanged(object? sender, EventArgs args) => ClassBuilder.Reset();
-
-    protected override void RegisterComponentStyles()
-    {
-        StyleBuilder.Register(() => Width.HasValue() ? $"width: {Width}" : string.Empty);
-    }
 
     private void HandleInputFocusIn()
     {
