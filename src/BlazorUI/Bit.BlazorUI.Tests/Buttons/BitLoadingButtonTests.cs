@@ -115,27 +115,27 @@ public class BitLoadingButtonTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow(BitLabelPosition.Top, BitElementSize.XSmall),
-        DataRow(BitLabelPosition.Top, BitElementSize.Small),
-        DataRow(BitLabelPosition.Top, BitElementSize.Medium),
-        DataRow(BitLabelPosition.Top, BitElementSize.Large),
+        DataRow(BitLabelPosition.Top, BitSpinnerSize.XSmall),
+        DataRow(BitLabelPosition.Top, BitSpinnerSize.Small),
+        DataRow(BitLabelPosition.Top, BitSpinnerSize.Medium),
+        DataRow(BitLabelPosition.Top, BitSpinnerSize.Large),
 
-        DataRow(BitLabelPosition.Right, BitElementSize.XSmall),
-        DataRow(BitLabelPosition.Right, BitElementSize.Small),
-        DataRow(BitLabelPosition.Right, BitElementSize.Medium),
-        DataRow(BitLabelPosition.Right, BitElementSize.Large),
+        DataRow(BitLabelPosition.Right, BitSpinnerSize.XSmall),
+        DataRow(BitLabelPosition.Right, BitSpinnerSize.Small),
+        DataRow(BitLabelPosition.Right, BitSpinnerSize.Medium),
+        DataRow(BitLabelPosition.Right, BitSpinnerSize.Large),
 
-        DataRow(BitLabelPosition.Bottom, BitElementSize.XSmall),
-        DataRow(BitLabelPosition.Bottom, BitElementSize.Small),
-        DataRow(BitLabelPosition.Bottom, BitElementSize.Medium),
-        DataRow(BitLabelPosition.Bottom, BitElementSize.Large),
+        DataRow(BitLabelPosition.Bottom, BitSpinnerSize.XSmall),
+        DataRow(BitLabelPosition.Bottom, BitSpinnerSize.Small),
+        DataRow(BitLabelPosition.Bottom, BitSpinnerSize.Medium),
+        DataRow(BitLabelPosition.Bottom, BitSpinnerSize.Large),
 
-        DataRow(BitLabelPosition.Left, BitElementSize.XSmall),
-        DataRow(BitLabelPosition.Left, BitElementSize.Small),
-        DataRow(BitLabelPosition.Left, BitElementSize.Medium),
-        DataRow(BitLabelPosition.Left, BitElementSize.Large),
+        DataRow(BitLabelPosition.Left, BitSpinnerSize.XSmall),
+        DataRow(BitLabelPosition.Left, BitSpinnerSize.Small),
+        DataRow(BitLabelPosition.Left, BitSpinnerSize.Medium),
+        DataRow(BitLabelPosition.Left, BitSpinnerSize.Large),
     ]
-    public void BitLoadingButtonLoaderTest(BitLabelPosition labelPosition, BitElementSize spinnerSize)
+    public void BitLoadingButtonLoaderTest(BitLabelPosition labelPosition, BitSpinnerSize spinnerSize)
     {
         string loadingLabel = "I'm Loading Label";
 
@@ -160,10 +160,10 @@ public class BitLoadingButtonTests : BunitTestContext
 
         var spinnerSizeClass = spinnerSize switch
         {
-            BitElementSize.XSmall => "xSmall",
-            BitElementSize.Small => "small",
-            BitElementSize.Medium => "medium",
-            BitElementSize.Large => "large",
+            BitSpinnerSize.XSmall => "xSmall",
+            BitSpinnerSize.Small => "small",
+            BitSpinnerSize.Medium => "medium",
+            BitSpinnerSize.Large => "large",
             _ => string.Empty
         };
 

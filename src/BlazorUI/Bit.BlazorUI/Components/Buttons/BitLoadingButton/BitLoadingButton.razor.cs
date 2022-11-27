@@ -80,7 +80,7 @@ public partial class BitLoadingButton
     /// <summary>
     /// The size of loading spinner to render.
     /// </summary>
-    [Parameter] public BitElementSize LoadingSpinnerSize { get; set; } = BitElementSize.Small;
+    [Parameter] public BitSpinnerSize LoadingSpinnerSize { get; set; } = BitSpinnerSize.Small;
 
     /// <summary>
     /// The position of the loading Label in regards to the spinner animation.
@@ -135,10 +135,10 @@ public partial class BitLoadingButton
     {
         string classSize = LoadingSpinnerSize switch
         {
-            BitElementSize.XSmall => "xSmall",
-            BitElementSize.Small => "small",
-            BitElementSize.Medium => "medium",
-            BitElementSize.Large => "large",
+            BitSpinnerSize.XSmall => "xSmall",
+            BitSpinnerSize.Small => "small",
+            BitSpinnerSize.Medium => "medium",
+            BitSpinnerSize.Large => "large",
             _ => "small"
         };
 

@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-public enum BitElementSize
+public enum BitSpinnerSize
 {
     Medium,
     Large,
