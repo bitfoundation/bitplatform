@@ -379,8 +379,8 @@ public partial class BitLoadingButtonDemo
         new ComponentParameter
         {
             Name = "LoadingSpinnerSize",
-            Type = "BitElementSize",
-            DefaultValue = "BitElementSize.Small",
+            Type = "BitSpinnerSize",
+            DefaultValue = "BitSpinnerSize.Small",
             Description = "The size of loading spinner to render.",
             LinkType = LinkType.Link,
             Href = "#spinner-size-enum"
@@ -527,7 +527,7 @@ public partial class BitLoadingButtonDemo
         new EnumParameter()
         {
             Id = "spinner-position-enum",
-            Title = "BitElementSize Enum",
+            Title = "BitSpinnerSize Enum",
             Description = "",
             EnumList = new List<EnumItem>()
             {
@@ -730,27 +730,27 @@ private async Task LeftPositionOnClick()
 
     private readonly string example4HTMLCode = @"
 <BitLoadingButton IsLoading=""XSmallIsLoading""
-                  LoadingSpinnerSize=""BitElementSize.XSmall""
+                  LoadingSpinnerSize=""BitSpinnerSize.XSmall""
                   OnClick=""XSmallOnClick"">
     XSmall (@XSmallCounter)
 </BitLoadingButton>
 
 <BitLoadingButton IsLoading=""SmallIsLoading""
-                  LoadingSpinnerSize=""BitElementSize.Small""
+                  LoadingSpinnerSize=""BitSpinnerSize.Small""
                   OnClick=""SmallOnClick"">
     Small (@SmallCounter)
 </BitLoadingButton>
 
 <BitLoadingButton IsLoading=""MediumIsLoading""
                   ButtonStyle=""BitButtonStyle.Standard""
-                  LoadingSpinnerSize=""BitElementSize.Medium""
+                  LoadingSpinnerSize=""BitSpinnerSize.Medium""
                   OnClick=""MediumOnClick"">
     Medium (@MediumCounter)
 </BitLoadingButton>
 
 <BitLoadingButton IsLoading=""LargeIsLoading""
                   ButtonStyle=""BitButtonStyle.Standard""
-                  LoadingSpinnerSize=""BitElementSize.Large""
+                  LoadingSpinnerSize=""BitSpinnerSize.Large""
                   OnClick=""LargeOnClick"">
     Large (@LargeCounter)
 </BitLoadingButton>

@@ -17,7 +17,7 @@ public partial class BitSpinner
     /// <summary>
     /// The size of spinner to render
     /// </summary>
-    [Parameter] public BitElementSize Size { get; set; }
+    [Parameter] public BitSpinnerSize Size { get; set; }
 
     /// <summary>
     /// The label to show next to the spinner. Label updates will be announced to the screen readers
@@ -38,19 +38,19 @@ public partial class BitSpinner
 
         switch (Size)
         {
-            case BitElementSize.XSmall:
+            case BitSpinnerSize.XSmall:
                 classSize = "xSmall";
                 break;
 
-            case BitElementSize.Small:
+            case BitSpinnerSize.Small:
                 classSize = "small";
                 break;
 
-            case BitElementSize.Medium:
+            case BitSpinnerSize.Medium:
                 classSize = "medium";
                 break;
 
-            case BitElementSize.Large:
+            case BitSpinnerSize.Large:
                 classSize = "large";
                 break;
         }
