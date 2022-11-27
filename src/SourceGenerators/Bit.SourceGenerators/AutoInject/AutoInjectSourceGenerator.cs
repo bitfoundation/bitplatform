@@ -13,6 +13,7 @@ namespace Bit.SourceGenerators;
 [Generator]
 public class AutoInjectSourceGenerator : ISourceGenerator
 {
+    private static int counter;
     private static readonly DiagnosticDescriptor NonPartialClassError = new DiagnosticDescriptor(id: "BITGEN001",
                                                                                               title: "The class needs to be partial",
                                                                                               messageFormat: "{0} is not partial. The AutoInject attribute needs to be used only in partial classes.",
@@ -27,13 +28,12 @@ public class AutoInjectSourceGenerator : ISourceGenerator
 
     public void Execute(GeneratorExecutionContext context)
     {
-        if ((context.SyntaxContextReceiver is AutoInjectSyntaxReceiver receiver) is false)
+        if (context.SyntaxContextReceiver is not AutoInjectSyntaxReceiver receiver)
             return;
 
         INamedTypeSymbol? attributeSymbol = context.Compilation.GetTypeByMetadataName(AutoInjectHelper.AutoInjectAttributeFullName);
 
-        foreach (IGrouping<INamedTypeSymbol, ISymbol> group in receiver.EligibleMembers
-                     .GroupBy<ISymbol, INamedTypeSymbol>(f => f.ContainingType, SymbolEqualityComparer.Default))
+        foreach (IGrouping<INamedTypeSymbol, ISymbol> group in receiver.EligibleMembers.GroupBy<ISymbol, INamedTypeSymbol>(f => f.ContainingType, SymbolEqualityComparer.Default))
         {
             if (IsClassIsPartial(context, group.Key) is false)
                 return;
@@ -41,8 +41,10 @@ public class AutoInjectSourceGenerator : ISourceGenerator
             string? partialClassSource = GenerateSource(attributeSymbol, group.Key, group.ToList());
 
             if (string.IsNullOrEmpty(partialClassSource) is false)
-                context.AddSource($"{group.Key.Name}_autoInject.g.cs",
-                    SourceText.From(partialClassSource!, Encoding.UTF8));
+            {
+                counter++;
+                context.AddSource($"{group.Key.Name}_{counter}_autoInject.g.cs", SourceText.From(partialClassSource!, Encoding.UTF8));
+            }
         }
 
         foreach (var @class in receiver.EligibleClassesWithBaseClassUsedAutoInject)
@@ -56,8 +58,10 @@ public class AutoInjectSourceGenerator : ISourceGenerator
             string? partialClassSource = GenerateSource(attributeSymbol, @class, new List<ISymbol>());
 
             if (string.IsNullOrEmpty(partialClassSource) is false)
-                context.AddSource($"{@class.Name}_autoInject.g.cs",
-                  SourceText.From(partialClassSource!, Encoding.UTF8));
+            {
+                counter++;
+                context.AddSource($"{@class.Name}_{counter}_autoInject.g.cs", SourceText.From(partialClassSource!, Encoding.UTF8));
+            }
         }
     }
 
@@ -78,18 +82,14 @@ public class AutoInjectSourceGenerator : ISourceGenerator
         return true;
     }
 
-    private static string? GenerateSource(
-        INamedTypeSymbol? attributeSymbol,
-        INamedTypeSymbol? classSymbol,
-        IReadOnlyCollection<ISymbol> eligibleMembers)
+    private static string? GenerateSource(INamedTypeSymbol? attributeSymbol, INamedTypeSymbol? classSymbol, IReadOnlyCollection<ISymbol> eligibleMembers)
     {
         AutoInjectClassType env = FigureOutTypeOfEnvironment(classSymbol);
         return env switch
         {
-            AutoInjectClassType.NormalClass => AutoInjectNormalClassHandler.Generate(attributeSymbol, classSymbol,
-                eligibleMembers),
+            AutoInjectClassType.NormalClass => AutoInjectNormalClassHandler.Generate(attributeSymbol, classSymbol, eligibleMembers),
             AutoInjectClassType.RazorComponent => AutoInjectRazorComponentHandler.Generate(classSymbol, eligibleMembers),
-            _ => ""
+            _ => string.Empty
         };
     }
 
@@ -106,14 +106,13 @@ public class AutoInjectSourceGenerator : ISourceGenerator
 
     private static bool IsClassIsRazorComponent(INamedTypeSymbol @class)
     {
-        bool isInheritIComponent = @class.AllInterfaces.Any(o =>
-            o.ToDisplayString() == "Microsoft.AspNetCore.Components.IComponent");
+        bool isInheritIComponent = @class.AllInterfaces.Any(o => o.ToDisplayString().Equals("Microsoft.AspNetCore.Components.IComponent"));
 
         if (isInheritIComponent)
             return true;
 
         var classFilePaths = @class.Locations
-            .Where(o => o.SourceTree != null)
+            .Where(o => o.SourceTree is not null)
             .Select(o => o.SourceTree?.FilePath)
             .ToList();
 
@@ -121,7 +120,7 @@ public class AutoInjectSourceGenerator : ISourceGenerator
 
         foreach (var path in classFilePaths)
         {
-            string directoryPath = Path.GetDirectoryName(path) ?? "";
+            string directoryPath = Path.GetDirectoryName(path) ?? string.Empty;
             string filePath = Path.Combine(directoryPath, razorFileName);
             if (File.Exists(filePath))
                 return true;

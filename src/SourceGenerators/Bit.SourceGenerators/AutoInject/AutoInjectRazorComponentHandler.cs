@@ -7,9 +7,7 @@ namespace Bit.SourceGenerators;
 
 public static class AutoInjectRazorComponentHandler
 {
-    public static string? Generate(
-        INamedTypeSymbol? classSymbol,
-        IReadOnlyCollection<ISymbol> eligibleMembers)
+    public static string? Generate(INamedTypeSymbol? classSymbol, IReadOnlyCollection<ISymbol> eligibleMembers)
     {
         if (classSymbol is null)
         {

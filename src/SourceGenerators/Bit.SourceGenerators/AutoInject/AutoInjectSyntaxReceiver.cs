@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -20,7 +21,7 @@ public class AutoInjectSyntaxReceiver : ISyntaxContextReceiver
 
     private void MarkEligibleClasses(GeneratorSyntaxContext context)
     {
-        if ((context.Node is ClassDeclarationSyntax classDeclarationSyntax) is false)
+        if (context.Node is not ClassDeclarationSyntax classDeclarationSyntax)
             return;
 
         var classSymbol = context.SemanticModel.GetDeclaredSymbol(classDeclarationSyntax);
@@ -56,21 +57,16 @@ public class AutoInjectSyntaxReceiver : ISyntaxContextReceiver
 
     private void MarkEligibleFields(GeneratorSyntaxContext context)
     {
-        if ((context.Node is FieldDeclarationSyntax fieldDeclarationSyntax) is false ||
-            fieldDeclarationSyntax.AttributeLists.Any() is false) return;
-
-        var classDeclarationSyntax = (ClassDeclarationSyntax?)fieldDeclarationSyntax.Parent;
-
-        if (classDeclarationSyntax is null)
+        if (context.Node is not FieldDeclarationSyntax fieldDeclarationSyntax || fieldDeclarationSyntax.AttributeLists.Any() is false)
             return;
 
         foreach (VariableDeclaratorSyntax variable in fieldDeclarationSyntax.Declaration.Variables)
         {
             var fieldSymbol = ModelExtensions.GetDeclaredSymbol(context.SemanticModel, variable) as IFieldSymbol;
-            if (fieldSymbol != null &&
+            if (fieldSymbol is not null &&
                 fieldSymbol.GetAttributes()
-                    .Any(ad => ad.AttributeClass != null &&
-                               ad.AttributeClass.ToDisplayString() == AutoInjectHelper.AutoInjectAttributeFullName))
+                    .Any(ad => ad.AttributeClass is not null &&
+                               ad.AttributeClass.ToDisplayString().Equals(AutoInjectHelper.AutoInjectAttributeFullName, StringComparison.Ordinal)))
             {
                 EligibleMembers.Add(fieldSymbol);
             }
@@ -79,18 +75,15 @@ public class AutoInjectSyntaxReceiver : ISyntaxContextReceiver
 
     private void MarkEligibleProperties(GeneratorSyntaxContext context)
     {
-        if (!(context.Node is PropertyDeclarationSyntax propertyDeclarationSyntax) ||
-            propertyDeclarationSyntax.AttributeLists.Count <= 0) return;
-
-        var classDeclarationSyntax = (ClassDeclarationSyntax?)propertyDeclarationSyntax.Parent;
-
-        if (classDeclarationSyntax is null) return;
+        if (context.Node is not PropertyDeclarationSyntax propertyDeclarationSyntax || propertyDeclarationSyntax.AttributeLists.Count <= 0)
+            return;
 
         var propertySymbol = context.SemanticModel.GetDeclaredSymbol(propertyDeclarationSyntax);
 
-        if (propertySymbol is null) return;
+        if (propertySymbol is null)
+            return;
 
-        if (propertySymbol.GetAttributes().Any(ad => ad.AttributeClass != null && ad.AttributeClass.ToDisplayString() == AutoInjectHelper.AutoInjectAttributeFullName))
+        if (propertySymbol.GetAttributes().Any(ad => ad.AttributeClass is not null && ad.AttributeClass.ToDisplayString().Equals(AutoInjectHelper.AutoInjectAttributeFullName, StringComparison.Ordinal)))
         {
             EligibleMembers.Add(propertySymbol);
         }
