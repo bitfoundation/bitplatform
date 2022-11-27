@@ -60,6 +60,9 @@ public class AutoInjectSyntaxReceiver : ISyntaxContextReceiver
         if (context.Node is not FieldDeclarationSyntax fieldDeclarationSyntax || fieldDeclarationSyntax.AttributeLists.Any() is false)
             return;
 
+        if (fieldDeclarationSyntax.Parent is ClassDeclarationSyntax classDeclarationSyntax && classDeclarationSyntax is null)
+            return;
+
         foreach (VariableDeclaratorSyntax variable in fieldDeclarationSyntax.Declaration.Variables)
         {
             var fieldSymbol = ModelExtensions.GetDeclaredSymbol(context.SemanticModel, variable) as IFieldSymbol;
@@ -76,6 +79,9 @@ public class AutoInjectSyntaxReceiver : ISyntaxContextReceiver
     private void MarkEligibleProperties(GeneratorSyntaxContext context)
     {
         if (context.Node is not PropertyDeclarationSyntax propertyDeclarationSyntax || propertyDeclarationSyntax.AttributeLists.Count <= 0)
+            return;
+
+        if (propertyDeclarationSyntax.Parent is ClassDeclarationSyntax classDeclarationSyntax && classDeclarationSyntax is null)
             return;
 
         var propertySymbol = context.SemanticModel.GetDeclaredSymbol(propertyDeclarationSyntax);
