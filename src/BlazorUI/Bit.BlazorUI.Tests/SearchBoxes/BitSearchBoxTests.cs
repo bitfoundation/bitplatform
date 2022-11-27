@@ -11,7 +11,7 @@ public class BitSearchBoxTests : BunitTestContext
     {
         var component = RenderComponent<BitSearchBoxTest>(parameter =>
         parameter.Add(p => p.Placeholder, componentPlaceholder));
-        var input = component.Find(".search-box-input");
+        var input = component.Find(".input");
 
         var inputPlaceholder = input.GetAttribute("placeholder");
 
@@ -23,7 +23,7 @@ public class BitSearchBoxTests : BunitTestContext
     {
         var component = RenderComponent<BitSearchBoxTest>(parameter =>
         parameter.Add(p => p.Value, value));
-        var input = component.Find(".search-box-input");
+        var input = component.Find(".input");
 
         var inputValue = input.GetAttribute("value");
 
@@ -58,7 +58,7 @@ public class BitSearchBoxTests : BunitTestContext
             parameters.Add(p => p.AriaLabel, ariaLabel);
         });
 
-        var bitSearchBox = com.Find(".search-box-input");
+        var bitSearchBox = com.Find(".input");
 
         Assert.IsTrue(bitSearchBox.GetAttribute("aria-label").Equals(ariaLabel));
     }
@@ -77,7 +77,7 @@ public class BitSearchBoxTests : BunitTestContext
                 parameters.Add(p => p.DefaultValue, defaultValue);
             });
 
-        var input = component.Find(".search-box-input");
+        var input = component.Find(".input");
         var actualValue = string.IsNullOrEmpty(value) ? defaultValue : value;
 
         Assert.AreEqual(input.GetAttribute("value"), actualValue);
@@ -111,7 +111,7 @@ public class BitSearchBoxTests : BunitTestContext
             {
                 parameters.Add(p => p.IsEnabled, isEnabled);
             });
-        var input = component.Find(".search-box-input");
+        var input = component.Find(".input");
         //TODO: bypassed - BUnit oninput event issue
         //input.KeyDown("a");
         //Assert.AreEqual(isEnabled ? 1 : 0, component.Instance.CurrentCount);
@@ -130,7 +130,7 @@ public class BitSearchBoxTests : BunitTestContext
             parameters.Add(p => p.IsEnabled, true);
         });
 
-        var input = component.Find(".search-box-input");
+        var input = component.Find(".input");
 
         if (autoComplete.HasValue())
         {
@@ -165,7 +165,7 @@ public class BitSearchBoxTests : BunitTestContext
         Assert.AreEqual(component.Instance.ValidCount, isValid ? 1 : 0);
         Assert.AreEqual(component.Instance.InvalidCount, isValid ? 0 : 1);
 
-        var input = component.Find("input.search-box-input");
+        var input = component.Find("input.input");
         if (isValid)
         {
             input.Input("bit.com");
