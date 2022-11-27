@@ -42,8 +42,7 @@ public class AutoInjectSourceGenerator : ISourceGenerator
 
             if (string.IsNullOrEmpty(partialClassSource) is false)
             {
-                counter++;
-                context.AddSource($"{group.Key.Name}_{counter}_autoInject.g.cs", SourceText.From(partialClassSource!, Encoding.UTF8));
+                context.AddSource($"{group.Key.Name}_{counter++}_autoInject.g.cs", SourceText.From(partialClassSource!, Encoding.UTF8));
             }
         }
 
@@ -59,8 +58,7 @@ public class AutoInjectSourceGenerator : ISourceGenerator
 
             if (string.IsNullOrEmpty(partialClassSource) is false)
             {
-                counter++;
-                context.AddSource($"{@class.Name}_{counter}_autoInject.g.cs", SourceText.From(partialClassSource!, Encoding.UTF8));
+                context.AddSource($"{@class.Name}_{counter++}_autoInject.g.cs", SourceText.From(partialClassSource!, Encoding.UTF8));
             }
         }
     }
@@ -106,7 +104,7 @@ public class AutoInjectSourceGenerator : ISourceGenerator
 
     private static bool IsClassIsRazorComponent(INamedTypeSymbol @class)
     {
-        bool isInheritIComponent = @class.AllInterfaces.Any(o => o.ToDisplayString().Equals("Microsoft.AspNetCore.Components.IComponent"));
+        bool isInheritIComponent = @class.AllInterfaces.Any(o => o.ToDisplayString() == "Microsoft.AspNetCore.Components.IComponent");
 
         if (isInheritIComponent)
             return true;

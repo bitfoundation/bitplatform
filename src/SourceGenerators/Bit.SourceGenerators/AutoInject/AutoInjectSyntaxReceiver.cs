@@ -66,7 +66,7 @@ public class AutoInjectSyntaxReceiver : ISyntaxContextReceiver
             if (fieldSymbol is not null &&
                 fieldSymbol.GetAttributes()
                     .Any(ad => ad.AttributeClass is not null &&
-                               ad.AttributeClass.ToDisplayString().Equals(AutoInjectHelper.AutoInjectAttributeFullName, StringComparison.Ordinal)))
+                               ad.AttributeClass.ToDisplayString() == AutoInjectHelper.AutoInjectAttributeFullName))
             {
                 EligibleMembers.Add(fieldSymbol);
             }
@@ -83,7 +83,7 @@ public class AutoInjectSyntaxReceiver : ISyntaxContextReceiver
         if (propertySymbol is null)
             return;
 
-        if (propertySymbol.GetAttributes().Any(ad => ad.AttributeClass is not null && ad.AttributeClass.ToDisplayString().Equals(AutoInjectHelper.AutoInjectAttributeFullName, StringComparison.Ordinal)))
+        if (propertySymbol.GetAttributes().Any(ad => ad.AttributeClass is not null && ad.AttributeClass.ToDisplayString() == AutoInjectHelper.AutoInjectAttributeFullName))
         {
             EligibleMembers.Add(propertySymbol);
         }
