@@ -87,6 +87,7 @@
         background-color: $White;
         cursor: pointer;
         text-align: center;
+        -moz-appearance: textfield;
 
         &:focus {
             outline: none;
@@ -95,6 +96,7 @@
 
         &::-webkit-inner-spin-button, &::-webkit-outer-spin-button {
             -webkit-appearance: none;
+            appearance: none;
         }
     }
 }
