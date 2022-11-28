@@ -1,19 +1,16 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
-using Microsoft.JSInterop;
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
 public partial class BitSearchBox
 {
+    private string _inputId = string.Empty;
+    private ElementReference _inputRef = default!;
     private bool disableAnimation;
     private bool isUnderlined;
     private bool inputHasFocus;
     private bool showIcon;
-    private string? width;
+
     private bool InputHasFocus
     {
         get => inputHasFocus;
@@ -24,14 +21,20 @@ public partial class BitSearchBox
         }
     }
 
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-    [Inject] public IJSRuntime JSRuntime { get; set; }
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-
-    public ElementReference InputRef { get; set; }
+    [Inject] private IJSRuntime _js { get; set; } = default!;
 
     /// <summary>
-    /// Whether or not to animate the search box icon on focus
+    /// Specifies the value of the autocomplete attribute of the input component.
+    /// </summary>
+    [Parameter] public string? Autocomplete { get; set; }
+
+    /// <summary>
+    /// The default value of the text in the SearchBox, in the case of an uncontrolled component.
+    /// </summary>
+    [Parameter] public string? DefaultValue { get; set; }
+
+    /// <summary>
+    /// Whether or not to animate the search box icon on focus.
     /// </summary>
     [Parameter]
     public bool DisableAnimation
@@ -45,7 +48,7 @@ public partial class BitSearchBox
     }
 
     /// <summary>
-    /// Whether or not the SearchBox is underlined
+    /// Whether or not the SearchBox is underlined.
     /// </summary>
     [Parameter]
     public bool IsUnderlined
@@ -57,6 +60,36 @@ public partial class BitSearchBox
             ClassBuilder.Reset();
         }
     }
+
+    /// <summary>
+    /// The icon name for the icon shown at the beginning of the search box.
+    /// </summary>
+    [Parameter] public BitIconName IconName { get; set; } = BitIconName.Search;
+
+    /// <summary>
+    /// Callback for when the input value changes.
+    /// </summary>
+    [Parameter] public EventCallback<string?> OnChange { get; set; }
+
+    /// <summary>
+    /// Callback executed when the user presses escape in the search box.
+    /// </summary>
+    [Parameter] public EventCallback OnEscape { get; set; }
+
+    /// <summary>
+    /// Callback executed when the user clears the search box by either clicking 'X' or hitting escape.
+    /// </summary>
+    [Parameter] public EventCallback OnClear { get; set; }
+
+    /// <summary>
+    /// Callback executed when the user presses enter in the search box.
+    /// </summary>
+    [Parameter] public EventCallback<string> OnSearch { get; set; }
+
+    /// <summary>
+    /// Placeholder for the search box.
+    /// </summary>
+    [Parameter] public string? Placeholder { get; set; }
 
     /// <summary>
     /// Whether or not to make the icon be always visible (it hides by default when the search box is focused).
@@ -72,63 +105,6 @@ public partial class BitSearchBox
         }
     }
 
-    /// <summary>
-    /// The default value of the text in the SearchBox, in the case of an uncontrolled component.
-    /// </summary>
-    [Parameter] public string? DefaultValue { get; set; }
-
-    /// <summary>
-    /// The icon name for the icon shown at the beginning of the search box
-    /// </summary>
-    [Parameter] public BitIconName IconName { get; set; } = BitIconName.Search;
-
-    /// <summary>
-    /// Placeholder for the search box
-    /// </summary>
-    [Parameter] public string? Placeholder { get; set; }
-
-    /// <summary>
-    /// Specifies the width of the search box
-    /// </summary>
-    [Parameter]
-    public string? Width
-    {
-        get => width;
-        set
-        {
-            width = value;
-            StyleBuilder.Reset();
-        }
-    }
-
-    /// <summary>
-    /// Callback for when the input value changes
-    /// </summary>
-    [Parameter] public EventCallback<string?> OnChange { get; set; }
-
-    /// <summary>
-    /// Callback executed when the user presses escape in the search box.
-    /// </summary>
-    [Parameter] public EventCallback OnEscape { get; set; }
-
-
-    /// <summary>
-    /// Callback executed when the user clears the search box by either clicking 'X' or hitting escape
-    /// </summary>
-    [Parameter] public EventCallback OnClear { get; set; }
-
-    /// <summary>
-    /// Callback executed when the user presses enter in the search box
-    /// </summary>
-    [Parameter] public EventCallback<string> OnSearch { get; set; }
-
-    /// <summary>
-    /// Specifies the value of the autocomplete attribute of the input component
-    /// </summary>
-    [Parameter] public string? Autocomplete { get; set; }
-
-    public string InputId { get; set; } = string.Empty;
-
     protected override Task OnInitializedAsync()
     {
         if (CurrentValueAsString.HasNoValue() && DefaultValue.HasValue())
@@ -138,25 +114,37 @@ public partial class BitSearchBox
 
         OnValueChanged += HandleOnValueChanged;
 
-        InputId = $"SearchBox{UniqueId}";
+        _inputId = $"{RootElementClass}-{UniqueId}";
+
         return base.OnInitializedAsync();
     }
 
-    protected override string RootElementClass => "bit-srch-box";
+    protected override string RootElementClass => "bit-srb";
 
     protected override void RegisterComponentClasses()
     {
-        ClassBuilder.Register(() => CurrentValue.HasValue() ? $"{RootElementClass}{(ShowIcon ? "-fixed-icon" : string.Empty)}-has-value-{VisualClassRegistrar()}" : string.Empty);
-        ClassBuilder.Register(() => DisableAnimation ? $"{RootElementClass}-no-animation-{VisualClassRegistrar()}" : string.Empty);
-        ClassBuilder.Register(() => IsUnderlined ? $"{RootElementClass}-underlined-{VisualClassRegistrar()}" : string.Empty);
-        ClassBuilder.Register(() => InputHasFocus ? $"{RootElementClass}{(ShowIcon ? "-fixed-icon" : string.Empty)}-focused-{VisualClassRegistrar()}" : string.Empty);
-        ClassBuilder.Register(() => ValueInvalid is true ? $"{RootElementClass}-invalid-{VisualClassRegistrar()}" : string.Empty);
+        ClassBuilder.Register(() => CurrentValue.HasValue()
+                                    ? $"{RootElementClass}{(ShowIcon ? "-fixed-icon" : string.Empty)}-has-value-{VisualClassRegistrar()}"
+                                    : string.Empty);
+
+        ClassBuilder.Register(() => DisableAnimation
+                                    ? $"{RootElementClass}-no-animation-{VisualClassRegistrar()}"
+                                    : string.Empty);
+
+        ClassBuilder.Register(() => IsUnderlined
+                                    ? $"{RootElementClass}-underlined-{VisualClassRegistrar()}"
+                                    : string.Empty);
+
+        ClassBuilder.Register(() => InputHasFocus
+                                    ? $"{RootElementClass}{(ShowIcon ? "-fixed-icon" : string.Empty)}-focused-{VisualClassRegistrar()}"
+                                    : string.Empty);
+
+        ClassBuilder.Register(() => ValueInvalid is true
+                                    ? $"{RootElementClass}-invalid-{VisualClassRegistrar()}"
+                                    : string.Empty);
     }
 
-    protected override void RegisterComponentStyles()
-    {
-        StyleBuilder.Register(() => Width.HasValue() ? $"width: {Width}" : string.Empty);
-    }
+    private void HandleOnValueChanged(object? sender, EventArgs args) => ClassBuilder.Reset();
 
     private void HandleInputFocusIn()
     {
@@ -173,11 +161,11 @@ public partial class BitSearchBox
         if (IsEnabled is false) return;
 
         CurrentValueAsString = string.Empty;
-        await InputRef.FocusAsync();
+        await _inputRef.FocusAsync();
         await OnClear.InvokeAsync();
     }
 
-    private async Task HandleChange(ChangeEventArgs e)
+    private async Task HandleOnChange(ChangeEventArgs e)
     {
         if (IsEnabled is false) return;
         if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
@@ -199,14 +187,9 @@ public partial class BitSearchBox
         }
         else if (eventArgs.Code == "Enter")
         {
-            CurrentValueAsString = await JSRuntime.GetProperty(InputRef, "value");
+            CurrentValueAsString = await _js.GetProperty(_inputRef, "value");
             await OnSearch.InvokeAsync(CurrentValue);
         }
-    }
-
-    private void HandleOnValueChanged(object? sender, EventArgs args)
-    {
-        ClassBuilder.Reset();
     }
 
     /// <inheritdoc />
