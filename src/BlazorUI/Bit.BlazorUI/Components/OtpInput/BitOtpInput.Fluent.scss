@@ -87,16 +87,15 @@
         background-color: $White;
         cursor: pointer;
         text-align: center;
-        appearance: textfield;
+        -moz-appearance: textfield; // Firefox
+
+        &::-webkit-inner-spin-button, &::-webkit-outer-spin-button { // Chrome, Safari, Edge, Opera
+            -webkit-appearance: none
+        }
 
         &:focus {
             outline: none;
             border: rem(2px) solid $Primary;
-        }
-
-        // chrome
-        &::-webkit-inner-spin-button, &::-webkit-outer-spin-button {
-            -webkit-appearance: textfield;
         }
     }
 }
