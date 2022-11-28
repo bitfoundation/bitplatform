@@ -4,9 +4,8 @@ namespace Bit.BlazorUI;
 
 public partial class BitSearchBox
 {
-    public string _inputId { get; set; } = string.Empty;
-    public ElementReference _inputRef { get; set; } = new();
-
+    private string _inputId = string.Empty;
+    private ElementReference _inputRef = default!;
     private bool disableAnimation;
     private bool isUnderlined;
     private bool inputHasFocus;
@@ -22,7 +21,7 @@ public partial class BitSearchBox
         }
     }
 
-    [Inject] public IJSRuntime _js { get; set; } = default!;
+    [Inject] private IJSRuntime _js { get; set; } = default!;
 
     /// <summary>
     /// Specifies the value of the autocomplete attribute of the input component.
