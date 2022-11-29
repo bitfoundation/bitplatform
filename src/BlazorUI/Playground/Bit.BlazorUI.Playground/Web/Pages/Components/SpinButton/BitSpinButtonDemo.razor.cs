@@ -244,7 +244,6 @@ public partial class BitSpinButtonDemo
     <BitSpinButton Label=""Basic"" />
     <BitSpinButton Label=""Disabled"" IsEnabled=""false"" />
     <BitSpinButton Label=""Label & Icon"" IconName=""BitIconName.Lightbulb"" />
-    <BitSpinButton Label=""Top Label"" IconName=""BitIconName.Lightbulb"" LabelPosition=""BitSpinButtonLabelPosition.Top"" />
     <BitSpinButton Label=""Left Label"" IconName=""BitIconName.Lightbulb"" LabelPosition=""BitSpinButtonLabelPosition.Left"" />
 </div>
 ";
@@ -282,16 +281,16 @@ public partial class BitSpinButtonDemo
 
     private readonly string example4HTMLCode = @"
 <div class=""example-box"">
-    <BitSpinButton Label=""Min(-10) Max(10)""
+    <BitSpinButton Label=""Min: -10, Max: 10""
                     Min=""-10""
                     Max=""10"" />
 
-    <BitSpinButton Label=""Min(-20) Max(20) Step(2)""
+    <BitSpinButton Label=""Min: -20, Max: 20, Step: 2""
                     Min=""-20""
                     Max=""20""
                     Step=""2"" />
 
-    <BitSpinButton Label=""Min(-1) Max(1) Step(0.1)""
+    <BitSpinButton Label=""Min: -1, Max: 1, Step: 0.1""
                     Min=""-1""
                     Max=""1""
                     Step=""0.1"" />
