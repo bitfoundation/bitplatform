@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using Bit.BlazorUI.Playground.Web.Models;
 using Bit.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
@@ -8,21 +7,12 @@ namespace Bit.BlazorUI.Playground.Web.Pages.Components.SpinButton;
 
 public partial class BitSpinButtonDemo
 {
-    private double BasicSpinButtonValue = 5;
-    private double BasicSpinButtonDisableValue = 20;
-    private double SpinButtonWithLabelAboveValue = 7;
-    private double BitSpinButtonBindValue = 8;
-    private double BitSpinButtonValueChanged = 16;
+    private double OneWayValue = 3;
+    private double TwoWayValue = 5;
+    private double OnIncrementOnDecrementValue = 1;
 
     private string SuccessMessage = string.Empty;
     private BitSpinButtonValidationModel ValidationModel = new();
-
-    public class BitSpinButtonValidationModel
-    {
-        [Required(ErrorMessage = "Enter an age")]
-        [Range(1, 200, ErrorMessage = "Nobody is that old")]
-        public double AgeInYears { get; set; }
-    }
 
     private async Task HandleValidSubmit()
     {
@@ -37,18 +27,12 @@ public partial class BitSpinButtonDemo
         SuccessMessage = string.Empty;
     }
 
-    private void HandleControlledSpinButtonValueChange(double value)
-    {
-        BitSpinButtonValueChanged = value;
-    }
-
     private readonly List<ComponentParameter> componentParameters = new()
     {
         new ComponentParameter()
         {
             Name = "AriaDescription",
             Type = "string",
-            DefaultValue = "",
             Description = "Detailed description of the input for the benefit of screen readers.",
         },
         new ComponentParameter()
@@ -76,15 +60,13 @@ public partial class BitSpinButtonDemo
         {
             Name = "AriaValueText",
             Type = "string",
-            DefaultValue = "",
             Description = "Sets the control's aria-valuetext.",
         },
         new ComponentParameter()
         {
-            Name = "DecrementButtonAriaLabel",
-            Type = "string",
-            DefaultValue = "",
-            Description = "Accessible label text for the decrement button (for screen reader users).",
+            Name = "ChangeHandler",
+            Type = "EventCallback<BitSpinButtonAction>",
+            Description = "",
         },
         new ComponentParameter()
         {
@@ -92,6 +74,12 @@ public partial class BitSpinButtonDemo
             Type = "double",
             DefaultValue = "0",
             Description = "Initial value of the spin button.",
+        },
+        new ComponentParameter()
+        {
+            Name = "DecrementButtonAriaLabel",
+            Type = "string",
+            Description = "Accessible label text for the decrement button (for screen reader users).",
         },
         new ComponentParameter()
         {
@@ -104,21 +92,18 @@ public partial class BitSpinButtonDemo
         {
             Name = "IconName",
             Type = "BitIconName",
-            DefaultValue = "",
             Description = "Icon name for an icon to display alongside the spin button's label.",
         },
         new ComponentParameter()
         {
             Name = "IconAriaLabel",
             Type = "string",
-            DefaultValue = "",
             Description = "The aria label of the icon for the benefit of screen readers.",
         },
         new ComponentParameter()
         {
             Name = "IncrementButtonAriaLabel",
             Type = "string",
-            DefaultValue = "",
             Description = "Accessible label text for the increment button (for screen reader users).",
         },
         new ComponentParameter()
@@ -130,23 +115,14 @@ public partial class BitSpinButtonDemo
         },
         new ComponentParameter()
         {
-            Name = "InputHtmlAttributes",
-            Type = "Dictionary<string, object>",
-            DefaultValue = "",
-            Description = "Additional props for the input field.",
-        },
-        new ComponentParameter()
-        {
             Name = "Label",
             Type = "string",
-            DefaultValue = "",
             Description = "Descriptive label for the spin button, Label displayed above the spin button and read by screen readers.",
         },
         new ComponentParameter()
         {
-            Name = "LabelFragment",
-            Type = "RenderFragment",
-            DefaultValue = "",
+            Name = "LabelTemplate",
+            Type = "RenderFragment?",
             Description = "Shows the custom Label for spin button. If you don't call default label, ensure that you give your custom label an id and that you set the input's aria-labelledby prop to that id..",
         },
         new ComponentParameter()
@@ -155,8 +131,15 @@ public partial class BitSpinButtonDemo
             Type = "BitSpinButtonLabelPosition",
             LinkType = LinkType.Link,
             Href = "#labelPosition-enum",
-            DefaultValue = "BitSpinButtonLabelPosition.Left",
+            DefaultValue = "BitSpinButtonLabelPosition.Top",
             Description = "The position of the label in regards to the spin button.",
+        },
+        new ComponentParameter()
+        {
+            Name = "Min",
+            Type = "double",
+            DefaultValue = "0",
+            Description = "Min value of the spin button. If not provided, the spin button has minimum value of double type.",
         },
         new ComponentParameter()
         {
@@ -167,10 +150,10 @@ public partial class BitSpinButtonDemo
         },
         new ComponentParameter()
         {
-            Name = "Min",
-            Type = "double",
-            DefaultValue = "0",
-            Description = "Min value of the spin button. If not provided, the spin button has minimum value of double type.",
+            Name = "OnFocus",
+            Type = "EventCallback<FocusEventArgs>",
+            DefaultValue = "",
+            Description = "Callback for when focus moves into the input.",
         },
         new ComponentParameter()
         {
@@ -202,16 +185,8 @@ public partial class BitSpinButtonDemo
         },
         new ComponentParameter()
         {
-            Name = "OnFocus",
-            Type = "EventCallback<FocusEventArgs>",
-            DefaultValue = "",
-            Description = "Callback for when focus moves into the input.",
-        },
-        new ComponentParameter()
-        {
             Name = "Precision",
             Type = "int",
-            DefaultValue = "",
             Description = "How many decimal places the value should be rounded to.",
         },
         new ComponentParameter()
@@ -225,7 +200,7 @@ public partial class BitSpinButtonDemo
         {
             Name = "Suffix",
             Type = "string",
-            DefaultValue = "",
+            DefaultValue = "string.Empty",
             Description = "A text is shown after the spin button value.",
         },
         new ComponentParameter()
@@ -234,29 +209,6 @@ public partial class BitSpinButtonDemo
             Type = "string",
             DefaultValue = "ChevronUpSmall",
             Description = "A more descriptive title for the control, visible on its tooltip.",
-        },
-        new ComponentParameter()
-        {
-            Name = "Value",
-            Type = "double",
-            DefaultValue = "0",
-            Description = "Current value of the spin button.",
-        },
-        new ComponentParameter()
-        {
-            Name = "ValueChanged",
-            Type = "EventCallback<double>",
-            DefaultValue = "",
-            Description = "Callback for when the spin button value change.",
-        },
-        new ComponentParameter()
-        {
-            Name = "Visibility",
-            Type = "BitComponentVisibility",
-            LinkType = LinkType.Link,
-            Href = "#component-visibility-enum",
-            DefaultValue = "BitComponentVisibility.Visible",
-            Description = "Whether the component is Visible,Hidden,Collapsed.",
         },
     };
 
@@ -282,138 +234,164 @@ public partial class BitSpinButtonDemo
                     Value="1",
                 }
             }
-        },
-        new EnumParameter()
-        {
-            Id = "component-visibility-enum",
-            Title = "BitComponentVisibility Enum",
-            Description = "",
-            EnumList = new List<EnumItem>()
-            {
-                new EnumItem()
-                {
-                    Name= "Visible",
-                    Description="Show content of the component.",
-                    Value="0",
-                },
-                new EnumItem()
-                {
-                    Name= "Hidden",
-                    Description="Hide content of the component,though the space it takes on the page remains.",
-                    Value="1",
-                },
-                new EnumItem()
-                {
-                    Name= "Collapsed",
-                    Description="Hide content of the component,though the space it takes on the page gone.",
-                    Value="2",
-                }
-            }
         }
     };
 
-    private readonly string example1HTMLCode = @"<BitSpinButton @bind-Value=""BasicSpinButtonValue""
-               Min=""0""
-               Max=""100""
-               Step=""1""
-               Label=""Basic SpinButton"">
-</BitSpinButton>
-<BitSpinButton Min=""-10""
-               Max=""10""
-               Step=""0.1""
-               Label=""Decimal SpinButton"">
-</BitSpinButton>
-<BitSpinButton @bind-Value=""BasicSpinButtonDisableValue""
-               Min=""0""
-               Max=""100""
-               Step=""1""
-               Label=""Disabled SpinButton""
-               IsEnabled=""false"">
-</BitSpinButton>";
+    #region Sample Code 1
 
-    private readonly string example1CSharpCode = @"
-private double BasicSpinButtonValue = 5;
-private double BasicSpinButtonDisableValue = 20;";
+    private readonly string example1HTMLCode = @"
+<div class=""example-box"">
+    <BitSpinButton Label=""Basic"" />
+    <BitSpinButton Label=""Disabled"" IsEnabled=""false"" />
+    <BitSpinButton Label=""Label & Icon"" IconName=""BitIconName.Lightbulb"" />
+    <BitSpinButton Label=""Top Label"" IconName=""BitIconName.Lightbulb"" LabelPosition=""BitSpinButtonLabelPosition.Top"" />
+    <BitSpinButton Label=""Left Label"" IconName=""BitIconName.Lightbulb"" LabelPosition=""BitSpinButtonLabelPosition.Left"" />
+</div>
+";
 
-    private readonly string example2HTMLCode = @"<BitSpinButton IconName=""BitIconName.IncreaseIndentText""
-               Min=""0""
-               Max=""100""
-               Step=""1""
-               Label=""With Icon"">
-</BitSpinButton>
-<BitSpinButton IconName=""BitIconName.IncreaseIndentText""
-               Min=""0""
-               Max=""100""
-               Step=""1""
-               Label=""Disabled With Icon""
-               IsEnabled=""false"">
-</BitSpinButton>";
+    #endregion
 
-    private readonly string example3HTMLCode = @"<BitSpinButton Suffix=""Inch""
-               Min=""0""
-               Max=""100""
-               Step=""1""
-               Label=""With suffix"">
-</BitSpinButton>";
+    #region Sample Code 2
 
-    private readonly string example4HTMLCode = @"<BitSpinButton @bind-Value=""SpinButtonWithLabelAboveValue""
-               Suffix=""cm""
-               Min=""0""
-               Max=""100""
-               Step=""1""
-               Label=""With Labal Above""
-               LabelPosition=""@BitSpinButtonLabelPosition.Top"">
-</BitSpinButton>";
+    private readonly string example2HTMLCode = @"
+<div class=""example-box"">
+    <BitSpinButton>
+        <LabelTemplate>
+            <BitIcon IconName=""BitIconName.ChevronUpSmall"" Style=""color:green;"" />
+            <BitIcon IconName=""BitIconName.ChevronDownSmall"" Style=""color:red;"" />
+        </LabelTemplate>
+    </BitSpinButton>
+</div>
+";
 
-    private readonly string example4CSharpCode = @"
-private double SpinButtonWithLabelAboveValue = 7;";
+    #endregion
 
-    private readonly string example5HTMLCode = @"<BitSpinButton Class=""custom-spb""
-               Min=""0""
-               Max=""100""
-               Step=""1""
-               Label=""Custom Styled"">
-</BitSpinButton>
+    #region Sample Code 3
 
-<style>
-    .custom-spb {
-            .bit-spb-wrapper input {
-                    background-color: #D7D7D7;
-            }
-    }
-</style>";
+    private readonly string example3HTMLCode = @"
+<div class=""example-box"">
+    <BitSpinButton Label=""Like and Dislike""
+                    IncrementButtonIconName=""BitIconName.LikeSolid""
+                    DecrementButtonIconName=""BitIconName.DislikeSolid"" />
+</div>
+";
+
+    #endregion
+
+    #region Sample Code 4
+
+    private readonly string example4HTMLCode = @"
+<div class=""example-box"">
+    <BitSpinButton Label=""Min(-10) Max(10)""
+                    Min=""-10""
+                    Max=""10"" />
+
+    <BitSpinButton Label=""Min(-20) Max(20) Step(2)""
+                    Min=""-20""
+                    Max=""20""
+                    Step=""2"" />
+
+    <BitSpinButton Label=""Min(-1) Max(1) Step(0.1)""
+                    Min=""-1""
+                    Max=""1""
+                    Step=""0.1"" />
+</div>
+";
+
+    #endregion
+
+    #region Sample Code 5
+
+    private readonly string example5HTMLCode = @"
+<div class=""example-box"">
+    <BitSpinButton Label=""Height""
+                    IconName=""BitIconName.AutoHeight""
+                    DefaultValue=""150""
+                    Suffix="" cm"" />
+
+    <BitSpinButton Label=""Weight""
+                    IconName=""BitIconName.Weights""
+                    DefaultValue=""50""
+                    Step=""0.5""
+                    Suffix="" kg"" />
+</div>
+";
+
+    #endregion
+
+    #region Sample Code 6
+
+    private readonly string example6HTMLCode = @"
+<div class=""example-box"">
+    <div>
+        <BitSpinButton Label=""One-way"" Value=""OneWayValue"" />
+        <BitRating @bind-Value=""OneWayValue"" />
+    </div>
+
+    <div>
+        <BitSpinButton Label=""Two-way"" Step=""0.5"" @bind-Value=""TwoWayValue"" />
+        <BitRating @bind-Value=""TwoWayValue"" />
+    </div>
+
+    <div>
+        <BitSpinButton Label=""OnIncrement / OnDecrement""
+                        Value=""OnIncrementOnDecrementValue""
+                        OnIncrement=""(v) => OnIncrementOnDecrementValue = v.Value""
+                        OnDecrement=""(v) => OnIncrementOnDecrementValue = v.Value"" />
+        <BitRating @bind-Value=""OnIncrementOnDecrementValue"" />
+    </div>
+</div>
+";
 
     private readonly string example6CSharpCode = @"
-private double BitSpinButtonBindValue = 8;
-private double BitSpinButtonValueChanged = 16;        
-private void HandleControlledSpinButtonValueChange(double value)
-{
-    BitSpinButtonValueChanged = value;
-}";
+private double OneWayValue = 3;
+private double TwoWayValue = 5;
+private double OnIncrementOnDecrementValue = 1;
+";
 
-    private readonly string example6HTMLCode = @"<BitSpinButton Label=""Controlled SpinButton with bind-value""
-               @bind-Value=""BitSpinButtonBindValue""
-               Min=""0""
-               Max=""100""
-               Step=""1"">
-</BitSpinButton>
-<BitSpinButton Label=""Controlled SpinButton with Value""
-               Value=""BitSpinButtonValueChanged""
-               ValueChanged=""HandleControlledSpinButtonValueChange""
-               Min=""0""
-               Max=""100""
-               Step=""1"">
-</BitSpinButton>";
+    #endregion
 
-    private readonly string example7CSharpCode = @"private string SuccessMessage = string.Empty;
-private BitSpinButtonValidationModel ValidationModel = new();
+    #region Sample Code 7
 
+    private readonly string example7HTMLCode = @"
+<div class=""example-box"">
+    @if (string.IsNullOrEmpty(SuccessMessage))
+    {
+        <EditForm Model=""@ValidationModel"" OnValidSubmit=""@HandleValidSubmit"" OnInvalidSubmit=""@HandleInvalidSubmit"">
+
+            <DataAnnotationsValidator />
+
+            <div class=""validation-summary"">
+                <ValidationSummary />
+            </div>
+
+            <BitSpinButton Label=""Age"" @bind-Value=""@ValidationModel.AgeInYears""></BitSpinButton>
+            <ValidationMessage For=""@(() => ValidationModel.AgeInYears)"" />
+
+            <BitButton Style=""margin-top: 10px;"" ButtonType=""BitButtonType.Submit"">
+                Submit
+            </BitButton>
+        </EditForm>
+    }
+    else
+    {
+        <BitMessageBar MessageBarType=""BitMessageBarType.Success"" IsMultiline=""false"">
+            @SuccessMessage
+        </BitMessageBar>
+    }
+</div>
+";
+
+    private readonly string example7CSharpCode = @"
 public class BitSpinButtonValidationModel
 {
     [Required(ErrorMessage = ""Enter an age"")]
     [Range(1, 200, ErrorMessage = ""Nobody is that old"")]
     public double AgeInYears { get; set; }
 }
+
+private string SuccessMessage = string.Empty;
+private BitSpinButtonValidationModel ValidationModel = new();
 
 private async Task HandleValidSubmit()
 {
@@ -426,32 +404,8 @@ private async Task HandleValidSubmit()
 private void HandleInvalidSubmit()
 {
     SuccessMessage = string.Empty;
-}";
-
-    private readonly string example7HTMLCode = @"@if (string.IsNullOrEmpty(SuccessMessage))
-{
-    <EditForm Model=""@ValidationModel"" OnValidSubmit=""@HandleValidSubmit"" OnInvalidSubmit=""@HandleInvalidSubmit"">
-        <DataAnnotationsValidator />
-
-        <div class=""validation-summary"">
-            <ValidationSummary />
-        </div>
-
-        <div>
-            <BitSpinButton Label=""Age"" @bind-Value=""@ValidationModel.AgeInYears""></BitSpinButton>
-
-            <ValidationMessage For=""@(() => ValidationModel.AgeInYears)"" />
-        </div>
-
-        <BitButton ButtonType=""BitButtonType.Submit"">
-            Submit
-        </BitButton>
-    </EditForm>
 }
-else
-{
-    <BitMessageBar MessageBarType=""BitMessageBarType.Success"" IsMultiline=""false"">
-        @SuccessMessage
-    </BitMessageBar>
-}";
+";
+
+    #endregion
 }

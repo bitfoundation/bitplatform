@@ -1,8 +1,6 @@
 ﻿@import "../../Styles/Fluent/colors.fluent.scss", "../../Styles/functions.scss";
 
 .bit-spb {
-    width: 100%;
-    min-width: rem(86px);
     font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
     display: flex;
     align-items: center;
@@ -81,14 +79,13 @@
             box-sizing: border-box;
             box-shadow: none;
             padding: rem(5px) 0;
-            overflow-wrap: break-word;
             line-height: rem(20px);
+            white-space: nowrap;
         }
     }
 
     .bit-spb-wrapper {
         width: 100%;
-        min-width: rem(86px);
         height: rem(32px);
         border-radius: rem(2px);
         display: flex;
@@ -97,7 +94,8 @@
         position: relative;
 
         .input {
-            min-width: rem(61px);
+            width: 100%;
+            height: 100%;
             box-sizing: border-box;
             box-shadow: none;
             border-style: none;
@@ -107,7 +105,6 @@
             font-family: inherit;
             color: $Grey160;
             background-color: $White;
-            height: 100%;
             padding: 0 rem(8px) 0 rem(9px);
             outline: 0;
             display: block;

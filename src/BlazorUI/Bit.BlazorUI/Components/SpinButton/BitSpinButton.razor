@@ -6,7 +6,7 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
 
-    @if (IconName.HasValue || Label.HasValue() || LabelFragment is not null)
+    @if (IconName.HasValue || Label.HasValue() || LabelTemplate is not null)
     {
         <div class="bit-spb-lbl-wrapper">
             @if (IconName.HasValue)
@@ -18,10 +18,10 @@
                 </i>
             }
 
-            @if (LabelFragment != null)
+            @if (LabelTemplate != null)
             {
                 <label class="label" id="@GetLabelId" for="@_inputId">
-                    @LabelFragment
+                    @LabelTemplate
                 </label>
             }
             else if (Label.HasValue())
@@ -51,7 +51,7 @@
                aria-valuemax="@max"
                aria-describedby="@AriaDescription"
                aria-disabled="@(IsEnabled is false)"
-               disabled="@(IsEnabled is false || (ValueHasBeenSet && ValueChanged.HasDelegate is false))"
+               disabled="@(IsEnabled is false)"
                @ref="@_inputRef"
                @attributes="@InputHtmlAttributes"
                @onfocus="e => HandleFocus(e)"

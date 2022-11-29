@@ -10,7 +10,7 @@ public partial class BitSpinButton
     private ElementReference _inputRef;
     private ElementReference _buttonIncrement;
     private ElementReference _buttonDecrement;
-    private BitSpinButtonLabelPosition labelPosition = BitSpinButtonLabelPosition.Left;
+    private BitSpinButtonLabelPosition labelPosition = BitSpinButtonLabelPosition.Top;
 
     private double min;
     private double max;
@@ -99,7 +99,7 @@ public partial class BitSpinButton
     /// <summary>
     /// Shows the custom Label for spin button. If you don't call default label, ensure that you give your custom label an id and that you set the input's aria-labelledby prop to that id.
     /// </summary>
-    [Parameter] public RenderFragment? LabelFragment { get; set; }
+    [Parameter] public RenderFragment? LabelTemplate { get; set; }
 
     /// <summary>
     /// The position of the label in regards to the spin button
@@ -188,7 +188,7 @@ public partial class BitSpinButton
 
         if (ValueHasBeenSet is false)
         {
-            SetValue(DefaultValue ?? Math.Min(0, min));
+            SetValue(DefaultValue ?? 0);
         }
         else
         {
@@ -268,7 +268,7 @@ public partial class BitSpinButton
     private void HandleChange(ChangeEventArgs e)
     {
         if (IsEnabled is false) return;
-        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+        if (ValueHasBeenSet && ValueChanged.HasDelegate is false && OnIncrement.HasDelegate is false && OnDecrement.HasDelegate is false) return;
 
         intermediateValue = GetCleanValue(e.Value?.ToString());
     }
@@ -276,7 +276,7 @@ public partial class BitSpinButton
     private async Task HandleMouseDownAction(BitSpinButtonAction action, MouseEventArgs e)
     {
         if (IsEnabled is false) return;
-        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+        if (ValueHasBeenSet && ValueChanged.HasDelegate is false && OnIncrement.HasDelegate is false && OnDecrement.HasDelegate is false) return;
 
         await ChangeHandler.InvokeAsync(action);
 
@@ -304,7 +304,7 @@ public partial class BitSpinButton
     private async Task HandleKeyDown(KeyboardEventArgs e)
     {
         if (IsEnabled is false) return;
-        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+        if (ValueHasBeenSet && ValueChanged.HasDelegate is false && OnIncrement.HasDelegate is false && OnDecrement.HasDelegate is false) return;
 
         if (e.Key is "Enter" && intermediateValue != CurrentValueAsString)
         {
@@ -438,7 +438,7 @@ public partial class BitSpinButton
 
     private async Task CheckIntermediateValueAndSetValue()
     {
-        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+        if (ValueHasBeenSet && ValueChanged.HasDelegate is false && OnIncrement.HasDelegate is false && OnDecrement.HasDelegate is false) return;
         if (intermediateValue == CurrentValueAsString) return;
 
         var isNumber = double.TryParse(intermediateValue, out var numericValue);
