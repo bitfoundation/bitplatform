@@ -60,7 +60,7 @@ public class AutoInjectSyntaxReceiver : ISyntaxContextReceiver
         if (context.Node is not FieldDeclarationSyntax fieldDeclarationSyntax || fieldDeclarationSyntax.AttributeLists.Any() is false)
             return;
 
-        if (fieldDeclarationSyntax.Parent is ClassDeclarationSyntax classDeclarationSyntax && classDeclarationSyntax is null)
+        if (fieldDeclarationSyntax.Parent is not ClassDeclarationSyntax classDeclarationSyntax || classDeclarationSyntax is null)
             return;
 
         foreach (VariableDeclaratorSyntax variable in fieldDeclarationSyntax.Declaration.Variables)
@@ -81,7 +81,7 @@ public class AutoInjectSyntaxReceiver : ISyntaxContextReceiver
         if (context.Node is not PropertyDeclarationSyntax propertyDeclarationSyntax || propertyDeclarationSyntax.AttributeLists.Count <= 0)
             return;
 
-        if (propertyDeclarationSyntax.Parent is ClassDeclarationSyntax classDeclarationSyntax && classDeclarationSyntax is null)
+        if (propertyDeclarationSyntax.Parent is not ClassDeclarationSyntax classDeclarationSyntax || classDeclarationSyntax is null)
             return;
 
         var propertySymbol = context.SemanticModel.GetDeclaredSymbol(propertyDeclarationSyntax);
