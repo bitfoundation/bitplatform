@@ -28,3 +28,8 @@
         width: rem(200px);
     }
 }
+
+.column {
+    display: flex;
+    flex-direction: column;
+}

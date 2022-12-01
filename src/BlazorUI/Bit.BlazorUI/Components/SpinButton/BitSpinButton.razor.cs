@@ -6,21 +6,20 @@ namespace Bit.BlazorUI;
 
 public partial class BitSpinButton
 {
+    private const int INITIAL_STEP_DELAY = 400;
+    private const int STEP_DELAY = 75;
+    private BitSpinButtonLabelPosition labelPosition = BitSpinButtonLabelPosition.Top;
+    private double _min;
+    private double _max;
+    private int _precision;
+    private string? _intermediateValue;
+    private Timer? _timer;
     private string _inputId = $"input-{Guid.NewGuid()}";
     private ElementReference _inputRef;
     private ElementReference _buttonIncrement;
     private ElementReference _buttonDecrement;
-    private BitSpinButtonLabelPosition labelPosition = BitSpinButtonLabelPosition.Top;
 
-    private double min;
-    private double max;
-    private int precision;
-    private string? intermediateValue;
-    private Timer? timer;
-    private int initialStepDelay = 400;
-    private int stepDelay = 75;
-
-    [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
+    [Inject] private IJSRuntime _js { get; set; } = default!;
 
     /// <summary>
     /// Detailed description of the input for the benefit of screen readers
@@ -174,17 +173,17 @@ public partial class BitSpinButton
 
     protected override async Task OnParametersSetAsync()
     {
-        min = Min.HasValue ? Min.Value : double.MinValue;
-        max = Max.HasValue ? Max.Value : double.MaxValue;
+        _min = Min.HasValue ? Min.Value : double.MinValue;
+        _max = Max.HasValue ? Max.Value : double.MaxValue;
 
-        if (min > max)
+        if (_min > _max)
         {
-            min += max;
-            max = min - max;
-            min -= max;
+            _min += _max;
+            _max = _min - _max;
+            _min -= _max;
         }
 
-        precision = Precision is not null ? Precision.Value : CalculatePrecision(Step);
+        _precision = Precision is not null ? Precision.Value : CalculatePrecision(Step);
 
         if (ValueHasBeenSet is false)
         {
@@ -206,12 +205,12 @@ public partial class BitSpinButton
                 {
                     case BitSpinButtonAction.Increment:
                         result = CurrentValue + Step;
-                        isValid = result <= max && result >= min;
+                        isValid = result <= _max && result >= _min;
                         break;
 
                     case BitSpinButtonAction.Decrement:
                         result = CurrentValue - Step;
-                        isValid = result <= max && result >= min;
+                        isValid = result <= _max && result >= _min;
                         break;
                 }
 
@@ -236,7 +235,7 @@ public partial class BitSpinButton
                                     : string.Empty);
     }
 
-    private async Task HandleMouseDown(BitSpinButtonAction action, MouseEventArgs e)
+    private async Task HandleOnMouseDown(BitSpinButtonAction action, MouseEventArgs e)
     {
         //Change focus from input to spin button
         if (action == BitSpinButtonAction.Increment)
@@ -250,33 +249,33 @@ public partial class BitSpinButton
 
         await HandleMouseDownAction(action, e);
 
-        timer = new Timer(async (_) =>
+        _timer = new Timer(async (_) =>
         {
             await InvokeAsync(async () =>
             {
                 await HandleMouseDownAction(action, e);
                 StateHasChanged();
             });
-        }, null, initialStepDelay, stepDelay);
+        }, null, INITIAL_STEP_DELAY, STEP_DELAY);
     }
 
-    private void HandleMouseUpOrOut()
+    private void HandleOnMouseUpOrOut()
     {
-        if (timer is not null) timer.Dispose();
+        if (_timer is not null) _timer.Dispose();
     }
 
-    private void HandleChange(ChangeEventArgs e)
+    private void HandleOnChange(ChangeEventArgs e)
     {
         if (IsEnabled is false) return;
-        if (ValueHasBeenSet && ValueChanged.HasDelegate is false && OnIncrement.HasDelegate is false && OnDecrement.HasDelegate is false) return;
+        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
-        intermediateValue = GetCleanValue(e.Value?.ToString());
+        _intermediateValue = GetCleanValue(e.Value?.ToString());
     }
 
     private async Task HandleMouseDownAction(BitSpinButtonAction action, MouseEventArgs e)
     {
         if (IsEnabled is false) return;
-        if (ValueHasBeenSet && ValueChanged.HasDelegate is false && OnIncrement.HasDelegate is false && OnDecrement.HasDelegate is false) return;
+        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
         await ChangeHandler.InvokeAsync(action);
 
@@ -301,60 +300,76 @@ public partial class BitSpinButton
         }
     }
 
-    private async Task HandleKeyDown(KeyboardEventArgs e)
+    private async Task HandleOnKeyDown(KeyboardEventArgs e)
     {
         if (IsEnabled is false) return;
-        if (ValueHasBeenSet && ValueChanged.HasDelegate is false && OnIncrement.HasDelegate is false && OnDecrement.HasDelegate is false) return;
+        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
-        if (e.Key is "Enter" && intermediateValue != CurrentValueAsString)
+        switch (e.Key)
         {
-            var isNumber = double.TryParse(intermediateValue, out var numericValue);
-
-            if (isNumber)
-            {
-                SetValue(numericValue);
-                await OnChange.InvokeAsync(CurrentValue);
-            }
-            else
-            {
-                SetDisplayValue();
-            }
-        }
-        else if (e.Key is "ArrowUp")
-        {
-            await CheckIntermediateValueAndSetValue();
-            await ChangeHandler.InvokeAsync(BitSpinButtonAction.Increment);
-
-            if (OnIncrement.HasDelegate is true)
-            {
-                var args = new BitSpinButtonChangeValue
+            case "Enter":
                 {
-                    Value = CurrentValue,
-                    KeyboardEventArgs = e
-                };
+                    if (_intermediateValue != CurrentValueAsString) break;
 
-                await OnIncrement.InvokeAsync(args);
-            }
-        }
-        else if (e.Key is "ArrowDown")
-        {
-            await CheckIntermediateValueAndSetValue();
-            await ChangeHandler.InvokeAsync(BitSpinButtonAction.Decrement);
+                    var isNumber = double.TryParse(_intermediateValue, out var numericValue);
 
-            if (OnDecrement.HasDelegate is true)
-            {
-                var args = new BitSpinButtonChangeValue
+                    if (isNumber)
+                    {
+                        SetValue(numericValue);
+                        await OnChange.InvokeAsync(CurrentValue);
+                    }
+                    else
+                    {
+                        SetDisplayValue();
+                    }
+
+                    break;
+                }
+
+            case "ArrowUp":
                 {
-                    Value = CurrentValue,
-                    KeyboardEventArgs = e
-                };
+                    await CheckIntermediateValueAndSetValue();
+                    await ChangeHandler.InvokeAsync(BitSpinButtonAction.Increment);
 
-                await OnDecrement.InvokeAsync(args);
-            }
+                    if (OnIncrement.HasDelegate is true)
+                    {
+                        var args = new BitSpinButtonChangeValue
+                        {
+                            Value = CurrentValue,
+                            KeyboardEventArgs = e
+                        };
+
+                        await OnIncrement.InvokeAsync(args);
+                    }
+
+                    break;
+                }
+
+            case "ArrowDown":
+                {
+                    await CheckIntermediateValueAndSetValue();
+                    await ChangeHandler.InvokeAsync(BitSpinButtonAction.Decrement);
+
+                    if (OnDecrement.HasDelegate is true)
+                    {
+                        var args = new BitSpinButtonChangeValue
+                        {
+                            Value = CurrentValue,
+                            KeyboardEventArgs = e
+                        };
+
+                        await OnDecrement.InvokeAsync(args);
+                    }
+
+                    break;
+                }
+
+            default:
+                break;
         }
     }
 
-    private async Task HandleBlur(FocusEventArgs e)
+    private async Task HandleOnBlur(FocusEventArgs e)
     {
         if (IsEnabled is false) return;
 
@@ -363,13 +378,13 @@ public partial class BitSpinButton
         await CheckIntermediateValueAndSetValue();
     }
 
-    private async Task HandleFocus(FocusEventArgs e)
+    private async Task HandleOnFocus(FocusEventArgs e)
     {
         if (IsEnabled is false) return;
 
         await OnFocus.InvokeAsync(e);
 
-        await JSRuntime.SelectText(_inputRef);
+        await _js.SelectText(_inputRef);
     }
 
     private static int CalculatePrecision(double value)
@@ -398,13 +413,13 @@ public partial class BitSpinButton
     {
         value = Normalize(value);
 
-        if (value > max)
+        if (value > _max)
         {
-            CurrentValue = max;
+            CurrentValue = _max;
         }
-        else if (value < min)
+        else if (value < _min)
         {
-            CurrentValue = min;
+            CurrentValue = _min;
         }
         else
         {
@@ -416,7 +431,7 @@ public partial class BitSpinButton
 
     private void SetDisplayValue()
     {
-        intermediateValue = CurrentValueAsString + Suffix;
+        _intermediateValue = CurrentValueAsString + Suffix;
     }
 
     private static string? GetCleanValue(string? value)
@@ -438,10 +453,10 @@ public partial class BitSpinButton
 
     private async Task CheckIntermediateValueAndSetValue()
     {
-        if (ValueHasBeenSet && ValueChanged.HasDelegate is false && OnIncrement.HasDelegate is false && OnDecrement.HasDelegate is false) return;
-        if (intermediateValue == CurrentValueAsString) return;
+        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+        if (_intermediateValue == CurrentValueAsString) return;
 
-        var isNumber = double.TryParse(intermediateValue, out var numericValue);
+        var isNumber = double.TryParse(_intermediateValue, out var numericValue);
         if (isNumber)
         {
             SetValue(numericValue);
@@ -453,7 +468,7 @@ public partial class BitSpinButton
         }
     }
 
-    private double Normalize(double value) => Math.Round(value, precision);
+    private double Normalize(double value) => Math.Round(value, _precision);
 
     private double? GetAriaValueNow => AriaValueNow is not null ? AriaValueNow : Suffix.HasNoValue() ? CurrentValue : null;
     private string? GetAriaValueText => AriaValueText.HasValue() ? AriaValueText : Suffix.HasValue() ? CurrentValueAsString + Suffix : null;
@@ -479,7 +494,7 @@ public partial class BitSpinButton
     {
         if (disposing)
         {
-            timer?.Dispose();
+            _timer?.Dispose();
         }
 
         base.Dispose(disposing);

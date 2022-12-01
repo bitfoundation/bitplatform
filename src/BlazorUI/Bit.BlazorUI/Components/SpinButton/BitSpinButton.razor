@@ -39,7 +39,7 @@
          aria-setsize="@AriaSetSize"
          aria-posinset="@AriaPositionInSet">
         <input class="input"
-               value="@intermediateValue"
+               value="@_intermediateValue"
                id="@_inputId"
                type="text"
                autocomplete="off"
@@ -47,18 +47,18 @@
                aria-labelledby="@GetLabelId"
                aria-valuenow="@GetAriaValueNow"
                aria-valuetext="@GetAriaValueText"
-               aria-valuemin="@min"
-               aria-valuemax="@max"
+               aria-valuemin="@_min"
+               aria-valuemax="@_max"
                aria-describedby="@AriaDescription"
                aria-disabled="@(IsEnabled is false)"
                disabled="@(IsEnabled is false)"
                @ref="@_inputRef"
                @attributes="@InputHtmlAttributes"
-               @onfocus="e => HandleFocus(e)"
-               @onblur="e => HandleBlur(e)"
-               @oninput="e => HandleChange(e)"
-               @onchange="e => HandleChange(e)"
-               @onkeydown="e => HandleKeyDown(e)" />
+               @onfocus="e => HandleOnFocus(e)"
+               @onblur="e => HandleOnBlur(e)"
+               @oninput="e => HandleOnChange(e)"
+               @onchange="e => HandleOnChange(e)"
+               @onkeydown="e => HandleOnKeyDown(e)" />
         <span class="operators">
             <button type="button"
                     class="Chevron-btn"
@@ -68,9 +68,9 @@
                     tabindex="-1"
                     aria-label="@IncrementButtonAriaLabel"
                     @ref="_buttonIncrement"
-                    @onmousedown="e => HandleMouseDown(BitSpinButtonAction.Increment, e)"
-                    @onmouseout="HandleMouseUpOrOut"
-                    @onmouseup="HandleMouseUpOrOut">
+                    @onmousedown="e => HandleOnMouseDown(BitSpinButtonAction.Increment, e)"
+                    @onmouseout="HandleOnMouseUpOrOut"
+                    @onmouseup="HandleOnMouseUpOrOut">
                 <span class="Chevron-icon-wrapper">
                     <i class="bit-icon bit-icon--@IncrementButtonIconName.GetName() bit-icon--s"></i>
                 </span>
@@ -84,9 +84,9 @@
                     tabindex="-1"
                     aria-label="@DecrementButtonAriaLabel"
                     @ref="_buttonDecrement"
-                    @onmousedown="e => HandleMouseDown(BitSpinButtonAction.Decrement, e)"
-                    @onmouseout="HandleMouseUpOrOut"
-                    @onmouseup="HandleMouseUpOrOut">
+                    @onmousedown="e => HandleOnMouseDown(BitSpinButtonAction.Decrement, e)"
+                    @onmouseout="HandleOnMouseUpOrOut"
+                    @onmouseup="HandleOnMouseUpOrOut">
                 <span class="Chevron-icon-wrapper">
                     <i class="bit-icon bit-icon--@DecrementButtonIconName.GetName() bit-icon--s"></i>
                 </span>

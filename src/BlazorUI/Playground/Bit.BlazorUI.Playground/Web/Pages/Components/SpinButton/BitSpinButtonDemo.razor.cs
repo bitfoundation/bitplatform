@@ -9,7 +9,20 @@ public partial class BitSpinButtonDemo
 {
     private double OneWayValue = 3;
     private double TwoWayValue = 5;
-    private double OnIncrementOnDecrementValue = 1;
+
+    private double IncrementEventValue;
+    private int OnIncrementCounter;
+    private int OnDecrementCounter;
+
+    private double OnChangeEventBindedValue;
+    private double OnChangeEventReturnedValue;
+    private int OnChangeClickedCounter;
+    private void HandleOnChangeEvent(double value)
+    {
+        OnChangeEventReturnedValue = value;
+
+        OnChangeClickedCounter++;
+    }
 
     private string SuccessMessage = string.Empty;
     private BitSpinButtonValidationModel ValidationModel = new();
@@ -331,21 +344,12 @@ public partial class BitSpinButtonDemo
         <BitSpinButton Label=""Two-way"" Step=""0.5"" @bind-Value=""TwoWayValue"" />
         <BitRating @bind-Value=""TwoWayValue"" />
     </div>
-
-    <div>
-        <BitSpinButton Label=""OnIncrement / OnDecrement""
-                        Value=""OnIncrementOnDecrementValue""
-                        OnIncrement=""(v) => OnIncrementOnDecrementValue = v.Value""
-                        OnDecrement=""(v) => OnIncrementOnDecrementValue = v.Value"" />
-        <BitRating @bind-Value=""OnIncrementOnDecrementValue"" />
-    </div>
 </div>
 ";
 
     private readonly string example6CSharpCode = @"
 private double OneWayValue = 3;
 private double TwoWayValue = 5;
-private double OnIncrementOnDecrementValue = 1;
 ";
 
     #endregion
@@ -353,6 +357,47 @@ private double OnIncrementOnDecrementValue = 1;
     #region Sample Code 7
 
     private readonly string example7HTMLCode = @"
+<div class=""column"">
+    <BitSpinButton @bind-Value=""IncrementEventValue""
+                    Label=""OnIncrement / OnDecrement""
+                    Step=""0.1""
+                    OnIncrement=""() => OnIncrementCounter++""
+                    OnDecrement=""() => OnDecrementCounter++"" />
+    <span>OnIncrement Counter: @OnIncrementCounter</span>
+    <span>OnDecrement Counter: @OnDecrementCounter</span>
+</div>
+
+<div class=""column"">
+    <BitSpinButton @bind-Value=""OnChangeEventBindedValue""
+                    Label=""OnChange""
+                    Step=""0.1"" 
+                    OnChange=""HandleOnChangeEvent""/>
+    <span>OnChange Clicked Counter: @OnChangeClickedCounter</span>
+    <span>OnChange Returned Value: @OnChangeEventReturnedValue</span>
+</div>
+";
+
+    private readonly string example7CSharpCode = @"
+private double IncrementEventValue;
+private int OnIncrementCounter;
+private int OnDecrementCounter;
+
+private double OnChangeEventBindedValue;
+private double OnChangeEventReturnedValue;
+private int OnChangeClickedCounter;
+private void HandleOnChangeEvent(double value)
+{
+    OnChangeEventReturnedValue = value;
+
+    OnChangeClickedCounter++;
+}
+";
+
+    #endregion
+
+    #region Sample Code 8
+
+    private readonly string example8HTMLCode = @"
 <div class=""example-box"">
     @if (string.IsNullOrEmpty(SuccessMessage))
     {
@@ -381,7 +426,7 @@ private double OnIncrementOnDecrementValue = 1;
 </div>
 ";
 
-    private readonly string example7CSharpCode = @"
+    private readonly string example8CSharpCode = @"
 public class BitSpinButtonValidationModel
 {
     [Required(ErrorMessage = ""Enter an age"")]

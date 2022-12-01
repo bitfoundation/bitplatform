@@ -79,7 +79,6 @@
 
     <ComponentExampleBox Title="BitSpinButton Binding" HTMLSourceCode="@example6HTMLCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example6">
         <ExamplePreview>
-            <div class="example-desc"></div>
             <div class="example-box">
                 <div>
                     <BitSpinButton Label="One-way" Value="OneWayValue" />
@@ -90,19 +89,36 @@
                     <BitSpinButton Label="Two-way" Step="0.5" @bind-Value="TwoWayValue" />
                     <BitRating @bind-Value="TwoWayValue" />
                 </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
 
-                <div>
-                    <BitSpinButton Label="OnIncrement / OnDecrement"
-                                   Value="OnIncrementOnDecrementValue"
-                                   OnIncrement="(v) => OnIncrementOnDecrementValue = v.Value"
-                                   OnDecrement="(v) => OnIncrementOnDecrementValue = v.Value" />
-                    <BitRating @bind-Value="OnIncrementOnDecrementValue" />
+    <ComponentExampleBox Title="BitSpinButton Events" HTMLSourceCode="@example7HTMLCode" CSharpSourceCode="@example7CSharpCode" ExampleId="example7">
+        <ExamplePreview>
+            <div class="example-box">
+                <div class="column">
+                    <BitSpinButton @bind-Value="IncrementEventValue"
+                                   Label="OnIncrement / OnDecrement"
+                                   Step="0.1"
+                                   OnIncrement="() => OnIncrementCounter++"
+                                   OnDecrement="() => OnDecrementCounter++" />
+                    <span>OnIncrement Counter: @OnIncrementCounter</span>
+                    <span>OnDecrement Counter: @OnDecrementCounter</span>
+                </div>
+
+                <div class="column">
+                    <BitSpinButton @bind-Value="OnChangeEventBindedValue"
+                                   Label="OnChange"
+                                   Step="0.1" 
+                                   OnChange="HandleOnChangeEvent"/>
+                    <span>OnChange Clicked Counter: @OnChangeClickedCounter</span>
+                    <span>OnChange Returned Value: @OnChangeEventReturnedValue</span>
                 </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BitSpinButton validation" HTMLSourceCode="@example7HTMLCode" CSharpSourceCode="@example7CSharpCode" ExampleId="example7">
+    <ComponentExampleBox Title="BitSpinButton validation" HTMLSourceCode="@example8HTMLCode" CSharpSourceCode="@example8CSharpCode" ExampleId="example8">
         <ExamplePreview>
             <div class="example-box">
                 @if (string.IsNullOrEmpty(SuccessMessage))
