@@ -307,25 +307,6 @@ public partial class BitSpinButton
 
         switch (e.Key)
         {
-            case "Enter":
-                {
-                    if (_intermediateValue != CurrentValueAsString) break;
-
-                    var isNumber = double.TryParse(_intermediateValue, out var numericValue);
-
-                    if (isNumber)
-                    {
-                        SetValue(numericValue);
-                        await OnChange.InvokeAsync(CurrentValue);
-                    }
-                    else
-                    {
-                        SetDisplayValue();
-                    }
-
-                    break;
-                }
-
             case "ArrowUp":
                 {
                     await CheckIntermediateValueAndSetValue();
@@ -359,6 +340,25 @@ public partial class BitSpinButton
                         };
 
                         await OnDecrement.InvokeAsync(args);
+                    }
+
+                    break;
+                }
+
+            case "Enter":
+                {
+                    if (_intermediateValue == CurrentValueAsString) break;
+
+                    var isNumber = double.TryParse(_intermediateValue, out var numericValue);
+
+                    if (isNumber)
+                    {
+                        SetValue(numericValue);
+                        await OnChange.InvokeAsync(CurrentValue);
+                    }
+                    else
+                    {
+                        SetDisplayValue();
                     }
 
                     break;
