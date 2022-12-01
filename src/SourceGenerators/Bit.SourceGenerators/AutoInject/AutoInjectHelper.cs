@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Reflection;
-using System.Text;
 using Microsoft.CodeAnalysis;
 
 namespace Bit.SourceGenerators;
@@ -27,7 +25,7 @@ public static class AutoInjectHelper
 
         do
         {
-            if (currentClass.BaseType != null)
+            if (currentClass.BaseType is not null)
             {
                 INamedTypeSymbol baseType = currentClass.BaseType;
                 string baseMetadataName = baseType.ToDisplayString();
@@ -38,7 +36,7 @@ public static class AutoInjectHelper
                         .Where(m =>
                             m.Kind == SymbolKind.Field &&
                             m.GetAttributes()
-                                .Any(a => a.AttributeClass != null &&
+                                .Any(a => a.AttributeClass is not null &&
                                           a.AttributeClass.MetadataName == attributeSymbol.MetadataName))
                         .ToList();
 
@@ -47,7 +45,7 @@ public static class AutoInjectHelper
                         .Where(m =>
                             m.Kind == SymbolKind.Property &&
                             m.GetAttributes()
-                                .Any(a => a.AttributeClass != null &&
+                                .Any(a => a.AttributeClass is not null &&
                                           a.AttributeClass.MetadataName == attributeSymbol.MetadataName))
                         .ToList();
 
@@ -72,10 +70,10 @@ public static class AutoInjectHelper
 
     public static string FormatMemberName(string? memberName)
     {
-        if (memberName is null)
+        if (string.IsNullOrEmpty(memberName))
             throw new ArgumentNullException(nameof(memberName));
 
-        memberName = memberName.TrimStart('_');
+        memberName = memberName!.TrimStart('_');
         if (memberName.Length == 0)
             return string.Empty;
 
