@@ -645,15 +645,15 @@ public class BitSpinButtonTests : BunitTestContext
     [DataTestMethod,
         DataRow("<div>This is labelFragment</div>")
     ]
-    public void BitSpinButtonLabelFragmentTest(string labelFragment)
+    public void BitSpinButtonLabelFragmentTest(string labelTemplate)
     {
         var component = RenderComponent<BitSpinButtonTest>(parameters =>
         {
-            parameters.Add(p => p.LabelFragment, labelFragment);
+            parameters.Add(p => p.LabelTemplate, labelTemplate);
         });
 
         var spbLabelChild = component.Find("label").ChildNodes;
-        spbLabelChild.MarkupMatches(labelFragment);
+        spbLabelChild.MarkupMatches(labelTemplate);
     }
 
     [DataTestMethod,

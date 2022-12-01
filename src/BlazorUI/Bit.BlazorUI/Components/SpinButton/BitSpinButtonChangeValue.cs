@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Components.Web;
-
+﻿
 namespace Bit.BlazorUI;
 
 public class BitSpinButtonChangeValue
