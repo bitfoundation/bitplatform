@@ -13,7 +13,7 @@ public partial class BitSpinButton
     private double _max;
     private int _precision;
     private string? _intermediateValue;
-    private Timer? _timer;
+    private Timer? _mouseDownTimer;
     private string _inputId = $"input-{Guid.NewGuid()}";
     private ElementReference _inputRef;
     private ElementReference _buttonIncrement;
@@ -249,7 +249,7 @@ public partial class BitSpinButton
 
         await HandleMouseDownAction(action, e);
 
-        _timer = new Timer(async (_) =>
+        _mouseDownTimer = new Timer(async (_) =>
         {
             await InvokeAsync(async () =>
             {
@@ -261,7 +261,7 @@ public partial class BitSpinButton
 
     private void HandleOnMouseUpOrOut()
     {
-        if (_timer is not null) _timer.Dispose();
+        if (_mouseDownTimer is not null) _mouseDownTimer.Dispose();
     }
 
     private void HandleOnChange(ChangeEventArgs e)
@@ -494,7 +494,7 @@ public partial class BitSpinButton
     {
         if (disposing)
         {
-            _timer?.Dispose();
+            _mouseDownTimer?.Dispose();
         }
 
         base.Dispose(disposing);
