@@ -159,7 +159,7 @@ public partial class BitCarousel : IDisposable
         for (int i = 0; i < itemsCount; i++)
         {
             var item = AllItems[i];
-            item.InternalStyle = $"width:{NumUtils.ToInvariantString(rect.Width / VisibleItemsCount)}px; display:block";
+            item.InternalStyle = $"width:{NumUtils.ToInvariantString(rect.Width / VisibleItemsCount)}px;display:block";
             item.InternalTransformStyle = $"transform:translateX({sign * 100 * i}%)";
 
         }
