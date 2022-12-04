@@ -159,7 +159,7 @@ public partial class BitCarousel : IDisposable
         for (int i = 0; i < itemsCount; i++)
         {
             var item = AllItems[i];
-            item.InternalStyle = $"width:{rect.Width / VisibleItemsCount}px; display:block";
+            item.InternalStyle = $"width:{NumUtils.ToInvariantString(rect.Width / VisibleItemsCount)}px; display:block";
             item.InternalTransformStyle = $"transform:translateX({sign * 100 * i}%)";
 
         }
@@ -248,7 +248,7 @@ public partial class BitCarousel : IDisposable
         for (int i = 0; i < currents.Length; i++)
         {
             var c = currents[i];
-            c.InternalTransitionStyle = $"transition:all {AnimationDuration}s";
+            c.InternalTransitionStyle = $"transition:all {NumUtils.ToInvariantString(AnimationDuration)}s";
             var x = -sign * 100 * (scrollCount + (-sign * i));
             x = Direction == BitDirection.LeftToRight ? x : -x;
             c.InternalTransformStyle = $"transform:translateX({x}%)";
@@ -257,7 +257,7 @@ public partial class BitCarousel : IDisposable
         for (int i = 0; i < others.Length; i++)
         {
             var o = others[i];
-            o.InternalTransitionStyle = $"transition:all {AnimationDuration}s";
+            o.InternalTransitionStyle = $"transition:all {NumUtils.ToInvariantString(AnimationDuration)}s";
             var x = 100 * (offset + i);
             x = Direction == BitDirection.LeftToRight ? x : -x;
             o.InternalTransformStyle = $"transform:translateX({x}%)";
