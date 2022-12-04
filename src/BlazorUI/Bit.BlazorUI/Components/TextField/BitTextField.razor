@@ -6,23 +6,25 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
     <div class="bit-txt-wrapper">
-        @if (LabelFragment != null)
+        @if (LabelTemplate is not null)
         {
-            <label class="bit-txt-label" id="@LabelId" for="@TextFieldId">
-                @LabelFragment
+            <label class="bit-txt-label" id="@_labelId" for="@_textFieldId">
+                @LabelTemplate
             </label>
         }
         else if (Label.HasValue())
         {
-            <label class="bit-txt-label" id="@LabelId" for="@TextFieldId">
+            <label class="bit-txt-label" id="@_labelId" for="@_textFieldId">
                 @Label
             </label>
         }
 
         <div class="bit-txt-field-grp">
-            @if (PrefixFragment is not null)
+            @if (PrefixTemplate is not null)
             {
-                <span>@PrefixFragment</span>
+                <span>
+                    @PrefixTemplate
+                </span>
             }
             else if (Prefix.HasValue())
             {
@@ -34,7 +36,7 @@
             @if (IsMultiline && Type == BitTextFieldType.Text)
             {
                 <textarea @attributes="InputHtmlAttributes"
-                      id="@TextFieldId"
+                      id="@_textFieldId"
                       class="txt-field"
                       rows="@Rows"
                       disabled=@(!IsEnabled)
@@ -43,8 +45,8 @@
                       placeholder="@Placeholder"
                       maxlength="@MaxLength"
                       aria-label="@AriaLabel"
-                      aria-labelledby="@(Label.HasValue() || LabelFragment is not null ? LabelId : null)"
-                      aria-aria-describedby="@(Description.HasValue() || DescriptionFragment is not null ? DescriptionId : null)"
+                      aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)"
+                      aria-aria-describedby="@(Description.HasValue() || DescriptionTemplate is not null ? _descriptionId : null)"
                       @onclick="@HandleClick"
                       @onfocusin="@HandleFocusIn"
                       @onfocusout="@HandleFocusOut"
@@ -59,18 +61,18 @@
             else
             {
                 <input @attributes="InputHtmlAttributes"
-                   id="@TextFieldId"
+                   id="@_textFieldId"
                    class="txt-field"
                    disabled=@(!IsEnabled)
                    readonly=@IsReadonly
                    required=@IsRequired
-                   type="@InputType"
+                   type="@_inputType"
                    value="@CurrentValue"
                    placeholder="@Placeholder"
                    maxlength="@MaxLength"
                    aria-label="@AriaLabel"
-                   aria-labelledby="@(Label.HasValue() || LabelFragment is not null ? LabelId : null)"
-                   aria-aria-describedby="@(Description.HasValue() || DescriptionFragment is not null ? DescriptionId : null)"
+                   aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)"
+                   aria-aria-describedby="@(Description.HasValue() || DescriptionTemplate is not null ? _descriptionId : null)"
                    autocomplete="@AutoComplete"
                    @onclick="@HandleClick"
                    @onfocusin="@HandleFocusIn"
@@ -88,9 +90,9 @@
                     type="button"
                     aria-label="@RevealPasswordAriaLabel"
                     @onclick="ToggleRevealPassword"
-                    aria-pressed="@(ElementType == BitTextFieldType.Text ? "true" : "false")">
+                    aria-pressed="@(_textFieldType == BitTextFieldType.Text ? "true" : "false")">
                     <span>
-                        <i class="bit-icon bit-icon--@(ElementType == BitTextFieldType.Text ? "Hide" : "RedEye")" aria-hidden="true" />
+                        <i class="bit-icon bit-icon--@(_textFieldType == BitTextFieldType.Text ? "Hide" : "RedEye")" aria-hidden="true" />
                     </span>
                 </button>
             }
@@ -100,9 +102,11 @@
                 <i class="bit-icon bit-icon--@IconName.GetName()" aria-hidden="true"></i>
             }
 
-            @if (SuffixFragment is not null)
+            @if (SuffixTemplate is not null)
             {
-                <span>@SuffixFragment</span>
+                <span>
+                    @SuffixTemplate
+                </span>
             }
             else if (Suffix.HasValue())
             {
@@ -113,12 +117,14 @@
 
         </div>
     </div>
-    @if (Description.HasValue() || DescriptionFragment is not null)
+    @if (Description.HasValue() || DescriptionTemplate is not null)
     {
-        <span class="txt-desc" id="@DescriptionId">
-            @if (DescriptionFragment is not null)
+        <span class="txt-desc" id="@_descriptionId">
+            @if (DescriptionTemplate is not null)
             {
-                <span>@DescriptionFragment</span>
+                <span>
+                    @DescriptionTemplate
+                </span>
             }
             else if (Description.HasValue())
             {

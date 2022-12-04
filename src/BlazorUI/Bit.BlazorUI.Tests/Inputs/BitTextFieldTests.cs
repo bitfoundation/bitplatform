@@ -673,7 +673,7 @@ public class BitTextFieldTests : BunitTestContext
     {
         var component = RenderComponent<BitTextFieldTest>(parameters =>
         {
-            parameters.Add(p => p.Trim, true);
+            parameters.Add(p => p.IsTrim, true);
             parameters.Add(p => p.DefaultValue, value);
         });
 
@@ -693,7 +693,7 @@ public class BitTextFieldTests : BunitTestContext
     {
         var component = RenderComponent<BitTextField>(parameters =>
         {
-            parameters.Add(p => p.Trim, true);
+            parameters.Add(p => p.IsTrim, true);
         });
 
         var input = component.Find("input");
