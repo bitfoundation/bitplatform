@@ -87,12 +87,6 @@ public partial class BitTextFieldDemo
         },
         new ComponentParameter()
         {
-            Name = "",
-            Type = "",
-            Description = ".",
-        },
-        new ComponentParameter()
-        {
             Name = "IsRequired",
             Type = "bool",
             Description = "Whether the associated input is required or not, add an asterisk \"*\" to its label.",
@@ -118,7 +112,7 @@ public partial class BitTextFieldDemo
         },
         new ComponentParameter()
         {
-            Name = "IsTrim",
+            Name = "IsTrimed",
             Type = "bool",
             Description = "Specifies whether to remove any leading or trailing whitespace from the value.",
         },
@@ -309,9 +303,9 @@ public partial class BitTextFieldDemo
     #region Sample Code 3
 
     private readonly string example3HTMLCode = @"
-<BitTextField Placeholder=""Enter a text..."" Label=""Has No Border"" HasBorder=""false"" />
-<BitTextField Placeholder=""Enter a text..."" Label=""Has No Border and Required"" HasBorder=""false"" IsRequired=""true"" />
-<BitTextField Placeholder=""Enter a text..."" Label=""Has No Border and Disabled"" HasBorder=""false"" IsEnabled=""false"" />
+<BitTextField Placeholder=""Enter a text..."" Label=""Basic No Border"" HasBorder=""false"" />
+<BitTextField Placeholder=""Enter a text..."" Label=""Required No Border"" HasBorder=""false"" IsRequired=""true"" />
+<BitTextField Placeholder=""Enter a text..."" Label=""Disabled No Border"" HasBorder=""false"" IsEnabled=""false"" />
 ";
 
     #endregion
@@ -319,9 +313,9 @@ public partial class BitTextFieldDemo
     #region Sample Code 4
 
     private readonly string example4HTMLCode = @"
-<BitTextField Placeholder=""Enter a text..."" Label=""Multiline and Resizable(by default)"" IsMultiline=""true"" />
-<BitTextField Placeholder=""Enter a text..."" Label=""Multiline and is not Resizable"" IsMultiline=""true"" IsResizable=""false"" />
-<BitTextField Placeholder=""Enter a text..."" Label=""Multiline and Row count: 10"" IsMultiline=""true"" Rows=""10"" />
+<BitTextField Placeholder=""Enter a text..."" Label=""Resizable (By default)"" IsMultiline=""true"" />
+<BitTextField Placeholder=""Enter a text..."" Label=""Unresizable (Fixed)"" IsMultiline=""true"" IsResizable=""false"" />
+<BitTextField Placeholder=""Enter a text..."" Label=""Row count (10)"" IsMultiline=""true"" Rows=""10"" />
 ";
 
     #endregion
@@ -419,11 +413,11 @@ private string ReadOnlyValue = ""this is readonly value"";
     private readonly string example10HTMLCode = @"
 <div>
     <BitTextField Placeholder=""Enter a text..."" Label=""Trimed"" IsTrim=""true"" @bind-Value=""TrimedValue"" />
-    <pre>[@TrimedValue]</pre>
+    <pre class=""trimed-box"">[@TrimedValue]</pre>
 </div>
 <div>
-    <BitTextField Placeholder=""Enter a text..."" Label=""Not Trimed"" @bind-Value=""NotTrimedValue"" />
-    <pre>[@NotTrimedValue]</pre>
+    <BitTextField Placeholder=""Enter a text..."" Label=""Not IsTrimed"" @bind-Value=""NotTrimedValue"" />
+    <pre class=""trimed-box"">[@NotTrimedValue]</pre>
 </div>
 ";
 

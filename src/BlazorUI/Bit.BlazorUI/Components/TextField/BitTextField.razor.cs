@@ -147,7 +147,7 @@ public partial class BitTextField
     /// <summary>
     /// Specifies whether to remove any leading or trailing whitespace from the value.
     /// </summary>
-    [Parameter] public bool IsTrim { get; set; }
+    [Parameter] public bool IsTrimed { get; set; }
 
     /// <summary>
     /// Label displayed above the text field and read by screen readers.
@@ -388,7 +388,7 @@ public partial class BitTextField
     /// <inheritdoc />
     protected override bool TryParseValueFromString(string? value, out string? result, [NotNullWhen(false)] out string? validationErrorMessage)
     {
-        result = IsTrim ? value?.Trim() : value;
+        result = IsTrimed ? value?.Trim() : value;
         validationErrorMessage = null;
         return true;
     }

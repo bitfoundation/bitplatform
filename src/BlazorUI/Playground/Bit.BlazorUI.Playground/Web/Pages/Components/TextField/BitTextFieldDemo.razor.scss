@@ -22,11 +22,19 @@
 
 .example-box {
     display: flex;
-    gap: rem(10px);
+    gap: rem(15px);
     width: rem(300px);
     flex-direction: column;
+
+    ::deep .bit-btn{
+        width: fit-content;
+    }
 
     @include sm {
         width: rem(200px);
     }
+}
+.trimed-box {
+    margin-top: rem(10px);
+    border: 1px solid $Gray3;
 }

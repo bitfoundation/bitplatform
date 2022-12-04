@@ -27,12 +27,12 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BitTextField with Border Control" HTMLSourceCode="@example3HTMLCode" ExampleId="example3">
+    <ComponentExampleBox Title="BitTextField without Border" HTMLSourceCode="@example3HTMLCode" ExampleId="example3">
         <ExamplePreview>
             <div class="example-box">
-                <BitTextField Placeholder="Enter a text..." Label="Has No Border" HasBorder="false" />
-                <BitTextField Placeholder="Enter a text..." Label="Has No Border and Required" HasBorder="false" IsRequired="true" />
-                <BitTextField Placeholder="Enter a text..." Label="Has No Border and Disabled" HasBorder="false" IsEnabled="false" />
+                <BitTextField Placeholder="Enter a text..." Label="Basic No Border" HasBorder="false" />
+                <BitTextField Placeholder="Enter a text..." Label="Required No Border" HasBorder="false" IsRequired="true" />
+                <BitTextField Placeholder="Enter a text..." Label="Disabled No Border" HasBorder="false" IsEnabled="false" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -40,9 +40,9 @@
     <ComponentExampleBox Title="Multiline BitTextField" HTMLSourceCode="@example4HTMLCode" ExampleId="example4">
         <ExamplePreview>
             <div class="example-box">
-                <BitTextField Placeholder="Enter a text..." Label="Multiline and Resizable(by default)" IsMultiline="true" />
-                <BitTextField Placeholder="Enter a text..." Label="Multiline and is not Resizable" IsMultiline="true" IsResizable="false" />
-                <BitTextField Placeholder="Enter a text..." Label="Multiline and Row count: 10" IsMultiline="true" Rows="10" />
+                <BitTextField Placeholder="Enter a text..." Label="Resizable (By default)" IsMultiline="true" />
+                <BitTextField Placeholder="Enter a text..." Label="Unresizable (Fixed)" IsMultiline="true" IsResizable="false" />
+                <BitTextField Placeholder="Enter a text..." Label="Row count (10)" IsMultiline="true" Rows="10" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -67,7 +67,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BitTextField custom Templates" HTMLSourceCode="@example7HTMLCode" ExampleId="example7">
+    <ComponentExampleBox Title="BitTextField with Templates" HTMLSourceCode="@example7HTMLCode" ExampleId="example7">
         <ExamplePreview>
             <div class="example-box">
                 <BitTextField Placeholder="Enter a text...">
@@ -133,12 +133,12 @@
             <div class="example-desc">The trim property removes whitespaces from both sides of a string.</div>
             <div class="example-box">
                 <div>
-                    <BitTextField Placeholder="Enter a text..." Label="Trimed" IsTrim="true" @bind-Value="TrimedValue" />
-                    <pre>[@TrimedValue]</pre>
+                    <BitTextField Placeholder="Enter a text..." Label="Trimed" IsTrimed="true" @bind-Value="TrimedValue" />
+                    <pre class="trimed-box">[@TrimedValue]</pre>
                 </div>
                 <div>
                     <BitTextField Placeholder="Enter a text..." Label="Not Trimed" @bind-Value="NotTrimedValue" />
-                    <pre>[@NotTrimedValue]</pre>
+                    <pre class="trimed-box">[@NotTrimedValue]</pre>
                 </div>
             </div>
         </ExamplePreview>
@@ -146,12 +146,11 @@
 
     <ComponentExampleBox Title="TextField validation" HTMLSourceCode="@example11HTMLCode" CSharpSourceCode="@example11CSharpCode" ExampleId="example11">
         <ExamplePreview>
-            <div class="example-box">
-                @if (formIsValidSubmit is false)
-                {
-                    <EditForm Model="validationTextFieldModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
-                        <DataAnnotationsValidator />
-
+            @if (formIsValidSubmit is false)
+            {
+                <EditForm Model="validationTextFieldModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
+                    <DataAnnotationsValidator />
+                    <div class="example-box">
                         <div class="form-item">
                             <BitTextField Label="Required" IsRequired="true" @bind-Value="validationTextFieldModel.Text" />
                             <ValidationMessage For="() => validationTextFieldModel.Text" />
@@ -173,18 +172,18 @@
                             <ValidationMessage For="() => validationTextFieldModel.RangeText" />
                         </div>
 
-                        <BitButton ButtonType="BitButtonType.Submit" Style="margin-top: 10px;">
+                        <BitButton ButtonType="BitButtonType.Submit">
                             Submit
                         </BitButton>
-                    </EditForm>
-                }
-                else
-                {
-                    <BitMessageBar MessageBarType="BitMessageBarType.Success" IsMultiline="false">
-                        The form is valid to submit successfully.
-                    </BitMessageBar>
-                }
-            </div>
+                    </div>
+                </EditForm>
+            }
+            else
+            {
+                <BitMessageBar MessageBarType="BitMessageBarType.Success" IsMultiline="false">
+                    The form is valid to submit successfully.
+                </BitMessageBar>
+            }
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>
