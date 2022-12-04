@@ -1,8 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Timers;
-using Microsoft.AspNetCore.Components;
+﻿using System.Timers;
 
 namespace Bit.BlazorUI;
 
@@ -276,7 +272,7 @@ public partial class BitSwiper : IDisposable
             if (x > _swiperEffectiveWidth) x = _swiperEffectiveWidth;
         }
 
-        await _js.SetStyle(_swiper, "transform", $"translateX({x}px)");
+        await _js.SetStyle(_swiper, "transform", $"translateX({NumUtils.ToInvariantString(x)}px)");
 
         SetNavigationButtonsVisibility(x);
     }
