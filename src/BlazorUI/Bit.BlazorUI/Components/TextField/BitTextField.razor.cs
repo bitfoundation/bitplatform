@@ -236,7 +236,7 @@ public partial class BitTextField
         set
         {
             type = value;
-            SetTextFieldType();
+            SetElementType();
             ClassBuilder.Reset();
         }
     }
@@ -291,7 +291,7 @@ public partial class BitTextField
                                    : string.Empty);
     }
 
-    private void SetTextFieldType()
+    private void SetElementType()
     {
         _elementType = type is BitTextFieldType.Password && CanRevealPassword && _isPasswordRevealed
                          ? BitTextFieldType.Text
@@ -309,7 +309,7 @@ public partial class BitTextField
         };
     }
 
-    private async Task HandleFocusIn(FocusEventArgs e)
+    private async Task HandleOnFocusIn(FocusEventArgs e)
     {
         if (IsEnabled)
         {
@@ -319,7 +319,7 @@ public partial class BitTextField
         }
     }
 
-    private async Task HandleFocusOut(FocusEventArgs e)
+    private async Task HandleOnFocusOut(FocusEventArgs e)
     {
         if (IsEnabled)
         {
@@ -329,7 +329,7 @@ public partial class BitTextField
         }
     }
 
-    private async Task HandleFocus(FocusEventArgs e)
+    private async Task HandleOnFocus(FocusEventArgs e)
     {
         if (IsEnabled)
         {
@@ -339,7 +339,7 @@ public partial class BitTextField
         }
     }
 
-    private async Task HandleChange(ChangeEventArgs e)
+    private async Task HandleOnChange(ChangeEventArgs e)
     {
         if (IsEnabled is false) return;
         if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
@@ -348,7 +348,7 @@ public partial class BitTextField
         await OnChange.InvokeAsync(Value);
     }
 
-    private async Task HandleKeyDown(KeyboardEventArgs e)
+    private async Task HandleOnKeyDown(KeyboardEventArgs e)
     {
         if (IsEnabled)
         {
@@ -356,7 +356,7 @@ public partial class BitTextField
         }
     }
 
-    private async Task HandleKeyUp(KeyboardEventArgs e)
+    private async Task HandleOnKeyUp(KeyboardEventArgs e)
     {
         if (IsEnabled)
         {
@@ -364,7 +364,7 @@ public partial class BitTextField
         }
     }
 
-    private async Task HandleClick(MouseEventArgs e)
+    private async Task HandleOnClick(MouseEventArgs e)
     {
         if (IsEnabled)
         {
@@ -375,7 +375,7 @@ public partial class BitTextField
     public void ToggleRevealPassword()
     {
         _isPasswordRevealed = !_isPasswordRevealed;
-        SetTextFieldType();
+        SetElementType();
     }
 
     /// <inheritdoc />

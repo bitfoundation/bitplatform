@@ -47,14 +47,14 @@
                       aria-label="@AriaLabel"
                       aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)"
                       aria-aria-describedby="@(Description.HasValue() || DescriptionTemplate is not null ? _descriptionId : null)"
-                      @onclick="@HandleClick"
-                      @onfocusin="@HandleFocusIn"
-                      @onfocusout="@HandleFocusOut"
-                      @onfocus="@HandleFocus"
-                      @oninput="@HandleChange"
-                      @onchange="@HandleChange"
-                      @onkeydown="@HandleKeyDown"
-                      @onkeyup="@HandleKeyUp">
+                      @onclick="@HandleOnClick"
+                      @onfocusin="@HandleOnFocusIn"
+                      @onfocusout="@HandleOnFocusOut"
+                      @onfocus="@HandleOnFocus"
+                      @oninput="@HandleOnChange"
+                      @onchange="@HandleOnChange"
+                      @onkeydown="@HandleOnKeyDown"
+                      @onkeyup="@HandleOnKeyUp">
                     @CurrentValue
                  </textarea>
             }
@@ -74,14 +74,14 @@
                    aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)"
                    aria-aria-describedby="@(Description.HasValue() || DescriptionTemplate is not null ? _descriptionId : null)"
                    autocomplete="@AutoComplete"
-                   @onclick="@HandleClick"
-                   @onfocusin="@HandleFocusIn"
-                   @onfocusout="@HandleFocusOut"
-                   @onfocus="@HandleFocus"
-                   @oninput="@HandleChange"
-                   @onchange="@HandleChange"
-                   @onkeydown="@HandleKeyDown"
-                   @onkeyup="@HandleKeyUp" />
+                   @onclick="@HandleOnClick"
+                   @onfocusin="@HandleOnFocusIn"
+                   @onfocusout="@HandleOnFocusOut"
+                   @onfocus="@HandleOnFocus"
+                   @oninput="@HandleOnChange"
+                   @onchange="@HandleOnChange"
+                   @onkeydown="@HandleOnKeyDown"
+                   @onkeyup="@HandleOnKeyUp" />
             }
 
             @if (CanRevealPassword && Type == BitTextFieldType.Password)

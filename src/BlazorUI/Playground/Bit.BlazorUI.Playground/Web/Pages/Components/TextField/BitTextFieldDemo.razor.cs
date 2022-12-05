@@ -345,25 +345,25 @@ public partial class BitTextFieldDemo
     private readonly string example7HTMLCode = @"
 <BitTextField Placeholder=""Enter a text..."">
     <LabelTemplate>
-        <label style=""color: red;"">This is custom Label</label>
+        <label style=""color: coral;"">This is custom Label</label>
     </LabelTemplate>
 </BitTextField>
 
 <BitTextField Placeholder=""Enter a text..."" Label=""This is custom Description"">
     <DescriptionTemplate>
-        <span style=""color: red;"">Description</span>
+        <span style=""color: coral;"">Description</span>
     </DescriptionTemplate>
 </BitTextField>
 
 <BitTextField Placeholder=""Enter a text..."" Label=""This is custom Prefix"">
     <PrefixTemplate>
-        <span style=""color: red; margin: 0 5px;"">Prefix</span>
+        <span style=""color: coral; margin: 0 5px;"">Prefix</span>
     </PrefixTemplate>
 </BitTextField>
 
 <BitTextField Placeholder=""Enter a text..."" Label=""This is custom Suffix"">
     <SuffixTemplate>
-        <span style=""color: red; margin: 0 5px;"">Suffix</span>
+        <span style=""color: coral; margin: 0 5px;"">Suffix</span>
     </SuffixTemplate>
 </BitTextField>
 ";
