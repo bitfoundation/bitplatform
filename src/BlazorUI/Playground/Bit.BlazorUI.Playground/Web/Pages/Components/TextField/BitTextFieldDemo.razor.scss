@@ -15,7 +15,7 @@
     overflow: hidden;
     margin-bottom: rem(10px);
 
-    .validation-errors {
+    ::deep .validation-errors {
         margin: rem(5px);
     }
 }
@@ -26,15 +26,16 @@
     width: rem(300px);
     flex-direction: column;
 
-    ::deep .bit-btn{
+    ::deep .bit-btn {
         width: fit-content;
     }
 
     @include sm {
         width: rem(200px);
     }
-}
-.trimed-box {
-    margin-top: rem(10px);
-    border: 1px solid $Gray3;
+
+    .trimmed-box {
+        margin-top: rem(10px);
+        border: 1px solid $Gray3;
+    }
 }

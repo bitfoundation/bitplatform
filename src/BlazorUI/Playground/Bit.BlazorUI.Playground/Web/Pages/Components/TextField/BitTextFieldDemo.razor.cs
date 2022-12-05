@@ -12,8 +12,8 @@ public partial class BitTextFieldDemo
     private string OnChangeValue;
     private string ReadOnlyValue = "this is readonly value";
 
-    private string TrimedValue;
-    private string NotTrimedValue;
+    private string TrimmedValue;
+    private string NotTrimmedValue;
 
     private ValidationTextFieldModel validationTextFieldModel = new();
     public bool formIsValidSubmit;
@@ -112,7 +112,7 @@ public partial class BitTextFieldDemo
         },
         new ComponentParameter()
         {
-            Name = "IsTrimed",
+            Name = "IsTrimmed",
             Type = "bool",
             Description = "Specifies whether to remove any leading or trailing whitespace from the value.",
         },
@@ -412,18 +412,18 @@ private string ReadOnlyValue = ""this is readonly value"";
 
     private readonly string example10HTMLCode = @"
 <div>
-    <BitTextField Placeholder=""Enter a text..."" Label=""Trimed"" IsTrim=""true"" @bind-Value=""TrimedValue"" />
-    <pre class=""trimed-box"">[@TrimedValue]</pre>
+    <BitTextField Placeholder=""Enter a text..."" Label=""Trimmed"" IsTrimmed=""true"" @bind-Value=""TrimmedValue"" />
+    <pre class=""trimmed-box"">[@TrimmedValue]</pre>
 </div>
 <div>
-    <BitTextField Placeholder=""Enter a text..."" Label=""Not IsTrimed"" @bind-Value=""NotTrimedValue"" />
-    <pre class=""trimed-box"">[@NotTrimedValue]</pre>
+    <BitTextField Placeholder=""Enter a text..."" Label=""Not Trimmed"" @bind-Value=""NotTrimmedValue"" />
+    <pre class=""trimmed-box"">[@NotTrimmedValue]</pre>
 </div>
 ";
 
     private readonly string example10CSharpCode = @"
-private string TrimedValue;
-private string NotTrimedValue;
+private string TrimmedValue;
+private string NotTrimmedValue;
 ";
 
     #endregion
@@ -431,11 +431,33 @@ private string NotTrimedValue;
     #region Sample Code 11
 
     private readonly string example11HTMLCode = @"
+<style>
+    .validation-message {
+        color: $Red20;
+        font-size: rem(12px);
+        line-height: normal;
+        margin-top: rem(5px);
+    }
+
+    .validation-summary {
+        border-left: rem(5px) solid $Red10;
+        background-color: $ErrorBlockRed;
+        overflow: hidden;
+        margin-bottom: rem(10px);
+
+        .validation-errors {
+            margin: rem(5px);
+        }
+    }
+</style>
+
 @if (formIsValidSubmit is false)
 {
     <EditForm Model=""validationTextFieldModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
         <DataAnnotationsValidator />
-
+        <div class=""validation-summary"">
+            <ValidationSummary />
+        </div>
         <div class=""form-item"">
             <BitTextField Label=""Required"" IsRequired=""true"" @bind-Value=""validationTextFieldModel.Text"" />
             <ValidationMessage For=""() => validationTextFieldModel.Text"" />

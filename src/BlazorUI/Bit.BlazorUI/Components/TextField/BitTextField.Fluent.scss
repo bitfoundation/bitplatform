@@ -1,8 +1,7 @@
 ﻿@import "../../Styles/Fluent/colors.fluent.scss", "../../Styles/functions.scss";
 
-.bit-txt {
-
-    @mixin getMultilineStyle($isResizable: true) {
+@mixin getMultilineStyle($isResizable: true) {
+    .bit-txt {
         .bit-txt-field-grp {
             align-items: stretch;
             height: auto;
@@ -21,8 +20,10 @@
             }
         }
     }
+}
 
-    @mixin getUnderlineStyle($isEnabel: true) {
+@mixin getUnderlineStyle($isEnabel: true) {
+    .bit-txt {
         .bit-txt-wrapper {
             display: flex;
             width: 100%;
@@ -49,6 +50,9 @@
             text-align: left;
         }
     }
+}
+
+.bit-txt {
 
     &.bit-txt-fluent {
         position: relative;

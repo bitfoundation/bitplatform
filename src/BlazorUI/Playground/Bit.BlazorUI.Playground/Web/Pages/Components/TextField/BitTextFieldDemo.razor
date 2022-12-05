@@ -128,17 +128,17 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Trimed TextField" HTMLSourceCode="@example10HTMLCode" CSharpSourceCode="@example10CSharpCode" ExampleId="example10">
+    <ComponentExampleBox Title="Trimmed TextField" HTMLSourceCode="@example10HTMLCode" CSharpSourceCode="@example10CSharpCode" ExampleId="example10">
         <ExamplePreview>
             <div class="example-desc">The trim property removes whitespaces from both sides of a string.</div>
             <div class="example-box">
                 <div>
-                    <BitTextField Placeholder="Enter a text..." Label="Trimed" IsTrimed="true" @bind-Value="TrimedValue" />
-                    <pre class="trimed-box">[@TrimedValue]</pre>
+                    <BitTextField Placeholder="Enter a text..." Label="Trimmed" IsTrimmed="true" @bind-Value="TrimmedValue" />
+                    <pre class="trimmed-box">[@TrimmedValue]</pre>
                 </div>
                 <div>
-                    <BitTextField Placeholder="Enter a text..." Label="Not Trimed" @bind-Value="NotTrimedValue" />
-                    <pre class="trimed-box">[@NotTrimedValue]</pre>
+                    <BitTextField Placeholder="Enter a text..." Label="Not Trimmed" @bind-Value="NotTrimmedValue" />
+                    <pre class="trimmed-box">[@NotTrimmedValue]</pre>
                 </div>
             </div>
         </ExamplePreview>
@@ -150,6 +150,9 @@
             {
                 <EditForm Model="validationTextFieldModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
                     <DataAnnotationsValidator />
+                    <div class="validation-summary">
+                        <ValidationSummary />
+                    </div>
                     <div class="example-box">
                         <div class="form-item">
                             <BitTextField Label="Required" IsRequired="true" @bind-Value="validationTextFieldModel.Text" />

@@ -17,18 +17,8 @@ public partial class BitTextField
     private string _labelId = string.Empty;
     private string _descriptionId = string.Empty;
     private bool _isPasswordRevealed;
-    private BitTextFieldType _textFieldType;
-
-    private string focusClass = string.Empty;
-    public string FocusClass
-    {
-        get => focusClass;
-        set
-        {
-            focusClass = value;
-            ClassBuilder.Reset();
-        }
-    }
+    private BitTextFieldType _elementType;
+    private string _focusClass = string.Empty;
 
     /// <summary>
     /// AutoComplete is a string that maps to the autocomplete attribute of the HTML input element.
@@ -147,7 +137,7 @@ public partial class BitTextField
     /// <summary>
     /// Specifies whether to remove any leading or trailing whitespace from the value.
     /// </summary>
-    [Parameter] public bool IsTrimed { get; set; }
+    [Parameter] public bool IsTrimmed { get; set; }
 
     /// <summary>
     /// Label displayed above the text field and read by screen readers.
@@ -288,8 +278,8 @@ public partial class BitTextField
         ClassBuilder.Register(() => HasBorder is false
                                    ? $"{RootElementClass}-no-border-{VisualClassRegistrar()}" : string.Empty);
 
-        ClassBuilder.Register(() => FocusClass.HasValue()
-                                    ? $"{RootElementClass}-{(IsUnderlined ? "underlined-" : "")}{FocusClass}-{VisualClassRegistrar()}" 
+        ClassBuilder.Register(() => _focusClass.HasValue()
+                                    ? $"{RootElementClass}-{(IsUnderlined ? "underlined-" : "")}{_focusClass}-{VisualClassRegistrar()}" 
                                     : string.Empty);
 
         ClassBuilder.Register(() => ValueInvalid is true
@@ -303,11 +293,11 @@ public partial class BitTextField
 
     private void SetTextFieldType()
     {
-        _textFieldType = type is BitTextFieldType.Password && CanRevealPassword && _isPasswordRevealed
+        _elementType = type is BitTextFieldType.Password && CanRevealPassword && _isPasswordRevealed
                          ? BitTextFieldType.Text
                          : type;
 
-        _inputType = _textFieldType switch
+        _inputType = _elementType switch
         {
             BitTextFieldType.Text => "text",
             BitTextFieldType.Password => "password",
@@ -323,7 +313,8 @@ public partial class BitTextField
     {
         if (IsEnabled)
         {
-            FocusClass = "focused";
+            _focusClass = "focused";
+            ClassBuilder.Reset();
             await OnFocusIn.InvokeAsync(e);
         }
     }
@@ -332,7 +323,8 @@ public partial class BitTextField
     {
         if (IsEnabled)
         {
-            FocusClass = "";
+            _focusClass = "";
+            ClassBuilder.Reset();
             await OnFocusOut.InvokeAsync(e);
         }
     }
@@ -341,7 +333,8 @@ public partial class BitTextField
     {
         if (IsEnabled)
         {
-            FocusClass = "focused";
+            _focusClass = "focused";
+            ClassBuilder.Reset();
             await OnFocus.InvokeAsync(e);
         }
     }
@@ -388,7 +381,7 @@ public partial class BitTextField
     /// <inheritdoc />
     protected override bool TryParseValueFromString(string? value, out string? result, [NotNullWhen(false)] out string? validationErrorMessage)
     {
-        result = IsTrimed ? value?.Trim() : value;
+        result = IsTrimmed ? value?.Trim() : value;
         validationErrorMessage = null;
         return true;
     }
