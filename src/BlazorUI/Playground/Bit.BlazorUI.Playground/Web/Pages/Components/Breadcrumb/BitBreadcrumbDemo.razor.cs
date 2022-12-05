@@ -329,19 +329,16 @@ private List<BitBreadcrumbItem> GetBreadcrumbItems()
 
     private readonly string example5HTMLCode = @"
 <style>
-    ::deep {
+    .custom-item {
+        background-color: lightgreen;
+        padding: 2px;
+        margin: 0 5px;
+        border-radius: 10px;
+    }
 
-        .custom-item {
-            background-color: lightgreen;
-            padding: 2px;
-            margin: 0 5px;
-            border-radius: 10px;
-
-            &.last-item {
-                background-color: green;
-                padding: 5px;
-            }
-        }
+    .last-item {
+        background-color: green;
+        padding: 5px;
     }
 </style>
 
