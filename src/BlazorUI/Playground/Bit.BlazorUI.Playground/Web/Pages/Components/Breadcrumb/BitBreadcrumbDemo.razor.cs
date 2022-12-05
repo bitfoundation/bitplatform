@@ -416,7 +416,7 @@ private List<BitBreadcrumbItem> GetBreadcrumbItemsWithClass()
             Key = ""f3"",
             href = ""/components/breadcrumb"",
             OnClick = (() => OnClickValue = ""Folder 3 clicked""),
-                Class = ""custom-item""
+            Class = ""custom-item""
         },
         new()
         {
