@@ -158,6 +158,46 @@ public partial class BitBreadcrumbDemo
         };
     }
 
+    private List<BitBreadcrumbItem> GetBreadcrumbItemsWithClassAndStyle()
+    {
+        return new List<BitBreadcrumbItem>()
+        {
+            new()
+            {
+                Text = "Folder 1",
+                Key = "f1",
+                href = "/components/breadcrumb",
+                OnClick = (() => OnClickValue = "Folder 1 clicked"),
+                Style = "background-color: lightgreen; border-radius: 10px; margin: 0 5px;"
+            },
+            new()
+            {
+                Text = "Folder 2",
+                Key = "f2",
+                href = "/components/breadcrumb",
+                OnClick = (() => OnClickValue = "Folder 2 clicked"),
+                Style = "background-color: lightgreen; border-radius: 10px; margin: 0 5px;"
+            },
+            new()
+            {
+                Text = "Folder 3",
+                Key = "f3",
+                href = "/components/breadcrumb",
+                OnClick = (() => OnClickValue = "Folder 3 clicked"),
+                Style = "background-color: lightgreen; border-radius: 10px; margin: 0 5px;"
+            },
+            new()
+            {
+                Text = "Folder 4",
+                Key = "f4",
+                href = "/components/breadcrumb",
+                IsCurrentItem = true,
+                OnClick = (() => OnClickValue = "Folder 4 clicked"),
+                Class = "last-item-class"
+            }
+        };
+    }
+
     private readonly string example1HTMLCode = @"<div class=""example-desc"">With items rendered as links</div>
 <div>
     <BitBreadcrumb Items=""GetBreadcrumbItems()""></BitBreadcrumb>
@@ -249,4 +289,60 @@ private List<BitBreadcrumbItem> GetBreadcrumbItems()
         }
     };
 }";
+
+    private readonly string example5HTMLCode = @"
+<style>
+    ::deep .last-item-class {
+        background-color: green;
+        border-radius: 10px;
+        padding: 5px;
+    }
+</style>
+
+<div>
+    <BitBreadcrumb Items=""GetBreadcrumbItemsWithClassAndStyle()"" />
+</div>
+";
+
+    private readonly string example5CSharpCode = @"
+private List<BitBreadcrumbItem> GetBreadcrumbItemsWithClassAndStyle()
+{
+    return new List<BitBreadcrumbItem>()
+    {
+        new()
+        {
+            Text = ""Folder 1"",
+            Key = ""f1"",
+            href = ""/components/breadcrumb"",
+            OnClick = (() => OnClickValue = ""Folder 1 clicked""),
+            Style = ""background-color: lightgreen; border-radius: 10px; margin: 0 5px;""
+        },
+        new()
+        {
+            Text = ""Folder 2"",
+            Key = ""f2"",
+            href = ""/components/breadcrumb"",
+            OnClick = (() => OnClickValue = ""Folder 2 clicked""),
+            Style = ""background-color: lightgreen; border-radius: 10px; margin: 0 5px;""
+        },
+        new()
+        {
+            Text = ""Folder 3"",
+            Key = ""f3"",
+            href = ""/components/breadcrumb"",
+            OnClick = (() => OnClickValue = ""Folder 3 clicked""),
+            Style = ""background-color: lightgreen; border-radius: 10px; margin: 0 5px;""
+        },
+        new()
+        {
+            Text = ""Folder 4"",
+            Key = ""f4"",
+            href = ""/components/breadcrumb"",
+            IsCurrentItem = true,
+            OnClick = (() => OnClickValue = ""Folder 4 clicked""),
+            Class = ""last-item-class""
+        }
+    };
+}
+";
 }

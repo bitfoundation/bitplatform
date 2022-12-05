@@ -1,0 +1,7 @@
+﻿@import '../../../Styles/abstracts/_functions.scss';
+
+::deep .last-item-class {
+    background-color: green;
+    border-radius: rem(10px);
+    padding: rem(5px);
+}

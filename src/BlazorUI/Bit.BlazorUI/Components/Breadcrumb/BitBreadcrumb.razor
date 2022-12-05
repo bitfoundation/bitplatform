@@ -13,7 +13,7 @@
 
             @foreach ((BitBreadcrumbItem value, int index) item in _itemsToShowInBreadcrumb.Select((item, index) => (item, index)))
             {
-                <li>
+                <li style="@item.value.Style" class="@item.value.Class">
                     @if (_overflowItems.Any() && item.index == OverflowIndex)
                     {
                         <button type="button" aria-label="@OverflowAriaLabel" id=@OverflowDropDownId @onclick="HandleClick">
