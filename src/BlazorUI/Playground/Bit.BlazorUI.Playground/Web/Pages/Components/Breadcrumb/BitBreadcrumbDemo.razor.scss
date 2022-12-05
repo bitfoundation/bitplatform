@@ -1,0 +1,16 @@
+﻿@import '../../../Styles/abstracts/_functions.scss';
+
+::deep {
+
+    .custom-item {
+        background-color: lightgreen;
+        padding: rem(2px);
+        margin: 0 rem(5px);
+        border-radius: rem(10px);
+
+        &.last-item {
+            background-color: green;
+            padding: rem(5px);
+        }
+    }
+}

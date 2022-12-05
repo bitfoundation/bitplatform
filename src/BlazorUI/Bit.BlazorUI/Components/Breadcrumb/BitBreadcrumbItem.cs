@@ -31,4 +31,13 @@ public class BitBreadcrumbItem
     /// </summary>
     public Action OnClick { get; set; } = default!;
 
+    /// <summary>
+    /// class HTML attribute for breadcrumb item.
+    /// </summary>
+    public string? Class { get; set; }
+
+    /// <summary>
+    /// Style HTML attribute for breadcrumb item.
+    /// </summary>
+    public string? Style { get; set; }
 }

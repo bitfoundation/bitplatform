@@ -158,6 +158,83 @@ public partial class BitBreadcrumbDemo
         };
     }
 
+    private List<BitBreadcrumbItem> GetBreadcrumbItemsWithStyle()
+    {
+        return new List<BitBreadcrumbItem>()
+        {
+            new()
+            {
+                Text = "Folder 1",
+                Key = "f1",
+                href = "/components/breadcrumb",
+                OnClick = (() => OnClickValue = "Folder 1 clicked"),
+            },
+            new()
+            {
+                Text = "Folder 2",
+                Key = "f2",
+                href = "/components/breadcrumb",
+                OnClick = (() => OnClickValue = "Folder 2 clicked"),
+            },
+            new()
+            {
+                Text = "Folder 3",
+                Key = "f3",
+                href = "/components/breadcrumb",
+                OnClick = (() => OnClickValue = "Folder 3 clicked"),
+                Style = "color: red;"
+            },
+            new()
+            {
+                Text = "Folder 4",
+                Key = "f4",
+                href = "/components/breadcrumb",
+                IsCurrentItem = true,
+                OnClick = (() => OnClickValue = "Folder 4 clicked")
+            }
+        };
+    }
+
+    private List<BitBreadcrumbItem> GetBreadcrumbItemsWithClass()
+    {
+        return new List<BitBreadcrumbItem>()
+        {
+            new()
+            {
+                Text = "Folder 1",
+                Key = "f1",
+                href = "/components/breadcrumb",
+                OnClick = (() => OnClickValue = "Folder 1 clicked"),
+                Class = "custom-item"
+            },
+            new()
+            {
+                Text = "Folder 2",
+                Key = "f2",
+                href = "/components/breadcrumb",
+                OnClick = (() => OnClickValue = "Folder 2 clicked"),
+                Class = "custom-item"
+            },
+            new()
+            {
+                Text = "Folder 3",
+                Key = "f3",
+                href = "/components/breadcrumb",
+                OnClick = (() => OnClickValue = "Folder 3 clicked"),
+                 Class = "custom-item"
+            },
+            new()
+            {
+                Text = "Folder 4",
+                Key = "f4",
+                href = "/components/breadcrumb",
+                IsCurrentItem = true,
+                OnClick = (() => OnClickValue = "Folder 4 clicked"),
+                Class = "custom-item last-item"
+            }
+        };
+    }
+
     private readonly string example1HTMLCode = @"<div class=""example-desc"">With items rendered as links</div>
 <div>
     <BitBreadcrumb Items=""GetBreadcrumbItems()""></BitBreadcrumb>
@@ -249,4 +326,108 @@ private List<BitBreadcrumbItem> GetBreadcrumbItems()
         }
     };
 }";
+
+    private readonly string example5HTMLCode = @"
+<style>
+    .custom-item {
+        background-color: lightgreen;
+        padding: 2px;
+        margin: 0 5px;
+        border-radius: 10px;
+    }
+
+    .last-item {
+        background-color: green;
+        padding: 5px;
+    }
+</style>
+
+<div>
+    <BitLabel>Class</BitLabel>
+    <BitBreadcrumb Items=""GetBreadcrumbItemsWithClass()"" />
+</div>
+<div>
+    <BitLabel>Style</BitLabel>
+    <BitBreadcrumb Items=""GetBreadcrumbItemsWithStyle()"" />
+</div>
+";
+
+    private readonly string example5CSharpCode = @"
+private List<BitBreadcrumbItem> GetBreadcrumbItemsWithStyle()
+{
+    return new List<BitBreadcrumbItem>()
+    {
+        new()
+        {
+            Text = ""Folder 1"",
+            Key = ""f1"",
+            href = ""/components/breadcrumb"",
+            OnClick = (() => OnClickValue = ""Folder 1 clicked""),
+        },
+        new()
+        {
+            Text = ""Folder 2"",
+            Key = ""f2"",
+            href = ""/components/breadcrumb"",
+            OnClick = (() => OnClickValue = ""Folder 2 clicked""),
+        },
+        new()
+        {
+            Text = ""Folder 3"",
+            Key = ""f3"",
+            href = ""/components/breadcrumb"",
+            OnClick = (() => OnClickValue = ""Folder 3 clicked""),
+            Style = ""color: red;""
+        },
+        new()
+        {
+            Text = ""Folder 4"",
+            Key = ""f4"",
+            href = ""/components/breadcrumb"",
+            IsCurrentItem = true,
+            OnClick = (() => OnClickValue = ""Folder 4 clicked"")
+        }
+    };
+}
+
+private List<BitBreadcrumbItem> GetBreadcrumbItemsWithClass()
+{
+    return new List<BitBreadcrumbItem>()
+    {
+        new()
+        {
+            Text = ""Folder 1"",
+            Key = ""f1"",
+            href = ""/components/breadcrumb"",
+            OnClick = (() => OnClickValue = ""Folder 1 clicked""),
+            Class = ""custom-item""
+        },
+        new()
+        {
+            Text = ""Folder 2"",
+            Key = ""f2"",
+            href = ""/components/breadcrumb"",
+            OnClick = (() => OnClickValue = ""Folder 2 clicked""),
+            Class = ""custom-item""
+        },
+        new()
+        {
+            Text = ""Folder 3"",
+            Key = ""f3"",
+            href = ""/components/breadcrumb"",
+            OnClick = (() => OnClickValue = ""Folder 3 clicked""),
+            Class = ""custom-item""
+        },
+        new()
+        {
+            Text = ""Folder 4"",
+            Key = ""f4"",
+            href = ""/components/breadcrumb"",
+            IsCurrentItem = true,
+            OnClick = (() => OnClickValue = ""Folder 4 clicked""),
+            Class = ""custom-item last-item""
+        }
+    };
+}
+";
 }
