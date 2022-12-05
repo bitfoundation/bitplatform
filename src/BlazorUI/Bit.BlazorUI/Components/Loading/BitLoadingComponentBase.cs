@@ -14,8 +14,8 @@ public class BitLoadingComponentBase : ComponentBase
 
     protected virtual int OriginalSize { get; set; } = 80;
 
-    protected double Convert(double value)
+    protected string Convert(double value)
     {
-        return value * Size / OriginalSize;
+        return NumUtils.ToInvariantString(value * Size / OriginalSize);
     }
 }
