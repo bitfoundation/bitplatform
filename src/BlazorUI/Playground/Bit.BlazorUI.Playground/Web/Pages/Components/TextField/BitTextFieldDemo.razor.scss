@@ -2,40 +2,46 @@
 @import '../../../Styles/abstracts/_colors.scss';
 @import '../../../Styles/abstracts/_media-queries.scss';
 
-::deep .validation-message {
-    color: $Red20;
-    font-size: rem(12px);
-    line-height: normal;
-    margin-top: rem(5px);
-}
-
-.validation-summary {
-    border-left: rem(5px) solid $Red10;
-    background-color: $ErrorBlockRed;
-    overflow: hidden;
-    margin-bottom: rem(10px);
-
-    ::deep .validation-errors {
-        margin: rem(5px);
-    }
-}
-
 .example-box {
     display: flex;
     gap: rem(15px);
     width: rem(300px);
     flex-direction: column;
 
-    ::deep .bit-btn {
-        width: fit-content;
-    }
-
     @include sm {
         width: rem(200px);
+    }
+
+    .validation-summary {
+        border-left: rem(5px) solid $Red10;
+        background-color: $ErrorBlockRed;
+        overflow: hidden;
+        margin-bottom: rem(10px);
+    }
+
+    ::deep {
+        .bit-btn {
+            width: fit-content;
+        }
+
+        .validation-message {
+            color: $Red20;
+            font-size: rem(12px);
+            line-height: normal;
+            margin-top: rem(5px);
+        }
+
+        .validation-errors {
+            margin: rem(5px);
+        }
     }
 
     .trimmed-box {
         margin-top: rem(10px);
         border: 1px solid $Gray3;
+    }
+
+    .form-item {
+        margin-bottom: rem(15px);
     }
 }

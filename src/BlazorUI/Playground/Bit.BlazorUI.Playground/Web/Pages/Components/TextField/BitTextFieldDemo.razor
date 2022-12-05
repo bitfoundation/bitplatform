@@ -146,14 +146,14 @@
 
     <ComponentExampleBox Title="TextField validation" HTMLSourceCode="@example11HTMLCode" CSharpSourceCode="@example11CSharpCode" ExampleId="example11">
         <ExamplePreview>
-            @if (formIsValidSubmit is false)
-            {
-                <EditForm Model="validationTextFieldModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
-                    <DataAnnotationsValidator />
-                    <div class="validation-summary">
-                        <ValidationSummary />
-                    </div>
-                    <div class="example-box">
+            <div class="example-box">
+                @if (formIsValidSubmit is false)
+                {
+                    <EditForm Model="validationTextFieldModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
+                        <DataAnnotationsValidator />
+                        <div class="validation-summary">
+                            <ValidationSummary />
+                        </div>
                         <div class="form-item">
                             <BitTextField Label="Required" IsRequired="true" @bind-Value="validationTextFieldModel.Text" />
                             <ValidationMessage For="() => validationTextFieldModel.Text" />
@@ -174,19 +174,18 @@
                             <BitTextField Label="Length character validation (Min: 3, Max: 5)" MaxLength="5" @bind-Value="validationTextFieldModel.RangeText" />
                             <ValidationMessage For="() => validationTextFieldModel.RangeText" />
                         </div>
-
                         <BitButton ButtonType="BitButtonType.Submit">
                             Submit
                         </BitButton>
-                    </div>
-                </EditForm>
-            }
-            else
-            {
-                <BitMessageBar MessageBarType="BitMessageBarType.Success" IsMultiline="false">
-                    The form is valid to submit successfully.
-                </BitMessageBar>
-            }
+                    </EditForm>
+                }
+                else
+                {
+                    <BitMessageBar MessageBarType="BitMessageBarType.Success" IsMultiline="false">
+                        The form is valid to submit successfully.
+                    </BitMessageBar>
+                }
+            </div>
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>
