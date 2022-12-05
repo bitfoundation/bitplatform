@@ -1,22 +1,47 @@
-﻿@import '../../../Styles/abstracts/_colors.scss';
-@import '../../../Styles/abstracts/_functions.scss';
+﻿@import '../../../Styles/abstracts/_functions.scss';
+@import '../../../Styles/abstracts/_colors.scss';
+@import '../../../Styles/abstracts/_media-queries.scss';
 
-.m-t-15 {
-    margin-top: rem(15px);
-}
+.example-box {
+    display: flex;
+    gap: rem(15px);
+    width: rem(300px);
+    flex-direction: column;
 
-.form-item {
-    line-height: 0;
-    margin-bottom: rem(15px);
-}
+    @include sm {
+        width: rem(200px);
+    }
 
-::deep div.validation-message {
-    color: $Red20;
-    font-size: rem(12px);
-    line-height: normal;
-    margin-top: -10px;
-}
+    .validation-summary {
+        border-left: rem(5px) solid $Red10;
+        background-color: $ErrorBlockRed;
+        overflow: hidden;
+        margin-bottom: rem(10px);
+    }
 
-::deep .bit-txt-wrapper {
-    margin-bottom: rem(20px);
+    ::deep {
+        .bit-btn {
+            width: fit-content;
+        }
+
+        .validation-message {
+            color: $Red20;
+            font-size: rem(12px);
+            line-height: normal;
+            margin-top: rem(5px);
+        }
+
+        .validation-errors {
+            margin: rem(5px);
+        }
+    }
+
+    .trimmed-box {
+        margin-top: rem(10px);
+        border: 1px solid $Gray3;
+    }
+
+    .form-item {
+        margin-bottom: rem(15px);
+    }
 }

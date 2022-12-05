@@ -1,24 +1,66 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 
 namespace Bit.BlazorUI;
 
 public partial class BitTextField
 {
+    private bool hasBorder = true;
     private bool isMultiline;
     private bool isReadonly;
     private bool isRequired;
     private bool isUnderlined;
-    private bool hasBorder = true;
-    private string focusClass = string.Empty;
-    private BitTextFieldType type = BitTextFieldType.Text;
     private bool isResizable = true;
+    private BitTextFieldType type = BitTextFieldType.Text;
+
+    private string _textFieldId = string.Empty;
+    private string _inputType = string.Empty;
+    private string _labelId = string.Empty;
+    private string _descriptionId = string.Empty;
     private bool _isPasswordRevealed;
+    private BitTextFieldType _elementType;
+    private string _focusClass = string.Empty;
 
     /// <summary>
-    /// Whether or not the text field is a Multiline text field
+    /// AutoComplete is a string that maps to the autocomplete attribute of the HTML input element.
+    /// </summary>
+    [Parameter] public string? AutoComplete { get; set; }
+
+    /// <summary>
+    /// Whether to show the reveal password button for input type 'password'.
+    /// </summary>
+    [Parameter] public bool CanRevealPassword { get; set; }
+
+    /// <summary>
+    /// Default value of the text field. Only provide this if the text field is an uncontrolled component; otherwise, use the value property.
+    /// </summary>
+    [Parameter] public string? DefaultValue { get; set; }
+
+    /// <summary>
+    /// Description displayed below the text field to provide additional details about what text to enter.
+    /// </summary>
+    [Parameter] public string? Description { get; set; }
+
+    /// <summary>
+    /// Shows the custom description for text field.
+    /// </summary>
+    [Parameter] public RenderFragment? DescriptionTemplate { get; set; }
+
+    /// <summary>
+    /// Whether or not the text field is borderless.
+    /// </summary>
+    [Parameter]
+    public bool HasBorder
+    {
+        get => hasBorder;
+        set
+        {
+            hasBorder = value;
+            ClassBuilder.Reset();
+        }
+    }
+
+    /// <summary>
+    /// Whether or not the text field is a Multiline text field.
     /// </summary>
     [Parameter]
     public bool IsMultiline
@@ -32,7 +74,7 @@ public partial class BitTextField
     }
 
     /// <summary>
-    /// If true, the text field is readonly
+    /// If true, the text field is readonly.
     /// </summary>
     [Parameter]
     public bool IsReadonly
@@ -46,7 +88,7 @@ public partial class BitTextField
     }
 
     /// <summary>
-    /// Whether the associated input is required or not, add an asterisk "*" to its label
+    /// Whether the associated input is required or not, add an asterisk "*" to its label.
     /// </summary>
     [Parameter]
     public bool IsRequired
@@ -60,7 +102,7 @@ public partial class BitTextField
     }
 
     /// <summary>
-    /// Whether or not the text field is underlined
+    /// Whether or not the text field is underlined.
     /// </summary>
     [Parameter]
     public bool IsUnderlined
@@ -88,120 +130,34 @@ public partial class BitTextField
     }
 
     /// <summary>
-    /// Whether or not the text field is borderless
+    /// The icon name for the icon shown in the far right end of the text field.
     /// </summary>
-    [Parameter]
-    public bool HasBorder
-    {
-        get => hasBorder;
-        set
-        {
-            hasBorder = value;
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter] public BitIconName? IconName { get; set; }
+
+    /// <summary>
+    /// Specifies whether to remove any leading or trailing whitespace from the value.
+    /// </summary>
+    [Parameter] public bool IsTrimmed { get; set; }
+
+    /// <summary>
+    /// Label displayed above the text field and read by screen readers.
+    /// </summary>
+    [Parameter] public string? Label { get; set; }
+
+    /// <summary>
+    /// Shows the custom label for text field.
+    /// </summary>
+    [Parameter] public RenderFragment? LabelTemplate { get; set; }
+
+    /// <summary>
+    /// Specifies the maximum number of characters allowed in the input.
+    /// </summary>
+    [Parameter] public int MaxLength { get; set; } = -1;
 
     /// <summary>
     /// Callback for when the input value changes. This is called on both input and change events. 
     /// </summary>
     [Parameter] public EventCallback<string?> OnChange { get; set; }
-
-    /// <summary>
-    /// Default value of the text field. Only provide this if the text field is an uncontrolled component; otherwise, use the value property
-    /// </summary>
-    [Parameter] public string? DefaultValue { get; set; }
-
-    /// <summary>
-    /// Input placeholder text
-    /// </summary>
-    [Parameter] public string? Placeholder { get; set; }
-
-    /// <summary>
-    /// Label displayed above the text field and read by screen readers
-    /// </summary>
-    [Parameter] public string? Label { get; set; }
-
-    /// <summary>
-    /// Shows the custom label for text field
-    /// </summary>
-    [Parameter] public RenderFragment? LabelFragment { get; set; }
-
-    /// <summary>
-    /// Description displayed below the text field to provide additional details about what text to enter.
-    /// </summary>
-    [Parameter] public string? Description { get; set; }
-
-    /// <summary>
-    /// Shows the custom description for text field
-    /// </summary>
-    [Parameter] public RenderFragment? DescriptionFragment { get; set; }
-
-    /// <summary>
-    /// Specifies the maximum number of characters allowed in the input
-    /// </summary>
-    [Parameter] public int MaxLength { get; set; } = -1;
-
-    /// <summary>
-    /// For multiline text, Number of rows
-    /// </summary>
-    [Parameter] public int Rows { get; set; } = 3;
-
-    /// <summary>
-    /// The icon name for the icon shown in the far right end of the text field
-    /// </summary>
-    [Parameter] public BitIconName? IconName { get; set; }
-
-    /// <summary>
-    /// Prefix displayed before the text field contents. This is not included in the value.
-    /// Ensure a descriptive label is present to assist screen readers, as the value does not include the prefix.
-    /// </summary>
-    [Parameter] public string? Prefix { get; set; }
-
-    /// <summary>
-    /// Shows the custom prefix for text field
-    /// </summary>
-    [Parameter] public RenderFragment? PrefixFragment { get; set; }
-
-    /// <summary>
-    /// Suffix displayed after the text field contents. This is not included in the value. 
-    /// Ensure a descriptive label is present to assist screen readers, as the value does not include the suffix.
-    /// </summary>
-    [Parameter] public string? Suffix { get; set; }
-
-    /// <summary>
-    /// Shows the custom suffix for text field
-    /// </summary>
-    [Parameter] public RenderFragment? SuffixFragment { get; set; }
-
-    /// <summary>
-    /// Whether to show the reveal password button for input type 'password'
-    /// </summary>
-    [Parameter] public bool CanRevealPassword { get; set; }
-
-    /// <summary>
-    /// Aria label for the reveal password button
-    /// </summary>
-    [Parameter] public string? RevealPasswordAriaLabel { get; set; }
-
-    /// <summary>
-    /// AutoComplete is a string that maps to the autocomplete attribute of the HTML input element
-    /// </summary>
-    [Parameter] public string? AutoComplete { get; set; }
-
-    /// <summary>
-    /// Input type
-    /// </summary>
-    [Parameter]
-    public BitTextFieldType Type
-    {
-        get => type;
-        set
-        {
-            type = value;
-            SetElementType();
-            ClassBuilder.Reset();
-        }
-    }
 
     /// <summary>
     /// Callback for when focus moves into the input
@@ -229,60 +185,63 @@ public partial class BitTextField
     [Parameter] public EventCallback<KeyboardEventArgs> OnKeyUp { get; set; }
 
     /// <summary>
-    /// Callback for when the input clicked
+    /// Callback for when the input clicked.
     /// </summary>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
     /// <summary>
-    /// Specifies whether to remove any leading or trailing whitespace from the value.
+    /// Input placeholder text.
     /// </summary>
-    [Parameter] public bool Trim { get; set; }
+    [Parameter] public string? Placeholder { get; set; }
 
-    public BitTextFieldType ElementType { get; private set; }
-    public string InputType { get; private set; } = string.Empty;
+    /// <summary>
+    /// Prefix displayed before the text field contents. This is not included in the value.
+    /// Ensure a descriptive label is present to assist screen readers, as the value does not include the prefix.
+    /// </summary>
+    [Parameter] public string? Prefix { get; set; }
 
-    public string FocusClass
+    /// <summary>
+    /// Shows the custom prefix for text field.
+    /// </summary>
+    [Parameter] public RenderFragment? PrefixTemplate { get; set; }
+
+    /// <summary>
+    /// For multiline text, Number of rows.
+    /// </summary>
+    [Parameter] public int Rows { get; set; } = 3;
+
+    /// <summary>
+    /// Aria label for the reveal password button.
+    /// </summary>
+    [Parameter] public string? RevealPasswordAriaLabel { get; set; }
+
+    /// <summary>
+    /// Suffix displayed after the text field contents. This is not included in the value. 
+    /// Ensure a descriptive label is present to assist screen readers, as the value does not include the suffix.
+    /// </summary>
+    [Parameter] public string? Suffix { get; set; }
+
+    /// <summary>
+    /// Shows the custom suffix for text field.
+    /// </summary>
+    [Parameter] public RenderFragment? SuffixTemplate { get; set; }
+
+    /// <summary>
+    /// Input type.
+    /// </summary>
+    [Parameter]
+    public BitTextFieldType Type
     {
-        get => focusClass;
+        get => type;
         set
         {
-            focusClass = value;
+            type = value;
+            SetElementType();
             ClassBuilder.Reset();
         }
     }
 
-    public string TextFieldId { get; set; } = string.Empty;
-    public string LabelId { get; set; } = string.Empty;
-    public string DescriptionId { get; set; } = string.Empty;
-
     protected override string RootElementClass => "bit-txt";
-
-    protected override void RegisterComponentClasses()
-    {
-        ClassBuilder.Register(() => IsMultiline && Type == BitTextFieldType.Text
-                                    ? $"{RootElementClass}-multiline-{(IsResizable is false ? "fix-" : string.Empty)}{VisualClassRegistrar()}" : string.Empty);
-
-        ClassBuilder.Register(() => IsEnabled && IsReadonly
-                                    ? $"{RootElementClass}-readonly-{VisualClassRegistrar()}" : string.Empty);
-
-        ClassBuilder.Register(() => IsEnabled && IsRequired
-                                    ? $"{RootElementClass}-required-{VisualClassRegistrar()}" : string.Empty);
-
-        ClassBuilder.Register(() => IsUnderlined
-                                   ? $"{RootElementClass}-underlined-{(IsEnabled is false ? "disabled-" : string.Empty)}{VisualClassRegistrar()}" : string.Empty);
-
-        ClassBuilder.Register(() => HasBorder is false
-                                   ? $"{RootElementClass}-no-border-{VisualClassRegistrar()}" : string.Empty);
-
-        ClassBuilder.Register(() => FocusClass.HasValue()
-                                    ? $"{RootElementClass}-{(IsUnderlined ? "underlined-" : "")}{FocusClass}-{VisualClassRegistrar()}" : string.Empty);
-
-        ClassBuilder.Register(() => ValueInvalid is true
-                                   ? $"{RootElementClass}-invalid-{VisualClassRegistrar()}" : string.Empty);
-
-        ClassBuilder.Register(() => IsRequired && Label is null
-                                   ? $"{RootElementClass}-required-no-label-{VisualClassRegistrar()}" : string.Empty);
-    }
 
     protected override Task OnInitializedAsync()
     {
@@ -291,20 +250,54 @@ public partial class BitTextField
             CurrentValueAsString = DefaultValue;
         }
 
-        TextFieldId = $"TextField{UniqueId}";
-        LabelId = $"TextFieldLabel{UniqueId}";
-        DescriptionId = $"TextFieldDescription{UniqueId}";
+        _textFieldId = $"TextField_{UniqueId}";
+        _labelId = $"TextFieldLabel_{UniqueId}";
+        _descriptionId = $"TextFieldDescription_{UniqueId}";
 
         return base.OnInitializedAsync();
     }
 
+    protected override void RegisterComponentClasses()
+    {
+        ClassBuilder.Register(() => IsMultiline && Type == BitTextFieldType.Text
+                                    ? $"{RootElementClass}-multiline-{(IsResizable is false ? "fix-" : string.Empty)}{VisualClassRegistrar()}" 
+                                    : string.Empty);
+
+        ClassBuilder.Register(() => IsEnabled && IsReadonly
+                                    ? $"{RootElementClass}-readonly-{VisualClassRegistrar()}" 
+                                    : string.Empty);
+
+        ClassBuilder.Register(() => IsEnabled && IsRequired
+                                    ? $"{RootElementClass}-required-{VisualClassRegistrar()}" 
+                                    : string.Empty);
+
+        ClassBuilder.Register(() => IsUnderlined
+                                   ? $"{RootElementClass}-underlined-{(IsEnabled is false ? "disabled-" : string.Empty)}{VisualClassRegistrar()}" 
+                                   : string.Empty);
+
+        ClassBuilder.Register(() => HasBorder is false
+                                   ? $"{RootElementClass}-no-border-{VisualClassRegistrar()}" : string.Empty);
+
+        ClassBuilder.Register(() => _focusClass.HasValue()
+                                    ? $"{RootElementClass}-{(IsUnderlined ? "underlined-" : "")}{_focusClass}-{VisualClassRegistrar()}" 
+                                    : string.Empty);
+
+        ClassBuilder.Register(() => ValueInvalid is true
+                                   ? $"{RootElementClass}-invalid-{VisualClassRegistrar()}" 
+                                   : string.Empty);
+
+        ClassBuilder.Register(() => IsRequired && Label is null
+                                   ? $"{RootElementClass}-required-no-label-{VisualClassRegistrar()}" 
+                                   : string.Empty);
+    }
+
     private void SetElementType()
     {
-        ElementType = type == BitTextFieldType.Password && CanRevealPassword && _isPasswordRevealed
-                      ? BitTextFieldType.Text
-                      : type;
+        _elementType = type is BitTextFieldType.Password && CanRevealPassword && _isPasswordRevealed
+                         ? BitTextFieldType.Text
+                         : type;
 
-        InputType = ElementType switch
+        _inputType = _elementType switch
         {
             BitTextFieldType.Text => "text",
             BitTextFieldType.Password => "password",
@@ -316,34 +309,37 @@ public partial class BitTextField
         };
     }
 
-    private async Task HandleFocusIn(FocusEventArgs e)
+    private async Task HandleOnFocusIn(FocusEventArgs e)
     {
         if (IsEnabled)
         {
-            FocusClass = "focused";
+            _focusClass = "focused";
+            ClassBuilder.Reset();
             await OnFocusIn.InvokeAsync(e);
         }
     }
 
-    private async Task HandleFocusOut(FocusEventArgs e)
+    private async Task HandleOnFocusOut(FocusEventArgs e)
     {
         if (IsEnabled)
         {
-            FocusClass = "";
+            _focusClass = "";
+            ClassBuilder.Reset();
             await OnFocusOut.InvokeAsync(e);
         }
     }
 
-    private async Task HandleFocus(FocusEventArgs e)
+    private async Task HandleOnFocus(FocusEventArgs e)
     {
         if (IsEnabled)
         {
-            FocusClass = "focused";
+            _focusClass = "focused";
+            ClassBuilder.Reset();
             await OnFocus.InvokeAsync(e);
         }
     }
 
-    private async Task HandleChange(ChangeEventArgs e)
+    private async Task HandleOnChange(ChangeEventArgs e)
     {
         if (IsEnabled is false) return;
         if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
@@ -352,7 +348,7 @@ public partial class BitTextField
         await OnChange.InvokeAsync(Value);
     }
 
-    private async Task HandleKeyDown(KeyboardEventArgs e)
+    private async Task HandleOnKeyDown(KeyboardEventArgs e)
     {
         if (IsEnabled)
         {
@@ -360,7 +356,7 @@ public partial class BitTextField
         }
     }
 
-    private async Task HandleKeyUp(KeyboardEventArgs e)
+    private async Task HandleOnKeyUp(KeyboardEventArgs e)
     {
         if (IsEnabled)
         {
@@ -368,7 +364,7 @@ public partial class BitTextField
         }
     }
 
-    private async Task HandleClick(MouseEventArgs e)
+    private async Task HandleOnClick(MouseEventArgs e)
     {
         if (IsEnabled)
         {
@@ -385,7 +381,7 @@ public partial class BitTextField
     /// <inheritdoc />
     protected override bool TryParseValueFromString(string? value, out string? result, [NotNullWhen(false)] out string? validationErrorMessage)
     {
-        result = Trim ? value?.Trim() : value;
+        result = IsTrimmed ? value?.Trim() : value;
         validationErrorMessage = null;
         return true;
     }
