@@ -1,54 +1,50 @@
 ﻿@import "../../Styles/Fluent/colors.fluent.scss", "../../Styles/functions.scss";
 
 @mixin getMultilineStyle($isResizable: true) {
-    .bit-txt {
-        .bit-txt-field-grp {
-            align-items: stretch;
-            height: auto;
-            min-height: rem(60px);
-        }
+    .bit-txt-field-grp {
+        align-items: stretch;
+        height: auto;
+        min-height: rem(60px);
+    }
 
-        textarea.txt-field {
-            flex-grow: 1;
-            min-height: inherit;
-            padding: rem(6px) rem(8px);
-            line-height: rem(17);
-            overflow: auto;
+    textarea.txt-field {
+        flex-grow: 1;
+        min-height: inherit;
+        padding: rem(6px) rem(8px);
+        line-height: rem(17);
+        overflow: auto;
 
-            @if $isResizable == false {
-                resize: none;
-            }
+        @if $isResizable == false {
+            resize: none;
         }
     }
 }
 
 @mixin getUnderlineStyle($isEnabel: true) {
-    .bit-txt {
-        .bit-txt-wrapper {
-            display: flex;
-            width: 100%;
-            border-bottom: rem(1px) solid;
+    .bit-txt-wrapper {
+        display: flex;
+        width: 100%;
+        border-bottom: rem(1px) solid;
 
-            @if($isEnabel == true) {
-                border-bottom-color: $Grey130;
-            }
-            @else {
-                border-bottom-color: $Grey20;
-            }
+        @if($isEnabel == true) {
+            border-bottom-color: $Grey130;
         }
+        @else {
+            border-bottom-color: $Grey20;
+        }
+    }
 
-        .bit-txt-label {
-            height: rem(32px);
-            padding: rem(5px) 0 rem(5px) rem(12px);
-            margin: 0 rem(8px) 0 0;
-            line-height: rem(22px);
-        }
+    .bit-txt-label {
+        height: rem(32px);
+        padding: rem(5px) 0 rem(5px) rem(12px);
+        margin: 0 rem(8px) 0 0;
+        line-height: rem(22px);
+    }
 
-        .bit-txt-field-grp {
-            border: none;
-            flex: 1 1 0px;
-            text-align: left;
-        }
+    .bit-txt-field-grp {
+        border: none;
+        flex: 1 1 0px;
+        text-align: left;
     }
 }
 
