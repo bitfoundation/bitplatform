@@ -12,6 +12,10 @@
     }
 
     button {
+        background-color: transparent;
+    }
+
+    .overflow-btn {
         font-size: rem(20px);
         font-weight: 400;
         color: $Grey160;
@@ -27,9 +31,10 @@
         font-size: rem(20px);
         padding: 0 rem(8px);
         color: $Grey90;
+        cursor: pointer;
     }
 
-    .bit-brc-current-itm{
+    .bit-brc-current-itm {
         font-size: rem(20px);
         font-weight: 600;
         padding: 0 rem(8px);

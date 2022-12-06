@@ -63,6 +63,11 @@ public partial class BitBreadcrumb
     /// </summary>
     [Parameter] public BitIconName OnRenderOverflowIcon { get; set; } = BitIconName.More;
 
+    /// <summary>
+    /// Callback for when the breadcrumb item clicked.
+    /// </summary>
+    [Parameter] public EventCallback<BitBreadcrumbItem> OnItemClick { get; set; }
+
     public string BreadcrumbItemsWrapperId { get; set; } = string.Empty;
     public string OverflowDropDownId { get; set; } = string.Empty;
     public string OverflowDropDownMenuCalloutId { get; set; } = string.Empty;
@@ -99,6 +104,13 @@ public partial class BitBreadcrumb
         var obj = DotNetObjectReference.Create(this);
         await JSRuntime.InvokeVoidAsync("BitOverflowDropDownMenu.toggleOverflowDropDownMenuCallout", obj, BreadcrumbItemsWrapperId, OverflowDropDownId, OverflowDropDownMenuCalloutId, OverflowDropDownMenuOverlayId, isOpen);
         isOpen = !isOpen;
+    }
+
+    private async Task HandleOnItemClick(BitBreadcrumbItem item)
+    {
+        if (IsEnabled is false) return;
+
+        await OnItemClick.InvokeAsync(item);
     }
 
     private IList<BitBreadcrumbItem> GetBreadcrumbItemsToShow()

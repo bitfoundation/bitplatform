@@ -13,77 +13,77 @@ public partial class BitBreadcrumbDemo
             new()
             {
                 Text = "Folder 1",
-                href = "/components/breadcrumb"
+                Href = "/components/breadcrumb"
             },
             new()
             {
                 Text = "Folder 2",
-                href = "/components/breadcrumb"
+                Href = "/components/breadcrumb"
             },
             new()
             {
                 Text = "Folder 3",
-                href = "/components/breadcrumb"
+                Href = "/components/breadcrumb"
             },
             new()
             {
                 Text = "Folder 4",
-                href = "/components/breadcrumb"
+                Href = "/components/breadcrumb"
             }
         };
 
-        BreadcrumbItemsWithStyle = new List<BitBreadcrumbItem>()
+        BreadcrumbItemsWithStyle = new List<BitBreadcrumbItem>
         {
             new()
             {
                 Text = "Folder 1",
-                href = "/components/breadcrumb",
+                Href = "/components/breadcrumb",
                 Style = "background-color: lightblue; padding: 2px 5px; border-radius: 10px;"
             },
             new()
             {
                 Text = "Folder 2",
-                href = "/components/breadcrumb",
+                Href = "/components/breadcrumb",
                 Style = "background-color: lightblue; padding: 2px 5px; border-radius: 10px;"
             },
             new()
             {
                 Text = "Folder 3",
-                href = "/components/breadcrumb",
+                Href = "/components/breadcrumb",
                 Style = "background-color: lightblue; padding: 2px 5px; border-radius: 10px;"
             },
             new()
             {
                 Text = "Folder 4",
-                href = "/components/breadcrumb",
+                Href = "/components/breadcrumb",
                 Style = "background-color: lightblue; padding: 2px 5px; border-radius: 10px;"
             }
         };
 
-        BreadcrumbItemsWithClass = new List<BitBreadcrumbItem>()
+        BreadcrumbItemsWithClass = new List<BitBreadcrumbItem>
         {
             new()
             {
                 Text = "Folder 1",
-                href = "/components/breadcrumb",
+                Href = "/components/breadcrumb",
                 Class = "custom-item"
             },
             new()
             {
                 Text = "Folder 2",
-                href = "/components/breadcrumb",
+                Href = "/components/breadcrumb",
                 Class = "custom-item"
             },
             new()
             {
                 Text = "Folder 3",
-                href = "/components/breadcrumb",
-                 Class = "custom-item"
+                Href = "/components/breadcrumb",
+                Class = "custom-item"
             },
             new()
             {
                 Text = "Folder 4",
-                href = "/components/breadcrumb",
+                Href = "/components/breadcrumb",
                 Class = "custom-item"
             }
         };
@@ -92,31 +92,19 @@ public partial class BitBreadcrumbDemo
         {
             new()
             {
-                Text = "Folder 1",
-                href = "/components/breadcrumb",
-                OnClick = () => 
-                {
-                    ControlledCurrentItem = BreadcrumbItemsWithControll[0];
-                    StateHasChanged();
-                }
+                Text = "Folder 1"
             },
             new()
             {
-                Text = "Folder 2",
-                href = "/components/breadcrumb",
-                OnClick = () => ControlledCurrentItem = BreadcrumbItemsWithControll[1]
+                Text = "Folder 2"
             },
             new()
             {
-                Text = "Folder 3",
-                href = "/components/breadcrumb",
-                OnClick = () => ControlledCurrentItem = BreadcrumbItemsWithControll[2]
+                Text = "Folder 3"
             },
             new()
             {
-                Text = "Folder 4",
-                href = "/components/breadcrumb",
-                OnClick = () => ControlledCurrentItem = BreadcrumbItemsWithControll[3]
+                Text = "Folder 4"
             }
         };
     }
@@ -125,7 +113,7 @@ public partial class BitBreadcrumbDemo
     private List<BitBreadcrumbItem> BreadcrumbItemsWithStyle { get; set; }
     private List<BitBreadcrumbItem> BreadcrumbItemsWithClass { get; set; }
     private List<BitBreadcrumbItem> BreadcrumbItemsWithControll { get; set; }
-    private BitBreadcrumbItem ControlledCurrentItem { get; set; }
+    private BitBreadcrumbItem ControlledCurrentItem;
 
     private readonly List<ComponentParameter> componentParameters = new()
     {
@@ -227,7 +215,6 @@ public partial class BitBreadcrumbDemo
             Description = "by default, the current item is the last item. But it can also be specified manually."
         },
     };
-
     private readonly List<EnumParameter> enumParameters = new()
     {
         new EnumParameter()
@@ -260,23 +247,61 @@ public partial class BitBreadcrumbDemo
     };
 
     private readonly string example1HTMLCode = @"
+<div>
+    <div class=""example-desc"">With items rendered as links</div>
+    <BitBreadcrumb Items=""BreadcrumbItems""></BitBreadcrumb>
+</div>
 
+<div>
+    <div class=""example-desc"">With custom rendered divider and overflow icon</div>
+    <BitBreadcrumb Items=""BreadcrumbItems""
+                    DividerIcon=""BitIconName.Separator""
+                    OverflowIndex=""1""
+                    MaxDisplayedItems=""2""
+                    OnRenderOverflowIcon=""BitIconName.ChevronDown""></BitBreadcrumb>
+</div>
+
+<div>
+    <BitBreadcrumb Items=""BreadcrumbItems""></BitBreadcrumb>
+</div>
 ";
-
-    private readonly string example1CSharpCode = @"
-";
-
     private readonly string example2HTMLCode = @"
+<div>
+    <div class=""example-desc"">With no maxDisplayedItems</div>
+    <BitBreadcrumb Items=""BreadcrumbItems""
+                    AriaLabel=""Breadcrumb with no maxDisplayedItems""></BitBreadcrumb>
+</div>
 
+<div>
+    <div class=""example-desc"">With maxDisplayedItems set to 3</div>
+    <BitBreadcrumb Items=""BreadcrumbItems""
+                    MaxDisplayedItems=""3""
+                    AriaLabel=""Breadcrumb with 3 maxDisplayedItems""></BitBreadcrumb>
+</div>
+
+<div>
+    <div class=""example-desc"">With maxDisplayedItems set to 2 and overflowIndex set to 1 (second element)""</div>
+    <BitBreadcrumb Items=""BreadcrumbItems""
+                    MaxDisplayedItems=""2""
+                    OverflowIndex=""1""></BitBreadcrumb>
+</div>
 ";
-
     private readonly string example3HTMLCode = @"
+<div>
+    <BitBreadcrumb Items=""BreadcrumbItems""
+                    MaxDisplayedItems=""2""
+                    OverflowIndex=""1""
+                    IsEnabled=""false""></BitBreadcrumb>
+</div>
 ";
-
     private readonly string example4HTMLCode = @"
-
+<div>
+    <BitBreadcrumb Items=""BreadcrumbItems""
+                    MaxDisplayedItems=""3""
+                    OverflowIndex=""2""
+                    OverflowAriaLabel=""More Items""></BitBreadcrumb>
+</div>
 ";
-
     private readonly string example5HTMLCode = @"
 <style>
     .custom-item {
@@ -290,18 +315,164 @@ public partial class BitBreadcrumbDemo
     }
 </style>
 
+<div>
+    <BitLabel>Current Item Style</BitLabel>
+    <BitBreadcrumb Items=""BreadcrumbItems""
+                    MaxDisplayedItems=""3""
+                    OverflowIndex=""2""
+                    CurrentItemStyle=""color: blue;""
+                    CurrentItem=""BreadcrumbItems[3]"" />
+</div>
 
+<div>
+    <BitLabel>Current Item Style in Overflow</BitLabel>
+    <BitBreadcrumb Items=""BreadcrumbItems""
+                    MaxDisplayedItems=""3""
+                    OverflowIndex=""2""
+                    CurrentItemStyle=""color: blue;""
+                    CurrentItem=""BreadcrumbItems[2]"" />
+</div>
+
+<div>
+    <BitLabel>Current Item Class</BitLabel>
+    <BitBreadcrumb Items=""BreadcrumbItems""
+                    MaxDisplayedItems=""3""
+                    OverflowIndex=""2""
+                    CurrentItemClass=""custom-current-item""
+                    CurrentItem=""BreadcrumbItems[3]"" />
+</div>
+
+<div>
+    <BitLabel>Current Item Class in Overflow</BitLabel>
+    <BitBreadcrumb Items=""BreadcrumbItems""
+                    MaxDisplayedItems=""3""
+                    OverflowIndex=""2""
+                    CurrentItemClass=""custom-current-item""
+                    CurrentItem=""BreadcrumbItems[2]"" />
+</div>
+
+<div>
+    <BitLabel>Other Item Class</BitLabel>
+    <BitBreadcrumb Items=""BreadcrumbItemsWithClass"" />
+</div>
+
+<div>
+    <BitLabel>Other Item Style</BitLabel>
+    <BitBreadcrumb Items=""BreadcrumbItemsWithStyle"" />
+</div>
 ";
-
-    private readonly string example5CSharpCode = @"
-
-";
-
     private readonly string example6HTMLCode = @"
+<BitBreadcrumb Items=""@BreadcrumbItemsWithControll""
+                MaxDisplayedItems=""3""
+                OverflowIndex=""2""
+                CurrentItem=""@ControlledCurrentItem""
+                OnItemClick=""(item) => ControlledCurrentItem = item""
+                CurrentItemStyle=""color: blue;""/>
+";
 
+    private readonly string example1CSharpCode = @"
+private List<BitBreadcrumbItem> BreadcrumbItems = new List<BitBreadcrumbItem>
+{
+    new()
+    {
+        Text = ""Folder 1"",
+        Href = ""/components/breadcrumb""
+    },
+    new()
+    {
+        Text = ""Folder 2"",
+        Href = ""/components/breadcrumb""
+    },
+    new()
+    {
+        Text = ""Folder 3"",
+        Href = ""/components/breadcrumb""
+    },
+    new()
+    {
+        Text = ""Folder 4"",
+        Href = ""/components/breadcrumb""
+    }
+};
+";
+    private readonly string example5CSharpCode = @"
+private List<BitBreadcrumbItem> BreadcrumbItemsWithStyle = new List<BitBreadcrumbItem>
+{
+    new()
+    {
+        Text = ""Folder 1"",
+        Href = ""/components/breadcrumb"",
+        Style = ""background-color: lightblue; padding: 2px 5px; border-radius: 10px;""
+    },
+    new()
+    {
+        Text = ""Folder 2"",
+        Href = ""/components/breadcrumb"",
+        Style = ""background-color: lightblue; padding: 2px 5px; border-radius: 10px;""
+    },
+    new()
+    {
+        Text = ""Folder 3"",
+        Href = ""/components/breadcrumb"",
+        Style = ""background-color: lightblue; padding: 2px 5px; border-radius: 10px;""
+    },
+    new()
+    {
+        Text = ""Folder 4"",
+        Href = ""/components/breadcrumb"",
+        Style = ""background-color: lightblue; padding: 2px 5px; border-radius: 10px;""
+    }
+};
+
+private List<BitBreadcrumbItem> BreadcrumbItemsWithClass = new List<BitBreadcrumbItem>
+{
+    new()
+    {
+        Text = ""Folder 1"",
+        Href = ""/components/breadcrumb"",
+        Class = ""custom-item""
+    },
+    new()
+    {
+        Text = ""Folder 2"",
+        Href = ""/components/breadcrumb"",
+        Class = ""custom-item""
+    },
+    new()
+    {
+        Text = ""Folder 3"",
+        Href = ""/components/breadcrumb"",
+        Class = ""custom-item""
+    },
+    new()
+    {
+        Text = ""Folder 4"",
+        Href = ""/components/breadcrumb"",
+        Class = ""custom-item""
+    }
+};
 ";
     private readonly string example6CSharpCode = @"
+ private BitBreadcrumbItem ControlledCurrentItem;
 
+private List<BitBreadcrumbItem> BreadcrumbItemsWithControll = new List<BitBreadcrumbItem>
+{
+    new()
+    {
+        Text = ""Folder 1""
+    },
+    new()
+    {
+        Text = ""Folder 2""
+    },
+    new()
+    {
+        Text = ""Folder 3""
+    },
+    new()
+    {
+        Text = ""Folder 4""
+    }
+};
 ";
-
 }

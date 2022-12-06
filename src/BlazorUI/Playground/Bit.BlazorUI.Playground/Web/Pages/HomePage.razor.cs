@@ -22,22 +22,22 @@ public partial class HomePage
              new()
              {
                  Text = "Folder 1",
-                 href = "/components/breadcrumb",
+                 Href = "/components/breadcrumb",
              },
              new()
              {
                  Text = "Folder 2",
-                 href = "/components/breadcrumb",
+                 Href = "/components/breadcrumb",
              },
              new()
              {
                  Text = "Folder 3",
-                 href = "/components/breadcrumb",
+                 Href = "/components/breadcrumb",
              },
              new()
              {
                  Text = "Folder 4",
-                 href = "/components/breadcrumb",
+                 Href = "/components/breadcrumb",
              }
         };
     }

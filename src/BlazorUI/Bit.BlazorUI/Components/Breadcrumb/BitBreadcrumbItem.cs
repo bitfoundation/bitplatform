@@ -13,12 +13,7 @@ public class BitBreadcrumbItem
     /// URL to navigate to when this breadcrumb item is clicked.
     /// If provided, the breadcrumb will be rendered as a link.
     /// </summary>
-    public string? href { get; set; }
-
-    /// <summary>
-    /// Callback for when the breadcrumb item clicked
-    /// </summary>
-    public Action OnClick { get; set; } = default!;
+    public string? Href { get; set; }
 
     /// <summary>
     /// class HTML attribute for breadcrumb item.
