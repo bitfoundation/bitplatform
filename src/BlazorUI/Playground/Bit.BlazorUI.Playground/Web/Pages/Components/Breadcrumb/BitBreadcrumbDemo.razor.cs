@@ -210,9 +210,15 @@ public partial class BitBreadcrumbDemo
         },
         new()
         {
-            Name = "CurrentItemKey",
-            Type = "string?",
+            Name = "CurrentItem",
+            Type = "BitBreadcrumbItem?",
             Description = "by default, the current item is the last item. But it can also be specified manually."
+        },
+        new()
+        {
+            Name = "OnItemClick",
+            Type = "EventCallback<BitBreadcrumbItem>",
+            Description = "Callback for when the breadcrumb item clicked."
         },
     };
     private readonly List<EnumParameter> enumParameters = new()
