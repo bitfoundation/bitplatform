@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -13,6 +14,21 @@ public partial class BitBreadcrumb
     protected override string RootElementClass => "bit-brc";
 
     [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
+
+    /// <summary>
+    /// The class HTML attribute for Current Item.
+    /// </summary>
+    [Parameter] public string? CurrentItemClass { get; set; }
+
+    /// <summary>
+    /// The style HTML attribute for Current Item.
+    /// </summary>
+    [Parameter] public string? CurrentItemStyle { get; set; }
+
+    /// <summary>
+    /// by default, the current item is the last item. But it can also be specified manually.
+    /// </summary>
+    [Parameter] public BitBreadcrumbItem? CurrentItem { get; set; }
 
     /// <summary>
     /// Collection of breadcrumbs to render
@@ -46,6 +62,11 @@ public partial class BitBreadcrumb
     /// Render a custom overflow icon in place of the default icon
     /// </summary>
     [Parameter] public BitIconName OnRenderOverflowIcon { get; set; } = BitIconName.More;
+
+    /// <summary>
+    /// Callback for when the breadcrumb item clicked.
+    /// </summary>
+    [Parameter] public EventCallback<BitBreadcrumbItem> OnItemClick { get; set; }
 
     public string BreadcrumbItemsWrapperId { get; set; } = string.Empty;
     public string OverflowDropDownId { get; set; } = string.Empty;
@@ -85,6 +106,13 @@ public partial class BitBreadcrumb
         isOpen = !isOpen;
     }
 
+    private async Task HandleOnItemClick(BitBreadcrumbItem item)
+    {
+        if (IsEnabled is false) return;
+
+        await OnItemClick.InvokeAsync(item);
+    }
+
     private IList<BitBreadcrumbItem> GetBreadcrumbItemsToShow()
     {
         if (MaxDisplayedItems == 0 || MaxDisplayedItems >= Items.Count)
@@ -93,30 +121,68 @@ public partial class BitBreadcrumb
         }
 
         _itemsToShowInBreadcrumb.Clear();
+        _overflowItems.Clear();
 
         if (OverflowIndex >= MaxDisplayedItems)
             OverflowIndex = 0;
 
         var overflowItemsCount = Items.Count - MaxDisplayedItems;
 
-        foreach ((BitBreadcrumbItem item, int index) item in Items.Select((item, index) => (item, index)))
+        foreach ((BitBreadcrumbItem item, int index) in Items.Select((item, index) => (item, index)))
         {
-            if (OverflowIndex <= item.index && item.index < overflowItemsCount + OverflowIndex)
+            if (OverflowIndex <= index && index < overflowItemsCount + OverflowIndex)
             {
-                if (item.index == OverflowIndex)
-                    _itemsToShowInBreadcrumb.Add(item.item);
+                if (index == OverflowIndex)
+                {
+                    _itemsToShowInBreadcrumb.Add(item);
+                }
 
-                _overflowItems.Add(item.item);
+                _overflowItems.Add(item);
             }
             else
             {
-                _itemsToShowInBreadcrumb.Add(item.item);
+                _itemsToShowInBreadcrumb.Add(item);
             }
         }
 
         return _itemsToShowInBreadcrumb;
     }
 
+    private string GetItemClass(BitBreadcrumbItem item)
+    {
+        StringBuilder itemClasses = new();
+
+        itemClasses.Append("bit-brc-itm");
+
+        if (IsCurrentItem(item))
+        {
+            itemClasses.Append(" bit-brc-crt-itm");
+        }
+
+        if (IsCurrentItem(item) && CurrentItemClass.HasValue())
+        {
+            itemClasses.Append($" {CurrentItemClass}");
+        }
+
+        return itemClasses.ToString();
+    }
+
+    private string GetItemStyle(BitBreadcrumbItem item)
+    {
+        if (IsCurrentItem(item) && CurrentItemStyle.HasValue())
+        {
+            return CurrentItemStyle!;
+        }
+
+        return string.Empty;
+    }
+
+    private bool IsCurrentItem(BitBreadcrumbItem item)
+    {
+        var currentItem = CurrentItem ?? Items[^1];
+
+        return item == currentItem;
+    }
 
     private bool IsLastItem(int index)
     {

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -106,17 +107,9 @@ public class BitBreadcrumbTests : BunitTestContext
 
         var breadcrumbElements = component.FindAll(".bit-brc ul li a");
 
-        var activeItemIndex = breadcrumbItems.FindLastIndex(item => item.IsCurrentItem);
+        var lastIndex = breadcrumbItems.Count - 1;
 
-        Assert.IsTrue(breadcrumbElements[activeItemIndex].GetAttribute("aria-current").Contains("page"));
-
-        for (int index = 0; index < breadcrumbElements.Count; index++)
-        {
-            if (index != activeItemIndex)
-            {
-                Assert.IsTrue(breadcrumbElements[index].GetAttribute("aria-current").Contains("undefined"));
-            }
-        }
+        Assert.IsTrue(breadcrumbElements[lastIndex].GetAttribute("aria-current").Contains("page"));
     }
 
     [DataTestMethod,
@@ -206,27 +199,22 @@ public class BitBreadcrumbTests : BunitTestContext
             new()
             {
                 Text = "Folder 1",
-                Key = "f1",
-                href = "/components/breadcrumb",
+                Href = "/components/breadcrumb",
             },
             new()
             {
                 Text = "Folder 2 ",
-                Key = "f2",
-                href = "/components/breadcrumb",
+                Href = "/components/breadcrumb",
             },
             new()
             {
                 Text = "Folder 3",
-                Key = "f3",
-                href = "/components/breadcrumb",
+                Href = "/components/breadcrumb",
             },
             new()
             {
                 Text = "Folder 4",
-                Key = "f3",
-                href = "/components/breadcrumb",
-                IsCurrentItem = true,
+                Href = "/components/breadcrumb",
             }
         };
     }

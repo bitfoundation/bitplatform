@@ -2,59 +2,58 @@
 
 <ComponentDemo ComponentName="Breadcrumb" ComponentDescription="Breadcrumbs should be used as a navigational aid in your app or site. They indicate the current page’s location within a hierarchy and help the user understand where they are in relation to the rest of that hierarchy. They also afford one-click access to higher levels of that hierarchy."
                ComponentParameters="componentParameters" EnumParameters="enumParameters">
+
     <ComponentExampleBox Title="BitBreadcrumb" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
-            <div class="example-desc">With items rendered as links</div>
             <div>
-                <BitBreadcrumb Items="GetBreadcrumbItems()"></BitBreadcrumb>
+                <div class="example-desc">With items rendered as links</div>
+                <BitBreadcrumb Items="BreadcrumbItems"></BitBreadcrumb>
             </div>
-            <div class="example-desc">With custom rendered divider and overflow icon</div>
+
             <div>
-                <BitBreadcrumb Items="GetBreadcrumbItems()"
+                <div class="example-desc">With custom rendered divider and overflow icon</div>
+                <BitBreadcrumb Items="BreadcrumbItems"
                                DividerIcon="BitIconName.Separator"
                                OverflowIndex="1"
                                MaxDisplayedItems="2"
                                OnRenderOverflowIcon="BitIconName.ChevronDown"></BitBreadcrumb>
             </div>
-            <div class="example-desc">With item OnClick event: @OnClickValue</div>
+
             <div>
-                <BitBreadcrumb Items="GetBreadcrumbItems()"></BitBreadcrumb>
+                <BitBreadcrumb Items="BreadcrumbItems"></BitBreadcrumb>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="Breadcrumb collapsing options" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example2">
         <ExamplePreview>
-            <div class="example-desc">With no maxDisplayedItems</div>
             <div>
-                <BitBreadcrumb Items="GetBreadcrumbItems()"
+                <div class="example-desc">With no maxDisplayedItems</div>
+                <BitBreadcrumb Items="BreadcrumbItems"
                                AriaLabel="Breadcrumb with no maxDisplayedItems"></BitBreadcrumb>
             </div>
 
-            <div class="example-desc">With maxDisplayedItems set to 3</div>
             <div>
-                <BitBreadcrumb Items="GetBreadcrumbItems()"
+                <div class="example-desc">With maxDisplayedItems set to 3</div>
+                <BitBreadcrumb Items="BreadcrumbItems"
                                MaxDisplayedItems="3"
                                AriaLabel="Breadcrumb with 3 maxDisplayedItems"></BitBreadcrumb>
             </div>
 
-            <div class="example-desc">With maxDisplayedItems set to 2 and overflowIndex set to 1 (second element)"</div>
             <div>
-                <BitBreadcrumb Items="GetBreadcrumbItems()"
+                <div class="example-desc">With maxDisplayedItems set to 2 and overflowIndex set to 1 (second element)"</div>
+                <BitBreadcrumb Items="BreadcrumbItems"
                                MaxDisplayedItems="2"
                                OverflowIndex="1"></BitBreadcrumb>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Disabled Breadcrumb"
-                         HTMLSourceCode="@example3HTMLCode"
-                         CSharpSourceCode="@example1CSharpCode"
-                         ExampleId="example3">
+    <ComponentExampleBox Title="Disabled Breadcrumb" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example3">
         <ExamplePreview>
             <div class="example-desc">BitBreadcrumb can be disabled or enabled by setting IsEnabled attribute.</div>
             <div>
-                <BitBreadcrumb Items="GetBreadcrumbItems()"
+                <BitBreadcrumb Items="BreadcrumbItems"
                                MaxDisplayedItems="2"
                                OverflowIndex="1"
                                IsEnabled="false"></BitBreadcrumb>
@@ -62,13 +61,10 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Breadcrumb With OverflowAriaLabel"
-                         HTMLSourceCode="@example4HTMLCode"
-                         CSharpSourceCode="@example1CSharpCode"
-                         ExampleId="example4">
+    <ComponentExampleBox Title="Breadcrumb With OverflowAriaLabel" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example4">
         <ExamplePreview>
             <div>
-                <BitBreadcrumb Items="GetBreadcrumbItems()"
+                <BitBreadcrumb Items="BreadcrumbItems"
                                MaxDisplayedItems="3"
                                OverflowIndex="2"
                                OverflowAriaLabel="More Items"></BitBreadcrumb>
@@ -79,13 +75,61 @@
     <ComponentExampleBox Title="Breadcrumb Item with Class & Style" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
         <ExamplePreview>
             <div>
-                <BitLabel>Class</BitLabel>
-                <BitBreadcrumb Items="GetBreadcrumbItemsWithClass()" />
+                <BitLabel>Current Item Style</BitLabel>
+                <BitBreadcrumb Items="BreadcrumbItems"
+                               MaxDisplayedItems="3"
+                               OverflowIndex="2"
+                               CurrentItemStyle="color: blue;"
+                               CurrentItem="BreadcrumbItems[3]" />
             </div>
+
             <div>
-                <BitLabel>Style</BitLabel>
-                <BitBreadcrumb Items="GetBreadcrumbItemsWithStyle()" />
+                <BitLabel>Current Item Style in Overflow</BitLabel>
+                <BitBreadcrumb Items="BreadcrumbItems"
+                               MaxDisplayedItems="3"
+                               OverflowIndex="2"
+                               CurrentItemStyle="color: blue;"
+                               CurrentItem="BreadcrumbItems[2]" />
             </div>
+
+            <div>
+                <BitLabel>Current Item Class</BitLabel>
+                <BitBreadcrumb Items="BreadcrumbItems"
+                               MaxDisplayedItems="3"
+                               OverflowIndex="2"
+                               CurrentItemClass="custom-current-item"
+                               CurrentItem="BreadcrumbItems[3]" />
+            </div>
+
+            <div>
+                <BitLabel>Current Item Class in Overflow</BitLabel>
+                <BitBreadcrumb Items="BreadcrumbItems"
+                               MaxDisplayedItems="3"
+                               OverflowIndex="2"
+                               CurrentItemClass="custom-current-item"
+                               CurrentItem="BreadcrumbItems[2]" />
+            </div>
+
+            <div>
+                <BitLabel>Other Item Class</BitLabel>
+                <BitBreadcrumb Items="BreadcrumbItemsWithClass" />
+            </div>
+
+            <div>
+                <BitLabel>Other Item Style</BitLabel>
+                <BitBreadcrumb Items="BreadcrumbItemsWithStyle" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Controlled Breadcrumb" HTMLSourceCode="@example6HTMLCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example6">
+        <ExamplePreview>
+            <BitBreadcrumb Items="@BreadcrumbItemsWithControll"
+                           MaxDisplayedItems="3"
+                           OverflowIndex="2"
+                           CurrentItem="@ControlledCurrentItem"
+                           OnItemClick="(item) => ControlledCurrentItem = item"
+                           CurrentItemStyle="color: blue;"/>
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>
