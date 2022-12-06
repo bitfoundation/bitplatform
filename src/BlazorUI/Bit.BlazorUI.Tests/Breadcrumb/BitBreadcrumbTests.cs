@@ -107,7 +107,7 @@ public class BitBreadcrumbTests : BunitTestContext
 
         var breadcrumbElements = component.FindAll(".bit-brc ul li a");
 
-        var lastIndex = breadcrumbItems.IndexOf(breadcrumbItems.Last());
+        var lastIndex = breadcrumbItems.Count - 1;
 
         Assert.IsTrue(breadcrumbElements[lastIndex].GetAttribute("aria-current").Contains("page"));
     }
