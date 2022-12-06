@@ -15,33 +15,6 @@ public partial class HomePage
         base.OnInitialized();
     }
 
-    private List<BitBreadcrumbItem> GetBreadcrumbItems()
-    {
-        return new List<BitBreadcrumbItem>()
-        {
-             new()
-             {
-                 Text = "Folder 1",
-                 Href = "/components/breadcrumb",
-             },
-             new()
-             {
-                 Text = "Folder 2",
-                 Href = "/components/breadcrumb",
-             },
-             new()
-             {
-                 Text = "Folder 3",
-                 Href = "/components/breadcrumb",
-             },
-             new()
-             {
-                 Text = "Folder 4",
-                 Href = "/components/breadcrumb",
-             }
-        };
-    }
-
     private List<BitDropDownItem> GetProductDropdownItems()
     {
         List<BitDropDownItem> items = new();
