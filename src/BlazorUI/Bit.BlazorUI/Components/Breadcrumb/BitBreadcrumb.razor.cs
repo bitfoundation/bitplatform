@@ -121,24 +121,27 @@ public partial class BitBreadcrumb
         }
 
         _itemsToShowInBreadcrumb.Clear();
+        _overflowItems.Clear();
 
         if (OverflowIndex >= MaxDisplayedItems)
             OverflowIndex = 0;
 
         var overflowItemsCount = Items.Count - MaxDisplayedItems;
 
-        foreach ((BitBreadcrumbItem item, int index) item in Items.Select((item, index) => (item, index)))
+        foreach ((BitBreadcrumbItem item, int index) in Items.Select((item, index) => (item, index)))
         {
-            if (OverflowIndex <= item.index && item.index < overflowItemsCount + OverflowIndex)
+            if (OverflowIndex <= index && index < overflowItemsCount + OverflowIndex)
             {
-                if (item.index == OverflowIndex)
-                    _itemsToShowInBreadcrumb.Add(item.item);
+                if (index == OverflowIndex)
+                {
+                    _itemsToShowInBreadcrumb.Add(item);
+                }
 
-                _overflowItems.Add(item.item);
+                _overflowItems.Add(item);
             }
             else
             {
-                _itemsToShowInBreadcrumb.Add(item.item);
+                _itemsToShowInBreadcrumb.Add(item);
             }
         }
 
@@ -147,18 +150,16 @@ public partial class BitBreadcrumb
 
     private string GetItemClass(BitBreadcrumbItem item)
     {
-        var currentItem = CurrentItem ?? Items[^1];
-
         StringBuilder itemClasses = new();
 
         itemClasses.Append("bit-brc-itm");
 
-        if (item == currentItem)
+        if (IsCurrentItem(item))
         {
-            itemClasses.Append(" bit-brc-current-itm");
+            itemClasses.Append(" bit-brc-crt-itm");
         }
 
-        if (item == currentItem && CurrentItemClass.HasValue())
+        if (IsCurrentItem(item) && CurrentItemClass.HasValue())
         {
             itemClasses.Append($" {CurrentItemClass}");
         }
@@ -168,14 +169,19 @@ public partial class BitBreadcrumb
 
     private string GetItemStyle(BitBreadcrumbItem item)
     {
-        var currentItem = CurrentItem ?? Items[^1];
-
-        if (item == currentItem && CurrentItemStyle.HasValue())
+        if (IsCurrentItem(item) && CurrentItemStyle.HasValue())
         {
             return CurrentItemStyle!;
         }
 
         return string.Empty;
+    }
+
+    private bool IsCurrentItem(BitBreadcrumbItem item)
+    {
+        var currentItem = CurrentItem ?? Items[^1];
+
+        return item == currentItem;
     }
 
     private bool IsLastItem(int index)
