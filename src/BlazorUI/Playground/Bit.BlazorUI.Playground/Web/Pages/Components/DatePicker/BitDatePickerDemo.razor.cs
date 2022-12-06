@@ -468,14 +468,14 @@ private async Task OpenCallout()
 private DateTimeOffset? selectedDate = new DateTimeOffset(new DateTime(2020, 1, 17), DateTimeOffset.Now.Offset);";
 
     private readonly string example11HTMLCode = @"
-<BitDatePicker FormatDate=""yyyy/MM/dd hh:mm tt"" 
+<BitDatePicker DateFormat=""yyyy/MM/dd hh:mm tt"" 
                Culture=""CultureInfoHelper.GetFaIrCultureByFarsiNames()""
                GoToToday=""برو به امروز""
                Style=""max-width: 300px"">
 </BitDatePicker>";
 
     private readonly string example12HTMLCode = @"
-<BitDatePicker FormatDate=""yyyy/MM/dd hh:mm tt"" 
+<BitDatePicker DateFormat=""yyyy/MM/dd hh:mm tt"" 
                Culture=""CultureInfoHelper.GetFaIrCultureByFingilishNames()""
                GoToToday=""Boro be emrouz""
                Style=""max-width: 300px"">
