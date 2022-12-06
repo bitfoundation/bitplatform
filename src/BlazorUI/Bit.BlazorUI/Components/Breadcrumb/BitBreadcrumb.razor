@@ -9,13 +9,14 @@
      aria-label="@AriaLabel">
 
     <div class="bit-brc-items-wrapper" id=@BreadcrumbItemsWrapperId>
-        <ul>
-            @foreach ((BitBreadcrumbItem value, int index) item in _itemsToShowInBreadcrumb.Select((item, index) => (item, index)))
-            {
-                string itemKey = item.value.Key!;
 
+        <div>Current item: @CurrentItem?.Text</div>
+
+        <ul>
+            @foreach ((BitBreadcrumbItem item, int index) in _itemsToShowInBreadcrumb.Select((item, index) => (item, index)))
+            {
                 <li>
-                    @if (_overflowItems.Any() && item.index == OverflowIndex)
+                    @if (_overflowItems.Any() && index == OverflowIndex)
                     {
                         <button type="button" aria-label="@OverflowAriaLabel" id=@OverflowDropDownId @onclick="HandleClick">
                             <span>
@@ -25,16 +26,16 @@
                     }
                     else
                     {
-                        <a href="@item.value.href"
-                           onclick="@item.value.OnClick"
-                           aria-current=@(itemKey == CurrentItemKey ? "page" : "undefined")
-                           style="@item.value.Style @GetItemStyle(itemKey)"
-                           class="@item.value.Class @GetItemClass(itemKey)">
-                            @item.value.Text
+                        <a href="@item.href"
+                           aria-current=@(IsLastItem(index) ? "page" : null)
+                           style="@item.Style @GetItemStyle(item)"
+                           class="@item.Class @GetItemClass(item)"
+                           @onclick="() => item.OnClick()">
+                            @item.Text
                         </a>
                     }
 
-                    @if (IsLastItem(item.index) is false)
+                    @if (IsLastItem(index) is false)
                     {
                         <i class=@($"bit-icon bit-icon--{DividerIcon.GetName()}")></i>
                     }
@@ -53,13 +54,12 @@
         <ul>
             @foreach ((BitBreadcrumbItem item, int index) in _overflowItems.Select((item, index) => (item, index)))
             {
-                string itemKey = item.Key!;
-
                 <li>
                     <a href="@item.href"
-                       style="@item.Style @GetItemStyle(itemKey)"
-                       class="@item.Class @GetItemClass(itemKey)"
-                       @onclick="@item.OnClick">
+                       aria-current=@(IsLastItem(index) ? "page" : null)
+                       style="@item.Style @GetItemStyle(item)"
+                       class="@item.Class @GetItemClass(item)"
+                       @onclick="item.OnClick">
                         @item.Text
                     </a>
                 </li>

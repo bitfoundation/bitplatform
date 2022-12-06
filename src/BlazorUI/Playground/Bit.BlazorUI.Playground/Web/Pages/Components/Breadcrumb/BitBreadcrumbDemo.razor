@@ -2,23 +2,23 @@
 
 <ComponentDemo ComponentName="Breadcrumb" ComponentDescription="Breadcrumbs should be used as a navigational aid in your app or site. They indicate the current page’s location within a hierarchy and help the user understand where they are in relation to the rest of that hierarchy. They also afford one-click access to higher levels of that hierarchy."
                ComponentParameters="componentParameters" EnumParameters="enumParameters">
-    <ComponentExampleBox Title="BitBreadcrumb" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
+
+@*    <ComponentExampleBox Title="BitBreadcrumb" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
             <div class="example-desc">With items rendered as links</div>
             <div>
-                <BitBreadcrumb Items="GetBreadcrumbItems()"></BitBreadcrumb>
+                <BitBreadcrumb Items="BreadcrumbItems"></BitBreadcrumb>
             </div>
             <div class="example-desc">With custom rendered divider and overflow icon</div>
             <div>
-                <BitBreadcrumb Items="GetBreadcrumbItems()"
+                <BitBreadcrumb Items="BreadcrumbItems"
                                DividerIcon="BitIconName.Separator"
                                OverflowIndex="1"
                                MaxDisplayedItems="2"
                                OnRenderOverflowIcon="BitIconName.ChevronDown"></BitBreadcrumb>
             </div>
-            <div class="example-desc">With item OnClick event: @OnClickValue</div>
             <div>
-                <BitBreadcrumb Items="GetBreadcrumbItems()"></BitBreadcrumb>
+                <BitBreadcrumb Items="BreadcrumbItems"></BitBreadcrumb>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -27,20 +27,20 @@
         <ExamplePreview>
             <div class="example-desc">With no maxDisplayedItems</div>
             <div>
-                <BitBreadcrumb Items="GetBreadcrumbItems()"
+                <BitBreadcrumb Items="BreadcrumbItems"
                                AriaLabel="Breadcrumb with no maxDisplayedItems"></BitBreadcrumb>
             </div>
 
             <div class="example-desc">With maxDisplayedItems set to 3</div>
             <div>
-                <BitBreadcrumb Items="GetBreadcrumbItems()"
+                <BitBreadcrumb Items="BreadcrumbItems"
                                MaxDisplayedItems="3"
                                AriaLabel="Breadcrumb with 3 maxDisplayedItems"></BitBreadcrumb>
             </div>
 
             <div class="example-desc">With maxDisplayedItems set to 2 and overflowIndex set to 1 (second element)"</div>
             <div>
-                <BitBreadcrumb Items="GetBreadcrumbItems()"
+                <BitBreadcrumb Items="BreadcrumbItems"
                                MaxDisplayedItems="2"
                                OverflowIndex="1"></BitBreadcrumb>
             </div>
@@ -54,7 +54,7 @@
         <ExamplePreview>
             <div class="example-desc">BitBreadcrumb can be disabled or enabled by setting IsEnabled attribute.</div>
             <div>
-                <BitBreadcrumb Items="GetBreadcrumbItems()"
+                <BitBreadcrumb Items="BreadcrumbItems"
                                MaxDisplayedItems="2"
                                OverflowIndex="1"
                                IsEnabled="false"></BitBreadcrumb>
@@ -68,7 +68,7 @@
                          ExampleId="example4">
         <ExamplePreview>
             <div>
-                <BitBreadcrumb Items="GetBreadcrumbItems()"
+                <BitBreadcrumb Items="BreadcrumbItems"
                                MaxDisplayedItems="3"
                                OverflowIndex="2"
                                OverflowAriaLabel="More Items"></BitBreadcrumb>
@@ -80,49 +80,61 @@
         <ExamplePreview>
             <div>
                 <BitLabel>Current Item Style</BitLabel>
-                <BitBreadcrumb Items="GetBreadcrumbItems()"
+                <BitBreadcrumb Items="BreadcrumbItems"
                                MaxDisplayedItems="3"
                                OverflowIndex="2"
                                CurrentItemStyle="color: blue;"
-                               CurrentItemKey="f4" />
+                               CurrentItem="BreadcrumbItems[3]" />
             </div>
 
             <div>
                 <BitLabel>Current Item Style in Overflow</BitLabel>
-                <BitBreadcrumb Items="GetBreadcrumbItems()"
+                <BitBreadcrumb Items="BreadcrumbItems"
                                MaxDisplayedItems="3"
                                OverflowIndex="2"
                                CurrentItemStyle="color: blue;"
-                               CurrentItemKey="f3" />
+                               CurrentItem="BreadcrumbItems[2]" />
             </div>
 
             <div>
                 <BitLabel>Current Item Class</BitLabel>
-                <BitBreadcrumb Items="GetBreadcrumbItems()"
+                <BitBreadcrumb Items="BreadcrumbItems"
                                MaxDisplayedItems="3"
                                OverflowIndex="2"
                                CurrentItemClass="custom-current-item"
-                               CurrentItemKey="f4" />
+                               CurrentItem="BreadcrumbItems[3]" />
             </div>
 
             <div>
                 <BitLabel>Current Item Class in Overflow</BitLabel>
-                <BitBreadcrumb Items="GetBreadcrumbItems()"
+                <BitBreadcrumb Items="BreadcrumbItems"
                                MaxDisplayedItems="3"
                                OverflowIndex="2"
                                CurrentItemClass="custom-current-item"
-                               CurrentItemKey="f3" />
+                               CurrentItem="BreadcrumbItems[2]" />
             </div>
 
             <div>
                 <BitLabel>Other Item Class</BitLabel>
-                <BitBreadcrumb Items="GetBreadcrumbItemsWithClass()" />
+                <BitBreadcrumb Items="BreadcrumbItemsWithClass" />
             </div>
 
             <div>
                 <BitLabel>Other Item Style</BitLabel>
-                <BitBreadcrumb Items="GetBreadcrumbItemsWithStyle()" />
+                <BitBreadcrumb Items="BreadcrumbItemsWithStyle" />
             </div>
+        </ExamplePreview>
+    </ComponentExampleBox>*@
+
+    <ComponentExampleBox Title="Controlled Breadcrumb" HTMLSourceCode="@example6HTMLCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example6">
+        <ExamplePreview>
+
+            <div>Current: @ControlledCurrentItem?.Text</div>
+
+            <BitBreadcrumb Items="BreadcrumbItemsWithControll"
+                           MaxDisplayedItems="3"
+                           OverflowIndex="2"
+                           CurrentItemStyle="color: blue;" />
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>

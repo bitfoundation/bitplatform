@@ -22,30 +22,22 @@ public partial class HomePage
              new()
              {
                  Text = "Folder 1",
-                 Key = "f1",
                  href = "/components/breadcrumb",
-                 OnClick = (() => OnClickValue = "Folder 1 clicked")
              },
              new()
              {
                  Text = "Folder 2",
-                 Key = "f2",
                  href = "/components/breadcrumb",
-                 OnClick = (() => OnClickValue = "Folder 2 clicked")
              },
              new()
              {
                  Text = "Folder 3",
-                 Key = "f3",
                  href = "/components/breadcrumb",
-                 OnClick = (() => OnClickValue = "Folder 3 clicked")
              },
              new()
              {
                  Text = "Folder 4",
-                 Key = "f4",
                  href = "/components/breadcrumb",
-                 OnClick = (() => OnClickValue = "Folder 4 clicked")
              }
         };
     }

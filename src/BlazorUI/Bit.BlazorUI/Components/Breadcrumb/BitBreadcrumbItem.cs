@@ -5,11 +5,6 @@ namespace Bit.BlazorUI;
 public class BitBreadcrumbItem
 {
     /// <summary>
-    /// Arbitrary unique string associated with the breadcrumb item.
-    /// </summary>
-    public string? Key { get; set; }
-
-    /// <summary>
     /// Text to display in the breadcrumb item.
     /// </summary>
     public string? Text { get; set; }
