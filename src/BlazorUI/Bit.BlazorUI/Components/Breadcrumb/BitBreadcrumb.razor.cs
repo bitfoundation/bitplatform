@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -13,6 +14,21 @@ public partial class BitBreadcrumb
     protected override string RootElementClass => "bit-brc";
 
     [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
+
+    /// <summary>
+    /// The class HTML attribute for Current Item.
+    /// </summary>
+    [Parameter] public string? CurrentItemClass { get; set; }
+
+    /// <summary>
+    /// The style HTML attribute for Current Item.
+    /// </summary>
+    [Parameter] public string? CurrentItemStyle { get; set; }
+
+    /// <summary>
+    /// by default, the current item is the last item. But it can also be specified manually.
+    /// </summary>
+    [Parameter] public string? CurrentItemKey { get; set; }
 
     /// <summary>
     /// Collection of breadcrumbs to render
@@ -64,6 +80,11 @@ public partial class BitBreadcrumb
         OverflowDropDownMenuCalloutId = $"overflow-dropdown-callout{UniqueId}";
 
         GetBreadcrumbItemsToShow();
+
+        if (CurrentItemKey.HasNoValue())
+        {
+            CurrentItemKey = _itemsToShowInBreadcrumb.LastOrDefault()?.Key;
+        }
 
         await base.OnParametersSetAsync();
     }
@@ -117,6 +138,36 @@ public partial class BitBreadcrumb
         return _itemsToShowInBreadcrumb;
     }
 
+    private string GetItemClass(string itemKey)
+    {
+        StringBuilder ItemClasses = new();
+
+        ItemClasses.Append("bit-brc-itm");
+
+        if (itemKey == CurrentItemKey)
+        {
+            ItemClasses.Append(" ");
+            ItemClasses.Append("bit-brc-current-itm");
+        }
+
+        if (itemKey == CurrentItemKey && CurrentItemClass.HasValue())
+        {
+            ItemClasses.Append(" ");
+            ItemClasses.Append(CurrentItemClass);
+        }
+
+        return ItemClasses.ToString();
+    }
+
+    private string GetItemStyle(string itemKey)
+    {
+        if (itemKey == CurrentItemKey && CurrentItemStyle.HasValue())
+        {
+            return CurrentItemStyle;
+        }
+
+        return "";
+    }
 
     private bool IsLastItem(int index)
     {

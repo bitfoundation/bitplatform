@@ -2,7 +2,7 @@
 @inherits BitComponentBase
 
 <div @ref="RootElement"
-     @attributes="HtmlAttributes"
+@attributes="HtmlAttributes"
      id="@UniqueId"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
@@ -12,7 +12,9 @@
         <ul>
             @foreach ((BitBreadcrumbItem value, int index) item in _itemsToShowInBreadcrumb.Select((item, index) => (item, index)))
             {
-                <li style="@item.value.Style" class="@item.value.Class">
+                string itemKey = item.value.Key!;
+
+                <li>
                     @if (_overflowItems.Any() && item.index == OverflowIndex)
                     {
                         <button type="button" aria-label="@OverflowAriaLabel" id=@OverflowDropDownId @onclick="HandleClick">
@@ -25,15 +27,16 @@
                     {
                         <a href="@item.value.href"
                            onclick="@item.value.OnClick"
-                           aria-current=@(IsLastItem(item.index) ? "page" : "undefined")
-                           class=@(IsLastItem(item.index) ? "bit-brc-lst-itm" :"bit-brc-itm")>
-                           @item.value.Text
+                           aria-current=@(itemKey == CurrentItemKey ? "page" : "undefined")
+                           style="@item.value.Style @GetItemStyle(itemKey)"
+                           class="@item.value.Class @GetItemClass(itemKey)">
+                            @item.value.Text
                         </a>
                     }
 
                     @if (IsLastItem(item.index) is false)
                     {
-                        <i class=@($"bit-icon bit-icon--{DividerIcon.GetName()} divider-icon")></i>
+                        <i class=@($"bit-icon bit-icon--{DividerIcon.GetName()}")></i>
                     }
 
                 </li>
@@ -50,8 +53,15 @@
         <ul>
             @foreach ((BitBreadcrumbItem item, int index) in _overflowItems.Select((item, index) => (item, index)))
             {
+                string itemKey = item.Key!;
+
                 <li>
-                    <a href="@item.href" @onclick="@item.OnClick">@item.Text</a>
+                    <a href="@item.href"
+                       style="@item.Style @GetItemStyle(itemKey)"
+                       class="@item.Class @GetItemClass(itemKey)"
+                       @onclick="@item.OnClick">
+                        @item.Text
+                    </a>
                 </li>
             }
         </ul>

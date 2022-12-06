@@ -21,12 +21,6 @@ public class BitBreadcrumbItem
     public string? href { get; set; }
 
     /// <summary>
-    /// Whether this is the breadcrumb item the user is currently navigated to.
-    /// If true, aria-current="page" will be applied to this breadcrumb item.
-    /// </summary>
-    public bool IsCurrentItem { get; set; }
-
-    /// <summary>
     /// Callback for when the breadcrumb item clicked
     /// </summary>
     public Action OnClick { get; set; } = default!;

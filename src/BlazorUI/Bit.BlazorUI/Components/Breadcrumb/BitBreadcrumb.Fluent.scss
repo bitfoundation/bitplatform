@@ -8,7 +8,6 @@
         li {
             display: inline-flex;
             align-items: center;
-            color: $Grey90;
         }
     }
 
@@ -27,18 +26,14 @@
     .bit-brc-itm {
         font-size: rem(20px);
         padding: 0 rem(8px);
-        color: inherit;
+        color: $Grey90;
     }
 
-    .bit-brc-lst-itm {
+    .bit-brc-current-itm{
         font-size: rem(20px);
         font-weight: 600;
         padding: 0 rem(8px);
         color: $Grey160;
-    }
-
-    .divider-icon {
-        color: $Grey90;
     }
 }
 

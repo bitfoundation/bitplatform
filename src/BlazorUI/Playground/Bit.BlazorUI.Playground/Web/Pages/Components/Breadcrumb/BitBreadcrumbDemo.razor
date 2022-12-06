@@ -79,11 +79,48 @@
     <ComponentExampleBox Title="Breadcrumb Item with Class & Style" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
         <ExamplePreview>
             <div>
-                <BitLabel>Class</BitLabel>
+                <BitLabel>Current Item Style</BitLabel>
+                <BitBreadcrumb Items="GetBreadcrumbItems()"
+                               MaxDisplayedItems="3"
+                               OverflowIndex="2"
+                               CurrentItemStyle="color: blue;"
+                               CurrentItemKey="f4" />
+            </div>
+
+            <div>
+                <BitLabel>Current Item Style in Overflow</BitLabel>
+                <BitBreadcrumb Items="GetBreadcrumbItems()"
+                               MaxDisplayedItems="3"
+                               OverflowIndex="2"
+                               CurrentItemStyle="color: blue;"
+                               CurrentItemKey="f3" />
+            </div>
+
+            <div>
+                <BitLabel>Current Item Class</BitLabel>
+                <BitBreadcrumb Items="GetBreadcrumbItems()"
+                               MaxDisplayedItems="3"
+                               OverflowIndex="2"
+                               CurrentItemClass="custom-current-item"
+                               CurrentItemKey="f4" />
+            </div>
+
+            <div>
+                <BitLabel>Current Item Class in Overflow</BitLabel>
+                <BitBreadcrumb Items="GetBreadcrumbItems()"
+                               MaxDisplayedItems="3"
+                               OverflowIndex="2"
+                               CurrentItemClass="custom-current-item"
+                               CurrentItemKey="f3" />
+            </div>
+
+            <div>
+                <BitLabel>Other Item Class</BitLabel>
                 <BitBreadcrumb Items="GetBreadcrumbItemsWithClass()" />
             </div>
+
             <div>
-                <BitLabel>Style</BitLabel>
+                <BitLabel>Other Item Style</BitLabel>
                 <BitBreadcrumb Items="GetBreadcrumbItemsWithStyle()" />
             </div>
         </ExamplePreview>

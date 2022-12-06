@@ -18,7 +18,7 @@ public partial class HomePage
     private List<BitBreadcrumbItem> GetBreadcrumbItems()
     {
         return new List<BitBreadcrumbItem>()
-         {
+        {
              new()
              {
                  Text = "Folder 1",
@@ -45,10 +45,9 @@ public partial class HomePage
                  Text = "Folder 4",
                  Key = "f4",
                  href = "/components/breadcrumb",
-                 IsCurrentItem = true,
                  OnClick = (() => OnClickValue = "Folder 4 clicked")
              }
-         };
+        };
     }
 
     private List<BitDropDownItem> GetProductDropdownItems()
