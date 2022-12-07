@@ -715,7 +715,7 @@ public class BitNumericTextFieldSByteTests : BunitTestContext
     {
         var component = RenderComponent<BitNumericTextField<sbyte>>(parameters =>
         {
-            parameters.Add(p => p.LabelFragment, labelFragment);
+            parameters.Add(p => p.LabelTemplate, labelFragment);
         });
 
         var ntfLabelChild = component.Find("label").ChildNodes;

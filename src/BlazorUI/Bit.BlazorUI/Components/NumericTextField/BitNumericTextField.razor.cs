@@ -1,12 +1,6 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
-using Microsoft.JSInterop;
 
 namespace Bit.BlazorUI;
 
@@ -14,49 +8,49 @@ public partial class BitNumericTextField<TValue>
 {
     const int INITIAL_STEP_DELAY = 400;
     const int STEP_DELAY = 75;
-    private BitNumericTextFieldLabelPosition labelPosition = BitNumericTextFieldLabelPosition.Left;
-    private int precision;
+    private BitNumericTextFieldLabelPosition labelPosition = BitNumericTextFieldLabelPosition.Top;
     private TValue? step;
     private TValue? min;
     private TValue? max;
     private double internalStep;
     private double? internalMin;
     private double? internalMax;
-    private string? intermediateValue;
-    private string InputId = $"input{Guid.NewGuid()}";
-    private Timer? timer;
-    private ElementReference inputRef;
-    private ElementReference buttonIncrement;
-    private ElementReference buttonDecrement;
-    private readonly Type typeOfValue;
-    private readonly bool isDecimals;
-    private readonly double minGenericValue;
-    private readonly double maxGenericValue;
+    private int _precision;
+    private string? _intermediateValue;
+    private string _inputId = $"input_{Guid.NewGuid()}";
+    private Timer? _timer;
+    private ElementReference _inputRef;
+    private ElementReference _buttonIncrement;
+    private ElementReference _buttonDecrement;
+    private readonly Type _typeOfValue;
+    private readonly bool _isDecimals;
+    private readonly double _minGenericValue;
+    private readonly double _maxGenericValue;
 
     public BitNumericTextField()
     {
-        typeOfValue = typeof(TValue);
-        typeOfValue = Nullable.GetUnderlyingType(typeOfValue) ?? typeOfValue;
+        _typeOfValue = typeof(TValue);
+        _typeOfValue = Nullable.GetUnderlyingType(_typeOfValue) ?? _typeOfValue;
 
-        isDecimals = typeOfValue == typeof(float) || typeOfValue == typeof(double) || typeOfValue == typeof(decimal);
-        minGenericValue = GetMinValue();
-        maxGenericValue = GetMaxValue();
+        _isDecimals = _typeOfValue == typeof(float) || _typeOfValue == typeof(double) || _typeOfValue == typeof(decimal);
+        _minGenericValue = GetMinValue();
+        _maxGenericValue = GetMaxValue();
     }
 
-    [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
+    [Inject] private IJSRuntime _js { get; set; } = default!;
 
     /// <summary>
-    /// Detailed description of the input for the benefit of screen readers
+    /// Detailed description of the input for the benefit of screen readers.
     /// </summary>
     [Parameter] public string? AriaDescription { get; set; }
 
     /// <summary>
-    /// The position in the parent set (if in a set)
+    /// The position in the parent set (if in a set).
     /// </summary>
     [Parameter] public int? AriaPositionInSet { get; set; }
 
     /// <summary>
-    /// The total size of the parent set (if in a set)
+    /// The total size of the parent set (if in a set).
     /// </summary>
     [Parameter] public int? AriaSetSize { get; set; }
 
@@ -71,104 +65,62 @@ public partial class BitNumericTextField<TValue>
     [Parameter] public string? AriaValueText { get; set; }
 
     /// <summary>
-    /// Min value of the numeric text field. If not provided, the numeric text field has minimum value
+    /// Whether to show the up/down spinner arrows (buttons).
     /// </summary>
-    [Parameter]
-    public TValue? Min
-    {
-        get => min;
-        set
-        {
-            internalMin = GetDoubleValueOrDefault(value);
-            min = value;
-        }
-    }
+    [Parameter] public bool Arrows { get; set; }
 
     /// <summary>
-    /// Max value of the numeric text field. If not provided, the numeric text field has max value
+    /// 
     /// </summary>
-    [Parameter]
-    public TValue? Max
-    {
-        get => max;
-        set
-        {
-            internalMax = GetDoubleValueOrDefault(value);
-            max = value;
-        }
-    }
+    [Parameter] public EventCallback<BitNumericTextFieldAction> ChangeHandler { get; set; }
 
     /// <summary>
-    /// Callback for when the numeric text field value change
-    /// </summary>
-    [Parameter] public EventCallback<TValue> OnChange { get; set; }
-
-    /// <summary>
-    /// Callback for when focus moves into the input
-    /// </summary>
-    [Parameter] public EventCallback<FocusEventArgs> OnFocus { get; set; }
-
-    /// <summary>
-    /// Callback for when the control loses focus
-    /// </summary>
-    [Parameter] public EventCallback<FocusEventArgs> OnBlur { get; set; }
-
-    /// <summary>
-    /// Callback for when the decrement button or down arrow key is pressed
-    /// </summary>
-    [Parameter] public EventCallback<BitNumericTextFieldChangeValue<TValue>> OnDecrement { get; set; }
-
-    /// <summary>
-    /// Callback for when the increment button or up arrow key is pressed
-    /// </summary>
-    [Parameter] public EventCallback<BitNumericTextFieldChangeValue<TValue>> OnIncrement { get; set; }
-
-    /// <summary>
-    /// Initial value of the numeric text field
+    /// Initial value of the numeric text field.
     /// </summary>
     [Parameter] public TValue? DefaultValue { get; set; }
 
     /// <summary>
-    /// Difference between two adjacent values of the numeric text field
+    /// Accessible label text for the decrement button (for screen reader users).
     /// </summary>
-    [Parameter]
-    public TValue? Step
-    {
-        get => step;
-        set
-        {
-            internalStep = GetDoubleValueOrDefault(value) ?? 1;
-            step = value;
-        }
-    }
+    [Parameter] public string? DecrementButtonAriaLabel { get; set; }
 
     /// <summary>
-    /// A text is shown after the numeric text field value
+    /// Custom icon name for the decrement button.
     /// </summary>
-    [Parameter] public string Suffix { get; set; } = string.Empty;
+    [Parameter] public BitIconName DecrementButtonIconName { get; set; } = BitIconName.ChevronDownSmall;
 
     /// <summary>
-    /// Descriptive label for the numeric text field, Label displayed above the numeric text field and read by screen readers
+    /// Icon name for an icon to display alongside the numeric text field's label.
+    /// </summary>
+    [Parameter] public BitIconName? IconName { get; set; }
+
+    /// <summary>
+    /// The aria label of the icon for the benefit of screen readers.
+    /// </summary>
+    [Parameter] public string IconAriaLabel { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Accessible label text for the increment button (for screen reader users).
+    /// </summary>
+    [Parameter] public string? IncrementButtonAriaLabel { get; set; }
+
+    /// <summary>
+    /// Custom icon name for the increment button.
+    /// </summary>
+    [Parameter] public BitIconName IncrementButtonIconName { get; set; } = BitIconName.ChevronUpSmall;
+
+    /// <summary>
+    /// Descriptive label for the numeric text field, Label displayed above the numeric text field and read by screen readers.
     /// </summary>
     [Parameter] public string Label { get; set; } = string.Empty;
 
     /// <summary>
     /// Shows the custom Label for numeric text field. If you don't call default label, ensure that you give your custom label an id and that you set the input's aria-labelledby prop to that id.
     /// </summary>
-    [Parameter] public RenderFragment? LabelFragment { get; set; }
+    [Parameter] public RenderFragment? LabelTemplate { get; set; }
 
     /// <summary>
-    /// Icon name for an icon to display alongside the numeric text field's label
-    /// </summary>
-    [Parameter] public BitIconName? IconName { get; set; }
-
-    /// <summary>
-    /// The aria label of the icon for the benefit of screen readers
-    /// </summary>
-    [Parameter] public string IconAriaLabel { get; set; } = string.Empty;
-
-    /// <summary>
-    /// The position of the label in regards to the numeric text field
+    /// The position of the label in regards to the numeric text field.
     /// </summary>
     [Parameter]
     public BitNumericTextFieldLabelPosition LabelPosition
@@ -182,46 +134,91 @@ public partial class BitNumericTextField<TValue>
     }
 
     /// <summary>
-    /// Accessible label text for the decrement button (for screen reader users)
+    /// Min value of the numeric text field. If not provided, the numeric text field has minimum value.
     /// </summary>
-    [Parameter] public string? DecrementButtonAriaLabel { get; set; }
+    [Parameter]
+    public TValue? Min
+    {
+        get => min;
+        set
+        {
+            internalMin = GetDoubleValueOrDefault(value);
+            min = value;
+        }
+    }
 
     /// <summary>
-    /// Accessible label text for the increment button (for screen reader users)
+    /// Max value of the numeric text field. If not provided, the numeric text field has max value.
     /// </summary>
-    [Parameter] public string? IncrementButtonAriaLabel { get; set; }
+    [Parameter]
+    public TValue? Max
+    {
+        get => max;
+        set
+        {
+            internalMax = GetDoubleValueOrDefault(value);
+            max = value;
+        }
+    }
 
     /// <summary>
-    /// Custom icon name for the decrement button
+    /// Callback for when the numeric text field value change.
     /// </summary>
-    [Parameter] public BitIconName DecrementButtonIconName { get; set; } = BitIconName.ChevronDownSmall;
+    [Parameter] public EventCallback<TValue> OnChange { get; set; }
 
     /// <summary>
-    /// Custom icon name for the increment button
+    /// Callback for when focus moves into the input.
     /// </summary>
-    [Parameter] public BitIconName IncrementButtonIconName { get; set; } = BitIconName.ChevronUpSmall;
+    [Parameter] public EventCallback<FocusEventArgs> OnFocus { get; set; }
 
     /// <summary>
-    /// A more descriptive title for the control, visible on its tooltip
+    /// Callback for when the control loses focus.
     /// </summary>
-    [Parameter] public string? Title { get; set; }
+    [Parameter] public EventCallback<FocusEventArgs> OnBlur { get; set; }
 
     /// <summary>
-    /// How many decimal places the value should be rounded to
+    /// Callback for when the decrement button or down arrow key is pressed.
+    /// </summary>
+    [Parameter] public EventCallback<BitNumericTextFieldChangeValue<TValue>> OnDecrement { get; set; }
+
+    /// <summary>
+    /// Callback for when the increment button or up arrow key is pressed.
+    /// </summary>
+    [Parameter] public EventCallback<BitNumericTextFieldChangeValue<TValue>> OnIncrement { get; set; }
+
+    /// <summary>
+    /// How many decimal places the value should be rounded to.
     /// </summary>
     [Parameter] public int? Precision { get; set; }
 
-    [Parameter] public EventCallback<BitNumericTextFieldAction> ChangeHandler { get; set; }
-
     /// <summary>
-    /// Whether to show the up/down spinner arrows (buttons)
-    /// </summary>
-    [Parameter] public bool Arrows { get; set; }
-
-    /// <summary>
-    /// Input placeholder text
+    /// Input placeholder text.
     /// </summary>
     [Parameter] public string? Placeholder { get; set; }
+
+    /// <summary>
+    /// Difference between two adjacent values of the numeric text field.
+    /// </summary>
+    [Parameter]
+    public TValue? Step
+    {
+        get => step;
+        set
+        {
+            internalStep = GetDoubleValueOrDefault(value) ?? 1;
+            step = value;
+        }
+    }
+
+    /// <summary>
+    /// A text is shown after the numeric text field value.
+    /// </summary>
+    [Parameter] public string Suffix { get; set; } = string.Empty;
+
+    /// <summary>
+    /// A more descriptive title for the control, visible on its tooltip.
+    /// </summary>
+    [Parameter] public string? Title { get; set; }
 
     protected override string RootElementClass => "bit-ntf";
 
@@ -240,21 +237,21 @@ public partial class BitNumericTextField<TValue>
     {
         if (internalMin.HasValue is false)
         {
-            internalMin = minGenericValue;
+            internalMin = _minGenericValue;
         }
 
         if (internalMax.HasValue is false)
         {
-            internalMax = maxGenericValue;
+            internalMax = _maxGenericValue;
         }
 
         if (internalMin > internalMax)
         {
-            internalMin = minGenericValue;
-            internalMax = maxGenericValue;
+            internalMin = _minGenericValue;
+            internalMax = _maxGenericValue;
         }
 
-        precision = Precision is not null ? Precision.Value : CalculatePrecision(Step);
+        _precision = Precision is not null ? Precision.Value : CalculatePrecision(Step);
         if (ValueHasBeenSet is false)
         {
             SetValue(GetDoubleValueOrDefault(DefaultValue) ?? Math.Min(0, internalMin.Value));
@@ -297,45 +294,45 @@ public partial class BitNumericTextField<TValue>
         await base.OnParametersSetAsync();
     }
 
-    private async Task HandleMouseDown(BitNumericTextFieldAction action, MouseEventArgs e)
+    private async Task HandleOnMouseDown(BitNumericTextFieldAction action, MouseEventArgs e)
     {
         //Change focus from input to numeric text field
         if (action == BitNumericTextFieldAction.Increment)
         {
-            await buttonIncrement.FocusAsync();
+            await _buttonIncrement.FocusAsync();
         }
         else
         {
-            await buttonDecrement.FocusAsync();
+            await _buttonDecrement.FocusAsync();
         }
 
 
-        await HandleMouseDownAction(action, e);
-        timer = new Timer(async (_) =>
+        await HandleOnMouseDownAction(action, e);
+        _timer = new Timer(async (_) =>
         {
             await InvokeAsync(async () =>
             {
-                await HandleMouseDownAction(action, e);
+                await HandleOnMouseDownAction(action, e);
                 StateHasChanged();
             });
         }, null, INITIAL_STEP_DELAY, STEP_DELAY);
     }
 
-    private void HandleMouseUpOrOut()
+    private void HandleOnMouseUpOrOut()
     {
-        if (timer is null) return;
-        timer.Dispose();
+        if (_timer is null) return;
+        _timer.Dispose();
     }
 
-    private void HandleChange(ChangeEventArgs e)
+    private void HandleOnChange(ChangeEventArgs e)
     {
         if (IsEnabled is false) return;
         if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
-        intermediateValue = GetCleanValue(e.Value?.ToString());
+        _intermediateValue = GetCleanValue(e.Value?.ToString());
     }
 
-    private async Task HandleMouseDownAction(BitNumericTextFieldAction action, MouseEventArgs e)
+    private async Task HandleOnMouseDownAction(BitNumericTextFieldAction action, MouseEventArgs e)
     {
         if (IsEnabled is false) return;
         if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
@@ -362,7 +359,7 @@ public partial class BitNumericTextField<TValue>
         }
     }
 
-    private async Task HandleKeyDown(KeyboardEventArgs e)
+    private async Task HandleOnKeyDown(KeyboardEventArgs e)
     {
         if (IsEnabled is false) return;
         if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
@@ -372,17 +369,37 @@ public partial class BitNumericTextField<TValue>
             case "ArrowUp":
                 await CheckIntermediateValueAndSetValue();
                 await ChangeHandler.InvokeAsync(BitNumericTextFieldAction.Increment);
+
+                if (OnIncrement.HasDelegate is true)
+                {
+                    var args = new BitNumericTextFieldChangeValue<TValue>
+                    {
+                        Value = CurrentValue,
+                        KeyboardEventArgs = e
+                    };
+                    await OnIncrement.InvokeAsync(args);
+                }
                 break;
 
             case "ArrowDown":
                 await CheckIntermediateValueAndSetValue();
                 await ChangeHandler.InvokeAsync(BitNumericTextFieldAction.Decrement);
+
+                if (OnDecrement.HasDelegate is true)
+                {
+                    var args = new BitNumericTextFieldChangeValue<TValue>
+                    {
+                        Value = CurrentValue,
+                        KeyboardEventArgs = e
+                    };
+                    await OnDecrement.InvokeAsync(args);
+                }
                 break;
 
             case "Enter":
-                if (intermediateValue == CurrentValueAsString) break;
+                if (_intermediateValue == CurrentValueAsString) break;
 
-                var isNumber = double.TryParse(intermediateValue, out var numericValue);
+                var isNumber = double.TryParse(_intermediateValue, out var numericValue);
                 if (isNumber)
                 {
                     SetValue(numericValue);
@@ -397,29 +414,9 @@ public partial class BitNumericTextField<TValue>
             default:
                 break;
         }
-
-        if (e.Key is "ArrowUp" && OnIncrement.HasDelegate is true)
-        {
-            var args = new BitNumericTextFieldChangeValue<TValue>
-            {
-                Value = CurrentValue,
-                KeyboardEventArgs = e
-            };
-            await OnIncrement.InvokeAsync(args);
-        }
-
-        if (e.Key is "ArrowDown" && OnDecrement.HasDelegate is true)
-        {
-            var args = new BitNumericTextFieldChangeValue<TValue>
-            {
-                Value = CurrentValue,
-                KeyboardEventArgs = e
-            };
-            await OnDecrement.InvokeAsync(args);
-        }
     }
 
-    private async Task HandleBlur(FocusEventArgs e)
+    private async Task HandleOnBlur(FocusEventArgs e)
     {
         if (IsEnabled is false) return;
         await OnBlur.InvokeAsync(e);
@@ -427,12 +424,12 @@ public partial class BitNumericTextField<TValue>
         await CheckIntermediateValueAndSetValue();
     }
 
-    private async Task HandleFocus(FocusEventArgs e)
+    private async Task HandleOnFocus(FocusEventArgs e)
     {
         if (IsEnabled)
         {
             await OnFocus.InvokeAsync(e);
-            await JSRuntime.SelectText(inputRef);
+            await _js.SelectText(_inputRef);
         }
     }
 
@@ -440,7 +437,7 @@ public partial class BitNumericTextField<TValue>
     {
         if (value is null) return 0;
 
-        var pattern = isDecimals ? @"[1-9]([0]+$)|\.([0-9]*)" : @"(^-\d+$)|\d+";
+        var pattern = _isDecimals ? @"[1-9]([0]+$)|\.([0-9]*)" : @"(^-\d+$)|\d+";
         var regex = new Regex(pattern);
         if (regex.IsMatch($"{value}") is false) return 0;
 
@@ -477,12 +474,13 @@ public partial class BitNumericTextField<TValue>
         {
             CurrentValue = GetGenericValue(value);
         }
+
         SetDisplayValue();
     }
 
     private void SetDisplayValue()
     {
-        intermediateValue = CurrentValueAsString + Suffix;
+        _intermediateValue = CurrentValueAsString + Suffix;
     }
 
     private static string? GetCleanValue(string? value)
@@ -505,9 +503,9 @@ public partial class BitNumericTextField<TValue>
     private async Task CheckIntermediateValueAndSetValue()
     {
         if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
-        if (intermediateValue == CurrentValueAsString) return;
+        if (_intermediateValue == CurrentValueAsString) return;
 
-        var isNumber = double.TryParse(intermediateValue, out var numericValue);
+        var isNumber = double.TryParse(_intermediateValue, out var numericValue);
         if (isNumber)
         {
             SetValue(numericValue);
@@ -519,60 +517,49 @@ public partial class BitNumericTextField<TValue>
         }
     }
 
-    private double Normalize(double value) => Math.Round(value, precision);
-    private double NormalizeDecimal(decimal value) => Convert.ToDouble(Math.Round(value, precision));
-
-    private TValue? GetAriaValueNow => AriaValueNow is not null ? AriaValueNow : Suffix.HasNoValue() ? CurrentValue : default;
-    private string? GetAriaValueText => AriaValueText.HasValue() ? AriaValueText : Suffix.HasValue() ? CurrentValueAsString + Suffix : null;
-    private string? GetIconRole => IconAriaLabel.HasValue() ? "img" : null;
-    private string GetLabelId => Label.HasValue() ? $"label{Guid.NewGuid()}" : string.Empty;
-
-    private TValue? GetGenericValue(double? value) => value.HasValue ? (TValue)Convert.ChangeType(value, typeOfValue, CultureInfo.InvariantCulture) : default;
-    private double? GetDoubleValueOrDefault(TValue? value, double? defaultValue = null) => value is null ? defaultValue : (double?)Convert.ChangeType(value, typeof(double), CultureInfo.InvariantCulture);
-
     private double GetMaxValue()
     {
-        if (typeOfValue == typeof(byte))
+        if (_typeOfValue == typeof(byte))
         {
             return byte.MaxValue;
         }
-        else if (typeOfValue == typeof(sbyte))
+        else if (_typeOfValue == typeof(sbyte))
         {
             return sbyte.MaxValue;
         }
-        else if (typeOfValue == typeof(short))
+        else if (_typeOfValue == typeof(short))
         {
             return short.MaxValue;
         }
-        else if (typeOfValue == typeof(ushort))
+        else if (_typeOfValue == typeof(ushort))
         {
             return ushort.MaxValue;
         }
-        else if (typeOfValue == typeof(int))
+        else if (_typeOfValue == typeof(int))
         {
             return int.MaxValue;
         }
-        else if (typeOfValue == typeof(uint))
+        else if (_typeOfValue == typeof(uint))
         {
             return uint.MaxValue;
         }
-        else if (typeOfValue == typeof(long))
+        else if (_typeOfValue == typeof(long))
         {
             return long.MaxValue;
         }
-        else if (typeOfValue == typeof(ulong))
+        else if (_typeOfValue == typeof(ulong))
         {
             return ulong.MaxValue;
         }
-        else if (typeOfValue == typeof(double))
+        else if (_typeOfValue == typeof(double))
         {
             return double.MaxValue;
         }
-        else if (typeOfValue == typeof(float))
+        else if (_typeOfValue == typeof(float))
         {
             return float.MaxValue;
         }
-        else if (typeOfValue == typeof(decimal))
+        else if (_typeOfValue == typeof(decimal))
         {
             return (double)decimal.MaxValue;
         }
@@ -584,47 +571,47 @@ public partial class BitNumericTextField<TValue>
 
     private double GetMinValue()
     {
-        if (typeOfValue == typeof(byte))
+        if (_typeOfValue == typeof(byte))
         {
             return byte.MinValue;
         }
-        else if (typeOfValue == typeof(sbyte))
+        else if (_typeOfValue == typeof(sbyte))
         {
             return sbyte.MinValue;
         }
-        else if (typeOfValue == typeof(short))
+        else if (_typeOfValue == typeof(short))
         {
             return short.MinValue;
         }
-        else if (typeOfValue == typeof(ushort))
+        else if (_typeOfValue == typeof(ushort))
         {
             return ushort.MinValue;
         }
-        else if (typeOfValue == typeof(int))
+        else if (_typeOfValue == typeof(int))
         {
             return int.MinValue;
         }
-        else if (typeOfValue == typeof(uint))
+        else if (_typeOfValue == typeof(uint))
         {
             return uint.MinValue;
         }
-        else if (typeOfValue == typeof(long))
+        else if (_typeOfValue == typeof(long))
         {
             return long.MinValue;
         }
-        else if (typeOfValue == typeof(ulong))
+        else if (_typeOfValue == typeof(ulong))
         {
             return ulong.MinValue;
         }
-        else if (typeOfValue == typeof(double))
+        else if (_typeOfValue == typeof(double))
         {
             return double.MinValue;
         }
-        else if (typeOfValue == typeof(float))
+        else if (_typeOfValue == typeof(float))
         {
             return float.MinValue;
         }
-        else if (typeOfValue == typeof(decimal))
+        else if (_typeOfValue == typeof(decimal))
         {
             return (double)decimal.MinValue;
         }
@@ -634,20 +621,19 @@ public partial class BitNumericTextField<TValue>
         }
     }
 
-    protected override void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            timer?.Dispose();
-        }
-
-        base.Dispose(disposing);
-    }
+    private double Normalize(double value) => Math.Round(value, _precision);
+    private double NormalizeDecimal(decimal value) => Convert.ToDouble(Math.Round(value, _precision));
+    private TValue? GetAriaValueNow => AriaValueNow is not null ? AriaValueNow : Suffix.HasNoValue() ? CurrentValue : default;
+    private string? GetAriaValueText => AriaValueText.HasValue() ? AriaValueText : Suffix.HasValue() ? CurrentValueAsString + Suffix : null;
+    private string? GetIconRole => IconAriaLabel.HasValue() ? "img" : null;
+    private string GetLabelId => Label.HasValue() ? $"label{Guid.NewGuid()}" : string.Empty;
+    private TValue? GetGenericValue(double? value) => value.HasValue ? (TValue)Convert.ChangeType(value, _typeOfValue, CultureInfo.InvariantCulture) : default;
+    private double? GetDoubleValueOrDefault(TValue? value, double? defaultValue = null) => value is null ? defaultValue : (double?)Convert.ChangeType(value, typeof(double), CultureInfo.InvariantCulture);
 
     /// <inheritdoc />
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue? result, [NotNullWhen(false)] out string? validationErrorMessage)
     {
-        if (typeOfValue == typeof(byte))
+        if (_typeOfValue == typeof(byte))
         {
             if (byte.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedValue))
             {
@@ -656,7 +642,7 @@ public partial class BitNumericTextField<TValue>
                 return true;
             }
         }
-        else if (typeOfValue == typeof(sbyte))
+        else if (_typeOfValue == typeof(sbyte))
         {
             if (sbyte.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedValue))
             {
@@ -665,7 +651,7 @@ public partial class BitNumericTextField<TValue>
                 return true;
             }
         }
-        else if (typeOfValue == typeof(short))
+        else if (_typeOfValue == typeof(short))
         {
             if (short.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedValue))
             {
@@ -674,7 +660,7 @@ public partial class BitNumericTextField<TValue>
                 return true;
             }
         }
-        else if (typeOfValue == typeof(ushort))
+        else if (_typeOfValue == typeof(ushort))
         {
             if (ushort.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedValue))
             {
@@ -683,7 +669,7 @@ public partial class BitNumericTextField<TValue>
                 return true;
             }
         }
-        else if (typeOfValue == typeof(int))
+        else if (_typeOfValue == typeof(int))
         {
             if (int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedValue))
             {
@@ -692,7 +678,7 @@ public partial class BitNumericTextField<TValue>
                 return true;
             }
         }
-        else if (typeOfValue == typeof(uint))
+        else if (_typeOfValue == typeof(uint))
         {
             if (uint.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedValue))
             {
@@ -701,7 +687,7 @@ public partial class BitNumericTextField<TValue>
                 return true;
             }
         }
-        else if (typeOfValue == typeof(long))
+        else if (_typeOfValue == typeof(long))
         {
             if (long.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedValue))
             {
@@ -710,7 +696,7 @@ public partial class BitNumericTextField<TValue>
                 return true;
             }
         }
-        else if (typeOfValue == typeof(ulong))
+        else if (_typeOfValue == typeof(ulong))
         {
             if (ulong.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedValue))
             {
@@ -719,7 +705,7 @@ public partial class BitNumericTextField<TValue>
                 return true;
             }
         }
-        else if (typeOfValue == typeof(double))
+        else if (_typeOfValue == typeof(double))
         {
             if (double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsedValue))
             {
@@ -728,7 +714,7 @@ public partial class BitNumericTextField<TValue>
                 return true;
             }
         }
-        else if (typeOfValue == typeof(float))
+        else if (_typeOfValue == typeof(float))
         {
             if (float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsedValue))
             {
@@ -737,7 +723,7 @@ public partial class BitNumericTextField<TValue>
                 return true;
             }
         }
-        else if (typeOfValue == typeof(decimal))
+        else if (_typeOfValue == typeof(decimal))
         {
             if (decimal.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsedValue))
             {
@@ -750,5 +736,15 @@ public partial class BitNumericTextField<TValue>
         result = default;
         validationErrorMessage = $"The {DisplayName ?? FieldIdentifier.FieldName} field is not valid.";
         return false;
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _timer?.Dispose();
+        }
+
+        base.Dispose(disposing);
     }
 }

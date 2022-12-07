@@ -705,7 +705,7 @@ public class BitNumericTextFieldLongTests : BunitTestContext
     {
         var component = RenderComponent<BitNumericTextField<long>>(parameters =>
         {
-            parameters.Add(p => p.LabelFragment, labelFragment);
+            parameters.Add(p => p.LabelTemplate, labelFragment);
         });
 
         var ntfLabelChild = component.Find("label").ChildNodes;
