@@ -399,14 +399,15 @@ public partial class BitDatePicker
         if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
         if (AllowTextInput is false) return;
 
-        var oldValue = CurrentValue;
+        var oldValue = CurrentValue.GetValueOrDefault(DateTimeOffset.Now);
         CurrentValueAsString = e.Value?.ToString();
-        if (IsOpen && oldValue != CurrentValue)
+        var curValue = CurrentValue.GetValueOrDefault(DateTimeOffset.Now);
+        if (IsOpen && oldValue != curValue)
         {
             CheckCurrentCalendarMatchesCurrentValue();
-            if (CurrentValue.GetValueOrDefault().Year != oldValue.GetValueOrDefault().Year)
+            if (curValue.Year != oldValue.Year)
             {
-                _displayYear = CurrentValue.GetValueOrDefault().Year;
+                _displayYear = curValue.Year;
                 ChangeYearRanges(_currentYear - 1);
             }
         }
@@ -917,7 +918,7 @@ public partial class BitDatePicker
 
     private void CheckCurrentCalendarMatchesCurrentValue()
     {
-        var currentValue = CurrentValue.GetValueOrDefault();
+        var currentValue = CurrentValue.GetValueOrDefault(DateTimeOffset.Now);
         var currentValueYear = Culture.DateTimeFormat.Calendar.GetYear(currentValue.DateTime);
         var currentValueMonth = Culture.DateTimeFormat.Calendar.GetMonth(currentValue.DateTime);
         var currentValueDay = Culture.DateTimeFormat.Calendar.GetDayOfMonth(currentValue.DateTime);
