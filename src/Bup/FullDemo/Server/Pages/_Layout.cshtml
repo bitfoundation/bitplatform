@@ -1,0 +1,35 @@
+﻿@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@namespace Bit.Bup.Demo.Web.Pages
+
+@using Bit.Bup.Demo.Web
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Http
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bit Bup Demo</title>
+    <base href="~/" />
+    <link rel="icon" href="~/favicon.ico" type="image/x-icon" asp-append-version="true">
+</head>
+<body>
+
+    <div id="app-container">
+        @RenderBody()
+    </div>
+
+    <script src="_framework/blazor.webassembly.js" autostart="false" asp-append-version="true"></script>
+    <script src="_content/Bit.Bup/bit-bup.js"
+            scope="/"
+            log="none"
+            sw="service-worker.js"
+            handler="bitBupHandler"></script>
+
+    <component type="typeof(Bit.Bup.BupProgress)" render-mode="@RenderMode.Static"
+                param-ShowAssets="true"
+                param-ShowLogs="true"
+                param-AppContainer="@("#app-container")" />
+</body>
+</html>

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Bit Bup Demo</title>
+    <base href="/" />
+    <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
+    <style>
+        #bit-bup {
+            position: fixed;
+            background: #fff;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            top: 0;
+            padding: 20px;
+            text-align: center;
+            display: none;
+        }
+
+        .bit-bup-container {
+            width: 70%;
+            margin: 0 auto;
+            margin-top: 45px;
+        }
+
+        .bit-bup-title,
+        #bit-bup-percent {
+            font-size: 20px;
+        }
+
+        .bit-bup-description {
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .bit-bup-progress {
+            border: 1px solid #ebebff;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+            width: 100%;
+            height: 21px;
+        }
+
+        #bit-bup-progress-bar {
+            background-color: #538fc3;
+            border-radius: 2px;
+            height: 19px;
+        }
+
+        #bit-bup-reload {
+            display: none;
+            margin-bottom: 8px;
+        }
+
+        #bit-bup-assets {
+            font-size: 10px;
+            overflow: auto;
+            height: 666px;
+            text-align: left;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="bit-bup">
+        <div class="bit-bup-container">
+            <p class="bit-bup-title">Downloading resources</p>
+            <p class="bit-bup-description">Downloading updates, please wait...</p>
+            <div class="bit-bup-progress">
+                <div id="bit-bup-progress-bar" style="width: 0%"></div>
+            </div>
+            <p id="bit-bup-percent">0 %</p>
+            <ul id="bit-bup-assets"></ul>
+        </div>
+    </div>
+
+    <div id="app">Loading...</div>
+
+    <script>
+        var appEl = document.getElementById('app');
+        var progressEl = document.getElementById('bit-bup');
+        var progressBar = document.getElementById('bit-bup-progress-bar');
+        var percentLabel = document.getElementById('bit-bup-percent');
+        var assetsUl = document.getElementById('bit-bup-assets');
+
+        function bitBupHandler(type, data) {
+            switch (type) {
+                case 'start':
+                    appEl.style.display = 'none';
+                    progressEl.style.display = 'block';
+                    return console.log('downloading resources started.');
+
+                case 'progress':
+                    const li = document.createElement('li');
+                    li.innerHTML = `${data.index}: <b>[${data.type}] ${data.name}</b>: ${data.url} (${data.integrity})`
+                    assetsUl.prepend(li);
+
+                    const percent = Math.round(data.percent);
+                    progressBar.style.width = `${percent}%`;
+                    percentLabel.innerHTML = `${percent}%`;
+                    return console.log('resource downloaded:', data)
+
+                case 'end':
+                    appEl.style.display = 'block';
+                    progressEl.style.display = 'none';
+                    return console.log('downloading resources ended.');
+            }
+        }
+
+        async function cleanCache() {
+            var keys = await caches.keys();
+            await Promise.all(keys.map(key => caches.delete(key)));
+            window.location.reload();
+        }
+    </script>
+    <script src="_framework/blazor.webassembly.js" autostart=false></script>
+    <script src="_content/Bit.Bup/bit-bup.js" log="verbose" handler="bitBupHandler"></script>
+</body>
+
+</html>
