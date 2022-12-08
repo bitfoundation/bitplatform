@@ -239,6 +239,7 @@ _book
 /src/BlazorUI/Bit.BlazorUI.Charts/wwwroot/**/*.css.gz
 /src/BlazorUI/Bit.BlazorUI.Charts/wwwroot/scripts/*.js
 
+/src/Bswup/Bit.Bup/wwwroot/**/*.js
 /src/Bswup/Bit.Bswup/wwwroot/**/*.js
 /src/Butil/Bit.Butil/wwwroot/**/*.js
 
