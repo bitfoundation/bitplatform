@@ -1,0 +1,8 @@
+[
+  {
+    "outputFileName": "wwwroot/bit-bup.min.js",
+    "inputFiles": [
+      "wwwroot/bit-bup.js"
+    ]
+  }
+]
