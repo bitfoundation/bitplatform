@@ -62,7 +62,7 @@
         align-items: center;
         margin-right: rem(10px);
 
-        & .bit-icon {
+        .bit-icon {
             display: inline-block;
             font-weight: normal;
             font-family: "Fabric MDL2 Assets";
@@ -70,7 +70,7 @@
             font-size: rem(20px);
         }
 
-        & label {
+        label {
             font-size: rem(14px);
             font-weight: 600;
             color: $Grey160;

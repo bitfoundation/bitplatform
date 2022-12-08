@@ -11,24 +11,24 @@
             <div class="example-box">
                 <BitNumericTextField @bind-Value="BasicValue"
                                      Placeholder="Enter a number..."
-                                     Step="@BasicStepValue"
+                                     Step="@(1)"
                                      Label="Basic" />
 
                 <BitNumericTextField @bind-Value="DisabledValue"
                                      Placeholder="Enter a number..."
-                                     Step="@BasicStepValue"
+                                     Step="@(1)"
                                      Label="Disabled"
                                      IsEnabled="false" />
 
                 <BitNumericTextField @bind-Value="LabelAndIconValue"
                                      Placeholder="Enter a number..."
-                                     Step="@BasicStepValue"
+                                     Step="@(1)"
                                      Label="Label & Icon"
                                      IconName="BitIconName.Lightbulb" />
 
                 <BitNumericTextField @bind-Value="LabelLeftValue"
                                      Placeholder="Enter a number..."
-                                     Step="@BasicStepValue"
+                                     Step="@(1)"
                                      Label="Label Left"
                                      LabelPosition="BitNumericTextFieldLabelPosition.Left" />
             </div>
@@ -38,32 +38,32 @@
     <ComponentExampleBox Title="BitNumericTextField with LabelTemplate" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example2">
         <ExamplePreview>
             <div class="example-box">
-                <BitNumericTextField @bind-Value="LabelTemplateValue" Placeholder="Enter a number..." Step="@BasicStepValue">
+                <BitNumericTextField @bind-Value="LabelTemplateValue" Placeholder="Enter a number..." Step="@(1)">
                     <LabelTemplate>
-                        <BitIcon IconName="BitIconName.ChevronUpSmall" Style="color:green;" />
-                        <BitIcon IconName="BitIconName.ChevronDownSmall" Style="color:red;" />
+                        <label style="color: green;">This is custom Label</label>
+                        <BitIcon IconName="BitIconName.Filter" />
                     </LabelTemplate>
                 </BitNumericTextField>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BitNumericTextField with Spin Arrow" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example3">
+    <ComponentExampleBox Title="BitNumericTextField with Increment and Decrement Arrows" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example3">
         <ExamplePreview>
             <div class="example-box">
                 <BitNumericTextField @bind-Value="SpinArrowValue"
                                      Placeholder="Enter a number..."
-                                     Step="@BasicStepValue"
+                                     Step="@(1)"
                                      Label="Increment & Decrement"
-                                     Arrows="true" />
+                                     ShowArrows="true" />
 
                 <BitNumericTextField @bind-Value="SpinArrowWithIconValue"
                                      Placeholder="Enter a number..."
-                                     Step="@BasicStepValue"
+                                     Step="@(1)"
                                      Label="Increment & Decrement Icon"
-                                     Arrows="true"
-                                     IncrementButtonIconName="BitIconName.LikeSolid"
-                                     DecrementButtonIconName="BitIconName.DislikeSolid" />
+                                     ShowArrows="true"
+                                     IncrementIconName="BitIconName.LikeSolid"
+                                     DecrementIconName="BitIconName.DislikeSolid" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -73,21 +73,21 @@
             <div class="example-box">
                 <BitNumericTextField @bind-Value="MinMaxValue1"
                                      Placeholder="Enter a number..."
-                                     Step="@BasicStepValue"
+                                     Step="@(1)"
                                      Label="Min: -10, Max: 10, Step: 1"
                                      Min="-10"
                                      Max="10" />
 
                 <BitNumericTextField @bind-Value="MinMaxValue2"
                                      Placeholder="Enter a number..."
-                                     Step="@MinMaxStepValue2"
+                                     Step="@(2)"
                                      Label="Min: -20, Max: 20, Step: 2"
                                      Min="-20"
                                      Max="20" />
 
                 <BitNumericTextField @bind-Value="MinMaxValue3"
                                      Placeholder="Enter a number..."
-                                     Step="@MinMaxStepValue3"
+                                     Step="@(0.1M)"
                                      Label="Min: -1, Max: 1, Step: 0.1"
                                      Min="-1"
                                      Max="1" />
@@ -100,7 +100,7 @@
             <div class="example-box">
                 <BitNumericTextField @bind-Value="SuffixValue1"
                                      Placeholder="Enter a number..."
-                                     Step="@BasicStepValue"
+                                     Step="@(1)"
                                      Label="Height"
                                      IconName="BitIconName.AutoHeight"
                                      DefaultValue="150"
@@ -108,7 +108,7 @@
 
                 <BitNumericTextField @bind-Value="SuffixValue2"
                                      Placeholder="Enter a number..."
-                                     Step="@SuffixStepValue2"
+                                     Step="@(0.5M)"
                                      Label="Weight"
                                      IconName="BitIconName.Weights"
                                      DefaultValue="50"
@@ -123,14 +123,14 @@
                 <div>
                     <BitNumericTextField Value="OneWayValue"
                                          Placeholder="Enter a number..."
-                                         Step="@BasicStepValue"
+                                         Step="@(1)"
                                          Label="One-way" />
                     <BitRating @bind-Value="OneWayValue" />
                 </div>
                 <div>
                     <BitNumericTextField @bind-Value="TwoWayValue"
                                          Placeholder="Enter a number..."
-                                         Step="TwoWayStepValue"
+                                         Step="@(0.5)"
                                          Label="Two-way" />
                     <BitRating @bind-Value="TwoWayValue" />
                 </div>
@@ -144,8 +144,9 @@
                 <div class="column">
                     <BitNumericTextField @bind-Value="ArrowsEventBindedValue"
                                          Placeholder="Enter a number..."
-                                         Step="@EventsStepValue"
+                                         Step="@(0.1)"
                                          Label="OnIncrement / OnDecrement"
+                                         ShowArrows="true"
                                          OnIncrement="(BitNumericTextFieldChangeValue<double> v) => HandleOnIncrementEvent(v)"
                                          OnDecrement="(BitNumericTextFieldChangeValue<double> v) => HandleOnDecrementEvent(v)" />
                     <span>OnIncrement Counter: @OnIncrementCounter</span>
@@ -156,7 +157,7 @@
                 <div class="column">
                     <BitNumericTextField @bind-Value="OnChangeEventBindedValue"
                                          Placeholder="Enter a number..."
-                                         Step="@EventsStepValue"
+                                         Step="@(0.1)"
                                          Label="OnChange"
                                          OnChange="(double v) => HandleOnChangeEvent(v)" />
                     <span>OnChange Counter: @OnChangeCounter</span>
@@ -180,7 +181,7 @@
 
                         <BitNumericTextField @bind-Value="@ValidationModel.AgeInYears"
                                              Placeholder="Enter a number..."
-                                             Step="@BasicStepValue"
+                                             Step="@(1)"
                                              Label="Age" />
                         <ValidationMessage For="@(() => ValidationModel.AgeInYears)" />
 

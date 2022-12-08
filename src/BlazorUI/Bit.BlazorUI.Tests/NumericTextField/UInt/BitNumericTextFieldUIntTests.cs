@@ -49,7 +49,7 @@ public class BitNumericTextFieldUIntTests : BunitTestContext
     {
         var component = RenderComponent<BitNumericTextField<uint>>(parameters =>
         {
-            parameters.Add(p => p.Arrows, arrows);
+            parameters.Add(p => p.ShowArrows, arrows);
         });
 
         var arrowButtonHolder = component.FindAll(".bit-ntf-arrows");
@@ -479,7 +479,7 @@ public class BitNumericTextFieldUIntTests : BunitTestContext
             parameters.Add(p => p.Step, (uint)step);
             parameters.Add(p => p.Max, (uint)max);
             parameters.Add(p => p.DefaultValue, (uint)defaultValue);
-            parameters.Add(p => p.Arrows, true);
+            parameters.Add(p => p.ShowArrows, true);
         });
 
         var input = component.Find("input");
@@ -534,7 +534,7 @@ public class BitNumericTextFieldUIntTests : BunitTestContext
             parameters.Add(p => p.Step, (uint)step);
             parameters.Add(p => p.Min, (uint)min);
             parameters.Add(p => p.DefaultValue, (uint)defaultValue);
-            parameters.Add(p => p.Arrows, true);
+            parameters.Add(p => p.ShowArrows, true);
         });
 
         var input = component.Find("input");
@@ -690,7 +690,7 @@ public class BitNumericTextFieldUIntTests : BunitTestContext
             parameters.Add(p => p.Step, (uint)step);
             parameters.Add(p => p.Value, BitNumericTextFieldTwoWayBoundValue);
             parameters.Add(p => p.ValueChanged, HandleValueChanged);
-            parameters.Add(p => p.Arrows, true);
+            parameters.Add(p => p.ShowArrows, true);
         });
 
         var incrementButton = component.FindAll("button")[0];
@@ -729,7 +729,7 @@ public class BitNumericTextFieldUIntTests : BunitTestContext
             parameters.Add(p => p.Step, (uint)step);
             parameters.Add(p => p.Max, (uint)max);
             parameters.Add(p => p.DefaultValue, (uint)defaultValue);
-            parameters.Add(p => p.Arrows, true);
+            parameters.Add(p => p.ShowArrows, true);
         });
 
         var input = component.Find("input");
@@ -754,7 +754,7 @@ public class BitNumericTextFieldUIntTests : BunitTestContext
             parameters.Add(p => p.Step, (uint)step);
             parameters.Add(p => p.Min, (uint)min);
             parameters.Add(p => p.DefaultValue, (uint)defaultValue);
-            parameters.Add(p => p.Arrows, true);
+            parameters.Add(p => p.ShowArrows, true);
         });
 
         var input = component.Find("input");

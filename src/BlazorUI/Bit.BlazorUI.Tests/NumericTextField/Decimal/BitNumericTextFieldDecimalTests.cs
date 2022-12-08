@@ -49,7 +49,7 @@ public class BitNumericTextFieldDecimalTests : BunitTestContext
     {
         var component = RenderComponent<BitNumericTextField<decimal>>(parameters =>
         {
-            parameters.Add(p => p.Arrows, arrows);
+            parameters.Add(p => p.ShowArrows, arrows);
         });
 
         var arrowButtonHolder = component.FindAll(".bit-ntf-arrows");
@@ -484,7 +484,7 @@ public class BitNumericTextFieldDecimalTests : BunitTestContext
             parameters.Add(p => p.Step, (decimal)step);
             parameters.Add(p => p.Max, (decimal)max);
             parameters.Add(p => p.DefaultValue, (decimal)defaultValue);
-            parameters.Add(p => p.Arrows, true);
+            parameters.Add(p => p.ShowArrows, true);
         });
 
         var input = component.Find("input");
@@ -536,7 +536,7 @@ public class BitNumericTextFieldDecimalTests : BunitTestContext
             parameters.Add(p => p.Min, (decimal)min);
             parameters.Add(p => p.DefaultValue, (decimal)defaultValue);
             parameters.Add(p => p.Precision, precision);
-            parameters.Add(p => p.Arrows, true);
+            parameters.Add(p => p.ShowArrows, true);
         });
 
         var input = component.Find("input");
@@ -698,7 +698,7 @@ public class BitNumericTextFieldDecimalTests : BunitTestContext
             parameters.Add(p => p.Value, BitNumericTextFieldTwoWayBoundValue);
             parameters.Add(p => p.ValueChanged, HandleValueChanged);
             parameters.Add(p => p.Precision, precision);
-            parameters.Add(p => p.Arrows, true);
+            parameters.Add(p => p.ShowArrows, true);
         });
 
         var incrementButton = component.FindAll("button")[0];
@@ -738,7 +738,7 @@ public class BitNumericTextFieldDecimalTests : BunitTestContext
             parameters.Add(p => p.Step, (decimal)step);
             parameters.Add(p => p.Max, (decimal)max);
             parameters.Add(p => p.DefaultValue, (decimal)defaultValue);
-            parameters.Add(p => p.Arrows, true);
+            parameters.Add(p => p.ShowArrows, true);
         });
 
         var input = component.Find("input");
@@ -763,7 +763,7 @@ public class BitNumericTextFieldDecimalTests : BunitTestContext
             parameters.Add(p => p.Step, (decimal)step);
             parameters.Add(p => p.Min, (decimal)min);
             parameters.Add(p => p.DefaultValue, (decimal)defaultValue);
-            parameters.Add(p => p.Arrows, true);
+            parameters.Add(p => p.ShowArrows, true);
         });
 
         var input = component.Find("input");

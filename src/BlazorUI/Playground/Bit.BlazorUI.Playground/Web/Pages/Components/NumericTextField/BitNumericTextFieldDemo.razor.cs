@@ -7,8 +7,6 @@ namespace Bit.BlazorUI.Playground.Web.Pages.Components.NumericTextField;
 
 public partial class BitNumericTextFieldDemo
 {
-    private int BasicStepValue = 1;
-
     #region Example 1
 
     private int BasicValue;
@@ -36,8 +34,6 @@ public partial class BitNumericTextFieldDemo
     private int MinMaxValue1;
     private int MinMaxValue2;
     private decimal MinMaxValue3;
-    private int MinMaxStepValue2 = 2;
-    private decimal MinMaxStepValue3 = 0.1M;
 
     #endregion
 
@@ -45,7 +41,6 @@ public partial class BitNumericTextFieldDemo
 
     private int SuffixValue1;
     private decimal SuffixValue2;
-    private decimal SuffixStepValue2 = 0.5M;
 
     #endregion
 
@@ -53,7 +48,6 @@ public partial class BitNumericTextFieldDemo
 
     private double OneWayValue;
     private double TwoWayValue;
-    private double TwoWayStepValue = 0.5;
 
     #endregion
 
@@ -67,8 +61,6 @@ public partial class BitNumericTextFieldDemo
     private double OnChangeEventBindedValue;
     private double OnChangeEventReturnedValue;
     private int OnChangeCounter;
-
-    private double EventsStepValue = 0.1;
 
     private void HandleOnIncrementEvent(BitNumericTextFieldChangeValue<double> onChangeValue)
     {
@@ -147,12 +139,6 @@ public partial class BitNumericTextFieldDemo
         },
         new ComponentParameter()
         {
-            Name = "Arrows",
-            Type = "bool",
-            Description = "Whether to show the up/down spinner arrows (buttons).",
-        },
-        new ComponentParameter()
-        {
             Name = "ChangeHandler",
             Type = "EventCallback<BitNumericTextFieldAction>",
             Description = "",
@@ -165,13 +151,13 @@ public partial class BitNumericTextFieldDemo
         },
         new ComponentParameter()
         {
-            Name = "DecrementButtonAriaLabel",
+            Name = "DecrementAriaLabel",
             Type = "string?",
             Description = "Accessible label text for the decrement button (for screen reader users).",
         },
         new ComponentParameter()
         {
-            Name = "DecrementButtonIconName",
+            Name = "DecrementIconName",
             Type = "BitIconName",
             DefaultValue = "BitIconName.ChevronDownSmall",
             Description = "Custom icon name for the decrement button.",
@@ -191,13 +177,13 @@ public partial class BitNumericTextFieldDemo
         },
         new ComponentParameter()
         {
-            Name = "IncrementButtonAriaLabel",
+            Name = "IncrementAriaLabel",
             Type = "string?",
             Description = "Accessible label text for the increment button (for screen reader users).",
         },
         new ComponentParameter()
         {
-            Name = "IncrementButtonIconName",
+            Name = "IncrementIconName",
             Type = "BitIconName",
             DefaultValue = "BitIconName.ChevronUpSmall",
             Description = "Custom icon name for the increment button.",
@@ -297,6 +283,12 @@ public partial class BitNumericTextFieldDemo
         },
         new ComponentParameter()
         {
+            Name = "ShowArrows",
+            Type = "bool",
+            Description = "Whether to show the up/down spinner arrows (buttons).",
+        },
+        new ComponentParameter()
+        {
             Name = "Title",
             Type = "string?",
             Description = "A more descriptive title for the control, visible on its tooltip.",
@@ -360,24 +352,24 @@ public partial class BitNumericTextFieldDemo
     private readonly string example1HTMLCode = @"
 <BitNumericTextField @bind-Value=""BasicValue""
                      Placeholder=""Enter a number...""
-                     Step=""@BasicStepValue""
+                     Step=""@(1)""
                      Label=""Basic"" />
 
 <BitNumericTextField @bind-Value=""DisabledValue""
                      Placeholder=""Enter a number...""
-                     Step=""@BasicStepValue""
+                     Step=""@(1)""
                      Label=""Disabled""
                      IsEnabled=""false"" />
 
 <BitNumericTextField @bind-Value=""LabelAndIconValue""
                      Placeholder=""Enter a number...""
-                     Step=""@BasicStepValue""
+                     Step=""@(1)""
                      Label=""Label & Icon""
                      IconName=""BitIconName.Lightbulb"" />
 
 <BitNumericTextField @bind-Value=""LabelLeftValue""
                      Placeholder=""Enter a number...""
-                     Step=""@BasicStepValue""
+                     Step=""@(1)""
                      Label=""Label Left""
                      LabelPosition=""BitNumericTextFieldLabelPosition.Left"" />
 ";
@@ -387,7 +379,6 @@ private int BasicValue;
 private int DisabledValue;
 private int LabelAndIconValue;
 private int LabelLeftValue;
-private int BasicStepValue = 1;
 ";
 
     #endregion
@@ -395,17 +386,16 @@ private int BasicStepValue = 1;
     #region Example Code 2
 
     private readonly string example2HTMLCode = @"
-<BitNumericTextField @bind-Value=""LabelTemplateValue"" Placeholder=""Enter a number..."" Step=""@BasicStepValue"">
+<BitNumericTextField @bind-Value=""LabelTemplateValue"" Placeholder=""Enter a number..."" Step=""@(1)"">
     <LabelTemplate>
-        <BitIcon IconName=""BitIconName.ChevronUpSmall"" Style=""color:green;"" />
-        <BitIcon IconName=""BitIconName.ChevronDownSmall"" Style=""color:red;"" />
+        <label style=""color: green;"">This is custom Label</label>
+        <BitIcon IconName=""BitIconName.Filter"" />
     </LabelTemplate>
 </BitNumericTextField>
 ";
 
     private readonly string example2CSharpCode = @"
 private int LabelTemplateValue;
-private int BasicStepValue = 1;
 ";
 
     #endregion
@@ -415,23 +405,22 @@ private int BasicStepValue = 1;
     private readonly string example3HTMLCode = @"
 <BitNumericTextField @bind-Value=""SpinArrowValue""
                      Placeholder=""Enter a number...""
-                     Step=""@BasicStepValue""
+                     Step=""@(1)""
                      Label=""Increment & Decrement""
-                     Arrows=""true"" />
+                     ShowArrows=""true"" />
 
 <BitNumericTextField @bind-Value=""SpinArrowWithIconValue""
                      Placeholder=""Enter a number...""
-                     Step=""@BasicStepValue""
+                     Step=""@(1)""
                      Label=""Increment & Decrement Icon""
-                     Arrows=""true""
-                     IncrementButtonIconName=""BitIconName.LikeSolid""
-                     DecrementButtonIconName=""BitIconName.DislikeSolid"" />
+                     ShowArrows=""true""
+                     IncrementIconName=""BitIconName.LikeSolid""
+                     DecrementIconName=""BitIconName.DislikeSolid"" />
 ";
 
     private readonly string example3CSharpCode = @"
 private int SpinArrowValue;
 private int SpinArrowWithIconValue;
-private int BasicStepValue = 1;
 ";
 
     #endregion
@@ -441,21 +430,21 @@ private int BasicStepValue = 1;
     private readonly string example4HTMLCode = @"
 <BitNumericTextField @bind-Value=""MinMaxValue1""
                      Placeholder=""Enter a number...""
-                     Step=""@BasicStepValue""
+                     Step=""@(1)""
                      Label=""Min: -10, Max: 10, Step: 1""
                      Min=""-10""
                      Max=""10"" />
 
 <BitNumericTextField @bind-Value=""MinMaxValue2""
                      Placeholder=""Enter a number...""
-                     Step=""@MinMaxStepValue2""
+                     Step=""@(2)""
                      Label=""Min: -20, Max: 20, Step: 2""
                      Min=""-20""
                      Max=""20"" />
 
 <BitNumericTextField @bind-Value=""MinMaxValue3""
                      Placeholder=""Enter a number...""
-                     Step=""@MinMaxStepValue3""
+                     Step=""@(0.1M)""
                      Label=""Min: -1, Max: 1, Step: 0.1""
                      Min=""-1""
                      Max=""1"" />
@@ -465,9 +454,6 @@ private int BasicStepValue = 1;
 private int MinMaxValue1;
 private int MinMaxValue2;
 private decimal MinMaxValue3;
-private int BasicStepValue = 1;
-private int MinMaxStepValue2 = 2;
-private decimal MinMaxStepValue3 = 0.1M;
 ";
 
     #endregion
@@ -477,7 +463,7 @@ private decimal MinMaxStepValue3 = 0.1M;
     private readonly string example5HTMLCode = @"
 <BitNumericTextField @bind-Value=""SuffixValue1""
                      Placeholder=""Enter a number...""
-                     Step=""@BasicStepValue""
+                     Step=""@(1)""
                      Label=""Height""
                      IconName=""BitIconName.AutoHeight""
                      DefaultValue=""150""
@@ -485,7 +471,7 @@ private decimal MinMaxStepValue3 = 0.1M;
 
 <BitNumericTextField @bind-Value=""SuffixValue2""
                      Placeholder=""Enter a number...""
-                     Step=""@SuffixStepValue2""
+                     Step=""@(0.5M)""
                      Label=""Weight""
                      IconName=""BitIconName.Weights""
                      DefaultValue=""50""
@@ -495,8 +481,6 @@ private decimal MinMaxStepValue3 = 0.1M;
     private readonly string example5CSharpCode = @"
 private int SuffixValue1;
 private decimal SuffixValue2;
-private int BasicStepValue = 1;
-private decimal SuffixStepValue2 = 0.5M;
 ";
 
     #endregion
@@ -507,14 +491,14 @@ private decimal SuffixStepValue2 = 0.5M;
 <div>
     <BitNumericTextField Value=""OneWayValue""
                          Placeholder=""Enter a number...""
-                         Step=""@BasicStepValue""
+                         Step=""@(1)""
                          Label=""One-way"" />
     <BitRating @bind-Value=""OneWayValue"" />
 </div>
 <div>
     <BitNumericTextField @bind-Value=""TwoWayValue""
                          Placeholder=""Enter a number...""
-                         Step=""TwoWayStepValue""
+                         Step=""@(0.5)""
                          Label=""Two-way"" />
     <BitRating @bind-Value=""TwoWayValue"" />
 </div>
@@ -523,8 +507,6 @@ private decimal SuffixStepValue2 = 0.5M;
     private readonly string example6CSharpCode = @"
 private double OneWayValue;
 private double TwoWayValue;
-private int BasicStepValue = 1;
-private double TwoWayStepValue = 0.5;
 ";
 
     #endregion
@@ -535,8 +517,9 @@ private double TwoWayStepValue = 0.5;
 <div class=""column"">
     <BitNumericTextField @bind-Value=""ArrowsEventBindedValue""
                          Placeholder=""Enter a number...""
-                         Step=""@EventsStepValue""
+                         Step=""@(0.1)""
                          Label=""OnIncrement / OnDecrement""
+                         ShowArrows=""true""
                          OnIncrement=""(BitNumericTextFieldChangeValue<double> v) => HandleOnIncrementEvent(v)""
                          OnDecrement=""(BitNumericTextFieldChangeValue<double> v) => HandleOnDecrementEvent(v)"" />
     <span>OnIncrement Counter: @OnIncrementCounter</span>
@@ -547,7 +530,7 @@ private double TwoWayStepValue = 0.5;
 <div class=""column"">
     <BitNumericTextField @bind-Value=""OnChangeEventBindedValue""
                          Placeholder=""Enter a number...""
-                         Step=""@EventsStepValue""
+                         Step=""@(0.1)""
                          Label=""OnChange""
                          OnChange=""(double v) => HandleOnChangeEvent(v)"" />
     <span>OnChange Counter: @OnChangeCounter</span>
@@ -564,8 +547,6 @@ private int OnDecrementCounter;
 private double OnChangeEventBindedValue;
 private double OnChangeEventReturnedValue;
 private int OnChangeCounter;
-
-private double EventsStepValue = 0.1;
 
 private void HandleOnIncrementEvent(BitNumericTextFieldChangeValue<double> onChangeValue)
 {
@@ -623,7 +604,7 @@ private void HandleOnChangeEvent(double value)
 
         <BitNumericTextField @bind-Value=""@ValidationModel.AgeInYears""
                              Placeholder=""Enter a number...""
-                             Step=""@BasicStepValue""
+                             Step=""@(1)""
                              Label=""Age"" />
         <ValidationMessage For=""@(() => ValidationModel.AgeInYears)"" />
 
@@ -650,7 +631,6 @@ public class BitNumericTextFieldValidationModel
 
 private BitNumericTextFieldValidationModel ValidationModel = new();
 private string SuccessMessage = string.Empty;
-private int BasicStepValue = 1;
 
 private async Task HandleValidSubmit()
 {

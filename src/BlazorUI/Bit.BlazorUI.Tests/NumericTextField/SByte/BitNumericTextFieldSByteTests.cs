@@ -49,7 +49,7 @@ public class BitNumericTextFieldSByteTests : BunitTestContext
     {
         var component = RenderComponent<BitNumericTextField<sbyte>>(parameters =>
         {
-            parameters.Add(p => p.Arrows, arrows);
+            parameters.Add(p => p.ShowArrows, arrows);
         });
 
         var arrowButtonHolder = component.FindAll(".bit-ntf-arrows");
@@ -479,7 +479,7 @@ public class BitNumericTextFieldSByteTests : BunitTestContext
             parameters.Add(p => p.Step, (sbyte)step);
             parameters.Add(p => p.Max, (sbyte)max);
             parameters.Add(p => p.DefaultValue, (sbyte)defaultValue);
-            parameters.Add(p => p.Arrows, true);
+            parameters.Add(p => p.ShowArrows, true);
         });
 
         var input = component.Find("input");
@@ -534,7 +534,7 @@ public class BitNumericTextFieldSByteTests : BunitTestContext
             parameters.Add(p => p.Step, (sbyte)step);
             parameters.Add(p => p.Min, (sbyte)min);
             parameters.Add(p => p.DefaultValue, (sbyte)defaultValue);
-            parameters.Add(p => p.Arrows, true);
+            parameters.Add(p => p.ShowArrows, true);
         });
 
         var input = component.Find("input");
@@ -694,7 +694,7 @@ public class BitNumericTextFieldSByteTests : BunitTestContext
             parameters.Add(p => p.Step, (sbyte)step);
             parameters.Add(p => p.Value, BitNumericTextFieldTwoWayBoundValue);
             parameters.Add(p => p.ValueChanged, HandleValueChanged);
-            parameters.Add(p => p.Arrows, true);
+            parameters.Add(p => p.ShowArrows, true);
         });
 
         var incrementButton = component.FindAll("button")[0];
@@ -733,7 +733,7 @@ public class BitNumericTextFieldSByteTests : BunitTestContext
             parameters.Add(p => p.Step, (sbyte)step);
             parameters.Add(p => p.Max, (sbyte)max);
             parameters.Add(p => p.DefaultValue, (sbyte)defaultValue);
-            parameters.Add(p => p.Arrows, true);
+            parameters.Add(p => p.ShowArrows, true);
         });
 
         var input = component.Find("input");
@@ -759,7 +759,7 @@ public class BitNumericTextFieldSByteTests : BunitTestContext
             parameters.Add(p => p.Step, (sbyte)step);
             parameters.Add(p => p.Min, (sbyte)min);
             parameters.Add(p => p.DefaultValue, (sbyte)defaultValue);
-            parameters.Add(p => p.Arrows, true);
+            parameters.Add(p => p.ShowArrows, true);
         });
 
         var input = component.Find("input");

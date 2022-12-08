@@ -12,9 +12,9 @@ public partial class BitNumericTextField<TValue>
     private TValue? step;
     private TValue? min;
     private TValue? max;
-    private double internalStep;
-    private double? internalMin;
-    private double? internalMax;
+    private double _internalStep;
+    private double? _internalMin;
+    private double? _internalMax;
     private int _precision;
     private string? _intermediateValue;
     private string _inputId = $"input_{Guid.NewGuid()}";
@@ -65,11 +65,6 @@ public partial class BitNumericTextField<TValue>
     [Parameter] public string? AriaValueText { get; set; }
 
     /// <summary>
-    /// Whether to show the up/down spinner arrows (buttons).
-    /// </summary>
-    [Parameter] public bool Arrows { get; set; }
-
-    /// <summary>
     /// 
     /// </summary>
     [Parameter] public EventCallback<BitNumericTextFieldAction> ChangeHandler { get; set; }
@@ -82,12 +77,12 @@ public partial class BitNumericTextField<TValue>
     /// <summary>
     /// Accessible label text for the decrement button (for screen reader users).
     /// </summary>
-    [Parameter] public string? DecrementButtonAriaLabel { get; set; }
+    [Parameter] public string? DecrementAriaLabel { get; set; }
 
     /// <summary>
     /// Custom icon name for the decrement button.
     /// </summary>
-    [Parameter] public BitIconName DecrementButtonIconName { get; set; } = BitIconName.ChevronDownSmall;
+    [Parameter] public BitIconName DecrementIconName { get; set; } = BitIconName.ChevronDownSmall;
 
     /// <summary>
     /// Icon name for an icon to display alongside the numeric text field's label.
@@ -102,12 +97,12 @@ public partial class BitNumericTextField<TValue>
     /// <summary>
     /// Accessible label text for the increment button (for screen reader users).
     /// </summary>
-    [Parameter] public string? IncrementButtonAriaLabel { get; set; }
+    [Parameter] public string? IncrementAriaLabel { get; set; }
 
     /// <summary>
     /// Custom icon name for the increment button.
     /// </summary>
-    [Parameter] public BitIconName IncrementButtonIconName { get; set; } = BitIconName.ChevronUpSmall;
+    [Parameter] public BitIconName IncrementIconName { get; set; } = BitIconName.ChevronUpSmall;
 
     /// <summary>
     /// Descriptive label for the numeric text field, Label displayed above the numeric text field and read by screen readers.
@@ -142,7 +137,7 @@ public partial class BitNumericTextField<TValue>
         get => min;
         set
         {
-            internalMin = GetDoubleValueOrDefault(value);
+            _internalMin = GetDoubleValueOrDefault(value);
             min = value;
         }
     }
@@ -156,7 +151,7 @@ public partial class BitNumericTextField<TValue>
         get => max;
         set
         {
-            internalMax = GetDoubleValueOrDefault(value);
+            _internalMax = GetDoubleValueOrDefault(value);
             max = value;
         }
     }
@@ -205,7 +200,7 @@ public partial class BitNumericTextField<TValue>
         get => step;
         set
         {
-            internalStep = GetDoubleValueOrDefault(value) ?? 1;
+            _internalStep = GetDoubleValueOrDefault(value) ?? 1;
             step = value;
         }
     }
@@ -214,6 +209,11 @@ public partial class BitNumericTextField<TValue>
     /// A text is shown after the numeric text field value.
     /// </summary>
     [Parameter] public string Suffix { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Whether to show the up/down spinner arrows (buttons).
+    /// </summary>
+    [Parameter] public bool ShowArrows { get; set; }
 
     /// <summary>
     /// A more descriptive title for the control, visible on its tooltip.
@@ -235,26 +235,26 @@ public partial class BitNumericTextField<TValue>
 
     protected override async Task OnParametersSetAsync()
     {
-        if (internalMin.HasValue is false)
+        if (_internalMin.HasValue is false)
         {
-            internalMin = _minGenericValue;
+            _internalMin = _minGenericValue;
         }
 
-        if (internalMax.HasValue is false)
+        if (_internalMax.HasValue is false)
         {
-            internalMax = _maxGenericValue;
+            _internalMax = _maxGenericValue;
         }
 
-        if (internalMin > internalMax)
+        if (_internalMin > _internalMax)
         {
-            internalMin = _minGenericValue;
-            internalMax = _maxGenericValue;
+            _internalMin = _minGenericValue;
+            _internalMax = _maxGenericValue;
         }
 
         _precision = Precision is not null ? Precision.Value : CalculatePrecision(Step);
         if (ValueHasBeenSet is false)
         {
-            SetValue(GetDoubleValueOrDefault(DefaultValue) ?? Math.Min(0, internalMin.Value));
+            SetValue(GetDoubleValueOrDefault(DefaultValue) ?? Math.Min(0, _internalMin.Value));
         }
         else
         {
@@ -271,13 +271,13 @@ public partial class BitNumericTextField<TValue>
                 switch (action)
                 {
                     case BitNumericTextFieldAction.Increment:
-                        result = GetDoubleValueOrDefault(CurrentValue, 0d)!.Value + internalStep;
-                        isValid = result <= internalMax && result >= internalMin;
+                        result = GetDoubleValueOrDefault(CurrentValue, 0d)!.Value + _internalStep;
+                        isValid = result <= _internalMax && result >= _internalMin;
                         break;
 
                     case BitNumericTextFieldAction.Decrement:
-                        result = GetDoubleValueOrDefault(CurrentValue, 0d)!.Value - internalStep;
-                        isValid = result <= internalMax && result >= internalMin;
+                        result = GetDoubleValueOrDefault(CurrentValue, 0d)!.Value - _internalStep;
+                        isValid = result <= _internalMax && result >= _internalMin;
                         break;
 
                     default:
@@ -462,13 +462,13 @@ public partial class BitNumericTextField<TValue>
     {
         value = Normalize(value);
 
-        if (value > internalMax)
+        if (value > _internalMax)
         {
-            CurrentValue = GetGenericValue(internalMax.Value);
+            CurrentValue = GetGenericValue(_internalMax.Value);
         }
-        else if (value < internalMin)
+        else if (value < _internalMin)
         {
-            CurrentValue = GetGenericValue(internalMin.Value);
+            CurrentValue = GetGenericValue(_internalMin.Value);
         }
         else
         {
