@@ -78,7 +78,7 @@ public class BitNumericTextFieldUShortTests : BunitTestContext
         {
             parameters.Add(p => p.IconName, iconName);
             parameters.Add(p => p.IconAriaLabel, iconAriaLabel);
-            parameters.Add(p => p.Arrows, true);
+            parameters.Add(p => p.ShowArrows, true);
         });
 
         if (iconName.HasValue)
@@ -136,10 +136,10 @@ public class BitNumericTextFieldUShortTests : BunitTestContext
     {
         var component = RenderComponent<BitNumericTextFieldUShortTest>(parameters =>
         {
-            parameters.Add(p => p.IncrementButtonIconName, iconName);
-            parameters.Add(p => p.IncrementButtonAriaLabel, iconAriaLabel);
+            parameters.Add(p => p.IncrementIconName, iconName);
+            parameters.Add(p => p.IncrementAriaLabel, iconAriaLabel);
             parameters.Add(p => p.IsEnabled, isEnabled);
-            parameters.Add(p => p.Arrows, true);
+            parameters.Add(p => p.ShowArrows, true);
         });
 
         var button = component.Find("button");
@@ -165,10 +165,10 @@ public class BitNumericTextFieldUShortTests : BunitTestContext
     {
         var component = RenderComponent<BitNumericTextFieldUShortTest>(parameters =>
         {
-            parameters.Add(p => p.DecrementButtonIconName, iconName);
-            parameters.Add(p => p.DecrementButtonAriaLabel, iconAriaLabel);
+            parameters.Add(p => p.DecrementIconName, iconName);
+            parameters.Add(p => p.DecrementAriaLabel, iconAriaLabel);
             parameters.Add(p => p.IsEnabled, isEnabled);
-            parameters.Add(p => p.Arrows, true);
+            parameters.Add(p => p.ShowArrows, true);
         });
 
         var button = component.Find("button:last-child");
@@ -315,7 +315,7 @@ public class BitNumericTextFieldUShortTests : BunitTestContext
     {
         var component = RenderComponent<BitNumericTextFieldUShortTest>(parameters =>
         {
-            parameters.Add(p => p.Arrows, true);
+            parameters.Add(p => p.ShowArrows, true);
         });
 
         var increaseButton = component.FindAll("button")[0];
@@ -335,7 +335,7 @@ public class BitNumericTextFieldUShortTests : BunitTestContext
     {
         var component = RenderComponent<BitNumericTextFieldUShortTest>(parameters =>
         {
-            parameters.Add(p => p.Arrows, true);
+            parameters.Add(p => p.ShowArrows, true);
         });
 
         var decreaseButton = component.FindAll("button")[1];

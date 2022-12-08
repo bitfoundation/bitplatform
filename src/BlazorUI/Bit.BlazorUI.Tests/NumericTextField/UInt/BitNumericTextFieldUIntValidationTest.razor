@@ -18,10 +18,10 @@
                        LabelPosition="@LabelPosition"
                        IconName="@IconName"
                        IconAriaLabel="@IconAriaLabel"
-                       DecrementButtonIconName="@DecrementButtonIconName"
-                       IncrementButtonIconName="@IncrementButtonIconName"
-                       DecrementButtonAriaLabel="@DecrementButtonAriaLabel"
-                       IncrementButtonAriaLabel="@IncrementButtonAriaLabel"
+                       DecrementIconName="@DecrementIconName"
+                       IncrementIconName="@IncrementIconName"
+                       DecrementAriaLabel="@DecrementAriaLabel"
+                       IncrementAriaLabel="@IncrementAriaLabel"
                        Label="@Label"
                        Placeholder="@Placeholder"
                        InputHtmlAttributes="@InputHtmlAttributes"
@@ -31,9 +31,9 @@
                        OnChange="(uint? value) => OnChangeEventValue = value"
                        OnBlur="@HandleBlur"
                        OnFocus="@HandleFocus">
-            <LabelFragment>
-                @LabelFragment
-            </LabelFragment>
+            <LabelTemplate>
+                @LabelTemplate
+            </LabelTemplate>
         </BitNumericTextField>
     </CascadingValue>
 
@@ -60,14 +60,14 @@
     [Parameter] public Dictionary<string, object> InputHtmlAttributes { get; set; } = null;
     [Parameter] public string Title { get; set; }
     [Parameter] public int? Precision { get; set; }
-    [Parameter] public BitIconName DecrementButtonIconName { get; set; }
-    [Parameter] public BitIconName IncrementButtonIconName { get; set; }
+    [Parameter] public BitIconName DecrementIconName { get; set; }
+    [Parameter] public BitIconName IncrementIconName { get; set; }
     [Parameter] public uint DefaultValue { get; set; }
     [Parameter] public string IconAriaLabel { get; set; } = string.Empty;
-    [Parameter] public string DecrementButtonAriaLabel { get; set; }
-    [Parameter] public string IncrementButtonAriaLabel { get; set; }
+    [Parameter] public string DecrementAriaLabel { get; set; }
+    [Parameter] public string IncrementAriaLabel { get; set; }
     [Parameter] public bool IsEnabled { get; set; } = true;
-    [Parameter] public RenderFragment LabelFragment { get; set; }
+    [Parameter] public RenderFragment LabelTemplate { get; set; }
 
     public int OnIncrementEventCounter { get; set; }
     public int OnBlurEventCounter { get; set; }
