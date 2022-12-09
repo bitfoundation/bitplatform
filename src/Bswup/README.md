@@ -2,10 +2,11 @@
 
 To use BitBswup, please follow these steps:
 
-1. Install the `Bit.Bswup` nuget package
-2. Disable static file caching.You can follow below code in `Startup.cs` file
-```csharp
+1. Install the `Bit.Bswup` nuget package.
 
+2. Disable static file caching. You can follow the below code in the `Startup.cs` file:
+
+```csharp
 app.UseStaticFiles(new StaticFileOptions
 {
     OnPrepareResponse = ctx =>
@@ -16,38 +17,34 @@ app.UseStaticFiles(new StaticFileOptions
         };
     }
 });
-
 ```
 
-4. In the default document (`_Host.cshtml`, `index.html` or `_Layout.cshtml`), add an `autostart = "false"` attribute and value to the <script> tag for the Blazor script.
+3. In the default document (`index.html`, `_Host.cshtml`, or `_Layout.cshtml`), add an `autostart="false"` attribute and value to the script tag for the Blazor script.
 
 ```html
-
 <script src="_framework/blazor.webassembly.js" autostart="false"></script>
-
 ```
 
-5. In the default document (`_Host.cshtml`, `index.html` or `_Layout.cshtml`), add the `Bit.Bswup` reference after the <script> tag for the Blazor script.
-```html
+4. Also In the default document (`index.html`, `_Host.cshtml`, or `_Layout.cshtml`), add the `Bit.Bswup` reference after the script tag for the Blazor script.
 
+```html
 <script src="_content/Bit.Bswup/bit-bswup.js"
         scope="/"
         log="verbose"
         sw="service-worker.js"
         handler="bitBswupHandler"></script>
-
 ```
 
-- scope: The scope of the service worker determines which files the service worker controls. You need more about that [read it](https://developer.chrome.com/docs/workbox/service-worker-lifecycle/#scope).
-- log: The log level for log provider. log options: `info`, `verbose`, `debug`, `error`
-- sw: The sw is name and path service worker file.
-- handler: The name of handler for the service worker events
-> You can not specify the values of the attributes, and use the default values which are equal to the above values. 
+- `scope`: The scope of the service worker ([read more](https://developer.chrome.com/docs/workbox/service-worker-lifecycle/#scope)).
+- `log`: The log level of the Bswup logger. available options are: `info`, `verbose`, `debug`, and `error`. (not implemented yet)
+- `sw`: The file path of the service worker file.
+- `handler`: The name of the handler function for the service worker events.
 
-6. Add a handler in the simplest way possible, like the below code. or you can add a handler with a progress process bar like the bitBswupHandler on the sample in the index.html file of the demo project in this repo.
+> You can remove any of these attributes, and use the default values mentioned above.
+
+5. Add a handler function like the below code to handle multiple events of the Bswup, or you can follow the full sample code which is provided in the Demo projects of this repo.
 
 ```js
-
 function bitBswupHandler(type, data) {
     switch (type)
     {
@@ -69,17 +66,57 @@ function bitBswupHandler(type, data) {
             return console.log('new version activated:', data.version);
     }
 }
-
 ```
-7. Configure additional settings in the service worker file (based on the sample shown in the `service-worker.js` file of the demo project)
 
-## <a id="service-worker" />**Service Worker**
-- `self.assetsInclude`: The list of files or regex of files to be cached.
-- `self.assetsExclude`: The list of files or regex of files that should not be cached.
-- `self.defaultUrl`: The default page url. Use `/` for `_Host.cshtml`
-- `self.prohibitedUrls`: The list of files or regex of files that should not be accessed.
+6. Configure additional settings in the service worker file like the following code:
+
+```js
+// In development, always fetch from the network and do not enable offline support.
+// This is because caching would make development more difficult (changes would not
+// be reflected on the first load after each change).
+//self.addEventListener('fetch', () => { });
+
+self.assetsInclude = [];
+self.assetsExclude = [/\.scp\.css$/, /weather\.json$/];
+self.defaultUrl = 'index.html';
+self.prohibitedUrls = [];
+self.assetsUrl = '/service-worker-assets.js';
+
+// more about SRI (Subresource Integrity) here: https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity
+// online tool to generate integrity hash: https://www.srihash.org/   or   https://laysent.github.io/sri-hash-generator/
+// using only js to generate hash: https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest
+self.externalAssets = [
+    //{
+    //    "hash": "sha256-lDAEEaul32OkTANWkZgjgs4sFCsMdLsR5NJxrjVcXdo=",
+    //    "url": "css/app.css"
+    //},
+    {
+        "url": "/"
+    },
+];
+
+self.caseInsensitiveUrl = true;
+
+self.serverHandledUrls = [/\/api\//];
+self.serverRenderedUrls = [/\/privacy$/];
+
+self.importScripts('_content/Bit.Bswup/bit-bswup.sw.js');
+```
+
+The most important line of code which is the only mandatory config in this file is the last line of importing the Bswup service worker file:
+
+```js
+self.importScripts('_content/Bit.Bswup/bit-bswup.sw.js');
+```
+
+The other settings are:
+
+- `self.assetsInclude`: The list of file names to be cached (regex supported).
+- `self.assetsExclude`: The list of file names that should not be cached (regex supported).
+- `self.defaultUrl`: The default page url. Use `/` when using `_Host.cshtml`.
+- `self.prohibitedUrls`: The list of file names that should not be accessed (regex supported).
 - `self.assetsUrl`: The url address of service worker assets.
-- `self.externalAssets`: The list of external assets. If you're not using `index.html` for default url, then you should add this `{ "url": "/" }` item.
-- `self.caseInsensitiveUrl`: If set true you can check case insensitive url in the cache process.
-- `self.serverHandledUrls`: The list of urls or regex that do not enter the service worker process. ex. `api, swagger, ...`
-- `self.serverRenderedUrls`: The list of urls or regex that should be cached by the server after rendering. ex. `about.html`
+- `self.externalAssets`: The list of external assets. If you're not using `index.html` for the default url, then you should add this `{ "url": "/" }` item.
+- `self.caseInsensitiveUrl`: If set true you can check case insensitive URL in the cache process.
+- `self.serverHandledUrls`: The list of URLs or regex that do not enter the service worker process. ex. `api, swagger, ...`
+- `self.serverRenderedUrls`: The list of URLs or regex that should be cached by the server after rendering. ex. `about.html`
