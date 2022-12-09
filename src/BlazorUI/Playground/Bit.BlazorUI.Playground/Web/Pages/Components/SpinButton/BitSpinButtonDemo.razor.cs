@@ -269,8 +269,8 @@ public partial class BitSpinButtonDemo
 <div class=""example-box"">
     <BitSpinButton>
         <LabelTemplate>
-            <BitIcon IconName=""BitIconName.ChevronUpSmall"" Style=""color:green;"" />
-            <BitIcon IconName=""BitIconName.ChevronDownSmall"" Style=""color:red;"" />
+            <label style=""color: green;"">This is custom Label</label>
+            <BitIcon IconName=""BitIconName.Filter"" />
         </LabelTemplate>
     </BitSpinButton>
 </div>
