@@ -113,10 +113,10 @@ The other settings are:
 
 - `self.assetsInclude`: The list of file names to be cached (regex supported).
 - `self.assetsExclude`: The list of file names that should not be cached (regex supported).
-- `self.defaultUrl`: The default page url. Use `/` when using `_Host.cshtml`.
+- `self.defaultUrl`: The default page URL. Use `/` when using `_Host.cshtml`.
 - `self.prohibitedUrls`: The list of file names that should not be accessed (regex supported).
-- `self.assetsUrl`: The url address of service worker assets.
-- `self.externalAssets`: The list of external assets. If you're not using `index.html` for the default url, then you should add this `{ "url": "/" }` item.
-- `self.caseInsensitiveUrl`: If set true you can check case insensitive URL in the cache process.
-- `self.serverHandledUrls`: The list of URLs or regex that do not enter the service worker process. ex. `api, swagger, ...`
-- `self.serverRenderedUrls`: The list of URLs or regex that should be cached by the server after rendering. ex. `about.html`
+- `self.assetsUrl`: The file path of the service worker assets file generated at compile time.
+- `self.externalAssets`: The list of external assets to cache that are not included in the auto-generated asset file. For example, if you're not using `index.html` (like `_host.cshtml`), then you should add `{ "url": "/" }`.
+- `self.caseInsensitiveUrl`: Enables the case insensitivity in the URL checking of the cache process.
+- `self.serverHandledUrls`: The list of URLs that do not enter the service worker offline process and will be handled only by server (regex supported). such as `/api`, `/swagger`, ...
+- `self.serverRenderedUrls`: The list of URLs that should be rendered by the server and not client while navigating (regex supported). such as `/about.html`, `/privacy`, ...
