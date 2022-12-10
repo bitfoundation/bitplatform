@@ -1,10 +1,10 @@
 ## Bit Blazor Update Progress (Bit Bup)
 
-To use BitBup, please follow these steps:
+To use Bit Bup, please follow these steps:
 
 1. Install the `Bit.Bup` nuget package
 
-2. In the default document (`_Host.cshtml`, `index.html` or `_Layout.cshtml`), add an `autostart="false"` attribute and value to the <script> tag for the Blazor script.
+2. In the default document (`index.html`, `_Host.cshtml`, or `_Layout.cshtml`), add an `autostart="false"` attribute and value to the script tag of the Blazor script.
 
 ```html
 
@@ -12,18 +12,20 @@ To use BitBup, please follow these steps:
 
 ```
 
-3. In the default document (`_Host.cshtml`, `index.html` or `_Layout.cshtml`), add the `Bit.Bup` reference after the <script> tag for the Blazor script.
+3. Also In the default document (`index.html`, `_Host.cshtml`, or `_Layout.cshtml`), add the `Bit.Bup` reference after the script tag of the Blazor script.
+
 ```html
 
 <script src="_content/Bit.Bup/bit-bup.js" log="verbose" handler="bitBupHandler"></script>
 
 ```
 
-- log: The log level for log provider. log options: `info`, `verbose`, `debug`, `error`
-- handler: The name of handler for the service worker events
-> You can not specify the values of the attributes, and use the default values which are equal to the above values. 
+- `log`: The log level of the Bit Bup logger. available options are: `info`, `verbose`, `debug`, and `error`. (not implemented yet)
+- `handler`: The name of the handler function for the Bit Bup events.
 
-4. Add a handler in the simplest way possible, like the below code. or you can add a handler with a progress process bar like the bitBupHandler on the sample in the index.html file of the demo project in this repo.
+> You can remove any of these attributes, and use the default values mentioned above.
+
+4. Add a handler function like the below code to handle multiple events of the Bit Bup, or you can follow the full sample code which is provided in the Demo projects of this repo.
 
 ```js
 
