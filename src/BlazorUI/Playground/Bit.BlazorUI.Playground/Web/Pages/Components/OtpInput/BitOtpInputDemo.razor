@@ -4,72 +4,77 @@
                ComponentDescription="The OTP input is used for MFA procedure of authenticating users by a one-time password."
                ComponentParameters="@componentParameters"
                EnumParameters="@enumParameters">
-    <ComponentExampleBox Title="Basic OtpInput" HTMLSourceCode="@example1HtmlCode" ExampleId="example1">
+
+    <ComponentExampleBox Title="Basic BitOtpInput" HTMLSourceCode="@example1HtmlCode" ExampleId="example1">
         <ExamplePreview>
-            <div class="otp-input-box">
-                <BitLabel>OtpInput</BitLabel>
-                <BitOtpInput Length="4" @bind-Value="basicOtpInput" />
-                <div>Output: [@basicOtpInput]</div>
-            </div>
-            <div class="otp-input-box">
-                <BitLabel>Disabled OtpInput</BitLabel>
-                <BitOtpInput Length="6" IsEnabled="false" />
+            <div class="example-box">
+                <div>
+                    <BitLabel>Basic</BitLabel>
+                    <BitOtpInput Length="4" @bind-Value="basicOtpInput" />
+                    <div>Output: [@basicOtpInput]</div>
+                </div>
+                <div>
+                    <BitLabel>Disabled</BitLabel>
+                    <BitOtpInput Length="6" IsEnabled="false" />
+                </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="OtpInput with AutoFocus" HTMLSourceCode="@example2HtmlCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example2">
+    <ComponentExampleBox Title="BitOtpInput with AutoFocus" HTMLSourceCode="@example2HtmlCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example2">
         <ExamplePreview>
-            <div class="example-desc">The OtpInput will be focused by default in the first render.</div>
-            <div class="otp-input-box">
+            <div class="example-desc">The BitOtpInput will be focused by default in the first render.</div>
+            <div>
                 <BitOtpInput Length="4" AutoFocus="true" @bind-Value="autoFocusOtpInput" />
                 <div>Output: [@autoFocusOtpInput]</div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="OtpInput with InputType" HTMLSourceCode="@example3HtmlCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example3">
+    <ComponentExampleBox Title="BitOtpInput with InputType" HTMLSourceCode="@example3HtmlCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example3">
         <ExamplePreview>
-            <div class="otp-input-box">
-                <BitLabel>Text</BitLabel>
-                <BitOtpInput Length="4" InputType="BitOtpInputType.Text" @bind-Value="textOtpInput" />
-                <div>Output: [@textOtpInput]</div>
-            </div>
-            <div class="otp-input-box">
-                <BitLabel>Number</BitLabel>
-                <BitOtpInput Length="4" InputType="BitOtpInputType.Number" @bind-Value="numberOtpInput" />
-                <div>Output: [@numberOtpInput]</div>
-            </div>
-            <div class="otp-input-box">
-                <BitLabel>Password</BitLabel>
-                <BitOtpInput Length="4" InputType="BitOtpInputType.Password" @bind-Value="passwordOtpInput" />
-                <div>Output: [@passwordOtpInput]</div>
+            <div class="example-box">
+                <div>
+                    <BitLabel>Text</BitLabel>
+                    <BitOtpInput Length="4" InputType="BitOtpInputType.Text" @bind-Value="textOtpInput" />
+                    <div>Output: [@textOtpInput]</div>
+                </div>
+                <div>
+                    <BitLabel>Number</BitLabel>
+                    <BitOtpInput Length="4" InputType="BitOtpInputType.Number" @bind-Value="numberOtpInput" />
+                    <div>Output: [@numberOtpInput]</div>
+                </div>
+                <div>
+                    <BitLabel>Password</BitLabel>
+                    <BitOtpInput Length="4" InputType="BitOtpInputType.Password" @bind-Value="passwordOtpInput" />
+                    <div>Output: [@passwordOtpInput]</div>
+                </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="OtpInput with Direction" HTMLSourceCode="@example4HtmlCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
+    <ComponentExampleBox Title="BitOtpInput with Direction" HTMLSourceCode="@example4HtmlCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
         <ExamplePreview>
-            <div class="example-desc">You can choose which side OtpInput starts from.</div>
-            <div>
-                <div class="otp-input-box">
+            <div class="example-desc">You can choose which side BitOtpInput starts from.</div>
+            <div class="example-box">
+                <div>
                     <BitLabel>Left to right</BitLabel>
                     <BitOtpInput Length="4" Direction="BitOtpInputDirection.LeftToRight" @bind-Value="leftToRightOtpInput" />
                     <div>Output: [@leftToRightOtpInput]</div>
                 </div>
-                <div class="otp-input-box">
+                <div>
                     <BitLabel>Right to left</BitLabel>
                     <BitOtpInput Length="4" Direction="BitOtpInputDirection.RightToLeft" @bind-Value="rightToLeftOtpInput" />
                     <div>Output: [@rightToLeftOtpInput]</div>
                 </div>
             </div>
-            <div class="vertical-otp-box">
-                <div class="otp-input-box">
+            <div class="example-box row">
+                <div>
                     <BitLabel>Top to bottom</BitLabel>
                     <BitOtpInput Length="4" Direction="BitOtpInputDirection.TopToBottom" @bind-Value="topToBottomOtpInput" />
                     <div>Output: [@topToBottomOtpInput]</div>
                 </div>
-                <div class="otp-input-box">
+                <div>
                     <BitLabel>Bottom to top</BitLabel>
                     <BitOtpInput Length="4" Direction="BitOtpInputDirection.BottomToTop" @bind-Value="BottomToTopOtpInput" />
                     <div>Output: [@BottomToTopOtpInput]</div>
@@ -78,40 +83,57 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="OtpInput with Two-way binding" HTMLSourceCode="@example5HtmlCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
+    <ComponentExampleBox Title="BitOtpInput Binding" HTMLSourceCode="@example5HtmlCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
         <ExamplePreview>
-            <div class="otp-input-box">
-                <BitOtpInput Length="4" @bind-Value="twoWayBindOtpInput" />
-            </div>
-            <div>
-                <BitLabel>Output:</BitLabel>
-                <BitTextField @bind-Value="twoWayBindOtpInput" />
+            <div class="example-box">
+                <div>
+                    <BitLabel>One-way</BitLabel>
+                    <BitOtpInput Length="4" Value="@oneWayBindOtpInput" />
+                    <BitTextField Style="margin-top: 5px;" @bind-Value="oneWayBindOtpInput" />
+                </div>
+                <div>
+                    <BitLabel>Two-way</BitLabel>
+                    <BitOtpInput Length="4" @bind-Value="twoWayBindOtpInput" />
+                    <BitTextField Style="margin-top: 5px;" @bind-Value="twoWayBindOtpInput" />
+                </div>
+                <div>
+                    <BitLabel>OnChange</BitLabel>
+                    <BitOtpInput Length="4" OnChange="(value) => onChangeBindOtpInput = value" />
+                    <div>Output: [@onChangeBindOtpInput]</div>
+                </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="OtpInput with form validation" HTMLSourceCode="@example6HtmlCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example6">
+    <ComponentExampleBox Title="BitOtpInput with form validation" HTMLSourceCode="@example6HtmlCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example6">
         <ExamplePreview>
-            @if (formIsValidSubmit is false)
-            {
-                <EditForm Model="validationOtpInputModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
-                    <DataAnnotationsValidator />
-                    <div class="otp-input-box">
-                        <BitOtpInput Length="6" @bind-Value="validationOtpInputModel.OtpValue" />
-                        <ValidationMessage For="() => validationOtpInputModel.OtpValue" />
-                        <div>Output: [@validationOtpInputModel.OtpValue]</div>
-                    </div>
-                    <BitButton ButtonType="BitButtonType.Submit">
-                        Submit
-                    </BitButton>
-                </EditForm>
-            }
-            else
-            {
-                <BitMessageBar MessageBarType="BitMessageBarType.Success" IsMultiline="false">
-                    The form is valid to submit successfully.
-                </BitMessageBar>
-            }
+            <div class="example-box">
+                @if (formIsValidSubmit is false)
+                {
+                    <EditForm Model="validationOtpInputModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
+                        <DataAnnotationsValidator />
+
+                        <div class="validation-summary">
+                            <ValidationSummary />
+                        </div>
+
+                        <div>
+                            <BitOtpInput Length="6" @bind-Value="validationOtpInputModel.OtpValue" />
+                            <ValidationMessage For="() => validationOtpInputModel.OtpValue" />
+                        </div>
+
+                        <BitButton Style="margin-top: 10px;" ButtonType="BitButtonType.Submit">
+                            Submit
+                        </BitButton>
+                    </EditForm>
+                }
+                else
+                {
+                    <BitMessageBar MessageBarType="BitMessageBarType.Success" IsMultiline="false">
+                        The form is valid to submit successfully.
+                    </BitMessageBar>
+                }
+            </div>
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Reflection.Emit;
-using System.Text.RegularExpressions;
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
@@ -60,6 +56,11 @@ public partial class BitOtpInput
     /// </summary>
     [Parameter] public EventCallback<ClipboardEventArgs> OnPaste { get; set; }
 
+    /// <summary>
+    /// Callback for when the OtpInput value change.
+    /// </summary>
+    [Parameter] public EventCallback<string?> OnChange { get; set; }
+
     protected override string RootElementClass => "bit-otp";
 
     protected override async Task OnInitializedAsync()
@@ -83,6 +84,8 @@ public partial class BitOtpInput
             BitOtpInputType.Password => "text",
             _ => string.Empty
         };
+
+        OnValueChanging += HandleOnValueChanging;
 
         await base.OnInitializedAsync();
     }
@@ -122,7 +125,8 @@ public partial class BitOtpInput
     protected override void RegisterComponentClasses()
     {
         ClassBuilder.Register(() => ValueInvalid is true
-                                   ? $"{RootElementClass}-invalid-{VisualClassRegistrar()}" : string.Empty);
+                                   ? $"{RootElementClass}-invalid-{VisualClassRegistrar()}" 
+                                   : string.Empty);
 
         ClassBuilder.Register(() => Direction switch
         {
@@ -134,24 +138,45 @@ public partial class BitOtpInput
         });
     }
 
+    private void HandleOnValueChanging(object? sender, ValueChangingEventArgs<string?> args)
+    {
+        if (args.Value.HasValue() && (args.Value!.Length > Length || InputType is BitOtpInputType.Number && int.TryParse(args.Value, out _) is false))
+        {
+            args.ShouldChange = false;
+
+            if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+            if (Value == args.Value) return;
+
+            _ = ValueChanged.InvokeAsync(Value);
+        }
+    }
+
     private async Task HandleOnInput(ChangeEventArgs e, int index)
     {
-        if (IsEnabled is false) return;
-
-        var oldValue = _inputValue[index] ?? string.Empty;
-        _inputValue[index] = string.Empty;
-
-        await Task.Delay(1); // waiting for input default behavior before setting a new value.
-
+        var oldValue = _inputValue[index];
         var newValue = e.Value!.ToString()!;
 
-        if (newValue.HasValue())
-        {
-            var diff = DiffValues(oldValue, newValue);
-            _inputValue[index] = diff;
+        _inputValue[index] = string.Empty;
+        await Task.Delay(1); // waiting for input default behavior before setting a new value.
 
-            int nextIndex = index + 1;
-            if (nextIndex < Length) await _inputRef[nextIndex].FocusAsync();
+        if (IsEnabled is false || (ValueHasBeenSet && ValueChanged.HasDelegate is false))
+        {
+            _inputValue[index] = oldValue;
+        }
+        else if (newValue.HasValue())
+        {
+            var diff = DiffValues(oldValue ?? string.Empty, newValue);
+
+            if (InputType is BitOtpInputType.Number && int.TryParse(diff, out _) is false)
+            {
+                _inputValue[index] = oldValue;
+            }
+            else
+            {
+                _inputValue[index] = diff;
+                int nextIndex = index + 1;
+                if (nextIndex < Length) await _inputRef[nextIndex].FocusAsync();
+            }
         }
         else
         {
@@ -161,11 +186,13 @@ public partial class BitOtpInput
         CurrentValue = string.Join("", _inputValue);
 
         await OnInput.InvokeAsync(e);
+        await OnChange.InvokeAsync(CurrentValue);
     }
 
     private async Task HandleOnKeyDown(KeyboardEventArgs e, int index)
     {
         if (IsEnabled is false || e.Code is null) return;
+        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
         await NavigateInput(e.Code, e.Key, index);
 
@@ -249,15 +276,18 @@ public partial class BitOtpInput
     }
 
     [JSInvokable]
-    public void SetPastedData(string pastedValue)
+    public async Task SetPastedData(string pastedValue)
     {
+        if (IsEnabled is false) return;
+        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
         if (pastedValue.HasNoValue()) return;
-
         if (InputType is BitOtpInputType.Number && int.TryParse(pastedValue, out _) is false) return;
 
         SetInputValue(pastedValue);
 
         CurrentValue = string.Join("", _inputValue);
+
+        await OnChange.InvokeAsync(CurrentValue);
     }
 
     private void SetInputValue(string value)

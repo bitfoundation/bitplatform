@@ -1,21 +1,33 @@
 ﻿@import '../../../Styles/abstracts/_functions.scss';
+@import '../../../Styles/abstracts/_colors.scss';
+@import '../../../Styles/abstracts/_media-queries.scss';
 
-.otp-input-box {
-    margin-bottom: rem(15px);
+.validation-summary {
+    border-left: rem(5px) solid $Red10;
+    background-color: $ErrorBlockRed;
+    overflow: hidden;
+    margin-bottom: rem(10px);
 }
 
-::deep div.validation-message {
-    color: #A4262C;
-    font-size: 0.75rem;
+::deep {
+    .validation-message {
+        color: $Red20;
+        font-size: rem(12px);
+    }
+
+    .validation-errors {
+        margin: rem(5px);
+    }
 }
 
-.vertical-otp-box {
+.example-box {
     display: flex;
-    width: rem(265px);
-    justify-content: space-between;
+    gap: rem(10px);
+    flex-flow: column nowrap;
 
-    .otp-input-box {
-        margin-bottom: unset;
-        margin-right: rem(15px);
+    &.row {
+        gap: rem(40px);
+        flex-flow: row wrap;
+        margin-top: rem(20px);
     }
 }
