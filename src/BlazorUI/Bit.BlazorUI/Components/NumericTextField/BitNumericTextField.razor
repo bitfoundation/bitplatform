@@ -47,7 +47,7 @@
                aria-valuemax="@Max"
                aria-describedby="@AriaDescription"
                aria-disabled="@(IsEnabled is false)"
-               disabled="@(IsEnabled is false || (ValueHasBeenSet && ValueChanged.HasDelegate is false))"
+               disabled="@(IsEnabled is false)"
                class="bit-ntf-input"
                @ref="@_inputRef"
                @onfocus="e => HandleOnFocus(e)"
