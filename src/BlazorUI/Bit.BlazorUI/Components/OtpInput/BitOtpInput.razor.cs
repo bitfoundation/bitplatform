@@ -140,7 +140,7 @@ public partial class BitOtpInput
 
     private void HandleOnValueChanging(object? sender, ValueChangingEventArgs<string?> args)
     {
-        if (args.Value?.Length > Length)
+        if (args.Value.HasValue() && (args.Value!.Length > Length || InputType is BitOtpInputType.Number && int.TryParse(args.Value, out _) is false))
         {
             args.ShouldChange = false;
 
@@ -153,8 +153,6 @@ public partial class BitOtpInput
 
     private async Task HandleOnInput(ChangeEventArgs e, int index)
     {
-        if (IsEnabled is false) return;
-
         var oldValue = _inputValue[index] ?? string.Empty;
         _inputValue[index] = null;
 
@@ -162,17 +160,24 @@ public partial class BitOtpInput
 
         var newValue = e.Value!.ToString()!;
 
-        if (ValueHasBeenSet && ValueChanged.HasDelegate is false)
+        if (IsEnabled is false || (ValueHasBeenSet && ValueChanged.HasDelegate is false))
         {
             _inputValue[index] = oldValue;
         }
         else if (newValue.HasValue())
         {
             var diff = DiffValues(oldValue, newValue);
-            _inputValue[index] = diff;
 
-            int nextIndex = index + 1;
-            if (nextIndex < Length) await _inputRef[nextIndex].FocusAsync();
+            if (InputType is BitOtpInputType.Number && int.TryParse(diff, out _) is false)
+            {
+                _inputValue[index] = oldValue;
+            }
+            else
+            {
+                _inputValue[index] = diff;
+                int nextIndex = index + 1;
+                if (nextIndex < Length) await _inputRef[nextIndex].FocusAsync();
+            }
         }
         else
         {
@@ -274,9 +279,9 @@ public partial class BitOtpInput
     [JSInvokable]
     public async Task SetPastedData(string pastedValue)
     {
+        if (IsEnabled is false) return;
         if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
         if (pastedValue.HasNoValue()) return;
-
         if (InputType is BitOtpInputType.Number && int.TryParse(pastedValue, out _) is false) return;
 
         SetInputValue(pastedValue);

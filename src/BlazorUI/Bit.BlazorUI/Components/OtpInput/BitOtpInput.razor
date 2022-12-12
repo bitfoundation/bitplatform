@@ -15,7 +15,7 @@
                type="@_inputType"
                inputmode="@_inputMode"
                value="@_inputValue[index]"
-               disabled="@(IsEnabled is false || ValueHasBeenSet && ValueChanged.HasDelegate is false)"
+               disabled="@(IsEnabled is false)"
                autocomplete="@BitAutoCompleteValue.NewPassword"
                @ref="_inputRef[index]" 
                @onfocusin="HandleOnFocusIn"
