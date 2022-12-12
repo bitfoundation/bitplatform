@@ -153,12 +153,11 @@ public partial class BitOtpInput
 
     private async Task HandleOnInput(ChangeEventArgs e, int index)
     {
-        var oldValue = _inputValue[index] ?? string.Empty;
-        _inputValue[index] = null;
-
-        await Task.Delay(1); // waiting for input default behavior before setting a new value.
-
+        var oldValue = _inputValue[index];
         var newValue = e.Value!.ToString()!;
+
+        _inputValue[index] = string.Empty;
+        await Task.Delay(1); // waiting for input default behavior before setting a new value.
 
         if (IsEnabled is false || (ValueHasBeenSet && ValueChanged.HasDelegate is false))
         {
@@ -166,7 +165,7 @@ public partial class BitOtpInput
         }
         else if (newValue.HasValue())
         {
-            var diff = DiffValues(oldValue, newValue);
+            var diff = DiffValues(oldValue ?? string.Empty, newValue);
 
             if (InputType is BitOtpInputType.Number && int.TryParse(diff, out _) is false)
             {
