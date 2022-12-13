@@ -2,9 +2,9 @@
 
 namespace Bit.Butil;
 
-public static class Document
+public static class Window
 {
-    private const string ElementName = "document";
+    private const string ElementName = "window";
 
     public static void AddEventListener<T>(string domEvent, Action<T> listener, bool useCapture = false)
     {
