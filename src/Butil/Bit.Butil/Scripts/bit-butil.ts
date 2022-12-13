@@ -1,4 +1,4 @@
-var butil = (function () {
+var BitButil = (function () {
     const _handlers = {};
 
     return {

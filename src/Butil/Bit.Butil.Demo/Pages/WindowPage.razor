@@ -1,0 +1,40 @@
+﻿@page "/window"
+@inject IJSRuntime jsRuntime
+
+<PageTitle>Window Samples</PageTitle>
+
+<h1>Window</h1>
+
+<a href="/">Index</a>
+<br />
+<a href="/document">Document Samples</a>
+<hr />
+
+<button @onclick=AddEvenetListener>AddEvenetListener</button> &nbsp; <button @onclick=RemoveEvenetListener>RemoveEvenetListener</button>
+<hr />
+<div>Is Registered: @isRegistered</div>
+
+@code {
+    private bool isRegistered = false;
+
+    private Action<DomKeyboardEventArgs> _handler = default!;
+
+    protected override void OnInitialized()
+    {
+        _handler = (DomKeyboardEventArgs arg) => jsRuntime.InvokeVoidAsync("console.log", "KeyDown from C#:", arg.Code);
+
+        base.OnInitialized();
+    }
+
+    private void AddEvenetListener()
+    {
+        Window.AddEventListener(DomEvents.KeyDown, _handler);
+        isRegistered = true;
+    }
+
+    private void RemoveEvenetListener()
+    {
+        Window.RemoveEventListener(DomEvents.KeyDown, _handler);
+        isRegistered = false;
+    }
+}
