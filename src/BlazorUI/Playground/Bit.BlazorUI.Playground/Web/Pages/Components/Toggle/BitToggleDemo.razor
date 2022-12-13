@@ -2,94 +2,77 @@
 
 @using Bit.BlazorUI.Playground.Web.Components
 
-<ComponentDemo ComponentName="Toggle" ComponentDescription="A toggle represents a physical switch that allows someone to choose between two mutually exclusive options.  For example, “On/Off”, “Show/Hide”. Choosing an option should produce an immediate result."
-               ComponentParameters="componentParameters" EnumParameters="enumParameters">
-    <ComponentExampleBox Title="BitToggle" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
+<ComponentDemo ComponentName="Toggle"
+               ComponentDescription="A toggle represents a physical switch that allows someone to choose between two mutually exclusive options.  For example, “On/Off”, “Show/Hide”. Choosing an option should produce an immediate result."
+               ComponentParameters="@componentParameters">
+
+    <ComponentExampleBox Title="Basic" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
-            <div>
-                <BitToggle Label="Enabled And Checked" @bind-Value="IsToggleChecked" IsEnabled="true" OnText="On" OffText="Off" />
-            </div>
-            <div>
-                <BitToggle Label="Enabled And Unchecked" @bind-Value="IsToggleUnChecked" IsEnabled="true" OnText="On" OffText="Off" />
-            </div>
-            <div>
-                <BitToggle Label="Disabled And Checked" Value="true" IsEnabled="false" OnText="On" OffText="Off" />
-            </div>
-            <div>
-                <BitToggle Label="Disabled And Unchecked" Value="false" IsEnabled="false" OnText="On" OffText="Off" />
-            </div>
-            <div class="m-t-15">
-                <BitToggle Label="With Inline Label" @bind-Value="IsToggleUnChecked" IsEnabled="true" IsInlineLabel="true" OnText="On" OffText="Off" />
-            </div>
-            <div class="m-t-15">
-                <BitToggle Label="Disabled With Inline Label" Value="false" IsEnabled="false" IsInlineLabel="true" OnText="On" OffText="Off" />
-            </div>
-            <div class="m-t-15">
-                <BitToggle Label="With Inline Label And Without OnText And OffText" @bind-Value="IsToggleUnChecked" IsEnabled="true" IsInlineLabel="true" />
-            </div>
-            <div class="m-t-15">
-                <BitToggle Label="Disabled With Inline Label And Without OnText And OffText" Value="false" IsEnabled="false" IsInlineLabel="true" />
-            </div>
-            <div>
-                <BitToggle Label="Enabled And Checked (ARIA 1.0 compatible)" @bind-Value="IsToggleChecked" IsEnabled="true" OnText="On" OffText="Off" Role="Checkbox" />
+            <div class="example-box">
+                <BitToggle Label="Basic" @bind-Value="BasicValue" />
+                <BitToggle Label="Disabled" @bind-Value="DisabledValue" IsEnabled="false" />
+                <BitToggle Label="OnText And OffText" @bind-Value="OnTextValue" OnText="On" OffText="Off" />
+                <BitToggle Label="Inline Label" @bind-Value="InLineLabelValue" IsInlineLabel="true" />
+                <BitToggle @bind-Value="DefaultTextValue" DefaultText="Default Text" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Toggles With Custom Labels" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example2">
+    <ComponentExampleBox Title="BitToggle with Custom Label" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example2">
         <ExamplePreview>
-            <div class="m-t-15">
-                <BitToggle @bind-Value="IsToggleUnChecked" IsEnabled="true" OnText="On" OffText="Off">
-                    <LabelFragment>
-                        Custom Label
-                    </LabelFragment>
+            <div class="example-box">
+                <BitToggle @bind-Value="LabelTemplateValue">
+                    <LabelTemplate>
+                        <span style="color: green;">This is custom Label</span>
+                        <BitIcon IconName="BitIconName.Filter" />
+                    </LabelTemplate>
                 </BitToggle>
             </div>
-            <div class="m-t-15">
-                <BitToggle @bind-Value="BindedIsToggleUnChecked" IsEnabled="true" OnText="On" OffText="Off" IsInlineLabel="true">
-                    <LabelFragment>
-                        Custom Inline Label
-                    </LabelFragment>
-                </BitToggle>
-                <div class="m-t-15">
-                    <BitButton Class="m-t-15" OnClick="() => BindedIsToggleUnChecked = true">Make Toggle Check</BitButton>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="BitToggle Binding" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example3">
+        <ExamplePreview>
+            <div class="example-box">
+                <div>
+                    <BitToggle Value="OneWayValue" Label="One-way" OnText="Off" OffText="On" />
+                    <BitToggleButton @bind-IsChecked="OneWayValue" Label="@(OneWayValue ? "Off" : "On")" />
+                </div>
+                <div>
+                    <BitToggle @bind-Value="TwoWayValue" Label="Two-way" OnText="Off" OffText="On" />
+                    <BitToggleButton @bind-IsChecked="TwoWayValue" Label="@(TwoWayValue ? "Off" : "On")" />
                 </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Toggle validation" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example3">
+    <ComponentExampleBox Title="BitToggle validation" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
         <ExamplePreview>
-            <div class="m-t-15">
-                @if (string.IsNullOrEmpty(SuccessMessage))
-                {
-                    <EditForm Model="ValidationForm" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
-                        <DataAnnotationsValidator />
+            @if (string.IsNullOrEmpty(SuccessMessage))
+            {
+                <EditForm Model="ValidationForm" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
+                    <DataAnnotationsValidator />
 
-                        <div class="validation-summary">
-                            <ValidationSummary />
-                        </div>
+                    <div class="validation-summary">
+                        <ValidationSummary />
+                    </div>
 
-                        <div>
-                            <BitToggle @bind-Value="ValidationForm.TermsAgreement" DefaultText="I agree with the terms and conditions." />
+                    <div>
+                        <BitToggle @bind-Value="ValidationForm.TermsAgreement" DefaultText="I agree with the terms and conditions." />
+                        <ValidationMessage For="@(() => ValidationForm.TermsAgreement)" />
+                    </div>
 
-                            <ValidationMessage For="@(() => ValidationForm.TermsAgreement)" />
-                        </div>
-
-                        <div class="m-t-15">
-                            <BitButton ButtonType="BitButtonType.Submit">
-                                Submit
-                            </BitButton>
-                        </div>
-                    </EditForm>
-                }
-                else
-                {
-                    <BitMessageBar MessageBarType="BitMessageBarType.Success" IsMultiline="false">
-                        @SuccessMessage
-                    </BitMessageBar>
-                }
-            </div>
+                    <BitButton Style="margin-top: 10px;" ButtonType="BitButtonType.Submit">
+                        Submit
+                    </BitButton>
+                </EditForm>
+            }
+            else
+            {
+                <BitMessageBar MessageBarType="BitMessageBarType.Success" IsMultiline="false">
+                    @SuccessMessage
+                </BitMessageBar>
+            }
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>
