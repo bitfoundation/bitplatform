@@ -10,9 +10,9 @@
                    AriaLabel="@AriaLabel"
                    Role="@Role"
                    Label="@Label">
-            <LabelFragment>
-                @LabelFragment
-            </LabelFragment>
+            <LabelTemplate>
+                @LabelTemplate
+            </LabelTemplate>
         </BitToggle>
     </CascadingValue>
 
@@ -28,7 +28,7 @@
     [Parameter] public string AriaLabel { get; set; }
     [Parameter] public string Role { get; set; }
     [Parameter] public string Label { get; set; }
-    [Parameter] public RenderFragment LabelFragment { get; set; }
+    [Parameter] public RenderFragment LabelTemplate { get; set; }
     [Parameter] public BitToggleTestModel TestModel { get; set; }
 
     public int ValidCount { get; set; }
