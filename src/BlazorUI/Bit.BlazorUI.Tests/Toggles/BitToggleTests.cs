@@ -148,13 +148,13 @@ public class BitToggleTests : BunitTestContext
         var bitToggleButton = com.Find(".tgl-btn");
 
         StringBuilder labelIdBuilder = new();
-        labelIdBuilder.Append("lbl_");
-        labelIdBuilder.Append(bitToggleButton.Id.Replace("tgl_", ""));
+        labelIdBuilder.Append("label_");
+        labelIdBuilder.Append(bitToggleButton.Id.Replace("toggle_", ""));
         var labelId = labelIdBuilder.ToString();
         
         StringBuilder stateTextIdBuilder = new();
-        stateTextIdBuilder.Append("state_txt_");
-        stateTextIdBuilder.Append(bitToggleButton.Id.Replace("tgl_", ""));
+        stateTextIdBuilder.Append("state_text_");
+        stateTextIdBuilder.Append(bitToggleButton.Id.Replace("toggle_", ""));
         var stateTextId = stateTextIdBuilder.ToString();
 
         var ariaLabelledById = string.Empty;
@@ -211,7 +211,7 @@ public class BitToggleTests : BunitTestContext
             parameters.Add(p => p.Label, label);
         });
 
-        var bitToggleLabel = com.Find(".tgl-lbl");
+        var bitToggleLabel = com.Find("label");
         Assert.AreEqual(bitToggleLabel.TextContent, label);
     }
 
@@ -223,7 +223,7 @@ public class BitToggleTests : BunitTestContext
             parameters.Add(p => p.LabelTemplate, labelTemplate);
         });
 
-        var bitToggleLabelChild = com.Find(".tgl-lbl").ChildNodes;
+        var bitToggleLabelChild = com.Find("label").ChildNodes;
         bitToggleLabelChild.MarkupMatches(labelTemplate);
     }
 

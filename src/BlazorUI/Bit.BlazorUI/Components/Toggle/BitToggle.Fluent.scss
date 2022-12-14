@@ -1,7 +1,7 @@
 ﻿@import "../../Styles/Fluent/colors.fluent.scss", "../../Styles/functions.scss";
 
 @mixin getStyle($enabled: true, $checked: true) {
-    .tgl-lbl {
+    label {
         @if $enabled {
             color: $Grey160;
         }
@@ -10,7 +10,7 @@
         }
     }
 
-    .tgl-container {
+    .container {
         .tgl-btn {
             @if $enabled {
                 @if $checked {
@@ -19,7 +19,7 @@
                     background: $Primary;
                     justify-content: flex-end;
 
-                    .tgl-state {
+                    .state {
                         background-color: $White;
                     }
 
@@ -33,14 +33,14 @@
                     cursor: pointer;
                     background: $White;
 
-                    .tgl-state {
+                    .state {
                         background-color: $Grey130;
                     }
 
                     &:hover {
                         border-color: $Grey160;
 
-                        .tgl-state {
+                        .state {
                             background-color: $Grey160;
                         }
                     }
@@ -53,7 +53,7 @@
                     background: $Grey60;
                     justify-content: flex-end;
 
-                    .tgl-state {
+                    .state {
                         background-color: $Grey20;
                     }
                 }
@@ -62,7 +62,7 @@
                     cursor: default;
                     background: $White;
 
-                    .tgl-state {
+                    .state {
                         background-color: $Grey60;
                     }
                 }
@@ -99,16 +99,16 @@
         display: flex;
         align-items: center;
 
-        .tgl-lbl {
-            margin: 0px 16px 0px 0px;
+        label {
+            margin: 0px rem(16px) 0px 0px;
         }
     }
 
     &.bit-tgl-noonoff-fluent {
-        .tgl-container {
-            .state-txt {
+        .container {
+            .state-text {
                 display: inline-block;
-                margin: 0px 0px 0px 16px;
+                margin: 0px 0px 0px rem(16px);
                 order: 1;
             }
         }
@@ -116,19 +116,19 @@
 
     &.bit-tgl-invalid-fluent {
         &.bit-tgl-enabled-unchecked-fluent {
-            .tgl-container {
+            .container {
                 .tgl-btn {
                     border-color: $Red20;
                 }
 
-                .state-txt {
+                .state-text {
                     color: $Red20;
                 }
             }
         }
 
         &.bit-tgl-enabled-checked-fluent {
-            .tgl-container {
+            .container {
                 .tgl-btn {
                     background-color: $Red20;
 
@@ -137,45 +137,47 @@
                     }
                 }
 
-                .state-txt {
+                .state-text {
                     color: $Red20;
                 }
             }
         }
     }
 
-    .tgl-lbl {
+    label {
         font-size: rem(14);
         font-weight: 600;
         box-sizing: border-box;
         box-shadow: none;
         margin: 0px;
         display: inline-block;
-        padding: 5px 0px;
+        padding: rem(5px) 0px;
         overflow-wrap: break-word;
     }
 
-    .tgl-container {
+    .container {
         display: flex;
         position: relative;
+        align-items: center;
 
         .tgl-btn {
             outline: transparent;
             position: relative;
             font-size: 20px;
             box-sizing: border-box;
-            width: 40px;
-            height: 20px;
-            border-radius: 10px;
+            width: rem(40px);
+            min-width: rem(40px);
+            height: rem(20px);
+            border-radius: rem(10px);
             transition: all 0.1s ease 0s;
             display: flex;
             align-items: center;
             padding: 0px 3px;
 
-            .tgl-state {
+            .state {
                 display: block;
-                width: 12px;
-                height: 12px;
+                width: rem(12px);
+                height: rem(12px);
                 border-radius: 50%;
                 transition: all 0.1s ease 0s;
                 border-width: 6px;
@@ -185,9 +187,9 @@
             }
         }
 
-        .state-txt {
+        .state-text {
             padding: 0px;
-            margin: 0px 8px;
+            margin: 0px rem(8px);
             font-weight: 400;
             user-select: none;
         }

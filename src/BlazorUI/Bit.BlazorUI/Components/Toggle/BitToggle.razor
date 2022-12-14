@@ -8,18 +8,18 @@
 
     @if (LabelTemplate is not null)
     {
-        <label for="@_buttonId" class="tgl-lbl">
+        <label for="@_buttonId">
             @LabelTemplate
         </label>
     }
     else if (Label.HasValue())
     {
-        <label for="@_buttonId" class="tgl-lbl">
+        <label for="@_buttonId">
             @Label
         </label>
     }
 
-    <div class="tgl-container">
+    <div class="container">
         <button id="@_buttonId"
                 class="tgl-btn"
                 aria-label="@AriaLabel"
@@ -30,11 +30,11 @@
                 data-is-focusable="true"
                 data-ktp-target="true"
                 @onclick="HandleOnClick">
-            <span class="tgl-state"></span>
+            <span class="state"></span>
         </button>
         @if (_stateText.HasValue())
         {
-            <label for="@_buttonId" class="state-txt">
+            <label for="@_buttonId" class="state-text">
                 @_stateText
             </label>
         }

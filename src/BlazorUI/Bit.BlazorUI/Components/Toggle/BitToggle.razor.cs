@@ -5,11 +5,11 @@ namespace Bit.BlazorUI;
 
 public partial class BitToggle
 {
-    private string? _buttonId;
-    private string? _labelId;
-    private string? _stateTextId;
     private string? _labelledById;
     private string? _stateText;
+    private string? _buttonId => $"toggle_{UniqueId}";
+    private string? _labelId => $"label_{UniqueId}";
+    private string? _stateTextId => $"state_text_{UniqueId}";
     private string? _ariaChecked => CurrentValueAsString;
 
     /// <summary>
@@ -57,10 +57,6 @@ public partial class BitToggle
 
     protected override async Task OnInitializedAsync()
     {
-        _buttonId = $"tgl_{UniqueId}";
-        _labelId = $"lbl_{UniqueId}";
-        _stateTextId = $"state_txt_{UniqueId}";
-
         SetTexts();
 
         OnValueChanged += HandleOnValueChanged;
@@ -77,8 +73,8 @@ public partial class BitToggle
             return $"{RootElementClass}-{isEnabledClass}-{isCheckedClass}-{VisualClassRegistrar()}";
         });
 
-        ClassBuilder.Register(() => IsInlineLabel ? 
-                                    $"{RootElementClass}-inline-{VisualClassRegistrar()}" 
+        ClassBuilder.Register(() => IsInlineLabel
+                                    ? $"{RootElementClass}-inline-{VisualClassRegistrar()}" 
                                     : string.Empty);
 
         ClassBuilder.Register(() => OnText.HasNoValue() || OffText.HasNoValue()
