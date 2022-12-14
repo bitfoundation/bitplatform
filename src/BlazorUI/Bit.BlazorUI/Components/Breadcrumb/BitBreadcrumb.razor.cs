@@ -138,11 +138,11 @@ public partial class BitBreadcrumb
     {
         StringBuilder itemClasses = new();
 
-        itemClasses.Append("bit-brc-itm");
+        itemClasses.Append("item");
 
         if (IsCurrentItem(item))
         {
-            itemClasses.Append(" bit-brc-crt-itm");
+            itemClasses.Append(" current-item");
         }
 
         if (IsCurrentItem(item) && CurrentItemClass.HasValue())

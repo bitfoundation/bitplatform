@@ -8,7 +8,7 @@
      class="@ClassBuilder.Value"
      aria-label="@AriaLabel">
 
-    <div class="bit-brc-items-wrapper" id="@_breadcrumbId">
+    <div class="items-wrapper" id="@_breadcrumbId">
         <ul>
             @foreach ((BitBreadcrumbItem item, int index) in _itemsToShowInBreadcrumb.Select((item, index) => (item, index)))
             {
@@ -16,7 +16,7 @@
                     @if (_overflowItems.Any() && index == OverflowIndex)
                     {
                         <button type="button" class="overflow-btn" aria-label="@OverflowAriaLabel" id="@_overflowDropDownId" @onclick="HandleOnClick">
-                            <span>
+                            <span class="overflow-icon-container">
                                 <i class="@($"bit-icon bit-icon--{OnRenderOverflowIcon.GetName()}")"></i>
                             </span>
                         </button>
@@ -54,7 +54,7 @@
 
     <div class="bit-brc-overlay" id="@_breadcrumbOverlayId" @onclick="CloseCallout"></div>
 
-    <div class="bit-brc-overflow-menu-wrapper"
+    <div class="overflow-menu-wrapper"
          id="@_breadcrumbCalloutId"
          tabindex="0"
          role="listbox">

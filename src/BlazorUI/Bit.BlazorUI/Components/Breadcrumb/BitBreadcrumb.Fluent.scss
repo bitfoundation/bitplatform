@@ -2,14 +2,17 @@
 
 .bit-brc {
     &.bit-brc-disabled-fluent {
-        a, button, i {
-            color: $Grey90;
-            cursor: default;
-            pointer-events: none;
+        .items-wrapper {
+            .overflow-btn, .item, .current-item, i {
+                color: $Grey60;
+                cursor: default;
+                pointer-events: none;
+                font-weight: 400;
+            }
         }
     }
 
-    .bit-brc-items-wrapper {
+    .items-wrapper {
 
         ul {
             padding-inline-start: 0;
@@ -25,44 +28,42 @@
         }
 
         .overflow-btn {
-            font-size: rem(20px);
-            font-weight: 400;
-            color: $Grey160;
-            background-color: transparent;
             cursor: pointer;
+            line-height: rem(36px);
+            color: $Grey160;
+
+            .overflow-icon-container {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                padding: 0px rem(4px);
+            }
 
             &:hover {
                 background-color: $Grey20;
             }
         }
 
-        .bit-brc-itm {
+        .item {
             font-size: rem(20px);
+            font-weight: 400;
             padding: 0 rem(8px);
-            color: $Grey90;
             cursor: pointer;
+            line-height: rem(36px);
+            color: $Grey130;
+
+            &:hover {
+                background-color: $Grey20;
+            }
         }
 
-        .bit-brc-crt-itm {
-            font-size: rem(20px);
+        .current-item {
             font-weight: 600;
-            padding: 0 rem(8px);
             color: $Grey160;
         }
     }
 
-    .bit-brc-overlay {
-        display: none;
-        width: 100%;
-        height: 100%;
-        position: fixed;
-        top: 0;
-        left: 0;
-        z-index: 999;
-        background-color: transparent;
-    }
-
-    .bit-brc-overflow-menu-wrapper {
+    .overflow-menu-wrapper {
         display: none;
         position: fixed;
         max-height: rem(744px);
@@ -79,6 +80,11 @@
         z-index: 1001;
         overflow: hidden auto;
         -webkit-font-smoothing: antialiased;
+
+        ul {
+            padding-inline-start: 0;
+            margin: 0;
+        }
 
         a {
             width: 100%;
@@ -109,10 +115,16 @@
                 background-color: $Grey20;
             }
         }
+    }
 
-        ul {
-            padding-inline-start: 0;
-            margin: 0;
-        }
+    .bit-brc-overlay {
+        display: none;
+        width: 100%;
+        height: 100%;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 999;
+        background-color: transparent;
     }
 }
