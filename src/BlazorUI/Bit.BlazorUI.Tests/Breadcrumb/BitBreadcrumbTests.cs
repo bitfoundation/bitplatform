@@ -58,7 +58,7 @@ public class BitBreadcrumbTests : BunitTestContext
             parameters.Add(p => p.MaxDisplayedItems, maxDisplayedItems);
         });
 
-        var breadcrumbElements = component.FindAll(".bit-brc .bit-brc-items-wrapper ul li");
+        var breadcrumbElements = component.FindAll(".bit-brc .items-wrapper ul li");
 
         if (maxDisplayedItems > 0)
         {
@@ -88,7 +88,7 @@ public class BitBreadcrumbTests : BunitTestContext
 
         Assert.IsTrue(breadcrumbOverflowIcon.ClassList.Contains($"bit-icon--{icon}"));
 
-        var breadcrumbElements = component.FindAll(".bit-brc .bit-brc-items-wrapper ul li");
+        var breadcrumbElements = component.FindAll(".bit-brc .items-wrapper ul li");
         var overflowItem = breadcrumbElements[overflowIndex];
 
         Assert.AreEqual(breadcrumbElements.Count, maxDisplayedItems + 1);
