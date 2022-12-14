@@ -7,9 +7,9 @@ public partial class BitToggle
 {
     private string? _labelledById;
     private string? _stateText;
-    private string? _buttonId => $"toggle_{UniqueId}";
-    private string? _labelId => $"label_{UniqueId}";
-    private string? _stateTextId => $"state_text_{UniqueId}";
+    private string? _buttonId => $"{UniqueId}_button";
+    private string? _labelId => $"{UniqueId}_label";
+    private string? _stateTextId => $"{UniqueId}_state_text";
     private string? _ariaChecked => CurrentValueAsString;
 
     /// <summary>

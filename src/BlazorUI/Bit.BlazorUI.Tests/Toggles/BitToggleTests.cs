@@ -123,7 +123,7 @@ public class BitToggleTests : BunitTestContext
             parameters.Add(p => p.AriaLabel, ariaLabel);
         });
 
-        var bitToggleButton = com.Find(".bit-tgl .tgl-btn");
+        var bitToggleButton = com.Find(".bit-tgl button");
         Assert.AreEqual(bitToggleButton.GetAttribute("aria-label"), ariaLabel);
     }
 
@@ -145,17 +145,12 @@ public class BitToggleTests : BunitTestContext
             parameters.Add(p => p.Label, label);
         });
 
-        var bitToggleButton = com.Find(".tgl-btn");
+        var bitToggleButton = com.Find("button");
 
-        StringBuilder labelIdBuilder = new();
-        labelIdBuilder.Append("label_");
-        labelIdBuilder.Append(bitToggleButton.Id.Replace("toggle_", ""));
-        var labelId = labelIdBuilder.ToString();
+      
+        var labelId = bitToggleButton.Id.Replace("button", "label");
         
-        StringBuilder stateTextIdBuilder = new();
-        stateTextIdBuilder.Append("state_text_");
-        stateTextIdBuilder.Append(bitToggleButton.Id.Replace("toggle_", ""));
-        var stateTextId = stateTextIdBuilder.ToString();
+        var stateTextId = bitToggleButton.Id.Replace("button", "state_text");
 
         var ariaLabelledById = string.Empty;
         var stateText = (value ? onText : offText) ?? defaultText ?? string.Empty;
@@ -187,7 +182,7 @@ public class BitToggleTests : BunitTestContext
         });
 
         var ariaChecked = value ? "true" : "false";
-        var bitToggleButton = com.Find(".tgl-btn");
+        var bitToggleButton = com.Find("button");
         Assert.AreEqual(bitToggleButton.GetAttribute("aria-checked"), ariaChecked);
     }
 
@@ -199,7 +194,7 @@ public class BitToggleTests : BunitTestContext
             parameters.Add(p => p.Role, role);
         });
 
-        var bitToggleButton = com.Find(".tgl-btn");
+        var bitToggleButton = com.Find("button");
         Assert.AreEqual(bitToggleButton.GetAttribute("role"), role);
     }
 
@@ -245,7 +240,7 @@ public class BitToggleTests : BunitTestContext
         Assert.AreEqual(com.Instance.ValidCount, value ? 0 : 1);
         Assert.AreEqual(com.Instance.InvalidCount, value ? 1 : 0);
 
-        var button = com.Find(".tgl-btn");
+        var button = com.Find("button");
         button.Click();
         form.Submit();
 
@@ -278,7 +273,7 @@ public class BitToggleTests : BunitTestContext
             Assert.AreEqual(checkBox.GetAttribute("aria-invalid"), "true");
         }
 
-        var button = com.Find(".tgl-btn");
+        var button = com.Find("button");
         button.Click();
 
         Assert.AreEqual(checkBox.HasAttribute("aria-invalid"), !value);
@@ -311,7 +306,7 @@ public class BitToggleTests : BunitTestContext
 
         Assert.AreEqual(bitToggle.ClassList.Contains($"bit-tgl-invalid-{visualClass}"), value);
 
-        var button = com.Find(".tgl-btn");
+        var button = com.Find("button");
         button.Click();
 
         Assert.AreEqual(bitToggle.ClassList.Contains($"bit-tgl-invalid-{visualClass}"), !value);

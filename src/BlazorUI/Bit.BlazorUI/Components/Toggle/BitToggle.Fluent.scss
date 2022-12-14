@@ -11,7 +11,7 @@
     }
 
     .container {
-        .tgl-btn {
+        button {
             @if $enabled {
                 @if $checked {
                     border: 1px solid transparent;
@@ -117,7 +117,7 @@
     &.bit-tgl-invalid-fluent {
         &.bit-tgl-enabled-unchecked-fluent {
             .container {
-                .tgl-btn {
+                button {
                     border-color: $Red20;
                 }
 
@@ -129,7 +129,7 @@
 
         &.bit-tgl-enabled-checked-fluent {
             .container {
-                .tgl-btn {
+                button {
                     background-color: $Red20;
 
                     &:hover {
@@ -160,7 +160,7 @@
         position: relative;
         align-items: center;
 
-        .tgl-btn {
+        button {
             outline: transparent;
             position: relative;
             font-size: 20px;
