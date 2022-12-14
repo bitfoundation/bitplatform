@@ -6,36 +6,35 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
 
-    @if (LabelFragment is not null)
+    @if (LabelTemplate is not null)
     {
-        <label for="@Id">
-            @LabelFragment
+        <label for="@_buttonId">
+            @LabelTemplate
         </label>
     }
     else if (Label.HasValue())
     {
-        <label for="@Id">
+        <label for="@_buttonId">
             @Label
         </label>
     }
 
-    <div>
-        <button id="@Id"
+    <div class="container">
+        <button id="@_buttonId"
                 aria-label="@AriaLabel"
-                aria-checked="@AriaChecked"
-                aria-labelledby="@LabelledById"
+                aria-checked="@_ariaChecked"
+                aria-labelledby="@_labelledById"
                 role="@Role"
                 type="button"
                 data-is-focusable="true"
                 data-ktp-target="true"
                 @onclick="HandleOnClick">
-            <span></span>
+            <span class="state"></span>
         </button>
-
-        @if (StateText.HasValue())
+        @if (_stateText.HasValue())
         {
-            <label for="@Id">
-                @StateText
+            <label for="@_buttonId" class="state-text">
+                @_stateText
             </label>
         }
     </div>
