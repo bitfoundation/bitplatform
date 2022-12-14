@@ -31,34 +31,6 @@ public partial class BitBreadcrumbDemo
             }
         };
 
-        BreadcrumbItemsWithStyle = new List<BitBreadcrumbItem>
-        {
-            new()
-            {
-                Text = "Folder 1",
-                Href = "/components/breadcrumb",
-                Style = "background-color: lightblue; padding: 2px 5px; border-radius: 10px;"
-            },
-            new()
-            {
-                Text = "Folder 2",
-                Href = "/components/breadcrumb",
-                Style = "background-color: lightblue; padding: 2px 5px; border-radius: 10px;"
-            },
-            new()
-            {
-                Text = "Folder 3",
-                Href = "/components/breadcrumb",
-                Style = "background-color: lightblue; padding: 2px 5px; border-radius: 10px;"
-            },
-            new()
-            {
-                Text = "Folder 4",
-                Href = "/components/breadcrumb",
-                Style = "background-color: lightblue; padding: 2px 5px; border-radius: 10px;"
-            }
-        };
-
         BreadcrumbItemsWithClass = new List<BitBreadcrumbItem>
         {
             new()
@@ -87,6 +59,34 @@ public partial class BitBreadcrumbDemo
             }
         };
 
+        BreadcrumbItemsWithStyle = new List<BitBreadcrumbItem>
+        {
+            new()
+            {
+                Text = "Folder 1",
+                Href = "/components/breadcrumb",
+                Style = "background-color: #CC6; padding: 2px 5px; margin: 2px 5px; border-radius: 5px; color: green;"
+            },
+            new()
+            {
+                Text = "Folder 2",
+                Href = "/components/breadcrumb",
+                Style = "background-color: #CC6; padding: 2px 5px; margin: 2px 5px; border-radius: 5px; color: green;"
+            },
+            new()
+            {
+                Text = "Folder 3",
+                Href = "/components/breadcrumb",
+                Style = "background-color: #CC6; padding: 2px 5px; margin: 2px 5px; border-radius: 5px; color: green;"
+            },
+            new()
+            {
+                Text = "Folder 4",
+                Href = "/components/breadcrumb",
+                Style = "background-color: #CC6; padding: 2px 5px; margin: 2px 5px; border-radius: 5px; color: green;"
+            }
+        };
+
         BreadcrumbItemsWithControll = new List<BitBreadcrumbItem>
         {
             new()
@@ -109,8 +109,8 @@ public partial class BitBreadcrumbDemo
     }
 
     private List<BitBreadcrumbItem> BreadcrumbItems { get; set; }
-    private List<BitBreadcrumbItem> BreadcrumbItemsWithStyle { get; set; }
     private List<BitBreadcrumbItem> BreadcrumbItemsWithClass { get; set; }
+    private List<BitBreadcrumbItem> BreadcrumbItemsWithStyle { get; set; }
     private List<BitBreadcrumbItem> BreadcrumbItemsWithControll { get; set; }
 
     private BitBreadcrumbItem ControlledCurrentItem;
@@ -182,14 +182,44 @@ public partial class BitBreadcrumbDemo
         },
     };
 
+    private readonly string BasicItemsCSharpCode = @"
+private List<BitBreadcrumbItem> BreadcrumbItems { get; set; } = new List<BitBreadcrumbItem>
+{
+    new()
+    {
+        Text = ""Folder 1"",
+        Href = ""/components/breadcrumb""
+    },
+    new()
+    {
+        Text = ""Folder 2"",
+        Href = ""/components/breadcrumb""
+    },
+    new()
+    {
+        Text = ""Folder 3"",
+        Href = ""/components/breadcrumb""
+    },
+    new()
+    {
+        Text = ""Folder 4"",
+        Href = ""/components/breadcrumb""
+    }
+};
+";
+
     #region Sample Code 1
 
     private readonly string example1HTMLCode = @"
+<div>
+    <BitLabel>Basic</BitLabel>
+    <BitBreadcrumb Items=""BreadcrumbItems"" />
+</div>
 
-";
-
-    private readonly string example1CSharpCode = @"
-
+<div>
+    <BitLabel>Disabled</BitLabel>
+    <BitBreadcrumb Items=""BreadcrumbItems"" IsEnabled=""false"" />
+</div>
 ";
 
     #endregion
@@ -197,7 +227,19 @@ public partial class BitBreadcrumbDemo
     #region Sample Code 2
 
     private readonly string example2HTMLCode = @"
+<div>
+    <BitLabel>MaxDisplayedItems</BitLabel>
+    <BitBreadcrumb Items=""BreadcrumbItems"" MaxDisplayedItems=""1"" />
+    <BitBreadcrumb Items=""BreadcrumbItems"" MaxDisplayedItems=""2"" />
+    <BitBreadcrumb Items=""BreadcrumbItems"" MaxDisplayedItems=""3"" />
+</div>
 
+<div>
+    <BitLabel>OverflowIndex</BitLabel>
+    <BitBreadcrumb Items=""BreadcrumbItems"" MaxDisplayedItems=""3"" OverflowIndex=""0"" />
+    <BitBreadcrumb Items=""BreadcrumbItems"" MaxDisplayedItems=""3"" OverflowIndex=""1"" />
+    <BitBreadcrumb Items=""BreadcrumbItems"" MaxDisplayedItems=""3"" OverflowIndex=""2"" />
+</div>
 ";
 
     #endregion
@@ -205,7 +247,15 @@ public partial class BitBreadcrumbDemo
     #region Sample Code 3
 
     private readonly string example3HTMLCode = @"
+<BitBreadcrumb Items=""BreadcrumbItems""
+               MaxDisplayedItems=""3""
+               OverflowIndex=""2""
+               OnRenderOverflowIcon=""BitIconName.ChevronDown"" />
 
+<BitBreadcrumb Items=""BreadcrumbItems""
+               MaxDisplayedItems=""3""
+               OverflowIndex=""2""
+               OnRenderOverflowIcon=""BitIconName.CollapseMenu"" />
 ";
 
     #endregion
@@ -213,7 +263,124 @@ public partial class BitBreadcrumbDemo
     #region Sample Code 4
 
     private readonly string example4HTMLCode = @"
+<style>
+    .custom-item {
+        background-color: #CC6;
+        padding: 2px 5px !important;
+        margin: 2px 5px;
+        border-radius: 5px;
+        color: red !important;
+    }
 
+    .custom-current-item {
+        background-color: #CC6;
+        padding: 2px 5px !important;
+        margin: 0 5px;
+        border-radius: 5px;
+        color: blue !important;
+    }
+</style>
+
+<div>
+    <BitLabel>Items Class & Style</BitLabel>
+
+    <BitBreadcrumb Items=""BreadcrumbItemsWithClass"" />
+    <BitBreadcrumb Items=""BreadcrumbItemsWithStyle"" />
+</div>
+
+<div>
+    <BitLabel>Change Current Item Class & Style</BitLabel>
+
+    <BitBreadcrumb Items=""BreadcrumbItems""
+                   CurrentItemClass=""custom-current-item""
+                   CurrentItem=""BreadcrumbItems[3]"" />
+
+    <BitBreadcrumb Items=""BreadcrumbItems""
+                   CurrentItemStyle=""background-color: #CC6; padding: 2px 5px; margin: 0 5px; border-radius: 5px; color: blue;""
+                   CurrentItem=""BreadcrumbItems[3]"" />
+</div>
+";
+
+    private readonly string example4CSharpCode = @"
+private List<BitBreadcrumbItem> BreadcrumbItems { get; set; } = new List<BitBreadcrumbItem>
+{
+    new()
+    {
+        Text = ""Folder 1"",
+        Href = ""/components/breadcrumb""
+    },
+    new()
+    {
+        Text = ""Folder 2"",
+        Href = ""/components/breadcrumb""
+    },
+    new()
+    {
+        Text = ""Folder 3"",
+        Href = ""/components/breadcrumb""
+    },
+    new()
+    {
+        Text = ""Folder 4"",
+        Href = ""/components/breadcrumb""
+    }
+};
+
+private List<BitBreadcrumbItem> BreadcrumbItemsWithClass { get; set; } = new List<BitBreadcrumbItem>
+{
+    new()
+    {
+        Text = ""Folder 1"",
+        Href = ""/components/breadcrumb"",
+        Class = ""custom-item""
+    },
+    new()
+    {
+        Text = ""Folder 2"",
+        Href = ""/components/breadcrumb"",
+        Class = ""custom-item""
+    },
+    new()
+    {
+        Text = ""Folder 3"",
+        Href = ""/components/breadcrumb"",
+        Class = ""custom-item""
+    },
+    new()
+    {
+        Text = ""Folder 4"",
+        Href = ""/components/breadcrumb"",
+        Class = ""custom-item""
+    }
+};
+
+private List<BitBreadcrumbItem> BreadcrumbItemsWithStyle { get; set; } = new List<BitBreadcrumbItem>
+{
+    new()
+    {
+        Text = ""Folder 1"",
+        Href = ""/components/breadcrumb"",
+        Style = ""background-color: #CC6; padding: 2px 5px; margin: 2px 5px; border-radius: 5px; color: green;""
+    },
+    new()
+    {
+        Text = ""Folder 2"",
+        Href = ""/components/breadcrumb"",
+        Style = ""background-color: #CC6; padding: 2px 5px; margin: 2px 5px; border-radius: 5px; color: green;""
+    },
+    new()
+    {
+        Text = ""Folder 3"",
+        Href = ""/components/breadcrumb"",
+        Style = ""background-color: #CC6; padding: 2px 5px; margin: 2px 5px; border-radius: 5px; color: green;""
+    },
+    new()
+    {
+        Text = ""Folder 4"",
+        Href = ""/components/breadcrumb"",
+        Style = ""background-color: #CC6; padding: 2px 5px; margin: 2px 5px; border-radius: 5px; color: green;""
+    }
+};
 ";
 
     #endregion
@@ -221,33 +388,36 @@ public partial class BitBreadcrumbDemo
     #region Sample Code 5
 
     private readonly string example5HTMLCode = @"
-<style>
-    .custom-item {
-        background-color: lightgreen;
-        padding: rem(2px) rem(5px);
-        border-radius: rem(10px);
-    }
-
-    .custom-current-item {
-        color: deeppink;
-    }
-</style>
+<BitBreadcrumb Items=""@BreadcrumbItemsWithControll""
+               MaxDisplayedItems=""3""
+               OverflowIndex=""2""
+               CurrentItem=""@ControlledCurrentItem""
+               OnItemClick=""(item) => ControlledCurrentItem = item""
+               CurrentItemStyle=""background-color: #CC6; padding: 2px 5px; border-radius: 5px; color: red;"" />
 ";
 
     private readonly string example5CSharpCode = @"
+private List<BitBreadcrumbItem> BreadcrumbItemsWithControll { get; set; } = new List<BitBreadcrumbItem>
+{
+    new()
+    {
+        Text = ""Folder 1""
+    },
+    new()
+    {
+        Text = ""Folder 2""
+    },
+    new()
+    {
+        Text = ""Folder 3""
+    },
+    new()
+    {
+        Text = ""Folder 4""
+    }
+};
 
-";
-
-    #endregion
-
-    #region Sample Code 6
-
-    private readonly string example6HTMLCode = @"
-
-";
-
-    private readonly string example6CSharpCode = @"
-
+private BitBreadcrumbItem ControlledCurrentItem;
 ";
 
     #endregion

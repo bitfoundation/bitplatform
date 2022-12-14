@@ -5,10 +5,10 @@ namespace Bit.BlazorUI;
 public partial class BitBreadcrumb
 {
     private bool _isCalloutOpen;
-    private string _breadcrumbId = string.Empty;
-    private string _breadcrumbCalloutId = string.Empty;
-    private string _breadcrumbOverlayId = string.Empty;
-    private string _overflowDropDownId = string.Empty;
+    private string _breadcrumbId => $"breadcrumb-items-wrapper-{UniqueId}";
+    private string _breadcrumbCalloutId => $"overflow-dropdown-callout{UniqueId}";
+    private string _breadcrumbOverlayId => $"overflow-dropdown-overlay-{UniqueId}";
+    private string _overflowDropDownId => $"overflow-dropdown-{UniqueId}";
 
     private IList<BitBreadcrumbItem> _itemsToShowInBreadcrumb = new List<BitBreadcrumbItem>();
     private IList<BitBreadcrumbItem> _overflowItems = new List<BitBreadcrumbItem>();
@@ -67,16 +67,6 @@ public partial class BitBreadcrumb
     [Parameter] public EventCallback<BitBreadcrumbItem> OnItemClick { get; set; }
 
     protected override string RootElementClass => "bit-brc";
-
-    protected override async Task OnInitializedAsync()
-    {
-        _breadcrumbId = $"breadcrumb-items-wrapper-{UniqueId}";
-        _overflowDropDownId = $"overflow-dropdown-{UniqueId}";
-        _breadcrumbOverlayId = $"overflow-dropdown-overlay-{UniqueId}";
-        _breadcrumbCalloutId = $"overflow-dropdown-callout{UniqueId}";
-
-        await base.OnInitializedAsync();
-    }
 
     protected override async Task OnParametersSetAsync()
     {
