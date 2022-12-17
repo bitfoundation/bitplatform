@@ -1,19 +1,19 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
-using Microsoft.JSInterop;
-
+﻿using System.Text;
 
 namespace Bit.BlazorUI;
 
 public partial class BitBreadcrumb
 {
-    protected override string RootElementClass => "bit-brc";
+    private bool _isCalloutOpen;
+    private string _breadcrumbId => $"{UniqueId}-items-wrapper";
+    private string _calloutId => $"{UniqueId}-callout";
+    private string _overlayId => $"{UniqueId}-overlay";
+    private string _overflowDropDownId => $"{UniqueId}-overflow-dropdown";
 
-    [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
+    private IList<BitBreadcrumbItem> _itemsToShowInBreadcrumb = new List<BitBreadcrumbItem>();
+    private IList<BitBreadcrumbItem> _overflowItems = new List<BitBreadcrumbItem>();
+
+    [Inject] public IJSRuntime _js { get; set; } = default!;
 
     /// <summary>
     /// The class HTML attribute for Current Item.
@@ -31,11 +31,14 @@ public partial class BitBreadcrumb
     [Parameter] public BitBreadcrumbItem? CurrentItem { get; set; }
 
     /// <summary>
-    /// Collection of breadcrumbs to render
+    /// Render a custom divider in place of the default chevron >
     /// </summary>
-#pragma warning disable CA2227 // Collection properties should be read only
+    [Parameter] public BitIconName DividerIcon { get; set; } = BitIconName.ChevronRight;
+
+    /// <summary>
+    /// Collection of breadcrumbs to render.
+    /// </summary>
     [Parameter] public IList<BitBreadcrumbItem> Items { get; set; } = new List<BitBreadcrumbItem>();
-#pragma warning restore CA2227 // Collection properties should be read only
 
     /// <summary>
     /// The maximum number of breadcrumbs to display before coalescing.
@@ -54,12 +57,7 @@ public partial class BitBreadcrumb
     [Parameter] public int OverflowIndex { get; set; }
 
     /// <summary>
-    /// Render a custom divider in place of the default chevron >
-    /// </summary>
-    [Parameter] public BitIconName DividerIcon { get; set; } = BitIconName.ChevronRight;
-
-    /// <summary>
-    /// Render a custom overflow icon in place of the default icon
+    /// Render a custom overflow icon in place of the default icon.
     /// </summary>
     [Parameter] public BitIconName OnRenderOverflowIcon { get; set; } = BitIconName.More;
 
@@ -68,22 +66,10 @@ public partial class BitBreadcrumb
     /// </summary>
     [Parameter] public EventCallback<BitBreadcrumbItem> OnItemClick { get; set; }
 
-    public string BreadcrumbItemsWrapperId { get; set; } = string.Empty;
-    public string OverflowDropDownId { get; set; } = string.Empty;
-    public string OverflowDropDownMenuCalloutId { get; set; } = string.Empty;
-    public string OverflowDropDownMenuOverlayId { get; set; } = string.Empty;
-
-    private IList<BitBreadcrumbItem> _overflowItems = new List<BitBreadcrumbItem>();
-    private IList<BitBreadcrumbItem> _itemsToShowInBreadcrumb = new List<BitBreadcrumbItem>();
-    private bool isOpen;
+    protected override string RootElementClass => "bit-brc";
 
     protected override async Task OnParametersSetAsync()
     {
-        BreadcrumbItemsWrapperId = $"breadcrumb-items-wrapper-{UniqueId}";
-        OverflowDropDownId = $"overflow-dropdown-{UniqueId}";
-        OverflowDropDownMenuOverlayId = $"overflow-dropdown-overlay-{UniqueId}";
-        OverflowDropDownMenuCalloutId = $"overflow-dropdown-callout{UniqueId}";
-
         GetBreadcrumbItemsToShow();
 
         await base.OnParametersSetAsync();
@@ -92,18 +78,18 @@ public partial class BitBreadcrumb
     private async Task CloseCallout()
     {
         var obj = DotNetObjectReference.Create(this);
-        await JSRuntime.InvokeVoidAsync("BitOverflowDropDownMenu.toggleOverflowDropDownMenuCallout", obj, BreadcrumbItemsWrapperId, OverflowDropDownId, OverflowDropDownMenuCalloutId, OverflowDropDownMenuOverlayId, isOpen);
-        isOpen = false;
+        await _js.InvokeVoidAsync("BitOverflowDropDownMenu.toggleOverflowDropDownMenuCallout", obj, _breadcrumbId, _overflowDropDownId, _calloutId, _overlayId, _isCalloutOpen);
+        _isCalloutOpen = false;
         StateHasChanged();
     }
 
-    private async Task HandleClick(MouseEventArgs e)
+    private async Task HandleOnClick(MouseEventArgs e)
     {
-        if (IsEnabled is false || JSRuntime is null) return;
+        if (IsEnabled is false || _js is null) return;
 
         var obj = DotNetObjectReference.Create(this);
-        await JSRuntime.InvokeVoidAsync("BitOverflowDropDownMenu.toggleOverflowDropDownMenuCallout", obj, BreadcrumbItemsWrapperId, OverflowDropDownId, OverflowDropDownMenuCalloutId, OverflowDropDownMenuOverlayId, isOpen);
-        isOpen = !isOpen;
+        await _js.InvokeVoidAsync("BitOverflowDropDownMenu.toggleOverflowDropDownMenuCallout", obj, _breadcrumbId, _overflowDropDownId, _calloutId, _overlayId, _isCalloutOpen);
+        _isCalloutOpen = !_isCalloutOpen;
     }
 
     private async Task HandleOnItemClick(BitBreadcrumbItem item)
@@ -148,15 +134,15 @@ public partial class BitBreadcrumb
         return _itemsToShowInBreadcrumb;
     }
 
-    private string GetItemClass(BitBreadcrumbItem item)
+    private string GetItemClasses(BitBreadcrumbItem item)
     {
         StringBuilder itemClasses = new();
 
-        itemClasses.Append("bit-brc-itm");
+        itemClasses.Append("item");
 
         if (IsCurrentItem(item))
         {
-            itemClasses.Append(" bit-brc-crt-itm");
+            itemClasses.Append(" current-item");
         }
 
         if (IsCurrentItem(item) && CurrentItemClass.HasValue())
@@ -167,7 +153,7 @@ public partial class BitBreadcrumb
         return itemClasses.ToString();
     }
 
-    private string GetItemStyle(BitBreadcrumbItem item)
+    private string GetItemStyles(BitBreadcrumbItem item)
     {
         if (IsCurrentItem(item) && CurrentItemStyle.HasValue())
         {

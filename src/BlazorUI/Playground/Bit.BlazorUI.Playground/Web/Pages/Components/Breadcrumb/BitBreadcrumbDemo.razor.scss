@@ -1,14 +1,25 @@
 ﻿@import '../../../Styles/abstracts/_functions.scss';
 
 ::deep {
-
     .custom-item {
-        background-color: lightgreen;
-        padding: rem(2px) rem(5px);
-        border-radius: rem(10px);
+        background-color: #CC6;
+        padding: rem(2px) rem(5px) !important;
+        margin: rem(2px) rem(5px);
+        border-radius: rem(5px);
+        color: red !important;
     }
 
     .custom-current-item {
-        color: deeppink;
+        background-color: #CC6;
+        padding: rem(2px) rem(5px) !important;
+        margin: 0 rem(5px);
+        border-radius: rem(5px);
+        color: blue !important;
     }
+}
+
+.example-box {
+    display: flex;
+    gap: rem(20px);
+    flex-direction: column;
 }

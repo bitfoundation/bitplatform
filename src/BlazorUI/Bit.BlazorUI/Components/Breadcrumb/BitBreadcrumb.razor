@@ -8,15 +8,15 @@
      class="@ClassBuilder.Value"
      aria-label="@AriaLabel">
 
-    <div class="bit-brc-items-wrapper" id=@BreadcrumbItemsWrapperId>
+    <div class="items-wrapper" id="@_breadcrumbId">
         <ul>
             @foreach ((BitBreadcrumbItem item, int index) in _itemsToShowInBreadcrumb.Select((item, index) => (item, index)))
             {
                 <li>
                     @if (_overflowItems.Any() && index == OverflowIndex)
                     {
-                        <button type="button" class="overflow-btn" aria-label="@OverflowAriaLabel" id="@OverflowDropDownId" @onclick="HandleClick">
-                            <span>
+                        <button type="button" class="overflow-btn" aria-label="@OverflowAriaLabel" id="@_overflowDropDownId" @onclick="HandleOnClick">
+                            <span class="overflow-icon-container">
                                 <i class="@($"bit-icon bit-icon--{OnRenderOverflowIcon.GetName()}")"></i>
                             </span>
                         </button>
@@ -27,16 +27,16 @@
                         {
                             <a href="@item.Href"
                                aria-current="@(IsCurrentItem(item) ? "page" : null)"
-                               style="@item.Style @GetItemStyle(item)"
-                               class="@item.Class @GetItemClass(item)">
+                               style="@item.Style @GetItemStyles(item)"
+                               class="@item.Class @GetItemClasses(item)">
                                 @item.Text
                             </a>
                         }
                         else
                         {
                             <button aria-current="@(IsCurrentItem(item) ? "page" : null)"
-                                    style="@item.Style @GetItemStyle(item)"
-                                    class="@item.Class @GetItemClass(item)"
+                                    style="@item.Style @GetItemStyles(item)"
+                                    class="@item.Class @GetItemClasses(item)"
                                     @onclick="() => HandleOnItemClick(item)">
                                 @item.Text
                             </button>
@@ -52,10 +52,10 @@
         </ul>
     </div>
 
-    <div class="bit-brc-overlay" id="@OverflowDropDownMenuOverlayId" @onclick="CloseCallout"></div>
+    <div class="bit-brc-overlay" id="@_overlayId" @onclick="CloseCallout"></div>
 
-    <div class="bit-brc-overflow-menu-wrapper"
-         id="@OverflowDropDownMenuCalloutId"
+    <div class="overflow-menu-wrapper"
+         id="@_calloutId"
          tabindex="0"
          role="listbox">
         <ul>
@@ -64,8 +64,8 @@
                 <li>
                     <a href="@item.Href"
                        aria-current=@(IsCurrentItem(item) ? "page" : null)
-                       style="@item.Style @GetItemStyle(item)"
-                       class="@item.Class @GetItemClass(item)"
+                       style="@item.Style @GetItemStyles(item)"
+                       class="@item.Class @GetItemClasses(item)"
                        @onclick="() => HandleOnItemClick(item)">
                         @item.Text
                     </a>

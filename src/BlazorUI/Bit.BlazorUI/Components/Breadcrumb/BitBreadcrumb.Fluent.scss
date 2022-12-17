@@ -1,116 +1,130 @@
 ﻿@import "../../Styles/Fluent/colors.fluent.scss", "../../Styles/functions.scss";
 
-.bit-brc-items-wrapper {
-
-    ul {
-        padding-inline-start: 0;
-
-        li {
-            display: inline-flex;
-            align-items: center;
+.bit-brc {
+    &.bit-brc-disabled-fluent {
+        .items-wrapper {
+            .overflow-btn, .item, .current-item, i {
+                color: $Grey60;
+                cursor: default;
+                pointer-events: none;
+                font-weight: 400;
+            }
         }
     }
 
-    button {
-        background-color: transparent;
-    }
+    .items-wrapper {
 
-    .overflow-btn {
-        font-size: rem(20px);
-        font-weight: 400;
-        color: $Grey160;
-        background-color: transparent;
-        cursor: pointer;
+        ul {
+            padding-inline-start: 0;
 
-        &:hover {
-            background-color: $Grey20;
+            li {
+                display: inline-flex;
+                align-items: center;
+            }
+        }
+
+        button {
+            background-color: transparent;
+        }
+
+        .overflow-btn {
+            cursor: pointer;
+            line-height: rem(36px);
+            color: $Grey160;
+
+            .overflow-icon-container {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                padding: 0px rem(4px);
+            }
+
+            &:hover {
+                background-color: $Grey20;
+            }
+        }
+
+        .item {
+            font-size: rem(20px);
+            font-weight: 400;
+            padding: 0 rem(8px);
+            cursor: pointer;
+            line-height: rem(36px);
+            color: $Grey130;
+
+            &:hover {
+                background-color: $Grey20;
+            }
+        }
+
+        .current-item {
+            font-weight: 600;
+            color: $Grey160;
         }
     }
 
-    .bit-brc-itm {
-        font-size: rem(20px);
-        padding: 0 rem(8px);
-        color: $Grey90;
-        cursor: pointer;
-    }
-
-    .bit-brc-crt-itm {
-        font-size: rem(20px);
-        font-weight: 600;
-        padding: 0 rem(8px);
-        color: $Grey160;
-    }
-}
-
-.bit-brc-disabled-fluent {
-    a, button, i, a.bit-brc-lst-itm {
-        color: $Grey90;
-        cursor: default;
-        pointer-events: none;
-    }
-}
-
-.bit-brc-overlay {
-    display: none;
-    width: 100%;
-    height: 100%;
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 999;
-    background-color: transparent;
-}
-
-.bit-brc-overflow-menu-wrapper {
-    display: none;
-    position: fixed;
-    max-height: rem(744px);
-    font-size: rem(14px);
-    font-weight: 400;
-    box-sizing: border-box;
-    border-radius: 0 0 rem(2px) rem(2px);
-    box-shadow: rgba(0,0,0,0.13) 0px rem(3.2px) rem(7.2px) 0px, rgba(0,0,0,0.11) 0px rem(0.6px) rem(1.8px) 0px;
-    animation-name: opacity, trans-y;
-    animation-duration: 0.367s;
-    animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
-    animation-fill-mode: both;
-    background-color: $White;
-    z-index: 1001;
-    overflow: hidden auto;
-    -webkit-font-smoothing: antialiased;
-
-    a {
-        width: 100%;
-        height: rem(36px);
-        display: flex;
-        align-items: center;
-        position: relative;
-        font-size: rem(15px);
-        text-align: left;
-        line-height: rem(20px);
+    .overflow-menu-wrapper {
+        display: none;
+        position: fixed;
+        max-height: rem(744px);
+        font-size: rem(14px);
         font-weight: 400;
         box-sizing: border-box;
-        outline: transparent;
-        border: rem(1px) solid transparent;
-        text-decoration: none;
-        padding: 0 rem(8px);
-        color: $Grey160;
-        background-color: transparent;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        cursor: pointer;
-        user-select: none;
-        min-width: rem(180px);
+        border-radius: 0 0 rem(2px) rem(2px);
+        box-shadow: rgba(0,0,0,0.13) 0px rem(3.2px) rem(7.2px) 0px, rgba(0,0,0,0.11) 0px rem(0.6px) rem(1.8px) 0px;
+        animation-name: opacity, trans-y;
+        animation-duration: 0.367s;
+        animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
+        animation-fill-mode: both;
+        background-color: $White;
+        z-index: 1001;
+        overflow: hidden auto;
         -webkit-font-smoothing: antialiased;
 
-        &:hover {
-            background-color: $Grey20;
+        ul {
+            padding-inline-start: 0;
+            margin: 0;
+        }
+
+        a {
+            width: 100%;
+            height: rem(36px);
+            display: flex;
+            align-items: center;
+            position: relative;
+            font-size: rem(15px);
+            text-align: left;
+            line-height: rem(20px);
+            font-weight: 400;
+            box-sizing: border-box;
+            outline: transparent;
+            border: rem(1px) solid transparent;
+            text-decoration: none;
+            padding: 0 rem(8px);
+            color: $Grey160;
+            background-color: transparent;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            cursor: pointer;
+            user-select: none;
+            min-width: rem(180px);
+            -webkit-font-smoothing: antialiased;
+
+            &:hover {
+                background-color: $Grey20;
+            }
         }
     }
 
-    ul {
-        padding-inline-start: 0;
-        margin: 0;
+    .bit-brc-overlay {
+        display: none;
+        width: 100%;
+        height: 100%;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 999;
+        background-color: transparent;
     }
 }
