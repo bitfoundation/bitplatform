@@ -28,16 +28,27 @@
             </div>
             <div class="example-box">
                 <div>
-                    <BitLabel>MaxDisplayedItems</BitLabel>
+                    <BitLabel>MaxDisplayedItems (1)</BitLabel>
                     <BitBreadcrumb Items="BreadcrumbItems" MaxDisplayedItems="1" />
+                </div>
+                <div>
+                    <BitLabel>MaxDisplayedItems (2)</BitLabel>
                     <BitBreadcrumb Items="BreadcrumbItems" MaxDisplayedItems="2" />
+                </div>
+                <div>
+                    <BitLabel>MaxDisplayedItems (3)</BitLabel>
                     <BitBreadcrumb Items="BreadcrumbItems" MaxDisplayedItems="3" />
                 </div>
-
                 <div>
-                    <BitLabel>OverflowIndex</BitLabel>
+                    <BitLabel>MaxDisplayedItems (3), OverflowIndex (0)</BitLabel>
                     <BitBreadcrumb Items="BreadcrumbItems" MaxDisplayedItems="3" OverflowIndex="0" />
+                </div>
+                <div>
+                    <BitLabel>MaxDisplayedItems (3), OverflowIndex (1)</BitLabel>
                     <BitBreadcrumb Items="BreadcrumbItems" MaxDisplayedItems="3" OverflowIndex="1" />
+                </div>
+                <div>
+                    <BitLabel>MaxDisplayedItems (3), OverflowIndex (2)</BitLabel>
                     <BitBreadcrumb Items="BreadcrumbItems" MaxDisplayedItems="3" OverflowIndex="2" />
                 </div>
             </div>
@@ -47,15 +58,21 @@
     <ComponentExampleBox Title="Overflow with Icon" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@BasicItemsCSharpCode" ExampleId="example3">
         <ExamplePreview>
             <div class="example-box">
-                <BitBreadcrumb Items="BreadcrumbItems"
-                               MaxDisplayedItems="3"
-                               OverflowIndex="2"
-                               OnRenderOverflowIcon="BitIconName.ChevronDown" />
+                <div>
+                    <BitLabel>BitIconName (ChevronDown)</BitLabel>
+                    <BitBreadcrumb Items="BreadcrumbItems"
+                                   MaxDisplayedItems="3"
+                                   OverflowIndex="2"
+                                   OnRenderOverflowIcon="BitIconName.ChevronDown" />
+                </div>
 
-                <BitBreadcrumb Items="BreadcrumbItems"
-                               MaxDisplayedItems="3"
-                               OverflowIndex="2"
-                               OnRenderOverflowIcon="BitIconName.CollapseMenu" />
+                <div>
+                    <BitLabel>BitIconName (CollapseMenu)</BitLabel>
+                    <BitBreadcrumb Items="BreadcrumbItems"
+                                   MaxDisplayedItems="3"
+                                   OverflowIndex="2"
+                                   OnRenderOverflowIcon="BitIconName.CollapseMenu" />
+                </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -64,17 +81,21 @@
         <ExamplePreview>
             <div class="example-box">
                 <div>
-                    <BitLabel>Items Class & Style</BitLabel>
+                    <BitLabel>Items Class</BitLabel>
                     <BitBreadcrumb Items="BreadcrumbItemsWithClass" />
+                </div>
+                <div>
+                    <BitLabel>Items Style</BitLabel>
                     <BitBreadcrumb Items="BreadcrumbItemsWithStyle" />
                 </div>
-
                 <div>
-                    <BitLabel>Change Current Item Class & Style</BitLabel>
+                    <BitLabel>Current Item Class</BitLabel>
                     <BitBreadcrumb Items="BreadcrumbItems"
                                    CurrentItemClass="custom-current-item"
                                    CurrentItem="BreadcrumbItems[3]" />
-
+                </div>
+                <div>
+                    <BitLabel>Current Item Style</BitLabel>
                     <BitBreadcrumb Items="BreadcrumbItems"
                                    CurrentItemStyle="background-color: #CC6; padding: 2px 5px; margin: 0 5px; border-radius: 5px; color: blue;"
                                    CurrentItem="BreadcrumbItems[3]" />
@@ -85,6 +106,7 @@
 
     <ComponentExampleBox Title="Controlled" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
         <ExamplePreview>
+            <div class="example-desc">By clicking on the items, the current item will change and match the CurrentItemStyle.</div>
             <div class="example-box">
                 <BitBreadcrumb Items="@BreadcrumbItemsWithControll"
                                MaxDisplayedItems="3"

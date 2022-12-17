@@ -5,10 +5,10 @@ namespace Bit.BlazorUI;
 public partial class BitBreadcrumb
 {
     private bool _isCalloutOpen;
-    private string _breadcrumbId => $"breadcrumb-items-wrapper-{UniqueId}";
-    private string _breadcrumbCalloutId => $"overflow-dropdown-callout{UniqueId}";
-    private string _breadcrumbOverlayId => $"overflow-dropdown-overlay-{UniqueId}";
-    private string _overflowDropDownId => $"overflow-dropdown-{UniqueId}";
+    private string _breadcrumbId => $"{UniqueId}-items-wrapper";
+    private string _calloutId => $"{UniqueId}-callout";
+    private string _overlayId => $"{UniqueId}-overlay";
+    private string _overflowDropDownId => $"{UniqueId}-overflow-dropdown";
 
     private IList<BitBreadcrumbItem> _itemsToShowInBreadcrumb = new List<BitBreadcrumbItem>();
     private IList<BitBreadcrumbItem> _overflowItems = new List<BitBreadcrumbItem>();
@@ -78,7 +78,7 @@ public partial class BitBreadcrumb
     private async Task CloseCallout()
     {
         var obj = DotNetObjectReference.Create(this);
-        await _js.InvokeVoidAsync("BitOverflowDropDownMenu.toggleOverflowDropDownMenuCallout", obj, _breadcrumbId, _overflowDropDownId, _breadcrumbCalloutId, _breadcrumbOverlayId, _isCalloutOpen);
+        await _js.InvokeVoidAsync("BitOverflowDropDownMenu.toggleOverflowDropDownMenuCallout", obj, _breadcrumbId, _overflowDropDownId, _calloutId, _overlayId, _isCalloutOpen);
         _isCalloutOpen = false;
         StateHasChanged();
     }
@@ -88,7 +88,7 @@ public partial class BitBreadcrumb
         if (IsEnabled is false || _js is null) return;
 
         var obj = DotNetObjectReference.Create(this);
-        await _js.InvokeVoidAsync("BitOverflowDropDownMenu.toggleOverflowDropDownMenuCallout", obj, _breadcrumbId, _overflowDropDownId, _breadcrumbCalloutId, _breadcrumbOverlayId, _isCalloutOpen);
+        await _js.InvokeVoidAsync("BitOverflowDropDownMenu.toggleOverflowDropDownMenuCallout", obj, _breadcrumbId, _overflowDropDownId, _calloutId, _overlayId, _isCalloutOpen);
         _isCalloutOpen = !_isCalloutOpen;
     }
 

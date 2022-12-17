@@ -228,16 +228,27 @@ private List<BitBreadcrumbItem> BreadcrumbItems { get; set; } = new List<BitBrea
 
     private readonly string example2HTMLCode = @"
 <div>
-    <BitLabel>MaxDisplayedItems</BitLabel>
+    <BitLabel>MaxDisplayedItems (1)</BitLabel>
     <BitBreadcrumb Items=""BreadcrumbItems"" MaxDisplayedItems=""1"" />
+</div>
+<div>
+    <BitLabel>MaxDisplayedItems (2)</BitLabel>
     <BitBreadcrumb Items=""BreadcrumbItems"" MaxDisplayedItems=""2"" />
+</div>
+<div>
+    <BitLabel>MaxDisplayedItems (3)</BitLabel>
     <BitBreadcrumb Items=""BreadcrumbItems"" MaxDisplayedItems=""3"" />
 </div>
-
 <div>
-    <BitLabel>OverflowIndex</BitLabel>
+    <BitLabel>MaxDisplayedItems (3), OverflowIndex (0)</BitLabel>
     <BitBreadcrumb Items=""BreadcrumbItems"" MaxDisplayedItems=""3"" OverflowIndex=""0"" />
+</div>
+<div>
+    <BitLabel>MaxDisplayedItems (3), OverflowIndex (1)</BitLabel>
     <BitBreadcrumb Items=""BreadcrumbItems"" MaxDisplayedItems=""3"" OverflowIndex=""1"" />
+</div>
+<div>
+    <BitLabel>MaxDisplayedItems (3), OverflowIndex (2)</BitLabel>
     <BitBreadcrumb Items=""BreadcrumbItems"" MaxDisplayedItems=""3"" OverflowIndex=""2"" />
 </div>
 ";
@@ -247,15 +258,21 @@ private List<BitBreadcrumbItem> BreadcrumbItems { get; set; } = new List<BitBrea
     #region Sample Code 3
 
     private readonly string example3HTMLCode = @"
-<BitBreadcrumb Items=""BreadcrumbItems""
-               MaxDisplayedItems=""3""
-               OverflowIndex=""2""
-               OnRenderOverflowIcon=""BitIconName.ChevronDown"" />
+<div>
+    <BitLabel>BitIconName (ChevronDown)</BitLabel>
+    <BitBreadcrumb Items=""BreadcrumbItems""
+                   MaxDisplayedItems=""3""
+                   OverflowIndex=""2""
+                   OnRenderOverflowIcon=""BitIconName.ChevronDown"" />
+</div>
 
-<BitBreadcrumb Items=""BreadcrumbItems""
-               MaxDisplayedItems=""3""
-               OverflowIndex=""2""
-               OnRenderOverflowIcon=""BitIconName.CollapseMenu"" />
+<div>
+    <BitLabel>BitIconName (CollapseMenu)</BitLabel>
+    <BitBreadcrumb Items=""BreadcrumbItems""
+                   MaxDisplayedItems=""3""
+                   OverflowIndex=""2""
+                   OnRenderOverflowIcon=""BitIconName.CollapseMenu"" />
+</div>
 ";
 
     #endregion
@@ -282,19 +299,21 @@ private List<BitBreadcrumbItem> BreadcrumbItems { get; set; } = new List<BitBrea
 </style>
 
 <div>
-    <BitLabel>Items Class & Style</BitLabel>
-
+    <BitLabel>Items Class</BitLabel>
     <BitBreadcrumb Items=""BreadcrumbItemsWithClass"" />
+</div>
+<div>
+    <BitLabel>Items Style</BitLabel>
     <BitBreadcrumb Items=""BreadcrumbItemsWithStyle"" />
 </div>
-
 <div>
-    <BitLabel>Change Current Item Class & Style</BitLabel>
-
+    <BitLabel>Current Item Class</BitLabel>
     <BitBreadcrumb Items=""BreadcrumbItems""
                    CurrentItemClass=""custom-current-item""
                    CurrentItem=""BreadcrumbItems[3]"" />
-
+</div>
+<div>
+    <BitLabel>Current Item Style</BitLabel>
     <BitBreadcrumb Items=""BreadcrumbItems""
                    CurrentItemStyle=""background-color: #CC6; padding: 2px 5px; margin: 0 5px; border-radius: 5px; color: blue;""
                    CurrentItem=""BreadcrumbItems[3]"" />
