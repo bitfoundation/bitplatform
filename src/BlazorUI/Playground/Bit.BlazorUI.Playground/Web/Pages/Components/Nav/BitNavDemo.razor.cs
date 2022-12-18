@@ -188,13 +188,6 @@ public partial class BitNavDemo
     {
         new ComponentParameter()
         {
-            Name = "AriaLabel",
-            Type = "string",
-            DefaultValue = "",
-            Description = "The aria-label of the control for the benefit of screen readers.",
-        },
-        new ComponentParameter()
-        {
             Name = "HeaderTemplate",
             Type = "RenderFragment<BitNavLinkItem>",
             DefaultValue = "",
@@ -204,24 +197,10 @@ public partial class BitNavDemo
         },
         new ComponentParameter()
         {
-            Name = "HtmlAttributes",
-            Type = "Dictionary<string, object>",
-            DefaultValue = "",
-            Description = "Capture and render additional attributes in addition to the component's parameters.",
-        },
-        new ComponentParameter()
-        {
             Name = "InitialSelectedKey",
             Type = "string",
             DefaultValue = "",
             Description = "(Optional) The key of the nav item initially selected in manual mode.",
-        },
-        new ComponentParameter()
-        {
-            Name = "IsEnabled",
-            Type = "bool",
-            DefaultValue = "",
-            Description = "Whether or not the component is enabled.",
         },
         new ComponentParameter()
         {
@@ -282,15 +261,6 @@ public partial class BitNavDemo
             DefaultValue = "",
             Description = "The key of the nav item selected by caller.",
         },
-        new ComponentParameter()
-        {
-            Name = "Visibility",
-            Type = "BitComponentVisibility",
-            LinkType = LinkType.Link,
-            Href = "#component-visibility-enum",
-            DefaultValue = "BitComponentVisibility.Visible",
-            Description = "Whether the component is Visible,Hidden,Collapsed.",
-        },
     };
 
     private readonly List<EnumParameter> enumParameters = new()
@@ -337,33 +307,6 @@ public partial class BitNavDemo
                 }
             }
         },
-        new EnumParameter()
-        {
-            Id = "component-visibility-enum",
-            Title = "BitComponentVisibility Enum",
-            Description = "",
-            EnumList = new List<EnumItem>()
-            {
-                new EnumItem()
-                {
-                    Name= "Visible",
-                    Description="Show content of the component.",
-                    Value="0",
-                },
-                new EnumItem()
-                {
-                    Name= "Hidden",
-                    Description="Hide content of the component,though the space it takes on the page remains.",
-                    Value="1",
-                },
-                new EnumItem()
-                {
-                    Name= "Collapsed",
-                    Description="Hide content of the component,though the space it takes on the page gone.",
-                    Value="2",
-                }
-            }
-        }
     };
 
     private readonly List<ComponentSubParameter> componentSubParameters = new()
@@ -504,7 +447,8 @@ public partial class BitNavDemo
         }
     };
 
-    private static string example1HTMLCode = @"<BitNav Style=""width: 208px;
+    private static string example1HTMLCode = @"
+<BitNav Style=""width: 208px;
         height: 350px;
         box-sizing: border-box;
         border: 1px solid #eee;
@@ -514,7 +458,8 @@ public partial class BitNavDemo
         InitialSelectedKey=""key3"">
 </BitNav>";
 
-    private static string example2HTMLCode = @"<BitNav Style=""width: 208px;
+    private static string example2HTMLCode = @"
+<BitNav Style=""width: 208px;
     height: 350px;
     box-sizing: border-box;
     border: 1px solid #eee;
@@ -525,18 +470,21 @@ public partial class BitNavDemo
     NavLinkItems=""NavLinksNoToolTip"">
 </BitNav>";
 
-    private static string example3HTMLCode = @"<BitNav Style=""width: 300px;""
+    private static string example3HTMLCode = @"
+<BitNav Style=""width: 300px;""
         NavLinkItems=""NavLinksSimilarThisApp""
         RenderType=""BitNavRenderType.Grouped""
         AriaLabel=""Nav example similar to one found in this demo page"">
 </BitNav>";
 
-    private static string example4HTMLCode = @"<BitNav NavLinkItems=""NavWithNestedLinks""
+    private static string example4HTMLCode = @"
+<BitNav NavLinkItems=""NavWithNestedLinks""
         AriaLabel=""Nav example with nested links""
         SelectedKey=""Key1-1-2"">
 </BitNav>";
 
-    private static string example5HTMLCode = @"<BitNav NavLinkItems=""NavLinksWithCustomHeader""
+    private static string example5HTMLCode = @"
+<BitNav NavLinkItems=""NavLinksWithCustomHeader""
         RenderType=""BitNavRenderType.Grouped""
         AriaLabel=""Nav with custom group header"">
     <HeaderTemplate Context=""link"">
@@ -544,7 +492,8 @@ public partial class BitNavDemo
     </HeaderTemplate>
 </BitNav>";
 
-    private static string example6HTMLCode = @"<BitNav Style=""width: 208px;
+    private static string example6HTMLCode = @"
+<BitNav Style=""width: 208px;
         height: 350px;
         box-sizing: border-box;
         border: 1px solid #eee;
