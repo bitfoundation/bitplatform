@@ -22,7 +22,7 @@
          tabindex=@(IsEnabled ? 0 : -1)
          role="combobox"
          data-is-focusable="true"
-         aria-expanded=@(isOpen ? "true" : "false")
+         aria-expanded=@(IsOpen ? "true" : "false")
          aria-labelledby="@GetDropdownAriaLabelledby"
          aria-required="@IsRequired"
          aria-disabled="@(IsEnabled is false)"
