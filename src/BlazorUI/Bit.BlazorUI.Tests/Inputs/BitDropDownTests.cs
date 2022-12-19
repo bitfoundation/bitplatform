@@ -177,11 +177,12 @@ public class BitDropDownTests : BunitTestContext
     public void BitDropDownIsMultiSelectShouldWorkCorrect(Visual visual, bool isMultiSelect)
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        var isOpen = true;
 
         var items = GetDropdownItems();
         var component = RenderComponent<BitDropDown>(parameters =>
         {
-            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.IsOpen, isOpen);
             parameters.Add(p => p.Visual, visual);
             parameters.Add(p => p.Items, items);
             parameters.Add(p => p.IsMultiSelect, isMultiSelect);
@@ -215,12 +216,13 @@ public class BitDropDownTests : BunitTestContext
     public void BitDropDownItemsShouldRenderCorrect(Visual visual, bool isMultiSelect)
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
-
+        var isOpen = true;
         var items = GetDropdownItems();
         var component = RenderComponent<BitDropDown>(parameters =>
         {
             parameters.AddCascadingValue(visual);
-            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.IsOpen, isOpen);
+            parameters.Add(p => p.IsOpenChanged, v => isOpen = v);
             parameters.Add(p => p.Items, items);
             parameters.Add(p => p.IsMultiSelect, isMultiSelect);
         });
@@ -486,11 +488,14 @@ public class BitDropDownTests : BunitTestContext
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
         var items = GetRawDropdownItems();
         var itemSelecetd = false;
+        var isOpen = true;
+
         var component = RenderComponent<BitDropDown>(parameters =>
         {
             parameters.Add(p => p.Visual, visual);
             parameters.Add(p => p.Items, items);
-            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.IsOpen, isOpen);
+            parameters.Add(p => p.IsOpenChanged, v => isOpen = v);
             parameters.Add(p => p.IsEnabled, true);
             parameters.Add(p => p.NotifyOnReselect, notifyOnReselect);
             parameters.Add(p => p.DefaultValue, defaultValue);
@@ -514,16 +519,18 @@ public class BitDropDownTests : BunitTestContext
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
         var itemsSelected = 0;
+        var isOpen = true;
 
         var items = new List<BitDropDownItem>()
         {
-            new() {Value = "Apple", Text = "f-app", IsEnabled = itemIsEnabled },
-            new() {Value = "Banana", Text = "f-ban", IsEnabled = itemIsEnabled }
+            new() { Value = "Apple", Text = "f-app", IsEnabled = itemIsEnabled },
+            new() { Value = "Banana", Text = "f-ban", IsEnabled = itemIsEnabled }
         };
         var component = RenderComponent<BitDropDown>(parameters =>
         {
             parameters.Add(p => p.Items, items);
-            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.IsOpen, isOpen);
+            parameters.Add(p => p.IsOpenChanged, v => isOpen = v);
             parameters.Add(p => p.IsEnabled, true);
             parameters.Add(p => p.IsMultiSelect, isMultiSelect);
             parameters.Add(p => p.OnSelectItem, () => itemsSelected++);
@@ -555,11 +562,13 @@ public class BitDropDownTests : BunitTestContext
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
         BitDropDownValue = value;
+        var isOpen = true;
 
         var items = GetRawDropdownItems();
         var component = RenderComponent<BitDropDown>(parameters =>
         {
-            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.IsOpen, isOpen);
+            parameters.Add(p => p.IsOpenChanged, v => isOpen = v);
             parameters.Add(p => p.IsEnabled, true);
             parameters.Add(p => p.Items, items);
             parameters.Add(p => p.Value, BitDropDownValue);
@@ -581,13 +590,15 @@ public class BitDropDownTests : BunitTestContext
     public void BitDropDownMultiSelectTwoWayBoundWithCustomHandlerShouldWorkCorrect(string values)
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        var isOpen = true;
 
         BitDropDownValues = values.Split(",").ToList();
         var initialValuesCount = BitDropDownValues.Count;
         var items = GetRawDropdownItems();
         var component = RenderComponent<BitDropDown>(parameters =>
         {
-            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.IsOpen, isOpen);
+            parameters.Add(p => p.IsOpenChanged, v => isOpen = v);
             parameters.Add(p => p.IsEnabled, true);
             parameters.Add(p => p.IsMultiSelect, true);
             parameters.Add(p => p.Items, items);
@@ -621,11 +632,13 @@ public class BitDropDownTests : BunitTestContext
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
         BitDropDownItem? selectedItem = null;
+        var isOpen = true;
 
         var items = GetRawDropdownItems();
         var component = RenderComponent<BitDropDown>(parameters =>
         {
-            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.IsOpen, isOpen);
+            parameters.Add(p => p.IsOpenChanged, v => isOpen = v);
             parameters.Add(p => p.IsEnabled, true);
             parameters.Add(p => p.Items, items);
             parameters.Add(p => p.SelectedItem, selectedItem);
@@ -650,16 +663,18 @@ public class BitDropDownTests : BunitTestContext
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
         List<BitDropDownItem>? selectedItems = null;
+        var isOpen = true;
 
         var items = GetRawDropdownItems();
         var component = RenderComponent<BitDropDown>(parameters =>
         {
-            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.IsOpen, isOpen);
+            parameters.Add(p => p.IsOpenChanged, v => isOpen = v);
             parameters.Add(p => p.IsEnabled, true);
             parameters.Add(p => p.IsMultiSelect, true);
             parameters.Add(p => p.Items, items);
             parameters.Add(p => p.SelectedItems, selectedItems);
-            parameters.Add(p => p.SelectedItemsChanged, (values) => selectedItems = values);
+            parameters.Add(p => p.SelectedItemsChanged, v => selectedItems = v);
         });
 
         var textList = text.Split(",").ToList();
