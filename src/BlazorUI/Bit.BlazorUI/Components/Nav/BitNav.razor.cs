@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
+﻿using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Components.Routing;
 
 namespace Bit.BlazorUI;
@@ -12,10 +6,24 @@ namespace Bit.BlazorUI;
 public partial class BitNav : IDisposable
 {
     private bool SelectedKeyHasBeenSet;
-
     private string? selectedKey;
 
-    [Inject] private NavigationManager NavigationManager { get; set; } = default!;
+    [Inject] private NavigationManager _navigationManager { get; set; } = default!;
+
+    /// <summary>
+    /// Used to customize how content inside the group header is rendered
+    /// </summary>
+    [Parameter] public RenderFragment<BitNavLinkItem>? HeaderTemplate { get; set; }
+
+    /// <summary>
+    /// (Optional) The key of the nav item initially selected in manual mode
+    /// </summary>
+    [Parameter] public string? InitialSelectedKey { get; set; }
+
+    /// <summary>
+    /// Used to customize how content inside the link tag is rendered
+    /// </summary>
+    [Parameter] public RenderFragment<BitNavLinkItem>? LinkTemplate { get; set; }
 
     /// <summary>
     /// Determines how the navigation will be handled
@@ -24,14 +32,24 @@ public partial class BitNav : IDisposable
     [Parameter] public BitNavMode Mode { get; set; } = BitNavMode.Automatic;
 
     /// <summary>
+    /// A collection of link items to display in the navigation bar
+    /// </summary>
+    [Parameter] public IEnumerable<BitNavLinkItem> NavLinkItems { get; set; } = new List<BitNavLinkItem>();
+
+    /// <summary>
+    /// Function callback invoked when the chevron on a link is clicked
+    /// </summary>
+    [Parameter] public EventCallback<BitNavLinkItem> OnLinkExpandClick { get; set; }
+
+    /// <summary>
+    /// Function callback invoked when a link in the navigation is clicked
+    /// </summary>
+    [Parameter] public EventCallback<BitNavLinkItem> OnLinkClick { get; set; }
+
+    /// <summary>
     /// The way to render nav links 
     /// </summary>
     [Parameter] public BitNavRenderType RenderType { get; set; } = BitNavRenderType.Normal;
-
-    /// <summary>
-    /// (Optional) The key of the nav item initially selected in manual mode
-    /// </summary>
-    [Parameter] public string? InitialSelectedKey { get; set; }
 
     /// <summary>
     /// The key of the nav item selected by caller
@@ -55,38 +73,13 @@ public partial class BitNav : IDisposable
 
     [Parameter] public EventCallback<string> SelectedKeyChanged { get; set; }
 
-    /// <summary>
-    /// A collection of link items to display in the navigation bar
-    /// </summary>
-    [Parameter] public IEnumerable<BitNavLinkItem> NavLinkItems { get; set; } = new List<BitNavLinkItem>();
-
-    /// <summary>
-    /// Function callback invoked when the chevron on a link is clicked
-    /// </summary>
-    [Parameter] public EventCallback<BitNavLinkItem> OnLinkExpandClick { get; set; }
-
-    /// <summary>
-    /// Function callback invoked when a link in the navigation is clicked
-    /// </summary>
-    [Parameter] public EventCallback<BitNavLinkItem> OnLinkClick { get; set; }
-
-    /// <summary>
-    /// Used to customize how content inside the group header is rendered
-    /// </summary>
-    [Parameter] public RenderFragment<BitNavLinkItem>? HeaderTemplate { get; set; }
-
-    /// <summary>
-    /// Used to customize how content inside the link tag is rendered
-    /// </summary>
-    [Parameter] public RenderFragment<BitNavLinkItem>? LinkTemplate { get; set; }
-
     protected override string RootElementClass => "bit-nav";
 
     protected override async Task OnInitializedAsync()
     {
         if (Mode == BitNavMode.Automatic)
         {
-            NavigationManager.LocationChanged += OnLocationChanged;
+            _navigationManager.LocationChanged += OnLocationChanged;
         }
 
         foreach (var navLink in NavLinkItems)
@@ -104,7 +97,7 @@ public partial class BitNav : IDisposable
         }
 
         var flatNavLinkItems = Flatten(NavLinkItems).ToList();
-        var currrentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
+        var currrentUrl = _navigationManager.Uri.Replace(_navigationManager.BaseUri, "/", StringComparison.Ordinal);
         selectedKey = flatNavLinkItems.FirstOrDefault(item => item.Url == currrentUrl)?.Key
                                   ?? selectedKey
                                   ?? InitialSelectedKey;
@@ -148,7 +141,7 @@ public partial class BitNav : IDisposable
     {
         if (Mode == BitNavMode.Manual) return;
 
-        var currentPage = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
+        var currentPage = _navigationManager.Uri.Replace(_navigationManager.BaseUri, "/", StringComparison.Ordinal);
 
         var currentItem = Flatten(NavLinkItems).ToList().FirstOrDefault(CreateComparer(currentPage));
         string currentPageKey = currentItem?.Key ?? string.Empty;
@@ -165,7 +158,7 @@ public partial class BitNav : IDisposable
         }
     }
 
-    private async Task HandleLinkExpand(BitNavLinkItem navLinkItem)
+    private async Task HandleOnLinkExpand(BitNavLinkItem navLinkItem)
     {
         if (navLinkItem.IsEnabled is false || navLinkItem.Links.Any() is false) return;
 
@@ -174,7 +167,7 @@ public partial class BitNav : IDisposable
         await OnLinkExpandClick.InvokeAsync(navLinkItem);
     }
 
-    private async Task HandleLinkClick(BitNavLinkItem navLinkItem)
+    private async Task HandleOnLinkClick(BitNavLinkItem navLinkItem)
     {
         if (navLinkItem.IsEnabled is false) return;
 
@@ -187,24 +180,24 @@ public partial class BitNav : IDisposable
         await OnLinkClick.InvokeAsync(navLinkItem);
         if (navLinkItem.Url.HasNoValue() && navLinkItem.Links.Any())
         {
-            await HandleLinkExpand(navLinkItem);
+            await HandleOnLinkExpand(navLinkItem);
         }
     }
 
-    private static void HandleClick(BitNavLinkItem navLinkItem)
+    private static void HandleOnClick(BitNavLinkItem navLinkItem)
     {
         if (navLinkItem.IsEnabled is false) return;
 
         navLinkItem.OnClick?.Invoke(navLinkItem);
     }
 
-    private async Task HandleGroupHeaderClick(BitNavLinkItem navLinkItem)
+    private async Task HandleOnGroupHeaderClick(BitNavLinkItem navLinkItem)
     {
         navLinkItem.OnHeaderClick?.Invoke(navLinkItem.IsExpanded);
 
         if (navLinkItem.Links.Any())
         {
-            await HandleLinkExpand(navLinkItem);
+            await HandleOnLinkExpand(navLinkItem);
         }
     }
 
@@ -262,7 +255,7 @@ public partial class BitNav : IDisposable
     {
         if (disposing && Mode == BitNavMode.Automatic)
         {
-            NavigationManager.LocationChanged -= OnLocationChanged;
+            _navigationManager.LocationChanged -= OnLocationChanged;
         }
     }
 }
