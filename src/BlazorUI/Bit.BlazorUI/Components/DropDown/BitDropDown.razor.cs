@@ -255,7 +255,7 @@ public partial class BitDropDown
         get => selectedItems;
         set
         {
-            if (selectedItems == null || selectedItems == value) return;
+            if (value == null || selectedItems == value) return;
             if (selectedItems.All(value.Contains) && selectedItems.Count == value.Count) return;
 
             selectedItems = value;
