@@ -64,14 +64,11 @@ public partial class Header : IAsyncDisposable
             new()
             {
                 Text = Localizer[nameof(AppStrings.ProductCatologue)],
-                Key = "Product catologue"
             },
             new()
             {
                 Text = Localizer[nameof(AppStrings.Products)],
-                Key = "Products",
-                href = "/products",
-                IsCurrentItem = true
+                Href = "/products",
             }
         };
 
@@ -80,14 +77,11 @@ public partial class Header : IAsyncDisposable
             new()
             {
                 Text = Localizer[nameof(AppStrings.ProductCatologue)],
-                Key = "Product catologue"
             },
             new()
             {
-                            Text = Localizer[nameof(AppStrings.Categories)],
-                Key = "Categories",
-                href = "/categories",
-                IsCurrentItem = true
+                Text = Localizer[nameof(AppStrings.Categories)],
+                Href = "/categories",
             }
         };
 
@@ -96,19 +90,15 @@ public partial class Header : IAsyncDisposable
             new()
             {
                 Text = Localizer[nameof(AppStrings.ProductCatologue)],
-                Key = "Product catologue"
             },
             new()
             {
                 Text = Localizer[nameof(AppStrings.Categories)],
-                Key = "Categories",
-                href = "/categories",
+                Href = "/categories",
             },
             new()
             {
                 Text = Localizer[nameof(AppStrings.AddEditCategory)],
-                Key = "Add/Edit Category",
-                IsCurrentItem = true
             }
         };
 
@@ -116,10 +106,8 @@ public partial class Header : IAsyncDisposable
         {
             new()
             {
-               Text = Localizer[nameof(AppStrings.Home)],
-                Key = "Home",
-                href = "/",
-                IsCurrentItem = true
+                Text = Localizer[nameof(AppStrings.Home)],
+                Href = "/",
             }
         };
 
@@ -128,9 +116,7 @@ public partial class Header : IAsyncDisposable
             new()
             {
                 Text = Localizer[nameof(AppStrings.EditProfile)],
-                Key = "Edit profile",
-                href = "/edit-profile",
-                IsCurrentItem = true
+                Href = "/edit-profile",
             }
         };
     }
