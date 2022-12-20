@@ -43,30 +43,29 @@
     <ComponentExampleBox Title="Required BitDatePicker" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
         <ExamplePreview>
             <div class="example-desc">Validation will happen when the <code>Submit</code> button is clicked.</div>
-            @if (string.IsNullOrEmpty(SuccessMessage))
-            {
-                <EditForm Model="formValidationDatePickerModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
-                    <DataAnnotationsValidator />
 
-                    <div class="validation-summary">
-                        <ValidationSummary />
-                    </div>
-                    <div>
-                        <BitDatePicker Style="max-width: 300px"
-                        @bind-Value="formValidationDatePickerModel.Date"
-                                       AriaLabel="Select a date"
-                                       Placeholder="Select a date..."
-                                       Label="Date required (with label)" />
+            <EditForm Model="formValidationDatePickerModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
+                <DataAnnotationsValidator />
 
-                        <ValidationMessage For="@(() => formValidationDatePickerModel.Date)" />
-                    </div>
-                    <br />
-                    <BitButton ButtonType="BitButtonType.Submit">
-                        Submit
-                    </BitButton>
-                </EditForm>
-            }
-            else
+                <div class="validation-summary">
+                    <ValidationSummary />
+                </div>
+                <div>
+                    <BitDatePicker @bind-Value="formValidationDatePickerModel.Date"
+                                   AllowTextInput="true"
+                                   Style="max-width: 300px"
+                                   AriaLabel="Select a date"
+                                   Placeholder="Select a date..."
+                                   Label="Date required (with label)" />
+                    <ValidationMessage For="@(() => formValidationDatePickerModel.Date)" />
+                </div>
+                <br />
+                <BitButton ButtonType="BitButtonType.Submit">
+                    Submit
+                </BitButton>
+            </EditForm>
+
+            @if (string.IsNullOrEmpty(SuccessMessage) is false)
             {
                 <BitMessageBar MessageBarType="BitMessageBarType.Success" IsMultiline="false">
                     @SuccessMessage
@@ -251,6 +250,28 @@
                            AriaLabel="Select a date"
                            IconName="BitIconName.Airplane"
                            Placeholder="Select a date..." />
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Custom Invalid Error Message" HTMLSourceCode="@example17HTMLCode" CSharpSourceCode="@example17CSharpCode" ExampleId="example17">
+        <ExamplePreview>
+            <div class="example-desc">The custom invalid error message will show when an invalid date is entered.</div>
+
+            <EditForm Model="formValidationDatePickerModel">
+                <DataAnnotationsValidator />
+                <div>
+                    <BitDatePicker @bind-Value="formValidationDatePickerModel.Date"
+                                   Style="max-width: 350px"
+                                   AllowTextInput="true"
+                                   Label="BitDatePicker with Custom Invalid Error Message"
+                                   InvalidErrorMessage="Invalid Date!!!" />
+                    <ValidationMessage For="@(() => formValidationDatePickerModel.Date)" />
+                </div>
+                <br />
+                <div class="validation-summary">
+                    <ValidationSummary />
+                </div>
+            </EditForm>
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>
