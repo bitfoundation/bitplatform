@@ -116,6 +116,11 @@ public partial class BitDatePicker
     [Parameter] public BitIconName IconName { get; set; } = BitIconName.CalendarMirrored;
 
     /// <summary>
+    /// The custom validation error message for the invalid value.
+    /// </summary>
+    [Parameter] public string InvalidErrorMessage { get; set; } = string.Empty;
+
+    /// <summary>
     /// Whether the month picker is shown beside the day picker or hidden.
     /// </summary>
     [Parameter] public bool IsMonthPickerVisible { get; set; } = true;
@@ -317,7 +322,7 @@ public partial class BitDatePicker
         }
 
         result = default;
-        validationErrorMessage = $"The {DisplayName ?? FieldIdentifier.FieldName} field is not valid.";
+        validationErrorMessage = InvalidErrorMessage.HasValue() ? InvalidErrorMessage : $"The {DisplayName ?? FieldIdentifier.FieldName} field is not valid.";
         return false;
     }
 
