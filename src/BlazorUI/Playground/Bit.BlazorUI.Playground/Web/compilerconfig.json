@@ -204,6 +204,10 @@
         "inputFile": "Pages/Components/Breadcrumb/BitBreadcrumbDemo.razor.scss"
     },
     {
+        "outputFile": "Pages/Components/BreadList/BitBreadListDemo.razor.css",
+        "inputFile": "Pages/Components/BreadList/BitBreadListDemo.razor.scss"
+    },
+    {
         "outputFile": "Pages/Components/Icon/BitIconDemo.razor.css",
         "inputFile": "Pages/Components/Icon/BitIconDemo.razor.scss"
     },
