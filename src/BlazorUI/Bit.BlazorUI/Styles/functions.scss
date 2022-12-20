@@ -1,4 +1,6 @@
-﻿$html-font-size: 16px;
+﻿@import "variables.scss";
+
+$html-font-size: 16px;
 
 @function stripUnit($value) {
     @return $value / ($value * 0 + 1);
@@ -10,4 +12,8 @@
 
 @function rem($pxValue) {
     @return #{stripUnit($pxValue) / stripUnit($html-font-size)}rem;
+}
+
+@function calc-rem($spacingValue) {
+    @return calc($spacing-scaling-factor * $spacingValue);
 }

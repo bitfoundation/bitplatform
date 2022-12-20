@@ -280,31 +280,25 @@ public int StandardCounter;";
 
     private readonly string example7HTMLCode = @"
 <style>
-    ::deep .custom-btn-sm {
-        &.bit-btn-sm-fluent {
+    ::deep .custom-btn-sm.small {
             padding: 4px 8px;
             font-size: 8px;
             line-height: 1.5;
             border-radius: 3px;
-        }
     }
     
-    ::deep .custom-btn-md {
-        &.bit-btn-md-fluent {
+    ::deep .custom-btn-md.medium {
             padding: 12px 24px;
             font-size: 16px;
             line-height: 1.4;
             border-radius: 4px;
-        }
     }
     
-    ::deep .custom-btn-lg {
-        &.bit-btn-lg-fluent {
+    ::deep .custom-btn-lg.large {
             padding: 20px 32px;
             font-size: 32px;
             line-height: 1.33;
             border-radius: 6px;
-        }
     }
 </style>
 

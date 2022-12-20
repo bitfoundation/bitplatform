@@ -1,0 +1,29 @@
+﻿:root {
+    /* ======== primary color ========= */
+    // main color
+    --clr-primary-main: #0078D4;
+    --clr-primary-dark: #106EBE;
+    --clr-primary-darker: #005A9E;
+    --clr-primary-light: #2b88d8;
+    --clr-secondary-main: #FFF;
+    --clr-secondary-dark: #F3F2F1;
+    --clr-secondary-darker: #EDEBE9;
+    //background color
+    --clr-background: #FFF;
+    //action
+    --clr-act-hovor-pri: var(--clr-primary-dark);
+    --clr-act-active-pri: var(--clr-primary-darker);
+    --clr-act-hovor-sec: var(--clr-secondary-dark);
+    --clr-act-active-sec: var(--clr-secondary-darker);
+    --clr-act-disabled: #F3F2F1;
+    --clr-act-border-hovor-sec: #323130;
+    --clr-act-border-active-sec: #323130;
+    //text
+    --clr-txt-primary: #FFF;
+    --clr-txt-secondary: #323130;
+    --clr-txt-disabled: #A19F9D;
+    //border
+    --clr-brd-primary: var(--clr-primary-main);
+    --clr-brd-secondary: #8A8886;
+    --clr-brd-disabled: var(--clr-act-disabled);
+}

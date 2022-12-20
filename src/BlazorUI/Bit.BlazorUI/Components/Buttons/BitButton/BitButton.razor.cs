@@ -4,6 +4,7 @@ namespace Bit.BlazorUI;
 
 public partial class BitButton
 {
+    protected override bool UseVisual => false;
     private BitButtonSize buttonSize = BitButtonSize.Medium;
     private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
     private int? _tabIndex;
@@ -97,10 +98,10 @@ public partial class BitButton
                                            : "standard");
 
         ClassBuilder.Register(() => ButtonSize == BitButtonSize.Small
-                                       ? $"{RootElementClass}-sm-{VisualClassRegistrar()}"
+                                       ? "small"
                                        : ButtonSize == BitButtonSize.Medium
-                                           ? $"{RootElementClass}-md-{VisualClassRegistrar()}"
-                                           : $"{RootElementClass}-lg-{VisualClassRegistrar()}");
+                                           ? "medium"
+                                           : "large");
     }
 
     protected override async Task OnInitializedAsync()
