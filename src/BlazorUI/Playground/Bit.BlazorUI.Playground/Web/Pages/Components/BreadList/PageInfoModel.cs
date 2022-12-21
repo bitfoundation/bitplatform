@@ -2,11 +2,11 @@
 
 public class PageInfoModel
 {
-    public string Text { get; set; }
+    public string Name { get; set; }
 
     public string Href { get; set; }
 
-    public string Class { get; set; }
+    public string HtmlClass { get; set; }
 
-    public string Style { get; set; }
+    public string HtmlStyle { get; set; }
 }

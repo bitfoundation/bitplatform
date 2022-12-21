@@ -28,16 +28,16 @@
                         {
                             <a href="@GetItemHref(item)"
                                aria-current="@(IsCurrentItem(item) ? "page" : null)"
-                               style="@GetItemStyle(item) @GetItemStyles(item)"
-                               class="@GetItemClass(item) @GetItemClasses(item)">
+                               style="@GetItemStyles(item)"
+                               class="@GetItemClasses(item)">
                                 @GetItemText(item)
                             </a>
                         }
                         else
                         {
                             <button aria-current="@(IsCurrentItem(item) ? "page" : null)"
-                                    style="@GetItemStyle(item) @GetItemStyles(item)"
-                                    class="@GetItemClass(item) @GetItemClasses(item)"
+                                    style="@GetItemStyles(item)"
+                                    class="@GetItemClasses(item)"
                                     @onclick="() => HandleOnItemClick(item)">
                                 @GetItemText(item)
                             </button>
@@ -65,8 +65,8 @@
                 <li>
                     <a href="@GetItemHref(item)"
                        aria-current=@(IsCurrentItem(item) ? "page" : null)
-                       style="@GetItemStyle(item) @GetItemStyles(item)"
-                       class="@GetItemClass(item) @GetItemClasses(item)"
+                       style="@GetItemStyles(item)"
+                       class="@GetItemClasses(item)"
                        @onclick="() => HandleOnItemClick(item)">
                         @GetItemText(item)
                     </a>

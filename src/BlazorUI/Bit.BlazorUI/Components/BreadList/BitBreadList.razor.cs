@@ -37,12 +37,14 @@ public partial class BitBreadList<TItem>
     [Parameter] public BitIconName DividerIcon { get; set; } = BitIconName.ChevronRight;
 
     /// <summary>
-    /// 
+    /// URL to navigate to when this breadcrumb item is clicked.
+    /// If provided, the breadcrumb will be rendered as a link.
     /// </summary>
     [Parameter] public string HrefField { get; set; } = "Href";
 
     /// <summary>
-    /// 
+    /// URL to navigate to when this breadcrumb item is clicked.
+    /// If provided, the breadcrumb will be rendered as a link.
     /// </summary>
     [Parameter] public Expression<Func<TItem, object>>? HrefSelector { get; set; }
 
@@ -52,22 +54,22 @@ public partial class BitBreadList<TItem>
     [Parameter] public IList<TItem> Items { get; set; } = new List<TItem>();
 
     /// <summary>
-    /// 
+    /// class HTML attribute for breadcrumb item.
     /// </summary>
     [Parameter] public string ItemClassField { get; set; } = "ItemClass";
 
     /// <summary>
-    /// 
+    /// Class HTML attribute for breadcrumb item.
     /// </summary>
     [Parameter] public Expression<Func<TItem, object>>? ItemClassSelector { get; set; }
 
     /// <summary>
-    /// 
+    /// Style HTML attribute for breadcrumb item.
     /// </summary>
     [Parameter] public string ItemStyleField { get; set; } = "ItemStyle";
 
     /// <summary>
-    /// 
+    /// Style HTML attribute for breadcrumb item.
     /// </summary>
     [Parameter] public Expression<Func<TItem, object>>? ItemStyleSelector { get; set; }
 
@@ -98,12 +100,12 @@ public partial class BitBreadList<TItem>
     [Parameter] public EventCallback<TItem> OnItemClick { get; set; }
 
     /// <summary>
-    /// 
+    /// Text to display in the breadcrumb item.
     /// </summary>
     [Parameter] public string TextField { get; set; } = "Text";
 
     /// <summary>
-    /// 
+    /// Text to display in the breadcrumb item.
     /// </summary>
     [Parameter] public Expression<Func<TItem, object>>? TextSelector { get; set; }
 
@@ -206,6 +208,11 @@ public partial class BitBreadList<TItem>
 
         itemClasses.Append("item");
 
+        if (GetItemClass(item).HasValue())
+        {
+            itemClasses.Append($" {GetItemClass(item)}");
+        }
+
         if (IsCurrentItem(item))
         {
             itemClasses.Append(" current-item");
@@ -221,12 +228,19 @@ public partial class BitBreadList<TItem>
 
     private string GetItemStyles(TItem item)
     {
-        if (IsCurrentItem(item) && CurrentItemStyle.HasValue())
+        StringBuilder itemStyles = new();
+
+        if (GetItemStyle(item).HasValue())
         {
-            return CurrentItemStyle!;
+            itemStyles.Append(GetItemStyle(item));
         }
 
-        return string.Empty;
+        if (IsCurrentItem(item) && CurrentItemStyle.HasValue())
+        {
+            itemStyles.Append(CurrentItemStyle);
+        }
+
+        return itemStyles.ToString();
     }
 
     private bool IsCurrentItem(TItem item)
