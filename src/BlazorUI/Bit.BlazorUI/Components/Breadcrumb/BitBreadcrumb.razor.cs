@@ -2,16 +2,19 @@
 
 namespace Bit.BlazorUI;
 
-public partial class BitBreadcrumb
+public partial class BitBreadcrumb : IDisposable
 {
+    private bool _disposed;
     private bool _isCalloutOpen;
-    private string _breadcrumbId => $"{UniqueId}-items-wrapper";
+    private string _wrapperId => $"{UniqueId}-wrapper";
     private string _calloutId => $"{UniqueId}-callout";
     private string _overlayId => $"{UniqueId}-overlay";
     private string _overflowDropDownId => $"{UniqueId}-overflow-dropdown";
 
     private IList<BitBreadcrumbItem> _itemsToShowInBreadcrumb = new List<BitBreadcrumbItem>();
     private IList<BitBreadcrumbItem> _overflowItems = new List<BitBreadcrumbItem>();
+
+    private DotNetObjectReference<BitBreadcrumb> _dotnetObj = default!;
 
     [Inject] public IJSRuntime _js { get; set; } = default!;
 
@@ -68,6 +71,13 @@ public partial class BitBreadcrumb
 
     protected override string RootElementClass => "bit-brc";
 
+    protected override Task OnInitializedAsync()
+    {
+        _dotnetObj = DotNetObjectReference.Create(this);
+
+        return base.OnInitializedAsync();
+    }
+
     protected override async Task OnParametersSetAsync()
     {
         GetBreadcrumbItemsToShow();
@@ -77,18 +87,21 @@ public partial class BitBreadcrumb
 
     private async Task CloseCallout()
     {
-        var obj = DotNetObjectReference.Create(this);
-        await _js.InvokeVoidAsync("BitOverflowDropDownMenu.toggleOverflowDropDownMenuCallout", obj, _breadcrumbId, _overflowDropDownId, _calloutId, _overlayId, _isCalloutOpen);
+        if (IsEnabled is false) return;
+
+        await BitBreadcrumbJsRuntimeExtension.ToggleOverflowCallout(_js, _dotnetObj, _wrapperId, _overflowDropDownId, _calloutId, _overlayId, _isCalloutOpen);
+
         _isCalloutOpen = false;
+
         StateHasChanged();
     }
 
     private async Task HandleOnClick(MouseEventArgs e)
     {
-        if (IsEnabled is false || _js is null) return;
+        if (IsEnabled is false) return;
 
-        var obj = DotNetObjectReference.Create(this);
-        await _js.InvokeVoidAsync("BitOverflowDropDownMenu.toggleOverflowDropDownMenuCallout", obj, _breadcrumbId, _overflowDropDownId, _calloutId, _overlayId, _isCalloutOpen);
+        await BitBreadcrumbJsRuntimeExtension.ToggleOverflowCallout(_js, _dotnetObj, _wrapperId, _overflowDropDownId, _calloutId, _overlayId, _isCalloutOpen);
+
         _isCalloutOpen = !_isCalloutOpen;
     }
 
@@ -110,7 +123,9 @@ public partial class BitBreadcrumb
         _overflowItems.Clear();
 
         if (OverflowIndex >= MaxDisplayedItems)
+        {
             OverflowIndex = 0;
+        }
 
         var overflowItemsCount = Items.Count - MaxDisplayedItems;
 
@@ -155,23 +170,33 @@ public partial class BitBreadcrumb
 
     private string GetItemStyles(BitBreadcrumbItem item)
     {
-        if (IsCurrentItem(item) && CurrentItemStyle.HasValue())
-        {
-            return CurrentItemStyle!;
-        }
-
-        return string.Empty;
+        return IsCurrentItem(item) ? CurrentItemStyle ?? string.Empty : string.Empty;
     }
 
     private bool IsCurrentItem(BitBreadcrumbItem item)
     {
-        var currentItem = CurrentItem ?? Items[^1];
-
-        return item == currentItem;
+        return item == (CurrentItem ?? Items[^1]);
     }
 
     private bool IsLastItem(int index)
     {
         return index == _itemsToShowInBreadcrumb.Count - 1;
+    }
+
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_disposed) return;
+        if (!disposing) return;
+
+        _dotnetObj.Dispose();
+
+        _disposed = true;
     }
 }
