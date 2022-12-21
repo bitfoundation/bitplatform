@@ -89,7 +89,7 @@ public partial class BitBreadcrumb : IDisposable
     {
         if (IsEnabled is false) return;
 
-        await BitBreadcrumbJsRuntimeExtension.ToggleOverflowCallout(_js, _dotnetObj, _wrapperId, _overflowDropDownId, _calloutId, _overlayId, _isCalloutOpen);
+        await _js.ToggleOverflowCallout(_dotnetObj, _wrapperId, _overflowDropDownId, _calloutId, _overlayId, _isCalloutOpen);
 
         _isCalloutOpen = false;
 
@@ -100,7 +100,7 @@ public partial class BitBreadcrumb : IDisposable
     {
         if (IsEnabled is false) return;
 
-        await BitBreadcrumbJsRuntimeExtension.ToggleOverflowCallout(_js, _dotnetObj, _wrapperId, _overflowDropDownId, _calloutId, _overlayId, _isCalloutOpen);
+        await _js.ToggleOverflowCallout(_dotnetObj, _wrapperId, _overflowDropDownId, _calloutId, _overlayId, _isCalloutOpen);
 
         _isCalloutOpen = !_isCalloutOpen;
     }
