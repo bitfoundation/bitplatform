@@ -17,14 +17,12 @@ public partial class BitPivotDemo
         {
             Name = "ChildContent",
             Type = "RenderFragment",
-            DefaultValue = "",
             Description = "The content of pivot, It can be Any custom tag.",
         },
         new ComponentParameter()
         {
             Name = "DefaultSelectedKey",
             Type = "string",
-            DefaultValue = "",
             Description = "Default selected key for the pivot.",
         },
         new ComponentParameter()
@@ -49,7 +47,6 @@ public partial class BitPivotDemo
         {
             Name = "OnLinkClick",
             Type = "EventCallback<BitPivotItem>",
-            DefaultValue = "",
             LinkType = LinkType.Link,
             Href = "#pivotItem",
             Description = "Callback for when the selected pivot item is changed.",
@@ -67,17 +64,7 @@ public partial class BitPivotDemo
         {
             Name = "SelectedKey",
             Type = "string",
-            DefaultValue = "",
             Description = "Key of the selected pivot item. Updating this will override the Pivot's selected item state.",
-        },
-        new ComponentParameter()
-        {
-            Name = "Visibility",
-            Type = "BitComponentVisibility",
-            LinkType = LinkType.Link,
-            Href = "#component-visibility-enum",
-            DefaultValue = "BitComponentVisibility.Visible",
-            Description = "Whether the component is Visible,Hidden,Collapsed.",
         },
     };
 
@@ -89,55 +76,49 @@ public partial class BitPivotDemo
             Title = "BitPivotItem",
             Parameters = new List<ComponentParameter>()
             {
-               new ComponentParameter()
-               {
-                   Name = "ChildContent",
-                   Type = "RenderFragment",
-                   DefaultValue = "",
-                   Description = "The content of the pivot item, It can be Any custom tag or a text.",
-               },
-               new ComponentParameter()
-               {
-                   Name = "BodyFragment",
-                   Type = "RenderFragment",
-                   DefaultValue = "",
-                   Description = "The content of the pivot item can be Any custom tag or a text, If HeaderContent provided value of this parameter show, otherwise use ChildContent.",
-               },
-               new ComponentParameter()
-               {
-                   Name = "HeaderFragment",
-                   Type = "RenderFragment",
-                   DefaultValue = "",
-                   Description = "The content of the pivot item header, It can be Any custom tag or a text.",
-               },
-               new ComponentParameter()
-               {
-                   Name = "HeaderText",
-                   Type = "string",
-                   DefaultValue = "",
-                   Description = "The text of the pivot item header, The text displayed of each pivot link.",
-               },
-               new ComponentParameter()
-               {
-                   Name = "IconName",
-                   Type = "BitIconName",
-                   DefaultValue = "",
-                   Description = "The icon name for the icon shown next to the pivot link.",
-               },
-               new ComponentParameter()
-               {
-                   Name = "ItemCount",
-                   Type = "int",
-                   DefaultValue = "0",
-                   Description = "Defines an optional item count displayed in parentheses just after the linkText.",
-               },
-               new ComponentParameter()
-               {
-                   Name = "Key",
-                   Type = "string",
-                   DefaultValue = "",
-                   Description = "A required key to uniquely identify a pivot item.",
-               },
+                new ComponentParameter()
+                {
+                    Name = "BodyTemplate",
+                    Type = "RenderFragment",
+                    Description = "The content of the pivot item can be Any custom tag or a text, If HeaderContent provided value of this parameter show, otherwise use ChildContent.",
+                },
+                new ComponentParameter()
+                {
+                    Name = "ChildContent",
+                    Type = "RenderFragment",
+                    Description = "The content of the pivot item, It can be Any custom tag or a text.",
+                },
+                new ComponentParameter()
+                {
+                    Name = "HeaderTemplate",
+                    Type = "RenderFragment",
+                    Description = "The content of the pivot item header, It can be Any custom tag or a text.",
+                },
+                new ComponentParameter()
+                {
+                    Name = "HeaderText",
+                    Type = "string",
+                    Description = "The text of the pivot item header, The text displayed of each pivot link.",
+                },
+                new ComponentParameter()
+                {
+                    Name = "IconName",
+                    Type = "BitIconName",
+                    Description = "The icon name for the icon shown next to the pivot link.",
+                },
+                new ComponentParameter()
+                {
+                    Name = "ItemCount",
+                    Type = "int",
+                    DefaultValue = "0",
+                    Description = "Defines an optional item count displayed in parentheses just after the linkText.",
+                },
+                new ComponentParameter()
+                {
+                    Name = "Key",
+                    Type = "string",
+                    Description = "A required key to uniquely identify a pivot item.",
+                },
             }
         }
     };
@@ -213,33 +194,6 @@ public partial class BitPivotDemo
                 },
             }
         },
-        new EnumParameter()
-        {
-            Id = "component-visibility-enum",
-            Title = "BitComponentVisibility Enum",
-            Description = "",
-            EnumList = new List<EnumItem>()
-            {
-                new EnumItem()
-                {
-                    Name= "Visible",
-                    Description="Show content of the component.",
-                    Value="0",
-                },
-                new EnumItem()
-                {
-                    Name= "Hidden",
-                    Description="Hide content of the component,though the space it takes on the page remains.",
-                    Value="1",
-                },
-                new EnumItem()
-                {
-                    Name= "Collapsed",
-                    Description="Hide content of the component,though the space it takes on the page gone.",
-                    Value="2",
-                }
-            }
-        }
     };
 
     private void TogglePivotItemVisobility()
@@ -247,7 +201,8 @@ public partial class BitPivotDemo
         PivotItemVisibility = PivotItemVisibility == BitComponentVisibility.Visible ? BitComponentVisibility.Collapsed : BitComponentVisibility.Visible;
     }
 
-    private readonly string example1HTMLCode = @"<BitPivot>
+    private readonly string example1HTMLCode = @"
+<BitPivot>
     <BitPivotItem HeaderText=""File"">
         Pivot #1
     </BitPivotItem>
@@ -257,9 +212,11 @@ public partial class BitPivotDemo
     <BitPivotItem HeaderText=""Recent"">
         Pivot #3
     </BitPivotItem>
-</BitPivot>";
+</BitPivot>
+";
 
-    private readonly string example2HTMLCode = @"<BitPivot OverflowBehavior=""@BitPivotOverflowBehavior.Scroll"">
+    private readonly string example2HTMLCode = @"
+<BitPivot OverflowBehavior=""@BitPivotOverflowBehavior.Scroll"">
     <BitPivotItem HeaderText=""Files""
                   IconName=""BitIconName.Info"">
         Pivot #1
@@ -293,9 +250,11 @@ public partial class BitPivotDemo
             Pivot #6
         </BodyFragment>
     </BitPivotItem>
-</BitPivot>";
+</BitPivot>
+";
 
-    private readonly string example3HTMLCode = @"<BitPivot LinkSize=""@BitPivotLinkSize.Large"">
+    private readonly string example3HTMLCode = @"
+<BitPivot LinkSize=""@BitPivotLinkSize.Large"">
     <BitPivotItem HeaderText=""File"">
         Pivot #1
     </BitPivotItem>
@@ -305,9 +264,11 @@ public partial class BitPivotDemo
     <BitPivotItem HeaderText=""Recent"">
         Pivot #3
     </BitPivotItem>
-</BitPivot>";
+</BitPivot>
+";
 
-    private readonly string example4HTMLCode = @"<BitPivot LinkFormat=""@BitPivotLinkFormat.Tabs"">
+    private readonly string example4HTMLCode = @"
+<BitPivot LinkFormat=""@BitPivotLinkFormat.Tabs"">
     <BitPivotItem HeaderText=""Foo"">
         Pivot #1
     </BitPivotItem>
@@ -320,9 +281,11 @@ public partial class BitPivotDemo
     <BitPivotItem HeaderText=""Biz"">
         Pivot #4
     </BitPivotItem>
-</BitPivot>";
+</BitPivot>
+";
 
-    private readonly string example5HTMLCode = @"<BitPivot LinkFormat=""@BitPivotLinkFormat.Tabs""
+    private readonly string example5HTMLCode = @"
+<BitPivot LinkFormat=""@BitPivotLinkFormat.Tabs""
           LinkSize=""@BitPivotLinkSize.Large"">
     <BitPivotItem HeaderText=""Foo"">
         Pivot #1
@@ -336,9 +299,11 @@ public partial class BitPivotDemo
     <BitPivotItem HeaderText=""Biz"">
         Pivot #4
     </BitPivotItem>
-</BitPivot>";
+</BitPivot>
+";
 
-    private readonly string example6HTMLCode = @"<BitPivot LinkFormat=""@BitPivotLinkFormat.Tabs""
+    private readonly string example6HTMLCode = @"
+<BitPivot LinkFormat=""@BitPivotLinkFormat.Tabs""
           LinkSize=""@BitPivotLinkSize.Large""
           @bind-SelectedKey=""OverridePivotSelectedKey"">
     <BitPivotItem Key=""1"" HeaderText=""Samples"">
@@ -354,12 +319,15 @@ public partial class BitPivotDemo
 <BitButton IsEnabled=""@(OverridePivotSelectedKey != ""1"")""
            OnClick=""() => OverridePivotSelectedKey = (((int.Parse(OverridePivotSelectedKey) + 3 - 1) % 3)).ToString()"">Prev</BitButton>
 <BitButton IsEnabled=""@(OverridePivotSelectedKey != ""3"")""
-           OnClick=""() => OverridePivotSelectedKey = (((int.Parse(OverridePivotSelectedKey) + 1 ) % 4)).ToString()"">Next</BitButton>";
+           OnClick=""() => OverridePivotSelectedKey = (((int.Parse(OverridePivotSelectedKey) + 1 ) % 4)).ToString()"">Next</BitButton>
+";
 
     private readonly string example6CSharpCode = @"
-private string OverridePivotSelectedKey = ""1"";";
+private string OverridePivotSelectedKey = ""1"";
+";
 
-    private readonly string example7HTMLCode = @"<BitPivot LinkFormat=""@BitPivotLinkFormat.Tabs""
+    private readonly string example7HTMLCode = @"
+<BitPivot LinkFormat=""@BitPivotLinkFormat.Tabs""
           DefaultSelectedKey=""Foo""
           LinkSize=""@BitPivotLinkSize.Large""
           HeadersOnly=""true""
@@ -386,12 +354,15 @@ private string OverridePivotSelectedKey = ""1"";";
     {
         <div>Hello I am Biz</div>
     }
-</div>";
+</div>
+";
 
     private readonly string example7CSharpCode = @"
-private string SelectedKey = ""Foo"";";
+private string SelectedKey = ""Foo"";
+";
 
-    private readonly string example8HTMLCode = @"<div>
+    private readonly string example8HTMLCode = @"
+<div>
     <BitPivot LinkFormat=""@BitPivotLinkFormat.Tabs""
               LinkSize=""@BitPivotLinkSize.Large""
               OnLinkClick=""@(item => SelectedPivotItem = item)"">
@@ -415,7 +386,8 @@ private string SelectedKey = ""Foo"";";
         </BitPivotItem>
     </BitPivot>
 </div>
-<BitButton OnClick=""TogglePivotItemVisobility"">Hide/Show Biz</BitButton>";
+<BitButton OnClick=""TogglePivotItemVisobility"">Hide/Show Biz</BitButton>
+";
 
     private readonly string example8CSharpCode = @"
 private BitPivotItem SelectedPivotItem;
@@ -423,5 +395,6 @@ private BitComponentVisibility PivotItemVisibility;
 private void TogglePivotItemVisobility()
 {
     PivotItemVisibility = PivotItemVisibility == BitComponentVisibility.Visible ? BitComponentVisibility.Collapsed : BitComponentVisibility.Visible;
-}";
+}
+";
 }

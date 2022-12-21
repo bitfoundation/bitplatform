@@ -1,10 +1,14 @@
 ﻿@page "/components/pivot"
 
-<ComponentDemo ComponentName="Pivot" ComponentDescription=" The Pivot control and related tabs pattern are used for navigating frequently accessed,
-        distinct content categories. Pivots allow for navigation between two or more content
-        views and relies on text headers to articulate the different sections of content. Tapping on a pivot item header navigates to that header's section content. Tabs are a visual variant of Pivot that use a combination of icons and text
-        or just icons to articulate section content."
-               ComponentParameters="componentParameters" ComponentSubParameters="componentSubParameters" EnumParameters="enumParameters">
+<ComponentDemo ComponentName="Pivot"
+               ComponentDescription="The Pivot control and related tabs pattern are used for navigating frequently accessed, distinct content categories.
+                                     Pivots allow for navigation between two or more contentviews and relies on text headers to articulate the different sections of content.
+                                     Tapping on a pivot item header navigates to that header's section content.
+                                     Tabs are a visual variant of Pivot that use a combination of icons and textor just icons to articulate section content."
+               ComponentParameters="componentParameters"
+               ComponentSubParameters="componentSubParameters"
+               EnumParameters="enumParameters">
+
     <ComponentExampleBox Title="BitPivot" HTMLSourceCode="@example1HTMLCode" ExampleId="example1">
         <ExamplePreview>
             <BitPivot>
@@ -50,12 +54,12 @@
                 <BitPivotItem HeaderText="I also have a custom template for icon"
                               IconName="BitIconName.Info"
                               ItemCount="45">
-                    <HeaderFragment>
+                    <HeaderTemplate>
                         <i class="bit-icon bit-icon--HeartFill"></i>
-                    </HeaderFragment>
-                    <BodyFragment>
+                    </HeaderTemplate>
+                    <BodyTemplate>
                         Pivot #6
-                    </BodyFragment>
+                    </BodyTemplate>
                 </BitPivotItem>
             </BitPivot>
         </ExamplePreview>
@@ -118,9 +122,9 @@
 
     <ComponentExampleBox Title="Change tabs from outside of the component" HTMLSourceCode="@example6HTMLCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example6">
         <ExamplePreview>
-            <BitPivot LinkFormat="@BitPivotLinkFormat.Tabs"
-                      LinkSize="@BitPivotLinkSize.Large"
-                      @bind-SelectedKey="OverridePivotSelectedKey">
+            <BitPivot @bind-SelectedKey="OverridePivotSelectedKey"
+                      LinkFormat="@BitPivotLinkFormat.Tabs"
+                      LinkSize="@BitPivotLinkSize.Large">
                 <BitPivotItem Key="1" HeaderText="Samples">
                     Pivot #1
                 </BitPivotItem>
