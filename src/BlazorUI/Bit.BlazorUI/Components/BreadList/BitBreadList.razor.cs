@@ -5,6 +5,11 @@ namespace Bit.BlazorUI;
 
 public partial class BitBreadList<TItem>
 {
+    private string _internalHrefField = "Href";
+    private string _internalItemClassField = "ItemClass";
+    private string _internalItemStyleField = "ItemStyle";
+    private string _internalTextField = "Text";
+
     private bool _isCalloutOpen;
     private string _breadListId => $"{UniqueId}-items-wrapper";
     private string _calloutId => $"{UniqueId}-callout";
@@ -40,13 +45,29 @@ public partial class BitBreadList<TItem>
     /// URL to navigate to when this breadcrumb item is clicked.
     /// If provided, the breadcrumb will be rendered as a link.
     /// </summary>
-    [Parameter] public string HrefField { get; set; } = "Href";
+    [Parameter]
+    public string HrefField
+    {
+        get => _internalHrefField;
+        set
+        {
+            _internalHrefField = value;
+        }
+    }
 
     /// <summary>
     /// URL to navigate to when this breadcrumb item is clicked.
     /// If provided, the breadcrumb will be rendered as a link.
     /// </summary>
-    [Parameter] public Expression<Func<TItem, object>>? HrefSelector { get; set; }
+    [Parameter] 
+    public Expression<Func<TItem, object>>? HrefSelector
+    {
+        set
+        {
+            if (value is not null)
+                _internalHrefField = value.GetName();
+        }
+    }
 
     /// <summary>
     /// Collection of breadcrumbs to render.
@@ -56,22 +77,54 @@ public partial class BitBreadList<TItem>
     /// <summary>
     /// class HTML attribute for breadcrumb item.
     /// </summary>
-    [Parameter] public string ItemClassField { get; set; } = "ItemClass";
+    [Parameter]
+    public string ItemClassField
+    {
+        get => _internalItemClassField;
+        set
+        {
+            _internalItemClassField = value;
+        }
+    }
 
     /// <summary>
     /// Class HTML attribute for breadcrumb item.
     /// </summary>
-    [Parameter] public Expression<Func<TItem, object>>? ItemClassSelector { get; set; }
+    [Parameter] 
+    public Expression<Func<TItem, object>>? ItemClassSelector
+    {
+        set
+        {
+            if (value is not null)
+                _internalItemClassField = value.GetName();
+        }
+    }
 
     /// <summary>
     /// Style HTML attribute for breadcrumb item.
     /// </summary>
-    [Parameter] public string ItemStyleField { get; set; } = "ItemStyle";
+    [Parameter]
+    public string ItemStyleField
+    {
+        get => _internalItemStyleField;
+        set
+        {
+            _internalItemStyleField = value;
+        }
+    }
 
     /// <summary>
     /// Style HTML attribute for breadcrumb item.
     /// </summary>
-    [Parameter] public Expression<Func<TItem, object>>? ItemStyleSelector { get; set; }
+    [Parameter]
+    public Expression<Func<TItem, object>>? ItemStyleSelector
+    {
+        set
+        {
+            if (value is not null)
+                _internalItemStyleField = value.GetName();
+        }
+    }
 
     /// <summary>
     /// The maximum number of breadcrumbs to display before coalescing.
@@ -102,39 +155,30 @@ public partial class BitBreadList<TItem>
     /// <summary>
     /// Text to display in the breadcrumb item.
     /// </summary>
-    [Parameter] public string TextField { get; set; } = "Text";
+    [Parameter]
+    public string TextField
+    {
+        get => _internalTextField;
+        set
+        {
+            _internalTextField = value;
+        }
+    }
 
     /// <summary>
     /// Text to display in the breadcrumb item.
     /// </summary>
-    [Parameter] public Expression<Func<TItem, object>>? TextSelector { get; set; }
+    [Parameter]
+    public Expression<Func<TItem, object>>? TextSelector
+    {
+        set
+        {
+            if (value is not null)
+                _internalTextField = value.GetName();
+        }
+    }
 
     protected override string RootElementClass => "bit-brl";
-
-    protected override async Task OnInitializedAsync()
-    {
-        if (HrefSelector is not null)
-        {
-            HrefField = HrefSelector.GetName();
-        }
-
-        if (ItemClassSelector is not null)
-        {
-            ItemClassField = ItemClassSelector.GetName();
-        }
-
-        if (ItemStyleSelector is not null)
-        {
-            ItemStyleField = ItemStyleSelector.GetName();
-        }
-
-        if (TextSelector is not null)
-        {
-            TextField = TextSelector.GetName();
-        }
-
-        await base.OnInitializedAsync();
-    }
 
     protected override async Task OnParametersSetAsync()
     {
