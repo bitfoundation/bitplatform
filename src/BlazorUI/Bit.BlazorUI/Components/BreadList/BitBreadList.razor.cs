@@ -5,6 +5,15 @@ namespace Bit.BlazorUI;
 
 public partial class BitBreadList<TItem>
 {
+    private string hrefField = "Href";
+    private string itemClassField = "ItemClass";
+    private string itemStyleField = "ItemStyle";
+    private string textField = "Text";
+    private Expression<Func<TItem, object>>? hrefSelector;
+    private Expression<Func<TItem, object>>? itemClassSelector;
+    private Expression<Func<TItem, object>>? itemStyleSelector;
+    private Expression<Func<TItem, object>>? textSelector;
+
     private string _internalHrefField = "Href";
     private string _internalItemClassField = "ItemClass";
     private string _internalItemStyleField = "ItemStyle";
@@ -48,9 +57,10 @@ public partial class BitBreadList<TItem>
     [Parameter]
     public string HrefField
     {
-        get => _internalHrefField;
+        get => hrefField;
         set
         {
+            hrefField = value;
             _internalHrefField = value;
         }
     }
@@ -62,8 +72,11 @@ public partial class BitBreadList<TItem>
     [Parameter] 
     public Expression<Func<TItem, object>>? HrefSelector
     {
+        get => hrefSelector;
         set
         {
+            hrefSelector = value;
+
             if (value is not null)
                 _internalHrefField = value.GetName();
         }
@@ -80,9 +93,10 @@ public partial class BitBreadList<TItem>
     [Parameter]
     public string ItemClassField
     {
-        get => _internalItemClassField;
+        get => itemClassField;
         set
         {
+            itemClassField = value;
             _internalItemClassField = value;
         }
     }
@@ -93,8 +107,11 @@ public partial class BitBreadList<TItem>
     [Parameter] 
     public Expression<Func<TItem, object>>? ItemClassSelector
     {
+        get => itemClassSelector;
         set
         {
+            itemClassSelector = value;
+
             if (value is not null)
                 _internalItemClassField = value.GetName();
         }
@@ -106,9 +123,10 @@ public partial class BitBreadList<TItem>
     [Parameter]
     public string ItemStyleField
     {
-        get => _internalItemStyleField;
+        get => itemClassField;
         set
         {
+            itemClassField = value;
             _internalItemStyleField = value;
         }
     }
@@ -119,8 +137,11 @@ public partial class BitBreadList<TItem>
     [Parameter]
     public Expression<Func<TItem, object>>? ItemStyleSelector
     {
+        get => itemStyleSelector;
         set
         {
+            itemStyleSelector = value;
+
             if (value is not null)
                 _internalItemStyleField = value.GetName();
         }
@@ -158,9 +179,10 @@ public partial class BitBreadList<TItem>
     [Parameter]
     public string TextField
     {
-        get => _internalTextField;
+        get => textField;
         set
         {
+            textField = value;
             _internalTextField = value;
         }
     }
@@ -171,8 +193,11 @@ public partial class BitBreadList<TItem>
     [Parameter]
     public Expression<Func<TItem, object>>? TextSelector
     {
+        get => textSelector;
         set
         {
+            textSelector = value;
+
             if (value is not null)
                 _internalTextField = value.GetName();
         }
@@ -302,8 +327,8 @@ public partial class BitBreadList<TItem>
         return index == _itemsToShowInBreadcrumb.Count - 1;
     }
 
-    private string? GetItemHref(TItem item) => item.GetValueAsObjectFromProperty(HrefField)?.ToString();
-    private string? GetItemClass(TItem item) => item.GetValueAsObjectFromProperty(ItemClassField)?.ToString();
-    private string? GetItemStyle(TItem item) => item.GetValueAsObjectFromProperty(ItemStyleField)?.ToString();
-    private string? GetItemText(TItem item) => item.GetValueAsObjectFromProperty(TextField)?.ToString();
+    private string? GetItemHref(TItem item) => item.GetValueAsObjectFromProperty(_internalHrefField)?.ToString();
+    private string? GetItemClass(TItem item) => item.GetValueAsObjectFromProperty(_internalItemClassField)?.ToString();
+    private string? GetItemStyle(TItem item) => item.GetValueAsObjectFromProperty(_internalItemStyleField)?.ToString();
+    private string? GetItemText(TItem item) => item.GetValueAsObjectFromProperty(_internalTextField)?.ToString();
 }
