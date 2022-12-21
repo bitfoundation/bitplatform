@@ -3,15 +3,15 @@ namespace Bit.BlazorUI;
 
 public partial class BitPivotItem : IDisposable
 {
+    private bool isSelected;
     private bool _disposed;
-    private bool _isSelected;
     public bool IsSelected
     {
-        get => _isSelected;
+        get => isSelected;
         set
         {
-            if (value == _isSelected) return;
-            _isSelected = value;
+            if (value == isSelected) return;
+            isSelected = value;
             ClassBuilder.Reset();
         }
     }
