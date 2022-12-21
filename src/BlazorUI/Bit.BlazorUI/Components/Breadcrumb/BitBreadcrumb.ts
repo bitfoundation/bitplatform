@@ -1,10 +1,11 @@
-﻿class BitOverflowDropDownMenu {
-    static toggleOverflowDropDownMenuCallout(dotnetObjReference: DotNetObject,
+﻿class BitBreadcrumb {
+    static toggleOverflowCallout(
+        dotnetObjReference: DotNetObject,
         dropDownWrapperId: string,
         dropDownId: string,
-        dropDownCalloutId: string,
-        dropDownOverlayId: string,
-        isOpen: boolean) {
+        calloutId: string,
+        overlayId: string,
+        isCalloutOpen: boolean) {
 
         const dropDownWrapper = document.getElementById(dropDownWrapperId);
         if (dropDownWrapper == null)
@@ -14,22 +15,22 @@
         if (dropDown == null)
             return;
 
-        const dropDownCallout = document.getElementById(dropDownCalloutId);
+        const dropDownCallout = document.getElementById(calloutId);
         if (dropDownCallout == null)
             return;
 
-        const dropDownOverlay = document.getElementById(dropDownOverlayId);
+        const dropDownOverlay = document.getElementById(overlayId);
         if (dropDownOverlay == null)
             return;
 
-        if (isOpen) {
+        if (isCalloutOpen) {
             dropDownCallout.style.display = "none";
             dropDownOverlay.style.display = "none";
             Bit.currentCallout.update("", "", null);
             Bit.currentDropDownCalloutId = "";
         } else {
-            Bit.currentDropDownCalloutId = dropDownCalloutId;
-            Bit.closeCurrentCalloutIfExists(dropDownCalloutId, dropDownOverlayId, dotnetObjReference);
+            Bit.currentDropDownCalloutId = calloutId;
+            Bit.closeCurrentCalloutIfExists(calloutId, overlayId, dotnetObjReference);
             dropDownCallout.style.display = "block";
             dropDownOverlay.style.display = "block";
 

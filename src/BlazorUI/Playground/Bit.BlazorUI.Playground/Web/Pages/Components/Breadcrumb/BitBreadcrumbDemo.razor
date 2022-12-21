@@ -97,8 +97,8 @@
                 <div>
                     <BitLabel>Current Item Style</BitLabel>
                     <BitBreadcrumb Items="BreadcrumbItems"
-                                   CurrentItemStyle="background-color: #CC6; padding: 2px 5px; margin: 0 5px; border-radius: 5px; color: blue;"
-                                   CurrentItem="BreadcrumbItems[3]" />
+                                   CurrentItem="BreadcrumbItems[3]" 
+                                   CurrentItemStyle="color:red;background:lightgreen" />
                 </div>
             </div>
         </ExamplePreview>
@@ -113,7 +113,7 @@
                                OverflowIndex="2"
                                CurrentItem="@ControlledCurrentItem"
                                OnItemClick="(item) => ControlledCurrentItem = item"
-                               CurrentItemStyle="background-color: #CC6; padding: 2px 5px; border-radius: 5px; color: red;" />
+                               CurrentItemStyle="color:red;background:lightgreen" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>

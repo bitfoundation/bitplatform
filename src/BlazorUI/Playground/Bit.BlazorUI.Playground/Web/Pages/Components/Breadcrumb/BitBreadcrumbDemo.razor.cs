@@ -65,25 +65,25 @@ public partial class BitBreadcrumbDemo
             {
                 Text = "Folder 1",
                 Href = "/components/breadcrumb",
-                Style = "background-color: #CC6; padding: 2px 5px; margin: 2px 5px; border-radius: 5px; color: green;"
+                Style = "color:red;background:greenyellow"
             },
             new()
             {
                 Text = "Folder 2",
                 Href = "/components/breadcrumb",
-                Style = "background-color: #CC6; padding: 2px 5px; margin: 2px 5px; border-radius: 5px; color: green;"
+                Style = "color:red;background:darkseagreen"
             },
             new()
             {
                 Text = "Folder 3",
                 Href = "/components/breadcrumb",
-                Style = "background-color: #CC6; padding: 2px 5px; margin: 2px 5px; border-radius: 5px; color: green;"
+                Style = "color:red;background:lawngreen"
             },
             new()
             {
                 Text = "Folder 4",
                 Href = "/components/breadcrumb",
-                Style = "background-color: #CC6; padding: 2px 5px; margin: 2px 5px; border-radius: 5px; color: green;"
+                Style = "color:red;background:lightgreen"
             }
         };
 
@@ -104,6 +104,14 @@ public partial class BitBreadcrumbDemo
             new()
             {
                 Text = "Folder 4"
+            },
+            new()
+            {
+                Text = "Folder 5"
+            },
+            new()
+            {
+                Text = "Folder 6"
             }
         };
     }
@@ -208,8 +216,6 @@ private List<BitBreadcrumbItem> BreadcrumbItems { get; set; } = new List<BitBrea
 };
 ";
 
-    #region Sample Code 1
-
     private readonly string example1HTMLCode = @"
 <div>
     <BitLabel>Basic</BitLabel>
@@ -221,10 +227,6 @@ private List<BitBreadcrumbItem> BreadcrumbItems { get; set; } = new List<BitBrea
     <BitBreadcrumb Items=""BreadcrumbItems"" IsEnabled=""false"" />
 </div>
 ";
-
-    #endregion
-
-    #region Sample Code 2
 
     private readonly string example2HTMLCode = @"
 <div>
@@ -253,10 +255,6 @@ private List<BitBreadcrumbItem> BreadcrumbItems { get; set; } = new List<BitBrea
 </div>
 ";
 
-    #endregion
-
-    #region Sample Code 3
-
     private readonly string example3HTMLCode = @"
 <div>
     <BitLabel>BitIconName (ChevronDown)</BitLabel>
@@ -275,26 +273,26 @@ private List<BitBreadcrumbItem> BreadcrumbItems { get; set; } = new List<BitBrea
 </div>
 ";
 
-    #endregion
-
-    #region Sample Code 4
-
     private readonly string example4HTMLCode = @"
 <style>
     .custom-item {
-        background-color: #CC6;
-        padding: 2px 5px !important;
+        color: red;
         margin: 2px 5px;
-        border-radius: 5px;
-        color: red !important;
+        border-radius: 2px;
+        background: lightgreen;
+    }
+    .custom-item:hover {
+        background: greenyellow;
     }
 
     .custom-current-item {
-        background-color: #CC6;
-        padding: 2px 5px !important;
-        margin: 0 5px;
-        border-radius: 5px;
-        color: blue !important;
+        color: red;
+        margin: 2px 5px;
+        border-radius: 2px;
+        background: lightgreen;
+    }
+    .custom-current-item:hover {
+        background: greenyellow;
     }
 </style>
 
@@ -315,7 +313,7 @@ private List<BitBreadcrumbItem> BreadcrumbItems { get; set; } = new List<BitBrea
 <div>
     <BitLabel>Current Item Style</BitLabel>
     <BitBreadcrumb Items=""BreadcrumbItems""
-                   CurrentItemStyle=""background-color: #CC6; padding: 2px 5px; margin: 0 5px; border-radius: 5px; color: blue;""
+                   CurrentItemStyle=""color:red;background:lightgreen""
                    CurrentItem=""BreadcrumbItems[3]"" />
 </div>
 ";
@@ -379,32 +377,28 @@ private List<BitBreadcrumbItem> BreadcrumbItemsWithStyle { get; set; } = new Lis
     {
         Text = ""Folder 1"",
         Href = ""/components/breadcrumb"",
-        Style = ""background-color: #CC6; padding: 2px 5px; margin: 2px 5px; border-radius: 5px; color: green;""
+        Style = ""color:red;background:lightgreen""
     },
     new()
     {
         Text = ""Folder 2"",
         Href = ""/components/breadcrumb"",
-        Style = ""background-color: #CC6; padding: 2px 5px; margin: 2px 5px; border-radius: 5px; color: green;""
+        Style = ""color:red;background:lightgreen""
     },
     new()
     {
         Text = ""Folder 3"",
         Href = ""/components/breadcrumb"",
-        Style = ""background-color: #CC6; padding: 2px 5px; margin: 2px 5px; border-radius: 5px; color: green;""
+        Style = ""color:red;background:lightgreen""
     },
     new()
     {
         Text = ""Folder 4"",
         Href = ""/components/breadcrumb"",
-        Style = ""background-color: #CC6; padding: 2px 5px; margin: 2px 5px; border-radius: 5px; color: green;""
+        Style = ""color:red;background:lightgreen""
     }
 };
 ";
-
-    #endregion
-
-    #region Sample Code 5
 
     private readonly string example5HTMLCode = @"
 <BitBreadcrumb Items=""@BreadcrumbItemsWithControll""
@@ -412,10 +406,11 @@ private List<BitBreadcrumbItem> BreadcrumbItemsWithStyle { get; set; } = new Lis
                OverflowIndex=""2""
                CurrentItem=""@ControlledCurrentItem""
                OnItemClick=""(item) => ControlledCurrentItem = item""
-               CurrentItemStyle=""background-color: #CC6; padding: 2px 5px; border-radius: 5px; color: red;"" />
+               CurrentItemStyle=""color:red;background:lightgreen"" />
 ";
 
     private readonly string example5CSharpCode = @"
+private BitBreadcrumbItem ControlledCurrentItem;
 private List<BitBreadcrumbItem> BreadcrumbItemsWithControll { get; set; } = new List<BitBreadcrumbItem>
 {
     new()
@@ -433,11 +428,17 @@ private List<BitBreadcrumbItem> BreadcrumbItemsWithControll { get; set; } = new 
     new()
     {
         Text = ""Folder 4""
+    },
+    new()
+    {
+        Text = ""Folder 5""
+    },
+    new()
+    {
+        Text = ""Folder 6""
     }
 };
 
 private BitBreadcrumbItem ControlledCurrentItem;
 ";
-
-    #endregion
 }
