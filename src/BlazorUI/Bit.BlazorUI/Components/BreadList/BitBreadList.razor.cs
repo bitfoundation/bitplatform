@@ -3,7 +3,7 @@ using System.Text;
 
 namespace Bit.BlazorUI;
 
-public partial class BitBreadList<TItem>
+public partial class BitBreadList<TItem> : IDisposable
 {
     private string hrefField = "Href";
     private string itemClassField = "ItemClass";
@@ -20,13 +20,17 @@ public partial class BitBreadList<TItem>
     private string _internalTextField = "Text";
 
     private bool _isCalloutOpen;
-    private string _breadListId => $"{UniqueId}-items-wrapper";
+    private string _wrapperId => $"{UniqueId}-wrapper";
     private string _calloutId => $"{UniqueId}-callout";
     private string _overlayId => $"{UniqueId}-overlay";
     private string _overflowDropDownId => $"{UniqueId}-overflow-dropdown";
 
     private IList<TItem> _itemsToShowInBreadcrumb = new List<TItem>();
     private IList<TItem> _overflowItems = new List<TItem>();
+
+    private DotNetObjectReference<BitBreadList<TItem>> _dotnetObj = default!;
+
+    private bool _disposed;
 
     [Inject] public IJSRuntime _js { get; set; } = default!;
 
@@ -212,20 +216,27 @@ public partial class BitBreadList<TItem>
         await base.OnParametersSetAsync();
     }
 
+    protected override Task OnInitializedAsync()
+    {
+        _dotnetObj = DotNetObjectReference.Create(this);
+
+        return base.OnInitializedAsync();
+    }
+
     private async Task CloseCallout()
     {
-        var obj = DotNetObjectReference.Create(this);
-        await _js.InvokeVoidAsync("BitOverflowDropDownMenu.toggleOverflowDropDownMenuCallout", obj, _breadListId, _overflowDropDownId, _calloutId, _overlayId, _isCalloutOpen);
+        if (IsEnabled is false) return;
+
+        await _js.ToggleOverflowCallout(_dotnetObj, _wrapperId, _overflowDropDownId, _calloutId, _overlayId, _isCalloutOpen);
         _isCalloutOpen = false;
         StateHasChanged();
     }
 
     private async Task HandleOnClick(MouseEventArgs e)
     {
-        if (IsEnabled is false || _js is null) return;
+        if (IsEnabled is false) return;
 
-        var obj = DotNetObjectReference.Create(this);
-        await _js.InvokeVoidAsync("BitOverflowDropDownMenu.toggleOverflowDropDownMenuCallout", obj, _breadListId, _overflowDropDownId, _calloutId, _overlayId, _isCalloutOpen);
+        await _js.ToggleOverflowCallout(_dotnetObj, _wrapperId, _overflowDropDownId, _calloutId, _overlayId, _isCalloutOpen);
         _isCalloutOpen = !_isCalloutOpen;
     }
 
@@ -247,7 +258,9 @@ public partial class BitBreadList<TItem>
         _overflowItems.Clear();
 
         if (OverflowIndex >= MaxDisplayedItems)
+        {
             OverflowIndex = 0;
+        }
 
         var overflowItemsCount = Items.Count - MaxDisplayedItems;
 
@@ -331,4 +344,20 @@ public partial class BitBreadList<TItem>
     private string? GetItemClass(TItem item) => item.GetValueAsObjectFromProperty(_internalItemClassField)?.ToString();
     private string? GetItemStyle(TItem item) => item.GetValueAsObjectFromProperty(_internalItemStyleField)?.ToString();
     private string? GetItemText(TItem item) => item.GetValueAsObjectFromProperty(_internalTextField)?.ToString();
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_disposed) return;
+        if (!disposing) return;
+
+        _dotnetObj.Dispose();
+
+        _disposed = true;
+    }
 }

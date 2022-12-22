@@ -2,18 +2,15 @@
 
 .bit-brl {
     &.bit-brl-disabled-fluent {
-        .items-wrapper {
-            .overflow-btn, .item, .current-item, i {
-                color: $Grey60;
-                cursor: default;
-                pointer-events: none;
-                font-weight: 400;
-            }
+        .overflow-btn, .item, .current-item, i {
+            color: $Grey60;
+            cursor: default;
+            pointer-events: none;
+            font-weight: 400;
         }
     }
 
     .items-wrapper {
-
         ul {
             padding-inline-start: 0;
 
@@ -26,41 +23,41 @@
         button {
             background-color: transparent;
         }
+    }
 
-        .overflow-btn {
-            cursor: pointer;
-            line-height: rem(36px);
-            color: $Grey160;
+    .overflow-btn {
+        cursor: pointer;
+        line-height: rem(36px);
+        color: $Grey160;
 
-            .overflow-icon-container {
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                padding: 0px rem(4px);
-            }
-
-            &:hover {
-                background-color: $Grey20;
-            }
+        .overflow-icon-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0px rem(4px);
         }
 
-        .item {
-            font-size: rem(20px);
-            font-weight: 400;
-            padding: 0 rem(8px);
-            cursor: pointer;
-            line-height: rem(36px);
-            color: $Grey130;
-
-            &:hover {
-                background-color: $Grey20;
-            }
+        &:hover {
+            background-color: $Grey20;
         }
+    }
 
-        .current-item {
-            font-weight: 600;
-            color: $Grey160;
+    .item {
+        font-size: rem(20px);
+        font-weight: 400;
+        padding: 0 rem(8px);
+        cursor: pointer;
+        line-height: rem(36px);
+        color: $Grey130;
+
+        &:hover {
+            background-color: $Grey20;
         }
+    }
+
+    .current-item {
+        font-weight: 600;
+        color: $Grey160;
     }
 
     .overflow-menu-wrapper {

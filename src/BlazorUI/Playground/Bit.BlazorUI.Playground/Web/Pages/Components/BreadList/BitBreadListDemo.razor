@@ -142,8 +142,8 @@
                     <BitBreadList Items="BasicBreadListItems"
                                   TextField="@nameof(PageInfoModel.Name)"
                                   HrefField="@nameof(PageInfoModel.Href)"
-                                  CurrentItemStyle="background-color: #CC6; padding: 2px 5px; margin: 0 5px; border-radius: 5px; color: blue;"
-                                  CurrentItem="BasicBreadListItems[3]" />
+                                  CurrentItem="BasicBreadListItems[3]"
+                                  CurrentItemStyle="color:red; background:lightgreen;" />
                 </div>
             </div>
         </ExamplePreview>
@@ -159,7 +159,7 @@
                               OverflowIndex="2"
                               CurrentItem="@ControlledCurrentItem"
                               OnItemClick="(PageInfoModel item) => ControlledCurrentItem = item"
-                              CurrentItemStyle="background-color: #CC6; padding: 0 5px; border-radius: 5px; color: red;" />
+                              CurrentItemStyle="color:red; background:lightgreen;" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>

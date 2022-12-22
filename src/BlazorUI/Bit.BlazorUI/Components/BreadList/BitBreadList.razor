@@ -9,7 +9,7 @@
      class="@ClassBuilder.Value"
      aria-label="@AriaLabel">
 
-    <div class="items-wrapper" id="@_breadListId">
+    <div class="items-wrapper" id="@_wrapperId">
         <ul>
             @foreach ((TItem item, int index) in _itemsToShowInBreadcrumb.Select((item, index) => (item, index)))
             {

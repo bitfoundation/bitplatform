@@ -23,10 +23,10 @@ public partial class BitBreadListDemo
 
     private List<PageInfoModel> BreadListItemsWithStyle = new()
     {
-        new PageInfoModel { Name = "Item 1", Href = "/components/bread-list", HtmlStyle = "background-color: #CC6; padding: 2px 5px; margin: 2px 5px; border-radius: 5px; color: green;" },
-        new PageInfoModel { Name = "Item 2", Href = "/components/bread-list", HtmlStyle = "background-color: #CC6; padding: 2px 5px; margin: 2px 5px; border-radius: 5px; color: green;" },
-        new PageInfoModel { Name = "Item 3", Href = "/components/bread-list", HtmlStyle = "background-color: #CC6; padding: 2px 5px; margin: 2px 5px; border-radius: 5px; color: green;" },
-        new PageInfoModel { Name = "Item 4", Href = "/components/bread-list", HtmlStyle = "background-color: #CC6; padding: 2px 5px; margin: 2px 5px; border-radius: 5px; color: green;" },
+        new PageInfoModel { Name = "Item 1", Href = "/components/bread-list", HtmlStyle = "color:red; background:greenyellow;" },
+        new PageInfoModel { Name = "Item 2", Href = "/components/bread-list", HtmlStyle = "color:red; background:greenyellow;" },
+        new PageInfoModel { Name = "Item 3", Href = "/components/bread-list", HtmlStyle = "color:red; background:greenyellow;" },
+        new PageInfoModel { Name = "Item 4", Href = "/components/bread-list", HtmlStyle = "color:red; background:greenyellow;" },
     };
 
     private List<PageInfoModel> BreadListItemsWithControll = new()
@@ -35,6 +35,8 @@ public partial class BitBreadListDemo
         new PageInfoModel { Name = "Item 2" },
         new PageInfoModel { Name = "Item 3" },
         new PageInfoModel { Name = "Item 4" },
+        new PageInfoModel { Name = "Item 5" },
+        new PageInfoModel { Name = "Item 6" },
     };
 
     private PageInfoModel ControlledCurrentItem;
@@ -288,19 +290,25 @@ private List<PageInfoModel> BasicBreadListItems = new()
     private readonly string example4HTMLCode = @"
 <style>
     .custom-item {
-        background-color: #CC6;
-        padding: 2px 5px !important;
+        color: red;
         margin: 2px 5px;
-        border-radius: 5px;
-        color: red !important;
+        border-radius: 2px;
+        background: limegreen;
+
+        &:hover {
+            background: greenyellow;
+        }
     }
 
     .custom-current-item {
-        background-color: #CC6;
-        padding: 2px 5px !important;
-        margin: 0 5px;
-        border-radius: 5px;
-        color: blue !important;
+        color: red;
+        margin: 2px 5px;
+        border-radius: 2px;
+        background: mediumspringgreen;
+
+        &:hover {
+            background: greenyellow;
+        }
     }
 </style>
 
@@ -331,8 +339,8 @@ private List<PageInfoModel> BasicBreadListItems = new()
     <BitBreadList Items=""BasicBreadListItems""
                   TextField=""@nameof(PageInfoModel.Name)""
                   HrefField=""@nameof(PageInfoModel.Href)""
-                  CurrentItemStyle=""background-color: #CC6; padding: 2px 5px; margin: 0 5px; border-radius: 5px; color: blue;""
-                  CurrentItem=""BasicBreadListItems[3]"" />
+                  CurrentItem=""BasicBreadListItems[3]""
+                  CurrentItemStyle=""color:red; background:lightgreen;"" />
 </div>
 ";
 
@@ -358,10 +366,10 @@ private List<PageInfoModel> BreadListItemsWithClass = new()
 
 private List<PageInfoModel> BreadListItemsWithStyle = new()
 {
-    new PageInfoModel { Name = ""Item 1"", Href = ""/components/bread-list"", HtmlStyle = ""background-color: #CC6; padding: 2px 5px; margin: 2px 5px; border-radius: 5px; color: green;"" },
-    new PageInfoModel { Name = ""Item 2"", Href = ""/components/bread-list"", HtmlStyle = ""background-color: #CC6; padding: 2px 5px; margin: 2px 5px; border-radius: 5px; color: green;"" },
-    new PageInfoModel { Name = ""Item 3"", Href = ""/components/bread-list"", HtmlStyle = ""background-color: #CC6; padding: 2px 5px; margin: 2px 5px; border-radius: 5px; color: green;"" },
-    new PageInfoModel { Name = ""Item 4"", Href = ""/components/bread-list"", HtmlStyle = ""background-color: #CC6; padding: 2px 5px; margin: 2px 5px; border-radius: 5px; color: green;"" },
+    new PageInfoModel { Name = ""Item 1"", Href = ""/components/bread-list"", HtmlStyle = ""color:red; background:greenyellow;"" },
+    new PageInfoModel { Name = ""Item 2"", Href = ""/components/bread-list"", HtmlStyle = ""color:red; background:greenyellow;"" },
+    new PageInfoModel { Name = ""Item 3"", Href = ""/components/bread-list"", HtmlStyle = ""color:red; background:greenyellow;"" },
+    new PageInfoModel { Name = ""Item 4"", Href = ""/components/bread-list"", HtmlStyle = ""color:red; background:greenyellow;"" },
 };
 
 private List<PageInfoModel> BasicBreadListItems = new()
@@ -384,7 +392,7 @@ private List<PageInfoModel> BasicBreadListItems = new()
               OverflowIndex=""2""
               CurrentItem=""@ControlledCurrentItem""
               OnItemClick=""(PageInfoModel item) => ControlledCurrentItem = item""
-              CurrentItemStyle=""background-color: #CC6; padding: 0 5px; border-radius: 5px; color: red;"" />
+              CurrentItemStyle=""color:red; background:lightgreen;"" />
 ";
 
     private readonly string example5CSharpCode = @"
@@ -405,6 +413,8 @@ private List<PageInfoModel> BreadListItemsWithControll = new()
     new PageInfoModel { Name = ""Item 2"" },
     new PageInfoModel { Name = ""Item 3"" },
     new PageInfoModel { Name = ""Item 4"" },
+    new PageInfoModel { Name = ""Item 5"" },
+    new PageInfoModel { Name = ""Item 6"" },
 };
 
  private PageInfoModel ControlledCurrentItem;
