@@ -427,15 +427,12 @@
 }
 
 ::deep .bit-lnk-fluent {
-    a {
-        display: flex;
-        align-items: center;
-        color: $White;
+    display: flex;
+    align-items: center;
 
-        &:hover {
-            color: $White;
-            text-decoration: none;
-        }
+    &:hover {
+        color: $White;
+        text-decoration: none;
     }
 }
 
