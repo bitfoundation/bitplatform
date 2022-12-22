@@ -17,7 +17,7 @@
         <div role="tabpanel"
              aria-hidden="false"
              aria-labelledby="@GetAriaLabelledby">
-            @(SelectedItem?.BodyFragment ?? SelectedItem?.ChildContent)
+            @(_selectedItem?.BodyTemplate ?? _selectedItem?.ChildContent)
         </div>
     }
 </div>
