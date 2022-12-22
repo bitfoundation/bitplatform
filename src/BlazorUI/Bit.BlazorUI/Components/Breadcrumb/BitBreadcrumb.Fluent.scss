@@ -10,17 +10,19 @@
         }
     }
 
-    ul {
-        padding-inline-start: 0;
+    .items-wrapper {
+        ul {
+            padding-inline-start: 0;
 
-        li {
-            display: inline-flex;
-            align-items: center;
+            li {
+                display: inline-flex;
+                align-items: center;
+            }
         }
-    }
 
-    button {
-        background-color: transparent;
+        button {
+            background-color: transparent;
+        }
     }
 
     .overflow-btn {
