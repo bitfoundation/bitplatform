@@ -1,0 +1,77 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+@typeparam TItem
+
+<div @ref="RootElement"
+     @attributes="HtmlAttributes"
+     id="@UniqueId"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     aria-label="@AriaLabel">
+
+    <div class="items-wrapper" id="@_wrapperId">
+        <ul>
+            @foreach ((TItem item, int index) in _itemsToShowInBreadcrumb.Select((item, index) => (item, index)))
+            {
+                <li>
+                    @if (_overflowItems.Any() && index == OverflowIndex)
+                    {
+                        <button type="button" class="overflow-btn" aria-label="@OverflowAriaLabel" id="@_overflowDropDownId" @onclick="HandleOnClick">
+                            <span class="overflow-icon-container">
+                                <i class="@($"bit-icon bit-icon--{OverflowIcon.GetName()}")"></i>
+                            </span>
+                        </button>
+                    }
+                    else
+                    {
+                        if (GetItemHref(item).HasValue())
+                        {
+                            <a href="@GetItemHref(item)"
+                               aria-current="@(IsCurrentItem(item) ? "page" : null)"
+                               style="@GetItemStyles(item)"
+                               class="@GetItemClasses(item)">
+                                @GetItemText(item)
+                            </a>
+                        }
+                        else
+                        {
+                            <button aria-current="@(IsCurrentItem(item) ? "page" : null)"
+                                    style="@GetItemStyles(item)"
+                                    class="@GetItemClasses(item)"
+                                    @onclick="() => HandleOnItemClick(item)">
+                                @GetItemText(item)
+                            </button>
+                        }
+                    }
+
+                    @if (IsLastItem(index) is false)
+                    {
+                        <i class="@($"bit-icon bit-icon--{DividerIcon.GetName()}")"></i>
+                    }
+                </li>
+            }
+        </ul>
+    </div>
+
+    <div class="overlay" id="@_overlayId" @onclick="CloseCallout"></div>
+
+    <div class="overflow-menu-wrapper"
+         id="@_calloutId"
+         tabindex="0"
+         role="listbox">
+        <ul>
+            @foreach ((TItem item, int index) in _overflowItems.Select((item, index) => (item, index)))
+            {
+                <li>
+                    <a href="@GetItemHref(item)"
+                       aria-current=@(IsCurrentItem(item) ? "page" : null)
+                       style="@GetItemStyles(item)"
+                       class="@GetItemClasses(item)"
+                       @onclick="() => HandleOnItemClick(item)">
+                        @GetItemText(item)
+                    </a>
+                </li>
+            }
+        </ul>
+    </div>
+</div>

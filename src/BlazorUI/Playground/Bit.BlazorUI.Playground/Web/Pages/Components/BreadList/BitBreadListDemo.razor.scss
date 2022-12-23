@@ -1,0 +1,31 @@
+﻿@import '../../../Styles/abstracts/_functions.scss';
+
+::deep {
+    .custom-item {
+        color: red;
+        margin: 2px 5px;
+        border-radius: 2px;
+        background: limegreen;
+
+        &:hover {
+            background: greenyellow;
+        }
+    }
+
+    .custom-current-item {
+        color: red;
+        margin: 2px 5px;
+        border-radius: 2px;
+        background: mediumspringgreen;
+
+        &:hover {
+            background: greenyellow;
+        }
+    }
+}
+
+.example-box {
+    display: flex;
+    gap: 20px;
+    flex-direction: column;
+}
