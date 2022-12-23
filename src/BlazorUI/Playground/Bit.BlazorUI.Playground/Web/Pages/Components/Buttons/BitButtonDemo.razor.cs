@@ -211,11 +211,13 @@ public partial class BitButtonDemo
         }
     };
 
+    #region Example Code 1
+
     private readonly string example1HTMLCode = @"
 <BitButton IsEnabled=""true"" OnClick=""() => PrimaryCounter++"">
     Primary (@PrimaryCounter)
 </BitButton>
-<BitButton ButtonStyle=""BitButtonStyle.Standard"" Style=""margin-right: 2px;"" IsEnabled=""true"" OnClick=""() => StandardCounter++"">
+<BitButton ButtonStyle=""BitButtonStyle.Standard"" IsEnabled=""true"" OnClick=""() => StandardCounter++"">
     Standard (@StandardCounter)
 </BitButton>
 <BitButton IsEnabled=""false"" AllowDisabledFocus=""false"">
@@ -229,18 +231,41 @@ public partial class BitButtonDemo
 public int PrimaryCounter;
 public int StandardCounter;";
 
+    #endregion Example Code 1
+
+    #region Example Code 2
+
     private readonly string example2HTMLCode = @"
-<BitButton Style=""height: 40px;width: 166px;font-size: 16px;"" Class=""styled-btn"">
+<style>
+    ::deep .custom-button,
+    ::deep .custom-button:hover {
+        height: 2.5rem;
+        width: 10.375rem;
+        font-size: 1rem;
+        background-color: #0054C6;
+        border-color: #0054C6;
+    }
+</style>
+
+<BitButton Style=""height: 40px;width: 166px;font-size: 16px;"">
     Styled Button
 </BitButton>
 <BitButton Class=""custom-button"">
     Classed Button
 </BitButton>";
 
+    #endregion Example Code 2
+
+    #region Example Code 3
+
     private readonly string example3HTMLCode = @"
 <BitButton Style=""margin-bottom: 10px;"" Visibility=""BitComponentVisibility.Visible"">Visible Button</BitButton>
 <div>Hidden Button: [<BitButton Visibility=""BitComponentVisibility.Hidden"">Hidden Button</BitButton>]</div>
 <div>Collapsed Button: [<BitButton Visibility=""BitComponentVisibility.Collapsed"">Collapsed Button</BitButton>]</div>";
+
+    #endregion Example Code 3
+
+    #region Example Code 4
 
     private readonly string example4HTMLCode = @"
 <BitButton AriaDescription=""Detailed description used for screen reader."">
@@ -250,33 +275,42 @@ public int StandardCounter;";
     Button with Aria Hidden
 </BitButton>";
 
+    #endregion Example Code 4
+
+    #region Example Code 5
+
     private readonly string example5HTMLCode = @"
-<BitButton Style=""margin-right: 10px;"" Title=""Primary"" Target=""_blank"" Href=""https://github.com/bitfoundation/bitplatform"">
+<BitButton Title=""Primary"" Target=""_blank"" Href=""https://github.com/bitfoundation/bitplatform"">
     Open Bit Platform In New Tab
 </BitButton>
-<BitButton Class=""lnk-btn"" Style=""margin-right: 10px;"" Title=""Standard"" Href=""https://github.com/bitfoundation/bitplatform"" ButtonStyle=""BitButtonStyle.Standard"">
+<BitButton Title=""Standard"" Href=""https://github.com/bitfoundation/bitplatform"" ButtonStyle=""BitButtonStyle.Standard"">
     Go To Bit Platform
 </BitButton>
-<BitButton Class=""disable-btn"" Target=""_self"" Href=""https://github.com/bitfoundation/bitplatform"" IsEnabled=""false"">
+<BitButton Target=""_self"" Href=""https://github.com/bitfoundation/bitplatform"" IsEnabled=""false"">
     <span>Bit Platform From Span</span>
 </BitButton>";
+
+    #endregion Example Code 5
+
+    #region Example Code 6
 
     private readonly string example6HTMLCode = @"
 <div>
     <BitLabel>Small size</BitLabel>
-    <BitButton Style=""margin-bottom: 8px""
-               ButtonSize=""BitButtonSize.Small"">Button</BitButton>
+    <BitButton ButtonSize=""BitButtonSize.Small"">Button</BitButton>
 </div>
 <div>
     <BitLabel>Medium size</BitLabel>
-    <BitButton Style=""margin-bottom: 8px""
-               ButtonSize=""BitButtonSize.Medium"">Button</BitButton>
+    <BitButton ButtonSize=""BitButtonSize.Medium"">Button</BitButton>
 </div>
 <div>
     <BitLabel>Large size</BitLabel>
-    <BitButton Style=""margin-bottom: 8px""
-               ButtonSize=""BitButtonSize.Large"">Button</BitButton>
+    <BitButton ButtonSize=""BitButtonSize.Large"">Button</BitButton>
 </div>";
+
+    #endregion Example Code 6
+
+    #region Example Code 7
 
     private readonly string example7HTMLCode = @"
 <style>
@@ -304,20 +338,19 @@ public int StandardCounter;";
 
 <div>
     <BitLabel>Small size</BitLabel>
-    <BitButton Style=""margin-bottom: 8px""
-               Class=""custom-btn-sm""
-               ButtonSize=""BitButtonSize.Small"">Button</BitButton>
+    <BitButton Class=""custom-btn-sm""
+                ButtonSize=""BitButtonSize.Small"">Button</BitButton>
 </div>
 <div>
     <BitLabel>Medium size</BitLabel>
-    <BitButton Style=""margin-bottom: 8px""
-               Class=""custom-btn-md""
-               ButtonSize=""BitButtonSize.Medium"">Button</BitButton>
+    <BitButton Class=""custom-btn-md""
+                ButtonSize=""BitButtonSize.Medium"">Button</BitButton>
 </div>
 <div>
     <BitLabel>Large size</BitLabel>
-    <BitButton Style=""margin-bottom: 8px""
-               Class=""custom-btn-lg""
-               ButtonSize=""BitButtonSize.Large"">Button</BitButton>
+    <BitButton Class=""custom-btn-lg""
+                ButtonSize=""BitButtonSize.Large"">Button</BitButton>
 </div>";
+
+    #endregion Example Code 7
 }

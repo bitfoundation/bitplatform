@@ -6,11 +6,11 @@
     <ComponentExampleBox Title="BitButton" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
             <div class="example-desc">To create a button you can use a BitButton component.</div>
-            <div>
+            <div class="buttons-container">
                 <BitButton IsEnabled="true" OnClick="() => PrimaryCounter++">
                     Primary (@PrimaryCounter)
                 </BitButton>
-                <BitButton ButtonStyle="BitButtonStyle.Standard" Style="margin-right: 2px;" IsEnabled="true" OnClick="() => StandardCounter++">
+                <BitButton ButtonStyle="BitButtonStyle.Standard" IsEnabled="true" OnClick="() => StandardCounter++">
                     Standard (@StandardCounter)
                 </BitButton>
                 <BitButton IsEnabled="false" AllowDisabledFocus="false">
@@ -26,8 +26,8 @@
     <ComponentExampleBox Title="Style & Class" HTMLSourceCode="@example2HTMLCode" ExampleId="example2">
         <ExamplePreview>
             <div class="example-desc">BitButton can directly get css class or inline style.</div>
-            <div>
-                <BitButton Style="height: 40px;width: 166px;font-size: 16px;" Class="styled-btn">
+            <div class="buttons-container">
+                <BitButton Style="height: 40px;width: 166px;font-size: 16px;">
                     Styled Button
                 </BitButton>
                 <BitButton Class="custom-button">
@@ -49,11 +49,11 @@
     <ComponentExampleBox Title="Arias for Screen Reader" HTMLSourceCode="@example4HTMLCode" ExampleId="example4">
         <ExamplePreview>
             <div class="example-desc">Aria attribues can also set for a BitButton.</div>
-            <div>
-                <BitButton Class="styled-btn" AriaDescription="Detailed description used for screen reader.">
+            <div class="buttons-container">
+                <BitButton AriaDescription="Detailed description used for screen reader.">
                     Button with Aria Description
                 </BitButton>
-                <BitButton Class="styled-btn" ButtonStyle="BitButtonStyle.Standard" AriaHidden="true">
+                <BitButton ButtonStyle="BitButtonStyle.Standard" AriaHidden="true">
                     Button with Aria Hidden
                 </BitButton>
             </div>
@@ -63,14 +63,14 @@
     <ComponentExampleBox Title="Button-like Anchor" HTMLSourceCode="@example5HTMLCode" ExampleId="example5">
         <ExamplePreview>
             <div class="example-desc">BitButton can act as a link by setting Href and Target attributes.</div>
-            <div class="sample-lnk-btn">
-                <BitButton Style="margin-right: 10px;" Title="Primary" Target="_blank" Href="https://github.com/bitfoundation/bitplatform">
+            <div class="buttons-container">
+                <BitButton Title="Primary" Target="_blank" Href="https://github.com/bitfoundation/bitplatform">
                     Open Bit Platform In New Tab
                 </BitButton>
-                <BitButton Class="lnk-btn" Style="margin-right: 10px;" Title="Standard" Href="https://github.com/bitfoundation/bitplatform" ButtonStyle="BitButtonStyle.Standard">
+                <BitButton Title="Standard" Href="https://github.com/bitfoundation/bitplatform" ButtonStyle="BitButtonStyle.Standard">
                     Go To Bit Platform
                 </BitButton>
-                <BitButton Class="disable-btn" Target="_self" Href="https://github.com/bitfoundation/bitplatform" IsEnabled="false">
+                <BitButton Target="_self" Href="https://github.com/bitfoundation/bitplatform" IsEnabled="false">
                     <span>Bit Platform From Span</span>
                 </BitButton>
             </div>
@@ -80,20 +80,19 @@
     <ComponentExampleBox Title="BitButton in different sizes" HTMLSourceCode="@example6HTMLCode" ExampleId="example6">
         <ExamplePreview>
             <div class="example-desc">BitButton can get different sizes using the <code>ButtonSize</code> parameter.</div>
-            <div>
-                <BitLabel>Small size</BitLabel>
-                <BitButton Style="margin-bottom: 8px"
-                           ButtonSize="BitButtonSize.Small">Button</BitButton>
-            </div>
-            <div>
-                <BitLabel>Medium size</BitLabel>
-                <BitButton Style="margin-bottom: 8px"
-                           ButtonSize="BitButtonSize.Medium">Button</BitButton>
-            </div>
-            <div>
-                <BitLabel>Large size</BitLabel>
-                <BitButton Style="margin-bottom: 8px"
-                           ButtonSize="BitButtonSize.Large">Button</BitButton>
+            <div class="buttons-container-grid">
+                <div>
+                    <BitLabel>Small size</BitLabel>
+                    <BitButton ButtonSize="BitButtonSize.Small">Button</BitButton>
+                </div>
+                <div>
+                    <BitLabel>Medium size</BitLabel>
+                    <BitButton ButtonSize="BitButtonSize.Medium">Button</BitButton>
+                </div>
+                <div>
+                    <BitLabel>Large size</BitLabel>
+                    <BitButton ButtonSize="BitButtonSize.Large">Button</BitButton>
+                </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -101,23 +100,22 @@
     <ComponentExampleBox Title="Customized BitButton in different sizes" HTMLSourceCode="@example7HTMLCode" ExampleId="example7">
         <ExamplePreview>
             <div class="example-desc">BitButton can be customized easily in different sizes by overriding a certain CSS class.</div>
-            <div>
-                <BitLabel>Small size</BitLabel>
-                <BitButton Style="margin-bottom: 8px"
-                           Class="custom-btn-sm"
-                           ButtonSize="BitButtonSize.Small">Button</BitButton>
-            </div>
-            <div>
-                <BitLabel>Medium size</BitLabel>
-                <BitButton Style="margin-bottom: 8px"
-                           Class="custom-btn-md"
-                           ButtonSize="BitButtonSize.Medium">Button</BitButton>
-            </div>
-            <div>
-                <BitLabel>Large size</BitLabel>
-                <BitButton Style="margin-bottom: 8px"
-                           Class="custom-btn-lg"
-                           ButtonSize="BitButtonSize.Large">Button</BitButton>
+            <div class="buttons-container-grid">
+                <div>
+                    <BitLabel>Small size</BitLabel>
+                    <BitButton Class="custom-btn-sm"
+                               ButtonSize="BitButtonSize.Small">Button</BitButton>
+                </div>
+                <div>
+                    <BitLabel>Medium size</BitLabel>
+                    <BitButton Class="custom-btn-md"
+                               ButtonSize="BitButtonSize.Medium">Button</BitButton>
+                </div>
+                <div>
+                    <BitLabel>Large size</BitLabel>
+                    <BitButton Class="custom-btn-lg"
+                               ButtonSize="BitButtonSize.Large">Button</BitButton>
+                </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
