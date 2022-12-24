@@ -156,6 +156,8 @@ public abstract partial class BitComponentBase : ComponentBase
         return base.SetParametersAsync(ParameterView.Empty);
     }
 
+    protected virtual bool UseVisual => true;
+
     protected override void OnInitialized()
     {
         RegisterComponentStyles();
@@ -165,10 +167,22 @@ public abstract partial class BitComponentBase : ComponentBase
                             visibility == BitComponentVisibility.Collapsed ? "display:none" :
                             string.Empty);
 
-        ClassBuilder
-            .Register(() => RootElementClass)
-            .Register(() => $"{RootElementClass}-{VisualClassRegistrar()}")
-            .Register(() => $"{RootElementClass}-{(IsEnabled ? "enabled" : "disabled")}-{VisualClassRegistrar()}");
+        if (UseVisual)
+        {
+            ClassBuilder
+                .Register(() => RootElementClass)
+                .Register(() => $"{RootElementClass}-{VisualClassRegistrar()}")
+                .Register(() => $"{RootElementClass}-{(IsEnabled ? "enabled" : "disabled")}-{VisualClassRegistrar()}");
+        }
+        else
+        {
+            ClassBuilder
+              .Register(() => RootElementClass)
+              .Register(() => (IsEnabled ? string.Empty : "disabled"));
+        }
+       
+
+        
         RegisterComponentClasses();
         ClassBuilder.Register(() => @class);
 
