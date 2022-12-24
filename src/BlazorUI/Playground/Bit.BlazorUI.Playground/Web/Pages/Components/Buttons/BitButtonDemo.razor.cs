@@ -211,8 +211,6 @@ public partial class BitButtonDemo
         }
     };
 
-    #region Example Code 1
-
     private readonly string example1HTMLCode = @"
 <style>
     .buttons-container {
@@ -241,10 +239,6 @@ public partial class BitButtonDemo
 public int PrimaryCounter;
 public int StandardCounter;";
 
-    #endregion Example Code 1
-
-    #region Example Code 2
-
     private readonly string example2HTMLCode = @"
 <style>
     .buttons-container {
@@ -253,8 +247,7 @@ public int StandardCounter;";
         gap: 0.5rem;
     }
 
-    .custom-button.primary,
-    .custom-button.primary:hover {
+    .custom-button.primary {
         height: 2.5rem;
         width: 10.375rem;
         font-size: 1rem;
@@ -277,10 +270,6 @@ public int StandardCounter;";
     </BitButton>
 </div>";
 
-    #endregion Example Code 2
-
-    #region Example Code 3
-
     private readonly string example3HTMLCode = @"
 <style>
     .buttons-container-grid {
@@ -294,10 +283,6 @@ public int StandardCounter;";
     <div>Hidden Button: [<BitButton Visibility=""BitComponentVisibility.Hidden"">Hidden Button</BitButton>]</div>
     <div>Collapsed Button: [<BitButton Visibility=""BitComponentVisibility.Collapsed"">Collapsed Button</BitButton>]</div>
 </div>";
-
-    #endregion Example Code 3
-
-    #region Example Code 4
 
     private readonly string example4HTMLCode = @"
 <style>
@@ -316,10 +301,6 @@ public int StandardCounter;";
         Button with Aria Hidden
     </BitButton>
 </div>";
-
-    #endregion Example Code 4
-
-    #region Example Code 5
 
     private readonly string example5HTMLCode = @"
 <style>
@@ -341,10 +322,6 @@ public int StandardCounter;";
         <span>Bit Platform From Span</span>
     </BitButton>
 </div>";
-
-    #endregion Example Code 5
-
-    #region Example Code 6
 
     private readonly string example6HTMLCode = @"
 <style>
@@ -368,10 +345,6 @@ public int StandardCounter;";
         <BitButton ButtonSize=""BitButtonSize.Large"">Button</BitButton>
     </div>
 </div>";
-
-    #endregion Example Code 6
-
-    #region Example Code 7
 
     private readonly string example7HTMLCode = @"
 <style>
@@ -419,6 +392,4 @@ public int StandardCounter;";
                     ButtonSize=""BitButtonSize.Large"">Button</BitButton>
     </div>
 </div>";
-
-    #endregion Example Code 7
 }
