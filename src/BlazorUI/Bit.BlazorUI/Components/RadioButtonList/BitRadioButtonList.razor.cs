@@ -31,7 +31,7 @@ public partial class BitRadioButtonList<TItem, TValue>
     private string _internalTextField = "Text";
     private string _internalValueField = "Value";
     private string? _imageSizeStyle;
-    public string _labelId => $"{UniqueId}RadioButtonListLabel";
+    public string _labelId => $"RadioButtonListLabel{UniqueId}";
 
     /// <summary>
     /// ID of an element to use as the aria label for this RadioButtonList.
