@@ -214,18 +214,28 @@ public partial class BitButtonDemo
     #region Example Code 1
 
     private readonly string example1HTMLCode = @"
-<BitButton IsEnabled=""true"" OnClick=""() => PrimaryCounter++"">
-    Primary (@PrimaryCounter)
-</BitButton>
-<BitButton ButtonStyle=""BitButtonStyle.Standard"" IsEnabled=""true"" OnClick=""() => StandardCounter++"">
-    Standard (@StandardCounter)
-</BitButton>
-<BitButton IsEnabled=""false"" AllowDisabledFocus=""false"">
-    Disabled
-</BitButton>
-<BitButton Class=""label-btn"" IsEnabled=""true"">
-    <label>A Text from label element</label>
-</BitButton>";
+<style>
+    .buttons-container {
+        display: flex;
+        flex-flow: row wrap;
+        gap: 0.5rem;
+    }
+</style>
+
+<div class=""buttons-container"">
+    <BitButton IsEnabled=""true"" OnClick=""() => PrimaryCounter++"">
+        Primary (@PrimaryCounter)
+    </BitButton>
+    <BitButton ButtonStyle=""BitButtonStyle.Standard"" IsEnabled=""true"" OnClick=""() => StandardCounter++"">
+        Standard (@StandardCounter)
+    </BitButton>
+    <BitButton IsEnabled=""false"" AllowDisabledFocus=""false"">
+        Disabled
+    </BitButton>
+    <BitButton Class=""label-btn"" IsEnabled=""true"">
+        <label>A Text from label element</label>
+    </BitButton>
+</div>";
 
     private readonly string example1CSharpCode = @"
 public int PrimaryCounter;
@@ -237,75 +247,126 @@ public int StandardCounter;";
 
     private readonly string example2HTMLCode = @"
 <style>
-    ::deep .custom-button,
-    ::deep .custom-button:hover {
+    .buttons-container {
+        display: flex;
+        flex-flow: row wrap;
+        gap: 0.5rem;
+    }
+
+    .custom-button.primary,
+    .custom-button.primary:hover {
         height: 2.5rem;
         width: 10.375rem;
         font-size: 1rem;
         background-color: #0054C6;
         border-color: #0054C6;
     }
+
+    .custom-button.primary:hover {
+        background-color: #01367e;
+        border-color: #01367e;
+    }
 </style>
 
-<BitButton Style=""height: 40px;width: 166px;font-size: 16px;"">
-    Styled Button
-</BitButton>
-<BitButton Class=""custom-button"">
-    Classed Button
-</BitButton>";
+<div class=""buttons-container"">
+    <BitButton Style=""height: 40px;width: 166px;font-size: 16px;"">
+        Styled Button
+    </BitButton>
+    <BitButton Class=""custom-button"">
+        Classed Button
+    </BitButton>
+</div>";
 
     #endregion Example Code 2
 
     #region Example Code 3
 
     private readonly string example3HTMLCode = @"
-<BitButton Style=""margin-bottom: 10px;"" Visibility=""BitComponentVisibility.Visible"">Visible Button</BitButton>
-<div>Hidden Button: [<BitButton Visibility=""BitComponentVisibility.Hidden"">Hidden Button</BitButton>]</div>
-<div>Collapsed Button: [<BitButton Visibility=""BitComponentVisibility.Collapsed"">Collapsed Button</BitButton>]</div>";
+<style>
+    .buttons-container-grid {
+        display: grid;
+        gap: 0.5rem;
+    }
+</style>
+
+<div class=""buttons-container-grid"">
+    <div><BitButton Visibility=""BitComponentVisibility.Visible"">Visible Button</BitButton></div>
+    <div>Hidden Button: [<BitButton Visibility=""BitComponentVisibility.Hidden"">Hidden Button</BitButton>]</div>
+    <div>Collapsed Button: [<BitButton Visibility=""BitComponentVisibility.Collapsed"">Collapsed Button</BitButton>]</div>
+</div>";
 
     #endregion Example Code 3
 
     #region Example Code 4
 
     private readonly string example4HTMLCode = @"
-<BitButton AriaDescription=""Detailed description used for screen reader."">
-    Button with Aria Description
-</BitButton>
-<BitButton ButtonStyle=""BitButtonStyle.Standard"" AriaHidden=""true"">
-    Button with Aria Hidden
-</BitButton>";
+<style>
+    .buttons-container {
+        display: flex;
+        flex-flow: row wrap;
+        gap: 0.5rem;
+    }
+</style>
+
+<div class=""buttons-container"">
+    <BitButton AriaDescription=""Detailed description used for screen reader."">
+        Button with Aria Description
+    </BitButton>
+    <BitButton ButtonStyle=""BitButtonStyle.Standard"" AriaHidden=""true"">
+        Button with Aria Hidden
+    </BitButton>
+</div>";
 
     #endregion Example Code 4
 
     #region Example Code 5
 
     private readonly string example5HTMLCode = @"
-<BitButton Title=""Primary"" Target=""_blank"" Href=""https://github.com/bitfoundation/bitplatform"">
-    Open Bit Platform In New Tab
-</BitButton>
-<BitButton Title=""Standard"" Href=""https://github.com/bitfoundation/bitplatform"" ButtonStyle=""BitButtonStyle.Standard"">
-    Go To Bit Platform
-</BitButton>
-<BitButton Target=""_self"" Href=""https://github.com/bitfoundation/bitplatform"" IsEnabled=""false"">
-    <span>Bit Platform From Span</span>
-</BitButton>";
+<style>
+    .buttons-container {
+        display: flex;
+        flex-flow: row wrap;
+        gap: 0.5rem;
+    }
+</style>
+
+<div class=""buttons-container"">
+    <BitButton Title=""Primary"" Target=""_blank"" Href=""https://github.com/bitfoundation/bitplatform"">
+        Open Bit Platform In New Tab
+    </BitButton>
+    <BitButton Title=""Standard"" Href=""https://github.com/bitfoundation/bitplatform"" ButtonStyle=""BitButtonStyle.Standard"">
+        Go To Bit Platform
+    </BitButton>
+    <BitButton Target=""_self"" Href=""https://github.com/bitfoundation/bitplatform"" IsEnabled=""false"">
+        <span>Bit Platform From Span</span>
+    </BitButton>
+</div>";
 
     #endregion Example Code 5
 
     #region Example Code 6
 
     private readonly string example6HTMLCode = @"
-<div>
-    <BitLabel>Small size</BitLabel>
-    <BitButton ButtonSize=""BitButtonSize.Small"">Button</BitButton>
-</div>
-<div>
-    <BitLabel>Medium size</BitLabel>
-    <BitButton ButtonSize=""BitButtonSize.Medium"">Button</BitButton>
-</div>
-<div>
-    <BitLabel>Large size</BitLabel>
-    <BitButton ButtonSize=""BitButtonSize.Large"">Button</BitButton>
+<style>
+    .buttons-container-grid {
+        display: grid;
+        gap: 0.5rem;
+    }
+</style>
+
+<div class=""buttons-container-grid"">
+    <div>
+        <BitLabel>Small size</BitLabel>
+        <BitButton ButtonSize=""BitButtonSize.Small"">Button</BitButton>
+    </div>
+    <div>
+        <BitLabel>Medium size</BitLabel>
+        <BitButton ButtonSize=""BitButtonSize.Medium"">Button</BitButton>
+    </div>
+    <div>
+        <BitLabel>Large size</BitLabel>
+        <BitButton ButtonSize=""BitButtonSize.Large"">Button</BitButton>
+    </div>
 </div>";
 
     #endregion Example Code 6
@@ -314,42 +375,49 @@ public int StandardCounter;";
 
     private readonly string example7HTMLCode = @"
 <style>
-    ::deep .custom-btn-sm.small {
-            padding: 4px 8px;
-            font-size: 8px;
-            line-height: 1.5;
-            border-radius: 3px;
+    .buttons-container-grid {
+        display: grid;
+        gap: 0.5rem;
     }
     
-    ::deep .custom-btn-md.medium {
-            padding: 12px 24px;
-            font-size: 16px;
-            line-height: 1.4;
-            border-radius: 4px;
+    .custom-btn-sm.small {
+        padding: 4px 8px;
+        font-size: 8px;
+        line-height: 1.5;
+        border-radius: 3px;
     }
     
-    ::deep .custom-btn-lg.large {
-            padding: 20px 32px;
-            font-size: 32px;
-            line-height: 1.33;
-            border-radius: 6px;
+    .custom-btn-md.medium {
+        padding: 12px 24px;
+        font-size: 16px;
+        line-height: 1.4;
+        border-radius: 4px;
+    }
+    
+    .custom-btn-lg.large {
+        padding: 20px 32px;
+        font-size: 32px;
+        line-height: 1.33;
+        border-radius: 6px;
     }
 </style>
 
-<div>
-    <BitLabel>Small size</BitLabel>
-    <BitButton Class=""custom-btn-sm""
-                ButtonSize=""BitButtonSize.Small"">Button</BitButton>
-</div>
-<div>
-    <BitLabel>Medium size</BitLabel>
-    <BitButton Class=""custom-btn-md""
-                ButtonSize=""BitButtonSize.Medium"">Button</BitButton>
-</div>
-<div>
-    <BitLabel>Large size</BitLabel>
-    <BitButton Class=""custom-btn-lg""
-                ButtonSize=""BitButtonSize.Large"">Button</BitButton>
+<div class=""buttons-container-grid"">
+    <div>
+        <BitLabel>Small size</BitLabel>
+        <BitButton Class=""custom-btn-sm""
+                    ButtonSize=""BitButtonSize.Small"">Button</BitButton>
+    </div>
+    <div>
+        <BitLabel>Medium size</BitLabel>
+        <BitButton Class=""custom-btn-md""
+                    ButtonSize=""BitButtonSize.Medium"">Button</BitButton>
+    </div>
+    <div>
+        <BitLabel>Large size</BitLabel>
+        <BitButton Class=""custom-btn-lg""
+                    ButtonSize=""BitButtonSize.Large"">Button</BitButton>
+    </div>
 </div>";
 
     #endregion Example Code 7

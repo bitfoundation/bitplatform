@@ -40,9 +40,11 @@
     <ComponentExampleBox Title="Visibility" HTMLSourceCode="@example3HTMLCode" ExampleId="example3">
         <ExamplePreview>
             <div class="example-desc">By setting Visibility attribute, BitButton can be Visible, Hidden or Collapsed.</div>
-            <BitButton Style="margin-bottom: 10px;" Visibility="BitComponentVisibility.Visible">Visible Button</BitButton>
-            <div>Hidden Button: [<BitButton Visibility="BitComponentVisibility.Hidden">Hidden Button</BitButton>]</div>
-            <div>Collapsed Button: [<BitButton Visibility="BitComponentVisibility.Collapsed">Collapsed Button</BitButton>]</div>
+            <div class="buttons-container-grid">
+                <div><BitButton Visibility="BitComponentVisibility.Visible">Visible Button</BitButton></div>
+                <div>Hidden Button: [<BitButton Visibility="BitComponentVisibility.Hidden">Hidden Button</BitButton>]</div>
+                <div>Collapsed Button: [<BitButton Visibility="BitComponentVisibility.Collapsed">Collapsed Button</BitButton>]</div>
+            </div>
         </ExamplePreview>
     </ComponentExampleBox>
 

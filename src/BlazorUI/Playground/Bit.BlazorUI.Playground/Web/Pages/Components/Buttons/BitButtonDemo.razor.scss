@@ -14,13 +14,18 @@
 }
 
 ::deep {
-    .custom-button,
-    .custom-button:hover {
-        height: rem(40px);
-        width: rem(166px);
-        font-size: rem(16px);
-        background-color: $B1Color;
-        border-color: $B1Color;
+    .custom-button.primary,
+    .custom-button.primary:hover {
+        height: 2.5rem;
+        width: 10.375rem;
+        font-size: 1rem;
+        background-color: #0054C6;
+        border-color: #0054C6;
+    }
+
+    .custom-button.primary:hover {
+        background-color: #01367e;
+        border-color: #01367e;
     }
 
     .custom-btn-sm {
