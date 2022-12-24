@@ -141,7 +141,9 @@ public partial class BitBreadcrumbDemo
         {
             Name = "CurrentItem",
             Type = "BitBreadcrumbItem?",
-            Description = "by default, the current item is the last item. But it can also be specified manually."
+            Description = "by default, the current item is the last item. But it can also be specified manually.",
+            LinkType = LinkType.Link,
+            Href = "#bit-breadcrumb-item",
         },
         new()
         {
@@ -188,6 +190,42 @@ public partial class BitBreadcrumbDemo
             Type = "EventCallback<BitBreadcrumbItem>",
             Description = "Callback for when the breadcrumb item clicked."
         },
+    };
+
+    private readonly List<ComponentSubParameter> componentSubParameters = new()
+    {
+        new ComponentSubParameter()
+        {
+            Id = "bit-breadcrumb-item",
+            Title = "BitBreadcrumbItem",
+            Parameters = new List<ComponentParameter>()
+            {
+               new ComponentParameter()
+               {
+                   Name = "Text",
+                   Type = "string?",
+                   Description = "Text to display in the breadcrumb item.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "Href",
+                   Type = "string?",
+                   Description = "URL to navigate to when this breadcrumb item is clicked. If provided, the breadcrumb will be rendered as a link.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "Class",
+                   Type = "string?",
+                   Description = "Class HTML attribute for breadcrumb item.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "Style",
+                   Type = "string?",
+                   Description = "Style HTML attribute for breadcrumb item.",
+               },
+            }
+        }
     };
 
     private readonly string BasicItemsCSharpCode = @"
