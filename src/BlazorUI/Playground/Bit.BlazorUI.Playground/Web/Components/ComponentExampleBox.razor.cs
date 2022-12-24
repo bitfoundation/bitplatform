@@ -42,7 +42,7 @@ public partial class ComponentExampleBox
 
     private async Task CopyLinkToClipboard()
     {
-        var currentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
+        var currentUrl = NavigationManager.Uri;
         currentUrl = currentUrl.Contains("#") ? currentUrl.Substring(0, currentUrl.IndexOf("#")) : currentUrl;
         var exampleUrl = $"{currentUrl}#{ExampleId}";
         await JSRuntime.CopyToClipboard(exampleUrl);
