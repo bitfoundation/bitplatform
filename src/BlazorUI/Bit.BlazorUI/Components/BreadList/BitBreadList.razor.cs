@@ -14,10 +14,10 @@ public partial class BitBreadList<TItem> : IDisposable
     private Expression<Func<TItem, object>>? itemStyleSelector;
     private Expression<Func<TItem, object>>? textSelector;
 
-    private string _internalHrefField = "Href";
-    private string _internalItemClassField = "ItemClass";
-    private string _internalItemStyleField = "ItemStyle";
-    private string _internalTextField = "Text";
+    private string _internalHrefField = default!;
+    private string _internalItemClassField = default!;
+    private string _internalItemStyleField = default!;
+    private string _internalTextField = default!;
 
     private bool _isCalloutOpen;
     private string _wrapperId => $"{UniqueId}-wrapper";
@@ -73,7 +73,7 @@ public partial class BitBreadList<TItem> : IDisposable
     /// URL to navigate to when this breadcrumb item is clicked.
     /// If provided, the breadcrumb will be rendered as a link.
     /// </summary>
-    [Parameter] 
+    [Parameter]
     public Expression<Func<TItem, object>>? HrefSelector
     {
         get => hrefSelector;
@@ -108,7 +108,7 @@ public partial class BitBreadList<TItem> : IDisposable
     /// <summary>
     /// Class HTML attribute for breadcrumb item.
     /// </summary>
-    [Parameter] 
+    [Parameter]
     public Expression<Func<TItem, object>>? ItemClassSelector
     {
         get => itemClassSelector;
@@ -218,6 +218,11 @@ public partial class BitBreadList<TItem> : IDisposable
 
     protected override Task OnInitializedAsync()
     {
+        _internalHrefField = hrefField;
+        _internalItemClassField = itemClassField;
+        _internalItemStyleField = itemStyleField;
+        _internalTextField = textField;
+
         _dotnetObj = DotNetObjectReference.Create(this);
 
         return base.OnInitializedAsync();
