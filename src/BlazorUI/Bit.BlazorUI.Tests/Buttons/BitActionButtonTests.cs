@@ -32,10 +32,14 @@ public class BitActionButtonTests : BunitTestContext
         var bitButton = com.Find(".bit-actb");
         var bitIconITag = com.Find(".bit-actb > span > i");
 
-        var isEnabledClass = isEnabled ? "enabled" : "disabled";
-        var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
-
-        Assert.IsTrue(bitButton.ClassList.Contains($"bit-actb-{isEnabledClass}-{visualClass}"));
+        if (isEnabled)
+        {
+            Assert.IsFalse(bitButton.ClassList.Contains($"disabled"));
+        }
+        else
+        {
+            Assert.IsTrue(bitButton.ClassList.Contains($"disabled"));
+        }
 
         Assert.IsTrue(bitIconITag.ClassList.Contains($"bit-icon--{iconName.GetName()}"));
 
