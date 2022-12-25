@@ -7,31 +7,34 @@ namespace Bit.BlazorUI;
 
 public partial class BitRadioButtonList<TItem, TValue>
 {
-    private string isEnabledField = "IsEnabled";
-    private Expression<Func<TItem, bool>>? isEnabledSelector;
-    private string iconNameField = "IconName";
-    private Expression<Func<TItem, BitIconName>>? iconNameSelector;
-    private string imageSrcField = "ImageSrc";
-    private Expression<Func<TItem, object>>? imageSrcSelector;
-    private string imageAltField = "ImageAlt";
-    private Expression<Func<TItem, object>>? imageAltSelector;
-    private string selectedImageSrcField = "SelectedImageSrc";
-    private Expression<Func<TItem, object>>? selectedImageSrcSelector;
-    private string textField = "Text";
-    private Expression<Func<TItem, object>>? textSelector;
-    private string valueField = "Value";
-    private Expression<Func<TItem, object>>? valueSelector;
     private bool isRequired;
 
-    private string _internalIsEnabledField = "IsEnabled";
-    private string _internalIconNameField = "IconName";
-    private string _internalImageSrcField = "ImageSrc";
-    private string _internalImageAltField = "ImageAlt";
-    private string _internalSelectedImageSrcField = "SelectedImageSrc";
-    private string _internalTextField = "Text";
-    private string _internalValueField = "Value";
+    private string isEnabledField = "IsEnabled";
+    private string iconNameField = "IconName";
+    private string imageSrcField = "ImageSrc";
+    private string imageAltField = "ImageAlt";
+    private string selectedImageSrcField = "SelectedImageSrc";
+    private string textField = "Text";
+    private string valueField = "Value";
+
+    private Expression<Func<TItem, bool>>? isEnabledSelector;
+    private Expression<Func<TItem, BitIconName>>? iconNameSelector;
+    private Expression<Func<TItem, object>>? imageSrcSelector;
+    private Expression<Func<TItem, object>>? imageAltSelector;
+    private Expression<Func<TItem, object>>? selectedImageSrcSelector;
+    private Expression<Func<TItem, object>>? textSelector;
+    private Expression<Func<TItem, object>>? valueSelector;
+
+    private string _internalIsEnabledField = default!;
+    private string _internalIconNameField = default!;
+    private string _internalImageSrcField = default!;
+    private string _internalImageAltField = default!;
+    private string _internalSelectedImageSrcField = default!;
+    private string _internalTextField = default!;
+    private string _internalValueField = default!;
+
     private string? _imageSizeStyle;
-    public string _labelId => $"RadioButtonListLabel{UniqueId}";
+    private string _labelId => $"{UniqueId}-label";
 
     /// <summary>
     /// ID of an element to use as the aria label for this RadioButtonList.
@@ -70,7 +73,7 @@ public partial class BitRadioButtonList<TItem, TValue>
     /// <summary>
     /// The name of the field from the model that will be enable item.
     /// </summary>
-    [Parameter] 
+    [Parameter]
     public string IsEnabledField
     {
         get => isEnabledField;
@@ -84,7 +87,7 @@ public partial class BitRadioButtonList<TItem, TValue>
     /// <summary>
     /// The field from the model that will be enable item.
     /// </summary>
-    [Parameter] 
+    [Parameter]
     public Expression<Func<TItem, bool>>? IsEnabledSelector
     {
         get => isEnabledSelector;
@@ -102,7 +105,7 @@ public partial class BitRadioButtonList<TItem, TValue>
     /// <summary>
     /// The name of the field from the model that will be the BitIconName.
     /// </summary>
-    [Parameter] 
+    [Parameter]
     public string IconNameField
     {
         get => iconNameField;
@@ -180,7 +183,7 @@ public partial class BitRadioButtonList<TItem, TValue>
     /// <summary>
     /// The field from the model that will be the image alternate text.
     /// </summary>
-    [Parameter] 
+    [Parameter]
     public Expression<Func<TItem, object>>? ImageAltSelector
     {
         get => imageAltSelector;
@@ -238,7 +241,7 @@ public partial class BitRadioButtonList<TItem, TValue>
     /// <summary>
     /// The name of the field from the model that will be the selected image src.
     /// </summary>
-    [Parameter] 
+    [Parameter]
     public string SelectedImageSrcField
     {
         get => selectedImageSrcField;
@@ -302,7 +305,7 @@ public partial class BitRadioButtonList<TItem, TValue>
     /// <summary>
     /// The name of the field from the model that will be the underlying value.
     /// </summary>
-    [Parameter] 
+    [Parameter]
     public string ValueField
     {
         get => valueField;
@@ -343,6 +346,19 @@ public partial class BitRadioButtonList<TItem, TValue>
 
         ClassBuilder.Register(() => IsRtl
                                    ? $"{RootElementClass}-rtl-{VisualClassRegistrar()}" : string.Empty);
+    }
+
+    protected override void OnInitialized()
+    {
+        _internalIsEnabledField = isEnabledField;
+        _internalIconNameField = iconNameField;
+        _internalImageSrcField = imageSrcField;
+        _internalImageAltField = imageAltField;
+        _internalSelectedImageSrcField = selectedImageSrcField;
+        _internalTextField = textField;
+        _internalValueField = valueField;
+
+        base.OnInitialized();
     }
 
     protected override Task OnParametersSetAsync()
