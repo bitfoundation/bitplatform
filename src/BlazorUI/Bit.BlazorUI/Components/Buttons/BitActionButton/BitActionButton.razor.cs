@@ -62,7 +62,7 @@ public partial class BitActionButton
     /// </summary>
     [Parameter] public string? Title { get; set; }
 
-    protected override string RootElementClass => "bit-actb";
+    protected override string RootElementClass => "bit-acb";
 
     protected override async Task OnInitializedAsync()
     {

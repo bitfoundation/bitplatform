@@ -1,6 +1,6 @@
 ﻿@import "../../../Styles/functions.scss";
 
-.bit-actb {
+.bit-acb {
     font-family: $typography-button-font-family;
     font-weight: 400;
     font-size: spacing(1.75);
@@ -16,7 +16,7 @@
     color: $color-text-secondary;
     text-align: center;
 
-    & .icon-container {
+    .icon-container {
         display: flex;
         align-items: center;
 
@@ -39,7 +39,7 @@
     &:hover {
         color: $color-primary-main;
 
-        & .bit-icon {
+        .bit-icon {
             color: $color-primary-main;
         }
     }
@@ -47,7 +47,7 @@
     &:active {
         color: $color-neutrals-black;
 
-        & .bit-icon {
+        .bit-icon {
             color: $color-action2-active-primary;
         }
     }
@@ -57,7 +57,7 @@
         cursor: default;
         pointer-events: none;
 
-        & .bit-icon {
+        .bit-icon {
             color: $color-text-disabled;
         }
     }
