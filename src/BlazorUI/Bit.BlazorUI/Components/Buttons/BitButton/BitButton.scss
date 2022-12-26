@@ -2,7 +2,7 @@
 
 .bit-btn {
     position: relative;
-    min-width: calc-rem(8);
+    min-width: spacing(8);
     box-sizing: border-box;
     font-family: $typography-button-font-family;
     font-weight: $typography-button-font-weight;
@@ -55,17 +55,17 @@
     }
 
     &.small {
-        padding: calc-rem(0.5) calc-rem(1.25);
-        font-size: calc-rem(1.625);
+        padding: spacing(0.5) spacing(1.25);
+        font-size: spacing(1.625);
     }
 
     &.medium {
-        padding: calc-rem(0.75) calc-rem(2);
-        font-size: calc-rem(1.75);
+        padding: spacing(0.75) spacing(2);
+        font-size: spacing(1.75);
     }
 
     &.large {
-        padding: calc-rem(1) calc-rem(2.75);
-        font-size: calc-rem(1.875);
+        padding: spacing(1) spacing(2.75);
+        font-size: spacing(1.875);
     }
 }

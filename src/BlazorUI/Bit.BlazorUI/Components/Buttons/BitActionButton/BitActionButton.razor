@@ -15,11 +15,11 @@
        href="@Href"
        tabindex="@_tabIndex"
        @onclick="HandleOnClick">
-        <span>
+        <span class="icon-container">
             <i class="bit-icon bit-icon--@IconName.GetName()"></i>
-        </span>
-        <span>
-            @ChildContent
+            <span class="content">
+                @ChildContent
+            </span>
         </span>
     </a>
 }
@@ -36,11 +36,11 @@ else
             tabindex="@_tabIndex"
             title="@Title"
             @onclick="HandleOnClick">
-        <span>
+        <span class="icon-container">
             <i class="bit-icon bit-icon--@IconName.GetName()"></i>
-        </span>
-        <span>
-            @ChildContent
+            <span class="content">
+                @ChildContent
+            </span>
         </span>
     </button>
 }

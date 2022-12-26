@@ -1,17 +1,14 @@
-﻿@import '../../../Styles/abstracts/_colors.scss';
-@import '../../../Styles/abstracts/_functions.scss';
-
-.sample-btn {
-    line-height: rem(50px);
-    color: $Black1;
+﻿.buttons-container {
+    line-height: 3.125rem;
 }
 
-::deep .custom-action-button,
-::deep .custom-action-button:hover {
-    font-size: rem(16px);
-    background-color: $Gray3;
-    border-color: $Gray3;
-    justify-content: center;
-    width: rem(232px);
-    margin-top: rem(10px);
+::deep {
+    .custom-action-button {
+        font-size: 1rem;
+        background-color: #D7D7D7;
+        border-color: #D7D7D7;
+        justify-content: center;
+        width: 14.5rem;
+        margin-top: 0.625rem;
+    }
 }
