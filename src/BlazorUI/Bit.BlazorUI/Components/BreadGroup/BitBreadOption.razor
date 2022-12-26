@@ -1,0 +1,51 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+@if (IsOverfelowButton() || IsDisplayedOption())
+{
+    <li @ref="RootElement"
+        @attributes="HtmlAttributes"
+        id="@UniqueId"
+        style="@StyleBuilder.Value"
+        class="@ClassBuilder.Value"
+        aria-label="@AriaLabel">
+
+        @if (IsOverfelowButton())
+        {
+            <button type="button"
+                    class="overflow-btn"
+                    aria-label="@BreadGroup?.OverflowAriaLabel"
+                    id="@BreadGroup?._overflowDropDownId"
+                    @onclick="HandleOnOverfelowClick">
+                <span class="overflow-icon-container">
+                    <i class="@($"bit-icon bit-icon--{BreadGroup?.OverflowIcon.GetName()}")"></i>
+                </span>
+            </button>
+        }
+        else if (IsDisplayedOption())
+        {
+            if (Href.HasValue())
+            {
+                <a href="@Href"
+                   aria-current="@(ItIsCurrentOption() ? "page" : null)"
+                   style="@GetOptionStyles()"
+                   class="@GetOptionClasses()">
+                    @Text
+                </a>
+            }
+            else
+            {
+                <button aria-current="@(ItIsCurrentOption() ? "page" : null)"
+                        style="@GetOptionStyles()"
+                        class="@GetOptionClasses()"
+                        @onclick="HandleOnOptionClick">
+                    @Text
+                </button>
+            }
+        }
+        @if (HasDividerIconOption())
+        {
+            <i class="@($"bit-icon bit-icon--{BreadGroup?.DividerIcon.GetName()}")"></i>
+        }
+    </li>
+}

@@ -1,0 +1,49 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+<div @ref="RootElement"
+     @attributes="HtmlAttributes"
+     id="@UniqueId"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     aria-label="@AriaLabel">
+
+    <div class="options-wrapper" id="@_wrapperId">
+        <ul>
+            @if (ChildContent is not null)
+            {
+                <CascadingValue Value="this" IsFixed="true">
+                    @ChildContent
+                </CascadingValue>
+            }
+        </ul>
+    </div>
+
+    <div class="overlay" id="@_overlayId" @onclick="CloseCallout"></div>
+
+    <div class="overflow-menu-wrapper"
+         id="@_calloutId"
+         tabindex="0"
+         role="listbox">
+        <ul>
+            @foreach (var option in _overflowOptions)
+            {
+                <li @ref="RootElement"
+                    @attributes="HtmlAttributes"
+                    id="@UniqueId"
+                    style="@StyleBuilder.Value"
+                    class="@ClassBuilder.Value"
+                    aria-label="@AriaLabel">
+
+                    <a href="@option.Href"
+                       aria-current=@(option.ItIsCurrentOption() ? "page" : null)
+                       style="@option.GetOptionStyles()"
+                       class="@option.GetOptionClasses()"
+                       @onclick="option.HandleOnOptionClick">
+                        @option.Text
+                    </a>
+                </li>
+            }
+        </ul>
+    </div>
+</div>

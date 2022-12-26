@@ -1,0 +1,23 @@
+﻿@page "/components/bread-group"
+
+<ComponentDemo ComponentName="BreadList"
+               ComponentDescription="BreadList should be used as a navigational aid in your app or site. They indicate the current page’s location within a hierarchy and help the user understand where they are in relation to the rest of that hierarchy. They also afford one-click access to higher levels of that hierarchy."
+               ComponentParameters="componentParameters">
+
+    <ComponentExampleBox Title="Basic" ExampleId="example1">
+        <ExamplePreview>
+            <div class="example-box">
+                <div>
+                    <BitLabel>Basic</BitLabel>
+                    <BitBreadGroup IsEnabled="false">
+                        <BitBreadOption Text="Href" Href="/components/bread-group" />
+                        <BitBreadOption Text="IsCurrentOption" Href="/components/bread-group" IsCurrentOption="true" />
+                        <BitBreadOption Text="IsEnabled" Href="/components/bread-group" IsEnabled="false" />
+                        <BitBreadOption Text="OnClick" OnClick="() => onClick = !onClick" />
+                    </BitBreadGroup>
+                    <div>OnClick: @onClick</div>
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+</ComponentDemo>
