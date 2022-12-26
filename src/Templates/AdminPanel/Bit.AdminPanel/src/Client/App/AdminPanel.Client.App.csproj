@@ -70,12 +70,12 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.BlazorUI" Version="4.9.1-pre-01" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="4.9.1-pre-01">
+        <PackageReference Include="Bit.BlazorUI" Version="4.9.1-pre-02" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="4.9.1-pre-02">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="4.9.1-pre-01">
+        <PackageReference Include="Bit.SourceGenerators" Version="4.9.1-pre-02">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
