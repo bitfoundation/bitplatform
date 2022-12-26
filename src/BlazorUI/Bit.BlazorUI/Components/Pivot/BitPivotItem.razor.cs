@@ -16,44 +16,43 @@ public partial class BitPivotItem : IDisposable
         }
     }
 
-
     /// <summary>
-    /// The content of the pivot item can be Any custom tag or a text, If HeaderContent provided value of this parameter show, otherwise use ChildContent
+    /// The content of the pivot item, It can be Any custom tag or a text (alias of ChildContent).
     /// </summary>
-    [Parameter] public RenderFragment? BodyTemplate { get; set; }
+    [Parameter] public RenderFragment? Body { get; set; }
 
     /// <summary>
-    /// The content of the pivot item, It can be Any custom tag or a text 
+    /// The content of the pivot item, It can be Any custom tag or a text.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// The content of the pivot item header, It can be Any custom tag or a text
+    /// The content of the pivot item header, It can be Any custom tag or a text.
     /// </summary>
-    [Parameter] public RenderFragment? HeaderTemplate { get; set; }
+    [Parameter] public RenderFragment? Header { get; set; }
 
     /// <summary>
-    /// The text of the pivot item header, The text displayed of each pivot link
+    /// The text of the pivot item header, The text displayed of each pivot link.
     /// </summary>
     [Parameter] public string? HeaderText { get; set; }
 
     /// <summary>
-    /// The icon name for the icon shown next to the pivot link
+    /// The icon name for the icon shown next to the pivot link.
     /// </summary>
     [Parameter] public BitIconName? IconName { get; set; }
 
     /// <summary>
-    /// Defines an optional item count displayed in parentheses just after the linkText
+    /// Defines an optional item count displayed in parentheses just after the link text.
     /// </summary>
     [Parameter] public int? ItemCount { get; set; }
 
     /// <summary>
-    /// The parent BitPivot component instance
+    /// The parent BitPivot component instance.
     /// </summary>
     [CascadingParameter] public BitPivot? Pivot { get; set; }
 
     /// <summary>
-    /// A required key to uniquely identify a pivot item
+    /// A required key to uniquely identify a pivot item.
     /// </summary>
     [Parameter] public string? Key { get; set; }
 

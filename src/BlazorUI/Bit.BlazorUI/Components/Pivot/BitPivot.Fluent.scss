@@ -1,17 +1,20 @@
 ﻿@import "../../Styles/Fluent/colors.fluent.scss", "../../Styles/functions.scss";
 
 .bit-pvt {
-
     &.bit-pvt-fluent {
-        > div {
+        .header-container {
+            height: rem(50px);
+        }
+
+        .content-container {
             font-size: rem(14px);
             font-weight: 400;
             box-shadow: none;
-            margin: 0;
             padding: 0;
+            margin: 0;
             box-sizing: border-box;
             position: relative;
-            color: $CyanBlue10;
+            color: $Grey160;
             white-space: nowrap;
         }
     }
@@ -55,7 +58,7 @@
     }
 
     &.bit-pvt-scroll-fluent {
-        & > div:nth-child(1) {
+        .header-container {
             overflow-X: auto;
 
             &::-webkit-scrollbar {
@@ -79,17 +82,17 @@
     }
 
     &.bit-pvt-normal-fluent {
-        & > div:nth-child(1) {
-            div {
-                font-size: rem(14px);
+        .header-container {
+            * {
+                font-size: rem(16px);
             }
         }
     }
 
     &.bit-pvt-large-fluent {
-        & > div:nth-child(1) {
-            div {
-                font-size: rem(18px);
+        .header-container {
+            * {
+                font-size: rem(20px);
             }
         }
     }
@@ -99,15 +102,12 @@
     &.bit-pvt-itm-fluent {
         outline: transparent;
         position: relative;
-        font-size: rem(14px);
-        font-weight: 600;
         box-sizing: border-box;
-        border: 0;
         display: inline-block;
         text-decoration: none;
         text-align: center;
-        cursor: pointer;
         padding: 0 rem(8px);
+        border: 0;
         border-radius: 0;
         height: rem(44px);
         color: $Grey160;
@@ -137,7 +137,6 @@
     &.bit-pvt-itm-selcted-fluent {
         outline: transparent;
         position: relative;
-        font-size: rem(14px);
         font-weight: 600;
         box-sizing: border-box;
         border: 0;
@@ -167,7 +166,6 @@
 
         &:after {
             color: transparent;
-            content: attr(data-content);
             display: block;
             font-weight: 700;
             height: rem(1px);

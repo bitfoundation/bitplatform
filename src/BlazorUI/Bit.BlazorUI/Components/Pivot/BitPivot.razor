@@ -1,23 +1,23 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
-<div @ref="RootElement"
-     @attributes="HtmlAttributes"
+<div @ref="RootElement" @attributes="HtmlAttributes"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      aria-label="@AriaLabel"
      rolo="toolbar">
     <CascadingValue Value="this" IsFixed="true">
-        <div role="tablist">
+        <div class="header-container" role="tablist">
             @ChildContent
         </div>
     </CascadingValue>
-    @if (!HeadersOnly)
+    @if (HeadersOnly is false)
     {
-        <div role="tabpanel"
+        <div class="content-container"
+             role="tabpanel"
              aria-hidden="false"
              aria-labelledby="@GetAriaLabelledby">
-            @(_selectedItem?.BodyTemplate ?? _selectedItem?.ChildContent)
+            @(_selectedItem?.Body ?? _selectedItem?.ChildContent)
         </div>
     }
 </div>
