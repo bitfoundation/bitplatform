@@ -106,20 +106,18 @@ public partial class BitBreadGroup : IDisposable
         StateHasChanged();
     }
 
-    private async Task HandleCallout()
+    internal void StateHasChanged()
+    {
+        base.StateHasChanged();
+    }
+
+    private async Task ToggleCallout()
     {
         if (IsEnabled is false) return;
 
         await _js.ToggleOverflowCallout(_dotnetObj, _wrapperId, _overflowDropDownId, _calloutId, _overlayId, _isCalloutOpen);
 
         _isCalloutOpen = !_isCalloutOpen;
-
-        StateHasChanged();
-    }
-
-    private async void HandleOnOverflowOptionClick(MouseEventArgs e, BitBreadOption option)
-    {
-        await option.HandleOnOptionClick(e);
 
         StateHasChanged();
     }
@@ -163,24 +161,18 @@ public partial class BitBreadGroup : IDisposable
         }
     }
 
-    private bool IsSelectedOption(BitBreadOption option) => option == (_allOptions.LastOrDefault(o => o.IsSelected) ?? _allOptions[^1]);
-
-    private bool IsOverfelowButton(BitBreadOption option) =>  _overflowOptions.Any(o => o == option) && _allOptions.IndexOf(option) == _internalOverfelowIndex;
-
-    private bool HasDividerIconOption(BitBreadOption option) =>  (_displayOptions.Any(o => o == option) && option != _allOptions[^1]) || IsOverfelowButton(option);
-
     private string GetOptionClasses(BitBreadOption option)
     {
         StringBuilder optionClasses = new();
 
         optionClasses.Append("option");
 
-        if (IsSelectedOption(option))
+        if (option.IsSelected)
         {
             optionClasses.Append(" selected-option");
         }
 
-        if (IsSelectedOption(option) && SelectedOptionClass.HasValue())
+        if (option.IsSelected && SelectedOptionClass.HasValue())
         {
             optionClasses.Append(' ');
             optionClasses.Append(SelectedOptionClass);
@@ -191,12 +183,7 @@ public partial class BitBreadGroup : IDisposable
 
     private string GetOptionStyles(BitBreadOption option)
     {
-        if (IsSelectedOption(option) && SelectedOptionStyle.HasValue())
-        {
-            return SelectedOptionStyle!;
-        }
-
-        return string.Empty;
+        return option.IsSelected && SelectedOptionStyle.HasValue() ? SelectedOptionStyle ?? string.Empty : string.Empty;
     }
 
     public void Dispose()

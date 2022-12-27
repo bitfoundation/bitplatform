@@ -81,7 +81,7 @@ public partial class BitBreadGroupDemo
                {
                    Name = "IsSelected",
                    Type = "bool",
-                   Description = "By default, the Selected option is the last option. But it can also be specified manually.",
+                   Description = "Set the Selected option.",
                },
                new ComponentParameter()
                {
@@ -106,7 +106,7 @@ public partial class BitBreadGroupDemo
         <BitBreadOption Text=""Option 1"" Href=""/components/bread-group"" />
         <BitBreadOption Text=""Option 2"" Href=""/components/bread-group"" />
         <BitBreadOption Text=""Option 3"" Href=""/components/bread-group"" />
-        <BitBreadOption Text=""Option 4"" Href=""/components/bread-group"" />
+        <BitBreadOption Text=""Option 4"" Href=""/components/bread-group"" IsSelected=""true"" />
     </BitBreadGroup>
 </div>
 
@@ -116,7 +116,7 @@ public partial class BitBreadGroupDemo
         <BitBreadOption Text=""Option 1"" Href=""/components/bread-group"" />
         <BitBreadOption Text=""Option 2"" Href=""/components/bread-group"" />
         <BitBreadOption Text=""Option 3"" Href=""/components/bread-group"" />
-        <BitBreadOption Text=""Option 4"" Href=""/components/bread-group"" />
+        <BitBreadOption Text=""Option 4"" Href=""/components/bread-group"" IsSelected=""true"" />
     </BitBreadGroup>
 </div>
 
@@ -126,7 +126,7 @@ public partial class BitBreadGroupDemo
         <BitBreadOption Text=""Option 1"" Href=""/components/bread-group"" IsEnabled=""false"" />
         <BitBreadOption Text=""Option 2"" Href=""/components/bread-group"" IsEnabled=""false"" />
         <BitBreadOption Text=""Option 3"" Href=""/components/bread-group"" />
-        <BitBreadOption Text=""Option 4"" Href=""/components/bread-group"" />
+        <BitBreadOption Text=""Option 4"" Href=""/components/bread-group"" IsSelected=""true"" />
     </BitBreadGroup>
 </div>
 ";
@@ -138,7 +138,7 @@ public partial class BitBreadGroupDemo
         <BitBreadOption Text=""Option 1"" Href=""/components/bread-group"" />
         <BitBreadOption Text=""Option 2"" Href=""/components/bread-group"" />
         <BitBreadOption Text=""Option 3"" Href=""/components/bread-group"" />
-        <BitBreadOption Text=""Option 4"" Href=""/components/bread-group"" />
+        <BitBreadOption Text=""Option 4"" Href=""/components/bread-group"" IsSelected=""true"" />
     </BitBreadGroup>
 </div>
 <div>
@@ -147,7 +147,7 @@ public partial class BitBreadGroupDemo
         <BitBreadOption Text=""Option 1"" Href=""/components/bread-group"" />
         <BitBreadOption Text=""Option 2"" Href=""/components/bread-group"" />
         <BitBreadOption Text=""Option 3"" Href=""/components/bread-group"" />
-        <BitBreadOption Text=""Option 4"" Href=""/components/bread-group"" />
+        <BitBreadOption Text=""Option 4"" Href=""/components/bread-group"" IsSelected=""true"" />
     </BitBreadGroup>
 </div>
 <div>
@@ -156,7 +156,7 @@ public partial class BitBreadGroupDemo
         <BitBreadOption Text=""Option 1"" Href=""/components/bread-group"" />
         <BitBreadOption Text=""Option 2"" Href=""/components/bread-group"" />
         <BitBreadOption Text=""Option 3"" Href=""/components/bread-group"" />
-        <BitBreadOption Text=""Option 4"" Href=""/components/bread-group"" />
+        <BitBreadOption Text=""Option 4"" Href=""/components/bread-group"" IsSelected=""true"" />
     </BitBreadGroup>
 </div>
 <div>
@@ -165,7 +165,7 @@ public partial class BitBreadGroupDemo
         <BitBreadOption Text=""Option 1"" Href=""/components/bread-group"" />
         <BitBreadOption Text=""Option 2"" Href=""/components/bread-group"" />
         <BitBreadOption Text=""Option 3"" Href=""/components/bread-group"" />
-        <BitBreadOption Text=""Option 4"" Href=""/components/bread-group"" />
+        <BitBreadOption Text=""Option 4"" Href=""/components/bread-group"" IsSelected=""true"" />
     </BitBreadGroup>
 </div>
 <div>
@@ -174,7 +174,7 @@ public partial class BitBreadGroupDemo
         <BitBreadOption Text=""Option 1"" Href=""/components/bread-group"" />
         <BitBreadOption Text=""Option 2"" Href=""/components/bread-group"" />
         <BitBreadOption Text=""Option 3"" Href=""/components/bread-group"" />
-        <BitBreadOption Text=""Option 4"" Href=""/components/bread-group"" />
+        <BitBreadOption Text=""Option 4"" Href=""/components/bread-group"" IsSelected=""true"" />
     </BitBreadGroup>
 </div>
 <div>
@@ -183,7 +183,7 @@ public partial class BitBreadGroupDemo
         <BitBreadOption Text=""Option 1"" Href=""/components/bread-group"" />
         <BitBreadOption Text=""Option 2"" Href=""/components/bread-group"" />
         <BitBreadOption Text=""Option 3"" Href=""/components/bread-group"" />
-        <BitBreadOption Text=""Option 4"" Href=""/components/bread-group"" />
+        <BitBreadOption Text=""Option 4"" Href=""/components/bread-group"" IsSelected=""true"" />
     </BitBreadGroup>
 </div>
 ";
@@ -195,7 +195,7 @@ public partial class BitBreadGroupDemo
         <BitBreadOption Text=""Option 1"" Href=""/components/bread-group"" />
         <BitBreadOption Text=""Option 2"" Href=""/components/bread-group"" />
         <BitBreadOption Text=""Option 3"" Href=""/components/bread-group"" />
-        <BitBreadOption Text=""Option 4"" Href=""/components/bread-group"" />
+        <BitBreadOption Text=""Option 4"" Href=""/components/bread-group"" IsSelected=""true"" />
     </BitBreadGroup>
 </div>
 
@@ -205,7 +205,7 @@ public partial class BitBreadGroupDemo
         <BitBreadOption Text=""Option 1"" Href=""/components/bread-group"" />
         <BitBreadOption Text=""Option 2"" Href=""/components/bread-group"" />
         <BitBreadOption Text=""Option 3"" Href=""/components/bread-group"" />
-        <BitBreadOption Text=""Option 4"" Href=""/components/bread-group"" />
+        <BitBreadOption Text=""Option 4"" Href=""/components/bread-group"" IsSelected=""true"" />
     </BitBreadGroup>
 </div>
 ";
@@ -241,7 +241,7 @@ public partial class BitBreadGroupDemo
         <BitBreadOption Text=""Option 1"" Href=""/components/bread-group"" Class=""custom-option"" />
         <BitBreadOption Text=""Option 2"" Href=""/components/bread-group"" Class=""custom-option"" />
         <BitBreadOption Text=""Option 3"" Href=""/components/bread-group"" Class=""custom-option"" />
-        <BitBreadOption Text=""Option 4"" Href=""/components/bread-group"" Class=""custom-option"" />
+        <BitBreadOption Text=""Option 4"" Href=""/components/bread-group"" Class=""custom-option"" IsSelected=""true"" />
     </BitBreadGroup>
 </div>
 <div>
@@ -250,7 +250,7 @@ public partial class BitBreadGroupDemo
         <BitBreadOption Text=""Option 1"" Href=""/components/bread-group"" Style=""color:red;background:greenyellow"" />
         <BitBreadOption Text=""Option 2"" Href=""/components/bread-group"" Style=""color:red;background:greenyellow"" />
         <BitBreadOption Text=""Option 3"" Href=""/components/bread-group"" Style=""color:red;background:greenyellow"" />
-        <BitBreadOption Text=""Option 4"" Href=""/components/bread-group"" Style=""color:red;background:greenyellow"" />
+        <BitBreadOption Text=""Option 4"" Href=""/components/bread-group"" Style=""color:red;background:greenyellow"" IsSelected=""true"" />
     </BitBreadGroup>
 </div>
 <div>
@@ -259,7 +259,7 @@ public partial class BitBreadGroupDemo
         <BitBreadOption Text=""Option 1"" Href=""/components/bread-group"" />
         <BitBreadOption Text=""Option 2"" Href=""/components/bread-group"" />
         <BitBreadOption Text=""Option 3"" Href=""/components/bread-group"" />
-        <BitBreadOption Text=""Option 4"" Href=""/components/bread-group"" />
+        <BitBreadOption Text=""Option 4"" Href=""/components/bread-group"" IsSelected=""true"" />
     </BitBreadGroup>
 </div>
 <div>
@@ -268,7 +268,7 @@ public partial class BitBreadGroupDemo
         <BitBreadOption Text=""Option 1"" Href=""/components/bread-group"" />
         <BitBreadOption Text=""Option 2"" Href=""/components/bread-group"" />
         <BitBreadOption Text=""Option 3"" Href=""/components/bread-group"" />
-        <BitBreadOption Text=""Option 4"" Href=""/components/bread-group"" />
+        <BitBreadOption Text=""Option 4"" Href=""/components/bread-group"" IsSelected=""true"" />
     </BitBreadGroup>
 </div>
 ";

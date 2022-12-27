@@ -3,9 +3,13 @@ namespace Bit.BlazorUI;
 
 public partial class BitBreadOption : IDisposable
 {
+    private bool isSelected;
+    private string? href;
+    private string? text;
     private bool _disposed;
-    internal ElementStyleBuilder _styleBuilder => StyleBuilder;
-    internal ElementClassBuilder _classBuilder => ClassBuilder;
+
+    internal ElementStyleBuilder InternalStyleBuilder => StyleBuilder;
+    internal ElementClassBuilder InternalClassBuilder => ClassBuilder;
 
     [CascadingParameter] protected BitBreadGroup? BreadGroup { get; set; }
 
@@ -13,12 +17,41 @@ public partial class BitBreadOption : IDisposable
     /// URL to navigate to when this BitBreadOption is clicked.
     /// If provided, the BitBreadOption will be rendered as a link.
     /// </summary>
-    [Parameter] public string? Href { get; set; }
+    [Parameter] public string? Href
+    {
+        get => href;
+        set
+        {
+            if (value == href) return;
+
+            href = value;
+
+            if (BreadGroup is not null)
+            {
+                BreadGroup.StateHasChanged();
+            }
+        }
+    }
 
     /// <summary>
-    /// By default, the Selected option is the last option. But it can also be specified manually.
+    /// Set the Selected option.
     /// </summary>
-    [Parameter] public bool IsSelected { get; set; }
+    [Parameter]
+    public bool IsSelected
+    {
+        get => isSelected;
+        set
+        {
+            if (value == isSelected) return;
+
+            isSelected = value;
+
+            if (BreadGroup is not null)
+            {
+                BreadGroup.StateHasChanged();
+            }
+        }
+    }
 
     /// <summary>
     /// Callback for when the BitBreadOption clicked and Href is empty.
@@ -28,7 +61,21 @@ public partial class BitBreadOption : IDisposable
     /// <summary>
     /// Text to display in the BitBreadOption option.
     /// </summary>
-    [Parameter] public string? Text { get; set; }
+    [Parameter] public string? Text
+    {
+        get => text;
+        set
+        {
+            if (value == text) return;
+
+            text = value;
+
+            if (BreadGroup is not null)
+            {
+                BreadGroup.StateHasChanged();
+            }
+        }
+    }
 
     protected override string RootElementClass => "bit-bro";
 
@@ -38,14 +85,13 @@ public partial class BitBreadOption : IDisposable
         {
             BreadGroup.RegisterOptions(this);
         }
-        
+
         await base.OnInitializedAsync();
     }
 
     internal async Task HandleOnOptionClick(MouseEventArgs e)
     {
         if (IsEnabled is false) return;
-        if (Href.HasValue()) return;
 
         await OnClick.InvokeAsync(e);
     }
