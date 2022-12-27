@@ -28,7 +28,7 @@ public partial class BitBreadOption : IDisposable
 
             if (BreadGroup is not null)
             {
-                BreadGroup.StateHasChanged();
+                BreadGroup.InternalStateHasChanged();
             }
         }
     }
@@ -48,7 +48,7 @@ public partial class BitBreadOption : IDisposable
 
             if (BreadGroup is not null)
             {
-                BreadGroup.StateHasChanged();
+                BreadGroup.InternalStateHasChanged();
             }
         }
     }
@@ -72,7 +72,7 @@ public partial class BitBreadOption : IDisposable
 
             if (BreadGroup is not null)
             {
-                BreadGroup.StateHasChanged();
+                BreadGroup.InternalStateHasChanged();
             }
         }
     }

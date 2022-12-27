@@ -106,7 +106,7 @@ public partial class BitBreadGroup : IDisposable
         StateHasChanged();
     }
 
-    internal void StateHasChanged()
+    internal void InternalStateHasChanged()
     {
         base.StateHasChanged();
     }
