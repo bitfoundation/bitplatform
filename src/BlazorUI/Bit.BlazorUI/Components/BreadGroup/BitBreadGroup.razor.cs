@@ -11,14 +11,14 @@ public partial class BitBreadGroup : IDisposable
     private string _wrapperId => $"{UniqueId}-wrapper";
     private string _calloutId => $"{UniqueId}-callout";
     private string _overlayId => $"{UniqueId}-overlay";
-    internal string _overflowDropDownId => $"{UniqueId}-overflow-dropdown";
+    private string _overflowDropDownId => $"{UniqueId}-overflow-dropdown";
 
     private bool _disposed;
     private bool _isCalloutOpen;
-    internal int _internalOverfelowIndex;
-    internal List<BitBreadOption> _allOptions = new();
-    internal List<BitBreadOption> _displayOptions = new();
-    internal List<BitBreadOption> _overflowOptions = new();
+    private int _internalOverfelowIndex;
+    private List<BitBreadOption> _allOptions = new();
+    private List<BitBreadOption> _displayOptions = new();
+    private List<BitBreadOption> _overflowOptions = new();
     private DotNetObjectReference<BitBreadGroup> _dotnetObj = default!;
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
@@ -92,7 +92,21 @@ public partial class BitBreadGroup : IDisposable
         return base.OnInitializedAsync();
     }
 
-    internal async Task HandleCallout()
+    internal void RegisterOptions(BitBreadOption option)
+    {
+        _allOptions.Add(option);
+        SetOptionsToShow();
+        StateHasChanged();
+    }
+
+    internal void UnregisterOptions(BitBreadOption option)
+    {
+        _allOptions.Remove(option);
+        SetOptionsToShow();
+        StateHasChanged();
+    }
+
+    private async Task HandleCallout()
     {
         if (IsEnabled is false) return;
 
@@ -108,18 +122,6 @@ public partial class BitBreadGroup : IDisposable
         await option.HandleOnOptionClick(e);
 
         StateHasChanged();
-    }
-
-    internal void RegisterOptions(BitBreadOption option)
-    {
-        _allOptions.Add(option);
-        SetOptionsToShow();
-    }
-
-    internal void UnregisterOptions(BitBreadOption option)
-    {
-        _allOptions.Remove(option);
-        SetOptionsToShow();
     }
 
     private void SetOptionsToShow()
@@ -144,10 +146,14 @@ public partial class BitBreadGroup : IDisposable
 
             for (int index = 0; index < _allOptions.Count; index++)
             {
-                if (_internalOverfelowIndex <= index && overflowOptionCount > 0)
+                if (OverflowIndex <= index && index < overflowOptionCount + _internalOverfelowIndex)
                 {
                     _overflowOptions.Add(_allOptions[index]);
-                    overflowOptionCount--;
+                    
+                    if (index == _internalOverfelowIndex)
+                    {
+                        _displayOptions.Add(_allOptions[index]);
+                    }
                 }
                 else
                 {
@@ -155,6 +161,42 @@ public partial class BitBreadGroup : IDisposable
                 }
             }
         }
+    }
+
+    private bool IsSelectedOption(BitBreadOption option) => option == (_allOptions.LastOrDefault(o => o.IsSelected) ?? _allOptions[^1]);
+
+    private bool IsOverfelowButton(BitBreadOption option) =>  _overflowOptions.Any(o => o == option) && _allOptions.IndexOf(option) == _internalOverfelowIndex;
+
+    private bool HasDividerIconOption(BitBreadOption option) =>  (_displayOptions.Any(o => o == option) && option != _allOptions[^1]) || IsOverfelowButton(option);
+
+    private string GetOptionClasses(BitBreadOption option)
+    {
+        StringBuilder optionClasses = new();
+
+        optionClasses.Append("option");
+
+        if (IsSelectedOption(option))
+        {
+            optionClasses.Append(" selected-option");
+        }
+
+        if (IsSelectedOption(option) && SelectedOptionClass.HasValue())
+        {
+            optionClasses.Append(' ');
+            optionClasses.Append(SelectedOptionClass);
+        }
+
+        return optionClasses.ToString();
+    }
+
+    private string GetOptionStyles(BitBreadOption option)
+    {
+        if (IsSelectedOption(option) && SelectedOptionStyle.HasValue())
+        {
+            return SelectedOptionStyle!;
+        }
+
+        return string.Empty;
     }
 
     public void Dispose()

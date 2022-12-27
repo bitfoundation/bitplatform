@@ -8,13 +8,60 @@
      class="@ClassBuilder.Value"
      aria-label="@AriaLabel">
 
+    <CascadingValue Value="this" IsFixed="true">
+        @ChildContent
+    </CascadingValue>
+
     <div class="options-wrapper" id="@_wrapperId">
         <ul>
-            @if (ChildContent is not null)
+            @foreach (var option in _displayOptions)
             {
-                <CascadingValue Value="this" IsFixed="true">
-                    @ChildContent
-                </CascadingValue>
+                <li @ref="option.RootElement"
+                    @attributes="option.HtmlAttributes"
+                    id="@option.UniqueId"
+                    style="@option._styleBuilder.Value"
+                    class="@option._classBuilder.Value"
+                    aria-label="@option.AriaLabel">
+
+                    @if (IsOverfelowButton(option))
+                    {
+                        <button type="button"
+                                class="overflow-btn"
+                                aria-label="@OverflowAriaLabel"
+                                id="@_overflowDropDownId"
+                                @onclick="HandleCallout">
+                            <span class="overflow-icon-container">
+                                <i class="@($"bit-icon bit-icon--{OverflowIcon.GetName()}")"></i>
+                            </span>
+                        </button>
+                    }
+                    else
+                    {
+                        if (option.Href.HasValue())
+                        {
+                            <a href="@option.Href"
+                               aria-current="@(IsSelectedOption(option) ? "page" : null)"
+                               style="@GetOptionStyles(option)"
+                               class="@GetOptionClasses(option)">
+                                @option.Text
+                            </a>
+                        }
+                        else
+                        {
+                            <button aria-current="@(IsSelectedOption(option) ? "page" : null)"
+                                    style="@GetOptionStyles(option)"
+                                    class="@GetOptionClasses(option)"
+                                    @onclick="(e) => HandleOnOverflowOptionClick(e, option)">
+                                @option.Text
+                            </button>
+                        }
+                    }
+                </li>
+
+                @if (HasDividerIconOption(option))
+                {
+                    <i class="@($"bit-icon bit-icon--{DividerIcon.GetName()}")"></i>
+                }
             }
         </ul>
     </div>
@@ -28,27 +75,27 @@
         <ul>
             @foreach (var option in _overflowOptions)
             {
-                <li @ref="RootElement"
-                    @attributes="HtmlAttributes"
-                    id="@UniqueId"
-                    style="@StyleBuilder.Value"
-                    class="@ClassBuilder.Value"
-                    aria-label="@AriaLabel">
+                <li @ref="option.RootElement"
+                    @attributes="option.HtmlAttributes"
+                    id="@option.UniqueId"
+                    style="@option._styleBuilder.Value"
+                    class="@option._classBuilder.Value"
+                    aria-label="@option.AriaLabel">
 
                     @if (option.Href.HasValue())
                     {
                         <a href="@option.Href"
-                           aria-current="@(option.IsSelectedOption() ? "page" : null)"
-                           style="@option.GetOptionStyles()"
-                           class="@option.GetOptionClasses()">
+                           aria-current="@(IsSelectedOption(option) ? "page" : null)"
+                           style="@GetOptionStyles(option)"
+                           class="@GetOptionClasses(option)">
                             @option.Text
                         </a>
                     }
                     else
                     {
-                        <button aria-current="@(option.IsSelectedOption() ? "page" : null)"
-                                style="@option.GetOptionStyles()"
-                                class="@option.GetOptionClasses()"
+                        <button aria-current="@(IsSelectedOption(option) ? "page" : null)"
+                                style="@GetOptionStyles(option)"
+                                class="@GetOptionClasses(option)"
                                 @onclick="(e) => HandleOnOverflowOptionClick(e, option)">
                             @option.Text
                         </button>

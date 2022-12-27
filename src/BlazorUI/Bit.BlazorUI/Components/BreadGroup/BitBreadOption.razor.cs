@@ -1,10 +1,11 @@
-﻿using System.Text;
-
+﻿
 namespace Bit.BlazorUI;
 
 public partial class BitBreadOption : IDisposable
 {
     private bool _disposed;
+    internal ElementStyleBuilder _styleBuilder => StyleBuilder;
+    internal ElementClassBuilder _classBuilder => ClassBuilder;
 
     [CascadingParameter] protected BitBreadGroup? BreadGroup { get; set; }
 
@@ -48,55 +49,6 @@ public partial class BitBreadOption : IDisposable
 
         await OnClick.InvokeAsync(e);
     }
-
-    private async Task HandleOnOverfelowClick()
-    {
-        if (IsEnabled is false || BreadGroup is null) return;
-
-        await BreadGroup.HandleCallout();
-    }
-
-    internal string GetOptionClasses()
-    {
-        if (BreadGroup is null) return string.Empty;
-
-        StringBuilder optionClasses = new();
-
-        optionClasses.Append("option");
-
-        if (IsSelectedOption())
-        {
-            optionClasses.Append(" selected-option");
-        }
-
-        if (IsSelectedOption() && BreadGroup.SelectedOptionClass.HasValue())
-        {
-            optionClasses.Append(' ');
-            optionClasses.Append(BreadGroup.SelectedOptionClass);
-        }
-
-        return optionClasses.ToString();
-    }
-
-    internal string GetOptionStyles()
-    {
-        if (BreadGroup is null) return string.Empty;
-
-        if (IsSelectedOption() && BreadGroup.SelectedOptionStyle.HasValue())
-        {
-            return BreadGroup.SelectedOptionStyle!;
-        }
-
-        return string.Empty;
-    }
-
-    internal bool IsSelectedOption() => BreadGroup is not null && this == (BreadGroup._allOptions.LastOrDefault(o => o.IsSelected) ?? BreadGroup._allOptions[^1]);
-
-    private bool IsOverfelowButton() => BreadGroup is not null && BreadGroup._overflowOptions.Any(o => o == this) && BreadGroup._allOptions.IndexOf(this) == BreadGroup._internalOverfelowIndex;
-
-    private bool IsDisplayedOption() => BreadGroup is not null && BreadGroup._displayOptions.Any(o => o == this);
-
-    private bool HasDividerIconOption() => BreadGroup is not null && (BreadGroup._displayOptions.Any(o => o == this) && this != BreadGroup._allOptions[^1]) || IsOverfelowButton();
 
     public void Dispose()
     {
