@@ -2,7 +2,7 @@
 
 .bit-bro {
     &.bit-bro-disabled-fluent {
-        .overflow-btn, .item, .current-option, i {
+        .overflow-btn, .option, .selected-option, i {
             color: $Grey60;
             cursor: default;
             pointer-events: none;
@@ -40,7 +40,7 @@
         }
     }
 
-    .current-option {
+    .selected-option {
         font-weight: 600;
         color: $Grey160;
     }

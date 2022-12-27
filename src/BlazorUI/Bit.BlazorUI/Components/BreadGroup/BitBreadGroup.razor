@@ -19,7 +19,7 @@
         </ul>
     </div>
 
-    <div class="overlay" id="@_overlayId" @onclick="CloseCallout"></div>
+    <div class="overlay" id="@_overlayId" @onclick="HandleCallout"></div>
 
     <div class="overflow-menu-wrapper"
          id="@_calloutId"
@@ -35,13 +35,24 @@
                     class="@ClassBuilder.Value"
                     aria-label="@AriaLabel">
 
-                    <a href="@option.Href"
-                       aria-current=@(option.ItIsCurrentOption() ? "page" : null)
-                       style="@option.GetOptionStyles()"
-                       class="@option.GetOptionClasses()"
-                       @onclick="option.HandleOnOptionClick">
-                        @option.Text
-                    </a>
+                    @if (option.Href.HasValue())
+                    {
+                        <a href="@option.Href"
+                           aria-current="@(option.IsSelectedOption() ? "page" : null)"
+                           style="@option.GetOptionStyles()"
+                           class="@option.GetOptionClasses()">
+                            @option.Text
+                        </a>
+                    }
+                    else
+                    {
+                        <button aria-current="@(option.IsSelectedOption() ? "page" : null)"
+                                style="@option.GetOptionStyles()"
+                                class="@option.GetOptionClasses()"
+                                @onclick="(e) => HandleOnOverflowOptionClick(e, option)">
+                            @option.Text
+                        </button>
+                    }
                 </li>
             }
         </ul>

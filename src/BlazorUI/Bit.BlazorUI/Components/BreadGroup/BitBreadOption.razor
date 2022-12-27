@@ -27,7 +27,7 @@
             if (Href.HasValue())
             {
                 <a href="@Href"
-                   aria-current="@(ItIsCurrentOption() ? "page" : null)"
+                   aria-current="@(IsSelectedOption() ? "page" : null)"
                    style="@GetOptionStyles()"
                    class="@GetOptionClasses()">
                     @Text
@@ -35,7 +35,7 @@
             }
             else
             {
-                <button aria-current="@(ItIsCurrentOption() ? "page" : null)"
+                <button aria-current="@(IsSelectedOption() ? "page" : null)"
                         style="@GetOptionStyles()"
                         class="@GetOptionClasses()"
                         @onclick="HandleOnOptionClick">

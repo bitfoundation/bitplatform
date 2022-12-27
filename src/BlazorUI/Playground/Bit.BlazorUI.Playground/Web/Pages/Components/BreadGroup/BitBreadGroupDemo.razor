@@ -1,22 +1,192 @@
 ﻿@page "/components/bread-group"
 
-<ComponentDemo ComponentName="BreadList"
-               ComponentDescription="BreadList should be used as a navigational aid in your app or site. They indicate the current page’s location within a hierarchy and help the user understand where they are in relation to the rest of that hierarchy. They also afford one-click access to higher levels of that hierarchy."
-               ComponentParameters="componentParameters">
+<ComponentDemo ComponentName="BreadGroup"
+               ComponentDescription="BreadGroup should be used as a navigational aid in your app or site. They indicate the current page’s location within a hierarchy and help the user understand where they are in relation to the rest of that hierarchy. They also afford one-click access to higher levels of that hierarchy."
+               ComponentParameters="componentParameters"
+               ComponentSubParameters="componentSubParameters">
 
-    <ComponentExampleBox Title="Basic" ExampleId="example1">
+    <ComponentExampleBox Title="Basic" HTMLSourceCode="@example1HTMLCode" ExampleId="example1">
         <ExamplePreview>
             <div class="example-box">
                 <div>
                     <BitLabel>Basic</BitLabel>
-                    <BitBreadGroup IsEnabled="false">
-                        <BitBreadOption Text="Href" Href="/components/bread-group" />
-                        <BitBreadOption Text="IsCurrentOption" Href="/components/bread-group" IsCurrentOption="true" />
-                        <BitBreadOption Text="IsEnabled" Href="/components/bread-group" IsEnabled="false" />
-                        <BitBreadOption Text="OnClick" OnClick="() => onClick = !onClick" />
+                    <BitBreadGroup>
+                        <BitBreadOption Text="Option 1" Href="/components/bread-group" />
+                        <BitBreadOption Text="Option 2" Href="/components/bread-group" />
+                        <BitBreadOption Text="Option 3" Href="/components/bread-group" />
+                        <BitBreadOption Text="Option 4" Href="/components/bread-group" />
                     </BitBreadGroup>
-                    <div>OnClick: @onClick</div>
                 </div>
+
+                <div>
+                    <BitLabel>Group Disabled</BitLabel>
+                    <BitBreadGroup IsEnabled="false">
+                        <BitBreadOption Text="Option 1" Href="/components/bread-group" />
+                        <BitBreadOption Text="Option 2" Href="/components/bread-group" />
+                        <BitBreadOption Text="Option 3" Href="/components/bread-group" />
+                        <BitBreadOption Text="Option 4" Href="/components/bread-group" />
+                    </BitBreadGroup>
+                </div>
+
+                <div>
+                    <BitLabel>Option Disabled</BitLabel>
+                    <BitBreadGroup>
+                        <BitBreadOption Text="Option 1" Href="/components/bread-group" IsEnabled="false" />
+                        <BitBreadOption Text="Option 2" Href="/components/bread-group" IsEnabled="false" />
+                        <BitBreadOption Text="Option 3" Href="/components/bread-group" />
+                        <BitBreadOption Text="Option 4" Href="/components/bread-group" />
+                    </BitBreadGroup>
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="MaxDisplayedOptions & OverflowIndex" HTMLSourceCode="@example2HTMLCode" ExampleId="example2">
+        <ExamplePreview>
+            <div class="example-desc">
+                You can specify how many options are displayed among the options you have and the rest of the options are displayed as overflow.
+                You can also choose which index the overflow icon should be placed in.
+            </div>
+            <div class="example-box">
+                <div>
+                    <BitLabel>MaxDisplayedOptions (1)</BitLabel>
+                    <BitBreadGroup MaxDisplayedOptions="1">
+                        <BitBreadOption Text="Option 1" Href="/components/bread-group" />
+                        <BitBreadOption Text="Option 2" Href="/components/bread-group" />
+                        <BitBreadOption Text="Option 3" Href="/components/bread-group" />
+                        <BitBreadOption Text="Option 4" Href="/components/bread-group" />
+                    </BitBreadGroup>
+                </div>
+                <div>
+                    <BitLabel>MaxDisplayedOptions (2)</BitLabel>
+                    <BitBreadGroup MaxDisplayedOptions="2">
+                        <BitBreadOption Text="Option 1" Href="/components/bread-group" />
+                        <BitBreadOption Text="Option 2" Href="/components/bread-group" />
+                        <BitBreadOption Text="Option 3" Href="/components/bread-group" />
+                        <BitBreadOption Text="Option 4" Href="/components/bread-group" />
+                    </BitBreadGroup>
+                </div>
+                <div>
+                    <BitLabel>MaxDisplayedOptions (3)</BitLabel>
+                    <BitBreadGroup MaxDisplayedOptions="3">
+                        <BitBreadOption Text="Option 1" Href="/components/bread-group" />
+                        <BitBreadOption Text="Option 2" Href="/components/bread-group" />
+                        <BitBreadOption Text="Option 3" Href="/components/bread-group" />
+                        <BitBreadOption Text="Option 4" Href="/components/bread-group" />
+                    </BitBreadGroup>
+                </div>
+                <div>
+                    <BitLabel>MaxDisplayedOptions (3), OverflowIndex (0)</BitLabel>
+                    <BitBreadGroup MaxDisplayedOptions="3" OverflowIndex="0">
+                        <BitBreadOption Text="Option 1" Href="/components/bread-group" />
+                        <BitBreadOption Text="Option 2" Href="/components/bread-group" />
+                        <BitBreadOption Text="Option 3" Href="/components/bread-group" />
+                        <BitBreadOption Text="Option 4" Href="/components/bread-group" />
+                    </BitBreadGroup>
+                </div>
+                <div>
+                    <BitLabel>MaxDisplayedOptions (3), OverflowIndex (1)</BitLabel>
+                    <BitBreadGroup MaxDisplayedOptions="3" OverflowIndex="1">
+                        <BitBreadOption Text="Option 1" Href="/components/bread-group" />
+                        <BitBreadOption Text="Option 2" Href="/components/bread-group" />
+                        <BitBreadOption Text="Option 3" Href="/components/bread-group" />
+                        <BitBreadOption Text="Option 4" Href="/components/bread-group" />
+                    </BitBreadGroup>
+                </div>
+                <div>
+                    <BitLabel>MaxDisplayedOptions (3), OverflowIndex (2)</BitLabel>
+                    <BitBreadGroup MaxDisplayedOptions="3" OverflowIndex="2">
+                        <BitBreadOption Text="Option 1" Href="/components/bread-group" />
+                        <BitBreadOption Text="Option 2" Href="/components/bread-group" />
+                        <BitBreadOption Text="Option 3" Href="/components/bread-group" />
+                        <BitBreadOption Text="Option 4" Href="/components/bread-group" />
+                    </BitBreadGroup>
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Overflow with Icon" HTMLSourceCode="@example3HTMLCode" ExampleId="example3">
+        <ExamplePreview>
+            <div class="example-box">
+                <div>
+                    <BitLabel>BitIconName (ChevronDown)</BitLabel>
+                    <BitBreadGroup MaxDisplayedOptions="3" OverflowIndex="2" OverflowIcon="BitIconName.ChevronDown">
+                        <BitBreadOption Text="Option 1" Href="/components/bread-group" />
+                        <BitBreadOption Text="Option 2" Href="/components/bread-group" />
+                        <BitBreadOption Text="Option 3" Href="/components/bread-group" />
+                        <BitBreadOption Text="Option 4" Href="/components/bread-group" />
+                    </BitBreadGroup>
+                </div>
+
+                <div>
+                    <BitLabel>BitIconName (CollapseMenu)</BitLabel>
+                    <BitBreadGroup MaxDisplayedOptions="3" OverflowIndex="2" OverflowIcon="BitIconName.CollapseMenu">
+                        <BitBreadOption Text="Option 1" Href="/components/bread-group" />
+                        <BitBreadOption Text="Option 2" Href="/components/bread-group" />
+                        <BitBreadOption Text="Option 3" Href="/components/bread-group" />
+                        <BitBreadOption Text="Option 4" Href="/components/bread-group" />
+                    </BitBreadGroup>
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Class & Style" HTMLSourceCode="@example4HTMLCode" ExampleId="example4">
+        <ExamplePreview>
+            <div class="example-box">
+                <div>
+                    <BitLabel>Options Class</BitLabel>
+                    <BitBreadGroup>
+                        <BitBreadOption Text="Option 1" Href="/components/bread-group" Class="custom-option" />
+                        <BitBreadOption Text="Option 2" Href="/components/bread-group" Class="custom-option" />
+                        <BitBreadOption Text="Option 3" Href="/components/bread-group" Class="custom-option" />
+                        <BitBreadOption Text="Option 4" Href="/components/bread-group" Class="custom-option" />
+                    </BitBreadGroup>
+                </div>
+                <div>
+                    <BitLabel>Options Style</BitLabel>
+                    <BitBreadGroup>
+                        <BitBreadOption Text="Option 1" Href="/components/bread-group" Style="color:red;background:greenyellow" />
+                        <BitBreadOption Text="Option 2" Href="/components/bread-group" Style="color:red;background:greenyellow" />
+                        <BitBreadOption Text="Option 3" Href="/components/bread-group" Style="color:red;background:greenyellow" />
+                        <BitBreadOption Text="Option 4" Href="/components/bread-group" Style="color:red;background:greenyellow" />
+                    </BitBreadGroup>
+                </div>
+                <div>
+                    <BitLabel>Selected Option Class</BitLabel>
+                    <BitBreadGroup SelectedOptionClass="custom-selected-option">
+                        <BitBreadOption Text="Option 1" Href="/components/bread-group" />
+                        <BitBreadOption Text="Option 2" Href="/components/bread-group" />
+                        <BitBreadOption Text="Option 3" Href="/components/bread-group" />
+                        <BitBreadOption Text="Option 4" Href="/components/bread-group" />
+                    </BitBreadGroup>
+                </div>
+                <div>
+                    <BitLabel>Selected Option Style</BitLabel>
+                    <BitBreadGroup SelectedOptionStyle="color:red; background:lightgreen;">
+                        <BitBreadOption Text="Option 1" Href="/components/bread-group" />
+                        <BitBreadOption Text="Option 2" Href="/components/bread-group" />
+                        <BitBreadOption Text="Option 3" Href="/components/bread-group" />
+                        <BitBreadOption Text="Option 4" Href="/components/bread-group" />
+                    </BitBreadGroup>
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Controlled" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
+        <ExamplePreview>
+            <div class="example-desc">By clicking on the Options, the Selected Option will change and match the SelectedOptionStyle.</div>
+            <div class="example-box">
+                <BitBreadGroup MaxDisplayedOptions="3" OverflowIndex="2" SelectedOptionStyle="color:red; background:lightgreen;">
+                    <BitBreadOption Text="Option 1" IsSelected="@(SelectedOptionNumber == 1)" OnClick="() => SelectedOptionNumber = 1" />
+                    <BitBreadOption Text="Option 2" IsSelected="@(SelectedOptionNumber == 2)" OnClick="() => SelectedOptionNumber = 2" />
+                    <BitBreadOption Text="Option 3" IsSelected="@(SelectedOptionNumber == 3)" OnClick="() => SelectedOptionNumber = 3" />
+                    <BitBreadOption Text="Option 4" IsSelected="@(SelectedOptionNumber == 4)" OnClick="() => SelectedOptionNumber = 4" />
+                    <BitBreadOption Text="Option 5" IsSelected="@(SelectedOptionNumber == 5)" OnClick="() => SelectedOptionNumber = 5" />
+                    <BitBreadOption Text="Option 6" IsSelected="@(SelectedOptionNumber == 6)" OnClick="() => SelectedOptionNumber = 6" />
+                </BitBreadGroup>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>

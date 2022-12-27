@@ -6,30 +6,28 @@ public partial class BitBreadOption : IDisposable
 {
     private bool _disposed;
 
-    /// <summary>
-    /// 
-    /// </summary>
     [CascadingParameter] protected BitBreadGroup? BreadGroup { get; set; }
 
     /// <summary>
-    /// 
-    /// </summary>
-    [Parameter] public bool IsCurrentOption { get; set; }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    [Parameter] public string? Text { get; set; }
-
-    /// <summary>
-    /// 
+    /// URL to navigate to when this BitBreadOption is clicked.
+    /// If provided, the BitBreadOption will be rendered as a link.
     /// </summary>
     [Parameter] public string? Href { get; set; }
+
+    /// <summary>
+    /// By default, the Selected option is the last option. But it can also be specified manually.
+    /// </summary>
+    [Parameter] public bool IsSelected { get; set; }
 
     /// <summary>
     /// Callback for when the BitBreadOption clicked and Href is empty.
     /// </summary>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+    /// <summary>
+    /// Text to display in the BitBreadOption option.
+    /// </summary>
+    [Parameter] public string? Text { get; set; }
 
     protected override string RootElementClass => "bit-bro";
 
@@ -51,12 +49,11 @@ public partial class BitBreadOption : IDisposable
         await OnClick.InvokeAsync(e);
     }
 
-    internal async Task HandleOnOverfelowClick(MouseEventArgs e)
+    private async Task HandleOnOverfelowClick()
     {
-        if (IsEnabled is false) return;
-        if (BreadGroup is null) return;
+        if (IsEnabled is false || BreadGroup is null) return;
 
-        await BreadGroup.HandleOnClick(e);
+        await BreadGroup.HandleCallout();
     }
 
     internal string GetOptionClasses()
@@ -67,15 +64,15 @@ public partial class BitBreadOption : IDisposable
 
         optionClasses.Append("option");
 
-        if (ItIsCurrentOption())
+        if (IsSelectedOption())
         {
-            optionClasses.Append(" current-option");
+            optionClasses.Append(" selected-option");
         }
 
-        if (ItIsCurrentOption() && BreadGroup.CurrentOptionClass.HasValue())
+        if (IsSelectedOption() && BreadGroup.SelectedOptionClass.HasValue())
         {
             optionClasses.Append(' ');
-            optionClasses.Append(BreadGroup.CurrentOptionClass);
+            optionClasses.Append(BreadGroup.SelectedOptionClass);
         }
 
         return optionClasses.ToString();
@@ -85,15 +82,15 @@ public partial class BitBreadOption : IDisposable
     {
         if (BreadGroup is null) return string.Empty;
 
-        if (ItIsCurrentOption() && BreadGroup.CurrentOptionStyle.HasValue())
+        if (IsSelectedOption() && BreadGroup.SelectedOptionStyle.HasValue())
         {
-            return BreadGroup.CurrentOptionStyle!;
+            return BreadGroup.SelectedOptionStyle!;
         }
 
         return string.Empty;
     }
 
-    internal bool ItIsCurrentOption() => BreadGroup is not null && this == (BreadGroup._allOptions.LastOrDefault(o => o.IsCurrentOption) ?? BreadGroup._allOptions[^1]);
+    internal bool IsSelectedOption() => BreadGroup is not null && this == (BreadGroup._allOptions.LastOrDefault(o => o.IsSelected) ?? BreadGroup._allOptions[^1]);
 
     private bool IsOverfelowButton() => BreadGroup is not null && BreadGroup._overflowOptions.Any(o => o == this) && BreadGroup._allOptions.IndexOf(this) == BreadGroup._internalOverfelowIndex;
 
@@ -114,7 +111,7 @@ public partial class BitBreadOption : IDisposable
 
         if (BreadGroup is not null)
         {
-            BreadGroup.UnRegisterOptions(this);
+            BreadGroup.UnregisterOptions(this);
         }
 
         _disposed = true;

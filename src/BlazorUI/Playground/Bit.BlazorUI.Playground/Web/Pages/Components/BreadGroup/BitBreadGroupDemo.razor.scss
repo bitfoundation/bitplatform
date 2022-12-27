@@ -1,7 +1,7 @@
 ﻿@import '../../../Styles/abstracts/_functions.scss';
 
 ::deep {
-    .custom-item {
+    .custom-option {
         color: red;
         margin: 2px 5px;
         border-radius: 2px;
@@ -12,7 +12,7 @@
         }
     }
 
-    .custom-current-item {
+    .custom-selected-option {
         color: red;
         margin: 2px 5px;
         border-radius: 2px;

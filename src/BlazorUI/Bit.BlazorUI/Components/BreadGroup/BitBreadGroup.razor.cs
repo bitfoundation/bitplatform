@@ -7,8 +7,7 @@ public partial class BitBreadGroup : IDisposable
 {
     private int maxDisplayedOptions;
     private int overfelowIndex;
-    internal int _internalOverfelowIndex;
-
+    
     private string _wrapperId => $"{UniqueId}-wrapper";
     private string _calloutId => $"{UniqueId}-callout";
     private string _overlayId => $"{UniqueId}-overlay";
@@ -16,37 +15,37 @@ public partial class BitBreadGroup : IDisposable
 
     private bool _disposed;
     private bool _isCalloutOpen;
+    internal int _internalOverfelowIndex;
     internal List<BitBreadOption> _allOptions = new();
     internal List<BitBreadOption> _displayOptions = new();
     internal List<BitBreadOption> _overflowOptions = new();
-
     private DotNetObjectReference<BitBreadGroup> _dotnetObj = default!;
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
     /// <summary>
-    /// 
+    /// The content of BitBreadGroup, common values are BitBreadGroup component.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// The class HTML attribute for Current Option.
+    /// The class HTML attribute for Selected Option.
     /// </summary>
-    [Parameter] public string? CurrentOptionClass { get; set; }
+    [Parameter] public string? SelectedOptionClass { get; set; }
 
     /// <summary>
-    /// The style HTML attribute for Current Option.
+    /// The style HTML attribute for Selected Option.
     /// </summary>
-    [Parameter] public string? CurrentOptionStyle { get; set; }
+    [Parameter] public string? SelectedOptionStyle { get; set; }
 
     /// <summary>
-    /// Render a custom divider in place of the default chevron >
+    /// Render a custom divider in place of the default chevron.
     /// </summary>
     [Parameter] public BitIconName DividerIcon { get; set; } = BitIconName.ChevronRight;
 
     /// <summary>
-    /// The maximum number of breadcrumbs to display before coalescing.
-    /// If not specified, all breadcrumbs will be rendered.
+    /// The maximum number of BitBreadGroup to display before coalescing.
+    /// If not specified, all BitBreadGroup will be rendered.
     /// </summary>
     [Parameter]
     public int MaxDisplayedOptions
@@ -93,24 +92,22 @@ public partial class BitBreadGroup : IDisposable
         return base.OnInitializedAsync();
     }
 
-    private async Task CloseCallout()
-    {
-        if (IsEnabled is false) return;
-
-        await _js.ToggleOverflowCallout(_dotnetObj, _wrapperId, _overflowDropDownId, _calloutId, _overlayId, _isCalloutOpen);
-
-        _isCalloutOpen = false;
-
-        StateHasChanged();
-    }
-
-    internal async Task HandleOnClick(MouseEventArgs e)
+    internal async Task HandleCallout()
     {
         if (IsEnabled is false) return;
 
         await _js.ToggleOverflowCallout(_dotnetObj, _wrapperId, _overflowDropDownId, _calloutId, _overlayId, _isCalloutOpen);
 
         _isCalloutOpen = !_isCalloutOpen;
+
+        StateHasChanged();
+    }
+
+    private async void HandleOnOverflowOptionClick(MouseEventArgs e, BitBreadOption option)
+    {
+        await option.HandleOnOptionClick(e);
+
+        StateHasChanged();
     }
 
     internal void RegisterOptions(BitBreadOption option)
@@ -119,7 +116,7 @@ public partial class BitBreadGroup : IDisposable
         SetOptionsToShow();
     }
 
-    internal void UnRegisterOptions(BitBreadOption option)
+    internal void UnregisterOptions(BitBreadOption option)
     {
         _allOptions.Remove(option);
         SetOptionsToShow();
