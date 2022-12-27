@@ -1,0 +1,107 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+<div @ref="RootElement"
+     @attributes="HtmlAttributes"
+     id="@UniqueId"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     aria-label="@AriaLabel">
+
+    <CascadingValue Value="this" IsFixed="true">
+        @ChildContent
+    </CascadingValue>
+
+    <div class="options-wrapper" id="@_wrapperId">
+        <ul>
+            @foreach ((BitBreadOption option, int index) in _displayOptions.Select((option, index) => (option, index)))
+            {
+                <li @ref="option.RootElement"
+                    @attributes="option.HtmlAttributes"
+                    id="@option.UniqueId"
+                    style="@option.InternalStyleBuilder.Value"
+                    class="@option.InternalClassBuilder.Value"
+                    aria-label="@option.AriaLabel">
+
+                    @if (_overflowOptions.Any(o => o == option) && index == _internalOverfelowIndex)
+                    {
+                        <button type="button"
+                                class="overflow-btn"
+                                aria-label="@OverflowAriaLabel"
+                                id="@_overflowDropDownId"
+                                @onclick="ToggleCallout">
+                            <span class="overflow-icon-container">
+                                <i class="@($"bit-icon bit-icon--{OverflowIcon.GetName()}")"></i>
+                            </span>
+                        </button>
+                    }
+                    else
+                    {
+                        if (option.Href.HasValue())
+                        {
+                            <a href="@option.Href"
+                               aria-current="@(option.IsSelected ? "page" : null)"
+                               style="@GetOptionStyles(option)"
+                               class="@GetOptionClasses(option)">
+                                @option.Text
+                            </a>
+                        }
+                        else
+                        {
+                            <button aria-current="@(option.IsSelected ? "page" : null)"
+                                    style="@GetOptionStyles(option)"
+                                    class="@GetOptionClasses(option)"
+                                    @onclick="option.HandleOnOptionClick">
+                                @option.Text
+                            </button>
+                        }
+                    }
+                </li>
+
+                @if (option != _allOptions[^1] || index == _internalOverfelowIndex)
+                {
+                    <i class="@($"bit-icon bit-icon--{DividerIcon.GetName()}")"></i>
+                }
+            }
+        </ul>
+    </div>
+
+    <div class="overlay" id="@_overlayId" @onclick="ToggleCallout"></div>
+
+    <div class="overflow-menu-wrapper"
+         id="@_calloutId"
+         tabindex="0"
+         role="listbox">
+        <ul>
+            @foreach (var option in _overflowOptions)
+            {
+                <li @ref="option.RootElement"
+                    @attributes="option.HtmlAttributes"
+                    id="@option.UniqueId"
+                    style="@option.InternalStyleBuilder.Value"
+                    class="@option.InternalClassBuilder.Value"
+                    aria-label="@option.AriaLabel">
+
+                    @if (option.Href.HasValue())
+                    {
+                        <a href="@option.Href"
+                           aria-current="@(option.IsSelected ? "page" : null)"
+                           style="@GetOptionStyles(option)"
+                           class="@GetOptionClasses(option)">
+                            @option.Text
+                        </a>
+                    }
+                    else
+                    {
+                        <button aria-current="@(option.IsSelected ? "page" : null)"
+                                style="@GetOptionStyles(option)"
+                                class="@GetOptionClasses(option)"
+                                @onclick="option.HandleOnOptionClick">
+                            @option.Text
+                        </button>
+                    }
+                </li>
+            }
+        </ul>
+    </div>
+</div>
