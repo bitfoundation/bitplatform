@@ -215,7 +215,7 @@ public class BitBreadcrumbTests : BunitTestContext
             {
                 Text = "Folder 4",
                 Href = "/components/breadcrumb",
-                IsCurrent = true,
+                IsSelected = true,
             }
         };
     }
