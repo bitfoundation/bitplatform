@@ -33,6 +33,33 @@ public partial class BitBreadcrumbDemo
             }
         };
 
+        BreadcrumbItemsDisabled = new List<BitBreadcrumbItem>
+        {
+            new()
+            {
+                Text = "Folder 1",
+                Href = "/components/breadcrumb",
+                IsEnabled = false
+            },
+            new()
+            {
+                Text = "Folder 2",
+                Href = "/components/breadcrumb",
+                IsEnabled = false
+            },
+            new()
+            {
+                Text = "Folder 3",
+                Href = "/components/breadcrumb"
+            },
+            new()
+            {
+                Text = "Folder 4",
+                Href = "/components/breadcrumb",
+                IsCurrent = true
+            }
+        };
+
         BreadcrumbItemsWithClass = new List<BitBreadcrumbItem>
         {
             new()
@@ -122,6 +149,7 @@ public partial class BitBreadcrumbDemo
     }
 
     private List<BitBreadcrumbItem> BreadcrumbItems { get; set; }
+    private List<BitBreadcrumbItem> BreadcrumbItemsDisabled { get; set; }
     private List<BitBreadcrumbItem> BreadcrumbItemsWithClass { get; set; }
     private List<BitBreadcrumbItem> BreadcrumbItemsWithStyle { get; set; }
     private List<BitBreadcrumbItem> BreadcrumbItemsWithControll { get; set; }
@@ -235,6 +263,7 @@ public partial class BitBreadcrumbDemo
                {
                    Name = "IsEnabled",
                    Type = "bool",
+                   DefaultValue = "true",
                    Description = "Whether an item is enabled or not.",
                },
             }
@@ -278,6 +307,65 @@ private List<BitBreadcrumbItem> BreadcrumbItems { get; set; } = new List<BitBrea
     <BitLabel>Disabled</BitLabel>
     <BitBreadcrumb Items=""BreadcrumbItems"" IsEnabled=""false"" />
 </div>
+
+<div>
+    <BitLabel>Item Disabled</BitLabel>
+    <BitBreadcrumb Items=""BreadcrumbItemsDisabled"" />
+</div>
+";
+
+    private readonly string example1CSharpCode = @"
+private List<BitBreadcrumbItem> BreadcrumbItems { get; set; } = new List<BitBreadcrumbItem>
+{
+    new()
+    {
+        Text = ""Folder 1"",
+        Href = ""/components/breadcrumb""
+    },
+    new()
+    {
+        Text = ""Folder 2"",
+        Href = ""/components/breadcrumb""
+    },
+    new()
+    {
+        Text = ""Folder 3"",
+        Href = ""/components/breadcrumb""
+    },
+    new()
+    {
+        Text = ""Folder 4"",
+        Href = ""/components/breadcrumb"",
+        IsCurrent = true
+    }
+};
+
+ private List<BitBreadcrumbItem> BreadcrumbItemsDisabled { get; set; } = new List<BitBreadcrumbItem>
+{
+    new()
+    {
+        Text = ""Folder 1"",
+        Href = ""/components/breadcrumb"",
+        IsEnabled = false
+    },
+    new()
+    {
+        Text = ""Folder 2"",
+        Href = ""/components/breadcrumb"",
+        IsEnabled = false
+    },
+    new()
+    {
+        Text = ""Folder 3"",
+        Href = ""/components/breadcrumb""
+    },
+    new()
+    {
+        Text = ""Folder 4"",
+        Href = ""/components/breadcrumb"",
+        IsCurrent = true
+    }
+};
 ";
 
     private readonly string example2HTMLCode = @"
@@ -464,7 +552,6 @@ private List<BitBreadcrumbItem> BreadcrumbItemsWithStyle { get; set; } = new Lis
 ";
 
     private readonly string example5CSharpCode = @"
-private BitBreadcrumbItem ControlledCurrentItem;
 private List<BitBreadcrumbItem> BreadcrumbItemsWithControll { get; set; } = new List<BitBreadcrumbItem>
 {
     new()

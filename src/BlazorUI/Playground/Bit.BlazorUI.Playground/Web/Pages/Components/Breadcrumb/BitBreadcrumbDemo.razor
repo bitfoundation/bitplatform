@@ -5,7 +5,7 @@
                ComponentParameters="componentParameters"
                ComponentSubParameters="componentSubParameters">
 
-    <ComponentExampleBox Title="Basic" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@BasicItemsCSharpCode" ExampleId="example1">
+    <ComponentExampleBox Title="Basic" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
             <div class="example-box">
                 <div>
@@ -16,6 +16,11 @@
                 <div>
                     <BitLabel>Disabled</BitLabel>
                     <BitBreadcrumb Items="BreadcrumbItems" IsEnabled="false" />
+                </div>
+
+                <div>
+                    <BitLabel>Item Disabled</BitLabel>
+                    <BitBreadcrumb Items="BreadcrumbItemsDisabled" />
                 </div>
             </div>
         </ExamplePreview>

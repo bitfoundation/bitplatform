@@ -33,5 +33,5 @@ public class BitBreadcrumbItem
     /// <summary>
     /// Whether an item is enabled or not.
     /// </summary>
-    public bool IsEnabled { get; set; }
+    public bool IsEnabled { get; set; } = true;
 }

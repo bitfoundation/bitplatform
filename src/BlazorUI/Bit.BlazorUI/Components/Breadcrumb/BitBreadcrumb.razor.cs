@@ -116,6 +116,7 @@ public partial class BitBreadcrumb : IDisposable
     private async Task HandleOnItemClick(BitBreadcrumbItem item)
     {
         if (IsEnabled is false) return;
+        if (item.IsEnabled is false) return;
 
         await OnItemClick.InvokeAsync(item);
     }
@@ -171,6 +172,11 @@ public partial class BitBreadcrumb : IDisposable
         if (item.IsCurrent && CurrentItemClass.HasValue())
         {
             itemClasses.Append($" {CurrentItemClass}");
+        }
+
+        if (item.IsEnabled is false)
+        {
+            itemClasses.Append(" disabled-item");
         }
 
         return itemClasses.ToString();

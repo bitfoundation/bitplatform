@@ -60,6 +60,13 @@
         color: $Grey160;
     }
 
+    .disabled-item {
+        color: $Grey60;
+        cursor: default;
+        pointer-events: none;
+        font-weight: 400;
+    }
+
     .overflow-menu-wrapper {
         display: none;
         position: fixed;
