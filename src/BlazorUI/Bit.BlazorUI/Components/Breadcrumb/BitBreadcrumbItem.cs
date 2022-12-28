@@ -28,7 +28,7 @@ public class BitBreadcrumbItem
     /// <summary>
     /// Display the item as a current item.
     /// </summary>
-    public bool IsCurrent { get; set; }
+    public bool IsSelected { get; set; }
 
     /// <summary>
     /// Whether an item is enabled or not.

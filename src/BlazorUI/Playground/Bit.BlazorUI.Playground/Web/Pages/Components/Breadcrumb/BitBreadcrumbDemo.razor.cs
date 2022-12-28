@@ -29,7 +29,7 @@ public partial class BitBreadcrumbDemo
             {
                 Text = "Folder 4",
                 Href = "/components/breadcrumb",
-                IsCurrent = true
+                IsSelected = true
             }
         };
 
@@ -56,7 +56,7 @@ public partial class BitBreadcrumbDemo
             {
                 Text = "Folder 4",
                 Href = "/components/breadcrumb",
-                IsCurrent = true
+                IsSelected = true
             }
         };
 
@@ -85,7 +85,7 @@ public partial class BitBreadcrumbDemo
                 Text = "Folder 4",
                 Href = "/components/breadcrumb",
                 Class = "custom-item",
-                IsCurrent = true
+                IsSelected = true
             }
         };
 
@@ -114,7 +114,7 @@ public partial class BitBreadcrumbDemo
                 Text = "Folder 4",
                 Href = "/components/breadcrumb",
                 Style = "color:red;background:lightgreen",
-                IsCurrent = true
+                IsSelected = true
             }
         };
 
@@ -143,7 +143,7 @@ public partial class BitBreadcrumbDemo
             new()
             {
                 Text = "Folder 6",
-                IsCurrent = true
+                IsSelected = true
             }
         };
     }
@@ -156,8 +156,8 @@ public partial class BitBreadcrumbDemo
 
     private void HandleOnItemClick(BitBreadcrumbItem item)
     {
-        BreadcrumbItemsWithControll.FirstOrDefault(i => i.IsCurrent).IsCurrent = false;
-        BreadcrumbItemsWithControll.FirstOrDefault(i => i == item).IsCurrent = true;
+        BreadcrumbItemsWithControll.FirstOrDefault(i => i.IsSelected).IsSelected = false;
+        BreadcrumbItemsWithControll.FirstOrDefault(i => i == item).IsSelected = true;
     }
 
     private readonly List<ComponentParameter> componentParameters = new()
@@ -255,7 +255,7 @@ public partial class BitBreadcrumbDemo
                },
                new ComponentParameter()
                {
-                   Name = "IsCurrent",
+                   Name = "IsSelected",
                    Type = "bool",
                    Description = "Display the item as a current item.",
                },
@@ -292,7 +292,7 @@ private List<BitBreadcrumbItem> BreadcrumbItems { get; set; } = new List<BitBrea
     {
         Text = ""Folder 4"",
         Href = ""/components/breadcrumb"",
-        IsCurrent = true
+        IsSelected = true
     }
 };
 ";
@@ -336,7 +336,7 @@ private List<BitBreadcrumbItem> BreadcrumbItems { get; set; } = new List<BitBrea
     {
         Text = ""Folder 4"",
         Href = ""/components/breadcrumb"",
-        IsCurrent = true
+        IsSelected = true
     }
 };
 
@@ -363,7 +363,7 @@ private List<BitBreadcrumbItem> BreadcrumbItems { get; set; } = new List<BitBrea
     {
         Text = ""Folder 4"",
         Href = ""/components/breadcrumb"",
-        IsCurrent = true
+        IsSelected = true
     }
 };
 ";
@@ -480,7 +480,7 @@ private List<BitBreadcrumbItem> BreadcrumbItems { get; set; } = new List<BitBrea
     {
         Text = ""Folder 4"",
         Href = ""/components/breadcrumb"",
-        IsCurrent = true
+        IsSelected = true
     }
 };
 
@@ -509,7 +509,7 @@ private List<BitBreadcrumbItem> BreadcrumbItemsWithClass { get; set; } = new Lis
         Text = ""Folder 4"",
         Href = ""/components/breadcrumb"",
         Class = ""custom-item"",
-        IsCurrent = true
+        IsSelected = true
     }
 };
 
@@ -538,7 +538,7 @@ private List<BitBreadcrumbItem> BreadcrumbItemsWithStyle { get; set; } = new Lis
         Text = ""Folder 4"",
         Href = ""/components/breadcrumb"",
         Style = ""color:red;background:lightgreen"",
-        IsCurrent = true
+        IsSelected = true
     }
 };
 ";
@@ -577,14 +577,14 @@ private List<BitBreadcrumbItem> BreadcrumbItemsWithControll { get; set; } = new 
     new()
     {
         Text = ""Folder 6"",
-        IsCurrent = true
+        IsSelected = true
     }
 };
 
 private void HandleOnItemClick(BitBreadcrumbItem item)
 {
-    BreadcrumbItemsWithControll.FirstOrDefault(i => i.IsCurrent).IsCurrent = false;
-    BreadcrumbItemsWithControll.FirstOrDefault(i => i == item).IsCurrent = true;
+    BreadcrumbItemsWithControll.FirstOrDefault(i => i.IsSelected).IsSelected = false;
+    BreadcrumbItemsWithControll.FirstOrDefault(i => i == item).IsSelected = true;
 }
 ";
 }

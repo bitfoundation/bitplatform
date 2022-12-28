@@ -6,6 +6,7 @@ public partial class BitBreadcrumb : IDisposable
 {
     private int overflowIndex;
     private int maxDisplayedItems;
+    private IList<BitBreadcrumbItem> items = new List<BitBreadcrumbItem>();
 
     private List<BitBreadcrumbItem> _displayItems = new List<BitBreadcrumbItem>();
     private List<BitBreadcrumbItem> _overflowItems = new List<BitBreadcrumbItem>();
@@ -13,7 +14,6 @@ public partial class BitBreadcrumb : IDisposable
     private bool _disposed;
     private bool _isCalloutOpen;
     private int _internaloverflowIndex;
-    private IList<BitBreadcrumbItem> items = new List<BitBreadcrumbItem>();
 
     private string _wrapperId => $"{UniqueId}-wrapper";
     private string _calloutId => $"{UniqueId}-callout";
@@ -164,12 +164,12 @@ public partial class BitBreadcrumb : IDisposable
 
         itemClasses.Append("item");
 
-        if (item.IsCurrent)
+        if (item.IsSelected)
         {
             itemClasses.Append(" current-item");
         }
 
-        if (item.IsCurrent && CurrentItemClass.HasValue())
+        if (item.IsSelected && CurrentItemClass.HasValue())
         {
             itemClasses.Append($" {CurrentItemClass}");
         }
@@ -184,7 +184,7 @@ public partial class BitBreadcrumb : IDisposable
 
     private string GetItemStyles(BitBreadcrumbItem item)
     {
-        return item.IsCurrent ? CurrentItemStyle ?? string.Empty : string.Empty;
+        return item.IsSelected ? CurrentItemStyle ?? string.Empty : string.Empty;
     }
 
     public void Dispose()

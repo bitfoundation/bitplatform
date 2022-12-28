@@ -26,7 +26,7 @@
                         if (item.Href.HasValue())
                         {
                             <a href="@item.Href"
-                               aria-current="@(item.IsCurrent ? "page" : null)"
+                               aria-current="@(item.IsSelected ? "page" : null)"
                                style="@item.Style @GetItemStyles(item)"
                                class="@item.Class @GetItemClasses(item)">
                                 @item.Text
@@ -34,7 +34,7 @@
                         }
                         else
                         {
-                            <button aria-current="@(item.IsCurrent ? "page" : null)"
+                            <button aria-current="@(item.IsSelected ? "page" : null)"
                                     style="@item.Style @GetItemStyles(item)"
                                     class="@item.Class @GetItemClasses(item)"
                                     @onclick="() => HandleOnItemClick(item)">
@@ -65,7 +65,7 @@
                     @if (item.Href.HasValue())
                     {
                         <a href="@item.Href"
-                           aria-current="@(item.IsCurrent ? "page" : null)"
+                           aria-current="@(item.IsSelected ? "page" : null)"
                            style="@item.Style @GetItemStyles(item)"
                            class="@item.Class @GetItemClasses(item)">
                             @item.Text
@@ -73,7 +73,7 @@
                     }
                     else
                     {
-                        <button aria-current="@(item.IsCurrent ? "page" : null)"
+                        <button aria-current="@(item.IsSelected ? "page" : null)"
                                 style="@item.Style @GetItemStyles(item)"
                                 class="@item.Class @GetItemClasses(item)"
                                 @onclick="() => HandleOnItemClick(item)">
