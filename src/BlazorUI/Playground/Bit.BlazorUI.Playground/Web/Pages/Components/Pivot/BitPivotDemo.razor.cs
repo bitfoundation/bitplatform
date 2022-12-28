@@ -475,46 +475,154 @@ private void TogglePivotItemVisobility()
 
     private readonly string example10HtmlCode = @"
 <BitPivot>
-<BitPivotItem>
-    <Header>
-        <div>
-            <span style=""color:red"">Header #1</span>
-        </div>
-    </Header>
-    <Body>
-        <div style=""margin-top:10px"">
-            <h1>Pivot #1</h1>
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
-        </div>
-    </Body>
-</BitPivotItem>
-<BitPivotItem ItemCount=""99"">
-    <Header>
-        <div>
-            <i style=""color:green"" class=""bit-icon bit-icon--HeartFill""></i>
-            <span style=""color:blue"">Header #2</span>
-            <i style=""color:green"" class=""bit-icon bit-icon--HeartFill""></i>
-        </div>
-    </Header>
-    <Body>
-        <div style=""margin-top:10px"">
-            <h1>Pivot #2</h1>
-            <p>Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel.</p>
-        </div>
-    </Body>
-</BitPivotItem>
-<BitPivotItem IconName=""BitIconName.Inbox"">
-    <Header>
-        <div>
-            <span style=""color:rebeccapurple"">Header <i style=""color:purple"" class=""bit-icon bit-icon--HeartFill""></i> #3</span>
-        </div>
-    </Header>
-    <Body>
-        <div style=""margin-top:10px"">
-            <h1>Pivot #3</h1>
-            <p>Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum.</p>
-        </div>
-    </Body>
-</BitPivotItem>
+    <BitPivotItem>
+        <Header>
+            <div>
+                <span style=""color:red"">Header #1</span>
+            </div>
+        </Header>
+        <Body>
+            <div style=""margin-top:10px"">
+                <h1>Pivot #1</h1>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
+            </div>
+        </Body>
+    </BitPivotItem>
+    <BitPivotItem ItemCount=""99"">
+        <Header>
+            <div>
+                <i style=""color:green"" class=""bit-icon bit-icon--HeartFill""></i>
+                <span style=""color:blue"">Header #2</span>
+                <i style=""color:green"" class=""bit-icon bit-icon--HeartFill""></i>
+            </div>
+        </Header>
+        <Body>
+            <div style=""margin-top:10px"">
+                <h1>Pivot #2</h1>
+                <p>Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel.</p>
+            </div>
+        </Body>
+    </BitPivotItem>
+    <BitPivotItem IconName=""BitIconName.Inbox"">
+        <Header>
+            <div>
+                <span style=""color:rebeccapurple"">Header <i style=""color:purple"" class=""bit-icon bit-icon--HeartFill""></i> #3</span>
+            </div>
+        </Header>
+        <Body>
+            <div style=""margin-top:10px"">
+                <h1>Pivot #3</h1>
+                <p>Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum.</p>
+            </div>
+        </Body>
+    </BitPivotItem>
 </BitPivot>";
+
+    private readonly string example11HtmlCode = @"
+<style>
+.subtitle {
+    padding: 20px 0 10px 0;
+}
+
+.box {
+    border: 1px solid #ccc;
+    padding: 5px 10px;
+}
+</style>
+
+<div class=""subtitle"">Pivot Position: <strong>Top</strong></div>
+<div class=""box"">
+    <BitPivot Position=""BitPivotPosition.Top"" Style=""height:200px"">
+        <BitPivotItem HeaderText=""File"">
+            <div style=""margin-top:10px"">
+                <h1>Pivot #1: File</h1>
+                <p style=""white-space:pre-wrap"">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. </p>
+            </div>
+        </BitPivotItem>
+        <BitPivotItem HeaderText=""Shared"">
+            <div style=""margin-top:15px"">
+                <h1>Pivot #2: Shared</h1>
+                <p style=""white-space:pre-wrap"">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet.</p>
+            </div>
+        </BitPivotItem>
+        <BitPivotItem HeaderText=""Recent"">
+            <div style=""margin-top:10px"">
+                <h1>Pivot #3: Recent</h1>
+                <p style=""white-space:pre-wrap"">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. </p>
+            </div>
+        </BitPivotItem>
+    </BitPivot>
+</div>
+<br />
+<div class=""subtitle"">Pivot Position: <strong>Bottom</strong></div>
+<div class=""box"">
+    <BitPivot Position=""BitPivotPosition.Bottom"" Style=""height:200px"">
+        <BitPivotItem HeaderText=""File"">
+            <div style=""margin-top:10px"">
+                <h1>Pivot #1: File</h1>
+                <p style=""white-space:pre-wrap"">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. </p>
+            </div>
+        </BitPivotItem>
+        <BitPivotItem HeaderText=""Shared"">
+            <div style=""margin-top:15px"">
+                <h1>Pivot #2: Shared</h1>
+                <p style=""white-space:pre-wrap"">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet.</p>
+            </div>
+        </BitPivotItem>
+        <BitPivotItem HeaderText=""Recent"">
+            <div style=""margin-top:10px"">
+                <h1>Pivot #3: Recent</h1>
+                <p style=""white-space:pre-wrap"">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. </p>
+            </div>
+        </BitPivotItem>
+    </BitPivot>
+</div>
+<br />
+<div class=""subtitle"">Pivot Position: <strong>Left</strong></div>
+<div class=""box"">
+    <BitPivot Position=""BitPivotPosition.Left"">
+        <BitPivotItem HeaderText=""File"">
+            <div style=""margin-top:10px"">
+                <h1>Pivot #1: File</h1>
+                <p style=""white-space:pre-wrap"">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. </p>
+            </div>
+        </BitPivotItem>
+        <BitPivotItem HeaderText=""Shared with me"" Style=""width:130px"">
+            <div style=""margin-top:15px"">
+                <h1>Pivot #2: Shared with me</h1>
+                <p style=""white-space:pre-wrap"">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet.</p>
+            </div>
+        </BitPivotItem>
+        <BitPivotItem HeaderText=""Recent"">
+            <div style=""margin-top:10px"">
+                <h1>Pivot #3: Recent</h1>
+                <p style=""white-space:pre-wrap"">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. </p>
+            </div>
+        </BitPivotItem>
+    </BitPivot>
+</div>
+<br />
+<div class=""subtitle"">Pivot Position: <strong>Right</strong></div>
+<div class=""box"">
+    <BitPivot Position=""BitPivotPosition.Right"">
+        <BitPivotItem HeaderText=""File"">
+            <div style=""margin-top:10px"">
+                <h1>Pivot #1: File</h1>
+                <p style=""white-space:pre-wrap"">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. </p>
+            </div>
+        </BitPivotItem>
+        <BitPivotItem HeaderText=""Shared with me"" Style=""width:130px"">
+            <div style=""margin-top:15px"">
+                <h1>Pivot #2: Shared with me</h1>
+                <p style=""white-space:pre-wrap"">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet.</p>
+            </div>
+        </BitPivotItem>
+        <BitPivotItem HeaderText=""Recent"">
+            <div style=""margin-top:10px"">
+                <h1>Pivot #3: Recent</h1>
+                <p style=""white-space:pre-wrap"">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. </p>
+            </div>
+        </BitPivotItem>
+    </BitPivot>
+</div>";
 }
