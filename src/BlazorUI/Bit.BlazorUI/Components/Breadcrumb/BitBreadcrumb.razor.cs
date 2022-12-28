@@ -129,31 +129,30 @@ public partial class BitBreadcrumb : IDisposable
         if (MaxDisplayedItems == 0 || MaxDisplayedItems >= Items.Count)
         {
             _displayItems.AddRange(Items);
+            return;
         }
-        else
+
+        if (OverflowIndex >= MaxDisplayedItems)
         {
-            if (OverflowIndex >= MaxDisplayedItems)
+            _internaloverflowIndex = 0;
+        }
+
+        var overflowItemsCount = Items.Count - MaxDisplayedItems;
+
+        foreach ((BitBreadcrumbItem item, int index) in Items.Select((item, index) => (item, index)))
+        {
+            if (_internaloverflowIndex <= index && index < overflowItemsCount + _internaloverflowIndex)
             {
-                _internaloverflowIndex = 0;
-            }
-
-            var overflowItemsCount = Items.Count - MaxDisplayedItems;
-
-            foreach ((BitBreadcrumbItem item, int index) in Items.Select((item, index) => (item, index)))
-            {
-                if (_internaloverflowIndex <= index && index < overflowItemsCount + _internaloverflowIndex)
-                {
-                    if (index == _internaloverflowIndex)
-                    {
-                        _displayItems.Add(item);
-                    }
-
-                    _overflowItems.Add(item);
-                }
-                else
+                if (index == _internaloverflowIndex)
                 {
                     _displayItems.Add(item);
                 }
+
+                _overflowItems.Add(item);
+            }
+            else
+            {
+                _displayItems.Add(item);
             }
         }
     }
