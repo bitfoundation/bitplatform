@@ -39,7 +39,7 @@ public class BitBreadcrumbTests : BunitTestContext
             parameters.Add(p => p.DividerIcon, icon);
         });
 
-        var breadcrumbDividerIcon = component.Find(".bit-brc ul li i");
+        var breadcrumbDividerIcon = component.Find(".bit-brc ul i");
 
         Assert.IsTrue(breadcrumbDividerIcon.ClassList.Contains($"bit-icon--{icon}"));
     }
@@ -80,7 +80,7 @@ public class BitBreadcrumbTests : BunitTestContext
         {
             parameters.Add(p => p.Items, GetBreadcrumbItems());
             parameters.Add(p => p.OverflowIndex, overflowIndex);
-            parameters.Add(p => p.OnRenderOverflowIcon, icon);
+            parameters.Add(p => p.OverflowIcon, icon);
             parameters.Add(p => p.MaxDisplayedItems, maxDisplayedItems);
         });
 
@@ -215,6 +215,7 @@ public class BitBreadcrumbTests : BunitTestContext
             {
                 Text = "Folder 4",
                 Href = "/components/breadcrumb",
+                IsCurrent = true,
             }
         };
     }
