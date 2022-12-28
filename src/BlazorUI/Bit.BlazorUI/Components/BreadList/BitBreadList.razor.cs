@@ -5,19 +5,24 @@ namespace Bit.BlazorUI;
 
 public partial class BitBreadList<TItem> : IDisposable
 {
-    private string hrefField = "Href";
-    private string itemClassField = "ItemClass";
-    private string itemStyleField = "ItemStyle";
-    private string textField = "Text";
+    private const string HREF_FIELD = "Href";
+    private const string CLASS_FIELD = "ItemClass";
+    private const string STYLE_FIELD = "ItemStyle";
+    private const string TEXT_FIELD = "ItemStyle";
+
+    private string hrefField = HREF_FIELD;
+    private string itemClassField = CLASS_FIELD;
+    private string itemStyleField = STYLE_FIELD;
+    private string textField = TEXT_FIELD;
     private Expression<Func<TItem, object>>? hrefSelector;
     private Expression<Func<TItem, object>>? itemClassSelector;
     private Expression<Func<TItem, object>>? itemStyleSelector;
     private Expression<Func<TItem, object>>? textSelector;
 
-    private string _internalHrefField = default!;
-    private string _internalItemClassField = default!;
-    private string _internalItemStyleField = default!;
-    private string _internalTextField = default!;
+    private string _internalHrefField = HREF_FIELD;
+    private string _internalItemClassField = CLASS_FIELD;
+    private string _internalItemStyleField = STYLE_FIELD;
+    private string _internalTextField = TEXT_FIELD;
 
     private bool _isCalloutOpen;
     private string _wrapperId => $"{UniqueId}-wrapper";
@@ -127,10 +132,10 @@ public partial class BitBreadList<TItem> : IDisposable
     [Parameter]
     public string ItemStyleField
     {
-        get => itemClassField;
+        get => itemStyleField;
         set
         {
-            itemClassField = value;
+            itemStyleField = value;
             _internalItemStyleField = value;
         }
     }
@@ -209,23 +214,18 @@ public partial class BitBreadList<TItem> : IDisposable
 
     protected override string RootElementClass => "bit-brl";
 
+    protected override Task OnInitializedAsync()
+    {
+        _dotnetObj = DotNetObjectReference.Create(this);
+
+        return base.OnInitializedAsync();
+    }
+
     protected override async Task OnParametersSetAsync()
     {
         GetBreadcrumbItemsToShow();
 
         await base.OnParametersSetAsync();
-    }
-
-    protected override Task OnInitializedAsync()
-    {
-        _internalHrefField = hrefField;
-        _internalItemClassField = itemClassField;
-        _internalItemStyleField = itemStyleField;
-        _internalTextField = textField;
-
-        _dotnetObj = DotNetObjectReference.Create(this);
-
-        return base.OnInitializedAsync();
     }
 
     private async Task CloseCallout()
