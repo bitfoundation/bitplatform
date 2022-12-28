@@ -23,16 +23,6 @@ public partial class BitBreadcrumb : IDisposable
     [Inject] public IJSRuntime _js { get; set; } = default!;
 
     /// <summary>
-    /// The class HTML attribute for Current Item.
-    /// </summary>
-    [Parameter] public string? CurrentItemClass { get; set; }
-
-    /// <summary>
-    /// The style HTML attribute for Current Item.
-    /// </summary>
-    [Parameter] public string? CurrentItemStyle { get; set; }
-
-    /// <summary>
     /// Render a custom divider in place of the default chevron >
     /// </summary>
     [Parameter] public BitIconName DividerIcon { get; set; } = BitIconName.ChevronRight;
@@ -95,6 +85,16 @@ public partial class BitBreadcrumb : IDisposable
     /// </summary>
     [Parameter] public EventCallback<BitBreadcrumbItem> OnItemClick { get; set; }
 
+    /// <summary>
+    /// The class HTML attribute for Selected Item.
+    /// </summary>
+    [Parameter] public string? SelectedItemClass { get; set; }
+
+    /// <summary>
+    /// The style HTML attribute for Selected Item.
+    /// </summary>
+    [Parameter] public string? SelectedItemStyle { get; set; }
+
     protected override string RootElementClass => "bit-brc";
 
     protected override Task OnInitializedAsync()
@@ -128,7 +128,7 @@ public partial class BitBreadcrumb : IDisposable
 
         if (MaxDisplayedItems == 0 || MaxDisplayedItems >= Items.Count)
         {
-            _displayItems.AddRange(Items);
+            _displayItems = Items.ToList();
             return;
         }
 
@@ -165,12 +165,12 @@ public partial class BitBreadcrumb : IDisposable
 
         if (item.IsSelected)
         {
-            itemClasses.Append(" current-item");
+            itemClasses.Append(" selected-item");
         }
 
-        if (item.IsSelected && CurrentItemClass.HasValue())
+        if (item.IsSelected && SelectedItemClass.HasValue())
         {
-            itemClasses.Append($" {CurrentItemClass}");
+            itemClasses.Append($" {SelectedItemClass}");
         }
 
         if (item.IsEnabled is false)
@@ -183,7 +183,7 @@ public partial class BitBreadcrumb : IDisposable
 
     private string GetItemStyles(BitBreadcrumbItem item)
     {
-        return item.IsSelected ? CurrentItemStyle ?? string.Empty : string.Empty;
+        return item.IsSelected ? SelectedItemStyle ?? string.Empty : string.Empty;
     }
 
     public void Dispose()

@@ -12,12 +12,10 @@
                     <BitLabel>Basic</BitLabel>
                     <BitBreadcrumb Items="BreadcrumbItems" />
                 </div>
-
                 <div>
                     <BitLabel>Disabled</BitLabel>
                     <BitBreadcrumb Items="BreadcrumbItems" IsEnabled="false" />
                 </div>
-
                 <div>
                     <BitLabel>Item Disabled</BitLabel>
                     <BitBreadcrumb Items="BreadcrumbItemsDisabled" />
@@ -71,7 +69,6 @@
                                    OverflowIndex="2"
                                    OverflowIcon="BitIconName.ChevronDown" />
                 </div>
-
                 <div>
                     <BitLabel>BitIconName (CollapseMenu)</BitLabel>
                     <BitBreadcrumb Items="BreadcrumbItems"
@@ -95,14 +92,14 @@
                     <BitBreadcrumb Items="BreadcrumbItemsWithStyle" />
                 </div>
                 <div>
-                    <BitLabel>Current Item Class</BitLabel>
+                    <BitLabel>Selected Item Class</BitLabel>
                     <BitBreadcrumb Items="BreadcrumbItems"
-                                   CurrentItemClass="custom-current-item" />
+                                   SelectedItemClass="custom-selected-item" />
                 </div>
                 <div>
-                    <BitLabel>Current Item Style</BitLabel>
+                    <BitLabel>Selected Item Style</BitLabel>
                     <BitBreadcrumb Items="BreadcrumbItems"
-                                   CurrentItemStyle="color:red;background:lightgreen" />
+                                   SelectedItemStyle="color:red;background:lightgreen" />
                 </div>
             </div>
         </ExamplePreview>
@@ -110,13 +107,13 @@
 
     <ComponentExampleBox Title="Controlled" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
         <ExamplePreview>
-            <div class="example-desc">By clicking on the items, the current item will change and match the CurrentItemStyle.</div>
+            <div class="example-desc">By clicking on the items, the selected item will change and match the SelectedItemStyle.</div>
             <div class="example-box">
                 <BitBreadcrumb Items="@BreadcrumbItemsWithControll"
                                MaxDisplayedItems="3"
                                OverflowIndex="2"
                                OnItemClick="HandleOnItemClick"
-                               CurrentItemStyle="color:red;background:lightgreen" />
+                               SelectedItemStyle="color:red;background:lightgreen" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>

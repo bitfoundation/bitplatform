@@ -164,18 +164,6 @@ public partial class BitBreadcrumbDemo
     {
         new()
         {
-            Name = "CurrentItemClass",
-            Type = "string?",
-            Description = "The class HTML attribute for Current Item."
-        },
-        new()
-        {
-            Name = "CurrentItemStyle",
-            Type = "string?",
-            Description = "The style HTML attribute for Current Item."
-        },
-        new()
-        {
             Name = "DividerIcon",
             Type = "BitIconName",
             DefaultValue = "BitIconName.ChevronRight",
@@ -218,6 +206,18 @@ public partial class BitBreadcrumbDemo
             Name = "OnItemClick",
             Type = "EventCallback<BitBreadcrumbItem>",
             Description = "Callback for when the breadcrumb item clicked."
+        },
+        new()
+        {
+            Name = "SelectedItemClass",
+            Type = "string?",
+            Description = "The class HTML attribute for Selected Item."
+        },
+        new()
+        {
+            Name = "SelectedItemStyle",
+            Type = "string?",
+            Description = "The style HTML attribute for Selected Item."
         },
     };
 
@@ -302,12 +302,10 @@ private List<BitBreadcrumbItem> BreadcrumbItems { get; set; } = new List<BitBrea
     <BitLabel>Basic</BitLabel>
     <BitBreadcrumb Items=""BreadcrumbItems"" />
 </div>
-
 <div>
     <BitLabel>Disabled</BitLabel>
     <BitBreadcrumb Items=""BreadcrumbItems"" IsEnabled=""false"" />
 </div>
-
 <div>
     <BitLabel>Item Disabled</BitLabel>
     <BitBreadcrumb Items=""BreadcrumbItemsDisabled"" />
@@ -403,7 +401,6 @@ private List<BitBreadcrumbItem> BreadcrumbItems { get; set; } = new List<BitBrea
                    OverflowIndex=""2""
                    OverflowIcon=""BitIconName.ChevronDown"" />
 </div>
-
 <div>
     <BitLabel>BitIconName (CollapseMenu)</BitLabel>
     <BitBreadcrumb Items=""BreadcrumbItems""
@@ -425,7 +422,7 @@ private List<BitBreadcrumbItem> BreadcrumbItems { get; set; } = new List<BitBrea
         background: greenyellow;
     }
 
-    .custom-current-item {
+    .custom-selected-item {
         color: red;
         margin: 2px 5px;
         border-radius: 2px;
@@ -445,16 +442,14 @@ private List<BitBreadcrumbItem> BreadcrumbItems { get; set; } = new List<BitBrea
     <BitBreadcrumb Items=""BreadcrumbItemsWithStyle"" />
 </div>
 <div>
-    <BitLabel>Current Item Class</BitLabel>
+    <BitLabel>Selected Item Class</BitLabel>
     <BitBreadcrumb Items=""BreadcrumbItems""
-                   CurrentItemClass=""custom-current-item""
-                   CurrentItem=""BreadcrumbItems[3]"" />
+                   SelectedItemClass=""custom-selected-item"" />
 </div>
 <div>
-    <BitLabel>Current Item Style</BitLabel>
+    <BitLabel>Selected Item Style</BitLabel>
     <BitBreadcrumb Items=""BreadcrumbItems""
-                   CurrentItemStyle=""color:red;background:lightgreen""
-                   CurrentItem=""BreadcrumbItems[3]"" />
+                   SelectedItemStyle=""color:red;background:lightgreen"" />
 </div>
 ";
 
@@ -548,7 +543,7 @@ private List<BitBreadcrumbItem> BreadcrumbItemsWithStyle { get; set; } = new Lis
                MaxDisplayedItems=""3""
                OverflowIndex=""2""
                OnItemClick=""HandleOnItemClick""
-               CurrentItemStyle=""color:red;background:lightgreen"" />
+               SelectedItemStyle=""color:red;background:lightgreen"" />
 ";
 
     private readonly string example5CSharpCode = @"
