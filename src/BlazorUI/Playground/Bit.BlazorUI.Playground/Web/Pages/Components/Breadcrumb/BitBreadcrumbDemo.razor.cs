@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Bit.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
 namespace Bit.BlazorUI.Playground.Web.Pages.Components.Breadcrumb;
@@ -27,7 +28,8 @@ public partial class BitBreadcrumbDemo
             new()
             {
                 Text = "Folder 4",
-                Href = "/components/breadcrumb"
+                Href = "/components/breadcrumb",
+                IsCurrent = true
             }
         };
 
@@ -55,7 +57,8 @@ public partial class BitBreadcrumbDemo
             {
                 Text = "Folder 4",
                 Href = "/components/breadcrumb",
-                Class = "custom-item"
+                Class = "custom-item",
+                IsCurrent = true
             }
         };
 
@@ -83,7 +86,8 @@ public partial class BitBreadcrumbDemo
             {
                 Text = "Folder 4",
                 Href = "/components/breadcrumb",
-                Style = "color:red;background:lightgreen"
+                Style = "color:red;background:lightgreen",
+                IsCurrent = true
             }
         };
 
@@ -111,7 +115,8 @@ public partial class BitBreadcrumbDemo
             },
             new()
             {
-                Text = "Folder 6"
+                Text = "Folder 6",
+                IsCurrent = true
             }
         };
     }
@@ -121,7 +126,11 @@ public partial class BitBreadcrumbDemo
     private List<BitBreadcrumbItem> BreadcrumbItemsWithStyle { get; set; }
     private List<BitBreadcrumbItem> BreadcrumbItemsWithControll { get; set; }
 
-    private BitBreadcrumbItem ControlledCurrentItem;
+    private void HandleOnItemClick(BitBreadcrumbItem item)
+    {
+        BreadcrumbItemsWithControll.FirstOrDefault(i => i.IsCurrent).IsCurrent = false;
+        BreadcrumbItemsWithControll.FirstOrDefault(i => i == item).IsCurrent = true;
+    }
 
     private readonly List<ComponentParameter> componentParameters = new()
     {
@@ -136,14 +145,6 @@ public partial class BitBreadcrumbDemo
             Name = "CurrentItemStyle",
             Type = "string?",
             Description = "The style HTML attribute for Current Item."
-        },
-        new()
-        {
-            Name = "CurrentItem",
-            Type = "BitBreadcrumbItem?",
-            Description = "by default, the current item is the last item. But it can also be specified manually.",
-            LinkType = LinkType.Link,
-            Href = "#bit-breadcrumb-item",
         },
         new()
         {
@@ -179,7 +180,7 @@ public partial class BitBreadcrumbDemo
         },
         new()
         {
-            Name = "OnRenderOverflowIcon",
+            Name = "OverflowIcon",
             Type = "BitIconName",
             DefaultValue= "BitIconName.More",
             Description = "Render a custom overflow icon in place of the default icon."
@@ -224,6 +225,18 @@ public partial class BitBreadcrumbDemo
                    Type = "string?",
                    Description = "Style HTML attribute for breadcrumb item.",
                },
+               new ComponentParameter()
+               {
+                   Name = "IsCurrent",
+                   Type = "bool",
+                   Description = "Display the item as a current item.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "IsEnabled",
+                   Type = "bool",
+                   Description = "Whether an item is enabled or not.",
+               },
             }
         }
     };
@@ -249,7 +262,8 @@ private List<BitBreadcrumbItem> BreadcrumbItems { get; set; } = new List<BitBrea
     new()
     {
         Text = ""Folder 4"",
-        Href = ""/components/breadcrumb""
+        Href = ""/components/breadcrumb"",
+        IsCurrent = true
     }
 };
 ";
@@ -299,7 +313,7 @@ private List<BitBreadcrumbItem> BreadcrumbItems { get; set; } = new List<BitBrea
     <BitBreadcrumb Items=""BreadcrumbItems""
                    MaxDisplayedItems=""3""
                    OverflowIndex=""2""
-                   OnRenderOverflowIcon=""BitIconName.ChevronDown"" />
+                   OverflowIcon=""BitIconName.ChevronDown"" />
 </div>
 
 <div>
@@ -307,7 +321,7 @@ private List<BitBreadcrumbItem> BreadcrumbItems { get; set; } = new List<BitBrea
     <BitBreadcrumb Items=""BreadcrumbItems""
                    MaxDisplayedItems=""3""
                    OverflowIndex=""2""
-                   OnRenderOverflowIcon=""BitIconName.CollapseMenu"" />
+                   OverflowIcon=""BitIconName.CollapseMenu"" />
 </div>
 ";
 
@@ -377,7 +391,8 @@ private List<BitBreadcrumbItem> BreadcrumbItems { get; set; } = new List<BitBrea
     new()
     {
         Text = ""Folder 4"",
-        Href = ""/components/breadcrumb""
+        Href = ""/components/breadcrumb"",
+        IsCurrent = true
     }
 };
 
@@ -405,7 +420,8 @@ private List<BitBreadcrumbItem> BreadcrumbItemsWithClass { get; set; } = new Lis
     {
         Text = ""Folder 4"",
         Href = ""/components/breadcrumb"",
-        Class = ""custom-item""
+        Class = ""custom-item"",
+        IsCurrent = true
     }
 };
 
@@ -433,7 +449,8 @@ private List<BitBreadcrumbItem> BreadcrumbItemsWithStyle { get; set; } = new Lis
     {
         Text = ""Folder 4"",
         Href = ""/components/breadcrumb"",
-        Style = ""color:red;background:lightgreen""
+        Style = ""color:red;background:lightgreen"",
+        IsCurrent = true
     }
 };
 ";
@@ -442,8 +459,7 @@ private List<BitBreadcrumbItem> BreadcrumbItemsWithStyle { get; set; } = new Lis
 <BitBreadcrumb Items=""@BreadcrumbItemsWithControll""
                MaxDisplayedItems=""3""
                OverflowIndex=""2""
-               CurrentItem=""@ControlledCurrentItem""
-               OnItemClick=""(item) => ControlledCurrentItem = item""
+               OnItemClick=""HandleOnItemClick""
                CurrentItemStyle=""color:red;background:lightgreen"" />
 ";
 
@@ -473,10 +489,15 @@ private List<BitBreadcrumbItem> BreadcrumbItemsWithControll { get; set; } = new 
     },
     new()
     {
-        Text = ""Folder 6""
+        Text = ""Folder 6"",
+        IsCurrent = true
     }
 };
 
-private BitBreadcrumbItem ControlledCurrentItem;
+private void HandleOnItemClick(BitBreadcrumbItem item)
+{
+    BreadcrumbItemsWithControll.FirstOrDefault(i => i.IsCurrent).IsCurrent = false;
+    BreadcrumbItemsWithControll.FirstOrDefault(i => i == item).IsCurrent = true;
+}
 ";
 }

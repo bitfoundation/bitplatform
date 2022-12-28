@@ -64,7 +64,7 @@
                     <BitBreadcrumb Items="BreadcrumbItems"
                                    MaxDisplayedItems="3"
                                    OverflowIndex="2"
-                                   OnRenderOverflowIcon="BitIconName.ChevronDown" />
+                                   OverflowIcon="BitIconName.ChevronDown" />
                 </div>
 
                 <div>
@@ -72,7 +72,7 @@
                     <BitBreadcrumb Items="BreadcrumbItems"
                                    MaxDisplayedItems="3"
                                    OverflowIndex="2"
-                                   OnRenderOverflowIcon="BitIconName.CollapseMenu" />
+                                   OverflowIcon="BitIconName.CollapseMenu" />
                 </div>
             </div>
         </ExamplePreview>
@@ -92,13 +92,11 @@
                 <div>
                     <BitLabel>Current Item Class</BitLabel>
                     <BitBreadcrumb Items="BreadcrumbItems"
-                                   CurrentItemClass="custom-current-item"
-                                   CurrentItem="BreadcrumbItems[3]" />
+                                   CurrentItemClass="custom-current-item" />
                 </div>
                 <div>
                     <BitLabel>Current Item Style</BitLabel>
                     <BitBreadcrumb Items="BreadcrumbItems"
-                                   CurrentItem="BreadcrumbItems[3]" 
                                    CurrentItemStyle="color:red;background:lightgreen" />
                 </div>
             </div>
@@ -112,8 +110,7 @@
                 <BitBreadcrumb Items="@BreadcrumbItemsWithControll"
                                MaxDisplayedItems="3"
                                OverflowIndex="2"
-                               CurrentItem="@ControlledCurrentItem"
-                               OnItemClick="(item) => ControlledCurrentItem = item"
+                               OnItemClick="HandleOnItemClick"
                                CurrentItemStyle="color:red;background:lightgreen" />
             </div>
         </ExamplePreview>

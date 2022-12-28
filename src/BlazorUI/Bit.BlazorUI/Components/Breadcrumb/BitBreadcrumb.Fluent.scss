@@ -83,7 +83,7 @@
             margin: 0;
         }
 
-        a {
+        .item {
             width: 100%;
             height: rem(36px);
             display: flex;
@@ -114,7 +114,7 @@
         }
     }
 
-    .bit-brc-overlay {
+    .overlay {
         display: none;
         width: 100%;
         height: 100%;
