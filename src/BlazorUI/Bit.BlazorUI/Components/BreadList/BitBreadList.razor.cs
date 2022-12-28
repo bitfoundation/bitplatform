@@ -59,8 +59,11 @@ public partial class BitBreadList<TItem> : IDisposable
         get => classField;
         set
         {
-            classField = value;
-            _internalClassField = value;
+            if (value != classField)
+            {
+                classField = value;
+                _internalClassField = value;
+            }
         }
     }
 
@@ -73,10 +76,15 @@ public partial class BitBreadList<TItem> : IDisposable
         get => classSelector;
         set
         {
-            classSelector = value;
+            if(value != classSelector)
+            {
+                classSelector = value;
 
-            if (value is not null)
-                _internalClassField = value.GetName();
+                if (value is not null)
+                {
+                    _internalClassField = value.GetName();
+                }
+            }
         }
     }
 
@@ -95,8 +103,11 @@ public partial class BitBreadList<TItem> : IDisposable
         get => hrefField;
         set
         {
-            hrefField = value;
-            _internalHrefField = value;
+            if (value != hrefField)
+            {
+                hrefField = value;
+                _internalHrefField = value;
+            }
         }
     }
 
@@ -110,10 +121,15 @@ public partial class BitBreadList<TItem> : IDisposable
         get => hrefSelector;
         set
         {
-            hrefSelector = value;
+            if(value != hrefSelector)
+            {
+                hrefSelector = value;
 
-            if (value is not null)
-                _internalHrefField = value.GetName();
+                if (value is not null)
+                {
+                    _internalHrefField = value.GetName();
+                }
+            }
         }
     }
 
@@ -126,8 +142,11 @@ public partial class BitBreadList<TItem> : IDisposable
         get => items;
         set
         {
-            items = value;
-            SetItemsToShow();
+            if (value != items)
+            {
+                items = value;
+                SetItemsToShow();
+            }
         }
     }
 
@@ -140,8 +159,11 @@ public partial class BitBreadList<TItem> : IDisposable
         get => isSelectedField;
         set
         {
-            isSelectedField = value;
-            _internalIsSelectedField = value;
+            if (value != isSelectedField)
+            {
+                isSelectedField = value;
+                _internalIsSelectedField = value;
+            }
         }
     }
 
@@ -154,10 +176,15 @@ public partial class BitBreadList<TItem> : IDisposable
         get => isSelectedSelector;
         set
         {
-            isSelectedSelector = value;
+            if (value != isSelectedSelector) 
+            {
+                isSelectedSelector = value;
 
-            if (value is not null)
-                _internalIsSelectedField = value.GetName();
+                if (value is not null)
+                {
+                    _internalIsSelectedField = value.GetName();
+                }
+            }
         }
     }
 
@@ -170,8 +197,11 @@ public partial class BitBreadList<TItem> : IDisposable
         get => isEnabledField;
         set
         {
-            isEnabledField = value;
-            _internalIsEnabledField = value;
+            if (value != isEnabledField) 
+            {
+                isEnabledField = value;
+                _internalIsEnabledField = value;
+            }
         }
     }
 
@@ -184,10 +214,15 @@ public partial class BitBreadList<TItem> : IDisposable
         get => isEnabledSelector;
         set
         {
-            isEnabledSelector = value;
+            if (value != isEnabledSelector)
+            {
+                isEnabledSelector = value;
 
-            if (value is not null)
-                _internalIsEnabledField = value.GetName();
+                if (value is not null)
+                {
+                    _internalIsEnabledField = value.GetName();
+                }
+            }
         }
     }
 
@@ -201,8 +236,11 @@ public partial class BitBreadList<TItem> : IDisposable
         get => maxDisplayedItems;
         set
         {
-            maxDisplayedItems = value;
-            SetItemsToShow();
+            if (value != maxDisplayedItems)
+            {
+                maxDisplayedItems = value;
+                SetItemsToShow();
+            }
         }
     }
 
@@ -220,9 +258,12 @@ public partial class BitBreadList<TItem> : IDisposable
         get => overflowIndex;
         set
         {
-            overflowIndex = value;
-            _internalOverflowIndex = value;
-            SetItemsToShow();
+            if (value != overflowIndex)
+            {
+                overflowIndex = value;
+                _internalOverflowIndex = value;
+                SetItemsToShow();
+            }
         }
     }
 
@@ -245,8 +286,11 @@ public partial class BitBreadList<TItem> : IDisposable
         get => styleField;
         set
         {
-            styleField = value;
-            _internalStyleField = value;
+            if(value != styleField)
+            {
+                styleField = value;
+                _internalStyleField = value;
+            }
         }
     }
 
@@ -259,10 +303,15 @@ public partial class BitBreadList<TItem> : IDisposable
         get => styleSelector;
         set
         {
-            styleSelector = value;
+            if (value != styleSelector)
+            {
+                styleSelector = value;
 
-            if (value is not null)
-                _internalStyleField = value.GetName();
+                if (value is not null)
+                {
+                    _internalStyleField = value.GetName();
+                }
+            }
         }
     }
 
@@ -285,8 +334,11 @@ public partial class BitBreadList<TItem> : IDisposable
         get => textField;
         set
         {
-            textField = value;
-            _internalTextField = value;
+            if (value != textField)
+            {
+                textField = value;
+                _internalTextField = value;
+            }
         }
     }
 
@@ -299,10 +351,15 @@ public partial class BitBreadList<TItem> : IDisposable
         get => textSelector;
         set
         {
-            textSelector = value;
+            if (value != textSelector)
+            {
+                textSelector = value;
 
-            if (value is not null)
-                _internalTextField = value.GetName();
+                if (value is not null)
+                {
+                    _internalTextField = value.GetName();
+                }
+            }
         }
     }
 
