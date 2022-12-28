@@ -22,7 +22,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{4E16
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Bswup.Demo", "Bit.Bswup.Demo\Bit.Bswup.Demo.csproj", "{2595C9A4-F41F-449C-AA46-39026984DEC6}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Full Demo", "Full Demo", "{264F406E-4839-4FC0-997B-325DFF0049E9}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FullDemo", "FullDemo", "{264F406E-4839-4FC0-997B-325DFF0049E9}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Bswup.Demo.Client", "FullDemo\Client\Bit.Bswup.Demo.Client.csproj", "{CFA3E562-B1A2-448F-B75E-0B63E7C257AB}"
 EndProject

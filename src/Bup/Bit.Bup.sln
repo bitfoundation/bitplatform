@@ -18,7 +18,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{4E16
 		..\..\.github\workflows\Prerelease.nuget.org.yml = ..\..\.github\workflows\Prerelease.nuget.org.yml
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Full Demo", "Full Demo", "{264F406E-4839-4FC0-997B-325DFF0049E9}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FullDemo", "FullDemo", "{264F406E-4839-4FC0-997B-325DFF0049E9}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Bup", "Bit.Bup\Bit.Bup.csproj", "{8A02B000-7C7F-4ACC-9B69-4395ADB87C40}"
 EndProject
