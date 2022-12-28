@@ -34,7 +34,7 @@
                     <BitBreadList Items="BasicBreadListItemsDisabled"
                                   TextSelector="item => item.Name"
                                   HrefSelector="item => item.Href"
-                                  IsEnabledItemSelector="item => item.IsEnabled"
+                                  IsEnabledSelector="item => item.IsEnabled"
                                   IsSelectedSelector="item => item.IsSelected" />
                 </div>
             </div>
@@ -140,7 +140,7 @@
                                   TextField="@nameof(PageInfoModel.Name)"
                                   HrefField="@nameof(PageInfoModel.Href)"
                                   IsSelectedField="@nameof(PageInfoModel.IsSelected)"
-                                  ItemClassField="@nameof(PageInfoModel.HtmlClass)" />
+                                  ClassField="@nameof(PageInfoModel.HtmlClass)" />
                 </div>
                 <div>
                     <BitLabel>Items Style</BitLabel>
@@ -148,7 +148,7 @@
                                   TextField="@nameof(PageInfoModel.Name)"
                                   HrefField="@nameof(PageInfoModel.Href)"
                                   IsSelectedField="@nameof(PageInfoModel.IsSelected)"
-                                  ItemStyleField="@nameof(PageInfoModel.HtmlStyle)" />
+                                  StyleField="@nameof(PageInfoModel.HtmlStyle)" />
                 </div>
                 <div>
                     <BitLabel>Current Item Class</BitLabel>

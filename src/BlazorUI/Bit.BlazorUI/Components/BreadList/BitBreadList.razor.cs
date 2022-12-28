@@ -6,48 +6,47 @@ namespace Bit.BlazorUI;
 public partial class BitBreadList<TItem> : IDisposable
 {
     private const string HREF_FIELD = "Href";
-    private const string CLASS_FIELD = "ItemClass";
-    private const string STYLE_FIELD = "ItemStyle";
-    private const string TEXT_FIELD = "ItemStyle";
+    private const string CLASS_FIELD = "Class";
+    private const string STYLE_FIELD = "Style";
+    private const string TEXT_FIELD = "Text";
     private const string IS_SELECTED_FIELD = "IsSelected";
-    private const string IS_ENABLED_ITEM_FIELD = "IsEnabledItem";
+    private const string IS_ENABLED_FIELD = "IsEnabled";
 
     private string hrefField = HREF_FIELD;
-    private string itemClassField = CLASS_FIELD;
-    private string itemStyleField = STYLE_FIELD;
+    private string classField = CLASS_FIELD;
+    private string styleField = STYLE_FIELD;
     private string textField = TEXT_FIELD;
     private string isSelectedField = IS_SELECTED_FIELD;
-    private string isEnabledItemField = IS_SELECTED_FIELD;
+    private string isEnabledField = IS_ENABLED_FIELD;
     private Expression<Func<TItem, object>>? hrefSelector;
-    private Expression<Func<TItem, object>>? itemClassSelector;
-    private Expression<Func<TItem, object>>? itemStyleSelector;
+    private Expression<Func<TItem, object>>? classSelector;
+    private Expression<Func<TItem, object>>? styleSelector;
     private Expression<Func<TItem, object>>? textSelector;
     private Expression<Func<TItem, bool>>? isSelectedSelector;
-    private Expression<Func<TItem, bool>>? isEnabledItemSelector;
+    private Expression<Func<TItem, bool>>? isEnabledSelector;
+
     private IList<TItem> items = new List<TItem>();
     private int maxDisplayedItems;
     private int overflowIndex;
 
     private string _internalHrefField = HREF_FIELD;
-    private string _internalItemClassField = CLASS_FIELD;
-    private string _internalItemStyleField = STYLE_FIELD;
+    private string _internalClassField = CLASS_FIELD;
+    private string _internalStyleField = STYLE_FIELD;
     private string _internalTextField = TEXT_FIELD;
     private string _internalIsSelectedField = IS_SELECTED_FIELD;
-    private string _internalIsEnabledItemField = IS_ENABLED_ITEM_FIELD;
+    private string _internalIsEnabledField = IS_ENABLED_FIELD;
     private int _internalOverflowIndex;
 
+    private List<TItem> _displayItems = new();
+    private List<TItem> _overflowItems = new();
+    private DotNetObjectReference<BitBreadList<TItem>> _dotnetObj = default!;
     private bool _isCalloutOpen;
+    private bool _disposed;
+
     private string _wrapperId => $"{UniqueId}-wrapper";
     private string _calloutId => $"{UniqueId}-callout";
     private string _overlayId => $"{UniqueId}-overlay";
     private string _overflowDropDownId => $"{UniqueId}-overflow-dropdown";
-
-    private List<TItem> _displayItems = new();
-    private List<TItem> _overflowItems = new();
-
-    private DotNetObjectReference<BitBreadList<TItem>> _dotnetObj = default!;
-
-    private bool _disposed;
 
     [Inject] public IJSRuntime _js { get; set; } = default!;
 
@@ -146,13 +145,13 @@ public partial class BitBreadList<TItem> : IDisposable
     /// 
     /// </summary>
     [Parameter]
-    public string IsEnabledItemField
+    public string IsEnabledField
     {
-        get => isEnabledItemField;
+        get => isEnabledField;
         set
         {
-            isEnabledItemField = value;
-            _internalIsEnabledItemField = value;
+            isEnabledField = value;
+            _internalIsEnabledField = value;
         }
     }
 
@@ -160,15 +159,15 @@ public partial class BitBreadList<TItem> : IDisposable
     /// 
     /// </summary>
     [Parameter]
-    public Expression<Func<TItem, bool>>? IsEnabledItemSelector
+    public Expression<Func<TItem, bool>>? IsEnabledSelector
     {
-        get => isEnabledItemSelector;
+        get => isEnabledSelector;
         set
         {
-            isEnabledItemSelector = value;
+            isEnabledSelector = value;
 
             if (value is not null)
-                _internalIsEnabledItemField = value.GetName();
+                _internalIsEnabledField = value.GetName();
         }
     }
 
@@ -176,13 +175,13 @@ public partial class BitBreadList<TItem> : IDisposable
     /// class HTML attribute for breadcrumb item.
     /// </summary>
     [Parameter]
-    public string ItemClassField
+    public string ClassField
     {
-        get => itemClassField;
+        get => classField;
         set
         {
-            itemClassField = value;
-            _internalItemClassField = value;
+            classField = value;
+            _internalClassField = value;
         }
     }
 
@@ -190,15 +189,15 @@ public partial class BitBreadList<TItem> : IDisposable
     /// Class HTML attribute for breadcrumb item.
     /// </summary>
     [Parameter]
-    public Expression<Func<TItem, object>>? ItemClassSelector
+    public Expression<Func<TItem, object>>? ClassSelector
     {
-        get => itemClassSelector;
+        get => classSelector;
         set
         {
-            itemClassSelector = value;
+            classSelector = value;
 
             if (value is not null)
-                _internalItemClassField = value.GetName();
+                _internalClassField = value.GetName();
         }
     }
 
@@ -206,13 +205,13 @@ public partial class BitBreadList<TItem> : IDisposable
     /// Style HTML attribute for breadcrumb item.
     /// </summary>
     [Parameter]
-    public string ItemStyleField
+    public string StyleField
     {
-        get => itemStyleField;
+        get => styleField;
         set
         {
-            itemStyleField = value;
-            _internalItemStyleField = value;
+            styleField = value;
+            _internalStyleField = value;
         }
     }
 
@@ -220,15 +219,15 @@ public partial class BitBreadList<TItem> : IDisposable
     /// Style HTML attribute for breadcrumb item.
     /// </summary>
     [Parameter]
-    public Expression<Func<TItem, object>>? ItemStyleSelector
+    public Expression<Func<TItem, object>>? StyleSelector
     {
-        get => itemStyleSelector;
+        get => styleSelector;
         set
         {
-            itemStyleSelector = value;
+            styleSelector = value;
 
             if (value is not null)
-                _internalItemStyleField = value.GetName();
+                _internalStyleField = value.GetName();
         }
     }
 
@@ -327,7 +326,7 @@ public partial class BitBreadList<TItem> : IDisposable
     private async Task HandleOnItemClick(TItem item)
     {
         if (IsEnabled is false) return;
-        if (GetIsEnabledItem(item) is false) return;
+        if (GetIsEnabled(item) is false) return;
 
         await OnItemClick.InvokeAsync(item);
     }
@@ -339,7 +338,7 @@ public partial class BitBreadList<TItem> : IDisposable
 
         if (MaxDisplayedItems == 0 || MaxDisplayedItems >= Items.Count)
         {
-            _displayItems.AddRange(Items);
+            _displayItems = items.ToList();
             return;
         }
 
@@ -389,7 +388,7 @@ public partial class BitBreadList<TItem> : IDisposable
             itemClasses.Append($" {CurrentItemClass}");
         }
 
-        if (GetIsEnabledItem(item) is false)
+        if (GetIsEnabled(item) is false)
         {
             itemClasses.Append(" disabled-item");
         }
@@ -415,11 +414,11 @@ public partial class BitBreadList<TItem> : IDisposable
     }
 
     private string? GetItemHref(TItem item) => item.GetValueAsObjectFromProperty(_internalHrefField)?.ToString();
-    private string? GetItemClass(TItem item) => item.GetValueAsObjectFromProperty(_internalItemClassField)?.ToString();
-    private string? GetItemStyle(TItem item) => item.GetValueAsObjectFromProperty(_internalItemStyleField)?.ToString();
+    private string? GetItemClass(TItem item) => item.GetValueAsObjectFromProperty(_internalClassField)?.ToString();
+    private string? GetItemStyle(TItem item) => item.GetValueAsObjectFromProperty(_internalStyleField)?.ToString();
     private string? GetItemText(TItem item) => item.GetValueAsObjectFromProperty(_internalTextField)?.ToString();
     private bool GetIsSelected(TItem item) => item.GetValueFromProperty(_internalIsSelectedField, false);
-    private bool GetIsEnabledItem(TItem item) => item.GetValueFromProperty(_internalIsEnabledItemField, true);
+    private bool GetIsEnabled(TItem item) => item.GetValueFromProperty(_internalIsEnabledField, true);
 
     public void Dispose()
     {

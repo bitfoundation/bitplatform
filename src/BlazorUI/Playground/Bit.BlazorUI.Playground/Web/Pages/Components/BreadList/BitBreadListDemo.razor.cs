@@ -97,27 +97,27 @@ public partial class BitBreadListDemo
         },
         new()
         {
-            Name = "ItemClassField",
+            Name = "ClassField",
             Type = "string",
             DefaultValue = "ItemClass",
             Description = "Class HTML attribute for breadcrumb item."
         },
         new()
         {
-            Name = "ItemClassSelector",
+            Name = "ClassSelector",
             Type = "Expression<Func<TItem, object>>?",
             Description = "Class HTML attribute for breadcrumb item."
         },
         new()
         {
-            Name = "ItemStyleField",
+            Name = "StyleField",
             Type = "string",
             DefaultValue = "ItemStyle",
             Description = "Style HTML attribute for breadcrumb item."
         },
         new()
         {
-            Name = "ItemStyleSelector",
+            Name = "StyleSelector",
             Type = "Expression<Func<TItem, object>>?",
             Description = "Style HTML attribute for breadcrumb item."
         },
@@ -216,6 +216,14 @@ private List<PageInfoModel> BasicBreadListItems = new()
                   HrefSelector=""item => item.Href""
                   IsSelectedSelector=""item => item.IsSelected""
                   IsEnabled=""false"" />
+</div>
+<div>
+    <BitLabel>Item Disabled</BitLabel>
+    <BitBreadList Items=""BasicBreadListItemsDisabled""
+                    TextSelector=""item => item.Name""
+                    HrefSelector=""item => item.Href""
+                    IsEnabledSelector=""item => item.IsEnabled""
+                    IsSelectedSelector=""item => item.IsSelected"" />
 </div>
 ";
 
@@ -373,7 +381,7 @@ private List<PageInfoModel> BasicBreadListItemsDisabled = new()
                   TextField=""@nameof(PageInfoModel.Name)""
                   HrefField=""@nameof(PageInfoModel.Href)""
                   IsSelectedField=""@nameof(PageInfoModel.IsSelected)""
-                  ItemClassField=""@nameof(PageInfoModel.HtmlClass)"" />
+                  ClassField=""@nameof(PageInfoModel.HtmlClass)"" />
 </div>
 <div>
     <BitLabel>Items Style</BitLabel>
@@ -381,7 +389,7 @@ private List<PageInfoModel> BasicBreadListItemsDisabled = new()
                   TextField=""@nameof(PageInfoModel.Name)""
                   HrefField=""@nameof(PageInfoModel.Href)""
                   IsSelectedField=""@nameof(PageInfoModel.IsSelected)""
-                  ItemStyleField=""@nameof(PageInfoModel.HtmlStyle)"" />
+                  StyleField=""@nameof(PageInfoModel.HtmlStyle)"" />
 </div>
 <div>
     <BitLabel>Current Item Class</BitLabel>
