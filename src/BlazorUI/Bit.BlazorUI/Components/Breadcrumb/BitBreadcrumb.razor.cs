@@ -35,8 +35,11 @@ public partial class BitBreadcrumb : IDisposable
         get => items;
         set
         {
-            items = value;
-            SetItemsToShow();
+            if(value != items)
+            {
+                items = value;
+                SetItemsToShow();
+            }
         }
     }
 
@@ -50,8 +53,11 @@ public partial class BitBreadcrumb : IDisposable
         get => maxDisplayedItems;
         set
         {
-            maxDisplayedItems = value;
-            SetItemsToShow();
+            if (value != maxDisplayedItems)
+            {
+                maxDisplayedItems = value;
+                SetItemsToShow();
+            }
         }
     }
 
@@ -69,9 +75,12 @@ public partial class BitBreadcrumb : IDisposable
         get => overflowIndex;
         set
         {
-            overflowIndex = value;
-            _internaloverflowIndex = value;
-            SetItemsToShow();
+            if (value != overflowIndex)
+            {
+                overflowIndex = value;
+                _internaloverflowIndex = value;
+                SetItemsToShow();
+            }
         }
     }
 
