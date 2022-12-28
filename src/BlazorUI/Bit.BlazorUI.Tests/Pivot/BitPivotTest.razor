@@ -3,11 +3,12 @@
               HeadersOnly="HeadersOnly"
               LinkFormat="LinkFormat"
               LinkSize="LinkSize"
-              AriaLabel="@AriaLabel">
+              AriaLabel="@AriaLabel"
+              Position="Position">
     </BitPivot>
 </CascadingValue>
 
-@code{
+@code {
     [Parameter] public BitPivotOverflowBehavior OverflowBehavior { get; set; }
     [Parameter] public Visual Visual { get; set; }
     [Parameter] public bool HeadersOnly { get; set; }
@@ -15,4 +16,5 @@
     [Parameter] public BitPivotLinkSize LinkSize { get; set; }
     [Parameter] public RenderFragment ChildContent { get; set; }
     [Parameter] public string AriaLabel { get; set; }
+    [Parameter] public BitPivotPosition Position { get; set; }
 }

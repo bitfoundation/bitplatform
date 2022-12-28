@@ -76,4 +76,27 @@ public class BitPivotTests : BunitTestContext
             Assert.IsTrue(bitPivot.GetAttribute("aria-label").Equals(ariaLabel));
         }
     }
+
+    [DataTestMethod,
+     DataRow(BitPivotPosition.Top),
+     DataRow(BitPivotPosition.Bottom),
+     DataRow(BitPivotPosition.Left),
+     DataRow(BitPivotPosition.Right)]
+    public void BitPivotShouldRepectPosition(BitPivotPosition position)
+    {
+        var component = RenderComponent<BitPivotTest>(parameters =>
+        {
+            parameters.Add(p => p.Position, position);
+        });
+
+        var positionClass = position == BitPivotPosition.Top ? $"position-top"
+                            : position == BitPivotPosition.Bottom ? $"position-bottom"
+                            : position == BitPivotPosition.Left ? $"position-left"
+                            : position == BitPivotPosition.Right ? $"position-right"
+                            : string.Empty;
+
+        var bitPivot = component.Find(".bit-pvt");
+
+        Assert.IsTrue(bitPivot.ClassList.Contains(positionClass));
+    }
 }

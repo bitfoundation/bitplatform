@@ -7,6 +7,7 @@ public partial class BitPivot
     private BitPivotLinkFormat linkFormat = BitPivotLinkFormat.Links;
     private BitPivotLinkSize linkSize = BitPivotLinkSize.Normal;
     private BitPivotOverflowBehavior overflowBehavior = BitPivotOverflowBehavior.None;
+    private BitPivotPosition position = BitPivotPosition.Top;
     private string? selectedKey;
 
     private BitPivotItem? _selectedItem;
@@ -75,6 +76,22 @@ public partial class BitPivot
     [Parameter] public EventCallback<BitPivotItem> OnLinkClick { get; set; }
 
     /// <summary>
+    /// Position of the pivot header
+    /// </summary>
+    [Parameter]
+    public BitPivotPosition Position
+    {
+        get => position;
+        set
+        {
+            if (value == position) return;
+
+            position = value;
+            ClassBuilder.Reset();
+        }
+    }
+
+    /// <summary>
     /// Key of the selected pivot item. Updating this will override the Pivot's selected item state
     /// </summary>
     [Parameter]
@@ -105,6 +122,12 @@ public partial class BitPivot
         ClassBuilder.Register(() => OverflowBehavior == BitPivotOverflowBehavior.Menu ? $"{RootElementClass}-menu-{VisualClassRegistrar()}"
                                   : OverflowBehavior == BitPivotOverflowBehavior.Scroll ? $"{RootElementClass}-scroll-{VisualClassRegistrar()}"
                                   : OverflowBehavior == BitPivotOverflowBehavior.None ? $"{RootElementClass}-none-{VisualClassRegistrar()}"
+                                  : string.Empty);
+
+        ClassBuilder.Register(() => Position == BitPivotPosition.Top ? $"position-top"
+                                  : Position == BitPivotPosition.Bottom ? $"position-bottom"
+                                  : Position == BitPivotPosition.Left ? $"position-left"
+                                  : Position == BitPivotPosition.Right ? $"position-right"
                                   : string.Empty);
     }
 

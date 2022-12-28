@@ -1,21 +1,47 @@
 ﻿@import "../../Styles/Fluent/colors.fluent.scss", "../../Styles/functions.scss";
 
 .bit-pvt {
-    &.bit-pvt-fluent {
-        .header-container {
-            height: rem(50px);
-        }
+    display: flex;
 
-        .content-container {
-            font-size: rem(14px);
-            font-weight: 400;
-            box-shadow: none;
-            padding: 0;
-            margin: 0;
-            box-sizing: border-box;
-            position: relative;
-            color: $Grey160;
-            white-space: nowrap;
+    .header-container {
+        display: flex;
+        height: rem(50px);
+    }
+
+    .content-container {
+        flex-grow: 1;
+        font-size: rem(14px);
+        font-weight: 400;
+        box-shadow: none;
+        padding: 0;
+        margin: 0;
+        box-sizing: border-box;
+        position: relative;
+        color: $Grey160;
+        white-space: nowrap;
+    }
+
+    &.position-top {
+        flex-flow: column;
+    }
+
+    &.position-bottom {
+        flex-flow: column-reverse;
+    }
+
+    &.position-left {
+        flex-flow: row;
+    }
+
+    &.position-right {
+        flex-flow: row-reverse;
+    }
+
+    &.position-left,
+    &.position-right {
+        .header-container {
+            flex-flow: column;
+            height: unset;
         }
     }
 

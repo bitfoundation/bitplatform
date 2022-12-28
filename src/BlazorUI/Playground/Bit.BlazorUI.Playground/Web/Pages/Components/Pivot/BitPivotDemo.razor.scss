@@ -1,7 +1,8 @@
-﻿.m-t-20 {
-    margin-top: rem(20px);
+﻿.subtitle {
+    padding: 20px 0 10px 0;
 }
 
-::deep .bit-pvt-fluent > div {
-    margin-top: rem(10px);
+.box {
+    border: 1px solid #ccc;
+    padding: 5px 10px;
 }
