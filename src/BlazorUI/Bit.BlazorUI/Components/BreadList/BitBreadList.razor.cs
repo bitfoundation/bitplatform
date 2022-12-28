@@ -10,17 +10,20 @@ public partial class BitBreadList<TItem> : IDisposable
     private const string STYLE_FIELD = "ItemStyle";
     private const string TEXT_FIELD = "ItemStyle";
     private const string IS_SELECTED_FIELD = "IsSelected";
+    private const string IS_ENABLED_ITEM_FIELD = "IsEnabledItem";
 
     private string hrefField = HREF_FIELD;
     private string itemClassField = CLASS_FIELD;
     private string itemStyleField = STYLE_FIELD;
     private string textField = TEXT_FIELD;
     private string isSelectedField = IS_SELECTED_FIELD;
+    private string isEnabledItemField = IS_SELECTED_FIELD;
     private Expression<Func<TItem, object>>? hrefSelector;
     private Expression<Func<TItem, object>>? itemClassSelector;
     private Expression<Func<TItem, object>>? itemStyleSelector;
     private Expression<Func<TItem, object>>? textSelector;
     private Expression<Func<TItem, bool>>? isSelectedSelector;
+    private Expression<Func<TItem, bool>>? isEnabledItemSelector;
     private IList<TItem> items = new List<TItem>();
     private int maxDisplayedItems;
     private int overflowIndex;
@@ -30,6 +33,7 @@ public partial class BitBreadList<TItem> : IDisposable
     private string _internalItemStyleField = STYLE_FIELD;
     private string _internalTextField = TEXT_FIELD;
     private string _internalIsSelectedField = IS_SELECTED_FIELD;
+    private string _internalIsEnabledItemField = IS_ENABLED_ITEM_FIELD;
     private int _internalOverflowIndex;
 
     private bool _isCalloutOpen;
@@ -56,36 +60,6 @@ public partial class BitBreadList<TItem> : IDisposable
     /// The style HTML attribute for Current Item.
     /// </summary>
     [Parameter] public string? CurrentItemStyle { get; set; }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    [Parameter]
-    public string IsSelectedField
-    {
-        get => isSelectedField;
-        set
-        {
-            isSelectedField = value;
-            _internalIsSelectedField = value;
-        }
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    [Parameter]
-    public Expression<Func<TItem, bool>>? IsSelectedSelector
-    {
-        get => isSelectedSelector;
-        set
-        {
-            isSelectedSelector = value;
-
-            if (value is not null)
-                _internalIsSelectedField = value.GetName();
-        }
-    }
 
     /// <summary>
     /// Render a custom divider in place of the default chevron >
@@ -135,6 +109,66 @@ public partial class BitBreadList<TItem> : IDisposable
         {
             items = value;
             SetItemsToShow();
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    [Parameter]
+    public string IsSelectedField
+    {
+        get => isSelectedField;
+        set
+        {
+            isSelectedField = value;
+            _internalIsSelectedField = value;
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    [Parameter]
+    public Expression<Func<TItem, bool>>? IsSelectedSelector
+    {
+        get => isSelectedSelector;
+        set
+        {
+            isSelectedSelector = value;
+
+            if (value is not null)
+                _internalIsSelectedField = value.GetName();
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    [Parameter]
+    public string IsEnabledItemField
+    {
+        get => isEnabledItemField;
+        set
+        {
+            isEnabledItemField = value;
+            _internalIsEnabledItemField = value;
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    [Parameter]
+    public Expression<Func<TItem, bool>>? IsEnabledItemSelector
+    {
+        get => isEnabledItemSelector;
+        set
+        {
+            isEnabledItemSelector = value;
+
+            if (value is not null)
+                _internalIsEnabledItemField = value.GetName();
         }
     }
 
@@ -293,6 +327,7 @@ public partial class BitBreadList<TItem> : IDisposable
     private async Task HandleOnItemClick(TItem item)
     {
         if (IsEnabled is false) return;
+        if (GetIsEnabledItem(item) is false) return;
 
         await OnItemClick.InvokeAsync(item);
     }
@@ -305,31 +340,30 @@ public partial class BitBreadList<TItem> : IDisposable
         if (MaxDisplayedItems == 0 || MaxDisplayedItems >= Items.Count)
         {
             _displayItems.AddRange(Items);
+            return;
         }
-        else
+
+        if (OverflowIndex >= MaxDisplayedItems)
         {
-            if (OverflowIndex >= MaxDisplayedItems)
+            _internalOverflowIndex = 0;
+        }
+
+        var overflowItemsCount = Items.Count - MaxDisplayedItems;
+
+        foreach ((TItem item, int index) in Items.Select((item, index) => (item, index)))
+        {
+            if (_internalOverflowIndex <= index && index < overflowItemsCount + _internalOverflowIndex)
             {
-                _internalOverflowIndex = 0;
-            }
-
-            var overflowItemsCount = Items.Count - MaxDisplayedItems;
-
-            foreach ((TItem item, int index) in Items.Select((item, index) => (item, index)))
-            {
-                if (_internalOverflowIndex <= index && index < overflowItemsCount + _internalOverflowIndex)
-                {
-                    if (index == _internalOverflowIndex)
-                    {
-                        _displayItems.Add(item);
-                    }
-
-                    _overflowItems.Add(item);
-                }
-                else
+                if (index == _internalOverflowIndex)
                 {
                     _displayItems.Add(item);
                 }
+
+                _overflowItems.Add(item);
+            }
+            else
+            {
+                _displayItems.Add(item);
             }
         }
     }
@@ -353,6 +387,11 @@ public partial class BitBreadList<TItem> : IDisposable
         if (GetIsSelected(item) && CurrentItemClass.HasValue())
         {
             itemClasses.Append($" {CurrentItemClass}");
+        }
+
+        if (GetIsEnabledItem(item) is false)
+        {
+            itemClasses.Append(" disabled-item");
         }
 
         return itemClasses.ToString();
@@ -380,6 +419,7 @@ public partial class BitBreadList<TItem> : IDisposable
     private string? GetItemStyle(TItem item) => item.GetValueAsObjectFromProperty(_internalItemStyleField)?.ToString();
     private string? GetItemText(TItem item) => item.GetValueAsObjectFromProperty(_internalTextField)?.ToString();
     private bool GetIsSelected(TItem item) => item.GetValueFromProperty(_internalIsSelectedField, false);
+    private bool GetIsEnabledItem(TItem item) => item.GetValueFromProperty(_internalIsEnabledItemField, true);
 
     public void Dispose()
     {

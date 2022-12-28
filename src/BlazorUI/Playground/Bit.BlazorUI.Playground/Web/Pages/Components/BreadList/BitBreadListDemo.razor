@@ -4,7 +4,7 @@
                ComponentDescription="BreadList should be used as a navigational aid in your app or site. They indicate the current page’s location within a hierarchy and help the user understand where they are in relation to the rest of that hierarchy. They also afford one-click access to higher levels of that hierarchy."
                ComponentParameters="componentParameters">
 
-    <ComponentExampleBox Title="Basic" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@BasicItemsCSharpCode" ExampleId="example1">
+    <ComponentExampleBox Title="Basic" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
             <div class="example-box">
                 <div>
@@ -28,6 +28,14 @@
                                   HrefSelector="item => item.Href"
                                   IsSelectedSelector="item => item.IsSelected"
                                   IsEnabled="false" />
+                </div>
+                <div>
+                    <BitLabel>Item Disabled</BitLabel>
+                    <BitBreadList Items="BasicBreadListItemsDisabled"
+                                  TextSelector="item => item.Name"
+                                  HrefSelector="item => item.Href"
+                                  IsEnabledItemSelector="item => item.IsEnabled"
+                                  IsSelectedSelector="item => item.IsSelected" />
                 </div>
             </div>
         </ExamplePreview>

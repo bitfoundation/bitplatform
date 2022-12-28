@@ -14,6 +14,14 @@ public partial class BitBreadListDemo
         new PageInfoModel { Name = "Item 4", Href = "/components/bread-list", IsSelected = true },
     };
 
+    private List<PageInfoModel> BasicBreadListItemsDisabled = new()
+    {
+        new PageInfoModel { Name = "Item 1", Href = "/components/bread-list", IsEnabled = false },
+        new PageInfoModel { Name = "Item 2", Href = "/components/bread-list", IsEnabled = false },
+        new PageInfoModel { Name = "Item 3", Href = "/components/bread-list" },
+        new PageInfoModel { Name = "Item 4", Href = "/components/bread-list", IsSelected = true },
+    };
+
     private List<PageInfoModel> BreadListItemsWithClass = new()
     {
         new PageInfoModel { Name = "Item 1", Href = "/components/bread-list", HtmlClass = "custom-item" },
@@ -205,6 +213,35 @@ private List<PageInfoModel> BasicBreadListItems = new()
                   IsSelectedSelector=""item => item.IsSelected""
                   IsEnabled=""false"" />
 </div>
+";
+
+    private readonly string example1CSharpCode = @"
+public class PageInfoModel
+{
+    public string Name { get; set; }
+
+    public string Href { get; set; }
+
+    public string HtmlClass { get; set; }
+
+    public string HtmlStyle { get; set; }
+}
+
+private List<PageInfoModel> BasicBreadListItems = new()
+{
+    new PageInfoModel { Name = ""Item 1"", Href = ""/components/bread-list"" },
+    new PageInfoModel { Name = ""Item 2"", Href = ""/components/bread-list"" },
+    new PageInfoModel { Name = ""Item 3"", Href = ""/components/bread-list"" },
+    new PageInfoModel { Name = ""Item 4"", Href = ""/components/bread-list"", IsSelected = true },
+};
+
+private List<PageInfoModel> BasicBreadListItemsDisabled = new()
+{
+    new PageInfoModel { Name = ""Item 1"", Href = ""/components/bread-list"", IsEnabled = false },
+    new PageInfoModel { Name = ""Item 2"", Href = ""/components/bread-list"", IsEnabled = false },
+    new PageInfoModel { Name = ""Item 3"", Href = ""/components/bread-list"" },
+    new PageInfoModel { Name = ""Item 4"", Href = ""/components/bread-list"", IsSelected = true },
+};
 ";
 
     #endregion
