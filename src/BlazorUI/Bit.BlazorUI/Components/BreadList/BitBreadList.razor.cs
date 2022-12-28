@@ -51,14 +51,34 @@ public partial class BitBreadList<TItem> : IDisposable
     [Inject] public IJSRuntime _js { get; set; } = default!;
 
     /// <summary>
-    /// The class HTML attribute for Current Item.
+    /// class HTML attribute for breadcrumb item.
     /// </summary>
-    [Parameter] public string? CurrentItemClass { get; set; }
+    [Parameter]
+    public string ClassField
+    {
+        get => classField;
+        set
+        {
+            classField = value;
+            _internalClassField = value;
+        }
+    }
 
     /// <summary>
-    /// The style HTML attribute for Current Item.
+    /// Class HTML attribute for breadcrumb item.
     /// </summary>
-    [Parameter] public string? CurrentItemStyle { get; set; }
+    [Parameter]
+    public Expression<Func<TItem, object>>? ClassSelector
+    {
+        get => classSelector;
+        set
+        {
+            classSelector = value;
+
+            if (value is not null)
+                _internalClassField = value.GetName();
+        }
+    }
 
     /// <summary>
     /// Render a custom divider in place of the default chevron >
@@ -112,7 +132,7 @@ public partial class BitBreadList<TItem> : IDisposable
     }
 
     /// <summary>
-    /// 
+    /// Display the item as a Selected item.
     /// </summary>
     [Parameter]
     public string IsSelectedField
@@ -126,7 +146,7 @@ public partial class BitBreadList<TItem> : IDisposable
     }
 
     /// <summary>
-    /// 
+    /// Display the item as a Selected item.
     /// </summary>
     [Parameter]
     public Expression<Func<TItem, bool>>? IsSelectedSelector
@@ -142,7 +162,7 @@ public partial class BitBreadList<TItem> : IDisposable
     }
 
     /// <summary>
-    /// 
+    /// Whether an item is enabled or not.
     /// </summary>
     [Parameter]
     public string IsEnabledField
@@ -156,7 +176,7 @@ public partial class BitBreadList<TItem> : IDisposable
     }
 
     /// <summary>
-    /// 
+    /// Whether an item is enabled or not.
     /// </summary>
     [Parameter]
     public Expression<Func<TItem, bool>>? IsEnabledSelector
@@ -168,66 +188,6 @@ public partial class BitBreadList<TItem> : IDisposable
 
             if (value is not null)
                 _internalIsEnabledField = value.GetName();
-        }
-    }
-
-    /// <summary>
-    /// class HTML attribute for breadcrumb item.
-    /// </summary>
-    [Parameter]
-    public string ClassField
-    {
-        get => classField;
-        set
-        {
-            classField = value;
-            _internalClassField = value;
-        }
-    }
-
-    /// <summary>
-    /// Class HTML attribute for breadcrumb item.
-    /// </summary>
-    [Parameter]
-    public Expression<Func<TItem, object>>? ClassSelector
-    {
-        get => classSelector;
-        set
-        {
-            classSelector = value;
-
-            if (value is not null)
-                _internalClassField = value.GetName();
-        }
-    }
-
-    /// <summary>
-    /// Style HTML attribute for breadcrumb item.
-    /// </summary>
-    [Parameter]
-    public string StyleField
-    {
-        get => styleField;
-        set
-        {
-            styleField = value;
-            _internalStyleField = value;
-        }
-    }
-
-    /// <summary>
-    /// Style HTML attribute for breadcrumb item.
-    /// </summary>
-    [Parameter]
-    public Expression<Func<TItem, object>>? StyleSelector
-    {
-        get => styleSelector;
-        set
-        {
-            styleSelector = value;
-
-            if (value is not null)
-                _internalStyleField = value.GetName();
         }
     }
 
@@ -275,6 +235,46 @@ public partial class BitBreadList<TItem> : IDisposable
     /// Callback for when the breadcrumb item clicked.
     /// </summary>
     [Parameter] public EventCallback<TItem> OnItemClick { get; set; }
+
+    /// <summary>
+    /// Style HTML attribute for breadcrumb item.
+    /// </summary>
+    [Parameter]
+    public string StyleField
+    {
+        get => styleField;
+        set
+        {
+            styleField = value;
+            _internalStyleField = value;
+        }
+    }
+
+    /// <summary>
+    /// Style HTML attribute for breadcrumb item.
+    /// </summary>
+    [Parameter]
+    public Expression<Func<TItem, object>>? StyleSelector
+    {
+        get => styleSelector;
+        set
+        {
+            styleSelector = value;
+
+            if (value is not null)
+                _internalStyleField = value.GetName();
+        }
+    }
+
+    /// <summary>
+    /// The class HTML attribute for Selected Item.
+    /// </summary>
+    [Parameter] public string? SelectedItemClass { get; set; }
+
+    /// <summary>
+    /// The style HTML attribute for Selected Item.
+    /// </summary>
+    [Parameter] public string? SelectedItemStyle { get; set; }
 
     /// <summary>
     /// Text to display in the breadcrumb item.
@@ -380,12 +380,12 @@ public partial class BitBreadList<TItem> : IDisposable
 
         if (GetIsSelected(item))
         {
-            itemClasses.Append(" current-item");
+            itemClasses.Append(" selected-item");
         }
 
-        if (GetIsSelected(item) && CurrentItemClass.HasValue())
+        if (GetIsSelected(item) && SelectedItemClass.HasValue())
         {
-            itemClasses.Append($" {CurrentItemClass}");
+            itemClasses.Append($" {SelectedItemClass}");
         }
 
         if (GetIsEnabled(item) is false)
@@ -405,9 +405,9 @@ public partial class BitBreadList<TItem> : IDisposable
             itemStyles.Append(GetItemStyle(item));
         }
 
-        if (GetIsSelected(item) && CurrentItemStyle.HasValue())
+        if (GetIsSelected(item) && SelectedItemStyle.HasValue())
         {
-            itemStyles.Append(CurrentItemStyle);
+            itemStyles.Append(SelectedItemStyle);
         }
 
         return itemStyles.ToString();

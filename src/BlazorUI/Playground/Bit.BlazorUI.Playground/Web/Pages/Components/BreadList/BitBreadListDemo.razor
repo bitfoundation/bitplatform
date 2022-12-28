@@ -116,7 +116,6 @@
                                   OverflowIndex="2"
                                   OverflowIcon="BitIconName.ChevronDown" />
                 </div>
-
                 <div>
                     <BitLabel>BitIconName (CollapseMenu)</BitLabel>
                     <BitBreadList Items="BasicBreadListItems"
@@ -151,20 +150,20 @@
                                   StyleField="@nameof(PageInfoModel.HtmlStyle)" />
                 </div>
                 <div>
-                    <BitLabel>Current Item Class</BitLabel>
+                    <BitLabel>Selected Item Class</BitLabel>
                     <BitBreadList Items="BasicBreadListItems"
                                   TextField="@nameof(PageInfoModel.Name)"
                                   HrefField="@nameof(PageInfoModel.Href)"
                                   IsSelectedField="@nameof(PageInfoModel.IsSelected)"
-                                  CurrentItemClass="custom-current-item" />
+                                  SelectedItemClass="custom-selected-item" />
                 </div>
                 <div>
-                    <BitLabel>Current Item Style</BitLabel>
+                    <BitLabel>Selected Item Style</BitLabel>
                     <BitBreadList Items="BasicBreadListItems"
                                   TextField="@nameof(PageInfoModel.Name)"
                                   HrefField="@nameof(PageInfoModel.Href)"
                                   IsSelectedField="@nameof(PageInfoModel.IsSelected)"
-                                  CurrentItemStyle="color:red; background:lightgreen;" />
+                                  SelectedItemStyle="color:red; background:lightgreen;" />
                 </div>
             </div>
         </ExamplePreview>
@@ -172,7 +171,7 @@
 
     <ComponentExampleBox Title="Controlled" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
         <ExamplePreview>
-            <div class="example-desc">By clicking on the items, the current item will change and match the CurrentItemStyle.</div>
+            <div class="example-desc">By clicking on the items, the Selected item will change and match the SelectedItemStyle.</div>
             <div class="example-box">
                 <BitBreadList Items="BreadListItemsWithControll"
                               TextField="@nameof(PageInfoModel.Name)"
@@ -180,7 +179,7 @@
                               MaxDisplayedItems="3"
                               OverflowIndex="2"
                               OnItemClick="(PageInfoModel item) => HandleOnItemClick(item)"
-                              CurrentItemStyle="color:red; background:lightgreen;" />
+                              SelectedItemStyle="color:red; background:lightgreen;" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>

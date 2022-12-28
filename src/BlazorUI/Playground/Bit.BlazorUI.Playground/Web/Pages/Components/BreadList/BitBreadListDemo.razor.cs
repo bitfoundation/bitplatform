@@ -58,74 +58,75 @@ public partial class BitBreadListDemo
     {
         new()
         {
-            Name = "CurrentItemClass",
-            Type = "string?",
-            Description = "The class HTML attribute for Current Item."
+            Name = "ClassField",
+            Type = "string",
+            DefaultValue = "Class",
+            Description = "Class HTML attribute for BreadList item."
         },
         new()
         {
-            Name = "CurrentItemStyle",
-            Type = "string?",
-            Description = "The style HTML attribute for Current Item."
+            Name = "ClassSelector",
+            Type = "Expression<Func<TItem, object>>?",
+            Description = "Class HTML attribute for BreadList item."
         },
         new()
         {
             Name = "DividerIcon",
             Type = "BitIconName",
             DefaultValue = "BitIconName.ChevronRight",
-            Description = "Render a custom divider in place of the default chevron >"
+            Description = "Render a custom divider in place of the default chevron."
         },
         new()
         {
             Name = "HrefField",
             Type = "string",
             DefaultValue = "Href",
-            Description = "URL to navigate to when this breadcrumb item is clicked. If provided, the breadcrumb will be rendered as a link."
+            Description = "URL to navigate to when this BreadList item is clicked. If provided, the BreadList will be rendered as a link."
         },
         new()
         {
             Name = "HrefSelector",
             Type = "Expression<Func<TItem, object>>?",
-            Description = "URL to navigate to when this breadcrumb item is clicked. If provided, the breadcrumb will be rendered as a link."
+            Description = "URL to navigate to when this BreadList item is clicked. If provided, the BreadList will be rendered as a link."
         },
         new()
         {
             Name = "Items",
             Type = "IList<TItem>",
             DefaultValue = "new List<TItem>()",
-            Description = "Collection of breadcrumbs to render."
+            Description = "Collection of BreadList items to render."
         },
         new()
         {
-            Name = "ClassField",
+            Name = "IsSelectedField",
             Type = "string",
-            DefaultValue = "ItemClass",
-            Description = "Class HTML attribute for breadcrumb item."
+            DefaultValue = "IsSelected",
+            Description = "Display the item as a Selected item."
         },
         new()
         {
-            Name = "ClassSelector",
-            Type = "Expression<Func<TItem, object>>?",
-            Description = "Class HTML attribute for breadcrumb item."
+            Name = "IsSelectedSelector",
+            Type = "Expression<Func<TItem, bool>>?",
+            Description = "Display the item as a Selected item."
         },
         new()
         {
-            Name = "StyleField",
+            Name = "IsEnabledField",
             Type = "string",
-            DefaultValue = "ItemStyle",
-            Description = "Style HTML attribute for breadcrumb item."
+            DefaultValue = "",
+            Description = "Whether an item is enabled or not."
         },
         new()
         {
-            Name = "StyleSelector",
-            Type = "Expression<Func<TItem, object>>?",
-            Description = "Style HTML attribute for breadcrumb item."
+            Name = "IsEnabledSelector",
+            Type = "Expression<Func<TItem, bool>>?",
+            Description = "Whether an item is enabled or not."
         },
         new()
         {
             Name = "MaxDisplayedItems",
             Type = "int",
-            Description = "The maximum number of breadcrumbs to display before coalescing. If not specified, all breadcrumbs will be rendered."
+            Description = "The maximum number of BreadLists to display before coalescing. If not specified, all BreadLists will be rendered."
         },
         new()
         {
@@ -150,20 +151,45 @@ public partial class BitBreadListDemo
         {
             Name = "OnItemClick",
             Type = "EventCallback<TItem>",
-            Description = "Callback for when the breadcrumb item clicked."
+            Description = "Callback for when the BreadList item clicked."
+        },
+        new()
+        {
+            Name = "StyleField",
+            Type = "string",
+            DefaultValue = "Style",
+            Description = "Style HTML attribute for BreadList item."
+        },
+        new()
+        {
+            Name = "StyleSelector",
+            Type = "Expression<Func<TItem, object>>?",
+            Description = "Style HTML attribute for BreadList item."
+        },
+        new()
+        {
+            Name = "SelectedItemClass",
+            Type = "string?",
+            Description = "The class HTML attribute for Selected Item."
+        },
+        new()
+        {
+            Name = "SelectedItemStyle",
+            Type = "string?",
+            Description = "The style HTML attribute for Selected Item."
         },
         new()
         {
             Name = "TextField",
             Type = "string",
             DefaultValue = "Text",
-            Description = "Text to display in the breadcrumb item."
+            Description = "Text to display in the BreadList item."
         },
         new()
         {
             Name = "TextSelector",
             Type = "Expression<Func<TItem, object>>?",
-            Description = "Text to display in the breadcrumb item."
+            Description = "Text to display in the BreadList item."
         },
     };
 
@@ -220,10 +246,10 @@ private List<PageInfoModel> BasicBreadListItems = new()
 <div>
     <BitLabel>Item Disabled</BitLabel>
     <BitBreadList Items=""BasicBreadListItemsDisabled""
-                    TextSelector=""item => item.Name""
-                    HrefSelector=""item => item.Href""
-                    IsEnabledSelector=""item => item.IsEnabled""
-                    IsSelectedSelector=""item => item.IsSelected"" />
+                  TextSelector=""item => item.Name""
+                  HrefSelector=""item => item.Href""
+                  IsEnabledSelector=""item => item.IsEnabled""
+                  IsSelectedSelector=""item => item.IsSelected"" />
 </div>
 ";
 
@@ -333,7 +359,6 @@ private List<PageInfoModel> BasicBreadListItemsDisabled = new()
                   OverflowIndex=""2""
                   OverflowIcon=""BitIconName.ChevronDown"" />
 </div>
-
 <div>
     <BitLabel>BitIconName (CollapseMenu)</BitLabel>
     <BitBreadList Items=""BasicBreadListItems""
@@ -363,7 +388,7 @@ private List<PageInfoModel> BasicBreadListItemsDisabled = new()
         }
     }
 
-    .custom-current-item {
+    .custom-selected-item {
         color: red;
         margin: 2px 5px;
         border-radius: 2px;
@@ -392,20 +417,20 @@ private List<PageInfoModel> BasicBreadListItemsDisabled = new()
                   StyleField=""@nameof(PageInfoModel.HtmlStyle)"" />
 </div>
 <div>
-    <BitLabel>Current Item Class</BitLabel>
+    <BitLabel>Selected Item Class</BitLabel>
     <BitBreadList Items=""BasicBreadListItems""
                   TextField=""@nameof(PageInfoModel.Name)""
                   HrefField=""@nameof(PageInfoModel.Href)""
                   IsSelectedField=""@nameof(PageInfoModel.IsSelected)""
-                  CurrentItemClass=""custom-current-item"" />
+                  SelectedItemClass=""custom-selected-item"" />
 </div>
 <div>
-    <BitLabel>Current Item Style</BitLabel>
+    <BitLabel>Selected Item Style</BitLabel>
     <BitBreadList Items=""BasicBreadListItems""
                   TextField=""@nameof(PageInfoModel.Name)""
                   HrefField=""@nameof(PageInfoModel.Href)""
                   IsSelectedField=""@nameof(PageInfoModel.IsSelected)""
-                  CurrentItemStyle=""color:red; background:lightgreen;"" />
+                  SelectedItemStyle=""color:red; background:lightgreen;"" />
 </div>
 ";
 
@@ -461,7 +486,7 @@ private List<PageInfoModel> BasicBreadListItems = new()
               MaxDisplayedItems=""3""
               OverflowIndex=""2""
               OnItemClick=""(PageInfoModel item) => HandleOnItemClick(item)""
-              CurrentItemStyle=""color:red; background:lightgreen;"" />
+              SelectedItemStyle=""color:red; background:lightgreen;"" />
 ";
 
     private readonly string example5CSharpCode = @"
