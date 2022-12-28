@@ -177,6 +177,10 @@ public class PageInfoModel
     public string HtmlClass { get; set; }
 
     public string HtmlStyle { get; set; }
+
+    public bool IsSelected { get; set; }
+
+    public bool IsEnabled { get; set; } = true;
 }
 
 private List<PageInfoModel> BasicBreadListItems = new()
@@ -225,6 +229,10 @@ public class PageInfoModel
     public string HtmlClass { get; set; }
 
     public string HtmlStyle { get; set; }
+
+    public bool IsSelected { get; set; }
+
+    public bool IsEnabled { get; set; } = true;
 }
 
 private List<PageInfoModel> BasicBreadListItems = new()
@@ -403,6 +411,10 @@ public class PageInfoModel
     public string HtmlClass { get; set; }
 
     public string HtmlStyle { get; set; }
+
+    public bool IsSelected { get; set; }
+
+    public bool IsEnabled { get; set; } = true;
 }
 
 private List<PageInfoModel> BreadListItemsWithClass = new()
@@ -454,6 +466,10 @@ public class PageInfoModel
     public string HtmlClass { get; set; }
 
     public string HtmlStyle { get; set; }
+
+    public bool IsSelected { get; set; }
+
+    public bool IsEnabled { get; set; } = true;
 }
 
 private List<PageInfoModel> BreadListItemsWithControll = new()
