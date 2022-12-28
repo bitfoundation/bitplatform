@@ -11,12 +11,12 @@
 
     <div class="items-wrapper" id="@_wrapperId">
         <ul>
-            @foreach ((TItem item, int index) in _itemsToShowInBreadcrumb.Select((item, index) => (item, index)))
+            @foreach ((TItem item, int index) in _displayItems.Select((item, index) => (item, index)))
             {
                 <li>
                     @if (_overflowItems.Any() && index == OverflowIndex)
                     {
-                        <button type="button" class="overflow-btn" aria-label="@OverflowAriaLabel" id="@_overflowDropDownId" @onclick="HandleOnClick">
+                        <button type="button" class="overflow-btn" aria-label="@OverflowAriaLabel" id="@_overflowDropDownId" @onclick="ToggleCallout">
                             <span class="overflow-icon-container">
                                 <i class="@($"bit-icon bit-icon--{OverflowIcon.GetName()}")"></i>
                             </span>
@@ -27,7 +27,7 @@
                         if (GetItemHref(item).HasValue())
                         {
                             <a href="@GetItemHref(item)"
-                               aria-current="@(IsCurrentItem(item) ? "page" : null)"
+                               aria-current="@(GetIsSelected(item) ? "page" : null)"
                                style="@GetItemStyles(item)"
                                class="@GetItemClasses(item)">
                                 @GetItemText(item)
@@ -35,7 +35,7 @@
                         }
                         else
                         {
-                            <button aria-current="@(IsCurrentItem(item) ? "page" : null)"
+                            <button aria-current="@(GetIsSelected(item) ? "page" : null)"
                                     style="@GetItemStyles(item)"
                                     class="@GetItemClasses(item)"
                                     @onclick="() => HandleOnItemClick(item)">
@@ -43,28 +43,28 @@
                             </button>
                         }
                     }
-
-                    @if (IsLastItem(index) is false)
-                    {
-                        <i class="@($"bit-icon bit-icon--{DividerIcon.GetName()}")"></i>
-                    }
                 </li>
+
+                @if (index != _displayItems.Count - 1)
+                {
+                    <i class="@($"bit-icon bit-icon--{DividerIcon.GetName()}")"></i>
+                }
             }
         </ul>
     </div>
 
-    <div class="overlay" id="@_overlayId" @onclick="CloseCallout"></div>
+    <div class="overlay" id="@_overlayId" @onclick="ToggleCallout"></div>
 
     <div class="overflow-menu-wrapper"
          id="@_calloutId"
          tabindex="0"
          role="listbox">
         <ul>
-            @foreach ((TItem item, int index) in _overflowItems.Select((item, index) => (item, index)))
+            @foreach (var item in _overflowItems)
             {
                 <li>
                     <a href="@GetItemHref(item)"
-                       aria-current=@(IsCurrentItem(item) ? "page" : null)
+                       aria-current=@(GetIsSelected(item) ? "page" : null)
                        style="@GetItemStyles(item)"
                        class="@GetItemClasses(item)"
                        @onclick="() => HandleOnItemClick(item)">

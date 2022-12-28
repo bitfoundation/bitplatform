@@ -9,20 +9,28 @@ public partial class BitBreadList<TItem> : IDisposable
     private const string CLASS_FIELD = "ItemClass";
     private const string STYLE_FIELD = "ItemStyle";
     private const string TEXT_FIELD = "ItemStyle";
+    private const string IS_SELECTED_FIELD = "IsSelected";
 
     private string hrefField = HREF_FIELD;
     private string itemClassField = CLASS_FIELD;
     private string itemStyleField = STYLE_FIELD;
     private string textField = TEXT_FIELD;
+    private string isSelectedField = IS_SELECTED_FIELD;
     private Expression<Func<TItem, object>>? hrefSelector;
     private Expression<Func<TItem, object>>? itemClassSelector;
     private Expression<Func<TItem, object>>? itemStyleSelector;
     private Expression<Func<TItem, object>>? textSelector;
+    private Expression<Func<TItem, bool>>? isSelectedSelector;
+    private IList<TItem> items = new List<TItem>();
+    private int maxDisplayedItems;
+    private int overflowIndex;
 
     private string _internalHrefField = HREF_FIELD;
     private string _internalItemClassField = CLASS_FIELD;
     private string _internalItemStyleField = STYLE_FIELD;
     private string _internalTextField = TEXT_FIELD;
+    private string _internalIsSelectedField = IS_SELECTED_FIELD;
+    private int _internalOverflowIndex;
 
     private bool _isCalloutOpen;
     private string _wrapperId => $"{UniqueId}-wrapper";
@@ -30,8 +38,8 @@ public partial class BitBreadList<TItem> : IDisposable
     private string _overlayId => $"{UniqueId}-overlay";
     private string _overflowDropDownId => $"{UniqueId}-overflow-dropdown";
 
-    private IList<TItem> _itemsToShowInBreadcrumb = new List<TItem>();
-    private IList<TItem> _overflowItems = new List<TItem>();
+    private List<TItem> _displayItems = new();
+    private List<TItem> _overflowItems = new();
 
     private DotNetObjectReference<BitBreadList<TItem>> _dotnetObj = default!;
 
@@ -50,9 +58,34 @@ public partial class BitBreadList<TItem> : IDisposable
     [Parameter] public string? CurrentItemStyle { get; set; }
 
     /// <summary>
-    /// by default, the current item is the last item. But it can also be specified manually.
+    /// 
     /// </summary>
-    [Parameter] public TItem? CurrentItem { get; set; }
+    [Parameter]
+    public string IsSelectedField
+    {
+        get => isSelectedField;
+        set
+        {
+            isSelectedField = value;
+            _internalIsSelectedField = value;
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    [Parameter]
+    public Expression<Func<TItem, bool>>? IsSelectedSelector
+    {
+        get => isSelectedSelector;
+        set
+        {
+            isSelectedSelector = value;
+
+            if (value is not null)
+                _internalIsSelectedField = value.GetName();
+        }
+    }
 
     /// <summary>
     /// Render a custom divider in place of the default chevron >
@@ -94,7 +127,16 @@ public partial class BitBreadList<TItem> : IDisposable
     /// <summary>
     /// Collection of breadcrumbs to render.
     /// </summary>
-    [Parameter] public IList<TItem> Items { get; set; } = new List<TItem>();
+    [Parameter]
+    public IList<TItem> Items
+    {
+        get => items;
+        set
+        {
+            items = value;
+            SetItemsToShow();
+        }
+    }
 
     /// <summary>
     /// class HTML attribute for breadcrumb item.
@@ -160,7 +202,16 @@ public partial class BitBreadList<TItem> : IDisposable
     /// The maximum number of breadcrumbs to display before coalescing.
     /// If not specified, all breadcrumbs will be rendered.
     /// </summary>
-    [Parameter] public int MaxDisplayedItems { get; set; }
+    [Parameter]
+    public int MaxDisplayedItems
+    {
+        get => maxDisplayedItems;
+        set
+        {
+            maxDisplayedItems = value;
+            SetItemsToShow();
+        }
+    }
 
     /// <summary>
     /// Aria label for the overflow button.
@@ -170,7 +221,17 @@ public partial class BitBreadList<TItem> : IDisposable
     /// <summary>
     /// Optional index where overflow items will be collapsed.
     /// </summary>
-    [Parameter] public int OverflowIndex { get; set; }
+    [Parameter] 
+    public int OverflowIndex 
+    {
+        get => overflowIndex;
+        set
+        {
+            overflowIndex = value;
+            _internalOverflowIndex = value;
+            SetItemsToShow();
+        }
+    }
 
     /// <summary>
     /// Render a custom overflow icon in place of the default icon.
@@ -221,23 +282,7 @@ public partial class BitBreadList<TItem> : IDisposable
         return base.OnInitializedAsync();
     }
 
-    protected override async Task OnParametersSetAsync()
-    {
-        GetBreadcrumbItemsToShow();
-
-        await base.OnParametersSetAsync();
-    }
-
-    private async Task CloseCallout()
-    {
-        if (IsEnabled is false) return;
-
-        await _js.ToggleOverflowCallout(_dotnetObj, _wrapperId, _overflowDropDownId, _calloutId, _overlayId, _isCalloutOpen);
-        _isCalloutOpen = false;
-        StateHasChanged();
-    }
-
-    private async Task HandleOnClick(MouseEventArgs e)
+    private async Task ToggleCallout()
     {
         if (IsEnabled is false) return;
 
@@ -252,41 +297,41 @@ public partial class BitBreadList<TItem> : IDisposable
         await OnItemClick.InvokeAsync(item);
     }
 
-    private IList<TItem> GetBreadcrumbItemsToShow()
+    private void SetItemsToShow()
     {
-        if (MaxDisplayedItems == 0 || MaxDisplayedItems >= Items.Count)
-        {
-            return _itemsToShowInBreadcrumb = Items;
-        }
-
-        _itemsToShowInBreadcrumb.Clear();
+        _displayItems.Clear();
         _overflowItems.Clear();
 
-        if (OverflowIndex >= MaxDisplayedItems)
+        if (MaxDisplayedItems == 0 || MaxDisplayedItems >= Items.Count)
         {
-            OverflowIndex = 0;
+            _displayItems.AddRange(Items);
         }
-
-        var overflowItemsCount = Items.Count - MaxDisplayedItems;
-
-        foreach ((TItem item, int index) in Items.Select((item, index) => (item, index)))
+        else
         {
-            if (OverflowIndex <= index && index < overflowItemsCount + OverflowIndex)
+            if (OverflowIndex >= MaxDisplayedItems)
             {
-                if (index == OverflowIndex)
+                _internalOverflowIndex = 0;
+            }
+
+            var overflowItemsCount = Items.Count - MaxDisplayedItems;
+
+            foreach ((TItem item, int index) in Items.Select((item, index) => (item, index)))
+            {
+                if (_internalOverflowIndex <= index && index < overflowItemsCount + _internalOverflowIndex)
                 {
-                    _itemsToShowInBreadcrumb.Add(item);
-                }
+                    if (index == _internalOverflowIndex)
+                    {
+                        _displayItems.Add(item);
+                    }
 
-                _overflowItems.Add(item);
-            }
-            else
-            {
-                _itemsToShowInBreadcrumb.Add(item);
+                    _overflowItems.Add(item);
+                }
+                else
+                {
+                    _displayItems.Add(item);
+                }
             }
         }
-
-        return _itemsToShowInBreadcrumb;
     }
 
     private string GetItemClasses(TItem item)
@@ -300,12 +345,12 @@ public partial class BitBreadList<TItem> : IDisposable
             itemClasses.Append($" {GetItemClass(item)}");
         }
 
-        if (IsCurrentItem(item))
+        if (GetIsSelected(item))
         {
             itemClasses.Append(" current-item");
         }
 
-        if (IsCurrentItem(item) && CurrentItemClass.HasValue())
+        if (GetIsSelected(item) && CurrentItemClass.HasValue())
         {
             itemClasses.Append($" {CurrentItemClass}");
         }
@@ -322,7 +367,7 @@ public partial class BitBreadList<TItem> : IDisposable
             itemStyles.Append(GetItemStyle(item));
         }
 
-        if (IsCurrentItem(item) && CurrentItemStyle.HasValue())
+        if (GetIsSelected(item) && CurrentItemStyle.HasValue())
         {
             itemStyles.Append(CurrentItemStyle);
         }
@@ -330,25 +375,11 @@ public partial class BitBreadList<TItem> : IDisposable
         return itemStyles.ToString();
     }
 
-    private bool IsCurrentItem(TItem item)
-    {
-        var currentItem = CurrentItem ?? Items[^1];
-
-        return GetItemHref(item) == GetItemHref(currentItem) &&
-               GetItemClass(item) == GetItemClass(currentItem) &&
-               GetItemStyle(item) == GetItemStyle(currentItem) &&
-               GetItemText(item) == GetItemText(currentItem);
-    }
-
-    private bool IsLastItem(int index)
-    {
-        return index == _itemsToShowInBreadcrumb.Count - 1;
-    }
-
     private string? GetItemHref(TItem item) => item.GetValueAsObjectFromProperty(_internalHrefField)?.ToString();
     private string? GetItemClass(TItem item) => item.GetValueAsObjectFromProperty(_internalItemClassField)?.ToString();
     private string? GetItemStyle(TItem item) => item.GetValueAsObjectFromProperty(_internalItemStyleField)?.ToString();
     private string? GetItemText(TItem item) => item.GetValueAsObjectFromProperty(_internalTextField)?.ToString();
+    private bool GetIsSelected(TItem item) => item.GetValueFromProperty(_internalIsSelectedField, false);
 
     public void Dispose()
     {

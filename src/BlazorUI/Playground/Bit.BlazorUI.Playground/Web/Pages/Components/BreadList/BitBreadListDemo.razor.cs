@@ -1,5 +1,6 @@
 ﻿using Bit.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Bit.BlazorUI.Playground.Web.Pages.Components.BreadList;
 
@@ -10,7 +11,7 @@ public partial class BitBreadListDemo
         new PageInfoModel { Name = "Item 1", Href = "/components/bread-list" },
         new PageInfoModel { Name = "Item 2", Href = "/components/bread-list" },
         new PageInfoModel { Name = "Item 3", Href = "/components/bread-list" },
-        new PageInfoModel { Name = "Item 4", Href = "/components/bread-list" },
+        new PageInfoModel { Name = "Item 4", Href = "/components/bread-list", IsSelected = true },
     };
 
     private List<PageInfoModel> BreadListItemsWithClass = new()
@@ -18,7 +19,7 @@ public partial class BitBreadListDemo
         new PageInfoModel { Name = "Item 1", Href = "/components/bread-list", HtmlClass = "custom-item" },
         new PageInfoModel { Name = "Item 2", Href = "/components/bread-list", HtmlClass = "custom-item" },
         new PageInfoModel { Name = "Item 3", Href = "/components/bread-list", HtmlClass = "custom-item" },
-        new PageInfoModel { Name = "Item 4", Href = "/components/bread-list", HtmlClass = "custom-item" },
+        new PageInfoModel { Name = "Item 4", Href = "/components/bread-list", HtmlClass = "custom-item", IsSelected = true },
     };
 
     private List<PageInfoModel> BreadListItemsWithStyle = new()
@@ -26,7 +27,7 @@ public partial class BitBreadListDemo
         new PageInfoModel { Name = "Item 1", Href = "/components/bread-list", HtmlStyle = "color:red; background:greenyellow;" },
         new PageInfoModel { Name = "Item 2", Href = "/components/bread-list", HtmlStyle = "color:red; background:greenyellow;" },
         new PageInfoModel { Name = "Item 3", Href = "/components/bread-list", HtmlStyle = "color:red; background:greenyellow;" },
-        new PageInfoModel { Name = "Item 4", Href = "/components/bread-list", HtmlStyle = "color:red; background:greenyellow;" },
+        new PageInfoModel { Name = "Item 4", Href = "/components/bread-list", HtmlStyle = "color:red; background:greenyellow;", IsSelected = true },
     };
 
     private List<PageInfoModel> BreadListItemsWithControll = new()
@@ -36,10 +37,14 @@ public partial class BitBreadListDemo
         new PageInfoModel { Name = "Item 3" },
         new PageInfoModel { Name = "Item 4" },
         new PageInfoModel { Name = "Item 5" },
-        new PageInfoModel { Name = "Item 6" },
+        new PageInfoModel { Name = "Item 6", IsSelected = true },
     };
 
-    private PageInfoModel ControlledCurrentItem;
+    private void HandleOnItemClick(PageInfoModel item)
+    {
+        BreadListItemsWithControll.FirstOrDefault(i => i.IsSelected).IsSelected = false;
+        BreadListItemsWithControll.FirstOrDefault(i => i == item).IsSelected = true;
+    }
 
     private readonly List<ComponentParameter> componentParameters = new()
     {
@@ -54,12 +59,6 @@ public partial class BitBreadListDemo
             Name = "CurrentItemStyle",
             Type = "string?",
             Description = "The style HTML attribute for Current Item."
-        },
-        new()
-        {
-            Name = "CurrentItem",
-            Type = "TItem?",
-            Description = "by default, the current item is the last item. But it can also be specified manually."
         },
         new()
         {
@@ -177,7 +176,7 @@ private List<PageInfoModel> BasicBreadListItems = new()
     new PageInfoModel { Name = ""Item 1"", Href = ""/components/bread-list"" },
     new PageInfoModel { Name = ""Item 2"", Href = ""/components/bread-list"" },
     new PageInfoModel { Name = ""Item 3"", Href = ""/components/bread-list"" },
-    new PageInfoModel { Name = ""Item 4"", Href = ""/components/bread-list"" },
+    new PageInfoModel { Name = ""Item 4"", Href = ""/components/bread-list"", IsSelected = true },
 };
 ";
 
@@ -188,19 +187,22 @@ private List<PageInfoModel> BasicBreadListItems = new()
     <BitLabel>Field parameter</BitLabel>
     <BitBreadList Items=""BasicBreadListItems""
                   TextField=""@nameof(PageInfoModel.Name)""
-                  HrefField=""@nameof(PageInfoModel.Href)"" />
+                  HrefField=""@nameof(PageInfoModel.Href)""
+                  IsSelectedField=""@nameof(PageInfoModel.IsSelected)"" />
 </div>
 <div>
     <BitLabel>Selector parameter</BitLabel>
     <BitBreadList Items=""BasicBreadListItems""
                   TextSelector=""item => item.Name""
-                  HrefSelector=""item => item.Href"" />
+                  HrefSelector=""item => item.Href""
+                  IsSelectedSelector=""item => item.IsSelected"" />
 </div>
 <div>
     <BitLabel>Disabled</BitLabel>
     <BitBreadList Items=""BasicBreadListItems""
                   TextSelector=""item => item.Name""
                   HrefSelector=""item => item.Href""
+                  IsSelectedSelector=""item => item.IsSelected""
                   IsEnabled=""false"" />
 </div>
 ";
@@ -215,6 +217,7 @@ private List<PageInfoModel> BasicBreadListItems = new()
     <BitBreadList Items=""BasicBreadListItems""
                   TextField=""@nameof(PageInfoModel.Name)""
                   HrefField=""@nameof(PageInfoModel.Href)""
+                  IsSelectedField=""@nameof(PageInfoModel.IsSelected)""
                   MaxDisplayedItems=""1"" />
 </div>
 <div>
@@ -222,6 +225,7 @@ private List<PageInfoModel> BasicBreadListItems = new()
     <BitBreadList Items=""BasicBreadListItems""
                   TextField=""@nameof(PageInfoModel.Name)""
                   HrefField=""@nameof(PageInfoModel.Href)""
+                  IsSelectedField=""@nameof(PageInfoModel.IsSelected)""
                   MaxDisplayedItems=""2"" />
 </div>
 <div>
@@ -229,6 +233,7 @@ private List<PageInfoModel> BasicBreadListItems = new()
     <BitBreadList Items=""BasicBreadListItems""
                   TextField=""@nameof(PageInfoModel.Name)""
                   HrefField=""@nameof(PageInfoModel.Href)""
+                  IsSelectedField=""@nameof(PageInfoModel.IsSelected)""
                   MaxDisplayedItems=""3"" />
 </div>
 <div>
@@ -236,6 +241,7 @@ private List<PageInfoModel> BasicBreadListItems = new()
     <BitBreadList Items=""BasicBreadListItems""
                   TextField=""@nameof(PageInfoModel.Name)""
                   HrefField=""@nameof(PageInfoModel.Href)""
+                  IsSelectedField=""@nameof(PageInfoModel.IsSelected)""
                   MaxDisplayedItems=""3""
                   OverflowIndex=""0"" />
 </div>
@@ -244,6 +250,7 @@ private List<PageInfoModel> BasicBreadListItems = new()
     <BitBreadList Items=""BasicBreadListItems""
                   TextField=""@nameof(PageInfoModel.Name)""
                   HrefField=""@nameof(PageInfoModel.Href)""
+                  IsSelectedField=""@nameof(PageInfoModel.IsSelected)""
                   MaxDisplayedItems=""3""
                   OverflowIndex=""1"" />
 </div>
@@ -252,6 +259,7 @@ private List<PageInfoModel> BasicBreadListItems = new()
     <BitBreadList Items=""BasicBreadListItems""
                   TextField=""@nameof(PageInfoModel.Name)""
                   HrefField=""@nameof(PageInfoModel.Href)""
+                  IsSelectedField=""@nameof(PageInfoModel.IsSelected)""
                   MaxDisplayedItems=""3""
                   OverflowIndex=""2"" />
 </div>
@@ -267,6 +275,7 @@ private List<PageInfoModel> BasicBreadListItems = new()
     <BitBreadList Items=""BasicBreadListItems""
                   TextField=""@nameof(PageInfoModel.Name)""
                   HrefField=""@nameof(PageInfoModel.Href)""
+                  IsSelectedField=""@nameof(PageInfoModel.IsSelected)""
                   MaxDisplayedItems=""3""
                   OverflowIndex=""2""
                   OverflowIcon=""BitIconName.ChevronDown"" />
@@ -277,6 +286,7 @@ private List<PageInfoModel> BasicBreadListItems = new()
     <BitBreadList Items=""BasicBreadListItems""
                   TextField=""@nameof(PageInfoModel.Name)""
                   HrefField=""@nameof(PageInfoModel.Href)""
+                  IsSelectedField=""@nameof(PageInfoModel.IsSelected)""
                   MaxDisplayedItems=""3""
                   OverflowIndex=""2""
                   OverflowIcon=""BitIconName.CollapseMenu"" />
@@ -317,6 +327,7 @@ private List<PageInfoModel> BasicBreadListItems = new()
     <BitBreadList Items=""BreadListItemsWithClass""
                   TextField=""@nameof(PageInfoModel.Name)""
                   HrefField=""@nameof(PageInfoModel.Href)""
+                  IsSelectedField=""@nameof(PageInfoModel.IsSelected)""
                   ItemClassField=""@nameof(PageInfoModel.HtmlClass)"" />
 </div>
 <div>
@@ -324,6 +335,7 @@ private List<PageInfoModel> BasicBreadListItems = new()
     <BitBreadList Items=""BreadListItemsWithStyle""
                   TextField=""@nameof(PageInfoModel.Name)""
                   HrefField=""@nameof(PageInfoModel.Href)""
+                  IsSelectedField=""@nameof(PageInfoModel.IsSelected)""
                   ItemStyleField=""@nameof(PageInfoModel.HtmlStyle)"" />
 </div>
 <div>
@@ -331,15 +343,15 @@ private List<PageInfoModel> BasicBreadListItems = new()
     <BitBreadList Items=""BasicBreadListItems""
                   TextField=""@nameof(PageInfoModel.Name)""
                   HrefField=""@nameof(PageInfoModel.Href)""
-                  CurrentItemClass=""custom-current-item""
-                  CurrentItem=""BasicBreadListItems[3]"" />
+                  IsSelectedField=""@nameof(PageInfoModel.IsSelected)""
+                  CurrentItemClass=""custom-current-item"" />
 </div>
 <div>
     <BitLabel>Current Item Style</BitLabel>
     <BitBreadList Items=""BasicBreadListItems""
                   TextField=""@nameof(PageInfoModel.Name)""
                   HrefField=""@nameof(PageInfoModel.Href)""
-                  CurrentItem=""BasicBreadListItems[3]""
+                  IsSelectedField=""@nameof(PageInfoModel.IsSelected)""
                   CurrentItemStyle=""color:red; background:lightgreen;"" />
 </div>
 ";
@@ -361,7 +373,7 @@ private List<PageInfoModel> BreadListItemsWithClass = new()
     new PageInfoModel { Name = ""Item 1"", Href = ""/components/bread-list"", HtmlClass = ""custom-item"" },
     new PageInfoModel { Name = ""Item 2"", Href = ""/components/bread-list"", HtmlClass = ""custom-item"" },
     new PageInfoModel { Name = ""Item 3"", Href = ""/components/bread-list"", HtmlClass = ""custom-item"" },
-    new PageInfoModel { Name = ""Item 4"", Href = ""/components/bread-list"", HtmlClass = ""custom-item"" },
+    new PageInfoModel { Name = ""Item 4"", Href = ""/components/bread-list"", HtmlClass = ""custom-item"", IsSelected = true },
 };
 
 private List<PageInfoModel> BreadListItemsWithStyle = new()
@@ -369,7 +381,7 @@ private List<PageInfoModel> BreadListItemsWithStyle = new()
     new PageInfoModel { Name = ""Item 1"", Href = ""/components/bread-list"", HtmlStyle = ""color:red; background:greenyellow;"" },
     new PageInfoModel { Name = ""Item 2"", Href = ""/components/bread-list"", HtmlStyle = ""color:red; background:greenyellow;"" },
     new PageInfoModel { Name = ""Item 3"", Href = ""/components/bread-list"", HtmlStyle = ""color:red; background:greenyellow;"" },
-    new PageInfoModel { Name = ""Item 4"", Href = ""/components/bread-list"", HtmlStyle = ""color:red; background:greenyellow;"" },
+    new PageInfoModel { Name = ""Item 4"", Href = ""/components/bread-list"", HtmlStyle = ""color:red; background:greenyellow;"", IsSelected = true },
 };
 
 private List<PageInfoModel> BasicBreadListItems = new()
@@ -377,7 +389,7 @@ private List<PageInfoModel> BasicBreadListItems = new()
     new PageInfoModel { Name = ""Item 1"", Href = ""/components/bread-list"" },
     new PageInfoModel { Name = ""Item 2"", Href = ""/components/bread-list"" },
     new PageInfoModel { Name = ""Item 3"", Href = ""/components/bread-list"" },
-    new PageInfoModel { Name = ""Item 4"", Href = ""/components/bread-list"" },
+    new PageInfoModel { Name = ""Item 4"", Href = ""/components/bread-list"", IsSelected = true },
 };
 ";
 
@@ -388,10 +400,10 @@ private List<PageInfoModel> BasicBreadListItems = new()
     private readonly string example5HTMLCode = @"
 <BitBreadList Items=""BreadListItemsWithControll""
               TextField=""@nameof(PageInfoModel.Name)""
+              IsSelectedField=""@nameof(PageInfoModel.IsSelected)""
               MaxDisplayedItems=""3""
               OverflowIndex=""2""
-              CurrentItem=""@ControlledCurrentItem""
-              OnItemClick=""(PageInfoModel item) => ControlledCurrentItem = item""
+              OnItemClick=""(PageInfoModel item) => HandleOnItemClick(item)""
               CurrentItemStyle=""color:red; background:lightgreen;"" />
 ";
 
@@ -414,10 +426,14 @@ private List<PageInfoModel> BreadListItemsWithControll = new()
     new PageInfoModel { Name = ""Item 3"" },
     new PageInfoModel { Name = ""Item 4"" },
     new PageInfoModel { Name = ""Item 5"" },
-    new PageInfoModel { Name = ""Item 6"" },
+    new PageInfoModel { Name = ""Item 6"", IsSelected = true },
 };
 
- private PageInfoModel ControlledCurrentItem;
+private void HandleOnItemClick(PageInfoModel item)
+{
+    BreadListItemsWithControll.FirstOrDefault(i => i.IsSelected).IsSelected = false;
+    BreadListItemsWithControll.FirstOrDefault(i => i == item).IsSelected = true;
+}
 ";
 
     #endregion
