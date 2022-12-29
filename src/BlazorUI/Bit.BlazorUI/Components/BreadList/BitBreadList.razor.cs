@@ -155,7 +155,7 @@ public partial class BitBreadList<TItem> : IDisposable
 
     protected override async Task OnParametersSetAsync()
     {
-        bool shouldSetItemsToShow = false;
+        bool shouldCallSetItemsToShow = false;
 
         var newClassField = ClassFieldSelector?.GetName() ?? ClassField;
         if (newClassField != _internalClassField)
@@ -196,22 +196,38 @@ public partial class BitBreadList<TItem> : IDisposable
         if (Items != _internalItems)
         {
             _internalItems = Items;
-            shouldSetItemsToShow = true;
-        }
-
-        if (OverflowIndex != _internalOverflowIndex)
-        {
-            _internalOverflowIndex = OverflowIndex;
-            shouldSetItemsToShow = true;
+            shouldCallSetItemsToShow = true;
         }
 
         if (MaxDisplayedItems != _internalMaxDisplayedItems)
         {
-            _internalMaxDisplayedItems = MaxDisplayedItems;
-            shouldSetItemsToShow = true;
+            if (MaxDisplayedItems < 0 || MaxDisplayedItems > _internalItems.Count)
+            {
+                _internalMaxDisplayedItems = 0;
+            }
+            else
+            {
+                _internalMaxDisplayedItems = MaxDisplayedItems;
+            }
+            
+            shouldCallSetItemsToShow = true;
         }
 
-        if (shouldSetItemsToShow)
+        if (OverflowIndex != _internalOverflowIndex)
+        {
+            if (OverflowIndex < 0 || OverflowIndex >= _internalMaxDisplayedItems)
+            {
+                _internalOverflowIndex = 0;
+            }
+            else
+            {
+                _internalOverflowIndex = OverflowIndex;
+            }
+            
+            shouldCallSetItemsToShow = true;
+        }
+
+        if (shouldCallSetItemsToShow)
         {
             SetItemsToShow();
         }
@@ -244,11 +260,6 @@ public partial class BitBreadList<TItem> : IDisposable
         {
             _displayItems = _internalItems.ToList();
             return;
-        }
-
-        if (_internalOverflowIndex >= _internalMaxDisplayedItems)
-        {
-            _internalOverflowIndex = 0;
         }
 
         var overflowItemsCount = _internalItems.Count - _internalMaxDisplayedItems;
