@@ -14,7 +14,7 @@
             @foreach ((TItem item, int index) in _displayItems.Select((item, index) => (item, index)))
             {
                 <li>
-                    @if (_overflowItems.Any() && index == OverflowIndex)
+                    @if (_overflowItems.Any() && index == _internalOverflowIndex)
                     {
                         <button type="button" class="overflow-btn" aria-label="@OverflowAriaLabel" id="@_overflowDropDownId" @onclick="ToggleCallout">
                             <span class="overflow-icon-container">

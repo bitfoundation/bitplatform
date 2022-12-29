@@ -5,41 +5,26 @@ namespace Bit.BlazorUI;
 
 public partial class BitBreadList<TItem> : IDisposable
 {
-    private const string HREF_FIELD = "Href";
     private const string CLASS_FIELD = "Class";
-    private const string STYLE_FIELD = "Style";
-    private const string TEXT_FIELD = "Text";
+    private const string HREF_FIELD = "Href";
     private const string IS_SELECTED_FIELD = "IsSelected";
     private const string IS_ENABLED_FIELD = "IsEnabled";
+    private const string TEXT_FIELD = "Text";
+    private const string STYLE_FIELD = "Style";
 
-    private string hrefField = HREF_FIELD;
-    private string classField = CLASS_FIELD;
-    private string styleField = STYLE_FIELD;
-    private string textField = TEXT_FIELD;
-    private string isSelectedField = IS_SELECTED_FIELD;
-    private string isEnabledField = IS_ENABLED_FIELD;
-    private Expression<Func<TItem, object>>? hrefSelector;
-    private Expression<Func<TItem, object>>? classSelector;
-    private Expression<Func<TItem, object>>? styleSelector;
-    private Expression<Func<TItem, object>>? textSelector;
-    private Expression<Func<TItem, bool>>? isSelectedSelector;
-    private Expression<Func<TItem, bool>>? isEnabledSelector;
-
-    private IList<TItem> items = new List<TItem>();
-    private int maxDisplayedItems;
-    private int overflowIndex;
-
-    private string _internalHrefField = HREF_FIELD;
     private string _internalClassField = CLASS_FIELD;
-    private string _internalStyleField = STYLE_FIELD;
-    private string _internalTextField = TEXT_FIELD;
+    private string _internalHrefField = HREF_FIELD;
     private string _internalIsSelectedField = IS_SELECTED_FIELD;
     private string _internalIsEnabledField = IS_ENABLED_FIELD;
-    private int _internalOverflowIndex;
+    private string _internalTextField = TEXT_FIELD;
+    private string _internalStyleField = STYLE_FIELD;
 
-    private List<TItem> _displayItems = new();
-    private List<TItem> _overflowItems = new();
     private DotNetObjectReference<BitBreadList<TItem>> _dotnetObj = default!;
+    private IList<TItem> _internalItems = new List<TItem>();
+    private IList<TItem> _displayItems = new List<TItem>();
+    private IList<TItem> _overflowItems = new List<TItem>();
+    private int _internalOverflowIndex;
+    private int _internalMaxDisplayedItems;
     private bool _isCalloutOpen;
     private bool _disposed;
 
@@ -53,34 +38,12 @@ public partial class BitBreadList<TItem> : IDisposable
     /// <summary>
     /// class HTML attribute for breadcrumb item.
     /// </summary>
-    [Parameter]
-    public string ClassField
-    {
-        get => classField;
-        set
-        {
-            classField = value;
-            _internalClassField = value;
-        }
-    }
+    [Parameter] public string ClassField { get; set; } = CLASS_FIELD;
 
     /// <summary>
     /// Class HTML attribute for breadcrumb item.
     /// </summary>
-    [Parameter]
-    public Expression<Func<TItem, object>>? ClassSelector
-    {
-        get => classSelector;
-        set
-        {
-            classSelector = value;
-
-            if (value is not null)
-            {
-                _internalClassField = value.GetName();
-            }
-        }
-    }
+    [Parameter] public Expression<Func<TItem, object>>? ClassSelector { get; set; }
 
     /// <summary>
     /// Render a custom divider in place of the default chevron >
@@ -92,136 +55,44 @@ public partial class BitBreadList<TItem> : IDisposable
     /// If provided, the breadcrumb will be rendered as a link.
     /// </summary>
     [Parameter]
-    public string HrefField
-    {
-        get => hrefField;
-        set
-        {
-            if (value != hrefField)
-            {
-                hrefField = value;
-                _internalHrefField = value;
-            }
-        }
-    }
+    public string HrefField { get; set; } = HREF_FIELD;
 
     /// <summary>
     /// URL to navigate to when this breadcrumb item is clicked.
     /// If provided, the breadcrumb will be rendered as a link.
     /// </summary>
-    [Parameter]
-    public Expression<Func<TItem, object>>? HrefSelector
-    {
-        get => hrefSelector;
-        set
-        {
-            hrefSelector = value;
-
-            if (value is not null)
-            {
-                _internalHrefField = value.GetName();
-            }
-        }
-    }
+    [Parameter] public Expression<Func<TItem, object>>? HrefSelector { get; set; }
 
     /// <summary>
     /// Collection of breadcrumbs to render.
     /// </summary>
-    [Parameter]
-    public IList<TItem> Items
-    {
-        get => items;
-        set
-        {
-            if (value != items)
-            {
-                items = value;
-                SetItemsToShow();
-            }
-        }
-    }
+    [Parameter] public IList<TItem> Items { get; set; } = new List<TItem>();
 
     /// <summary>
     /// Display the item as a Selected item.
     /// </summary>
-    [Parameter]
-    public string IsSelectedField
-    {
-        get => isSelectedField;
-        set
-        {
-            isSelectedField = value;
-            _internalIsSelectedField = value;
-        }
-    }
+    [Parameter] public string IsSelectedField { get; set; } = IS_SELECTED_FIELD;
 
     /// <summary>
     /// Display the item as a Selected item.
     /// </summary>
-    [Parameter]
-    public Expression<Func<TItem, bool>>? IsSelectedSelector
-    {
-        get => isSelectedSelector;
-        set
-        {
-            isSelectedSelector = value;
-
-            if (value is not null)
-            {
-                _internalIsSelectedField = value.GetName();
-            }
-        }
-    }
+    [Parameter] public Expression<Func<TItem, bool>>? IsSelectedSelector { get; set; }
 
     /// <summary>
     /// Whether an item is enabled or not.
     /// </summary>
-    [Parameter]
-    public string IsEnabledField
-    {
-        get => isEnabledField;
-        set
-        {
-            isEnabledField = value;
-            _internalIsEnabledField = value;
-        }
-    }
+    [Parameter] public string IsEnabledField { get; set; } = IS_ENABLED_FIELD;
 
     /// <summary>
     /// Whether an item is enabled or not.
     /// </summary>
-    [Parameter]
-    public Expression<Func<TItem, bool>>? IsEnabledSelector
-    {
-        get => isEnabledSelector;
-        set
-        {
-            isEnabledSelector = value;
-
-            if (value is not null)
-            {
-                _internalIsEnabledField = value.GetName();
-            }
-        }
-    }
+    [Parameter] public Expression<Func<TItem, bool>>? IsEnabledSelector { get; set; }
 
     /// <summary>
     /// The maximum number of breadcrumbs to display before coalescing.
     /// If not specified, all breadcrumbs will be rendered.
     /// </summary>
-    [Parameter]
-    public int MaxDisplayedItems
-    {
-        get => maxDisplayedItems;
-        set
-        {
-            if (value != maxDisplayedItems)
-            {
-                maxDisplayedItems = value;
-                SetItemsToShow();
-            }
-        }
-    }
+    [Parameter] public int MaxDisplayedItems { get; set; }
 
     /// <summary>
     /// Aria label for the overflow button.
@@ -231,21 +102,7 @@ public partial class BitBreadList<TItem> : IDisposable
     /// <summary>
     /// Optional index where overflow items will be collapsed.
     /// </summary>
-    [Parameter] 
-    public int OverflowIndex 
-    {
-        get => overflowIndex;
-        set
-        {
-            _internalOverflowIndex = value;
-
-            if (value != overflowIndex)
-            {
-                overflowIndex = value;
-                SetItemsToShow();
-            }
-        }
-    }
+    [Parameter] public int OverflowIndex { get; set; }
 
     /// <summary>
     /// Render a custom overflow icon in place of the default icon.
@@ -260,34 +117,12 @@ public partial class BitBreadList<TItem> : IDisposable
     /// <summary>
     /// Style HTML attribute for breadcrumb item.
     /// </summary>
-    [Parameter]
-    public string StyleField
-    {
-        get => styleField;
-        set
-        {
-            styleField = value;
-            _internalStyleField = value;
-        }
-    }
+    [Parameter] public string StyleField { get; set; } = STYLE_FIELD;
 
     /// <summary>
     /// Style HTML attribute for breadcrumb item.
     /// </summary>
-    [Parameter]
-    public Expression<Func<TItem, object>>? StyleSelector
-    {
-        get => styleSelector;
-        set
-        {
-            styleSelector = value;
-
-            if (value is not null)
-            {
-                _internalStyleField = value.GetName();
-            }
-        }
-    }
+    [Parameter] public Expression<Func<TItem, object>>? StyleSelector { get; set; }
 
     /// <summary>
     /// The class HTML attribute for Selected Item.
@@ -302,34 +137,12 @@ public partial class BitBreadList<TItem> : IDisposable
     /// <summary>
     /// Text to display in the breadcrumb item.
     /// </summary>
-    [Parameter]
-    public string TextField
-    {
-        get => textField;
-        set
-        {
-            textField = value;
-            _internalTextField = value;
-        }
-    }
+    [Parameter] public string TextField { get; set; } = TEXT_FIELD;
 
     /// <summary>
     /// Text to display in the breadcrumb item.
     /// </summary>
-    [Parameter]
-    public Expression<Func<TItem, object>>? TextSelector
-    {
-        get => textSelector;
-        set
-        {
-            textSelector = value;
-
-            if (value is not null)
-            {
-                _internalTextField = value.GetName();
-            }
-        }
-    }
+    [Parameter] public Expression<Func<TItem, object>>? TextSelector { get; set; }
 
     protected override string RootElementClass => "bit-brl";
 
@@ -338,6 +151,72 @@ public partial class BitBreadList<TItem> : IDisposable
         _dotnetObj = DotNetObjectReference.Create(this);
 
         return base.OnInitializedAsync();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        bool shouldSetItemsToShow = false;
+
+        var newClassField = ClassSelector?.GetName() ?? ClassField;
+        if (newClassField != _internalClassField)
+        {
+            _internalClassField = newClassField;
+        }
+
+        var newHrefField = HrefSelector?.GetName() ?? HrefField;
+        if (newHrefField != _internalHrefField)
+        {
+            _internalHrefField = newHrefField;
+        }
+
+        var newIsSelectedField = IsSelectedSelector?.GetName() ?? IsSelectedField;
+        if (newIsSelectedField != _internalIsSelectedField)
+        {
+            _internalIsSelectedField = newIsSelectedField;
+        }
+
+        var newIsEnabledField = IsEnabledSelector?.GetName() ?? IsEnabledField;
+        if (newIsEnabledField != _internalIsEnabledField)
+        {
+            _internalIsEnabledField = newIsEnabledField;
+        }
+
+        var newTextField = TextSelector?.GetName() ?? TextField;
+        if (newTextField != _internalTextField)
+        {
+            _internalTextField = newTextField;
+        }
+
+        var newStyleField = StyleSelector?.GetName() ?? StyleField;
+        if (newStyleField != _internalStyleField)
+        {
+            _internalStyleField = newStyleField;
+        }
+
+        if (Items != _internalItems)
+        {
+            _internalItems = Items;
+            shouldSetItemsToShow = true;
+        }
+
+        if (OverflowIndex != _internalOverflowIndex)
+        {
+            _internalOverflowIndex = OverflowIndex;
+            shouldSetItemsToShow = true;
+        }
+
+        if (MaxDisplayedItems != _internalMaxDisplayedItems)
+        {
+            _internalMaxDisplayedItems = MaxDisplayedItems;
+            shouldSetItemsToShow = true;
+        }
+
+        if (shouldSetItemsToShow)
+        {
+            SetItemsToShow();
+        }
+
+        await base.OnParametersSetAsync();
     }
 
     private async Task ToggleCallout()
@@ -361,20 +240,20 @@ public partial class BitBreadList<TItem> : IDisposable
         _displayItems.Clear();
         _overflowItems.Clear();
 
-        if (MaxDisplayedItems == 0 || MaxDisplayedItems >= Items.Count)
+        if (_internalMaxDisplayedItems == 0 || _internalMaxDisplayedItems >= _internalItems.Count)
         {
-            _displayItems = items.ToList();
+            _displayItems = _internalItems.ToList();
             return;
         }
 
-        if (OverflowIndex >= MaxDisplayedItems)
+        if (_internalOverflowIndex >= _internalMaxDisplayedItems)
         {
             _internalOverflowIndex = 0;
         }
 
-        var overflowItemsCount = Items.Count - MaxDisplayedItems;
+        var overflowItemsCount = _internalItems.Count - _internalMaxDisplayedItems;
 
-        foreach ((TItem item, int index) in Items.Select((item, index) => (item, index)))
+        foreach ((TItem item, int index) in _internalItems.Select((item, index) => (item, index)))
         {
             if (_internalOverflowIndex <= index && index < overflowItemsCount + _internalOverflowIndex)
             {
