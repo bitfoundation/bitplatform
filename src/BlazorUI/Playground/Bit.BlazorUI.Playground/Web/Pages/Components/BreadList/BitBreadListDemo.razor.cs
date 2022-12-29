@@ -65,7 +65,7 @@ public partial class BitBreadListDemo
         },
         new()
         {
-            Name = "ClassSelector",
+            Name = "ClassFieldSelector",
             Type = "Expression<Func<TItem, object>>?",
             Description = "Class HTML attribute for BreadList item."
         },
@@ -85,7 +85,7 @@ public partial class BitBreadListDemo
         },
         new()
         {
-            Name = "HrefSelector",
+            Name = "HrefFieldSelector",
             Type = "Expression<Func<TItem, object>>?",
             Description = "URL to navigate to when this BreadList item is clicked. If provided, the BreadList will be rendered as a link."
         },
@@ -105,7 +105,7 @@ public partial class BitBreadListDemo
         },
         new()
         {
-            Name = "IsSelectedSelector",
+            Name = "IsSelectedFieldSelector",
             Type = "Expression<Func<TItem, bool>>?",
             Description = "Display the item as a Selected item."
         },
@@ -118,7 +118,7 @@ public partial class BitBreadListDemo
         },
         new()
         {
-            Name = "IsEnabledSelector",
+            Name = "IsEnabledFieldSelector",
             Type = "Expression<Func<TItem, bool>>?",
             Description = "Whether an item is enabled or not."
         },
@@ -155,19 +155,6 @@ public partial class BitBreadListDemo
         },
         new()
         {
-            Name = "StyleField",
-            Type = "string",
-            DefaultValue = "Style",
-            Description = "Style HTML attribute for BreadList item."
-        },
-        new()
-        {
-            Name = "StyleSelector",
-            Type = "Expression<Func<TItem, object>>?",
-            Description = "Style HTML attribute for BreadList item."
-        },
-        new()
-        {
             Name = "SelectedItemClass",
             Type = "string?",
             Description = "The class HTML attribute for Selected Item."
@@ -187,9 +174,22 @@ public partial class BitBreadListDemo
         },
         new()
         {
-            Name = "TextSelector",
+            Name = "TextFieldSelector",
             Type = "Expression<Func<TItem, object>>?",
             Description = "Text to display in the BreadList item."
+        },
+        new()
+        {
+            Name = "StyleField",
+            Type = "string",
+            DefaultValue = "Style",
+            Description = "Style HTML attribute for BreadList item."
+        },
+        new()
+        {
+            Name = "StyleFieldSelector",
+            Type = "Expression<Func<TItem, object>>?",
+            Description = "Style HTML attribute for BreadList item."
         },
     };
 
@@ -231,25 +231,25 @@ private List<PageInfoModel> BasicBreadListItems = new()
 <div>
     <BitLabel>Selector parameter</BitLabel>
     <BitBreadList Items=""BasicBreadListItems""
-                  TextSelector=""item => item.Name""
-                  HrefSelector=""item => item.Href""
-                  IsSelectedSelector=""item => item.IsSelected"" />
+                  TextFieldSelector=""item => item.Name""
+                  HrefFieldSelector=""item => item.Href""
+                  IsSelectedFieldSelector=""item => item.IsSelected"" />
 </div>
 <div>
     <BitLabel>Disabled</BitLabel>
     <BitBreadList Items=""BasicBreadListItems""
-                  TextSelector=""item => item.Name""
-                  HrefSelector=""item => item.Href""
-                  IsSelectedSelector=""item => item.IsSelected""
+                  TextFieldSelector=""item => item.Name""
+                  HrefFieldSelector=""item => item.Href""
+                  IsSelectedFieldSelector=""item => item.IsSelected""
                   IsEnabled=""false"" />
 </div>
 <div>
     <BitLabel>Item Disabled</BitLabel>
     <BitBreadList Items=""BasicBreadListItemsDisabled""
-                  TextSelector=""item => item.Name""
-                  HrefSelector=""item => item.Href""
-                  IsEnabledSelector=""item => item.IsEnabled""
-                  IsSelectedSelector=""item => item.IsSelected"" />
+                  TextFieldSelector=""item => item.Name""
+                  HrefFieldSelector=""item => item.Href""
+                  IsEnabledFieldSelector=""item => item.IsEnabled""
+                  IsSelectedFieldSelector=""item => item.IsSelected"" />
 </div>
 ";
 

@@ -36,14 +36,14 @@ public partial class BitBreadList<TItem> : IDisposable
     [Inject] public IJSRuntime _js { get; set; } = default!;
 
     /// <summary>
-    /// class HTML attribute for breadcrumb item.
+    /// class HTML attribute for BreadList item.
     /// </summary>
     [Parameter] public string ClassField { get; set; } = CLASS_FIELD;
 
     /// <summary>
-    /// Class HTML attribute for breadcrumb item.
+    /// Class HTML attribute for BreadList item.
     /// </summary>
-    [Parameter] public Expression<Func<TItem, object>>? ClassSelector { get; set; }
+    [Parameter] public Expression<Func<TItem, object>>? ClassFieldSelector { get; set; }
 
     /// <summary>
     /// Render a custom divider in place of the default chevron >
@@ -51,20 +51,20 @@ public partial class BitBreadList<TItem> : IDisposable
     [Parameter] public BitIconName DividerIcon { get; set; } = BitIconName.ChevronRight;
 
     /// <summary>
-    /// URL to navigate to when this breadcrumb item is clicked.
-    /// If provided, the breadcrumb will be rendered as a link.
+    /// URL to navigate to when this BreadList item is clicked.
+    /// If provided, the BreadList will be rendered as a link.
     /// </summary>
     [Parameter]
     public string HrefField { get; set; } = HREF_FIELD;
 
     /// <summary>
-    /// URL to navigate to when this breadcrumb item is clicked.
-    /// If provided, the breadcrumb will be rendered as a link.
+    /// URL to navigate to when this BreadList item is clicked.
+    /// If provided, the BreadList will be rendered as a link.
     /// </summary>
-    [Parameter] public Expression<Func<TItem, object>>? HrefSelector { get; set; }
+    [Parameter] public Expression<Func<TItem, object>>? HrefFieldSelector { get; set; }
 
     /// <summary>
-    /// Collection of breadcrumbs to render.
+    /// Collection of BreadLists to render.
     /// </summary>
     [Parameter] public IList<TItem> Items { get; set; } = new List<TItem>();
 
@@ -76,7 +76,7 @@ public partial class BitBreadList<TItem> : IDisposable
     /// <summary>
     /// Display the item as a Selected item.
     /// </summary>
-    [Parameter] public Expression<Func<TItem, bool>>? IsSelectedSelector { get; set; }
+    [Parameter] public Expression<Func<TItem, bool>>? IsSelectedFieldSelector { get; set; }
 
     /// <summary>
     /// Whether an item is enabled or not.
@@ -86,11 +86,11 @@ public partial class BitBreadList<TItem> : IDisposable
     /// <summary>
     /// Whether an item is enabled or not.
     /// </summary>
-    [Parameter] public Expression<Func<TItem, bool>>? IsEnabledSelector { get; set; }
+    [Parameter] public Expression<Func<TItem, bool>>? IsEnabledFieldSelector { get; set; }
 
     /// <summary>
-    /// The maximum number of breadcrumbs to display before coalescing.
-    /// If not specified, all breadcrumbs will be rendered.
+    /// The maximum number of BreadLists to display before coalescing.
+    /// If not specified, all BreadLists will be rendered.
     /// </summary>
     [Parameter] public int MaxDisplayedItems { get; set; }
 
@@ -110,19 +110,19 @@ public partial class BitBreadList<TItem> : IDisposable
     [Parameter] public BitIconName OverflowIcon { get; set; } = BitIconName.More;
 
     /// <summary>
-    /// Callback for when the breadcrumb item clicked.
+    /// Callback for when the BreadList item clicked.
     /// </summary>
     [Parameter] public EventCallback<TItem> OnItemClick { get; set; }
 
     /// <summary>
-    /// Style HTML attribute for breadcrumb item.
+    /// Style HTML attribute for BreadList item.
     /// </summary>
     [Parameter] public string StyleField { get; set; } = STYLE_FIELD;
 
     /// <summary>
-    /// Style HTML attribute for breadcrumb item.
+    /// Style HTML attribute for BreadList item.
     /// </summary>
-    [Parameter] public Expression<Func<TItem, object>>? StyleSelector { get; set; }
+    [Parameter] public Expression<Func<TItem, object>>? StyleFieldSelector { get; set; }
 
     /// <summary>
     /// The class HTML attribute for Selected Item.
@@ -135,14 +135,14 @@ public partial class BitBreadList<TItem> : IDisposable
     [Parameter] public string? SelectedItemStyle { get; set; }
 
     /// <summary>
-    /// Text to display in the breadcrumb item.
+    /// Text to display in the BreadList item.
     /// </summary>
     [Parameter] public string TextField { get; set; } = TEXT_FIELD;
 
     /// <summary>
-    /// Text to display in the breadcrumb item.
+    /// Text to display in the BreadList item.
     /// </summary>
-    [Parameter] public Expression<Func<TItem, object>>? TextSelector { get; set; }
+    [Parameter] public Expression<Func<TItem, object>>? TextFieldSelector { get; set; }
 
     protected override string RootElementClass => "bit-brl";
 
@@ -157,37 +157,37 @@ public partial class BitBreadList<TItem> : IDisposable
     {
         bool shouldSetItemsToShow = false;
 
-        var newClassField = ClassSelector?.GetName() ?? ClassField;
+        var newClassField = ClassFieldSelector?.GetName() ?? ClassField;
         if (newClassField != _internalClassField)
         {
             _internalClassField = newClassField;
         }
 
-        var newHrefField = HrefSelector?.GetName() ?? HrefField;
+        var newHrefField = HrefFieldSelector?.GetName() ?? HrefField;
         if (newHrefField != _internalHrefField)
         {
             _internalHrefField = newHrefField;
         }
 
-        var newIsSelectedField = IsSelectedSelector?.GetName() ?? IsSelectedField;
+        var newIsSelectedField = IsSelectedFieldSelector?.GetName() ?? IsSelectedField;
         if (newIsSelectedField != _internalIsSelectedField)
         {
             _internalIsSelectedField = newIsSelectedField;
         }
 
-        var newIsEnabledField = IsEnabledSelector?.GetName() ?? IsEnabledField;
+        var newIsEnabledField = IsEnabledFieldSelector?.GetName() ?? IsEnabledField;
         if (newIsEnabledField != _internalIsEnabledField)
         {
             _internalIsEnabledField = newIsEnabledField;
         }
 
-        var newTextField = TextSelector?.GetName() ?? TextField;
+        var newTextField = TextFieldSelector?.GetName() ?? TextField;
         if (newTextField != _internalTextField)
         {
             _internalTextField = newTextField;
         }
 
-        var newStyleField = StyleSelector?.GetName() ?? StyleField;
+        var newStyleField = StyleFieldSelector?.GetName() ?? StyleField;
         if (newStyleField != _internalStyleField)
         {
             _internalStyleField = newStyleField;
