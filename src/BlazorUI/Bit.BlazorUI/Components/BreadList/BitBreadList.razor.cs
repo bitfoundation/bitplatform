@@ -23,8 +23,8 @@ public partial class BitBreadList<TItem> : IDisposable
     private IList<TItem> _internalItems = new List<TItem>();
     private IList<TItem> _displayItems = new List<TItem>();
     private IList<TItem> _overflowItems = new List<TItem>();
-    private int _internalOverflowIndex;
-    private int _internalMaxDisplayedItems;
+    private uint _internalOverflowIndex;
+    private uint _internalMaxDisplayedItems;
     private bool _isCalloutOpen;
     private bool _disposed;
 
@@ -92,7 +92,7 @@ public partial class BitBreadList<TItem> : IDisposable
     /// The maximum number of BreadLists to display before coalescing.
     /// If not specified, all BreadLists will be rendered.
     /// </summary>
-    [Parameter] public int MaxDisplayedItems { get; set; }
+    [Parameter] public uint MaxDisplayedItems { get; set; }
 
     /// <summary>
     /// Aria label for the overflow button.
@@ -102,7 +102,7 @@ public partial class BitBreadList<TItem> : IDisposable
     /// <summary>
     /// Optional index where overflow items will be collapsed.
     /// </summary>
-    [Parameter] public int OverflowIndex { get; set; }
+    [Parameter] public uint OverflowIndex { get; set; }
 
     /// <summary>
     /// Render a custom overflow icon in place of the default icon.
@@ -155,77 +155,23 @@ public partial class BitBreadList<TItem> : IDisposable
 
     protected override async Task OnParametersSetAsync()
     {
+        _internalClassField = ClassFieldSelector?.GetName() ?? ClassField;
+        _internalHrefField = HrefFieldSelector?.GetName() ?? HrefField;
+        _internalIsSelectedField = IsSelectedFieldSelector?.GetName() ?? IsSelectedField;
+        _internalIsEnabledField = IsEnabledFieldSelector?.GetName() ?? IsEnabledField;
+        _internalTextField = TextFieldSelector?.GetName() ?? TextField;
+        _internalStyleField = StyleFieldSelector?.GetName() ?? StyleField;
+
         bool shouldCallSetItemsToShow = false;
 
-        var newClassField = ClassFieldSelector?.GetName() ?? ClassField;
-        if (newClassField != _internalClassField)
-        {
-            _internalClassField = newClassField;
-        }
+        shouldCallSetItemsToShow = _internalItems != Items;
+        _internalItems = Items;
 
-        var newHrefField = HrefFieldSelector?.GetName() ?? HrefField;
-        if (newHrefField != _internalHrefField)
-        {
-            _internalHrefField = newHrefField;
-        }
+        shouldCallSetItemsToShow = shouldCallSetItemsToShow || _internalMaxDisplayedItems != MaxDisplayedItems;
+        _internalMaxDisplayedItems = MaxDisplayedItems == 0 ? (uint)_internalItems.Count : MaxDisplayedItems;
 
-        var newIsSelectedField = IsSelectedFieldSelector?.GetName() ?? IsSelectedField;
-        if (newIsSelectedField != _internalIsSelectedField)
-        {
-            _internalIsSelectedField = newIsSelectedField;
-        }
-
-        var newIsEnabledField = IsEnabledFieldSelector?.GetName() ?? IsEnabledField;
-        if (newIsEnabledField != _internalIsEnabledField)
-        {
-            _internalIsEnabledField = newIsEnabledField;
-        }
-
-        var newTextField = TextFieldSelector?.GetName() ?? TextField;
-        if (newTextField != _internalTextField)
-        {
-            _internalTextField = newTextField;
-        }
-
-        var newStyleField = StyleFieldSelector?.GetName() ?? StyleField;
-        if (newStyleField != _internalStyleField)
-        {
-            _internalStyleField = newStyleField;
-        }
-
-        if (Items != _internalItems)
-        {
-            _internalItems = Items;
-            shouldCallSetItemsToShow = true;
-        }
-
-        if (MaxDisplayedItems != _internalMaxDisplayedItems)
-        {
-            if (MaxDisplayedItems < 0 || MaxDisplayedItems > _internalItems.Count)
-            {
-                _internalMaxDisplayedItems = 0;
-            }
-            else
-            {
-                _internalMaxDisplayedItems = MaxDisplayedItems;
-            }
-            
-            shouldCallSetItemsToShow = true;
-        }
-
-        if (OverflowIndex != _internalOverflowIndex)
-        {
-            if (OverflowIndex < 0 || OverflowIndex >= _internalMaxDisplayedItems)
-            {
-                _internalOverflowIndex = 0;
-            }
-            else
-            {
-                _internalOverflowIndex = OverflowIndex;
-            }
-            
-            shouldCallSetItemsToShow = true;
-        }
+        shouldCallSetItemsToShow = shouldCallSetItemsToShow || _internalOverflowIndex != OverflowIndex;
+        _internalOverflowIndex = OverflowIndex >= _internalMaxDisplayedItems ? 0 : OverflowIndex;
 
         if (shouldCallSetItemsToShow)
         {
@@ -256,17 +202,11 @@ public partial class BitBreadList<TItem> : IDisposable
         _displayItems.Clear();
         _overflowItems.Clear();
 
-        if (_internalMaxDisplayedItems == 0 || _internalMaxDisplayedItems >= _internalItems.Count)
-        {
-            _displayItems = _internalItems.ToList();
-            return;
-        }
-
         var overflowItemsCount = _internalItems.Count - _internalMaxDisplayedItems;
 
         foreach ((TItem item, int index) in _internalItems.Select((item, index) => (item, index)))
         {
-            if (_internalOverflowIndex <= index && index < overflowItemsCount + _internalOverflowIndex)
+            if (_internalOverflowIndex <= index && index < (overflowItemsCount + _internalOverflowIndex))
             {
                 if (index == _internalOverflowIndex)
                 {
