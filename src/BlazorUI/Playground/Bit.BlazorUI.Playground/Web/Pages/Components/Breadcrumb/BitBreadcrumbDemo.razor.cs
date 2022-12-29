@@ -179,7 +179,7 @@ public partial class BitBreadcrumbDemo
         new()
         {
             Name = "MaxDisplayedItems",
-            Type = "int",
+            Type = "uint",
             Description = "The maximum number of breadcrumbs to display before coalescing. If not specified, all breadcrumbs will be rendered."
         },
         new()
@@ -191,7 +191,7 @@ public partial class BitBreadcrumbDemo
         new()
         {
             Name = "OverflowIndex",
-            Type = "int",
+            Type = "uint",
             Description = "Optional index where overflow items will be collapsed."
         },
         new()
