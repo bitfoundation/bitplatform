@@ -173,13 +173,39 @@
         <ExamplePreview>
             <div class="example-desc">By clicking on the items, the Selected item will change and match the SelectedItemStyle.</div>
             <div class="example-box">
-                <BitBreadList Items="BreadListItemsWithControll"
+                <BitBreadList Items="BreadListItemsWithControlled"
                               TextField="@nameof(PageInfoModel.Name)"
                               IsSelectedField="@nameof(PageInfoModel.IsSelected)"
                               MaxDisplayedItems="3"
                               OverflowIndex="2"
                               OnItemClick="(PageInfoModel item) => HandleOnItemClick(item)"
                               SelectedItemStyle="color:red; background:lightgreen;" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Customized" HTMLSourceCode="@example6HTMLCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example6">
+        <ExamplePreview>
+            <div class="example-box">
+                <div>
+                    <BitBreadList Items="BreadListItemsWithCustomized"
+                                  TextField="@nameof(PageInfoModel.Name)"
+                                  IsSelectedField="@nameof(PageInfoModel.IsSelected)"
+                                  MaxDisplayedItems="@MaxDisplayedItems"
+                                  OverflowIndex="@OverflowIndex"
+                                  OnItemClick="(PageInfoModel item) => HandleOnItemClick_Customized(item)" />
+                </div>
+
+                <div class="operators">
+                    <div>
+                        <BitButton OnClick="AddItem">Add Item</BitButton>
+                        <BitButton OnClick="RemoveItem">Remove Item</BitButton>
+                    </div>
+                    <div>
+                        <BitNumericTextField @bind-Value="MaxDisplayedItems" Step="@NumericTextFieldStep" Label="MaxDisplayedItems" />
+                        <BitNumericTextField @bind-Value="OverflowIndex" Step="@NumericTextFieldStep" Label="OverflowIndex" />
+                    </div>
+                </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>

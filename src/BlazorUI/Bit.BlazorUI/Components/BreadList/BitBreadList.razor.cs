@@ -165,7 +165,7 @@ public partial class BitBreadList<TItem> : IDisposable
         bool shouldCallSetItemsToShow = false;
 
         shouldCallSetItemsToShow = _internalItems != Items;
-        _internalItems = Items;
+        _internalItems = Items.ToList();
 
         shouldCallSetItemsToShow = shouldCallSetItemsToShow || _internalMaxDisplayedItems != MaxDisplayedItems;
         _internalMaxDisplayedItems = MaxDisplayedItems == 0 ? (uint)_internalItems.Count : MaxDisplayedItems;
@@ -201,6 +201,12 @@ public partial class BitBreadList<TItem> : IDisposable
     {
         _displayItems.Clear();
         _overflowItems.Clear();
+
+        if (_internalMaxDisplayedItems >= _internalItems.Count)
+        {
+            _displayItems = _internalItems.ToList();
+            return;
+        }
 
         var overflowItemsCount = _internalItems.Count - _internalMaxDisplayedItems;
 

@@ -38,7 +38,7 @@ public partial class BitBreadListDemo
         new PageInfoModel { Name = "Item 4", Href = "/components/bread-list", HtmlStyle = "color:red; background:greenyellow;", IsSelected = true },
     };
 
-    private List<PageInfoModel> BreadListItemsWithControll = new()
+    private List<PageInfoModel> BreadListItemsWithControlled = new()
     {
         new PageInfoModel { Name = "Item 1" },
         new PageInfoModel { Name = "Item 2" },
@@ -48,10 +48,54 @@ public partial class BitBreadListDemo
         new PageInfoModel { Name = "Item 6", IsSelected = true },
     };
 
+    private List<PageInfoModel> BreadListItemsWithCustomized = new()
+    {
+        new PageInfoModel { Name = "Item 1" },
+        new PageInfoModel { Name = "Item 2" },
+        new PageInfoModel { Name = "Item 3" },
+        new PageInfoModel { Name = "Item 4", IsSelected = true }
+    };
+
     private void HandleOnItemClick(PageInfoModel item)
     {
-        BreadListItemsWithControll.FirstOrDefault(i => i.IsSelected).IsSelected = false;
-        BreadListItemsWithControll.FirstOrDefault(i => i == item).IsSelected = true;
+        BreadListItemsWithControlled.FirstOrDefault(i => i.IsSelected).IsSelected = false;
+        BreadListItemsWithControlled.FirstOrDefault(i => i == item).IsSelected = true;
+    }
+
+    private uint ItemsCount = 4;
+    private uint MaxDisplayedItems = 3;
+    private uint OverflowIndex = 2;
+    private uint NumericTextFieldStep = 1;
+
+    private void AddItem()
+    {
+        ItemsCount++;
+        BreadListItemsWithCustomized.Add(new PageInfoModel
+        {
+            Name = $"Item {ItemsCount}"
+        });
+    }
+
+    private void RemoveItem()
+    {
+        if (BreadListItemsWithCustomized.Count > 1)
+        {
+            ItemsCount--;
+
+            var item = BreadListItemsWithCustomized[^1];
+            BreadListItemsWithCustomized.Remove(item);
+
+            if (item.IsSelected)
+            {
+                BreadListItemsWithCustomized[^1].IsSelected = true;
+            }
+        }
+    }
+
+    private void HandleOnItemClick_Customized(PageInfoModel item)
+    {
+        BreadListItemsWithCustomized.FirstOrDefault(i => i.IsSelected).IsSelected = false;
+        BreadListItemsWithCustomized.FirstOrDefault(i => i == item).IsSelected = true;
     }
 
     private readonly List<ComponentParameter> componentParameters = new()
@@ -480,7 +524,7 @@ private List<PageInfoModel> BasicBreadListItems = new()
     #region Sample Code 5
 
     private readonly string example5HTMLCode = @"
-<BitBreadList Items=""BreadListItemsWithControll""
+<BitBreadList Items=""BreadListItemsWithControlled""
               TextField=""@nameof(PageInfoModel.Name)""
               IsSelectedField=""@nameof(PageInfoModel.IsSelected)""
               MaxDisplayedItems=""3""
@@ -505,7 +549,7 @@ public class PageInfoModel
     public bool IsEnabled { get; set; } = true;
 }
 
-private List<PageInfoModel> BreadListItemsWithControll = new()
+private List<PageInfoModel> BreadListItemsWithControlled = new()
 {
     new PageInfoModel { Name = ""Item 1"" },
     new PageInfoModel { Name = ""Item 2"" },
@@ -517,8 +561,80 @@ private List<PageInfoModel> BreadListItemsWithControll = new()
 
 private void HandleOnItemClick(PageInfoModel item)
 {
-    BreadListItemsWithControll.FirstOrDefault(i => i.IsSelected).IsSelected = false;
-    BreadListItemsWithControll.FirstOrDefault(i => i == item).IsSelected = true;
+    BreadListItemsWithControlled.FirstOrDefault(i => i.IsSelected).IsSelected = false;
+    BreadListItemsWithControlled.FirstOrDefault(i => i == item).IsSelected = true;
+}
+";
+
+    #endregion
+
+    #region Sample Code 6
+
+    private readonly string example6HTMLCode = @"
+<div>
+    <BitBreadList Items=""BreadListItemsWithCustomized""
+                  TextField=""@nameof(PageInfoModel.Name)""
+                  IsSelectedField=""@nameof(PageInfoModel.IsSelected)""
+                  MaxDisplayedItems=""@MaxDisplayedItems""
+                  OverflowIndex=""@OverflowIndex""
+                  OnItemClick=""(PageInfoModel item) => HandleOnItemClick_Customized(item)"" />
+</div>
+
+<div class=""operators"">
+    <div>
+        <BitButton OnClick=""AddItem"">Add Item</BitButton>
+        <BitButton OnClick=""RemoveItem"">Remove Item</BitButton>
+    </div>
+    <div>
+        <BitNumericTextField @bind-Value=""MaxDisplayedItems"" Step=""@NumericTextFieldStep"" Label=""MaxDisplayedItems"" />
+        <BitNumericTextField @bind-Value=""OverflowIndex"" Step=""@NumericTextFieldStep"" Label=""OverflowIndex"" />
+    </div>
+</div>
+";
+
+    private readonly string example6CSharpCode = @"
+private List<PageInfoModel> BreadListItemsWithCustomized = new()
+{
+    new PageInfoModel { Name = ""Item 1"" },
+    new PageInfoModel { Name = ""Item 2"" },
+    new PageInfoModel { Name = ""Item 3"" },
+    new PageInfoModel { Name = ""Item 4"", IsSelected = true }
+};
+
+private uint ItemsCount = 4;
+private uint MaxDisplayedItems = 3;
+private uint OverflowIndex = 2;
+private uint NumericTextFieldStep = 1;
+
+private void AddItem()
+{
+    ItemsCount++;
+    BreadListItemsWithCustomized.Add(new PageInfoModel
+    {
+        Name = $""Item {ItemsCount}""
+    });
+}
+
+private void RemoveItem()
+{
+    if (BreadListItemsWithCustomized.Count > 1)
+    {
+        ItemsCount--;
+
+        var item = BreadListItemsWithCustomized[^1];
+        BreadListItemsWithCustomized.Remove(item);
+
+        if (item.IsSelected)
+        {
+            BreadListItemsWithCustomized[^1].IsSelected = true;
+        }
+    }
+}
+
+private void HandleOnItemClick_Customized(PageInfoModel item)
+{
+    BreadListItemsWithCustomized.FirstOrDefault(i => i.IsSelected).IsSelected = false;
+    BreadListItemsWithCustomized.FirstOrDefault(i => i == item).IsSelected = true;
 }
 ";
 
