@@ -48,7 +48,7 @@ public class BitBreadcrumbTests : BunitTestContext
       DataRow(0),
       DataRow(3)
    ]
-    public void BitBreadcrumbShouldRespectMaxDisplayeItems(int maxDisplayedItems)
+    public void BitBreadcrumbShouldRespectMaxDisplayeItems(uint maxDisplayedItems)
     {
         var breadcrumbItems = GetBreadcrumbItems();
 
@@ -62,7 +62,7 @@ public class BitBreadcrumbTests : BunitTestContext
 
         if (maxDisplayedItems > 0)
         {
-            Assert.AreEqual(breadcrumbElements.Count, maxDisplayedItems + 1);
+            Assert.AreEqual((uint)breadcrumbElements.Count, maxDisplayedItems + 1);
         }
         else
         {
@@ -74,7 +74,7 @@ public class BitBreadcrumbTests : BunitTestContext
       DataRow(BitIconName.ChevronDown, 2, 0),
       DataRow(BitIconName.ChevronDown, 3, 1)
     ]
-    public void BitBreadcrumbShouldRespectOverflowChanges(BitIconName icon, int maxDisplayedItems, int overflowIndex)
+    public void BitBreadcrumbShouldRespectOverflowChanges(BitIconName icon, uint maxDisplayedItems, uint overflowIndex)
     {
         var component = RenderComponent<BitBreadcrumb>(parameters =>
         {
@@ -89,9 +89,9 @@ public class BitBreadcrumbTests : BunitTestContext
         Assert.IsTrue(breadcrumbOverflowIcon.ClassList.Contains($"bit-icon--{icon}"));
 
         var breadcrumbElements = component.FindAll(".bit-brc .items-wrapper ul li");
-        var overflowItem = breadcrumbElements[overflowIndex];
+        var overflowItem = breadcrumbElements[(int)overflowIndex];
 
-        Assert.AreEqual(breadcrumbElements.Count, maxDisplayedItems + 1);
+        Assert.AreEqual((uint)breadcrumbElements.Count, maxDisplayedItems + 1);
         Assert.IsTrue(overflowItem.InnerHtml.Contains("button"));
     }
 
@@ -115,7 +115,7 @@ public class BitBreadcrumbTests : BunitTestContext
     [DataTestMethod,
       DataRow("Detailed label", 3)
     ]
-    public void BitBreadcrumbShouldTakeOverflowAriaLabel(string overflowAriaLabel, int maxDisplayedItems)
+    public void BitBreadcrumbShouldTakeOverflowAriaLabel(string overflowAriaLabel, uint maxDisplayedItems)
     {
         var breadcrumbItems = GetBreadcrumbItems();
 
