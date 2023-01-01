@@ -5,21 +5,19 @@ namespace Bit.BlazorUI;
 
 public partial class BitBreadGroup : IDisposable
 {
-    private int maxDisplayedOptions;
-    private int overfelowIndex;
-    
-    private string _wrapperId => $"{UniqueId}-wrapper";
-    private string _calloutId => $"{UniqueId}-callout";
-    private string _overlayId => $"{UniqueId}-overlay";
-    private string _overflowDropDownId => $"{UniqueId}-overflow-dropdown";
-
     private bool _disposed;
     private bool _isCalloutOpen;
-    private int _internalOverfelowIndex;
+    private uint _internalOverflowIndex;
+    private uint _internalMaxDisplayedOptions;
     private List<BitBreadOption> _allOptions = new();
     private List<BitBreadOption> _displayOptions = new();
     private List<BitBreadOption> _overflowOptions = new();
     private DotNetObjectReference<BitBreadGroup> _dotnetObj = default!;
+
+    private string _wrapperId => $"{UniqueId}-wrapper";
+    private string _calloutId => $"{UniqueId}-callout";
+    private string _overlayId => $"{UniqueId}-overlay";
+    private string _overflowDropDownId => $"{UniqueId}-overflow-dropdown";
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
@@ -47,16 +45,7 @@ public partial class BitBreadGroup : IDisposable
     /// The maximum number of BitBreadGroup to display before coalescing.
     /// If not specified, all BitBreadGroup will be rendered.
     /// </summary>
-    [Parameter]
-    public int MaxDisplayedOptions
-    {
-        get => maxDisplayedOptions;
-        set
-        {
-            maxDisplayedOptions = value;
-            SetOptionsToShow();
-        }
-    }
+    [Parameter] public uint MaxDisplayedOptions { get; set; }
 
     /// <summary>
     /// Aria label for the overflow button.
@@ -66,17 +55,7 @@ public partial class BitBreadGroup : IDisposable
     /// <summary>
     /// Optional index where overflow Options will be collapsed.
     /// </summary>
-    [Parameter]
-    public int OverflowIndex 
-    {
-        get => overfelowIndex;
-        set
-        {
-            overfelowIndex = value;
-            _internalOverfelowIndex = value;
-            SetOptionsToShow();
-        }
-    }
+    [Parameter] public uint OverflowIndex { get; set; }
 
     /// <summary>
     /// Render a custom overflow icon in place of the default icon.
@@ -92,9 +71,32 @@ public partial class BitBreadGroup : IDisposable
         return base.OnInitializedAsync();
     }
 
+    protected override async Task OnParametersSetAsync()
+    {
+        bool shouldCallSetItemsToShow = false;
+
+        shouldCallSetItemsToShow = _internalMaxDisplayedOptions != MaxDisplayedOptions;
+        _internalMaxDisplayedOptions = MaxDisplayedOptions == 0 ? (uint)_allOptions.Count : MaxDisplayedOptions;
+
+        shouldCallSetItemsToShow = shouldCallSetItemsToShow || _internalOverflowIndex != OverflowIndex;
+        _internalOverflowIndex = OverflowIndex >= _internalMaxDisplayedOptions ? 0 : OverflowIndex;
+
+        if (shouldCallSetItemsToShow)
+        {
+            SetOptionsToShow();
+        }
+
+        await base.OnParametersSetAsync();
+    }
+
     internal void RegisterOptions(BitBreadOption option)
     {
         _allOptions.Add(option);
+
+        _internalMaxDisplayedOptions = MaxDisplayedOptions == 0 ? (uint)_allOptions.Count : MaxDisplayedOptions;
+
+        _internalOverflowIndex = OverflowIndex >= _internalMaxDisplayedOptions ? 0 : OverflowIndex;
+
         SetOptionsToShow();
         StateHasChanged();
     }
@@ -124,39 +126,31 @@ public partial class BitBreadGroup : IDisposable
 
     private void SetOptionsToShow()
     {
-        if (_allOptions.Count == 0) return;
-
         _displayOptions.Clear();
         _overflowOptions.Clear();
 
-        if (MaxDisplayedOptions == 0 || MaxDisplayedOptions >= _allOptions.Count)
+        if (_internalMaxDisplayedOptions >= _allOptions.Count)
         {
-            _displayOptions.AddRange(_allOptions);
+            _displayOptions = _allOptions.ToList();
+            return;
         }
-        else 
+
+        var overflowOptionCount = _allOptions.Count - _internalMaxDisplayedOptions;
+
+        for (int index = 0; index < _allOptions.Count; index++)
         {
-            if (OverflowIndex >= MaxDisplayedOptions || OverflowIndex < 0)
+            if (_internalOverflowIndex <= index && index < (overflowOptionCount + _internalOverflowIndex))
             {
-                _internalOverfelowIndex = 0;
-            }
+                _overflowOptions.Add(_allOptions[index]);
 
-            int overflowOptionCount = _allOptions.Count - MaxDisplayedOptions;
-
-            for (int index = 0; index < _allOptions.Count; index++)
-            {
-                if (OverflowIndex <= index && index < overflowOptionCount + _internalOverfelowIndex)
-                {
-                    _overflowOptions.Add(_allOptions[index]);
-                    
-                    if (index == _internalOverfelowIndex)
-                    {
-                        _displayOptions.Add(_allOptions[index]);
-                    }
-                }
-                else
+                if (index == _internalOverflowIndex)
                 {
                     _displayOptions.Add(_allOptions[index]);
                 }
+            }
+            else
+            {
+                _displayOptions.Add(_allOptions[index]);
             }
         }
     }

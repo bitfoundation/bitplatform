@@ -28,4 +28,11 @@
     display: flex;
     gap: 20px;
     flex-direction: column;
+
+    .operators {
+        display: flex;
+        flex-flow: column nowrap;
+        gap: 5px;
+        max-width: 300px;
+    }
 }

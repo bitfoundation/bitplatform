@@ -23,7 +23,7 @@
                     class="@option.InternalClassBuilder.Value"
                     aria-label="@option.AriaLabel">
 
-                    @if (_overflowOptions.Any(o => o == option) && index == _internalOverfelowIndex)
+                    @if (_overflowOptions.Any() && index == _internalOverflowIndex)
                     {
                         <button type="button"
                                 class="overflow-btn"
@@ -58,7 +58,7 @@
                     }
                 </li>
 
-                @if (option != _allOptions[^1] || index == _internalOverfelowIndex)
+                @if (option != _allOptions[^1] || index == _internalOverflowIndex)
                 {
                     <i class="@($"bit-icon bit-icon--{DividerIcon.GetName()}")"></i>
                 }

@@ -190,4 +190,30 @@
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Customized" HTMLSourceCode="@example6HTMLCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example6">
+        <ExamplePreview>
+            <div class="example-box">
+                <div>
+                    <BitBreadGroup MaxDisplayedOptions="@MaxDisplayedOptions" OverflowIndex="@OverflowIndex">
+                        @for (int i = 0; i < OptionsCount; i++)
+                        {
+                            int index = i + 1;
+                            <BitBreadOption Text="@($"Option {index}")" IsSelected="@(CustomizedSelectedOptionNumber == index)" OnClick="() => CustomizedSelectedOptionNumber = index" />
+                        }
+                    </BitBreadGroup>
+                </div>
+                <div class="operators">
+                    <div>
+                        <BitButton OnClick="() => OptionsCount++">Add Option</BitButton>
+                        <BitButton OnClick="() => OptionsCount--">Remove Option</BitButton>
+                    </div>
+                    <div>
+                        <BitNumericTextField @bind-Value="MaxDisplayedOptions" Step="@NumericTextFieldStep" Label="MaxDisplayedOption" />
+                        <BitNumericTextField @bind-Value="OverflowIndex" Step="@NumericTextFieldStep" Label="OverflowIndex" />
+                    </div>
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
 </ComponentDemo>
