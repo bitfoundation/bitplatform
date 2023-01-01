@@ -197,8 +197,18 @@ public partial class BitBreadcrumbDemo
 
     private void RemoveItem()
     {
-        ItemsCount--;
-        BreadcrumbItemsWithCustomized.Remove(BreadcrumbItemsWithCustomized.LastOrDefault());
+        if (BreadcrumbItemsWithCustomized.Count > 1)
+        {
+            ItemsCount--;
+
+            var item = BreadcrumbItemsWithCustomized[^1];
+            BreadcrumbItemsWithCustomized.Remove(item);
+
+            if (item.IsSelected)
+            {
+                BreadcrumbItemsWithCustomized[^1].IsSelected = true;
+            }
+        }
     }
 
     private void HandleOnItemClick_Customized(BitBreadcrumbItem item)
@@ -687,8 +697,18 @@ private void AddItem()
 
 private void RemoveItem()
 {
-    ItemsCount--;
-    BreadcrumbItemsWithCustomized.Remove(BreadcrumbItemsWithCustomized.LastOrDefault());
+    if (BreadcrumbItemsWithCustomized.Count > 1)
+    {
+        ItemsCount--;
+
+        var item = BreadcrumbItemsWithCustomized[^1];
+        BreadcrumbItemsWithCustomized.Remove(item);
+
+        if (item.IsSelected)
+        {
+            BreadcrumbItemsWithCustomized[^1].IsSelected = true;
+        }
+    }
 }
 
 private void HandleOnItemClick_Customized(BitBreadcrumbItem item)
