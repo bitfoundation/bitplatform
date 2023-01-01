@@ -115,7 +115,7 @@ public partial class BitRadioButtonListDemo
         },
         new ComponentParameter()
         {
-            Name = "IsEnabledSelector",
+            Name = "IsEnabledFieldSelector",
             Type = "Expression<Func<TItem, bool>>?",
             Description = "The field from the model that will be enable item.",
         },
@@ -142,19 +142,19 @@ public partial class BitRadioButtonListDemo
         },
         new ComponentParameter()
         {
-            Name = "IconNameSelector",
+            Name = "IconNameFieldSelector",
             Type = "Expression<Func<TItem, BitIconName>>?",
             Description = "The field from the model that will be the BitIconName.",
         },
         new ComponentParameter()
         {
-            Name = "ImageSrcSelector",
+            Name = "ImageSrcFieldSelector",
             Type = "Expression<Func<TItem, object>>?",
             Description = "The field from the model that will be the image src.",
         },
         new ComponentParameter()
         {
-            Name = "ImageAltSelector",
+            Name = "ImageAltFieldSelector",
             Type = "Expression<Func<TItem, object>>?",
             Description = "The field from the model that will be the image alternate text.",
         },
@@ -217,7 +217,7 @@ public partial class BitRadioButtonListDemo
         },
         new ComponentParameter()
         {
-            Name = "SelectedImageSrcSelector",
+            Name = "SelectedImageSrcFieldSelector",
             Type = "Expression<Func<TItem, object>>?",
             Description = "The field from the model that will be the selected image src.",
         },
@@ -230,7 +230,7 @@ public partial class BitRadioButtonListDemo
         },
         new ComponentParameter()
         {
-            Name = "TextSelector",
+            Name = "TextFieldSelector",
             Type = "Expression<Func<TItem, object>>?",
             Description = "The field from the model that will be shown to the user.",
         },
@@ -243,7 +243,7 @@ public partial class BitRadioButtonListDemo
         },
         new ComponentParameter()
         {
-            Name = "ValueSelector",
+            Name = "ValueFieldSelector",
             Type = "Expression<Func<TItem, object>>?",
             Description = "The field from the model that will be the underlying value.",
         },
@@ -261,8 +261,8 @@ public partial class BitRadioButtonListDemo
 <BitRadioButtonList @bind-Value=""@example1SelectorApproacheValue""
                     Label=""Selector parameter""
                     Items=""BasicGenderItems""
-                    TextSelector=""item => item.GenderText""
-                    ValueSelector=""item => item.GenderId"" />
+                    TextFieldSelector=""item => item.GenderText""
+                    ValueFieldSelector=""item => item.GenderId"" />
 ";
 
     private readonly string example1CSharpCode = @"
@@ -380,9 +380,9 @@ private List<GenderModel> ImageGenderItems = new()
     private readonly string example4HTMLCode = @"
 <BitRadioButtonList @bind-Value=""@example4Value""
                     Items=""IconGenderItems""
-                    TextSelector=""item => item.GenderText""
-                    ValueSelector=""item => item.GenderId""
-                    IconNameSelector=""item => (BitIconName)item.IconName"" />
+                    TextFieldSelector=""item => item.GenderText""
+                    ValueFieldSelector=""item => item.GenderId""
+                    IconNameFieldSelector=""item => (BitIconName)item.IconName"" />
 ";
 
     private readonly string example4CSharpCode = @"

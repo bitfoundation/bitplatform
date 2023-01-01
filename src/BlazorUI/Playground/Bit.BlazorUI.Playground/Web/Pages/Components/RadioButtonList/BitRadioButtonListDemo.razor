@@ -17,8 +17,8 @@
                 <BitRadioButtonList @bind-Value="@example1SelectorApproacheValue"
                                     Label="Selector parameter"
                                     Items="BasicGenderItems"
-                                    TextSelector="item => item.GenderText"
-                                    ValueSelector="item => item.GenderId" />
+                                    TextFieldSelector="item => item.GenderText"
+                                    ValueFieldSelector="item => item.GenderId" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -63,9 +63,9 @@
             <div class="example-desc">BitRadioButtonList with icon.</div>
             <BitRadioButtonList @bind-Value="@example4Value"
                                 Items="IconGenderItems"
-                                TextSelector="item => item.GenderText"
-                                ValueSelector="item => item.GenderId"
-                                IconNameSelector="item => (BitIconName)item.IconName" />
+                                TextFieldSelector="item => item.GenderText"
+                                ValueFieldSelector="item => item.GenderId"
+                                IconNameFieldSelector="item => (BitIconName)item.IconName" />
         </ExamplePreview>
     </ComponentExampleBox>
 
