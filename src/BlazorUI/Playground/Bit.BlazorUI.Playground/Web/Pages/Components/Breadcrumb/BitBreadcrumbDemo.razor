@@ -109,11 +109,34 @@
         <ExamplePreview>
             <div class="example-desc">By clicking on the items, the selected item will change and match the SelectedItemStyle.</div>
             <div class="example-box">
-                <BitBreadcrumb Items="@BreadcrumbItemsWithControll"
+                <BitBreadcrumb Items="@BreadcrumbItemsWithControlled"
                                MaxDisplayedItems="3"
                                OverflowIndex="2"
                                OnItemClick="HandleOnItemClick"
                                SelectedItemStyle="color:red;background:lightgreen" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Customized" HTMLSourceCode="@example6HTMLCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example6">
+        <ExamplePreview>
+            <div class="example-box">
+                <div>
+                    <BitBreadcrumb Items="@BreadcrumbItemsWithCustomized"
+                                   MaxDisplayedItems="@MaxDisplayedItems"
+                                   OverflowIndex="@OverflowIndex"
+                                   OnItemClick="HandleOnItemClick_Customized" />
+                </div>
+                <div class="operators">
+                    <div>
+                        <BitButton OnClick="AddItem">Add Item</BitButton>
+                        <BitButton OnClick="RemoveItem">Remove Item</BitButton>
+                    </div>
+                   <div>
+                        <BitNumericTextField @bind-Value="MaxDisplayedItems" Step="@NumericTextFieldStep" Label="MaxDisplayedItems" />
+                        <BitNumericTextField @bind-Value="OverflowIndex" Step="@NumericTextFieldStep" Label="OverflowIndex" />
+                   </div>
+                </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>

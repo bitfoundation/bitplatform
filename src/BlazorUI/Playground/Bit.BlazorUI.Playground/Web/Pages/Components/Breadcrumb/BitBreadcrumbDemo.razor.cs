@@ -118,7 +118,7 @@ public partial class BitBreadcrumbDemo
             }
         };
 
-        BreadcrumbItemsWithControll = new List<BitBreadcrumbItem>
+        BreadcrumbItemsWithControlled = new List<BitBreadcrumbItem>
         {
             new()
             {
@@ -146,18 +146,65 @@ public partial class BitBreadcrumbDemo
                 IsSelected = true
             }
         };
+
+        BreadcrumbItemsWithCustomized = new List<BitBreadcrumbItem>
+        {
+            new()
+            {
+                Text = "Folder 1"
+            },
+            new()
+            {
+                Text = "Folder 2"
+            },
+            new()
+            {
+                Text = "Folder 3"
+            },
+            new()
+            {
+                Text = "Folder 4",
+                IsSelected = true
+            }
+        };
     }
 
     private List<BitBreadcrumbItem> BreadcrumbItems { get; set; }
     private List<BitBreadcrumbItem> BreadcrumbItemsDisabled { get; set; }
     private List<BitBreadcrumbItem> BreadcrumbItemsWithClass { get; set; }
     private List<BitBreadcrumbItem> BreadcrumbItemsWithStyle { get; set; }
-    private List<BitBreadcrumbItem> BreadcrumbItemsWithControll { get; set; }
+    private List<BitBreadcrumbItem> BreadcrumbItemsWithControlled { get; set; }
+    private List<BitBreadcrumbItem> BreadcrumbItemsWithCustomized { get; set; }
 
     private void HandleOnItemClick(BitBreadcrumbItem item)
     {
-        BreadcrumbItemsWithControll.FirstOrDefault(i => i.IsSelected).IsSelected = false;
-        BreadcrumbItemsWithControll.FirstOrDefault(i => i == item).IsSelected = true;
+        BreadcrumbItemsWithControlled.FirstOrDefault(i => i.IsSelected).IsSelected = false;
+        BreadcrumbItemsWithControlled.FirstOrDefault(i => i == item).IsSelected = true;
+    }
+
+    private int ItemsCount = 4;
+    private uint OverflowIndex = 2;
+    private uint MaxDisplayedItems = 3;
+    private uint NumericTextFieldStep = 1;
+    private void AddItem()
+    {
+        ItemsCount++;
+        BreadcrumbItemsWithCustomized.Add(new BitBreadcrumbItem()
+        {
+            Text = $"Folder {ItemsCount}"
+        });
+    }
+
+    private void RemoveItem()
+    {
+        ItemsCount--;
+        BreadcrumbItemsWithCustomized.Remove(BreadcrumbItemsWithCustomized.LastOrDefault());
+    }
+
+    private void HandleOnItemClick_Customized(BitBreadcrumbItem item)
+    {
+        BreadcrumbItemsWithCustomized.FirstOrDefault(i => i.IsSelected).IsSelected = false;
+        BreadcrumbItemsWithCustomized.FirstOrDefault(i => i == item).IsSelected = true;
     }
 
     private readonly List<ComponentParameter> componentParameters = new()
@@ -539,7 +586,7 @@ private List<BitBreadcrumbItem> BreadcrumbItemsWithStyle { get; set; } = new Lis
 ";
 
     private readonly string example5HTMLCode = @"
-<BitBreadcrumb Items=""@BreadcrumbItemsWithControll""
+<BitBreadcrumb Items=""@BreadcrumbItemsWithControlled""
                MaxDisplayedItems=""3""
                OverflowIndex=""2""
                OnItemClick=""HandleOnItemClick""
@@ -547,7 +594,7 @@ private List<BitBreadcrumbItem> BreadcrumbItemsWithStyle { get; set; } = new Lis
 ";
 
     private readonly string example5CSharpCode = @"
-private List<BitBreadcrumbItem> BreadcrumbItemsWithControll { get; set; } = new List<BitBreadcrumbItem>
+private List<BitBreadcrumbItem> BreadcrumbItemsWithControlled { get; set; } = new List<BitBreadcrumbItem>
 {
     new()
     {
@@ -578,8 +625,76 @@ private List<BitBreadcrumbItem> BreadcrumbItemsWithControll { get; set; } = new 
 
 private void HandleOnItemClick(BitBreadcrumbItem item)
 {
-    BreadcrumbItemsWithControll.FirstOrDefault(i => i.IsSelected).IsSelected = false;
-    BreadcrumbItemsWithControll.FirstOrDefault(i => i == item).IsSelected = true;
+    BreadcrumbItemsWithControlled.FirstOrDefault(i => i.IsSelected).IsSelected = false;
+    BreadcrumbItemsWithControlled.FirstOrDefault(i => i == item).IsSelected = true;
+}
+";
+
+    private readonly string example6HTMLCode = @"
+<div>
+    <BitBreadcrumb Items=""@BreadcrumbItemsWithCustomized""
+                    MaxDisplayedItems=""@MaxDisplayedItems""
+                    OverflowIndex=""@OverflowIndex""
+                    OnItemClick=""HandleOnItemClick_Customized"" />
+</div>
+<div class=""operators"">
+    <div>
+        <BitButton OnClick=""AddItem"">Add Item</BitButton>
+        <BitButton OnClick=""RemoveItem"">Remove Item</BitButton>
+    </div>
+    <div>
+        <BitNumericTextField @bind-Value=""MaxDisplayedItems"" Step=""@NumericTextFieldStep"" Label=""MaxDisplayedItems"" />
+        <BitNumericTextField @bind-Value=""OverflowIndex"" Step=""@NumericTextFieldStep"" Label=""OverflowIndex"" />
+    </div>
+</div>
+";
+
+    private readonly string example6CSharpCode = @"
+private List<BitBreadcrumbItem> BreadcrumbItemsWithCustomized { get; set; } = new List<BitBreadcrumbItem>
+{
+    new()
+    {
+        Text = ""Folder 1""
+    },
+    new()
+    {
+        Text = ""Folder 2""
+    },
+    new()
+    {
+        Text = ""Folder 3""
+    },
+    new()
+    {
+        Text = ""Folder 4"",
+        IsSelected = true
+    }
+};
+
+private int ItemsCount = 4;
+private uint OverflowIndex = 2;
+private uint MaxDisplayedItems = 3;
+private uint NumericTextFieldStep = 1;
+
+private void AddItem()
+{
+    ItemsCount++;
+    BreadcrumbItemsWithCustomized.Add(new BitBreadcrumbItem()
+    {
+        Text = $""Folder {ItemsCount}""
+    });
+}
+
+private void RemoveItem()
+{
+    ItemsCount--;
+    BreadcrumbItemsWithCustomized.Remove(BreadcrumbItemsWithCustomized.LastOrDefault());
+}
+
+private void HandleOnItemClick_Customized(BitBreadcrumbItem item)
+{
+    BreadcrumbItemsWithCustomized.FirstOrDefault(i => i.IsSelected).IsSelected = false;
+    BreadcrumbItemsWithCustomized.FirstOrDefault(i => i == item).IsSelected = true;
 }
 ";
 }

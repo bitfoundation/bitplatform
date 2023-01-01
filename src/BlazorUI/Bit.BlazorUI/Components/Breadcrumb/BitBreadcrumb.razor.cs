@@ -80,7 +80,7 @@ public partial class BitBreadcrumb : IDisposable
         bool shouldCallSetItemsToShow = false;
 
         shouldCallSetItemsToShow = _internalItems != Items;
-        _internalItems = Items;
+        _internalItems = Items.ToList();
 
         shouldCallSetItemsToShow = shouldCallSetItemsToShow || _internalMaxDisplayedItems != MaxDisplayedItems;
         _internalMaxDisplayedItems = MaxDisplayedItems == 0 ? (uint)_internalItems.Count : MaxDisplayedItems;
@@ -117,6 +117,12 @@ public partial class BitBreadcrumb : IDisposable
     {
         _displayItems.Clear();
         _overflowItems.Clear();
+
+        if (_internalMaxDisplayedItems >= Items.Count)
+        {
+            _displayItems = Items.ToList();
+            return;
+        }
 
         var overflowItemsCount = _internalItems.Count - _internalMaxDisplayedItems;
 

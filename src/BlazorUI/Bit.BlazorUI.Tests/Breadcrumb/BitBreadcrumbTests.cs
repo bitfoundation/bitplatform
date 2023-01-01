@@ -45,8 +45,8 @@ public class BitBreadcrumbTests : BunitTestContext
     }
 
     [DataTestMethod,
-      DataRow(0),
-      DataRow(3)
+      DataRow((uint)0),
+      DataRow((uint)3)
    ]
     public void BitBreadcrumbShouldRespectMaxDisplayeItems(uint maxDisplayedItems)
     {
@@ -71,8 +71,8 @@ public class BitBreadcrumbTests : BunitTestContext
     }
 
     [DataTestMethod,
-      DataRow(BitIconName.ChevronDown, 2, 0),
-      DataRow(BitIconName.ChevronDown, 3, 1)
+      DataRow(BitIconName.ChevronDown, (uint)2, (uint)0),
+      DataRow(BitIconName.ChevronDown, (uint)3, (uint)1)
     ]
     public void BitBreadcrumbShouldRespectOverflowChanges(BitIconName icon, uint maxDisplayedItems, uint overflowIndex)
     {
@@ -113,7 +113,7 @@ public class BitBreadcrumbTests : BunitTestContext
     }
 
     [DataTestMethod,
-      DataRow("Detailed label", 3)
+      DataRow("Detailed label", (uint)3)
     ]
     public void BitBreadcrumbShouldTakeOverflowAriaLabel(string overflowAriaLabel, uint maxDisplayedItems)
     {
