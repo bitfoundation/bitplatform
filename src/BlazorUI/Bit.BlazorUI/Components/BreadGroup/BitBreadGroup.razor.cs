@@ -94,7 +94,6 @@ public partial class BitBreadGroup : IDisposable
         _allOptions.Add(option);
 
         _internalMaxDisplayedOptions = MaxDisplayedOptions == 0 ? (uint)_allOptions.Count : MaxDisplayedOptions;
-
         _internalOverflowIndex = OverflowIndex >= _internalMaxDisplayedOptions ? 0 : OverflowIndex;
 
         SetOptionsToShow();
