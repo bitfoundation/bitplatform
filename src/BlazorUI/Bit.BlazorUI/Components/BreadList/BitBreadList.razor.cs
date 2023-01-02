@@ -164,7 +164,7 @@ public partial class BitBreadList<TItem> : IDisposable
 
         bool shouldCallSetItemsToShow = false;
 
-        shouldCallSetItemsToShow = _internalItems != Items;
+        shouldCallSetItemsToShow = _internalItems.Count != Items.Count || _internalItems.Any(item => Items.Contains(item) is false);
         _internalItems = Items.ToList();
 
         shouldCallSetItemsToShow = shouldCallSetItemsToShow || _internalMaxDisplayedItems != MaxDisplayedItems;
