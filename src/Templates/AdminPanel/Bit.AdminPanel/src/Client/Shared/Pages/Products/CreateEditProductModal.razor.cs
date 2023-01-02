@@ -29,8 +29,8 @@ public partial class CreateEditProductModal
         await InvokeAsync(() =>
         {
             IsOpen = true;
-            
-            _ =JsRuntime.SetToggleBodyOverflow(true);
+
+            _ = JsRuntime.SetToggleBodyOverflow(true);
 
             Product = product;
         });
