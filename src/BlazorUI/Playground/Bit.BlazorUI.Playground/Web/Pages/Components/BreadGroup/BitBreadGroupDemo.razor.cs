@@ -313,8 +313,8 @@ private int SelectedOptionNumber;
         <BitButton OnClick=""() => OptionsCount--"">Remove Option</BitButton>
     </div>
     <div>
-        <BitNumericTextField @bind-Value=""MaxDisplayedOptions"" Step=""@NumericTextFieldStep"" Label=""MaxDisplayedOption"" />
-        <BitNumericTextField @bind-Value=""OverflowIndex"" Step=""@NumericTextFieldStep"" Label=""OverflowIndex"" />
+        <BitNumericTextField @bind-Value=""MaxDisplayedOptions"" Step=""@NumericTextFieldStep"" Label=""MaxDisplayedOption"" ShowArrows=""true"" />
+        <BitNumericTextField @bind-Value=""OverflowIndex"" Step=""@NumericTextFieldStep"" Label=""OverflowIndex"" ShowArrows=""true"" />
     </div>
 </div>
 ";

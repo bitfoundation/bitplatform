@@ -74,12 +74,10 @@ public partial class BitBreadGroup : IDisposable
     protected override async Task OnParametersSetAsync()
     {
         bool shouldCallSetItemsToShow = false;
-
         shouldCallSetItemsToShow = _internalMaxDisplayedOptions != MaxDisplayedOptions;
-        _internalMaxDisplayedOptions = MaxDisplayedOptions == 0 ? (uint)_allOptions.Count : MaxDisplayedOptions;
-
         shouldCallSetItemsToShow = shouldCallSetItemsToShow || _internalOverflowIndex != OverflowIndex;
-        _internalOverflowIndex = OverflowIndex >= _internalMaxDisplayedOptions ? 0 : OverflowIndex;
+
+        SetInternalFields();
 
         if (shouldCallSetItemsToShow)
         {
@@ -89,13 +87,16 @@ public partial class BitBreadGroup : IDisposable
         await base.OnParametersSetAsync();
     }
 
+    private void SetInternalFields()
+    {
+        _internalMaxDisplayedOptions = MaxDisplayedOptions == 0 ? (uint)_allOptions.Count : MaxDisplayedOptions;
+        _internalOverflowIndex = OverflowIndex >= _internalMaxDisplayedOptions ? 0 : OverflowIndex;
+    }
+
     internal void RegisterOptions(BitBreadOption option)
     {
         _allOptions.Add(option);
-
-        _internalMaxDisplayedOptions = MaxDisplayedOptions == 0 ? (uint)_allOptions.Count : MaxDisplayedOptions;
-        _internalOverflowIndex = OverflowIndex >= _internalMaxDisplayedOptions ? 0 : OverflowIndex;
-
+        SetInternalFields();
         SetOptionsToShow();
         StateHasChanged();
     }

@@ -175,7 +175,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Controlled" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
+    <ComponentExampleBox Title="Controlled BitBreadGroup" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
         <ExamplePreview>
             <div class="example-desc">By clicking on the Options, the Selected Option will change and match the SelectedOptionStyle.</div>
             <div class="example-box">
@@ -191,7 +191,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Customized" HTMLSourceCode="@example6HTMLCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example6">
+    <ComponentExampleBox Title="Customized Parameters" HTMLSourceCode="@example6HTMLCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example6">
         <ExamplePreview>
             <div class="example-box">
                 <div>
@@ -209,8 +209,8 @@
                         <BitButton OnClick="() => OptionsCount--">Remove Option</BitButton>
                     </div>
                     <div>
-                        <BitNumericTextField @bind-Value="MaxDisplayedOptions" Step="@NumericTextFieldStep" Label="MaxDisplayedOption" />
-                        <BitNumericTextField @bind-Value="OverflowIndex" Step="@NumericTextFieldStep" Label="OverflowIndex" />
+                        <BitNumericTextField @bind-Value="MaxDisplayedOptions" Step="@NumericTextFieldStep" Label="MaxDisplayedOption" ShowArrows="true" />
+                        <BitNumericTextField @bind-Value="OverflowIndex" Step="@NumericTextFieldStep" Label="OverflowIndex" ShowArrows="true" />
                     </div>
                 </div>
             </div>
