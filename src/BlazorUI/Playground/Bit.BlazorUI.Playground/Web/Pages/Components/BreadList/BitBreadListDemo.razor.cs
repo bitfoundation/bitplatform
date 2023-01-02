@@ -586,8 +586,8 @@ private void HandleOnItemClick(PageInfoModel item)
         <BitButton OnClick=""RemoveItem"">Remove Item</BitButton>
     </div>
     <div>
-        <BitNumericTextField @bind-Value=""MaxDisplayedItems"" Step=""@NumericTextFieldStep"" Label=""MaxDisplayedItems"" />
-        <BitNumericTextField @bind-Value=""OverflowIndex"" Step=""@NumericTextFieldStep"" Label=""OverflowIndex"" />
+        <BitNumericTextField @bind-Value=""MaxDisplayedItems"" Step=""@NumericTextFieldStep"" Label=""MaxDisplayedItems"" ShowArrows=""true"" />
+        <BitNumericTextField @bind-Value=""OverflowIndex"" Step=""@NumericTextFieldStep"" Label=""OverflowIndex"" ShowArrows=""true"" />
     </div>
 </div>
 ";
