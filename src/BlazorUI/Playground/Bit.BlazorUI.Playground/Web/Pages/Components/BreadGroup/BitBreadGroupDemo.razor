@@ -175,7 +175,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Controlled" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
+    <ComponentExampleBox Title="Controlled BitBreadGroup" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
         <ExamplePreview>
             <div class="example-desc">By clicking on the Options, the Selected Option will change and match the SelectedOptionStyle.</div>
             <div class="example-box">
@@ -187,6 +187,32 @@
                     <BitBreadOption Text="Option 5" IsSelected="@(SelectedOptionNumber == 5)" OnClick="() => SelectedOptionNumber = 5" />
                     <BitBreadOption Text="Option 6" IsSelected="@(SelectedOptionNumber == 6)" OnClick="() => SelectedOptionNumber = 6" />
                 </BitBreadGroup>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Customized Parameters" HTMLSourceCode="@example6HTMLCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example6">
+        <ExamplePreview>
+            <div class="example-box">
+                <div>
+                    <BitBreadGroup MaxDisplayedOptions="@MaxDisplayedOptions" OverflowIndex="@OverflowIndex">
+                        @for (int i = 0; i < OptionsCount; i++)
+                        {
+                            int index = i + 1;
+                            <BitBreadOption Text="@($"Option {index}")" IsSelected="@(CustomizedSelectedOptionNumber == index)" OnClick="() => CustomizedSelectedOptionNumber = index" />
+                        }
+                    </BitBreadGroup>
+                </div>
+                <div class="operators">
+                    <div>
+                        <BitButton OnClick="() => OptionsCount++">Add Option</BitButton>
+                        <BitButton OnClick="() => OptionsCount--">Remove Option</BitButton>
+                    </div>
+                    <div>
+                        <BitNumericTextField @bind-Value="MaxDisplayedOptions" Step="@NumericTextFieldStep" Label="MaxDisplayedOption" ShowArrows="true" />
+                        <BitNumericTextField @bind-Value="OverflowIndex" Step="@NumericTextFieldStep" Label="OverflowIndex" ShowArrows="true" />
+                    </div>
+                </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>

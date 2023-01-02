@@ -5,7 +5,14 @@ namespace Bit.BlazorUI.Playground.Web.Pages.Components.BreadGroup;
 
 public partial class BitBreadGroupDemo
 {
-    private int SelectedOptionNumber;
+    private int SelectedOptionNumber = 6;
+
+    private uint MaxDisplayedOptions = 3;
+    private uint OverflowIndex = 2;
+    private int OptionsCount = 4;
+    private int CustomizedSelectedOptionNumber = 4;
+    private uint NumericTextFieldStep = 1;
+
 
     private readonly List<ComponentParameter> componentParameters = new()
     {
@@ -39,7 +46,7 @@ public partial class BitBreadGroupDemo
         new ComponentParameter
         {
             Name = "MaxDisplayedOptions",
-            Type = "int",
+            Type = "uint",
             Description = "The maximum number of BitBreadGroup to display before coalescing. If not specified, all BitBreadGroup will be rendered."
         },
         new ComponentParameter
@@ -51,7 +58,7 @@ public partial class BitBreadGroupDemo
         new ComponentParameter
         {
             Name = "OverflowIndex",
-            Type = "int",
+            Type = "uint",
             Description = "Optional index where overflow Options will be collapsed."
         },
         new ComponentParameter
@@ -288,5 +295,35 @@ public partial class BitBreadGroupDemo
 
     private readonly string example5CSharpCode = @"
 private int SelectedOptionNumber;
+";
+
+    private readonly string example6HTMLCode = @"
+<div>
+    <BitBreadGroup MaxDisplayedOptions=""@MaxDisplayedOptions"" OverflowIndex=""@OverflowIndex"">
+        @for (int i = 0; i < OptionsCount; i++)
+        {
+            int index = i + 1;
+            <BitBreadOption Text=""@($""Option {index}"")"" IsSelected=""@(CustomizedSelectedOptionNumber == index)"" OnClick=""() => CustomizedSelectedOptionNumber = index"" />
+        }
+    </BitBreadGroup>
+</div>
+<div class=""operators"">
+    <div>
+        <BitButton OnClick=""() => OptionsCount++"">Add Option</BitButton>
+        <BitButton OnClick=""() => OptionsCount--"">Remove Option</BitButton>
+    </div>
+    <div>
+        <BitNumericTextField @bind-Value=""MaxDisplayedOptions"" Step=""@NumericTextFieldStep"" Label=""MaxDisplayedOption"" ShowArrows=""true"" />
+        <BitNumericTextField @bind-Value=""OverflowIndex"" Step=""@NumericTextFieldStep"" Label=""OverflowIndex"" ShowArrows=""true"" />
+    </div>
+</div>
+";
+
+    private readonly string example6CSharpCode = @"
+private uint MaxDisplayedOptions = 3;
+private uint OverflowIndex = 2;
+private int OptionsCount = 4;
+private int CustomizedSelectedOptionNumber = 4;
+private uint NumericTextFieldStep = 1;
 ";
 }
