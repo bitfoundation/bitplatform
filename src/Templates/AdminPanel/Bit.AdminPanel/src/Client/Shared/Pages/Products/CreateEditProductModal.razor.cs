@@ -26,14 +26,13 @@ public partial class CreateEditProductModal
 
     public async Task ShowModal(ProductDto product)
     {
-        await InvokeAsync(async () =>
+        await InvokeAsync(() =>
         {
             IsOpen = true;
-            await JsRuntime.SetToggleBodyOverflow(true);
+            
+            _ =JsRuntime.SetToggleBodyOverflow(true);
 
             Product = product;
-
-            StateHasChanged();
         });
     }
 
