@@ -17,21 +17,6 @@ public partial class BitRadioButtonList<TItem, TValue>
 
     private bool isRequired;
 
-    private string isEnabledField = IS_ENABLED_FIELD;
-    private string iconNameField = ICON_NAME_FIELD;
-    private string imageSrcField = IMAGE_SRC_FIELD;
-    private string imageAltField = IMAGE_ALT_FIELD;
-    private string selectedImageSrcField = SELECTED_IMAGE_SRC_FIELD;
-    private string textField = TEXT_FIELD;
-    private string valueField = VALUE_FIELD;
-    private Expression<Func<TItem, bool>>? isEnabledSelector;
-    private Expression<Func<TItem, BitIconName>>? iconNameSelector;
-    private Expression<Func<TItem, object>>? imageSrcSelector;
-    private Expression<Func<TItem, object>>? imageAltSelector;
-    private Expression<Func<TItem, object>>? selectedImageSrcSelector;
-    private Expression<Func<TItem, object>>? textSelector;
-    private Expression<Func<TItem, object>>? valueSelector;
-
     private string _internalIsEnabledField = IS_ENABLED_FIELD;
     private string _internalIconNameField = ICON_NAME_FIELD;
     private string _internalImageSrcField = IMAGE_SRC_FIELD;
@@ -80,130 +65,42 @@ public partial class BitRadioButtonList<TItem, TValue>
     /// <summary>
     /// The name of the field from the model that will be enable item.
     /// </summary>
-    [Parameter]
-    public string IsEnabledField
-    {
-        get => isEnabledField;
-        set
-        {
-            isEnabledField = value;
-            _internalIsEnabledField = value;
-        }
-    }
+    [Parameter] public string IsEnabledField { get; set; } = IS_ENABLED_FIELD;
 
     /// <summary>
     /// The field from the model that will be enable item.
     /// </summary>
-    [Parameter]
-    public Expression<Func<TItem, bool>>? IsEnabledSelector
-    {
-        get => isEnabledSelector;
-        set
-        {
-            isEnabledSelector = value;
-
-            if (value is not null)
-            {
-                _internalIconNameField = value.GetName();
-            }
-        }
-    }
+    [Parameter] public Expression<Func<TItem, bool>>? IsEnabledFieldSelector { get; set; }
 
     /// <summary>
     /// The name of the field from the model that will be the BitIconName.
     /// </summary>
-    [Parameter]
-    public string IconNameField
-    {
-        get => iconNameField;
-        set
-        {
-            iconNameField = value;
-            _internalIconNameField = value;
-        }
-    }
+    [Parameter] public string IconNameField { get; set; } = ICON_NAME_FIELD;
 
     /// <summary>
     /// The name of the field from the model that will be the image src.
     /// </summary>
-    [Parameter]
-    public string ImageSrcField
-    {
-        get => imageSrcField;
-        set
-        {
-            imageSrcField = value;
-            _internalImageSrcField = value;
-        }
-    }
+    [Parameter] public string ImageSrcField { get; set; } = IMAGE_SRC_FIELD;
 
     /// <summary>
     /// The name of the field from the model that will be the image alternate text.
     /// </summary>
-    [Parameter]
-    public string ImageAltField
-    {
-        get => imageAltField;
-        set
-        {
-            imageAltField = value;
-            _internalImageAltField = value;
-        }
-    }
+    [Parameter] public string ImageAltField { get; set; } = IMAGE_ALT_FIELD;
 
     /// <summary>
     /// The field from the model that will be the BitIconName.
     /// </summary>
-    [Parameter]
-    public Expression<Func<TItem, BitIconName>>? IconNameSelector
-    {
-        get => iconNameSelector;
-        set
-        {
-            iconNameSelector = value;
-
-            if (value is not null)
-            {
-                _internalIconNameField = value.GetName();
-            }
-        }
-    }
+    [Parameter] public Expression<Func<TItem, BitIconName>>? IconNameFieldSelector { get; set; }
 
     /// <summary>
     /// The field from the model that will be the image src.
     /// </summary>
-    [Parameter]
-    public Expression<Func<TItem, object>>? ImageSrcSelector
-    {
-        get => imageSrcSelector;
-        set
-        {
-            imageSrcSelector = value;
-
-            if (value is not null)
-            {
-                _internalImageSrcField = value.GetName();
-            }
-        }
-    }
+    [Parameter] public Expression<Func<TItem, object>>? ImageSrcFieldSelector { get; set; }
 
     /// <summary>
     /// The field from the model that will be the image alternate text.
     /// </summary>
-    [Parameter]
-    public Expression<Func<TItem, object>>? ImageAltSelector
-    {
-        get => imageAltSelector;
-        set
-        {
-            imageAltSelector = value;
-
-            if (value is not null)
-            {
-                _internalImageAltField = value.GetName();
-            }
-        }
-    }
+    [Parameter] public Expression<Func<TItem, object>>? ImageAltFieldSelector { get; set; }
 
     /// <summary>
     /// The width and height of the image in px for item field.
@@ -248,98 +145,32 @@ public partial class BitRadioButtonList<TItem, TValue>
     /// <summary>
     /// The name of the field from the model that will be the selected image src.
     /// </summary>
-    [Parameter]
-    public string SelectedImageSrcField
-    {
-        get => selectedImageSrcField;
-        set
-        {
-            selectedImageSrcField = value;
-            _internalSelectedImageSrcField = value;
-        }
-    }
+    [Parameter] public string SelectedImageSrcField { get; set; } = SELECTED_IMAGE_SRC_FIELD;
 
     /// <summary>
     /// The field from the model that will be the selected image src.
     /// </summary>
-    [Parameter]
-    public Expression<Func<TItem, object>>? SelectedImageSrcSelector
-    {
-        get => selectedImageSrcSelector;
-        set
-        {
-            selectedImageSrcSelector = value;
-
-            if (value is not null)
-            {
-                _internalSelectedImageSrcField = value.GetName();
-            }
-        }
-    }
+    [Parameter] public Expression<Func<TItem, object>>? SelectedImageSrcFieldSelector { get; set; }
 
     /// <summary>
     /// The name of the field from the model that will be shown to the user.
     /// </summary>
-    [Parameter]
-    public string TextField
-    {
-        get => textField;
-        set
-        {
-            textField = value;
-            _internalTextField = value;
-        }
-    }
+    [Parameter] public string TextField { get; set; } = TEXT_FIELD;
 
     /// <summary>
     /// The field from the model that will be shown to the user.
     /// </summary>
-    [Parameter]
-    public Expression<Func<TItem, object>>? TextSelector
-    {
-        get => textSelector;
-        set
-        {
-            textSelector = value;
-
-            if (value is not null)
-            {
-                _internalTextField = value.GetName();
-            }
-        }
-    }
+    [Parameter] public Expression<Func<TItem, object>>? TextFieldSelector { get; set; }
 
     /// <summary>
     /// The name of the field from the model that will be the underlying value.
     /// </summary>
-    [Parameter]
-    public string ValueField
-    {
-        get => valueField;
-        set
-        {
-            valueField = value;
-            _internalValueField = value;
-        }
-    }
+    [Parameter] public string ValueField { get; set; } = VALUE_FIELD;
 
     /// <summary>
     /// The field from the model that will be the underlying value.
     /// </summary>
-    [Parameter]
-    public Expression<Func<TItem, object>>? ValueSelector
-    {
-        get => valueSelector;
-        set
-        {
-            valueSelector = value;
-
-            if (value is not null)
-            {
-                _internalValueField = value.GetName();
-            }
-        }
-    }
+    [Parameter] public Expression<Func<TItem, object>>? ValueFieldSelector { get; set; }
 
     protected override string RootElementClass => "bit-rbl";
 
@@ -357,6 +188,14 @@ public partial class BitRadioButtonList<TItem, TValue>
 
     protected override Task OnParametersSetAsync()
     {
+        _internalIsEnabledField = IsEnabledFieldSelector?.GetName() ?? IsEnabledField;
+        _internalIconNameField = IconNameFieldSelector?.GetName() ?? IconNameField;
+        _internalImageSrcField = ImageSrcFieldSelector?.GetName() ?? ImageSrcField;
+        _internalImageAltField = ImageAltFieldSelector?.GetName() ?? ImageAltField;
+        _internalSelectedImageSrcField = SelectedImageSrcFieldSelector?.GetName() ?? SelectedImageSrcField;
+        _internalTextField = TextFieldSelector?.GetName() ?? TextField;
+        _internalValueField = ValueFieldSelector?.GetName() ?? ValueField;
+
         if (ImageSize is not null)
         {
             _imageSizeStyle = $" width:{ImageSize.Value.Width}px; height:{ImageSize.Value.Height}px;";
