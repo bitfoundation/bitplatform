@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Bit.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
 namespace Bit.BlazorUI.Playground.Web.Pages.Components.Breadcrumb;
@@ -27,7 +28,35 @@ public partial class BitBreadcrumbDemo
             new()
             {
                 Text = "Folder 4",
+                Href = "/components/breadcrumb",
+                IsSelected = true
+            }
+        };
+
+        BreadcrumbItemsDisabled = new List<BitBreadcrumbItem>
+        {
+            new()
+            {
+                Text = "Folder 1",
+                Href = "/components/breadcrumb",
+                IsEnabled = false
+            },
+            new()
+            {
+                Text = "Folder 2",
+                Href = "/components/breadcrumb",
+                IsEnabled = false
+            },
+            new()
+            {
+                Text = "Folder 3",
                 Href = "/components/breadcrumb"
+            },
+            new()
+            {
+                Text = "Folder 4",
+                Href = "/components/breadcrumb",
+                IsSelected = true
             }
         };
 
@@ -55,7 +84,8 @@ public partial class BitBreadcrumbDemo
             {
                 Text = "Folder 4",
                 Href = "/components/breadcrumb",
-                Class = "custom-item"
+                Class = "custom-item",
+                IsSelected = true
             }
         };
 
@@ -83,11 +113,12 @@ public partial class BitBreadcrumbDemo
             {
                 Text = "Folder 4",
                 Href = "/components/breadcrumb",
-                Style = "color:red;background:lightgreen"
+                Style = "color:red;background:lightgreen",
+                IsSelected = true
             }
         };
 
-        BreadcrumbItemsWithControll = new List<BitBreadcrumbItem>
+        BreadcrumbItemsWithControlled = new List<BitBreadcrumbItem>
         {
             new()
             {
@@ -111,40 +142,83 @@ public partial class BitBreadcrumbDemo
             },
             new()
             {
-                Text = "Folder 6"
+                Text = "Folder 6",
+                IsSelected = true
+            }
+        };
+
+        BreadcrumbItemsWithCustomized = new List<BitBreadcrumbItem>
+        {
+            new()
+            {
+                Text = "Folder 1"
+            },
+            new()
+            {
+                Text = "Folder 2"
+            },
+            new()
+            {
+                Text = "Folder 3"
+            },
+            new()
+            {
+                Text = "Folder 4",
+                IsSelected = true
             }
         };
     }
 
     private List<BitBreadcrumbItem> BreadcrumbItems { get; set; }
+    private List<BitBreadcrumbItem> BreadcrumbItemsDisabled { get; set; }
     private List<BitBreadcrumbItem> BreadcrumbItemsWithClass { get; set; }
     private List<BitBreadcrumbItem> BreadcrumbItemsWithStyle { get; set; }
-    private List<BitBreadcrumbItem> BreadcrumbItemsWithControll { get; set; }
+    private List<BitBreadcrumbItem> BreadcrumbItemsWithControlled { get; set; }
+    private List<BitBreadcrumbItem> BreadcrumbItemsWithCustomized { get; set; }
 
-    private BitBreadcrumbItem ControlledCurrentItem;
+    private void HandleOnItemClick(BitBreadcrumbItem item)
+    {
+        BreadcrumbItemsWithControlled.FirstOrDefault(i => i.IsSelected).IsSelected = false;
+        BreadcrumbItemsWithControlled.FirstOrDefault(i => i == item).IsSelected = true;
+    }
+
+    private int ItemsCount = 4;
+    private uint OverflowIndex = 2;
+    private uint MaxDisplayedItems = 3;
+    private uint NumericTextFieldStep = 1;
+    private void AddItem()
+    {
+        ItemsCount++;
+        BreadcrumbItemsWithCustomized.Add(new BitBreadcrumbItem()
+        {
+            Text = $"Folder {ItemsCount}"
+        });
+    }
+
+    private void RemoveItem()
+    {
+        if (BreadcrumbItemsWithCustomized.Count > 1)
+        {
+            ItemsCount--;
+
+            var item = BreadcrumbItemsWithCustomized[^1];
+            BreadcrumbItemsWithCustomized.Remove(item);
+
+            if (item.IsSelected)
+            {
+                BreadcrumbItemsWithCustomized[^1].IsSelected = true;
+            }
+        }
+    }
+
+    private void HandleOnItemClick_Customized(BitBreadcrumbItem item)
+    {
+        BreadcrumbItemsWithCustomized.FirstOrDefault(i => i.IsSelected).IsSelected = false;
+        BreadcrumbItemsWithCustomized.FirstOrDefault(i => i == item).IsSelected = true;
+    }
 
     private readonly List<ComponentParameter> componentParameters = new()
     {
-        new()
-        {
-            Name = "CurrentItemClass",
-            Type = "string?",
-            Description = "The class HTML attribute for Current Item."
-        },
-        new()
-        {
-            Name = "CurrentItemStyle",
-            Type = "string?",
-            Description = "The style HTML attribute for Current Item."
-        },
-        new()
-        {
-            Name = "CurrentItem",
-            Type = "BitBreadcrumbItem?",
-            Description = "by default, the current item is the last item. But it can also be specified manually.",
-            LinkType = LinkType.Link,
-            Href = "#bit-breadcrumb-item",
-        },
         new()
         {
             Name = "DividerIcon",
@@ -162,7 +236,7 @@ public partial class BitBreadcrumbDemo
         new()
         {
             Name = "MaxDisplayedItems",
-            Type = "int",
+            Type = "uint",
             Description = "The maximum number of breadcrumbs to display before coalescing. If not specified, all breadcrumbs will be rendered."
         },
         new()
@@ -174,12 +248,12 @@ public partial class BitBreadcrumbDemo
         new()
         {
             Name = "OverflowIndex",
-            Type = "int",
+            Type = "uint",
             Description = "Optional index where overflow items will be collapsed."
         },
         new()
         {
-            Name = "OnRenderOverflowIcon",
+            Name = "OverflowIcon",
             Type = "BitIconName",
             DefaultValue= "BitIconName.More",
             Description = "Render a custom overflow icon in place of the default icon."
@@ -189,6 +263,18 @@ public partial class BitBreadcrumbDemo
             Name = "OnItemClick",
             Type = "EventCallback<BitBreadcrumbItem>",
             Description = "Callback for when the breadcrumb item clicked."
+        },
+        new()
+        {
+            Name = "SelectedItemClass",
+            Type = "string?",
+            Description = "The class HTML attribute for Selected Item."
+        },
+        new()
+        {
+            Name = "SelectedItemStyle",
+            Type = "string?",
+            Description = "The style HTML attribute for Selected Item."
         },
     };
 
@@ -224,6 +310,19 @@ public partial class BitBreadcrumbDemo
                    Type = "string?",
                    Description = "Style HTML attribute for breadcrumb item.",
                },
+               new ComponentParameter()
+               {
+                   Name = "IsSelected",
+                   Type = "bool",
+                   Description = "Display the item as a current item.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "IsEnabled",
+                   Type = "bool",
+                   DefaultValue = "true",
+                   Description = "Whether an item is enabled or not.",
+               },
             }
         }
     };
@@ -249,7 +348,8 @@ private List<BitBreadcrumbItem> BreadcrumbItems { get; set; } = new List<BitBrea
     new()
     {
         Text = ""Folder 4"",
-        Href = ""/components/breadcrumb""
+        Href = ""/components/breadcrumb"",
+        IsSelected = true
     }
 };
 ";
@@ -259,11 +359,68 @@ private List<BitBreadcrumbItem> BreadcrumbItems { get; set; } = new List<BitBrea
     <BitLabel>Basic</BitLabel>
     <BitBreadcrumb Items=""BreadcrumbItems"" />
 </div>
-
 <div>
     <BitLabel>Disabled</BitLabel>
     <BitBreadcrumb Items=""BreadcrumbItems"" IsEnabled=""false"" />
 </div>
+<div>
+    <BitLabel>Item Disabled</BitLabel>
+    <BitBreadcrumb Items=""BreadcrumbItemsDisabled"" />
+</div>
+";
+
+    private readonly string example1CSharpCode = @"
+private List<BitBreadcrumbItem> BreadcrumbItems { get; set; } = new List<BitBreadcrumbItem>
+{
+    new()
+    {
+        Text = ""Folder 1"",
+        Href = ""/components/breadcrumb""
+    },
+    new()
+    {
+        Text = ""Folder 2"",
+        Href = ""/components/breadcrumb""
+    },
+    new()
+    {
+        Text = ""Folder 3"",
+        Href = ""/components/breadcrumb""
+    },
+    new()
+    {
+        Text = ""Folder 4"",
+        Href = ""/components/breadcrumb"",
+        IsSelected = true
+    }
+};
+
+ private List<BitBreadcrumbItem> BreadcrumbItemsDisabled { get; set; } = new List<BitBreadcrumbItem>
+{
+    new()
+    {
+        Text = ""Folder 1"",
+        Href = ""/components/breadcrumb"",
+        IsEnabled = false
+    },
+    new()
+    {
+        Text = ""Folder 2"",
+        Href = ""/components/breadcrumb"",
+        IsEnabled = false
+    },
+    new()
+    {
+        Text = ""Folder 3"",
+        Href = ""/components/breadcrumb""
+    },
+    new()
+    {
+        Text = ""Folder 4"",
+        Href = ""/components/breadcrumb"",
+        IsSelected = true
+    }
+};
 ";
 
     private readonly string example2HTMLCode = @"
@@ -299,15 +456,14 @@ private List<BitBreadcrumbItem> BreadcrumbItems { get; set; } = new List<BitBrea
     <BitBreadcrumb Items=""BreadcrumbItems""
                    MaxDisplayedItems=""3""
                    OverflowIndex=""2""
-                   OnRenderOverflowIcon=""BitIconName.ChevronDown"" />
+                   OverflowIcon=""BitIconName.ChevronDown"" />
 </div>
-
 <div>
     <BitLabel>BitIconName (CollapseMenu)</BitLabel>
     <BitBreadcrumb Items=""BreadcrumbItems""
                    MaxDisplayedItems=""3""
                    OverflowIndex=""2""
-                   OnRenderOverflowIcon=""BitIconName.CollapseMenu"" />
+                   OverflowIcon=""BitIconName.CollapseMenu"" />
 </div>
 ";
 
@@ -323,7 +479,7 @@ private List<BitBreadcrumbItem> BreadcrumbItems { get; set; } = new List<BitBrea
         background: greenyellow;
     }
 
-    .custom-current-item {
+    .custom-selected-item {
         color: red;
         margin: 2px 5px;
         border-radius: 2px;
@@ -343,16 +499,14 @@ private List<BitBreadcrumbItem> BreadcrumbItems { get; set; } = new List<BitBrea
     <BitBreadcrumb Items=""BreadcrumbItemsWithStyle"" />
 </div>
 <div>
-    <BitLabel>Current Item Class</BitLabel>
+    <BitLabel>Selected Item Class</BitLabel>
     <BitBreadcrumb Items=""BreadcrumbItems""
-                   CurrentItemClass=""custom-current-item""
-                   CurrentItem=""BreadcrumbItems[3]"" />
+                   SelectedItemClass=""custom-selected-item"" />
 </div>
 <div>
-    <BitLabel>Current Item Style</BitLabel>
+    <BitLabel>Selected Item Style</BitLabel>
     <BitBreadcrumb Items=""BreadcrumbItems""
-                   CurrentItemStyle=""color:red;background:lightgreen""
-                   CurrentItem=""BreadcrumbItems[3]"" />
+                   SelectedItemStyle=""color:red;background:lightgreen"" />
 </div>
 ";
 
@@ -377,7 +531,8 @@ private List<BitBreadcrumbItem> BreadcrumbItems { get; set; } = new List<BitBrea
     new()
     {
         Text = ""Folder 4"",
-        Href = ""/components/breadcrumb""
+        Href = ""/components/breadcrumb"",
+        IsSelected = true
     }
 };
 
@@ -405,7 +560,8 @@ private List<BitBreadcrumbItem> BreadcrumbItemsWithClass { get; set; } = new Lis
     {
         Text = ""Folder 4"",
         Href = ""/components/breadcrumb"",
-        Class = ""custom-item""
+        Class = ""custom-item"",
+        IsSelected = true
     }
 };
 
@@ -433,23 +589,22 @@ private List<BitBreadcrumbItem> BreadcrumbItemsWithStyle { get; set; } = new Lis
     {
         Text = ""Folder 4"",
         Href = ""/components/breadcrumb"",
-        Style = ""color:red;background:lightgreen""
+        Style = ""color:red;background:lightgreen"",
+        IsSelected = true
     }
 };
 ";
 
     private readonly string example5HTMLCode = @"
-<BitBreadcrumb Items=""@BreadcrumbItemsWithControll""
+<BitBreadcrumb Items=""@BreadcrumbItemsWithControlled""
                MaxDisplayedItems=""3""
                OverflowIndex=""2""
-               CurrentItem=""@ControlledCurrentItem""
-               OnItemClick=""(item) => ControlledCurrentItem = item""
-               CurrentItemStyle=""color:red;background:lightgreen"" />
+               OnItemClick=""HandleOnItemClick""
+               SelectedItemStyle=""color:red;background:lightgreen"" />
 ";
 
     private readonly string example5CSharpCode = @"
-private BitBreadcrumbItem ControlledCurrentItem;
-private List<BitBreadcrumbItem> BreadcrumbItemsWithControll { get; set; } = new List<BitBreadcrumbItem>
+private List<BitBreadcrumbItem> BreadcrumbItemsWithControlled { get; set; } = new List<BitBreadcrumbItem>
 {
     new()
     {
@@ -473,10 +628,93 @@ private List<BitBreadcrumbItem> BreadcrumbItemsWithControll { get; set; } = new 
     },
     new()
     {
-        Text = ""Folder 6""
+        Text = ""Folder 6"",
+        IsSelected = true
     }
 };
 
-private BitBreadcrumbItem ControlledCurrentItem;
+private void HandleOnItemClick(BitBreadcrumbItem item)
+{
+    BreadcrumbItemsWithControlled.FirstOrDefault(i => i.IsSelected).IsSelected = false;
+    BreadcrumbItemsWithControlled.FirstOrDefault(i => i == item).IsSelected = true;
+}
+";
+
+    private readonly string example6HTMLCode = @"
+<div>
+    <BitBreadcrumb Items=""@BreadcrumbItemsWithCustomized""
+                    MaxDisplayedItems=""@MaxDisplayedItems""
+                    OverflowIndex=""@OverflowIndex""
+                    OnItemClick=""HandleOnItemClick_Customized"" />
+</div>
+<div class=""operators"">
+    <div>
+        <BitButton OnClick=""AddItem"">Add Item</BitButton>
+        <BitButton OnClick=""RemoveItem"">Remove Item</BitButton>
+    </div>
+    <div>
+        <BitNumericTextField @bind-Value=""MaxDisplayedItems"" Step=""@NumericTextFieldStep"" Label=""MaxDisplayedItems"" ShowArrows=""true"" />
+        <BitNumericTextField @bind-Value=""OverflowIndex"" Step=""@NumericTextFieldStep"" Label=""OverflowIndex"" ShowArrows=""true"" />
+    </div>
+</div>
+";
+
+    private readonly string example6CSharpCode = @"
+private List<BitBreadcrumbItem> BreadcrumbItemsWithCustomized { get; set; } = new List<BitBreadcrumbItem>
+{
+    new()
+    {
+        Text = ""Folder 1""
+    },
+    new()
+    {
+        Text = ""Folder 2""
+    },
+    new()
+    {
+        Text = ""Folder 3""
+    },
+    new()
+    {
+        Text = ""Folder 4"",
+        IsSelected = true
+    }
+};
+
+private int ItemsCount = 4;
+private uint OverflowIndex = 2;
+private uint MaxDisplayedItems = 3;
+private uint NumericTextFieldStep = 1;
+
+private void AddItem()
+{
+    ItemsCount++;
+    BreadcrumbItemsWithCustomized.Add(new BitBreadcrumbItem()
+    {
+        Text = $""Folder {ItemsCount}""
+    });
+}
+
+private void RemoveItem()
+{
+    if (BreadcrumbItemsWithCustomized.Count > 1)
+    {
+        ItemsCount--;
+
+        var item = BreadcrumbItemsWithCustomized[^1];
+        BreadcrumbItemsWithCustomized.Remove(item);
+
+        if (item.IsSelected)
+        {
+            BreadcrumbItemsWithCustomized[^1].IsSelected = true;
+        }
+    }
+}
+
+private void HandleOnItemClick_Customized(BitBreadcrumbItem item)
+{
+    BreadcrumbItemsWithCustomized.FirstOrDefault(i => i.IsSelected).IsSelected = false;
+    BreadcrumbItemsWithCustomized.FirstOrDefault(i => i == item).IsSelected = true;
+}
 ";
 }

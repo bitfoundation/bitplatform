@@ -5,17 +5,20 @@
                ComponentParameters="componentParameters"
                ComponentSubParameters="componentSubParameters">
 
-    <ComponentExampleBox Title="Basic" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@BasicItemsCSharpCode" ExampleId="example1">
+    <ComponentExampleBox Title="Basic" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
             <div class="example-box">
                 <div>
                     <BitLabel>Basic</BitLabel>
                     <BitBreadcrumb Items="BreadcrumbItems" />
                 </div>
-
                 <div>
                     <BitLabel>Disabled</BitLabel>
                     <BitBreadcrumb Items="BreadcrumbItems" IsEnabled="false" />
+                </div>
+                <div>
+                    <BitLabel>Item Disabled</BitLabel>
+                    <BitBreadcrumb Items="BreadcrumbItemsDisabled" />
                 </div>
             </div>
         </ExamplePreview>
@@ -64,15 +67,14 @@
                     <BitBreadcrumb Items="BreadcrumbItems"
                                    MaxDisplayedItems="3"
                                    OverflowIndex="2"
-                                   OnRenderOverflowIcon="BitIconName.ChevronDown" />
+                                   OverflowIcon="BitIconName.ChevronDown" />
                 </div>
-
                 <div>
                     <BitLabel>BitIconName (CollapseMenu)</BitLabel>
                     <BitBreadcrumb Items="BreadcrumbItems"
                                    MaxDisplayedItems="3"
                                    OverflowIndex="2"
-                                   OnRenderOverflowIcon="BitIconName.CollapseMenu" />
+                                   OverflowIcon="BitIconName.CollapseMenu" />
                 </div>
             </div>
         </ExamplePreview>
@@ -90,31 +92,51 @@
                     <BitBreadcrumb Items="BreadcrumbItemsWithStyle" />
                 </div>
                 <div>
-                    <BitLabel>Current Item Class</BitLabel>
+                    <BitLabel>Selected Item Class</BitLabel>
                     <BitBreadcrumb Items="BreadcrumbItems"
-                                   CurrentItemClass="custom-current-item"
-                                   CurrentItem="BreadcrumbItems[3]" />
+                                   SelectedItemClass="custom-selected-item" />
                 </div>
                 <div>
-                    <BitLabel>Current Item Style</BitLabel>
+                    <BitLabel>Selected Item Style</BitLabel>
                     <BitBreadcrumb Items="BreadcrumbItems"
-                                   CurrentItem="BreadcrumbItems[3]" 
-                                   CurrentItemStyle="color:red;background:lightgreen" />
+                                   SelectedItemStyle="color:red;background:lightgreen" />
                 </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Controlled" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
+    <ComponentExampleBox Title="Controlled BitBreadcrumb" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
         <ExamplePreview>
-            <div class="example-desc">By clicking on the items, the current item will change and match the CurrentItemStyle.</div>
+            <div class="example-desc">By clicking on the items, the selected item will change and match the SelectedItemStyle.</div>
             <div class="example-box">
-                <BitBreadcrumb Items="@BreadcrumbItemsWithControll"
+                <BitBreadcrumb Items="@BreadcrumbItemsWithControlled"
                                MaxDisplayedItems="3"
                                OverflowIndex="2"
-                               CurrentItem="@ControlledCurrentItem"
-                               OnItemClick="(item) => ControlledCurrentItem = item"
-                               CurrentItemStyle="color:red;background:lightgreen" />
+                               OnItemClick="HandleOnItemClick"
+                               SelectedItemStyle="color:red;background:lightgreen" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Customized Parameters" HTMLSourceCode="@example6HTMLCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example6">
+        <ExamplePreview>
+            <div class="example-box">
+                <div>
+                    <BitBreadcrumb Items="@BreadcrumbItemsWithCustomized"
+                                   MaxDisplayedItems="@MaxDisplayedItems"
+                                   OverflowIndex="@OverflowIndex"
+                                   OnItemClick="HandleOnItemClick_Customized" />
+                </div>
+                <div class="operators">
+                    <div>
+                        <BitButton OnClick="AddItem">Add Item</BitButton>
+                        <BitButton OnClick="RemoveItem">Remove Item</BitButton>
+                    </div>
+                   <div>
+                        <BitNumericTextField @bind-Value="MaxDisplayedItems" Step="@NumericTextFieldStep" Label="MaxDisplayedItems" ShowArrows="true" />
+                        <BitNumericTextField @bind-Value="OverflowIndex" Step="@NumericTextFieldStep" Label="OverflowIndex" ShowArrows="true" />
+                   </div>
+                </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>

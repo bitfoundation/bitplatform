@@ -2,7 +2,7 @@
 
 .bit-brc {
     &.bit-brc-disabled-fluent {
-        .overflow-btn, .item, .current-item, i {
+        .overflow-btn, .item, .selected-item, i {
             color: $Grey60;
             cursor: default;
             pointer-events: none;
@@ -55,9 +55,16 @@
         }
     }
 
-    .current-item {
+    .selected-item {
         font-weight: 600;
         color: $Grey160;
+    }
+
+    .disabled-item {
+        color: $Grey60;
+        cursor: default;
+        pointer-events: none;
+        font-weight: 400;
     }
 
     .overflow-menu-wrapper {
@@ -83,7 +90,7 @@
             margin: 0;
         }
 
-        a {
+        .item {
             width: 100%;
             height: rem(36px);
             display: flex;
@@ -114,7 +121,7 @@
         }
     }
 
-    .bit-brc-overlay {
+    .overlay {
         display: none;
         width: 100%;
         height: 100%;

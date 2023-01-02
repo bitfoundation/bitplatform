@@ -24,4 +24,14 @@ public class BitBreadcrumbItem
     /// Style HTML attribute for breadcrumb item.
     /// </summary>
     public string? Style { get; set; }
+
+    /// <summary>
+    /// Display the item as a current item.
+    /// </summary>
+    public bool IsSelected { get; set; }
+
+    /// <summary>
+    /// Whether an item is enabled or not.
+    /// </summary>
+    public bool IsEnabled { get; set; } = true;
 }
