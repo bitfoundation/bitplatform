@@ -2,7 +2,7 @@
 
 .bit-brl {
     &.bit-brl-disabled-fluent {
-        .overflow-btn, .item, .current-item, i {
+        .overflow-btn, .item, .selected-item, i {
             color: $Grey60;
             cursor: default;
             pointer-events: none;
@@ -55,9 +55,16 @@
         }
     }
 
-    .current-item {
+    .selected-item {
         font-weight: 600;
         color: $Grey160;
+    }
+
+    .disabled-item {
+        color: $Grey60;
+        cursor: default;
+        pointer-events: none;
+        font-weight: 400;
     }
 
     .overflow-menu-wrapper {

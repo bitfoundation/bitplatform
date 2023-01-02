@@ -9,4 +9,8 @@ public class PageInfoModel
     public string HtmlClass { get; set; }
 
     public string HtmlStyle { get; set; }
+
+    public bool IsSelected { get; set; }
+
+    public bool IsEnabled { get; set; } = true;
 }

@@ -4,27 +4,38 @@
                ComponentDescription="BreadList should be used as a navigational aid in your app or site. They indicate the current page’s location within a hierarchy and help the user understand where they are in relation to the rest of that hierarchy. They also afford one-click access to higher levels of that hierarchy."
                ComponentParameters="componentParameters">
 
-    <ComponentExampleBox Title="Basic" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@BasicItemsCSharpCode" ExampleId="example1">
+    <ComponentExampleBox Title="Basic" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
             <div class="example-box">
                 <div>
                     <BitLabel>Field parameter</BitLabel>
                     <BitBreadList Items="BasicBreadListItems"
                                   TextField="@nameof(PageInfoModel.Name)"
-                                  HrefField="@nameof(PageInfoModel.Href)" />
+                                  HrefField="@nameof(PageInfoModel.Href)"
+                                  IsSelectedField="@nameof(PageInfoModel.IsSelected)" />
                 </div>
                 <div>
                     <BitLabel>Selector parameter</BitLabel>
                     <BitBreadList Items="BasicBreadListItems"
-                                  TextSelector="item => item.Name"
-                                  HrefSelector="item => item.Href" />
+                                  TextFieldSelector="item => item.Name"
+                                  HrefFieldSelector="item => item.Href"
+                                  IsSelectedFieldSelector="item => item.IsSelected" />
                 </div>
                 <div>
                     <BitLabel>Disabled</BitLabel>
                     <BitBreadList Items="BasicBreadListItems"
-                                  TextSelector="item => item.Name"
-                                  HrefSelector="item => item.Href"
+                                  TextFieldSelector="item => item.Name"
+                                  HrefFieldSelector="item => item.Href"
+                                  IsSelectedFieldSelector="item => item.IsSelected"
                                   IsEnabled="false" />
+                </div>
+                <div>
+                    <BitLabel>Item Disabled</BitLabel>
+                    <BitBreadList Items="BasicBreadListItemsDisabled"
+                                  TextFieldSelector="item => item.Name"
+                                  HrefFieldSelector="item => item.Href"
+                                  IsEnabledFieldSelector="item => item.IsEnabled"
+                                  IsSelectedFieldSelector="item => item.IsSelected" />
                 </div>
             </div>
         </ExamplePreview>
@@ -42,6 +53,7 @@
                     <BitBreadList Items="BasicBreadListItems"
                                   TextField="@nameof(PageInfoModel.Name)"
                                   HrefField="@nameof(PageInfoModel.Href)"
+                                  IsSelectedField="@nameof(PageInfoModel.IsSelected)"
                                   MaxDisplayedItems="1" />
                 </div>
                 <div>
@@ -49,6 +61,7 @@
                     <BitBreadList Items="BasicBreadListItems"
                                   TextField="@nameof(PageInfoModel.Name)"
                                   HrefField="@nameof(PageInfoModel.Href)"
+                                  IsSelectedField="@nameof(PageInfoModel.IsSelected)"
                                   MaxDisplayedItems="2" />
                 </div>
                 <div>
@@ -56,6 +69,7 @@
                     <BitBreadList Items="BasicBreadListItems"
                                   TextField="@nameof(PageInfoModel.Name)"
                                   HrefField="@nameof(PageInfoModel.Href)"
+                                  IsSelectedField="@nameof(PageInfoModel.IsSelected)"
                                   MaxDisplayedItems="3" />
                 </div>
                 <div>
@@ -63,6 +77,7 @@
                     <BitBreadList Items="BasicBreadListItems"
                                   TextField="@nameof(PageInfoModel.Name)"
                                   HrefField="@nameof(PageInfoModel.Href)"
+                                  IsSelectedField="@nameof(PageInfoModel.IsSelected)"
                                   MaxDisplayedItems="3"
                                   OverflowIndex="0" />
                 </div>
@@ -71,6 +86,7 @@
                     <BitBreadList Items="BasicBreadListItems"
                                   TextField="@nameof(PageInfoModel.Name)"
                                   HrefField="@nameof(PageInfoModel.Href)"
+                                  IsSelectedField="@nameof(PageInfoModel.IsSelected)"
                                   MaxDisplayedItems="3"
                                   OverflowIndex="1" />
                 </div>
@@ -79,6 +95,7 @@
                     <BitBreadList Items="BasicBreadListItems"
                                   TextField="@nameof(PageInfoModel.Name)"
                                   HrefField="@nameof(PageInfoModel.Href)"
+                                  IsSelectedField="@nameof(PageInfoModel.IsSelected)"
                                   MaxDisplayedItems="3"
                                   OverflowIndex="2" />
                 </div>
@@ -94,16 +111,17 @@
                     <BitBreadList Items="BasicBreadListItems"
                                   TextField="@nameof(PageInfoModel.Name)"
                                   HrefField="@nameof(PageInfoModel.Href)"
+                                  IsSelectedField="@nameof(PageInfoModel.IsSelected)"
                                   MaxDisplayedItems="3"
                                   OverflowIndex="2"
                                   OverflowIcon="BitIconName.ChevronDown" />
                 </div>
-
                 <div>
                     <BitLabel>BitIconName (CollapseMenu)</BitLabel>
                     <BitBreadList Items="BasicBreadListItems"
                                   TextField="@nameof(PageInfoModel.Name)"
                                   HrefField="@nameof(PageInfoModel.Href)"
+                                  IsSelectedField="@nameof(PageInfoModel.IsSelected)"
                                   MaxDisplayedItems="3"
                                   OverflowIndex="2"
                                   OverflowIcon="BitIconName.CollapseMenu" />
@@ -120,46 +138,74 @@
                     <BitBreadList Items="BreadListItemsWithClass"
                                   TextField="@nameof(PageInfoModel.Name)"
                                   HrefField="@nameof(PageInfoModel.Href)"
-                                  ItemClassField="@nameof(PageInfoModel.HtmlClass)" />
+                                  IsSelectedField="@nameof(PageInfoModel.IsSelected)"
+                                  ClassField="@nameof(PageInfoModel.HtmlClass)" />
                 </div>
                 <div>
                     <BitLabel>Items Style</BitLabel>
                     <BitBreadList Items="BreadListItemsWithStyle"
                                   TextField="@nameof(PageInfoModel.Name)"
                                   HrefField="@nameof(PageInfoModel.Href)"
-                                  ItemStyleField="@nameof(PageInfoModel.HtmlStyle)" />
+                                  IsSelectedField="@nameof(PageInfoModel.IsSelected)"
+                                  StyleField="@nameof(PageInfoModel.HtmlStyle)" />
                 </div>
                 <div>
-                    <BitLabel>Current Item Class</BitLabel>
+                    <BitLabel>Selected Item Class</BitLabel>
                     <BitBreadList Items="BasicBreadListItems"
                                   TextField="@nameof(PageInfoModel.Name)"
                                   HrefField="@nameof(PageInfoModel.Href)"
-                                  CurrentItemClass="custom-current-item"
-                                  CurrentItem="BasicBreadListItems[3]" />
+                                  IsSelectedField="@nameof(PageInfoModel.IsSelected)"
+                                  SelectedItemClass="custom-selected-item" />
                 </div>
                 <div>
-                    <BitLabel>Current Item Style</BitLabel>
+                    <BitLabel>Selected Item Style</BitLabel>
                     <BitBreadList Items="BasicBreadListItems"
                                   TextField="@nameof(PageInfoModel.Name)"
                                   HrefField="@nameof(PageInfoModel.Href)"
-                                  CurrentItem="BasicBreadListItems[3]"
-                                  CurrentItemStyle="color:red; background:lightgreen;" />
+                                  IsSelectedField="@nameof(PageInfoModel.IsSelected)"
+                                  SelectedItemStyle="color:red; background:lightgreen;" />
                 </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Controlled" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
+    <ComponentExampleBox Title="Controlled BitBreadList" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
         <ExamplePreview>
-            <div class="example-desc">By clicking on the items, the current item will change and match the CurrentItemStyle.</div>
+            <div class="example-desc">By clicking on the items, the Selected item will change and match the SelectedItemStyle.</div>
             <div class="example-box">
-                <BitBreadList Items="BreadListItemsWithControll"
+                <BitBreadList Items="BreadListItemsWithControlled"
                               TextField="@nameof(PageInfoModel.Name)"
+                              IsSelectedField="@nameof(PageInfoModel.IsSelected)"
                               MaxDisplayedItems="3"
                               OverflowIndex="2"
-                              CurrentItem="@ControlledCurrentItem"
-                              OnItemClick="(PageInfoModel item) => ControlledCurrentItem = item"
-                              CurrentItemStyle="color:red; background:lightgreen;" />
+                              OnItemClick="(PageInfoModel item) => HandleOnItemClick(item)"
+                              SelectedItemStyle="color:red; background:lightgreen;" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Customized Parameters" HTMLSourceCode="@example6HTMLCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example6">
+        <ExamplePreview>
+            <div class="example-box">
+                <div>
+                    <BitBreadList Items="BreadListItemsWithCustomized"
+                                  TextField="@nameof(PageInfoModel.Name)"
+                                  IsSelectedField="@nameof(PageInfoModel.IsSelected)"
+                                  MaxDisplayedItems="@MaxDisplayedItems"
+                                  OverflowIndex="@OverflowIndex"
+                                  OnItemClick="(PageInfoModel item) => HandleOnItemClick_Customized(item)" />
+                </div>
+
+                <div class="operators">
+                    <div>
+                        <BitButton OnClick="AddItem">Add Item</BitButton>
+                        <BitButton OnClick="RemoveItem">Remove Item</BitButton>
+                    </div>
+                    <div>
+                        <BitNumericTextField @bind-Value="MaxDisplayedItems" Step="@NumericTextFieldStep" Label="MaxDisplayedItems" ShowArrows="true" />
+                        <BitNumericTextField @bind-Value="OverflowIndex" Step="@NumericTextFieldStep" Label="OverflowIndex" ShowArrows="true" />
+                    </div>
+                </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
