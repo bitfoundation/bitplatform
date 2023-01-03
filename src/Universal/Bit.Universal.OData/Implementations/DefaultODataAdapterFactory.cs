@@ -40,7 +40,7 @@ namespace Bit.OData.Implementations
         {
         }
 
-        private readonly FieldInfo _reasonPhraseField = typeof(WebRequestException).GetField("_reasonPhrase", BindingFlags.NonPublic | BindingFlags.Instance);
+        private static readonly FieldInfo _reasonPhraseField = typeof(WebRequestException).GetField("<ReasonPhrase>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance) ?? throw new InvalidOperationException("ReasonPharse backing field could not be found");
 
         public async override Task<ODataResponse> GetResponseAsync(HttpResponseMessage responseMessage)
         {

@@ -22,7 +22,7 @@
         <PackageReference Include="Microsoft.AspNet.WebApi.Tracing" Version="5.2.9" />
         <PackageReference Include="Microsoft.Owin.Cors" Version="4.2.2" />
         <PackageReference Include="Microsoft.Owin.Security.Cookies" Version="4.2.2" />
-        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.25.0" />
+        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.25.1" />
     </ItemGroup>
 
     <ItemGroup>

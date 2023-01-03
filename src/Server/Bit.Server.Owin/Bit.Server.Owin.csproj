@@ -22,10 +22,10 @@
     <PackageReference Include="NWebsec.Core" Version="3.0.1" />
     <PackageReference Include="NWebsec.Owin" Version="4.0.0" />
     <PackageReference Include="System.Diagnostics.EventLog" Version="7.0.0" />
-    <PackageReference Include="Serilog.AspNetCore" Version="6.0.1" />
+    <PackageReference Include="Serilog.AspNetCore" Version="6.1.0" />
     <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="7.0.0" />
     <PackageReference Include="NWebsec.AspNetCore.Middleware" Version="3.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Owin" Version="7.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Owin" Version="7.0.1" />
   </ItemGroup>
 
   <ItemGroup>
