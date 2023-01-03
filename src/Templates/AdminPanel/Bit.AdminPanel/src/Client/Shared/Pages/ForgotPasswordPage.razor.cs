@@ -4,43 +4,34 @@ namespace AdminPanel.Client.Shared.Pages;
 
 public partial class ForgotPasswordPage
 {
-    public SendResetPasswordEmailRequestDto ForgotPasswordModel { get; set; } = new();
-
-    public bool IsLoading { get; set; }
-
-    public BitMessageBarType ForgotPasswordMessageType { get; set; }
-
-    public string? ForgotPasswordMessage { get; set; }
-
-    private bool IsSubmitButtonEnabled => IsLoading is false;
+    public bool _isLoading;
+    public string? _forgotPasswordMessage;
+    public BitMessageBarType _forgotPasswordMessageType;
+    public SendResetPasswordEmailRequestDto _forgotPasswordModel = new();
 
     private async Task Submit()
     {
-        if (IsLoading)
-        {
-            return;
-        }
+        if (_isLoading) return;
 
-        IsLoading = true;
-        ForgotPasswordMessage = null;
+        _isLoading = true;
+        _forgotPasswordMessage = null;
 
         try
         {
-            await HttpClient.PostAsJsonAsync("Auth/SendResetPasswordEmail", ForgotPasswordModel, AppJsonContext.Default.SendResetPasswordEmailRequestDto);
+            await HttpClient.PostAsJsonAsync("Auth/SendResetPasswordEmail", _forgotPasswordModel, AppJsonContext.Default.SendResetPasswordEmailRequestDto);
 
-            ForgotPasswordMessageType = BitMessageBarType.Success;
+            _forgotPasswordMessageType = BitMessageBarType.Success;
 
-            ForgotPasswordMessage = @Localizer[nameof(AppStrings.ResetPasswordLinkSentMessage)];
+            _forgotPasswordMessage = @Localizer[nameof(AppStrings.ResetPasswordLinkSentMessage)];
         }
         catch (KnownException e)
         {
-            ForgotPasswordMessageType = BitMessageBarType.Error;
-
-            ForgotPasswordMessage = e.Message;
+            _forgotPasswordMessage = e.Message;
+            _forgotPasswordMessageType = BitMessageBarType.Error;
         }
         finally
         {
-            IsLoading = false;
+            _isLoading = false;
         }
     }
 }

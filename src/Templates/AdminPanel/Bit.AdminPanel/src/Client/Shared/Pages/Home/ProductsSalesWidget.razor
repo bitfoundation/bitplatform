@@ -1,11 +1,12 @@
-﻿@inherits AppComponentBase;
+﻿@namespace AdminPanel.Client.Shared.Pages
+@inherits AppComponentBase
 
 <div class="card">
     <div class="card-header">
         <div class="title">
-            @Localizer[nameof(AppStrings.ProductsPercentagePerCategory)]
+            @Localizer[nameof(AppStrings.ProductSales)]
         </div>
-        <div class="subtitle">@Localizer[nameof(AppStrings.ProductsPercentagePerCategoryText)]</div>
+        <div class="subtitle">@Localizer[nameof(AppStrings.ProductSalesText)]</div>
     </div>
     <div class="card-body">
         @if (_isLoading)
@@ -14,7 +15,9 @@
         }
         else
         {
-            <BitChart Config="_config" />
+            <BitChart Config="_config" @ref="_chart" />
         }
     </div>
 </div>
+
+

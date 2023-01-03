@@ -12,28 +12,48 @@
         "outputFile": "Shared/MessageBox.razor.css"
     },
     {
+        "inputFile": "Shared/Header.razor.scss",
+        "outputFile": "Shared/Header.razor.css"
+    },
+    {
+        "inputFile": "Shared/Footer.razor.scss",
+        "outputFile": "Shared/Footer.razor.css"
+    },
+    {
+        "inputFile": "Shared/NavMenu.razor.scss",
+        "outputFile": "Shared/NavMenu.razor.css"
+    },
+    {
+        "inputFile": "Components/SignOutConfirmModal.razor.scss",
+        "outputFile": "Components/SignOutConfirmModal.razor.css"
+    },
+    {
+        "inputFile": "Shared/PageNotFound.razor.scss",
+        "outputFile": "Shared/PageNotFound.razor.css"
+    },
+    {
         "inputFile": "Components/ConfirmMessageBox.razor.scss",
         "outputFile": "Components/ConfirmMessageBox.razor.css"
     },
     {
-        "inputFile": "Pages/HomePage.razor.scss",
-        "outputFile": "Pages/HomePage.razor.css"
+        "inputFile": "Pages/Home/HomePage.razor.scss",
+        "outputFile": "Pages/Home/HomePage.razor.css"
     },
     {
-        "inputFile": "Components/OverallStatsWidget.razor.scss",
-        "outputFile": "Components/OverallStatsWidget.razor.css"
+        "inputFile": "Pages/Home/OverallStatsWidget.razor.scss",
+        "outputFile": "Pages/Home/OverallStatsWidget.razor.css"
     },
     {
-        "inputFile": "Components/ProductsCountPerCategotyWidget.razor.scss",
-        "outputFile": "Components/ProductsCountPerCategotyWidget.razor.css"
+        "inputFile": "Pages/Home/ProductsCountPerCategotyWidget.razor.scss",
+        "outputFile": "Pages/Home/ProductsCountPerCategotyWidget.razor.css"
     },
     {
-        "inputFile": "Components/ProductsSalesWidget.razor.scss",
-        "outputFile": "Components/ProductsSalesWidget.razor.css"
+        "inputFile": "Pages/Home/ProductsSalesWidget.razor.scss",
+        "outputFile": "Pages/Home/ProductsSalesWidget.razor.css"
     },
     {
-        "inputFile": "Components/ProductsPercentageWidget.razor.scss",
-        "outputFile": "Components/ProductsPercentageWidget.razor.css"
+        "inputFile": "Pages/Home/ProductsPercentageWidget.razor.scss",
+        "outputFile": "Pages/Home/ProductsPercentageWidget.razor.css"
     },
     {
         "inputFile": "Pages/Categories/CategoriesPage.razor.scss",
@@ -50,26 +70,6 @@
     {
         "inputFile": "Pages/Products/CreateEditProductModal.razor.scss",
         "outputFile": "Pages/Products/CreateEditProductModal.razor.css"
-    },
-    {
-        "inputFile": "Components/Header.razor.scss",
-        "outputFile": "Components/Header.razor.css"
-    },
-    {
-        "inputFile": "Components/Footer.razor.scss",
-        "outputFile": "Components/Footer.razor.css"
-    },
-    {
-        "inputFile": "Components/NavMenu.razor.scss",
-        "outputFile": "Components/NavMenu.razor.css"
-    },
-    {
-        "inputFile": "Components/SignOutConfirmModal.razor.scss",
-        "outputFile": "Components/SignOutConfirmModal.razor.css"
-    },
-    {
-        "inputFile": "Components/PageNotFound.razor.scss",
-        "outputFile": "Components/PageNotFound.razor.css"
     },
     {
         "inputFile": "Pages/SignUpPage.razor.scss",

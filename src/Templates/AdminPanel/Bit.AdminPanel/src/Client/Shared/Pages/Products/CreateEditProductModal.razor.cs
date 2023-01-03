@@ -1,34 +1,34 @@
 ﻿using AdminPanel.Shared.Dtos.Products;
 
-namespace AdminPanel.Client.Shared.Pages.Products;
+namespace AdminPanel.Client.Shared.Pages;
 
 public partial class CreateEditProductModal
 {
-    [Parameter]
-    public ProductDto Product { get; set; }
-    [Parameter]
-    public EventCallback OnSave { get; set; }
 
-    private bool IsOpen { get; set; }
-    public bool IsLoading { get; private set; }
-    public bool IsSaveLoading { get; private set; }
+    private bool _isOpen;
+    private bool _isLoading;
+    private bool _isSaveLoading;
+    private List<BitDropDownItem>? _allCategoryList = new();
+    private string SelectedCategoyId
+    {
+        get => (Product.CategoryId ?? 0).ToString();
+        set { Product.CategoryId = int.Parse(value); }
+    }
 
-    public List<BitDropDownItem>? AllCategoryList { get; set; } = new();
+    [Parameter] public ProductDto Product { get; set; } = default!;
 
-    public string SelectedCategoyId { get => Product!.CategoryId!.ToString(); set { Product.CategoryId = int.Parse(value); } }
+    [Parameter] public EventCallback OnSave { get; set; }
 
     protected override async Task OnInitAsync()
     {
-        AllCategoryList = await GetCategoryDropdownItemsAsync();
-
-        await base.OnInitAsync();
+        _allCategoryList = await GetCategoryDropdownItemsAsync();
     }
 
     public async Task ShowModal(ProductDto product)
     {
         await InvokeAsync(() =>
         {
-            IsOpen = true;
+            _isOpen = true;
 
             _ = JsRuntime.SetToggleBodyOverflow(true);
 
@@ -38,36 +38,35 @@ public partial class CreateEditProductModal
 
     private async Task<List<BitDropDownItem>> GetCategoryDropdownItemsAsync()
     {
-        IsLoading = true;
+        _isLoading = true;
 
         try
         {
-            var categoryList = await StateService.GetValue($"{nameof(ProductsPage)}-{nameof(AllCategoryList)}", async () => await HttpClient.GetFromJsonAsync("Category/Get", AppJsonContext.Default.ListCategoryDto));
+            var categoryList = await StateService.GetValue($"{nameof(ProductsPage)}-AllCategoryList",
+                                        async () => await HttpClient.GetFromJsonAsync("Category/Get",
+                                            AppJsonContext.Default.ListCategoryDto)) ?? new();
 
-            return categoryList!.Select(c => new BitDropDownItem()
+            return categoryList.Select(c => new BitDropDownItem()
             {
                 ItemType = BitDropDownItemType.Normal,
-                Text = c.Name!,
-                Value = c.Id!.ToString()
+                Text = c.Name ?? string.Empty,
+                Value = c.Id.ToString()
             }).ToList();
         }
         finally
         {
-            IsLoading = false;
+            _isLoading = false;
         }
     }
 
     private async Task Save()
     {
-        if (IsLoading)
-        {
-            return;
-        }
+        if (_isLoading) return;
+
+        _isSaveLoading = true;
 
         try
         {
-            IsSaveLoading = true;
-
             if (Product.Id == 0)
             {
                 await HttpClient.PostAsJsonAsync("Product/Create", Product, AppJsonContext.Default.ProductDto);
@@ -77,19 +76,22 @@ public partial class CreateEditProductModal
                 await HttpClient.PutAsJsonAsync("Product/Update", Product, AppJsonContext.Default.ProductDto);
             }
 
-            IsOpen = false;
+            _isOpen = false;
+
             await JsRuntime.SetToggleBodyOverflow(false);
         }
         finally
         {
+            _isSaveLoading = false;
+
             await OnSave.InvokeAsync();
-            IsSaveLoading = false;
         }
     }
 
     private async Task OnCloseClick()
     {
-        IsOpen = false;
+        _isOpen = false;
+
         await JsRuntime.SetToggleBodyOverflow(false);
     }
 }

@@ -1,6 +1,8 @@
 ﻿//-:cnd:noEmit
-using System.Globalization;
 using System.Net.Http.Headers;
+#if MultilingualEnabled && (BlazorServer || BlazorHybrid)
+using System.Globalization;
+#endif
 
 namespace AdminPanel.Client.Shared.Services.Implementations;
 
@@ -26,24 +28,27 @@ public partial class AppHttpClientHandler : HttpClientHandler
 
         var response = await base.SendAsync(request, cancellationToken);
 
-        if (!response.IsSuccessStatusCode && response.Content.Headers.ContentType?.MediaType == "application/json")
+        if (response.IsSuccessStatusCode is false && response.Content.Headers.ContentType?.MediaType == "application/json")
         {
             if (response.Headers.TryGetValues("Request-ID", out IEnumerable<string>? values) && values is not null && values.Any())
             {
-                RestExceptionPayload restError = await response.Content.ReadFromJsonAsync(AppJsonContext.Default.RestExceptionPayload);
+                RestExceptionPayload restError = await response.Content.ReadFromJsonAsync(AppJsonContext.Default.RestExceptionPayload, cancellationToken) ?? new();
 
-                Type exceptionType = typeof(RestExceptionPayload).Assembly.GetType(restError.ExceptionType) ?? typeof(UnknownException);
+                Type exceptionType = typeof(RestExceptionPayload).Assembly.GetType(restError.ExceptionType ?? string.Empty) ?? typeof(UnknownException);
 
-                var args = new List<object> { typeof(KnownException).IsAssignableFrom(exceptionType) ? new LocalizedString(restError.Key!, restError.Message!) : restError.Message };
+                List<object> args = new()
+                {
+                    typeof(KnownException).IsAssignableFrom(exceptionType)
+                        ? new LocalizedString(restError.Key ?? string.Empty, restError.Message ?? string.Empty)
+                        : restError.Message ?? string.Empty
+                };
 
                 if (exceptionType == typeof(ResourceValidationException))
                 {
                     args.Add(restError.Details);
                 }
 
-                Exception exp = (Exception)Activator.CreateInstance(exceptionType, args.ToArray());
-
-                throw exp;
+                throw (Exception)(Activator.CreateInstance(exceptionType, args.ToArray()) ?? new Exception());
             }
         }
 

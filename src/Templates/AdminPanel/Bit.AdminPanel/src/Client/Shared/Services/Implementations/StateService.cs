@@ -16,13 +16,15 @@ public class StateService : IStateService, IAsyncDisposable
         _applicationState = applicationState;
 
         if (OperatingSystem.IsBrowser() is false)
+        {
             _subscription = applicationState.RegisterOnPersisting(PersistAsJson);
+        }
     }
 
     public async Task<T?> GetValue<T>(string key, Func<Task<T?>> factory)
     {
-        if (_applicationState.TryTakeFromJson(key, out T? value))
-            return value;
+        if (_applicationState.TryTakeFromJson(key, out T? value)) return value;
+
         var result = await factory();
         Persist(key, result);
         return result;
@@ -30,18 +32,20 @@ public class StateService : IStateService, IAsyncDisposable
 
     void Persist<T>(string key, T value)
     {
-        if (OperatingSystem.IsBrowser())
-            return;
+        if (OperatingSystem.IsBrowser()) return;
+
         _values.TryRemove(key, out object? _);
         _values.TryAdd(key, value);
     }
 
     async Task PersistAsJson()
     {
-        if (OperatingSystem.IsBrowser())
-            return;
+        if (OperatingSystem.IsBrowser()) return;
+
         foreach (var item in _values)
+        {
             _applicationState.PersistAsJson(item.Key, item.Value);
+        }
     }
 
     public async ValueTask DisposeAsync()

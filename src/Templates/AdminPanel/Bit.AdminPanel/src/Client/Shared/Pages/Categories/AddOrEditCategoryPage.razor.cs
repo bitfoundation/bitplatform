@@ -1,91 +1,83 @@
 ﻿using AdminPanel.Shared.Dtos.Categories;
 
-namespace AdminPanel.Client.Shared.Pages.Categories;
+namespace AdminPanel.Client.Shared.Pages;
 
 [Authorize]
 public partial class AddOrEditCategoryPage
 {
-    [Parameter]
-    public int? Id { get; set; }
+    [Parameter] public int? Id { get; set; }
 
-    public CategoryDto? Category { get; set; } = new();
-    public bool IsLoading { get; private set; }
-    public bool IsSaveLoading { get; private set; }
-    public bool IsColorPickerOpen { get; set; }
-    public BitMessageBarType SaveMessageType { get; set; }
-    public string? SaveMessage { get; set; }
+    private bool _isLoading;
+    private bool _isSaveLoading;
+    private string? _saveMessage;
+    private bool _isColorPickerOpen;
+    private BitMessageBarType _saveMessageType;
+    private CategoryDto _category = new();
+
     protected override async Task OnInitAsync()
     {
         await LoadCategory();
-        await base.OnInitAsync();
     }
 
     private async Task LoadCategory()
     {
-        if (Id == null)
-        {
-            return;
-        }
+        if (Id == null) return;
+
+        _isLoading = true;
 
         try
         {
-            IsLoading = true;
-            Category = await HttpClient.GetFromJsonAsync($"Category/Get/{Id}", AppJsonContext.Default.CategoryDto);
-        }        
+            _category = await HttpClient.GetFromJsonAsync($"Category/Get/{Id}", AppJsonContext.Default.CategoryDto) ?? new();
+        }
         finally
         {
-            IsLoading = false;
+            _isLoading = false;
         }
     }
 
     private void SetCategoryColor(string color)
     {
-        Category!.Color = color;
+        _category.Color = color;
     }
 
     private void ToggleColorPicker()
     {
-        IsColorPickerOpen = !IsColorPickerOpen;
+        _isColorPickerOpen = !_isColorPickerOpen;
     }
 
     private async Task Save()
     {
-        if (IsSaveLoading)
-        {
-            return;
-        }
+        if (_isSaveLoading) return;
+
+        _isSaveLoading = true;
 
         try
         {
-            IsSaveLoading = true;
-
-            if (Category!.Id == 0)
+            if (_category.Id == 0)
             {
-                await HttpClient.PostAsJsonAsync("Category/Create", Category, AppJsonContext.Default.CategoryDto);
+                await HttpClient.PostAsJsonAsync("Category/Create", _category, AppJsonContext.Default.CategoryDto);
             }
             else
             {
-                await HttpClient.PutAsJsonAsync("Category/Update", Category, AppJsonContext.Default.CategoryDto);
+                await HttpClient.PutAsJsonAsync("Category/Update", _category, AppJsonContext.Default.CategoryDto);
             }
 
             NavigationManager.NavigateTo("categories");
         }
         catch (ResourceValidationException e)
         {
-            SaveMessageType = BitMessageBarType.Error;
-            SaveMessage = string.Join(Environment.NewLine, e.Details.SelectMany(d => d.Errors)
-                .Select(e => e.Message));
+            _saveMessageType = BitMessageBarType.Error;
+
+            _saveMessage = string.Join(Environment.NewLine, e.Details.SelectMany(d => d.Errors).Select(e => e.Message));
         }
         catch (KnownException e)
         {
-            SaveMessageType = BitMessageBarType.Error;
-            SaveMessage = e.Message;
+            _saveMessage = e.Message;
+            _saveMessageType = BitMessageBarType.Error;
         }
         finally
         {
-            IsSaveLoading = false;
+            _isSaveLoading = false;
         }
-
     }
-
 }
