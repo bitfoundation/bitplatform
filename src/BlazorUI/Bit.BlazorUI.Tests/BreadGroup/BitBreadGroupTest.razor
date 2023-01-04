@@ -1,0 +1,17 @@
+﻿<CascadingValue Value="Visual">
+    <BitBreadGroup IsEnabled="@IsEnabled" MaxDisplayedOptions="@MaxDisplayedOptions" OverflowIndex="@OverflowIndex">
+        <BitBreadOption Text="Option 1" Href="https://components.bitplatform.dev/" />
+        <BitBreadOption Text="Option 2" Href="https://components.bitplatform.dev/" IsEnabled="false" />
+        <BitBreadOption Text="Option 3" Href="https://components.bitplatform.dev/" IsSelected="true" />
+        <BitBreadOption Text="Option 4" Href="https://components.bitplatform.dev/" Class="custom-class-name" />
+        <BitBreadOption Text="Option 5" Href="https://components.bitplatform.dev/" Style="background-color: red;" />
+    </BitBreadGroup>
+</CascadingValue>
+
+
+@code {
+    [Parameter] public Visual Visual { get; set; }
+    [Parameter] public bool IsEnabled { get; set; } = true;
+    [Parameter] public uint MaxDisplayedOptions { get; set; }
+    [Parameter] public uint OverflowIndex { get; set; }
+}
