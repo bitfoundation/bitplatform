@@ -24,7 +24,7 @@ public partial class BitColorPicker : IAsyncDisposable
     public string? Hex => _color.Hex;
     public string? Rgb => _color.Rgb;
 
-    [Inject] public IJSRuntime _Js { get; set; } = default!;
+    [Inject] public IJSRuntime _js { get; set; } = default!;
 
     /// <summary>
     /// Indicates the Alpha value.
@@ -95,8 +95,8 @@ public partial class BitColorPicker : IAsyncDisposable
     {
         if (firstRender)
         {
-            _onWindowMouseUpAbortControllerId = await _Js.RegisterOnWindowMouseUpEvent(this, "OnWindowMouseUp");
-            _onWindowMouseMoveAbortControllerId = await _Js.RegisterOnWindowMouseMoveEvent(this, "OnWindowMouseMove");
+            _onWindowMouseUpAbortControllerId = await _js.RegisterOnWindowMouseUpEvent(this, "OnWindowMouseUp");
+            _onWindowMouseMoveAbortControllerId = await _js.RegisterOnWindowMouseMoveEvent(this, "OnWindowMouseMove");
 
             await SetPositionAsync();
         }
@@ -107,7 +107,7 @@ public partial class BitColorPicker : IAsyncDisposable
     private async Task SetPositionAsync()
     {
         var hsv = _color.Hsv;
-        var saturationPickerRect = await _Js.GetBoundingClientRect(_saturationPickerRef);
+        var saturationPickerRect = await _js.GetBoundingClientRect(_saturationPickerRef);
 
         var width = saturationPickerRect?.Width ?? 0;
         var height = saturationPickerRect?.Height ?? 0;
@@ -132,7 +132,7 @@ public partial class BitColorPicker : IAsyncDisposable
     {
         if (ColorHasBeenSet && ColorChanged.HasDelegate is false) return;
 
-        var parent = await _Js.GetBoundingClientRect(_saturationPickerRef);
+        var parent = await _js.GetBoundingClientRect(_saturationPickerRef);
         _saturationPickerThumbPosition = new BitColorPosition
         {
             Left = e.ClientX < parent.Left ? 0 : e.ClientX > parent.Left + parent.Width ? Convert.ToInt32(parent.Width) : Convert.ToInt32(e.ClientX - parent.Left),
@@ -224,12 +224,12 @@ public partial class BitColorPicker : IAsyncDisposable
     {
         if (_onWindowMouseUpAbortControllerId.HasValue())
         {
-            await _Js.AbortProcedure(_onWindowMouseUpAbortControllerId!);
+            await _js.AbortProcedure(_onWindowMouseUpAbortControllerId!);
         }
 
         if (_onWindowMouseMoveAbortControllerId.HasValue())
         {
-            await _Js.AbortProcedure(_onWindowMouseMoveAbortControllerId!);
+            await _js.AbortProcedure(_onWindowMouseMoveAbortControllerId!);
         }
 
         GC.SuppressFinalize(this);
