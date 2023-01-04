@@ -13,15 +13,15 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Bit.Server.Data.EntityFramework" Version="13.0.0" />
-		<PackageReference Include="Bit.Server.Hangfire" Version="13.0.0" />
-		<PackageReference Include="Bit.Server.IdentityServer" Version="13.0.0" />
-		<PackageReference Include="Bit.Server.OData" Version="13.0.0" />
-		<PackageReference Include="Bit.Server.Owin" Version="13.0.0" />
-		<PackageReference Include="Bit.Server.Signalr" Version="13.0.0" />
-		<PackageReference Include="Bit.Tooling.CodeAnalyzer" Version="13.0.0" />
-		<PackageReference Include="Bit.Tooling.CodeGenerator.Task" Version="13.0.0" />
-		<PackageReference Include="Bit.Universal.AutoMapper" Version="13.0.0" />
+		<PackageReference Include="Bit.Server.Data.EntityFramework" Version="13.1.0" />
+		<PackageReference Include="Bit.Server.Hangfire" Version="13.1.0" />
+		<PackageReference Include="Bit.Server.IdentityServer" Version="13.1.0" />
+		<PackageReference Include="Bit.Server.OData" Version="13.1.0" />
+		<PackageReference Include="Bit.Server.Owin" Version="13.1.0" />
+		<PackageReference Include="Bit.Server.Signalr" Version="13.1.0" />
+		<PackageReference Include="Bit.Tooling.CodeAnalyzer" Version="13.1.0" />
+		<PackageReference Include="Bit.Tooling.CodeGenerator.Task" Version="13.1.0" />
+		<PackageReference Include="Bit.Universal.AutoMapper" Version="13.1.0" />
 		<PackageReference Include="Dapper" Version="2.0.123" />
 	</ItemGroup>
 
