@@ -1,7 +1,9 @@
-var BitButil = (function () {
+var BitButil = BitButil || {};
+
+(function (butil: any) {
     const _handlers = {};
 
-    return {
+    butil.events = {
         addEventListener,
         removeEventListener
     };
@@ -22,4 +24,4 @@ var BitButil = (function () {
             window[elementName].removeEventListener(eventName, handler, options);
         });
     }
-}());
+}(BitButil));
