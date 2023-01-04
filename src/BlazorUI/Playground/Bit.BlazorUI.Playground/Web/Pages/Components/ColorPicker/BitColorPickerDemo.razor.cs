@@ -5,11 +5,17 @@ namespace Bit.BlazorUI.Playground.Web.Pages.Components.ColorPicker;
 
 public partial class BitColorPickerDemo
 {
-    private BitColorPicker ColorPicker;
-    private string Color = "#FFFFFF";
-    private string ColorRgb = "rgb(255,255,255)";
+    private string BasicRgbColor = "rgb(255,255,255)";
+    private string BasicHexColor = "#FFFFFF";
+
+    private string AlphaRgbColor = "rgb(255,255,255)";
     private double Alpha = 1;
-    private bool IsToggleChecked = false;
+
+    private string TwoWayColor = "#FFFFFF";
+
+    private BitColorValue ColorValue;
+    private string BoundColor = "#FFFFFF";
+    private BitColorPicker ColorPicker;
 
     private readonly List<ComponentParameter> componentParameters = new()
     {
@@ -17,21 +23,18 @@ public partial class BitColorPickerDemo
         {
             Name = "Alpha",
             Type = "double",
-            DefaultValue = "",
             Description = "Indicates the Alpha value.",
         },
         new ComponentParameter()
         {
             Name = "Color",
             Type = "string",
-            DefaultValue = "",
             Description = "CSS-compatible string to describe the color.",
         },
         new ComponentParameter()
         {
             Name = "OnChange",
             Type = "EventCallback<BitColorEventArgs>",
-            DefaultValue = "",
             Description = "Callback for when the value changed.",
         },
         new ComponentParameter()
@@ -50,36 +53,92 @@ public partial class BitColorPickerDemo
         },
     };
 
+    #region Sample Code 1
+
     private readonly string example1HTMLCode = @"
-<div>
-    <BitColorPicker ShowPreview=""@IsToggleChecked"" @ref=""ColorPicker"" @bind-Color=""@Color"" ShowAlphaSlider=""false"" />
+<div class=""column"">
+    <BitColorPicker @bind-Color=""BasicRgbColor"" />
+    <span>Rgb: @BasicRgbColor</span>
 </div>
-<div class=""operators"">
-    <BitToggle Label=""Show Preview Box"" @bind-Value=""@IsToggleChecked"" IsEnabled=""true"" />
-    <BitTextField Label=""Hex Code"" Value=""@Color"" />
-    <BitTextField Label=""RGB"" Value=""@(ColorPicker?.Rgb ?? ""rgb(255,255,255)"")"" />
+<div class=""column"">
+    <BitColorPicker @bind-Color=""BasicHexColor"" />
+    <span>Hex: @BasicHexColor</span>
 </div>
 ";
 
     private readonly string example1CSharpCode = @"
-private BitColorPicker ColorPicker;
-private string Color = ""#FFFFFF"";
-private bool IsToggleChecked = false;
+private string BasicRgbColor = ""rgb(255,255,255)"";
+private string BasicHexColor = ""#FFFFFF"";
 ";
 
+    #endregion
+
+    #region Sample Code 2
+
     private readonly string example2HTMLCode = @"
-<div>
-    <BitColorPicker ShowPreview=""true"" @bind-Alpha=""@Alpha"" @bind-Color=""@ColorRgb"" />
-</div>
-<div class=""operators"">
-    <BitTextField Label=""RGB"" Value=""@ColorRgb"" />
-    <BitTextField Label=""Alpha"" Value=""@(Alpha.ToString())"" />
+<div class=""column"">
+    <BitColorPicker @bind-Color=""AlphaRgbColor"" @bind-Alpha=""Alpha"" ShowAlphaSlider=""true"" />
+    <span>Rgb: @AlphaRgbColor</span>
+    <span>Alpha: @Alpha</span>
 </div>
 ";
 
     private readonly string example2CSharpCode = @"
-private BitColorPicker ColorPicker;
-private string ColorRgb = ""rgb(255,255,255)"";
+private string AlphaRgbColor = ""rgb(255,255,255)"";
 private double Alpha = 1;
 ";
+
+    #endregion
+
+    #region Sample Code 3
+
+    private readonly string example3HTMLCode = @"
+<div class=""column"">
+    <BitColorPicker ShowPreview=""true"" />
+</div>
+";
+
+    #endregion
+
+    #region Sample Code 4
+
+    private readonly string example4HTMLCode = @"
+<div class=""column"">
+    <BitColorPicker @bind-Color=""TwoWayColor"" />
+    <BitTextField Label=""Enter Hex or Rgb"" @bind-Value=""TwoWayColor"" />
+</div>
+";
+
+    private readonly string example4CSharpCode = @"
+private string TwoWayColor = ""#FFFFFF"";
+";
+
+    #endregion
+
+    #region Sample Code 5
+
+    private readonly string example5HTMLCode = @"
+<div class=""column"">
+    <BitLabel>OnChange</BitLabel>
+    <BitColorPicker OnChange=""(value) => ColorValue = value"" ShowAlphaSlider=""true"" />
+    <span>Color (Hex): @ColorValue?.Color</span>
+    <span>Alpha: @ColorValue?.Alpha</span>
+</div>
+<div class=""column"">
+    <BitLabel>Component Reference</BitLabel>
+    <BitColorPicker @ref=""ColorPicker"" @bind-Color=""BoundColor"" ShowAlphaSlider=""true"" />
+    <span>Bound Color Value: @BoundColor</span>
+    <span>Reference Hex: @ColorPicker?.Hex</span>
+    <span>Reference Rgb: @ColorPicker?.Rgb</span>
+    <span>Reference Alpha: @ColorPicker?.Alpha</span>
+</div>
+";
+
+    private readonly string example5CSharpCode = @"
+private BitColorValue ColorValue;
+private string BoundColor = ""#FFFFFF"";
+private BitColorPicker ColorPicker;
+";
+
+    #endregion
 }

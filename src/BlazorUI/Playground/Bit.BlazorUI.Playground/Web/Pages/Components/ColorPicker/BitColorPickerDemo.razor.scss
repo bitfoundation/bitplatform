@@ -1,12 +1,12 @@
-﻿@import '../../../Styles/abstracts/_functions.scss';
-@import '../../../Styles/abstracts/_media-queries.scss';
-
+﻿
 .example-box {
     display: flex;
-    flex-flow: column nowrap;
-    gap: 10px;
+    flex-flow: row wrap;
+    gap: 20px;
 
-    .operators {
-        width: 230px;
+    .column {
+        display: flex;
+        flex-flow: column nowrap;
+        width: 352px;
     }
 }

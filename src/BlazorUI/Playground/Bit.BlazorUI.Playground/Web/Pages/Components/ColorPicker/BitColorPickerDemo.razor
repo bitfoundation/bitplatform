@@ -4,32 +4,77 @@
                ComponentDescription="The color picker (ColorPicker) is used to browse through and select colors. By default, it lets people navigate through colors on a color spectrum, or specify a color in either Red-Green-Blue (RGB), or alpha color code; or Hexadecimal textboxes."
                ComponentParameters="componentParameters">
 
-    <ComponentExampleBox Title="BitColorPicker (Hex)" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
+    <ComponentExampleBox Title="Basic" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
+            <div class="example-desc">
+                The output type of the BitColorPicker automatically matches its default value type.
+                if you set the bound value to a Hex type, the outputs will be based on Hex and if you set the bound value to an Rgb type, the outputs will be based on Rgb. (default Type of output is Rgb)
+            </div>
             <div class="example-box">
-                <div>
-                    <BitColorPicker ShowPreview="@IsToggleChecked" @ref="ColorPicker" @bind-Color="@Color" ShowAlphaSlider="false" />
+                <div class="column">
+                    <BitColorPicker @bind-Color="BasicRgbColor" />
+                    <span>Rgb: @BasicRgbColor</span>
                 </div>
-                <div class="operators">
-                    <BitToggle Label="Show Preview Box" @bind-Value="@IsToggleChecked" IsEnabled="true" />
-                    <BitTextField Label="Hex Code" Value="@Color" />
-                    <BitTextField Label="RGB" Value="@(ColorPicker?.Rgb ?? "rgb(255,255,255)")" />
+                <div class="column">
+                    <BitColorPicker @bind-Color="BasicHexColor" />
+                    <span>Hex: @BasicHexColor</span>
                 </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BitColorPicker (RGB)" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example2">
+    <ComponentExampleBox Title="Alpha" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example2">
         <ExamplePreview>
             <div class="example-box">
-                <div>
-                    <BitColorPicker ShowPreview="true" @bind-Alpha="@Alpha" @bind-Color="@ColorRgb" />
-                </div>
-                <div class="operators">
-                    <BitTextField Label="RGB" Value="@ColorRgb" />
-                    <BitTextField Label="Alpha" Value="@(Alpha.ToString())" />
+                <div class="column">
+                    <BitColorPicker @bind-Color="AlphaRgbColor" @bind-Alpha="Alpha" ShowAlphaSlider="true" />
+                    <span>Rgb: @AlphaRgbColor</span>
+                    <span>Alpha: @Alpha</span>
                 </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Preview" HTMLSourceCode="@example3HTMLCode" ExampleId="example3">
+        <ExamplePreview>
+            <div class="example-box">
+                <div class="column">
+                    <BitColorPicker ShowPreview="true" />
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Two-way" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
+        <ExamplePreview>
+            <div class="example-box">
+                <div class="column">
+                    <BitColorPicker @bind-Color="TwoWayColor" />
+                    <BitTextField Label="Enter Hex or Rgb" @bind-Value="TwoWayColor" />
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Events" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
+        <ExamplePreview>
+            <div class="example-box">
+                <div class="column">
+                    <BitLabel>OnChange</BitLabel>
+                    <BitColorPicker OnChange="(value) => ColorValue = value" ShowAlphaSlider="true" />
+                    <span>Color (Hex): @ColorValue?.Color</span>
+                    <span>Alpha: @ColorValue?.Alpha</span>
+                </div>
+                <div class="column">
+                    <BitLabel>Component Reference</BitLabel>
+                    <BitColorPicker @ref="ColorPicker" @bind-Color="BoundColor" ShowAlphaSlider="true" />
+                    <span>Bound Color Value: @BoundColor</span>
+                    <span>Reference Hex: @ColorPicker?.Hex</span>
+                    <span>Reference Rgb: @ColorPicker?.Rgb</span>
+                    <span>Reference Alpha: @ColorPicker?.Alpha</span>
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
 </ComponentDemo>

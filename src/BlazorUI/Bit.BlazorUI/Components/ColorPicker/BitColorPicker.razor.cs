@@ -68,14 +68,14 @@ public partial class BitColorPicker : IAsyncDisposable
     [Parameter] public EventCallback<string> ColorChanged { get; set; }
 
     /// <summary>
-    /// 
+    /// Callback for when the value changed.
     /// </summary>
     [Parameter] public EventCallback<BitColorValue> OnChange { get; set; }
 
     /// <summary>
     /// Whether to show a slider for editing alpha value.
     /// </summary>
-    [Parameter] public bool ShowAlphaSlider { get; set; } = true;
+    [Parameter] public bool ShowAlphaSlider { get; set; }
 
     /// <summary>
     /// Whether to show color preview box.
