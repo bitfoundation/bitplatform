@@ -1,13 +1,12 @@
 ﻿@import '../../../Styles/abstracts/_functions.scss';
+@import '../../../Styles/abstracts/_media-queries.scss';
 
-.m-l-70 {
-    margin-left: rem(70px);
-}
+.example-box {
+    display: flex;
+    flex-flow: column nowrap;
+    gap: 10px;
 
-.p-12 {
-    padding: rem(12px);
-}
-
-.max-w-300 {
-    max-width: rem(304px);
+    .operators {
+        width: 230px;
+    }
 }

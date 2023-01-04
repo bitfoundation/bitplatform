@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Bit.BlazorUI.Playground.Web.Models;
 using Bit.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
 namespace Bit.BlazorUI.Playground.Web.Pages.Components.ColorPicker;
@@ -23,24 +22,10 @@ public partial class BitColorPickerDemo
         },
         new ComponentParameter()
         {
-            Name = "AlphaChanged",
-            Type = "EventCallback<double>",
-            DefaultValue = "",
-            Description = "Callback for when the alpha value changed.",
-        },
-        new ComponentParameter()
-        {
             Name = "Color",
             Type = "string",
             DefaultValue = "",
             Description = "CSS-compatible string to describe the color.",
-        },
-        new ComponentParameter()
-        {
-            Name = "ColorChanged",
-            Type = "EventCallback<string>",
-            DefaultValue = "",
-            Description = "Callback for when the color value changed.",
         },
         new ComponentParameter()
         {
@@ -63,70 +48,38 @@ public partial class BitColorPickerDemo
             DefaultValue = "false",
             Description = "Whether to show color preview box.",
         },
-        new ComponentParameter()
-        {
-            Name = "Visibility",
-            Type = "BitComponentVisibility",
-            LinkType = LinkType.Link,
-            Href = "#component-visibility-enum",
-            DefaultValue = "BitComponentVisibility.Visible",
-            Description = "Whether the component is Visible,Hidden,Collapsed.",
-        },
     };
 
-    private readonly List<EnumParameter> enumParameters = new()
-    {
-        new EnumParameter()
-        {
-            Id = "component-visibility-enum",
-            Title = "BitComponentVisibility Enum",
-            Description = "",
-            EnumList = new List<EnumItem>()
-            {
-                new EnumItem()
-                {
-                    Name= "Visible",
-                    Description="Show content of the component.",
-                    Value="0",
-                },
-                new EnumItem()
-                {
-                    Name= "Hidden",
-                    Description="Hide content of the component,though the space it takes on the page remains.",
-                    Value="1",
-                },
-                new EnumItem()
-                {
-                    Name= "Collapsed",
-                    Description="Hide content of the component,though the space it takes on the page gone.",
-                    Value="2",
-                }
-            }
-        }
-    };
-
-    private readonly string example1HTMLCode = @"<BitColorPicker ShowPreview=""@IsToggleChecked"" @ref=""ColorPicker"" @bind-Color=""@Color"" ShowAlphaSlider=""false"">Default ColorPicker</BitColorPicker>
+    private readonly string example1HTMLCode = @"
 <div>
-    <BitToggle Label=""Show Preview Box"" @bind-Value=""@IsToggleChecked"" IsEnabled=""true"" />
+    <BitColorPicker ShowPreview=""@IsToggleChecked"" @ref=""ColorPicker"" @bind-Color=""@Color"" ShowAlphaSlider=""false"" />
 </div>
-<div>
-    <BitTextField Label=""Hex Code"" Value=""@Color""></BitTextField>
-    <BitTextField Label=""RGB"" Value=""@(ColorPicker?.Rgb ?? ""rgb(255,255,255)"")""></BitTextField>
-</div>";
+<div class=""operators"">
+    <BitToggle Label=""Show Preview Box"" @bind-Value=""@IsToggleChecked"" IsEnabled=""true"" />
+    <BitTextField Label=""Hex Code"" Value=""@Color"" />
+    <BitTextField Label=""RGB"" Value=""@(ColorPicker?.Rgb ?? ""rgb(255,255,255)"")"" />
+</div>
+";
 
     private readonly string example1CSharpCode = @"
 private BitColorPicker ColorPicker;
 private string Color = ""#FFFFFF"";
-private bool IsToggleChecked = false;";
+private bool IsToggleChecked = false;
+";
 
-    private readonly string example2HTMLCode = @"<BitColorPicker ShowPreview=""true"" @bind-Alpha=""@Alpha"" @bind-Color=""@ColorRgb"">Default ColorPicker</BitColorPicker>
+    private readonly string example2HTMLCode = @"
 <div>
-    <BitTextField Label=""RGB"" Value=""@ColorRgb""></BitTextField>
-    <BitTextField Label=""Alpha"" Value=""@(Alpha.ToString())""></BitTextField>
-</div>";
+    <BitColorPicker ShowPreview=""true"" @bind-Alpha=""@Alpha"" @bind-Color=""@ColorRgb"" />
+</div>
+<div class=""operators"">
+    <BitTextField Label=""RGB"" Value=""@ColorRgb"" />
+    <BitTextField Label=""Alpha"" Value=""@(Alpha.ToString())"" />
+</div>
+";
 
     private readonly string example2CSharpCode = @"
 private BitColorPicker ColorPicker;
 private string ColorRgb = ""rgb(255,255,255)"";
-private double Alpha = 1;";
+private double Alpha = 1;
+";
 }
