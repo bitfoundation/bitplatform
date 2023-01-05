@@ -1,4 +1,4 @@
-﻿@inject IJSRuntime jsRuntime
+﻿@inject IJSRuntime js
 
 <LayoutView>
     <Router AppAssembly="@typeof(App).Assembly">
@@ -15,7 +15,7 @@
 @code {
     protected override void OnInitialized()
     {
-        BitButil.Init(jsRuntime);
+        BitButil.Init(js);
 
         base.OnInitialized();
     }

@@ -1,17 +1,24 @@
 ﻿@page "/window"
-@inject IJSRuntime jsRuntime
+@using Console = Bit.Butil.Console
 
 <PageTitle>Window Samples</PageTitle>
 
 <h1>Window</h1>
 
+<h3>Open the DevTools</h3>
+
 <a href="/">Index</a>
 <br />
 <a href="/document">Document Samples</a>
+
 <hr />
 
-<button @onclick=AddEvenetListener>AddEvenetListener</button> &nbsp; <button @onclick=RemoveEvenetListener>RemoveEvenetListener</button>
+<button @onclick=AddEvenetListener>AddEvenetListener</button>
+&nbsp;
+<button @onclick=RemoveEvenetListener>RemoveEvenetListener</button>
+
 <hr />
+
 <div>Is Registered: @isRegistered</div>
 
 @code {
@@ -21,7 +28,7 @@
 
     protected override void OnInitialized()
     {
-        _handler = (DomKeyboardEventArgs arg) => jsRuntime.InvokeVoidAsync("console.log", "KeyDown from C#:", arg.Code);
+        _handler = (DomKeyboardEventArgs arg) => Console.Log("KeyDown from C#:", arg.Code);
 
         base.OnInitialized();
     }
