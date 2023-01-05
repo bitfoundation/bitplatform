@@ -1,57 +1,32 @@
-﻿using System;
-using System.Globalization;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
-using Microsoft.JSInterop;
+﻿using System.Globalization;
 
 namespace Bit.BlazorUI;
 
 public partial class BitColorPicker : IAsyncDisposable
 {
-    private string? onWindowMouseUpAbortControllerId;
-    private string? onWindowMouseMoveAbortControllerId;
-    private string? saturationPickerBackgroundRgbCss;
-    private string? saturationPickerBackgroundRgbaCss;
-    private bool saturationPickerMouseDown;
-    private BitColorPosition? saturationPickerThumbPosition;
-    private BitColor color = new BitColor();
-    private BitColorType colorType;
-    private double hue;
-    private double selectedSaturation = 1;
-    private double selectedValue = 1;
     private bool ColorHasBeenSet;
     private bool AlphaHasBeenSet;
 
-    [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
+    private ElementReference _saturationPickerRef;
+    private string? _onWindowMouseUpAbortControllerId;
+    private string? _onWindowMouseMoveAbortControllerId;
+    private string? _saturationPickerBackgroundRgbCss;
+    private string? _saturationPickerBackgroundRgbaCss;
+    private bool _saturationPickerMouseDown;
+    private BitColorPosition? _saturationPickerThumbPosition;
+    private BitColor _color = new BitColor();
+    private BitColorType _colorType;
+    private double _hue;
+    private double _selectedSaturation = 1;
+    private double _selectedValue = 1;
+    private string _colorRectangleDescriptionId => $"{UniqueId}-ColorRectangle-description";
 
-    /// <summary>
-    /// Whether to show a slider for editing alpha value.
-    /// </summary>
-    [Parameter] public bool ShowAlphaSlider { get; set; } = true;
+    public string? Hex => _color.Hex;
+    public string? Rgb => _color.Rgb;
+    public string? Rgba => _color.Rgba;
+    public (int Hue, int Saturation, int Value) Hsv => _color.Hsv;
 
-    /// <summary>
-    /// CSS-compatible string to describe the color.
-    /// </summary>
-    [Parameter]
-    public string Color
-    {
-        get => colorType == BitColorType.Hex ? color.Hex! : color.Rgb!;
-        set
-        {
-            colorType = value.HasValue() && value.StartsWith("#", StringComparison.InvariantCultureIgnoreCase) ? BitColorType.Hex : BitColorType.Rgb;
-
-            var valueAsBitColor = new BitColor(value, Alpha);
-            if (valueAsBitColor == color) return;
-            color = valueAsBitColor;
-            hue = color.Hsv.Hue;
-            SetSaturationPickerBackground();
-
-            ColorChanged.InvokeAsync(value);
-        }
-    }
-
-    [Parameter] public EventCallback<string> ColorChanged { get; set; }
+    [Inject] public IJSRuntime _js { get; set; } = default!;
 
     /// <summary>
     /// Indicates the Alpha value.
@@ -59,11 +34,11 @@ public partial class BitColorPicker : IAsyncDisposable
     [Parameter]
     public double Alpha
     {
-        get => color.Alpha;
+        get => _color.Alpha;
         set
         {
-            if (color.Alpha == value) return;
-            color.Alpha = value;
+            if (_color.Alpha == value) return;
+            _color.Alpha = value;
 
             AlphaChanged.InvokeAsync(value);
         }
@@ -72,22 +47,48 @@ public partial class BitColorPicker : IAsyncDisposable
     [Parameter] public EventCallback<double> AlphaChanged { get; set; }
 
     /// <summary>
+    /// CSS-compatible string to describe the color.
+    /// </summary>
+    [Parameter]
+    public string Color
+    {
+        get => _colorType == BitColorType.Hex ? _color.Hex! : _color.Rgb!;
+        set
+        {
+            _colorType = value.HasValue() && value.StartsWith("#", StringComparison.InvariantCultureIgnoreCase) ? BitColorType.Hex : BitColorType.Rgb;
+
+            var valueAsBitColor = new BitColor(value, Alpha);
+            if (valueAsBitColor == _color) return;
+            _color = valueAsBitColor;
+            _hue = _color.Hsv.Hue;
+            SetSaturationPickerBackground();
+            _ = SetPositionAsync();
+
+            ColorChanged.InvokeAsync(value);
+        }
+    }
+
+    [Parameter] public EventCallback<string> ColorChanged { get; set; }
+
+    /// <summary>
+    /// Callback for when the value changed.
+    /// </summary>
+    [Parameter] public EventCallback<BitColorValue> OnChange { get; set; }
+
+    /// <summary>
+    /// Whether to show a slider for editing alpha value.
+    /// </summary>
+    [Parameter] public bool ShowAlphaSlider { get; set; }
+
+    /// <summary>
     /// Whether to show color preview box.
     /// </summary>
     [Parameter] public bool ShowPreview { get; set; }
 
-    [Parameter] public EventCallback<BitColorValue> OnChange { get; set; }
-
-    public ElementReference SaturationPickerRef { get; set; }
-    public string? Hex => color.Hex;
-    public string? Rgb => color.Rgb;
-    public string ColorRectangleDescriptionId { get; set; } = string.Empty;
-
-    protected override string RootElementClass => "bit-clr-pkr";
+    protected override string RootElementClass => "bit-clp";
 
     protected override void OnInitialized()
     {
-        ColorRectangleDescriptionId = $"ColorRectangle-description{UniqueId}";
         SetSaturationPickerBackground();
 
         base.OnInitialized();
@@ -97,8 +98,8 @@ public partial class BitColorPicker : IAsyncDisposable
     {
         if (firstRender)
         {
-            onWindowMouseUpAbortControllerId = await JSRuntime.RegisterOnWindowMouseUpEvent(this, "OnWindowMouseUp");
-            onWindowMouseMoveAbortControllerId = await JSRuntime.RegisterOnWindowMouseMoveEvent(this, "OnWindowMouseMove");
+            _onWindowMouseUpAbortControllerId = await _js.RegisterOnWindowMouseUpEvent(this, "OnWindowMouseUp");
+            _onWindowMouseMoveAbortControllerId = await _js.RegisterOnWindowMouseMoveEvent(this, "OnWindowMouseMove");
 
             await SetPositionAsync();
         }
@@ -108,13 +109,13 @@ public partial class BitColorPicker : IAsyncDisposable
 
     private async Task SetPositionAsync()
     {
-        var hsv = color.Hsv;
-        var saturationPickerRect = await JSRuntime.GetBoundingClientRect(SaturationPickerRef);
+        var hsv = _color.Hsv;
+        var saturationPickerRect = await _js.GetBoundingClientRect(_saturationPickerRef);
 
         var width = saturationPickerRect?.Width ?? 0;
         var height = saturationPickerRect?.Height ?? 0;
 
-        saturationPickerThumbPosition = new BitColorPosition
+        _saturationPickerThumbPosition = new BitColorPosition
         {
             Left = Convert.ToInt32(width * hsv.Saturation / 100),
             Top = Convert.ToInt32(height - (height * hsv.Value / 100))
@@ -125,30 +126,30 @@ public partial class BitColorPicker : IAsyncDisposable
 
     private void SetSaturationPickerBackground()
     {
-        var bitColor = new BitColor(hue, 1, 1, 1);
-        saturationPickerBackgroundRgbaCss = bitColor.Rgba;
-        saturationPickerBackgroundRgbCss = bitColor.Rgb;
+        var bitColor = new BitColor(_hue, 1, 1, 1);
+        _saturationPickerBackgroundRgbaCss = bitColor.Rgba;
+        _saturationPickerBackgroundRgbCss = bitColor.Rgb;
     }
 
     private async Task PickColorTune(MouseEventArgs e)
     {
         if (ColorHasBeenSet && ColorChanged.HasDelegate is false) return;
 
-        var parent = await JSRuntime.GetBoundingClientRect(SaturationPickerRef);
-        saturationPickerThumbPosition = new BitColorPosition
+        var parent = await _js.GetBoundingClientRect(_saturationPickerRef);
+        _saturationPickerThumbPosition = new BitColorPosition
         {
             Left = e.ClientX < parent.Left ? 0 : e.ClientX > parent.Left + parent.Width ? Convert.ToInt32(parent.Width) : Convert.ToInt32(e.ClientX - parent.Left),
             Top = e.ClientY < parent.Top ? 0 : e.ClientY > parent.Top + parent.Height ? Convert.ToInt32(parent.Height) : Convert.ToInt32(e.ClientY - parent.Top)
         };
 
-        selectedSaturation = Math.Clamp(ToValidSpanValue(0, parent.Width, 0, 1, Convert.ToInt32(e.ClientX - parent.Left)), 0, 1);
-        selectedValue = Math.Clamp(ToValidSpanValue(0, parent.Height, 0, 1, parent.Height - Convert.ToInt32(e.ClientY - parent.Top)), 0, 1);
-        color = new BitColor(hue, selectedSaturation, selectedValue, color.Alpha);
+        _selectedSaturation = Math.Clamp(ToValidSpanValue(0, parent.Width, 0, 1, Convert.ToInt32(e.ClientX - parent.Left)), 0, 1);
+        _selectedValue = Math.Clamp(ToValidSpanValue(0, parent.Height, 0, 1, parent.Height - Convert.ToInt32(e.ClientY - parent.Top)), 0, 1);
+        _color = new BitColor(_hue, _selectedSaturation, _selectedValue, _color.Alpha);
         SetSaturationPickerBackground();
-        string? colorValue = colorType == BitColorType.Hex ? color.Hex : color.Rgb;
+        string? colorValue = _colorType == BitColorType.Hex ? _color.Hex : _color.Rgb;
         await ColorChanged.InvokeAsync(colorValue);
-        await AlphaChanged.InvokeAsync(color.Alpha);
-        await OnChange.InvokeAsync(new() { Color = colorValue, Alpha = color.Alpha });
+        await AlphaChanged.InvokeAsync(_color.Alpha);
+        await OnChange.InvokeAsync(new() { Color = colorValue, Alpha = _color.Alpha });
         StateHasChanged();
     }
 
@@ -156,13 +157,13 @@ public partial class BitColorPicker : IAsyncDisposable
     {
         if (ColorHasBeenSet && ColorChanged.HasDelegate is false) return;
 
-        hue = Convert.ToInt32(args.Value, CultureInfo.InvariantCulture);
-        color = new BitColor(hue, selectedSaturation, selectedValue, color.Alpha);
+        _hue = Convert.ToInt32(args.Value, CultureInfo.InvariantCulture);
+        _color = new BitColor(_hue, _selectedSaturation, _selectedValue, _color.Alpha);
         SetSaturationPickerBackground();
-        string? colorValue = colorType == BitColorType.Hex ? color.Hex : color.Rgb;
+        string? colorValue = _colorType == BitColorType.Hex ? _color.Hex : _color.Rgb;
         await ColorChanged.InvokeAsync(colorValue);
-        await AlphaChanged.InvokeAsync(color.Alpha);
-        await OnChange.InvokeAsync(new() { Color = colorValue, Alpha = color.Alpha });
+        await AlphaChanged.InvokeAsync(_color.Alpha);
+        await OnChange.InvokeAsync(new() { Color = colorValue, Alpha = _color.Alpha });
     }
 
     private async Task PickAlphaColor(ChangeEventArgs args)
@@ -170,11 +171,11 @@ public partial class BitColorPicker : IAsyncDisposable
         if (AlphaHasBeenSet && AlphaChanged.HasDelegate is false) return;
 
         var alpha = Convert.ToDouble(args.Value, CultureInfo.InvariantCulture) / 100;
-        color = new BitColor(color.Hex ?? "", alpha);
-        string? colorValue = colorType == BitColorType.Hex ? color.Hex : color.Rgb;
+        _color = new BitColor(_color.Hex ?? "", alpha);
+        string? colorValue = _colorType == BitColorType.Hex ? _color.Hex : _color.Rgb;
         await ColorChanged.InvokeAsync(colorValue);
-        await AlphaChanged.InvokeAsync(color.Alpha);
-        await OnChange.InvokeAsync(new() { Color = colorValue, Alpha = color.Alpha });
+        await AlphaChanged.InvokeAsync(_color.Alpha);
+        await OnChange.InvokeAsync(new() { Color = colorValue, Alpha = _color.Alpha });
     }
 
     private static double ToValidSpanValue(double min, double max, double newMin, double newMax, double value)
@@ -184,23 +185,23 @@ public partial class BitColorPicker : IAsyncDisposable
 
     private async Task OnSaturationPickerMouseDown(MouseEventArgs e)
     {
-        saturationPickerMouseDown = true;
+        _saturationPickerMouseDown = true;
         await PickColorTune(e);
     }
 
     private async Task OnSaturationPickerMouseMove(MouseEventArgs e)
     {
-        if (saturationPickerMouseDown is false) return;
+        if (_saturationPickerMouseDown is false) return;
 
         await PickColorTune(e);
     }
 
     private string GetRootElAriaLabel()
     {
-        var ariaLabel = $"Color picker, Red {color.Red} Green {color.Green} Blue {color.Blue} ";
+        var ariaLabel = $"Color picker, Red {_color.Red} Green {_color.Green} Blue {_color.Blue} ";
         if (ShowAlphaSlider)
         {
-            ariaLabel += $"Alpha {color.Alpha * 100}% selected.";
+            ariaLabel += $"Alpha {_color.Alpha * 100}% selected.";
         }
         else
         {
@@ -213,7 +214,7 @@ public partial class BitColorPicker : IAsyncDisposable
     [JSInvokable]
     public void OnWindowMouseUp(MouseEventArgs e)
     {
-        saturationPickerMouseDown = false;
+        _saturationPickerMouseDown = false;
     }
 
     [JSInvokable]
@@ -224,14 +225,14 @@ public partial class BitColorPicker : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        if (onWindowMouseUpAbortControllerId.HasValue())
+        if (_onWindowMouseUpAbortControllerId.HasValue())
         {
-            await JSRuntime.AbortProcedure(onWindowMouseUpAbortControllerId!);
+            await _js.AbortProcedure(_onWindowMouseUpAbortControllerId!);
         }
 
-        if (onWindowMouseMoveAbortControllerId.HasValue())
+        if (_onWindowMouseMoveAbortControllerId.HasValue())
         {
-            await JSRuntime.AbortProcedure(onWindowMouseMoveAbortControllerId!);
+            await _js.AbortProcedure(_onWindowMouseMoveAbortControllerId!);
         }
 
         GC.SuppressFinalize(this);

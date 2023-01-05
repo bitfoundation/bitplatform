@@ -13,9 +13,11 @@ public class BitColorPickerTests : BunitTestContext
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
     }
 
-    [DataTestMethod, DataRow(Visual.Fluent),
+    [DataTestMethod, 
+        DataRow(Visual.Fluent),
         DataRow(Visual.Cupertino),
-        DataRow(Visual.Material)]
+        DataRow(Visual.Material)
+    ]
     public void BitColorPickerMustRespectBasicClasses(Visual visual)
     {
         var cut = RenderComponent<BitColorPickerTest>(parameters =>
@@ -24,15 +26,16 @@ public class BitColorPickerTests : BunitTestContext
             parameters.Add(p => p.Color, "rgb(255,255,255)");
         });
 
-        var BitColorPicker = cut.Find(".bit-clr-pkr");
+        var BitColorPicker = cut.Find(".bit-clp");
         var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
 
-        Assert.IsTrue(BitColorPicker.ClassList.Contains($"bit-clr-pkr-{visualClass}") && BitColorPicker.ClassList.Contains($"bit-clr-pkr"));
+        Assert.IsTrue(BitColorPicker.ClassList.Contains($"bit-clp-{visualClass}") && BitColorPicker.ClassList.Contains($"bit-clp"));
     }
 
     [DataTestMethod,
         DataRow(true),
-        DataRow(false)]
+        DataRow(false)
+    ]
     public void BitColorPickerMustRespecUiChange(bool visibility)
     {
         var cut = RenderComponent<BitColorPickerTest>(parameters =>
@@ -52,7 +55,8 @@ public class BitColorPickerTests : BunitTestContext
     [DataTestMethod,
         DataRow("#fc5603", "#fc5603", "rgb(252,86,3)", 1),
         DataRow("rgba(3,98,252,0.3)", "#0362fc", "rgb(3,98,252)", 0.3),
-        DataRow("rgb(252,3,240)", "#fc03f0", "rgb(252,3,240)", 1)]
+        DataRow("rgb(252,3,240)", "#fc03f0", "rgb(252,3,240)", 1)
+    ]
     public void BitColorPickerMustRespecValueChange(string color, string hex, string rgb, double alpha)
     {
         var cut = RenderComponent<BitColorPickerTest>(parameters =>
