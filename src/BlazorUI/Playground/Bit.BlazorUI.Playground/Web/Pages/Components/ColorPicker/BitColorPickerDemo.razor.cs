@@ -14,6 +14,7 @@ public partial class BitColorPickerDemo
     private string TwoWayColor = "#FFFFFF";
 
     private BitColorValue ColorValue;
+
     private string BoundColor = "#FFFFFF";
     private BitColorPicker ColorPicker;
 
@@ -56,13 +57,15 @@ public partial class BitColorPickerDemo
     #region Sample Code 1
 
     private readonly string example1HTMLCode = @"
-<div class=""column"">
+<div class=""example"">
+    <BitLabel>Rgb</BitLabel>
     <BitColorPicker @bind-Color=""BasicRgbColor"" />
-    <span>Rgb: @BasicRgbColor</span>
+    <span>Color: @BasicRgbColor</span>
 </div>
-<div class=""column"">
+<div class=""example"">
+    <BitLabel>Hex</BitLabel>
     <BitColorPicker @bind-Color=""BasicHexColor"" />
-    <span>Hex: @BasicHexColor</span>
+    <span>Color: @BasicHexColor</span>
 </div>
 ";
 
@@ -76,11 +79,9 @@ private string BasicHexColor = ""#FFFFFF"";
     #region Sample Code 2
 
     private readonly string example2HTMLCode = @"
-<div class=""column"">
-    <BitColorPicker @bind-Color=""AlphaRgbColor"" @bind-Alpha=""Alpha"" ShowAlphaSlider=""true"" />
-    <span>Rgb: @AlphaRgbColor</span>
-    <span>Alpha: @Alpha</span>
-</div>
+<BitColorPicker @bind-Color=""AlphaRgbColor"" @bind-Alpha=""Alpha"" ShowAlphaSlider=""true"" />
+<span>Color: @AlphaRgbColor</span>
+<span>Alpha: @Alpha</span>
 ";
 
     private readonly string example2CSharpCode = @"
@@ -93,9 +94,7 @@ private double Alpha = 1;
     #region Sample Code 3
 
     private readonly string example3HTMLCode = @"
-<div class=""column"">
-    <BitColorPicker ShowPreview=""true"" />
-</div>
+<BitColorPicker ShowAlphaSlider=""true"" ShowPreview=""true"" />
 ";
 
     #endregion
@@ -103,10 +102,8 @@ private double Alpha = 1;
     #region Sample Code 4
 
     private readonly string example4HTMLCode = @"
-<div class=""column"">
-    <BitColorPicker @bind-Color=""TwoWayColor"" />
-    <BitTextField Label=""Enter Hex or Rgb"" @bind-Value=""TwoWayColor"" />
-</div>
+<BitColorPicker @bind-Color=""TwoWayColor"" ShowPreview=""true"" />
+<BitTextField Label=""Enter Color (Hex or Rgb)"" @bind-Value=""TwoWayColor"" Style=""width: 200px;"" />
 ";
 
     private readonly string example4CSharpCode = @"
@@ -118,26 +115,53 @@ private string TwoWayColor = ""#FFFFFF"";
     #region Sample Code 5
 
     private readonly string example5HTMLCode = @"
-<div class=""column"">
-    <BitLabel>OnChange</BitLabel>
-    <BitColorPicker OnChange=""(value) => ColorValue = value"" ShowAlphaSlider=""true"" />
-    <span>Color (Hex): @ColorValue?.Color</span>
-    <span>Alpha: @ColorValue?.Alpha</span>
-</div>
-<div class=""column"">
-    <BitLabel>Component Reference</BitLabel>
-    <BitColorPicker @ref=""ColorPicker"" @bind-Color=""BoundColor"" ShowAlphaSlider=""true"" />
-    <span>Bound Color Value: @BoundColor</span>
-    <span>Reference Hex: @ColorPicker?.Hex</span>
-    <span>Reference Rgb: @ColorPicker?.Rgb</span>
-    <span>Reference Alpha: @ColorPicker?.Alpha</span>
-</div>
+<BitColorPicker OnChange=""(value) => ColorValue = value"" ShowAlphaSlider=""true"" ShowPreview=""true"" />
+<span>Color (Hex): @ColorValue?.Color</span>
+<span>Alpha: @ColorValue?.Alpha</span>
 ";
 
     private readonly string example5CSharpCode = @"
 private BitColorValue ColorValue;
+";
+
+    #endregion
+
+    #region Sample Code 6
+
+    private readonly string example6HTMLCode = @"
+<BitColorPicker @ref=""ColorPicker"" @bind-Color=""BoundColor"" ShowAlphaSlider=""true"" ShowPreview=""true"" />
+<span>Color Value: @BoundColor</span>
+<span>Hex: @ColorPicker?.Hex</span>
+<span>Rgb: @ColorPicker?.Rgb</span>
+<span>Rgba: @ColorPicker?.Rgba</span>
+<span>Hsv: @ColorPicker?.Hsv</span>
+";
+
+    private readonly string example6CSharpCode = @"
 private string BoundColor = ""#FFFFFF"";
 private BitColorPicker ColorPicker;
+";
+
+    #endregion
+
+    #region Sample Code 7
+
+    private readonly string example7HTMLCode = @"
+<style>
+    .custom-color-picker {
+        width: 100px;
+        height: 250px;
+    }
+</style>
+
+<div>
+    <BitLabel>Class</BitLabel>
+    <BitColorPicker ShowAlphaSlider=""true"" Class=""custom-color-picker"" />
+</div>
+<div>
+    <BitLabel>Style</BitLabel>
+    <BitColorPicker ShowAlphaSlider=""true"" Style=""width: 250px; height: 150px;"" />
+</div>
 ";
 
     #endregion

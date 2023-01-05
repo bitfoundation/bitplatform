@@ -1,12 +1,18 @@
 ﻿
+::deep {
+    .custom-color-picker {
+        width: 100px;
+        height: 250px;
+    }
+}
+
 .example-box {
     display: flex;
-    flex-flow: row wrap;
-    gap: 20px;
+    flex-flow: column nowrap;
+    gap: 30px;
+}
 
-    .column {
-        display: flex;
-        flex-flow: column nowrap;
-        width: 352px;
-    }
+.example {
+    display: flex;
+    flex-flow: column nowrap;
 }

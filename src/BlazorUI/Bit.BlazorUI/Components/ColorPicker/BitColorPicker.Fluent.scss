@@ -5,22 +5,21 @@
     touch-action: none;
 
     &.bit-clp-fluent {
+        display: flex;
+        flex-direction: column;
         position: relative;
-        max-width: rem(352px);
+        width: rem(268px);
+        height: rem(300px);
         font-size: rem(14px);
         font-weight: 400;
         font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
         -webkit-font-smoothing: antialiased;
-    }
-
-    .panel {
-        padding: rem(12px);
         user-select: none;
     }
 
     .rectangle {
         position: relative;
-        height: rem(268px);
+        flex-grow: 1;
         margin-bottom: rem(8px);
         border: rem(1px) solid $Grey20;
         border-radius: rem(2px);

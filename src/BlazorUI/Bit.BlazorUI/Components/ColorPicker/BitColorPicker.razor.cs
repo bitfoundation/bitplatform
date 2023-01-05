@@ -23,6 +23,8 @@ public partial class BitColorPicker : IAsyncDisposable
 
     public string? Hex => _color.Hex;
     public string? Rgb => _color.Rgb;
+    public string? Rgba => _color.Rgba;
+    public (int Hue, int Saturation, int Value) Hsv => _color.Hsv;
 
     [Inject] public IJSRuntime _js { get; set; } = default!;
 
@@ -60,6 +62,7 @@ public partial class BitColorPicker : IAsyncDisposable
             _color = valueAsBitColor;
             _hue = _color.Hsv.Hue;
             SetSaturationPickerBackground();
+            _ = SetPositionAsync();
 
             ColorChanged.InvokeAsync(value);
         }
