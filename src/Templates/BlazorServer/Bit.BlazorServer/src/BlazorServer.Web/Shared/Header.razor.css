@@ -1,0 +1,57 @@
+﻿header {
+    top: 0;
+    width: 100%;
+    z-index: 1100;
+    position: fixed;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: inset 0px -1px 1px #e7ebf0;
+    background-color: rgba(255, 255, 255, 0.72);
+    transition: top 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+}
+
+.container {
+    width: 100%;
+    display: flex;
+    margin-left: auto;
+    margin-right: auto;
+    align-items: center;
+    flex-flow: row nowrap;
+    box-sizing: border-box;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    min-height: 3rem;
+    justify-content: space-between;
+}
+
+.content {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    height: 100%;
+}
+
+.logo {
+    width: 2rem;
+    height: 2rem;
+    background-image: url('/images/bit-blue-icon.svg');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
+    cursor: pointer;
+    margin-right: 1rem;
+}
+
+::deep .link {
+    height: 100%;
+    padding: 1rem;
+    box-sizing: border-box;
+    line-height: 1.5;
+    color: #515151;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+    ::deep .link.active {
+        color: #0064EF;
+    }

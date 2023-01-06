@@ -220,12 +220,3 @@ dotnet-tools.json
 profile.arm.json
 
 # BlazorServer
-*.map
-*Resource.designer.cs
-/**/*.css
-custom.aprof
-
-/src/Server/Api/Attachments/**/*.*
-
-/src/Client/Shared/wwwroot/scripts/app*.js
-/src/Client/Web/appsettings.json
