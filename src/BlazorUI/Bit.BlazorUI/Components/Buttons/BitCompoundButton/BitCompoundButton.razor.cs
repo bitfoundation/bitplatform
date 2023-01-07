@@ -4,6 +4,7 @@ namespace Bit.BlazorUI;
 
 public partial class BitCompoundButton
 {
+    protected override bool UseVisual => false;
     private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
     private int? _tabIndex;
 
@@ -80,11 +81,7 @@ public partial class BitCompoundButton
 
     protected override void RegisterComponentClasses()
     {
-        ClassBuilder.Register(() => IsEnabled is false
-                                    ? ButtonStyle == BitButtonStyle.Primary
-                                        ? "primary-disabled"
-                                        : "standard-disabled"
-                                    : ButtonStyle == BitButtonStyle.Primary
+        ClassBuilder.Register(() => ButtonStyle == BitButtonStyle.Primary
                                         ? "primary"
                                         : "standard");
     }

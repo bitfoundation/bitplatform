@@ -2,41 +2,30 @@
 @import '../../../Styles/abstracts/_media-queries.scss';
 @import '../../../Styles/abstracts/_functions.scss';
 
-.sample-btn {
-    text-justify: auto;
-    color: $Black1;
+.buttons-container {
+    display: flex;
+    flex-flow: row wrap;
+    gap: 0.5rem;
 }
 
-.m-l-30 {
-    margin-left: rem(30px);
+.buttons-container-grid {
+    display: grid;
+    gap: 0.5rem;
 }
 
-.m-l-45 {
-    margin-left: rem(45px);
-}
+::deep {
+    .custom-compound-button {
+        &.standard {
+            width: rem(230px);
+            font-size: rem(16px);
+            color: #FFFFFF;
+            background-color: #0054C6;
+            border-color: #0054C6;
 
-::deep .disable-cmp-btn {
-    @include lg {
-        margin-top: rem(10px);
+            &:hover {
+                background-color: #0065EF;
+                border-color: #0065EF;
+            }
+        }
     }
-
-    @include md {
-        margin-top: rem(10px);
-    }
-}
-
-::deep .bit-cmpb {
-    @include sm {
-        margin-top: rem(10px);
-        width: rem(230px);
-    }
-}
-
-::deep .custom-compound-button,
-::deep .custom-compound-button:hover {
-    width: rem(230px);
-    font-size: rem(16px);
-    color: $White;
-    background-color: $B1Color;
-    border-color: $B1Color;
 }
