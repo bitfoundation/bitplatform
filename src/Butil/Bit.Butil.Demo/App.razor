@@ -1,6 +1,6 @@
 ﻿@inject IJSRuntime js
 
-<LayoutView>
+<LayoutView Layout="typeof(MainLayout)">
     <Router AppAssembly="@typeof(App).Assembly">
         <Found Context="routeData">
             <RouteView RouteData="@routeData" />
