@@ -4,6 +4,7 @@ namespace Bit.BlazorUI;
 
 public partial class BitIconButton
 {
+    protected override bool UseVisual => false;
     private int? _tabIndex;
 
     /// <summary>

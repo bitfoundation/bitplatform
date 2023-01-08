@@ -8,27 +8,16 @@ namespace Bit.BlazorUI.Tests.Buttons;
 public class BitIconButtonTests : BunitTestContext
 {
     [DataTestMethod,
-           DataRow(Visual.Fluent, true, BitIconName.Emoji2, null),
-           DataRow(Visual.Fluent, false, BitIconName.Emoji2, null),
-           DataRow(Visual.Fluent, true, BitIconName.Emoji2, "I'm Happy"),
-           DataRow(Visual.Fluent, false, BitIconName.Emoji2, "I'm Happy"),
-
-           DataRow(Visual.Cupertino, true, BitIconName.Emoji2, null),
-           DataRow(Visual.Cupertino, false, BitIconName.Emoji2, null),
-           DataRow(Visual.Cupertino, true, BitIconName.Emoji2, "I'm Happy"),
-           DataRow(Visual.Cupertino, false, BitIconName.Emoji2, "I'm Happy"),
-
-           DataRow(Visual.Material, true, BitIconName.Emoji2, null),
-           DataRow(Visual.Material, false, BitIconName.Emoji2, null),
-           DataRow(Visual.Material, true, BitIconName.Emoji2, "I'm Happy"),
-           DataRow(Visual.Material, false, BitIconName.Emoji2, "I'm Happy"),
-       ]
-    public void BitIconButton(Visual visual, bool isEnabled, BitIconName iconName, string title)
+        DataRow(true, BitIconName.Emoji2, null),
+        DataRow(false, BitIconName.Emoji2, null),
+        DataRow(true, BitIconName.Emoji2, "I'm Happy"),
+        DataRow(false, BitIconName.Emoji2, "I'm Happy")
+    ]
+    public void BitIconButtonTest(bool isEnabled, BitIconName iconName, string title)
     {
         var clicked = false;
         var com = RenderComponent<BitIconButton>(parameters =>
         {
-            parameters.AddCascadingValue(visual);
             parameters.Add(p => p.IsEnabled, isEnabled);
             parameters.Add(p => p.IconName, iconName);
             parameters.Add(p => p.Title, title);
@@ -36,13 +25,17 @@ public class BitIconButtonTests : BunitTestContext
         });
 
         var bitIconButton = com.Find(".bit-icob");
-        var bitIconITag = com.Find(".bit-icob > span > i");
 
-        var isEnabledClass = isEnabled ? "enabled" : "disabled";
-        var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
+        if (isEnabled)
+        {
+            Assert.IsFalse(bitIconButton.ClassList.Contains("disabled"));
+        }
+        else
+        {
+            Assert.IsTrue(bitIconButton.ClassList.Contains("disabled"));
+        }
 
-        Assert.IsTrue(bitIconButton.ClassList.Contains($"bit-icob-{isEnabledClass}-{visualClass}"));
-
+        var bitIconITag = com.Find(".bit-icob > span.icon-container > i.bit-icon");
         Assert.IsTrue(bitIconITag.ClassList.Contains($"bit-icon--{iconName.GetName()}"));
 
         if (title.HasValue())
@@ -59,7 +52,7 @@ public class BitIconButtonTests : BunitTestContext
       DataRow(true, false),
       DataRow(true, true),
       DataRow(false, false),
-      DataRow(false, true),
+      DataRow(false, true)
     ]
     public void BitIconButtonDisabledFocusTest(bool isEnabled, bool allowDisabledFocus)
     {
