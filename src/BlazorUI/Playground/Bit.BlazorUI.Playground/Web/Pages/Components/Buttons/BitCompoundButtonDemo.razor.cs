@@ -217,8 +217,8 @@ public partial class BitCompoundButtonDemo
     }
 
     .custom-compound-button.standard {
-        width: rem(230px);
-        font-size: rem(16px);
+        width: 15rem;
+        font-size: 1rem;
         color: #FFFFFF;
         background-color: #0054C6;
         border-color: #0054C6;
