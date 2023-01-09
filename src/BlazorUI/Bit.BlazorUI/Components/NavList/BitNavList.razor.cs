@@ -44,7 +44,6 @@ public partial class BitNavList<TItem>
 
     private IDictionary<string, int> _itemsDepth = new Dictionary<string, int>();
     private IDictionary<string, bool> _itemsExpanded = new Dictionary<string, bool>();
-
     private IDictionary<BitNavListItemAriaCurrent, string> _ariaCurrentMap = new Dictionary<BitNavListItemAriaCurrent, string>()
     {
         [BitNavListItemAriaCurrent.Page] = "page",
@@ -56,6 +55,36 @@ public partial class BitNavList<TItem>
     };
 
     [Inject] private NavigationManager _navigationManager { get; set; } = default!;
+
+    /// <summary>
+    /// 
+    /// </summary>
+    [Parameter] public string AriaCurrentField { get; set; } = ARIA_CURRENT;
+    [Parameter] public Expression<Func<TItem, BitNavListItemAriaCurrent>>? AriaCurrentFieldSelector { get; set; }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    [Parameter] public string AriaLabelField { get; set; } = ARIA_LABEL;
+    [Parameter] public Expression<Func<TItem, object>>? AriaLabelFieldSelector { get; set; }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    [Parameter] public string CollapseAriaLabelField { get; set; } = COLLAPSE_ARIA_LABEL;
+    [Parameter] public Expression<Func<TItem, object>>? CollapseAriaLabelFieldSelector { get; set; }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    [Parameter] public string ExpandAriaLabelField { get; set; } = EXPAND_ARIA_LABEL;
+    [Parameter] public Expression<Func<TItem, object>>? ExpandAriaLabelFieldSelector { get; set; }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    [Parameter] public string ForceAnchorField { get; set; } = FORCE_ANCHOR;
+    [Parameter] public Expression<Func<TItem, bool>>? ForceAnchorFieldelector { get; set; }
 
     /// <summary>
     /// Used to customize how content inside the group header is rendered
@@ -78,10 +107,46 @@ public partial class BitNavList<TItem>
     [Parameter] public IList<TItem> Items { get; set; } = new List<TItem>();
 
     /// <summary>
+    /// 
+    /// </summary>
+    [Parameter] public string ItemsField { get; set; } = TARGET;
+    [Parameter] public Expression<Func<TItem, IList<TItem>>>? ItemsFieldSelector { get; set; }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    [Parameter] public string IconNameField { get; set; } = ICON_NAME;
+    [Parameter] public Expression<Func<TItem, BitIconName>>? IconNameFieldSelector { get; set; }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    [Parameter] public string IsExpandedField { get; set; } = IS_EXPANDED;
+    [Parameter] public Expression<Func<TItem, bool>>? IsExpandedFieldSelector { get; set; }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    [Parameter] public string IsEnabledField { get; set; } = IS_ENABLED;
+    [Parameter] public Expression<Func<TItem, bool>>? IsEnabledFieldSelector { get; set; }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    [Parameter] public string KeyField { get; set; } = KEY;
+    [Parameter] public Expression<Func<TItem, object>>? KeyFieldSelector { get; set; }
+
+    /// <summary>
     /// Determines how the navigation will be handled
     /// The default value is Automatic
     /// </summary>
     [Parameter] public BitNavListMode Mode { get; set; } = BitNavListMode.Automatic;
+
+    /// <summary>
+    /// 
+    /// </summary>
+    [Parameter] public string NameField { get; set; } = NAME;
+    [Parameter] public Expression<Func<TItem, object>>? NameFieldSelector { get; set; }
 
     /// <summary>
     /// 
@@ -115,54 +180,29 @@ public partial class BitNavList<TItem>
 
     [Parameter] public EventCallback<string> SelectedKeyChanged { get; set; }
 
-    #region Items prop
-
-    [Parameter] public string ForceAnchorField { get; set; } = FORCE_ANCHOR;
-    [Parameter] public Expression<Func<TItem, bool>>? ForceAnchorFieldelector { get; set; }
-
-    [Parameter] public string KeyField { get; set; } = KEY;
-    [Parameter] public Expression<Func<TItem, object>>? KeyFieldSelector { get; set; }
-
-    [Parameter] public string NameField { get; set; } = NAME;
-    [Parameter] public Expression<Func<TItem, object>>? NameFieldSelector { get; set; }
-
-    [Parameter] public string TitleField { get; set; } = TITLE;
-    [Parameter] public Expression<Func<TItem, object>>? TitleFieldSelector { get; set; }
-
-    [Parameter] public string UrlField { get; set; } = URL;
-    [Parameter] public Expression<Func<TItem, object>>? UrlFieldSelector { get; set; }
-
-    [Parameter] public string AriaCurrentField { get; set; } = ARIA_CURRENT;
-    [Parameter] public Expression<Func<TItem, BitNavListItemAriaCurrent>>? AriaCurrentFieldSelector { get; set; }
-
-    [Parameter] public string ExpandAriaLabelField { get; set; } = EXPAND_ARIA_LABEL;
-    [Parameter] public Expression<Func<TItem, object>>? ExpandAriaLabelFieldSelector { get; set; }
-
-    [Parameter] public string CollapseAriaLabelField { get; set; } = COLLAPSE_ARIA_LABEL;
-    [Parameter] public Expression<Func<TItem, object>>? CollapseAriaLabelFieldSelector { get; set; }
-
-    [Parameter] public string AriaLabelField { get; set; } = ARIA_LABEL;
-    [Parameter] public Expression<Func<TItem, object>>? AriaLabelFieldSelector { get; set; }
-
-    [Parameter] public string IconNameField { get; set; } = ICON_NAME;
-    [Parameter] public Expression<Func<TItem, BitIconName>>? IconNameFieldSelector { get; set; }
-
-    [Parameter] public string IsExpandedField { get; set; } = IS_EXPANDED;
-    [Parameter] public Expression<Func<TItem, bool>>? IsExpandedFieldSelector { get; set; }
-
-    [Parameter] public string IsEnabledField { get; set; } = IS_ENABLED;
-    [Parameter] public Expression<Func<TItem, bool>>? IsEnabledFieldSelector { get; set; }
-
+    /// <summary>
+    /// 
+    /// </summary>
     [Parameter] public string StyleField { get; set; } = STYLE;
     [Parameter] public Expression<Func<TItem, object>>? StyleFieldSelector { get; set; }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    [Parameter] public string TitleField { get; set; } = TITLE;
+    [Parameter] public Expression<Func<TItem, object>>? TitleFieldSelector { get; set; }
+
+    /// <summary>
+    /// 
+    /// </summary>
     [Parameter] public string TargetField { get; set; } = TARGET;
     [Parameter] public Expression<Func<TItem, object>>? TargetFieldSelector { get; set; }
 
-    [Parameter] public string ItemsField { get; set; } = TARGET;
-    [Parameter] public Expression<Func<TItem, IList<TItem>>>? ItemsFieldSelector { get; set; }
-
-    #endregion
+    /// <summary>
+    /// 
+    /// </summary>
+    [Parameter] public string UrlField { get; set; } = URL;
+    [Parameter] public Expression<Func<TItem, object>>? UrlFieldSelector { get; set; }
 
     protected override string RootElementClass => "bit-nvl";
 
