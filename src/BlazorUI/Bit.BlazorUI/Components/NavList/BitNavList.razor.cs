@@ -174,6 +174,8 @@ public partial class BitNavList<TItem>
             SetItemsDepth(item);
         }
 
+        selectedKey = InitialSelectedKey;
+
         await base.OnInitializedAsync();
     }
 

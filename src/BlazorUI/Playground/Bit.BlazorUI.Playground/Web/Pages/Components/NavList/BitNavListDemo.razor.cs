@@ -12,6 +12,7 @@ public partial class BitNavListDemo
             {
                 new NavMenuModel {
                     Name = "Name 1-1",
+                    Key = "Name 1-1"
                 },
                 new NavMenuModel {
                     Name = "Name 1-2",
