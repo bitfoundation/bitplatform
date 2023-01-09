@@ -6,7 +6,7 @@
     --clr-primary-darker: #005A9E;
     --clr-primary-light: #2b88d8;
     --clr-secondary-main: #FFF;
-    --clr-secondary-dark: #F3F2F1;
+    --clr-secondary-dark: var(--clr-ntr-gray20);
     --clr-secondary-darker: #EDEBE9;
     //background color
     --clr-background: var(--clr-ntr-white);
@@ -15,7 +15,7 @@
     --clr-act-active-pri: var(--clr-primary-darker);
     --clr-act-hovor-sec: var(--clr-secondary-dark);
     --clr-act-active-sec: var(--clr-secondary-darker);
-    --clr-act-disabled: #F3F2F1;
+    --clr-act-disabled: var(--clr-ntr-gray20);
     --clr-act-border-hovor-sec: #323130;
     --clr-act-border-active-sec: #323130;
     --clr-act2-active: #004578;

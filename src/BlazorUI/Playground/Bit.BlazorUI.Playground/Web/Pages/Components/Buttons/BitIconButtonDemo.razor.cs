@@ -147,13 +147,37 @@ public partial class BitIconButtonDemo
 <BitIconButton IconName=""BitIconName.EmojiDisappointed"" AllowDisabledFocus=""false"" IsEnabled=""false"" />";
 
     private readonly string example2HTMLCode = @"
+<style>
+    .custom-icon-button {
+        height: 3rem;
+        width: 3rem;
+        border-radius: 0.375rem;
+        background-color: #D7D7D7;
+        border-color: #D7D7D7;
+    }
+
+    .custom-icon-button:hover {
+        background-color: #E9E9E9;
+        border-color: #E9E9E9;
+    }
+</style>
+
 <BitIconButton IconName=""BitIconName.Home"" Style=""border-radius: 5px;padding: 23px;border: #D7D7D7 solid 2px;"" />
 <BitIconButton IconName=""BitIconName.FileImage"" Class=""custom-icon-button"" />";
 
     private readonly string example3HTMLCode = @"
-<BitIconButton IconName=""BitIconName.List"" Visibility=""BitComponentVisibility.Visible"">Visible Button</BitIconButton>
-<div><span>Hidden Button: </span>[<BitIconButton Visibility=""BitComponentVisibility.Hidden"">Hidden Button</BitIconButton>]</div>
-<div><span>Collapsed Button: </span>[<BitIconButton Visibility=""BitComponentVisibility.Collapsed"">Collapsed Button</BitIconButton>]</div>";
+<style>
+    .buttons-container-grid {
+        display: grid;
+        gap: 0.5rem;
+    }
+</style>
+
+<div class=""buttons-container-grid"">
+    <BitIconButton IconName=""BitIconName.List"" Visibility=""BitComponentVisibility.Visible"">Visible Button</BitIconButton>
+    <div><span>Hidden Button: </span>[<BitIconButton Visibility=""BitComponentVisibility.Hidden"">Hidden Button</BitIconButton>]</div>
+    <div><span>Collapsed Button: </span>[<BitIconButton Visibility=""BitComponentVisibility.Collapsed"">Collapsed Button</BitIconButton>]</div>
+</div>";
 
     private readonly string example4HTMLCode = @"
 <BitIconButton IconName=""BitIconName.Library"" AriaDescription=""Detailed description used for screen reader."">
