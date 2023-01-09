@@ -84,6 +84,7 @@ public partial class NavMenu
                 new BitNavLinkItem { Name = "BreadGroup", Key = "BreadGroup", Url = "/components/bread-group" },
                 new BitNavLinkItem { Name = "BreadList", Key = "BreadList", Url = "/components/bread-list" },
                 new BitNavLinkItem { Name = "Nav (TreeList)", Key = "Nav", Url = "/components/nav" },
+                new BitNavLinkItem { Name = "NavList (TreeList)", Key = "NavList", Url = "/components/nav-list" },
                 new BitNavLinkItem { Name = "Pivot (Tab)", Key = "Pivot", Url = "/components/pivot" },
             }
         },
