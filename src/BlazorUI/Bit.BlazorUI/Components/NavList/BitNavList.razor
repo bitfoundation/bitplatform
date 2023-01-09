@@ -33,7 +33,7 @@
                     }
                 }
 
-                @if (GetItems(navLinkItem) != null && GetItems(navLinkItem)!.Any() && _itemsExpanded[GetKey(navLinkItem)])
+                @if (GetItems(navLinkItem) is not null && _itemsExpanded[GetKey(navLinkItem)])
                 {
                     <div class="group-content">
                         <ul class="nav-items" role="list">
@@ -73,7 +73,7 @@
 
                 <div class="composite-link @(GetIsEnabled(navLinkItem) is false ? "disabled" : "")" name="@GetName(navLinkItem)">
 
-                    @if (GetItems(navLinkItem)?.Any() ?? false)
+                    @if (GetItems(navLinkItem) is not null)
                     {
                         <button @onclick="(() => HandleOnItemExpand(navLinkItem))" 
                                 class="chevron-btn"
@@ -147,7 +147,7 @@
                     }
                 </div>
 
-                @if (GetItems(navLinkItem) != null && GetItems(navLinkItem)!.Any() && _itemsExpanded[GetKey(navLinkItem)])
+                @if (GetItems(navLinkItem) is not null && _itemsExpanded[GetKey(navLinkItem)])
                 {
                     <ul class="nav-items" role="list">
                         @foreach (var childLinkItem in GetItems(navLinkItem)!)

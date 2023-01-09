@@ -1,5 +1,7 @@
 ﻿using System.Linq.Expressions;
+using System.Text;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Components.Routing;
 
 namespace Bit.BlazorUI;
 
@@ -106,13 +108,8 @@ public partial class BitNavList<TItem>
         set
         {
             if (value == selectedKey) return;
-            if (Mode == BitNavListMode.Automatic)
-            {
-                SelectedKeyChanged.InvokeAsync(selectedKey);
-                return;
-            }
-
             selectedKey = value;
+            SelectedKeyChanged.InvokeAsync(selectedKey);
         }
     }
 
@@ -215,13 +212,13 @@ public partial class BitNavList<TItem>
     private bool GetIsEnabled(TItem item) => item.GetValueFromProperty(_internalIsEnabledField, true);
     private string? GetStyle(TItem item) => item.GetValueAsObjectFromProperty(_internalStyleField)?.ToString();
     private string? GetTarget(TItem item) => item.GetValueAsObjectFromProperty(_internalTargetField)?.ToString();
-    private List<TItem>? GetItems(TItem item) => item.GetValueFromProperty(_internalItemsField, new List<TItem>());
+    private List<TItem>? GetItems(TItem item) => item.GetValueFromProperty<List<TItem>>(_internalItemsField);
 
     private void SetItemsDepth(TItem item, int depth = 0)
     {
         _itemsDepth.Add(GetKey(item), depth);
 
-        if (GetItems(item) != null && GetItems(item)!.Any())
+        if (GetItems(item) is not null)
         {
             foreach (var childItem in GetItems(item)!)
             {
@@ -236,7 +233,7 @@ public partial class BitNavList<TItem>
     {
         _itemsExpanded.Add(GetKey(item), GetIsExpanded(item));
 
-        if (GetItems(item) != null && GetItems(item)!.Any())
+        if (GetItems(item) is not null)
         {
             foreach (var childItem in GetItems(item)!)
             {
@@ -251,10 +248,9 @@ public partial class BitNavList<TItem>
 
         if (Mode == BitNavListMode.Manual && GetItems(item) is null)
         {
-            await SelectedKeyChanged.InvokeAsync(GetKey(item));
+            SelectedKey = GetKey(item);
         }
-
-        if (GetUrl(item).HasNoValue() && GetItems(item) != null && GetItems(item)!.Any())
+        else if(GetUrl(item).HasNoValue())
         {
             await HandleOnItemExpand(item);
         }
@@ -276,15 +272,19 @@ public partial class BitNavList<TItem>
 
     private string GetItemClass(TItem item)
     {
-        var enabledClass = GetIsEnabled(item) ? "enabled" : "disabled";
+        StringBuilder classBuilder = new StringBuilder();
 
+        var enabledClass = GetIsEnabled(item) ? "enabled" : "disabled";
         var hasUrlClass = GetUrl(item).HasNoValue() ? "nourl" : "hasurl";
 
-        var mainStyle = $"link-{enabledClass}-{hasUrlClass}";
+        classBuilder.Append($"link-{enabledClass}-{hasUrlClass}");
 
-        var selectedClass = selectedKey.HasValue() && GetKey(item) == SelectedKey ? $"selected" : string.Empty;
+        if (SelectedKey.HasValue() && SelectedKey == GetKey(item))
+        {
+            classBuilder.Append(" selected");
+        }
 
-        return $"{mainStyle} {selectedClass}";
+        return classBuilder.ToString();
     }
 
     private bool IsRelativeUrl(TItem item)
