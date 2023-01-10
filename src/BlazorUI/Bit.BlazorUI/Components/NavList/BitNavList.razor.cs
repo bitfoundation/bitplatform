@@ -276,7 +276,7 @@ public partial class BitNavList<TItem>
 
     private void SetItemsExpanded(TItem item)
     {
-        var isExpanded = GetItems(item) is not null && GetItems(item)!.Any(ci => GetKey(ci) == SelectedKey);
+        var isExpanded = (GetItems(item) is not null && GetItems(item)!.Any(ci => GetKey(ci) == SelectedKey)) || GetIsExpanded(item);
 
         _itemsExpanded.Add(GetKey(item), isExpanded);
 
