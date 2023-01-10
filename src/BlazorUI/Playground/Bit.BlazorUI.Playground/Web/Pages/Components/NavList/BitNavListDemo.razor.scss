@@ -1,0 +1,28 @@
+﻿
+::deep {
+    .nav-list-custom-header {
+        color: green;
+    }
+
+    .nav-list-custom-item {
+        color: orange;
+        font-weight: 600;
+
+        &.disabled-item {
+            color: #ffa50066;
+        }
+    }
+}
+
+.example-box {
+    display: flex;
+    flex-direction: column;
+    width: 300px;
+    gap: 30px;
+
+    .example {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+}

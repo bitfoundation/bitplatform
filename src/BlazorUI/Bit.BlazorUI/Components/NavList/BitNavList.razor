@@ -15,22 +15,22 @@
             <div class="nav-group">
                 @if (GetName(navLinkItem).HasValue())
                 {
-                    @if (HeaderTemplate is not null)
-                    {
-                        @HeaderTemplate(navLinkItem)
-                    }
-                    else
-                    {
-                        <button @onclick="(() => HandleOnItemExpand(navLinkItem))"
-                                class="chevron-btn group-chevron-btn"
-                                tabindex="0"
-                                type="button"
-                                aria-label="@(_itemsExpanded[GetKey(navLinkItem)] ? GetCollapseAriaLabel(navLinkItem) : GetExpandAriaLabel(navLinkItem))"
-                                aria-expanded="@(_itemsExpanded[GetKey(navLinkItem)])">
+                    <button @onclick="(() => HandleOnItemExpand(navLinkItem))"
+                            class="chevron-btn group-chevron-btn"
+                            tabindex="0"
+                            type="button"
+                            aria-label="@(_itemsExpanded[GetKey(navLinkItem)] ? GetCollapseAriaLabel(navLinkItem) : GetExpandAriaLabel(navLinkItem))"
+                            aria-expanded="@(_itemsExpanded[GetKey(navLinkItem)])">
+                        @if (HeaderTemplate is not null)
+                        {
+                            @HeaderTemplate(navLinkItem)
+                        }
+                        else
+                        {
                             <i class="bit-icon bit-icon--ChevronDown @(_itemsExpanded[GetKey(navLinkItem)] ? "expand" : "")" aria-hidden="true"></i>
                             @GetName(navLinkItem)
-                        </button>
-                    }
+                        }
+                    </button>
                 }
 
                 @if (GetItems(navLinkItem) is not null && _itemsExpanded[GetKey(navLinkItem)])
@@ -101,17 +101,16 @@
                            rel="@(GetUrl(navLinkItem).HasValue() && GetTarget(navLinkItem).HasValue() && IsRelativeUrl(navLinkItem) is false ? "noopener noreferrer" : null)">
 
                             <div class="link-container">
-                                @if (GetIconName(navLinkItem).HasValue)
-                                {
-                                    <i class=@($"bit-icon bit-icon--{GetIconName(navLinkItem).GetName()}") aria-hidden="true"></i>
-                                }
-
                                 @if (ItemTemplate is not null)
                                 {
                                     @ItemTemplate(navLinkItem)
                                 }
                                 else
                                 {
+                                    @if (GetIconName(navLinkItem).HasValue)
+                                    {
+                                        <i class=@($"bit-icon bit-icon--{GetIconName(navLinkItem).GetName()}") aria-hidden="true"></i>
+                                    }
                                     <div class="link-txt">@GetName(navLinkItem)</div>
                                 }
                             </div>
@@ -129,17 +128,16 @@
                                 tabindex="-1"
                                 type="button">
                             <div class="link-container">
-                                @if (GetIconName(navLinkItem).HasValue)
-                                {
-                                    <i class=@($"bit-icon bit-icon--{GetIconName(navLinkItem).GetName()}") aria-hidden="true"></i>
-                                }
-
                                 @if (ItemTemplate is not null)
                                 {
                                     @ItemTemplate(navLinkItem)
                                 }
                                 else
                                 {
+                                    @if (GetIconName(navLinkItem).HasValue)
+                                    {
+                                        <i class=@($"bit-icon bit-icon--{GetIconName(navLinkItem).GetName()}") aria-hidden="true"></i>
+                                    }
                                     <div class="link-txt">@GetName(navLinkItem)</div>
                                 }
                             </div>

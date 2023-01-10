@@ -208,13 +208,16 @@ public partial class BitNavList<TItem>
 
     protected override async Task OnInitializedAsync()
     {
+        if (InitialSelectedKey.HasValue())
+        {
+            SelectedKey = InitialSelectedKey;
+        }
+
         foreach (var item in Items)
         {
             SetItemsExpanded(item);
             SetItemsDepth(item);
         }
-
-        selectedKey = InitialSelectedKey;
 
         await base.OnInitializedAsync();
     }
@@ -273,7 +276,9 @@ public partial class BitNavList<TItem>
 
     private void SetItemsExpanded(TItem item)
     {
-        _itemsExpanded.Add(GetKey(item), GetIsExpanded(item));
+        var isExpanded = GetItems(item) is not null && GetItems(item)!.Any(ci => GetKey(ci) == SelectedKey);
+
+        _itemsExpanded.Add(GetKey(item), isExpanded);
 
         if (GetItems(item) is not null)
         {
