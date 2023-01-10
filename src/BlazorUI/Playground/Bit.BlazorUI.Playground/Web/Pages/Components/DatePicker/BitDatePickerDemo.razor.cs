@@ -144,6 +144,13 @@ public partial class BitDatePickerDemo
         },
         new ComponentParameter()
         {
+            Name = "IsResponsive",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Enables the responsive mode in small screens.",
+        },
+        new ComponentParameter()
+        {
             Name = "IsUnderlined",
             Type = "bool",
             DefaultValue = "false",
@@ -625,4 +632,10 @@ public class FormValidationDatePickerModel
 }
 
 private FormValidationDatePickerModel formValidationDatePickerModel = new();";
+
+    private readonly string example18HTMLCode = @"
+<BitDatePicker Style=""max-width: 300px""
+               Responsive=""true""
+               AriaLabel=""Select a date""
+               Placeholder=""Select a date..."" />";
 }
