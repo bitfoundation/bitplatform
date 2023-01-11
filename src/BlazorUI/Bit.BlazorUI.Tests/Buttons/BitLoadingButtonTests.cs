@@ -1,5 +1,4 @@
-﻿using System.Drawing;
-using Bunit;
+﻿using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Buttons;
@@ -8,58 +7,51 @@ namespace Bit.BlazorUI.Tests.Buttons;
 public class BitLoadingButtonTests : BunitTestContext
 {
     [DataTestMethod,
-        DataRow(Visual.Fluent, true),
-        DataRow(Visual.Fluent, false),
-
-        DataRow(Visual.Cupertino, true),
-        DataRow(Visual.Cupertino, false),
-
-        DataRow(Visual.Material, true),
-        DataRow(Visual.Material, false),
+        DataRow(true),
+        DataRow(false)
     ]
-    public void BitLoadingButtonTest(Visual visual, bool isEnabled)
+    public void BitLoadingButtonTest(bool isEnabled)
     {
         var com = RenderComponent<BitLoadingButton>(parameters =>
         {
-            parameters.AddCascadingValue(visual);
             parameters.Add(p => p.IsEnabled, isEnabled);
         });
 
-        var isEnabledClass = isEnabled ? "enabled" : "disabled";
-        var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
-
         var bitLoadingButton = com.Find(".bit-lbtn");
 
-        Assert.IsTrue(bitLoadingButton.ClassList.Contains($"bit-lbtn-{isEnabledClass}-{visualClass}"));
+        if (isEnabled)
+        {
+            Assert.IsFalse(bitLoadingButton.ClassList.Contains("disabled"));
+        }
+        else
+        {
+            Assert.IsTrue(bitLoadingButton.ClassList.Contains("disabled"));
+        }
     }
 
     [DataTestMethod,
-        DataRow(Visual.Fluent, BitButtonSize.Small),
-        DataRow(Visual.Fluent, BitButtonSize.Medium),
-        DataRow(Visual.Fluent, BitButtonSize.Large),
-
-        DataRow(Visual.Cupertino, BitButtonSize.Small),
-        DataRow(Visual.Cupertino, BitButtonSize.Medium),
-        DataRow(Visual.Cupertino, BitButtonSize.Large),
-
-        DataRow(Visual.Material, BitButtonSize.Small),
-        DataRow(Visual.Material, BitButtonSize.Medium),
-        DataRow(Visual.Material, BitButtonSize.Large)
+        DataRow(BitButtonSize.Small),
+        DataRow(BitButtonSize.Medium),
+        DataRow(BitButtonSize.Large)
     ]
-    public void BitLoadingButtonSizeTest(Visual visual, BitButtonSize size)
+    public void BitLoadingButtonSizeTest(BitButtonSize size)
     {
         var com = RenderComponent<BitLoadingButton>(parameters =>
         {
-            parameters.AddCascadingValue(visual);
             parameters.Add(p => p.ButtonSize, size);
         });
 
-        var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
-        var sizeClass = size == BitButtonSize.Small ? "sm" : size == BitButtonSize.Medium ? "md" : "lg";
+        var sizeClass = size switch
+        {
+            BitButtonSize.Small => "small",
+            BitButtonSize.Medium => "medium",
+            BitButtonSize.Large => "large",
+            _ => "NotSet",
+        };
 
         var bitLoadingButton = com.Find(".bit-lbtn");
 
-        Assert.IsTrue(bitLoadingButton.ClassList.Contains($"bit-lbtn-{sizeClass}-{visualClass}"));
+        Assert.IsTrue(bitLoadingButton.ClassList.Contains(sizeClass));
     }
 
     [DataTestMethod,
