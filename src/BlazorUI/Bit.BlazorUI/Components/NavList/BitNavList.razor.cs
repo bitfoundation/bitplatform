@@ -1,14 +1,12 @@
 ﻿using System.Linq.Expressions;
 using System.Text;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Components.Routing;
 
 namespace Bit.BlazorUI;
 
-public partial class BitNavList<TItem>
+public partial class BitNavList<TItem> : IDisposable
 {
-    private bool SelectedKeyHasBeenSet;
-    private string? selectedKey;
-
     private const string FORCE_ANCHOR = "ForceAnchor";
     private const string KEY = "Key";
     private const string NAME = "Name";
@@ -24,6 +22,9 @@ public partial class BitNavList<TItem>
     private const string STYLE = "Style";
     private const string TARGET = "Target";
     private const string ITEMS = "Items";
+
+    private bool SelectedKeyHasBeenSet;
+    private string? selectedKey;
 
     private string _internalForceAnchorField = FORCE_ANCHOR;
     private string _internalKeyField = KEY;
@@ -53,11 +54,18 @@ public partial class BitNavList<TItem>
         [BitNavListItemAriaCurrent.True] = "true"
     };
 
+    [Inject] private NavigationManager _navigationManager { get; set; } = default!;
+
     /// <summary>
     /// Aria-current token for active nav item.
     /// Must be a valid token value, and defaults to 'page'.
     /// </summary>
     [Parameter] public string AriaCurrentField { get; set; } = ARIA_CURRENT;
+
+    /// <summary>
+    /// Aria-current token for active nav item.
+    /// Must be a valid token value, and defaults to 'page'.
+    /// </summary>
     [Parameter] public Expression<Func<TItem, BitNavListItemAriaCurrent>>? AriaCurrentFieldSelector { get; set; }
 
     /// <summary>
@@ -65,18 +73,31 @@ public partial class BitNavList<TItem>
     /// Ignored if collapseAriaLabel or expandAriaLabel is provided.
     /// </summary>
     [Parameter] public string AriaLabelField { get; set; } = ARIA_LABEL;
+
+    /// <summary>
+    /// Aria label for the item.
+    /// Ignored if collapseAriaLabel or expandAriaLabel is provided.
+    /// </summary>
     [Parameter] public Expression<Func<TItem, object>>? AriaLabelFieldSelector { get; set; }
 
     /// <summary>
     /// Aria label when group is collapsed.
     /// </summary>
     [Parameter] public string CollapseAriaLabelField { get; set; } = COLLAPSE_ARIA_LABEL;
+
+    /// <summary>
+    /// Aria label when group is collapsed.
+    /// </summary>
     [Parameter] public Expression<Func<TItem, object>>? CollapseAriaLabelFieldSelector { get; set; }
 
     /// <summary>
     /// Aria label when group is expanded.
     /// </summary>
     [Parameter] public string ExpandAriaLabelField { get; set; } = EXPAND_ARIA_LABEL;
+
+    /// <summary>
+    /// Aria label when group is expanded.
+    /// </summary>
     [Parameter] public Expression<Func<TItem, object>>? ExpandAriaLabelFieldSelector { get; set; }
 
     /// <summary>
@@ -84,6 +105,11 @@ public partial class BitNavList<TItem>
     /// (Links without onClick defined will render as anchors by default.)
     /// </summary>
     [Parameter] public string ForceAnchorField { get; set; } = FORCE_ANCHOR;
+
+    /// <summary>
+    /// (Optional) By default, any link with onClick defined will render as a button. Set this property to true to override that behavior. 
+    /// (Links without onClick defined will render as anchors by default.)
+    /// </summary>
     [Parameter] public Expression<Func<TItem, bool>>? ForceAnchorFieldelector { get; set; }
 
     /// <summary>
@@ -110,30 +136,50 @@ public partial class BitNavList<TItem>
     /// A list of items to render as children of the current item.
     /// </summary>
     [Parameter] public string ItemsField { get; set; } = TARGET;
+
+    /// <summary>
+    /// A list of items to render as children of the current item.
+    /// </summary>
     [Parameter] public Expression<Func<TItem, IList<TItem>>>? ItemsFieldSelector { get; set; }
 
     /// <summary>
     /// Name of an icon to render next to the item button.
     /// </summary>
     [Parameter] public string IconNameField { get; set; } = ICON_NAME;
+
+    /// <summary>
+    /// Name of an icon to render next to the item button.
+    /// </summary>
     [Parameter] public Expression<Func<TItem, BitIconName>>? IconNameFieldSelector { get; set; }
 
     /// <summary>
     /// Whether or not the group is in an expanded state.
     /// </summary>
     [Parameter] public string IsExpandedField { get; set; } = IS_EXPANDED;
+
+    /// <summary>
+    /// Whether or not the group is in an expanded state.
+    /// </summary>
     [Parameter] public Expression<Func<TItem, bool>>? IsExpandedFieldSelector { get; set; }
 
     /// <summary>
     /// Whether or not the item is disabled.
     /// </summary>
     [Parameter] public string IsEnabledField { get; set; } = IS_ENABLED;
+
+    /// <summary>
+    /// Whether or not the item is disabled.
+    /// </summary>
     [Parameter] public Expression<Func<TItem, bool>>? IsEnabledFieldSelector { get; set; }
 
     /// <summary>
     /// A unique value to use as a key or id of the item, used when rendering the list of item and for tracking the currently selected item.
     /// </summary>
     [Parameter] public string KeyField { get; set; } = KEY;
+
+    /// <summary>
+    /// A unique value to use as a key or id of the item, used when rendering the list of item and for tracking the currently selected item.
+    /// </summary>
     [Parameter] public Expression<Func<TItem, object>>? KeyFieldSelector { get; set; }
 
     /// <summary>
@@ -145,6 +191,10 @@ public partial class BitNavList<TItem>
     /// Text to render for the item.
     /// </summary>
     [Parameter] public string NameField { get; set; } = NAME;
+
+    /// <summary>
+    /// Text to render for the item.
+    /// </summary>
     [Parameter] public Expression<Func<TItem, object>>? NameFieldSelector { get; set; }
 
     /// <summary>
@@ -173,7 +223,7 @@ public partial class BitNavList<TItem>
         {
             if (value == selectedKey) return;
             selectedKey = value;
-            SelectedKeyChanged.InvokeAsync(selectedKey);
+            _ = SelectedKeyChanged.InvokeAsync(value);
         }
     }
 
@@ -183,30 +233,51 @@ public partial class BitNavList<TItem>
     /// Custom style for the each item element.
     /// </summary>
     [Parameter] public string StyleField { get; set; } = STYLE;
+
+    /// <summary>
+    /// Custom style for the each item element.
+    /// </summary>
     [Parameter] public Expression<Func<TItem, object>>? StyleFieldSelector { get; set; }
 
     /// <summary>
     /// Text for the item tooltip.
     /// </summary>
     [Parameter] public string TitleField { get; set; } = TITLE;
+
+    /// <summary>
+    /// Text for the item tooltip.
+    /// </summary>
     [Parameter] public Expression<Func<TItem, object>>? TitleFieldSelector { get; set; }
 
     /// <summary>
     /// Link target, specifies how to open the item link.
     /// </summary>
     [Parameter] public string TargetField { get; set; } = TARGET;
+
+    /// <summary>
+    /// Link target, specifies how to open the item link.
+    /// </summary>
     [Parameter] public Expression<Func<TItem, object>>? TargetFieldSelector { get; set; }
 
     /// <summary>
     /// URL to navigate for the item link.
     /// </summary>
     [Parameter] public string UrlField { get; set; } = URL;
+
+    /// <summary>
+    /// URL to navigate for the item link.
+    /// </summary>
     [Parameter] public Expression<Func<TItem, object>>? UrlFieldSelector { get; set; }
 
     protected override string RootElementClass => "bit-nvl";
 
     protected override async Task OnInitializedAsync()
     {
+        if (Mode == BitNavListMode.Automatic)
+        {
+            _navigationManager.LocationChanged += OnLocationChanged;
+        }
+
         if (InitialSelectedKey.HasValue())
         {
             SelectedKey = InitialSelectedKey;
@@ -258,6 +329,35 @@ public partial class BitNavList<TItem>
     private string? GetTarget(TItem item) => item.GetValueAsObjectFromProperty(_internalTargetField)?.ToString();
     private List<TItem>? GetItems(TItem item) => item.GetValueFromProperty<List<TItem>>(_internalItemsField);
 
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
+    {
+        var currentPageUrl = _navigationManager.Uri.Replace(_navigationManager.BaseUri, "/", StringComparison.Ordinal);
+        TItem? currentItem = default;
+        SetCurrentItemByUrl(Items);
+
+        if (currentItem is not null)
+        {
+            SelectedKey = GetKey(currentItem);
+            StateHasChanged();
+        }
+
+        void SetCurrentItemByUrl(IList<TItem> items)
+        {
+            foreach (var item in items)
+            {
+                if (GetUrl(item)?.ToLower(Thread.CurrentThread.CurrentCulture) == currentPageUrl.ToLower(Thread.CurrentThread.CurrentCulture))
+                {
+                    currentItem = item;
+                    return;
+                }
+                else if (GetItems(item) is not null)
+                {
+                    SetCurrentItemByUrl(GetItems(item)!);
+                }
+            }
+        }
+    }
+
     private void SetItemsDepth(TItem item, int depth = 0)
     {
         _itemsDepth.Add(GetKey(item), depth);
@@ -296,7 +396,7 @@ public partial class BitNavList<TItem>
         {
             SelectedKey = GetKey(item);
         }
-        else if(GetUrl(item).HasNoValue())
+        else if (GetUrl(item).HasNoValue())
         {
             await HandleOnItemExpand(item);
         }
@@ -338,5 +438,19 @@ public partial class BitNavList<TItem>
         string url = GetUrl(item) ?? string.Empty;
         var regex = new Regex(@"!/^[a-z0-9+-.]+:\/\//i");
         return regex.IsMatch(url);
+    }
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing && Mode == BitNavListMode.Automatic)
+        {
+            _navigationManager.LocationChanged -= OnLocationChanged;
+        }
     }
 }
