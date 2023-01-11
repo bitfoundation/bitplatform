@@ -1,4 +1,5 @@
-﻿
+﻿@import '../../../Styles/abstracts/_media-queries.scss';
+
 ::deep {
     .nav-list-custom-header {
         color: green;
@@ -17,12 +18,13 @@
 .example-box {
     display: flex;
     flex-direction: column;
-    width: 300px;
-    gap: 30px;
+    width: 350px;
 
-    .example {
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
+    @include sm {
+        width: 250px;
+    }
+
+    .margin-top {
+        margin-top: 20px;
     }
 }

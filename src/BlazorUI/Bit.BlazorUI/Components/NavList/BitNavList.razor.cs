@@ -1,7 +1,6 @@
 ﻿using System.Linq.Expressions;
 using System.Text;
 using System.Text.RegularExpressions;
-using Microsoft.AspNetCore.Components.Routing;
 
 namespace Bit.BlazorUI;
 
@@ -54,117 +53,117 @@ public partial class BitNavList<TItem>
         [BitNavListItemAriaCurrent.True] = "true"
     };
 
-    [Inject] private NavigationManager _navigationManager { get; set; } = default!;
-
     /// <summary>
-    /// 
+    /// Aria-current token for active nav item.
+    /// Must be a valid token value, and defaults to 'page'.
     /// </summary>
     [Parameter] public string AriaCurrentField { get; set; } = ARIA_CURRENT;
     [Parameter] public Expression<Func<TItem, BitNavListItemAriaCurrent>>? AriaCurrentFieldSelector { get; set; }
 
     /// <summary>
-    /// 
+    /// Aria label for the item.
+    /// Ignored if collapseAriaLabel or expandAriaLabel is provided.
     /// </summary>
     [Parameter] public string AriaLabelField { get; set; } = ARIA_LABEL;
     [Parameter] public Expression<Func<TItem, object>>? AriaLabelFieldSelector { get; set; }
 
     /// <summary>
-    /// 
+    /// Aria label when group is collapsed.
     /// </summary>
     [Parameter] public string CollapseAriaLabelField { get; set; } = COLLAPSE_ARIA_LABEL;
     [Parameter] public Expression<Func<TItem, object>>? CollapseAriaLabelFieldSelector { get; set; }
 
     /// <summary>
-    /// 
+    /// Aria label when group is expanded.
     /// </summary>
     [Parameter] public string ExpandAriaLabelField { get; set; } = EXPAND_ARIA_LABEL;
     [Parameter] public Expression<Func<TItem, object>>? ExpandAriaLabelFieldSelector { get; set; }
 
     /// <summary>
-    /// 
+    /// (Optional) By default, any link with onClick defined will render as a button. Set this property to true to override that behavior. 
+    /// (Links without onClick defined will render as anchors by default.)
     /// </summary>
     [Parameter] public string ForceAnchorField { get; set; } = FORCE_ANCHOR;
     [Parameter] public Expression<Func<TItem, bool>>? ForceAnchorFieldelector { get; set; }
 
     /// <summary>
-    /// Used to customize how content inside the group header is rendered
+    /// Used to customize how content inside the group header is rendered.
     /// </summary>
     [Parameter] public RenderFragment<TItem>? HeaderTemplate { get; set; }
 
     /// <summary>
-    /// (Optional) The key of the nav item initially selected in manual mode
+    /// (Optional) The key of the nav item initially selected in manual mode.
     /// </summary>
     [Parameter] public string? InitialSelectedKey { get; set; }
 
     /// <summary>
-    /// Used to customize how content inside the link tag is rendered
+    /// Used to customize how content inside the item is rendered.
     /// </summary>
     [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
 
     /// <summary>
-    /// A collection of link items to display in the navigation bar
+    /// A collection of item to display in the navigation bar.
     /// </summary>
     [Parameter] public IList<TItem> Items { get; set; } = new List<TItem>();
 
     /// <summary>
-    /// 
+    /// A list of items to render as children of the current item.
     /// </summary>
     [Parameter] public string ItemsField { get; set; } = TARGET;
     [Parameter] public Expression<Func<TItem, IList<TItem>>>? ItemsFieldSelector { get; set; }
 
     /// <summary>
-    /// 
+    /// Name of an icon to render next to the item button.
     /// </summary>
     [Parameter] public string IconNameField { get; set; } = ICON_NAME;
     [Parameter] public Expression<Func<TItem, BitIconName>>? IconNameFieldSelector { get; set; }
 
     /// <summary>
-    /// 
+    /// Whether or not the group is in an expanded state.
     /// </summary>
     [Parameter] public string IsExpandedField { get; set; } = IS_EXPANDED;
     [Parameter] public Expression<Func<TItem, bool>>? IsExpandedFieldSelector { get; set; }
 
     /// <summary>
-    /// 
+    /// Whether or not the item is disabled.
     /// </summary>
     [Parameter] public string IsEnabledField { get; set; } = IS_ENABLED;
     [Parameter] public Expression<Func<TItem, bool>>? IsEnabledFieldSelector { get; set; }
 
     /// <summary>
-    /// 
+    /// A unique value to use as a key or id of the item, used when rendering the list of item and for tracking the currently selected item.
     /// </summary>
     [Parameter] public string KeyField { get; set; } = KEY;
     [Parameter] public Expression<Func<TItem, object>>? KeyFieldSelector { get; set; }
 
     /// <summary>
-    /// Determines how the navigation will be handled
-    /// The default value is Automatic
+    /// Determines how the navigation will be handled.
     /// </summary>
     [Parameter] public BitNavListMode Mode { get; set; } = BitNavListMode.Automatic;
 
     /// <summary>
-    /// 
+    /// Text to render for the item.
     /// </summary>
     [Parameter] public string NameField { get; set; } = NAME;
     [Parameter] public Expression<Func<TItem, object>>? NameFieldSelector { get; set; }
 
     /// <summary>
-    /// 
+    /// Callback invoked when an item is clicked.
     /// </summary>
     [Parameter] public EventCallback<TItem> OnItemClick { get; set; }
 
     /// <summary>
-    /// 
+    /// Callback invoked when a group header is clicked and Expanded.
     /// </summary>
     [Parameter] public EventCallback<TItem> OnItemExpand { get; set; }
 
     /// <summary>
-    /// The way to render nav links 
+    /// The way to render nav items.
     /// </summary>
     [Parameter] public BitNavListRenderType RenderType { get; set; } = BitNavListRenderType.Normal;
 
     /// <summary>
-    /// The key of the nav item selected by caller
+    /// The key of the nav item selected by caller.
     /// </summary>
     [Parameter]
     public string? SelectedKey
@@ -181,25 +180,25 @@ public partial class BitNavList<TItem>
     [Parameter] public EventCallback<string> SelectedKeyChanged { get; set; }
 
     /// <summary>
-    /// 
+    /// Custom style for the each item element.
     /// </summary>
     [Parameter] public string StyleField { get; set; } = STYLE;
     [Parameter] public Expression<Func<TItem, object>>? StyleFieldSelector { get; set; }
 
     /// <summary>
-    /// 
+    /// Text for the item tooltip.
     /// </summary>
     [Parameter] public string TitleField { get; set; } = TITLE;
     [Parameter] public Expression<Func<TItem, object>>? TitleFieldSelector { get; set; }
 
     /// <summary>
-    /// 
+    /// Link target, specifies how to open the item link.
     /// </summary>
     [Parameter] public string TargetField { get; set; } = TARGET;
     [Parameter] public Expression<Func<TItem, object>>? TargetFieldSelector { get; set; }
 
     /// <summary>
-    /// 
+    /// URL to navigate for the item link.
     /// </summary>
     [Parameter] public string UrlField { get; set; } = URL;
     [Parameter] public Expression<Func<TItem, object>>? UrlFieldSelector { get; set; }
