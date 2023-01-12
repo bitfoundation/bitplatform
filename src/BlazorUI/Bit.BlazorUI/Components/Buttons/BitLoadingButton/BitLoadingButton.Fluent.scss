@@ -1,73 +1,75 @@
-﻿@import "../../../Styles/Fluent/colors.fluent.scss", "../../../Styles/functions.scss";
+﻿@import "../../../Styles/functions.scss";
 
 .bit-lbtn {
-    &.bit-lbtn-fluent {
-        font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
-        position: relative;
-        border-radius: rem(2px);
-        padding: rem(6px) rem(20px);
-        font-size: rem(14px);
-        font-weight: 400;
-        cursor: pointer;
-        text-decoration: none;
-        width: rem(120px);
-        min-height: rem(32px);
-        max-width: rem(120px);
-        box-sizing: border-box;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        overflow: hidden;
-    }
+    position: relative;
+    width: spacing(15);
+    min-height: spacing(4);
+    max-width: spacing(15);
+    padding: spacing(0.75) spacing(2.5);
+    box-sizing: border-box;
+    font-family: $typography-button-font-family;
+    font-weight: 400;
+    font-size: spacing(1.75);
+    cursor: pointer;
+    text-decoration: none;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    border-radius: $shape-border-radius;
+    border-style: $shape-border-style;
+    border-width: $shape-border-width;
 
-    &.bit-lbtn-disabled-fluent {
-        background: $Grey20;
-        color: $Grey90;
-        border: 1px solid $Grey20;
+    &.disabled {
+        color: $color-text-disabled;
+        background-color: $color-action-disabled;
+        border-color: $color-border-disabled;
         cursor: default;
         pointer-events: none;
     }
 
-    &.bit-lbtn-sm-fluent {
-        padding: rem(4px) rem(10px);
-        font-size: rem(13px);
+    &.small {
+        padding: spacing(0.5) spacing(1.25);
+        font-size: spacing(1.625);
     }
 
-    &.bit-lbtn-md-fluent {
-        padding: rem(6px) rem(16px);
-        font-size: rem(14px);
+    &.medium {
+        padding: spacing(0.75) spacing(2);
     }
 
-    &.bit-lbtn-lg-fluent {
-        padding: rem(8px) rem(22px);
-        font-size: rem(15px);
+    &.large {
+        padding: spacing(1) spacing(2.75);
+        font-size: spacing(1.875);
     }
 
     &.standard {
-        color: $Grey160;
-        background: $White;
-        border: 1px solid $GreyInputBorder;
+        border-color: $color-border-secondary;
+        color: $color-text-secondary;
+        background-color: $color-secondary-main;
 
         &:hover {
-            background-color: $Grey20;
-            border-color: $Grey160;
+            border-color: $color-action-borde-hover-secondary;
+            background-color: $color-action-hover-secondary;
         }
 
         &:active {
-            background-color: $Grey30;
+            border-color: $color-action-borde-active-secondary;
+            background-color: $color-action-active-secondary;
         }
     }
 
     &.primary {
-        color: $White;
-        background: $Primary;
-        border: 1px solid $Primary;
+        border-color: $color-border-primary;
+        color: $color-text-primary;
+        background: $color-primary-main;
 
         &:hover {
-            background-color: $DarkAlt;
+            border-color: $color-action-hover-primary;
+            background-color: $color-action-hover-primary;
         }
 
         &:active {
-            background-color: $Dark;
+            border-color: $color-action-active-primary;
+            background-color: $color-action-active-primary;
         }
     }
 
@@ -82,8 +84,8 @@
         }
 
         .label {
-            font-size: rem(12px);
-            margin: rem(2px) rem(8px);
+            font-size: spacing(1.5);
+            margin: spacing(0.25) spacing(1);
             text-align: center;
         }
 
@@ -91,7 +93,7 @@
             flex-direction: column-reverse;
 
             .label {
-                margin: 0 0 rem(8px);
+                margin: 0 0 spacing(1);
             }
         }
 
@@ -99,7 +101,7 @@
             flex-direction: column;
 
             .label {
-                margin: rem(8px) 0 0;
+                margin: spacing(1) 0 0;
             }
         }
 
@@ -107,7 +109,7 @@
             flex-direction: row;
 
             .label {
-                margin: 0 0 0 rem(8px);
+                margin: 0 0 0 spacing(1);
             }
         }
 
@@ -115,61 +117,61 @@
             flex-direction: row-reverse;
 
             .label {
-                margin: 0 rem(8px) 0 0;
+                margin: 0 spacing(1) 0 0;
             }
         }
 
         &.large {
             .spinner {
-                height: rem(28px);
-                width: rem(28px);
+                height: spacing(3.5);
+                width: spacing(3.5);
             }
         }
 
         &.medium {
             .spinner {
-                height: rem(20px);
-                width: rem(20px);
+                height: spacing(2.5);
+                width: spacing(2.5);
             }
         }
 
         &.small {
             .spinner {
-                height: rem(16px);
-                width: rem(16px);
+                height: spacing(2);
+                width: spacing(2);
             }
         }
 
         &.xSmall {
             .spinner {
-                height: rem(12px);
-                width: rem(12px);
+                height: spacing(1.5);
+                width: spacing(1.5);
             }
         }
 
         &.primary {
             .spinner {
-                border: rem(16px) solid $Grey60;
-                border-top: rem(16px) solid $White;
+                border: spacing(2) solid $color-neutrals-gray60;
+                border-top: spacing(2) solid $color-neutrals-white;
                 border-radius: 50%;
-                border-width: rem(1.7px);
+                border-width: spacing(0.2125);
             }
 
             .label {
-                color: $White;
+                color: $color-neutrals-white;
             }
         }
 
         &.standard {
             .spinner {
-                border: rem(16px) solid $Grey60;
-                border-top: rem(16px) solid $Primary;
+                border: spacing(2) solid $color-neutrals-gray60;
+                border-top: spacing(2) solid $color-primary-main;
                 border-radius: 50%;
-                border-width: rem(1.5px);
+                border-width: spacing(0.1875);
             }
 
             .label {
-                color: $Primary;
+                color: $color-primary-main;
             }
         }
     }
