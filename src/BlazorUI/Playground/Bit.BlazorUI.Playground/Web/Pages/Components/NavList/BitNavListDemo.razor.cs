@@ -12,7 +12,6 @@ public partial class BitNavListDemo
         {
             Name = "Home",
             TitleAttribute = "Home is Parent Row",
-            Url = "http://example.com",
             ExpandAriaLabel = "Expand Home section",
             CollapseAriaLabel = "Collapse Home section",
             IsExpanded = true,
@@ -465,7 +464,6 @@ public partial class BitNavListDemo
             ItemsField=""@nameof(NavMenuModel.Items)"" />
 ";
 
-
     private static string example1CSharpCode = @"
 public class NavMenuModel
 {
@@ -488,7 +486,6 @@ private readonly List<NavMenuModel> BasicNavItems= new()
     {
         Name = ""Home"",
         TitleAttribute = ""Home is Parent Row"",
-        Url = ""http://example.com"",
         ExpandAriaLabel = ""Expand Home section"",
         CollapseAriaLabel = ""Collapse Home section"",
         IsExpanded = true,
@@ -618,7 +615,6 @@ private readonly List<NavMenuModel> GroupedNavItems = new()
 </div>
 ";
 
-
     private static string example3CSharpCode = @"
 public class NavMenuModel
 {
@@ -725,7 +721,6 @@ private string ManualSelectedKey = ""key1"";
 </div>
 ";
 
-
     private static string example4CSharpCode = @"
 public class NavMenuModel
 {
@@ -748,7 +743,6 @@ private readonly List<NavMenuModel> BasicNavItems= new()
     {
         Name = ""Home"",
         TitleAttribute = ""Home is Parent Row"",
-        Url = ""http://example.com"",
         ExpandAriaLabel = ""Expand Home section"",
         CollapseAriaLabel = ""Collapse Home section"",
         IsExpanded = true,
@@ -831,7 +825,6 @@ private readonly List<NavMenuModel> GroupedNavItems = new()
 <span>Expanded Item: @ExpandedItem?.Name</span>
 <span>IsExpanded Value: @(ExpandedItem?.IsExpanded)</span>
 ";
-
 
     private static string example5CSharpCode = @"
 public class NavMenuModel
