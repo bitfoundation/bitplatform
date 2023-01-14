@@ -1,44 +1,11 @@
-﻿@import '../../../Styles/abstracts/_colors.scss';
-@import '../../../Styles/abstracts/_media-queries.scss';
-@import '../../../Styles/abstracts/_functions.scss';
+﻿.example-box {
+    display: flex;
+    flex-flow: row wrap;
+    gap: 0.5rem;
+    width: fit-content;
+    align-items: center;
 
-.m-t-10 {
-    margin-top: rem(10px);
-}
-
-.m-t-20 {
-    margin-top: rem(20px);
-}
-
-::deep .bit-tglb {
-
-    &.tgl-btn {
-        @include sm {
-            margin-top: rem(10px);
-            width: rem(195px);
-        }
-    }
-
-    &.aria-hidden-tgl-btn {
-        @include sm {
-            margin-top: rem(10px);
-            width: rem(239px);
-        }
-    }
-
-    &.primary {
-        .bit-icon {
-            color: $White;
-        }
-    }
-
-    &.bit-tglb-fluent {
-        span {
-            span {
-                font-weight: normal;
-                margin: 0;
-                line-height: 0;
-            }
-        }
+    &.column {
+        flex-direction: column;
     }
 }
