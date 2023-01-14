@@ -4,7 +4,8 @@
         <div class="header-btn-group">
             <BitToggleButton Class="com-example-box-header-btn"
                              @bind-IsChecked="showCode"
-                             IconName=BitIconName.CodeEdit
+                             IconName="BitIconName.CodeEdit"
+                             ButtonStyle="BitButtonStyle.Standard"
                              Label="@(showCode ? "Hide code" : "Show code")"
                              Title="@(showCode ? "Hide code" : "Show code")">
             </BitToggleButton>
