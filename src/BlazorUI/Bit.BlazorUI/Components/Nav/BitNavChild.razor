@@ -17,7 +17,7 @@
 
         @if (Item.Url.HasValue() || Item.ForceAnchor)
         {
-            <a class="@ParentBitNav.GetItemClasses(Item) @(Item == ParentBitNav.SelectedItem ? "selected" : "")"
+            <a class="@(Item == ParentBitNav.SelectedItem ? "selected" : "") @ParentBitNav.GetItemClasses(Item)"
                style="padding: 0 20px 0 @(((depth * 14) + 27).ToString() + "px"); @Item.Style;"
                href="@(Item.IsEnabled ? Item.Url : null)"
                target="@Item.Target"
@@ -47,7 +47,7 @@
         }
         else
         {
-            <button class="@ParentBitNav.GetItemClasses(Item) @(Item == ParentBitNav.SelectedItem ? "selected" : "")"
+            <button class="@(Item == ParentBitNav.SelectedItem ? "selected" : "") @ParentBitNav.GetItemClasses(Item)"
                     style="padding: 0 20px 0 @(((depth * 14) + 27).ToString() + "px"); @Item.Style;"
                     title="@(Item.Title is not null ? Item.Title : Item.Name)"
                     disabled="@(Item.IsEnabled is false)"
