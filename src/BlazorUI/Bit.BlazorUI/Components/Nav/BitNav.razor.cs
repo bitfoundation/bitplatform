@@ -5,8 +5,8 @@ namespace Bit.BlazorUI;
 
 public partial class BitNav : IDisposable
 {
-    private IDictionary<BitNavItem, bool> _itemsExpanded = new Dictionary<BitNavItem, bool>();
-    private static IDictionary<BitNavItemAriaCurrent, string> _ariaCurrentMap = new Dictionary<BitNavItemAriaCurrent, string>()
+    internal IDictionary<BitNavItem, bool> _itemsExpanded = new Dictionary<BitNavItem, bool>();
+    internal IDictionary<BitNavItemAriaCurrent, string> _ariaCurrentMap = new Dictionary<BitNavItemAriaCurrent, string>()
     {
         [BitNavItemAriaCurrent.Page] = "page",
         [BitNavItemAriaCurrent.Step] = "step",
@@ -116,7 +116,7 @@ public partial class BitNav : IDisposable
         }
     }
 
-    private async void HandleOnItemClick(BitNavItem item)
+    internal async void HandleOnItemClick(BitNavItem item)
     {
         if (item.IsEnabled == false) return;
 
@@ -132,7 +132,7 @@ public partial class BitNav : IDisposable
         await OnItemClick.InvokeAsync(item);
     }
 
-    private async Task HandleOnItemExpand(BitNavItem navLinkItem)
+    internal async Task HandleOnItemExpand(BitNavItem navLinkItem)
     {
         if (navLinkItem.IsEnabled is false || navLinkItem.Items.Any() is false) return;
 
@@ -143,7 +143,7 @@ public partial class BitNav : IDisposable
         await OnItemExpand.InvokeAsync(navLinkItem);
     }
 
-    private static string GetItemClasses(BitNavItem item)
+    internal string GetItemClasses(BitNavItem item)
     {
         var enabledClass = item.IsEnabled ? "enabled" : "disabled";
         var hasUrlClass = item.Url.HasNoValue() ? "nourl" : "hasurl";
@@ -151,7 +151,7 @@ public partial class BitNav : IDisposable
         return $"link-{enabledClass}-{hasUrlClass}";
     }
 
-    private static bool IsRelativeUrl(string url)
+    internal bool IsRelativeUrl(string url)
     {
         var regex = new Regex(@"!/^[a-z0-9+-.]+:\/\//i");
         return regex.IsMatch(url);
