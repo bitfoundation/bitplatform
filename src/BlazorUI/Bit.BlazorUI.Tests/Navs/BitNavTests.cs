@@ -30,7 +30,7 @@ public class BitNavTests : BunitTestContext
     [DataTestMethod]
     public void BitNavSelectedKeyTwoWayBindTest()
     {
-        var navLinkItems = new List<BitNavLinkItem> { new BitNavLinkItem { Name = "test", Key = "key", IsEnabled = true, Url = "example.com" } };
+        var navLinkItems = new List<BitNavItem> { new BitNavItem { Name = "test", Key = "key", IsEnabled = true, Url = "example.com" } };
         var component = RenderComponent<BitNav>(parameters =>
         {
             parameters.Add(p => p.NavLinkItems, navLinkItems);
@@ -62,7 +62,7 @@ public class BitNavTests : BunitTestContext
     public void BitNavLinkItemMainClassTest(Visual visual, bool isEnabled, bool hasUrl)
     {
         string url = hasUrl ? "https://www.google.com/" : null;
-        var navLinkItems = new List<BitNavLinkItem> { new BitNavLinkItem { Name = "test", Key = "key", IsEnabled = isEnabled, Url = url } };
+        var navLinkItems = new List<BitNavItem> { new BitNavItem { Name = "test", Key = "key", IsEnabled = isEnabled, Url = url } };
 
         var component = RenderComponent<BitNavTest>(parameters =>
         {
@@ -104,18 +104,18 @@ public class BitNavTests : BunitTestContext
     ]
     public void BitNavLinkItemAriaLabelTest(string collapseAriaLabel, string expandAriaLabel, bool isExpanded)
     {
-        List<BitNavLinkItem> navLinkItems = new()
+        List<BitNavItem> navLinkItems = new()
         {
-            new BitNavLinkItem()
+            new BitNavItem()
             {
                 Name = "Home",
                 Key = "key1",
                 CollapseAriaLabel = collapseAriaLabel,
                 ExpandAriaLabel = expandAriaLabel,
                 IsExpanded = isExpanded,
-                Links = new List<BitNavLinkItem>()
+                Links = new List<BitNavItem>()
                 {
-                    new BitNavLinkItem() { Name = "Activity", Url = "http://msn.com", Key = "key1-1", Title = "Activity" }
+                    new BitNavItem() { Name = "Activity", Url = "http://msn.com", Key = "key1-1", Title = "Activity" }
                 }
             }
         };
@@ -137,7 +137,7 @@ public class BitNavTests : BunitTestContext
     ]
     public void BitNavShouldRespectGroupItems(BitNavRenderType type)
     {
-        List<BitNavLinkItem> navLinkItems = new() { new() { Name = "test", Key = "key", Url = "https://www.google.com/" } };
+        List<BitNavItem> navLinkItems = new() { new() { Name = "test", Key = "key", Url = "https://www.google.com/" } };
         var component = RenderComponent<BitNavTest>(parameters =>
         {
             parameters.Add(p => p.NavLinkItems, navLinkItems);
@@ -177,9 +177,9 @@ public class BitNavTests : BunitTestContext
     [DataTestMethod]
     public void BitNavOnLinkExpandClickTest()
     {
-        var items = new List<BitNavLinkItem>()
+        var items = new List<BitNavItem>()
         {
-            new() { Name = "Test1", Key = "key1", Links = new List<BitNavLinkItem>() { new() { Name = "Test2", Key = "key2" } } }
+            new() { Name = "Test1", Key = "key1", Links = new List<BitNavItem>() { new() { Name = "Test2", Key = "key2" } } }
         };
 
         var componenet = RenderComponent<BitNavTest>(parameters =>
@@ -200,14 +200,14 @@ public class BitNavTests : BunitTestContext
     ]
     public void BitNavLinkItemIsCollapsedByDefaultTest(bool isCollapseByDefault)
     {
-        var items = new List<BitNavLinkItem>()
+        var items = new List<BitNavItem>()
         {
             new() {
                 Name = "Test1",
                 Key = "key1",
                 IsExpanded = true,
                 IsCollapseByDefault = isCollapseByDefault,
-                Links = new List<BitNavLinkItem>()
+                Links = new List<BitNavItem>()
                     { new() { Name = "Test2", Key = "key2" } } }
         };
 
@@ -238,13 +238,13 @@ public class BitNavTests : BunitTestContext
     ]
     public void BitNavLinkItemForceAnchorTest(bool isForced)
     {
-        var items = new List<BitNavLinkItem>()
+        var items = new List<BitNavItem>()
         {
             new() {
                 Name = "Test1",
                 Key = "key1",
                 IsExpanded = true,
-                Links = new List<BitNavLinkItem>()
+                Links = new List<BitNavItem>()
                     { new() { Name = "Test2", Key = "key2", ForceAnchor = isForced } } }
         };
 
@@ -271,7 +271,7 @@ public class BitNavTests : BunitTestContext
     ]
     public void BitNavLinkItemTitleTest(string title, string name)
     {
-        var items = new List<BitNavLinkItem>()
+        var items = new List<BitNavItem>()
         {
             new() { Name = name, Title = title, Key = "key1", IsExpanded = true }
         };
@@ -298,14 +298,14 @@ public class BitNavTests : BunitTestContext
         BitNavSelectedKey = key;
     }
 
-    private readonly List<BitNavLinkItem> BasicNavLinks = new()
+    private readonly List<BitNavItem> BasicNavLinks = new()
     {
-        new BitNavLinkItem { Name = "Activity", Url = "http://msn.com", Key = "key1", Target = "_blank" },
-        new BitNavLinkItem { Name = "MSN", Url = "http://msn.com", Key = "key2", IsEnabled = false, Target = "_blank" },
-        new BitNavLinkItem { Name = "Documents", Url = "http://example.com", Key = "key3", Target = "_blank", IsExpanded = true },
-        new BitNavLinkItem { Name = "Pages", Url = "http://msn.com", Key = "key4", Target = "_parent" },
-        new BitNavLinkItem { Name = "Notebook", Url = "http://msn.com", Key = "key5", IsEnabled = false },
-        new BitNavLinkItem { Name = "Communication and Media", Url = "http://msn.com", Key = "key6", Target = "_top" },
-        new BitNavLinkItem { Name = "News", Title = "News", Url = "http://msn.com", Key = "key7", IconName = BitIconName.News, Target = "_self" },
+        new BitNavItem { Name = "Activity", Url = "http://msn.com", Key = "key1", Target = "_blank" },
+        new BitNavItem { Name = "MSN", Url = "http://msn.com", Key = "key2", IsEnabled = false, Target = "_blank" },
+        new BitNavItem { Name = "Documents", Url = "http://example.com", Key = "key3", Target = "_blank", IsExpanded = true },
+        new BitNavItem { Name = "Pages", Url = "http://msn.com", Key = "key4", Target = "_parent" },
+        new BitNavItem { Name = "Notebook", Url = "http://msn.com", Key = "key5", IsEnabled = false },
+        new BitNavItem { Name = "Communication and Media", Url = "http://msn.com", Key = "key6", Target = "_top" },
+        new BitNavItem { Name = "News", Title = "News", Url = "http://msn.com", Key = "key7", IconName = BitIconName.News, Target = "_self" },
     };
 }

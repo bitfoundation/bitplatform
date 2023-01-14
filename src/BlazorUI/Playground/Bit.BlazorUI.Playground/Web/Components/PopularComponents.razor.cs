@@ -95,26 +95,26 @@ public partial class PopularComponents
         StateHasChanged();
     }
 
-    private readonly List<BitNavLinkItem> BasicNavLinks = new()
+    private readonly List<BitNavItem> BasicNavLinks = new()
     {
-        new BitNavLinkItem
+        new BitNavItem
         {
             Name = "Home",
             Url = "http://example.com",
             ExpandAriaLabel = "Expand Home section",
             CollapseAriaLabel = "Collapse Home section",
             IsExpanded = true,
-            Links = new List<BitNavLinkItem>
+            Items = new List<BitNavItem>
             {
-                new BitNavLinkItem { Name = "Activity", Url = "http://msn.com", Key = "key1", Target="_blank" },
-                new BitNavLinkItem { Name = "MSN", Url = "http://msn.com", Key = "key2", IsEnabled = false, Target = "_blank" }
+                new BitNavItem { Name = "Activity", Url = "http://msn.com", Target="_blank" },
+                new BitNavItem { Name = "MSN", Url = "http://msn.com", IsEnabled = false, Target = "_blank" }
             }
         },
-        new BitNavLinkItem { Name = "Documents", Url = "http://example.com", Key = "key3", Target = "_blank", IsExpanded = true },
-        new BitNavLinkItem { Name = "Pages", Url = "http://msn.com", Key = "key4", Target = "_parent" },
-        new BitNavLinkItem { Name = "Notebook", Url = "http://msn.com", Key = "key5", IsEnabled = false },
-        new BitNavLinkItem { Name = "Communication and Media", Url = "http://msn.com", Key = "key6", Target = "_top" },
-        new BitNavLinkItem { Name = "News", Title = "News", Url = "http://msn.com", Key = "key7", IconName = BitIconName.News, Target = "_self" },
+        new BitNavItem { Name = "Documents", Url = "http://example.com", Target = "_blank", IsExpanded = true },
+        new BitNavItem { Name = "Pages", Url = "http://msn.com", Target = "_parent" },
+        new BitNavItem { Name = "Notebook", Url = "http://msn.com", IsEnabled = false },
+        new BitNavItem { Name = "Communication and Media", Url = "http://msn.com", Target = "_top" },
+        new BitNavItem { Name = "News", Title = "News", Url = "http://msn.com", IconName = BitIconName.News, Target = "_self" },
     };
 
     private List<BitDropDownItem> GetDropdownItems()

@@ -18,18 +18,18 @@
     [Parameter] public string AriaLabel { get; set; }
     [Parameter] public bool IsOnTop { get; set; }
     [Parameter] public BitNavRenderType RenderType { get; set; }
-    [Parameter] public List<BitNavLinkItem> NavLinkItems { get; set; } = new List<BitNavLinkItem> { new BitNavLinkItem { Name = "Test", Key = "Test" } };
+    [Parameter] public List<BitNavItem> NavLinkItems { get; set; } = new List<BitNavItem> { new BitNavItem { Name = "Test", Key = "Test" } };
     [Parameter] public BitNavMode Mode { get; set; } = BitNavMode.Automatic;
 
     public string OnLinkClickValue = string.Empty;
     public string OnLinkExpandClickValue = string.Empty;
 
-    public void OnlinkClick(BitNavLinkItem navLinkItem)
+    public void OnlinkClick(BitNavItem navLinkItem)
     {
         OnLinkClickValue = navLinkItem.Name;
     }
 
-    public void OnLinkExpandClick(BitNavLinkItem navLinkItem)
+    public void OnLinkExpandClick(BitNavItem navLinkItem)
     {
         OnLinkExpandClickValue = navLinkItem.Key;
     }

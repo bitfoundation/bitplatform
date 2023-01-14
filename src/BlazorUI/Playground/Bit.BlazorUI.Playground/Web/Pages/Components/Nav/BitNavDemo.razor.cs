@@ -6,31 +6,40 @@ namespace Bit.BlazorUI.Playground.Web.Pages.Components.Nav;
 
 public partial class BitNavDemo
 {
-    private readonly List<BitNavLinkItem> BasicNavLinks = new()
+    private readonly List<BitNavItem> BasicNavLinks = new()
     {
-        new BitNavLinkItem
+        new BitNavItem
         {
             Name = "Home",
             Url = "http://example.com",
             ExpandAriaLabel = "Expand Home section",
             CollapseAriaLabel = "Collapse Home section",
             IsExpanded = true,
-            Links = new List<BitNavLinkItem>
+            Items = new List<BitNavItem>
             {
-                new BitNavLinkItem { Name = "Activity", Url = "http://msn.com", Key = "key1", Target="_blank" },
-                new BitNavLinkItem { Name = "MSN", Url = "http://msn.com", Key = "key2", IsEnabled = false, Target = "_blank" }
+                new BitNavItem { Name = "Activity", Url = "http://msn.com", Target="_blank" },
+                new BitNavItem {
+                    Name = "MSN",
+                    Url = "http://msn.com",
+                    Target = "_blank" ,
+                    Items = new List<BitNavItem>
+                    {
+                        new BitNavItem { Name = "Activity", Url = "http://msn.com", Target="_blank" },
+                        new BitNavItem { Name = "MSN", Url = "http://msn.com", IsEnabled = false, Target = "_blank" }
+                    } 
+                }
             }
         },
-        new BitNavLinkItem { Name = "Documents", Url = "http://example.com", Key = "key3", Target = "_blank", IsExpanded = true },
-        new BitNavLinkItem { Name = "Pages", Url = "http://msn.com", Key = "key4", Target = "_parent" },
-        new BitNavLinkItem { Name = "Notebook", Url = "http://msn.com", Key = "key5", IsEnabled = false },
-        new BitNavLinkItem { Name = "Communication and Media", Url = "http://msn.com", Key = "key6", Target = "_top" },
-        new BitNavLinkItem { Name = "News", Title = "News", Url = "http://msn.com", Key = "key7", IconName = BitIconName.News, Target = "_self" },
+        new BitNavItem { Name = "Documents", Url = "http://example.com", Target = "_blank", IsExpanded = true },
+        new BitNavItem { Name = "Pages", Url = "http://msn.com", Target = "_parent" },
+        new BitNavItem { Name = "Notebook", Url = "http://msn.com", IsEnabled = false },
+        new BitNavItem { Name = "Communication and Media", Url = "http://msn.com", Target = "_top" },
+        new BitNavItem { Name = "News", Title = "News", Url = "http://msn.com", IconName = BitIconName.News, Target = "_self" },
     };
 
-    private readonly List<BitNavLinkItem> NavLinksNoToolTip = new()
+    private readonly List<BitNavItem> NavLinksNoToolTip = new()
     {
-        new BitNavLinkItem
+        new BitNavItem
         {
             Name = "Home",
             Url = "http://example.com",
@@ -38,84 +47,82 @@ public partial class BitNavDemo
             IsExpanded = true,
             CollapseAriaLabel = "Collapse Home section",
             ExpandAriaLabel = "Expand Home section",
-            Links = new List<BitNavLinkItem>
+            Items = new List<BitNavItem>
             {
-                new BitNavLinkItem { Name = "Activity", Url = "http://msn.com", Key = "key1", Target="_blank", Title = "" },
-                new BitNavLinkItem { Name = "MSN", Url = "http://msn.com", Key = "key2", IsEnabled = false, Target = "_blank", Title = "" }
+                new BitNavItem { Name = "Activity", Url = "http://msn.com", Target="_blank", Title = "" },
+                new BitNavItem { Name = "MSN", Url = "http://msn.com", IsEnabled = false, Target = "_blank", Title = "" }
             }
         },
-        new BitNavLinkItem { Name = "Shared Documents and Files", Url = "http://example.com", Key = "key3", Target = "_blank", Title = "", ItemStyle="white-space: normal;" },
-        new BitNavLinkItem { Name = "Pages", Url = "http://msn.com", Key = "key4", Target = "_parent", Title = "" },
-        new BitNavLinkItem { Name = "Notebook", Url = "http://msn.com", Key = "key5", IsEnabled = false, Title = "" },
-        new BitNavLinkItem { Name = "Communication and Media", Url = "http://msn.com", Key = "key6", Target = "_top", Title = "", ItemStyle="white-space: normal;" },
-        new BitNavLinkItem { Name = "News", Key = "key7", Url = "http://cnn.com", IconName = BitIconName.News, Target = "_self", Title = "" }
+        new BitNavItem { Name = "Shared Documents and Files", Url = "http://example.com", Target = "_blank", Title = "", Style="white-space: normal;" },
+        new BitNavItem { Name = "Pages", Url = "http://msn.com", Target = "_parent", Title = "" },
+        new BitNavItem { Name = "Notebook", Url = "http://msn.com", IsEnabled = false, Title = "" },
+        new BitNavItem { Name = "Communication and Media", Url = "http://msn.com", Target = "_top", Title = "", Style="white-space: normal;" },
+        new BitNavItem { Name = "News", Url = "http://cnn.com", IconName = BitIconName.News, Target = "_self", Title = "" }
     };
 
-    private readonly List<BitNavLinkItem> NavLinksSimilarThisApp = new()
+    private readonly List<BitNavItem> NavLinksSimilarThisApp = new()
     {
-        new BitNavLinkItem
+        new BitNavItem
         {
             Name = "Basic Inputs",
             CollapseAriaLabel = "Collapse Basic Inputs section",
             IsExpanded = true,
-            Links = new List<BitNavLinkItem>
+            Items = new List<BitNavItem>
             {
-                new BitNavLinkItem { Name= "Bottons", Key = "Bottons", Url = "components/button" },
-                new BitNavLinkItem { Name= "DropDown", Key = "DropDown", Url = "components/drop-down" },
-                new BitNavLinkItem { Name= "FileUpload", Key = "FileUpload", Url = "components/file-upload" }
+                new BitNavItem { Name= "Bottons", Url = "components/button" },
+                new BitNavItem { Name= "DropDown", Url = "components/drop-down" },
+                new BitNavItem { Name= "FileUpload", Url = "components/file-upload" }
             }
         },
-        new BitNavLinkItem
+        new BitNavItem
         {
             Name = "Items & Lists",
             CollapseAriaLabel = "Collapse Items & Lists section",
             IsExpanded = true,
-            Links = new List<BitNavLinkItem>
+            Items = new List<BitNavItem>
             {
-                new BitNavLinkItem { Name = "BasicList", Key = "BasicList", Url ="components/basic-list" },
-                new BitNavLinkItem { Name = "DataGrid", Key = "DataGrid", Url ="components/data-grid" },
-                new BitNavLinkItem { Name = "Carousel", Key = "Carousel", Url ="components/carousel" }
+                new BitNavItem { Name = "BasicList", Url ="components/basic-list" },
+                new BitNavItem { Name = "DataGrid", Url ="components/data-grid" },
+                new BitNavItem { Name = "Carousel", Url ="components/carousel" }
             }
         },
-        new BitNavLinkItem
+        new BitNavItem
         {
             Name = "Galleries & Pickers",
             CollapseAriaLabel = "Collapse Galleries & Pickers section",
             IsExpanded = true,
-            Links = new List<BitNavLinkItem>
+            Items = new List<BitNavItem>
             {
-                new BitNavLinkItem { Name = "ColorPicker", Key = "ColorPicker", Url = "components/color-picker" },
-                new BitNavLinkItem { Name = "DatePicker", Key = "DatePicker", Url = "components/date-picker" },
-                new BitNavLinkItem { Name = "Chart", Key = "Chart", Url = "components/chart" }
+                new BitNavItem { Name = "ColorPicker", Url = "components/color-picker" },
+                new BitNavItem { Name = "DatePicker", Url = "components/date-picker" },
+                new BitNavItem { Name = "Chart", Url = "components/chart" }
             }
         }
     };
 
-    private readonly List<BitNavLinkItem> NavWithNestedLinks = new()
+    private readonly List<BitNavItem> NavWithNestedLinks = new()
     {
         new()
         {
             Name = "Parent link 1",
             Url = "http://example.com",
-            Key = "Key1",
             Title = "Parent link 1",
             CollapseAriaLabel = "Collapse Parent link 1",
-            Links = new List<BitNavLinkItem>()
+            Items = new List<BitNavItem>()
             {
                 new()
                 {
                     Name = "Child link 1",
                     Url = "http://msn.com",
-                    Key = "Key1-1",
                     Title = "Child link 1",
-                    Links = new List<BitNavLinkItem>()
+                    Items = new List<BitNavItem>()
                     {
-                        new() { Name = "3rd level link 1", Title = "3rd level link 1", Url = "http://msn.com", Key = "Key1-1-1" },
-                        new() { Name = "3rd level link 2", Title = "3rd level link 2", Url = "http://msn.com", Key = "Key1-1-2", IsEnabled = false }
+                        new() { Name = "3rd level link 1", Title = "3rd level link 1", Url = "http://msn.com", },
+                        new() { Name = "3rd level link 2", Title = "3rd level link 2", Url = "http://msn.com", IsEnabled = false }
                     }
                 },
-                new() { Name = "Child link 2", Title = "Child link 2", Url = "http://msn.com", Key = "Key1-2" },
-                new() { Name = "Child link 3", Title = "Child link 3", Url = "http://msn.com", Key = "Key1-3", IsEnabled = false },
+                new() { Name = "Child link 2", Title = "Child link 2", Url = "http://msn.com" },
+                new() { Name = "Child link 3", Title = "Child link 3", Url = "http://msn.com", IsEnabled = false },
             }
         },
         new()
@@ -123,66 +130,58 @@ public partial class BitNavDemo
             Name = "Parent link 2",
             Title = "Parent link 2",
             Url = "http://example.com",
-            Key = "Key2",
             CollapseAriaLabel = "Collapse Parent link 2",
-            Links = new List<BitNavLinkItem>()
+            Items = new List<BitNavItem>()
             {
-                new() { Name = "Child link 4", Title = "Child link 4", Url = "http://example.com", Key = "Key2-1" }
+                new() { Name = "Child link 4", Title = "Child link 4", Url = "http://example.com" }
             }
         }
     };
 
-    private readonly List<BitNavLinkItem> NavLinksWithCustomHeader = new()
+    private readonly List<BitNavItem> NavLinksWithCustomHeader = new()
     {
-        new BitNavLinkItem
+        new BitNavItem
         {
             Name = "Pages",
             IsExpanded = true,
-            Links = new List<BitNavLinkItem>
+            Items = new List<BitNavItem>
             {
-                new BitNavLinkItem { Name = "Activity", Url = "http://msn.com", Key = "Key1-1", Title = "Activity" },
-                new BitNavLinkItem { Name = "News", Title = "News", Url = "http://msn.com", Key = "Key1-2" },
+                new BitNavItem { Name = "Activity", Url = "http://msn.com", Title = "Activity" },
+                new BitNavItem { Name = "News", Title = "News", Url = "http://msn.com" },
             }
         },
-        new BitNavLinkItem
+        new BitNavItem
         {
             Name = "More pages",
             IsExpanded = true,
-            Links = new List<BitNavLinkItem>
+            Items = new List<BitNavItem>
             {
-                new BitNavLinkItem { Name= "Settings", Title = "Settings", Url = "http://example.com", Key = "Key2-1" },
-                new BitNavLinkItem { Name= "Notes", Title = "Notes", Url = "http://example.com", Key = "Key2-1" }
+                new BitNavItem { Name= "Settings", Title = "Settings", Url = "http://example.com" },
+                new BitNavItem { Name= "Notes", Title = "Notes", Url = "http://example.com" }
             }
         }
     };
 
-    private readonly List<BitNavLinkItem> NavLinksWithManualMode = new()
+    private readonly List<BitNavItem> NavLinksWithManualMode = new()
     {
-        new BitNavLinkItem
+        new BitNavItem
         {
             Name = "Home",
             ExpandAriaLabel = "Expand Home section",
             CollapseAriaLabel = "Collapse Home section",
             IsExpanded = true,
-            Links = new List<BitNavLinkItem>
+            Items = new List<BitNavItem>
             {
-                new BitNavLinkItem { Name = "Activity", Key = "key1", Target="_blank" },
-                new BitNavLinkItem { Name = "MSN", Key = "key2", IsEnabled = false, Target = "_blank" }
+                new BitNavItem { Name = "Activity", Target="_blank" },
+                new BitNavItem { Name = "MSN", IsEnabled = false, Target = "_blank" }
             }
         },
-        new BitNavLinkItem { Name = "Documents", Key = "key3", Target = "_blank", IsExpanded = true },
-        new BitNavLinkItem { Name = "Pages", Key = "key4", Target = "_parent" },
-        new BitNavLinkItem { Name = "Notebook", Key = "key5", IsEnabled = false },
-        new BitNavLinkItem { Name = "Communication and Media", Key = "key6", Target = "_top" },
-        new BitNavLinkItem { Name = "News", Title = "News", Key = "key7", IconName = BitIconName.News, Target = "_self" },
+        new BitNavItem { Name = "Documents", Target = "_blank", IsExpanded = true },
+        new BitNavItem { Name = "Pages", Target = "_parent" },
+        new BitNavItem { Name = "Notebook", IsEnabled = false },
+        new BitNavItem { Name = "Communication and Media", Target = "_top" },
+        new BitNavItem { Name = "News", Title = "News", IconName = BitIconName.News, Target = "_self" },
     };
-
-    private string BitNavManualModeSelectedKey = "key3";
-
-    private void HandleSelectedKeyChange(string selectedKey)
-    {
-        BitNavManualModeSelectedKey = selectedKey;
-    }
 
     private readonly List<ComponentParameter> componentParameters = new()
     {
