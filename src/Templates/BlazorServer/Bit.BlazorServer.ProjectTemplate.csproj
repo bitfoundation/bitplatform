@@ -15,7 +15,7 @@
         <Title>Bit Platform BlazorServer</Title>
         <PackageDescription>A template for creating a simple Blazor server app based on the Bit Platform tools</PackageDescription>
         <PackageTags>Bit;c#;asp.net;core;template;web;blazor</PackageTags>
-        <PackageCopyright>Copyright © Bit Platform 2022</PackageCopyright>
+        <PackageCopyright>Copyright © Bit Platform 2023</PackageCopyright>
         <PackageIcon>bit-icon-512.png</PackageIcon>
         
     </PropertyGroup>
