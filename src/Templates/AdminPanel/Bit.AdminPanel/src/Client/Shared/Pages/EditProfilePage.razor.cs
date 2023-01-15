@@ -71,10 +71,7 @@ public partial class EditProfilePage
 
     private Task<UserDto?> GetCurrentUser() => HttpClient.GetFromJsonAsync("User/GetCurrentUser", AppJsonContext.Default.UserDto);
 
-    private async Task GoBack()
-    {
-        await JsRuntime.GoBack();
-    }
+    private async Task GoBack() => await JsRuntime.GoBack();
 
     private async Task Submit()
     {
