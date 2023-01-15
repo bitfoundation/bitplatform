@@ -5,18 +5,17 @@ namespace Bit.BlazorUI;
 
 public partial class BitNav : IDisposable
 {
+    private bool SelectedItemHasBeenSet;
+    private BitNavItem? selectedItem;
+
     internal IDictionary<BitNavItem, bool> _itemsExpanded = new Dictionary<BitNavItem, bool>();
-    internal IDictionary<BitNavItemAriaCurrent, string> _ariaCurrentMap = new Dictionary<BitNavItemAriaCurrent, string>()
-    {
-        [BitNavItemAriaCurrent.Page] = "page",
-        [BitNavItemAriaCurrent.Step] = "step",
-        [BitNavItemAriaCurrent.Location] = "location",
-        [BitNavItemAriaCurrent.Time] = "time",
-        [BitNavItemAriaCurrent.Date] = "date",
-        [BitNavItemAriaCurrent.True] = "true"
-    };
 
     [Inject] private NavigationManager _navigationManager { get; set; } = default!;
+
+    /// <summary>
+    /// 
+    /// </summary>
+    [Parameter] public BitNavItem? DefaultSelectedItem { get; set; }
 
     /// <summary>
     /// Used to customize how content inside the group header is rendered.
@@ -50,6 +49,11 @@ public partial class BitNav : IDisposable
     [Parameter] public EventCallback<BitNavItem> OnItemExpand { get; set; }
 
     /// <summary>
+    /// Callback invoked when a group header is clicked and Collapse.
+    /// </summary>
+    [Parameter] public EventCallback<BitNavItem> OnItemCollapse { get; set; }
+
+    /// <summary>
     /// The way to render nav links.
     /// </summary>
     [Parameter] public BitNavRenderType RenderType { get; set; } = BitNavRenderType.Normal;
@@ -57,7 +61,18 @@ public partial class BitNav : IDisposable
     /// <summary>
     /// 
     /// </summary>
-    [Parameter] public BitNavItem? SelectedItem { get; set; }
+    [Parameter] 
+    public BitNavItem? SelectedItem 
+    {
+        get => selectedItem;
+        set
+        {
+            if (value == selectedItem) return;
+            selectedItem = value;
+            SelectedItemChanged.InvokeAsync(selectedItem);
+        }
+    }
+    [Parameter] public EventCallback<BitNavItem> SelectedItemChanged { get; set; }
 
     protected override string RootElementClass => "bit-nav";
 
@@ -68,14 +83,19 @@ public partial class BitNav : IDisposable
             _navigationManager.LocationChanged += OnLocationChanged;
         }
 
+        if (DefaultSelectedItem is not null)
+        {
+            SelectedItem = DefaultSelectedItem;
+        }
+
         foreach (var item in Items)
         {
             SetItemsExpanded(item);
         };
 
-        var flatNavLinkItems = Flatten(Items).ToList();
-        var currrentUrl = _navigationManager.Uri.Replace(_navigationManager.BaseUri, "/", StringComparison.Ordinal);
-        SelectedItem = flatNavLinkItems.FirstOrDefault(item => item.Url == currrentUrl);
+        //var flatNavLinkItems = Flatten(Items).ToList();
+        //var currrentUrl = _navigationManager.Uri.Replace(_navigationManager.BaseUri, "/", StringComparison.Ordinal);
+        //SelectedItem = flatNavLinkItems.FirstOrDefault(item => item.Url == currrentUrl);
 
         await base.OnInitializedAsync();
     }
@@ -120,7 +140,7 @@ public partial class BitNav : IDisposable
     {
         if (item.IsEnabled == false) return;
 
-        if (Mode == BitNavMode.Manual && item.Items.Any())
+        if (Mode == BitNavMode.Manual && item.Items.Any() is false)
         {
             SelectedItem = item;
         }
@@ -140,21 +160,14 @@ public partial class BitNav : IDisposable
         _itemsExpanded.Remove(navLinkItem);
         _itemsExpanded.Add(navLinkItem, !oldIsExpanded);
 
-        await OnItemExpand.InvokeAsync(navLinkItem);
-    }
-
-    internal string GetItemClasses(BitNavItem item)
-    {
-        var enabledClass = item.IsEnabled ? "enabled" : "disabled";
-        var hasUrlClass = item.Url.HasNoValue() ? "nourl" : "hasurl";
-
-        return $"link-{enabledClass}-{hasUrlClass}";
-    }
-
-    internal bool IsRelativeUrl(string url)
-    {
-        var regex = new Regex(@"!/^[a-z0-9+-.]+:\/\//i");
-        return regex.IsMatch(url);
+        if (oldIsExpanded)
+        {
+            await OnItemCollapse.InvokeAsync(navLinkItem);
+        }
+        else
+        {
+            await OnItemExpand.InvokeAsync(navLinkItem);
+        }
     }
 
     public void Dispose()

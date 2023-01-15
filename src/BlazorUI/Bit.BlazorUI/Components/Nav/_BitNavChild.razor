@@ -1,11 +1,10 @@
 ﻿
 <li class="nav-item" role="listitem">
-
-    <div class="composite-link @(Item.IsEnabled is false ? "disabled" : "")" name="@Item.Name">
+    <div class="composite-link @(Item.IsEnabled is false ? "disabled" : "")" name="@Item.Text">
         @if (Item.Items?.Any() ?? false)
         {
             <button class="chevron-btn"
-                    style="margin-left: @((depth * 14).ToString() + "px");"
+                    style="margin-left: @((_depth * 14).ToString() + "px");"
                     type="button"
                     tabindex="0"
                     aria-label="@(ParentBitNav._itemsExpanded[Item] ? Item.CollapseAriaLabel : Item.ExpandAriaLabel)"
@@ -17,16 +16,16 @@
 
         @if (Item.Url.HasValue() || Item.ForceAnchor)
         {
-            <a class="@(Item == ParentBitNav.SelectedItem ? "selected" : "") @ParentBitNav.GetItemClasses(Item)"
-               style="padding: 0 20px 0 @(((depth * 14) + 27).ToString() + "px"); @Item.Style;"
+            <a class="@GetItemClasses(Item)"
+               style="padding: 0 20px 0 @(((_depth * 14) + 27).ToString() + "px"); @Item.Style;"
                href="@(Item.IsEnabled ? Item.Url : null)"
                target="@Item.Target"
-               title="@(Item.Title is not null ? Item.Title : Item.Name)"
+               title="@(Item.Title is not null ? Item.Title : Item.Text)"
                disabled="@(Item.IsEnabled is false)"
                aria-label="@Item.AriaLabel"
-               aria-current="@(Item == ParentBitNav.SelectedItem ? ParentBitNav._ariaCurrentMap[Item.AriaCurrent] : null)"
+               aria-current="@(Item == ParentBitNav.SelectedItem ? _ariaCurrentMap[Item.AriaCurrent] : null)"
                tabindex="-1"
-               rel="@(Item.Url.HasValue() && Item.Target.HasValue() && ParentBitNav.IsRelativeUrl(Item.Url!) is false ? "noopener noreferrer" : null)"
+               rel="@(Item.Url.HasValue() && Item.Target.HasValue() && IsRelativeUrl(Item.Url!) is false ? "noopener noreferrer" : null)"
                @onclick="(() => ParentBitNav.HandleOnItemClick(Item))">
 
                 <div class="link-container">
@@ -40,19 +39,19 @@
                         {
                             <i class=@($"bit-icon bit-icon--{Item.IconName.GetName()}") aria-hidden="true"></i>
                         }
-                        <div class="link-txt">@Item.Name</div>
+                        <div class="link-txt">@Item.Text</div>
                     }
                 </div>
             </a>
         }
         else
         {
-            <button class="@(Item == ParentBitNav.SelectedItem ? "selected" : "") @ParentBitNav.GetItemClasses(Item)"
-                    style="padding: 0 20px 0 @(((depth * 14) + 27).ToString() + "px"); @Item.Style;"
-                    title="@(Item.Title is not null ? Item.Title : Item.Name)"
+            <button class="@GetItemClasses(Item)"
+                    style="padding: 0 20px 0 @(((_depth * 14) + 27).ToString() + "px"); @Item.Style;"
+                    title="@(Item.Title is not null ? Item.Title : Item.Text)"
                     disabled="@(Item.IsEnabled is false)"
                     aria-label="@Item.AriaLabel"
-                    aria-current="@(Item == ParentBitNav.SelectedItem ? ParentBitNav._ariaCurrentMap[Item.AriaCurrent] : null)"
+                    aria-current="@(Item == ParentBitNav.SelectedItem ? _ariaCurrentMap[Item.AriaCurrent] : null)"
                     tabindex="-1"
                     type="button"
                     @onclick="(() => ParentBitNav.HandleOnItemClick(Item))">
@@ -68,25 +67,26 @@
                     }
                     else
                     {
-                        <div class="link-txt">@Item.Name</div>
+                        <div class="link-txt">@Item.Text</div>
                     }
                 </div>
             </button>
         }
     </div>
+
     @if ((Item.Items?.Any() ?? false) && ParentBitNav._itemsExpanded[Item])
     {
-        depth++;
+        _depth++;
 
         <ul class="nav-items" role="list">
-            @foreach (var childitem in Item.Items)
-            {
-                <CascadingValue Value="this" IsFixed="true">
-                    <BitNavChild Item="childitem"></BitNavChild>
-                </CascadingValue>
-            }
+            <CascadingValue Value="this" IsFixed="true">
+                @foreach (var childitem in Item.Items)
+                {
+                    <_BitNavChild Item="childitem" />
+                }
+            </CascadingValue>
         </ul>
 
-        depth--;
+        _depth--;
     }
 </li>

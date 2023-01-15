@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Bit.BlazorUI.Playground.Web.Models;
 using Bit.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
@@ -10,32 +12,95 @@ public partial class BitNavDemo
     {
         new BitNavItem
         {
-            Name = "Home",
-            Url = "http://example.com",
+            Text = "Home",
+            Title = "Home is Parent Row",
             ExpandAriaLabel = "Expand Home section",
             CollapseAriaLabel = "Collapse Home section",
             IsExpanded = true,
             Items = new List<BitNavItem>
             {
-                new BitNavItem { Name = "Activity", Url = "http://msn.com", Target="_blank" },
-                new BitNavItem {
-                    Name = "MSN",
-                    Url = "http://msn.com",
-                    Target = "_blank",
-                    Items = new List<BitNavItem>
-                    {
-                        new BitNavItem { Name = "Activity", Url = "http://msn.com", Target="_blank" },
-                        new BitNavItem { Name = "MSN", Url = "http://msn.com", IsEnabled = false, Target = "_blank" }
-                    }
-                }
+                new BitNavItem { Text = "Activity", Url = "http://msn.com", Target="_blank" },
+                new BitNavItem { Text = "MSN", Url = "http://msn.com", IsEnabled = false, Target = "_blank" }
             }
         },
-        new BitNavItem { Name = "Documents", Url = "http://example.com", Target = "_blank", IsExpanded = true },
-        new BitNavItem { Name = "Pages", Url = "http://msn.com", Target = "_parent" },
-        new BitNavItem { Name = "Notebook", Url = "http://msn.com", IsEnabled = false },
-        new BitNavItem { Name = "Communication and Media", Url = "http://msn.com", Target = "_top" },
-        new BitNavItem { Name = "News", Title = "News", Url = "http://msn.com", IconName = BitIconName.News, Target = "_self" },
+        new BitNavItem { Text = "Documents", Url = "http://msn.com", Target = "_blank", IsExpanded = true },
+        new BitNavItem { Text = "Pages", Url = "http://msn.com", Target = "_parent" },
+        new BitNavItem { Text = "Notebook", Url = "http://msn.com", Target = "_blank", IsEnabled = false },
+        new BitNavItem { Text = "Communication and Media", Url = "http://msn.com", Target = "_top" },
+        new BitNavItem { Text = "News", Url = "http://msn.com", Target = "_self", IconName = BitIconName.News },
     };
+
+    private readonly List<BitNavItem> GroupedNavItems = new()
+    {
+        new BitNavItem
+        {
+            Text = "Basic Inputs",
+            CollapseAriaLabel = "Collapsed Basic Inputs section",
+            ExpandAriaLabel = "Expanded Basic Inputs section",
+            IsExpanded = true,
+            Items = new List<BitNavItem>
+            {
+                new BitNavItem { Text= "Bottons", Url = "components/button", Target = "_blank" },
+                new BitNavItem { Text= "DropDown", Url = "components/drop-down", Target = "_blank" },
+                new BitNavItem { Text= "FileUpload", Url = "components/file-upload", Target = "_blank" }
+            }
+        },
+        new BitNavItem
+        {
+            Text = "Items & Lists",
+            CollapseAriaLabel = "Collapsed Items & Lists section",
+            ExpandAriaLabel = "Expanded Items & Lists section",
+            IsExpanded = true,
+            Items = new List<BitNavItem>
+            {
+                new BitNavItem { Text = "BasicList", Url ="components/basic-list", Target = "_blank" },
+                new BitNavItem { Text = "DataGrid", Url ="components/data-grid", Target = "_blank" },
+                new BitNavItem { Text = "Carousel", Url ="components/carousel", Target = "_blank" }
+            }
+        },
+        new BitNavItem
+        {
+            Text = "Galleries & Pickers",
+            CollapseAriaLabel = "Collapsed Galleries & Pickers section",
+            ExpandAriaLabel = "Expanded Galleries & Pickers section",
+            IsExpanded = true,
+            Items = new List<BitNavItem>
+            {
+                new BitNavItem { Text = "ColorPicker", Url = "components/color-picker", Target = "_blank" },
+                new BitNavItem { Text = "DatePicker", Url = "components/date-picker", Target = "_blank" },
+                new BitNavItem { Text = "Chart", Url = "components/chart", Target = "_blank" }
+            }
+        }
+    };
+
+    private readonly List<BitNavItem> ManualNavItems = new()
+    {
+        new BitNavItem
+        {
+            Text = "Home",
+            Title = "Home is Parent Row",
+            ExpandAriaLabel = "Expand Home section",
+            CollapseAriaLabel = "Collapse Home section",
+            IsExpanded= true,
+            Items = new List<BitNavItem>
+            {
+                new BitNavItem { Text = "Activity", },
+                new BitNavItem { Text = "MSN", IsEnabled = false }
+            }
+        },
+        new BitNavItem { Text = "Documents" },
+        new BitNavItem { Text = "Pages" },
+        new BitNavItem { Text = "Notebook", IsEnabled = false },
+        new BitNavItem { Text = "Communication and Media" },
+        new BitNavItem { Text = "News", IconName = BitIconName.News },
+    };
+
+    private BitNavItem TwoWaySelectedItem;
+    private int SelectedItemIndex;
+
+    private BitNavItem ClickedItem;
+    private BitNavItem ExpandedItem;
+    private BitNavItem CollapsedItem;
 
     private readonly List<ComponentParameter> componentParameters = new()
     {

@@ -44,7 +44,7 @@ public class BitNavTests : BunitTestContext
     public void BitNavLinkItemMainClassTest(Visual visual, bool isEnabled, bool hasUrl)
     {
         string url = hasUrl ? "https://www.google.com/" : null;
-        var navLinkItems = new List<BitNavItem> { new BitNavItem { Name = "test", IsEnabled = isEnabled, Url = url } };
+        var navLinkItems = new List<BitNavItem> { new BitNavItem { Text = "test", IsEnabled = isEnabled, Url = url } };
 
         var component = RenderComponent<BitNavTest>(parameters =>
         {
@@ -90,13 +90,13 @@ public class BitNavTests : BunitTestContext
         {
             new BitNavItem()
             {
-                Name = "Home",
+                Text = "Home",
                 CollapseAriaLabel = collapseAriaLabel,
                 ExpandAriaLabel = expandAriaLabel,
                 IsExpanded = isExpanded,
                 Items = new List<BitNavItem>()
                 {
-                    new BitNavItem() { Name = "Activity", Url = "http://msn.com", Title = "Activity" }
+                    new BitNavItem() { Text = "Activity", Url = "http://msn.com", Title = "Activity" }
                 }
             }
         };
@@ -118,7 +118,7 @@ public class BitNavTests : BunitTestContext
     ]
     public void BitNavShouldRespectGroupItems(BitNavRenderType type)
     {
-        List<BitNavItem> navLinkItems = new() { new() { Name = "test", Url = "https://www.google.com/" } };
+        List<BitNavItem> navLinkItems = new() { new() { Text = "test", Url = "https://www.google.com/" } };
         var component = RenderComponent<BitNavTest>(parameters =>
         {
             parameters.Add(p => p.Items, navLinkItems);
@@ -163,7 +163,7 @@ public class BitNavTests : BunitTestContext
     {
         var items = new List<BitNavItem>()
         {
-            new() { Name = "Test1", Items = new List<BitNavItem>() { new() { Name = "Test2" } } }
+            new() { Text = "Test1", Items = new List<BitNavItem>() { new() { Text = "Test2" } } }
         };
 
         var componenet = RenderComponent<BitNavTest>(parameters =>
@@ -187,9 +187,9 @@ public class BitNavTests : BunitTestContext
         var items = new List<BitNavItem>()
         {
             new() {
-                Name = "Test1",
+                Text = "Test1",
                 IsExpanded = true,
-                Items = new List<BitNavItem>() { new() { Name = "Test2", ForceAnchor = isForced } }
+                Items = new List<BitNavItem>() { new() { Text = "Test2", ForceAnchor = isForced } }
             }
         };
 
@@ -218,7 +218,7 @@ public class BitNavTests : BunitTestContext
     {
         var items = new List<BitNavItem>()
         {
-            new() { Name = name, Title = title, IsExpanded = true }
+            new() { Text = name, Title = title, IsExpanded = true }
         };
 
         var componenet = RenderComponent<BitNavTest>(parameters =>
@@ -240,12 +240,12 @@ public class BitNavTests : BunitTestContext
 
     private List<BitNavItem> BasicNavLinks = new List<BitNavItem>()
     {
-        new BitNavItem { Name = "Activity", Url = "http://msn.com", Target = "_blank" },
-        new BitNavItem { Name = "MSN", Url = "http://msn.com", IsEnabled = false, Target = "_blank" },
-        new BitNavItem { Name = "Documents", Url = "http://example.com", Target = "_blank", IsExpanded = true },
-        new BitNavItem { Name = "Pages", Url = "http://msn.com", Target = "_parent" },
-        new BitNavItem { Name = "Notebook", Url = "http://msn.com", IsEnabled = false },
-        new BitNavItem { Name = "Communication and Media", Url = "http://msn.com", Target = "_top" },
-        new BitNavItem { Name = "News", Title = "News", Url = "http://msn.com", IconName = BitIconName.News, Target = "_self" },
+        new BitNavItem { Text = "Activity", Url = "http://msn.com", Target = "_blank" },
+        new BitNavItem { Text = "MSN", Url = "http://msn.com", IsEnabled = false, Target = "_blank" },
+        new BitNavItem { Text = "Documents", Url = "http://example.com", Target = "_blank", IsExpanded = true },
+        new BitNavItem { Text = "Pages", Url = "http://msn.com", Target = "_parent" },
+        new BitNavItem { Text = "Notebook", Url = "http://msn.com", IsEnabled = false },
+        new BitNavItem { Text = "Communication and Media", Url = "http://msn.com", Target = "_top" },
+        new BitNavItem { Text = "News", Title = "News", Url = "http://msn.com", IconName = BitIconName.News, Target = "_self" },
     };
 }

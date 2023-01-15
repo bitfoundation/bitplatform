@@ -6,11 +6,89 @@
                EnumParameters="enumParameters"
                ComponentSubParameters="componentSubParameters">
 
-    <ComponentExampleBox Title="Basic nav with sample links" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
+    <ComponentExampleBox Title="Basic" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
+            <div class="example-box">
+                <BitNav Items="BasicNavItems" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
 
-            <BitNav Items="BasicNavItems" />
+    <ComponentExampleBox Title="Grouped" ExampleId="example2">
+        <ExamplePreview>
+            <div class="example-box">
+                <BitNav Items="GroupedNavItems" RenderType="BitNavRenderType.Grouped" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
 
+    <ComponentExampleBox Title="Manual Mode" ExampleId="example3">
+        <ExamplePreview>
+            <div class="example-box">
+                <div>
+                    <BitLabel>Basic</BitLabel>
+                    <BitNav Items="ManualNavItems"
+                            DefaultSelectedItem="ManualNavItems[0].Items[0]"
+                            Mode="BitNavMode.Manual" />
+                </div>
+
+                <div class="margin-top">
+                    <BitLabel>Two-Way Bind</BitLabel>
+                    <BitNav @bind-SelectedItem="TwoWaySelectedItem"
+                            Items="ManualNavItems"
+                            DefaultSelectedItem="ManualNavItems[0].Items[0]"
+                            Mode="BitNavMode.Manual" />
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Custom Templates" ExampleId="example4">
+        <ExamplePreview>
+            <div class="example-box">
+                <div>
+                    <BitLabel>Header Template (in Grouped mode)</BitLabel>
+                    <BitNav Items="GroupedNavItems" RenderType="BitNavRenderType.Grouped">
+                        <HeaderTemplate Context="item">
+                            <div class="nav-custom-header">
+                                <BitIcon IconName="BitIconName.FavoriteStarFill" />
+                                <span>@item.Text</span>
+                            </div>
+                        </HeaderTemplate>
+                    </BitNav>
+                </div>
+
+                <div class="margin-top">
+                    <BitLabel>Item Template</BitLabel>
+                    <BitNav Items="BasicNavItems">
+                        <ItemTemplate Context="item">
+                            <a href="@item.Url" target="@item.Target" class="nav-custom-item @(item.IsEnabled is false ? "disabled-item" : "")">
+                                @if (item.IconName.HasValue)
+                                {
+                                    <BitIcon IconName="@item.IconName.Value" />
+                                }
+                                <span>@item.Text</span>
+                            </a>
+                        </ItemTemplate>
+                    </BitNav>
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Events" ExampleId="example5">
+        <ExamplePreview>
+            <div class="example-box">
+                <BitNav Items="ManualNavItems"
+                        DefaultSelectedItem="ManualNavItems[0].Items[0]"
+                        Mode="BitNavMode.Manual"
+                        OnItemClick="(item) => ClickedItem = item"
+                        OnItemExpand="(item) => { ExpandedItem = item; CollapsedItem = null; }"
+                        OnItemCollapse="(item) => { CollapsedItem = item; ExpandedItem = null; }" />
+                <span>Clicked Item: @ClickedItem?.Text</span>
+                <span>Expanded Item: @ExpandedItem?.Text</span>
+                <span>Collapsed Item: @(CollapsedItem?.Text)</span>
+            </div>
         </ExamplePreview>
     </ComponentExampleBox>
 

@@ -15,7 +15,7 @@
             @if (item is not null)
             {
                 <div class="nav-group">
-                    @if (item.Name.HasValue())
+                    @if (item.Text.HasValue())
                     {
 
                         <button @onclick="(() => HandleOnItemExpand(item))"
@@ -31,7 +31,7 @@
                             else
                             {
                                 <i class="bit-icon bit-icon--ChevronDown @(_itemsExpanded[item] ? "expand" : "")" aria-hidden="true"></i>
-                                @item.Name
+                                @item.Text
                             }
                         </button>
                     }
@@ -40,12 +40,12 @@
                     {
                         <div class="group-content">
                             <ul class="nav-items" role="list">
-                                @foreach (var childitem in item.Items)
-                                {
-                                    <CascadingValue Value="this" IsFixed="true">
-                                        <BitNavChild Item="childitem"></BitNavChild>
-                                    </CascadingValue>
-                                }
+                                <CascadingValue Value="this" IsFixed="true">
+                                    @foreach (var childitem in item.Items)
+                                    {
+                                        <_BitNavChild Item="childitem" />
+                                    }
+                                </CascadingValue>
                             </ul>
                         </div>
                     }
@@ -58,12 +58,12 @@
         <div class="nav-group">
             <div class="group-content">
                 <ul class="nav-items" role="list">
-                    @foreach (var childitem in Items)
-                    {
-                        <CascadingValue Value="this" IsFixed="true">
-                            <BitNavChild Item="childitem"></BitNavChild>
-                        </CascadingValue>
-                    }
+                    <CascadingValue Value="this" IsFixed="true">
+                        @foreach (var childitem in Items)
+                        {
+                            <_BitNavChild Item="childitem" />
+                        }
+                    </CascadingValue>
                 </ul>
             </div>
         </div>

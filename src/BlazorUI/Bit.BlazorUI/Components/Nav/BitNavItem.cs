@@ -12,7 +12,7 @@ public class BitNavItem
     /// <summary>
     /// Text to render for this link.
     /// </summary>
-    public string Name { get; set; } = string.Empty;
+    public string Text { get; set; } = string.Empty;
 
     /// <summary>
     /// Text for title tooltip.

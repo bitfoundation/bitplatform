@@ -99,22 +99,22 @@ public partial class PopularComponents
     {
         new BitNavItem
         {
-            Name = "Home",
+            Text = "Home",
             Url = "http://example.com",
             ExpandAriaLabel = "Expand Home section",
             CollapseAriaLabel = "Collapse Home section",
             IsExpanded = true,
             Items = new List<BitNavItem>
             {
-                new BitNavItem { Name = "Activity", Url = "http://msn.com", Target="_blank" },
-                new BitNavItem { Name = "MSN", Url = "http://msn.com", IsEnabled = false, Target = "_blank" }
+                new BitNavItem { Text = "Activity", Url = "http://msn.com", Target="_blank" },
+                new BitNavItem { Text = "MSN", Url = "http://msn.com", IsEnabled = false, Target = "_blank" }
             }
         },
-        new BitNavItem { Name = "Documents", Url = "http://example.com", Target = "_blank", IsExpanded = true },
-        new BitNavItem { Name = "Pages", Url = "http://msn.com", Target = "_parent" },
-        new BitNavItem { Name = "Notebook", Url = "http://msn.com", IsEnabled = false },
-        new BitNavItem { Name = "Communication and Media", Url = "http://msn.com", Target = "_top" },
-        new BitNavItem { Name = "News", Title = "News", Url = "http://msn.com", IconName = BitIconName.News, Target = "_self" },
+        new BitNavItem { Text = "Documents", Url = "http://example.com", Target = "_blank", IsExpanded = true },
+        new BitNavItem { Text = "Pages", Url = "http://msn.com", Target = "_parent" },
+        new BitNavItem { Text = "Notebook", Url = "http://msn.com", IsEnabled = false },
+        new BitNavItem { Text = "Communication and Media", Url = "http://msn.com", Target = "_top" },
+        new BitNavItem { Text = "News", Title = "News", Url = "http://msn.com", IconName = BitIconName.News, Target = "_self" },
     };
 
     private List<BitDropDownItem> GetDropdownItems()

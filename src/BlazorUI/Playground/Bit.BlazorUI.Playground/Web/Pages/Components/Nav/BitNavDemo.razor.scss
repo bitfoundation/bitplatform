@@ -1,12 +1,30 @@
-﻿::deep .bit-nav-wrapped-link {
-    a {
-        white-space: normal;
-        line-height: inherit
+﻿@import '../../../Styles/abstracts/_media-queries.scss';
+
+::deep {
+    .nav-custom-header {
+        color: green;
+    }
+
+    .nav-custom-item {
+        color: orange;
+        font-weight: 600;
+
+        &.disabled-item {
+            color: #ffa50066;
+        }
     }
 }
 
-::deep .grp h3 {
-    font-size: 20px;
-    font-weight: normal;
-    font-style: normal;
+.example-box {
+    display: flex;
+    flex-direction: column;
+    width: 350px;
+
+    @include sm {
+        width: 250px;
+    }
+
+    .margin-top {
+        margin-top: 20px;
+    }
 }
