@@ -15,6 +15,11 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <Watch Include="..\Shared\**\*.razor" />
+        <Watch Include="..\Shared\**\*.css" Exclude="node_modules\**\*;**\*.css.map;obj\**\*;bin\**\*" />
+    </ItemGroup>
+
+    <ItemGroup>
         <!--/-:msbuild-conditional:noEmit -->
         <!-- In the Blazor Web Assembly mode, the API project will host the web client app itself -->
         <Content Condition=" '$(BlazorMode)' != 'BlazorServer' " Remove="Pages\_Host.cshtml" />
