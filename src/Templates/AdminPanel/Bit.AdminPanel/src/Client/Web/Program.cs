@@ -1,5 +1,5 @@
 ﻿//-:cnd:noEmit
-using AdminPanel.Client.Shared.Shared;
+using AdminPanel.Client.Shared;
 #if BlazorServer
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;

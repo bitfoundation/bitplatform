@@ -1,4 +1,4 @@
-﻿namespace AdminPanel.Client.Shared.Components;
+﻿namespace AdminPanel.Client.Shared;
 
 public partial class LoadingComponent
 {

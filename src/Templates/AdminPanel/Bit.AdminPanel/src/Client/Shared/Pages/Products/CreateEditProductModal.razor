@@ -1,6 +1,7 @@
-﻿@inherits AppComponentBase;
+﻿@namespace AdminPanel.Client.Shared.Pages
+@inherits AppComponentBase
 
-<BitModal @bind-IsOpen="IsOpen">
+<BitModal @bind-IsOpen="_isOpen">
     <div class="main-container">
         <div class="header">
             <span class="title">
@@ -26,7 +27,7 @@ align-items: center">
 
             <div class="form-input-container">
                 <BitDropDown Label="@Localizer[(nameof(AppStrings.SelectCategory))]"
-                             Items="AllCategoryList"
+                             Items="_allCategoryList"
                              IsMultiSelect="false"
                              @bind-Value="SelectedCategoyId"
                              Placeholder="@Localizer[(nameof(AppStrings.SelectACategory))]" />
@@ -50,7 +51,7 @@ align-items: center">
             </div>
 
             <BitButton ButtonType="BitButtonType.Submit">
-                @if (IsSaveLoading)
+                @if (_isSaveLoading)
                 {
                     <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
                 }

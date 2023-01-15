@@ -1,4 +1,5 @@
-﻿@inherits AppComponentBase;
+﻿@namespace AdminPanel.Client.Shared.Pages
+@inherits AppComponentBase
 
 <div class="card">
     <div class="card-header">
@@ -6,7 +7,7 @@
         <div class="subtitle">@Localizer[nameof(AppStrings.ProductsCountPerCategoryChartText)]</div>
     </div>
     <div class="card-body">
-        @if (IsLoading)
+        @if (_isLoading)
         {
             <BitSpinner Size="BitSpinnerSize.Large"></BitSpinner>
         }

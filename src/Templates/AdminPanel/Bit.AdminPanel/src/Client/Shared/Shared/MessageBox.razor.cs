@@ -1,13 +1,19 @@
-﻿namespace AdminPanel.Client.Shared.Shared;
+﻿namespace AdminPanel.Client.Shared;
 
 public partial class MessageBox : IDisposable
 {
+    private bool _isOpen;
+    private bool _disposed;
+    private string _title = string.Empty;
+    private string _body = string.Empty;
+
     private static event Func<string, string, Task> OnShow = default!;
 
     public static async Task Show(string message, string title = "")
     {
-        if (OnShow is not null)
-            await OnShow.Invoke(message, title);
+        if (OnShow is null) return;
+
+        await OnShow.Invoke(message, title);
     }
 
     protected override void OnInitialized()
@@ -21,33 +27,34 @@ public partial class MessageBox : IDisposable
     {
         await InvokeAsync(() =>
         {
-            IsOpen = true;
-
-            Title = title;
-            Body = message;
-
-            StateHasChanged();
+            _isOpen = true;
+            _title = title;
+            _body = message;
         });
     }
 
-    // ========================================================================
-
-    private bool IsOpen { get; set; }
-    private string Title { get; set; } = string.Empty;
-    private string Body { get; set; } = string.Empty;
-
     private void OnCloseClick()
     {
-        IsOpen = false;
+        _isOpen = false;
     }
 
     private void OnOkClick()
     {
-        IsOpen = false;
+        _isOpen = false;
     }
 
     public void Dispose()
     {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_disposed || disposing is false) return;
+
         OnShow -= ShowMessageBox;
+
+        _disposed = true;
     }
 }

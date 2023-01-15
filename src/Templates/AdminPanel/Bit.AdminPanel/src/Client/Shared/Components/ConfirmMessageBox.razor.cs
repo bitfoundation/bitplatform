@@ -4,6 +4,11 @@ public partial class ConfirmMessageBox : IDisposable
 {
     private static event Func<string, string, Task<bool>> OnShow = default!;
 
+    private bool _isOpen;
+    private string? _title;
+    private string? _message;
+    private bool _disposed;
+
     public static async Task<bool> Show(string message, string title)
     {
         return await OnShow.Invoke(message, title);
@@ -13,7 +18,7 @@ public partial class ConfirmMessageBox : IDisposable
     {
         OnShow += ShowMessageBox;
 
-        await base.OnInitAsync();
+        await Task.CompletedTask;
     }
 
     private TaskCompletionSource<bool>? _tsc;
@@ -22,34 +27,38 @@ public partial class ConfirmMessageBox : IDisposable
     {
         _tsc = new TaskCompletionSource<bool>();
 
-        await InvokeAsync(async () =>
+        await InvokeAsync(() =>
         {
-            IsOpen = true;
-            await JsRuntime.SetToggleBodyOverflow(true);
-            Title = title;
-            Message = message;
-
-            StateHasChanged();
+            _isOpen = true;
+            
+            _ = JsRuntime.SetToggleBodyOverflow(true);
+            
+            _title = title;
+            _message = message;
         });
 
         return await _tsc.Task;
     }
 
-    // ========================================================================
-
-    private bool IsOpen { get; set; }
-    private string Title { get; set; } = string.Empty;
-    private string Message { get; set; } = string.Empty;
-
     public async Task Confirm(bool value)
     {
-        IsOpen = false;
+        _isOpen = false;
         await JsRuntime.SetToggleBodyOverflow(false);
         _tsc?.SetResult(value);
     }
 
     public void Dispose()
     {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_disposed || disposing is false) return;
+
         OnShow -= ShowMessageBox;
+
+        _disposed = true;
     }
 }

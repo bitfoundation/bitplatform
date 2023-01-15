@@ -4,55 +4,45 @@ namespace AdminPanel.Client.Shared.Pages;
 
 public partial class SignInPage
 {
-    public SignInRequestDto SignInModel { get; set; } = new();
-
-    public bool IsLoading { get; set; }
-
-    public BitMessageBarType SignInMessageType { get; set; }
-
-    public string? SignInMessage { get; set; }
+    public bool _isLoading;
+    public string? _signInMessage;
+    public BitMessageBarType _signInMessageType;
+    public SignInRequestDto _signInModel = new();
 
     [Parameter]
     [SupplyParameterFromQuery]
     public string? RedirectUrl { get; set; }
 
-    private bool IsSubmitButtonEnabled => IsLoading is false;
-
-    private async Task DoSignIn()
+    protected async override Task OnAfterFirstRenderAsync()
     {
-        if (IsLoading)
+        if (await AuthenticationStateProvider.IsUserAuthenticatedAsync())
         {
-            return;
+            NavigationManager.NavigateTo("/");
         }
 
-        IsLoading = true;
-        SignInMessage = null;
+        await base.OnAfterFirstRenderAsync();
+    }
+    private async Task DoSignIn()
+    {
+        if (_isLoading) return;
+
+        _isLoading = true;
+        _signInMessage = null;
 
         try
         {
-            await AuthenticationService.SignIn(SignInModel);
+            await AuthenticationService.SignIn(_signInModel);
 
             NavigationManager.NavigateTo(RedirectUrl ?? "/");
         }
         catch (KnownException e)
         {
-            SignInMessageType = BitMessageBarType.Error;
-
-            SignInMessage = e.Message;
+            _signInMessage = e.Message;
+            _signInMessageType = BitMessageBarType.Error;
         }
         finally
         {
-            IsLoading = false;
-        }
-    }
-
-    protected async override Task OnAfterFirstRenderAsync()
-    {
-        await base.OnAfterFirstRenderAsync();
-
-        if (await AuthenticationStateProvider.IsUserAuthenticated())
-        {
-            NavigationManager.NavigateTo("/");
+            _isLoading = false;
         }
     }
 }

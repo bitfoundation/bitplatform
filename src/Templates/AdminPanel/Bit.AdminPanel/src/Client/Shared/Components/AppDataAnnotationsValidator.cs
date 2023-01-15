@@ -5,44 +5,37 @@ namespace AdminPanel.Client.Shared.Components;
 
 public partial class AppDataAnnotationsValidator : AppComponentBase, IDisposable
 {
-    [CascadingParameter]
-    private EditContext EditContext { get; set; } = default!;
-
-    [AutoInject] private IServiceProvider _serviceProvider = default!;
-
-    [AutoInject] private IStringLocalizerFactory _stringLocalizerFactory = default!;
-
+    private bool _disposed;
+    private IStringLocalizer _localizer = default!;
+    private ValidationContext _validationContext = default!;
+    private Dictionary<string, string> _displayColumns = default!;
     private ValidationMessageStore _validationMessageStore = default!;
 
-    private ValidationContext _validationContext = default!;
+    [AutoInject] private IServiceProvider _serviceProvider = default!;
+    [AutoInject] private IStringLocalizerFactory _stringLocalizerFactory = default!;
 
-    private Dictionary<string, string> _displayColumns = new();
-
-    private IStringLocalizer _localizer = default!;
+    [CascadingParameter] private EditContext EditContext { get; set; } = default!;
 
     protected override async Task OnInitAsync()
     {
         if (EditContext is null)
             throw new InvalidOperationException("EditContext is required");
 
-        EditContext.OnValidationRequested += ValidationRequested;
         EditContext.OnFieldChanged += FieldChanged;
+        EditContext.OnValidationRequested += ValidationRequested;
 
         _validationMessageStore = new ValidationMessageStore(EditContext);
 
         _validationContext = new ValidationContext(EditContext.Model, serviceProvider: _serviceProvider, items: null);
 
-        _displayColumns = EditContext.Model
-            .GetType()
-            .GetProperties()
-            .ToDictionary(p => p.Name, p => p.GetCustomAttribute<DisplayAttribute>()?.Name ?? p.Name);
+        _displayColumns = EditContext.Model.GetType()
+                                           .GetProperties()
+                                           .ToDictionary(p => p.Name, p => p.GetCustomAttribute<DisplayAttribute>()?.Name ?? p.Name);
 
         _localizer = StringLocalizerProvider.ProvideLocalizer(EditContext.Model.GetType(), _stringLocalizerFactory);
-
-        base.OnInitialized();
     }
 
-    void ValidationRequested(object sender, ValidationRequestedEventArgs args)
+    private void ValidationRequested(object? sender, ValidationRequestedEventArgs args)
     {
         _validationMessageStore.Clear();
 
@@ -61,7 +54,7 @@ public partial class AppDataAnnotationsValidator : AppComponentBase, IDisposable
         }
     }
 
-    void FieldChanged(object sender, FieldChangedEventArgs args)
+    private void FieldChanged(object? sender, FieldChangedEventArgs args)
     {
         FieldIdentifier fieldIdentifier = args.FieldIdentifier;
 
@@ -85,10 +78,20 @@ public partial class AppDataAnnotationsValidator : AppComponentBase, IDisposable
 
     public void Dispose()
     {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_disposed || disposing is false) return;
+
         if (EditContext is not null)
         {
-            EditContext.OnValidationRequested -= ValidationRequested;
             EditContext.OnFieldChanged -= FieldChanged;
+            EditContext.OnValidationRequested -= ValidationRequested;
         }
+
+        _disposed = true;
     }
 }

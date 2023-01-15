@@ -1,19 +1,19 @@
 ﻿//-:cnd:noEmit
 using AdminPanel.Shared.Dtos.Categories;
 
-namespace AdminPanel.Client.Shared.Pages.Categories;
+namespace AdminPanel.Client.Shared.Pages;
 
 [Authorize]
 public partial class CategoriesPage
 {
-    public bool IsLoading { get; set; }
+    private bool _isLoading;
+    private string _categoryNameFilter = string.Empty;
 
-    BitDataGridPaginationState pagination = new() { ItemsPerPage = 10 };
-    BitDataGrid<CategoryDto>? dataGrid;
-    BitDataGridItemsProvider<CategoryDto>? categoriesProvider;
+    private BitDataGrid<CategoryDto>? _dataGrid;
+    private BitDataGridItemsProvider<CategoryDto> _categoriesProvider = default!;
+    private BitDataGridPaginationState _pagination = new() { ItemsPerPage = 10 };
 
-    string _categoryNameFilter = string.Empty;
-    string CategoryNameFilter
+    private string CategoryNameFilter
     {
         get => _categoryNameFilter;
         set
@@ -25,23 +25,23 @@ public partial class CategoriesPage
 
     protected override async Task OnInitAsync()
     {
-        await PrepareGridDataProvider();
+        PrepareGridDataProvider();
+
         await base.OnInitAsync();
     }
 
-    private async Task PrepareGridDataProvider()
+    private void PrepareGridDataProvider()
     {
-        categoriesProvider = async req =>
+        _categoriesProvider = async req =>
         {
+            _isLoading = true;
+
             try
             {
-                IsLoading = true;
-
                 // https://docs.microsoft.com/en-us/odata/concepts/queryoptions-overview
-
-                var query = new Dictionary<string, object>()
+                var query = new Dictionary<string, object?>()
                 {
-                    { "$top", req.Count.HasValue ? req.Count.Value : 10 },
+                    { "$top", req.Count ?? 10 },
                     { "$skip", req.StartIndex }
                 };
 
@@ -57,9 +57,9 @@ public partial class CategoriesPage
 
                 var url = NavigationManager.GetUriWithQueryParameters("Category/GetCategories", query);
 
-                var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultCategoryDto);
+                var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultCategoryDto) ?? new();
 
-                return BitDataGridItemsProviderResult.From(data!.Items, (int)data!.TotalCount);
+                return BitDataGridItemsProviderResult.From(data.Items, (int)data.TotalCount);
             }
             catch
             {
@@ -67,7 +67,8 @@ public partial class CategoriesPage
             }
             finally
             {
-                IsLoading = false;
+                _isLoading = false;
+
                 StateHasChanged();
             }
         };
@@ -75,7 +76,7 @@ public partial class CategoriesPage
 
     private async Task RefreshData()
     {
-        await dataGrid!.RefreshDataAsync();
+        await _dataGrid!.RefreshDataAsync();
     }
 
     private void CreateCategory()
@@ -83,18 +84,20 @@ public partial class CategoriesPage
         NavigationManager.NavigateTo("add-edit-category");
     }
 
-    private void EditCategory(CategoryDto Category)
+    private void EditCategory(CategoryDto category)
     {
-        NavigationManager.NavigateTo($"add-edit-category/{Category!.Id}");
+        NavigationManager.NavigateTo($"add-edit-category/{category.Id}");
     }
 
     private async Task DeleteCategory(CategoryDto category)
     {
-        var confirmed = await ConfirmMessageBox.Show(Localizer.GetString(nameof(AppStrings.AreYouSureWannaDeleteCategory), category.Name!), Localizer[nameof(AppStrings.DeleteCategory)]);
+        var confirmed = await ConfirmMessageBox.Show(Localizer.GetString(nameof(AppStrings.AreYouSureWannaDeleteCategory), category.Name ?? string.Empty), 
+                                                     Localizer[nameof(AppStrings.DeleteCategory)]);
 
         if (confirmed)
         {
             await HttpClient.DeleteAsync($"Category/Delete/{category.Id}");
+
             await RefreshData();
         }
     }

@@ -2,27 +2,27 @@
 
 public partial class AppComponentBase : ComponentBase
 {
-    [AutoInject] protected IExceptionHandler ExceptionHandler { get; set; } = default!;
-
-    [AutoInject] protected IStateService StateService = default!;
-
-    [AutoInject] protected AppAuthenticationStateProvider AuthenticationStateProvider = default!;
-
-    [AutoInject] protected IStringLocalizer<AppStrings> Localizer = default!;
+    [AutoInject] protected IJSRuntime JsRuntime = default!;
 
     [AutoInject] protected HttpClient HttpClient = default!;
 
-    [AutoInject] protected IAuthTokenProvider AuthTokenProvider = default!;
+    [AutoInject] protected IStateService StateService = default!;
 
     [AutoInject] protected IConfiguration Configuration = default!;
 
     [AutoInject] protected NavigationManager NavigationManager = default!;
 
+    [AutoInject] protected IAuthTokenProvider AuthTokenProvider = default!;
+
+    [AutoInject] protected IStringLocalizer<AppStrings> Localizer = default!;
+
     [AutoInject] protected IAuthenticationService AuthenticationService = default!;
 
-    [AutoInject] protected IJSRuntime JsRuntime = default!;
+    [AutoInject] protected IExceptionHandler ExceptionHandler { get; set; } = default!;
 
-    protected async sealed override Task OnInitializedAsync()
+    [AutoInject] protected AppAuthenticationStateProvider AuthenticationStateProvider = default!;
+
+    protected sealed override async Task OnInitializedAsync()
     {
         try
         {
@@ -35,7 +35,7 @@ public partial class AppComponentBase : ComponentBase
         }
     }
 
-    protected async sealed override Task OnParametersSetAsync()
+    protected sealed override async Task OnParametersSetAsync()
     {
         try
         {
@@ -56,21 +56,20 @@ public partial class AppComponentBase : ComponentBase
         return Task.CompletedTask;
     }
 
-    protected async override Task OnAfterRenderAsync(bool firstRender)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
-        {
-            try
-            {
-                await OnAfterFirstRenderAsync();
-            }
-            catch (Exception exp)
-            {
-                ExceptionHandler.Handle(exp);
-            }
-        }
-
         await base.OnAfterRenderAsync(firstRender);
+
+        if (firstRender is false) return;
+
+        try
+        {
+            await OnAfterFirstRenderAsync();
+        }
+        catch (Exception exp)
+        {
+            ExceptionHandler.Handle(exp);
+        }
     }
 
     protected sealed override void OnInitialized()

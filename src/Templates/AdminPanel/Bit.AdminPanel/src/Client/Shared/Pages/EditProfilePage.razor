@@ -1,19 +1,19 @@
 ﻿@page "/edit-profile"
-@inherits AppComponentBase;
+@inherits AppComponentBase
 
 <PageTitle>@Localizer[nameof(AppStrings.EditProfileTitle)]</PageTitle>
 
 <div class="page-container">
-    @if (string.IsNullOrEmpty(EditProfileMessage) is false)
+    @if (string.IsNullOrEmpty(_editProfileMessage) is false)
     {
-        <BitMessageBar MessageBarType="@EditProfileMessageType" OnDismiss="() => EditProfileMessage = null">@EditProfileMessage</BitMessageBar>
+        <BitMessageBar MessageBarType="@_editProfileMessageType" OnDismiss="() => _editProfileMessage = null">@_editProfileMessage</BitMessageBar>
     }
 
     <div class="page-header">
         <BitIconButton Class="back-btn" OnClick=@GoBack IconName="BitIconName.Back" Title="Back" />
         <h1 class="page-title">@Localizer[nameof(AppStrings.EditProfileTitle)]</h1>
     </div>
-    @if (IsLoadingData)
+    @if (_isLoadingData)
     {
         <div class="loading-container">
             <BitSpinner Size="BitSpinnerSize.Large"></BitSpinner>
@@ -22,55 +22,55 @@
     else
     {
         <div class="form-profile-container">
-            <BitPersona ImageUrl="@($"{ProfileImageUrl}&file={User.ProfileImageName}")"
-                    Size=@BitPersonaSize.Size72
-                    Text="@(string.IsNullOrWhiteSpace(User?.FullName) ? @User?.UserName : User?.FullName)"
-                    SecondaryText="@User?.UserName"
-                    Presence="BitPersonaPresenceStatus.Online" />
+            <BitPersona ImageUrl="@($"{_profileImageUrl}&file={_user.ProfileImageName}")"
+                        Size=@BitPersonaSize.Size72
+                        Text="@(string.IsNullOrWhiteSpace(_user?.FullName) ? _user?.UserName : _user?.FullName)"
+                        SecondaryText="@_user?.UserName"
+                        Presence="BitPersonaPresenceStatus.Online" />
         </div>
         <div class="form-input-container">
             <BitLabel>@Localizer[nameof(AppStrings.ProfileImage)]</BitLabel>
             <BitFileUpload Label="@Localizer[nameof(AppStrings.UploadNewProfileImage)]"
-                       Style="max-width: 100%"
-                       AllowedExtensions="@(new [] {".png", ".jpg", ".jpeg", ".webp", ".bpm", ".gif"})"
-                       AutoUploadEnabled="true"
-                       UploadUrl="@ProfileImageUploadUrl"
-                       OnUploadComplete="WrapHandled(LoadEditProfileData)"
-                       OnUploadFailed="() => ProfileImageError = Localizer[nameof(AppStrings.FileUploadFailed)]"
-                       @onfocus="() => ProfileImageError = null" />
-            <div class="form-input-error">@ProfileImageError</div>
+                           Style="max-width: 100%"
+                           AllowedExtensions="@(new [] {".png", ".jpg", ".jpeg", ".webp", ".bpm", ".gif"})"
+                           AutoUploadEnabled="true"
+                           UploadUrl="@_profileImageUploadUrl"
+                           OnUploadComplete="WrapHandled(LoadEditProfileData)"
+                           OnUploadFailed="() => _profileImageError = Localizer[nameof(AppStrings.FileUploadFailed)]"
+            @onfocus="() => _profileImageError = null" />
+            <div class="form-input-error">@_profileImageError</div>
         </div>
-        <EditForm Model="UserToEdit" OnSubmit="WrapHandled(Submit)">
+        <EditForm Model="_userToEdit" OnSubmit="WrapHandled(Submit)">
 
             <AppDataAnnotationsValidator />
 
             <div class="form-input-container">
                 <BitTextField Label="@Localizer[nameof(AppStrings.FullName)]"
-                          @bind-Value="UserToEdit.FullName"
-                          Placeholder="@Localizer[nameof(AppStrings.FullName)]" />
-                <ValidationMessage For="@(() => UserToEdit.FullName)" />
+                @bind-Value="_userToEdit.FullName"
+                              Placeholder="@Localizer[nameof(AppStrings.FullName)]" />
+                <ValidationMessage For="@(() => _userToEdit.FullName)" />
             </div>
             <div class="form-input-container">
                 <BitDatePicker Label="@Localizer[nameof(AppStrings.BirthDate)]"
-                           Class="edit-profile-dtp"
-                           @bind-Value="UserToEdit.BirthDate"
-                           Placeholder="@Localizer[nameof(AppStrings.SelectBirthDate)]" />
-                <ValidationMessage For="@(() => UserToEdit.BirthDate)" />
+                               Class="edit-profile-dtp"
+                @bind-Value="_userToEdit.BirthDate"
+                               Placeholder="@Localizer[nameof(AppStrings.SelectBirthDate)]" />
+                <ValidationMessage For="@(() => _userToEdit.BirthDate)" />
             </div>
             <div class="form-choice-container">
-                <BitRadioButtonGroup Label="@Localizer[nameof(AppStrings.Gender)]" @bind-Value="UserToEdit.GenderAsString">
+                <BitRadioButtonGroup Label="@Localizer[nameof(AppStrings.Gender)]" @bind-Value="_userToEdit.GenderAsString">
                     <BitRadioButtonOption Value="@Gender.Male.ToString()" Text="@Localizer[nameof(AppStrings.GenderMale)]" AriaLabel="@Localizer[nameof(AppStrings.GenderMale)]"></BitRadioButtonOption>
                     <BitRadioButtonOption Value="@Gender.Female.ToString()" Text="@Localizer[nameof(AppStrings.GenderFemale)]" AriaLabel="@Localizer[nameof(AppStrings.GenderFemale)]"></BitRadioButtonOption>
                     <BitRadioButtonOption Value="@Gender.Custom.ToString()" Text="@Localizer[nameof(AppStrings.GenderCustom)]" AriaLabel="@Localizer[nameof(AppStrings.GenderCustom)]"></BitRadioButtonOption>
                 </BitRadioButtonGroup>
-                <ValidationMessage For="@(() => UserToEdit.Gender)" />
+                <ValidationMessage For="@(() => _userToEdit.Gender)" />
             </div>
             <BitButton ButtonStyle="BitButtonStyle.Primary"
-                   AriaLabel="@Localizer[nameof(AppStrings.Save)]"
-                   Title="@Localizer[nameof(AppStrings.Save)]"
-                   IsEnabled="IsSubmitButtonEnabled"
-                   ButtonType="BitButtonType.Submit">
-                @if (IsLoadingData)
+                       AriaLabel="@Localizer[nameof(AppStrings.Save)]"
+                       Title="@Localizer[nameof(AppStrings.Save)]"
+                       IsEnabled="_isLoading is false"
+                       ButtonType="BitButtonType.Submit">
+                @if (_isLoadingData)
                 {
                     <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
                 }

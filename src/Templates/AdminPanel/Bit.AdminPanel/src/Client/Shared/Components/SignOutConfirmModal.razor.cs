@@ -11,7 +11,9 @@ public partial class SignOutConfirmModal
         set
         {
             if (value == isOpen) return;
+
             isOpen = value;
+
             _ = IsOpenChanged.InvokeAsync(value);
         }
     }
@@ -21,12 +23,14 @@ public partial class SignOutConfirmModal
     private async Task CloseModal()
     {
         IsOpen = false;
+
         await JsRuntime.SetToggleBodyOverflow(false);
     }
 
     private async Task SignOut()
     {
         await AuthenticationService.SignOut();
+
         await CloseModal();
     }
 }

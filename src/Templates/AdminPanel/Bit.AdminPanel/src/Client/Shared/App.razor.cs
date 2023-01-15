@@ -14,13 +14,16 @@ public partial class App
 
     [AutoInject] private IJSRuntime _jsRuntime = default!;
 
+#if BlazorHybrid && MultilingualEnabled
     private bool _cultureHasNotBeenSet = true;
+#endif
 
     private async Task OnNavigateAsync(NavigationContext args)
     {
         // Blazor Server & Pre Rendering use created cultures in UseRequestLocalization middleware
         // Android, windows and iOS have to set culture programmatically.
         // Browser is gets handled in Web project's Program.cs
+
 #if BlazorHybrid && MultilingualEnabled
         if (_cultureHasNotBeenSet)
         {
@@ -41,5 +44,7 @@ public partial class App
             }
         }
 #endif
+
+        await Task.CompletedTask;
     }
 }

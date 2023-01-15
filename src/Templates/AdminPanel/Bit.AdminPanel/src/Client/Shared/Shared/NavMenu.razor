@@ -1,4 +1,5 @@
-﻿@inherits AppComponentBase;
+﻿@namespace AdminPanel.Client.Shared
+@inherits AppComponentBase
 
 @if (IsMenuOpen)
 {
@@ -9,7 +10,7 @@
     <div class="menu-content">
         <div class="menu-top-row"></div>
         <BitNav Class="nav-menu"
-                NavLinkItems="NavLinks"
+                NavLinkItems="_navLinks"
                 AriaLabel="NavMenu"
                 SelectedKey="Home"
                 OnLinkClick=HandleLinkClick>

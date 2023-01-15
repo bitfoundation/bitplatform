@@ -1,12 +1,12 @@
-﻿@using AdminPanel.Shared.Dtos.Products
-
-@page "/products"
-@inherits AppComponentBase;
+﻿@page "/products"
+@using AdminPanel.Shared.Dtos.Products
+@namespace AdminPanel.Client.Shared.Pages
+@inherits AppComponentBase
 
 <PageTitle>@Localizer[nameof(AppStrings.ProductsPageTitle)]</PageTitle>
 
 <div class="page-container">
-    @if (IsLoading)
+    @if (_isLoading)
     {
         <div class="loading-contianer">
             <BitSpinner Size="BitSpinnerSize.Large"></BitSpinner>
@@ -17,25 +17,26 @@
         <BitButton OnClick="WrapHandled(CreateProduct)">@Localizer[nameof(AppStrings.AddProduct)]</BitButton>
     </div>
     <div class="grid">
-        <BitDataGrid ItemsProvider="@productsProvider" TGridItem="@ProductDto" ResizableColumns="true" Pagination="@pagination" @ref="dataGrid">
-            <BitDataGridPropertyColumn Title="@Localizer[nameof(AppStrings.Id)]" Property="@(c => c.Id)" Sortable="true" Align="BitDataGridAlign.Left" IsDefaultSort="BitDataGridSortDirection.Ascending" Class="id-col" />
-            <BitDataGridPropertyColumn Title="@Localizer[nameof(AppStrings.Name)]"  Property="@(c => c.Name)" Sortable="true" Class="column1">
+        <BitDataGrid @ref="_dataGrid" ItemsProvider="_productsProvider" TGridItem="ProductDto" ResizableColumns="true" Pagination="_pagination">
+            <BitDataGridPropertyColumn Title="@Localizer[nameof(AppStrings.Id)]" Property="p => p!.Id" Sortable="true" Class="id-col"
+                                       Align="BitDataGridAlign.Left" IsDefaultSort="BitDataGridSortDirection.Ascending" />
+            <BitDataGridPropertyColumn Title="@Localizer[nameof(AppStrings.Name)]"  Property="p => p!.Name" Sortable="true" Class="column1">
                 <ColumnOptions>
                     <BitSearchBox @bind-Value="ProductNameFilter"
                                   Placeholder="@Localizer[(nameof(AppStrings.SearchOnName))]"
                                   InputHtmlAttributes="@(new Dictionary<string, object> {{"autofocus", true}})" />
                 </ColumnOptions>
             </BitDataGridPropertyColumn>
-            <BitDataGridPropertyColumn Title="@Localizer[nameof(AppStrings.Category)]" Property="@(c => c.CategoryId)" Sortable="true" Align="BitDataGridAlign.Left" />
-            <BitDataGridPropertyColumn Title="@Localizer[nameof(AppStrings.Price)]" Property="@(c => c.Price)" Sortable="true" Align="BitDataGridAlign.Left" />
-            <BitDataGridTemplateColumn Title="@Localizer[(nameof(AppStrings.Action))]" Align="BitDataGridAlign.Center">
-                <BitIconButton Style="color:#605E5C;" IconName="BitIconName.Edit" OnClick=@(() => EditProduct(context)) Title="@Localizer[(nameof(AppStrings.Edit))]" />
-                <BitIconButton Style="color:#605E5C;" IconName="BitIconName.Delete" OnClick="WrapHandled(() => DeleteProduct(context))" Title="@Localizer[(nameof(AppStrings.Delete))]" />
+            <BitDataGridPropertyColumn Title="@Localizer[nameof(AppStrings.Category)]" Property="p => p!.CategoryId" Sortable="true" Align="BitDataGridAlign.Left" />
+            <BitDataGridPropertyColumn Title="@Localizer[nameof(AppStrings.Price)]" Property="p => p!.Price" Sortable="true" Align="BitDataGridAlign.Left" />
+            <BitDataGridTemplateColumn Title="@Localizer[(nameof(AppStrings.Action))]" Align="BitDataGridAlign.Center" Context="product">
+                <BitIconButton Style="color:#605E5C;" IconName="BitIconName.Edit" OnClick="() => EditProduct(product!)" Title="@Localizer[(nameof(AppStrings.Edit))]" />
+                <BitIconButton Style="color:#605E5C;" IconName="BitIconName.Delete" OnClick="WrapHandled(() => DeleteProduct(product!))" Title="@Localizer[(nameof(AppStrings.Delete))]" />
             </BitDataGridTemplateColumn>
         </BitDataGrid>
-        <BitDataGridPaginator Value="@pagination" />
+        <BitDataGridPaginator Value="_pagination" />
     </div>
 </div>
 
-<CreateEditProductModal @ref="modal" OnSave="@WrapHandled(() => RefreshData())"/>
+<CreateEditProductModal @ref="_modal" OnSave="WrapHandled(() => RefreshData())"/>
 <ConfirmMessageBox />

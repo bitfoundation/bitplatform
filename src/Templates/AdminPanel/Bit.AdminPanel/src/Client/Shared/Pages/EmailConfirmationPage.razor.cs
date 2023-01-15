@@ -2,6 +2,10 @@
 
 public partial class EmailConfirmationPage
 {
+    private bool _isLoading;
+    private string? _emailConfirmationMessage;
+    private BitMessageBarType _emailConfirmationMessageType;
+
     [Parameter]
     [SupplyParameterFromQuery]
     public string? Email { get; set; }
@@ -10,10 +14,6 @@ public partial class EmailConfirmationPage
     [SupplyParameterFromQuery(Name = "email-confirmed")]
     public bool EmailConfirmed { get; set; }
 
-    public bool IsLoading { get; set; }
-
-    public BitMessageBarType EmailConfirmationMessageType { get; set; }
-    public string? EmailConfirmationMessage { get; set; }
 
     private void RedirectToSignIn()
     {
@@ -22,34 +22,27 @@ public partial class EmailConfirmationPage
 
     private async Task ResendLink()
     {
-        if (IsLoading)
-        {
-            return;
-        }
+        if (_isLoading) return;
 
-        IsLoading = true;
-        EmailConfirmationMessage = null;
+        _isLoading = true;
+        _emailConfirmationMessage = null;
 
         try
         {
-            await HttpClient.PostAsJsonAsync("Auth/SendConfirmationEmail", new()
-            {
-                Email = Email
-            }, AppJsonContext.Default.SendConfirmationEmailRequestDto);
+            await HttpClient.PostAsJsonAsync("Auth/SendConfirmationEmail", new() { Email = Email }, AppJsonContext.Default.SendConfirmationEmailRequestDto);
 
-            EmailConfirmationMessageType = BitMessageBarType.Success;
+            _emailConfirmationMessageType = BitMessageBarType.Success;
 
-            EmailConfirmationMessage = Localizer[nameof(AppStrings.ResendConfirmationLinkMessage)];
+            _emailConfirmationMessage = Localizer[nameof(AppStrings.ResendConfirmationLinkMessage)];
         }
         catch (KnownException e)
         {
-            EmailConfirmationMessageType = BitMessageBarType.Error;
-
-            EmailConfirmationMessage = e.Message;
+            _emailConfirmationMessage = e.Message;
+            _emailConfirmationMessageType = BitMessageBarType.Error;
         }
         finally
         {
-            IsLoading = false;
+            _isLoading = false;
         }
     }
 }

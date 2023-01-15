@@ -1,6 +1,6 @@
 ﻿//-:cnd:noEmit
 
-namespace AdminPanel.Client.Shared.Components;
+namespace AdminPanel.Client.Shared;
 
 public partial class Footer
 {
@@ -21,9 +21,9 @@ public partial class Footer
     }
 #endif
 
-    string? SelectedCulture;
+    private string? SelectedCulture;
 
-    async Task OnCultureChanged()
+    private async Task OnCultureChanged()
     {
         var cultureCookie = $"c={SelectedCulture}|uic={SelectedCulture}";
 
@@ -36,10 +36,8 @@ public partial class Footer
         NavigationManager.ForceReload();
     }
 
-    List<BitDropDownItem> GetCultures()
+    private static List<BitDropDownItem> GetCultures()
     {
-        return CultureInfoManager.SupportedCultures
-            .Select(sc => new BitDropDownItem { Value = sc.code, Text = sc.name })
-            .ToList();
+        return CultureInfoManager.SupportedCultures.Select(sc => new BitDropDownItem { Value = sc.code, Text = sc.name }).ToList();
     }
 }
