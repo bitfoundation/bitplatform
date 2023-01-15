@@ -6,13 +6,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="~/" />
+    <meta charset="utf-8" />
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
-    <component type="typeof(HeadOutlet)" render-mode="ServerPrerendered" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.min.css" />
-    <link href="BlazorServer.Web.styles.css" rel="stylesheet" />
+    <link rel="stylesheet" href="BlazorServer.Web.styles.css" />
+    <component type="typeof(HeadOutlet)" render-mode="Server" />
     <style>
         html, body {
             margin: 0;
@@ -22,8 +22,7 @@
     </style>
 </head>
 <body>
-    <component type="typeof(App)" render-mode="ServerPrerendered" />
-
+    <component type="typeof(App)" render-mode="Server" />
     <script src="_framework/blazor.server.js"></script>
     <script src="_content/Bit.BlazorUI/scripts/bit.blazorui.min.js"></script>
 </body>
