@@ -35,7 +35,7 @@
                            AllowedExtensions="@(new [] {".png", ".jpg", ".jpeg", ".webp", ".bpm", ".gif"})"
                            AutoUploadEnabled="true"
                            UploadUrl="@_profileImageUploadUrl"
-                           OnUploadComplete="WrapHandled(LoadEditProfileData)"
+                           OnUploadComplete="WrapHandled(RefreshProfileData)"
                            OnUploadFailed="() => _profileImageError = Localizer[nameof(AppStrings.FileUploadFailed)]"
             @onfocus="() => _profileImageError = null" />
             <div class="form-input-error">@_profileImageError</div>

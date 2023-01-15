@@ -51,7 +51,7 @@ public partial class Header : IDisposable
 
         _isUserAuthenticated = await StateService.GetValue($"{nameof(Header)}-IsUserAuthenticated", AuthenticationStateProvider.IsUserAuthenticatedAsync);
 
-        var access_token = await StateService.GetValue($"{nameof(Header)}-access_token", () => AuthTokenProvider.GetAcccessToken());
+        var access_token = await StateService.GetValue($"{nameof(Header)}-access_token", AuthTokenProvider.GetAcccessTokenAsync);
         _profileImageUrlBase = $"{GetBaseUrl()}Attachment/GetProfileImage?access_token={access_token}&file=";
         _profileImageUrl = _profileImageUrlBase + _user.ProfileImageName;
     }

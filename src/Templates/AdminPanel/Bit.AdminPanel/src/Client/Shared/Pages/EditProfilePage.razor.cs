@@ -24,7 +24,7 @@ public partial class EditProfilePage
         {
             await LoadEditProfileData();
 
-            var access_token = await StateService.GetValue($"{nameof(EditProfilePage)}-access_token", () => AuthTokenProvider.GetAcccessToken());
+            var access_token = await StateService.GetValue($"{nameof(EditProfilePage)}-access_token", AuthTokenProvider.GetAcccessTokenAsync);
 
             _profileImageUploadUrl = $"{GetBaseUrl()}Attachment/UploadProfileImage?access_token={access_token}";
             _profileImageUrl = $"{GetBaseUrl()}Attachment/GetProfileImage?access_token={access_token}";
@@ -36,7 +36,7 @@ public partial class EditProfilePage
         }
     }
 
-    string GetBaseUrl()
+    private string GetBaseUrl()
     {
 #if BlazorWebAssembly
         return "/api/";
@@ -47,14 +47,29 @@ public partial class EditProfilePage
 
     private async Task LoadEditProfileData()
     {
-        _user = (await StateService.GetValue($"{nameof(EditProfilePage)}-{nameof(_user)}", async () =>
-            await HttpClient.GetFromJsonAsync("User/GetCurrentUser", AppJsonContext.Default.UserDto))) ?? new();
+        _user = await StateService.GetValue($"{nameof(EditProfilePage)}-{nameof(_user)}", GetCurrentUser) ?? new();
 
+        UpdateEditProfileData();
+    }
+
+    private async Task RefreshProfileData()
+    {
+        _user = await GetCurrentUser() ?? new();
+
+        UpdateEditProfileData();
+
+        PubSubService.Pub(PubSubMessages.PROFILE_UPDATED, _user);
+    }
+
+    private void UpdateEditProfileData()
+    {
         _userToEdit.ProfileImageName = _user.ProfileImageName;
         _userToEdit.FullName = _user.FullName;
         _userToEdit.BirthDate = _user.BirthDate;
         _userToEdit.Gender = _user.Gender;
     }
+
+    private Task<UserDto?> GetCurrentUser() => HttpClient.GetFromJsonAsync("User/GetCurrentUser", AppJsonContext.Default.UserDto);
 
     private async Task GoBack()
     {
