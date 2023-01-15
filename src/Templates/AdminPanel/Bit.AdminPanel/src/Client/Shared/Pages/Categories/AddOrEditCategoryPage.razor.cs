@@ -21,7 +21,7 @@ public partial class AddOrEditCategoryPage
 
     private async Task LoadCategory()
     {
-        if (Id == null) return;
+        if (Id is null) return;
 
         _isLoading = true;
 

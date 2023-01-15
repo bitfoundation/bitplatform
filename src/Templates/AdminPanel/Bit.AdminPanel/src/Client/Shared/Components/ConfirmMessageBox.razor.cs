@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Components.Forms;
-
-namespace AdminPanel.Client.Shared.Components;
+﻿namespace AdminPanel.Client.Shared.Components;
 
 public partial class ConfirmMessageBox : IDisposable
 {
@@ -19,6 +17,8 @@ public partial class ConfirmMessageBox : IDisposable
     protected override async Task OnInitAsync()
     {
         OnShow += ShowMessageBox;
+
+        await Task.CompletedTask;
     }
 
     private TaskCompletionSource<bool>? _tsc;
