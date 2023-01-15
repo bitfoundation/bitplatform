@@ -76,6 +76,8 @@ public partial class EditProfilePage
 
             await HttpClient.PutAsJsonAsync("User/Update", _user, AppJsonContext.Default.EditUserDto);
 
+            PubSubService.Pub(PubSubMessages.PROFILE_UPDATED, _user);
+
             _editProfileMessageType = BitMessageBarType.Success;
 
             _editProfileMessage = Localizer[nameof(AppStrings.ProfileUpdatedSuccessfullyMessage)];

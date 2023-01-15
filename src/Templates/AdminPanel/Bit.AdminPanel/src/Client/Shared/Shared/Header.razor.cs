@@ -15,11 +15,14 @@ public partial class Header : IDisposable
     private bool _disposed;
     private UserDto _user = default!;
     private string? _profileImageUrl;
+    private string? _profileImageUrlBase;
     private bool _isUserAuthenticated;
     private bool _isHeaderDrpDownOpen;
     private bool _isSignOutModalOpen;
     private string _currentUrl = string.Empty;
     private List<BitBreadcrumbItem> _currentBreadcrumbItems = default!;
+
+    private Action _unsubscribe = default!;
 
     [Parameter] public EventCallback OnToggleMenu { get; set; }
 
@@ -33,12 +36,22 @@ public partial class Header : IDisposable
 
         AuthenticationStateProvider.AuthenticationStateChanged += VerifyUserIsAuthenticatedOrNot;
 
+        //_unsubscribe = PubSubService.Sub(PubSubMessages.PROFILE_UPDATED, payload =>
+        //{
+        //    if (payload is null) return;
+
+        //    _user = (UserDto)payload;
+
+        //    _profileImageUrl = _profileImageUrlBase + _user.ProfileImageName;
+        //});
+
         _user = await StateService.GetValue($"{nameof(Header)}-User", async () => await HttpClient.GetFromJsonAsync("User/GetCurrentUser", AppJsonContext.Default.UserDto)) ?? new();
-        
+
         _isUserAuthenticated = await StateService.GetValue($"{nameof(Header)}-IsUserAuthenticated", AuthenticationStateProvider.IsUserAuthenticatedAsync);
 
         var access_token = await StateService.GetValue($"{nameof(Header)}-access_token", () => AuthTokenProvider.GetAcccessToken());
-        _profileImageUrl = $"{GetBaseUrl()}Attachment/GetProfileImage?access_token={access_token}&file={_user.ProfileImageName}";
+        _profileImageUrlBase = $"{GetBaseUrl()}Attachment/GetProfileImage?access_token={access_token}&file=";
+        _profileImageUrl = _profileImageUrlBase + _user.ProfileImageName;
     }
 
     private void SetBreadcrumbItems()
@@ -129,7 +142,7 @@ public partial class Header : IDisposable
             StateHasChanged();
         }
     }
-    
+
     private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
     {
         SetCurrentUrl();
@@ -195,6 +208,8 @@ public partial class Header : IDisposable
         if (_disposed || disposing is false) return;
 
         AuthenticationStateProvider.AuthenticationStateChanged -= VerifyUserIsAuthenticatedOrNot;
+
+        _unsubscribe?.Invoke();
 
         _disposed = true;
     }
