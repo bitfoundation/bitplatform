@@ -1,0 +1,24 @@
+﻿footer {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    border-top: 1px solid #E7EBF0;
+}
+
+.footer-section {
+    width: 100%;
+    max-width: 1200px;
+    padding: 3rem 1rem 5rem;
+}
+
+.copyright {
+    margin: 0;
+    color: #3E5060;
+    font-size: 1rem;
+    line-height: 1.5;
+    font-weight: 400;
+    letter-spacing: 0;
+}

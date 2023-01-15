@@ -1,0 +1,28 @@
+﻿@page "/"
+
+@code {
+    int counter;
+}
+
+<PageTitle>Home</PageTitle>
+
+<div class="page">
+    <div class="hero">
+        <div class="container">
+            <div class="content">
+                <h1 class="title">
+                    Hello World
+                </h1>
+                <div class="desc">
+                    Welcome to your new Bit Blazor Server app
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="counter">
+        <h1>Counter</h1>
+        <BitButton OnClick="() => counter = 0" ButtonStyle="BitButtonStyle.Standard">Reset</BitButton>
+        <BitButton OnClick="() => counter++">Increase [@counter]</BitButton>
+    </div>
+</div>
