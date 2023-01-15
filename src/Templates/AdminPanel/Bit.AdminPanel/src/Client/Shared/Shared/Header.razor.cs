@@ -13,7 +13,7 @@ public partial class Header : IDisposable
     private static List<BitBreadcrumbItem> _addCategoryBreadcrumbItems = default!;
 
     private bool _disposed;
-    private UserDto _user = default!;
+    private UserDto _user = new();
     private string? _profileImageUrl;
     private string? _profileImageUrlBase;
     private bool _isUserAuthenticated;
@@ -36,14 +36,16 @@ public partial class Header : IDisposable
 
         AuthenticationStateProvider.AuthenticationStateChanged += VerifyUserIsAuthenticatedOrNot;
 
-        //_unsubscribe = PubSubService.Sub(PubSubMessages.PROFILE_UPDATED, payload =>
-        //{
-        //    if (payload is null) return;
+        _unsubscribe = PubSubService.Sub(PubSubMessages.PROFILE_UPDATED, payload =>
+        {
+            if (payload is null) return;
 
-        //    _user = (UserDto)payload;
+            _user = (UserDto)payload;
 
-        //    _profileImageUrl = _profileImageUrlBase + _user.ProfileImageName;
-        //});
+            _profileImageUrl = _profileImageUrlBase + _user.ProfileImageName;
+
+            StateHasChanged();
+        });
 
         _user = await StateService.GetValue($"{nameof(Header)}-User", async () => await HttpClient.GetFromJsonAsync("User/GetCurrentUser", AppJsonContext.Default.UserDto)) ?? new();
 
