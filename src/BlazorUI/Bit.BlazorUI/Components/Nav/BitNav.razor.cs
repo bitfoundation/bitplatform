@@ -41,6 +41,11 @@ public partial class BitNav : IDisposable
     [Parameter] public EventCallback<BitNavItem> OnItemClick { get; set; }
 
     /// <summary>
+    /// Callback invoked when an item is selected.
+    /// </summary>
+    [Parameter] public EventCallback<BitNavItem> OnSelectItem { get; set; }
+
+    /// <summary>
     /// Callback invoked when a group header is clicked and Expanded or Collapse.
     /// </summary>
     [Parameter] public EventCallback<BitNavItem> OnItemToggle { get; set; }
@@ -151,8 +156,10 @@ public partial class BitNav : IDisposable
         else if(Mode == BitNavMode.Manual)
         {
             SelectedItem = item;
-            await OnItemClick.InvokeAsync(item);
+            await OnSelectItem.InvokeAsync(item);
         }
+
+        await OnItemClick.InvokeAsync(item);
     }
 
     internal async Task ToggleItem(BitNavItem item)

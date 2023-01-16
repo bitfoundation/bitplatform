@@ -104,6 +104,7 @@ public class BitNavTests : BunitTestContext
         var component = RenderComponent<BitNavTest>(parameters =>
         {
             parameters.Add(p => p.Items, navLinkItems);
+            parameters.Add(p => p.Mode, BitNavMode.Manual);
         });
 
         var button = component.Find("button");

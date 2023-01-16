@@ -35,26 +35,15 @@
                 <div class="margin-top">
                     <BitLabel>Two-Way Bind</BitLabel>
 
-                    <BitNav @bind-SelectedItem="TwoWaySelectedItem"
+                    <BitNav @bind-SelectedItem="SelectedItemNav"
                             Items="ManualNavItems"
-                            Mode="BitNavMode.Manual" />
+                            Mode="BitNavMode.Manual"
+                            OnSelectItem="(item) => SelectedItemText = DropDownItems.FirstOrDefault(i => i.Text == item.Text).Text" />
 
-                    <BitDropDown Label="Select Item"
-                                 Items="TwoWayDropDownItems"
-                                 Value="TwoWaySelectedItem.Text"
-                                 OnSelectItem="(item) => TwoWaySelectedItem = ManualNavItems.FirstOrDefault(i => i.Text == item.Value)" />
-
-                    @*<BitRadioButtonGroup Label="Pick one"
-                                         Value="@TwoWaySelectedItem.Text"
-                                         OnValueChange="(value) => TwoWaySelectedItem = ManualNavItems.FirstOrDefault(i => i.Text == value)">
-                        <BitRadioButtonOption Text="Activity" Value="Activity" />
-                        <BitRadioButtonOption Text="MSN" Value="MSN" />
-                        <BitRadioButtonOption Text="Documents" Value="Documents" />
-                        <BitRadioButtonOption Text="Pages" Value="Pages" />
-                        <BitRadioButtonOption Text="Notebook" Value="Notebook" />
-                        <BitRadioButtonOption Text="Communication and Media" Value="Communication and Media" />
-                        <BitRadioButtonOption Text="News" Value="News" />
-                    </BitRadioButtonGroup>*@
+                    <BitDropDown @bind-Value="SelectedItemText"
+                                 Label="Select Item"
+                                 Items="DropDownItems"
+                                 OnSelectItem="(item) => SelectedItemNav = Flatten(ManualNavItems).FirstOrDefault(i => i.Text == item.Value)" />
                 </div>
             </div>
         </ExamplePreview>

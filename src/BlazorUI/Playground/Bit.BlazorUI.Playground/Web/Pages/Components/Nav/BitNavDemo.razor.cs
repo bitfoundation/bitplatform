@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Bit.BlazorUI.Playground.Web.Models;
 using Bit.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
@@ -92,7 +93,7 @@ public partial class BitNavDemo
         new BitNavItem { Text = "News", IconName = BitIconName.News },
     };
 
-    private List<BitDropDownItem> TwoWayDropDownItems = new()
+    private static readonly List<BitDropDownItem> DropDownItems = new()
     {
         new BitDropDownItem
         {
@@ -130,7 +131,9 @@ public partial class BitNavDemo
             Value = "News",
         },
     };
-    private BitNavItem TwoWaySelectedItem = ManualNavItems[0].Items[0];
+    private static List<BitNavItem> Flatten(IList<BitNavItem> e) => e.SelectMany(c => Flatten(c.Items)).Concat(e).ToList();
+    private BitNavItem SelectedItemNav = ManualNavItems[0].Items[0];
+    private string SelectedItemText = ManualNavItems[0].Items[0].Text;
 
     private BitNavItem ClickedItem;
     private BitNavItem ToggledItem;
@@ -178,6 +181,12 @@ public partial class BitNavDemo
             Name = "OnItemClick",
             Type = "EventCallback<BitNavItem>",
             Description = "Callback invoked when an item is clicked.",
+        },
+        new ComponentParameter
+        {
+            Name = "OnSelectItem",
+            Type = "EventCallback<BitNavItem>",
+            Description = "Callback invoked when an item is selected.",
         },
         new ComponentParameter
         {
@@ -480,15 +489,15 @@ private static readonly List<BitNavItem> GroupedNavItems = new()
 <div class=""margin-top"">
     <BitLabel>Two-Way Bind</BitLabel>
 
-    <BitNav @bind-SelectedItem=""TwoWaySelectedItem""
+    <BitNav @bind-SelectedItem=""SelectedItemNav""
             Items=""ManualNavItems""
-            Mode=""BitNavMode.Manual"" />
+            Mode=""BitNavMode.Manual""
+            OnSelectItem=""(item) => SelectedItemText = DropDownItems.FirstOrDefault(i => i.Text == item.Text).Text"" />
 
-    <BitDropDown Label=""Select Item""
-                    Items=""TwoWayDropDownItems""
-                    Value=""TwoWaySelectedItem.Text""
-                    OnSelectItem=""(item) => TwoWaySelectedItem = ManualNavItems.FirstOrDefault(i => i.Text == item.Value)"" />
-
+    <BitDropDown @bind-Value=""SelectedItemText""
+                    Label=""Select Item""
+                    Items=""DropDownItems""
+                    OnSelectItem=""(item) => SelectedItemNav = Flatten(ManualNavItems).FirstOrDefault(i => i.Text == item.Value)"" />
 </div>
 ";
 
@@ -514,7 +523,7 @@ private static readonly List<BitNavItem> ManualNavItems = new()
     new BitNavItem { Text = ""News"", IconName = BitIconName.News },
 };
 
-private List<BitDropDownItem> TwoWayDropDownItems = new()
+private static readonly List<BitDropDownItem> DropDownItems = new()
 {
     new BitDropDownItem
     {
@@ -552,8 +561,9 @@ private List<BitDropDownItem> TwoWayDropDownItems = new()
         Value = ""News"",
     },
 };
-
-private BitNavItem TwoWaySelectedItem = ManualNavItems[0].Items[0];
+private static List<BitNavItem> Flatten(IList<BitNavItem> e) => e.SelectMany(c => Flatten(c.Items)).Concat(e).ToList();
+private BitNavItem SelectedItemNav = ManualNavItems[0].Items[0];
+private string SelectedItemText = ManualNavItems[0].Items[0].Text;
 ";
 
     #endregion
