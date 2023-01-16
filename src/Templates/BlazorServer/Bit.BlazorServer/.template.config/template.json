@@ -34,7 +34,7 @@
         {
             "modifiers": [
                 {
-                    "copyOnly": [ "src/global.json", "**.Web/Pages/Index.razor", "**/*.ico", "**/*.png" ],
+                    "copyOnly": [ "src/global.json", "**/*.ico", "**/*.png" ],
                     "exclude": [
                         ".vs/**",
                         "**/[Bb]in/**",
