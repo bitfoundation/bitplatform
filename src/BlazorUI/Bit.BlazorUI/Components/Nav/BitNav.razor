@@ -12,45 +12,42 @@
     {
         @foreach (var item in Items)
         {
-            @if (item is not null)
-            {
-                <div class="nav-group">
-                    @if (item.Text.HasValue())
-                    {
+            <div class="nav-group">
+                @if (item.Text.HasValue())
+                {
 
-                        <button @onclick="(() => HandleOnItemExpand(item))"
-                                class="chevron-btn group-chevron-btn"
-                                tabindex="0"
-                                type="button"
-                                aria-label="@(_itemsExpanded[item] ? item.CollapseAriaLabel : item.ExpandAriaLabel)"
-                                aria-expanded="@(_itemsExpanded[item])">
-                            @if (HeaderTemplate is not null)
-                            {
-                                @HeaderTemplate(item)
-                            }
-                            else
-                            {
-                                <i class="bit-icon bit-icon--ChevronDown @(_itemsExpanded[item] ? "expand" : "")" aria-hidden="true"></i>
-                                @item.Text
-                            }
-                        </button>
-                    }
+                    <button @onclick="(() => ToggleItem(item))"
+                            class="chevron-btn group-chevron-btn"
+                            tabindex="0"
+                            type="button"
+                            aria-label="@(item.IsExpanded ? item.CollapseAriaLabel : item.ExpandAriaLabel)"
+                            aria-expanded="@(item.IsExpanded)">
+                        @if (HeaderTemplate is not null)
+                        {
+                            @HeaderTemplate(item)
+                        }
+                        else
+                        {
+                            <i class="bit-icon bit-icon--ChevronDown @(item.IsExpanded ? "expand" : "")" aria-hidden="true"></i>
+                            @item.Text
+                        }
+                    </button>
+                }
 
-                    @if ((item.Items?.Any() ?? false) && _itemsExpanded[item])
-                    {
-                        <div class="group-content">
-                            <ul class="nav-items" role="list">
-                                <CascadingValue Value="this" IsFixed="true">
-                                    @foreach (var childitem in item.Items)
-                                    {
-                                        <_BitNavChild Item="childitem" />
-                                    }
-                                </CascadingValue>
-                            </ul>
-                        </div>
-                    }
-                </div>
-            }
+                @if ((item.Items?.Any() ?? false) && item.IsExpanded)
+                {
+                    <div class="group-content">
+                        <ul class="nav-items" role="list">
+                            <CascadingValue Value="this" IsFixed="true">
+                                @foreach (var childitem in item.Items)
+                                {
+                                    <_BitNavChild Item="childitem" Depth="0" />
+                                }
+                            </CascadingValue>
+                        </ul>
+                    </div>
+                }
+            </div>
         }
     }
     else
@@ -61,7 +58,7 @@
                     <CascadingValue Value="this" IsFixed="true">
                         @foreach (var childitem in Items)
                         {
-                            <_BitNavChild Item="childitem" />
+                            <_BitNavChild Item="childitem" Depth="0" />
                         }
                     </CascadingValue>
                 </ul>

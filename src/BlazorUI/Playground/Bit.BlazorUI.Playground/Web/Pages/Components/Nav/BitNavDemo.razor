@@ -3,8 +3,8 @@
 <ComponentDemo ComponentName="Nav"
                ComponentDescription="A navigation pane (Nav) provides links to the main areas of an app or site."
                ComponentParameters="componentParameters"
-               EnumParameters="enumParameters"
-               ComponentSubParameters="componentSubParameters">
+               ComponentSubParameters="componentSubParameters"
+               EnumParameters="enumParameters">
 
     <ComponentExampleBox Title="Basic" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
@@ -14,7 +14,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Grouped" ExampleId="example2">
+    <ComponentExampleBox Title="Grouped" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example2">
         <ExamplePreview>
             <div class="example-box">
                 <BitNav Items="GroupedNavItems" RenderType="BitNavRenderType.Grouped" />
@@ -22,7 +22,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Manual Mode" ExampleId="example3">
+    <ComponentExampleBox Title="Manual Mode" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example3">
         <ExamplePreview>
             <div class="example-box">
                 <div>
@@ -34,16 +34,33 @@
 
                 <div class="margin-top">
                     <BitLabel>Two-Way Bind</BitLabel>
+
                     <BitNav @bind-SelectedItem="TwoWaySelectedItem"
                             Items="ManualNavItems"
-                            DefaultSelectedItem="ManualNavItems[0].Items[0]"
                             Mode="BitNavMode.Manual" />
+
+                    <BitDropDown Label="Select Item"
+                                 Items="TwoWayDropDownItems"
+                                 Value="TwoWaySelectedItem.Text"
+                                 OnSelectItem="(item) => TwoWaySelectedItem = ManualNavItems.FirstOrDefault(i => i.Text == item.Value)" />
+
+                    @*<BitRadioButtonGroup Label="Pick one"
+                                         Value="@TwoWaySelectedItem.Text"
+                                         OnValueChange="(value) => TwoWaySelectedItem = ManualNavItems.FirstOrDefault(i => i.Text == value)">
+                        <BitRadioButtonOption Text="Activity" Value="Activity" />
+                        <BitRadioButtonOption Text="MSN" Value="MSN" />
+                        <BitRadioButtonOption Text="Documents" Value="Documents" />
+                        <BitRadioButtonOption Text="Pages" Value="Pages" />
+                        <BitRadioButtonOption Text="Notebook" Value="Notebook" />
+                        <BitRadioButtonOption Text="Communication and Media" Value="Communication and Media" />
+                        <BitRadioButtonOption Text="News" Value="News" />
+                    </BitRadioButtonGroup>*@
                 </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Custom Templates" ExampleId="example4">
+    <ComponentExampleBox Title="Custom Templates" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
         <ExamplePreview>
             <div class="example-box">
                 <div>
@@ -76,20 +93,18 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Events" ExampleId="example5">
+    <ComponentExampleBox Title="Events" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
         <ExamplePreview>
             <div class="example-box">
                 <BitNav Items="ManualNavItems"
                         DefaultSelectedItem="ManualNavItems[0].Items[0]"
                         Mode="BitNavMode.Manual"
                         OnItemClick="(item) => ClickedItem = item"
-                        OnItemExpand="(item) => { ExpandedItem = item; CollapsedItem = null; }"
-                        OnItemCollapse="(item) => { CollapsedItem = item; ExpandedItem = null; }" />
+                        OnItemToggle="(item) => ToggledItem = item" />
                 <span>Clicked Item: @ClickedItem?.Text</span>
-                <span>Expanded Item: @ExpandedItem?.Text</span>
-                <span>Collapsed Item: @(CollapsedItem?.Text)</span>
+                <span>Toggled Item: @ToggledItem?.Text</span>
+                <span>IsExpanded Value: @ToggledItem?.IsExpanded</span>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
-
 </ComponentDemo>

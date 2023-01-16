@@ -1,5 +1,4 @@
-﻿using System.Text.RegularExpressions;
-using Microsoft.AspNetCore.Components.Routing;
+﻿using Microsoft.AspNetCore.Components.Routing;
 
 namespace Bit.BlazorUI;
 
@@ -8,12 +7,10 @@ public partial class BitNav : IDisposable
     private bool SelectedItemHasBeenSet;
     private BitNavItem? selectedItem;
 
-    internal IDictionary<BitNavItem, bool> _itemsExpanded = new Dictionary<BitNavItem, bool>();
-
     [Inject] private NavigationManager _navigationManager { get; set; } = default!;
 
     /// <summary>
-    /// 
+    /// The initially selected item in manual mode.
     /// </summary>
     [Parameter] public BitNavItem? DefaultSelectedItem { get; set; }
 
@@ -28,15 +25,15 @@ public partial class BitNav : IDisposable
     [Parameter] public RenderFragment<BitNavItem>? ItemTemplate { get; set; }
 
     /// <summary>
-    /// Determines how the navigation will be handled.
-    /// The default value is Automatic
-    /// </summary>
-    [Parameter] public BitNavMode Mode { get; set; } = BitNavMode.Automatic;
-
-    /// <summary>
     /// A collection of link items to display in the navigation bar.
     /// </summary>
     [Parameter] public IList<BitNavItem> Items { get; set; } = new List<BitNavItem>();
+
+    /// <summary>
+    /// Determines how the navigation will be handled.
+    /// The default value is Automatic.
+    /// </summary>
+    [Parameter] public BitNavMode Mode { get; set; } = BitNavMode.Automatic;
 
     /// <summary>
     /// Callback invoked when an item is clicked.
@@ -44,14 +41,9 @@ public partial class BitNav : IDisposable
     [Parameter] public EventCallback<BitNavItem> OnItemClick { get; set; }
 
     /// <summary>
-    /// Callback invoked when a group header is clicked and Expanded.
+    /// Callback invoked when a group header is clicked and Expanded or Collapse.
     /// </summary>
-    [Parameter] public EventCallback<BitNavItem> OnItemExpand { get; set; }
-
-    /// <summary>
-    /// Callback invoked when a group header is clicked and Collapse.
-    /// </summary>
-    [Parameter] public EventCallback<BitNavItem> OnItemCollapse { get; set; }
+    [Parameter] public EventCallback<BitNavItem> OnItemToggle { get; set; }
 
     /// <summary>
     /// The way to render nav links.
@@ -59,7 +51,7 @@ public partial class BitNav : IDisposable
     [Parameter] public BitNavRenderType RenderType { get; set; } = BitNavRenderType.Normal;
 
     /// <summary>
-    /// 
+    /// Selected item to show in Nav.
     /// </summary>
     [Parameter] 
     public BitNavItem? SelectedItem 
@@ -80,59 +72,71 @@ public partial class BitNav : IDisposable
     {
         if (Mode == BitNavMode.Automatic)
         {
+            SetSelectedItemByCurrentUrl();
+            SetParentsExpandedBySelectedItem(Items);
             _navigationManager.LocationChanged += OnLocationChanged;
         }
-
-        if (DefaultSelectedItem is not null)
+        else
         {
-            SelectedItem = DefaultSelectedItem;
+            if (DefaultSelectedItem is not null && SelectedItemHasBeenSet is false)
+            {
+                SelectedItem = DefaultSelectedItem;
+                SetParentsExpandedBySelectedItem(Items);
+            }
         }
-
-        foreach (var item in Items)
-        {
-            SetItemsExpanded(item);
-        };
-
-        //var flatNavLinkItems = Flatten(Items).ToList();
-        //var currrentUrl = _navigationManager.Uri.Replace(_navigationManager.BaseUri, "/", StringComparison.Ordinal);
-        //SelectedItem = flatNavLinkItems.FirstOrDefault(item => item.Url == currrentUrl);
 
         await base.OnInitializedAsync();
     }
 
-    private void SetItemsExpanded(BitNavItem item)
-    {
-        var isExpanded = item.Items.Any(ci => ci == SelectedItem) || item.IsExpanded;
-
-        _itemsExpanded.Add(item, isExpanded);
-
-        if (item.Items.Any())
-        {
-            foreach (var childItem in item.Items)
-            {
-                SetItemsExpanded(childItem);
-            }
-        }
-    }
-
-    private static IEnumerable<BitNavItem> Flatten(IEnumerable<BitNavItem> e) => e.SelectMany(c => Flatten(c.Items)).Concat(e);
+    private static List<BitNavItem> Flatten(IList<BitNavItem> e) => e.SelectMany(c => Flatten(c.Items)).Concat(e).ToList();
 
     private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
     {
-        if (Mode == BitNavMode.Manual) return;
+        SetSelectedItemByCurrentUrl();
+        SetParentsExpandedBySelectedItem(Items);
 
-        var currentPage = _navigationManager.Uri.Replace(_navigationManager.BaseUri, "/", StringComparison.Ordinal);
-
-        var currentItem = Flatten(Items).ToList().FirstOrDefault(CreateComparer(currentPage));
-
-        if (currentItem is null) return;
-
-        SelectedItem = currentItem;
         StateHasChanged();
+    }
 
-        Func<BitNavItem, bool> CreateComparer(string currentPage)
+    private void SetSelectedItemByCurrentUrl()
+    {
+        var currrentUrl = _navigationManager.Uri.Replace(_navigationManager.BaseUri, "/", StringComparison.Ordinal);
+        var shouldBeSelectedItem = Flatten(Items).FirstOrDefault(item => item.Url == currrentUrl);
+
+        if (shouldBeSelectedItem is not null)
         {
-            return item => (item.Url ?? "").ToLower(Thread.CurrentThread.CurrentCulture) == currentPage.ToLower(Thread.CurrentThread.CurrentCulture);
+            SelectedItem = shouldBeSelectedItem;
+        }
+    }
+
+    private void SetParentsExpandedBySelectedItem(IList<BitNavItem> items)
+    {
+        if (SelectedItem is null) return;
+
+        List<BitNavItem> shouldBeExpandedParents = new();
+        SetParentsExpanded(items);
+
+        foreach (var item in shouldBeExpandedParents)
+        {
+            item.IsExpanded = true;
+        }
+
+        void SetParentsExpanded(IList<BitNavItem> items)
+        {
+            foreach (var item in items)
+            {
+                shouldBeExpandedParents.Add(item);
+
+                if (item.Items.Any())
+                {
+                    foreach (var childItem in item.Items)
+                    {
+                        if (childItem == SelectedItem) return;
+
+                        SetParentsExpanded(item.Items);
+                    }
+                }
+            }
         }
     }
 
@@ -140,34 +144,24 @@ public partial class BitNav : IDisposable
     {
         if (item.IsEnabled == false) return;
 
-        if (Mode == BitNavMode.Manual && item.Items.Any() is false)
+        if (item.Items.Any() && item.Url.HasNoValue())
+        {
+            await ToggleItem(item);
+        }
+        else if(Mode == BitNavMode.Manual)
         {
             SelectedItem = item;
+            await OnItemClick.InvokeAsync(item);
         }
-        else if (item.Url.HasNoValue())
-        {
-            await HandleOnItemExpand(item);
-        }
-
-        await OnItemClick.InvokeAsync(item);
     }
 
-    internal async Task HandleOnItemExpand(BitNavItem navLinkItem)
+    internal async Task ToggleItem(BitNavItem item)
     {
-        if (navLinkItem.IsEnabled is false || navLinkItem.Items.Any() is false) return;
+        if (item.IsEnabled is false || item.Items.Any() is false) return;
 
-        var oldIsExpanded = _itemsExpanded[navLinkItem];
-        _itemsExpanded.Remove(navLinkItem);
-        _itemsExpanded.Add(navLinkItem, !oldIsExpanded);
+        item.IsExpanded = !item.IsExpanded;
 
-        if (oldIsExpanded)
-        {
-            await OnItemCollapse.InvokeAsync(navLinkItem);
-        }
-        else
-        {
-            await OnItemExpand.InvokeAsync(navLinkItem);
-        }
+        await OnItemToggle.InvokeAsync(item);
     }
 
     public void Dispose()

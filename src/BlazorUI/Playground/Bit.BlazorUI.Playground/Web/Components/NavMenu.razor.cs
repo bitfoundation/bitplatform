@@ -22,30 +22,30 @@ public partial class NavMenu
             Text = "Basic Inputs",
             Items = new List<BitNavItem>
             {
-                new BitNavItem { Text= "Button", Url = "/components/button"},
-                new BitNavItem { Text= "ActionButton", Url = "/components/action-button"},
-                new BitNavItem { Text= "CompoundButton", Url = "/components/compound-button"},
-                new BitNavItem { Text= "IconButton", Url = "/components/icon-button"},
-                new BitNavItem { Text= "LoadingButton", Url = "/components/loading-button"},
-                new BitNavItem { Text= "ToggleButton", Url = "/components/toggle-button" },
-                new BitNavItem { Text= "MenuButton", Url = "/components/menu-button" },
-                new BitNavItem { Text= "SplitButton", Url = "/components/split-button" },
-                new BitNavItem { Text= "CheckBox", Url = "/components/check-box" },
-                new BitNavItem { Text= "ChoiceGroup", Url = "/components/choice-group" },
-                new BitNavItem { Text= "RadioButtonGroup", Url = "/components/radio-button-group" },
-                new BitNavItem { Text = "RadioButtonList", Url="/components/radio-button-list" },
-                new BitNavItem { Text= "DropDown", Url = "/components/drop-down" },
-                new BitNavItem { Text= "FileUpload", Url = "/components/file-upload"},
-                new BitNavItem { Text= "Label",  Url = "/components/label" },
-                new BitNavItem { Text= "Link", Url = "/components/link" },
-                new BitNavItem { Text= "Rating", Url = "/components/rating" },
-                new BitNavItem { Text= "SearchBox", Url = "/components/search-box" },
-                new BitNavItem { Text= "Slider", Url = "/components/slider" },
-                new BitNavItem { Text= "SpinButton", Url = "/components/spin-button"},
-                new BitNavItem { Text= "TextField", Url = "/components/text-field" },
-                new BitNavItem { Text= "NumericTextField", Url = "/components/numeric-text-field" },
-                new BitNavItem { Text= "OtpInput", Url = "/components/otp-input" },
-                new BitNavItem { Text= "Toggle (Switch)", Url = "/components/toggle" }
+                new BitNavItem { Text = "Button", Url = "/components/button"},
+                new BitNavItem { Text = "ActionButton", Url = "/components/action-button"},
+                new BitNavItem { Text = "CompoundButton", Url = "/components/compound-button"},
+                new BitNavItem { Text = "IconButton", Url = "/components/icon-button"},
+                new BitNavItem { Text = "LoadingButton", Url = "/components/loading-button"},
+                new BitNavItem { Text = "ToggleButton", Url = "/components/toggle-button" },
+                new BitNavItem { Text = "MenuButton", Url = "/components/menu-button" },
+                new BitNavItem { Text = "SplitButton", Url = "/components/split-button" },
+                new BitNavItem { Text = "CheckBox", Url = "/components/check-box" },
+                new BitNavItem { Text = "ChoiceGroup", Url = "/components/choice-group" },
+                new BitNavItem { Text = "RadioButtonGroup", Url = "/components/radio-button-group" },
+                new BitNavItem { Text = "RadioButtonList", Url = "/components/radio-button-list" },
+                new BitNavItem { Text = "DropDown", Url = "/components/drop-down" },
+                new BitNavItem { Text = "FileUpload", Url = "/components/file-upload"},
+                new BitNavItem { Text = "Label",  Url = "/components/label" },
+                new BitNavItem { Text = "Link", Url = "/components/link" },
+                new BitNavItem { Text = "Rating", Url = "/components/rating" },
+                new BitNavItem { Text = "SearchBox", Url = "/components/search-box" },
+                new BitNavItem { Text = "Slider", Url = "/components/slider" },
+                new BitNavItem { Text = "SpinButton", Url = "/components/spin-button"},
+                new BitNavItem { Text = "TextField", Url = "/components/text-field" },
+                new BitNavItem { Text = "NumericTextField", Url = "/components/numeric-text-field" },
+                new BitNavItem { Text = "OtpInput", Url = "/components/otp-input" },
+                new BitNavItem { Text = "Toggle (Switch)", Url = "/components/toggle" }
             }
         },
         new BitNavItem
@@ -53,10 +53,10 @@ public partial class NavMenu
             Text = "Galleries & Pickers",
             Items = new List<BitNavItem>
             {
-                new BitNavItem { Text= "ColorPicker", Url = "/components/color-picker" },
-                new BitNavItem { Text = "DatePicker", Url="/components/date-picker" },
-                new BitNavItem { Text = "DateRangePicker", Url="/components/date-range-picker" },
-                new BitNavItem { Text = "Chart", Url="/components/chart" }
+                new BitNavItem { Text = "ColorPicker", Url = "/components/color-picker" },
+                new BitNavItem { Text = "DatePicker", Url = "/components/date-picker" },
+                new BitNavItem { Text = "DateRangePicker", Url = "/components/date-range-picker" },
+                new BitNavItem { Text = "Chart", Url = "/components/chart" }
             }
         },
         new BitNavItem
@@ -64,11 +64,11 @@ public partial class NavMenu
             Text = "Items & Lists",
             Items = new List<BitNavItem>
             {
-                new BitNavItem { Text = "BasicList", Url="/components/basic-list" },
-                new BitNavItem { Text = "DataGrid", Url="/components/data-grid" },
-                new BitNavItem { Text= "Carousel", Url = "/components/carousel" },
-                new BitNavItem { Text= "Swiper", Url = "/components/swiper" },
-                new BitNavItem { Text = "Persona (AvatarView)", Url="/components/persona" }
+                new BitNavItem { Text = "BasicList", Url ="/components/basic-list" },
+                new BitNavItem { Text = "DataGrid", Url ="/components/data-grid" },
+                new BitNavItem { Text = "Carousel", Url = "/components/carousel" },
+                new BitNavItem { Text = "Swiper", Url = "/components/swiper" },
+                new BitNavItem { Text = "Persona (AvatarView)", Url = "/components/persona" }
             }
         },
         new BitNavItem
@@ -88,7 +88,7 @@ public partial class NavMenu
             Text = "Notification & Engagement",
             Items = new List<BitNavItem>
             {
-                new BitNavItem { Text = "MessageBar", Url="/components/message-bar" }
+                new BitNavItem { Text = "MessageBar", Url = "/components/message-bar" }
             }
         },
         new BitNavItem

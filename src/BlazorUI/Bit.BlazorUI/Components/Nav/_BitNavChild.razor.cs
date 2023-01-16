@@ -6,8 +6,6 @@ namespace Bit.BlazorUI.Components.Nav;
 public partial class _BitNavChild
 #pragma warning restore CA1707 // Identifiers should not contain underscores
 {
-    private int _depth;
-
     private IDictionary<BitNavItemAriaCurrent, string> _ariaCurrentMap = new Dictionary<BitNavItemAriaCurrent, string>()
     {
         [BitNavItemAriaCurrent.Page] = "page",
@@ -18,7 +16,9 @@ public partial class _BitNavChild
         [BitNavItemAriaCurrent.True] = "true"
     };
 
-    [CascadingParameter] protected BitNav ParentBitNav { get; set; } = default!;
+    [CascadingParameter] protected BitNav Parent { get; set; } = default!;
+
+    [Parameter] public int Depth { get; set; }
 
     [Parameter] public BitNavItem Item { get; set; } = default!;
 
@@ -27,7 +27,7 @@ public partial class _BitNavChild
         var enabledClass = item.IsEnabled ? "enabled" : "disabled";
         var hasUrlClass = item.Url.HasNoValue() ? "nourl" : "hasurl";
 
-        var isSelected = item == ParentBitNav.SelectedItem ? "selected" : "";
+        var isSelected = item == Parent.SelectedItem ? "selected" : "";
 
         return $"link-{enabledClass}-{hasUrlClass} {isSelected}";
     }
