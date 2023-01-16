@@ -73,7 +73,7 @@ public partial class BitNav : IDisposable
         if (Mode == BitNavMode.Automatic)
         {
             SetSelectedItemByCurrentUrl();
-            SetParentsExpandedBySelectedItem(Items);
+            SetExpandedParentsBySelectedItem(Items);
             _navigationManager.LocationChanged += OnLocationChanged;
         }
         else
@@ -81,7 +81,7 @@ public partial class BitNav : IDisposable
             if (DefaultSelectedItem is not null && SelectedItemHasBeenSet is false)
             {
                 SelectedItem = DefaultSelectedItem;
-                SetParentsExpandedBySelectedItem(Items);
+                SetExpandedParentsBySelectedItem(Items);
             }
         }
 
@@ -93,7 +93,7 @@ public partial class BitNav : IDisposable
     private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
     {
         SetSelectedItemByCurrentUrl();
-        SetParentsExpandedBySelectedItem(Items);
+        SetExpandedParentsBySelectedItem(Items);
 
         StateHasChanged();
     }
@@ -109,19 +109,19 @@ public partial class BitNav : IDisposable
         }
     }
 
-    private void SetParentsExpandedBySelectedItem(IList<BitNavItem> items)
+    private void SetExpandedParentsBySelectedItem(IList<BitNavItem> items)
     {
         if (SelectedItem is null) return;
 
         List<BitNavItem> shouldBeExpandedParents = new();
-        SetParentsExpanded(items);
+        SetExpandedParents(items);
 
         foreach (var item in shouldBeExpandedParents)
         {
             item.IsExpanded = true;
         }
 
-        void SetParentsExpanded(IList<BitNavItem> items)
+        void SetExpandedParents(IList<BitNavItem> items)
         {
             foreach (var item in items)
             {
@@ -133,7 +133,7 @@ public partial class BitNav : IDisposable
                     {
                         if (childItem == SelectedItem) return;
 
-                        SetParentsExpanded(item.Items);
+                        SetExpandedParents(item.Items);
                     }
                 }
             }
