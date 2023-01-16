@@ -8,6 +8,8 @@ public partial class AppComponentBase : ComponentBase
 
     [AutoInject] protected IStateService StateService = default!;
 
+    [AutoInject] protected IPubSubService PubSubService = default!;
+
     [AutoInject] protected IConfiguration Configuration = default!;
 
     [AutoInject] protected NavigationManager NavigationManager = default!;

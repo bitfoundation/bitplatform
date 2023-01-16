@@ -11,7 +11,7 @@
         <div class="header-content-container" style="cursor: pointer" @onclick=@ToggleHeaderDropDown>
             <BitPersona ImageUrl="@_profileImageUrl"
                         Size=@BitPersonaSize.Size32
-                        Text="@(string.IsNullOrWhiteSpace(_user?.FullName) ? _user?.UserName : _user?.FullName)"
+                        Text="@(string.IsNullOrWhiteSpace(_user.FullName) ? _user.UserName : _user.FullName)"
                         Presence="BitPersonaPresenceStatus.Online" />
             <div class="chevron-bottom-icon @(_isHeaderDrpDownOpen ? "chevron-up-icon" : null)"></div>
 
