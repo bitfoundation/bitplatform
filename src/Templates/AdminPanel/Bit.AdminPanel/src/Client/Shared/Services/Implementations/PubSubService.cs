@@ -6,10 +6,10 @@ public class PubSubService : IPubSubService
 
     public void Pub(string message, object? payload)
     {
-        if (_handlers.ContainsKey(message) is false) return;
-
-        var handlers = _handlers[message];
-        handlers.ForEach(handler => handler(payload));
+        if (_handlers.TryGetValue(message, out var handlers))
+        {
+            handlers.ForEach(handler => handler(payload));
+        }
     }
 
     public Action Sub(string message, Action<object?> handler)
