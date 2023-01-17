@@ -799,4 +799,7 @@ Veuillez confirmer votre email en cliquant sur le lien.</value>
   <data name="AreYouSureWannaDeleteProduct" xml:space="preserve">
     <value>Êtes-vous sûr de vouloir supprimer le produit {0}</value>
   </data>
+  <data name="SendResetLink" xml:space="preserve">
+    <value>Envoyer le lien de réinitialisation</value>
+  </data>
 </root>

@@ -40,7 +40,7 @@
             @onfocus="() => _profileImageError = null" />
             <div class="form-input-error">@_profileImageError</div>
         </div>
-        <EditForm Model="_userToEdit" OnSubmit="WrapHandled(Submit)">
+        <EditForm Model="_userToEdit" OnSubmit="WrapHandled(DoSave)">
 
             <AppDataAnnotationsValidator />
 
@@ -65,20 +65,13 @@
                 </BitRadioButtonGroup>
                 <ValidationMessage For="@(() => _userToEdit.Gender)" />
             </div>
-            <BitButton ButtonStyle="BitButtonStyle.Primary"
-                       AriaLabel="@Localizer[nameof(AppStrings.Save)]"
-                       Title="@Localizer[nameof(AppStrings.Save)]"
-                       IsEnabled="_isLoading is false"
-                       ButtonType="BitButtonType.Submit">
-                @if (_isLoadingData)
-                {
-                    <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
-                }
-                else
-                {
-                    <span>@Localizer[nameof(AppStrings.Save)]</span>
-                }
-            </BitButton>
+            <BitLoadingButton IsLoading="_isLoading"
+                              ButtonStyle="BitButtonStyle.Primary"
+                              Title="@Localizer[nameof(AppStrings.Save)]"
+                              AriaLabel="@Localizer[nameof(AppStrings.Save)]"
+                              ButtonType="BitButtonType.Submit">
+                <span>@Localizer[nameof(AppStrings.Save)]</span>
+            </BitLoadingButton>
         </EditForm>
     }
 </div>

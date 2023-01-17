@@ -20,7 +20,7 @@ public partial class EmailConfirmationPage
         NavigationManager.NavigateTo("/sign-in");
     }
 
-    private async Task ResendLink()
+    private async Task DoResendLink()
     {
         if (_isLoading) return;
 

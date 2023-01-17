@@ -9,7 +9,7 @@ public partial class ForgotPasswordPage
     public BitMessageBarType _forgotPasswordMessageType;
     public SendResetPasswordEmailRequestDto _forgotPasswordModel = new();
 
-    private async Task Submit()
+    private async Task DoSubmit()
     {
         if (_isLoading) return;
 
