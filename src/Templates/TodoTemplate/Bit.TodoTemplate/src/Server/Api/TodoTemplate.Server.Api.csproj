@@ -21,7 +21,7 @@
         <!--/+:msbuild-conditional:noEmit -->
 
         <EmbeddedResource Include="Resources\*.cshtml" />
-        <PackageReference Include="AutoMapper" Version="12.0.0" />
+        <PackageReference Include="AutoMapper" Version="12.0.1" />
         <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.0" />
         <PackageReference Include="Bit.CodeAnalyzers" Version="4.9.2-pre-01">
             <PrivateAssets>all</PrivateAssets>
