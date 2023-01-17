@@ -3,7 +3,7 @@
 [DtoResourceType(typeof(AppStrings))]
 public class EditUserDto
 {
-    [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
+    [Required(ErrorMessageResourceName = nameof(AppStrings.RequiredAttribute_ValidationError))]
     [Display(Name = nameof(AppStrings.FullName))]
     public string? FullName { get; set; }
 
