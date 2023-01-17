@@ -22,22 +22,30 @@
     else
     {
         <div class="form-profile-container">
-            <BitPersona ImageUrl="@($"{_profileImageUrl}&file={_user.ProfileImageName}")"
+            <BitPersona ImageUrl="@(_user.ProfileImageName is not null ? $"{_profileImageUrl}&file={_user.ProfileImageName}" : null)"
                         Size=@BitPersonaSize.Size72
                         Text="@(string.IsNullOrWhiteSpace(_user?.FullName) ? _user?.UserName : _user?.FullName)"
                         SecondaryText="@_user?.UserName"
                         Presence="BitPersonaPresenceStatus.Online" />
         </div>
         <div class="form-input-container">
+            @if (_user.ProfileImageName is not null)
+            {
+                <BitLoadingButton IsLoading="_isRemoving"
+                                  ButtonStyle="BitButtonStyle.Standard"
+                                  OnClick="RemoveProfileImage">
+                    @Localizer[nameof(AppStrings.Remove)]
+                </BitLoadingButton>
+            }
             <BitLabel>@Localizer[nameof(AppStrings.ProfileImage)]</BitLabel>
-            <BitFileUpload Label="@Localizer[nameof(AppStrings.UploadNewProfileImage)]"
+            <BitFileUpload @onfocus="() => _profileImageError = null"
+                           Label="@Localizer[nameof(AppStrings.UploadNewProfileImage)]"
                            Style="max-width: 100%"
                            AllowedExtensions="@(new [] {".png", ".jpg", ".jpeg", ".webp", ".bpm", ".gif"})"
                            AutoUploadEnabled="true"
                            UploadUrl="@_profileImageUploadUrl"
                            OnUploadComplete="WrapHandled(RefreshProfileData)"
-                           OnUploadFailed="() => _profileImageError = Localizer[nameof(AppStrings.FileUploadFailed)]"
-            @onfocus="() => _profileImageError = null" />
+                           OnUploadFailed="() => _profileImageError = Localizer[nameof(AppStrings.FileUploadFailed)]" />
             <div class="form-input-error">@_profileImageError</div>
         </div>
         <EditForm Model="_userToEdit" OnSubmit="WrapHandled(DoSave)">
@@ -45,15 +53,15 @@
             <AppDataAnnotationsValidator />
 
             <div class="form-input-container">
-                <BitTextField Label="@Localizer[nameof(AppStrings.FullName)]"
-                @bind-Value="_userToEdit.FullName"
+                <BitTextField @bind-Value="_userToEdit.FullName"
+                              Label="@Localizer[nameof(AppStrings.FullName)]"
                               Placeholder="@Localizer[nameof(AppStrings.FullName)]" />
                 <ValidationMessage For="@(() => _userToEdit.FullName)" />
             </div>
             <div class="form-input-container">
-                <BitDatePicker Label="@Localizer[nameof(AppStrings.BirthDate)]"
+                <BitDatePicker @bind-Value="_userToEdit.BirthDate"
+                               Label="@Localizer[nameof(AppStrings.BirthDate)]"
                                Class="edit-profile-dtp"
-                @bind-Value="_userToEdit.BirthDate"
                                Placeholder="@Localizer[nameof(AppStrings.SelectBirthDate)]" />
                 <ValidationMessage For="@(() => _userToEdit.BirthDate)" />
             </div>
