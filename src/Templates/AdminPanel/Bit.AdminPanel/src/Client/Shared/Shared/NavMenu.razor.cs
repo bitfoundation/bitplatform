@@ -74,6 +74,6 @@ public partial class NavMenu
     {
         IsMenuOpen = false;
 
-        await JsRuntime.SetToggleBodyOverflow(false);
+        await JsRuntime.SetBodyOverflow(false);
     }
 }

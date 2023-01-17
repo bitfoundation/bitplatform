@@ -14,11 +14,11 @@ public partial class ConfirmMessageBox : IDisposable
         return await OnShow.Invoke(message, title);
     }
 
-    protected override async Task OnInitAsync()
+    protected override Task OnInitAsync()
     {
         OnShow += ShowMessageBox;
 
-        await Task.CompletedTask;
+        return base.OnInitAsync();
     }
 
     private TaskCompletionSource<bool>? _tsc;
@@ -29,12 +29,13 @@ public partial class ConfirmMessageBox : IDisposable
 
         await InvokeAsync(() =>
         {
+            _ = JsRuntime.SetBodyOverflow(true);
+            
             _isOpen = true;
-            
-            _ = JsRuntime.SetToggleBodyOverflow(true);
-            
             _title = title;
             _message = message;
+
+            StateHasChanged();
         });
 
         return await _tsc.Task;
@@ -43,7 +44,7 @@ public partial class ConfirmMessageBox : IDisposable
     public async Task Confirm(bool value)
     {
         _isOpen = false;
-        await JsRuntime.SetToggleBodyOverflow(false);
+        await JsRuntime.SetBodyOverflow(false);
         _tsc?.SetResult(value);
     }
 

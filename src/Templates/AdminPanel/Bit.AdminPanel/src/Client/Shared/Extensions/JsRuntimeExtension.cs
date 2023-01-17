@@ -2,13 +2,13 @@
 
 public static class JsRuntimeExtension
 {
-    public static async Task SetToggleBodyOverflow(this IJSRuntime jsRuntime, bool isOverflowHidden)
+    public static async Task SetBodyOverflow(this IJSRuntime jsRuntime, bool hidden)
     {
-        await jsRuntime.InvokeVoidAsync("toggleBodyOverflow", isOverflowHidden);
+        await jsRuntime.InvokeVoidAsync("App.setBodyOverflow", hidden);
     }
 
     public static async Task GoBack(this IJSRuntime jsRuntime)
     {
-        await jsRuntime.InvokeVoidAsync("navigateToPrevUrl");
+        await jsRuntime.InvokeVoidAsync("App.goBack");
     }
 }

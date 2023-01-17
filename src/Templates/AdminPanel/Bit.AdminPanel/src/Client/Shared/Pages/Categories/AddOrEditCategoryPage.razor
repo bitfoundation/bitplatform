@@ -67,19 +67,12 @@
             <ValidationMessage For="() => _category.Color" />
         </div>
 
-        <BitButton Class="form-submit-button"
-                   ButtonStyle="BitButtonStyle.Primary"
-                   ButtonType="BitButtonType.Submit"
-                   AriaLabel="Category">
-            @if (_isSaveLoading)
-            {
-                <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
-            }
-            else
-            {
-                <span>@Localizer[nameof(AppStrings.Save)]</span>
-            }
-        </BitButton>
+        <BitLoadingButton IsLoading="_isSaving"
+                          ButtonStyle="BitButtonStyle.Primary"
+                          ButtonType="BitButtonType.Submit"
+                          AriaLabel="Category">
+            @Localizer[nameof(AppStrings.Save)]
+        </BitLoadingButton>
 
     </EditForm>
 </div>

@@ -184,7 +184,7 @@ public partial class Header : IDisposable
     private async Task OpenSignOutModal()
     {
         ToggleHeaderDropDown();
-        await JsRuntime.SetToggleBodyOverflow(true);
+        await JsRuntime.SetBodyOverflow(true);
         _isSignOutModalOpen = true;
     }
 
