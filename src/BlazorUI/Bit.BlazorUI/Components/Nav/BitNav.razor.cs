@@ -66,8 +66,8 @@ public partial class BitNav : IDisposable
         {
             if (value == selectedItem) return;
             selectedItem = value;
-            SelectedItemChanged.InvokeAsync(selectedItem);
             SetExpandedParentsBySelectedItem();
+            SelectedItemChanged.InvokeAsync(selectedItem);
         }
     }
     [Parameter] public EventCallback<BitNavItem> SelectedItemChanged { get; set; }
