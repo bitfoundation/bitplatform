@@ -26,7 +26,7 @@
                aria-current="@(Item == Parent.SelectedItem ? _ariaCurrentMap[Item.AriaCurrent] : null)"
                tabindex="-1"
                rel="@(Item.Url.HasValue() && Item.Target.HasValue() && IsRelativeUrl(Item.Url!) is false ? "noopener noreferrer" : null)"
-               @onclick="(() => Parent.HandleOnItemClick(Item))">
+               @onclick="(() => Parent.HandleOnClick(Item))">
 
                 <div class="link-container">
                     @if (Parent.ItemTemplate is not null)
@@ -54,7 +54,7 @@
                     aria-current="@(Item == Parent.SelectedItem ? _ariaCurrentMap[Item.AriaCurrent] : null)"
                     tabindex="-1"
                     type="button"
-                    @onclick="(() => Parent.HandleOnItemClick(Item))">
+            @onclick="(() => Parent.HandleOnClick(Item))">
                 <div class="link-container">
                     @if (Parent.ItemTemplate is not null)
                     {

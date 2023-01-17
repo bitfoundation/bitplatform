@@ -28,7 +28,7 @@
                 <div>
                     <BitLabel>Basic</BitLabel>
                     <BitNav Items="ManualNavItems"
-                            DefaultSelectedItem="ManualNavItems[0].Items[0].Items[0]"
+                            DefaultSelectedItem="ManualNavItems[0].Items[0]"
                             Mode="BitNavMode.Manual" />
                 </div>
 
@@ -66,10 +66,10 @@
 
                 <div class="margin-top">
                     <BitLabel>Item Template</BitLabel>
-                    <BitNav Items="ManualNavItems" Mode="BitNavMode.Manual" @bind-SelectedItem="SelectedItemTemplate">
+                    <BitNav Items="ManualNavItems" Mode="BitNavMode.Manual">
                         <ItemTemplate Context="item">
                             <div class="nav-custom-item @(item.IsEnabled is false ? "disabled-item" : "")">
-                                <BitCheckbox IsEnabled="@(item.IsEnabled)" Value="@(item == SelectedItemTemplate)" IsIndeterminate="@(item.Items.Any())" />
+                                <BitCheckbox IsEnabled="@(item.IsEnabled)" />
                                 @if (item.IconName.HasValue)
                                 {
                                     <BitIcon IconName="@item.IconName.Value" />
@@ -85,17 +85,19 @@
 
     <ComponentExampleBox Title="Events" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
         <ExamplePreview>
-            <div class="example-box">
+            <div class="events-example-box">
                 <BitNav Items="ManualNavItems"
-                        DefaultSelectedItem="ManualNavItems[0].Items[0].Items[0]"
+                        DefaultSelectedItem="ManualNavItems[0].Items[0]"
                         Mode="BitNavMode.Manual"
                         OnItemClick="(item) => ClickedItem = item"
                         OnSelectItem="(item) => SelectedItem = item"
                         OnItemToggle="(item) => ToggledItem = item" />
-                <span>Clicked Item: @ClickedItem?.Text</span>
-                <span>Selected Item: @SelectedItem?.Text</span>
-                <span>Toggled Item: @ToggledItem?.Text</span>
-                <span>IsExpanded Value: @ToggledItem?.IsExpanded</span>
+
+                <div class="flex">
+                    <span>Clicked Item: @ClickedItem?.Text</span>
+                    <span>Selected Item: @SelectedItem?.Text</span>
+                    <span>Toggled Item: @(ToggledItem is null ? "N/A" : $"{ToggledItem.Text} ({(ToggledItem.IsExpanded ? "Expanded" : "Collapsed")})")</span>
+                </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>

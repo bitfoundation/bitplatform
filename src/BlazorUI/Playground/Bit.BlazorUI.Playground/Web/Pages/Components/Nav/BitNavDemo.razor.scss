@@ -30,3 +30,33 @@
         margin-top: 20px;
     }
 }
+
+.events-example-box {
+    display: flex;
+    flex-direction: row;
+    gap: 100px;
+    align-items: center;
+
+    ::deep {
+        .bit-nav {
+            width: 350px;
+        }
+    }
+
+    @include sm {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0;
+
+        ::deep {
+            .bit-nav {
+                width: 250px;
+            }
+        }
+    }
+
+    .flex {
+        display: flex;
+        flex-direction: column;
+    }
+}
