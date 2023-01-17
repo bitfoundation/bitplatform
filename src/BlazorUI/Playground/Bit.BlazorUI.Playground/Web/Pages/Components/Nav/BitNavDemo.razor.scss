@@ -6,11 +6,13 @@
     }
 
     .nav-custom-item {
-        color: orange;
+        display: flex;
+        flex-flow: row nowrap;
+        color: #ff7800;
         font-weight: 600;
 
         &.disabled-item {
-            color: #ffa50066;
+            color: #ff780061;
         }
     }
 }

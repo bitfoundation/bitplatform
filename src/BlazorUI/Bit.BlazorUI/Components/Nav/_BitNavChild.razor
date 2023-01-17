@@ -56,17 +56,16 @@
                     type="button"
                     @onclick="(() => Parent.HandleOnItemClick(Item))">
                 <div class="link-container">
-                    @if (Item.IconName.HasValue)
-                    {
-                        <i class=@($"bit-icon bit-icon--{Item.IconName.GetName()}") aria-hidden="true"></i>
-                    }
-
                     @if (Parent.ItemTemplate is not null)
                     {
                         @Parent.ItemTemplate(Item)
                     }
                     else
                     {
+                        @if (Item.IconName.HasValue)
+                        {
+                            <i class=@($"bit-icon bit-icon--{Item.IconName.GetName()}") aria-hidden="true"></i>
+                        }
                         <div class="link-txt">@Item.Text</div>
                     }
                 </div>

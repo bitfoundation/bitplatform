@@ -67,6 +67,7 @@ public partial class BitNav : IDisposable
             if (value == selectedItem) return;
             selectedItem = value;
             SelectedItemChanged.InvokeAsync(selectedItem);
+            SetExpandedParentsBySelectedItem(Items);
         }
     }
     [Parameter] public EventCallback<BitNavItem> SelectedItemChanged { get; set; }
@@ -78,7 +79,6 @@ public partial class BitNav : IDisposable
         if (Mode == BitNavMode.Automatic)
         {
             SetSelectedItemByCurrentUrl();
-            SetExpandedParentsBySelectedItem(Items);
             _navigationManager.LocationChanged += OnLocationChanged;
         }
         else
@@ -86,7 +86,6 @@ public partial class BitNav : IDisposable
             if (DefaultSelectedItem is not null && SelectedItemHasBeenSet is false)
             {
                 SelectedItem = DefaultSelectedItem;
-                SetExpandedParentsBySelectedItem(Items);
             }
         }
 
@@ -98,7 +97,6 @@ public partial class BitNav : IDisposable
     private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
     {
         SetSelectedItemByCurrentUrl();
-        SetExpandedParentsBySelectedItem(Items);
 
         StateHasChanged();
     }
@@ -118,29 +116,24 @@ public partial class BitNav : IDisposable
     {
         if (SelectedItem is null) return;
 
-        List<BitNavItem> shouldBeExpandedParents = new();
-        SetExpandedParents(items);
-
-        foreach (var item in shouldBeExpandedParents)
+        foreach (var item in items)
         {
-            item.IsExpanded = true;
+            if (Flatten(item.Items).Any(i => i == SelectedItem))
+            {
+                SetExpandedParents(item);
+            }
         }
 
-        void SetExpandedParents(IList<BitNavItem> items)
+        void SetExpandedParents(BitNavItem item)
         {
-            foreach (var item in items)
+            if (item == SelectedItem) return;
+            if (item.Items.Any() is false) return;
+
+            item.IsExpanded = true;
+
+            foreach (var childItem in item.Items)
             {
-                shouldBeExpandedParents.Add(item);
-
-                if (item.Items.Any())
-                {
-                    foreach (var childItem in item.Items)
-                    {
-                        if (childItem == SelectedItem) return;
-
-                        SetExpandedParents(item.Items);
-                    }
-                }
+                SetExpandedParents(childItem);
             }
         }
     }
@@ -148,6 +141,8 @@ public partial class BitNav : IDisposable
     internal async void HandleOnItemClick(BitNavItem item)
     {
         if (item.IsEnabled == false) return;
+
+        await OnItemClick.InvokeAsync(item);
 
         if (item.Items.Any() && item.Url.HasNoValue())
         {
@@ -157,9 +152,8 @@ public partial class BitNav : IDisposable
         {
             SelectedItem = item;
             await OnSelectItem.InvokeAsync(item);
+            StateHasChanged();
         }
-
-        await OnItemClick.InvokeAsync(item);
     }
 
     internal async Task ToggleItem(BitNavItem item)

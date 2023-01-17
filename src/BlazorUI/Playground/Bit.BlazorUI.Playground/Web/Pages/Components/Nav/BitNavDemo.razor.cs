@@ -11,131 +11,222 @@ public partial class BitNavDemo
     {
         new BitNavItem
         {
-            Text = "Home",
-            Title = "Home is Parent Row",
-            ExpandAriaLabel = "Expand Home section",
-            CollapseAriaLabel = "Collapse Home section",
+            Text = "Products & Services",
+            Title = "Bit Platform Products & Services",
+            ExpandAriaLabel = "Products & Services Expanded",
+            CollapseAriaLabel = "Products & Services Collapsed",
+            IconName = BitIconName.TabletMode,
             IsExpanded = true,
             Items = new List<BitNavItem>
             {
-                new BitNavItem { Text = "Activity", Url = "http://msn.com", Target="_blank" },
-                new BitNavItem { Text = "MSN", Url = "http://msn.com", IsEnabled = false, Target = "_blank" }
+                new BitNavItem 
+                {
+                    Text = "Project Templates",
+                    Title = "Bit Platform Project Templates",
+                    Items = new List<BitNavItem>
+                    {
+                        new BitNavItem { Text = "TodoTemplate", Url = "https://bitplatform.dev/todo-template/overview", Target="_blank", },
+                        new BitNavItem { Text = "AdminPanel", Url = "https://bitplatform.dev/admin-panel/overview", Target = "_blank", },
+                    }
+                },
+                new BitNavItem { Text = "BlazorUI", Url = "https://bitplatform.dev/components", Target = "_blank", },
+                new BitNavItem { Text = "Cloud hosting solutions", Url = "https://bitplatform.dev/#", Target = "_blank", IsEnabled = false },
+                new BitNavItem { Text = "Bit academy", Url = "https://bitplatform.dev/#", Target = "_blank", IsEnabled = false }
             }
         },
-        new BitNavItem { Text = "Documents", Url = "http://msn.com", Target = "_blank", IsExpanded = true },
-        new BitNavItem { Text = "Pages", Url = "http://msn.com", Target = "_parent" },
-        new BitNavItem { Text = "Notebook", Url = "http://msn.com", Target = "_blank", IsEnabled = false },
-        new BitNavItem { Text = "Communication and Media", Url = "http://msn.com", Target = "_top" },
-        new BitNavItem { Text = "News", Url = "http://msn.com", Target = "_self", IconName = BitIconName.News },
+        new BitNavItem
+        {
+            Text = "Community",
+            Title = "Bit Platform Community",
+            ExpandAriaLabel = "Community Expanded",
+            CollapseAriaLabel = "Community Collapsed",
+            IconName = BitIconName.Heart,
+            Items = new List<BitNavItem>
+            {
+                new BitNavItem { Text = "About", Url = "https://bitplatform.dev/about-us", Target="_blank" },
+                new BitNavItem { Text = "Contact us", Url = "https://bitplatform.dev/contact-us", Target="_blank" },
+                new BitNavItem { Text = "Linkedin", Url = "https://www.linkedin.com/company/bitplatformhq/about/", Target="_blank" },
+                new BitNavItem { Text = "Youtube", Url = "https://www.youtube.com/channel/UCtk33NQ91f3GOJG0HAdkdog", Target="_blank" },
+                new BitNavItem { Text = "Twitter", Url = "https://twitter.com/bitplatformhq", Target="_blank" },
+            }
+        },
+        new BitNavItem { Text = "Github repo", Url = "https://github.com/bitfoundation/bitplatform", Target="_blank" },
+        new BitNavItem { Text = "Pricing", Url = "https://bitplatform.dev/pricing", Target="_blank" },
     };
 
     private static readonly List<BitNavItem> GroupedNavItems = new()
     {
         new BitNavItem
         {
-            Text = "Basic Inputs",
-            CollapseAriaLabel = "Collapsed Basic Inputs section",
-            ExpandAriaLabel = "Expanded Basic Inputs section",
-            IsExpanded = true,
+            Text = "Products & Services",
+            Title = "Bit Platform Products & Services",
+            ExpandAriaLabel = "Products & Services Expanded",
+            CollapseAriaLabel = "Products & Services Collapsed",
             Items = new List<BitNavItem>
             {
-                new BitNavItem { Text= "Bottons", Url = "components/button", Target = "_blank" },
-                new BitNavItem { Text= "DropDown", Url = "components/drop-down", Target = "_blank" },
-                new BitNavItem { Text= "FileUpload", Url = "components/file-upload", Target = "_blank" }
+                new BitNavItem
+                {
+                    Text = "Project Templates",
+                    Title = "Bit Platform Project Templates",
+                    Items = new List<BitNavItem>
+                    {
+                        new BitNavItem { Text = "TodoTemplate", Url = "https://bitplatform.dev/todo-template/overview", Target="_blank", },
+                        new BitNavItem { Text = "AdminPanel", Url = "https://bitplatform.dev/admin-panel/overview", Target = "_blank", },
+                    }
+                },
+                new BitNavItem { Text = "BlazorUI", Url = "https://bitplatform.dev/components", Target = "_blank", },
+                new BitNavItem { Text = "Cloud hosting solutions", Url = "https://bitplatform.dev/#", Target = "_blank", IsEnabled = false },
+                new BitNavItem { Text = "Bit academy", Url = "https://bitplatform.dev/#", Target = "_blank", IsEnabled = false }
             }
         },
         new BitNavItem
         {
-            Text = "Items & Lists",
-            CollapseAriaLabel = "Collapsed Items & Lists section",
-            ExpandAriaLabel = "Expanded Items & Lists section",
-            IsExpanded = true,
+            Text = "Community",
+            Title = "Bit Platform Community",
+            ExpandAriaLabel = "Community Expanded",
+            CollapseAriaLabel = "Community Collapsed",
             Items = new List<BitNavItem>
             {
-                new BitNavItem { Text = "BasicList", Url ="components/basic-list", Target = "_blank" },
-                new BitNavItem { Text = "DataGrid", Url ="components/data-grid", Target = "_blank" },
-                new BitNavItem { Text = "Carousel", Url ="components/carousel", Target = "_blank" }
+                new BitNavItem { Text = "About", Url = "https://bitplatform.dev/about-us", Target="_blank" },
+                new BitNavItem { Text = "Contact us", Url = "https://bitplatform.dev/contact-us", Target="_blank" },
+                new BitNavItem { Text = "Linkedin", Url = "https://www.linkedin.com/company/bitplatformhq/about/", Target="_blank" },
+                new BitNavItem { Text = "Youtube", Url = "https://www.youtube.com/channel/UCtk33NQ91f3GOJG0HAdkdog", Target="_blank" },
+                new BitNavItem { Text = "Twitter", Url = "https://twitter.com/bitplatformhq", Target="_blank" },
             }
         },
         new BitNavItem
         {
-            Text = "Galleries & Pickers",
-            CollapseAriaLabel = "Collapsed Galleries & Pickers section",
-            ExpandAriaLabel = "Expanded Galleries & Pickers section",
-            IsExpanded = true,
+            Text = "Media",
+            Title = "Bit Platform Media",
+            ExpandAriaLabel = "Media Expanded",
+            CollapseAriaLabel = "Media Collapsed",
             Items = new List<BitNavItem>
             {
-                new BitNavItem { Text = "ColorPicker", Url = "components/color-picker", Target = "_blank" },
-                new BitNavItem { Text = "DatePicker", Url = "components/date-picker", Target = "_blank" },
-                new BitNavItem { Text = "Chart", Url = "components/chart", Target = "_blank" }
+                new BitNavItem { Text = "Blogs", Url = "https://bitplatform.dev/#", Target="_blank" },
+                new BitNavItem { Text = "Videos", Url = "https://bitplatform.dev/#", Target="_blank" },
             }
-        }
+        },
     };
 
     private static readonly List<BitNavItem> ManualNavItems = new()
     {
         new BitNavItem
         {
-            Text = "Home",
-            Title = "Home is Parent Row",
-            ExpandAriaLabel = "Expand Home section",
-            CollapseAriaLabel = "Collapse Home section",
+            Text = "Products & Services",
+            Title = "Bit Platform Products & Services",
+            ExpandAriaLabel = "Products & Services Expanded",
+            CollapseAriaLabel = "Products & Services Collapsed",
+            IconName = BitIconName.TabletMode,
+            IsExpanded = true,
             Items = new List<BitNavItem>
             {
-                new BitNavItem { Text = "Activity", },
-                new BitNavItem { Text = "MSN", IsEnabled = false }
+                new BitNavItem
+                {
+                    Text = "Project Templates",
+                    Title = "Bit Platform Project Templates",
+                    Items = new List<BitNavItem>
+                    {
+                        new BitNavItem { Text = "TodoTemplate", Target="_blank", },
+                        new BitNavItem { Text = "AdminPanel", Target = "_blank", },
+                    }
+                },
+                new BitNavItem { Text = "BlazorUI", Target = "_blank", },
+                new BitNavItem { Text = "Cloud hosting solutions", Target = "_blank", IsEnabled = false },
+                new BitNavItem { Text = "Bit academy", Target = "_blank", IsEnabled = false }
             }
         },
-        new BitNavItem { Text = "Documents" },
-        new BitNavItem { Text = "Pages" },
-        new BitNavItem { Text = "Notebook", IsEnabled = false },
-        new BitNavItem { Text = "Communication and Media" },
-        new BitNavItem { Text = "News", IconName = BitIconName.News },
+        new BitNavItem
+        {
+            Text = "Community",
+            Title = "Bit Platform Community",
+            ExpandAriaLabel = "Community Expanded",
+            CollapseAriaLabel = "Community Collapsed",
+            IconName = BitIconName.Heart,
+            Items = new List<BitNavItem>
+            {
+                new BitNavItem { Text = "About", Target="_blank" },
+                new BitNavItem { Text = "Contact us", Target="_blank" },
+                new BitNavItem { Text = "Linkedin", Target="_blank" },
+                new BitNavItem { Text = "Youtube", Target="_blank" },
+                new BitNavItem { Text = "Twitter", Target="_blank" },
+            }
+        },
+        new BitNavItem { Text = "Github repo", Target="_blank" },
+        new BitNavItem { Text = "Pricing", Target="_blank" },
     };
 
     private static readonly List<BitDropDownItem> DropDownItems = new()
     {
         new BitDropDownItem
         {
-            Text = "Activity",
-            Value = "Activity",
+            Text = "TodoTemplate",
+            Value = "TodoTemplate",
         },
         new BitDropDownItem
         {
-            Text = "MSN",
-            Value = "MSN",
+            Text = "AdminPanel",
+            Value = "AdminPanel",
         },
         new BitDropDownItem
         {
-            Text = "Documents",
-            Value = "Documents",
+            Text = "BlazorUI",
+            Value = "BlazorUI",
         },
         new BitDropDownItem
         {
-            Text = "Pages",
-            Value = "Pages",
+            Text = "About",
+            Value = "About",
         },
         new BitDropDownItem
         {
-            Text = "Notebook",
-            Value = "Notebook",
+            Text = "Contact us",
+            Value = "Contact us",
         },
         new BitDropDownItem
         {
-            Text = "Communication and Media",
-            Value = "Communication and Media",
+            Text = "Linkedin",
+            Value = "Linkedin",
         },
         new BitDropDownItem
         {
-            Text = "News",
-            Value = "News",
+            Text = "Youtube",
+            Value = "Youtube",
         },
+        new BitDropDownItem
+        {
+            Text = "Twitter",
+            Value = "Twitter",
+        },
+        new BitDropDownItem
+        {
+            Text = "Blogs",
+            Value = "Blogs",
+        },
+        new BitDropDownItem
+        {
+            Text = "Videos",
+            Value = "Videos",
+        },
+        new BitDropDownItem
+        {
+            Text = "Github repo",
+            Value = "Github repo",
+        },
+        new BitDropDownItem
+        {
+            Text = "Pricing",
+            Value = "Pricing",
+        },
+
     };
     private static List<BitNavItem> Flatten(IList<BitNavItem> e) => e.SelectMany(c => Flatten(c.Items)).Concat(e).ToList();
-    private BitNavItem SelectedItemNav = ManualNavItems[0].Items[0];
-    private string SelectedItemText = ManualNavItems[0].Items[0].Text;
+    private BitNavItem SelectedItemNav = ManualNavItems[0].Items[0].Items[0];
+    private string SelectedItemText = ManualNavItems[0].Items[0].Items[0].Text;
+
+    private BitNavItem SelectedItemTemplate = ManualNavItems[0].Items[0].Items[0];
 
     private BitNavItem ClickedItem;
+    private BitNavItem SelectedItem;
     private BitNavItem ToggledItem;
 
     private readonly List<ComponentParameter> componentParameters = new()
@@ -402,22 +493,47 @@ private static readonly List<BitNavItem> BasicNavItems = new()
 {
     new BitNavItem
     {
-        Text = ""Home"",
-        Title = ""Home is Parent Row"",
-        ExpandAriaLabel = ""Expand Home section"",
-        CollapseAriaLabel = ""Collapse Home section"",
+        Text = ""Products & Services"",
+        Title = ""Bit Platform Products & Services"",
+        ExpandAriaLabel = ""Products & Services Expanded"",
+        CollapseAriaLabel = ""Products & Services Collapsed"",
+        IconName = BitIconName.TabletMode,
         IsExpanded = true,
         Items = new List<BitNavItem>
         {
-            new BitNavItem { Text = ""Activity"", Url = ""http://msn.com"", Target=""_blank"" },
-            new BitNavItem { Text = ""MSN"", Url = ""http://msn.com"", IsEnabled = false, Target = ""_blank"" }
+            new BitNavItem 
+            {
+                Text = ""Project Templates"",
+                Title = ""Bit Platform Project Templates"",
+                Items = new List<BitNavItem>
+                {
+                    new BitNavItem { Text = ""TodoTemplate"", Url = ""https://bitplatform.dev/todo-template/overview"", Target=""_blank"", },
+                    new BitNavItem { Text = ""AdminPanel"", Url = ""https://bitplatform.dev/admin-panel/overview"", Target = ""_blank"", },
+                }
+            },
+            new BitNavItem { Text = ""BlazorUI"", Url = ""https://bitplatform.dev/components"", Target = ""_blank"", },
+            new BitNavItem { Text = ""Cloud hosting solutions"", Url = ""https://bitplatform.dev/#"", Target = ""_blank"", IsEnabled = false },
+            new BitNavItem { Text = ""Bit academy"", Url = ""https://bitplatform.dev/#"", Target = ""_blank"", IsEnabled = false }
         }
     },
-    new BitNavItem { Text = ""Documents"", Url = ""http://msn.com"", Target = ""_blank"", IsExpanded = true },
-    new BitNavItem { Text = ""Pages"", Url = ""http://msn.com"", Target = ""_parent"" },
-    new BitNavItem { Text = ""Notebook"", Url = ""http://msn.com"", Target = ""_blank"", IsEnabled = false },
-    new BitNavItem { Text = ""Communication and Media"", Url = ""http://msn.com"", Target = ""_top"" },
-    new BitNavItem { Text = ""News"", Url = ""http://msn.com"", Target = ""_self"", IconName = BitIconName.News },
+    new BitNavItem
+    {
+        Text = ""Community"",
+        Title = ""Bit Platform Community"",
+        ExpandAriaLabel = ""Community Expanded"",
+        CollapseAriaLabel = ""Community Collapsed"",
+        IconName = BitIconName.Heart,
+        Items = new List<BitNavItem>
+        {
+            new BitNavItem { Text = ""About"", Url = ""https://bitplatform.dev/about-us"", Target=""_blank"" },
+            new BitNavItem { Text = ""Contact us"", Url = ""https://bitplatform.dev/contact-us"", Target=""_blank"" },
+            new BitNavItem { Text = ""Linkedin"", Url = ""https://www.linkedin.com/company/bitplatformhq/about/"", Target=""_blank"" },
+            new BitNavItem { Text = ""Youtube"", Url = ""https://www.youtube.com/channel/UCtk33NQ91f3GOJG0HAdkdog"", Target=""_blank"" },
+            new BitNavItem { Text = ""Twitter"", Url = ""https://twitter.com/bitplatformhq"", Target=""_blank"" },
+        }
+    },
+    new BitNavItem { Text = ""Github repo"", Url = ""https://github.com/bitfoundation/bitplatform"", Target=""_blank"" },
+    new BitNavItem { Text = ""Pricing"", Url = ""https://bitplatform.dev/pricing"", Target=""_blank"" },
 };
 ";
 
@@ -434,43 +550,54 @@ private static readonly List<BitNavItem> GroupedNavItems = new()
 {
     new BitNavItem
     {
-        Text = ""Basic Inputs"",
-        CollapseAriaLabel = ""Collapsed Basic Inputs section"",
-        ExpandAriaLabel = ""Expanded Basic Inputs section"",
-        IsExpanded = true,
+        Text = ""Products & Services"",
+        Title = ""Bit Platform Products & Services"",
+        ExpandAriaLabel = ""Products & Services Expanded"",
+        CollapseAriaLabel = ""Products & Services Collapsed"",
         Items = new List<BitNavItem>
         {
-            new BitNavItem { Text= ""Bottons"", Url = ""components/button"", Target = ""_blank"" },
-            new BitNavItem { Text= ""DropDown"", Url = ""components/drop-down"", Target = ""_blank"" },
-            new BitNavItem { Text= ""FileUpload"", Url = ""components/file-upload"", Target = ""_blank"" }
+            new BitNavItem
+            {
+                Text = ""Project Templates"",
+                Title = ""Bit Platform Project Templates"",
+                Items = new List<BitNavItem>
+                {
+                    new BitNavItem { Text = ""TodoTemplate"", Url = ""https://bitplatform.dev/todo-template/overview"", Target=""_blank"", },
+                    new BitNavItem { Text = ""AdminPanel"", Url = ""https://bitplatform.dev/admin-panel/overview"", Target = ""_blank"", },
+                }
+            },
+            new BitNavItem { Text = ""BlazorUI"", Url = ""https://bitplatform.dev/components"", Target = ""_blank"", },
+            new BitNavItem { Text = ""Cloud hosting solutions"", Url = ""https://bitplatform.dev/#"", Target = ""_blank"", IsEnabled = false },
+            new BitNavItem { Text = ""Bit academy"", Url = ""https://bitplatform.dev/#"", Target = ""_blank"", IsEnabled = false }
         }
     },
     new BitNavItem
     {
-        Text = ""Items & Lists"",
-        CollapseAriaLabel = ""Collapsed Items & Lists section"",
-        ExpandAriaLabel = ""Expanded Items & Lists section"",
-        IsExpanded = true,
+        Text = ""Community"",
+        Title = ""Bit Platform Community"",
+        ExpandAriaLabel = ""Community Expanded"",
+        CollapseAriaLabel = ""Community Collapsed"",
         Items = new List<BitNavItem>
         {
-            new BitNavItem { Text = ""BasicList"", Url =""components/basic-list"", Target = ""_blank"" },
-            new BitNavItem { Text = ""DataGrid"", Url =""components/data-grid"", Target = ""_blank"" },
-            new BitNavItem { Text = ""Carousel"", Url =""components/carousel"", Target = ""_blank"" }
+            new BitNavItem { Text = ""About"", Url = ""https://bitplatform.dev/about-us"", Target=""_blank"" },
+            new BitNavItem { Text = ""Contact us"", Url = ""https://bitplatform.dev/contact-us"", Target=""_blank"" },
+            new BitNavItem { Text = ""Linkedin"", Url = ""https://www.linkedin.com/company/bitplatformhq/about/"", Target=""_blank"" },
+            new BitNavItem { Text = ""Youtube"", Url = ""https://www.youtube.com/channel/UCtk33NQ91f3GOJG0HAdkdog"", Target=""_blank"" },
+            new BitNavItem { Text = ""Twitter"", Url = ""https://twitter.com/bitplatformhq"", Target=""_blank"" },
         }
     },
     new BitNavItem
     {
-        Text = ""Galleries & Pickers"",
-        CollapseAriaLabel = ""Collapsed Galleries & Pickers section"",
-        ExpandAriaLabel = ""Expanded Galleries & Pickers section"",
-        IsExpanded = true,
+        Text = ""Media"",
+        Title = ""Bit Platform Media"",
+        ExpandAriaLabel = ""Media Expanded"",
+        CollapseAriaLabel = ""Media Collapsed"",
         Items = new List<BitNavItem>
         {
-            new BitNavItem { Text = ""ColorPicker"", Url = ""components/color-picker"", Target = ""_blank"" },
-            new BitNavItem { Text = ""DatePicker"", Url = ""components/date-picker"", Target = ""_blank"" },
-            new BitNavItem { Text = ""Chart"", Url = ""components/chart"", Target = ""_blank"" }
+            new BitNavItem { Text = ""Blogs"", Url = ""https://bitplatform.dev/#"", Target=""_blank"" },
+            new BitNavItem { Text = ""Videos"", Url = ""https://bitplatform.dev/#"", Target=""_blank"" },
         }
-    }
+    },
 };
 ";
 
@@ -482,7 +609,7 @@ private static readonly List<BitNavItem> GroupedNavItems = new()
 <div>
     <BitLabel>Basic</BitLabel>
     <BitNav Items=""ManualNavItems""
-            DefaultSelectedItem=""ManualNavItems[0].Items[0]""
+            DefaultSelectedItem=""ManualNavItems[0].Items[0].Items[0]""
             Mode=""BitNavMode.Manual"" />
 </div>
 
@@ -506,64 +633,119 @@ private static readonly List<BitNavItem> ManualNavItems = new()
 {
     new BitNavItem
     {
-        Text = ""Home"",
-        Title = ""Home is Parent Row"",
-        ExpandAriaLabel = ""Expand Home section"",
-        CollapseAriaLabel = ""Collapse Home section"",
+        Text = ""Products & Services"",
+        Title = ""Bit Platform Products & Services"",
+        ExpandAriaLabel = ""Products & Services Expanded"",
+        CollapseAriaLabel = ""Products & Services Collapsed"",
+        IconName = BitIconName.TabletMode,
+        IsExpanded = true,
         Items = new List<BitNavItem>
         {
-            new BitNavItem { Text = ""Activity"", },
-            new BitNavItem { Text = ""MSN"", IsEnabled = false }
+            new BitNavItem
+            {
+                Text = ""Project Templates"",
+                Title = ""Bit Platform Project Templates"",
+                Items = new List<BitNavItem>
+                {
+                    new BitNavItem { Text = ""TodoTemplate"", Target=""_blank"", },
+                    new BitNavItem { Text = ""AdminPanel"", Target = ""_blank"", },
+                }
+            },
+            new BitNavItem { Text = ""BlazorUI"", Target = ""_blank"", },
+            new BitNavItem { Text = ""Cloud hosting solutions"", Target = ""_blank"", IsEnabled = false },
+            new BitNavItem { Text = ""Bit academy"", Target = ""_blank"", IsEnabled = false }
         }
     },
-    new BitNavItem { Text = ""Documents"" },
-    new BitNavItem { Text = ""Pages"" },
-    new BitNavItem { Text = ""Notebook"", IsEnabled = false },
-    new BitNavItem { Text = ""Communication and Media"" },
-    new BitNavItem { Text = ""News"", IconName = BitIconName.News },
+    new BitNavItem
+    {
+        Text = ""Community"",
+        Title = ""Bit Platform Community"",
+        ExpandAriaLabel = ""Community Expanded"",
+        CollapseAriaLabel = ""Community Collapsed"",
+        IconName = BitIconName.Heart,
+        Items = new List<BitNavItem>
+        {
+            new BitNavItem { Text = ""About"", Target=""_blank"" },
+            new BitNavItem { Text = ""Contact us"", Target=""_blank"" },
+            new BitNavItem { Text = ""Linkedin"", Target=""_blank"" },
+            new BitNavItem { Text = ""Youtube"", Target=""_blank"" },
+            new BitNavItem { Text = ""Twitter"", Target=""_blank"" },
+        }
+    },
+    new BitNavItem { Text = ""Github repo"", Target=""_blank"" },
+    new BitNavItem { Text = ""Pricing"", Target=""_blank"" },
 };
+
+private BitNavItem SelectedItemTemplate = ManualNavItems[0].Items[0].Items[0];
 
 private static readonly List<BitDropDownItem> DropDownItems = new()
 {
     new BitDropDownItem
     {
-        Text = ""Activity"",
-        Value = ""Activity"",
+        Text = ""TodoTemplate"",
+        Value = ""TodoTemplate"",
     },
     new BitDropDownItem
     {
-        Text = ""MSN"",
-        Value = ""MSN"",
+        Text = ""AdminPanel"",
+        Value = ""AdminPanel"",
     },
     new BitDropDownItem
     {
-        Text = ""Documents"",
-        Value = ""Documents"",
+        Text = ""BlazorUI"",
+        Value = ""BlazorUI"",
     },
     new BitDropDownItem
     {
-        Text = ""Pages"",
-        Value = ""Pages"",
+        Text = ""About"",
+        Value = ""About"",
     },
     new BitDropDownItem
     {
-        Text = ""Notebook"",
-        Value = ""Notebook"",
+        Text = ""Contact us"",
+        Value = ""Contact us"",
     },
     new BitDropDownItem
     {
-        Text = ""Communication and Media"",
-        Value = ""Communication and Media"",
+        Text = ""Linkedin"",
+        Value = ""Linkedin"",
     },
     new BitDropDownItem
     {
-        Text = ""News"",
-        Value = ""News"",
+        Text = ""Youtube"",
+        Value = ""Youtube"",
     },
+    new BitDropDownItem
+    {
+        Text = ""Twitter"",
+        Value = ""Twitter"",
+    },
+    new BitDropDownItem
+    {
+        Text = ""Blogs"",
+        Value = ""Blogs"",
+    },
+    new BitDropDownItem
+    {
+        Text = ""Videos"",
+        Value = ""Videos"",
+    },
+    new BitDropDownItem
+    {
+        Text = ""Github repo"",
+        Value = ""Github repo"",
+    },
+    new BitDropDownItem
+    {
+        Text = ""Pricing"",
+        Value = ""Pricing"",
+    },
+
 };
+
 private static List<BitNavItem> Flatten(IList<BitNavItem> e) => e.SelectMany(c => Flatten(c.Items)).Concat(e).ToList();
-private BitNavItem SelectedItemNav = ManualNavItems[0].Items[0];
-private string SelectedItemText = ManualNavItems[0].Items[0].Text;
+private BitNavItem SelectedItemNav = ManualNavItems[0].Items[0].Items[0];
+private string SelectedItemText = ManualNavItems[0].Items[0].Items[0].Text;
 ";
 
     #endregion
@@ -577,11 +759,13 @@ private string SelectedItemText = ManualNavItems[0].Items[0].Text;
     }
 
     .nav-custom-item {
-        color: orange;
+        display: flex;
+        flex-flow: row nowrap;
+        color: #ff7800;
         font-weight: 600;
 
         &.disabled-item {
-            color: #ffa50066;
+            color: #ff780061;
         }
     }
 </style>
@@ -600,85 +784,125 @@ private string SelectedItemText = ManualNavItems[0].Items[0].Text;
 
 <div class=""margin-top"">
     <BitLabel>Item Template</BitLabel>
-    <BitNav Items=""BasicNavItems"">
+    <BitNav Items=""ManualNavItems"" Mode=""BitNavMode.Manual"" @bind-SelectedItem=""SelectedItemTemplate"">
         <ItemTemplate Context=""item"">
-            <a href=""@item.Url"" target=""@item.Target"" class=""nav-custom-item @(item.IsEnabled is false ? ""disabled-item"" : """")"">
+            <div class=""nav-custom-item @(item.IsEnabled is false ? ""disabled-item"" : """")"">
+                <BitCheckbox IsEnabled=""@(item.IsEnabled)"" Value=""@(item == SelectedItemTemplate)"" IsIndeterminate=""@(item.Items.Any())"" />
                 @if (item.IconName.HasValue)
                 {
                     <BitIcon IconName=""@item.IconName.Value"" />
                 }
                 <span>@item.Text</span>
-            </a>
+            </div>
         </ItemTemplate>
     </BitNav>
 </div>
 ";
 
     private static string example4CSharpCode = @"
-private static readonly List<BitNavItem> BasicNavItems = new()
-{
-    new BitNavItem
-    {
-        Text = ""Home"",
-        Title = ""Home is Parent Row"",
-        ExpandAriaLabel = ""Expand Home section"",
-        CollapseAriaLabel = ""Collapse Home section"",
-        IsExpanded = true,
-        Items = new List<BitNavItem>
-        {
-            new BitNavItem { Text = ""Activity"", Url = ""http://msn.com"", Target=""_blank"" },
-            new BitNavItem { Text = ""MSN"", Url = ""http://msn.com"", IsEnabled = false, Target = ""_blank"" }
-        }
-    },
-    new BitNavItem { Text = ""Documents"", Url = ""http://msn.com"", Target = ""_blank"", IsExpanded = true },
-    new BitNavItem { Text = ""Pages"", Url = ""http://msn.com"", Target = ""_parent"" },
-    new BitNavItem { Text = ""Notebook"", Url = ""http://msn.com"", Target = ""_blank"", IsEnabled = false },
-    new BitNavItem { Text = ""Communication and Media"", Url = ""http://msn.com"", Target = ""_top"" },
-    new BitNavItem { Text = ""News"", Url = ""http://msn.com"", Target = ""_self"", IconName = BitIconName.News },
-};
-
 private static readonly List<BitNavItem> GroupedNavItems = new()
 {
     new BitNavItem
     {
-        Text = ""Basic Inputs"",
-        CollapseAriaLabel = ""Collapsed Basic Inputs section"",
-        ExpandAriaLabel = ""Expanded Basic Inputs section"",
-        IsExpanded = true,
+        Text = ""Products & Services"",
+        Title = ""Bit Platform Products & Services"",
+        ExpandAriaLabel = ""Products & Services Expanded"",
+        CollapseAriaLabel = ""Products & Services Collapsed"",
         Items = new List<BitNavItem>
         {
-            new BitNavItem { Text= ""Bottons"", Url = ""components/button"", Target = ""_blank"" },
-            new BitNavItem { Text= ""DropDown"", Url = ""components/drop-down"", Target = ""_blank"" },
-            new BitNavItem { Text= ""FileUpload"", Url = ""components/file-upload"", Target = ""_blank"" }
+            new BitNavItem
+            {
+                Text = ""Project Templates"",
+                Title = ""Bit Platform Project Templates"",
+                Items = new List<BitNavItem>
+                {
+                    new BitNavItem { Text = ""TodoTemplate"", Url = ""https://bitplatform.dev/todo-template/overview"", Target=""_blank"", },
+                    new BitNavItem { Text = ""AdminPanel"", Url = ""https://bitplatform.dev/admin-panel/overview"", Target = ""_blank"", },
+                }
+            },
+            new BitNavItem { Text = ""BlazorUI"", Url = ""https://bitplatform.dev/components"", Target = ""_blank"", },
+            new BitNavItem { Text = ""Cloud hosting solutions"", Url = ""https://bitplatform.dev/#"", Target = ""_blank"", IsEnabled = false },
+            new BitNavItem { Text = ""Bit academy"", Url = ""https://bitplatform.dev/#"", Target = ""_blank"", IsEnabled = false }
         }
     },
     new BitNavItem
     {
-        Text = ""Items & Lists"",
-        CollapseAriaLabel = ""Collapsed Items & Lists section"",
-        ExpandAriaLabel = ""Expanded Items & Lists section"",
-        IsExpanded = true,
+        Text = ""Community"",
+        Title = ""Bit Platform Community"",
+        ExpandAriaLabel = ""Community Expanded"",
+        CollapseAriaLabel = ""Community Collapsed"",
         Items = new List<BitNavItem>
         {
-            new BitNavItem { Text = ""BasicList"", Url =""components/basic-list"", Target = ""_blank"" },
-            new BitNavItem { Text = ""DataGrid"", Url =""components/data-grid"", Target = ""_blank"" },
-            new BitNavItem { Text = ""Carousel"", Url =""components/carousel"", Target = ""_blank"" }
+            new BitNavItem { Text = ""About"", Url = ""https://bitplatform.dev/about-us"", Target=""_blank"" },
+            new BitNavItem { Text = ""Contact us"", Url = ""https://bitplatform.dev/contact-us"", Target=""_blank"" },
+            new BitNavItem { Text = ""Linkedin"", Url = ""https://www.linkedin.com/company/bitplatformhq/about/"", Target=""_blank"" },
+            new BitNavItem { Text = ""Youtube"", Url = ""https://www.youtube.com/channel/UCtk33NQ91f3GOJG0HAdkdog"", Target=""_blank"" },
+            new BitNavItem { Text = ""Twitter"", Url = ""https://twitter.com/bitplatformhq"", Target=""_blank"" },
         }
     },
     new BitNavItem
     {
-        Text = ""Galleries & Pickers"",
-        CollapseAriaLabel = ""Collapsed Galleries & Pickers section"",
-        ExpandAriaLabel = ""Expanded Galleries & Pickers section"",
-        IsExpanded = true,
+        Text = ""Media"",
+        Title = ""Bit Platform Media"",
+        ExpandAriaLabel = ""Media Expanded"",
+        CollapseAriaLabel = ""Media Collapsed"",
         Items = new List<BitNavItem>
         {
-            new BitNavItem { Text = ""ColorPicker"", Url = ""components/color-picker"", Target = ""_blank"" },
-            new BitNavItem { Text = ""DatePicker"", Url = ""components/date-picker"", Target = ""_blank"" },
-            new BitNavItem { Text = ""Chart"", Url = ""components/chart"", Target = ""_blank"" }
+            new BitNavItem { Text = ""Blogs"", Url = ""https://bitplatform.dev/#"", Target=""_blank"" },
+            new BitNavItem { Text = ""Videos"", Url = ""https://bitplatform.dev/#"", Target=""_blank"" },
         }
-    }
+    },
 };
+
+private static readonly List<BitNavItem> ManualNavItems = new()
+{
+    new BitNavItem
+    {
+        Text = ""Products & Services"",
+        Title = ""Bit Platform Products & Services"",
+        ExpandAriaLabel = ""Products & Services Expanded"",
+        CollapseAriaLabel = ""Products & Services Collapsed"",
+        IconName = BitIconName.TabletMode,
+        IsExpanded = true,
+        Items = new List<BitNavItem>
+        {
+            new BitNavItem
+            {
+                Text = ""Project Templates"",
+                Title = ""Bit Platform Project Templates"",
+                Items = new List<BitNavItem>
+                {
+                    new BitNavItem { Text = ""TodoTemplate"", Target=""_blank"", },
+                    new BitNavItem { Text = ""AdminPanel"", Target = ""_blank"", },
+                }
+            },
+            new BitNavItem { Text = ""BlazorUI"", Target = ""_blank"", },
+            new BitNavItem { Text = ""Cloud hosting solutions"", Target = ""_blank"", IsEnabled = false },
+            new BitNavItem { Text = ""Bit academy"", Target = ""_blank"", IsEnabled = false }
+        }
+    },
+    new BitNavItem
+    {
+        Text = ""Community"",
+        Title = ""Bit Platform Community"",
+        ExpandAriaLabel = ""Community Expanded"",
+        CollapseAriaLabel = ""Community Collapsed"",
+        IconName = BitIconName.Heart,
+        Items = new List<BitNavItem>
+        {
+            new BitNavItem { Text = ""About"", Target=""_blank"" },
+            new BitNavItem { Text = ""Contact us"", Target=""_blank"" },
+            new BitNavItem { Text = ""Linkedin"", Target=""_blank"" },
+            new BitNavItem { Text = ""Youtube"", Target=""_blank"" },
+            new BitNavItem { Text = ""Twitter"", Target=""_blank"" },
+        }
+    },
+    new BitNavItem { Text = ""Github repo"", Target=""_blank"" },
+    new BitNavItem { Text = ""Pricing"", Target=""_blank"" },
+};
+
+private BitNavItem SelectedItemTemplate = ManualNavItems[0].Items[0].Items[0];
+
 ";
 
     #endregion
@@ -686,14 +910,16 @@ private static readonly List<BitNavItem> GroupedNavItems = new()
     #region Sample Code 5
 
     private static string example5HTMLCode = @"
-                <BitNav Items=""ManualNavItems""
-                        DefaultSelectedItem=""ManualNavItems[0].Items[0]""
-                        Mode=""BitNavMode.Manual""
-                        OnItemClick=""(item) => ClickedItem = item""
-                        OnItemToggle=""(item) => ToggledItem = item"" />
-                <span>Clicked Item: @ClickedItem?.Text</span>
-                <span>Toggled Item: @ToggledItem?.Text</span>
-                <span>IsExpanded Value: @ToggledItem?.IsExpanded</span>
+<BitNav Items=""ManualNavItems""
+        DefaultSelectedItem=""ManualNavItems[0].Items[0].Items[0]""
+        Mode=""BitNavMode.Manual""
+        OnItemClick=""(item) => ClickedItem = item""
+        OnSelectItem=""(item) => SelectedItem = item""
+        OnItemToggle=""(item) => ToggledItem = item"" />
+<span>Clicked Item: @ClickedItem?.Text</span>
+<span>Selected Item: @SelectedItem?.Text</span>
+<span>Toggled Item: @ToggledItem?.Text</span>
+<span>IsExpanded Value: @ToggledItem?.IsExpanded</span>
 ";
 
     private static string example5CSharpCode = @"
@@ -701,25 +927,52 @@ private static readonly List<BitNavItem> ManualNavItems = new()
 {
     new BitNavItem
     {
-        Text = ""Home"",
-        Title = ""Home is Parent Row"",
-        ExpandAriaLabel = ""Expand Home section"",
-        CollapseAriaLabel = ""Collapse Home section"",
+        Text = ""Products & Services"",
+        Title = ""Bit Platform Products & Services"",
+        ExpandAriaLabel = ""Products & Services Expanded"",
+        CollapseAriaLabel = ""Products & Services Collapsed"",
+        IconName = BitIconName.TabletMode,
+        IsExpanded = true,
         Items = new List<BitNavItem>
         {
-            new BitNavItem { Text = ""Activity"", },
-            new BitNavItem { Text = ""MSN"", IsEnabled = false }
+            new BitNavItem
+            {
+                Text = ""Project Templates"",
+                Title = ""Bit Platform Project Templates"",
+                Items = new List<BitNavItem>
+                {
+                    new BitNavItem { Text = ""TodoTemplate"", Target=""_blank"", },
+                    new BitNavItem { Text = ""AdminPanel"", Target = ""_blank"", },
+                }
+            },
+            new BitNavItem { Text = ""BlazorUI"", Target = ""_blank"", },
+            new BitNavItem { Text = ""Cloud hosting solutions"", Target = ""_blank"", IsEnabled = false },
+            new BitNavItem { Text = ""Bit academy"", Target = ""_blank"", IsEnabled = false }
         }
     },
-    new BitNavItem { Text = ""Documents"" },
-    new BitNavItem { Text = ""Pages"" },
-    new BitNavItem { Text = ""Notebook"", IsEnabled = false },
-    new BitNavItem { Text = ""Communication and Media"" },
-    new BitNavItem { Text = ""News"", IconName = BitIconName.News },
+    new BitNavItem
+    {
+        Text = ""Community"",
+        Title = ""Bit Platform Community"",
+        ExpandAriaLabel = ""Community Expanded"",
+        CollapseAriaLabel = ""Community Collapsed"",
+        IconName = BitIconName.Heart,
+        Items = new List<BitNavItem>
+        {
+            new BitNavItem { Text = ""About"", Target=""_blank"" },
+            new BitNavItem { Text = ""Contact us"", Target=""_blank"" },
+            new BitNavItem { Text = ""Linkedin"", Target=""_blank"" },
+            new BitNavItem { Text = ""Youtube"", Target=""_blank"" },
+            new BitNavItem { Text = ""Twitter"", Target=""_blank"" },
+        }
+    },
+    new BitNavItem { Text = ""Github repo"", Target=""_blank"" },
+    new BitNavItem { Text = ""Pricing"", Target=""_blank"" },
 };
 
-private BitNavItem ClickedItem;
-private BitNavItem ToggledItem;
+    private BitNavItem ClickedItem;
+    private BitNavItem SelectedItem;
+    private BitNavItem ToggledItem;
 ";
 
     #endregion

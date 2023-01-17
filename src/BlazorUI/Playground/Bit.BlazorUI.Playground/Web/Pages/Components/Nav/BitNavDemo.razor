@@ -28,7 +28,7 @@
                 <div>
                     <BitLabel>Basic</BitLabel>
                     <BitNav Items="ManualNavItems"
-                            DefaultSelectedItem="ManualNavItems[0].Items[0]"
+                            DefaultSelectedItem="ManualNavItems[0].Items[0].Items[0]"
                             Mode="BitNavMode.Manual" />
                 </div>
 
@@ -66,15 +66,16 @@
 
                 <div class="margin-top">
                     <BitLabel>Item Template</BitLabel>
-                    <BitNav Items="BasicNavItems">
+                    <BitNav Items="ManualNavItems" Mode="BitNavMode.Manual" @bind-SelectedItem="SelectedItemTemplate">
                         <ItemTemplate Context="item">
-                            <a href="@item.Url" target="@item.Target" class="nav-custom-item @(item.IsEnabled is false ? "disabled-item" : "")">
+                            <div class="nav-custom-item @(item.IsEnabled is false ? "disabled-item" : "")">
+                                <BitCheckbox IsEnabled="@(item.IsEnabled)" Value="@(item == SelectedItemTemplate)" IsIndeterminate="@(item.Items.Any())" />
                                 @if (item.IconName.HasValue)
                                 {
                                     <BitIcon IconName="@item.IconName.Value" />
                                 }
                                 <span>@item.Text</span>
-                            </a>
+                            </div>
                         </ItemTemplate>
                     </BitNav>
                 </div>
@@ -86,11 +87,13 @@
         <ExamplePreview>
             <div class="example-box">
                 <BitNav Items="ManualNavItems"
-                        DefaultSelectedItem="ManualNavItems[0].Items[0]"
+                        DefaultSelectedItem="ManualNavItems[0].Items[0].Items[0]"
                         Mode="BitNavMode.Manual"
                         OnItemClick="(item) => ClickedItem = item"
+                        OnSelectItem="(item) => SelectedItem = item"
                         OnItemToggle="(item) => ToggledItem = item" />
                 <span>Clicked Item: @ClickedItem?.Text</span>
+                <span>Selected Item: @SelectedItem?.Text</span>
                 <span>Toggled Item: @ToggledItem?.Text</span>
                 <span>IsExpanded Value: @ToggledItem?.IsExpanded</span>
             </div>
