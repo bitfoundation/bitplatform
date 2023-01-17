@@ -2,34 +2,36 @@
 
 public partial class MessageBox : IDisposable
 {
-    private bool _isOpen;
-    private bool _disposed;
-    private string _title = string.Empty;
-    private string _body = string.Empty;
-
     private static event Func<string, string, Task> OnShow = default!;
+
+    private bool _isOpen;
+    private string? _title;
+    private string? _body;
+    private bool _disposed;
 
     public static async Task Show(string message, string title = "")
     {
-        if (OnShow is null) return;
-
         await OnShow.Invoke(message, title);
     }
 
-    protected override void OnInitialized()
+    protected override Task OnInitAsync()
     {
         OnShow += ShowMessageBox;
 
-        base.OnInitialized();
+        return base.OnInitAsync();
     }
 
     private async Task ShowMessageBox(string message, string title)
     {
         await InvokeAsync(() =>
         {
+            _ = JsRuntime.SetBodyOverflow(true);
+
             _isOpen = true;
             _title = title;
             _body = message;
+
+            StateHasChanged();
         });
     }
 

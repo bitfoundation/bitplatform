@@ -8,7 +8,7 @@ public partial class AddOrEditCategoryPage
     [Parameter] public int? Id { get; set; }
 
     private bool _isLoading;
-    private bool _isSaveLoading;
+    private bool _isSaving;
     private string? _saveMessage;
     private bool _isColorPickerOpen;
     private BitMessageBarType _saveMessageType;
@@ -47,9 +47,9 @@ public partial class AddOrEditCategoryPage
 
     private async Task Save()
     {
-        if (_isSaveLoading) return;
+        if (_isSaving) return;
 
-        _isSaveLoading = true;
+        _isSaving = true;
 
         try
         {
@@ -77,7 +77,7 @@ public partial class AddOrEditCategoryPage
         }
         finally
         {
-            _isSaveLoading = false;
+            _isSaving = false;
         }
     }
 }

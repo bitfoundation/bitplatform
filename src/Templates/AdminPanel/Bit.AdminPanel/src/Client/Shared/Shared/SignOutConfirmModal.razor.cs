@@ -1,4 +1,4 @@
-﻿namespace AdminPanel.Client.Shared.Components;
+﻿namespace AdminPanel.Client.Shared;
 
 public partial class SignOutConfirmModal
 {
@@ -24,7 +24,7 @@ public partial class SignOutConfirmModal
     {
         IsOpen = false;
 
-        await JsRuntime.SetToggleBodyOverflow(false);
+        await JsRuntime.SetBodyOverflow(false);
     }
 
     private async Task SignOut()

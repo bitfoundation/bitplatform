@@ -62,7 +62,7 @@ public partial class MainLayout : IDisposable
     {
         _isMenuOpen = !_isMenuOpen;
 
-        await _jsRuntime.SetToggleBodyOverflow(_isMenuOpen);
+        await _jsRuntime.SetBodyOverflow(_isMenuOpen);
     }
 
     public void Dispose()

@@ -16,7 +16,7 @@ public partial class AppDataAnnotationsValidator : AppComponentBase, IDisposable
 
     [CascadingParameter] private EditContext EditContext { get; set; } = default!;
 
-    protected override async Task OnInitAsync()
+    protected override Task OnInitAsync()
     {
         if (EditContext is null)
             throw new InvalidOperationException("EditContext is required");
@@ -33,6 +33,8 @@ public partial class AppDataAnnotationsValidator : AppComponentBase, IDisposable
                                            .ToDictionary(p => p.Name, p => p.GetCustomAttribute<DisplayAttribute>()?.Name ?? p.Name);
 
         _localizer = StringLocalizerProvider.ProvideLocalizer(EditContext.Model.GetType(), _stringLocalizerFactory);
+
+        return base.OnInitAsync();
     }
 
     private void ValidationRequested(object? sender, ValidationRequestedEventArgs args)
@@ -68,8 +70,7 @@ public partial class AppDataAnnotationsValidator : AppComponentBase, IDisposable
             {
                 string memberName = string.Join(".", validationResultOfCurrentField.MemberNames);
 
-                if (memberName != fieldIdentifier.FieldName)
-                    continue;
+                if (memberName != fieldIdentifier.FieldName) continue;
 
                 _validationMessageStore.Add(fieldIdentifier, _localizer.GetString(validationResultOfCurrentField.ErrorMessage!, _localizer[_displayColumns[memberName]]));
             }
