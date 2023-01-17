@@ -4,21 +4,21 @@ namespace AdminPanel.Shared.Dtos.Account;
 [DtoResourceType(typeof(AppStrings))]
 public class ResetPasswordRequestDto
 {
-    [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
-    [EmailAddress(ErrorMessage = nameof(AppStrings.EmailAddressAttribute_Invalid))]
+    [Required(ErrorMessageResourceName = nameof(AppStrings.RequiredAttribute_ValidationError))]
+    [EmailAddress(ErrorMessageResourceName = nameof(AppStrings.EmailAddressAttribute_ValidationError))]
     [Display(Name = nameof(AppStrings.Email))]
     public string? Email { get; set; }
 
-    [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
+    [Required(ErrorMessageResourceName = nameof(AppStrings.RequiredAttribute_ValidationError))]
     public string? Token { get; set; }
 
-    [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
-    [MinLength(6, ErrorMessage = nameof(AppStrings.PasswordTooShort))]
+    [Required(ErrorMessageResourceName = nameof(AppStrings.RequiredAttribute_ValidationError))]
+    [MinLength(6, ErrorMessageResourceName = nameof(AppStrings.MinLengthAttribute_ValidationError))]
     [Display(Name = nameof(AppStrings.Password))]
     public string? Password { get; set; }
 
     [NotMapped]
-    [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
-    [Compare(nameof(Password), ErrorMessage = nameof(AppStrings.CompareAttribute_MustMatch))]
+    [Required(ErrorMessageResourceName = nameof(AppStrings.RequiredAttribute_ValidationError))]
+    [Compare(nameof(Password), ErrorMessageResourceName = nameof(AppStrings.CompareAttribute_ValidationError))]
     public string? ConfirmPassword { get; set; }
 }
