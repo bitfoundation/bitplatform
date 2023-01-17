@@ -15,6 +15,11 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <Watch Include="..\Shared\**\*.razor" />
+        <Watch Include="..\Shared\**\*.css" Exclude="node_modules\**\*;**\*.css.map;obj\**\*;bin\**\*" />
+    </ItemGroup>
+
+    <ItemGroup>
         <!--/-:msbuild-conditional:noEmit -->
         <!-- In the Blazor Web Assembly mode, the API project will host the web client app itself -->
         <Content Condition=" '$(BlazorMode)' != 'BlazorServer' " Remove="Pages\_Host.cshtml" />
@@ -25,18 +30,18 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.Bswup" Version="4.9.1-pre-02" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="4.9.1-pre-02">
+        <PackageReference Include="Bit.Bswup" Version="4.9.2-pre-01" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="4.9.2-pre-01">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="4.9.1-pre-02">
+        <PackageReference Include="Bit.SourceGenerators" Version="4.9.2-pre-01">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <!--/-:msbuild-conditional:noEmit -->
-        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.1" />
-        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.1" PrivateAssets="all" />
+        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.2" />
+        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.2" PrivateAssets="all" />
         <!--/+:msbuild-conditional:noEmit -->
     </ItemGroup>
 

@@ -1,6 +1,5 @@
 ﻿@page "/sign-in"
-
-@inherits AppComponentBase;
+@inherits AppComponentBase
 
 <PageTitle>@Localizer[nameof(AppStrings.SignInTitle)]</PageTitle>
 
@@ -15,43 +14,35 @@
     </section>
     <section class="page-section">
         <div class="bit-logo--blue"></div>
-        <EditForm Model="SignInModel" OnValidSubmit="WrapHandled(DoSignIn)" class="form">
+        <EditForm Model="_signInModel" OnValidSubmit="WrapHandled(DoSignIn)" class="form">
             <AppDataAnnotationsValidator />
-            @if (string.IsNullOrEmpty(SignInMessage) is false)
+            @if (string.IsNullOrEmpty(_signInMessage) is false)
             {
-                <BitMessageBar MessageBarType="@SignInMessageType" OnDismiss="() => SignInMessage = null">@SignInMessage</BitMessageBar>
+                <BitMessageBar MessageBarType="@_signInMessageType" OnDismiss="() => _signInMessage = null">@_signInMessage</BitMessageBar>
             }
             <h2 class="form-title">@Localizer[nameof(AppStrings.SignInTitle)]</h2>
             <div class="form-input-container">
                 <BitTextField Label="@Localizer[nameof(AppStrings.Email)]"
                               Placeholder="@Localizer[nameof(AppStrings.Email)]"
                               Type="BitTextFieldType.Email"
-                              @bind-Value="SignInModel.UserName" />
-                <ValidationMessage For="@(() => SignInModel.UserName)" />
+                @bind-Value="_signInModel.UserName" />
+                <ValidationMessage For="@(() => _signInModel.UserName)" />
             </div>
             <div class="form-input-container">
                 <BitTextField Label="@Localizer[nameof(AppStrings.Password)]"
-                              @bind-Value="SignInModel.Password"
+                @bind-Value="_signInModel.Password"
                               Type="BitTextFieldType.Password"
                               CanRevealPassword="true"
                               Placeholder="@Localizer[nameof(AppStrings.Password)]" />
-                <ValidationMessage For="@(() => SignInModel.Password)" />
+                <ValidationMessage For="@(() => _signInModel.Password)" />
             </div>
-            <BitButton Class="form-submit-button"
-                       ButtonStyle="BitButtonStyle.Primary"
-                       IsEnabled="IsSubmitButtonEnabled"
-                       Title="@Localizer[nameof(AppStrings.SignIn)]"
-                       AriaLabel="@Localizer[nameof(AppStrings.SignIn)]"
-                       ButtonType="BitButtonType.Submit">
-                @if (IsLoading)
-                {
-                    <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
-                }
-                else
-                {
-                    <span>@Localizer[nameof(AppStrings.SignIn)]</span>
-                }
-            </BitButton>
+            <BitLoadingButton IsLoading="_isLoading"
+                              ButtonStyle="BitButtonStyle.Primary"
+                              Title="@Localizer[nameof(AppStrings.SignIn)]"
+                              AriaLabel="@Localizer[nameof(AppStrings.SignIn)]"
+                              ButtonType="BitButtonType.Submit">
+                <span>@Localizer[nameof(AppStrings.SignIn)]</span>
+            </BitLoadingButton>
             <div class="form-forgot-password">
                 <BitLink Href="/forgot-password">@Localizer[nameof(AppStrings.ForgotPasswordLink)]</BitLink>
             </div>

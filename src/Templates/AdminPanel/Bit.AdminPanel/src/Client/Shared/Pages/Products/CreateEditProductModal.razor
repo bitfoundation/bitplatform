@@ -1,10 +1,11 @@
-﻿@inherits AppComponentBase;
+﻿@namespace AdminPanel.Client.Shared.Pages
+@inherits AppComponentBase
 
-<BitModal @bind-IsOpen="IsOpen">
+<BitModal @bind-IsOpen="_isOpen">
     <div class="main-container">
         <div class="header">
             <span class="title">
-                @if (Product.Id != 0)
+                @if (_product.Id != 0)
                 {
                     @Localizer[nameof(AppStrings.EditProduct)]
                 }
@@ -15,50 +16,44 @@
             </span>
             <BitIconButton IconName="BitIconName.ChromeClose" OnClick="OnCloseClick" />
         </div>
-        <EditForm Model="Product" OnValidSubmit="WrapHandled(Save)" style="width: 100%; display: flex; flex-direction: column;
-align-items: center">
+        <EditForm Model="_product" OnValidSubmit="WrapHandled(Save)" style="width: 100%; display: flex; flex-direction: column;align-items: center">
 
             <AppDataAnnotationsValidator />
             <div class="form-input-container">
-                <BitTextField Label="@Localizer[(nameof(AppStrings.Name))]" @bind-Value="Product.Name" Placeholder="@Localizer[nameof(AppStrings.EnterProductName)]" />
-                <ValidationMessage For="() => Product.Name" />
+                <BitTextField Label="@Localizer[(nameof(AppStrings.Name))]" @bind-Value="_product.Name" Placeholder="@Localizer[nameof(AppStrings.EnterProductName)]" />
+                <ValidationMessage For="() => _product.Name" />
             </div>
 
             <div class="form-input-container">
-                <BitDropDown Label="@Localizer[(nameof(AppStrings.SelectCategory))]"
-                             Items="AllCategoryList"
+                <BitDropDown @bind-Value="_selectedCategoyId"
                              IsMultiSelect="false"
-                             @bind-Value="SelectedCategoyId"
-                             Placeholder="@Localizer[(nameof(AppStrings.SelectACategory))]" />
-                <ValidationMessage For="@(() => Product.CategoryId)" />
+                             Items="_allCategoryList"
+                             OnSelectItem="(item => _product.CategoryId = int.Parse(item.Value))"
+                             Placeholder="@Localizer[(nameof(AppStrings.SelectACategory))]"
+                             Label="@Localizer[(nameof(AppStrings.SelectCategory))]" />
+                <ValidationMessage For="@(() => _product.CategoryId)" />
             </div>
 
             <div class="form-input-container">
-                <BitNumericTextField Precision="2" Label="@Localizer[(nameof(AppStrings.Price))]"
-                                     @bind-Value="Product.Price"
+                <BitNumericTextField @bind-Value="_product.Price"
+                                     Precision="2"
                                      Suffix="$"
+                                     Label="@Localizer[(nameof(AppStrings.Price))]"
                                      LabelPosition="@BitNumericTextFieldLabelPosition.Top" />
-                <ValidationMessage For="() => Product.Price" />
+                <ValidationMessage For="() => _product.Price" />
             </div>
 
             <div class="form-input-container">
-                <BitTextField Label="@Localizer[(nameof(AppStrings.Description))]"
-                              IsMultiline="true"
+                <BitTextField @bind-Value="_product.Description"
                               Rows="3"
-                              @bind-Value="Product.Description" />
-                <ValidationMessage For="() => Product.Description" />
+                              IsMultiline="true"
+                              Label="@Localizer[(nameof(AppStrings.Description))]" />
+                <ValidationMessage For="() => _product.Description" />
             </div>
 
-            <BitButton ButtonType="BitButtonType.Submit">
-                @if (IsSaveLoading)
-                {
-                    <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
-                }
-                else
-                {
-                    <span>@Localizer[nameof(AppStrings.Save)]</span>
-                }
-            </BitButton>
+            <BitLoadingButton IsLoading="_isSaving" ButtonType="BitButtonType.Submit">
+                @Localizer[nameof(AppStrings.Save)]
+            </BitLoadingButton>
         </EditForm>
     </div>
 </BitModal>

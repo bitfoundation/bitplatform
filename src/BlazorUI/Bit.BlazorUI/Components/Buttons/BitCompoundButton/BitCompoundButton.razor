@@ -14,16 +14,16 @@
        target="@Target"
        title="@Title"
        tabindex="@_tabIndex">
-        <span class="no-text-select">
+        <span class="text-container">
             @if (Text.HasValue())
             {
-                <span class="bit-cmp-btn-text">
+                <span class="primary-text">
                     @Text
                 </span>
             }
             @if (SecondaryText.HasValue())
             {
-                <span class="bit-cmp-btn-secondary-text">
+                <span class="secondary-text">
                     @SecondaryText
                 </span>
             }
@@ -43,16 +43,16 @@ else
             type="@ButtonType?.GetValue()"
             title="@Title"
             @onclick="HandleOnClick">
-        <span class="no-text-select">
+        <span class="text-container">
             @if (Text.HasValue())
             {
-                <span class="bit-cmp-btn-text">
+                <span class="primary-text">
                     @Text
                 </span>
             }
             @if (SecondaryText.HasValue())
             {
-                <span class="bit-cmp-btn-secondary-text">
+                <span class="secondary-text">
                     @SecondaryText
                 </span>
             }

@@ -1,95 +1,94 @@
 ﻿using AdminPanel.Shared.Dtos.Products;
 
-namespace AdminPanel.Client.Shared.Pages.Products;
+namespace AdminPanel.Client.Shared.Pages;
 
 public partial class CreateEditProductModal
 {
-    [Parameter]
-    public ProductDto Product { get; set; }
-    [Parameter]
-    public EventCallback OnSave { get; set; }
 
-    private bool IsOpen { get; set; }
-    public bool IsLoading { get; private set; }
-    public bool IsSaveLoading { get; private set; }
+    private bool _isOpen;
+    private bool _isLoading;
+    private bool _isSaving;
+    private ProductDto _product = new();
+    private List<BitDropDownItem> _allCategoryList = new();
+    private string _selectedCategoyId = string.Empty;
 
-    public List<BitDropDownItem>? AllCategoryList { get; set; } = new();
-
-    public string SelectedCategoyId { get => Product!.CategoryId!.ToString(); set { Product.CategoryId = int.Parse(value); } }
+    [Parameter] public EventCallback OnSave { get; set; }
 
     protected override async Task OnInitAsync()
     {
-        AllCategoryList = await GetCategoryDropdownItemsAsync();
-
-        await base.OnInitAsync();
+        await LoadAllCategoriesAsync();
     }
 
     public async Task ShowModal(ProductDto product)
     {
         await InvokeAsync(() =>
         {
-            IsOpen = true;
+            _ = JsRuntime.SetBodyOverflow(true);
 
-            _ = JsRuntime.SetToggleBodyOverflow(true);
+            _isOpen = true;
+            _product = product;
+            _selectedCategoyId = (_product.CategoryId ?? 0).ToString();
 
-            Product = product;
+            StateHasChanged();
         });
     }
 
-    private async Task<List<BitDropDownItem>> GetCategoryDropdownItemsAsync()
+    private async Task LoadAllCategoriesAsync()
     {
-        IsLoading = true;
+        _isLoading = true;
 
         try
         {
-            var categoryList = await StateService.GetValue($"{nameof(ProductsPage)}-{nameof(AllCategoryList)}", async () => await HttpClient.GetFromJsonAsync("Category/Get", AppJsonContext.Default.ListCategoryDto));
+            var categoryList = await StateService.GetValue($"{nameof(ProductsPage)}-AllCategoryList",
+                                        async () => await HttpClient.GetFromJsonAsync("Category/Get",
+                                            AppJsonContext.Default.ListCategoryDto)) ?? new();
 
-            return categoryList!.Select(c => new BitDropDownItem()
+            _allCategoryList = categoryList.Select(c => new BitDropDownItem()
             {
                 ItemType = BitDropDownItemType.Normal,
-                Text = c.Name!,
-                Value = c.Id!.ToString()
+                Text = c.Name ?? string.Empty,
+                Value = c.Id.ToString()
             }).ToList();
         }
         finally
         {
-            IsLoading = false;
+            _isLoading = false;
         }
     }
 
     private async Task Save()
     {
-        if (IsLoading)
-        {
-            return;
-        }
+        if (_isLoading) return;
+
+        _isSaving = true;
 
         try
         {
-            IsSaveLoading = true;
-
-            if (Product.Id == 0)
+            if (_product.Id == 0)
             {
-                await HttpClient.PostAsJsonAsync("Product/Create", Product, AppJsonContext.Default.ProductDto);
+                await HttpClient.PostAsJsonAsync("Product/Create", _product, AppJsonContext.Default.ProductDto);
             }
             else
             {
-                await HttpClient.PutAsJsonAsync("Product/Update", Product, AppJsonContext.Default.ProductDto);
+                await HttpClient.PutAsJsonAsync("Product/Update", _product, AppJsonContext.Default.ProductDto);
             }
 
-            IsOpen = false;
-            await JsRuntime.SetToggleBodyOverflow(false);
+            _isOpen = false;
+
+            await JsRuntime.SetBodyOverflow(false);
         }
         finally
         {
+            _isSaving = false;
+
             await OnSave.InvokeAsync();
-            IsSaveLoading = false;
         }
     }
 
     private async Task OnCloseClick()
     {
-        IsOpen = false;
-        await JsRuntime.SetToggleBodyOverflow(false);
+        _isOpen = false;
+
+        await JsRuntime.SetBodyOverflow(false);
     }
 }

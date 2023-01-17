@@ -1,94 +1,161 @@
 ﻿using System.Reflection;
+using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Components.Forms;
+using AdminPanel.Shared.Attributes;
 
 namespace AdminPanel.Client.Shared.Components;
 
 public partial class AppDataAnnotationsValidator : AppComponentBase, IDisposable
 {
-    [CascadingParameter]
-    private EditContext EditContext { get; set; } = default!;
-
-    [AutoInject] private IServiceProvider _serviceProvider = default!;
-
-    [AutoInject] private IStringLocalizerFactory _stringLocalizerFactory = default!;
-
+    private bool _disposed;
     private ValidationMessageStore _validationMessageStore = default!;
 
-    private ValidationContext _validationContext = default!;
+    [AutoInject] private IServiceProvider _serviceProvider = default!;
+    [AutoInject] private IStringLocalizerFactory _stringLocalizerFactory = default!;
 
-    private Dictionary<string, string> _displayColumns = new();
+    [CascadingParameter] private EditContext _editContext { get; set; } = default!;
 
-    private IStringLocalizer _localizer = default!;
-
-    protected override async Task OnInitAsync()
+    protected override Task OnInitAsync()
     {
-        if (EditContext is null)
+        if (_editContext is null)
             throw new InvalidOperationException("EditContext is required");
 
-        EditContext.OnValidationRequested += ValidationRequested;
-        EditContext.OnFieldChanged += FieldChanged;
+        _editContext.OnFieldChanged += OnFieldChanged;
+        _editContext.OnValidationRequested += OnValidationRequested;
 
-        _validationMessageStore = new ValidationMessageStore(EditContext);
+        _validationMessageStore = new ValidationMessageStore(_editContext);
 
-        _validationContext = new ValidationContext(EditContext.Model, serviceProvider: _serviceProvider, items: null);
-
-        _displayColumns = EditContext.Model
-            .GetType()
-            .GetProperties()
-            .ToDictionary(p => p.Name, p => p.GetCustomAttribute<DisplayAttribute>()?.Name ?? p.Name);
-
-        _localizer = StringLocalizerProvider.ProvideLocalizer(EditContext.Model.GetType(), _stringLocalizerFactory);
-
-        base.OnInitialized();
+        return base.OnInitAsync();
     }
 
-    void ValidationRequested(object sender, ValidationRequestedEventArgs args)
+    private void OnFieldChanged(object? sender, FieldChangedEventArgs eventArgs)
     {
-        _validationMessageStore.Clear();
+        var fieldIdentifier = eventArgs.FieldIdentifier;
+        var propertyInfo = fieldIdentifier.Model.GetType().GetProperty(fieldIdentifier.FieldName);
+        if (propertyInfo is null) return;
 
-        var validationResults = new List<ValidationResult>();
-
-        if (Validator.TryValidateObject(EditContext.Model, _validationContext, validationResults, validateAllProperties: true) is false)
+        var propertyValue = propertyInfo.GetValue(fieldIdentifier.Model);
+        var validationContext = new ValidationContext(fieldIdentifier.Model, _serviceProvider, items: null)
         {
-            foreach (var validationResult in validationResults)
+            MemberName = propertyInfo.Name
+        };
+        var results = new List<ValidationResult>();
+
+        var parent = propertyInfo.DeclaringType!;
+        var dtoResourceTypeAttr = parent.GetCustomAttribute<DtoResourceTypeAttribute>();
+        if (dtoResourceTypeAttr is not null)
+        {
+            var resourceType = dtoResourceTypeAttr.ResourceType;
+            var validationAttributes = propertyInfo.GetCustomAttributes<ValidationAttribute>();
+            foreach (var attribute in validationAttributes)
             {
-                string memberName = string.Join(".", validationResult.MemberNames);
+                if (string.IsNullOrWhiteSpace(attribute.ErrorMessageResourceName) is false && attribute.ErrorMessageResourceType is null)
+                {
+                    attribute.ErrorMessageResourceType = resourceType;
+                }
 
-                var fieldIdentifier = new FieldIdentifier(EditContext.Model, memberName);
+                var result = attribute.GetValidationResult(propertyValue, validationContext);
 
-                _validationMessageStore.Add(fieldIdentifier, _localizer.GetString(validationResult.ErrorMessage!, _localizer[_displayColumns[memberName]]));
+                if (result is not null)
+                {
+                    results.Add(result);
+                }
             }
-        }
-    }
 
-    void FieldChanged(object sender, FieldChangedEventArgs args)
-    {
-        FieldIdentifier fieldIdentifier = args.FieldIdentifier;
+        }
+        else
+        {
+            Validator.TryValidateProperty(propertyValue, validationContext, results);
+        }
 
         _validationMessageStore.Clear(fieldIdentifier);
-
-        var validationResults = new List<ValidationResult>();
-
-        if (Validator.TryValidateObject(EditContext.Model, _validationContext, validationResults, validateAllProperties: true) is false)
+        foreach (var result in CollectionsMarshal.AsSpan(results))
         {
-            foreach (var validationResultOfCurrentField in validationResults)
+            _validationMessageStore.Add(fieldIdentifier, result.ErrorMessage!);
+        }
+
+        _editContext.NotifyValidationStateChanged();
+    }
+
+    private void OnValidationRequested(object? sender, ValidationRequestedEventArgs e)
+    {
+        var validationContext = new ValidationContext(_editContext.Model, _serviceProvider, items: null);
+        var results = new List<ValidationResult>();
+
+        var objectType = validationContext.ObjectType;
+        var objectInstance = validationContext.ObjectInstance;
+        var dtoResourceTypeAttr = objectType.GetCustomAttribute<DtoResourceTypeAttribute>();
+
+        _validationMessageStore.Clear();
+        if (dtoResourceTypeAttr is not null)
+        {
+            var resourceType = dtoResourceTypeAttr.ResourceType;
+
+            var properties = objectType.GetProperties(BindingFlags.Instance | BindingFlags.Public);
+
+            foreach (var propertyInfo in properties)
             {
-                string memberName = string.Join(".", validationResultOfCurrentField.MemberNames);
+                var context = new ValidationContext(objectInstance, validationContext, validationContext.Items);
+                context.MemberName = propertyInfo.Name;
+                var propertyValue = propertyInfo.GetValue(objectInstance);
+                var validationAttributes = propertyInfo.GetCustomAttributes<ValidationAttribute>();
+                foreach (var attribute in validationAttributes)
+                {
+                    if (string.IsNullOrWhiteSpace(attribute.ErrorMessageResourceName) is false && attribute.ErrorMessageResourceType is null)
+                    {
+                        attribute.ErrorMessageResourceType = resourceType;
+                    }
 
-                if (memberName != fieldIdentifier.FieldName)
-                    continue;
+                    var result = attribute.GetValidationResult(propertyValue, context);
 
-                _validationMessageStore.Add(fieldIdentifier, _localizer.GetString(validationResultOfCurrentField.ErrorMessage!, _localizer[_displayColumns[memberName]]));
+                    if (result is not null)
+                    {
+                        results.Add(result);
+                    }
+                }
             }
         }
+        else
+        {
+            Validator.TryValidateObject(_editContext.Model, validationContext, results, true);
+        }
+
+        _validationMessageStore.Clear();
+        foreach (var validationResult in results)
+        {
+            if (validationResult == null) continue;
+
+            var hasMemberNames = false;
+            foreach (var memberName in validationResult.MemberNames)
+            {
+                hasMemberNames = true;
+                _validationMessageStore.Add(_editContext.Field(memberName), validationResult.ErrorMessage!);
+            }
+
+            if (hasMemberNames) continue;
+
+            _validationMessageStore.Add(new FieldIdentifier(_editContext.Model, fieldName: string.Empty), validationResult.ErrorMessage!);
+        }
+
+        _editContext.NotifyValidationStateChanged();
     }
 
     public void Dispose()
     {
-        if (EditContext is not null)
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_disposed || disposing is false) return;
+
+        if (_editContext is not null)
         {
-            EditContext.OnValidationRequested -= ValidationRequested;
-            EditContext.OnFieldChanged -= FieldChanged;
+            _editContext.OnFieldChanged -= OnFieldChanged;
+            _editContext.OnValidationRequested -= OnValidationRequested;
         }
+
+        _disposed = true;
     }
 }

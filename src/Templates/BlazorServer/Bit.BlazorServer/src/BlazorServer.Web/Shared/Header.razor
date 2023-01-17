@@ -1,0 +1,29 @@
+﻿@inject NavigationManager _navigationManager
+
+@code {
+    private string CurrentUrl = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        CurrentUrl = _navigationManager.Uri.Replace(_navigationManager.BaseUri, "/", StringComparison.Ordinal);
+        _navigationManager.LocationChanged += OnLocationChanged;
+
+        base.OnInitialized();
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
+    {
+        CurrentUrl = _navigationManager.Uri.Replace(_navigationManager.BaseUri, "/", StringComparison.Ordinal);
+        StateHasChanged();
+    }
+}
+
+<header>
+    <div class="container">
+        <div class="content">
+            <BitLink Class="logo" Href="/" aria-label="Home page" />
+            <BitLink Class="@($"link {(CurrentUrl == "/" ? "active" : string.Empty)}")" Href="/">Home</BitLink>
+            <BitLink Class="@($"link {(CurrentUrl == "/about" ? "active" : string.Empty)}")" Href="/about">About</BitLink>
+        </div>
+    </div>
+</header>

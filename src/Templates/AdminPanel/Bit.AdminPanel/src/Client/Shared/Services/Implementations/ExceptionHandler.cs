@@ -1,6 +1,5 @@
 ﻿//-:cnd:noEmit
 using System.Diagnostics;
-using AdminPanel.Client.Shared.Shared;
 
 namespace AdminPanel.Client.Shared.Services.Implementations;
 
@@ -12,7 +11,7 @@ public partial class ExceptionHandler : IExceptionHandler
     {
 #if DEBUG
         string exceptionMessage = (exception as KnownException)?.Message ?? exception.ToString();
-        MessageBox.Show(exceptionMessage, _localizer[nameof(AppStrings.Error)]);
+        _ = MessageBox.Show(exceptionMessage, _localizer[nameof(AppStrings.Error)]);
         Console.WriteLine(exceptionMessage);
         Debugger.Break();
 #else

@@ -1,5 +1,5 @@
 ﻿//-:cnd:noEmit
-using AdminPanel.Client.Shared.Shared;
+using AdminPanel.Client.Shared;
 #if BlazorServer
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
@@ -31,6 +31,7 @@ public class Program
         builder.Configuration.AddJsonStream(typeof(MainLayout).Assembly.GetManifestResourceStream("AdminPanel.Client.Shared.wwwroot.appsettings.json"));
 
         builder.Services.AddSingleton(sp => new HttpClient(sp.GetRequiredService<AppHttpClientHandler>()) { BaseAddress = new Uri($"{builder.HostEnvironment.BaseAddress}api/") });
+        builder.Services.AddSingleton<IPubSubService, PubSubService>();
         builder.Services.AddScoped<LazyAssemblyLoader>();
         builder.Services.AddTransient<IAuthTokenProvider, ClientSideAuthTokenProvider>();
 
@@ -51,7 +52,7 @@ public class Program
     public static WebApplication CreateHostBuilder(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
-        builder.Configuration.AddJsonStream(typeof(MainLayout).Assembly.GetManifestResourceStream("AdminPanel.Client.Shared.wwwroot.appsettings.json"));
+        builder.Configuration.AddJsonStream(typeof(MainLayout).Assembly.GetManifestResourceStream("AdminPanel.Client.Shared.wwwroot.appsettings.json")!);
 
 #if DEBUG
         if (OperatingSystem.IsWindows())

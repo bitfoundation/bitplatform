@@ -6,18 +6,18 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.CodeAnalyzers" Version="4.9.1-pre-02">
+        <PackageReference Include="Bit.CodeAnalyzers" Version="4.9.2-pre-01">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="4.9.1-pre-02">
+        <PackageReference Include="Bit.SourceGenerators" Version="4.9.2-pre-01">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="7.0.1" />
+        <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="7.0.2" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Localization" Version="7.0.1" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="7.0.1" />
+        <PackageReference Include="Microsoft.Extensions.Localization" Version="7.0.2" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="7.0.2" />
         <PackageReference Include="System.Text.Json" Version="7.0.1" />
     </ItemGroup>
 

@@ -59,26 +59,32 @@
         }
     }
 
-    static checkMonthPickerWidth(datePickerCalloutId: string) {
+    static checkMonthPickerWidth(datePickerCalloutId: string, responsive: boolean) {
 
         const datePickerCallout = document.getElementById(datePickerCalloutId);
-        if (datePickerCallout == null)
-            return;
+
+        if (datePickerCallout == null) return;
 
         const datePickerCalloutWidth = datePickerCallout.offsetWidth;
         const bodyWidth = document.body.offsetWidth;
-        if (datePickerCalloutWidth > bodyWidth) {
-            return true;
-        } else {
-            const calloutLeft = datePickerCallout.getBoundingClientRect().x;
-            if (datePickerCalloutWidth + calloutLeft > bodyWidth) {
-                datePickerCallout.style.left = "0";
-                datePickerCallout.style.right = "0";
-                datePickerCallout.style.margin = "auto";
-                datePickerCallout.style.width = "fit-content";
-            }
 
-            return false;
+        if (responsive && bodyWidth <= 600) {
+            datePickerCallout.style.width = "95%";
+            datePickerCallout.style.left = "2.5%";
+            return true;
         }
+
+        if (datePickerCalloutWidth > bodyWidth) return true;
+
+        const { x: calloutLeft } = datePickerCallout.getBoundingClientRect();
+
+        if (datePickerCalloutWidth + calloutLeft > bodyWidth) {
+            datePickerCallout.style.left = "0";
+            datePickerCallout.style.right = "0";
+            datePickerCallout.style.margin = "auto";
+            datePickerCallout.style.width = "fit-content";
+        }
+
+        return false;
     }
 }

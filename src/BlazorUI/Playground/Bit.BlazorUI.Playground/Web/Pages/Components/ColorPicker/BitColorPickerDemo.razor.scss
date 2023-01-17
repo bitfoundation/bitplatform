@@ -1,13 +1,18 @@
-﻿@import '../../../Styles/abstracts/_functions.scss';
-
-.m-l-70 {
-    margin-left: rem(70px);
+﻿
+::deep {
+    .custom-color-picker {
+        width: 100px;
+        height: 250px;
+    }
 }
 
-.p-12 {
-    padding: rem(12px);
+.example-box {
+    display: flex;
+    flex-flow: column nowrap;
+    gap: 30px;
 }
 
-.max-w-300 {
-    max-width: rem(304px);
+.example {
+    display: flex;
+    flex-flow: column nowrap;
 }

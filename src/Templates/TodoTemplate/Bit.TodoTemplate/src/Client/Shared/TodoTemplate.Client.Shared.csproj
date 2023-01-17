@@ -16,12 +16,12 @@
         <Content Remove="wwwroot\appsettings.json" />
         <EmbeddedResource Include="wwwroot\appsettings.json" />
 
-        <PackageReference Include="Bit.BlazorUI" Version="4.9.1-pre-02" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="4.9.1-pre-02">
+        <PackageReference Include="Bit.BlazorUI" Version="4.9.2-pre-01" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="4.9.2-pre-01">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="4.9.1-pre-02">
+        <PackageReference Include="Bit.SourceGenerators" Version="4.9.2-pre-01">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -30,9 +30,9 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="7.0.1" />
-        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.1" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.1" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="7.0.2" />
+        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.2" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.2" />
         <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.9.4">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

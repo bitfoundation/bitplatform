@@ -1,10 +1,8 @@
-﻿@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
-
+﻿@using AdminPanel.Shared.Infra;
+@using Microsoft.AspNetCore.Components.Web
 @namespace AdminPanel.Client.Web.Pages
 @inject IHttpContextAccessor ContextAccessor
-
-@using AdminPanel.Shared.Infra;
-@using Microsoft.AspNetCore.Components.Web
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 
 @{
     var isBlazorServer = BlazorModeDetector.Current.IsBlazorServer();
@@ -61,7 +59,7 @@
     </style>
     @if (isDefaultDeploymentType || isPwa)
     {
-        <component type="typeof(AdminPanel.Client.Shared.Components.LoadingComponent)" param-Color="@("#002A66")" render-mode="@RenderMode.Static" />
+        <component type="typeof(AdminPanel.Client.Shared.LoadingComponent)" param-Color="@("#002A66")" render-mode="@RenderMode.Static" />
     }
     <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.min.css" asp-append-version="@shoudAddAspAppendVersion" />
     <link href="_content/AdminPanel.Client.Shared/AdminPanel.Client.Shared.bundle.scp.css" rel="stylesheet" asp-append-version="@shoudAddAspAppendVersion" />

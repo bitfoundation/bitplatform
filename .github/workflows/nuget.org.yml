@@ -97,6 +97,12 @@ jobs:
 
     - name: dotnet pack AdminPanel
       run: dotnet pack src/Templates/AdminPanel/Bit.AdminPanel.ProjectTemplate.csproj --output . --configuration Release
+
+    - name: dotnet pack BlazorServer
+      run: dotnet pack src/Templates/BlazorServer/Bit.BlazorServer.ProjectTemplate.csproj --output . --configuration Release
+
+    - name: dotnet pack BlazorWebAssembly
+      run: dotnet pack src/Templates/BlazorWebAssembly/Bit.BlazorWebAssembly.ProjectTemplate.csproj --output . --configuration Release
     
     - name: dotnet nuget push
       run: dotnet nuget push *.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{secrets.NUGET_ORG_API_KEY}} --skip-duplicate

@@ -559,31 +559,43 @@ public partial class BitLoadingButtonDemo
         },
     };
 
-    #region Example Code 1
-
     private readonly string example1HTMLCode = @"
-<BitLoadingButton IsLoading=""BasicPrimaryIsLoading""
-                  ButtonStyle=""BitButtonStyle.Primary""
-                  OnClick=""BasicPrimaryOnClick"">
-    Primary (@BasicPrimaryCounter)
-</BitLoadingButton>
+<style>
+    .example-box {
+        display: flex;
+        flex-flow: row wrap;
+        gap: 0.5rem;
+        width: fit-content;
+        align-items: center;
+    }
+</style>
 
-<BitLoadingButton IsLoading=""BasicStandardIsLoading""
-                  ButtonStyle=""BitButtonStyle.Standard""
-                  OnClick=""BasicStandardOnClick"">
-    Standard (@BasicStandardCounter)
-</BitLoadingButton>
+<div class=""example-box"">
+    <BitLoadingButton IsLoading=""BasicPrimaryIsLoading""
+                        ButtonStyle=""BitButtonStyle.Primary""
+                        OnClick=""BasicPrimaryOnClick"">
+        Primary (@BasicPrimaryCounter)
+    </BitLoadingButton>
 
-<BitLoadingButton IsEnabled=""false"">
-    Disabled
-</BitLoadingButton>
-";
+    <BitLoadingButton IsLoading=""BasicStandardIsLoading""
+                        ButtonStyle=""BitButtonStyle.Standard""
+                        OnClick=""BasicStandardOnClick"">
+        Standard (@BasicStandardCounter)
+    </BitLoadingButton>
+
+    <BitLoadingButton IsEnabled=""false"">
+        Disabled
+    </BitLoadingButton>
+
+    <BitToggle @bind-Value=""Example1Toggle"" OnChange=""Example1ToggleOnChange"" OnText=""Turn Loading Off"" OffText=""Turn Loading On"" />
+</div>";
 
     private readonly string example1CSharpCode = @"
 private bool BasicPrimaryIsLoading;
 private int BasicPrimaryCounter;
 private bool BasicStandardIsLoading;
 private int BasicStandardCounter;
+private bool Example1Toggle;
 
 private async Task BasicPrimaryOnClick()
 {
@@ -600,33 +612,48 @@ private async Task BasicStandardOnClick()
     BasicStandardCounter++;
     BasicStandardIsLoading = false;
 }
-";
 
-    #endregion
-
-    #region Example Code 2
+private void Example1ToggleOnChange()
+{
+    BasicPrimaryIsLoading = !BasicPrimaryIsLoading;
+    BasicStandardIsLoading = !BasicStandardIsLoading;
+}";
 
     private readonly string example2HTMLCode = @"
-<BitLoadingButton IsLoading=""LoadingLabelPrimaryIsLoading""
-                  LoadingLabel=""Loading...""
-                  ButtonStyle=""BitButtonStyle.Primary""
-                  OnClick=""LoadingLabelPrimaryOnClick"">
-    Primary (@LoadingLabelPrimaryCounter)
-</BitLoadingButton>
+<style>
+    .example-box {
+        display: flex;
+        flex-flow: row wrap;
+        gap: 0.5rem;
+        width: fit-content;
+        align-items: center;
+    }
+</style>
 
-<BitLoadingButton IsLoading=""LoadingLabelStandardIsLoading""
-                  LoadingLabel=""Loading...""
-                  ButtonStyle=""BitButtonStyle.Standard""
-                  OnClick=""LoadingLabelStandardOnClick"">
-    Standard (@LoadingLabelStandardCounter)
-</BitLoadingButton>
-";
+<div class=""example-box"">
+    <BitLoadingButton IsLoading=""LoadingLabelPrimaryIsLoading""
+                        LoadingLabel=""Loading...""
+                        ButtonStyle=""BitButtonStyle.Primary""
+                        OnClick=""LoadingLabelPrimaryOnClick"">
+        Primary (@LoadingLabelPrimaryCounter)
+    </BitLoadingButton>
+
+    <BitLoadingButton IsLoading=""LoadingLabelStandardIsLoading""
+                        LoadingLabel=""Loading...""
+                        ButtonStyle=""BitButtonStyle.Standard""
+                        OnClick=""LoadingLabelStandardOnClick"">
+        Standard (@LoadingLabelStandardCounter)
+    </BitLoadingButton>
+
+    <BitToggle @bind-Value=""Example2Toggle"" OnChange=""Example2ToggleOnChange"" OnText=""Turn Loading Off"" OffText=""Turn Loading On"" />
+</div>";
 
     private readonly string example2CSharpCode = @"
 private bool LoadingLabelPrimaryIsLoading;
 private int LoadingLabelPrimaryCounter;
 private bool LoadingLabelStandardIsLoading;
 private int LoadingLabelStandardCounter;
+private bool Example2Toggle;
 
 private async Task LoadingLabelPrimaryOnClick()
 {
@@ -643,43 +670,57 @@ private async Task LoadingLabelStandardOnClick()
     LoadingLabelStandardCounter++;
     LoadingLabelStandardIsLoading = false;
 }
-";
 
-    #endregion
-
-    #region Example Code 3
+private void Example2ToggleOnChange()
+{
+    LoadingLabelPrimaryIsLoading = !LoadingLabelPrimaryIsLoading;
+    LoadingLabelStandardIsLoading = !LoadingLabelStandardIsLoading;
+}";
 
     private readonly string example3HTMLCode = @"
-<BitLoadingButton IsLoading=""TopPositionIsLoading""
-                  LoadingLabel=""Loading...""
-                  LoadingLabelPosition=""BitLabelPosition.Top""
-                  OnClick=""TopPositionOnClick"">
-    Top (@TopPositionCounter)
-</BitLoadingButton>
+<style>
+    .example-box {
+        display: flex;
+        flex-flow: row wrap;
+        gap: 0.5rem;
+        width: fit-content;
+        align-items: center;
+    }
+</style>
 
-<BitLoadingButton IsLoading=""RightPositionIsLoading""
-                  LoadingLabel=""Loading...""
-                  LoadingLabelPosition=""BitLabelPosition.Right""
-                  OnClick=""RightPositionOnClick"">
-    Right (@RightPositionCounter)
-</BitLoadingButton>
+<div class=""example-box"">
+    <BitLoadingButton IsLoading=""TopPositionIsLoading""
+                        LoadingLabel=""Loading...""
+                        LoadingLabelPosition=""BitLabelPosition.Top""
+                        OnClick=""TopPositionOnClick"">
+        Top (@TopPositionCounter)
+    </BitLoadingButton>
 
-<BitLoadingButton IsLoading=""BottomPositionIsLoading""
-                  ButtonStyle=""BitButtonStyle.Standard""
-                  LoadingLabel=""Loading...""
-                  LoadingLabelPosition=""BitLabelPosition.Bottom""
-                  OnClick=""BottomPositionOnClick"">
-    Bottom (@BottomPositionCounter)
-</BitLoadingButton>
+    <BitLoadingButton IsLoading=""RightPositionIsLoading""
+                        LoadingLabel=""Loading...""
+                        LoadingLabelPosition=""BitLabelPosition.Right""
+                        OnClick=""RightPositionOnClick"">
+        Right (@RightPositionCounter)
+    </BitLoadingButton>
 
-<BitLoadingButton IsLoading=""LeftPositionIsLoading""
-                  ButtonStyle=""BitButtonStyle.Standard""
-                  LoadingLabel=""Loading...""
-                  LoadingLabelPosition=""BitLabelPosition.Left""
-                  OnClick=""LeftPositionOnClick"">
-    Left (@LeftPositionCounter)
-</BitLoadingButton>
-";
+    <BitLoadingButton IsLoading=""BottomPositionIsLoading""
+                        ButtonStyle=""BitButtonStyle.Standard""
+                        LoadingLabel=""Loading...""
+                        LoadingLabelPosition=""BitLabelPosition.Bottom""
+                        OnClick=""BottomPositionOnClick"">
+        Bottom (@BottomPositionCounter)
+    </BitLoadingButton>
+
+    <BitLoadingButton IsLoading=""LeftPositionIsLoading""
+                        ButtonStyle=""BitButtonStyle.Standard""
+                        LoadingLabel=""Loading...""
+                        LoadingLabelPosition=""BitLabelPosition.Left""
+                        OnClick=""LeftPositionOnClick"">
+        Left (@LeftPositionCounter)
+    </BitLoadingButton>
+
+    <BitToggle @bind-Value=""Example3Toggle"" OnChange=""Example3ToggleOnChange"" OnText=""Turn Loading Off"" OffText=""Turn Loading On"" />
+</div>";
 
     private readonly string example3CSharpCode = @"
 private bool TopPositionIsLoading;
@@ -690,6 +731,7 @@ private bool BottomPositionIsLoading;
 private int BottomPositionCounter;
 private bool LeftPositionIsLoading;
 private int LeftPositionCounter;
+private bool Example3Toggle;
 
 private async Task TopPositionOnClick()
 {
@@ -722,39 +764,55 @@ private async Task LeftPositionOnClick()
     LeftPositionCounter++;
     LeftPositionIsLoading = false;
 }
-";
 
-    #endregion
-
-    #region Example Code 4
+private void Example3ToggleOnChange()
+{
+    TopPositionIsLoading = !TopPositionIsLoading;
+    RightPositionIsLoading = !RightPositionIsLoading;
+    BottomPositionIsLoading = !BottomPositionIsLoading;
+    LeftPositionIsLoading = !LeftPositionIsLoading;
+}";
 
     private readonly string example4HTMLCode = @"
-<BitLoadingButton IsLoading=""XSmallIsLoading""
-                  LoadingSpinnerSize=""BitSpinnerSize.XSmall""
-                  OnClick=""XSmallOnClick"">
-    XSmall (@XSmallCounter)
-</BitLoadingButton>
+<style>
+    .example-box {
+        display: flex;
+        flex-flow: row wrap;
+        gap: 0.5rem;
+        width: fit-content;
+        align-items: center;
+    }
+</style>
 
-<BitLoadingButton IsLoading=""SmallIsLoading""
-                  LoadingSpinnerSize=""BitSpinnerSize.Small""
-                  OnClick=""SmallOnClick"">
-    Small (@SmallCounter)
-</BitLoadingButton>
+<div class=""example-box"">
+    <BitLoadingButton IsLoading=""XSmallIsLoading""
+                        LoadingSpinnerSize=""BitSpinnerSize.XSmall""
+                        OnClick=""XSmallOnClick"">
+        XSmall (@XSmallCounter)
+    </BitLoadingButton>
 
-<BitLoadingButton IsLoading=""MediumIsLoading""
-                  ButtonStyle=""BitButtonStyle.Standard""
-                  LoadingSpinnerSize=""BitSpinnerSize.Medium""
-                  OnClick=""MediumOnClick"">
-    Medium (@MediumCounter)
-</BitLoadingButton>
+    <BitLoadingButton IsLoading=""SmallIsLoading""
+                        LoadingSpinnerSize=""BitSpinnerSize.Small""
+                        OnClick=""SmallOnClick"">
+        Small (@SmallCounter)
+    </BitLoadingButton>
 
-<BitLoadingButton IsLoading=""LargeIsLoading""
-                  ButtonStyle=""BitButtonStyle.Standard""
-                  LoadingSpinnerSize=""BitSpinnerSize.Large""
-                  OnClick=""LargeOnClick"">
-    Large (@LargeCounter)
-</BitLoadingButton>
-";
+    <BitLoadingButton IsLoading=""MediumIsLoading""
+                        ButtonStyle=""BitButtonStyle.Standard""
+                        LoadingSpinnerSize=""BitSpinnerSize.Medium""
+                        OnClick=""MediumOnClick"">
+        Medium (@MediumCounter)
+    </BitLoadingButton>
+
+    <BitLoadingButton IsLoading=""LargeIsLoading""
+                        ButtonStyle=""BitButtonStyle.Standard""
+                        LoadingSpinnerSize=""BitSpinnerSize.Large""
+                        OnClick=""LargeOnClick"">
+        Large (@LargeCounter)
+    </BitLoadingButton>
+
+    <BitToggle @bind-Value=""Example4Toggle"" OnChange=""Example4ToggleOnChange"" OnText=""Turn Loading Off"" OffText=""Turn Loading On"" />
+</div>";
 
     private readonly string example4CSharpCode = @"
 private bool XSmallIsLoading;
@@ -765,6 +823,7 @@ private bool MediumIsLoading;
 private int MediumCounter;
 private bool LargeIsLoading;
 private int LargeCounter;
+private bool Example4Toggle;
 
 private async Task XSmallOnClick()
 {
@@ -797,86 +856,101 @@ private async Task LargeOnClick()
     LargeCounter++;
     LargeIsLoading = false;
 }
-";
 
-    #endregion
-
-    #region Example Code 5
+private void Example4ToggleOnChange()
+{
+    XSmallIsLoading = !XSmallIsLoading;
+    SmallIsLoading = !SmallIsLoading;
+    MediumIsLoading = !MediumIsLoading;
+    LargeIsLoading = !LargeIsLoading;
+}";
 
     private readonly string example5HTMLCode = @"
 <style>
+    .example-box {
+        display: flex;
+        flex-flow: row wrap;
+        gap: 0.5rem;
+        width: fit-content;
+        align-items: center;
+    }
+
     .custom-loading {
         display: flex;
         justify-content: center;
         align-items: center;
-        gap: rem(5px);
+        gap: 0.3125rem;
     }
 </style>
 
-<BitLoadingButton IsLoading=""EllipsisIsLoading""
-                  Title=""Ellipsis Loading""
-                  OnClick=""EllipsisOnClick"">
-    <LoadingTemplate>
-        <div class=""custom-loading"">
-            <BitEllipsisLoading Size=""20"" />
-            <span>wait...</span>
-        </div>
-    </LoadingTemplate>
-    <ChildContent>
-        Ellipsis Loading
-    </ChildContent>
-</BitLoadingButton>
+<div class=""example-box"">
+    <BitLoadingButton IsLoading=""EllipsisIsLoading""
+                        Title=""Ellipsis Loading""
+                        OnClick=""EllipsisOnClick"">
+        <LoadingTemplate>
+            <div class=""custom-loading"">
+                <BitEllipsisLoading Size=""20"" />
+                <span>wait...</span>
+            </div>
+        </LoadingTemplate>
+        <ChildContent>
+            Ellipsis Loading
+        </ChildContent>
+    </BitLoadingButton>
 
-<BitLoadingButton IsLoading=""GridIsLoading""
-                  Title=""Grid Loading""
-                  OnClick=""GridOnClick"">
-    <LoadingTemplate>
-        <div class=""custom-loading"">
-            <BitGridLoading Size=""20"" />
-            <span>wait...</span>
-        </div>
-    </LoadingTemplate>
-    <ChildContent>
-        Grid Loading
-    </ChildContent>
-</BitLoadingButton>
+    <BitLoadingButton IsLoading=""GridIsLoading""
+                        Title=""Grid Loading""
+                        OnClick=""GridOnClick"">
+        <LoadingTemplate>
+            <div class=""custom-loading"">
+                <BitGridLoading Size=""20"" />
+                <span>wait...</span>
+            </div>
+        </LoadingTemplate>
+        <ChildContent>
+            Grid Loading
+        </ChildContent>
+    </BitLoadingButton>
 
-<BitLoadingButton IsLoading=""RollerIsLoading""
-                  ButtonStyle=""BitButtonStyle.Standard""
-                  Title=""Roller Loading""
-                  OnClick=""RollerOnClick"">
-    <LoadingTemplate>
-        <div class=""custom-loading"">
-            <BitRollerLoading Size=""20"" Color=""royalblue"" />
-            <span>wait...</span>
-        </div>
-    </LoadingTemplate>
-    <ChildContent>
-        Roller Loading
-    </ChildContent>
-</BitLoadingButton>
+    <BitLoadingButton IsLoading=""RollerIsLoading""
+                        ButtonStyle=""BitButtonStyle.Standard""
+                        Title=""Roller Loading""
+                        OnClick=""RollerOnClick"">
+        <LoadingTemplate>
+            <div class=""custom-loading"">
+                <BitRollerLoading Size=""20"" Color=""royalblue"" />
+                <span>wait...</span>
+            </div>
+        </LoadingTemplate>
+        <ChildContent>
+            Roller Loading
+        </ChildContent>
+    </BitLoadingButton>
 
-<BitLoadingButton IsLoading=""SpinnerIsLoading""
-                  ButtonStyle=""BitButtonStyle.Standard""
-                  Title=""Spinner Loading""
-                  OnClick=""SpinnerOnClick"">
-    <LoadingTemplate>
-        <div class=""custom-loading"">
-            <BitSpinnerLoading Size=""20"" Color=""royalblue"" />
-            <span>wait...</span>
-        </div>
-    </LoadingTemplate>
-    <ChildContent>
-        Spinner Loading
-    </ChildContent>
-</BitLoadingButton>
-";
+    <BitLoadingButton IsLoading=""SpinnerIsLoading""
+                        ButtonStyle=""BitButtonStyle.Standard""
+                        Title=""Spinner Loading""
+                        OnClick=""SpinnerOnClick"">
+        <LoadingTemplate>
+            <div class=""custom-loading"">
+                <BitSpinnerLoading Size=""20"" Color=""royalblue"" />
+                <span>wait...</span>
+            </div>
+        </LoadingTemplate>
+        <ChildContent>
+            Spinner Loading
+        </ChildContent>
+    </BitLoadingButton>
+
+    <BitToggle @bind-Value=""Example5Toggle"" OnChange=""Example5ToggleOnChange"" OnText=""Turn Loading Off"" OffText=""Turn Loading On"" />
+</div>";
 
     private readonly string example5CSharpCode = @"
 private bool EllipsisIsLoading;
 private bool GridIsLoading;
 private bool RollerIsLoading;
 private bool SpinnerIsLoading;
+private bool Example5Toggle;
 
 private async Task EllipsisOnClick()
 {
@@ -905,32 +979,48 @@ private async Task SpinnerOnClick()
     await Task.Delay(1000);
     SpinnerIsLoading = false;
 }
-";
 
-    #endregion
-
-    #region Example Code 6
+private void Example5ToggleOnChange()
+{
+    EllipsisIsLoading = !EllipsisIsLoading;
+    GridIsLoading = !GridIsLoading;
+    RollerIsLoading = !RollerIsLoading;
+    SpinnerIsLoading = !SpinnerIsLoading;
+}";
 
     private readonly string example6HTMLCode = @"
-<BitLoadingButton IsLoading=""SmallButtonIsLoading""
-                  ButtonSize=""BitButtonSize.Small""
-                  OnClick=""SmallButtonOnClick"">
-    Small (@SmallButtonCounter)
-</BitLoadingButton>
+<style>
+    .example-box {
+        display: flex;
+        flex-flow: row wrap;
+        gap: 0.5rem;
+        width: fit-content;
+        align-items: center;
+    }
+</style>
 
-<BitLoadingButton IsLoading=""MediumButtonIsLoading""
-                  ButtonSize=""BitButtonSize.Medium""
-                  OnClick=""MediumButtonOnClick"">
-    Medium (@MediumButtonCounter)
-</BitLoadingButton>
+<div class=""example-box"">
+    <BitLoadingButton IsLoading=""SmallButtonIsLoading""
+                        ButtonSize=""BitButtonSize.Small""
+                        OnClick=""SmallButtonOnClick"">
+        Small (@SmallButtonCounter)
+    </BitLoadingButton>
 
-<BitLoadingButton IsLoading=""LargeButtonIsLoading""
-                  ButtonStyle=""BitButtonStyle.Standard""
-                  ButtonSize=""BitButtonSize.Large""
-                  OnClick=""LargeButtonOnClick"">
-    Large (@LargeButtonCounter)
-</BitLoadingButton>
-";
+    <BitLoadingButton IsLoading=""MediumButtonIsLoading""
+                        ButtonSize=""BitButtonSize.Medium""
+                        OnClick=""MediumButtonOnClick"">
+        Medium (@MediumButtonCounter)
+    </BitLoadingButton>
+
+    <BitLoadingButton IsLoading=""LargeButtonIsLoading""
+                        ButtonStyle=""BitButtonStyle.Standard""
+                        ButtonSize=""BitButtonSize.Large""
+                        OnClick=""LargeButtonOnClick"">
+        Large (@LargeButtonCounter)
+    </BitLoadingButton>
+
+    <BitToggle @bind-Value=""Example6Toggle"" OnChange=""Example6ToggleOnChange"" OnText=""Turn Loading Off"" OffText=""Turn Loading On"" />
+</div>";
 
     private readonly string example6CSharpCode = @"
 private bool SmallButtonIsLoading;
@@ -939,6 +1029,7 @@ private bool MediumButtonIsLoading;
 private int MediumButtonCounter;
 private bool LargeButtonIsLoading;
 private int LargeButtonCounter;
+private bool Example6Toggle;
 
 private async Task SmallButtonOnClick()
 {
@@ -963,70 +1054,81 @@ private async Task LargeButtonOnClick()
     LargeButtonCounter++;
     LargeButtonIsLoading = false;
 }
-";
 
-    #endregion
-
-    #region Example Code 7
+private void Example6ToggleOnChange()
+{
+    SmallButtonIsLoading = !SmallButtonIsLoading;
+    MediumButtonIsLoading = !MediumButtonIsLoading;
+    LargeButtonIsLoading = !LargeButtonIsLoading;
+}";
 
     private readonly string example7HTMLCode = @"
 <style>
-    ::deep .custom-btn-sm {
-        &.bit-lbtn-sm-fluent {
-            max-width: 100px;
-            width: 100px;
-            padding: 15px 20px;
-            font-size: 15px;
-            line-height: 1.5;
-            border-radius: 3px;
-        }
+    .example-box {
+        display: flex;
+        flex-flow: row wrap;
+        gap: 0.5rem;
+        width: fit-content;
+        align-items: center;
     }
 
-    ::deep .custom-btn-md {
-        &.bit-lbtn-md-fluent {
-            max-width: 150px;
-            width: 150px;
-            padding: 18px 23px;
-            font-size: 18px;
-            line-height: 1.4;
-            border-radius: 4px;
-        }
+    .example-box.column {
+        flex-direction: column;
     }
 
-    ::deep .custom-btn-lg {
-        &.bit-lbtn-lg-fluent {
-            max-width: 200px;
-            width: 200px;
-            padding: 21px 26px;
-            font-size: 21px;
-            line-height: 1.33;
-            border-radius: 6px;
-        }
+    .custom-btn-sm.small {
+        max-width: 7rem;
+        width: 7rem;
+        padding: 1rem 1.25rem;
+        font-size: 1rem;
+        line-height: 1.5;
+        border-radius: 0.1875rem;
+    }
+
+    .custom-btn-md.medium {
+        max-width: 10rem;
+        width: 10rem;
+        padding: 1.125rem 1.5rem;
+        font-size: 1.125rem;
+        line-height: 1.4;
+        border-radius: 0.25rem;
+    }
+
+    .custom-btn-lg.large {
+        max-width: 12.5rem;
+        width: 12.5rem;
+        padding: 1.375rem 1.625rem;
+        font-size: 1.3125rem;
+        line-height: 1.33;
+        border-radius: 0.375rem;
     }
 </style>
 
-<BitLoadingButton Class=""custom-btn-sm""
-                  ButtonSize=""BitButtonSize.Small""
-                  IsLoading=""CustomizedSmallButtonIsLoading""
-                  OnClick=""CustomizedSmallButtonOnClick"">
-    Small (@CustomizedSmallButtonCounter)
-</BitLoadingButton>
+<div class=""example-box column"">
+    <BitLoadingButton Class=""custom-btn-sm""
+                        ButtonSize=""BitButtonSize.Small""
+                        IsLoading=""CustomizedSmallButtonIsLoading""
+                        OnClick=""CustomizedSmallButtonOnClick"">
+        Small (@CustomizedSmallButtonCounter)
+    </BitLoadingButton>
 
-<BitLoadingButton Class=""custom-btn-md""
-                  ButtonSize=""BitButtonSize.Medium""
-                  IsLoading=""CustomizedMediumButtonIsLoading""
-                  OnClick=""CustomizedMediumButtonOnClick"">
-    Medium (@CustomizedMediumButtonCounter)
-</BitLoadingButton>
+    <BitLoadingButton Class=""custom-btn-md""
+                        ButtonSize=""BitButtonSize.Medium""
+                        IsLoading=""CustomizedMediumButtonIsLoading""
+                        OnClick=""CustomizedMediumButtonOnClick"">
+        Medium (@CustomizedMediumButtonCounter)
+    </BitLoadingButton>
 
-<BitLoadingButton Class=""custom-btn-lg""
-                  ButtonSize=""BitButtonSize.Large""
-                  IsLoading=""CustomizedLargeButtonIsLoading""
-                  ButtonStyle=""BitButtonStyle.Standard""
-                  OnClick=""CustomizedLargeButtonOnClick"">
-    Large (@CustomizedLargeButtonCounter)
-</BitLoadingButton>
-";
+    <BitLoadingButton Class=""custom-btn-lg""
+                        ButtonSize=""BitButtonSize.Large""
+                        IsLoading=""CustomizedLargeButtonIsLoading""
+                        ButtonStyle=""BitButtonStyle.Standard""
+                        OnClick=""CustomizedLargeButtonOnClick"">
+        Large (@CustomizedLargeButtonCounter)
+    </BitLoadingButton>
+
+    <BitToggle @bind-Value=""Example7Toggle"" OnChange=""Example7ToggleOnChange"" OnText=""Turn Loading Off"" OffText=""Turn Loading On"" />
+</div>";
 
     private readonly string example7CSharpCode = @"
 private bool CustomizedSmallButtonIsLoading;
@@ -1035,6 +1137,7 @@ private bool CustomizedMediumButtonIsLoading;
 private int CustomizedMediumButtonCounter;
 private bool CustomizedLargeButtonIsLoading;
 private int CustomizedLargeButtonCounter;
+private bool Example7Toggle;
 
 private async Task CustomizedSmallButtonOnClick()
 {
@@ -1059,7 +1162,11 @@ private async Task CustomizedLargeButtonOnClick()
     CustomizedLargeButtonCounter++;
     CustomizedLargeButtonIsLoading = false;
 }
-";
 
-    #endregion
+private void Example7ToggleOnChange()
+{
+    CustomizedSmallButtonIsLoading = !CustomizedSmallButtonIsLoading;
+    CustomizedMediumButtonIsLoading = !CustomizedMediumButtonIsLoading;
+    CustomizedLargeButtonIsLoading = !CustomizedLargeButtonIsLoading;
+}";
 }

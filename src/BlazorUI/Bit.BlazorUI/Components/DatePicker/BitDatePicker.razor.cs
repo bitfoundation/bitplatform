@@ -58,7 +58,6 @@ public partial class BitDatePicker
         }
     }
 
-
     /// <summary>
     /// The format of the date in the DatePicker
     /// </summary>
@@ -140,6 +139,11 @@ public partial class BitDatePicker
             ClassBuilder.Reset();
         }
     }
+
+    /// <summary>
+    /// Enables the responsive mode in small screens
+    /// </summary>
+    [Parameter] public bool IsResponsive { get; set; }
 
     /// <summary>
     /// Whether or not the Textfield of the DatePicker is underlined.
@@ -355,7 +359,7 @@ public partial class BitDatePicker
 
         if (_showMonthPickerAsOverlayInternal is false)
         {
-            _showMonthPickerAsOverlayInternal = await JSRuntime.InvokeAsync<bool>("BitDatePicker.checkMonthPickerWidth", CalloutId);
+            _showMonthPickerAsOverlayInternal = await JSRuntime.InvokeAsync<bool>("BitDatePicker.checkMonthPickerWidth", CalloutId, IsResponsive);
         }
 
         if (_showMonthPickerAsOverlayInternal)

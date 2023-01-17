@@ -1,47 +1,49 @@
 ﻿//-:cnd:noEmit
 using AdminPanel.Shared.Dtos.Products;
 
-namespace AdminPanel.Client.Shared.Pages.Products;
+namespace AdminPanel.Client.Shared.Pages;
 
 [Authorize]
 public partial class ProductsPage
 {
-    public bool IsLoading { get; set; }
+    private bool _isLoading;
+    private CreateEditProductModal? _modal;
+    private string _productNameFilter = string.Empty;
 
-    CreateEditProductModal? modal;
 
-    BitDataGridPaginationState pagination = new() { ItemsPerPage = 10 };
-    BitDataGrid<ProductDto>? dataGrid;
-    BitDataGridItemsProvider<ProductDto> productsProvider;
+    private BitDataGrid<ProductDto>? _dataGrid;
+    private BitDataGridItemsProvider<ProductDto> _productsProvider = default!;
+    private BitDataGridPaginationState _pagination = new() { ItemsPerPage = 10 };
 
-    string _productNameFilter = string.Empty;
     string ProductNameFilter
     {
         get => _productNameFilter;
         set
         {
             _productNameFilter = value;
-            _ = dataGrid!.RefreshDataAsync();
+            _ = RefreshData();
         }
     }
 
     protected override async Task OnInitAsync()
     {
-        await PrepareGridDataProvider();
+        PrepareGridDataProvider();
+
         await base.OnInitAsync();
     }
 
-    private async Task PrepareGridDataProvider()
+    private void PrepareGridDataProvider()
     {
-        productsProvider = async req =>
+        _productsProvider = async req =>
         {
+            _isLoading = true;
+
             try
             {
                 // https://docs.microsoft.com/en-us/odata/concepts/queryoptions-overview
-
-                var query = new Dictionary<string, object>()
+                var query = new Dictionary<string, object?>()
                 {
-                    { "$top", req.Count.HasValue ? req.Count.Value : 10 },
+                    { "$top", req.Count ?? 10 },
                     { "$skip", req.StartIndex }
                 };
 
@@ -67,7 +69,8 @@ public partial class ProductsPage
             }
             finally
             {
-                IsLoading = false;
+                _isLoading = false;
+
                 StateHasChanged();
             }
         };
@@ -75,26 +78,28 @@ public partial class ProductsPage
 
     private async Task RefreshData()
     {
-        await dataGrid!.RefreshDataAsync();
+        await _dataGrid!.RefreshDataAsync();
     }
 
     private async Task CreateProduct()
     {
-        await modal!.ShowModal(new ProductDto());
+        await _modal!.ShowModal(new ProductDto());
     }
 
     private async Task EditProduct(ProductDto product)
     {
-        await modal!.ShowModal(product);
+        await _modal!.ShowModal(product);
     }
 
     private async Task DeleteProduct(ProductDto product)
     {
-        var confirmed = await ConfirmMessageBox.Show(Localizer.GetString(nameof(AppStrings.AreYouSureWannaDeleteProduct), product.Name!), Localizer[nameof(AppStrings.DeleteProduct)]);
+        var confirmed = await ConfirmMessageBox.Show(Localizer.GetString(nameof(AppStrings.AreYouSureWannaDeleteProduct), product.Name ?? string.Empty), 
+                                                     Localizer[nameof(AppStrings.DeleteProduct)]);
 
         if (confirmed)
         {
             await HttpClient.DeleteAsync($"Product/Delete/{product.Id}");
+
             await RefreshData();
         }
     }
