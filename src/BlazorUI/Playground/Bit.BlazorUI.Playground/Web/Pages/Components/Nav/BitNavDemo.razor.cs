@@ -160,8 +160,14 @@ public partial class BitNavDemo
         new BitNavItem { Text = "Iconography" },
     };
 
+
     private static readonly List<BitDropDownItem> DropDownItems = new()
     {
+        new BitDropDownItem
+        {
+            Text = "Home",
+            Value = "Home",
+        },
         new BitDropDownItem
         {
             Text = "TodoTemplate",
@@ -675,6 +681,11 @@ private static readonly List<BitNavItem> ManualNavItems = new()
 
 private static readonly List<BitDropDownItem> DropDownItems = new()
 {
+    new BitDropDownItem
+    {
+        Text = ""Home"",
+        Value = ""Home"",
+    },
     new BitDropDownItem
     {
         Text = ""TodoTemplate"",
