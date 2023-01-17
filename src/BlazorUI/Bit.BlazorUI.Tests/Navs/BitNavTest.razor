@@ -1,36 +1,32 @@
 ﻿<CascadingValue Value="Visual">
-    <BitNav InitialSelectedKey="@InitialSelectedKey"
-            SelectedKey="@SelectedKey"
-            AriaLabel="@AriaLabel"
-            IsOnTop="IsOnTop"
+    <BitNav AriaLabel="@AriaLabel"
             RenderType="@RenderType"
-            NavLinkItems="NavLinkItems"
-            OnLinkClick="OnlinkClick"
-            OnLinkExpandClick="OnLinkExpandClick"
+            Items="Items"
+            SelectedItem="@SelectedItem"
+            OnItemClick="OnItemClick"
+            OnItemExpand="OnItemExpand"
             Mode="@Mode">
     </BitNav>
 </CascadingValue>
 
 @code {
     [Parameter] public Visual Visual { get; set; }
-    [Parameter] public string SelectedKey { get; set; }
-    [Parameter] public string InitialSelectedKey { get; set; }
     [Parameter] public string AriaLabel { get; set; }
-    [Parameter] public bool IsOnTop { get; set; }
     [Parameter] public BitNavRenderType RenderType { get; set; }
-    [Parameter] public List<BitNavLinkItem> NavLinkItems { get; set; } = new List<BitNavLinkItem> { new BitNavLinkItem { Name = "Test", Key = "Test" } };
+    [Parameter] public IList<BitNavItem> Items { get; set; } = new List<BitNavItem>();
+    [Parameter] public BitNavItem SelectedItem { get; set; } = new BitNavItem();
     [Parameter] public BitNavMode Mode { get; set; } = BitNavMode.Automatic;
 
-    public string OnLinkClickValue = string.Empty;
-    public string OnLinkExpandClickValue = string.Empty;
+    public string ClickedItemName = string.Empty;
+    public string ExpandedItemName = string.Empty;
 
-    public void OnlinkClick(BitNavLinkItem navLinkItem)
+    public void OnItemClick(BitNavItem navLinkItem)
     {
-        OnLinkClickValue = navLinkItem.Name;
+        ClickedItemName = navLinkItem.Text;
     }
 
-    public void OnLinkExpandClick(BitNavLinkItem navLinkItem)
+    public void OnItemExpand(BitNavItem navLinkItem)
     {
-        OnLinkExpandClickValue = navLinkItem.Key;
+        ExpandedItemName = navLinkItem.Text;
     }
 }

@@ -70,14 +70,13 @@
                 else if (SelectedComponent.Name == "Nav (TreeList)")
                 {
                     <BitNav Style="width: 208px;
-                       height: 350px;
-                       box-sizing: border-box;
-                       border: 1px solid #eee;
-                       overflow-y: auto;"
-                        NavLinkItems="BasicNavLinks"
-                        AriaLabel="Nav basic example"
-                        SelectedKey="key3">
-                    </BitNav>
+                                   height: 350px;
+                                   box-sizing: border-box;
+                                   border: 1px solid #eee;
+                                   overflow-y: auto;"
+                            Items="BasicNavLinks"
+                            AriaLabel="Nav basic example"
+                            SelectedItem="BasicNavLinks[2]" />
                 }
                 else if (SelectedComponent.Name == "DataGrid")
                 {
@@ -205,39 +204,42 @@
             }
             else if (SelectedComponent.Name == "Nav (TreeList)")
             {
-                <pre class="code"><code class="language-cshtml">&ltBitNav Style="width: 208px;
-               height: 350px;
-               box-sizing: border-box;
-               border: 1px solid #eee;
-               overflow-y: auto;"
-        NavLinkItems="BasicNavLinks"
-        AriaLabel="Nav basic example"
-        SelectedKey="key3">
-&lt/BitNav></code>
-<code class="language-csharp">
+                <pre class="code">
+                    <code class="language-cshtml">
+&ltBitNav Style="width: 208px;
+                    height: 350px;
+                    box-sizing: border-box;
+                    border: 1px solid #eee;
+                    overflow-y: auto;"
+            Items="BasicNavLinks"
+            AriaLabel="Nav basic example"
+            SelectedItem="BasicNavLinks[2]" />
+                    </code>
+                    <code class="language-csharp">
 &#64;code {
-    private readonly List&ltBitNavLinkItem> BasicNavLinks = new()
+    private readonly List&ltBitNavItem> BasicNavLinks = new()
     {
-        new BitNavLinkItem
+        new BitNavItem
         {
             Name = "Home",
             Url = "http://example.com",
             ExpandAriaLabel = "Expand Home section",
             CollapseAriaLabel = "Collapse Home section",
             IsExpanded = true,
-            Links = new List&ltBitNavLinkItem>
+            Items = new List&ltBitNavItem>
             {
-                    new BitNavLinkItem { Name = "Activity", Url = "http://msn.com", Key = "key1", Target="_blank" },
-                    new BitNavLinkItem { Name = "MSN", Url = "http://msn.com", Key = "key2", IsEnabled = false, Target = "_blank" }
+                    new BitNavItem { Name = "Activity", Url = "http://msn.com", Target="_blank" },
+                    new BitNavItem { Name = "MSN", Url = "http://msn.com", IsEnabled = false, Target = "_blank" }
             }
         },
-        new BitNavLinkItem { Name = "Documents", Url = "http://example.com", Key = "key3", Target = "_blank", IsExpanded = true },
-        new BitNavLinkItem { Name = "Pages", Url = "http://msn.com", Key = "key4", Target = "_parent" },
-        new BitNavLinkItem { Name = "Notebook", Url = "http://msn.com", Key = "key5", IsEnabled = false },
-        new BitNavLinkItem { Name = "Communication and Media", Url = "http://msn.com", Key = "key6", Target = "_top" },
-        new BitNavLinkItem { Name = "News", Title = "News", Url = "http://msn.com", Key = "key7", Icon = "News", Target = "_self" },
+        new BitNavItem { Name = "Documents", Url = "http://example.com", Target = "_blank", IsExpanded = true },
+        new BitNavItem { Name = "Pages", Url = "http://msn.com", Target = "_parent" },
+        new BitNavItem { Name = "Notebook", Url = "http://msn.com", IsEnabled = false },
+        new BitNavItem { Name = "Communication and Media", Url = "http://msn.com", Target = "_top" },
+        new BitNavItem { Name = "News", Title = "News", Url = "http://msn.com", Icon = "News", Target = "_self" },
     };
-                        }</code></pre>
+                    </code>
+                </pre>
             }
             else if (SelectedComponent.Name == "DataGrid")
             {
