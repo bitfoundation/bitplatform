@@ -37,20 +37,13 @@
                     <br />
                     -@Localizer[nameof(AppStrings.Or)] -
                 </div>
-                <BitButton Class="form-submit-button"
-                           ButtonStyle="BitButtonStyle.Primary"
-                           Title="@Localizer[nameof(AppStrings.ResendEmail)]"
-                           AriaLabel="@Localizer[nameof(AppStrings.ResendEmail)]"
-                           OnClick="WrapHandled(ResendLink)">
-                    @if (_isLoading)
-                    {
-                        <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
-                    }
-                    else
-                    {
-                        <span>@Localizer[nameof(AppStrings.ResendEmail)]</span>
-                    }
-                </BitButton>
+                <BitLoadingButton IsLoading="_isLoading"
+                                  ButtonStyle="BitButtonStyle.Primary"
+                                  Title="@Localizer[nameof(AppStrings.ResendEmail)]"
+                                  AriaLabel="@Localizer[nameof(AppStrings.ResendEmail)]"
+                                  OnClick="WrapHandled(DoResendLink)">
+                    <span>@Localizer[nameof(AppStrings.ResendEmail)]</span>
+                </BitLoadingButton>
             }
             else
             {
@@ -72,22 +65,13 @@
                                   Placeholder=@Localizer[nameof(AppStrings.Password)] />
                     <ValidationMessage For="@(() => _signUpModel.Password)" />
                 </div>
-
-                <BitButton Class="form-submit-button"
-                           ButtonStyle="BitButtonStyle.Primary"
-                           IsEnabled="IsSubmitButtonEnabled"
-                           Title=@Localizer[nameof(AppStrings.SignUp)]
-                           AriaLabel=@Localizer[nameof(AppStrings.SignUp)]
-                           ButtonType="BitButtonType.Submit">
-                    @if (_isLoading)
-                    {
-                        <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
-                    }
-                    else
-                    {
-                        <span>@Localizer[nameof(AppStrings.SignUp)]</span>
-                    }
-                </BitButton>
+                <BitLoadingButton IsLoading="_isLoading"
+                                  ButtonStyle="BitButtonStyle.Primary"
+                                  Title="@Localizer[nameof(AppStrings.SignUp)]"
+                                  AriaLabel="@Localizer[nameof(AppStrings.SignUp)]"
+                                  ButtonType="BitButtonType.Submit">
+                    <span>@Localizer[nameof(AppStrings.SignUp)]</span>
+                </BitLoadingButton>
                 <div class="sign-in-row">
                     @Localizer[nameof(AppStrings.AlreadyHaveAccountMessage)] <BitLink Href="/sign-in">@Localizer[nameof(AppStrings.SignIn)]</BitLink>
                 </div>

@@ -10,12 +10,6 @@ public partial class SignUpPage
     public BitMessageBarType _signUpMessageType;
     public SignUpRequestDto _signUpModel = new();
 
-
-    private bool IsSubmitButtonEnabled =>
-        string.IsNullOrWhiteSpace(_signUpModel.UserName) is false &&
-        string.IsNullOrWhiteSpace(_signUpModel.Password) is false &&
-        _isLoading is false;
-
     protected async override Task OnAfterFirstRenderAsync()
     {
         if (await AuthenticationStateProvider.IsUserAuthenticatedAsync())
@@ -57,7 +51,7 @@ public partial class SignUpPage
         }
     }
 
-    private async Task ResendLink()
+    private async Task DoResendLink()
     {
         if (_isLoading) return;
 

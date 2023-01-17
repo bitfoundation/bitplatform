@@ -73,7 +73,7 @@ public partial class EditProfilePage
 
     private async Task GoBack() => await JsRuntime.GoBack();
 
-    private async Task Submit()
+    private async Task DoSave()
     {
         if (_isLoading) return;
 

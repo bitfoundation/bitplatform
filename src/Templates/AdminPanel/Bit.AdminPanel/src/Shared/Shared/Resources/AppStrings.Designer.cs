@@ -1637,6 +1637,15 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Send reset link.
+        /// </summary>
+        public static string SendResetLink {
+            get {
+                return ResourceManager.GetString("SendResetLink", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Sign in.
         /// </summary>
         public static string SignIn {
@@ -1754,7 +1763,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Send reset link.
+        ///   Looks up a localized string similar to Submit.
         /// </summary>
         public static string Submit {
             get {

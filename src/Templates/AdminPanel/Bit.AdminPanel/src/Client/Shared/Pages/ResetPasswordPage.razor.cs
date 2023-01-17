@@ -34,7 +34,7 @@ public partial class ResetPasswordPage
 
         await base.OnAfterFirstRenderAsync();
     }
-    private async Task Submit()
+    private async Task DoSubmit()
     {
         if (_isLoading) return;
 

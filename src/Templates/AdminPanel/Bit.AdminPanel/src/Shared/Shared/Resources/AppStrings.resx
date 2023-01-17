@@ -338,7 +338,7 @@ Please confirm your email by clicking on the link.</value>
     <value>Sign up</value>
   </data>
   <data name="Submit" xml:space="preserve">
-    <value>Send reset link</value>
+    <value>Submit</value>
   </data>
   <data name="BadRequestException" xml:space="preserve">
     <value>Invalid request</value>
@@ -813,5 +813,8 @@ Please confirm your email by clicking on the link.</value>
   </data>
   <data name="DeleteProduct" xml:space="preserve">
     <value>DeleteProduct</value>
+  </data>
+  <data name="SendResetLink" xml:space="preserve">
+    <value>Send reset link</value>
   </data>
 </root>

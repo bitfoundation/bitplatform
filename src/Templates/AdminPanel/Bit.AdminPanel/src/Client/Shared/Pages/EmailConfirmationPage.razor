@@ -39,21 +39,13 @@
                 <div class="form-description">
                     @Localizer[nameof(AppStrings.InvalidConfirmationLinkMessage)]
                 </div>
-                <BitButton Class="form-submit-button"
-                           ButtonStyle="BitButtonStyle.Primary"
-                           IsEnabled="@(_isLoading is false)"
-                           Title="@Localizer[nameof(AppStrings.ResendEmail)]"
-                           AriaLabel="@Localizer[nameof(AppStrings.ResendEmail)]"
-                           OnClick="WrapHandled(ResendLink)">
-                    @if (_isLoading)
-                    {
-                        <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
-                    }
-                    else
-                    {
-                        <span>@Localizer[nameof(AppStrings.ResendEmail)]</span>
-                    }
-                </BitButton>
+                <BitLoadingButton IsLoading="_isLoading"
+                                  ButtonStyle="BitButtonStyle.Primary"
+                                  Title="@Localizer[nameof(AppStrings.ResendEmail)]"
+                                  AriaLabel="@Localizer[nameof(AppStrings.ResendEmail)]"
+                                  OnClick="WrapHandled(DoResendLink)">
+                    <span>@Localizer[nameof(AppStrings.ResendEmail)]</span>
+                </BitLoadingButton>
             }
         </div>
     </section>
