@@ -2,11 +2,10 @@
 
 namespace Bit.BlazorUI.Playground.Web.Pages.Components.NavList;
 
-public class NavMenuModel
-{
-    public string Name { get; set; }
-    public string TitleAttribute { get; set; }
-    public string Key { get; set; }
+public class NavItemModel
+{    
+    public string Text { get; set; } = string.Empty;
+    public string Title { get; set; }
     public string Url { get; set; }
     public string Target { get; set; }
     public BitIconName IconName { get; set; }
@@ -14,5 +13,5 @@ public class NavMenuModel
     public string CollapseAriaLabel { get; set; }
     public bool IsExpanded { get; set; }
     public bool IsEnabled { get; set; } = true;
-    public List<NavMenuModel> Items { get; set; }
+    public List<NavItemModel> Items { get; set; } = new();
 }

@@ -6,11 +6,13 @@
     }
 
     .nav-list-custom-item {
-        color: orange;
+        display: flex;
+        flex-flow: row nowrap;
+        color: #ff7800;
         font-weight: 600;
 
         &.disabled-item {
-            color: #ffa50066;
+            color: #ff780061;
         }
     }
 }
@@ -26,5 +28,35 @@
 
     .margin-top {
         margin-top: 20px;
+    }
+}
+
+.events-example-box {
+    display: flex;
+    flex-direction: row;
+    gap: 100px;
+    align-items: center;
+
+    ::deep {
+        .bit-nvl {
+            width: 350px;
+        }
+    }
+
+    @include sm {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0;
+
+        ::deep {
+            .bit-nvl {
+                width: 250px;
+            }
+        }
+    }
+
+    .flex {
+        display: flex;
+        flex-direction: column;
     }
 }
