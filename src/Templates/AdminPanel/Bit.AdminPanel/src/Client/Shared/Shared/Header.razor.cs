@@ -42,7 +42,7 @@ public partial class Header : IDisposable
 
             _user = (UserDto)payload;
 
-            _profileImageUrl = _profileImageUrlBase + _user.ProfileImageName;
+            SetProfileImageUrl();
 
             StateHasChanged();
         });
@@ -53,7 +53,13 @@ public partial class Header : IDisposable
 
         var access_token = await StateService.GetValue($"{nameof(Header)}-access_token", AuthTokenProvider.GetAcccessTokenAsync);
         _profileImageUrlBase = $"{GetBaseUrl()}Attachment/GetProfileImage?access_token={access_token}&file=";
-        _profileImageUrl = _profileImageUrlBase + _user.ProfileImageName;
+        
+        SetProfileImageUrl();
+    }
+
+    private void SetProfileImageUrl()
+    {
+        _profileImageUrl = _user.ProfileImageName is not null ? _profileImageUrlBase + _user.ProfileImageName : null;
     }
 
     private void SetBreadcrumbItems()
