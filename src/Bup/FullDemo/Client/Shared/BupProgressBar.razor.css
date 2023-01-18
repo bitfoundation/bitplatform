@@ -1,0 +1,30 @@
+﻿::deep #bit-bup {
+    display: none;
+    position: fixed;
+    left: 0;
+    bottom: 50px;
+    text-align: center;
+    width: 200px;
+    font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+}
+
+    ::deep #bit-bup .bup-container {
+        width: 80%;
+        margin: 0 auto;
+    }
+
+    ::deep #bit-bup .bup-title {
+        color: white;
+        font-size: 14px;
+        margin-bottom: 1px;
+    }
+
+    ::deep #bit-bup .bup-progress {
+        background-color: rgb(237, 235, 233);
+    }
+
+    ::deep #bit-bup #bit-bup-progress-bar {
+        background-color: rgb(0, 120, 212);
+        border-radius: 10px;
+        height: 3px;
+    }

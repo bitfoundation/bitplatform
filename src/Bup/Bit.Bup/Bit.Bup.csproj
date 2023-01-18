@@ -34,9 +34,4 @@
         <Content Remove="bundleconfig.json" />
         <None Include="bundleconfig.json" />
     </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="wwwroot\" />
-    </ItemGroup>
-
 </Project>

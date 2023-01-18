@@ -1,4 +1,6 @@
-﻿; (function () {
+﻿declare const Blazor: any;
+
+; (function () {
     const bitBupScript = document.currentScript;
 
     if (!Blazor) {
@@ -7,9 +9,6 @@
     }
 
     window.addEventListener('load', runBup);
-    (window as any).startBupProgress = startBupProgress;
-
-    // ==============================================================
 
 
     function runBup() {
@@ -25,15 +24,15 @@
         function startBlazor() {
             const scriptTags = [].slice.call(document.scripts);
 
-            const blazorWasmScriptTag = scriptTags.find(s => s.src && s.src.indexOf('_framework/blazor.webassembly.js') !== -1);
+            const blazorWasmScriptTag = scriptTags.find(s => s.src && s.src.indexOf(options.blazorScript) !== -1);
             if (!blazorWasmScriptTag) {
-                warn('"blazor.webassembly.js" script tag not found!');
+                warn(`blazor script (${options.blazorScript}) not found!`);
                 return;
             }
 
             const autostart = blazorWasmScriptTag.attributes['autostart'];
             if (!autostart || autostart.value !== 'false') {
-                warn('no "autostart=false" found on "blazor.webassembly.js" script tag!');
+                warn('no "autostart=false" found on blazor script tag!');
                 return;
             }
 
@@ -43,16 +42,24 @@
         }
 
         function extract(): BupOptions {
+            const defaultoptions = {
+                log: 'info',
+                handler: (...args: any[]) => { },
+                blazorScript: '_framework/blazor.webassembly.js',
+            }
             const optionsAttribute = (bitBupScript.attributes)['options'];
             const optionsName = (optionsAttribute || {}).value || 'bitBup';
-            const options = (window[optionsName] || {}) as BupOptions;
+            const options = (window[optionsName] || defaultoptions) as BupOptions;
 
             const logAttribute = bitBupScript.attributes['log'];
-            options.log = (logAttribute && logAttribute.value) || options.log || 'info';
+            options.log = (logAttribute && logAttribute.value) || options.log;
 
             const handlerAttribute = bitBupScript.attributes['handler'];
             const handlerName = (handlerAttribute && handlerAttribute.value) || 'bitBupHandler';
             options.handler = (window[handlerName] || options.handler) as (...args: any[]) => void;
+
+            const blazorScriptAttribute = bitBupScript.attributes['blazorScript'];
+            options.log = (blazorScriptAttribute && blazorScriptAttribute.value) || options.blazorScript;
 
             if (!options.handler || typeof options.handler !== 'function') {
                 console.warn('BitBup: progress handler not found or is not a function!');
@@ -114,44 +121,10 @@
         }
     }
 
-    function startBupProgress(showLogs: boolean, showAssets: boolean, appContainerSelector: string) {
-        var appEl = document.querySelector(appContainerSelector) as HTMLElement;
-        var progressEl = document.getElementById('bit-bup');
-        var progressBar = document.getElementById('bit-bup-progress-bar');
-        var percentLabel = document.getElementById('bit-bup-percent');
-        var assetsUl = document.getElementById('bit-bup-assets');
-        (window as any).bitBupHandler = bitBupHandler;
-
-        function bitBupHandler(type, data) {
-            switch (type) {
-                case 'start':
-                    appEl.style.display = 'none';
-                    progressEl.style.display = 'block';
-                    return showLogs ? console.log('downloading resources started.') : undefined;
-                case 'progress':
-                    if (showAssets) {
-                        const li = document.createElement('li');
-                        li.innerHTML = `${data.index}: <b>[${data.type}] ${data.name}</b>: ${data.url} (${data.integrity})`
-                        assetsUl.prepend(li);
-                    }
-                    const percent = Math.round(data.percent);
-                    progressBar.style.width = `${percent}%`;
-                    percentLabel.innerHTML = `${percent}%`;
-                    return showLogs ? console.log('resource downloaded:', data) : undefined;
-                case 'end':
-                    appEl.style.display = 'block';
-                    progressEl.style.display = 'none';
-                    return showLogs ? console.log('downloading resources ended.') : undefined;
-            }
-        }
-    };
-
 }());
-
-
-declare const Blazor: any;
 
 interface BupOptions {
     log: 'none' | 'info' | 'verbose' | 'debug' | 'error'
     handler(...args: any[]): void
+    blazorScript: string
 }
