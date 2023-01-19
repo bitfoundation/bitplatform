@@ -7,14 +7,14 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.BlazorUI" Version="4.9.2-pre-01" />
+        <PackageReference Include="Bit.BlazorUI" Version="4.9.3-pre-01" />
         
-        <PackageReference Include="Bit.CodeAnalyzers" Version="4.9.2-pre-01">
+        <PackageReference Include="Bit.CodeAnalyzers" Version="4.9.3-pre-01">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         
-        <PackageReference Include="Bit.SourceGenerators" Version="4.9.2-pre-01">
+        <PackageReference Include="Bit.SourceGenerators" Version="4.9.3-pre-01">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
