@@ -24,10 +24,11 @@
         <div class="form-profile-container">
             <BitPersona ImageUrl="@(_user.ProfileImageName is not null ? $"{_profileImageUrl}&file={_user.ProfileImageName}" : null)"
                         Size=@BitPersonaSize.Size72
-                        Text="@(string.IsNullOrWhiteSpace(_user?.FullName) ? _user?.UserName : _user?.FullName)"
-                        SecondaryText="@_user?.UserName"
+                        Text="@(string.IsNullOrWhiteSpace(_user.FullName) ? _user.UserName : _user.FullName)"
+                        SecondaryText="@_user.UserName"
                         Presence="BitPersonaPresenceStatus.Online" />
         </div>
+
         <div class="form-input-container">
             @if (_user.ProfileImageName is not null)
             {
@@ -37,6 +38,7 @@
                     @Localizer[nameof(AppStrings.Remove)]
                 </BitLoadingButton>
             }
+
             <BitLabel>@Localizer[nameof(AppStrings.ProfileImage)]</BitLabel>
             <BitFileUpload @onfocus="() => _profileImageError = null"
                            Label="@Localizer[nameof(AppStrings.UploadNewProfileImage)]"
@@ -48,8 +50,8 @@
                            OnUploadFailed="() => _profileImageError = Localizer[nameof(AppStrings.FileUploadFailed)]" />
             <div class="form-input-error">@_profileImageError</div>
         </div>
-        <EditForm Model="_userToEdit" OnSubmit="WrapHandled(DoSave)">
 
+        <EditForm Model="_userToEdit" OnSubmit="WrapHandled(DoSave)">
             <AppDataAnnotationsValidator />
 
             <div class="form-input-container">
@@ -58,6 +60,7 @@
                               Placeholder="@Localizer[nameof(AppStrings.FullName)]" />
                 <ValidationMessage For="@(() => _userToEdit.FullName)" />
             </div>
+
             <div class="form-input-container">
                 <BitDatePicker @bind-Value="_userToEdit.BirthDate"
                                Label="@Localizer[nameof(AppStrings.BirthDate)]"
@@ -65,14 +68,16 @@
                                Placeholder="@Localizer[nameof(AppStrings.SelectBirthDate)]" />
                 <ValidationMessage For="@(() => _userToEdit.BirthDate)" />
             </div>
+
             <div class="form-choice-container">
                 <BitRadioButtonGroup Label="@Localizer[nameof(AppStrings.Gender)]" @bind-Value="_userToEdit.GenderAsString">
-                    <BitRadioButtonOption Value="@Gender.Male.ToString()" Text="@Localizer[nameof(AppStrings.GenderMale)]" AriaLabel="@Localizer[nameof(AppStrings.GenderMale)]"></BitRadioButtonOption>
-                    <BitRadioButtonOption Value="@Gender.Female.ToString()" Text="@Localizer[nameof(AppStrings.GenderFemale)]" AriaLabel="@Localizer[nameof(AppStrings.GenderFemale)]"></BitRadioButtonOption>
-                    <BitRadioButtonOption Value="@Gender.Custom.ToString()" Text="@Localizer[nameof(AppStrings.GenderCustom)]" AriaLabel="@Localizer[nameof(AppStrings.GenderCustom)]"></BitRadioButtonOption>
+                    <BitRadioButtonOption Value="@Gender.Male.ToString()" Text="@Localizer[nameof(AppStrings.GenderMale)]" AriaLabel="@Localizer[nameof(AppStrings.GenderMale)]" />
+                    <BitRadioButtonOption Value="@Gender.Female.ToString()" Text="@Localizer[nameof(AppStrings.GenderFemale)]" AriaLabel="@Localizer[nameof(AppStrings.GenderFemale)]" />
+                    <BitRadioButtonOption Value="@Gender.Custom.ToString()" Text="@Localizer[nameof(AppStrings.GenderCustom)]" AriaLabel="@Localizer[nameof(AppStrings.GenderCustom)]" />
                 </BitRadioButtonGroup>
                 <ValidationMessage For="@(() => _userToEdit.Gender)" />
             </div>
+
             <BitLoadingButton IsLoading="_isLoading"
                               ButtonStyle="BitButtonStyle.Primary"
                               Title="@Localizer[nameof(AppStrings.Save)]"

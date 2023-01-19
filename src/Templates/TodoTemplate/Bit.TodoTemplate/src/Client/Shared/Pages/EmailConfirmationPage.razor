@@ -9,8 +9,8 @@
         @if (string.IsNullOrEmpty(EmailConfirmationMessage) is false)
         {
             <BitMessageBar Class="form-message-bar"
-                       MessageBarType="@EmailConfirmationMessageType"
-                       OnDismiss="() => EmailConfirmationMessage = null">
+                           MessageBarType="@EmailConfirmationMessageType"
+                           OnDismiss="() => EmailConfirmationMessage = null">
                 @EmailConfirmationMessage
             </BitMessageBar>
         }
@@ -20,10 +20,10 @@
                 @Localizer[nameof(AppStrings.EmailConfirmedSuccessfullyMessage)]
             </h1>
             <BitButton Class="form-submit-button"
-                   ButtonStyle="BitButtonStyle.Primary"
-                   Title="@Localizer[nameof(AppStrings.SignIn)]"
-                   AriaLabel="@Localizer[nameof(AppStrings.SignIn)]"
-                   OnClick="WrapHandled(RedirectToSignIn)">
+                       ButtonStyle="BitButtonStyle.Primary"
+                       Title="@Localizer[nameof(AppStrings.SignIn)]"
+                       AriaLabel="@Localizer[nameof(AppStrings.SignIn)]"
+                       OnClick="WrapHandled(RedirectToSignIn)">
                 <span>@Localizer[nameof(AppStrings.SignIn)]</span>
             </BitButton>
         }
@@ -36,11 +36,11 @@
                 @Localizer[nameof(AppStrings.InvalidConfirmationLinkMessage)]
             </div>
             <BitButton Class="form-submit-button"
-                   ButtonStyle="BitButtonStyle.Primary"
-                   IsEnabled="@(IsLoading is false)"
-                   Title="@Localizer[nameof(AppStrings.ResendEmail)]"
-                   AriaLabel="@Localizer[nameof(AppStrings.ResendEmail)]"
-                   OnClick="WrapHandled(ResendLink)">
+                       ButtonStyle="BitButtonStyle.Primary"
+                       IsEnabled="@(IsLoading is false)"
+                       Title="@Localizer[nameof(AppStrings.ResendEmail)]"
+                       AriaLabel="@Localizer[nameof(AppStrings.ResendEmail)]"
+                       OnClick="WrapHandled(ResendLink)">
                 @if (IsLoading)
                 {
                     <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>

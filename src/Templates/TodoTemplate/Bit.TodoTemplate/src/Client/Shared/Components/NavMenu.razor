@@ -18,10 +18,10 @@
             @Localizer[nameof(AppStrings.EditProfileTitle)]
         </BitActionButton>
     </div>
-    <BitNav NavLinkItems="NavLinks"
+    <BitNav Items="_navItems"
             AriaLabel="NavMenu"
-            SelectedKey="Home"
-            OnLinkClick=CloseMenu>
+            DefaultSelectedItem="_navItems[0]"
+            OnItemClick="CloseMenu">
     </BitNav>
 </section>
 

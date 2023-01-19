@@ -12,22 +12,22 @@
         @if (string.IsNullOrEmpty(SignInMessage) is false)
         {
             <BitMessageBar Class="form-message-bar"
-                       MessageBarType="@SignInMessageType"
-                       OnDismiss="() => SignInMessage = null">
+                           MessageBarType="@SignInMessageType"
+                           OnDismiss="() => SignInMessage = null">
                 @SignInMessage
             </BitMessageBar>
         }
         <h1 class="form-title">@Localizer[nameof(AppStrings.SignInTitle)]</h1>
         <div class="form-input-container">
-            <BitTextField Label="@Localizer[nameof(AppStrings.Email)]"
+            <BitTextField @bind-Value="SignInModel.UserName"
+                          Label="@Localizer[nameof(AppStrings.Email)]"
                           Placeholder="@Localizer[nameof(AppStrings.Email)]"
-                          Type="BitTextFieldType.Email"
-                          @bind-Value="SignInModel.UserName" />
+                          Type="BitTextFieldType.Email" />
             <ValidationMessage For="@(() => SignInModel.UserName)" />
         </div>
         <div class="form-input-container">
-            <BitTextField Label="@Localizer[nameof(AppStrings.Password)]"
-                          @bind-Value="SignInModel.Password"
+            <BitTextField @bind-Value="SignInModel.Password"
+                          Label="@Localizer[nameof(AppStrings.Password)]"
                           Type="BitTextFieldType.Password"
                           AutoComplete="current-password"
                           CanRevealPassword="true"

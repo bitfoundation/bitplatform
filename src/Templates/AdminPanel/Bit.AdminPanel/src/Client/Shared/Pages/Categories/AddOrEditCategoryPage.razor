@@ -15,7 +15,10 @@
 
 <div class="page-container">
     <div class="page-header">
-        <BitIconButton Class="back-btn" Href="/categories" IconName="BitIconName.Back" Title="@Localizer[nameof(AppStrings.Back)]" />
+        <BitIconButton Class="back-btn"
+                       Href="/categories"
+                       IconName="BitIconName.Back"
+                       Title="@Localizer[nameof(AppStrings.Back)]" />
         <h1 class="page-title">
             @if (_category.Id == 0)
             {
@@ -28,40 +31,50 @@
         </h1>
     </div>
     <EditForm Model="_category" OnValidSubmit="WrapHandled(Save)">
+        <AppDataAnnotationsValidator />
+
         @if (_isLoading)
         {
             <div class="loading-continaer">
                 <BitSpinner Size="BitSpinnerSize.Large"></BitSpinner>
             </div>
         }
-        <AppDataAnnotationsValidator />
+
         @if (string.IsNullOrEmpty(_saveMessage) is false)
         {
             <BitMessageBar MessageBarType="@_saveMessageType" OnDismiss="() => _saveMessage = null">@_saveMessage</BitMessageBar>
         }
+
         <div class="form-input-container">
-            <BitTextField Label="@Localizer[nameof(AppStrings.Name)]" @bind-Value="_category.Name" Placeholder="@Localizer[nameof(AppStrings.EnterCategoryName)]" />
+            <BitTextField @bind-Value="_category.Name"
+                          Label="@Localizer[nameof(AppStrings.Name)]"
+                          Placeholder="@Localizer[nameof(AppStrings.EnterCategoryName)]" />
             <ValidationMessage For="() => _category.Name" />
         </div>
 
         <div class="form-input-container">
             <BitLabel For="catColorInput">@Localizer[nameof(AppStrings.Color)]</BitLabel>
             <div class="color-container">
-                <div class="color-btn @(_category.Color == "#FFCD56" ? "color-btn--active" : null)" style="background-color: #FFCD56" @onclick=@(() => SetCategoryColor("#FFCD56"))></div>
-                <div class="color-btn @(_category.Color == "#FF6384" ? "color-btn--active" : null)" style="background-color: #FF6384" @onclick=@(() => SetCategoryColor("#FF6384"))></div>
-                <div class="color-btn @(_category.Color == "#4BC0C0" ? "color-btn--active" : null)" style="background-color: #4BC0C0" @onclick=@(() => SetCategoryColor("#4BC0C0"))></div>
-                <div class="color-btn @(_category.Color == "#FF9124" ? "color-btn--active" : null)" style="background-color: #FF9124" @onclick=@(() => SetCategoryColor("#FF9124"))></div>
-                <div class="color-btn @(_category.Color == "#2B88D8" ? "color-btn--active" : null)" style="background-color: #2B88D8" @onclick=@(() => SetCategoryColor("#2B88D8"))></div>
-                <div class="color-btn @(_category.Color == "#C7E0F4" ? "color-btn--active" : null)" style="background-color: #C7E0F4" @onclick=@(() => SetCategoryColor("#C7E0F4"))></div>
-                <div class="custom-color-btn" @onclick=@ToggleColorPicker>
-                    <div class="btn-color" style="background-color: #F0F0F0"></div>
+                @foreach (var color in new[] { "#FFCD56", "#FF6384", "#4BC0C0", "#FF9124", "#2B88D8", "#C7E0F4" })
+                {
+                    <button @onclick="() => SetCategoryColor(color)"
+                            class="color-btn @(_category.Color == color ? "color-btn--active" : null)"
+                            style="background-color: @color"
+                            type="button" />
+                }
+                <button class="custom-color-btn" @onclick=@ToggleColorPicker type="button">
+                    <div class="btn-color" style="background-color: @_category.Color"></div>
                     @Localizer[(nameof(AppStrings.CustomColor))]
-                </div>
+                </button>
             </div>
             @if (_isColorPickerOpen)
             {
                 <div class="color-picker-container">
-                    <BitColorPicker id="catColorInput" ShowPreview="true" @bind-Color="_category.Color">@Localizer[nameof(AppStrings.DefaultColorPicker)]</BitColorPicker>
+                    <BitColorPicker @bind-Color="_category.Color"
+                                    id="catColorInput"
+                                    ShowPreview="true">
+                        @Localizer[nameof(AppStrings.DefaultColorPicker)]
+                    </BitColorPicker>
                 </div>
             }
             <ValidationMessage For="() => _category.Color" />

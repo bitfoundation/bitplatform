@@ -12,6 +12,7 @@
 
         <Content Remove="compilerconfig.json" />
         <None Include="compilerconfig.json" />
+        <None Include="Shared\LoadingComponent.razor.scss" />
         <Content Remove="wwwroot\appsettings.json" />
         <EmbeddedResource Include="wwwroot\appsettings.json" />
 

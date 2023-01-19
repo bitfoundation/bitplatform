@@ -4,6 +4,7 @@
 @inherits AppComponentBase
 
 <PageTitle>@Localizer[nameof(AppStrings.CategoriesPageTitle)]</PageTitle>
+
 <div class="page-container">
     @if (_isLoading)
     {
@@ -11,10 +12,12 @@
             <BitSpinner Size="BitSpinnerSize.Large"></BitSpinner>
         </div>
     }
+
     <div class="page-row">
         <h1 class="page-title">@Localizer[nameof(AppStrings.Categories)]</h1>
         <BitButton OnClick="CreateCategory">@Localizer[nameof(AppStrings.AddCategory)]</BitButton>
     </div>
+
     <div class="grid">
         <BitDataGrid @ref="_dataGrid" ItemsProvider="_categoriesProvider" TGridItem="CategoryDto" ResizableColumns="true" Pagination="_pagination">
             <BitDataGridPropertyColumn Class="id-col" Sortable="true" Property="c => c!.Id" Align="BitDataGridAlign.Left"

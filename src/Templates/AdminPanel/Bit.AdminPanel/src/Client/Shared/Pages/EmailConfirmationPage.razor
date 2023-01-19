@@ -18,6 +18,7 @@
             {
                 <BitMessageBar MessageBarType="@_emailConfirmationMessageType" OnDismiss="() => _emailConfirmationMessage = null">@_emailConfirmationMessage</BitMessageBar>
             }
+
             @if (EmailConfirmed)
             {
                 <h2 class="form-title">

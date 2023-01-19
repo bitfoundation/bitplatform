@@ -15,7 +15,7 @@ public static class IServiceCollectionExtensions
 {
     public static IServiceCollection AddIdentity(this IServiceCollection services, IConfiguration configuration)
     {
-        var appsettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
+        var appsettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
         var settings = appsettings.IdentitySettings;
 
         services.AddIdentity<User, Role>(options =>
@@ -78,7 +78,7 @@ public static class IServiceCollectionExtensions
 
             options.Events = new JwtBearerEvents
             {
-                OnMessageReceived = async context =>
+                OnMessageReceived = context =>
                 {
                     // The server accepts the access_token from either the authorization header, the cookie, or the request URL query string
 
@@ -90,6 +90,8 @@ public static class IServiceCollectionExtensions
                     }
 
                     context.Token = access_token;
+
+                    return Task.CompletedTask;
                 }
             };
 

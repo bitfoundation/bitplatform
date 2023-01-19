@@ -7,7 +7,7 @@ public partial class NavMenu
 {
     private bool isMenuOpen;
 
-    public List<BitNavLinkItem> NavLinks { get; set; }
+    public List<BitNavItem> _navItems { get; set; }
 
     public UserDto? User { get; set; } = new();
 
@@ -39,32 +39,24 @@ public partial class NavMenu
 
     protected override async Task OnInitAsync()
     {
-        NavLinks = new()
+        _navItems = new()
         {
-            new BitNavLinkItem
+            new BitNavItem
             {
-                Name = Localizer[nameof(AppStrings.Home)],
+                Text = Localizer[nameof(AppStrings.Home)],
                 Url = "/",
                 IconName = BitIconName.Home,
-                Key = "Home"
             },
-            new BitNavLinkItem
+            new BitNavItem
             {
-                Name = Localizer[nameof(AppStrings.TodoTitle)],
+                Text = Localizer[nameof(AppStrings.TodoTitle)],
                 Url = "/todo",
                 IconName = BitIconName.ToDoLogoOutline,
-                Key = "Todo"
             },
-            new BitNavLinkItem
+            new BitNavItem
             {
-                Name = Localizer[nameof(AppStrings.SignOut)],
-                OnClick = (item) =>
-                {
-                    IsSignOutModalOpen = true;
-                    StateHasChanged();
-                },
+                Text = Localizer[nameof(AppStrings.SignOut)],
                 IconName = BitIconName.SignOut,
-                Key = "SignOut"
             }
         };
 
