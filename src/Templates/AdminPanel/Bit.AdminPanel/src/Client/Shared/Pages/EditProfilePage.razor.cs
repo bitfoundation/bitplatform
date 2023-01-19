@@ -7,11 +7,13 @@ namespace AdminPanel.Client.Shared.Pages;
 public partial class EditProfilePage
 {
     private bool _isLoading;
+    private bool _isRemoving;
     private bool _isLoadingData;
     private string? _profileImageUrl;
     private string? _profileImageError;
     private string? _editProfileMessage;
     private string? _profileImageUploadUrl;
+    private string? _profileImageRemoveUrl;
     private BitMessageBarType _editProfileMessageType;
     private UserDto _user = new();
     private readonly UserDto _userToEdit = new();
@@ -28,7 +30,7 @@ public partial class EditProfilePage
 
             _profileImageUploadUrl = $"{GetBaseUrl()}Attachment/UploadProfileImage?access_token={access_token}";
             _profileImageUrl = $"{GetBaseUrl()}Attachment/GetProfileImage?access_token={access_token}";
-
+            _profileImageRemoveUrl = $"Attachment/RemoveProfileImage?access_token={access_token}";
         }
         finally
         {
@@ -102,6 +104,29 @@ public partial class EditProfilePage
         finally
         {
             _isLoading = false;
+        }
+    }
+    
+    private async Task RemoveProfileImage()
+    {
+        if (_isRemoving) return;
+
+        _isRemoving = true;
+
+        try
+        {
+            await HttpClient.DeleteAsync(_profileImageRemoveUrl);
+
+            await RefreshProfileData();
+        }
+        catch (KnownException e)
+        {
+            _editProfileMessage = e.Message;
+            _editProfileMessageType = BitMessageBarType.Error;
+        }
+        finally
+        {
+            _isRemoving = false;
         }
     }
 }

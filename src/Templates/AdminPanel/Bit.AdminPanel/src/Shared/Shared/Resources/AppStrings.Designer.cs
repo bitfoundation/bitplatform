@@ -322,20 +322,20 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &apos;{0}&apos; and &apos;{1}&apos; do not match..
-        /// </summary>
-        public static string CompareAttribute_MustMatch {
-            get {
-                return ResourceManager.GetString("CompareAttribute_MustMatch", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Could not find a property named {0}..
         /// </summary>
         public static string CompareAttribute_UnknownProperty {
             get {
                 return ResourceManager.GetString("CompareAttribute_UnknownProperty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; and &apos;{1}&apos; do not match..
+        /// </summary>
+        public static string CompareAttribute_ValidationError {
+            get {
+                return ResourceManager.GetString("CompareAttribute_ValidationError", resourceCulture);
             }
         }
         
@@ -649,9 +649,9 @@ namespace AdminPanel.Shared.Resources {
         /// <summary>
         ///   Looks up a localized string similar to The {0} field is not a valid e-mail address..
         /// </summary>
-        public static string EmailAddressAttribute_Invalid {
+        public static string EmailAddressAttribute_ValidationError {
             get {
-                return ResourceManager.GetString("EmailAddressAttribute_Invalid", resourceCulture);
+                return ResourceManager.GetString("EmailAddressAttribute_ValidationError", resourceCulture);
             }
         }
         
@@ -1219,15 +1219,6 @@ namespace AdminPanel.Shared.Resources {
         public static string PasswordRequiresUpper {
             get {
                 return ResourceManager.GetString("PasswordRequiresUpper", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Passwords must be at least {0} characters..
-        /// </summary>
-        public static string PasswordTooShort {
-            get {
-                return ResourceManager.GetString("PasswordTooShort", resourceCulture);
             }
         }
         

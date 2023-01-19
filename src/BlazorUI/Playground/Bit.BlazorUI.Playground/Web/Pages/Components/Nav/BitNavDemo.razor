@@ -1,80 +1,104 @@
 ﻿@page "/components/nav"
 
-<ComponentDemo ComponentName="Nav" ComponentDescription="A navigation pane (Nav) provides links to the main areas of an app or site."
-               ComponentParameters="componentParameters" EnumParameters="enumParameters" ComponentSubParameters="componentSubParameters">
-    <ComponentExampleBox Title="Basic nav with sample links" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
+<ComponentDemo ComponentName="Nav"
+               ComponentDescription="A navigation pane (Nav) provides links to the main areas of an app or site."
+               ComponentParameters="componentParameters"
+               ComponentSubParameters="componentSubParameters"
+               EnumParameters="enumParameters">
+
+    <ComponentExampleBox Title="Basic" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
-            <BitNav Style="width: 208px;
-                   height: 350px;
-                   box-sizing: border-box;
-                   border: 1px solid #eee;
-                   overflow-y: auto;"
-                    NavLinkItems="BasicNavLinks"
-                    AriaLabel="Nav basic example"
-                    InitialSelectedKey="key3">
-            </BitNav>
+            <div class="example-box">
+                <BitNav Items="BasicNavItems" />
+            </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Nav with wrapped link text and no tooltips" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example2">
+    <ComponentExampleBox Title="Grouped" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example2">
         <ExamplePreview>
-            <BitNav Style="width: 208px;
-                   height: 350px;
-                   box-sizing: border-box;
-                   border: 1px solid #eee;
-                   overflow-y: auto;"
-                    Class="bit-nav-wrapped-link"
-                    InitialSelectedKey="key6"
-                    AriaLabel="Nav example with wrapped link text"
-                    NavLinkItems="NavLinksNoToolTip">
-            </BitNav>
+            <div class="example-box">
+                <BitNav Items="GroupedNavItems" RenderType="BitNavRenderType.Grouped" />
+            </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Nav similar to the one in this demo app" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example3">
+    <ComponentExampleBox Title="Manual Mode" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example3">
         <ExamplePreview>
-            <BitNav Style="width: 300px;"
-                    NavLinkItems="NavLinksSimilarThisApp"
-                    RenderType="BitNavRenderType.Grouped"
-                    AriaLabel="Nav example similar to one found in this demo page">
-            </BitNav>
+            <div class="example-box">
+                <div>
+                    <BitLabel>Basic</BitLabel>
+                    <BitNav Items="ManualNavItems"
+                            DefaultSelectedItem="ManualNavItems[0].Items[0]"
+                            Mode="BitNavMode.Manual" />
+                </div>
+
+                <div class="margin-top">
+                    <BitLabel>Two-Way Bind</BitLabel>
+
+                    <BitNav @bind-SelectedItem="SelectedItemNav"
+                            Items="ManualNavItems"
+                            Mode="BitNavMode.Manual"
+                            OnSelectItem="(item) => SelectedItemText = DropDownItems.FirstOrDefault(i => i.Text == item.Text).Text" />
+
+                    <BitDropDown @bind-Value="SelectedItemText"
+                                 Label="Select Item"
+                                 Items="DropDownItems"
+                                 OnSelectItem="(item) => SelectedItemNav = Flatten(ManualNavItems).FirstOrDefault(i => i.Text == item.Value)" />
+                </div>
+            </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Nav with nested links" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
+    <ComponentExampleBox Title="Custom Templates" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
         <ExamplePreview>
-            <BitNav NavLinkItems="NavWithNestedLinks"
-                    AriaLabel="Nav example with nested links"
-                    SelectedKey="Key1-1-2">
-            </BitNav>
+            <div class="example-box">
+                <div>
+                    <BitLabel>Header Template (in Grouped mode)</BitLabel>
+                    <BitNav Items="GroupedNavItems" RenderType="BitNavRenderType.Grouped">
+                        <HeaderTemplate Context="item">
+                            <div class="nav-custom-header">
+                                <BitIcon IconName="BitIconName.FavoriteStarFill" />
+                                <span>@item.Text</span>
+                            </div>
+                        </HeaderTemplate>
+                    </BitNav>
+                </div>
+
+                <div class="margin-top">
+                    <BitLabel>Item Template</BitLabel>
+                    <BitNav Items="ManualNavItems" Mode="BitNavMode.Manual">
+                        <ItemTemplate Context="item">
+                            <div class="nav-custom-item @(item.IsEnabled is false ? "disabled-item" : "")">
+                                <BitCheckbox IsEnabled="@(item.IsEnabled)" />
+                                @if (item.IconName.HasValue)
+                                {
+                                    <BitIcon IconName="@item.IconName.Value" />
+                                }
+                                <span>@item.Text</span>
+                            </div>
+                        </ItemTemplate>
+                    </BitNav>
+                </div>
+            </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Nav with custom group header" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
+    <ComponentExampleBox Title="Events" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
         <ExamplePreview>
-            <BitNav NavLinkItems="NavLinksWithCustomHeader"
-                    RenderType="BitNavRenderType.Grouped"
-                    AriaLabel="Nav with custom group header">
-                <HeaderTemplate Context="link">
-                    <h3> @link.Name </h3>
-                </HeaderTemplate>
-            </BitNav>
-        </ExamplePreview>
-    </ComponentExampleBox>
+            <div class="events-example-box">
+                <BitNav Items="ManualNavItems"
+                        DefaultSelectedItem="ManualNavItems[0].Items[0]"
+                        Mode="BitNavMode.Manual"
+                        OnItemClick="(item) => ClickedItem = item"
+                        OnSelectItem="(item) => SelectedItem = item"
+                        OnItemToggle="(item) => ToggledItem = item" />
 
-    <ComponentExampleBox Title="Basic nav with manual mode" HTMLSourceCode="@example6HTMLCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example6">
-        <ExamplePreview>
-            <BitNav Style="width: 208px;
-                   height: 350px;
-                   box-sizing: border-box;
-                   border: 1px solid #eee;
-                   overflow-y: auto;"
-                    NavLinkItems="NavLinksWithManualMode"
-                    Mode="BitNavMode.Manual"
-                    AriaLabel="Nav manual mode example"
-                    SelectedKey="@BitNavManualModeSelectedKey"
-                    SelectedKeyChanged="HandleSelectedKeyChange">
-            </BitNav>
+                <div class="flex">
+                    <span>Clicked Item: @ClickedItem?.Text</span>
+                    <span>Selected Item: @SelectedItem?.Text</span>
+                    <span>Toggled Item: @(ToggledItem is null ? "N/A" : $"{ToggledItem.Text} ({(ToggledItem.IsExpanded ? "Expanded" : "Collapsed")})")</span>
+                </div>
+            </div>
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>
