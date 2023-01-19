@@ -6,7 +6,8 @@
                EnumParameters="enumParameters">
     <ComponentExampleBox Title="Persona in various sizes" HTMLSourceCode="@example1HtmlCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
-            <BitCheckbox @bind-Value="IsHideDetails" OnClick="() => IsHideDetails =! IsHideDetails">Include BitPersona details</BitCheckbox>
+            <BitCheckbox @bind-Value="IsHideDetails"
+                         Label="Include BitPersona details" />
             <div class="title">Size 24 Persona</div>
             <BitPersona ImageUrl="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"
                         Presence=@BitPersonaPresenceStatus.None
@@ -83,7 +84,7 @@
             <BitPersona ImageUrl="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"
                         Presence=@BitPersonaPresenceStatus.None
                         Size=@BitPersonaSize.Size120
-                        OnActionClick="HandleActionClick"
+                        OnActionClick="() => _actionClickCount++"
                         ActionIconName="BitIconName.Edit"
                         HidePersonaDetails="!IsHideDetails"
                         Text="Annie Lindqvist"
@@ -99,7 +100,7 @@
             <BitPersona ImageUrl="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"
                         Presence=@BitPersonaPresenceStatus.Online
                         Size=@BitPersonaSize.Size120
-                        OnImageClick="HandleImageClick"
+                        OnImageClick="() => _imageClickCount++"
                         HidePersonaDetails="!IsHideDetails"
                         Text="Annie Lindqvist"
                         SecondaryText="Software Engineer"
