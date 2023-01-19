@@ -1,8 +1,7 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
-<div @ref="RootElement"
-     @attributes="HtmlAttributes"
+<div @ref="RootElement" @attributes="HtmlAttributes"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
 
@@ -46,8 +45,8 @@
                                  alt="@ImageAlt"
                                  width="@dimension"
                                  height="@dimension"
-                                 @onerror="HandleOnError"
-                                 @onload="HandleOnLoad" />
+                            @onerror="HandleOnError"
+                            @onload="HandleOnLoad" />
                         }
                     }
                     else
@@ -66,9 +65,10 @@
                     }
                     else
                     {
-                        <BitIconButton IconName="@ActionIconName"
-                           Title="Edit image"
-                           OnClick="HandleActionClick" />
+                        <BitIconButton Class="bit-prs-action-button"
+                                       Title="Edit image"
+                                       IconName="@ActionIconName"
+                                       OnClick="HandleActionClick" />
                     }
                 }
                 else if (Presence != BitPersonaPresenceStatus.None)

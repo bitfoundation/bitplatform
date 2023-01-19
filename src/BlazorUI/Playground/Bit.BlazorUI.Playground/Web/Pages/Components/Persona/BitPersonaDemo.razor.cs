@@ -417,17 +417,7 @@ public partial class BitPersonaDemo
 
     private int _actionClickCount = 0;
 
-    private void HandleActionClick()
-    {
-        _actionClickCount++;
-    }
-
     private int _imageClickCount = 0;
-
-    private void HandleImageClick()
-    {
-        _imageClickCount++;
-    }
 
     private static readonly string example1CSharpCode = @"
 public bool IsHideDetails { get; set; } = true;";
@@ -505,18 +495,13 @@ public bool IsHideDetails { get; set; } = true;";
             OptionalText=""Available at 4:00pm""></BitPersona>";
 
     private static readonly string example2CSharpCode = @"
-private int _actionClickCount = 0;
-
-private void HandleActionClick()
-{
-    _actionClickCount++;
-}";
+private int _actionClickCount = 0;";
 
     private static readonly string example2HtmlCode = @"
 <BitPersona ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png""
             Presence=@BitPersonaPresenceStatus.None
             Size=@BitPersonaSize.Size120
-            OnActionClick=""HandleActionClick""
+            OnActionClick=""() => _actionClickCount++""
             ActionIconName=""BitIconName.Edit""
             HidePersonaDetails=""!IsHideDetails""
             Text=""Annie Lindqvist""
@@ -526,18 +511,13 @@ private void HandleActionClick()
 <p>ActionClickCount: @_actionClickCount</p>";
 
     private static readonly string example3CSharpCode = @"
-private int _imageClickCount = 0;
-
-private void HandleImageClick()
-{
-    _imageClickCount++;
-}";
+private int _imageClickCount = 0;";
 
     private static readonly string example3HtmlCode = @"
 <BitPersona ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png""
             Presence=@BitPersonaPresenceStatus.Online
             Size=@BitPersonaSize.Size120
-            OnImageClick=""HandleImageClick""
+            OnImageClick=""() => _imageClickCount++""
             HidePersonaDetails=""!IsHideDetails""
             Text=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
