@@ -5,7 +5,7 @@ It offers a variety of dotnet project templates such as TodoTemplate and AdminPa
 
 * Blazor Server: Best for fast development and debugging
 * Blazor Web Assembly: Best for SPA & PWA (for production)
-* Blazor Hybrid: Provides apps for Android, iOS, and Windows
+* Blazor Hybrid: Provides apps for Android, iOS, macOS, and Windows with full access to platform native features!
 
 Out-of-the-box, Bit Platform offers simple configurations for Android, iOS, and Windows apps, as well as PWA (for offline-capable web apps) and SPA with/without Pre-Rendering. These templates are powered by Bit Blazor components, which are fast and lightweight (less than 200KB) making them the best tool for developing most apps, even public websites like e-commerce.
 
