@@ -70,51 +70,51 @@
                         else
                         {
                             <BitBasicList Style="width: 100%; height: inherit"
-                                  Items="ViewTodoItemList"
-                                  Virtualize="true">
+                                          Items="ViewTodoItemList"
+                                          Virtualize="true">
                                 <RowTemplate>
                                     <div class="todo-item" role="listitem">
                                         @if (context.IsInEditMode)
-                                {
-                                    <BitTextField Class="todo-input" @bind-Value="context.Title" />
-                                    <div class="todo-item-btn-group--edit-mode">
+                                        {
+                                            <BitTextField Class="todo-input" @bind-Value="context.Title" />
+                                            <div class="todo-item-btn-group--edit-mode">
                                                 <BitButton Title="@Localizer[nameof(AppStrings.Edit)]"
-                                               AriaLabel="@Localizer[nameof(AppStrings.Edit)]"
-                                               OnClick="WrapHandled(() => EditTodoItem(context))">@Localizer[nameof(AppStrings.Edit)]</BitButton>
-                                        <BitButton ButtonStyle="BitButtonStyle.Standard"
-                                               Class="todo-button"
-                                               Title="@Localizer[nameof(AppStrings.Cancel)]"
-                                               AriaLabel="@Localizer[nameof(AppStrings.Cancel)]"
-                                               OnClick="WrapHandled(() => CancelEditMode(context))">@Localizer[nameof(AppStrings.Cancel)]</BitButton>
-                                    </div>
-                                }
-                                else
-                                {
-                                    <div class="todo-info">
-                                        <BitCheckbox DefaultValue="context.IsDone"
-                                                 OnChange="()=>ToggleTodoItem(context)">
-                                            @context.Title
-                                        </BitCheckbox>
+                                                           AriaLabel="@Localizer[nameof(AppStrings.Edit)]"
+                                                           OnClick="WrapHandled(() => EditTodoItem(context))">@Localizer[nameof(AppStrings.Edit)]</BitButton>
+                                                <BitButton ButtonStyle="BitButtonStyle.Standard"
+                                                           Class="todo-button"
+                                                           Title="@Localizer[nameof(AppStrings.Cancel)]"
+                                                           AriaLabel="@Localizer[nameof(AppStrings.Cancel)]"
+                                                           OnClick="WrapHandled(() => CancelEditMode(context))">@Localizer[nameof(AppStrings.Cancel)]</BitButton>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="todo-info">
+                                                <BitCheckbox DefaultValue="context.IsDone"
+                                                             OnChange="()=>ToggleTodoItem(context)">
+                                                    @context.Title
+                                                </BitCheckbox>
 
-                                        <div Class="todo-item-date">
-                                            @context.Date.ToString("MMMM dd , yyyy , dddd")
-                                        </div>
-                                    </div>
-                                    <div class="todo-btn-group">
-                                        <BitIconButton IconName="BitIconName.Edit"
-                                                   Title="@Localizer[nameof(AppStrings.Edit)]"
-                                                   AriaLabel="@Localizer[nameof(AppStrings.Edit)]"
-                                                   OnClick="WrapHandled(() => ToggleToEditMode(context))" />
+                                                <div Class="todo-item-date">
+                                                    @context.Date.ToString("MMMM dd , yyyy , dddd")
+                                                </div>
+                                            </div>
+                                            <div class="todo-btn-group">
+                                                <BitIconButton IconName="BitIconName.Edit"
+                                                               Title="@Localizer[nameof(AppStrings.Edit)]"
+                                                               AriaLabel="@Localizer[nameof(AppStrings.Edit)]"
+                                                               OnClick="WrapHandled(() => ToggleToEditMode(context))" />
 
-                                        <BitIconButton IconName="BitIconName.Delete"
-                                                   Title="@Localizer[nameof(AppStrings.Remove)]"
-                                                   AriaLabel="@Localizer[nameof(AppStrings.Remove)]"
-                                                   OnClick="WrapHandled(() => DeleteTodoItem(context))" />
+                                                <BitIconButton IconName="BitIconName.Delete"
+                                                               Title="@Localizer[nameof(AppStrings.Remove)]"
+                                                               AriaLabel="@Localizer[nameof(AppStrings.Remove)]"
+                                                               OnClick="WrapHandled(() => DeleteTodoItem(context))" />
+                                            </div>
+                                        }
                                     </div>
-                                }
-                            </div>
-                        </RowTemplate>
-                    </BitBasicList>
+                                </RowTemplate>
+                            </BitBasicList>
                         }
                     }
                 </div>

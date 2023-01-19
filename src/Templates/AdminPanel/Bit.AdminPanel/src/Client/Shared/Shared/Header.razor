@@ -8,6 +8,7 @@
             <a class="header-logo" href="/" aria-label="Homepage"></a>
             <BitBreadcrumb Items="_currentBreadcrumbItems" />
         </div>
+
         <div class="header-content-container" style="cursor: pointer" @onclick=@ToggleHeaderDropDown>
             <BitPersona ImageUrl="@_profileImageUrl"
                         Size=@BitPersonaSize.Size32
@@ -18,6 +19,7 @@
             @if (_isHeaderDrpDownOpen)
             {
                 <div class="header-drp-overlay"></div>
+            
                 <section class="header-drp-wrapper" @onclick:stopPropagation="true">
                     <div class="user-info-container">
                         <BitPersona ImageUrl="@_profileImageUrl"
@@ -26,9 +28,11 @@
                                     SecondaryText="@_user.UserName"
                                     Presence="BitPersonaPresenceStatus.Online" />
                     </div>
+                    
                     <BitActionButton Class="edit-profile-btn" IconName="BitIconName.Edit" AriaLabel="EditProfile" OnClick="WrapHandled(OpenEditProfilePage)">
                         @Localizer[nameof(AppStrings.EditProfileTitle)]
                     </BitActionButton>
+                    
                     <BitActionButton Class="sign-out-btn" IconName="BitIconName.OutOfOffice" AriaLabel="SignOut" OnClick="WrapHandled(OpenSignOutModal)">
                         @Localizer[nameof(AppStrings.SignOut)]
                     </BitActionButton>

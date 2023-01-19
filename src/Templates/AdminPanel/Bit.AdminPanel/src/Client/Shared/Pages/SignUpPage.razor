@@ -17,26 +17,32 @@
         <div class="bit-logo--blue"></div>
         <EditForm Model="_signUpModel" OnValidSubmit="WrapHandled(DoSignUp)" class="form">
             <AppDataAnnotationsValidator />
+
             @if (string.IsNullOrEmpty(_signUpMessage) is false)
             {
                 <BitMessageBar MessageBarType="@_signUpMessageType" OnDismiss="() => _signUpMessage = null">@_signUpMessage</BitMessageBar>
             }
+            
             @if (_isSignedUp)
             {
                 <h2 class="form-title">
                     @Localizer[nameof(AppStrings.ConfirmEmailTitle)]
                 </h2>
+
                 <div class="form-description">
                     @Localizer[nameof(AppStrings.ConfirmEmailMessage)]
                 </div>
+
                 <div class="form-link">
                     @Localizer[nameof(AppStrings.NotReceivedConfirmationEmailMessage)]
                 </div>
+
                 <div class="form-note">
                     @Localizer[nameof(AppStrings.CheckSpamMailMessage)]
                     <br />
                     -@Localizer[nameof(AppStrings.Or)] -
                 </div>
+
                 <BitLoadingButton IsLoading="_isLoading"
                                   ButtonStyle="BitButtonStyle.Primary"
                                   Title="@Localizer[nameof(AppStrings.ResendEmail)]"
@@ -50,6 +56,7 @@
                 <h2 class="form-title">
                     @Localizer[nameof(AppStrings.SignUp)]
                 </h2>
+
                 <div class="form-input-container">
                     <BitTextField Label=@Localizer[nameof(AppStrings.Email)]
                                   Placeholder=@Localizer[nameof(AppStrings.Email)]
@@ -57,6 +64,7 @@
                     @bind-Value="_signUpModel.UserName" />
                     <ValidationMessage For="@(() => _signUpModel.UserName)" />
                 </div>
+                
                 <div class="form-input-container">
                     <BitTextField @bind-Value="_signUpModel.Password"
                                   Label=@Localizer[nameof(AppStrings.Password)]
@@ -65,6 +73,7 @@
                                   Placeholder=@Localizer[nameof(AppStrings.Password)] />
                     <ValidationMessage For="@(() => _signUpModel.Password)" />
                 </div>
+                
                 <BitLoadingButton IsLoading="_isLoading"
                                   ButtonStyle="BitButtonStyle.Primary"
                                   Title="@Localizer[nameof(AppStrings.SignUp)]"
@@ -72,6 +81,7 @@
                                   ButtonType="BitButtonType.Submit">
                     <span>@Localizer[nameof(AppStrings.SignUp)]</span>
                 </BitLoadingButton>
+                
                 <div class="sign-in-row">
                     @Localizer[nameof(AppStrings.AlreadyHaveAccountMessage)] <BitLink Href="/sign-in">@Localizer[nameof(AppStrings.SignIn)]</BitLink>
                 </div>

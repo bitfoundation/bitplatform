@@ -1,39 +1,15 @@
 ﻿[
     {
-        "inputFile": "Shared/MainLayout.razor.scss",
-        "outputFile": "Shared/MainLayout.razor.css"
-    },
-    {
-        "inputFile": "Shared/AppErrorBoundary.razor.scss",
-        "outputFile": "Shared/AppErrorBoundary.razor.css"
-    },
-    {
-        "inputFile": "Shared/MessageBox.razor.scss",
-        "outputFile": "Shared/MessageBox.razor.css"
-    },
-    {
-        "inputFile": "Shared/Header.razor.scss",
-        "outputFile": "Shared/Header.razor.css"
-    },
-    {
-        "inputFile": "Shared/Footer.razor.scss",
-        "outputFile": "Shared/Footer.razor.css"
-    },
-    {
-        "inputFile": "Shared/NavMenu.razor.scss",
-        "outputFile": "Shared/NavMenu.razor.css"
-    },
-    {
-        "inputFile": "Components/SignOutConfirmModal.razor.scss",
-        "outputFile": "Components/SignOutConfirmModal.razor.css"
-    },
-    {
-        "inputFile": "Shared/PageNotFound.razor.scss",
-        "outputFile": "Shared/PageNotFound.razor.css"
-    },
-    {
         "inputFile": "Components/ConfirmMessageBox.razor.scss",
         "outputFile": "Components/ConfirmMessageBox.razor.css"
+    },
+    {
+        "inputFile": "Pages/Categories/AddOrEditCategoryPage.razor.scss",
+        "outputFile": "Pages/Categories/AddOrEditCategoryPage.razor.css"
+    },
+    {
+        "inputFile": "Pages/Categories/CategoriesPage.razor.scss",
+        "outputFile": "Pages/Categories/CategoriesPage.razor.css"
     },
     {
         "inputFile": "Pages/Home/HomePage.razor.scss",
@@ -48,36 +24,24 @@
         "outputFile": "Pages/Home/ProductsCountPerCategotyWidget.razor.css"
     },
     {
-        "inputFile": "Pages/Home/ProductsSalesWidget.razor.scss",
-        "outputFile": "Pages/Home/ProductsSalesWidget.razor.css"
-    },
-    {
         "inputFile": "Pages/Home/ProductsPercentageWidget.razor.scss",
         "outputFile": "Pages/Home/ProductsPercentageWidget.razor.css"
     },
     {
-        "inputFile": "Pages/Categories/CategoriesPage.razor.scss",
-        "outputFile": "Pages/Categories/CategoriesPage.razor.css"
-    },
-    {
-        "inputFile": "Pages/Categories/AddOrEditCategoryPage.razor.scss",
-        "outputFile": "Pages/Categories/AddOrEditCategoryPage.razor.css"
-    },
-    {
-        "inputFile": "Pages/Products/ProductsPage.razor.scss",
-        "outputFile": "Pages/Products/ProductsPage.razor.css"
+        "inputFile": "Pages/Home/ProductsSalesWidget.razor.scss",
+        "outputFile": "Pages/Home/ProductsSalesWidget.razor.css"
     },
     {
         "inputFile": "Pages/Products/CreateEditProductModal.razor.scss",
         "outputFile": "Pages/Products/CreateEditProductModal.razor.css"
     },
     {
-        "inputFile": "Pages/SignUpPage.razor.scss",
-        "outputFile": "Pages/SignUpPage.razor.css"
+        "inputFile": "Pages/Products/ProductsPage.razor.scss",
+        "outputFile": "Pages/Products/ProductsPage.razor.css"
     },
     {
-        "inputFile": "Pages/SignInPage.razor.scss",
-        "outputFile": "Pages/SignInPage.razor.css"
+        "inputFile": "Pages/EditProfilePage.razor.scss",
+        "outputFile": "Pages/EditProfilePage.razor.css"
     },
     {
         "inputFile": "Pages/EmailConfirmationPage.razor.scss",
@@ -92,7 +56,51 @@
         "outputFile": "Pages/ResetPasswordPage.razor.css"
     },
     {
-        "inputFile": "Pages/EditProfilePage.razor.scss",
-        "outputFile": "Pages/EditProfilePage.razor.css"
+        "inputFile": "Pages/SignInPage.razor.scss",
+        "outputFile": "Pages/SignInPage.razor.css"
+    },
+    {
+        "inputFile": "Pages/SignUpPage.razor.scss",
+        "outputFile": "Pages/SignUpPage.razor.css"
+    },
+    {
+        "inputFile": "Shared/AppErrorBoundary.razor.scss",
+        "outputFile": "Shared/AppErrorBoundary.razor.css"
+    },
+    {
+        "inputFile": "Shared/Footer.razor.scss",
+        "outputFile": "Shared/Footer.razor.css"
+    },
+    {
+        "inputFile": "Shared/Header.razor.scss",
+        "outputFile": "Shared/Header.razor.css"
+    },
+    {
+        "inputFile": "Shared/LoadingComponent.razor.scss",
+        "outputFile": "Shared/LoadingComponent.razor.css"
+    },
+    {
+        "inputFile": "Shared/MainLayout.razor.scss",
+        "outputFile": "Shared/MainLayout.razor.css"
+    },
+    {
+        "inputFile": "Shared/MessageBox.razor.scss",
+        "outputFile": "Shared/MessageBox.razor.css"
+    },
+    {
+        "inputFile": "Shared/NavMenu.razor.scss",
+        "outputFile": "Shared/NavMenu.razor.css"
+    },
+    {
+        "inputFile": "Shared/NotAuthorizedComponent.razor.scss",
+        "outputFile": "Shared/NotAuthorizedComponent.razor.css"
+    },
+    {
+        "inputFile": "Shared/PageNotFound.razor.scss",
+        "outputFile": "Shared/PageNotFound.razor.css"
+    },
+    {
+        "inputFile": "Shared/SignOutConfirmModal.razor.scss",
+        "outputFile": "Shared/SignOutConfirmModal.razor.css"
     }
 ]

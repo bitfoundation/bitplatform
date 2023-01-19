@@ -17,10 +17,12 @@
             <BitIconButton IconName="BitIconName.ChromeClose" OnClick="OnCloseClick" />
         </div>
         <EditForm Model="_product" OnValidSubmit="WrapHandled(Save)" style="width: 100%; display: flex; flex-direction: column;align-items: center">
-
             <AppDataAnnotationsValidator />
+
             <div class="form-input-container">
-                <BitTextField Label="@Localizer[(nameof(AppStrings.Name))]" @bind-Value="_product.Name" Placeholder="@Localizer[nameof(AppStrings.EnterProductName)]" />
+                <BitTextField @bind-Value="_product.Name"
+                              Label="@Localizer[(nameof(AppStrings.Name))]"
+                              Placeholder="@Localizer[nameof(AppStrings.EnterProductName)]" />
                 <ValidationMessage For="() => _product.Name" />
             </div>
 

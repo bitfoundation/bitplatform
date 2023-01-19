@@ -12,10 +12,12 @@
             <BitSpinner Size="BitSpinnerSize.Large"></BitSpinner>
         </div>
     }
+
     <div class="page-row">
         <h1 class="page-title">@Localizer[nameof(AppStrings.Products)]</h1>
         <BitButton OnClick="WrapHandled(CreateProduct)">@Localizer[nameof(AppStrings.AddProduct)]</BitButton>
     </div>
+    
     <div class="grid">
         <BitDataGrid @ref="_dataGrid" ItemsProvider="_productsProvider" TGridItem="ProductDto" ResizableColumns="true" Pagination="_pagination">
             <BitDataGridPropertyColumn Title="@Localizer[nameof(AppStrings.Id)]" Property="p => p!.Id" Sortable="true" Class="id-col"

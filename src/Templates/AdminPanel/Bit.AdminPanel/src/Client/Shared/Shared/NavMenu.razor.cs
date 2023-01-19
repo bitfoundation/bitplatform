@@ -6,7 +6,7 @@ public partial class NavMenu
 {
     private bool isMenuOpen;
 
-    private List<BitNavLinkItem> _navLinks = default!;
+    private List<BitNavItem> _navItems = default!;
 
     [CascadingParameter] public Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
 
@@ -28,33 +28,29 @@ public partial class NavMenu
 
     protected override async Task OnInitAsync()
     {
-        _navLinks = new()
+        _navItems = new()
         {
-            new BitNavLinkItem
+            new BitNavItem
             {
-                Name = Localizer[nameof(AppStrings.Home)],
-                Key = "Home",
+                Text = Localizer[nameof(AppStrings.Home)],
                 IconName = BitIconName.Home,
                 Url = "/",
             },
-            new BitNavLinkItem
+            new BitNavItem
             {
-                Name = Localizer[nameof(AppStrings.ProductCategory)],
-                Key = "Product catolog",
+                Text = Localizer[nameof(AppStrings.ProductCategory)],
                 IconName = BitIconName.Tag,
-                Links = new List<BitNavLinkItem>
+                Items = new List<BitNavItem>
                 {
-                    new BitNavLinkItem
+                    new BitNavItem
                     {
-                        Name = Localizer[nameof(AppStrings.Products)],
+                        Text = Localizer[nameof(AppStrings.Products)],
                         Url = "/products",
-                        Key = "Products"
                     },
-                    new BitNavLinkItem
+                    new BitNavItem
                     {
-                        Name = Localizer[nameof(AppStrings.Categories)],
+                        Text = Localizer[nameof(AppStrings.Categories)],
                         Url = "/categories",
-                        Key = "Categories"
                     },
                 }
             }
@@ -63,7 +59,7 @@ public partial class NavMenu
         await base.OnInitAsync();
     }
 
-    private async Task HandleLinkClick(BitNavLinkItem item)
+    private async Task HandleOnItemClick(BitNavItem item)
     {
         if (string.IsNullOrWhiteSpace(item.Url)) return;
 

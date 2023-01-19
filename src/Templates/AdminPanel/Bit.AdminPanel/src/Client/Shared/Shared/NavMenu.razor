@@ -10,10 +10,10 @@
     <div class="menu-content">
         <div class="menu-top-row"></div>
         <BitNav Class="nav-menu"
-                NavLinkItems="_navLinks"
+                Items="_navItems"
                 AriaLabel="NavMenu"
-                SelectedKey="Home"
-                OnLinkClick=HandleLinkClick>
+                DefaultSelectedItem="_navItems[0]"
+                OnItemClick=HandleOnItemClick>
         </BitNav>
     </div>
     <a class="menu-banner" href="https://todo.bitplatform.dev" target="_blank"></a>

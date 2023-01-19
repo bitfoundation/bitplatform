@@ -10,8 +10,16 @@
             @_message
         </div>
         <div class="btn-group">
-            <BitButton ButtonStyle="BitButtonStyle.Primary" Style="margin-right: 0.5rem" OnClick="@(() => Confirm(true))">@Localizer[nameof(AppStrings.Yes)]</BitButton>
-            <BitButton ButtonStyle="BitButtonStyle.Standard" OnClick="@(() => Confirm(false))">@Localizer[nameof(AppStrings.No)]</BitButton>
+            <BitButton ButtonStyle="BitButtonStyle.Primary"
+                       Style="margin-right: 0.5rem"
+                       OnClick="@(() => Confirm(true))">
+                @Localizer[nameof(AppStrings.Yes)]
+            </BitButton>
+
+            <BitButton ButtonStyle="BitButtonStyle.Standard"
+                       OnClick="@(() => Confirm(false))">
+                @Localizer[nameof(AppStrings.No)]
+            </BitButton>
         </div>
     </div>
 </BitModal>
