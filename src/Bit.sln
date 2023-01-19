@@ -66,6 +66,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TodoTemplate", "TodoTemplat
 		Templates\TodoTemplate\Bit.TodoTemplate\src\Clean.bat = Templates\TodoTemplate\Bit.TodoTemplate\src\Clean.bat
 		Templates\TodoTemplate\Bit.TodoTemplate\src\Directory.Build.props = Templates\TodoTemplate\Bit.TodoTemplate\src\Directory.Build.props
 		Templates\TodoTemplate\Bit.TodoTemplate\src\global.json = Templates\TodoTemplate\Bit.TodoTemplate\src\global.json
+		Templates\TodoTemplate\Readme.md = Templates\TodoTemplate\Readme.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.TodoTemplate.ProjectTemplate", "Templates\TodoTemplate\Bit.TodoTemplate.ProjectTemplate.csproj", "{08340313-0DA3-432D-8629-2F864218F678}"
@@ -97,6 +98,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AdminPanel", "AdminPanel", 
 		Templates\AdminPanel\Bit.AdminPanel\src\Clean.bat = Templates\AdminPanel\Bit.AdminPanel\src\Clean.bat
 		Templates\AdminPanel\Bit.AdminPanel\src\Directory.Build.props = Templates\AdminPanel\Bit.AdminPanel\src\Directory.Build.props
 		Templates\AdminPanel\Bit.AdminPanel\src\global.json = Templates\AdminPanel\Bit.AdminPanel\src\global.json
+		Templates\AdminPanel\Readme.md = Templates\AdminPanel\Readme.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.AdminPanel.ProjectTemplate", "Templates\AdminPanel\Bit.AdminPanel.ProjectTemplate.csproj", "{86731B01-337F-44B8-954C-644D36BFDA96}"
