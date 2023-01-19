@@ -1,24 +1,13 @@
 # Introduction
 
 Bit platform is the home for .NET developers. 
-Bit provides dotnet source templates such as TodoTemplate and AdminPanel template. In these project templates, common features such as Sign-up & Sign-in, are available using C#, HTML, and CSS, with which most of the .NET developers are familiar.
+It offers a variety of dotnet project templates such as TodoTemplate and AdminPanel, which come equipped with common features like Sign-up & Sign-in using C#, HTML, and CSS, making it familiar for most .NET developers. With these templates, one can easily switch between Blazor Server, Blazor Web Assembly, and Blazor Hybrid:
 
-The following apps are available out of the box with simple configurations:
-* Android app with full access to platform features
-* iOS app with full access to platform features
-* Windows app with full access to platform features
-* PWA (for offline-capable web apps)
-* SPA with/without Pre-Rendering (SEO friendly)
+* Blazor Server: Best for fast development and debugging
+* Blazor Web Assembly: Best for SPA & PWA (for production)
+* Blazor Hybrid: Provides apps for Android, iOS, and Windows
 
-Using these templates, one can easily switch between Blazor Server, Blazor Web Assembly, and Blazor Hybrid:
-* Blazor Server: best for fast development and debugging
-* Blazor Web Assembly: best for SPA & PWA (for production)
-* Blazor Hybrid: provides apps for Android, iOS, and Windows
-
-In practice, everyone can have the above outputs with just one codebase.
-
-
-These templates are powered by Bit Blazor components. Bit components are fast(performant) and lightweight (less than 200KB). These components are the best tool to develop most apps, even public websites like e-commerce.
+Out-of-the-box, Bit Platform offers simple configurations for Android, iOS, and Windows apps, as well as PWA (for offline-capable web apps) and SPA with/without Pre-Rendering. These templates are powered by Bit Blazor components, which are fast and lightweight (less than 200KB) making them the best tool for developing most apps, even public websites like e-commerce.
 
 
 The following websites are developed by Bit Platform and published in Blazor Web Assembly:
