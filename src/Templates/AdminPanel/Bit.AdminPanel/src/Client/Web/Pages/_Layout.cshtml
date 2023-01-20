@@ -62,10 +62,6 @@
 </head>
 <body>
     <div id="app-container">
-        @if (isDefaultDeploymentType || isPwa)
-        {
-            <component type="typeof(AdminPanel.Client.Shared.LoadingComponent)" param-Color="@("#002A66")" render-mode="@RenderMode.Static" />
-        }
         @RenderBody()
     </div>
 
@@ -84,6 +80,11 @@
                 <component type="typeof(Bit.Bswup.BswupProgress)" render-mode="@RenderMode.Static"
                            param-AutoReload="true"
                            param-AppContainer="@("#app-container")" />
+
+                <component type="typeof(AdminPanel.Client.Shared.LoadingComponent)"
+                    param-Color="@("#002A66")"
+                    param-AutoHide="true"
+                    render-mode="@RenderMode.WebAssemblyPrerendered" />
             }
             else
             {

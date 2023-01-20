@@ -6,8 +6,11 @@
     }
 </style>
 
-<div class="lds-wrapper">
-    <div class="lds-grid">
-        <div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+@if (_showLoading)
+{
+    <div class="lds-wrapper">
+        <div class="lds-grid">
+            <div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+        </div>
     </div>
-</div>
+}
