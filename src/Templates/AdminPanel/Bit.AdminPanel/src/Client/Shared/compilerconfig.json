@@ -68,10 +68,6 @@
         "outputFile": "Shared/AppErrorBoundary.razor.css"
     },
     {
-        "outputFile": "Shared/BupProgressBar.razor.css",
-        "inputFile": "Shared/BupProgressBar.razor.scss"
-    },
-    {
         "inputFile": "Shared/Footer.razor.scss",
         "outputFile": "Shared/Footer.razor.css"
     },
