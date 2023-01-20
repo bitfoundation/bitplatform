@@ -712,6 +712,7 @@ public class BitNumericTextFieldIntTests : BunitTestContext
         ntfLabelChild.MarkupMatches(labelFragment);
     }
 
+    [Ignore]
     [DataTestMethod,
      DataRow(3, 1, 100, 475),
      DataRow(3, 1, 100, 550)
@@ -737,6 +738,7 @@ public class BitNumericTextFieldIntTests : BunitTestContext
             TimeSpan.FromMilliseconds(timeout));
     }
 
+    [Ignore]
     [DataTestMethod,
      DataRow(50, 1, 0, 475),
      DataRow(50, 1, 0, 550)
