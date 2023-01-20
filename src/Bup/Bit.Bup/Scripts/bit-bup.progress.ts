@@ -1,5 +1,5 @@
 ﻿; (function () {
-    (window as any).startBupProgress = (showLogs: boolean, showAssets: boolean, appContainerSelector: string, hideApp: boolean) => {
+    (window as any).startBupProgress = (showLogs: boolean, showAssets: boolean, appContainerSelector: string, hideApp: boolean, autoHide: boolean) => {
         var appEl = document.querySelector(appContainerSelector) as HTMLElement;
         var bupEl = document.getElementById('bit-bup');
         var progressEl = document.getElementById('bit-bup-progress-bar');
@@ -25,7 +25,7 @@
                     return showLogs ? console.log('resource downloaded:', data) : undefined;
                 case 'end':
                     hideApp && appEl && (appEl.style.display = 'block');
-                    bupEl && (bupEl.style.display = 'none');
+                    autoHide && bupEl && (bupEl.style.display = 'none');
                     return showLogs ? console.log('downloading resources ended.') : undefined;
             }
         }
