@@ -1,10 +1,10 @@
 ﻿; (function () {
     (window as any).startBupProgress = (showLogs: boolean, showAssets: boolean, appContainerSelector: string, hideApp: boolean, autoHide: boolean) => {
-        var appEl = document.querySelector(appContainerSelector) as HTMLElement;
-        var bupEl = document.getElementById('bit-bup');
-        var progressEl = document.getElementById('bit-bup-progress-bar');
-        var percentEl = document.getElementById('bit-bup-percent');
-        var assetsEl = document.getElementById('bit-bup-assets');
+        const appEl = document.querySelector(appContainerSelector) as HTMLElement;
+        const bupEl = document.getElementById('bit-bup');
+        const progressEl = document.getElementById('bit-bup-progress-bar');
+        const percentEl = document.getElementById('bit-bup-percent');
+        const assetsEl = document.getElementById('bit-bup-assets');
         (window as any).bitBupHandler = bitBupHandler;
 
         function bitBupHandler(type, data) {
@@ -20,8 +20,11 @@
                         assetsEl.prepend(li);
                     }
                     const percent = Math.round(data.percent);
-                    progressEl && (progressEl.style.width = `${percent}%`);
-                    percentEl && (percentEl.innerHTML = `${percent}%`);
+                    const perStr = `${percent}%`;
+                    bupEl && bupEl.style.setProperty('--bit-bup-percent', perStr)
+                    bupEl && bupEl.style.setProperty('--bit-bup-percent-text', `"${perStr}"`)
+                    progressEl && (progressEl.style.width = perStr);
+                    percentEl && (percentEl.innerHTML = perStr);
                     return showLogs ? console.log('resource downloaded:', data) : undefined;
                 case 'end':
                     hideApp && appEl && (appEl.style.display = 'block');
