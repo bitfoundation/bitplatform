@@ -81,13 +81,29 @@
             {
                 <script src="_framework/blazor.webassembly.js" autostart=false></script>
                 <script src="_content/Bit.Bswup/bit-bswup.js" scope="/" sw="service-worker.js" handler="bitBswupHandler"></script>
-                <component type="typeof(Bit.Bswup.BswupProgress)" render-mode="@RenderMode.Static"
+                <component type="typeof(Bit.Bswup.BswupProgress)"
                            param-AutoReload="true"
-                           param-AppContainer="@("#app-container")" />
+                           param-AppContainer="@("#app-container")"
+                           render-mode="@RenderMode.Static" />
             }
             else
             {
-                <script src="_framework/blazor.webassembly.js" asp-append-version="@shoudAddAspAppendVersion"></script>
+                <script src="_framework/blazor.webassembly.js" autostart="false" asp-append-version="@shoudAddAspAppendVersion"></script>
+                <script src="_content/Bit.Bup/bit-bup.progress.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
+                <script src="_content/Bit.Bup/bit-bup.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
+
+                @if (isSsr)
+                {
+                    <component type="typeof(BupProgressBar)" render-mode="@RenderMode.WebAssemblyPrerendered" />
+                }
+                else
+                {
+                    <link rel="stylesheet" href="_content/Bit.Bup/bit-bup.progress.min.css" asp-append-version="@shoudAddAspAppendVersion">
+                    <component type="typeof(Bit.Bup.BupProgress)" render-mode="@RenderMode.Static"
+                               param-AutoHide="true"
+                               param-HideApp="true"
+                               param-AppContainer="@("#app-container")" />
+                }
             }
         }
 

@@ -1,0 +1,52 @@
+﻿@using Bit.Bup
+@using Bit.BlazorUI
+
+<style>
+    #bit-bup {
+        position: fixed;
+        left: 50%;
+        top: 2px;
+        transform: translateX(-50%);
+        text-align: center;
+        z-index: 999999;
+        font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+    }
+
+        #bit-bup .bup-progress-text {
+            position: absolute;
+            text-align: center;
+            font-weight: normal;
+            font-size: 12px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -63%);
+        }
+
+            #bit-bup .bup-progress-text::after {
+                content: var(--bit-bup-percent-text, "");
+            }
+
+</style>
+
+@code {
+    private bool _showLoading = true;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+        if (firstRender is false) return;
+
+        _showLoading = false;
+        StateHasChanged();
+    }
+}
+
+@if (_showLoading)
+{
+    <div>
+        <BupProgress>
+            <div class="bup-progress-text" />
+            <BitRollerLoading Size="42" Color="#0078d4" />
+        </BupProgress>
+    </div>
+}
