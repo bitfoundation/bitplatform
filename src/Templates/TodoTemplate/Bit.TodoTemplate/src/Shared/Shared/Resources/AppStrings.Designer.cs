@@ -1286,6 +1286,15 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Title.
+        /// </summary>
+        public static string Title {
+            get {
+                return ResourceManager.GetString("Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Add a todo.
         /// </summary>
         public static string TodoAddPlaceholder {
