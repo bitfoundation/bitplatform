@@ -30,6 +30,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="Bit.Bup" Version="4.9.3-pre-03" />
         <PackageReference Include="Bit.Bswup" Version="4.9.3-pre-02" />
         <PackageReference Include="Bit.CodeAnalyzers" Version="4.9.3-pre-02">
             <PrivateAssets>all</PrivateAssets>
