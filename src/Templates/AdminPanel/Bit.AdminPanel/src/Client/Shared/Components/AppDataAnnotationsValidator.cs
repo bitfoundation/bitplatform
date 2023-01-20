@@ -52,6 +52,8 @@ public partial class AppDataAnnotationsValidator : AppComponentBase, IDisposable
                 if (string.IsNullOrWhiteSpace(attribute.ErrorMessageResourceName) is false && attribute.ErrorMessageResourceType is null)
                 {
                     attribute.ErrorMessageResourceType = resourceType;
+                    var displayAttribute = propertyInfo.GetCustomAttribute<DisplayAttribute>();
+                    validationContext.DisplayName = _stringLocalizerFactory.Create(resourceType).GetString(displayAttribute?.Name ?? propertyInfo.Name);
                 }
 
                 var result = attribute.GetValidationResult(propertyValue, validationContext);
@@ -91,6 +93,8 @@ public partial class AppDataAnnotationsValidator : AppComponentBase, IDisposable
         {
             var resourceType = dtoResourceTypeAttr.ResourceType;
 
+            var stringLocalizer = _stringLocalizerFactory.Create(resourceType);
+
             var properties = objectType.GetProperties(BindingFlags.Instance | BindingFlags.Public);
 
             foreach (var propertyInfo in properties)
@@ -104,6 +108,8 @@ public partial class AppDataAnnotationsValidator : AppComponentBase, IDisposable
                     if (string.IsNullOrWhiteSpace(attribute.ErrorMessageResourceName) is false && attribute.ErrorMessageResourceType is null)
                     {
                         attribute.ErrorMessageResourceType = resourceType;
+                        var displayAttribute = propertyInfo.GetCustomAttribute<DisplayAttribute>();
+                        validationContext.DisplayName = stringLocalizer.GetString(displayAttribute?.Name ?? propertyInfo.Name);
                     }
 
                     var result = attribute.GetValidationResult(propertyValue, context);
