@@ -5,55 +5,47 @@ namespace TodoTemplate.Client.Shared.Pages;
 
 public partial class SignInPage
 {
-    public SignInRequestDto SignInModel { get; set; } = new();
-
-    public bool IsLoading { get; set; }
-
-    public BitMessageBarType SignInMessageType { get; set; }
-
-    public string? SignInMessage { get; set; }
+    private bool _isLoading;
+    private string? _signInMessage;
+    private BitMessageBarType _signInMessageType;
+    private SignInRequestDto _signInModel = new();
 
     [Parameter]
     [SupplyParameterFromQuery]
     public string? RedirectUrl { get; set; }
 
+    protected async override Task OnAfterFirstRenderAsync()
+    {
+        await base.OnAfterFirstRenderAsync();
+
+        if (await AuthenticationStateProvider.IsUserAuthenticatedAsync())
+        {
+            NavigationManager.NavigateTo("/");
+        }
+    }
+
     private async Task DoSignIn()
     {
-        if (IsLoading)
-        {
-            return;
-        }
+        if (_isLoading) return;
 
-        IsLoading = true;
-        SignInMessage = null;
+        _isLoading = true;
+        _signInMessage = null;
 
         try
         {
-            await AuthenticationService.SignIn(SignInModel);
+            await AuthenticationService.SignIn(_signInModel);
 
             NavigationManager.NavigateTo(RedirectUrl ?? "/");
         }
         catch (KnownException e)
         {
-            SignInMessageType = BitMessageBarType.Error;
+            _signInMessageType = BitMessageBarType.Error;
 
-            SignInMessage = e.Message;
+            _signInMessage = e.Message;
         }
         finally
         {
-            IsLoading = false;
-        }
-    }
-
-    private bool IsSubmitButtonEnabled => IsLoading is false;
-
-    protected async override Task OnAfterFirstRenderAsync()
-    {
-        await base.OnAfterFirstRenderAsync();
-
-        if (await AuthenticationStateProvider.IsUserAuthenticated())
-        {
-            NavigationManager.NavigateTo("/");
+            _isLoading = false;
         }
     }
 }

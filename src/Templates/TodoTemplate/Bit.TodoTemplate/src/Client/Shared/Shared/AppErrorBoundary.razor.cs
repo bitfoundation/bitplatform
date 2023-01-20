@@ -1,5 +1,5 @@
 ﻿//-:cnd:noEmit
-namespace TodoTemplate.Client.Shared.Shared;
+namespace TodoTemplate.Client.Shared;
 
 public partial class AppErrorBoundary
 {
@@ -16,9 +16,11 @@ public partial class AppErrorBoundary
     }
 #endif
 
-    protected override async Task OnErrorAsync(Exception exception)
+    protected override Task OnErrorAsync(Exception exception)
     {
         _exceptionHandler.Handle(exception);
+
+        return Task.CompletedTask;
     }
 
     private void Refresh()

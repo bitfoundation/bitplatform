@@ -1,19 +1,19 @@
 ﻿using Microsoft.AspNetCore.Components.Web;
 
-namespace TodoTemplate.Client.Shared.Shared;
+namespace TodoTemplate.Client.Shared;
 
-public partial class MainLayout : IAsyncDisposable
+public partial class MainLayout : IDisposable
 {
+    private bool _disposed;
+    private bool _isMenuOpen;
+    private bool _isUserAuthenticated;
+    private ErrorBoundary ErrorBoundaryRef = default!;
+
     [AutoInject] private IStateService _stateService = default!;
 
     [AutoInject] private IExceptionHandler _exceptionHandler = default!;
 
     [AutoInject] private AppAuthenticationStateProvider _authStateProvider = default!;
-
-    private ErrorBoundary ErrorBoundaryRef = default!;
-
-    public bool IsUserAuthenticated { get; set; }
-    public bool IsMenuOpen { get; set; } = false;
 
     protected override void OnParametersSet()
     {
@@ -30,7 +30,7 @@ public partial class MainLayout : IAsyncDisposable
         {
             _authStateProvider.AuthenticationStateChanged += VerifyUserIsAuthenticatedOrNot;
 
-            IsUserAuthenticated = await _stateService.GetValue($"{nameof(MainLayout)}-{nameof(IsUserAuthenticated)}", _authStateProvider.IsUserAuthenticated);
+            _isUserAuthenticated = await _stateService.GetValue($"{nameof(MainLayout)}-isUserAuthenticated", _authStateProvider.IsUserAuthenticatedAsync);
 
             await base.OnInitializedAsync();
         }
@@ -44,7 +44,7 @@ public partial class MainLayout : IAsyncDisposable
     {
         try
         {
-            IsUserAuthenticated = await _authStateProvider.IsUserAuthenticated();
+            _isUserAuthenticated = await _authStateProvider.IsUserAuthenticatedAsync();
         }
         catch (Exception ex)
         {
@@ -58,11 +58,21 @@ public partial class MainLayout : IAsyncDisposable
 
     private void ToggleMenuHandler()
     {
-        IsMenuOpen = !IsMenuOpen;
+        _isMenuOpen = !_isMenuOpen;
     }
 
-    public async ValueTask DisposeAsync()
+    public void Dispose()
     {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_disposed) return;
+
         _authStateProvider.AuthenticationStateChanged -= VerifyUserIsAuthenticatedOrNot;
+
+        _disposed = true;
     }
 }

@@ -1,20 +1,23 @@
 ﻿@page "/"
-
-@inherits AppComponentBase;
+@inherits AppComponentBase
 
 <PageTitle>@Localizer[nameof(AppStrings.HomeTitle)]</PageTitle>
 
 <div class="page-container">
     <section class="page-section hero-section">
         <h1 class="hero-section-title">@Localizer[nameof(AppStrings.HomeTitle)]</h1>
+
         <div class="hero-section-desc">
             @Localizer[nameof(AppStrings.HomeMessage)]
         </div>
+
         <BitButton Class="hero-section-cta"
                    Href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Templates/TodoTemplate/Bit.TodoTemplate"
                    Target="_blank"
                    Title="@Localizer[nameof(AppStrings.GitHubRepo)]"
                    AriaLabel="@Localizer[nameof(AppStrings.GitHubRepo)]"
-                   ButtonStyle="BitButtonStyle.Standard">@Localizer[nameof(AppStrings.GitHubRepo)]</BitButton>
+                   ButtonStyle="BitButtonStyle.Standard">
+            @Localizer[nameof(AppStrings.GitHubRepo)]
+        </BitButton>
     </section>
 </div>

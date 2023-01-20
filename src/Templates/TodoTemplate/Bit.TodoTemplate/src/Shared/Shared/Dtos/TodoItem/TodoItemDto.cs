@@ -13,5 +13,5 @@ public class TodoItemDto
     public bool IsDone { get; set; }
 
     [JsonIgnore]
-    public bool IsInEditMode { get; set; }
+    public bool IsUnderEdit { get; set; }
 }

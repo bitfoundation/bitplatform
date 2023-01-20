@@ -56,15 +56,15 @@
             background: #0D2960;
         }
     </style>
-    @if (isDefaultDeploymentType || isPwa)
-    {
-        <component type="typeof(TodoTemplate.Client.Shared.Components.LoadingComponent)" param-Color="@("#FFF")" render-mode="@RenderMode.Static" />
-    }
     <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.min.css" asp-append-version="@shoudAddAspAppendVersion" />
     <link href="_content/TodoTemplate.Client.Shared/TodoTemplate.Client.Shared.bundle.scp.css" rel="stylesheet" asp-append-version="@shoudAddAspAppendVersion" />
 </head>
 <body>
     <div id="app-container">
+        @if (isDefaultDeploymentType || isPwa)
+        {
+            <component type="typeof(TodoTemplate.Client.Shared.LoadingComponent)" param-Color="@("#FFF")" render-mode="@RenderMode.Static" />
+        }
         @RenderBody()
     </div>
 

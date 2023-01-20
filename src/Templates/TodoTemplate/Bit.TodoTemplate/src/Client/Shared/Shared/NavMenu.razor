@@ -1,4 +1,5 @@
-﻿@inherits AppComponentBase;
+﻿@namespace TodoTemplate.Client.Shared
+@inherits AppComponentBase;
 
 @if (IsMenuOpen)
 {
@@ -7,10 +8,10 @@
 
 <section class="main-container @(IsMenuOpen ? null : "main-container--closed")">
     <div class="top-container">
-        <BitPersona ImageUrl="@ProfileImageUrl"
+        <BitPersona ImageUrl="@_profileImageUrl"
                     Size=@BitPersonaSize.Size48
-                    Text="@User?.FullName"
-                    SecondaryText="@User?.UserName"
+                    Text="@_user.FullName"
+                    SecondaryText="@_user.UserName"
                     Presence="BitPersonaPresenceStatus.Online" />
         <BitActionButton IconName="BitIconName.Edit"
                          Href="/edit-profile"
@@ -25,4 +26,4 @@
     </BitNav>
 </section>
 
-<SignOutConfirmModal @bind-IsOpen=IsSignOutModalOpen></SignOutConfirmModal>
+<SignOutConfirmModal @bind-IsOpen=_isSignOutModalOpen></SignOutConfirmModal>

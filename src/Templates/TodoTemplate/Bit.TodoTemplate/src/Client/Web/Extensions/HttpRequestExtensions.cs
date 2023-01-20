@@ -8,14 +8,11 @@ public static class HttpRequestExtensions
     {
         var agent = GetLoweredUserAgent(request);
 
-        if (agent.Contains("google"))
-            return true;
+        if (agent.Contains("google")) return true;
 
-        if (agent.Contains("bing"))
-            return true;
+        if (agent.Contains("bing")) return true;
 
-        if (agent.Contains("lighthouse"))
-            return true;
+        if (agent.Contains("lighthouse")) return true;
 
         return false;
     }
@@ -24,8 +21,7 @@ public static class HttpRequestExtensions
     {
         var userAgent = request.Headers[HeaderNames.UserAgent].ToString();
 
-        if (string.IsNullOrEmpty(userAgent))
-            return string.Empty;
+        if (string.IsNullOrEmpty(userAgent)) return string.Empty;
 
         return userAgent.ToLower();
     }

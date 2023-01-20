@@ -1,13 +1,19 @@
-﻿namespace TodoTemplate.Client.Shared.Shared;
+﻿namespace TodoTemplate.Client.Shared;
 
 public partial class MessageBox : IDisposable
 {
     private static event Func<string, string, Task> OnShow = default!;
 
+    private bool _isOpen;
+    private string _title = string.Empty;
+    private string _body = string.Empty;
+
     public static async Task Show(string message, string title = "")
     {
         if (OnShow is not null)
+        {
             await OnShow.Invoke(message, title);
+        }
     }
 
     protected override void OnInitialized()
@@ -21,33 +27,18 @@ public partial class MessageBox : IDisposable
     {
         await InvokeAsync(() =>
         {
-            IsOpen = true;
+            _isOpen = true;
 
-            Title = title;
-            Body = message;
+            _title = title;
+            _body = message;
 
             StateHasChanged();
         });
     }
 
-    // ========================================================================
+    private void OnCloseClick() => _isOpen = false;
 
-    private bool IsOpen { get; set; }
-    private string Title { get; set; } = string.Empty;
-    private string Body { get; set; } = string.Empty;
+    private void OnOkClick() => _isOpen = false;
 
-    private void OnCloseClick()
-    {
-        IsOpen = false;
-    }
-
-    private void OnOkClick()
-    {
-        IsOpen = false;
-    }
-
-    public void Dispose()
-    {
-        OnShow -= ShowMessageBox;
-    }
+    public void Dispose() => OnShow -= ShowMessageBox;
 }

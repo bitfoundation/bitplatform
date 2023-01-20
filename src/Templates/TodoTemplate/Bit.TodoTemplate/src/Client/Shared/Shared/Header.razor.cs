@@ -1,16 +1,17 @@
-﻿namespace TodoTemplate.Client.Shared.Components;
+﻿namespace TodoTemplate.Client.Shared;
 
-public partial class Header : IAsyncDisposable
+public partial class Header : IDisposable
 {
-    [Parameter] public EventCallback OnToggleMenu { get; set; }
+    private bool _disposed;
+    private bool _isUserAuthenticated;
 
-    public bool IsUserAuthenticated { get; set; }
+    [Parameter] public EventCallback OnToggleMenu { get; set; }
 
     protected override async Task OnInitAsync()
     {
         AuthenticationStateProvider.AuthenticationStateChanged += VerifyUserIsAuthenticatedOrNot;
 
-        IsUserAuthenticated = await StateService.GetValue($"{nameof(Header)}-{nameof(IsUserAuthenticated)}", AuthenticationStateProvider.IsUserAuthenticated);
+        _isUserAuthenticated = await StateService.GetValue($"{nameof(Header)}-isUserAuthenticated", AuthenticationStateProvider.IsUserAuthenticatedAsync);
 
         await base.OnInitAsync();
     }
@@ -19,7 +20,7 @@ public partial class Header : IAsyncDisposable
     {
         try
         {
-            IsUserAuthenticated = await AuthenticationStateProvider.IsUserAuthenticated();
+            _isUserAuthenticated = await AuthenticationStateProvider.IsUserAuthenticatedAsync();
         }
         catch (Exception ex)
         {
@@ -36,8 +37,18 @@ public partial class Header : IAsyncDisposable
         await OnToggleMenu.InvokeAsync();
     }
 
-    public async ValueTask DisposeAsync()
+    public void Dispose()
     {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_disposed) return;
+
         AuthenticationStateProvider.AuthenticationStateChanged -= VerifyUserIsAuthenticatedOrNot;
+
+        _disposed = true;
     }
 }

@@ -4,43 +4,35 @@ namespace TodoTemplate.Client.Shared.Pages;
 
 public partial class ForgotPasswordPage
 {
-    public SendResetPasswordEmailRequestDto ForgotPasswordModel { get; set; } = new();
+    private bool _isLoading;
+    private string? _forgotPasswordMessage;
+    private BitMessageBarType _forgotPasswordMessageType;
+    private SendResetPasswordEmailRequestDto _forgotPasswordModel = new();
 
-    public bool IsLoading { get; set; }
-
-    public BitMessageBarType ForgotPasswordMessageType { get; set; }
-
-    public string? ForgotPasswordMessage { get; set; }
-
-    private bool IsSubmitButtonEnabled => IsLoading is false;
-
-    private async Task Submit()
+    private async Task DoSubmit()
     {
-        if (IsLoading)
-        {
-            return;
-        }
+        if (_isLoading) return;
 
-        IsLoading = true;
-        ForgotPasswordMessage = null;
+        _isLoading = true;
+        _forgotPasswordMessage = null;
 
         try
         {
-            await HttpClient.PostAsJsonAsync("Auth/SendResetPasswordEmail", ForgotPasswordModel, AppJsonContext.Default.SendResetPasswordEmailRequestDto);
+            await HttpClient.PostAsJsonAsync("Auth/SendResetPasswordEmail", _forgotPasswordModel, AppJsonContext.Default.SendResetPasswordEmailRequestDto);
 
-            ForgotPasswordMessageType = BitMessageBarType.Success;
+            _forgotPasswordMessageType = BitMessageBarType.Success;
 
-            ForgotPasswordMessage = Localizer[nameof(AppStrings.ResetPasswordLinkSentMessage)];
+            _forgotPasswordMessage = Localizer[nameof(AppStrings.ResetPasswordLinkSentMessage)];
         }
         catch (KnownException e)
         {
-            ForgotPasswordMessageType = BitMessageBarType.Error;
+            _forgotPasswordMessageType = BitMessageBarType.Error;
 
-            ForgotPasswordMessage = e.Message;
+            _forgotPasswordMessage = e.Message;
         }
         finally
         {
-            IsLoading = false;
+            _isLoading = false;
         }
     }
 }

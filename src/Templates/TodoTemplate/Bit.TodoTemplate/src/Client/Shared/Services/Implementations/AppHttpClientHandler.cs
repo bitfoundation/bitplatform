@@ -12,7 +12,7 @@ public partial class AppHttpClientHandler : HttpClientHandler
     {
         if (request.Headers.Authorization is null && OperatingSystem.IsBrowser() is false)
         {
-            var access_token = await _tokenProvider.GetAcccessToken();
+            var access_token = await _tokenProvider.GetAcccessTokenAsync();
             if (access_token is not null)
             {
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", access_token);
