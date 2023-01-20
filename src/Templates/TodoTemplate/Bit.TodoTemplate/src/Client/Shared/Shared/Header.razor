@@ -1,8 +1,9 @@
-﻿@inherits AppComponentBase;
+﻿@namespace TodoTemplate.Client.Shared
+@inherits AppComponentBase
 
 <header class="header">
     <div class="header-contact">
-        @if (IsUserAuthenticated)
+        @if (_isUserAuthenticated)
         {
             <BitIconButton Class="header-menu" IconName=BitIconName.CollapseMenu OnClick=ToggleMenu />
         }
@@ -10,7 +11,7 @@
     </div>
     <div class="header-contact">
         <BitLink Class="header-item--privacy" Href="/privacy" Target="_self">@Localizer[nameof(AppStrings.Privacy)]</BitLink>
-        @if (!IsUserAuthenticated)
+        @if (!_isUserAuthenticated)
         {
             <BitActionButton Class="header-item" IconName="BitIconName.AddFriend" Href="/sign-up" Target="_self">@Localizer[nameof(AppStrings.SignUp)]</BitActionButton>
             <BitActionButton Class="header-item" IconName="BitIconName.Signin" Href="/sign-in" Target="_self">@Localizer[nameof(AppStrings.SignIn)]</BitActionButton>

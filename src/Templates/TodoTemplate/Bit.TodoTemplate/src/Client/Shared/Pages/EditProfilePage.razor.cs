@@ -6,42 +6,41 @@ namespace TodoTemplate.Client.Shared.Pages;
 [Authorize]
 public partial class EditProfilePage
 {
-    public UserDto User { get; set; } = new();
-    public UserDto UserToEdit { get; set; } = new();
-
-    public string? ProfileImageUploadUrl { get; set; }
-    public string? ProfileImageUrl { get; set; }
-    public string? ProfileImageError { get; set; }
-
-    public bool IsSavingData { get; set; }
-    public bool IsLoadingData { get; set; }
-
-    public BitMessageBarType EditProfileMessageType { get; set; }
-    public string? EditProfileMessage { get; set; }
+    private bool _isSaving;
+    private bool _isRemoving;
+    private bool _isLoading;
+    private string? _profileImageUrl;
+    private string? _profileImageError;
+    private string? _editProfileMessage;
+    private string? _profileImageUploadUrl;
+    private string? _profileImageRemoveUrl;
+    private BitMessageBarType _editProfileMessageType;
+    private UserDto _user = new();
+    private readonly UserDto _userToEdit = new();
 
     protected override async Task OnInitAsync()
     {
-        IsLoadingData = true;
+        _isLoading = true;
 
         try
         {
             await LoadEditProfileData();
 
-            var access_token = await StateService.GetValue($"{nameof(EditProfilePage)}-access_token", async () =>
-                await AuthTokenProvider.GetAcccessToken());
+            var access_token = await StateService.GetValue($"{nameof(EditProfilePage)}-access_token", AuthTokenProvider.GetAcccessTokenAsync);
 
-            ProfileImageUploadUrl = $"{GetBaseUrl()}Attachment/UploadProfileImage?access_token={access_token}";
-            ProfileImageUrl = $"{GetBaseUrl()}Attachment/GetProfileImage?access_token={access_token}";
+            _profileImageUploadUrl = $"{GetBaseUrl()}Attachment/UploadProfileImage?access_token={access_token}";
+            _profileImageUrl = $"{GetBaseUrl()}Attachment/GetProfileImage?access_token={access_token}";
+            _profileImageRemoveUrl = $"Attachment/RemoveProfileImage?access_token={access_token}";
         }
         finally
         {
-            IsLoadingData = false;
+            _isLoading = false;
         }
 
         await base.OnInitAsync();
     }
 
-    string GetBaseUrl()
+    private string? GetBaseUrl()
     {
 #if BlazorWebAssembly
         return "/api/";
@@ -52,48 +51,83 @@ public partial class EditProfilePage
 
     private async Task LoadEditProfileData()
     {
-        User = (await StateService.GetValue($"{nameof(EditProfilePage)}-{nameof(User)}", async () =>
-            await HttpClient.GetFromJsonAsync("User/GetCurrentUser", AppJsonContext.Default.UserDto))) ?? new();
+        _user = await StateService.GetValue($"{nameof(EditProfilePage)}-{nameof(_user)}", GetCurrentUser) ?? new();
 
-        UserToEdit.ProfileImageName = User.ProfileImageName;
-        UserToEdit.FullName = User.FullName;
-        UserToEdit.BirthDate = User.BirthDate;
-        UserToEdit.Gender = User.Gender;
+        UpdateEditProfileData();
     }
 
-    private bool IsSubmitButtonEnabled => IsSavingData is false;
-
-    private async Task Save()
+    private async Task RefreshProfileData()
     {
-        if (IsSavingData)
-        {
-            return;
-        }
+        _user = await GetCurrentUser() ?? new();
 
-        IsSavingData = true;
-        EditProfileMessage = null;
+        UpdateEditProfileData();
+
+        PubSubService.Pub(PubSubMessages.PROFILE_UPDATED, _user);
+    }
+
+    private void UpdateEditProfileData()
+    {
+        _userToEdit.Gender = _user.Gender;
+        _userToEdit.FullName = _user.FullName;
+        _userToEdit.BirthDate = _user.BirthDate;
+        _userToEdit.ProfileImageName = _user.ProfileImageName;
+    }
+
+    private Task<UserDto?> GetCurrentUser() => HttpClient.GetFromJsonAsync("User/GetCurrentUser", AppJsonContext.Default.UserDto);
+
+
+    private async Task DoSave()
+    {
+        if (_isSaving) return;
+
+        _isSaving = true;
+        _editProfileMessage = null;
 
         try
         {
-            User.FullName = UserToEdit.FullName;
-            User.BirthDate = UserToEdit.BirthDate;
-            User.Gender = UserToEdit.Gender;
+            _user.FullName = _userToEdit.FullName;
+            _user.BirthDate = _userToEdit.BirthDate;
+            _user.Gender = _userToEdit.Gender;
 
-            await HttpClient.PutAsJsonAsync("User/Update", User, AppJsonContext.Default.EditUserDto);
+            await HttpClient.PutAsJsonAsync("User/Update", _user, AppJsonContext.Default.EditUserDto);
 
-            EditProfileMessageType = BitMessageBarType.Success;
+            PubSubService.Pub(PubSubMessages.PROFILE_UPDATED, _user);
 
-            EditProfileMessage = Localizer[nameof(AppStrings.ProfileUpdatedSuccessfullyMessage)];
+            _editProfileMessageType = BitMessageBarType.Success;
+            _editProfileMessage = Localizer[nameof(AppStrings.ProfileUpdatedSuccessfullyMessage)];
         }
         catch (KnownException e)
         {
-            EditProfileMessageType = BitMessageBarType.Error;
+            _editProfileMessageType = BitMessageBarType.Error;
 
-            EditProfileMessage = e.Message;
+            _editProfileMessage = e.Message;
         }
         finally
         {
-            IsSavingData = false;
+            _isSaving = false;
+        }
+    }
+
+    private async Task RemoveProfileImage()
+    {
+        if (_isRemoving) return;
+
+        _isRemoving = true;
+
+        try
+        {
+            await HttpClient.DeleteAsync(_profileImageRemoveUrl);
+
+            await RefreshProfileData();
+        }
+        catch (KnownException e)
+        {
+            _editProfileMessage = e.Message;
+            _editProfileMessageType = BitMessageBarType.Error;
+        }
+        finally
+        {
+            _isRemoving = false;
         }
     }
 }

@@ -1,5 +1,5 @@
 ﻿//-:cnd:noEmit
-namespace TodoTemplate.Client.Shared.Components;
+namespace TodoTemplate.Client.Shared;
 
 public partial class Footer
 {
@@ -19,9 +19,9 @@ public partial class Footer
     }
 #endif
 
-    string? SelectedCulture;
+    private string? SelectedCulture;
 
-    async Task OnCultureChanged()
+    private async Task OnCultureChanged()
     {
         var cultureCookie = $"c={SelectedCulture}|uic={SelectedCulture}";
 
@@ -34,11 +34,6 @@ public partial class Footer
         NavigationManager.ForceReload();
     }
 
-    List<BitDropDownItem> GetCultures()
-
-    {
-        return CultureInfoManager.SupportedCultures
-            .Select(sc => new BitDropDownItem { Value = sc.code, Text = sc.name })
-            .ToList();
-    }
+    private static List<BitDropDownItem> GetCultures() => 
+        CultureInfoManager.SupportedCultures.Select(sc => new BitDropDownItem { Value = sc.code, Text = sc.name }).ToList();
 }

@@ -980,6 +980,15 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Profile Image.
+        /// </summary>
+        public static string ProfileImage {
+            get {
+                return ResourceManager.GetString("ProfileImage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Profile updated successfully..
         /// </summary>
         public static string ProfileUpdatedSuccessfullyMessage {

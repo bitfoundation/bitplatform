@@ -1,19 +1,19 @@
 ﻿@page "/email-confirmation"
-
-@inherits AppComponentBase;
+@inherits AppComponentBase
 
 <PageTitle>@Localizer[nameof(AppStrings.EmailConfirmationTitle)]</PageTitle>
 
 <div class="page-container">
     <div class="form--white">
-        @if (string.IsNullOrEmpty(EmailConfirmationMessage) is false)
+        @if (string.IsNullOrEmpty(_emailConfirmationMessage) is false)
         {
             <BitMessageBar Class="form-message-bar"
-                           MessageBarType="@EmailConfirmationMessageType"
-                           OnDismiss="() => EmailConfirmationMessage = null">
-                @EmailConfirmationMessage
+                           MessageBarType="@_emailConfirmationMessageType"
+                           OnDismiss="() => _emailConfirmationMessage = null">
+                @_emailConfirmationMessage
             </BitMessageBar>
         }
+
         @if (EmailConfirmed)
         {
             <h1 class="form-title">
@@ -32,24 +32,19 @@
             <h1 class="form-title">
                 @Localizer[nameof(AppStrings.EmailConfirmationFailedMessage)]
             </h1>
+
             <div class="form-description">
                 @Localizer[nameof(AppStrings.InvalidConfirmationLinkMessage)]
             </div>
-            <BitButton Class="form-submit-button"
-                       ButtonStyle="BitButtonStyle.Primary"
-                       IsEnabled="@(IsLoading is false)"
-                       Title="@Localizer[nameof(AppStrings.ResendEmail)]"
-                       AriaLabel="@Localizer[nameof(AppStrings.ResendEmail)]"
-                       OnClick="WrapHandled(ResendLink)">
-                @if (IsLoading)
-                {
-                    <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
-                }
-                else
-                {
-                    <span>@Localizer[nameof(AppStrings.ResendEmail)]</span>
-                }
-            </BitButton>
+
+            <BitLoadingButton IsLoading="_isLoading"
+                              Class="form-submit-button"
+                              ButtonStyle="BitButtonStyle.Primary"
+                              Title="@Localizer[nameof(AppStrings.ResendEmail)]"
+                              AriaLabel="@Localizer[nameof(AppStrings.ResendEmail)]"
+                              OnClick="WrapHandled(DoResendLink)">
+                @Localizer[nameof(AppStrings.ResendEmail)]
+            </BitLoadingButton>
         }
     </div>
 </div>

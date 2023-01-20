@@ -11,7 +11,7 @@ public partial class AppAuthenticationStateProvider : AuthenticationStateProvide
 
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
-        var access_token = await _tokenProvider.GetAcccessToken();
+        var access_token = await _tokenProvider.GetAcccessTokenAsync();
 
         if (string.IsNullOrWhiteSpace(access_token))
         {
@@ -23,7 +23,7 @@ public partial class AppAuthenticationStateProvider : AuthenticationStateProvide
         return new AuthenticationState(new ClaimsPrincipal(identity));
     }
 
-    public async Task<bool> IsUserAuthenticated()
+    public async Task<bool> IsUserAuthenticatedAsync()
     {
         return (await GetAuthenticationStateAsync()).User.Identity?.IsAuthenticated == true;
     }

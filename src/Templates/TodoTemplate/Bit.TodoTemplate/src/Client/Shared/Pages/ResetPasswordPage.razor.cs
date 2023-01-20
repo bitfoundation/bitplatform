@@ -1,10 +1,14 @@
-﻿using System.Threading.Channels;
-using TodoTemplate.Shared.Dtos.Account;
+﻿using TodoTemplate.Shared.Dtos.Account;
 
 namespace TodoTemplate.Client.Shared.Pages;
 
 public partial class ResetPasswordPage
 {
+    private bool _isLoading;
+    private string? _resetPasswordMessage;
+    private BitMessageBarType _resetPasswordMessageType;
+    private ResetPasswordRequestDto _resetPasswordModel = new();
+
     [Parameter]
     [SupplyParameterFromQuery]
     public string? Email { get; set; }
@@ -13,58 +17,10 @@ public partial class ResetPasswordPage
     [SupplyParameterFromQuery]
     public string? Token { get; set; }
 
-    public ResetPasswordRequestDto ResetPasswordModel { get; set; } = new();
-
-    public bool IsLoading { get; set; }
-
-    public BitMessageBarType ResetPasswordMessageType { get; set; }
-
-    public string? ResetPasswordMessage { get; set; }
-
-    private bool IsSubmitButtonEnabled => IsLoading is false;
-
-    private async Task Submit()
-    {
-        if (IsLoading)
-        {
-            return;
-        }
-
-        IsLoading = true;
-        ResetPasswordMessage = null;
-
-        try
-        {
-            await HttpClient.PostAsJsonAsync("Auth/ResetPassword", ResetPasswordModel, AppJsonContext.Default.ResetPasswordRequestDto);
-
-            ResetPasswordMessageType = BitMessageBarType.Success;
-
-            ResetPasswordMessage = Localizer[nameof(AppStrings.PasswordChangedSuccessfullyMessage)];
-
-            await AuthenticationService.SignIn(new SignInRequestDto
-            {
-                UserName = Email,
-                Password = ResetPasswordModel.Password
-            });
-
-            NavigationManager.NavigateTo("/");
-        }
-        catch (KnownException e)
-        {
-            ResetPasswordMessageType = BitMessageBarType.Error;
-
-            ResetPasswordMessage = e.Message;
-        }
-        finally
-        {
-            IsLoading = false;
-        }
-    }
-
     protected override void OnInitialized()
     {
-        ResetPasswordModel.Email = Email;
-        ResetPasswordModel.Token = Token;
+        _resetPasswordModel.Email = Email;
+        _resetPasswordModel.Token = Token;
 
         base.OnInitialized();
     }
@@ -73,9 +29,44 @@ public partial class ResetPasswordPage
     {
         await base.OnAfterFirstRenderAsync();
 
-        if (await AuthenticationStateProvider.IsUserAuthenticated())
+        if (await AuthenticationStateProvider.IsUserAuthenticatedAsync())
         {
             NavigationManager.NavigateTo("/");
+        }
+    }
+
+    private async Task DoSubmit()
+    {
+        if (_isLoading) return;
+
+        _isLoading = true;
+        _resetPasswordMessage = null;
+
+        try
+        {
+            await HttpClient.PostAsJsonAsync("Auth/ResetPassword", _resetPasswordModel, AppJsonContext.Default.ResetPasswordRequestDto);
+
+            _resetPasswordMessageType = BitMessageBarType.Success;
+
+            _resetPasswordMessage = Localizer[nameof(AppStrings.PasswordChangedSuccessfullyMessage)];
+
+            await AuthenticationService.SignIn(new SignInRequestDto
+            {
+                UserName = Email,
+                Password = _resetPasswordModel.Password
+            });
+
+            NavigationManager.NavigateTo("/");
+        }
+        catch (KnownException e)
+        {
+            _resetPasswordMessageType = BitMessageBarType.Error;
+
+            _resetPasswordMessage = e.Message;
+        }
+        finally
+        {
+            _isLoading = false;
         }
     }
 }

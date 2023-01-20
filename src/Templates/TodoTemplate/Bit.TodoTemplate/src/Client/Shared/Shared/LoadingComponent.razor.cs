@@ -1,4 +1,4 @@
-﻿namespace TodoTemplate.Client.Shared.Components;
+﻿namespace TodoTemplate.Client.Shared;
 
 public partial class LoadingComponent
 {
