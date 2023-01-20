@@ -20,5 +20,6 @@ public class ResetPasswordRequestDto
     [NotMapped]
     [Required(ErrorMessageResourceName = nameof(AppStrings.RequiredAttribute_ValidationError))]
     [Compare(nameof(Password), ErrorMessageResourceName = nameof(AppStrings.CompareAttribute_ValidationError))]
+    [Display(Name = nameof(AppStrings.ConfirmNewPassword))]
     public string? ConfirmPassword { get; set; }
 }

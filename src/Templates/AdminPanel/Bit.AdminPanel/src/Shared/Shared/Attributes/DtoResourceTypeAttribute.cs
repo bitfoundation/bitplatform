@@ -9,6 +9,6 @@ public class DtoResourceTypeAttribute : Attribute
 
     public DtoResourceTypeAttribute(Type resourceType)
     {
-        ResourceType = resourceType;
+        ResourceType = resourceType ?? throw new ArgumentNullException(nameof(resourceType));
     }
 }
