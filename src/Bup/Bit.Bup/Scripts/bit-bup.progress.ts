@@ -1,10 +1,10 @@
 ﻿; (function () {
     (window as any).startBupProgress = (showLogs: boolean, showAssets: boolean, appContainerSelector: string, hideApp: boolean, autoHide: boolean) => {
-        let appEl = document.querySelector(appContainerSelector) as HTMLElement;
-        let bupEl = document.getElementById('bit-bup');
-        let progressEl = document.getElementById('bit-bup-progress-bar');
-        let percentEl = document.getElementById('bit-bup-percent');
-        let assetsEl = document.getElementById('bit-bup-assets');
+        const appEl = document.querySelector(appContainerSelector) as HTMLElement;
+        const bupEl = document.getElementById('bit-bup');
+        const progressEl = document.getElementById('bit-bup-progress-bar');
+        const percentEl = document.getElementById('bit-bup-percent');
+        const assetsEl = document.getElementById('bit-bup-assets');
         (window as any).bitBupHandler = bitBupHandler;
 
         function bitBupHandler(type, data) {

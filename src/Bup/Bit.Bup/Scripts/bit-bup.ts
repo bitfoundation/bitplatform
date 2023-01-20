@@ -73,7 +73,7 @@
             if (type === 'dotnetjs') return url; // blazor itself handles this specific resource and needs to have its url
             if (type === 'manifest') return url; // since this is the file containing the resources list lets the blazor itself handle it
 
-            var response = fetch(url, {
+            const response = fetch(url, {
                 cache: 'no-cache',
                 integrity: integrity
             });
@@ -85,7 +85,7 @@
                     handle('start');
                 }
 
-                var percent = 100 * (++counter) / fetchPromises.length;
+                const percent = 100 * (++counter) / fetchPromises.length;
 
                 try {
                     handle('progress', { percent, type, name, url, integrity, index: counter });
