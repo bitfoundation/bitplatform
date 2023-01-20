@@ -9,6 +9,7 @@ public static class IServiceCollectionExtensions
     {
         services.AddScoped<IStateService, StateService>();
         services.AddScoped<IExceptionHandler, ExceptionHandler>();
+        services.AddScoped<IPubSubService, PubSubService>();
 
         services.AddTransient<AppHttpClientHandler>();
 
