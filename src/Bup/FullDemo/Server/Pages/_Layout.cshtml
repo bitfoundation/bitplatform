@@ -27,10 +27,11 @@
     <script src="_framework/blazor.webassembly.js" autostart="false" asp-append-version="true"></script>
     <script src="_content/Bit.Bup/bit-bup.min.js" log="none" handler="bitBupHandler" asp-append-version="true"></script>
     
-    <component type="typeof(Bit.Bup.Demo.Client.Shared.BupProgressBar)" render-mode="@RenderMode.Static" />
+    <component type="typeof(Bit.Bup.Demo.Client.Shared.BupProgressBar)" render-mode="@RenderMode.WebAssemblyPrerendered" />
     @*<component type="typeof(Bit.Bup.BupProgress)" render-mode="@RenderMode.Static"
                param-ShowAssets="false"
                param-ShowLogs="false"
+               param-AutoHide="true"
                param-HideApp="true"
                param-AppContainer="@("#app-container")" />*@
 </body>
