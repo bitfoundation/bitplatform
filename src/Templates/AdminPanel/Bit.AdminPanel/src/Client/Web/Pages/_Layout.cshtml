@@ -64,7 +64,7 @@
     <div id="app-container">
         @if (isPwa)
         {
-            <component type="typeof(AdminPanel.Client.Shared.LoadingComponent)" param-Color="@("#002A66")" render-mode="@RenderMode.WebAssemblyPrerendered" />
+            <component type="typeof(AdminPanel.Client.Shared.LoadingComponent)" param-Color="@("#002A66")" render-mode="@RenderMode.Static" />
         }
         @RenderBody()
     </div>
