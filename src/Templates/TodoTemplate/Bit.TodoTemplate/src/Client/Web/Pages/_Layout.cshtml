@@ -84,7 +84,11 @@
             }
             else
             {
-                <script src="_framework/blazor.webassembly.js" asp-append-version="@shoudAddAspAppendVersion"></script>
+                <script src="_framework/blazor.webassembly.js" autostart="false" asp-append-version="@shoudAddAspAppendVersion"></script>
+                <script src="_content/Bit.Bup/bit-bup.progress.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
+                <script src="_content/Bit.Bup/bit-bup.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
+
+                <component type="typeof(TodoTemplate.Client.Shared.BupProgressBar)" render-mode="@RenderMode.WebAssemblyPrerendered" />
             }
         }
         <script src="_content/Bit.BlazorUI/scripts/bit.blazorui.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>

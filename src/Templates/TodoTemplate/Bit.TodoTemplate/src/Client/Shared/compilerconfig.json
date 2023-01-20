@@ -16,6 +16,10 @@
         "outputFile": "Components/Header.razor.css"
     },
     {
+        "outputFile": "Shared/BupProgressBar.razor.css",
+        "inputFile": "Shared/BupProgressBar.razor.scss"
+    },
+    {
         "inputFile": "Components/Footer.razor.scss",
         "outputFile": "Components/Footer.razor.css"
     },
