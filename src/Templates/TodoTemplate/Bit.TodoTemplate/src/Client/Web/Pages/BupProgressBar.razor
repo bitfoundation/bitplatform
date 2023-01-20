@@ -1,0 +1,61 @@
+﻿@using Bit.Bup
+
+<style>
+
+    #bit-bup {
+        display: none;
+        position: fixed;
+        left: 50%;
+        top: 2px;
+        transform: translateX(-50%);
+        text-align: center;
+        z-index: 999999;
+        font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+    }
+
+        #bit-bup .bup-container {
+            position: relative;
+            display: block;
+            width: 3rem;
+            height: 3rem;
+        }
+
+            #bit-bup .bup-container circle {
+                fill: none;
+                stroke: #e0e0e0;
+                stroke-width: 0.2rem;
+                transform-origin: 50% 50%;
+                transform: rotate(-90deg);
+            }
+
+                #bit-bup .bup-container circle:last-child {
+                    stroke: #1b6ec2;
+                    stroke-dasharray: calc(3.141 * var(--bit-bup-percent, 0%) * 0.8), 500%;
+                    transition: stroke-dasharray 0.05s ease-in-out;
+                }
+
+        #bit-bup .bup-progress-text {
+            position: absolute;
+            text-align: center;
+            font-weight: normal;
+            font-size: 12px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+            #bit-bup .bup-progress-text::after {
+                content: var(--bit-bup-percent-text, "");
+            }
+
+</style>
+
+<div>
+    <BupProgress>
+        <div class="bup-progress-text" />
+        <svg class="bup-container">
+            <circle r="40%" cx="50%" cy="50%" />
+            <circle r="40%" cx="50%" cy="50%" />
+        </svg>
+    </BupProgress>
+</div>
