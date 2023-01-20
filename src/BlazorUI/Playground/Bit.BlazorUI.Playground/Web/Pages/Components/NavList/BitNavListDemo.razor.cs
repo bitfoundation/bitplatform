@@ -7,224 +7,190 @@ namespace Bit.BlazorUI.Playground.Web.Pages.Components.NavList;
 
 public partial class BitNavListDemo
 {
-    private static readonly List<NavItemModel> BasicNavItems = new()
+    // Basic
+    private static readonly List<BitPlatformMenu> BitPlatformNavMenu = new()
     {
-        new NavItemModel
+        new BitPlatformMenu
         {
             Text = "Bit Platform",
-            ExpandAriaLabel = "Bit Platform Expanded",
-            CollapseAriaLabel = "Bit Platform Collapsed",
-            IconName = BitIconName.TabletMode,
-            IsExpanded = true,
-            Items = new List<NavItemModel>
+            Links = new List<BitPlatformMenu>
             {
-                new NavItemModel { Text = "Home", Url = "https://bitplatform.dev/", Target="_blank" },
-                new NavItemModel
+                new BitPlatformMenu { Text = "Home", Url = "https://bitplatform.dev/" },
+                new BitPlatformMenu
                 {
                     Text = "Products & Services",
-                    Items = new List<NavItemModel>
+                    Links = new List<BitPlatformMenu>
                     {
-                        new NavItemModel
+                        new BitPlatformMenu
                         {
                             Text = "Project Templates",
-                            Items = new List<NavItemModel>
+                            Links = new List<BitPlatformMenu>
                             {
-                                new NavItemModel { Text = "TodoTemplate", Url = "https://bitplatform.dev/todo-template/overview", Target="_blank", },
-                                new NavItemModel { Text = "AdminPanel", Url = "https://bitplatform.dev/admin-panel/overview", Target = "_blank", },
+                                new BitPlatformMenu { Text = "TodoTemplate", Url = "https://bitplatform.dev/todo-template/overview" },
+                                new BitPlatformMenu { Text = "AdminPanel", Url = "https://bitplatform.dev/admin-panel/overview" },
                             }
                         },
-                        new NavItemModel { Text = "BlazorUI", Url = "https://bitplatform.dev/components", Target = "_blank", },
-                        new NavItemModel { Text = "Cloud hosting solutions", Url = "https://bitplatform.dev/#", Target = "_blank", IsEnabled = false },
-                        new NavItemModel { Text = "Bit academy", Url = "https://bitplatform.dev/#", Target = "_blank", IsEnabled = false },
+                        new BitPlatformMenu { Text = "BlazorUI", Url = "https://bitplatform.dev/components" },
+                        new BitPlatformMenu { Text = "Cloud hosting solutions", Url = "https://bitplatform.dev/#", IsEnabled = false },
+                        new BitPlatformMenu { Text = "Bit academy", Url = "https://bitplatform.dev/#", IsEnabled = false },
                     }
                 },
-                new NavItemModel { Text = "Pricing", Url = "https://bitplatform.dev/pricing", Target="_blank" },
-                new NavItemModel { Text = "About", Url = "https://bitplatform.dev/about-us", Target="_blank" },
-                new NavItemModel { Text = "Contact us", Url = "https://bitplatform.dev/contact-us", Target="_blank" },
+                new BitPlatformMenu { Text = "Pricing", Url = "https://bitplatform.dev/pricing" },
+                new BitPlatformMenu { Text = "About", Url = "https://bitplatform.dev/about-us" },
+                new BitPlatformMenu { Text = "Contact us", Url = "https://bitplatform.dev/contact-us" },
             },
         },
-        new NavItemModel
+        new BitPlatformMenu
         {
             Text = "Community",
-            ExpandAriaLabel = "Community Expanded",
-            CollapseAriaLabel = "Community Collapsed",
-            IconName = BitIconName.Heart,
-            Items = new List<NavItemModel>
+            Links = new List<BitPlatformMenu>
             {
-                new NavItemModel { Text = "Linkedin", Url = "https://www.linkedin.com/company/bitplatformhq/about/", Target="_blank" },
-                new NavItemModel { Text = "Twitter", Url = "https://twitter.com/bitplatformhq", Target="_blank" },
-                new NavItemModel { Text = "Github repo", Url = "https://github.com/bitfoundation/bitplatform", Target="_blank" },
+                new BitPlatformMenu { Text = "Linkedin", Url = "https://www.linkedin.com/company/bitplatformhq/about/" },
+                new BitPlatformMenu { Text = "Twitter", Url = "https://twitter.com/bitplatformhq" },
+                new BitPlatformMenu { Text = "Github repo", Url = "https://github.com/bitfoundation/bitplatform" },
             }
         },
-        new NavItemModel { Text = "Iconography", Url = "/icons", Target="_blank" },
+        new BitPlatformMenu { Text = "Iconography", Url = "/icons" },
     };
 
-    private static readonly List<NavItemModel> GroupedNavItems = new()
+    // Grouped
+    private static readonly List<CarMenu> CarNavMenu = new()
     {
-        new NavItemModel
+        new CarMenu
         {
-            Text = "Bit Platform",
-            ExpandAriaLabel = "Bit Platform Expanded",
-            CollapseAriaLabel = "Bit Platform Collapsed",
-            IconName = BitIconName.TabletMode,
-            Items = new List<NavItemModel>
+            Name = "Mercedes-Benz",
+            ExpandedAriaLabel = "Mercedes-Benz Expanded",
+            CollapsedAriaLabel = "Mercedes-Benz Collapsed",
+            Tooltip = "Mercedes-Benz Car Models",
+            IsExpandedParent = true,
+            Links = new List<CarMenu>
             {
-                new NavItemModel { Text = "Home", Url = "https://bitplatform.dev/", Target="_blank" },
-                new NavItemModel
+                new CarMenu
                 {
-                    Text = "Products & Services",
-                    Items = new List<NavItemModel>
+                    Name = "SUVs",
+                    Links = new List<CarMenu>
                     {
-                        new NavItemModel
-                        {
-                            Text = "Project Templates",
-                            Items = new List<NavItemModel>
-                            {
-                                new NavItemModel { Text = "TodoTemplate", Url = "https://bitplatform.dev/todo-template/overview", Target="_blank", },
-                                new NavItemModel { Text = "AdminPanel", Url = "https://bitplatform.dev/admin-panel/overview", Target = "_blank", },
-                            }
-                        },
-                        new NavItemModel { Text = "BlazorUI", Url = "https://bitplatform.dev/components", Target = "_blank", },
-                        new NavItemModel { Text = "Cloud hosting solutions", Url = "https://bitplatform.dev/#", Target = "_blank", IsEnabled = false },
-                        new NavItemModel { Text = "Bit academy", Url = "https://bitplatform.dev/#", Target = "_blank", IsEnabled = false },
+                        new CarMenu { Name = "GLA", PageUrl = "https://www.mbusa.com/en/vehicles/class/gla/suv", UrlTarget = "_blank" },
+                        new CarMenu { Name = "GLB", PageUrl = "https://www.mbusa.com/en/vehicles/class/glb/suv", UrlTarget = "_blank" },
+                        new CarMenu { Name = "GLC", PageUrl = "https://www.mbusa.com/en/vehicles/class/glc/suv", UrlTarget = "_blank" },
                     }
                 },
-                new NavItemModel { Text = "Pricing", Url = "https://bitplatform.dev/pricing", Target="_blank" },
-                new NavItemModel { Text = "About", Url = "https://bitplatform.dev/about-us", Target="_blank" },
-                new NavItemModel { Text = "Contact us", Url = "https://bitplatform.dev/contact-us", Target="_blank" },
-            },
+                new CarMenu
+                {
+                    Name = "Sedans & Wagons",
+                    Links = new List<CarMenu>
+                    {
+                        new CarMenu { Name = "A Class", PageUrl = "https://www.mbusa.com/en/vehicles/class/a-class/sedan", UrlTarget = "_blank" },
+                        new CarMenu { Name = "C Class", PageUrl = "https://www.mbusa.com/en/vehicles/class/c-class/sedan", UrlTarget = "_blank" },
+                        new CarMenu { Name = "E Class", PageUrl = "https://www.mbusa.com/en/vehicles/class/e-class/sedan", UrlTarget = "_blank" },
+                    }
+                },
+                new CarMenu
+                {
+                    Name = "Coupes",
+                    Links = new List<CarMenu>
+                    {
+                        new CarMenu { Name = "CLA Coupe", PageUrl = "https://www.mbusa.com/en/vehicles/class/cla/coupe", UrlTarget = "_blank" },
+                        new CarMenu { Name = "C Class Coupe", PageUrl = "https://www.mbusa.com/en/vehicles/class/c-class/coupe", UrlTarget = "_blank" },
+                        new CarMenu { Name = "E Class Coupe", PageUrl = "https://www.mbusa.com/en/vehicles/class/e-class/coupe", UrlTarget = "_blank" },
+                    }
+                },
+            }
         },
-        new NavItemModel
+        new CarMenu
         {
-            Text = "Community",
-            ExpandAriaLabel = "Community Expanded",
-            CollapseAriaLabel = "Community Collapsed",
-            IconName = BitIconName.Heart,
-            Items = new List<NavItemModel>
+            Name = "Tesla",
+            ExpandedAriaLabel = "Tesla Expanded",
+            CollapsedAriaLabel = "Tesla Collapsed",
+            Tooltip = "Tesla Car Models",
+            Links = new List<CarMenu>
             {
-                new NavItemModel { Text = "Linkedin", Url = "https://www.linkedin.com/company/bitplatformhq/about/", Target="_blank" },
-                new NavItemModel { Text = "Twitter", Url = "https://twitter.com/bitplatformhq", Target="_blank" },
-                new NavItemModel { Text = "Github repo", Url = "https://github.com/bitfoundation/bitplatform", Target="_blank" },
+                new CarMenu { Name = "Model S", PageUrl = "https://www.tesla.com/models", UrlTarget = "_blank" },
+                new CarMenu { Name = "Model X", PageUrl = "https://www.tesla.com/modelx", UrlTarget = "_blank" },
+                new CarMenu { Name = "Model Y", PageUrl = "https://www.tesla.com/modely", UrlTarget = "_blank" },
             }
         },
     };
 
-    private static readonly List<NavItemModel> ManualNavItems = new()
+    // Manual
+    private static readonly List<FoodMenu> FoodNavMenu = new()
     {
-        new NavItemModel
+        new FoodMenu
         {
-            Text = "Bit Platform",
-            ExpandAriaLabel = "Bit Platform Expanded",
-            CollapseAriaLabel = "Bit Platform Collapsed",
-            IconName = BitIconName.TabletMode,
-            Items = new List<NavItemModel>
+            Name = "Fast-Food",
+            Icon = BitIconName.HeartBroken,
+            Childs = new List<FoodMenu>
             {
-                new NavItemModel { Text = "Home" },
-                new NavItemModel
-                {
-                    Text = "Products & Services",
-                    Items = new List<NavItemModel>
-                    {
-                        new NavItemModel
-                        {
-                            Text = "Project Templates",
-                            Items = new List<NavItemModel>
-                            {
-                                new NavItemModel { Text = "TodoTemplate" },
-                                new NavItemModel { Text = "AdminPanel" },
-                            }
-                        },
-                        new NavItemModel { Text = "BlazorUI" },
-                        new NavItemModel { Text = "Cloud hosting solutions" },
-                        new NavItemModel { Text = "Bit academy" },
-                    }
-                },
-                new NavItemModel { Text = "Pricing" },
-                new NavItemModel { Text = "About" },
-                new NavItemModel { Text = "Contact us" },
-            },
-        },
-        new NavItemModel
-        {
-            Text = "Community",
-            ExpandAriaLabel = "Community Expanded",
-            CollapseAriaLabel = "Community Collapsed",
-            IconName = BitIconName.Heart,
-            Items = new List<NavItemModel>
-            {
-                new NavItemModel { Text = "Linkedin" },
-                new NavItemModel { Text = "Twitter" },
-                new NavItemModel { Text = "Github repo" },
+                new FoodMenu { Name = "Burger" },
+                new FoodMenu { Name = "Pizza" },
+                new FoodMenu { Name = "French Fries" },
             }
         },
-        new NavItemModel { Text = "Iconography" },
+        new FoodMenu
+        {
+            Name = "Fruits",
+            Icon = BitIconName.Health,
+            Childs = new List<FoodMenu>
+            {
+                new FoodMenu { Name = "Aplle" },
+                new FoodMenu { Name = "Orange" },
+                new FoodMenu { Name = "Benana" },
+            }
+        },
+        new FoodMenu { Name = "Ice Cream" },
+        new FoodMenu { Name = "Cookie" },
     };
 
-    private static readonly List<BitDropDownItem> DropDownItems = new()
+    private static readonly List<BitDropDownItem> FoodMenuDropDownItems = new()
     {
         new BitDropDownItem
         {
-            Text = "Home",
-            Value = "Home",
+            Text = "Burger",
+            Value = "Burger",
         },
         new BitDropDownItem
         {
-            Text = "TodoTemplate",
-            Value = "TodoTemplate",
+            Text = "Pizza",
+            Value = "Pizza",
         },
         new BitDropDownItem
         {
-            Text = "AdminPanel",
-            Value = "AdminPanel",
+            Text = "French Fries",
+            Value = "French Fries",
         },
         new BitDropDownItem
         {
-            Text = "BlazorUI",
-            Value = "BlazorUI",
+            Text = "Aplle",
+            Value = "Aplle",
         },
         new BitDropDownItem
         {
-            Text = "Pricing",
-            Value = "Pricing",
+            Text = "Orange",
+            Value = "Orange",
         },
         new BitDropDownItem
         {
-            Text = "About",
-            Value = "About",
+            Text = "Benana",
+            Value = "Benana",
         },
         new BitDropDownItem
         {
-            Text = "Contact us",
-            Value = "Contact us",
+            Text = "Ice Cream",
+            Value = "Ice Cream",
         },
         new BitDropDownItem
         {
-            Text = "Linkedin",
-            Value = "Linkedin",
-        },
-        new BitDropDownItem
-        {
-            Text = "Twitter",
-            Value = "Twitter",
-        },
-        new BitDropDownItem
-        {
-            Text = "Github repo",
-            Value = "Github repo",
-        },
-        new BitDropDownItem
-        {
-            Text = "Iconography",
-            Value = "Iconography",
+            Text = "Cookie",
+            Value = "Cookie",
         },
     };
-    private static List<NavItemModel> Flatten(IList<NavItemModel> e) => e.SelectMany(c => Flatten(c.Items)).Concat(e).ToList();
-    private NavItemModel SelectedItemNav = ManualNavItems[0].Items[0];
-    private string SelectedItemText = ManualNavItems[0].Items[0].Text;
+    private static List<FoodMenu> Flatten(IList<FoodMenu> e) => e.SelectMany(c => Flatten(c.Childs)).Concat(e).ToList();
+    private FoodMenu SelectedFood = FoodNavMenu[0].Childs[0];
+    private string SelectedFoodName = FoodNavMenu[0].Childs[0].Name;
 
-    private NavItemModel ClickedItem;
-    private NavItemModel SelectedItem;
-    private NavItemModel ToggledItem;
+    private FoodMenu ClickedItem;
+    private FoodMenu SelectedItem;
+    private FoodMenu ToggledItem;
 
     private readonly List<ComponentParameter> componentParameters = new()
     {
@@ -565,70 +531,65 @@ public partial class BitNavListDemo
     #region Sample Code 1
 
     private static string example1HTMLCode = @"
-<BitNavList Items=""BasicNavItems""
-            TextField=""@nameof(NavItemModel.Text)""
-            UrlField=""@nameof(NavItemModel.Url)""
-            TargetField=""@nameof(NavItemModel.Target)""
-            TitleField=""@nameof(NavItemModel.Title)""
-            IsExpandedField=""@nameof(NavItemModel.IsExpanded)""
-            IconNameField=""@nameof(NavItemModel.IconName)""
-            IsEnabledField=""@nameof(NavItemModel.IsEnabled)""
-            CollapseAriaLabelField=""@nameof(NavItemModel.CollapseAriaLabel)""
-            ExpandAriaLabelField=""@nameof(NavItemModel.ExpandAriaLabel)""
-            ItemsField=""@nameof(NavItemModel.Items)"" />
+<BitNavList Items=""BitPlatformNavMenu""
+            TextField=""@nameof(BitPlatformMenu.Text)""
+            UrlField=""@nameof(BitPlatformMenu.Url)""
+            IsEnabledField=""@nameof(BitPlatformMenu.IsEnabled)""
+            ItemsField=""@nameof(BitPlatformMenu.Links)"" />
 ";
 
     private static string example1CSharpCode = @"
-private static readonly List<NavItemModel> BasicNavItems = new()
+public class BitPlatformMenu
 {
-    new NavItemModel
+    public string Text { get; set; } = string.Empty;
+    public string Url { get; set; }
+    public bool IsEnabled { get; set; } = true;
+    public List<BitPlatformMenu> Links { get; set; } = new();
+}
+
+private static readonly List<BitPlatformMenu> BitPlatformNavMenu = new()
+{
+    new BitPlatformMenu
     {
         Text = ""Bit Platform"",
-        ExpandAriaLabel = ""Bit Platform Expanded"",
-        CollapseAriaLabel = ""Bit Platform Collapsed"",
-        IconName = BitIconName.TabletMode,
-        IsExpanded = true,
-        Items = new List<NavItemModel>
+        Links = new List<BitPlatformMenu>
         {
-            new NavItemModel { Text = ""Home"", Url = ""https://bitplatform.dev/"", Target=""_blank"" },
-            new NavItemModel
+            new BitPlatformMenu { Text = ""Home"", Url = ""https://bitplatform.dev/"" },
+            new BitPlatformMenu
             {
                 Text = ""Products & Services"",
-                Items = new List<NavItemModel>
+                Links = new List<BitPlatformMenu>
                 {
-                    new NavItemModel
+                    new BitPlatformMenu
                     {
                         Text = ""Project Templates"",
-                        Items = new List<NavItemModel>
+                        Links = new List<BitPlatformMenu>
                         {
-                            new NavItemModel { Text = ""TodoTemplate"", Url = ""https://bitplatform.dev/todo-template/overview"", Target=""_blank"", },
-                            new NavItemModel { Text = ""AdminPanel"", Url = ""https://bitplatform.dev/admin-panel/overview"", Target = ""_blank"", },
+                            new BitPlatformMenu { Text = ""TodoTemplate"", Url = ""https://bitplatform.dev/todo-template/overview"" },
+                            new BitPlatformMenu { Text = ""AdminPanel"", Url = ""https://bitplatform.dev/admin-panel/overview"" },
                         }
                     },
-                    new NavItemModel { Text = ""BlazorUI"", Url = ""https://bitplatform.dev/components"", Target = ""_blank"", },
-                    new NavItemModel { Text = ""Cloud hosting solutions"", Url = ""https://bitplatform.dev/#"", Target = ""_blank"", IsEnabled = false },
-                    new NavItemModel { Text = ""Bit academy"", Url = ""https://bitplatform.dev/#"", Target = ""_blank"", IsEnabled = false },
+                    new BitPlatformMenu { Text = ""BlazorUI"", Url = ""https://bitplatform.dev/components"" },
+                    new BitPlatformMenu { Text = ""Cloud hosting solutions"", Url = ""https://bitplatform.dev/#"", IsEnabled = false },
+                    new BitPlatformMenu { Text = ""Bit academy"", Url = ""https://bitplatform.dev/#"", IsEnabled = false },
                 }
             },
-            new NavItemModel { Text = ""Pricing"", Url = ""https://bitplatform.dev/pricing"", Target=""_blank"" },
-            new NavItemModel { Text = ""About"", Url = ""https://bitplatform.dev/about-us"", Target=""_blank"" },
-            new NavItemModel { Text = ""Contact us"", Url = ""https://bitplatform.dev/contact-us"", Target=""_blank"" },
+            new BitPlatformMenu { Text = ""Pricing"", Url = ""https://bitplatform.dev/pricing"" },
+            new BitPlatformMenu { Text = ""About"", Url = ""https://bitplatform.dev/about-us"" },
+            new BitPlatformMenu { Text = ""Contact us"", Url = ""https://bitplatform.dev/contact-us"" },
         },
     },
-    new NavItemModel
+    new BitPlatformMenu
     {
         Text = ""Community"",
-        ExpandAriaLabel = ""Community Expanded"",
-        CollapseAriaLabel = ""Community Collapsed"",
-        IconName = BitIconName.Heart,
-        Items = new List<NavItemModel>
+        Links = new List<BitPlatformMenu>
         {
-            new NavItemModel { Text = ""Linkedin"", Url = ""https://www.linkedin.com/company/bitplatformhq/about/"", Target=""_blank"" },
-            new NavItemModel { Text = ""Twitter"", Url = ""https://twitter.com/bitplatformhq"", Target=""_blank"" },
-            new NavItemModel { Text = ""Github repo"", Url = ""https://github.com/bitfoundation/bitplatform"", Target=""_blank"" },
+            new BitPlatformMenu { Text = ""Linkedin"", Url = ""https://www.linkedin.com/company/bitplatformhq/about/"" },
+            new BitPlatformMenu { Text = ""Twitter"", Url = ""https://twitter.com/bitplatformhq"" },
+            new BitPlatformMenu { Text = ""Github repo"", Url = ""https://github.com/bitfoundation/bitplatform"" },
         }
     },
-    new NavItemModel { Text = ""Iconography"", Url = ""/icons"", Target=""_blank"" },
+    new BitPlatformMenu { Text = ""Iconography"", Url = ""/icons"" },
 };
 ";
 
@@ -637,67 +598,73 @@ private static readonly List<NavItemModel> BasicNavItems = new()
     #region Sample Code 2
 
     private static string example2HTMLCode = @"
-<BitNavList Items=""GroupedNavItems""
-            TextField=""@nameof(NavItemModel.Text)""
-            UrlField=""@nameof(NavItemModel.Url)""
-            TargetField=""@nameof(NavItemModel.Target)""
-            TitleField=""@nameof(NavItemModel.Title)""
-            IsExpandedField=""@nameof(NavItemModel.IsExpanded)""
-            IconNameField=""@nameof(NavItemModel.IconName)""
-            IsEnabledField=""@nameof(NavItemModel.IsEnabled)""
-            CollapseAriaLabelField=""@nameof(NavItemModel.CollapseAriaLabel)""
-            ExpandAriaLabelField=""@nameof(NavItemModel.ExpandAriaLabel)""
-            ItemsField=""@nameof(NavItemModel.Items)""
+<BitNavList Items=""CarNavMenu""
+            TextField=""@nameof(CarMenu.Name)""
+            UrlField=""@nameof(CarMenu.PageUrl)""
+            TargetField=""@nameof(CarMenu.UrlTarget)""
+            TitleField=""@nameof(CarMenu.Tooltip)""
+            IsExpandedField=""@nameof(CarMenu.IsExpandedParent)""
+            CollapseAriaLabelField=""@nameof(CarMenu.CollapsedAriaLabel)""
+            ExpandAriaLabelField=""@nameof(CarMenu.ExpandedAriaLabel)""
+            ItemsField=""@nameof(CarMenu.Links)""
             RenderType=""BitNavListRenderType.Grouped"" />
 ";
 
     private static string example2CSharpCode = @"
-private static readonly List<NavItemModel> GroupedNavItems = new()
+private static readonly List<CarMenu> CarNavMenu = new()
 {
-    new NavItemModel
+    new CarMenu
     {
-        Text = ""Bit Platform"",
-        ExpandAriaLabel = ""Bit Platform Expanded"",
-        CollapseAriaLabel = ""Bit Platform Collapsed"",
-        IconName = BitIconName.TabletMode,
-        Items = new List<NavItemModel>
+        Name = ""Mercedes-Benz"",
+        ExpandedAriaLabel = ""Mercedes-Benz Expanded"",
+        CollapsedAriaLabel = ""Mercedes-Benz Collapsed"",
+        Tooltip = ""Mercedes-Benz Car Models"",
+        IsExpandedParent = true,
+        Links = new List<CarMenu>
         {
-            new NavItemModel { Text = ""Home"", Url = ""https://bitplatform.dev/"", Target=""_blank"" },
-            new NavItemModel
+            new CarMenu
             {
-                Text = ""Products & Services"",
-                Items = new List<NavItemModel>
+                Name = ""SUVs"",
+                Links = new List<CarMenu>
                 {
-                    new NavItemModel
-                    {
-                        Text = ""Project Templates"",
-                        Items = new List<NavItemModel>
-                        {
-                            new NavItemModel { Text = ""TodoTemplate"", Url = ""https://bitplatform.dev/todo-template/overview"", Target=""_blank"", },
-                            new NavItemModel { Text = ""AdminPanel"", Url = ""https://bitplatform.dev/admin-panel/overview"", Target = ""_blank"", },
-                        }
-                    },
-                    new NavItemModel { Text = ""BlazorUI"", Url = ""https://bitplatform.dev/components"", Target = ""_blank"", },
-                    new NavItemModel { Text = ""Cloud hosting solutions"", Url = ""https://bitplatform.dev/#"", Target = ""_blank"", IsEnabled = false },
-                    new NavItemModel { Text = ""Bit academy"", Url = ""https://bitplatform.dev/#"", Target = ""_blank"", IsEnabled = false },
+                    new CarMenu { Name = ""GLA"", PageUrl = ""https://www.mbusa.com/en/vehicles/class/gla/suv"", UrlTarget = ""_blank"" },
+                    new CarMenu { Name = ""GLB"", PageUrl = ""https://www.mbusa.com/en/vehicles/class/glb/suv"", UrlTarget = ""_blank"" },
+                    new CarMenu { Name = ""GLC"", PageUrl = ""https://www.mbusa.com/en/vehicles/class/glc/suv"", UrlTarget = ""_blank"" },
                 }
             },
-            new NavItemModel { Text = ""Pricing"", Url = ""https://bitplatform.dev/pricing"", Target=""_blank"" },
-            new NavItemModel { Text = ""About"", Url = ""https://bitplatform.dev/about-us"", Target=""_blank"" },
-            new NavItemModel { Text = ""Contact us"", Url = ""https://bitplatform.dev/contact-us"", Target=""_blank"" },
-        },
+            new CarMenu
+            {
+                Name = ""Sedans & Wagons"",
+                Links = new List<CarMenu>
+                {
+                    new CarMenu { Name = ""A Class"", PageUrl = ""https://www.mbusa.com/en/vehicles/class/a-class/sedan"", UrlTarget = ""_blank"" },
+                    new CarMenu { Name = ""C Class"", PageUrl = ""https://www.mbusa.com/en/vehicles/class/c-class/sedan"", UrlTarget = ""_blank"" },
+                    new CarMenu { Name = ""E Class"", PageUrl = ""https://www.mbusa.com/en/vehicles/class/e-class/sedan"", UrlTarget = ""_blank"" },
+                }
+            },
+            new CarMenu
+            {
+                Name = ""Coupes"",
+                Links = new List<CarMenu>
+                {
+                    new CarMenu { Name = ""CLA Coupe"", PageUrl = ""https://www.mbusa.com/en/vehicles/class/cla/coupe"", UrlTarget = ""_blank"" },
+                    new CarMenu { Name = ""C Class Coupe"", PageUrl = ""https://www.mbusa.com/en/vehicles/class/c-class/coupe"", UrlTarget = ""_blank"" },
+                    new CarMenu { Name = ""E Class Coupe"", PageUrl = ""https://www.mbusa.com/en/vehicles/class/e-class/coupe"", UrlTarget = ""_blank"" },
+                }
+            },
+        }
     },
-    new NavItemModel
+    new CarMenu
     {
-        Text = ""Community"",
-        ExpandAriaLabel = ""Community Expanded"",
-        CollapseAriaLabel = ""Community Collapsed"",
-        IconName = BitIconName.Heart,
-        Items = new List<NavItemModel>
+        Name = ""Tesla"",
+        ExpandedAriaLabel = ""Tesla Expanded"",
+        CollapsedAriaLabel = ""Tesla Collapsed"",
+        Tooltip = ""Tesla Car Models"",
+        Links = new List<CarMenu>
         {
-            new NavItemModel { Text = ""Linkedin"", Url = ""https://www.linkedin.com/company/bitplatformhq/about/"", Target=""_blank"" },
-            new NavItemModel { Text = ""Twitter"", Url = ""https://twitter.com/bitplatformhq"", Target=""_blank"" },
-            new NavItemModel { Text = ""Github repo"", Url = ""https://github.com/bitfoundation/bitplatform"", Target=""_blank"" },
+            new CarMenu { Name = ""Model S"", PageUrl = ""https://www.tesla.com/models"", UrlTarget = ""_blank"" },
+            new CarMenu { Name = ""Model X"", PageUrl = ""https://www.tesla.com/modelx"", UrlTarget = ""_blank"" },
+            new CarMenu { Name = ""Model Y"", PageUrl = ""https://www.tesla.com/modely"", UrlTarget = ""_blank"" },
         }
     },
 };
@@ -710,159 +677,115 @@ private static readonly List<NavItemModel> GroupedNavItems = new()
     private static string example3HTMLCode = @"
 <div>
     <BitLabel>Basic</BitLabel>
-    <BitNavList Items=""ManualNavItems""
-                TextFieldSelector=""item => item.Text""
-                UrlFieldSelector=""item => item.Url""
-                TargetFieldSelector=""item => item.Target""
-                TitleFieldSelector=""item => item.Title""
-                IsExpandedFieldSelector=""item => item.IsExpanded""
-                IconNameFieldSelector=""item => item.IconName""
-                IsEnabledFieldSelector=""item => item.IsEnabled""
-                CollapseAriaLabelFieldSelector=""item => item.CollapseAriaLabel""
-                ExpandAriaLabelFieldSelector=""item => item.ExpandAriaLabel""
-                ItemsFieldSelector=""item => item.Items""
-                DefaultSelectedItem=""ManualNavItems[0].Items[0]""
+    <BitNavList Items=""FoodNavMenu""
+                TextFieldSelector=""item => item.Name""
+                IconNameFieldSelector=""item => item.Icon""
+                ItemsFieldSelector=""item => item.Childs""
+                DefaultSelectedItem=""FoodNavMenu[0].Childs[0]""
                 Mode=""BitNavListMode.Manual"" />
 </div>
 
 <div class=""margin-top"">
     <BitLabel>Two-Way Bind</BitLabel>
 
-    <BitNavList @bind-SelectedItem=""SelectedItemNav""
-                Items=""ManualNavItems""
-                TextFieldSelector=""item => item.Text""
-                UrlFieldSelector=""item => item.Url""
-                TargetFieldSelector=""item => item.Target""
-                TitleFieldSelector=""item => item.Title""
-                IsExpandedFieldSelector=""item => item.IsExpanded""
-                IconNameFieldSelector=""item => item.IconName""
-                IsEnabledFieldSelector=""item => item.IsEnabled""
-                CollapseAriaLabelFieldSelector=""item => item.CollapseAriaLabel""
-                ExpandAriaLabelFieldSelector=""item => item.ExpandAriaLabel""
-                ItemsFieldSelector=""item => item.Items""
+    <BitNavList @bind-SelectedItem=""SelectedFood""
+                Items=""FoodNavMenu""
+                TextFieldSelector=""item => item.Name""
+                IconNameFieldSelector=""item => item.Icon""
+                ItemsFieldSelector=""item => item.Childs""
                 Mode=""BitNavListMode.Manual""
-                OnSelectItem=""(NavItemModel item) => SelectedItemText = DropDownItems.FirstOrDefault(i => i.Text == item.Text).Text"" />
+                OnSelectItem=""(FoodMenu item) => SelectedFoodName = FoodMenuDropDownItems.FirstOrDefault(i => i.Text == item.Name).Text"" />
 
-    <BitDropDown @bind-Value=""SelectedItemText""
+    <BitDropDown @bind-Value=""SelectedFoodName""
                     Label=""Select Item""
-                    Items=""DropDownItems""
-                    OnSelectItem=""(item) => SelectedItemNav = Flatten(ManualNavItems).FirstOrDefault(i => i.Text == item.Value)"" />
+                    Items=""FoodMenuDropDownItems""
+                    OnSelectItem=""(item) => SelectedFood = Flatten(FoodNavMenu).FirstOrDefault(i => i.Name == item.Value)"" />
 </div>
 ";
 
     private static string example3CSharpCode = @"
-private static readonly List<NavItemModel> ManualNavItems = new()
+public class FoodMenu
 {
-    new NavItemModel
+    public string Name { get; set; } = string.Empty;
+    public BitIconName Icon { get; set; }
+    public List<FoodMenu> Childs { get; set; } = new();
+}
+
+private static readonly List<FoodMenu> FoodNavMenu = new()
+{
+    new FoodMenu
     {
-        Text = ""Bit Platform"",
-        ExpandAriaLabel = ""Bit Platform Expanded"",
-        CollapseAriaLabel = ""Bit Platform Collapsed"",
-        IconName = BitIconName.TabletMode,
-        Items = new List<NavItemModel>
+        Name = ""Fast-Food"",
+        Icon = BitIconName.HeartBroken,
+        Childs = new List<FoodMenu>
         {
-            new NavItemModel { Text = ""Home"" },
-            new NavItemModel
-            {
-                Text = ""Products & Services"",
-                Items = new List<NavItemModel>
-                {
-                    new NavItemModel
-                    {
-                        Text = ""Project Templates"",
-                        Items = new List<NavItemModel>
-                        {
-                            new NavItemModel { Text = ""TodoTemplate"" },
-                            new NavItemModel { Text = ""AdminPanel"" },
-                        }
-                    },
-                    new NavItemModel { Text = ""BlazorUI"" },
-                    new NavItemModel { Text = ""Cloud hosting solutions"" },
-                    new NavItemModel { Text = ""Bit academy"" },
-                }
-            },
-            new NavItemModel { Text = ""Pricing"" },
-            new NavItemModel { Text = ""About"" },
-            new NavItemModel { Text = ""Contact us"" },
-        },
-    },
-    new NavItemModel
-    {
-        Text = ""Community"",
-        ExpandAriaLabel = ""Community Expanded"",
-        CollapseAriaLabel = ""Community Collapsed"",
-        IconName = BitIconName.Heart,
-        Items = new List<NavItemModel>
-        {
-            new NavItemModel { Text = ""Linkedin"" },
-            new NavItemModel { Text = ""Twitter"" },
-            new NavItemModel { Text = ""Github repo"" },
+            new FoodMenu { Name = ""Burger"" },
+            new FoodMenu { Name = ""Pizza"" },
+            new FoodMenu { Name = ""French Fries"" },
         }
     },
-    new NavItemModel { Text = ""Iconography"" },
+    new FoodMenu
+    {
+        Name = ""Fruits"",
+        Icon = BitIconName.Health,
+        Childs = new List<FoodMenu>
+        {
+            new FoodMenu { Name = ""Aplle"" },
+            new FoodMenu { Name = ""Orange"" },
+            new FoodMenu { Name = ""Benana"" },
+        }
+    },
+    new FoodMenu { Name = ""Ice Cream"" },
+    new FoodMenu { Name = ""Cookie"" },
 };
 
-private static readonly List<BitDropDownItem> DropDownItems = new()
+private static readonly List<BitDropDownItem> FoodMenuDropDownItems = new()
 {
     new BitDropDownItem
     {
-        Text = ""Home"",
-        Value = ""Home"",
+        Text = ""Burger"",
+        Value = ""Burger"",
     },
     new BitDropDownItem
     {
-        Text = ""TodoTemplate"",
-        Value = ""TodoTemplate"",
+        Text = ""Pizza"",
+        Value = ""Pizza"",
     },
     new BitDropDownItem
     {
-        Text = ""AdminPanel"",
-        Value = ""AdminPanel"",
+        Text = ""French Fries"",
+        Value = ""French Fries"",
     },
     new BitDropDownItem
     {
-        Text = ""BlazorUI"",
-        Value = ""BlazorUI"",
+        Text = ""Aplle"",
+        Value = ""Aplle"",
     },
     new BitDropDownItem
     {
-        Text = ""Pricing"",
-        Value = ""Pricing"",
+        Text = ""Orange"",
+        Value = ""Orange"",
     },
     new BitDropDownItem
     {
-        Text = ""About"",
-        Value = ""About"",
+        Text = ""Benana"",
+        Value = ""Benana"",
     },
     new BitDropDownItem
     {
-        Text = ""Contact us"",
-        Value = ""Contact us"",
+        Text = ""Ice Cream"",
+        Value = ""Ice Cream"",
     },
     new BitDropDownItem
     {
-        Text = ""Linkedin"",
-        Value = ""Linkedin"",
-    },
-    new BitDropDownItem
-    {
-        Text = ""Twitter"",
-        Value = ""Twitter"",
-    },
-    new BitDropDownItem
-    {
-        Text = ""Github repo"",
-        Value = ""Github repo"",
-    },
-    new BitDropDownItem
-    {
-        Text = ""Iconography"",
-        Value = ""Iconography"",
+        Text = ""Cookie"",
+        Value = ""Cookie"",
     },
 };
-private static List<NavItemModel> Flatten(IList<NavItemModel> e) => e.SelectMany(c => Flatten(c.Items)).Concat(e).ToList();
-private NavItemModel SelectedItemNav = ManualNavItems[0].Items[0];
-private string SelectedItemText = ManualNavItems[0].Items[0].Text;
+
+private static List<FoodMenu> Flatten(IList<FoodMenu> e) => e.SelectMany(c => Flatten(c.Childs)).Concat(e).ToList();
+private FoodMenu SelectedFood = FoodNavMenu[0].Childs[0];
+private string SelectedFoodName = FoodNavMenu[0].Childs[0].Name;
 ";
 
     #endregion
@@ -880,32 +803,26 @@ private string SelectedItemText = ManualNavItems[0].Items[0].Text;
         flex-flow: row nowrap;
         color: #ff7800;
         font-weight: 600;
-
-        &.disabled-item {
-            color: #ff780061;
-        }
     }
 </style>
 
 <div>
     <BitLabel>Header Template (in Grouped mode)</BitLabel>
-    <BitNavList Items=""GroupedNavItems""
-                TextField=""@nameof(NavItemModel.Text)""
-                UrlField=""@nameof(NavItemModel.Url)""
-                TargetField=""@nameof(NavItemModel.Target)""
-                TitleField=""@nameof(NavItemModel.Title)""
-                IsExpandedField=""@nameof(NavItemModel.IsExpanded)""
-                IconNameField=""@nameof(NavItemModel.IconName)""
-                IsEnabledField=""@nameof(NavItemModel.IsEnabled)""
-                CollapseAriaLabelField=""@nameof(NavItemModel.CollapseAriaLabel)""
-                ExpandAriaLabelField=""@nameof(NavItemModel.ExpandAriaLabel)""
-                ItemsField=""@nameof(NavItemModel.Items)""
+    <BitNavList Items=""CarNavMenu""
+                TextField=""@nameof(CarMenu.Name)""
+                UrlField=""@nameof(CarMenu.PageUrl)""
+                TargetField=""@nameof(CarMenu.UrlTarget)""
+                TitleField=""@nameof(CarMenu.Tooltip)""
+                IsExpandedField=""@nameof(CarMenu.IsExpandedParent)""
+                CollapseAriaLabelField=""@nameof(CarMenu.CollapsedAriaLabel)""
+                ExpandAriaLabelField=""@nameof(CarMenu.ExpandedAriaLabel)""
+                ItemsField=""@nameof(CarMenu.Links)""
                 RenderType=""BitNavListRenderType.Grouped"">
 
         <HeaderTemplate Context=""item"">
             <div class=""nav-list-custom-header"">
                 <BitIcon IconName=""BitIconName.FavoriteStarFill"" />
-                <span>@item.Text</span>
+                <span>@item.Name</span>
             </div>
         </HeaderTemplate>
     </BitNavList>
@@ -913,24 +830,17 @@ private string SelectedItemText = ManualNavItems[0].Items[0].Text;
 
 <div class=""margin-top"">
     <BitLabel>Item Template</BitLabel>
-    <BitNavList Items=""ManualNavItems""
-                TextFieldSelector=""item => item.Text""
-                UrlFieldSelector=""item => item.Url""
-                TargetFieldSelector=""item => item.Target""
-                TitleFieldSelector=""item => item.Title""
-                IsExpandedFieldSelector=""item => item.IsExpanded""
-                IconNameFieldSelector=""item => item.IconName""
-                IsEnabledFieldSelector=""item => item.IsEnabled""
-                CollapseAriaLabelFieldSelector=""item => item.CollapseAriaLabel""
-                ExpandAriaLabelFieldSelector=""item => item.ExpandAriaLabel""
-                ItemsFieldSelector=""item => item.Items""
+    <BitNavList Items=""FoodNavMenu""
+                TextFieldSelector=""item => item.Name""
+                IconNameFieldSelector=""item => item.Icon""
+                ItemsFieldSelector=""item => item.Childs""
                 Mode=""BitNavListMode.Manual"">
 
         <ItemTemplate Context=""item"">
-            <div class=""nav-list-custom-item @(item.IsEnabled is false ? ""disabled-item"" : """")"">
-                <BitCheckbox IsEnabled=""@(item.IsEnabled)"" />
-                <BitIcon IconName=""@item.IconName"" />
-                <span>@item.Text</span>
+            <div class=""nav-list-custom-item"">
+                <BitCheckbox />
+                <BitIcon IconName=""@item.Icon"" />
+                <span>@item.Name</span>
             </div>
         </ItemTemplate>
     </BitNavList>
@@ -938,105 +848,109 @@ private string SelectedItemText = ManualNavItems[0].Items[0].Text;
 ";
 
     private static string example4CSharpCode = @"
-private static readonly List<NavItemModel> GroupedNavItems = new()
+public class CarMenu
 {
-    new NavItemModel
+    public string Name { get; set; } = string.Empty;
+    public string Tooltip { get; set; }
+    public string PageUrl { get; set; }
+    public string UrlTarget { get; set; }
+    public string ExpandedAriaLabel { get; set; }
+    public string CollapsedAriaLabel { get; set; }
+    public bool IsExpandedParent { get; set; }
+    public List<CarMenu> Links { get; set; } = new();
+}
+
+public class FoodMenu
+{
+    public string Name { get; set; } = string.Empty;
+    public BitIconName Icon { get; set; }
+    public List<FoodMenu> Childs { get; set; } = new();
+}
+
+private static readonly List<CarMenu> CarNavMenu = new()
+{
+    new CarMenu
     {
-        Text = ""Bit Platform"",
-        ExpandAriaLabel = ""Bit Platform Expanded"",
-        CollapseAriaLabel = ""Bit Platform Collapsed"",
-        IconName = BitIconName.TabletMode,
-        Items = new List<NavItemModel>
+        Name = ""Mercedes-Benz"",
+        ExpandedAriaLabel = ""Mercedes-Benz Expanded"",
+        CollapsedAriaLabel = ""Mercedes-Benz Collapsed"",
+        Tooltip = ""Mercedes-Benz Car Models"",
+        IsExpandedParent = true,
+        Links = new List<CarMenu>
         {
-            new NavItemModel { Text = ""Home"", Url = ""https://bitplatform.dev/"", Target=""_blank"" },
-            new NavItemModel
+            new CarMenu
             {
-                Text = ""Products & Services"",
-                Items = new List<NavItemModel>
+                Name = ""SUVs"",
+                Links = new List<CarMenu>
                 {
-                    new NavItemModel
-                    {
-                        Text = ""Project Templates"",
-                        Items = new List<NavItemModel>
-                        {
-                            new NavItemModel { Text = ""TodoTemplate"", Url = ""https://bitplatform.dev/todo-template/overview"", Target=""_blank"", },
-                            new NavItemModel { Text = ""AdminPanel"", Url = ""https://bitplatform.dev/admin-panel/overview"", Target = ""_blank"", },
-                        }
-                    },
-                    new NavItemModel { Text = ""BlazorUI"", Url = ""https://bitplatform.dev/components"", Target = ""_blank"", },
-                    new NavItemModel { Text = ""Cloud hosting solutions"", Url = ""https://bitplatform.dev/#"", Target = ""_blank"", IsEnabled = false },
-                    new NavItemModel { Text = ""Bit academy"", Url = ""https://bitplatform.dev/#"", Target = ""_blank"", IsEnabled = false },
+                    new CarMenu { Name = ""GLA"", PageUrl = ""https://www.mbusa.com/en/vehicles/class/gla/suv"", UrlTarget = ""_blank"" },
+                    new CarMenu { Name = ""GLB"", PageUrl = ""https://www.mbusa.com/en/vehicles/class/glb/suv"", UrlTarget = ""_blank"" },
+                    new CarMenu { Name = ""GLC"", PageUrl = ""https://www.mbusa.com/en/vehicles/class/glc/suv"", UrlTarget = ""_blank"" },
                 }
             },
-            new NavItemModel { Text = ""Pricing"", Url = ""https://bitplatform.dev/pricing"", Target=""_blank"" },
-            new NavItemModel { Text = ""About"", Url = ""https://bitplatform.dev/about-us"", Target=""_blank"" },
-            new NavItemModel { Text = ""Contact us"", Url = ""https://bitplatform.dev/contact-us"", Target=""_blank"" },
-        },
+            new CarMenu
+            {
+                Name = ""Sedans & Wagons"",
+                Links = new List<CarMenu>
+                {
+                    new CarMenu { Name = ""A Class"", PageUrl = ""https://www.mbusa.com/en/vehicles/class/a-class/sedan"", UrlTarget = ""_blank"" },
+                    new CarMenu { Name = ""C Class"", PageUrl = ""https://www.mbusa.com/en/vehicles/class/c-class/sedan"", UrlTarget = ""_blank"" },
+                    new CarMenu { Name = ""E Class"", PageUrl = ""https://www.mbusa.com/en/vehicles/class/e-class/sedan"", UrlTarget = ""_blank"" },
+                }
+            },
+            new CarMenu
+            {
+                Name = ""Coupes"",
+                Links = new List<CarMenu>
+                {
+                    new CarMenu { Name = ""CLA Coupe"", PageUrl = ""https://www.mbusa.com/en/vehicles/class/cla/coupe"", UrlTarget = ""_blank"" },
+                    new CarMenu { Name = ""C Class Coupe"", PageUrl = ""https://www.mbusa.com/en/vehicles/class/c-class/coupe"", UrlTarget = ""_blank"" },
+                    new CarMenu { Name = ""E Class Coupe"", PageUrl = ""https://www.mbusa.com/en/vehicles/class/e-class/coupe"", UrlTarget = ""_blank"" },
+                }
+            },
+        }
     },
-    new NavItemModel
+    new CarMenu
     {
-        Text = ""Community"",
-        ExpandAriaLabel = ""Community Expanded"",
-        CollapseAriaLabel = ""Community Collapsed"",
-        IconName = BitIconName.Heart,
-        Items = new List<NavItemModel>
+        Name = ""Tesla"",
+        ExpandedAriaLabel = ""Tesla Expanded"",
+        CollapsedAriaLabel = ""Tesla Collapsed"",
+        Tooltip = ""Tesla Car Models"",
+        Links = new List<CarMenu>
         {
-            new NavItemModel { Text = ""Linkedin"", Url = ""https://www.linkedin.com/company/bitplatformhq/about/"", Target=""_blank"" },
-            new NavItemModel { Text = ""Twitter"", Url = ""https://twitter.com/bitplatformhq"", Target=""_blank"" },
-            new NavItemModel { Text = ""Github repo"", Url = ""https://github.com/bitfoundation/bitplatform"", Target=""_blank"" },
+            new CarMenu { Name = ""Model S"", PageUrl = ""https://www.tesla.com/models"", UrlTarget = ""_blank"" },
+            new CarMenu { Name = ""Model X"", PageUrl = ""https://www.tesla.com/modelx"", UrlTarget = ""_blank"" },
+            new CarMenu { Name = ""Model Y"", PageUrl = ""https://www.tesla.com/modely"", UrlTarget = ""_blank"" },
         }
     },
 };
 
-private static readonly List<NavItemModel> ManualNavItems = new()
+private static readonly List<FoodMenu> FoodNavMenu = new()
 {
-    new NavItemModel
+    new FoodMenu
     {
-        Text = ""Bit Platform"",
-        ExpandAriaLabel = ""Bit Platform Expanded"",
-        CollapseAriaLabel = ""Bit Platform Collapsed"",
-        IconName = BitIconName.TabletMode,
-        Items = new List<NavItemModel>
+        Name = ""Fast-Food"",
+        Icon = BitIconName.HeartBroken,
+        Childs = new List<FoodMenu>
         {
-            new NavItemModel { Text = ""Home"" },
-            new NavItemModel
-            {
-                Text = ""Products & Services"",
-                Items = new List<NavItemModel>
-                {
-                    new NavItemModel
-                    {
-                        Text = ""Project Templates"",
-                        Items = new List<NavItemModel>
-                        {
-                            new NavItemModel { Text = ""TodoTemplate"" },
-                            new NavItemModel { Text = ""AdminPanel"" },
-                        }
-                    },
-                    new NavItemModel { Text = ""BlazorUI"" },
-                    new NavItemModel { Text = ""Cloud hosting solutions"" },
-                    new NavItemModel { Text = ""Bit academy"" },
-                }
-            },
-            new NavItemModel { Text = ""Pricing"" },
-            new NavItemModel { Text = ""About"" },
-            new NavItemModel { Text = ""Contact us"" },
-        },
-    },
-    new NavItemModel
-    {
-        Text = ""Community"",
-        ExpandAriaLabel = ""Community Expanded"",
-        CollapseAriaLabel = ""Community Collapsed"",
-        IconName = BitIconName.Heart,
-        Items = new List<NavItemModel>
-        {
-            new NavItemModel { Text = ""Linkedin"" },
-            new NavItemModel { Text = ""Twitter"" },
-            new NavItemModel { Text = ""Github repo"" },
+            new FoodMenu { Name = ""Burger"" },
+            new FoodMenu { Name = ""Pizza"" },
+            new FoodMenu { Name = ""French Fries"" },
         }
     },
-    new NavItemModel { Text = ""Iconography"" },
+    new FoodMenu
+    {
+        Name = ""Fruits"",
+        Icon = BitIconName.Health,
+        Childs = new List<FoodMenu>
+        {
+            new FoodMenu { Name = ""Aplle"" },
+            new FoodMenu { Name = ""Orange"" },
+            new FoodMenu { Name = ""Benana"" },
+        }
+    },
+    new FoodMenu { Name = ""Ice Cream"" },
+    new FoodMenu { Name = ""Cookie"" },
 };
 ";
 
@@ -1045,85 +959,55 @@ private static readonly List<NavItemModel> ManualNavItems = new()
     #region Sample Code 5
 
     private static string example5HTMLCode = @"
-<BitNavList Items=""ManualNavItems""
-            TextFieldSelector=""item => item.Text""
-            UrlFieldSelector=""item => item.Url""
-            TargetFieldSelector=""item => item.Target""
-            TitleFieldSelector=""item => item.Title""
-            IsExpandedFieldSelector=""item => item.IsExpanded""
-            IconNameFieldSelector=""item => item.IconName""
-            IsEnabledFieldSelector=""item => item.IsEnabled""
-            CollapseAriaLabelFieldSelector=""item => item.CollapseAriaLabel""
-            ExpandAriaLabelFieldSelector=""item => item.ExpandAriaLabel""
-            ItemsFieldSelector=""item => item.Items""
-            DefaultSelectedItem=""ManualNavItems[0].Items[0]""
+<BitNavList Items=""FoodNavMenu""
+            TextFieldSelector=""item => item.Name""
+            IconNameFieldSelector=""item => item.Icon""
+            ItemsFieldSelector=""item => item.Childs""
+            DefaultSelectedItem=""FoodNavMenu[0].Childs[0]""
             Mode=""BitNavListMode.Manual""
-            OnItemClick=""(NavItemModel item) => ClickedItem = item""
-            OnSelectItem=""(NavItemModel item) => SelectedItem = item""
-            OnItemToggle=""(NavItemModel item) => ToggledItem = item"" />
+            OnItemClick=""(FoodMenu item) => ClickedItem = item""
+            OnSelectItem=""(FoodMenu item) => SelectedItem = item""
+            OnItemToggle=""(FoodMenu item) => ToggledItem = item"" />
 
 <div class=""flex"">
-    <span>Clicked Item: @ClickedItem?.Text</span>
-    <span>Selected Item: @SelectedItem?.Text</span>
-    <span>Toggled Item: @(ToggledItem is null ? ""N/A"" : $""{ToggledItem.Text} ({(ToggledItem.IsExpanded ? ""Expanded"" : ""Collapsed"")})"")</span>
+    <span>Clicked Item: @ClickedItem?.Name</span>
+    <span>Selected Item: @SelectedItem?.Name</span>
+    <span>Toggled Item: @ToggledItem?.Name</span>
 </div>
 ";
 
     private static string example5CSharpCode = @"
-private static readonly List<NavItemModel> ManualNavItems = new()
+private static readonly List<FoodMenu> FoodNavMenu = new()
 {
-    new NavItemModel
+    new FoodMenu
     {
-        Text = ""Bit Platform"",
-        ExpandAriaLabel = ""Bit Platform Expanded"",
-        CollapseAriaLabel = ""Bit Platform Collapsed"",
-        IconName = BitIconName.TabletMode,
-        Items = new List<NavItemModel>
+        Name = ""Fast-Food"",
+        Icon = BitIconName.HeartBroken,
+        Childs = new List<FoodMenu>
         {
-            new NavItemModel { Text = ""Home"" },
-            new NavItemModel
-            {
-                Text = ""Products & Services"",
-                Items = new List<NavItemModel>
-                {
-                    new NavItemModel
-                    {
-                        Text = ""Project Templates"",
-                        Items = new List<NavItemModel>
-                        {
-                            new NavItemModel { Text = ""TodoTemplate"" },
-                            new NavItemModel { Text = ""AdminPanel"" },
-                        }
-                    },
-                    new NavItemModel { Text = ""BlazorUI"" },
-                    new NavItemModel { Text = ""Cloud hosting solutions"" },
-                    new NavItemModel { Text = ""Bit academy"" },
-                }
-            },
-            new NavItemModel { Text = ""Pricing"" },
-            new NavItemModel { Text = ""About"" },
-            new NavItemModel { Text = ""Contact us"" },
-        },
-    },
-    new NavItemModel
-    {
-        Text = ""Community"",
-        ExpandAriaLabel = ""Community Expanded"",
-        CollapseAriaLabel = ""Community Collapsed"",
-        IconName = BitIconName.Heart,
-        Items = new List<NavItemModel>
-        {
-            new NavItemModel { Text = ""Linkedin"" },
-            new NavItemModel { Text = ""Twitter"" },
-            new NavItemModel { Text = ""Github repo"" },
+            new FoodMenu { Name = ""Burger"" },
+            new FoodMenu { Name = ""Pizza"" },
+            new FoodMenu { Name = ""French Fries"" },
         }
     },
-    new NavItemModel { Text = ""Iconography"" },
+    new FoodMenu
+    {
+        Name = ""Fruits"",
+        Icon = BitIconName.Health,
+        Childs = new List<FoodMenu>
+        {
+            new FoodMenu { Name = ""Aplle"" },
+            new FoodMenu { Name = ""Orange"" },
+            new FoodMenu { Name = ""Benana"" },
+        }
+    },
+    new FoodMenu { Name = ""Ice Cream"" },
+    new FoodMenu { Name = ""Cookie"" },
 };
 
-private NavItemModel ClickedItem;
-private NavItemModel SelectedItem;
-private NavItemModel ToggledItem;
+private FoodMenu ClickedItem;
+private FoodMenu SelectedItem;
+private FoodMenu ToggledItem;
 ";
 
     #endregion

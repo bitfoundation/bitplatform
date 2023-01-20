@@ -8,17 +8,11 @@
     <ComponentExampleBox Title="Basic" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
             <div class="example-box">
-                <BitNavList Items="BasicNavItems"
-                            TextField="@nameof(NavItemModel.Text)"
-                            UrlField="@nameof(NavItemModel.Url)"
-                            TargetField="@nameof(NavItemModel.Target)"
-                            TitleField="@nameof(NavItemModel.Title)"
-                            IsExpandedField="@nameof(NavItemModel.IsExpanded)"
-                            IconNameField="@nameof(NavItemModel.IconName)"
-                            IsEnabledField="@nameof(NavItemModel.IsEnabled)"
-                            CollapseAriaLabelField="@nameof(NavItemModel.CollapseAriaLabel)"
-                            ExpandAriaLabelField="@nameof(NavItemModel.ExpandAriaLabel)"
-                            ItemsField="@nameof(NavItemModel.Items)" />
+                <BitNavList Items="BitPlatformNavMenu"
+                            TextField="@nameof(BitPlatformMenu.Text)"
+                            UrlField="@nameof(BitPlatformMenu.Url)"
+                            IsEnabledField="@nameof(BitPlatformMenu.IsEnabled)"
+                            ItemsField="@nameof(BitPlatformMenu.Links)" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -26,17 +20,15 @@
     <ComponentExampleBox Title="Grouped" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example2">
         <ExamplePreview>
             <div class="example-box">
-                <BitNavList Items="GroupedNavItems"
-                            TextField="@nameof(NavItemModel.Text)"
-                            UrlField="@nameof(NavItemModel.Url)"
-                            TargetField="@nameof(NavItemModel.Target)"
-                            TitleField="@nameof(NavItemModel.Title)"
-                            IsExpandedField="@nameof(NavItemModel.IsExpanded)"
-                            IconNameField="@nameof(NavItemModel.IconName)"
-                            IsEnabledField="@nameof(NavItemModel.IsEnabled)"
-                            CollapseAriaLabelField="@nameof(NavItemModel.CollapseAriaLabel)"
-                            ExpandAriaLabelField="@nameof(NavItemModel.ExpandAriaLabel)"
-                            ItemsField="@nameof(NavItemModel.Items)"
+                <BitNavList Items="CarNavMenu"
+                            TextField="@nameof(CarMenu.Name)"
+                            UrlField="@nameof(CarMenu.PageUrl)"
+                            TargetField="@nameof(CarMenu.UrlTarget)"
+                            TitleField="@nameof(CarMenu.Tooltip)"
+                            IsExpandedField="@nameof(CarMenu.IsExpandedParent)"
+                            CollapseAriaLabelField="@nameof(CarMenu.CollapsedAriaLabel)"
+                            ExpandAriaLabelField="@nameof(CarMenu.ExpandedAriaLabel)"
+                            ItemsField="@nameof(CarMenu.Links)"
                             RenderType="BitNavListRenderType.Grouped" />
             </div>
         </ExamplePreview>
@@ -47,43 +39,29 @@
             <div class="example-box">
                 <div>
                     <BitLabel>Basic</BitLabel>
-                    <BitNavList Items="ManualNavItems"
-                                TextFieldSelector="item => item.Text"
-                                UrlFieldSelector="item => item.Url"
-                                TargetFieldSelector="item => item.Target"
-                                TitleFieldSelector="item => item.Title"
-                                IsExpandedFieldSelector="item => item.IsExpanded"
-                                IconNameFieldSelector="item => item.IconName"
-                                IsEnabledFieldSelector="item => item.IsEnabled"
-                                CollapseAriaLabelFieldSelector="item => item.CollapseAriaLabel"
-                                ExpandAriaLabelFieldSelector="item => item.ExpandAriaLabel"
-                                ItemsFieldSelector="item => item.Items"
-                                DefaultSelectedItem="ManualNavItems[0].Items[0]"
+                    <BitNavList Items="FoodNavMenu"
+                                TextFieldSelector="item => item.Name"
+                                IconNameFieldSelector="item => item.Icon"
+                                ItemsFieldSelector="item => item.Childs"
+                                DefaultSelectedItem="FoodNavMenu[0].Childs[0]"
                                 Mode="BitNavListMode.Manual" />
                 </div>
 
                 <div class="margin-top">
                     <BitLabel>Two-Way Bind</BitLabel>
 
-                    <BitNavList @bind-SelectedItem="SelectedItemNav"
-                                Items="ManualNavItems"
-                                TextFieldSelector="item => item.Text"
-                                UrlFieldSelector="item => item.Url"
-                                TargetFieldSelector="item => item.Target"
-                                TitleFieldSelector="item => item.Title"
-                                IsExpandedFieldSelector="item => item.IsExpanded"
-                                IconNameFieldSelector="item => item.IconName"
-                                IsEnabledFieldSelector="item => item.IsEnabled"
-                                CollapseAriaLabelFieldSelector="item => item.CollapseAriaLabel"
-                                ExpandAriaLabelFieldSelector="item => item.ExpandAriaLabel"
-                                ItemsFieldSelector="item => item.Items"
+                    <BitNavList @bind-SelectedItem="SelectedFood"
+                                Items="FoodNavMenu"
+                                TextFieldSelector="item => item.Name"
+                                IconNameFieldSelector="item => item.Icon"
+                                ItemsFieldSelector="item => item.Childs"
                                 Mode="BitNavListMode.Manual"
-                                OnSelectItem="(NavItemModel item) => SelectedItemText = DropDownItems.FirstOrDefault(i => i.Text == item.Text).Text" />
+                                OnSelectItem="(FoodMenu item) => SelectedFoodName = FoodMenuDropDownItems.FirstOrDefault(i => i.Text == item.Name).Text" />
 
-                    <BitDropDown @bind-Value="SelectedItemText"
+                    <BitDropDown @bind-Value="SelectedFoodName"
                                  Label="Select Item"
-                                 Items="DropDownItems"
-                                 OnSelectItem="(item) => SelectedItemNav = Flatten(ManualNavItems).FirstOrDefault(i => i.Text == item.Value)" />
+                                 Items="FoodMenuDropDownItems"
+                                 OnSelectItem="(item) => SelectedFood = Flatten(FoodNavMenu).FirstOrDefault(i => i.Name == item.Value)" />
                 </div>
             </div>
         </ExamplePreview>
@@ -94,23 +72,21 @@
             <div class="example-box">
                 <div>
                     <BitLabel>Header Template (in Grouped mode)</BitLabel>
-                    <BitNavList Items="GroupedNavItems"
-                                TextField="@nameof(NavItemModel.Text)"
-                                UrlField="@nameof(NavItemModel.Url)"
-                                TargetField="@nameof(NavItemModel.Target)"
-                                TitleField="@nameof(NavItemModel.Title)"
-                                IsExpandedField="@nameof(NavItemModel.IsExpanded)"
-                                IconNameField="@nameof(NavItemModel.IconName)"
-                                IsEnabledField="@nameof(NavItemModel.IsEnabled)"
-                                CollapseAriaLabelField="@nameof(NavItemModel.CollapseAriaLabel)"
-                                ExpandAriaLabelField="@nameof(NavItemModel.ExpandAriaLabel)"
-                                ItemsField="@nameof(NavItemModel.Items)"
+                    <BitNavList Items="CarNavMenu"
+                                TextField="@nameof(CarMenu.Name)"
+                                UrlField="@nameof(CarMenu.PageUrl)"
+                                TargetField="@nameof(CarMenu.UrlTarget)"
+                                TitleField="@nameof(CarMenu.Tooltip)"
+                                IsExpandedField="@nameof(CarMenu.IsExpandedParent)"
+                                CollapseAriaLabelField="@nameof(CarMenu.CollapsedAriaLabel)"
+                                ExpandAriaLabelField="@nameof(CarMenu.ExpandedAriaLabel)"
+                                ItemsField="@nameof(CarMenu.Links)"
                                 RenderType="BitNavListRenderType.Grouped">
 
                         <HeaderTemplate Context="item">
                             <div class="nav-list-custom-header">
                                 <BitIcon IconName="BitIconName.FavoriteStarFill" />
-                                <span>@item.Text</span>
+                                <span>@item.Name</span>
                             </div>
                         </HeaderTemplate>
                     </BitNavList>
@@ -118,24 +94,17 @@
 
                 <div class="margin-top">
                     <BitLabel>Item Template</BitLabel>
-                    <BitNavList Items="ManualNavItems"
-                                TextFieldSelector="item => item.Text"
-                                UrlFieldSelector="item => item.Url"
-                                TargetFieldSelector="item => item.Target"
-                                TitleFieldSelector="item => item.Title"
-                                IsExpandedFieldSelector="item => item.IsExpanded"
-                                IconNameFieldSelector="item => item.IconName"
-                                IsEnabledFieldSelector="item => item.IsEnabled"
-                                CollapseAriaLabelFieldSelector="item => item.CollapseAriaLabel"
-                                ExpandAriaLabelFieldSelector="item => item.ExpandAriaLabel"
-                                ItemsFieldSelector="item => item.Items"
+                    <BitNavList Items="FoodNavMenu"
+                                TextFieldSelector="item => item.Name"
+                                IconNameFieldSelector="item => item.Icon"
+                                ItemsFieldSelector="item => item.Childs"
                                 Mode="BitNavListMode.Manual">
 
                         <ItemTemplate Context="item">
-                            <div class="nav-list-custom-item @(item.IsEnabled is false ? "disabled-item" : "")">
-                                <BitCheckbox IsEnabled="@(item.IsEnabled)" />
-                                <BitIcon IconName="@item.IconName" />
-                                <span>@item.Text</span>
+                            <div class="nav-list-custom-item">
+                                <BitCheckbox />
+                                <BitIcon IconName="@item.Icon" />
+                                <span>@item.Name</span>
                             </div>
                         </ItemTemplate>
                     </BitNavList>
@@ -147,27 +116,20 @@
     <ComponentExampleBox Title="Events" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
         <ExamplePreview>
             <div class="events-example-box">
-                <BitNavList Items="ManualNavItems"
-                            TextFieldSelector="item => item.Text"
-                            UrlFieldSelector="item => item.Url"
-                            TargetFieldSelector="item => item.Target"
-                            TitleFieldSelector="item => item.Title"
-                            IsExpandedFieldSelector="item => item.IsExpanded"
-                            IconNameFieldSelector="item => item.IconName"
-                            IsEnabledFieldSelector="item => item.IsEnabled"
-                            CollapseAriaLabelFieldSelector="item => item.CollapseAriaLabel"
-                            ExpandAriaLabelFieldSelector="item => item.ExpandAriaLabel"
-                            ItemsFieldSelector="item => item.Items"
-                            DefaultSelectedItem="ManualNavItems[0].Items[0]"
+                <BitNavList Items="FoodNavMenu"
+                            TextFieldSelector="item => item.Name"
+                            IconNameFieldSelector="item => item.Icon"
+                            ItemsFieldSelector="item => item.Childs"
+                            DefaultSelectedItem="FoodNavMenu[0].Childs[0]"
                             Mode="BitNavListMode.Manual"
-                            OnItemClick="(NavItemModel item) => ClickedItem = item"
-                            OnSelectItem="(NavItemModel item) => SelectedItem = item"
-                            OnItemToggle="(NavItemModel item) => ToggledItem = item" />
+                            OnItemClick="(FoodMenu item) => ClickedItem = item"
+                            OnSelectItem="(FoodMenu item) => SelectedItem = item"
+                            OnItemToggle="(FoodMenu item) => ToggledItem = item" />
 
                 <div class="flex">
-                    <span>Clicked Item: @ClickedItem?.Text</span>
-                    <span>Selected Item: @SelectedItem?.Text</span>
-                    <span>Toggled Item: @(ToggledItem is null ? "N/A" : $"{ToggledItem.Text} ({(ToggledItem.IsExpanded ? "Expanded" : "Collapsed")})")</span>
+                    <span>Clicked Item: @ClickedItem?.Name</span>
+                    <span>Selected Item: @SelectedItem?.Name</span>
+                    <span>Toggled Item: @ToggledItem?.Name</span>
                 </div>
             </div>
         </ExamplePreview>

@@ -20,21 +20,21 @@
                             class="chevron-btn group-chevron-btn"
                             tabindex="0"
                             type="button"
-                            aria-label="@(GetIsExpanded(item)? GetCollapseAriaLabel(item) : GetExpandAriaLabel(item))"
-                            aria-expanded="@(GetIsExpanded(item))">
+                            aria-label="@(_internalIsExpanded[item] ? GetCollapseAriaLabel(item) : GetExpandAriaLabel(item))"
+                            aria-expanded="@(_internalIsExpanded[item])">
                         @if (HeaderTemplate is not null)
                         {
                             @HeaderTemplate(item)
                         }
                         else
                         {
-                            <i class="bit-icon bit-icon--ChevronDown @(GetIsExpanded(item) ? "expand" : "")" aria-hidden="true"></i>
+                            <i class="bit-icon bit-icon--ChevronDown @(_internalIsExpanded[item] ? "expand" : "")" aria-hidden="true"></i>
                             @GetText(item)
                         }
                     </button>
                 }
 
-                @if ((GetItems(item).Any()) && GetIsExpanded(item))
+                @if ((GetItems(item).Any()) && _internalIsExpanded[item])
                 {
                     <div class="group-content">
                         <ul class="nav-items" role="list">
