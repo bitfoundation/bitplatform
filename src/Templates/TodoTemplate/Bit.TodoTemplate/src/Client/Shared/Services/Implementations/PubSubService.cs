@@ -2,7 +2,7 @@
 
 public class PubSubService : IPubSubService
 {
-    private readonly Dictionary<string, List<Action<object?>>> _handlers = new();
+    private readonly ConcurrentDictionary<string, List<Action<object?>>> _handlers = new();
 
     public void Pub(string message, object? payload)
     {
