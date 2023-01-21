@@ -18,7 +18,7 @@ public partial class BitNavDemo
             IsExpanded = true,
             Items = new List<BitNavItem>
             {
-                new BitNavItem { Text = "Home", Url = "https://bitplatform.dev/", Target="_blank" },
+                new BitNavItem { Text = "Home", Url = "https://bitplatform.dev/", Target = "_blank" },
                 new BitNavItem
                 {
                     Text = "Products & Services",
@@ -29,7 +29,7 @@ public partial class BitNavDemo
                             Text = "Project Templates",
                             Items = new List<BitNavItem>
                             {
-                                new BitNavItem { Text = "TodoTemplate", Url = "https://bitplatform.dev/todo-template/overview", Target="_blank", },
+                                new BitNavItem { Text = "TodoTemplate", Url = "https://bitplatform.dev/todo-template/overview", Target = "_blank", },
                                 new BitNavItem { Text = "AdminPanel", Url = "https://bitplatform.dev/admin-panel/overview", Target = "_blank", },
                             }
                         },
@@ -38,9 +38,9 @@ public partial class BitNavDemo
                         new BitNavItem { Text = "Bit academy", Url = "https://bitplatform.dev/#", Target = "_blank", IsEnabled = false },
                     }
                 },
-                new BitNavItem { Text = "Pricing", Url = "https://bitplatform.dev/pricing", Target="_blank" },
-                new BitNavItem { Text = "About", Url = "https://bitplatform.dev/about-us", Target="_blank" },
-                new BitNavItem { Text = "Contact us", Url = "https://bitplatform.dev/contact-us", Target="_blank" },
+                new BitNavItem { Text = "Pricing", Url = "https://bitplatform.dev/pricing", Target = "_blank" },
+                new BitNavItem { Text = "About", Url = "https://bitplatform.dev/about-us", Target = "_blank" },
+                new BitNavItem { Text = "Contact us", Url = "https://bitplatform.dev/contact-us", Target = "_blank" },
             },
         },
         new BitNavItem
@@ -51,12 +51,12 @@ public partial class BitNavDemo
             IconName = BitIconName.Heart,
             Items = new List<BitNavItem>
             {
-                new BitNavItem { Text = "Linkedin", Url = "https://www.linkedin.com/company/bitplatformhq/about/", Target="_blank" },
-                new BitNavItem { Text = "Twitter", Url = "https://twitter.com/bitplatformhq", Target="_blank" },
-                new BitNavItem { Text = "Github repo", Url = "https://github.com/bitfoundation/bitplatform", Target="_blank" },
+                new BitNavItem { Text = "Linkedin", Url = "https://www.linkedin.com/company/bitplatformhq/about/", Target = "_blank" },
+                new BitNavItem { Text = "Twitter", Url = "https://twitter.com/bitplatformhq", Target = "_blank" },
+                new BitNavItem { Text = "Github repo", Url = "https://github.com/bitfoundation/bitplatform", Target = "_blank" },
             }
         },
-        new BitNavItem { Text = "Iconography", Url = "/icons", Target="_blank" },
+        new BitNavItem { Text = "Iconography", Url = "/icons", Target = "_blank" },
     };
 
     private static readonly List<BitNavItem> GroupedNavItems = new()
@@ -69,7 +69,7 @@ public partial class BitNavDemo
             IconName = BitIconName.TabletMode,
             Items = new List<BitNavItem>
             {
-                new BitNavItem { Text = "Home", Url = "https://bitplatform.dev/", Target="_blank" },
+                new BitNavItem { Text = "Home", Url = "https://bitplatform.dev/", Target = "_blank" },
                 new BitNavItem
                 {
                     Text = "Products & Services",
@@ -80,7 +80,7 @@ public partial class BitNavDemo
                             Text = "Project Templates",
                             Items = new List<BitNavItem>
                             {
-                                new BitNavItem { Text = "TodoTemplate", Url = "https://bitplatform.dev/todo-template/overview", Target="_blank", },
+                                new BitNavItem { Text = "TodoTemplate", Url = "https://bitplatform.dev/todo-template/overview", Target = "_blank", },
                                 new BitNavItem { Text = "AdminPanel", Url = "https://bitplatform.dev/admin-panel/overview", Target = "_blank", },
                             }
                         },
@@ -89,9 +89,9 @@ public partial class BitNavDemo
                         new BitNavItem { Text = "Bit academy", Url = "https://bitplatform.dev/#", Target = "_blank", IsEnabled = false },
                     }
                 },
-                new BitNavItem { Text = "Pricing", Url = "https://bitplatform.dev/pricing", Target="_blank" },
-                new BitNavItem { Text = "About", Url = "https://bitplatform.dev/about-us", Target="_blank" },
-                new BitNavItem { Text = "Contact us", Url = "https://bitplatform.dev/contact-us", Target="_blank" },
+                new BitNavItem { Text = "Pricing", Url = "https://bitplatform.dev/pricing", Target = "_blank" },
+                new BitNavItem { Text = "About", Url = "https://bitplatform.dev/about-us", Target = "_blank" },
+                new BitNavItem { Text = "Contact us", Url = "https://bitplatform.dev/contact-us", Target = "_blank" },
             },
         },
         new BitNavItem
@@ -102,9 +102,9 @@ public partial class BitNavDemo
             IconName = BitIconName.Heart,
             Items = new List<BitNavItem>
             {
-                new BitNavItem { Text = "Linkedin", Url = "https://www.linkedin.com/company/bitplatformhq/about/", Target="_blank" },
-                new BitNavItem { Text = "Twitter", Url = "https://twitter.com/bitplatformhq", Target="_blank" },
-                new BitNavItem { Text = "Github repo", Url = "https://github.com/bitfoundation/bitplatform", Target="_blank" },
+                new BitNavItem { Text = "Linkedin", Url = "https://www.linkedin.com/company/bitplatformhq/about/", Target = "_blank" },
+                new BitNavItem { Text = "Twitter", Url = "https://twitter.com/bitplatformhq", Target = "_blank" },
+                new BitNavItem { Text = "Github repo", Url = "https://github.com/bitfoundation/bitplatform", Target = "_blank" },
             }
         },
     };
@@ -364,6 +364,12 @@ public partial class BitNavDemo
                    Name = "IsEnabled",
                    Type = "bool",
                    Description = "Whether or not the link is enabled.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "Key",
+                   Type = "string?",
+                   Description = "A unique value to use as a key or id of the item.",
                },
                new ComponentParameter()
                {

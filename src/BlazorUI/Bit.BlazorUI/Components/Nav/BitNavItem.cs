@@ -52,6 +52,11 @@ public class BitNavItem
     public bool IsEnabled { get; set; } = true;
 
     /// <summary>
+    /// A unique value to use as a key or id of the item
+    /// </summary>
+    public string? Key { get; set; }
+
+    /// <summary>
     /// Custom style for the each item element.
     /// </summary>
     public string? Style { get; set; }
