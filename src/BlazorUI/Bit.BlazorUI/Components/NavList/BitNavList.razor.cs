@@ -38,7 +38,7 @@ public partial class BitNavList<TItem> : IDisposable where TItem : class
     private string _internalTargetField = TARGET;
     private string _internalItemsField = ITEMS;
 
-    internal IDictionary<TItem, bool> _internalIsExpanded = new Dictionary<TItem, bool>();
+    internal Dictionary<TItem, bool> _itemExpandStates = new();
 
     [Inject] private NavigationManager _navigationManager { get; set; } = default!;
 
@@ -269,7 +269,7 @@ public partial class BitNavList<TItem> : IDisposable where TItem : class
         _internalTargetField = TargetFieldSelector?.GetName() ?? TargetField;
         _internalItemsField = ItemsFieldSelector?.GetName() ?? ItemsField;
 
-        SetInternalIsExpanded(Items);
+        SetItemExpandStates(Items);
 
         if (Mode == BitNavListMode.Automatic)
         {
@@ -322,15 +322,15 @@ public partial class BitNavList<TItem> : IDisposable where TItem : class
         }
     }
 
-    private void SetInternalIsExpanded(IList<TItem> items)
+    private void SetItemExpandStates(IList<TItem> items)
     {
         foreach (var item in items)
         {
-            _internalIsExpanded.Add(item, GetIsExpanded(item));
+            _itemExpandStates.Add(item, GetIsExpanded(item));
 
             if (GetItems(item).Any())
             {
-                SetInternalIsExpanded(GetItems(item));
+                SetItemExpandStates(GetItems(item));
             }
         }
     }
@@ -341,8 +341,8 @@ public partial class BitNavList<TItem> : IDisposable where TItem : class
         {
             if ((item == SelectedItem) || GetItems(item).Any() && ExpandSelectedItemParents(GetItems(item)))
             {
-                _internalIsExpanded.Remove(item);
-                _internalIsExpanded.Add(item, true);
+                _itemExpandStates.Remove(item);
+                _itemExpandStates.Add(item, true);
                 return true;
             }
         }
@@ -372,9 +372,9 @@ public partial class BitNavList<TItem> : IDisposable where TItem : class
     {
         if (GetIsEnabled(item) is false || GetItems(item).Any() is false) return;
 
-        var oldIsExpanded = _internalIsExpanded[item];
-        _internalIsExpanded.Remove(item);
-        _internalIsExpanded.Add(item, !oldIsExpanded);
+        var oldIsExpanded = _itemExpandStates[item];
+        _itemExpandStates.Remove(item);
+        _itemExpandStates.Add(item, !oldIsExpanded);
 
         await OnItemToggle.InvokeAsync(item);
     }
