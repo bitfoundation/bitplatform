@@ -3,11 +3,11 @@
 [DtoResourceType(typeof(AppStrings))]
 public class SignUpRequestDto
 {
-    [EmailAddress(ErrorMessageResourceName = nameof(AppStrings.EmailAddressAttribute_Invalid))]
+    [EmailAddress(ErrorMessageResourceName = nameof(AppStrings.EmailAddressAttribute_ValidationError))]
     [Display(Name = nameof(AppStrings.Email))]
     public string? Email { get; set; }
 
-    [EmailAddress(ErrorMessageResourceName = nameof(AppStrings.EmailAddressAttribute_Invalid))]
+    [EmailAddress(ErrorMessageResourceName = nameof(AppStrings.EmailAddressAttribute_ValidationError))]
     [Required(ErrorMessageResourceName = nameof(AppStrings.RequiredAttribute_ValidationError))]
     [Display(Name = nameof(AppStrings.UserName))]
     public string? UserName { get; set; }
@@ -16,7 +16,7 @@ public class SignUpRequestDto
     public string? PhoneNumber { get; set; }
 
     [Required(ErrorMessageResourceName = nameof(AppStrings.RequiredAttribute_ValidationError))]
-    [MinLength(6, ErrorMessageResourceName = nameof(AppStrings.PasswordTooShort))]
+    [MinLength(6, ErrorMessageResourceName = nameof(AppStrings.MinLengthAttribute_ValidationError))]
     [Display(Name = nameof(AppStrings.Password))]
     public string? Password { get; set; }
 

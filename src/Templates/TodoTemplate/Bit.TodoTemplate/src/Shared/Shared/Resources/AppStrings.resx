@@ -207,7 +207,7 @@
     <comment>Error when passwords do not have an uppercase letter</comment>
   </data>
   <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
-    <value>Passwords must be at least {0} characters.</value>
+    <value>{0} must be at least {1} characters.</value>
     <comment>Error message for passwords that are too short</comment>
   </data>
   <data name="RoleNotFound" xml:space="preserve">

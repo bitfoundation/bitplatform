@@ -4,7 +4,7 @@
 public class ResetPasswordRequestDto
 {
     [Required(ErrorMessageResourceName = nameof(AppStrings.RequiredAttribute_ValidationError))]
-    [EmailAddress(ErrorMessageResourceName = nameof(AppStrings.EmailAddressAttribute_Invalid))]
+    [EmailAddress(ErrorMessageResourceName = nameof(AppStrings.EmailAddressAttribute_ValidationError))]
     [Display(Name = nameof(AppStrings.Email))]
     public string? Email { get; set; }
 
@@ -12,13 +12,13 @@ public class ResetPasswordRequestDto
     public string? Token { get; set; }
 
     [Required(ErrorMessageResourceName = nameof(AppStrings.RequiredAttribute_ValidationError))]
-    [MinLength(6, ErrorMessageResourceName = nameof(AppStrings.PasswordTooShort))]
+    [MinLength(6, ErrorMessageResourceName = nameof(AppStrings.MinLengthAttribute_ValidationError))]
     [Display(Name = nameof(AppStrings.Password))]
     public string? Password { get; set; }
 
     [NotMapped]
     [Required(ErrorMessageResourceName = nameof(AppStrings.RequiredAttribute_ValidationError))]
-    [Compare(nameof(Password), ErrorMessageResourceName = nameof(AppStrings.CompareAttribute_MustMatch))]
+    [Compare(nameof(Password), ErrorMessageResourceName = nameof(AppStrings.CompareAttribute_ValidationError))]
     [Display(Name = nameof(AppStrings.ConfirmNewPassword))]
     public string? ConfirmPassword { get; set; }
 }
