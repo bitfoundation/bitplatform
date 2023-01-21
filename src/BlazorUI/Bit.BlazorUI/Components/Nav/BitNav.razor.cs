@@ -78,15 +78,13 @@ public partial class BitNav : IDisposable
     {
         if (Mode == BitNavMode.Automatic)
         {
-            SetSelectedItemByCurrentUrl();
             _navigationManager.LocationChanged += OnLocationChanged;
+
+            SelectItemByCurrentUrl();
         }
-        else
+        else if (DefaultSelectedItem is not null && SelectedItemHasBeenSet is false)
         {
-            if (DefaultSelectedItem is not null && SelectedItemHasBeenSet is false)
-            {
-                SelectedItem = DefaultSelectedItem;
-            }
+            SelectedItem = DefaultSelectedItem;
         }
 
         await base.OnInitializedAsync();
@@ -96,20 +94,17 @@ public partial class BitNav : IDisposable
 
     private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
     {
-        SetSelectedItemByCurrentUrl();
+        SelectItemByCurrentUrl();
 
         StateHasChanged();
     }
 
-    private void SetSelectedItemByCurrentUrl()
+    private void SelectItemByCurrentUrl()
     {
         var currentUrl = _navigationManager.Uri.Replace(_navigationManager.BaseUri, "/", StringComparison.Ordinal);
         var currentItem = Flatten(Items).FirstOrDefault(item => item.Url == currentUrl);
 
-        if (currentItem is not null)
-        {
-            SelectedItem = currentItem;
-        }
+        SelectedItem = currentItem;
     }
 
     private bool ExpandParents(IList<BitNavItem> items)
@@ -124,7 +119,7 @@ public partial class BitNav : IDisposable
         return false;
     }
 
-    internal async void HandleOnClick(BitNavItem item)
+    internal async Task HandleOnClick(BitNavItem item)
     {
         if (item.IsEnabled == false) return;
 
@@ -137,7 +132,9 @@ public partial class BitNav : IDisposable
         else if (Mode == BitNavMode.Manual)
         {
             SelectedItem = item;
+
             await OnSelectItem.InvokeAsync(item);
+            
             StateHasChanged();
         }
     }
