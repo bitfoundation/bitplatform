@@ -23,46 +23,39 @@ public class BitMenuButtonTests : BunitTestContext
     };
 
     [DataTestMethod,
-       DataRow(Visual.Fluent, true, BitButtonStyle.Primary),
-       DataRow(Visual.Fluent, true, BitButtonStyle.Standard),
-       DataRow(Visual.Fluent, false, BitButtonStyle.Primary),
-       DataRow(Visual.Fluent, false, BitButtonStyle.Standard),
-
-       DataRow(Visual.Cupertino, true, BitButtonStyle.Primary),
-       DataRow(Visual.Cupertino, true, BitButtonStyle.Standard),
-       DataRow(Visual.Cupertino, false, BitButtonStyle.Primary),
-       DataRow(Visual.Cupertino, false, BitButtonStyle.Standard),
-
-       DataRow(Visual.Material, true, BitButtonStyle.Primary),
-       DataRow(Visual.Material, true, BitButtonStyle.Standard),
-       DataRow(Visual.Material, false, BitButtonStyle.Primary),
-       DataRow(Visual.Material, false, BitButtonStyle.Standard),
-   ]
-    public void BitMenuButtonTest(Visual visual, bool isEnabled, BitButtonStyle style)
+       DataRow(true, BitButtonStyle.Primary),
+       DataRow(true, BitButtonStyle.Standard),
+       DataRow(false, BitButtonStyle.Primary),
+       DataRow(false, BitButtonStyle.Standard)
+    ]
+    public void BitMenuButtonTest(bool isEnabled, BitButtonStyle bitButtonStyle)
     {
         var com = RenderComponent<BitMenuButton>(parameters =>
         {
-            parameters.AddCascadingValue(visual);
             parameters.Add(p => p.IsEnabled, isEnabled);
-            parameters.Add(p => p.ButtonStyle, style);
+            parameters.Add(p => p.ButtonStyle, bitButtonStyle);
             parameters.Add(p => p.Items, items);
         });
 
-        var bitSplitButton = com.Find(".bit-mnb");
+        var bitMenuButton = com.Find(".bit-mnb");
 
-        var isEnabledClass = isEnabled ? "enabled" : "disabled";
-        var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
-        var buttonStyle = style is BitButtonStyle.Primary ? "primary" : "standard";
+        if (isEnabled)
+        {
+            Assert.IsFalse(bitMenuButton.ClassList.Contains("disabled"));
+        }
+        else
+        {
+            Assert.IsTrue(bitMenuButton.ClassList.Contains("disabled"));
+        }
 
-        Assert.IsTrue(bitSplitButton.ClassList.Contains($"bit-mnb-{isEnabledClass}-{visualClass}"));
-
-        Assert.AreEqual(isEnabled, bitSplitButton.ClassList.Contains(buttonStyle));
+        var buttonStyle = bitButtonStyle is BitButtonStyle.Primary ? "primary" : "standard";
+        Assert.AreEqual(isEnabled, bitMenuButton.ClassList.Contains(buttonStyle));
     }
 
     [DataTestMethod,
-    DataRow("A", BitIconName.Add),
-    DataRow("B", BitIconName.Edit)
-]
+        DataRow("A", BitIconName.Add),
+        DataRow("B", BitIconName.Edit)
+    ]
     public void BitMenuButtonShouldHasTextAndIcon(string text, BitIconName iconName)
     {
         var com = RenderComponent<BitMenuButton>(parameters =>
@@ -142,6 +135,33 @@ public class BitMenuButtonTests : BunitTestContext
         else
         {
             Assert.AreEqual(clickedItem, null);
+        }
+    }
+
+    [DataTestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitMenuButtonOpenMenu(bool isEnabled)
+    {
+        var com = RenderComponent<BitMenuButton>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.IsEnabled, isEnabled);
+        });
+
+        var button = com.Find("button.menu-btn");
+        var bitMenuButton = com.Find(".bit-mnb");
+        Assert.IsFalse(bitMenuButton.ClassList.Contains("open-menu"));
+        button.Click();
+
+        if (isEnabled)
+        {
+            Assert.IsTrue(bitMenuButton.ClassList.Contains("open-menu"));
+        }
+        else
+        {
+            Assert.IsFalse(bitMenuButton.ClassList.Contains("open-menu"));
         }
     }
 }

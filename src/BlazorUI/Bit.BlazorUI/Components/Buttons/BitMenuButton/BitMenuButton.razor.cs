@@ -4,11 +4,25 @@ namespace Bit.BlazorUI;
 
 public partial class BitMenuButton
 {
+    protected override bool UseVisual => false;
+
     private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
-    private bool _isCalloutOpen;
+    private bool isCalloutOpen;
     private string? _menuButtonId;
     private string? _menuButtonCalloutId;
     private string? _menuButtonOverlayId;
+
+    private bool _isCalloutOpen
+    {
+        get => isCalloutOpen;
+        set
+        {
+            if (isCalloutOpen == value) return;
+
+            isCalloutOpen = value;
+            ClassBuilder.Reset();
+        }
+    }
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
@@ -78,7 +92,13 @@ public partial class BitMenuButton
     /// <summary>
     /// The EditContext, which is set if the button is inside an <see cref="EditForm"/>
     /// </summary>
-    [CascadingParameter] public EditContext? EditContext { get; set; }
+    [CascadingParameter] private EditContext? _editContext { get; set; }
+
+    [JSInvokable("CloseCallout")]
+    public void CloseCalloutBeforeAnotherCalloutIsOpened()
+    {
+        _isCalloutOpen = false;
+    }
 
     protected override string RootElementClass => "bit-mnb";
 
@@ -93,7 +113,7 @@ public partial class BitMenuButton
 
     protected override Task OnParametersSetAsync()
     {
-        ButtonType ??= EditContext is null
+        ButtonType ??= _editContext is null
             ? BitButtonType.Button
             : BitButtonType.Submit;
 
@@ -107,6 +127,10 @@ public partial class BitMenuButton
                                        : ButtonStyle == BitButtonStyle.Primary
                                            ? "primary"
                                            : "standard");
+
+        ClassBuilder.Register(() => _isCalloutOpen
+                                       ? "open-menu"
+                                       : string.Empty);
     }
 
     private async Task HandleOnClick(MouseEventArgs e)
