@@ -158,11 +158,11 @@ public partial class BitSearchBox
 
     private async Task HandleOnClear()
     {
-        if (IsEnabled is false) return;
+        await HandleOnChange(new ChangeEventArgs { Value = string.Empty });
 
-        CurrentValueAsString = string.Empty;
-        await _inputRef.FocusAsync();
         await OnClear.InvokeAsync();
+
+        await _inputRef.FocusAsync();
     }
 
     private async Task HandleOnChange(ChangeEventArgs e)
@@ -171,6 +171,7 @@ public partial class BitSearchBox
         if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
         CurrentValueAsString = e.Value?.ToString();
+
         await OnChange.InvokeAsync(CurrentValue);
     }
 
@@ -181,7 +182,7 @@ public partial class BitSearchBox
         if (eventArgs.Code == "Escape")
         {
             CurrentValueAsString = string.Empty;
-            //await InputRef.FocusAsync(); // is it required when the keydown event is captured on the input itself?
+            //await _inputRef.FocusAsync(); // is it required when the keydown event is captured on the input itself?
             await OnEscape.InvokeAsync();
             await OnClear.InvokeAsync();
         }
