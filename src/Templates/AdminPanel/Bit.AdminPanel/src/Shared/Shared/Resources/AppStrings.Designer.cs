@@ -1628,7 +1628,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Send reset link.
+        ///   Looks up a localized string similar to Submit.
         /// </summary>
         public static string SendResetLink {
             get {

@@ -75,6 +75,16 @@ public partial class NavMenu : IDisposable
 #endif
     }
 
+    private async Task HandleOnItemClick(BitNavItem item)
+    {
+        if (item.Text == Localizer[nameof(AppStrings.SignOut)])
+        {
+            _isSignOutModalOpen = true;
+        }
+
+        await CloseMenu();
+    }
+
     private async Task CloseMenu()
     {
         IsMenuOpen = false;

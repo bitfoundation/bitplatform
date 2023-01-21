@@ -815,6 +815,6 @@ Please confirm your email by clicking on the link.</value>
     <value>DeleteProduct</value>
   </data>
   <data name="SendResetLink" xml:space="preserve">
-    <value>Send reset link</value>
+    <value>Submit</value>
   </data>
 </root>
