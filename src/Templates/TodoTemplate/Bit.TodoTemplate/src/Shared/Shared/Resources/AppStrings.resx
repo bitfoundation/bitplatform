@@ -206,7 +206,7 @@
     <value>Passwords must have at least one uppercase ('A'-'Z').</value>
     <comment>Error when passwords do not have an uppercase letter</comment>
   </data>
-  <data name="PasswordTooShort" xml:space="preserve">
+  <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
     <value>Passwords must be at least {0} characters.</value>
     <comment>Error message for passwords that are too short</comment>
   </data>
@@ -434,7 +434,7 @@ Please confirm your email by clicking on the link.</value>
     <value>Sort by</value>
   </data>
   <data name="Submit" xml:space="preserve">
-    <value>Send reset link</value>
+    <value>Submit</value>
   </data>
   <data name="TodoAddPlaceholder" xml:space="preserve">
     <value>Add a todo</value>
@@ -466,7 +466,7 @@ Please confirm your email by clicking on the link.</value>
   <data name="Common_PropertyNotFound" xml:space="preserve">
     <value>The property {0}.{1} could not be found.</value>
   </data>
-  <data name="CompareAttribute_MustMatch" xml:space="preserve">
+  <data name="CompareAttribute_ValidationError" xml:space="preserve">
     <value>'{0}' and '{1}' do not match.</value>
   </data>
   <data name="CompareAttribute_UnknownProperty" xml:space="preserve">
@@ -505,7 +505,7 @@ Please confirm your email by clicking on the link.</value>
   <data name="DisplayAttribute_PropertyNotSet" xml:space="preserve">
     <value>The {0} property has not been set.  Use the {1} method to get the value.</value>
   </data>
-  <data name="EmailAddressAttribute_Invalid" xml:space="preserve">
+  <data name="EmailAddressAttribute_ValidationError" xml:space="preserve">
     <value>The {0} field is not a valid e-mail address.</value>
   </data>
   <data name="EnumDataTypeAttribute_TypeCannotBeNull" xml:space="preserve">

@@ -427,7 +427,7 @@ Veuillez confirmer votre email en cliquant sur le lien.</value>
     <comment>Error when passwords do not have an uppercase letter</comment>
   </data>
   <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
-    <value>Les mots de passe doivent comporter au moins {0} caractères.</value>
+    <value>{0} doit comporter au moins {1} caractères.</value>
     <comment>Error message for passwords that are too short</comment>
   </data>
   <data name="RoleNotFound" xml:space="preserve">
@@ -527,7 +527,7 @@ Veuillez confirmer votre email en cliquant sur le lien.</value>
     <value>Common_PropertyNotFound</value>
   </data>
   <data name="CompareAttribute_ValidationError" xml:space="preserve">
-    <value>CompareAttribute_ValidationError</value>
+    <value>'{0}' et '{1}' ne correspondent pas.</value>
   </data>
   <data name="CompareAttribute_UnknownProperty" xml:space="preserve">
     <value>CompareAttribute_UnknownProperty</value>

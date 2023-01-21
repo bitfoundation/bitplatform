@@ -7,6 +7,8 @@ namespace AdminPanel.Client.Shared.Components;
 
 public partial class AppDataAnnotationsValidator : AppComponentBase, IDisposable
 {
+    private static readonly PropertyInfo _OtherPropertyNamePropertyInfo = typeof(CompareAttribute).GetProperty(nameof(CompareAttribute.OtherPropertyDisplayName))!;
+
     private bool _disposed;
     private ValidationMessageStore _validationMessageStore = default!;
 
@@ -46,14 +48,22 @@ public partial class AppDataAnnotationsValidator : AppComponentBase, IDisposable
         if (dtoResourceTypeAttr is not null)
         {
             var resourceType = dtoResourceTypeAttr.ResourceType;
+            var stringLocalizer = _stringLocalizerFactory.Create(resourceType);
             var validationAttributes = propertyInfo.GetCustomAttributes<ValidationAttribute>();
+
             foreach (var attribute in validationAttributes)
             {
                 if (string.IsNullOrWhiteSpace(attribute.ErrorMessageResourceName) is false && attribute.ErrorMessageResourceType is null)
                 {
                     attribute.ErrorMessageResourceType = resourceType;
                     var displayAttribute = propertyInfo.GetCustomAttribute<DisplayAttribute>();
-                    validationContext.DisplayName = _stringLocalizerFactory.Create(resourceType).GetString(displayAttribute?.Name ?? propertyInfo.Name);
+                    validationContext.DisplayName = stringLocalizer.GetString(displayAttribute?.Name ?? propertyInfo.Name);
+
+                    if (attribute is CompareAttribute compareAttribute)
+                    {
+                        var otherPropertyInfoDisplayAttribute = (parent.GetProperty(compareAttribute.OtherProperty) ?? throw new InvalidOperationException($"Invalid OtherProperty {compareAttribute.OtherProperty}")).GetCustomAttribute<DisplayAttribute>();
+                        _OtherPropertyNamePropertyInfo.SetValue(attribute, stringLocalizer.GetString(otherPropertyInfoDisplayAttribute?.Name ?? compareAttribute.OtherProperty).ToString());
+                    }
                 }
 
                 var result = attribute.GetValidationResult(propertyValue, validationContext);
@@ -110,6 +120,11 @@ public partial class AppDataAnnotationsValidator : AppComponentBase, IDisposable
                         attribute.ErrorMessageResourceType = resourceType;
                         var displayAttribute = propertyInfo.GetCustomAttribute<DisplayAttribute>();
                         validationContext.DisplayName = stringLocalizer.GetString(displayAttribute?.Name ?? propertyInfo.Name);
+                        if (attribute is CompareAttribute compareAttribute)
+                        {
+                            var otherPropertyInfoDisplayAttribute = (properties.FirstOrDefault(p => p.Name == compareAttribute.OtherProperty) ?? throw new InvalidOperationException($"Invalid OtherProperty {compareAttribute.OtherProperty}")).GetCustomAttribute<DisplayAttribute>();
+                            _OtherPropertyNamePropertyInfo.SetValue(attribute, stringLocalizer.GetString(otherPropertyInfoDisplayAttribute?.Name ?? compareAttribute.OtherProperty).ToString());
+                        }
                     }
 
                     var result = attribute.GetValidationResult(propertyValue, context);

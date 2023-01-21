@@ -206,8 +206,8 @@
     <value>Les mots de passe doivent avoir au moins une majuscule ('A'-'Z').</value>
     <comment>Error when passwords do not have an uppercase letter</comment>
   </data>
-  <data name="PasswordTooShort" xml:space="preserve">
-    <value>Les mots de passe doivent comporter au moins {0} caractères.</value>
+  <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
+    <value>{0} doit comporter au moins {1} caractères.</value>
     <comment>Error message for passwords that are too short</comment>
   </data>
   <data name="RoleNotFound" xml:space="preserve">
@@ -463,11 +463,11 @@ Veuillez confirmer votre email en cliquant sur le lien.</value>
   <data name="Common_PropertyNotFound" xml:space="preserve">
     <value>Common_PropertyNotFound</value>
   </data>
-  <data name="CompareAttribute_MustMatch" xml:space="preserve">
-    <value>CompareAttribute_MustMatch</value>
+  <data name="CompareAttribute_ValidationError" xml:space="preserve">
+    <value>'{0}' and '{1}' do not match.</value>
   </data>
   <data name="CompareAttribute_UnknownProperty" xml:space="preserve">
-    <value>CompareAttribute_UnknownProperty</value>
+    <value>Could not find a property named {0}.</value>
   </data>
   <data name="CreditCardAttribute_Invalid" xml:space="preserve">
     <value>Le champ {0} n'est pas un numéro de carte de crédit valide.</value>
@@ -502,7 +502,7 @@ Veuillez confirmer votre email en cliquant sur le lien.</value>
   <data name="DisplayAttribute_PropertyNotSet" xml:space="preserve">
     <value>La propriété {0} n'a pas été définie. Utilisez la méthode {1} pour obtenir la valeur.</value>
   </data>
-  <data name="EmailAddressAttribute_Invalid" xml:space="preserve">
+  <data name="EmailAddressAttribute_ValidationError" xml:space="preserve">
     <value>Le champ {0} n'est pas une adresse e-mail valide.</value>
   </data>
   <data name="EnumDataTypeAttribute_TypeCannotBeNull" xml:space="preserve">
