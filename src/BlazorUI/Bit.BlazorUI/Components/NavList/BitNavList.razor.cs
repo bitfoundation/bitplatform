@@ -194,7 +194,7 @@ public partial class BitNavList<TItem> : IDisposable where TItem : class
         {
             if (value == selectedItem) return;
             selectedItem = value;
-            ExpandSelectedItemParents(Items);
+            if (value is not null) ExpandSelectedItemParents(Items);
             SelectedItemChanged.InvokeAsync(selectedItem);
         }
     }
@@ -269,7 +269,10 @@ public partial class BitNavList<TItem> : IDisposable where TItem : class
         _internalTargetField = TargetFieldSelector?.GetName() ?? TargetField;
         _internalItemsField = ItemsFieldSelector?.GetName() ?? ItemsField;
 
-        SetItemExpandStates(Items);
+        foreach (var item in Flatten(Items))
+        {
+            SetItemExpanded(item, GetIsExpanded(item) ?? false);
+        }
 
         if (Mode == BitNavListMode.Automatic)
         {
@@ -296,7 +299,8 @@ public partial class BitNavList<TItem> : IDisposable where TItem : class
     internal string? GetCollapseAriaLabel(TItem item) => item.GetValueAsObjectFromProperty(_internalCollapseAriaLabelField)?.ToString();
     internal string? GetAriaLabel(TItem item) => item.GetValueAsObjectFromProperty(_internalAriaLabelField)?.ToString();
     internal BitIconName? GetIconName(TItem item) => item.GetValueFromProperty<BitIconName>(_internalIconNameField);
-    internal bool GetIsExpanded(TItem item) => item.GetValueFromProperty(_internalIsExpandedField, false);
+    internal bool? GetIsExpanded(TItem item) => item.GetValueFromProperty<bool?>(_internalIsExpandedField, null);
+    private void SetIsExpanded(TItem item, bool value) => item.SetValueToProperty(_internalIsExpandedField, value);
     internal bool GetIsEnabled(TItem item) => item.GetValueFromProperty(_internalIsEnabledField, true);
     internal string? GetStyle(TItem item) => item.GetValueAsObjectFromProperty(_internalStyleField)?.ToString();
     internal string? GetTarget(TItem item) => item.GetValueAsObjectFromProperty(_internalTargetField)?.ToString();
@@ -322,27 +326,42 @@ public partial class BitNavList<TItem> : IDisposable where TItem : class
         }
     }
 
-    private void SetItemExpandStates(IList<TItem> items)
+    private void SetItemExpanded(TItem item, bool value)
     {
-        foreach (var item in items)
-        {
-            _itemExpandStates.Add(item, GetIsExpanded(item));
+        var isExpanded = GetIsExpanded(item);
 
-            if (GetItems(item).Any())
-            {
-                SetItemExpandStates(GetItems(item));
-            }
+        if (isExpanded is not null)
+        {
+            SetIsExpanded(item, value);
+            return;
         }
+
+        if (_itemExpandStates.ContainsKey(item))
+        {
+            _itemExpandStates[item] = value;
+        }
+        else
+        {
+            _itemExpandStates.Add(item, value);
+        }
+    }
+
+    internal bool GetItemExpanded(TItem item)
+    {
+        var isExpanded = GetIsExpanded(item);
+
+        if (isExpanded is not null) return isExpanded.Value;
+
+        return _itemExpandStates[item];
     }
 
     private bool ExpandSelectedItemParents(IList<TItem> items)
     {
-        foreach (var item in items)
+        foreach (var parent in items)
         {
-            if ((item == SelectedItem) || GetItems(item).Any() && ExpandSelectedItemParents(GetItems(item)))
+            if (parent == SelectedItem || (GetItems(parent).Any() && ExpandSelectedItemParents(GetItems(parent))))
             {
-                _itemExpandStates.Remove(item);
-                _itemExpandStates.Add(item, true);
+                SetItemExpanded(parent, true);
                 return true;
             }
         }
@@ -372,9 +391,7 @@ public partial class BitNavList<TItem> : IDisposable where TItem : class
     {
         if (GetIsEnabled(item) is false || GetItems(item).Any() is false) return;
 
-        var oldIsExpanded = _itemExpandStates[item];
-        _itemExpandStates.Remove(item);
-        _itemExpandStates.Add(item, !oldIsExpanded);
+        SetItemExpanded(item, !GetItemExpanded(item));
 
         await OnItemToggle.InvokeAsync(item);
     }

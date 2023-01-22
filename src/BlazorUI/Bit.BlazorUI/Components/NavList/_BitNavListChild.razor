@@ -8,10 +8,10 @@
                     style="margin-left: @((Depth * 14).ToString() + "px");"
                     type="button"
                     tabindex="0"
-                    aria-label="@(Parent._itemExpandStates[Item] ? Parent.GetCollapseAriaLabel(Item) : Parent.GetExpandAriaLabel(Item))"
-                    aria-expanded="@(Parent._itemExpandStates[Item] ? "true" : "false")"
+                    aria-label="@(Parent.GetItemExpanded(Item) ? Parent.GetCollapseAriaLabel(Item) : Parent.GetExpandAriaLabel(Item))"
+                    aria-expanded="@(Parent.GetItemExpanded(Item) ? "true" : "false")"
                     @onclick="(() => Parent.ToggleItem(Item))">
-                <i class="bit-icon bit-icon--ChevronDown @(Parent._itemExpandStates[Item] ? "expand" : "")" aria-hidden="true"></i>
+                <i class="bit-icon bit-icon--ChevronDown @(Parent.GetItemExpanded(Item) ? "expand" : "")" aria-hidden="true"></i>
             </button>
         }
 
@@ -74,7 +74,7 @@
         }
     </div>
 
-    @if ((Parent.GetItems(Item).Any()) && Parent._itemExpandStates[Item])
+    @if ((Parent.GetItems(Item).Any()) && Parent.GetItemExpanded(Item))
     {
         <ul class="nav-items" role="list">
             <CascadingValue Value="this" IsFixed="true">

@@ -119,10 +119,31 @@ public partial class BitNavListDemo
         {
             Name = "Fast-Food",
             Icon = BitIconName.HeartBroken,
+            IsExpanded = true,
             Childs = new List<FoodMenu>
             {
-                new FoodMenu { Name = "Burger" },
-                new FoodMenu { Name = "Pizza" },
+                new FoodMenu
+                {
+                    Name = "Burgers",
+                    Childs = new List<FoodMenu>
+                    {
+                        new FoodMenu { Name = "Beef Burger" },
+                        new FoodMenu { Name = "Veggie Burger" },
+                        new FoodMenu { Name = "Bison Burger" },
+                        new FoodMenu { Name = "Wild Salmon Burger" },
+                    }
+                },
+                new FoodMenu 
+                {
+                    Name = "Pizzas",
+                    Childs = new List<FoodMenu>
+                    {
+                        new FoodMenu { Name = "Cheese Pizza" },
+                        new FoodMenu { Name = "Veggie Pizza" },
+                        new FoodMenu { Name = "Pepperoni Pizza" },
+                        new FoodMenu { Name = "Meat Pizza" },
+                    }
+                },
                 new FoodMenu { Name = "French Fries" },
             }
         },
@@ -145,13 +166,43 @@ public partial class BitNavListDemo
     {
         new BitDropDownItem
         {
-            Text = "Burger",
-            Value = "Burger",
+            Text = "Beef Burger",
+            Value = "Beef Burger",
         },
         new BitDropDownItem
         {
-            Text = "Pizza",
-            Value = "Pizza",
+            Text = "Veggie Burger",
+            Value = "Veggie Burger",
+        },
+        new BitDropDownItem
+        {
+            Text = "Bison Burger",
+            Value = "Bison Burger",
+        },
+        new BitDropDownItem
+        {
+            Text = "Wild Salmon Burger",
+            Value = "Wild Salmon Burger",
+        },
+        new BitDropDownItem
+        {
+            Text = "Cheese Pizza",
+            Value = "Cheese Pizza",
+        },
+        new BitDropDownItem
+        {
+            Text = "Veggie Pizza",
+            Value = "Veggie Pizza",
+        },
+        new BitDropDownItem
+        {
+            Text = "Pepperoni Pizza",
+            Value = "Pepperoni Pizza",
+        },
+        new BitDropDownItem
+        {
+            Text = "Meat Pizza",
+            Value = "Meat Pizza",
         },
         new BitDropDownItem
         {
@@ -185,8 +236,8 @@ public partial class BitNavListDemo
         },
     };
     private static List<FoodMenu> Flatten(IList<FoodMenu> e) => e.SelectMany(c => Flatten(c.Childs)).Concat(e).ToList();
-    private FoodMenu SelectedFood = FoodNavMenu[0].Childs[0];
-    private string SelectedFoodName = FoodNavMenu[0].Childs[0].Name;
+    private FoodMenu SelectedFood = FoodNavMenu[0].Childs[2];
+    private string SelectedFoodName = FoodNavMenu[0].Childs[2].Name;
 
     private FoodMenu ClickedItem;
     private FoodMenu SelectedItem;
@@ -680,8 +731,9 @@ private static readonly List<CarMenu> CarNavMenu = new()
     <BitNavList Items=""FoodNavMenu""
                 TextFieldSelector=""item => item.Name""
                 IconNameFieldSelector=""item => item.Icon""
+                IsExpandedFieldSelector=""item => item.IsExpanded""
                 ItemsFieldSelector=""item => item.Childs""
-                DefaultSelectedItem=""FoodNavMenu[0].Childs[0]""
+                DefaultSelectedItem=""FoodNavMenu[0].Childs[2]""
                 Mode=""BitNavListMode.Manual"" />
 </div>
 
@@ -692,6 +744,7 @@ private static readonly List<CarMenu> CarNavMenu = new()
                 Items=""FoodNavMenu""
                 TextFieldSelector=""item => item.Name""
                 IconNameFieldSelector=""item => item.Icon""
+                IsExpandedFieldSelector=""item => item.IsExpanded""
                 ItemsFieldSelector=""item => item.Childs""
                 Mode=""BitNavListMode.Manual""
                 OnSelectItem=""(FoodMenu item) => SelectedFoodName = FoodMenuDropDownItems.FirstOrDefault(i => i.Text == item.Name).Text"" />
@@ -708,6 +761,7 @@ public class FoodMenu
 {
     public string Name { get; set; } = string.Empty;
     public BitIconName Icon { get; set; }
+    public bool IsExpanded { get; set; }
     public List<FoodMenu> Childs { get; set; } = new();
 }
 
@@ -717,10 +771,31 @@ private static readonly List<FoodMenu> FoodNavMenu = new()
     {
         Name = ""Fast-Food"",
         Icon = BitIconName.HeartBroken,
+        IsExpanded = true,
         Childs = new List<FoodMenu>
         {
-            new FoodMenu { Name = ""Burger"" },
-            new FoodMenu { Name = ""Pizza"" },
+            new FoodMenu
+            {
+                Name = ""Burgers"",
+                Childs = new List<FoodMenu>
+                {
+                    new FoodMenu { Name = ""Beef Burger"" },
+                    new FoodMenu { Name = ""Veggie Burger"" },
+                    new FoodMenu { Name = ""Bison Burger"" },
+                    new FoodMenu { Name = ""Wild Salmon Burger"" },
+                }
+            },
+            new FoodMenu 
+            {
+                Name = ""Pizzas"",
+                Childs = new List<FoodMenu>
+                {
+                    new FoodMenu { Name = ""Cheese Pizza"" },
+                    new FoodMenu { Name = ""Veggie Pizza"" },
+                    new FoodMenu { Name = ""Pepperoni Pizza"" },
+                    new FoodMenu { Name = ""Meat Pizza"" },
+                }
+            },
             new FoodMenu { Name = ""French Fries"" },
         }
     },
@@ -743,13 +818,43 @@ private static readonly List<BitDropDownItem> FoodMenuDropDownItems = new()
 {
     new BitDropDownItem
     {
-        Text = ""Burger"",
-        Value = ""Burger"",
+        Text = ""Beef Burger"",
+        Value = ""Beef Burger"",
     },
     new BitDropDownItem
     {
-        Text = ""Pizza"",
-        Value = ""Pizza"",
+        Text = ""Veggie Burger"",
+        Value = ""Veggie Burger"",
+    },
+    new BitDropDownItem
+    {
+        Text = ""Bison Burger"",
+        Value = ""Bison Burger"",
+    },
+    new BitDropDownItem
+    {
+        Text = ""Wild Salmon Burger"",
+        Value = ""Wild Salmon Burger"",
+    },
+    new BitDropDownItem
+    {
+        Text = ""Cheese Pizza"",
+        Value = ""Cheese Pizza"",
+    },
+    new BitDropDownItem
+    {
+        Text = ""Veggie Pizza"",
+        Value = ""Veggie Pizza"",
+    },
+    new BitDropDownItem
+    {
+        Text = ""Pepperoni Pizza"",
+        Value = ""Pepperoni Pizza"",
+    },
+    new BitDropDownItem
+    {
+        Text = ""Meat Pizza"",
+        Value = ""Meat Pizza"",
     },
     new BitDropDownItem
     {
@@ -784,8 +889,8 @@ private static readonly List<BitDropDownItem> FoodMenuDropDownItems = new()
 };
 
 private static List<FoodMenu> Flatten(IList<FoodMenu> e) => e.SelectMany(c => Flatten(c.Childs)).Concat(e).ToList();
-private FoodMenu SelectedFood = FoodNavMenu[0].Childs[0];
-private string SelectedFoodName = FoodNavMenu[0].Childs[0].Name;
+private FoodMenu SelectedFood = FoodNavMenu[0].Childs[2];
+private string SelectedFoodName = FoodNavMenu[0].Childs[2].Name;
 ";
 
     #endregion
@@ -833,6 +938,7 @@ private string SelectedFoodName = FoodNavMenu[0].Childs[0].Name;
     <BitNavList Items=""FoodNavMenu""
                 TextFieldSelector=""item => item.Name""
                 IconNameFieldSelector=""item => item.Icon""
+                IsExpandedFieldSelector=""item => item.IsExpanded""
                 ItemsFieldSelector=""item => item.Childs""
                 Mode=""BitNavListMode.Manual"">
 
@@ -864,6 +970,7 @@ public class FoodMenu
 {
     public string Name { get; set; } = string.Empty;
     public BitIconName Icon { get; set; }
+    public bool IsExpanded { get; set; }
     public List<FoodMenu> Childs { get; set; } = new();
 }
 
@@ -931,10 +1038,31 @@ private static readonly List<FoodMenu> FoodNavMenu = new()
     {
         Name = ""Fast-Food"",
         Icon = BitIconName.HeartBroken,
+        IsExpanded = true,
         Childs = new List<FoodMenu>
         {
-            new FoodMenu { Name = ""Burger"" },
-            new FoodMenu { Name = ""Pizza"" },
+            new FoodMenu
+            {
+                Name = ""Burgers"",
+                Childs = new List<FoodMenu>
+                {
+                    new FoodMenu { Name = ""Beef Burger"" },
+                    new FoodMenu { Name = ""Veggie Burger"" },
+                    new FoodMenu { Name = ""Bison Burger"" },
+                    new FoodMenu { Name = ""Wild Salmon Burger"" },
+                }
+            },
+            new FoodMenu 
+            {
+                Name = ""Pizzas"",
+                Childs = new List<FoodMenu>
+                {
+                    new FoodMenu { Name = ""Cheese Pizza"" },
+                    new FoodMenu { Name = ""Veggie Pizza"" },
+                    new FoodMenu { Name = ""Pepperoni Pizza"" },
+                    new FoodMenu { Name = ""Meat Pizza"" },
+                }
+            },
             new FoodMenu { Name = ""French Fries"" },
         }
     },
@@ -962,8 +1090,9 @@ private static readonly List<FoodMenu> FoodNavMenu = new()
 <BitNavList Items=""FoodNavMenu""
             TextFieldSelector=""item => item.Name""
             IconNameFieldSelector=""item => item.Icon""
+            IsExpandedFieldSelector=""item => item.IsExpanded""
             ItemsFieldSelector=""item => item.Childs""
-            DefaultSelectedItem=""FoodNavMenu[0].Childs[0]""
+            DefaultSelectedItem=""FoodNavMenu[0].Childs[2]""
             Mode=""BitNavListMode.Manual""
             OnItemClick=""(FoodMenu item) => ClickedItem = item""
             OnSelectItem=""(FoodMenu item) => SelectedItem = item""
@@ -983,10 +1112,31 @@ private static readonly List<FoodMenu> FoodNavMenu = new()
     {
         Name = ""Fast-Food"",
         Icon = BitIconName.HeartBroken,
+        IsExpanded = true,
         Childs = new List<FoodMenu>
         {
-            new FoodMenu { Name = ""Burger"" },
-            new FoodMenu { Name = ""Pizza"" },
+            new FoodMenu
+            {
+                Name = ""Burgers"",
+                Childs = new List<FoodMenu>
+                {
+                    new FoodMenu { Name = ""Beef Burger"" },
+                    new FoodMenu { Name = ""Veggie Burger"" },
+                    new FoodMenu { Name = ""Bison Burger"" },
+                    new FoodMenu { Name = ""Wild Salmon Burger"" },
+                }
+            },
+            new FoodMenu 
+            {
+                Name = ""Pizzas"",
+                Childs = new List<FoodMenu>
+                {
+                    new FoodMenu { Name = ""Cheese Pizza"" },
+                    new FoodMenu { Name = ""Veggie Pizza"" },
+                    new FoodMenu { Name = ""Pepperoni Pizza"" },
+                    new FoodMenu { Name = ""Meat Pizza"" },
+                }
+            },
             new FoodMenu { Name = ""French Fries"" },
         }
     },

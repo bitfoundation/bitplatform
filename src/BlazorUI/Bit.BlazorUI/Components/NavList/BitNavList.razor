@@ -15,26 +15,25 @@
             <div class="nav-group">
                 @if (GetText(item).HasValue())
                 {
-
                     <button @onclick="(() => ToggleItem(item))"
                             class="chevron-btn group-chevron-btn"
                             tabindex="0"
                             type="button"
-                            aria-label="@(_itemExpandStates[item] ? GetCollapseAriaLabel(item) : GetExpandAriaLabel(item))"
-                            aria-expanded="@(_itemExpandStates[item])">
+                            aria-label="@(GetItemExpanded(item) ? GetCollapseAriaLabel(item) : GetExpandAriaLabel(item))"
+                            aria-expanded="@GetItemExpanded(item)">
                         @if (HeaderTemplate is not null)
                         {
                             @HeaderTemplate(item)
                         }
                         else
                         {
-                            <i class="bit-icon bit-icon--ChevronDown @(_itemExpandStates[item] ? "expand" : "")" aria-hidden="true"></i>
+                            <i class="bit-icon bit-icon--ChevronDown @(GetItemExpanded(item) ? "expand" : "")" aria-hidden="true"></i>
                             @GetText(item)
                         }
                     </button>
                 }
 
-                @if ((GetItems(item).Any()) && _itemExpandStates[item])
+                @if ((GetItems(item).Any()) && GetItemExpanded(item))
                 {
                     <div class="group-content">
                         <ul class="nav-items" role="list">

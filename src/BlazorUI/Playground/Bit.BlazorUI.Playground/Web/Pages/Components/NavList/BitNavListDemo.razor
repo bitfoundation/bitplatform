@@ -42,8 +42,9 @@
                     <BitNavList Items="FoodNavMenu"
                                 TextFieldSelector="item => item.Name"
                                 IconNameFieldSelector="item => item.Icon"
+                                IsExpandedFieldSelector="item => item.IsExpanded"
                                 ItemsFieldSelector="item => item.Childs"
-                                DefaultSelectedItem="FoodNavMenu[0].Childs[0]"
+                                DefaultSelectedItem="FoodNavMenu[0].Childs[2]"
                                 Mode="BitNavListMode.Manual" />
                 </div>
 
@@ -54,6 +55,7 @@
                                 Items="FoodNavMenu"
                                 TextFieldSelector="item => item.Name"
                                 IconNameFieldSelector="item => item.Icon"
+                                IsExpandedFieldSelector="item => item.IsExpanded"
                                 ItemsFieldSelector="item => item.Childs"
                                 Mode="BitNavListMode.Manual"
                                 OnSelectItem="(FoodMenu item) => SelectedFoodName = FoodMenuDropDownItems.FirstOrDefault(i => i.Text == item.Name).Text" />
@@ -97,6 +99,7 @@
                     <BitNavList Items="FoodNavMenu"
                                 TextFieldSelector="item => item.Name"
                                 IconNameFieldSelector="item => item.Icon"
+                                IsExpandedFieldSelector="item => item.IsExpanded"
                                 ItemsFieldSelector="item => item.Childs"
                                 Mode="BitNavListMode.Manual">
 
@@ -119,8 +122,9 @@
                 <BitNavList Items="FoodNavMenu"
                             TextFieldSelector="item => item.Name"
                             IconNameFieldSelector="item => item.Icon"
+                            IsExpandedFieldSelector="item => item.IsExpanded"
                             ItemsFieldSelector="item => item.Childs"
-                            DefaultSelectedItem="FoodNavMenu[0].Childs[0]"
+                            DefaultSelectedItem="FoodNavMenu[0].Childs[2]"
                             Mode="BitNavListMode.Manual"
                             OnItemClick="(FoodMenu item) => ClickedItem = item"
                             OnSelectItem="(FoodMenu item) => SelectedItem = item"
@@ -130,6 +134,7 @@
                     <span>Clicked Item: @ClickedItem?.Name</span>
                     <span>Selected Item: @SelectedItem?.Name</span>
                     <span>Toggled Item: @ToggledItem?.Name</span>
+                    <span>Toggled Item: @(ToggledItem is null ? "N/A" : $"{ToggledItem.Name} ({(ToggledItem.IsExpanded ? "Expanded" : "Collapsed")})")</span>
                 </div>
             </div>
         </ExamplePreview>
