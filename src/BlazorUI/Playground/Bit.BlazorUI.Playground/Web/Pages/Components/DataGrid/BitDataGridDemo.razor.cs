@@ -224,6 +224,7 @@ public partial class BitDataGridDemo
         },
 
     };
+    
     private readonly List<EnumParameter> enumParameters = new()
     {
         new EnumParameter()
@@ -455,7 +456,7 @@ public partial class BitDataGridDemo
     }
 
     .grid ::deep tr {
-        height: 1.8rem;
+        height: 41px;
     }
 
         .grid ::deep tr:nth-child(even) {
