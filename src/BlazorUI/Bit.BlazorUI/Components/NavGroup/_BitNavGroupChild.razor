@@ -1,0 +1,87 @@
+﻿
+<li class="nav-item" role="listitem">
+    <div class="composite-link @(Item.IsEnabled is false ? "disabled" : "")" name="@Item.Text">
+        @if (Item._options?.Any() ?? false)
+        {
+            <button class="chevron-btn"
+                    style="margin-left: @((Depth * 14).ToString() + "px");"
+                    type="button"
+                    tabindex="0"
+                    aria-label="@(Item.IsExpanded ? Item.CollapseAriaLabel : Item.ExpandAriaLabel)"
+                    aria-expanded="@(Item.IsExpanded ? "true" : "false")"
+                    @onclick="(() => Parent.ToggleItem(Item))">
+                <i class="bit-icon bit-icon--ChevronDown @(Item.IsExpanded ? "expand" : "")" aria-hidden="true"></i>
+            </button>
+        }
+
+        @if (Item.Url.HasValue() || Item.ForceAnchor)
+        {
+            <a class="@GetItemClasses(Item)"
+               style="padding: 0 20px 0 @(((Depth * 14) + 27).ToString() + "px"); @Item.Style;"
+               href="@(Item.IsEnabled ? Item.Url : null)"
+               target="@Item.Target"
+               title="@(Item.Title is not null ? Item.Title : Item.Text)"
+               disabled="@(Item.IsEnabled is false)"
+               aria-label="@Item.AriaLabel"
+               aria-current="@(Item == Parent.SelectedItem ? _ariaCurrentMap[Item.AriaCurrent] : null)"
+               tabindex="-1"
+               rel="@(Item.Url.HasValue() && Item.Target.HasValue() && IsRelativeUrl(Item.Url!) is false ? "noopener noreferrer" : null)"
+               @onclick="(() => Parent.HandleOnClick(Item))">
+
+                <div class="link-container">
+                    @if (Parent.ItemTemplate is not null)
+                    {
+                        @Parent.ItemTemplate(Item)
+                    }
+                    else
+                    {
+                        @if (Item.IconName.HasValue)
+                        {
+                            <i class=@($"bit-icon bit-icon--{Item.IconName.GetName()}") aria-hidden="true"></i>
+                        }
+                        <div class="link-txt">@Item.Text</div>
+                    }
+                </div>
+            </a>
+        }
+        else
+        {
+            <button class="@GetItemClasses(Item)"
+                    style="padding: 0 20px 0 @(((Depth * 14) + 27).ToString() + "px"); @Item.Style;"
+                    title="@(Item.Title is not null ? Item.Title : Item.Text)"
+                    disabled="@(Item.IsEnabled is false)"
+                    aria-label="@Item.AriaLabel"
+                    aria-current="@(Item == Parent.SelectedItem ? _ariaCurrentMap[Item.AriaCurrent] : null)"
+                    tabindex="-1"
+                    type="button"
+                    @onclick="(() => Parent.HandleOnClick(Item))">
+                <div class="link-container">
+                    @if (Parent.ItemTemplate is not null)
+                    {
+                        @Parent.ItemTemplate(Item)
+                    }
+                    else
+                    {
+                        @if (Item.IconName.HasValue)
+                        {
+                            <i class=@($"bit-icon bit-icon--{Item.IconName.GetName()}") aria-hidden="true"></i>
+                        }
+                        <div class="link-txt">@Item.Text</div>
+                    }
+                </div>
+            </button>
+        }
+    </div>
+
+    @if ((Item._options?.Any() ?? false) && Item.IsExpanded)
+    {
+        <ul class="nav-items" role="list">
+            <CascadingValue Value="@Parent" IsFixed="true">
+                @foreach (var childitem in Item._options)
+                {
+                    <_BitNavGroupChild Item="childitem" Depth="Depth + 1" />
+                }
+            </CascadingValue>
+        </ul>
+    }
+</li>

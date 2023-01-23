@@ -1,0 +1,71 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+@using Bit.BlazorUI.Components.NavGroup
+
+<CascadingValue Value="this" IsFixed="true">
+    @ChildContent
+</CascadingValue>
+
+<nav @ref="RootElement" @attributes="HtmlAttributes"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     role="navigation"
+     aria-label="@AriaLabel">
+    @if (RenderType == BitNavGroupRenderType.Grouped)
+    {
+        @foreach (var item in _options)
+        {
+            <div class="nav-group">
+                @if (item.Text.HasValue())
+                {
+
+                    <button @onclick="(() => ToggleItem(item))"
+                            class="chevron-btn group-chevron-btn"
+                            tabindex="0"
+                            type="button"
+                            aria-label="@(item.IsExpanded ? item.CollapseAriaLabel : item.ExpandAriaLabel)"
+                            aria-expanded="@(item.IsExpanded)">
+                        @if (HeaderTemplate is not null)
+                        {
+                            @HeaderTemplate(item)
+                        }
+                        else
+                        {
+                            <i class="bit-icon bit-icon--ChevronDown @(item.IsExpanded ? "expand" : "")" aria-hidden="true"></i>
+                            @item.Text
+                        }
+                    </button>
+                }
+
+                @if (item._options.Any() && item.IsExpanded)
+                {
+                    <div class="group-content">
+                        <ul class="nav-items" role="list">
+                            <CascadingValue Value="this" IsFixed="true">
+                                @foreach (var childitem in item._options)
+                                {
+                                    <_BitNavGroupChild Item="childitem" Depth="0" />
+                                }
+                            </CascadingValue>
+                        </ul>
+                    </div>
+                }
+            </div>
+        }
+    }
+    else
+    {
+        <div class="nav-group">
+            <div class="group-content">
+                <ul class="nav-items" role="list">
+                    <CascadingValue Value="this" IsFixed="true">
+                        @foreach (var childitem in _options)
+                        {
+                            <_BitNavGroupChild Item="childitem" Depth="0" />
+                        }
+                    </CascadingValue>
+                </ul>
+            </div>
+        </div>
+    }
+</nav>
