@@ -1,7 +1,7 @@
-﻿using MimeTypes;
+﻿using Microsoft.Extensions.Primitives;
+using MimeTypes;
 using AdminPanel.Server.Api.Models.Account;
 using SystemFile = System.IO.File;
-using Microsoft.Extensions.Primitives;
 
 namespace AdminPanel.Server.Api.Controllers;
 
@@ -20,7 +20,7 @@ public partial class AttachmentController : AppControllerBase
         if (file is null || Request.Headers.TryGetValue("bit_file_id", out StringValues bitFileId) is false)
             throw new BadRequestException();
 
-        var userId = User.GetUserId();
+        var userId = UserInformationProvider.GetUserId();
 
         var user = await _userManager.FindByIdAsync(userId.ToString());
 
@@ -31,9 +31,11 @@ public partial class AttachmentController : AppControllerBase
 
         await using var requestStream = file.OpenReadStream();
 
-        Directory.CreateDirectory(AppSettings.UserProfileImagePath);
+        var userProfileImageDirPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), AppSettings.UserProfileImagePath);
 
-        var path = Path.Combine(AppSettings.UserProfileImagePath, fileName);
+        Directory.CreateDirectory(userProfileImageDirPath);
+
+        var path = Path.Combine(userProfileImageDirPath, fileName);
 
         await using var fileStream = SystemFile.Exists(path)
             ? SystemFile.Open(path, FileMode.Append)
@@ -45,7 +47,7 @@ public partial class AttachmentController : AppControllerBase
         {
             try
             {
-                var filePath = Path.Combine(AppSettings.UserProfileImagePath, user.ProfileImageName);
+                var filePath = Path.Combine(userProfileImageDirPath, user.ProfileImageName);
 
                 if (SystemFile.Exists(filePath))
                 {
@@ -75,14 +77,16 @@ public partial class AttachmentController : AppControllerBase
     [HttpDelete]
     public async Task RemoveProfileImage()
     {
-        var userId = User.GetUserId();
+        var userId = UserInformationProvider.GetUserId();
 
         var user = await _userManager.FindByIdAsync(userId.ToString());
 
         if (user?.ProfileImageName is null)
             throw new ResourceNotFoundException();
 
-        var filePath = Path.Combine(AppSettings.UserProfileImagePath, user.ProfileImageName);
+        var userProfileImageDirPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), AppSettings.UserProfileImagePath);
+
+        var filePath = Path.Combine(userProfileImageDirPath, user.ProfileImageName);
 
         if (SystemFile.Exists(filePath) is false)
             throw new ResourceNotFoundException(Localizer[nameof(AppStrings.UserImageCouldNotBeFound)]);
@@ -97,14 +101,16 @@ public partial class AttachmentController : AppControllerBase
     [HttpGet]
     public async Task<IActionResult> GetProfileImage()
     {
-        var userId = User.GetUserId();
+        var userId = UserInformationProvider.GetUserId();
 
         var user = await _userManager.FindByIdAsync(userId.ToString());
 
         if (user?.ProfileImageName is null)
             throw new ResourceNotFoundException();
 
-        var filePath = Path.Combine(AppSettings.UserProfileImagePath, user.ProfileImageName);
+        var userProfileImageDirPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), AppSettings.UserProfileImagePath);
+
+        var filePath = Path.Combine(userProfileImageDirPath, user.ProfileImageName);
 
         if (SystemFile.Exists(filePath) is false)
             return new EmptyResult();
