@@ -123,8 +123,6 @@ public partial class BitNav : IDisposable
     {
         if (item.IsEnabled == false) return;
 
-        await OnItemClick.InvokeAsync(item);
-
         if (item.Items.Any() && item.Url.HasNoValue())
         {
             await ToggleItem(item);
@@ -137,6 +135,8 @@ public partial class BitNav : IDisposable
             
             StateHasChanged();
         }
+
+        await OnItemClick.InvokeAsync(item);
     }
 
     internal async Task ToggleItem(BitNavItem item)

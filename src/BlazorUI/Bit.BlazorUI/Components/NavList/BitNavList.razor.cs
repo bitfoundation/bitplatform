@@ -373,8 +373,6 @@ public partial class BitNavList<TItem> : IDisposable where TItem : class
     {
         if (GetIsEnabled(item) == false) return;
 
-        await OnItemClick.InvokeAsync(item);
-
         if (GetItems(item).Any() && GetUrl(item).HasNoValue())
         {
             await ToggleItem(item);
@@ -385,6 +383,8 @@ public partial class BitNavList<TItem> : IDisposable where TItem : class
             await OnSelectItem.InvokeAsync(item);
             StateHasChanged();
         }
+
+        await OnItemClick.InvokeAsync(item);
     }
 
     internal async Task ToggleItem(TItem item)
