@@ -22,7 +22,7 @@
                             </ColumnOptions>
                         </BitDataGridPropertyColumn>
                         <BitDataGridTemplateColumn Title="Flag" Align="BitDataGridAlign.Center">
-                            <img class="flag" src="https://countryflagsapi.com/svg/@(context.Code)" loading="lazy" />
+                            <img class="flag" src="https://flagsapi.com/@(context.Code)/shiny/32.png" loading="lazy" alt="@(context.Code)" />
                         </BitDataGridTemplateColumn>
                         <BitDataGridPropertyColumn Property="@(c => c.Medals.Gold)" Sortable="true" />
                         <BitDataGridPropertyColumn Property="@(c => c.Medals.Silver)" Sortable="true" />
