@@ -1,20 +1,292 @@
 ﻿@page "/components/nav-group"
 
 <ComponentDemo ComponentName="NavGroup"
-               ComponentDescription="A navigation pane (Nav) provides links to the main areas of an app or site.">
+               ComponentDescription="A navigation pane (Nav) provides links to the main areas of an app or site."
+               ComponentParameters="componentParameters"
+               ComponentSubParameters="componentSubParameters"
+               EnumParameters="enumParameters">
 
     <ComponentExampleBox Title="Basic" ExampleId="example1">
         <ExamplePreview>
-           
-            <BitNavGroup>
-                <BitNavOption Text="A">
-                    <BitNavOption Text="B">
-                        <BitNavOption Text="C" />
+            <div class="example-box">
+                <BitNavGroup>
+                    <BitNavOption Text="Bit Platform"
+                                  ExpandAriaLabel="Bit Platform Expanded"
+                                  CollapseAriaLabel="Bit Platform Collapsed"
+                                  IconName="BitIconName.TabletMode"
+                                  IsExpanded="true">
+                        <BitNavOption Text="Home" Url="https://bitplatform.dev/" Target="_blank" />
+                        <BitNavOption Text="Products & Services">
+                            <BitNavOption Text="Project Templates">
+                                <BitNavOption Text="TodoTemplate" Url="https://bitplatform.dev/todo-template/overview" Target="_blank" />
+                                <BitNavOption Text="AdminPanel" Url="https://bitplatform.dev/admin-panel/overview" Target="_blank" />
+                            </BitNavOption>
+                            <BitNavOption Text="BlazorUI" Url="https://bitplatform.dev/components" Target="_blank" />
+                            <BitNavOption Text="Cloud hosting solutions" IsEnabled="false" />
+                            <BitNavOption Text="Bit academy" IsEnabled="false" />
+                        </BitNavOption>
+                        <BitNavOption Text="Pricing" Url="https://bitplatform.dev/pricing" Target="_blank" />
+                        <BitNavOption Text="About" Url="https://bitplatform.dev/about-us" Target="_blank" />
+                        <BitNavOption Text="Contact us" Url="https://bitplatform.dev/contact-us" Target="_blank" />
                     </BitNavOption>
-                </BitNavOption>
-            </BitNavGroup>
 
+                    <BitNavOption Text="Community"
+                                  ExpandAriaLabel="Community Expanded"
+                                  CollapseAriaLabel="Community Collapsed"
+                                  IconName="BitIconName.Heart">
+                        <BitNavOption Text="Linkedin" Url="https://www.linkedin.com/company/bitplatformhq/about" Target="_blank" />
+                        <BitNavOption Text="Twitter" Url="https://twitter.com/bitplatformhq" Target="_blank" />
+                        <BitNavOption Text="Github repo" Url="https://github.com/bitfoundation/bitplatform" Target="_blank" />
+                    </BitNavOption>
+
+                    <BitNavOption Text="Iconography" Url="/icons" Target="_blank" />
+                </BitNavGroup>
+            </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
+    <ComponentExampleBox Title="Grouped" ExampleId="example2">
+        <ExamplePreview>
+            <div class="example-box">
+                <BitNavGroup RenderType="BitNavGroupRenderType.Grouped">
+                    <BitNavOption Text="Mercedes-Benz"
+                                  ExpandAriaLabel="Mercedes-Benz Expanded"
+                                  CollapseAriaLabel="Mercedes-Benz Collapsed"
+                                  Title="Mercedes-Benz Car Models"
+                                  IsExpanded="true">
+                        <BitNavOption Text="SUVs">
+                            <BitNavOption Text="GLA" Url="https://www.mbusa.com/en/vehicles/class/gla/suv" Target="_blank" />
+                            <BitNavOption Text="GLB" Url="https://www.mbusa.com/en/vehicles/class/glb/suv" Target="_blank" />
+                            <BitNavOption Text="GLC" Url="https://www.mbusa.com/en/vehicles/class/glc/suv" Target="_blank" />
+                        </BitNavOption>
+                        <BitNavOption Text="Sedans & Wagons">
+                            <BitNavOption Text="A Class" Url="https://www.mbusa.com/en/vehicles/class/a-class/sedan" Target="_blank" />
+                            <BitNavOption Text="C Class" Url="https://www.mbusa.com/en/vehicles/class/c-class/sedan" Target="_blank" />
+                            <BitNavOption Text="E Class" Url="https://www.mbusa.com/en/vehicles/class/e-class/sedan" Target="_blank" />
+                        </BitNavOption>
+                        <BitNavOption Text="Coupes">
+                            <BitNavOption Text="CLA Coupe" Url="https://www.mbusa.com/en/vehicles/class/cla/coupe" Target="_blank" />
+                            <BitNavOption Text="C Class Coupe" Url="https://www.mbusa.com/en/vehicles/class/c-class/coupe" Target="_blank" />
+                            <BitNavOption Text="E Class Coupe" Url="https://www.mbusa.com/en/vehicles/class/e-class/coupe" Target="_blank" />
+                        </BitNavOption>
+                    </BitNavOption>
+                    <BitNavOption Text="Tesla"
+                                  ExpandAriaLabel="Tesla Expanded"
+                                  CollapseAriaLabel="Tesla Collapsed"
+                                  Title="Tesla Car Models">
+                        <BitNavOption Text="Model S" Url="https://www.tesla.com/models" Target="_blank" />
+                        <BitNavOption Text="Model X" Url="https://www.tesla.com/modelx" Target="_blank" />
+                        <BitNavOption Text="Model Y" Url="https://www.tesla.com/modely" Target="_blank" />
+                    </BitNavOption>
+                </BitNavGroup>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Manual Mode" ExampleId="example3">
+        <ExamplePreview>
+            <div class="example-box">
+                <div>
+                    <BitLabel>Basic</BitLabel>
+                    <BitNavGroup Mode="BitNavGroupMode.Manual" DefaultSelectedKey="French Fries">
+                        <BitNavOption Text="Fast-Foods"
+                                      IconName="BitIconName.HeartBroken"
+                                      IsExpanded="true">
+                            <BitNavOption Text="Burgers">
+                                <BitNavOption Text="Beef Burger" Key="Beef Burger" />
+                                <BitNavOption Text="Veggie Burger" Key="Veggie Burger" />
+                                <BitNavOption Text="Bison Burger" Key="Bison Burger" />
+                                <BitNavOption Text="Wild Salmon Burger" Key="Wild Salmon Burger" />
+                            </BitNavOption>
+                            <BitNavOption Text="Pizzas">
+                                <BitNavOption Text="Cheese Pizza" Key="Cheese Pizza" />
+                                <BitNavOption Text="Veggie Pizza" Key="Veggie Pizza" />
+                                <BitNavOption Text="Pepperoni Pizza" Key="Pepperoni Pizza" />
+                                <BitNavOption Text="Meat Pizza" Key="Meat Pizza" />
+                            </BitNavOption>
+                            <BitNavOption Text="French Fries" Key="French Fries" />
+                        </BitNavOption>
+                        <BitNavOption Text="Fruits">
+                            <BitNavOption Text="Aplle" Key="Aplle" />
+                            <BitNavOption Text="Orange" Key="Orange" />
+                            <BitNavOption Text="Benana" Key="Benana" />
+                        </BitNavOption>
+                        <BitNavOption Text="Ice Cream" Key="Ice Cream" />
+                        <BitNavOption Text="Cookie" Key="Cookie" />
+                    </BitNavGroup>
+                </div>
+
+                <div class="margin-top">
+                    <BitLabel>Two-Way Bind</BitLabel>
+                    <BitNavGroup @bind-SelectedKey="SelectedOptionKey"
+                                 DefaultSelectedKey="French Fries"
+                                 Mode="BitNavGroupMode.Manual">
+                        <BitNavOption Text="Fast-Foods"
+                                      IconName="BitIconName.HeartBroken"
+                                      IsExpanded="true">
+                            <BitNavOption Text="Burgers">
+                                <BitNavOption Text="Beef Burger" Key="Beef Burger" />
+                                <BitNavOption Text="Veggie Burger" Key="Veggie Burger" />
+                                <BitNavOption Text="Bison Burger" Key="Bison Burger" />
+                                <BitNavOption Text="Wild Salmon Burger" Key="Wild Salmon Burger" />
+                            </BitNavOption>
+                            <BitNavOption Text="Pizzas">
+                                <BitNavOption Text="Cheese Pizza" Key="Cheese Pizza" />
+                                <BitNavOption Text="Veggie Pizza" Key="Veggie Pizza" />
+                                <BitNavOption Text="Pepperoni Pizza" Key="Pepperoni Pizza" />
+                                <BitNavOption Text="Meat Pizza" Key="Meat Pizza" />
+                            </BitNavOption>
+                            <BitNavOption Text="French Fries" Key="French Fries" />
+                        </BitNavOption>
+                        <BitNavOption Text="Fruits">
+                            <BitNavOption Text="Aplle" Key="Aplle" />
+                            <BitNavOption Text="Orange" Key="Orange" />
+                            <BitNavOption Text="Benana" Key="Benana" />
+                        </BitNavOption>
+                        <BitNavOption Text="Ice Cream" Key="Ice Cream" />
+                        <BitNavOption Text="Cookie" Key="Cookie" />
+                    </BitNavGroup>
+
+                    <BitDropDown @bind-Value="SelectedOptionKey"
+                                 DefaultValue="French Fries"
+                                 Label="Pick one"
+                                 Items="FoodMenuDropDownItems" />
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Custom Templates" ExampleId="example4">
+        <ExamplePreview>
+            <div class="example-box">
+                <div>
+                    <BitLabel>Header Template (in Grouped mode)</BitLabel>
+                    <BitNavGroup RenderType="BitNavGroupRenderType.Grouped">
+                        <HeaderTemplate Context="item">
+                            <div class="nav-group-custom-header">
+                                <BitIcon IconName="BitIconName.FavoriteStarFill" />
+                                <span>@item.Text</span>
+                            </div>
+                        </HeaderTemplate>
+                        <ChildContent>
+                            <BitNavOption Text="Mercedes-Benz"
+                                          ExpandAriaLabel="Mercedes-Benz Expanded"
+                                          CollapseAriaLabel="Mercedes-Benz Collapsed"
+                                          Title="Mercedes-Benz Car Models"
+                                          IsExpanded="true">
+                                <BitNavOption Text="SUVs">
+                                    <BitNavOption Text="GLA" Url="https://www.mbusa.com/en/vehicles/class/gla/suv" Target="_blank" />
+                                    <BitNavOption Text="GLB" Url="https://www.mbusa.com/en/vehicles/class/glb/suv" Target="_blank" />
+                                    <BitNavOption Text="GLC" Url="https://www.mbusa.com/en/vehicles/class/glc/suv" Target="_blank" />
+                                </BitNavOption>
+                                <BitNavOption Text="Sedans & Wagons">
+                                    <BitNavOption Text="A Class" Url="https://www.mbusa.com/en/vehicles/class/a-class/sedan" Target="_blank" />
+                                    <BitNavOption Text="C Class" Url="https://www.mbusa.com/en/vehicles/class/c-class/sedan" Target="_blank" />
+                                    <BitNavOption Text="E Class" Url="https://www.mbusa.com/en/vehicles/class/e-class/sedan" Target="_blank" />
+                                </BitNavOption>
+                                <BitNavOption Text="Coupes">
+                                    <BitNavOption Text="CLA Coupe" Url="https://www.mbusa.com/en/vehicles/class/cla/coupe" Target="_blank" />
+                                    <BitNavOption Text="C Class Coupe" Url="https://www.mbusa.com/en/vehicles/class/c-class/coupe" Target="_blank" />
+                                    <BitNavOption Text="E Class Coupe" Url="https://www.mbusa.com/en/vehicles/class/e-class/coupe" Target="_blank" />
+                                </BitNavOption>
+                            </BitNavOption>
+                            <BitNavOption Text="Tesla"
+                                          ExpandAriaLabel="Tesla Expanded"
+                                          CollapseAriaLabel="Tesla Collapsed"
+                                          Title="Tesla Car Models">
+                                <BitNavOption Text="Model S" Url="https://www.tesla.com/models" Target="_blank" />
+                                <BitNavOption Text="Model X" Url="https://www.tesla.com/modelx" Target="_blank" />
+                                <BitNavOption Text="Model Y" Url="https://www.tesla.com/modely" Target="_blank" />
+                            </BitNavOption>
+                        </ChildContent>
+                    </BitNavGroup>
+                </div>
+
+                <div class="margin-top">
+                    <BitLabel>Item Template</BitLabel>
+                    <BitNavGroup Mode="BitNavGroupMode.Manual">
+                        <ItemTemplate Context="item">
+                            <div class="nav-group-custom-item @(item.IsEnabled is false ? "disabled-item" : "")">
+                                <BitCheckbox IsEnabled="@(item.IsEnabled)" />
+                                @if (item.IconName.HasValue)
+                                {
+                                    <BitIcon IconName="@item.IconName.Value" />
+                                }
+                                <span>@item.Text</span>
+                            </div>
+                        </ItemTemplate>
+                        <ChildContent>
+                            <BitNavOption Text="Fast-Foods"
+                                          IconName="BitIconName.HeartBroken"
+                                          IsExpanded="true">
+                                <BitNavOption Text="Burgers">
+                                    <BitNavOption Text="Beef Burger" />
+                                    <BitNavOption Text="Veggie Burger" />
+                                    <BitNavOption Text="Bison Burger" />
+                                    <BitNavOption Text="Wild Salmon Burger" />
+                                </BitNavOption>
+                                <BitNavOption Text="Pizzas">
+                                    <BitNavOption Text="Cheese Pizza" />
+                                    <BitNavOption Text="Veggie Pizza" />
+                                    <BitNavOption Text="Pepperoni Pizza" />
+                                    <BitNavOption Text="Meat Pizza" />
+                                </BitNavOption>
+                                <BitNavOption Text="French Fries" />
+                            </BitNavOption>
+                            <BitNavOption Text="Fruits">
+                                <BitNavOption Text="Aplle" />
+                                <BitNavOption Text="Orange" />
+                                <BitNavOption Text="Benana" />
+                            </BitNavOption>
+                            <BitNavOption Text="Ice Cream" />
+                            <BitNavOption Text="Cookie" />
+                        </ChildContent>
+                    </BitNavGroup>
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Events" ExampleId="example5">
+        <ExamplePreview>
+            <div class="events-example-box">
+                <BitNavGroup Mode="BitNavGroupMode.Manual"
+                             DefaultSelectedKey="French Fries"
+                             OnItemClick="(item) => ClickedItem = item"
+                             OnSelectItem="(item) => SelectedItem = item"
+                             OnItemToggle="(item) => ToggledItem = item">
+                    <BitNavOption Text="Fast-Foods"
+                                  IconName="BitIconName.HeartBroken"
+                                  IsExpanded="true">
+                        <BitNavOption Text="Burgers">
+                            <BitNavOption Text="Beef Burger" Key="Beef Burger" />
+                            <BitNavOption Text="Veggie Burger" Key="Veggie Burger" />
+                            <BitNavOption Text="Bison Burger" Key="Bison Burger" />
+                            <BitNavOption Text="Wild Salmon Burger" Key="Wild Salmon Burger" />
+                        </BitNavOption>
+                        <BitNavOption Text="Pizzas">
+                            <BitNavOption Text="Cheese Pizza" Key="Cheese Pizza" />
+                            <BitNavOption Text="Veggie Pizza" Key="Veggie Pizza" />
+                            <BitNavOption Text="Pepperoni Pizza" Key="Pepperoni Pizza" />
+                            <BitNavOption Text="Meat Pizza" Key="Meat Pizza" />
+                        </BitNavOption>
+                        <BitNavOption Text="French Fries" Key="French Fries" />
+                    </BitNavOption>
+                    <BitNavOption Text="Fruits">
+                        <BitNavOption Text="Aplle" Key="Aplle" />
+                        <BitNavOption Text="Orange" Key="Orange" />
+                        <BitNavOption Text="Benana" Key="Benana" />
+                    </BitNavOption>
+                    <BitNavOption Text="Ice Cream" Key="Ice Cream" />
+                    <BitNavOption Text="Cookie" Key="Cookie" />
+                </BitNavGroup>
+
+                <div class="flex">
+                    <span>Clicked Item: @ClickedItem?.Text</span>
+                    <span>Selected Item: @SelectedItem?.Text</span>
+                    <span>Toggled Item: @(ToggledItem is null ? "N/A" : $"{ToggledItem.Text} ({(ToggledItem.IsExpanded ? "Expanded" : "Collapsed")})")</span>
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
 </ComponentDemo>

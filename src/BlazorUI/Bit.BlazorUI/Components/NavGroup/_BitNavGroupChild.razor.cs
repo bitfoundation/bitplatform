@@ -28,7 +28,7 @@ public partial class _BitNavGroupChild
         var enabledClass = item.IsEnabled ? "enabled" : "disabled";
         var hasUrlClass = item.Url.HasNoValue() ? "nourl" : "hasurl";
 
-        var isSelected = item == Parent.SelectedItem ? "selected" : "";
+        var isSelected = item.Key == Parent.SelectedKey ? "selected" : "";
 
         return $"link-{enabledClass}-{hasUrlClass} {isSelected}";
     }

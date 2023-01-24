@@ -4,10 +4,10 @@ namespace Bit.BlazorUI;
 
 public partial class BitNavGroup : IDisposable
 {
-    private bool SelectedItemHasBeenSet;
-    private BitNavOption? selectedItem;
+    private bool SelectedKeyHasBeenSet;
+    private string? selectedKey;
 
-    private IList<BitNavOption> _options = new List<BitNavOption>();
+    internal IList<BitNavOption> _options = new List<BitNavOption>();
 
     [Inject] private NavigationManager _navigationManager { get; set; } = default!;
 
@@ -19,7 +19,7 @@ public partial class BitNavGroup : IDisposable
     /// <summary>
     /// The initially selected item in manual mode.
     /// </summary>
-    [Parameter] public BitNavOption? DefaultSelectedItem { get; set; }
+    [Parameter] public string? DefaultSelectedKey { get; set; }
 
     /// <summary>
     /// Used to customize how content inside the group header is rendered.
@@ -61,18 +61,18 @@ public partial class BitNavGroup : IDisposable
     /// Selected item to show in Nav.
     /// </summary>
     [Parameter]
-    public BitNavOption? SelectedItem
+    public string? SelectedKey
     {
-        get => selectedItem;
+        get => selectedKey;
         set
         {
-            if (value == selectedItem) return;
-            selectedItem = value;
+            if (value == selectedKey) return;
+            selectedKey = value;
+            SelectedKeyChanged.InvokeAsync(value);
             ExpandParents(_options);
-            SelectedItemChanged.InvokeAsync(selectedItem);
         }
     }
-    [Parameter] public EventCallback<BitNavOption> SelectedItemChanged { get; set; }
+    [Parameter] public EventCallback<string> SelectedKeyChanged { get; set; }
 
     protected override string RootElementClass => "bit-nvg";
 
@@ -84,9 +84,9 @@ public partial class BitNavGroup : IDisposable
 
             SelectItemByCurrentUrl();
         }
-        else if (DefaultSelectedItem is not null && SelectedItemHasBeenSet is false)
+        else if (DefaultSelectedKey is not null && SelectedKeyHasBeenSet is false)
         {
-            SelectedItem = DefaultSelectedItem;
+            SelectedKey = DefaultSelectedKey;
         }
 
         await base.OnInitializedAsync();
@@ -106,16 +106,14 @@ public partial class BitNavGroup : IDisposable
         var currentUrl = _navigationManager.Uri.Replace(_navigationManager.BaseUri, "/", StringComparison.Ordinal);
         var currentItem = Flatten(_options).FirstOrDefault(item => item.Url == currentUrl);
 
-        SelectedItem = currentItem;
+        SelectedKey = currentItem?.Key;
     }
 
     private bool ExpandParents(IList<BitNavOption> items)
     {
         foreach (var item in items)
         {
-            if (item == SelectedItem) return item.IsExpanded = true;
-
-            if (item._options.Any() && ExpandParents(item._options)) return item.IsExpanded = true;
+            if (item.Key == SelectedKey || (item._options.Any() && ExpandParents(item._options))) return item.IsExpanded = true;
         }
 
         return false;
@@ -133,7 +131,7 @@ public partial class BitNavGroup : IDisposable
         }
         else if (Mode == BitNavGroupMode.Manual)
         {
-            SelectedItem = item;
+            SelectedKey = item.Key;
 
             await OnSelectItem.InvokeAsync(item);
 
@@ -152,6 +150,10 @@ public partial class BitNavGroup : IDisposable
 
     internal void RegisterOptions(BitNavOption option)
     {
+        if (option.Key.HasNoValue())
+        {
+            option.Key = $"{_options.Count}";
+        }
         _options.Add(option);
         StateHasChanged();
     }
@@ -164,6 +166,10 @@ public partial class BitNavGroup : IDisposable
 
     internal void RegisterChildOptions(BitNavOption parent, BitNavOption option)
     {
+        if (option.Key.HasNoValue())
+        {
+            option.Key = $"{parent.Key}-{parent._options.Count}";
+        }
         Flatten(_options).FirstOrDefault(i => i == parent)?._options.Add(option);
         StateHasChanged();
     }

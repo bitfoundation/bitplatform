@@ -23,7 +23,7 @@
                title="@(Item.Title is not null ? Item.Title : Item.Text)"
                disabled="@(Item.IsEnabled is false)"
                aria-label="@Item.AriaLabel"
-               aria-current="@(Item == Parent.SelectedItem ? _ariaCurrentMap[Item.AriaCurrent] : null)"
+               aria-current="@(Item.Key == Parent.SelectedKey ? _ariaCurrentMap[Item.AriaCurrent] : null)"
                tabindex="-1"
                rel="@(Item.Url.HasValue() && Item.Target.HasValue() && IsRelativeUrl(Item.Url!) is false ? "noopener noreferrer" : null)"
                @onclick="(() => Parent.HandleOnClick(Item))">
@@ -51,7 +51,7 @@
                     title="@(Item.Title is not null ? Item.Title : Item.Text)"
                     disabled="@(Item.IsEnabled is false)"
                     aria-label="@Item.AriaLabel"
-                    aria-current="@(Item == Parent.SelectedItem ? _ariaCurrentMap[Item.AriaCurrent] : null)"
+                    aria-current="@(Item.Key == Parent.SelectedKey ? _ariaCurrentMap[Item.AriaCurrent] : null)"
                     tabindex="-1"
                     type="button"
                     @onclick="(() => Parent.HandleOnClick(Item))">

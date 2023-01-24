@@ -46,6 +46,11 @@ public partial class BitNavOption : IDisposable
     [Parameter] public bool IsExpanded { get; set; }
 
     /// <summary>
+    /// A unique value to use as a key or id of the item.
+    /// </summary>
+    [Parameter] public string? Key { get; set; }
+
+    /// <summary>
     /// Text to render for this link.
     /// </summary>
     [Parameter] public string Text { get; set; } = string.Empty;
