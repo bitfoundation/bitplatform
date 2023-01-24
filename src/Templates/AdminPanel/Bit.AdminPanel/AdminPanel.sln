@@ -4,9 +4,9 @@ VisualStudioVersion = 17.0.31611.283
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".SolutionItems", ".SolutionItems", "{5CF43F76-BB71-4B5B-B4DF-1C753E042A8F}"
 	ProjectSection(SolutionItems) = preProject
-		..\.gitignore = ..\.gitignore
-		Directory.Build.props = Directory.Build.props
-		global.json = global.json
+		.gitignore = .gitignore
+		src\Directory.Build.props = src\Directory.Build.props
+		src\global.json = src\global.json
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Client", "Client", "{248D8229-BABD-4F0A-A9C6-0417B464507B}"
@@ -17,32 +17,32 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{A97138
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infra", "Infra", "{6271885D-B26B-49D2-AFC5-010A53B9D7BE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminPanel.Shared", "Shared\Shared\AdminPanel.Shared.csproj", "{26430D8C-32CB-4142-AC1A-33486A58DA01}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminPanel.Shared", "src\Shared\Shared\AdminPanel.Shared.csproj", "{26430D8C-32CB-4142-AC1A-33486A58DA01}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminPanel.Iac", "Infra\Iac\AdminPanel.Iac.csproj", "{E409C340-6F88-414A-A956-29D46B7C71C8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminPanel.Iac", "src\Infra\Iac\AdminPanel.Iac.csproj", "{E409C340-6F88-414A-A956-29D46B7C71C8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminPanel.Server.Api", "Server\Api\AdminPanel.Server.Api.csproj", "{8CC3E410-B716-4F4D-89C7-3392CA624439}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminPanel.Server.Api", "src\Server\Api\AdminPanel.Server.Api.csproj", "{8CC3E410-B716-4F4D-89C7-3392CA624439}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminPanel.Client.Shared", "Client\Shared\AdminPanel.Client.Shared.csproj", "{FC60C68D-8E8D-494B-8D60-0C8D83A472E7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminPanel.Client.Shared", "src\Client\Shared\AdminPanel.Client.Shared.csproj", "{FC60C68D-8E8D-494B-8D60-0C8D83A472E7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminPanel.Client.Web", "Client\Web\AdminPanel.Client.Web.csproj", "{13D6A40B-8B8B-41F0-AB62-3F5F1CB58A1B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminPanel.Client.Web", "src\Client\Web\AdminPanel.Client.Web.csproj", "{13D6A40B-8B8B-41F0-AB62-3F5F1CB58A1B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminPanel.Client.App", "Client\App\AdminPanel.Client.App.csproj", "{22816913-64D5-4AE8-9B34-6F188B71FAD1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminPanel.Client.App", "src\Client\App\AdminPanel.Client.App.csproj", "{22816913-64D5-4AE8-9B34-6F188B71FAD1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{D66B7377-367F-4D57-B176-6F172DFD9ABC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{423403B0-D47A-49BF-91EA-4A1280DD8608}"
 	ProjectSection(SolutionItems) = preProject
-		..\.github\workflows\cd.yml = ..\.github\workflows\cd.yml
-		..\.github\workflows\ci.yml = ..\.github\workflows\ci.yml
+		.github\workflows\cd.yml = .github\workflows\cd.yml
+		.github\workflows\ci.yml = .github\workflows\ci.yml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".azure-devops", ".azure-devops", "{AEE266C3-9E0B-4C41-A491-54D339708C06}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{28C56D1E-528C-4C7F-8A14-A540B6FCB20F}"
 	ProjectSection(SolutionItems) = preProject
-		..\.azure-devops\workflows\cd.yml = ..\.azure-devops\workflows\cd.yml
-		..\.azure-devops\workflows\ci.yml = ..\.azure-devops\workflows\ci.yml
+		.azure-devops\workflows\cd.yml = .azure-devops\workflows\cd.yml
+		.azure-devops\workflows\ci.yml = .azure-devops\workflows\ci.yml
 	EndProjectSection
 EndProject
 Global
