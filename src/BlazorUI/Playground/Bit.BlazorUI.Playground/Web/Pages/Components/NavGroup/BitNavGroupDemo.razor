@@ -206,7 +206,7 @@
                     <BitLabel>Option Template</BitLabel>
                     <BitNavGroup Mode="BitNavGroupMode.Manual">
                         <OptionTemplate Context="option">
-                            <div class="nav-group-custom-item @(option.IsEnabled is false ? "disabled-item" : "")">
+                            <div class="nav-group-custom-option @(option.IsEnabled is false ? "disabled-option" : "")">
                                 <BitCheckbox IsEnabled="@(option.IsEnabled)" />
                                 @if (option.IconName.HasValue)
                                 {

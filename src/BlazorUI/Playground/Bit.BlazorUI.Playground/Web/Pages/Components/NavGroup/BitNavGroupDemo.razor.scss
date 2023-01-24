@@ -5,13 +5,13 @@
         color: green;
     }
 
-    .nav-group-custom-item {
+    .nav-group-custom-option {
         display: flex;
         flex-flow: row nowrap;
         color: #ff7800;
         font-weight: 600;
 
-        &.disabled-item {
+        &.disabled-option {
             color: #ff780061;
         }
     }
