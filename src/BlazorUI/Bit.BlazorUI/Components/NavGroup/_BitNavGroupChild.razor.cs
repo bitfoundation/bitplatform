@@ -21,14 +21,14 @@ public partial class _BitNavGroupChild
 
     [Parameter] public int Depth { get; set; }
 
-    [Parameter] public BitNavOption Item { get; set; } = default!;
+    [Parameter] public BitNavOption Option { get; set; } = default!;
 
-    private string GetItemClasses(BitNavOption item)
+    private string GetOptionClasses(BitNavOption option)
     {
-        var enabledClass = item.IsEnabled ? "enabled" : "disabled";
-        var hasUrlClass = item.Url.HasNoValue() ? "nourl" : "hasurl";
+        var enabledClass = option.IsEnabled ? "enabled" : "disabled";
+        var hasUrlClass = option.Url.HasNoValue() ? "nourl" : "hasurl";
 
-        var isSelected = item.Key == Parent.SelectedKey ? "selected" : "";
+        var isSelected = option.Key == Parent.SelectedKey ? "selected" : "";
 
         return $"link-{enabledClass}-{hasUrlClass} {isSelected}";
     }

@@ -5,7 +5,7 @@ public partial class BitNavOption : IDisposable
 {
     internal IList<BitNavOption> _options = new List<BitNavOption>();
 
-    [CascadingParameter] protected BitNavGroup? NavGroup { get; set; }
+    [CascadingParameter] protected BitNavGroup NavGroup { get; set; } = default!;
     [CascadingParameter] protected BitNavOption? NavOption { get; set; }
 
     /// <summary>
@@ -15,12 +15,12 @@ public partial class BitNavOption : IDisposable
     [Parameter] public BitNavOptionAriaCurrent AriaCurrent { get; set; } = BitNavOptionAriaCurrent.Page;
 
     /// <summary>
-    /// Aria label when items is collapsed and can be expanded
+    /// Aria label when options is collapsed and can be expanded
     /// </summary>
     [Parameter] public string? CollapseAriaLabel { get; set; }
 
     /// <summary>
-    /// A list of items to render as children of the current item
+    /// A list of options to render as children of the current option
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
@@ -46,7 +46,7 @@ public partial class BitNavOption : IDisposable
     [Parameter] public bool IsExpanded { get; set; }
 
     /// <summary>
-    /// A unique value to use as a key or id of the item.
+    /// A unique value to use as a key or id of the option.
     /// </summary>
     [Parameter] public string? Key { get; set; }
 
@@ -76,18 +76,21 @@ public partial class BitNavOption : IDisposable
 
     protected override async Task OnInitializedAsync()
     {        
-        if (NavGroup is not null && NavOption is null)
+        if (NavOption is null)
         {
             NavGroup.RegisterOptions(this);
         }
 
-        if (NavGroup is not null && NavOption is not null)
+        if (NavOption is not null)
         {
             NavGroup.RegisterChildOptions(NavOption, this);
         }
 
         await base.OnInitializedAsync();
     }
+
+    internal void SetIsExpanded(bool value) => IsExpanded = value;
+    internal void SetKey(string value) => Key = value;
 
     public void Dispose()
     {
@@ -97,12 +100,12 @@ public partial class BitNavOption : IDisposable
 
     protected virtual void Dispose(bool disposing)
     {
-        if (NavGroup is not null && NavOption is null)
+        if (NavOption is null)
         {
             NavGroup.UnregisterOptions(this);
         }
 
-        if (NavGroup is not null && NavOption is not null)
+        if (NavOption is not null)
         {
             NavGroup.UnregisterChildOptions(NavOption, this);
         }

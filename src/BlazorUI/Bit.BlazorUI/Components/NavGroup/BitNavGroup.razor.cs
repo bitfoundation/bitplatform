@@ -7,17 +7,17 @@ public partial class BitNavGroup : IDisposable
     private bool SelectedKeyHasBeenSet;
     private string? selectedKey;
 
-    internal IList<BitNavOption> _options = new List<BitNavOption>();
+    private IList<BitNavOption> _options = new List<BitNavOption>();
 
     [Inject] private NavigationManager _navigationManager { get; set; } = default!;
 
     /// <summary>
-    /// A list of items to render as children of the current item
+    /// A list of options to render as children of the current option
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// The initially selected item in manual mode.
+    /// The initially selected option in manual mode.
     /// </summary>
     [Parameter] public string? DefaultSelectedKey { get; set; }
 
@@ -29,7 +29,7 @@ public partial class BitNavGroup : IDisposable
     /// <summary>
     /// Used to customize how content inside the link tag is rendered.
     /// </summary>
-    [Parameter] public RenderFragment<BitNavOption>? ItemTemplate { get; set; }
+    [Parameter] public RenderFragment<BitNavOption>? OptionTemplate { get; set; }
 
     /// <summary>
     /// Determines how the navigation will be handled.
@@ -38,19 +38,19 @@ public partial class BitNavGroup : IDisposable
     [Parameter] public BitNavGroupMode Mode { get; set; } = BitNavGroupMode.Automatic;
 
     /// <summary>
-    /// Callback invoked when an item is clicked.
+    /// Callback invoked when an option is clicked.
     /// </summary>
-    [Parameter] public EventCallback<BitNavOption> OnItemClick { get; set; }
+    [Parameter] public EventCallback<BitNavOption> OnOptionClick { get; set; }
 
     /// <summary>
-    /// Callback invoked when an item is selected.
+    /// Callback invoked when an option is selected.
     /// </summary>
-    [Parameter] public EventCallback<BitNavOption> OnSelectItem { get; set; }
+    [Parameter] public EventCallback<BitNavOption> OnSelectOption { get; set; }
 
     /// <summary>
     /// Callback invoked when a group header is clicked and Expanded or Collapse.
     /// </summary>
-    [Parameter] public EventCallback<BitNavOption> OnItemToggle { get; set; }
+    [Parameter] public EventCallback<BitNavOption> OnOptionToggle { get; set; }
 
     /// <summary>
     /// The way to render nav links.
@@ -58,7 +58,7 @@ public partial class BitNavGroup : IDisposable
     [Parameter] public BitNavGroupRenderType RenderType { get; set; } = BitNavGroupRenderType.Normal;
 
     /// <summary>
-    /// Selected item to show in Nav.
+    /// Selected option to show in Nav.
     /// </summary>
     [Parameter]
     public string? SelectedKey
@@ -82,7 +82,7 @@ public partial class BitNavGroup : IDisposable
         {
             _navigationManager.LocationChanged += OnLocationChanged;
 
-            SelectItemByCurrentUrl();
+            SelectOptionByCurrentUrl();
         }
         else if (DefaultSelectedKey is not null && SelectedKeyHasBeenSet is false)
         {
@@ -96,63 +96,67 @@ public partial class BitNavGroup : IDisposable
 
     private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
     {
-        SelectItemByCurrentUrl();
+        SelectOptionByCurrentUrl();
 
         StateHasChanged();
     }
 
-    private void SelectItemByCurrentUrl()
+    private void SelectOptionByCurrentUrl()
     {
         var currentUrl = _navigationManager.Uri.Replace(_navigationManager.BaseUri, "/", StringComparison.Ordinal);
-        var currentItem = Flatten(_options).FirstOrDefault(item => item.Url == currentUrl);
+        var currentOption = Flatten(_options).FirstOrDefault(option => option.Url == currentUrl);
 
-        SelectedKey = currentItem?.Key;
+        SelectedKey = currentOption?.Key;
     }
 
-    private bool ExpandParents(IList<BitNavOption> items)
+    private bool ExpandParents(IList<BitNavOption> options)
     {
-        foreach (var item in items)
+        foreach (var option in options)
         {
-            if (item.Key == SelectedKey || (item._options.Any() && ExpandParents(item._options))) return item.IsExpanded = true;
+            if (option.Key == SelectedKey || (option._options.Any() && ExpandParents(option._options))) 
+            {
+                option.SetIsExpanded(true);
+                return true;
+            }
         }
 
         return false;
     }
 
-    internal async Task HandleOnClick(BitNavOption item)
+    internal async Task HandleOnClick(BitNavOption option)
     {
-        if (item.IsEnabled == false) return;
+        if (option.IsEnabled == false) return;
 
-        await OnItemClick.InvokeAsync(item);
+        await OnOptionClick.InvokeAsync(option);
 
-        if (item._options.Any() && item.Url.HasNoValue())
+        if (option._options.Any() && option.Url.HasNoValue())
         {
-            await ToggleItem(item);
+            await ToggleOption(option);
         }
         else if (Mode == BitNavGroupMode.Manual)
         {
-            SelectedKey = item.Key;
+            SelectedKey = option.Key;
 
-            await OnSelectItem.InvokeAsync(item);
+            await OnSelectOption.InvokeAsync(option);
 
             StateHasChanged();
         }
     }
 
-    internal async Task ToggleItem(BitNavOption item)
+    internal async Task ToggleOption(BitNavOption option)
     {
-        if (item.IsEnabled is false || item._options.Any() is false) return;
+        if (option.IsEnabled is false || option._options.Any() is false) return;
 
-        item.IsExpanded = !item.IsExpanded;
+        option.SetIsExpanded(!option.IsExpanded);
 
-        await OnItemToggle.InvokeAsync(item);
+        await OnOptionClick.InvokeAsync(option);
     }
 
     internal void RegisterOptions(BitNavOption option)
     {
         if (option.Key.HasNoValue())
         {
-            option.Key = $"{_options.Count}";
+            option.SetKey($"{_options.Count}");
         }
         _options.Add(option);
         StateHasChanged();
@@ -168,7 +172,7 @@ public partial class BitNavGroup : IDisposable
     {
         if (option.Key.HasNoValue())
         {
-            option.Key = $"{parent.Key}-{parent._options.Count}";
+            option.SetKey($"{parent.Key}-{parent._options.Count}");
         }
         Flatten(_options).FirstOrDefault(i => i == parent)?._options.Add(option);
         StateHasChanged();

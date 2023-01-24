@@ -82,9 +82,9 @@ public partial class BitNavGroupDemo
         },
     };
 
-    private BitNavOption ClickedItem;
-    private BitNavOption SelectedItem;
-    private BitNavOption ToggledItem;
+    private BitNavOption ClickedOption;
+    private BitNavOption SelectedOption;
+    private BitNavOption ToggledOption;
 
     private readonly List<ComponentParameter> componentParameters = new()
     {

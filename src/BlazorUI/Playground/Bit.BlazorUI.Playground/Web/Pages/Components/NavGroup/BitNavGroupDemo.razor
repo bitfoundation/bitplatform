@@ -203,18 +203,18 @@
                 </div>
 
                 <div class="margin-top">
-                    <BitLabel>Item Template</BitLabel>
+                    <BitLabel>Option Template</BitLabel>
                     <BitNavGroup Mode="BitNavGroupMode.Manual">
-                        <ItemTemplate Context="item">
-                            <div class="nav-group-custom-item @(item.IsEnabled is false ? "disabled-item" : "")">
-                                <BitCheckbox IsEnabled="@(item.IsEnabled)" />
-                                @if (item.IconName.HasValue)
+                        <OptionTemplate Context="option">
+                            <div class="nav-group-custom-item @(option.IsEnabled is false ? "disabled-item" : "")">
+                                <BitCheckbox IsEnabled="@(option.IsEnabled)" />
+                                @if (option.IconName.HasValue)
                                 {
-                                    <BitIcon IconName="@item.IconName.Value" />
+                                    <BitIcon IconName="@option.IconName.Value" />
                                 }
-                                <span>@item.Text</span>
+                                <span>@option.Text</span>
                             </div>
-                        </ItemTemplate>
+                        </OptionTemplate>
                         <ChildContent>
                             <BitNavOption Text="Fast-Foods"
                                           IconName="BitIconName.HeartBroken"
@@ -252,9 +252,9 @@
             <div class="events-example-box">
                 <BitNavGroup Mode="BitNavGroupMode.Manual"
                              DefaultSelectedKey="French Fries"
-                             OnItemClick="(item) => ClickedItem = item"
-                             OnSelectItem="(item) => SelectedItem = item"
-                             OnItemToggle="(item) => ToggledItem = item">
+                             OnOptionClick="(option) => ClickedOption = option"
+                             OnSelectOption="(option) => SelectedOption = option"
+                             OnOptionToggle="(option) => ToggledOption = option">
                     <BitNavOption Text="Fast-Foods"
                                   IconName="BitIconName.HeartBroken"
                                   IsExpanded="true">
@@ -282,9 +282,9 @@
                 </BitNavGroup>
 
                 <div class="flex">
-                    <span>Clicked Item: @ClickedItem?.Text</span>
-                    <span>Selected Item: @SelectedItem?.Text</span>
-                    <span>Toggled Item: @(ToggledItem is null ? "N/A" : $"{ToggledItem.Text} ({(ToggledItem.IsExpanded ? "Expanded" : "Collapsed")})")</span>
+                    <span>Clicked Option: @ClickedOption?.Text</span>
+                    <span>Selected Option: @SelectedOption?.Text</span>
+                    <span>Toggled Option: @(ToggledOption is null ? "N/A" : $"{ToggledOption.Text} ({(ToggledOption.IsExpanded ? "Expanded" : "Collapsed")})")</span>
                 </div>
             </div>
         </ExamplePreview>
