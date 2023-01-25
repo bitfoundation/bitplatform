@@ -9,8 +9,8 @@
          class="option-container @GetOptionClasses()"
          name="@Option.Text">
 
-        @if ((Parent.RenderType is BitNavGroupRenderType.Normal && Option._options.Any()) ||
-             (Parent.RenderType is BitNavGroupRenderType.Grouped && Option._options.Any() && Parent._options.Any(o => o.Key == Option.Key) is false))
+        @if ((Parent.RenderType is BitNavRenderType.Normal && Option._options.Any()) ||
+             (Parent.RenderType is BitNavRenderType.Grouped && Option._options.Any() && Parent._options.Any(o => o.Key == Option.Key) is false))
         {
             <button @onclick="(() => Parent.ToggleOption(Option))"
                     class="chevron-btn"
@@ -35,7 +35,7 @@
                aria-current="@(Option.Key == Parent.SelectedKey ? _ariaCurrentMap[Option.AriaCurrent] : null)"
                rel="@(Option.Url.HasValue() && Option.Target.HasValue() && IsRelativeUrl(Option.Url!) is false ? "noopener noreferrer" : null)">
 
-                @if (Parent.RenderType is BitNavGroupRenderType.Grouped && Parent._options.Any(o => o.Key == Option.Key) && Parent.HeaderTemplate is not null)
+                @if (Parent.RenderType is BitNavRenderType.Grouped && Parent._options.Any(o => o.Key == Option.Key) && Parent.HeaderTemplate is not null)
                 {
                     @Parent.HeaderTemplate(Option)
                 }
@@ -64,7 +64,7 @@
                     tabindex="-1"
                     type="button">
 
-                @if (Parent.RenderType is BitNavGroupRenderType.Grouped && Parent._options.Any(o => o.Key == Option.Key) && Parent.HeaderTemplate is not null)
+                @if (Parent.RenderType is BitNavRenderType.Grouped && Parent._options.Any(o => o.Key == Option.Key) && Parent.HeaderTemplate is not null)
                 {
                     @Parent.HeaderTemplate(Option)
                 }

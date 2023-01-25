@@ -13,7 +13,7 @@ public partial class BitNavOption : IDisposable
     /// Aria-current token for active nav links.
     /// Must be a valid token value, and defaults to 'page'
     /// </summary>
-    [Parameter] public BitNavOptionAriaCurrent AriaCurrent { get; set; } = BitNavOptionAriaCurrent.Page;
+    [Parameter] public BitNavItemAriaCurrent AriaCurrent { get; set; } = BitNavItemAriaCurrent.Page;
 
     /// <summary>
     /// Aria label when options is collapsed and can be expanded

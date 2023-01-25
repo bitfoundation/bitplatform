@@ -6,14 +6,14 @@ namespace Bit.BlazorUI.Components.NavGroup;
 public partial class _BitNavGroupChild
 #pragma warning restore CA1707 // Identifiers should not contain underscores
 {
-    private Dictionary<BitNavOptionAriaCurrent, string> _ariaCurrentMap = new Dictionary<BitNavOptionAriaCurrent, string>()
+    private Dictionary<BitNavItemAriaCurrent, string> _ariaCurrentMap = new Dictionary<BitNavItemAriaCurrent, string>()
     {
-        [BitNavOptionAriaCurrent.Page] = "page",
-        [BitNavOptionAriaCurrent.Step] = "step",
-        [BitNavOptionAriaCurrent.Location] = "location",
-        [BitNavOptionAriaCurrent.Time] = "time",
-        [BitNavOptionAriaCurrent.Date] = "date",
-        [BitNavOptionAriaCurrent.True] = "true"
+        [BitNavItemAriaCurrent.Page] = "page",
+        [BitNavItemAriaCurrent.Step] = "step",
+        [BitNavItemAriaCurrent.Location] = "location",
+        [BitNavItemAriaCurrent.Time] = "time",
+        [BitNavItemAriaCurrent.Date] = "date",
+        [BitNavItemAriaCurrent.True] = "true"
     };
 
     [CascadingParameter] protected BitNavGroup Parent { get; set; } = default!;
@@ -28,7 +28,7 @@ public partial class _BitNavGroupChild
 
         var isSelected = Option.Key == Parent.SelectedKey ? "selected" : "";
 
-        var isHeader = Parent.RenderType == BitNavGroupRenderType.Grouped && Parent._options.Any(o => o == Option) ? "group-header" : "";
+        var isHeader = Parent.RenderType == BitNavRenderType.Grouped && Parent._options.Any(o => o == Option) ? "group-header" : "";
 
         return $"{enabledClass} {isSelected} {isHeader}";
     }

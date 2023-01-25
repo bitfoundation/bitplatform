@@ -2,7 +2,8 @@
 
 ::deep {
     .nav-group-custom-header {
-        text-align: left;
+        font-size: 17px;
+        font-weight: 600;
         color: green;
     }
 
@@ -10,12 +11,9 @@
         display: flex;
         align-items: center;
         flex-flow: row nowrap;
+        gap: 4px;
         color: #ff7800;
         font-weight: 600;
-
-        &.disabled-option {
-            color: #ff780061;
-        }
     }
 }
 

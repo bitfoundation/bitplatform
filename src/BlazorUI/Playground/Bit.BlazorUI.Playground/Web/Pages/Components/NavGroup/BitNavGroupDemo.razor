@@ -6,7 +6,7 @@
                ComponentSubParameters="componentSubParameters"
                EnumParameters="enumParameters">
 
-    <ComponentExampleBox Title="Basic" ExampleId="example1">
+    <ComponentExampleBox Title="Basic" HTMLSourceCode="@example1HTMLCode" ExampleId="example1">
         <ExamplePreview>
             <div class="example-box">
                 <BitNavGroup>
@@ -45,10 +45,10 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Grouped" ExampleId="example2">
+    <ComponentExampleBox Title="Grouped" HTMLSourceCode="@example2HTMLCode" ExampleId="example2">
         <ExamplePreview>
             <div class="example-box">
-                <BitNavGroup RenderType="BitNavGroupRenderType.Grouped">
+                <BitNavGroup RenderType="BitNavRenderType.Grouped">
                     <BitNavOption Text="Mercedes-Benz"
                                   ExpandAriaLabel="Mercedes-Benz Expanded"
                                   CollapseAriaLabel="Mercedes-Benz Collapsed"
@@ -83,12 +83,12 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Manual Mode" ExampleId="example3">
+    <ComponentExampleBox Title="Manual Mode" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example3">
         <ExamplePreview>
             <div class="example-box">
                 <div>
                     <BitLabel>Basic</BitLabel>
-                    <BitNavGroup Mode="BitNavGroupMode.Manual" DefaultSelectedKey="French Fries">
+                    <BitNavGroup Mode="BitNavMode.Manual" DefaultSelectedKey="French Fries">
                         <BitNavOption Text="Fast-Foods"
                                       IconName="BitIconName.HeartBroken"
                                       IsExpanded="true">
@@ -120,7 +120,7 @@
                     <BitLabel>Two-Way Bind</BitLabel>
                     <BitNavGroup @bind-SelectedKey="SelectedOptionKey"
                                  DefaultSelectedKey="French Fries"
-                                 Mode="BitNavGroupMode.Manual">
+                                 Mode="BitNavMode.Manual">
                         <BitNavOption Text="Fast-Foods"
                                       IconName="BitIconName.HeartBroken"
                                       IsExpanded="true">
@@ -156,12 +156,12 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Custom Templates" ExampleId="example4">
+    <ComponentExampleBox Title="Custom Templates" HTMLSourceCode="@example4HTMLCode" ExampleId="example4">
         <ExamplePreview>
             <div class="example-box">
                 <div>
                     <BitLabel>Header Template (in Grouped mode)</BitLabel>
-                    <BitNavGroup RenderType="BitNavGroupRenderType.Grouped">
+                    <BitNavGroup RenderType="BitNavRenderType.Grouped">
                         <HeaderTemplate Context="item">
                             <div class="nav-group-custom-header">
                                 <BitIcon IconName="BitIconName.FavoriteStarFill" />
@@ -204,9 +204,9 @@
 
                 <div class="margin-top">
                     <BitLabel>Option Template</BitLabel>
-                    <BitNavGroup Mode="BitNavGroupMode.Manual">
+                    <BitNavGroup Mode="BitNavMode.Manual">
                         <OptionTemplate Context="option">
-                            <div class="nav-group-custom-option @(option.IsEnabled is false ? "disabled-option" : "")">
+                            <div class="nav-group-custom-option">
                                 <BitCheckbox IsEnabled="@(option.IsEnabled)" />
                                 <span>@option.Text</span>
                             </div>
@@ -242,10 +242,10 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Events" ExampleId="example5">
+    <ComponentExampleBox Title="Events" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
         <ExamplePreview>
             <div class="events-example-box">
-                <BitNavGroup Mode="BitNavGroupMode.Manual"
+                <BitNavGroup Mode="BitNavMode.Manual"
                              DefaultSelectedKey="French Fries"
                              OnOptionClick="(option) => ClickedOption = option"
                              OnSelectOption="(option) => SelectedOption = option"

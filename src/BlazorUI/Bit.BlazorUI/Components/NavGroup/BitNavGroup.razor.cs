@@ -35,7 +35,7 @@ public partial class BitNavGroup : IDisposable
     /// Determines how the navigation will be handled.
     /// The default value is Automatic.
     /// </summary>
-    [Parameter] public BitNavGroupMode Mode { get; set; } = BitNavGroupMode.Automatic;
+    [Parameter] public BitNavMode Mode { get; set; } = BitNavMode.Automatic;
 
     /// <summary>
     /// Callback invoked when an option is clicked.
@@ -55,7 +55,7 @@ public partial class BitNavGroup : IDisposable
     /// <summary>
     /// The way to render nav links.
     /// </summary>
-    [Parameter] public BitNavGroupRenderType RenderType { get; set; } = BitNavGroupRenderType.Normal;
+    [Parameter] public BitNavRenderType RenderType { get; set; } = BitNavRenderType.Normal;
 
     /// <summary>
     /// Selected option to show in Nav.
@@ -78,7 +78,7 @@ public partial class BitNavGroup : IDisposable
 
     protected override async Task OnInitializedAsync()
     {
-        if (Mode == BitNavGroupMode.Automatic)
+        if (Mode == BitNavMode.Automatic)
         {
             _navigationManager.LocationChanged += OnLocationChanged;
 
@@ -133,7 +133,7 @@ public partial class BitNavGroup : IDisposable
         {
             await ToggleOption(option);
         }
-        else if (Mode == BitNavGroupMode.Manual)
+        else if (Mode == BitNavMode.Manual)
         {
             SelectedKey = option.Key;
 
@@ -192,7 +192,7 @@ public partial class BitNavGroup : IDisposable
 
     protected virtual void Dispose(bool disposing)
     {
-        if (disposing && Mode == BitNavGroupMode.Automatic)
+        if (disposing && Mode == BitNavMode.Automatic)
         {
             _navigationManager.LocationChanged -= OnLocationChanged;
         }
