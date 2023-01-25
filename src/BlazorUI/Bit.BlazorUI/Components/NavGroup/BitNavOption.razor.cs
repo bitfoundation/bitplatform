@@ -10,18 +10,18 @@ public partial class BitNavOption : IDisposable
     [CascadingParameter] protected BitNavOption? NavOption { get; set; }
 
     /// <summary>
-    /// Aria-current token for active nav links.
-    /// Must be a valid token value, and defaults to 'page'
+    /// Aria-current token for active nav option.
+    /// Must be a valid token value, and defaults to 'page'.
     /// </summary>
     [Parameter] public BitNavItemAriaCurrent AriaCurrent { get; set; } = BitNavItemAriaCurrent.Page;
 
     /// <summary>
-    /// Aria label when options is collapsed and can be expanded
+    /// Aria label when options is collapsed and can be expanded.
     /// </summary>
     [Parameter] public string? CollapseAriaLabel { get; set; }
 
     /// <summary>
-    /// A list of options to render as children of the current option
+    /// Options to render as children of the current option.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
@@ -37,12 +37,12 @@ public partial class BitNavOption : IDisposable
     [Parameter] public bool ForceAnchor { get; set; }
 
     /// <summary>
-    /// Name of an icon to render next to this link button
+    /// Name of an icon to render next to this link button.
     /// </summary>
     [Parameter] public BitIconName? IconName { get; set; }
 
     /// <summary>
-    /// Whether or not the link is in an expanded state
+    /// Whether or not the option is in an expanded state.
     /// </summary>
     [Parameter] public bool IsExpanded { get; set; }
 
@@ -52,7 +52,7 @@ public partial class BitNavOption : IDisposable
     [Parameter] public string? Key { get; set; }
 
     /// <summary>
-    /// Text to render for this link.
+    /// Text to render for this option.
     /// </summary>
     [Parameter] public string Text { get; set; } = string.Empty;
 
@@ -62,12 +62,12 @@ public partial class BitNavOption : IDisposable
     [Parameter] public string? Title { get; set; }
 
     /// <summary>
-    /// Link target, specifies how to open the link
+    /// Link target, specifies how to open the option.
     /// </summary>
     [Parameter] public string? Target { get; set; }
 
     /// <summary>
-    /// URL to navigate to for this link
+    /// URL to navigate to for this option.
     /// </summary>
 #pragma warning disable CA1056 // URI-like properties should not be strings
     [Parameter] public string? Url { get; set; }

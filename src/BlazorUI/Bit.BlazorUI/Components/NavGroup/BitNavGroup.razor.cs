@@ -12,12 +12,12 @@ public partial class BitNavGroup : IDisposable
     [Inject] private NavigationManager _navigationManager { get; set; } = default!;
 
     /// <summary>
-    /// A list of options to render as children of the current option
+    /// Option to render as children.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// The initially selected option in manual mode.
+    /// The initially selected key in manual mode.
     /// </summary>
     [Parameter] public string? DefaultSelectedKey { get; set; }
 
@@ -27,15 +27,15 @@ public partial class BitNavGroup : IDisposable
     [Parameter] public RenderFragment<BitNavOption>? HeaderTemplate { get; set; }
 
     /// <summary>
-    /// Used to customize how content inside the link tag is rendered.
-    /// </summary>
-    [Parameter] public RenderFragment<BitNavOption>? OptionTemplate { get; set; }
-
-    /// <summary>
     /// Determines how the navigation will be handled.
     /// The default value is Automatic.
     /// </summary>
     [Parameter] public BitNavMode Mode { get; set; } = BitNavMode.Automatic;
+
+    /// <summary>
+    /// Used to customize how content inside the option tag is rendered.
+    /// </summary>
+    [Parameter] public RenderFragment<BitNavOption>? OptionTemplate { get; set; }
 
     /// <summary>
     /// Callback invoked when an option is clicked.
@@ -53,7 +53,7 @@ public partial class BitNavGroup : IDisposable
     [Parameter] public EventCallback<BitNavOption> OnOptionToggle { get; set; }
 
     /// <summary>
-    /// The way to render nav links.
+    /// The way to render nav options.
     /// </summary>
     [Parameter] public BitNavRenderType RenderType { get; set; } = BitNavRenderType.Normal;
 

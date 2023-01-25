@@ -90,8 +90,70 @@ public partial class BitNavGroupDemo
     {
         new ComponentParameter
         {
-
-        }
+            Name = "ChildContent",
+            Type = "RenderFragment?",
+            Description = "Option to render as children."
+        },
+        new ComponentParameter
+        {
+            Name = "DefaultSelectedKey",
+            Type = "string?",
+            Description = "The initially selected key in manual mode."
+        },
+        new ComponentParameter
+        {
+            Name = "HeaderTemplate",
+            Type = "RenderFragment<BitNavOption>?",
+            Description = "Used to customize how content inside the group header is rendered."
+        },
+        new ComponentParameter
+        {
+            Name = "Mode",
+            Type = "BitNavMode",
+            DefaultValue = "BitNavMode.Automatic",
+            Description = "Determines how the navigation will be handled. The default value is Automatic.",
+            Href = "#nav-mode-enum",
+            LinkType = LinkType.Link
+        },
+        new ComponentParameter
+        {
+            Name = "OptionTemplate",
+            Type = "RenderFragment<BitNavOption>?",
+            Description = "Used to customize how content inside the option tag is rendered."
+        },
+        new ComponentParameter
+        {
+            Name = "OnOptionClick",
+            Type = "EventCallback<BitNavOption>",
+            Description = "Callback invoked when an option is clicked."
+        },
+        new ComponentParameter
+        {
+            Name = "OnSelectOption",
+            Type = "EventCallback<BitNavOption>",
+            Description = "Callback invoked when an option is selected."
+        },
+        new ComponentParameter
+        {
+            Name = "OnOptionToggle",
+            Type = "EventCallback<BitNavOption>",
+            Description = "Callback invoked when a group header is clicked and Expanded or Collapse."
+        },
+        new ComponentParameter
+        {
+            Name = "RenderType",
+            Type = "BitNavRenderType",
+            DefaultValue = "BitNavRenderType.Normal",
+            Description = "The way to render nav options.",
+            Href = "#nav-render-type-enum",
+            LinkType = LinkType.Link,
+        },
+        new ComponentParameter
+        {
+            Name = "SelectedKey",
+            Type = "string?",
+            Description = "Selected option to show in Nav."
+        },
     };
     private readonly List<ComponentSubParameter> componentSubParameters = new()
     {
@@ -103,8 +165,80 @@ public partial class BitNavGroupDemo
             {
                 new ComponentParameter
                 {
-
-                }
+                    Name = "AriaCurrent",
+                    Type = "BitNavItemAriaCurrent",
+                    DefaultValue = "BitNavItemAriaCurrent.Page",
+                    Description = "Aria-current token for active nav option. Must be a valid token value, and defaults to 'page'.",
+                    Href = "#nav-item-aria-current-enum",
+                    LinkType = LinkType.Link,
+                },
+                new ComponentParameter
+                {
+                    Name = "CollapseAriaLabel",
+                    Type = "string?",
+                    Description = "Aria label when options is collapsed and can be expanded."
+                },
+                new ComponentParameter
+                {
+                    Name = "ChildContent",
+                    Type = "RenderFragment?",
+                    Description = "Options to render as children of the current option."
+                },
+                new ComponentParameter
+                {
+                    Name = "ExpandAriaLabel",
+                    Type = "string?",
+                    Description = "Aria label when group is collapsed and can be expanded."
+                },
+                new ComponentParameter
+                {
+                    Name = "ForceAnchor",
+                    Type = "bool",
+                    Description = "(Optional) By default, any link with onClick defined will render as a button. Set this property to true to override that behavior. (Links without onClick defined will render as anchors by default.)"
+                },
+                new ComponentParameter
+                {
+                    Name = "IconName",
+                    Type = "BitIconName?",
+                    Description = "Name of an icon to render next to this link button."
+                },
+                new ComponentParameter
+                {
+                    Name = "IsExpanded",
+                    Type = "bool",
+                    Description = "Whether or not the option is in an expanded state."
+                },
+                new ComponentParameter
+                {
+                    Name = "Key",
+                    Type = "string?",
+                    Description = "A unique value to use as a key or id of the option."
+                },
+                new ComponentParameter
+                {
+                    Name = "Text",
+                    Type = "string",
+                    DefaultValue = "string.Empty",
+                    Description = "Text to render for this option."
+                },
+                new ComponentParameter
+                {
+                    Name = "Title",
+                    Type = "string?",
+                    Description = "Text for title tooltip."
+                },
+                new ComponentParameter
+                {
+                    Name = "Target",
+                    Type = "string?",
+                    Description = "Link target, specifies how to open the option."
+                },
+                new ComponentParameter
+                {
+                    Name = "Url",
+                    Type = "string?",
+                    Description = "URL to navigate to for this option."
+                },
             }
         }
     };
