@@ -4,9 +4,9 @@ VisualStudioVersion = 17.0.31611.283
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".SolutionItems", ".SolutionItems", "{5CF43F76-BB71-4B5B-B4DF-1C753E042A8F}"
 	ProjectSection(SolutionItems) = preProject
-		..\.gitignore = ..\.gitignore
-		Directory.Build.props = Directory.Build.props
-		global.json = global.json
+		.gitignore = .gitignore
+		src\Directory.Build.props = src\Directory.Build.props
+		src\global.json = src\global.json
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Client", "Client", "{99987B56-D7E8-43AA-9EFC-07EC384B4382}"
@@ -17,32 +17,32 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{4CB2E4
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infra", "Infra", "{4FFA9633-C4EC-4DD8-8C26-DE597E731E09}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Shared", "Shared\Shared\TodoTemplate.Shared.csproj", "{E654B009-D083-4476-AEA5-EF5D73BF2EA8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Shared", "src\Shared\Shared\TodoTemplate.Shared.csproj", "{E654B009-D083-4476-AEA5-EF5D73BF2EA8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Iac", "Infra\Iac\TodoTemplate.Iac.csproj", "{50296618-0E17-4596-9BFF-B5C47EB40E74}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Iac", "src\Infra\Iac\TodoTemplate.Iac.csproj", "{50296618-0E17-4596-9BFF-B5C47EB40E74}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Server.Api", "Server\Api\TodoTemplate.Server.Api.csproj", "{29532CE7-708E-4ED0-981E-EF17C573B6CB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Server.Api", "src\Server\Api\TodoTemplate.Server.Api.csproj", "{29532CE7-708E-4ED0-981E-EF17C573B6CB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Client.Shared", "Client\Shared\TodoTemplate.Client.Shared.csproj", "{0AAA866C-CEA9-4D11-B66A-AA2E295DA30B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Client.Shared", "src\Client\Shared\TodoTemplate.Client.Shared.csproj", "{0AAA866C-CEA9-4D11-B66A-AA2E295DA30B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Client.Web", "Client\Web\TodoTemplate.Client.Web.csproj", "{37B0BFFF-762E-42C6-A999-80EF9F38BE4C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Client.Web", "src\Client\Web\TodoTemplate.Client.Web.csproj", "{37B0BFFF-762E-42C6-A999-80EF9F38BE4C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Client.App", "Client\App\TodoTemplate.Client.App.csproj", "{5DD4EE2C-8397-4E32-B147-6FF87D7DD648}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Client.App", "src\Client\App\TodoTemplate.Client.App.csproj", "{5DD4EE2C-8397-4E32-B147-6FF87D7DD648}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{6FF861C0-D900-4CE2-A4E6-6FD525EC1A8F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{6734809E-1C51-492E-8EC1-60199EAAEF8F}"
 	ProjectSection(SolutionItems) = preProject
-		..\.github\workflows\cd.yml = ..\.github\workflows\cd.yml
-		..\.github\workflows\ci.yml = ..\.github\workflows\ci.yml
+		.github\workflows\cd.yml = .github\workflows\cd.yml
+		.github\workflows\ci.yml = .github\workflows\ci.yml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".azure-devops", ".azure-devops", "{308C2DB4-661A-410A-91B5-6C54CDB4E9B5}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{6CBB5D23-A91C-493B-BA95-CE6A6A8E0C79}"
 	ProjectSection(SolutionItems) = preProject
-		..\.azure-devops\workflows\cd.yml = ..\.azure-devops\workflows\cd.yml
-		..\.azure-devops\workflows\ci.yml = ..\.azure-devops\workflows\ci.yml
+		.azure-devops\workflows\cd.yml = .azure-devops\workflows\cd.yml
+		.azure-devops\workflows\ci.yml = .azure-devops\workflows\ci.yml
 	EndProjectSection
 EndProject
 Global

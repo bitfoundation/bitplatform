@@ -15,14 +15,20 @@
             2. Create a new project using the Template installed
         </div>
         <div class="code-box">dotnet new bit-admin</div>
+        <div class="section-card-txt"><span class="bold-txt">Note</span>: By default, the current folder name will be considered as the solution name. If you want to choose another name, use the switch -n as below.</div>
+        <div class="code-box">dotnet new bit-admin -n [YourSolutionName]</div>
         <div class="section-card-txt">
-            Or create a new project with the Visual Studio.
+            During the project construction, you will be prompted to install the LibSassBuilder global tool and generate CSS from SCSS files. Select "Yes" to both requests.
+            CSS files will automatically be generated from SCSS files after each build, and the <a href="https://marketplace.visualstudio.com/items?itemName=Failwyn.WebCompiler64" target="_blank">Web Compiler 2022+ extension</a> in Visual Studio and the <a href="https://marketplace.visualstudio.com/items?itemName=glenn2223.live-sass" target="_blank">Live Sass Compiler Extension</a> in Visual Studio Code will also generate CSS immediately after saving SCSS files.
+            This allows for real-time changes to be viewed in the browser without losing state, thanks to dotnet hot reload.
+        </div>
+        <div class="section-card-txt">
+            You can also create a new project with the Visual Studio.
         </div>
         <div class="image-container">
             <img class="image" alt="Create new project" width="1265" height="834" src="/images/demo/create-project-admin.webp" />
         </div>
-        <div class="section-card-txt"><span class="bold-txt">Note</span>: By default, the current folder name will be considered as the solution name. If you want to choose another name, use the switch -n as below.</div>
-        <div class="code-box">dotnet new Bit.AdminPanel -n [YourSolutionName]</div>
+
     </section>
 </div>
 
