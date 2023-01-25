@@ -208,16 +208,11 @@
                         <OptionTemplate Context="option">
                             <div class="nav-group-custom-option @(option.IsEnabled is false ? "disabled-option" : "")">
                                 <BitCheckbox IsEnabled="@(option.IsEnabled)" />
-                                @if (option.IconName.HasValue)
-                                {
-                                    <BitIcon IconName="@option.IconName.Value" />
-                                }
                                 <span>@option.Text</span>
                             </div>
                         </OptionTemplate>
                         <ChildContent>
                             <BitNavOption Text="Fast-Foods"
-                                          IconName="BitIconName.HeartBroken"
                                           IsExpanded="true">
                                 <BitNavOption Text="Burgers">
                                     <BitNavOption Text="Beef Burger" />

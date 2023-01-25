@@ -2,11 +2,13 @@
 
 ::deep {
     .nav-group-custom-header {
+        text-align: left;
         color: green;
     }
 
     .nav-group-custom-option {
         display: flex;
+        align-items: center;
         flex-flow: row nowrap;
         color: #ff7800;
         font-weight: 600;

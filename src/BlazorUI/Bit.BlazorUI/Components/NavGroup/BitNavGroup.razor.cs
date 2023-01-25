@@ -7,7 +7,7 @@ public partial class BitNavGroup : IDisposable
     private bool SelectedKeyHasBeenSet;
     private string? selectedKey;
 
-    private IList<BitNavOption> _options = new List<BitNavOption>();
+    internal IList<BitNavOption> _options = new List<BitNavOption>();
 
     [Inject] private NavigationManager _navigationManager { get; set; } = default!;
 
@@ -145,11 +145,11 @@ public partial class BitNavGroup : IDisposable
 
     internal async Task ToggleOption(BitNavOption option)
     {
-        if (option.IsEnabled is false || option._options.Any() is false) return;
+        if (option.IsEnabled is false) return;
 
         option.SetIsExpanded(!option.IsExpanded);
 
-        await OnOptionClick.InvokeAsync(option);
+        await OnOptionToggle.InvokeAsync(option);
     }
 
     internal void RegisterOptions(BitNavOption option)

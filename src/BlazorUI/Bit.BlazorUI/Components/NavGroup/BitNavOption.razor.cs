@@ -4,7 +4,8 @@ namespace Bit.BlazorUI;
 public partial class BitNavOption : IDisposable
 {
     internal IList<BitNavOption> _options = new List<BitNavOption>();
-
+    internal ElementStyleBuilder _internalStyleBuilder => StyleBuilder;
+    internal ElementClassBuilder _internalClassBuilder => ClassBuilder;
     [CascadingParameter] protected BitNavGroup NavGroup { get; set; } = default!;
     [CascadingParameter] protected BitNavOption? NavOption { get; set; }
 

@@ -1,5 +1,4 @@
-﻿
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 namespace Bit.BlazorUI.Components.NavGroup;
 
@@ -23,14 +22,15 @@ public partial class _BitNavGroupChild
 
     [Parameter] public BitNavOption Option { get; set; } = default!;
 
-    private string GetOptionClasses(BitNavOption option)
+    private string GetOptionClasses()
     {
-        var enabledClass = option.IsEnabled ? "enabled" : "disabled";
-        var hasUrlClass = option.Url.HasNoValue() ? "nourl" : "hasurl";
+        var enabledClass = Option.IsEnabled is false ? "disabled" : "";
 
-        var isSelected = option.Key == Parent.SelectedKey ? "selected" : "";
+        var isSelected = Option.Key == Parent.SelectedKey ? "selected" : "";
 
-        return $"link-{enabledClass}-{hasUrlClass} {isSelected}";
+        var isHeader = Parent.RenderType == BitNavGroupRenderType.Grouped && Parent._options.Any(o => o == Option) ? "group-header" : "";
+
+        return $"{enabledClass} {isSelected} {isHeader}";
     }
 
     private static bool IsRelativeUrl(string url)

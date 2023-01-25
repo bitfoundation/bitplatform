@@ -1,81 +1,92 @@
 ﻿
-<li class="nav-item" role="listitem">
-    <div class="composite-link @(Option.IsEnabled is false ? "disabled" : "")" name="@Option.Text">
-        @if (Option._options?.Any() ?? false)
+<li @ref="Option.RootElement" @attributes="Option.HtmlAttributes"
+    style="@Option._internalStyleBuilder.Value"
+    class="@Option._internalClassBuilder.Value"
+    aria-label="@Option.AriaLabel"
+    role="listitem">
+
+    <div style="padding: 0 10px 0 @(Option._options.Any() ? (Depth * 14) + 10 : (Depth * 28) + 10)px;"
+         class="option-container @GetOptionClasses()"
+         name="@Option.Text">
+
+        @if ((Parent.RenderType is BitNavGroupRenderType.Normal && Option._options.Any()) ||
+             (Parent.RenderType is BitNavGroupRenderType.Grouped && Option._options.Any() && Parent._options.Any(o => o.Key == Option.Key) is false))
         {
-            <button class="chevron-btn"
-                    style="margin-left: @((Depth * 14).ToString() + "px");"
+            <button @onclick="(() => Parent.ToggleOption(Option))"
+                    class="chevron-btn"
                     type="button"
                     tabindex="0"
                     aria-label="@(Option.IsExpanded ? Option.CollapseAriaLabel : Option.ExpandAriaLabel)"
-                    aria-expanded="@(Option.IsExpanded ? "true" : "false")"
-                    @onclick="(() => Parent.ToggleOption(Option))">
+                    aria-expanded="@(Option.IsExpanded ? "true" : "false")">
                 <i class="bit-icon bit-icon--ChevronDown @(Option.IsExpanded ? "expand" : "")" aria-hidden="true"></i>
             </button>
         }
 
         @if (Option.Url.HasValue() || Option.ForceAnchor)
         {
-            <a class="@GetOptionClasses(Option)"
-               style="padding: 0 20px 0 @(((Depth * 14) + 27).ToString() + "px"); @Option.Style;"
+            <a @onclick="(() => Parent.HandleOnClick(Option))"
                href="@(Option.IsEnabled ? Option.Url : null)"
                target="@Option.Target"
+               class="option"
+               tabindex="-1"
                title="@(Option.Title is not null ? Option.Title : Option.Text)"
                disabled="@(Option.IsEnabled is false)"
                aria-label="@Option.AriaLabel"
                aria-current="@(Option.Key == Parent.SelectedKey ? _ariaCurrentMap[Option.AriaCurrent] : null)"
-               tabindex="-1"
-               rel="@(Option.Url.HasValue() && Option.Target.HasValue() && IsRelativeUrl(Option.Url!) is false ? "noopener noreferrer" : null)"
-               @onclick="(() => Parent.HandleOnClick(Option))">
+               rel="@(Option.Url.HasValue() && Option.Target.HasValue() && IsRelativeUrl(Option.Url!) is false ? "noopener noreferrer" : null)">
 
-                <div class="link-container">
-                    @if (Parent.OptionTemplate is not null)
+                @if (Parent.RenderType is BitNavGroupRenderType.Grouped && Parent._options.Any(o => o.Key == Option.Key) && Parent.HeaderTemplate is not null)
+                {
+                    @Parent.HeaderTemplate(Option)
+                }
+                else if (Parent.OptionTemplate is not null)
+                {
+                    @Parent.OptionTemplate(Option)
+                }
+                else
+                {
+                    @if (Option.IconName.HasValue)
                     {
-                        @Parent.OptionTemplate(Option)
+                        <i class=@($"bit-icon bit-icon--{Option.IconName.GetName()} option-icon") aria-hidden="true"></i>
                     }
-                    else
-                    {
-                        @if (Option.IconName.HasValue)
-                        {
-                            <i class=@($"bit-icon bit-icon--{Option.IconName.GetName()}") aria-hidden="true"></i>
-                        }
-                        <div class="link-txt">@Option.Text</div>
-                    }
-                </div>
+                    <span class="option-txt">@Option.Text</span>
+                }
             </a>
         }
         else
         {
-            <button class="@GetOptionClasses(Option)"
-                    style="padding: 0 20px 0 @(((Depth * 14) + 27).ToString() + "px"); @Option.Style;"
+            <button @onclick="(() => Parent.HandleOnClick(Option))"
+                    class="option"
                     title="@(Option.Title is not null ? Option.Title : Option.Text)"
                     disabled="@(Option.IsEnabled is false)"
                     aria-label="@Option.AriaLabel"
                     aria-current="@(Option.Key == Parent.SelectedKey ? _ariaCurrentMap[Option.AriaCurrent] : null)"
                     tabindex="-1"
-                    type="button"
-                    @onclick="(() => Parent.HandleOnClick(Option))">
-                <div class="link-container">
-                    @if (Parent.OptionTemplate is not null)
+                    type="button">
+
+                @if (Parent.RenderType is BitNavGroupRenderType.Grouped && Parent._options.Any(o => o.Key == Option.Key) && Parent.HeaderTemplate is not null)
+                {
+                    @Parent.HeaderTemplate(Option)
+                }
+                else if (Parent.OptionTemplate is not null)
+                {
+                    @Parent.OptionTemplate(Option)
+                }
+                else
+                {
+                    @if (Option.IconName.HasValue)
                     {
-                        @Parent.OptionTemplate(Option)
+                        <i class=@($"bit-icon bit-icon--{Option.IconName.GetName()} option-icon") aria-hidden="true"></i>
                     }
-                    else
-                    {
-                        @if (Option.IconName.HasValue)
-                        {
-                            <i class=@($"bit-icon bit-icon--{Option.IconName.GetName()}") aria-hidden="true"></i>
-                        }
-                        <div class="link-txt">@Option.Text</div>
-                    }
-                </div>
+                    <span class="option-txt">@Option.Text</span>
+                }
             </button>
         }
     </div>
 
-    @if ((Option._options?.Any() ?? false) && Option.IsExpanded)
+    @if ((Option._options.Any()) && Option.IsExpanded)
     {
-        <ul class="nav-items" role="list">
+        <ul role="list">
             <CascadingValue Value="@Parent" IsFixed="true">
                 @foreach (var childitem in Option._options)
                 {
