@@ -3,12 +3,12 @@ namespace Bit.BlazorUI;
 
 public partial class BitNavOption : IDisposable
 {
-    internal IList<BitNavOption> _options = new List<BitNavOption>();
-    internal ElementStyleBuilder _internalStyleBuilder => StyleBuilder;
-    internal ElementClassBuilder _internalClassBuilder => ClassBuilder;
+    internal IList<BitNavOption> Options = new List<BitNavOption>();
+    internal ElementStyleBuilder InternalStyleBuilder => StyleBuilder;
+    internal ElementClassBuilder InternalClassBuilder => ClassBuilder;
 
     [CascadingParameter] protected BitNavGroup NavGroup { get; set; } = default!;
-    [CascadingParameter] protected BitNavOption? NavOption { get; set; }
+    [CascadingParameter] protected BitNavOption? Parent { get; set; }
 
     /// <summary>
     /// Aria-current token for active nav option.
@@ -78,17 +78,33 @@ public partial class BitNavOption : IDisposable
 
     protected override async Task OnInitializedAsync()
     {        
-        if (NavOption is null)
+        if (Parent is null)
         {
             NavGroup.RegisterOptions(this);
         }
-
-        if (NavOption is not null)
+        else
         {
-            NavGroup.RegisterChildOptions(NavOption, this);
+            Parent.RegisterOptions(this);
+            NavGroup.InternalStateHasChanged();
         }
 
         await base.OnInitializedAsync();
+    }
+
+    internal void RegisterOptions(BitNavOption option)
+    {
+        if (option.Key.HasNoValue())
+        {
+            option.Key = $"{Key}-{Options.Count}";
+        }
+        Options.Add(option);
+        StateHasChanged();
+    }
+
+    internal void UnregisterOptions(BitNavOption option)
+    {
+        Options.Remove(option);
+        StateHasChanged();
     }
 
     public void Dispose()
@@ -99,14 +115,14 @@ public partial class BitNavOption : IDisposable
 
     protected virtual void Dispose(bool disposing)
     {
-        if (NavOption is null)
+        if (Parent is null)
         {
             NavGroup.UnregisterOptions(this);
         }
-
-        if (NavOption is not null)
+        else
         {
-            NavGroup.UnregisterChildOptions(NavOption, this);
+            Parent.UnregisterOptions(this);
+            NavGroup.InternalStateHasChanged();
         }
     }
 }

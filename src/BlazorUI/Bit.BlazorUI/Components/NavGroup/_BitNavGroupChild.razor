@@ -1,16 +1,16 @@
 ﻿
 <li @ref="Option.RootElement" @attributes="Option.HtmlAttributes"
-    style="@Option._internalStyleBuilder.Value"
-    class="@Option._internalClassBuilder.Value"
+    style="@Option.InternalStyleBuilder.Value"
+    class="@Option.InternalClassBuilder.Value"
     aria-label="@Option.AriaLabel"
     role="listitem">
 
-    <div style="padding: 0 10px 0 @(Option._options.Any() ? (Depth * 14) + 10 : (Depth * 28) + 10)px;"
+    <div style="padding: 0 10px 0 @(Option.Options.Any() ? (Depth * 14) + 10 : (Depth * 28) + 10)px;"
          class="option-container @GetOptionClasses()"
          name="@Option.Text">
 
-        @if ((Parent.RenderType is BitNavRenderType.Normal && Option._options.Any()) ||
-             (Parent.RenderType is BitNavRenderType.Grouped && Option._options.Any() && Parent._options.Any(o => o.Key == Option.Key) is false))
+        @if ((NavGroup.RenderType is BitNavRenderType.Normal && Option.Options.Any()) ||
+             (NavGroup.RenderType is BitNavRenderType.Grouped && Option.Options.Any() && NavGroup.Options.Any(o => o.Key == Option.Key) is false))
         {
             <button @onclick="ToggleOption"
                     class="chevron-btn"
@@ -32,16 +32,16 @@
                title="@(Option.Title is not null ? Option.Title : Option.Text)"
                disabled="@(Option.IsEnabled is false)"
                aria-label="@Option.AriaLabel"
-               aria-current="@(Option.Key == Parent.SelectedKey ? _ariaCurrentMap[Option.AriaCurrent] : null)"
+               aria-current="@(Option.Key == NavGroup.SelectedKey ? _ariaCurrentMap[Option.AriaCurrent] : null)"
                rel="@(Option.Url.HasValue() && Option.Target.HasValue() && IsRelativeUrl(Option.Url!) is false ? "noopener noreferrer" : null)">
 
-                @if (Parent.RenderType is BitNavRenderType.Grouped && Parent._options.Any(o => o.Key == Option.Key) && Parent.HeaderTemplate is not null)
+                @if (NavGroup.RenderType is BitNavRenderType.Grouped && NavGroup.Options.Any(o => o.Key == Option.Key) && NavGroup.HeaderTemplate is not null)
                 {
-                    @Parent.HeaderTemplate(Option)
+                    @NavGroup.HeaderTemplate(Option)
                 }
-                else if (Parent.OptionTemplate is not null)
+                else if (NavGroup.OptionTemplate is not null)
                 {
-                    @Parent.OptionTemplate(Option)
+                    @NavGroup.OptionTemplate(Option)
                 }
                 else
                 {
@@ -60,17 +60,17 @@
                     title="@(Option.Title is not null ? Option.Title : Option.Text)"
                     disabled="@(Option.IsEnabled is false)"
                     aria-label="@Option.AriaLabel"
-                    aria-current="@(Option.Key == Parent.SelectedKey ? _ariaCurrentMap[Option.AriaCurrent] : null)"
+                    aria-current="@(Option.Key == NavGroup.SelectedKey ? _ariaCurrentMap[Option.AriaCurrent] : null)"
                     tabindex="-1"
                     type="button">
 
-                @if (Parent.RenderType is BitNavRenderType.Grouped && Parent._options.Any(o => o.Key == Option.Key) && Parent.HeaderTemplate is not null)
+                @if (NavGroup.RenderType is BitNavRenderType.Grouped && NavGroup.Options.Any(o => o.Key == Option.Key) && NavGroup.HeaderTemplate is not null)
                 {
-                    @Parent.HeaderTemplate(Option)
+                    @NavGroup.HeaderTemplate(Option)
                 }
-                else if (Parent.OptionTemplate is not null)
+                else if (NavGroup.OptionTemplate is not null)
                 {
-                    @Parent.OptionTemplate(Option)
+                    @NavGroup.OptionTemplate(Option)
                 }
                 else
                 {
@@ -84,11 +84,11 @@
         }
     </div>
 
-    @if ((Option._options.Any()) && Option.IsExpanded)
+    @if ((Option.Options.Any()) && Option.IsExpanded)
     {
         <ul role="list">
-            <CascadingValue Value="@Parent" IsFixed="true">
-                @foreach (var childitem in Option._options)
+            <CascadingValue Value="@NavGroup" IsFixed="true">
+                @foreach (var childitem in Option.Options)
                 {
                     <_BitNavGroupChild Option="childitem" Depth="Depth + 1" />
                 }

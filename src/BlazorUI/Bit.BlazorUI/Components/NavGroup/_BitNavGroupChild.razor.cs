@@ -16,7 +16,7 @@ public partial class _BitNavGroupChild
         [BitNavItemAriaCurrent.True] = "true"
     };
 
-    [CascadingParameter] protected BitNavGroup Parent { get; set; } = default!;
+    [CascadingParameter] protected BitNavGroup NavGroup { get; set; } = default!;
 
     [Parameter] public int Depth { get; set; }
 
@@ -26,17 +26,17 @@ public partial class _BitNavGroupChild
     {
         if (Option.IsEnabled == false) return;
 
-        await Parent.OnOptionClick.InvokeAsync(Option);
+        await NavGroup.OnOptionClick.InvokeAsync(Option);
 
-        if (Option._options.Any() && Option.Url.HasNoValue())
+        if (Option.Options.Any() && Option.Url.HasNoValue())
         {
             await ToggleOption();
         }
-        else if (Parent.Mode == BitNavMode.Manual)
+        else if (NavGroup.Mode == BitNavMode.Manual)
         {
-            Parent.SelectedKey = Option.Key;
+            NavGroup.SelectedKey = Option.Key;
 
-            await Parent.OnSelectOption.InvokeAsync(Option);
+            await NavGroup.OnSelectOption.InvokeAsync(Option);
 
             StateHasChanged();
         }
@@ -48,16 +48,16 @@ public partial class _BitNavGroupChild
 
         Option.IsExpanded = !Option.IsExpanded;
 
-        await Parent.OnOptionToggle.InvokeAsync(Option);
+        await NavGroup.OnOptionToggle.InvokeAsync(Option);
     }
 
     private string GetOptionClasses()
     {
         var enabledClass = Option.IsEnabled is false ? "disabled" : "";
 
-        var isSelected = Option.Key == Parent.SelectedKey ? "selected" : "";
+        var isSelected = Option.Key == NavGroup.SelectedKey ? "selected" : "";
 
-        var isHeader = Parent.RenderType == BitNavRenderType.Grouped && Parent._options.Any(o => o == Option) ? "group-header" : "";
+        var isHeader = NavGroup.RenderType == BitNavRenderType.Grouped && NavGroup.Options.Any(o => o == Option) ? "group-header" : "";
 
         return $"{enabledClass} {isSelected} {isHeader}";
     }

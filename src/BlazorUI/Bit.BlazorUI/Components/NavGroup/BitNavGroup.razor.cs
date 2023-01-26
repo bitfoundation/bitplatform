@@ -7,7 +7,7 @@ public partial class BitNavGroup : IDisposable
     private bool SelectedKeyHasBeenSet;
     private string? selectedKey;
 
-    internal IList<BitNavOption> _options = new List<BitNavOption>();
+    internal IList<BitNavOption> Options = new List<BitNavOption>();
 
     [Inject] private NavigationManager _navigationManager { get; set; } = default!;
 
@@ -69,7 +69,7 @@ public partial class BitNavGroup : IDisposable
             if (value == selectedKey) return;
             selectedKey = value;
             SelectedKeyChanged.InvokeAsync(value);
-            ExpandParents(_options);
+            ExpandParents(Options);
         }
     }
     [Parameter] public EventCallback<string> SelectedKeyChanged { get; set; }
@@ -92,7 +92,7 @@ public partial class BitNavGroup : IDisposable
         await base.OnInitializedAsync();
     }
 
-    private static List<BitNavOption> Flatten(IList<BitNavOption> e) => e.SelectMany(c => Flatten(c._options)).Concat(e).ToList();
+    private static List<BitNavOption> Flatten(IList<BitNavOption> e) => e.SelectMany(c => Flatten(c.Options)).Concat(e).ToList();
 
     private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
     {
@@ -104,7 +104,7 @@ public partial class BitNavGroup : IDisposable
     private void SelectOptionByCurrentUrl()
     {
         var currentUrl = _navigationManager.Uri.Replace(_navigationManager.BaseUri, "/", StringComparison.Ordinal);
-        var currentOption = Flatten(_options).FirstOrDefault(option => option.Url == currentUrl);
+        var currentOption = Flatten(Options).FirstOrDefault(option => option.Url == currentUrl);
 
         SelectedKey = currentOption?.Key;
     }
@@ -113,7 +113,7 @@ public partial class BitNavGroup : IDisposable
     {
         foreach (var option in options)
         {
-            if (option.Key == SelectedKey || (option._options.Any() && ExpandParents(option._options)))
+            if (option.Key == SelectedKey || (option.Options.Any() && ExpandParents(option.Options)))
             {
                 return option.IsExpanded = true;
             }
@@ -126,32 +126,21 @@ public partial class BitNavGroup : IDisposable
     {
         if (option.Key.HasNoValue())
         {
-            option.Key = $"{_options.Count}";
+            option.Key = $"{Options.Count}";
         }
-        _options.Add(option);
+        Options.Add(option);
         StateHasChanged();
     }
 
     internal void UnregisterOptions(BitNavOption option)
     {
-        _options.Remove(option);
+        Options.Remove(option);
         StateHasChanged();
     }
 
-    internal void RegisterChildOptions(BitNavOption parent, BitNavOption option)
+    internal void InternalStateHasChanged()
     {
-        if (option.Key.HasNoValue())
-        {
-            option.Key = $"{parent.Key}-{parent._options.Count}";
-        }
-        Flatten(_options).FirstOrDefault(i => i == parent)?._options.Add(option);
-        StateHasChanged();
-    }
-
-    internal void UnregisterChildOptions(BitNavOption parent, BitNavOption option)
-    {
-        Flatten(_options).FirstOrDefault(i => i == parent)?._options.Remove(option);
-        StateHasChanged();
+        base.StateHasChanged();
     }
 
     public void Dispose()

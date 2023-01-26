@@ -14,7 +14,7 @@
 
     <ul role="list">
         <CascadingValue Value="this" IsFixed="true">
-            @foreach (var childOption in _options)
+            @foreach (var childOption in Options)
             {
                 <_BitNavGroupChild Option="childOption" Depth="0" />
             }
