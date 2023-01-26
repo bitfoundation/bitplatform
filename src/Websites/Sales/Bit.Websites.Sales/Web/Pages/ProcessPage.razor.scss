@@ -1,6 +1,152 @@
-﻿@import '../wwwroot/styles/abstracts/_colors.scss';
-@import '../wwwroot/styles/abstracts/_media-queries.scss';
-@import '../wwwroot/styles/abstracts/_functions.scss';
+﻿@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_media-queries.scss';
+@import '../Styles/abstracts/_functions.scss';
+
+.page-sec {
+    width: 100%;
+    display: flex;
+    max-width: rem(1440px);
+    box-sizing: border-box;
+    padding: rem(40px) rem(140px);
+    margin: 0 auto;
+
+    @include lg {
+        padding: rem(32px) rem(60px);
+    }
+
+    @include sm {
+        padding: rem(16px) rem(30px);
+    }
+}
+
+.sec-title {
+    font-weight: bold;
+    font-size: rem(44px);
+    margin-bottom: 1rem;
+    text-align: center;
+
+    @include lg {
+        font-size: rem(34px);
+    }
+
+    @include md {
+        font-size: rem(30px);
+    }
+
+    @include sm {
+        font-size: rem(26px);
+    }
+}
+
+.sec-title-underline {
+    background-color: $Y1;
+    width: rem(240px);
+    height: rem(4px);
+    margin-bottom: 2rem;
+
+    @include lg {
+        width: rem(200px);
+        height: rem(2px);
+    }
+
+    @include md {
+        width: rem(180px);
+    }
+
+    @include sm {
+        width: rem(150px);
+    }
+}
+
+.sec-content {
+    color: $Gray2;
+    font-size: rem(20px);
+    text-align: center;
+    line-height: 2rem;
+    margin-bottom: 4rem;
+
+    @include md {
+        font-size: rem(18px);
+    }
+
+    @include sm {
+        font-size: rem(16px);
+    }
+}
+
+
+.process-bg {
+    background-image: url('/images/process/process_bg.webp');
+    background-repeat: no-repeat;
+    background-size: cover;
+    margin-bottom: rem(140px);
+
+    .process-us {
+        padding-top: rem(180px);
+        display: flex;
+        flex-flow: column;
+        align-items: center;
+
+        .process-title {
+            font-weight: 800;
+            font-size: rem(40px);
+            line-height: rem(52px);
+            color: $B2;
+            margin-bottom: rem(24px);
+        }
+
+        .process-bread {
+            font-weight: 400;
+            font-size: rem(16px);
+            line-height: rem(24px);
+            color: $Gray2;
+        }
+    }
+
+    .success-is-journey {
+        flex-flow: row nowrap;
+        justify-content: flex-start;
+        align-items: flex-start;
+        padding-top: rem(96px);
+
+        .sec-body {
+            .sec-title {
+                font-weight: 700;
+                font-size: rem(40px);
+                line-height: rem(52px);
+                text-align: unset;
+                margin-bottom: rem(24px);
+
+                @include sm {
+                    font-size: rem(34px);
+                    text-align: center;
+                }
+            }
+
+            .sec-desc {
+                font-weight: 400;
+                font-size: rem(20px);
+                line-height: rem(32px);
+                color: $Gray1;
+                max-width: rem(880px);
+
+                @include sm {
+                    font-size: rem(18px);
+                    text-align: center;
+                }
+            }
+        }
+    }
+}
+
+.sw-dev-cycle {
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    padding-top: 4rem;
+}
+
+
 
 .page-top-section {
     position: relative;
@@ -443,24 +589,5 @@
             background-position: top rem(51px) center;
             background-size: rem(77px) rem(95px);
         }
-    }
-}
-
-//Minor-Media-Queries===========================================================
-@media all and (max-width: em(660px)) {
-    .process-divider {
-        top: rem(300px);
-    }
-}
-
-@media all and (max-width: em(480px)) {
-    .process-divider {
-        top: rem(400px);
-    }
-}
-
-@media all and (max-width: em(410px)) {
-    .process-divider {
-        top: rem(480px);
     }
 }

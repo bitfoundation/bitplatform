@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 #elif BlazorWebAssembly
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using Blazored.Toast;
 #endif
 
 namespace Bit.Websites.Sales.Web;
@@ -29,8 +28,6 @@ public class Program
 
         builder.Services.AddSharedServices();
         builder.Services.AddAppServices();
-
-        builder.Services.AddBlazoredToast();
 
         return builder.Build();
     }

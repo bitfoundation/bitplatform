@@ -1,29 +1,32 @@
-﻿@import '../wwwroot/styles/abstracts/_colors.scss';
-@import '../wwwroot/styles/abstracts/_media-queries.scss';
-@import '../wwwroot/styles/abstracts/_functions.scss';
-@import '../wwwroot/styles/abstracts/_mixins.scss';
+﻿@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_media-queries.scss';
+@import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_mixins.scss';
 
 .header {
-    position: fixed;
     top: 0;
-    z-index: 100;
+    width: 100%;
+    position: absolute;
+    background: transparent;
+}
+
+.header-container {
     display: flex;
+    align-items: center;
     flex-flow: row nowrap;
     justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    height: rem(146px);
-    padding: 0 rem(120px);
-    box-sizing: border-box;
-    background-color: $White;
+    max-width: rem(1440px);
+    padding: rem(40px) rem(140px);
+    margin: 0 auto;
 
-    @include md {
-        padding: 0 rem(60px);
+    @include lg {
+        padding: rem(32px) rem(60px);
     }
+}
 
-    @include sm {
-        padding: 0 rem(30px);
-    }
+.logo-container {
+    flex-grow: 1;
+    display: flex;
 }
 
 .header-shadow {
@@ -31,17 +34,9 @@
 }
 
 .bit-logo {
-    width: rem(70px);
-    height: rem(70px);
-    background-image: url('/images/shared/bit-logo.svg');
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: cover;
-
-    @include sm {
-        width: rem(50px);
-        height: rem(50px);
-    }
+    width: rem(36px);
+    height: rem(24px);
+    background-image: url('/images/shared/bit-logo.png');
 }
 
 .header-content {
@@ -49,7 +44,7 @@
     flex-flow: row nowrap;
     align-items: center;
 
-    @include sm {
+    @include md {
         display: none;
     }
 }
@@ -60,15 +55,15 @@
     font-weight: 600;
     font-size: rem(16px);
     line-height: rem(22px);
-    color: $Black;
+    color: $Gray1;
 
     &:hover {
-        color: $Accent;
+        color: $B2;
     }
 }
 
 .header-lnk--active {
-    color: $Accent;
+    color: $B2;
 }
 
 .header-lnk-border {
@@ -77,7 +72,7 @@
     left: 0;
     width: 100%;
     height: rem(4px);
-    background-color: $Accent;
+    background-color: $B2;
 }
 
 .header-btn {
@@ -102,19 +97,19 @@
     background-size: rem(24px);
     cursor: pointer;
 
-    @include sm {
+    @include md {
         display: inline-block;
         right: rem(22px);
     }
 }
 
 .menu-shadow {
-    display: none;
-    justify-content: flex-start;
+    display: flex;
+    justify-content: flex-end;
     align-items: flex-start;
     position: fixed;
     top: 0;
-    left: 0;
+    right: 0;
     width: 100%;
     height: 100vh;
     background-color: rgba(0, 0, 0, 0.6);

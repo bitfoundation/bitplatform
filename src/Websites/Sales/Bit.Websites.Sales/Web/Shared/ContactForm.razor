@@ -1,0 +1,40 @@
+﻿@inherits AppComponentBase
+
+<div class="contact-bg">
+    <section class="section-container" id="contactus">
+        <div class="secondary-title">START</div>
+        <div class="title">Work with us</div>
+        <div class="title-underline"></div>
+
+        <EditForm class="form" Model="_contactUs" OnValidSubmit="WrapHandled(DoSubmit)">
+            <DataAnnotationsValidator />
+
+            <ValidationSummary style="color:red" />
+
+            <div class="input-row">
+                <div class="input-container">
+                    <BitTextField Label="Email *" @bind-Value="_contactUs.Email" Class="text-field" />
+                    @*<ValidationMessage For="() => _contactUs.Email" />*@
+                </div>
+                <div class="input-container">
+                    <BitTextField Label="Name *" @bind-Value="_contactUs.Name" Class="text-field" />
+                    @*<ValidationMessage For="() => _contactUs.Name" />*@
+                </div>
+            </div>
+
+            <div class="text-area-container">
+                <BitTextField Label="Tell us about your project" @bind-Value="_contactUs.Information" IsMultiline="true" Rows="3" Class="text-area" />
+            </div>
+
+            <BitLoadingButton IsLoading="_isLoading"
+                              Title="Send"
+                              AriaLabel="Send"
+                              Class="submit-btn--primary"
+                              ButtonStyle="BitButtonStyle.Primary"
+                              ButtonType="BitButtonType.Submit">
+                Send
+            </BitLoadingButton>
+        </EditForm>
+
+    </section>
+</div>

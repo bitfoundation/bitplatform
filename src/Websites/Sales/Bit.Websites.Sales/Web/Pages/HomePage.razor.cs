@@ -6,6 +6,7 @@ namespace Bit.Websites.Sales.Web.Pages;
 public partial class HomePage
 {
     private Case[] Cases { get; set; } = Array.Empty<Case>();
+    private BitCarousel? _carouselRef;
 
     protected override async Task OnInitAsync()
     {
