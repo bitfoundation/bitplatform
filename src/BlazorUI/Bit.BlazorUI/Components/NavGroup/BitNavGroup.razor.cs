@@ -113,50 +113,20 @@ public partial class BitNavGroup : IDisposable
     {
         foreach (var option in options)
         {
-            if (option.Key == SelectedKey || (option._options.Any() && ExpandParents(option._options))) 
+            if (option.Key == SelectedKey || (option._options.Any() && ExpandParents(option._options)))
             {
-                option.SetIsExpanded(true);
-                return true;
+                return option.IsExpanded = true;
             }
         }
 
         return false;
     }
 
-    internal async Task HandleOnClick(BitNavOption option)
-    {
-        if (option.IsEnabled == false) return;
-
-        await OnOptionClick.InvokeAsync(option);
-
-        if (option._options.Any() && option.Url.HasNoValue())
-        {
-            await ToggleOption(option);
-        }
-        else if (Mode == BitNavMode.Manual)
-        {
-            SelectedKey = option.Key;
-
-            await OnSelectOption.InvokeAsync(option);
-
-            StateHasChanged();
-        }
-    }
-
-    internal async Task ToggleOption(BitNavOption option)
-    {
-        if (option.IsEnabled is false) return;
-
-        option.SetIsExpanded(!option.IsExpanded);
-
-        await OnOptionToggle.InvokeAsync(option);
-    }
-
     internal void RegisterOptions(BitNavOption option)
     {
         if (option.Key.HasNoValue())
         {
-            option.SetKey($"{_options.Count}");
+            option.Key = $"{_options.Count}";
         }
         _options.Add(option);
         StateHasChanged();
@@ -172,7 +142,7 @@ public partial class BitNavGroup : IDisposable
     {
         if (option.Key.HasNoValue())
         {
-            option.SetKey($"{parent.Key}-{parent._options.Count}");
+            option.Key = $"{parent.Key}-{parent._options.Count}";
         }
         Flatten(_options).FirstOrDefault(i => i == parent)?._options.Add(option);
         StateHasChanged();

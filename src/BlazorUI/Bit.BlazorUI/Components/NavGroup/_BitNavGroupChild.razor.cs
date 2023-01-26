@@ -22,6 +22,35 @@ public partial class _BitNavGroupChild
 
     [Parameter] public BitNavOption Option { get; set; } = default!;
 
+    private async Task HandleOnClick()
+    {
+        if (Option.IsEnabled == false) return;
+
+        await Parent.OnOptionClick.InvokeAsync(Option);
+
+        if (Option._options.Any() && Option.Url.HasNoValue())
+        {
+            await ToggleOption();
+        }
+        else if (Parent.Mode == BitNavMode.Manual)
+        {
+            Parent.SelectedKey = Option.Key;
+
+            await Parent.OnSelectOption.InvokeAsync(Option);
+
+            StateHasChanged();
+        }
+    }
+
+    private async Task ToggleOption()
+    {
+        if (Option.IsEnabled is false) return;
+
+        Option.IsExpanded = !Option.IsExpanded;
+
+        await Parent.OnOptionToggle.InvokeAsync(Option);
+    }
+
     private string GetOptionClasses()
     {
         var enabledClass = Option.IsEnabled is false ? "disabled" : "";

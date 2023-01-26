@@ -12,7 +12,7 @@
         @if ((Parent.RenderType is BitNavRenderType.Normal && Option._options.Any()) ||
              (Parent.RenderType is BitNavRenderType.Grouped && Option._options.Any() && Parent._options.Any(o => o.Key == Option.Key) is false))
         {
-            <button @onclick="(() => Parent.ToggleOption(Option))"
+            <button @onclick="ToggleOption"
                     class="chevron-btn"
                     type="button"
                     tabindex="0"
@@ -24,7 +24,7 @@
 
         @if (Option.Url.HasValue() || Option.ForceAnchor)
         {
-            <a @onclick="(() => Parent.HandleOnClick(Option))"
+            <a @onclick="HandleOnClick"
                href="@(Option.IsEnabled ? Option.Url : null)"
                target="@Option.Target"
                class="option"
@@ -55,7 +55,7 @@
         }
         else
         {
-            <button @onclick="(() => Parent.HandleOnClick(Option))"
+            <button @onclick="HandleOnClick"
                     class="option"
                     title="@(Option.Title is not null ? Option.Title : Option.Text)"
                     disabled="@(Option.IsEnabled is false)"

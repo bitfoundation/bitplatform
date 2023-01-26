@@ -6,6 +6,7 @@ public partial class BitNavOption : IDisposable
     internal IList<BitNavOption> _options = new List<BitNavOption>();
     internal ElementStyleBuilder _internalStyleBuilder => StyleBuilder;
     internal ElementClassBuilder _internalClassBuilder => ClassBuilder;
+
     [CascadingParameter] protected BitNavGroup NavGroup { get; set; } = default!;
     [CascadingParameter] protected BitNavOption? NavOption { get; set; }
 
@@ -89,9 +90,6 @@ public partial class BitNavOption : IDisposable
 
         await base.OnInitializedAsync();
     }
-
-    internal void SetIsExpanded(bool value) => IsExpanded = value;
-    internal void SetKey(string value) => Key = value;
 
     public void Dispose()
     {
