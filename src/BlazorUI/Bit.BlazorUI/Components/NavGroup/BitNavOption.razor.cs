@@ -1,5 +1,4 @@
 ﻿using System.Text.RegularExpressions;
-using Microsoft.Extensions.Options;
 
 namespace Bit.BlazorUI;
 
@@ -186,7 +185,7 @@ public partial class BitNavOption : IDisposable
 
         IsExpanded = !IsExpanded;
 
-        await NavGroup.OnOptionToggle.InvokeAsync();
+        await NavGroup.OnOptionToggle.InvokeAsync(this);
     }
 
     private bool HasChevronButton()
@@ -197,20 +196,20 @@ public partial class BitNavOption : IDisposable
 
     private string GetOptionClasses()
     {
-        var enabledClass = NavGroup?.IsEnabled is false || IsEnabled is false ? "disabled" : "";
+        if (NavGroup is null) return string.Empty;
 
-        var isSelected = NavGroup?.SelectedKey == _internalKey ? "selected" : "";
+        var enabledClass = NavGroup.IsEnabled is false || IsEnabled is false ? "disabled" : "";
 
-        var isHeader = NavGroup?.RenderType == BitNavRenderType.Grouped && Parent is null ? "group-header" : "";
+        var isSelected = NavGroup.SelectedKey == _internalKey ? "selected" : "";
+
+        var isHeader = NavGroup.RenderType == BitNavRenderType.Grouped && Parent is null ? "group-header" : "";
 
         return $"{enabledClass} {isSelected} {isHeader}";
     }
 
-    private static bool IsRelativeUrl(string url)
-    {
-        var regex = new Regex(@"!/^[a-z0-9+-.]+:\/\//i");
-        return regex.IsMatch(url);
-    }
+    private static bool IsRelativeUrl(string url) => new Regex(@"!/^[a-z0-9+-.]+:\/\//i").IsMatch(url);
+
+    internal void InternalStateHasChanged() => base.StateHasChanged();
 
     public void Dispose()
     {

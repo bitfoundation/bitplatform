@@ -67,9 +67,12 @@ public partial class BitNavGroup : IDisposable
         set
         {
             if (value == selectedKey) return;
+
+            var oldSelectedKey = selectedKey;
             selectedKey = value;
             _ = SelectedKeyChanged.InvokeAsync(value);
-            ExpandParents(Options.FirstOrDefault(o => o.Key == value));
+            Options.FirstOrDefault(o => o._internalKey == oldSelectedKey)?.InternalStateHasChanged();
+            ExpandParents(value);
         }
     }
     [Parameter] public EventCallback<string> SelectedKeyChanged { get; set; }
@@ -104,17 +107,19 @@ public partial class BitNavGroup : IDisposable
         var currentUrl = _navigationManager.Uri.Replace(_navigationManager.BaseUri, "/", StringComparison.Ordinal);
         var currentOption = Options.FirstOrDefault(option => option.Url == currentUrl);
 
-        SelectedKey = currentOption?.Key;
+        SelectedKey = currentOption?._internalKey;
     }
 
-    private void ExpandParents(BitNavOption? option)
+    private void ExpandParents(string? key)
     {
+        var option = Options.FirstOrDefault(o => o._internalKey == key);
+
         if (option is null) return;
 
         if (option.Parent is not null)
         {
             option.Parent.IsExpanded = true;
-            ExpandParents(option.Parent);
+            ExpandParents(option.Parent._internalKey);
         }
     }
 
