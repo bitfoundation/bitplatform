@@ -68,8 +68,8 @@ public partial class BitNavGroup : IDisposable
         {
             if (value == selectedKey) return;
             selectedKey = value;
-            SelectedKeyChanged.InvokeAsync(value);
-            ExpandParents(Options);
+            _ = SelectedKeyChanged.InvokeAsync(value);
+            ExpandParents(Options.FirstOrDefault(o => o.Key == value));
         }
     }
     [Parameter] public EventCallback<string> SelectedKeyChanged { get; set; }
@@ -92,8 +92,6 @@ public partial class BitNavGroup : IDisposable
         await base.OnInitializedAsync();
     }
 
-    private static List<BitNavOption> Flatten(IList<BitNavOption> e) => e.SelectMany(c => Flatten(c.Options)).Concat(e).ToList();
-
     private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
     {
         SelectOptionByCurrentUrl();
@@ -104,43 +102,20 @@ public partial class BitNavGroup : IDisposable
     private void SelectOptionByCurrentUrl()
     {
         var currentUrl = _navigationManager.Uri.Replace(_navigationManager.BaseUri, "/", StringComparison.Ordinal);
-        var currentOption = Flatten(Options).FirstOrDefault(option => option.Url == currentUrl);
+        var currentOption = Options.FirstOrDefault(option => option.Url == currentUrl);
 
         SelectedKey = currentOption?.Key;
     }
 
-    private bool ExpandParents(IList<BitNavOption> options)
+    private void ExpandParents(BitNavOption? option)
     {
-        foreach (var option in options)
+        if (option is null) return;
+
+        if (option.Parent is not null)
         {
-            if (option.Key == SelectedKey || (option.Options.Any() && ExpandParents(option.Options)))
-            {
-                return option.IsExpanded = true;
-            }
+            option.Parent.IsExpanded = true;
+            ExpandParents(option.Parent);
         }
-
-        return false;
-    }
-
-    internal void RegisterOptions(BitNavOption option)
-    {
-        if (option.Key.HasNoValue())
-        {
-            option.Key = $"{Options.Count}";
-        }
-        Options.Add(option);
-        StateHasChanged();
-    }
-
-    internal void UnregisterOptions(BitNavOption option)
-    {
-        Options.Remove(option);
-        StateHasChanged();
-    }
-
-    internal void InternalStateHasChanged()
-    {
-        base.StateHasChanged();
     }
 
     public void Dispose()
@@ -151,6 +126,8 @@ public partial class BitNavGroup : IDisposable
 
     protected virtual void Dispose(bool disposing)
     {
+        if (disposing is false) return;
+
         if (disposing && Mode == BitNavMode.Automatic)
         {
             _navigationManager.LocationChanged -= OnLocationChanged;

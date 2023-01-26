@@ -186,6 +186,12 @@ public partial class BitNavGroupDemo
                 },
                 new ComponentParameter
                 {
+                    Name = "DefaultIsExpanded",
+                    Type = "bool?",
+                    Description = "Expand option initially."
+                },
+                new ComponentParameter
+                {
                     Name = "ExpandAriaLabel",
                     Type = "string?",
                     Description = "Aria label when group is collapsed and can be expanded."
@@ -331,7 +337,7 @@ public partial class BitNavGroupDemo
                   ExpandAriaLabel=""Bit Platform Expanded""
                   CollapseAriaLabel=""Bit Platform Collapsed""
                   IconName=""BitIconName.TabletMode""
-                  IsExpanded=""true"">
+                  DefaultIsExpanded=""true"">
         <BitNavOption Text=""Home"" Url=""https://bitplatform.dev/"" Target=""_blank"" />
         <BitNavOption Text=""Products & Services"">
             <BitNavOption Text=""Project Templates"">
@@ -370,7 +376,7 @@ public partial class BitNavGroupDemo
                   ExpandAriaLabel=""Mercedes-Benz Expanded""
                   CollapseAriaLabel=""Mercedes-Benz Collapsed""
                   Title=""Mercedes-Benz Car Models""
-                  IsExpanded=""true"">
+                  DefaultIsExpanded=""true"">
         <BitNavOption Text=""SUVs"">
             <BitNavOption Text=""GLA"" Url=""https://www.mbusa.com/en/vehicles/class/gla/suv"" Target=""_blank"" />
             <BitNavOption Text=""GLB"" Url=""https://www.mbusa.com/en/vehicles/class/glb/suv"" Target=""_blank"" />
@@ -408,7 +414,7 @@ public partial class BitNavGroupDemo
     <BitNavGroup Mode=""BitNavMode.Manual"" DefaultSelectedKey=""French Fries"">
         <BitNavOption Text=""Fast-Foods""
                         IconName=""BitIconName.HeartBroken""
-                        IsExpanded=""true"">
+                        DefaultIsExpanded=""true"">
             <BitNavOption Text=""Burgers"">
                 <BitNavOption Text=""Beef Burger"" Key=""Beef Burger"" />
                 <BitNavOption Text=""Veggie Burger"" Key=""Veggie Burger"" />
@@ -440,7 +446,7 @@ public partial class BitNavGroupDemo
                  Mode=""BitNavMode.Manual"">
         <BitNavOption Text=""Fast-Foods""
                       IconName=""BitIconName.HeartBroken""
-                      IsExpanded=""true"">
+                      DefaultIsExpanded=""true"">
             <BitNavOption Text=""Burgers"">
                 <BitNavOption Text=""Beef Burger"" Key=""Beef Burger"" />
                 <BitNavOption Text=""Veggie Burger"" Key=""Veggie Burger"" />
@@ -585,7 +591,7 @@ private static readonly List<BitDropDownItem> FoodMenuDropDownItems = new()
                           ExpandAriaLabel=""Mercedes-Benz Expanded""
                           CollapseAriaLabel=""Mercedes-Benz Collapsed""
                           Title=""Mercedes-Benz Car Models""
-                          IsExpanded=""true"">
+                          DefaultIsExpanded=""true"">
                 <BitNavOption Text=""SUVs"">
                     <BitNavOption Text=""GLA"" Url=""https://www.mbusa.com/en/vehicles/class/gla/suv"" Target=""_blank"" />
                     <BitNavOption Text=""GLB"" Url=""https://www.mbusa.com/en/vehicles/class/glb/suv"" Target=""_blank"" />
@@ -625,7 +631,7 @@ private static readonly List<BitDropDownItem> FoodMenuDropDownItems = new()
         </OptionTemplate>
         <ChildContent>
             <BitNavOption Text=""Fast-Foods""
-                          IsExpanded=""true"">
+                          DefaultIsExpanded=""true"">
                 <BitNavOption Text=""Burgers"">
                     <BitNavOption Text=""Beef Burger"" />
                     <BitNavOption Text=""Veggie Burger"" />
@@ -664,7 +670,7 @@ private static readonly List<BitDropDownItem> FoodMenuDropDownItems = new()
              OnOptionToggle=""(option) => ToggledOption = option"">
     <BitNavOption Text=""Fast-Foods""
                     IconName=""BitIconName.HeartBroken""
-                    IsExpanded=""true"">
+                    DefaultIsExpanded=""true"">
         <BitNavOption Text=""Burgers"">
             <BitNavOption Text=""Beef Burger"" Key=""Beef Burger"" />
             <BitNavOption Text=""Veggie Burger"" Key=""Veggie Burger"" />

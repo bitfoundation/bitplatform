@@ -1,6 +1,5 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
-@using Bit.BlazorUI.Components.NavGroup
 
 <nav @ref="RootElement" @attributes="HtmlAttributes"
      style="@StyleBuilder.Value"
@@ -8,16 +7,9 @@
      role="navigation"
      aria-label="@AriaLabel">
 
-    <CascadingValue Value="this" IsFixed="true">
-        @ChildContent
-    </CascadingValue>
-
     <ul role="list">
         <CascadingValue Value="this" IsFixed="true">
-            @foreach (var childOption in Options)
-            {
-                <_BitNavGroupChild Option="childOption" Depth="0" />
-            }
+            @ChildContent
         </CascadingValue>
     </ul>
 </nav>
