@@ -1,92 +1,66 @@
 [
     {
         "outputFile": "wwwroot/styles/app.css",
-        "inputFile": "Styles/app.scss",
-        "sourceMap": false,
-        "useNodeSass": false
+        "inputFile": "Styles/app.scss"
     },
     {
         "outputFile": "Pages/ShowCasePage.razor.css",
-        "inputFile": "Pages/ShowCasePage.razor.scss",
-        "sourceMap": false,
-        "useNodeSass": false
+        "inputFile": "Pages/ShowCasePage.razor.scss"
     },
     {
         "outputFile": "Pages/ShowCasePage.razor.css",
-        "inputFile": "Pages/ShowCasePage.razor.scss",
-        "sourceMap": false,
-        "useNodeSass": false
+        "inputFile": "Pages/ShowCasePage.razor.scss"
     },
     {
         "outputFile": "Pages/ShowCaseDetailPage.razor.css",
-        "inputFile": "Pages/ShowCaseDetailPage.razor.scss",
-        "sourceMap": false,
-        "useNodeSass": false
+        "inputFile": "Pages/ShowCaseDetailPage.razor.scss"
     },
     {
         "outputFile": "Pages/ServicesPage.razor.css",
-        "inputFile": "Pages/ServicesPage.razor.scss",
-        "sourceMap": false,
-        "useNodeSass": false
+        "inputFile": "Pages/ServicesPage.razor.scss"
     },
     {
         "outputFile": "Pages/ProcessPage.razor.css",
-        "inputFile": "Pages/ProcessPage.razor.scss",
-        "sourceMap": false,
-        "useNodeSass": false
+        "inputFile": "Pages/ProcessPage.razor.scss"
     },
     {
         "outputFile": "Pages/HomePage.razor.css",
-        "inputFile": "Pages/HomePage.razor.scss",
-        "sourceMap": false,
-        "useNodeSass": false
+        "inputFile": "Pages/HomePage.razor.scss"
     },
     {
         "outputFile": "Pages/AboutPage.razor.css",
-        "inputFile": "Pages/AboutPage.razor.scss",
-        "sourceMap": false,
-        "useNodeSass": false
+        "inputFile": "Pages/AboutPage.razor.scss"
     },
     {
         "outputFile": "Components/Case.razor.css",
-        "inputFile": "Components/Case.razor.scss",
-        "sourceMap": false,
-        "useNodeSass": false
+        "inputFile": "Components/Case.razor.scss"
     },
     {
         "outputFile": "Shared/ContactForm.razor.css",
-        "inputFile": "Shared/ContactForm.razor.scss",
-        "sourceMap": false,
-        "useNodeSass": false
+        "inputFile": "Shared/ContactForm.razor.scss"
     },
     {
         "outputFile": "Shared/Header.razor.css",
-        "inputFile": "Shared/Header.razor.scss",
-        "sourceMap": false,
-        "useNodeSass": false
+        "inputFile": "Shared/Header.razor.scss"
     },
     {
         "outputFile": "Shared/MainLayout.razor.css",
-        "inputFile": "Shared/MainLayout.razor.scss",
-        "sourceMap": false,
-        "useNodeSass": false
+        "inputFile": "Shared/MainLayout.razor.scss"
     },
     {
         "outputFile": "Shared/MessageBox.razor.css",
-        "inputFile": "Shared/MessageBox.razor.scss",
-        "sourceMap": false,
-        "useNodeSass": false
+        "inputFile": "Shared/MessageBox.razor.scss"
     },
     {
         "outputFile": "Shared/AppErrorBoundary.razor.css",
-        "inputFile": "Shared/AppErrorBoundary.razor.scss",
-        "sourceMap": false,
-        "useNodeSass": false
+        "inputFile": "Shared/AppErrorBoundary.razor.scss"
     },
     {
         "outputFile": "Shared/Footer.razor.css",
-        "inputFile": "Shared/Footer.razor.scss",
-        "sourceMap": false,
-        "useNodeSass": false
+        "inputFile": "Shared/Footer.razor.scss"
+    },
+    {
+        "outputFile": "Components/ProcessAccordion.razor.css",
+        "inputFile": "Components/ProcessAccordion.razor.scss"
     }
 ]

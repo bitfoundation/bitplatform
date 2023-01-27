@@ -16,6 +16,10 @@
     padding: rem(80px);
     box-sizing: border-box;
 
+    @include xs {
+        padding: rem(60px) rem(30px);
+    }
+
     .secondary-title {
         font-weight: 500;
         font-size: rem(30px);

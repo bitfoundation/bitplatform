@@ -1,0 +1,18 @@
+﻿<div>
+    <BitAccordion Class="process-accordion">
+        <HeaderTemplate Context="isExpanded">
+            @if (isExpanded)
+            {
+                <BitIconButton IconName="BitIconName.ChevronDown" Class="acc-icon" />
+            }
+            else
+            {
+                <BitIconButton IconName="BitIconName.ChevronRight" Class="acc-icon" />
+            }
+            <div class="acc-title">@Title</div>
+        </HeaderTemplate>
+        <ContentTemplate>
+            <div class="acc-body">@ChildContent</div>
+        </ContentTemplate>
+    </BitAccordion>
+</div>

@@ -29,7 +29,7 @@ $screen-sm-max: em(360px);
 }
 
 @mixin xs {
-    @media screen and (max-width: 360px) {
+    @media screen and (max-width: 540px) {
         @content;
     }
 }

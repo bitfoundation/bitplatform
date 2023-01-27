@@ -1,0 +1,36 @@
+@import "../Styles/abstracts/_colors.scss";
+
+div {
+    ::deep .bit-acd.process-accordion {
+        border-left: none;
+        border-right: none;
+        padding: 1rem;
+
+        .header {
+            justify-content: flex-start;
+            align-items: center;
+        }
+
+        .acc-icon {
+            color: $Green;
+
+            i {
+                font-weight: 900;
+            }
+        }
+
+        .acc-title {
+            font-weight: 700;
+            font-size: rem(20px);
+            color: $Black1;
+        }
+
+        .acc-body {
+            font-weight: 400;
+            font-size: rem(18px);
+            line-height: rem(28px);
+            color: $Gray2;
+            padding-left: 2rem;
+        }
+    }
+}
