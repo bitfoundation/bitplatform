@@ -9,6 +9,9 @@ public partial class BitNavGroup : IDisposable
 
     internal IList<BitNavOption> Options = new List<BitNavOption>();
 
+    private BitNavOption? _selectedOption;
+    private bool _disposed;
+
     [Inject] private NavigationManager _navigationManager { get; set; } = default!;
 
     /// <summary>
@@ -68,16 +71,36 @@ public partial class BitNavGroup : IDisposable
         {
             if (value == selectedKey) return;
 
-            var oldSelectedKey = selectedKey;
             selectedKey = value;
             _ = SelectedKeyChanged.InvokeAsync(value);
-            Options.FirstOrDefault(o => o._internalKey == oldSelectedKey)?.InternalStateHasChanged();
-            ExpandParents(value);
+
+            _selectedOption?.SetSelected(false);
+            _selectedOption = Options.FirstOrDefault(x => x._internalKey == value);
+            _selectedOption?.SetSelected(true);
+
+            _selectedOption?.Parent?.Expand();
         }
     }
     [Parameter] public EventCallback<string> SelectedKeyChanged { get; set; }
 
     protected override string RootElementClass => "bit-nvg";
+
+    internal void Select(BitNavOption option)
+    {
+        SelectedKey = option._internalKey;
+
+        _ = OnSelectOption.InvokeAsync(option);
+    }
+
+    internal void RegisterOption(BitNavOption option)
+    {
+        Options.Add(option);
+    }
+
+    internal void UnregisterOption(BitNavOption option)
+    {
+        Options.Remove(option);
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -110,19 +133,6 @@ public partial class BitNavGroup : IDisposable
         SelectedKey = currentOption?._internalKey;
     }
 
-    private void ExpandParents(string? key)
-    {
-        var option = Options.FirstOrDefault(o => o._internalKey == key);
-
-        if (option is null) return;
-
-        if (option.Parent is not null)
-        {
-            option.Parent.IsExpanded = true;
-            ExpandParents(option.Parent._internalKey);
-        }
-    }
-
     public void Dispose()
     {
         Dispose(true);
@@ -131,11 +141,16 @@ public partial class BitNavGroup : IDisposable
 
     protected virtual void Dispose(bool disposing)
     {
-        if (disposing is false) return;
+        if (_disposed) return;
+        if (!disposing) return;
 
-        if (disposing && Mode == BitNavMode.Automatic)
+        _selectedOption?.Dispose();
+
+        if (Mode == BitNavMode.Automatic)
         {
             _navigationManager.LocationChanged -= OnLocationChanged;
         }
+
+        _disposed = true;
     }
 }

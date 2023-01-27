@@ -1,19 +1,67 @@
 ﻿@import "../../Styles/Fluent/colors.fluent.scss", "../../Styles/functions.scss";
 
 .bit-nvg {
-    &.bit-nvg-fluent {
-        font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
-        -webkit-font-smoothing: antialiased;
-    }
 
     ul {
         list-style-type: none;
         padding: 0;
         margin: 0;
     }
+}
+
+.bit-nvgo {
+
+    &.bit-nvgo-fluent {
+        font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    &.bit-nvgo-disabled-fluent {
+        .option-container {
+            background-color: transparent;
+            pointer-events: none;
+            cursor: none;
+
+            .option .option-txt {
+                color: $Grey90;
+            }
+        }
+    }
 
     li {
         padding: 0;
+    }
+
+    .chevron-btn, .group-chevron-btn {
+        width: rem(30px);
+        font-size: rem(12px);
+        background-color: transparent;
+        color: $Grey160;
+        user-select: none;
+        cursor: pointer;
+
+        i {
+            transition: transform 0.1s linear 0s;
+            -webkit-font-smoothing: antialiased;
+
+            &.expand {
+                transform: rotate(-180deg);
+            }
+        }
+    }
+
+    .group-chevron-btn {
+        display: flex;
+        align-items: center;
+        gap: rem(10px);
+        width: 100%;
+        height: rem(44px);
+        border-bottom: rem(1px) solid $Grey30;
+
+        .group-header {
+            font-size: rem(18px);
+            font-weight: 500;
+        }
     }
 
     .option-container {
@@ -37,16 +85,6 @@
             }
         }
 
-        &.disabled {
-            background-color: transparent;
-            pointer-events: none;
-            cursor: none;
-
-            .option .option-txt {
-                color: $Grey90;
-            }
-        }
-
         &.selected {
             background-color: $Grey30;
             border-left: rem(2px) solid $Primary;
@@ -62,46 +100,6 @@
             .option .option-txt {
                 font-weight: 500;
                 color: $Black;
-            }
-        }
-
-        &.group-header {
-            border-bottom: rem(1px) solid $Grey30;
-
-            &:hover {
-                background-color: transparent;
-            }
-
-            .chevron-btn {
-                color: $Grey160;
-                font-size: rem(16px);
-                font-weight: 500;
-            }
-
-            .option {
-                .option-txt, .option-icon {
-                    color: $Grey160;
-                    font-size: rem(18px);
-                    font-weight: 500;
-                }
-            }
-        }
-    }
-
-    .chevron-btn {
-        width: rem(30px);
-        font-size: rem(14px);
-        font-weight: 400;
-        color: $Grey160;
-        user-select: none;
-        cursor: pointer;
-
-        i {
-            transition: transform 0.1s linear 0s;
-            -webkit-font-smoothing: antialiased;
-
-            &.expand {
-                transform: rotate(-180deg);
             }
         }
     }

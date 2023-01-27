@@ -4,15 +4,7 @@ namespace Bit.BlazorUI;
 
 public partial class BitNavOption : IDisposable
 {
-    private bool IsExpandedHasBeenSet;
-    private bool isExpanded;
-
-    private bool _parentIsExpanded;
-    private event EventHandler<bool>? _internalIsExpandedChanged;
-    internal string _internalKey = default!;
-    private int _depth;
-
-    private Dictionary<BitNavItemAriaCurrent, string> _ariaCurrentMap = new()
+    private static Dictionary<BitNavItemAriaCurrent, string> _AriaCurrentMap = new()
     {
         [BitNavItemAriaCurrent.Page] = "page",
         [BitNavItemAriaCurrent.Step] = "step",
@@ -22,9 +14,22 @@ public partial class BitNavOption : IDisposable
         [BitNavItemAriaCurrent.True] = "true"
     };
 
+
+    internal event EventHandler<bool>? InternalIsExpandedChanged;
+
+    private bool IsExpandedHasBeenSet;
+    private bool isExpanded;
+    private string? key;
+
+    private bool _parentIsExpanded;
+    private bool _isSelected;
+    internal string _internalKey = default!;
+    private int _depth;
+    private bool _disposed;
+
     [Inject] private NavigationManager _navigationManager { get; set; } = default!;
 
-    [CascadingParameter] protected BitNavGroup? NavGroup { get; set; }
+    [CascadingParameter] internal BitNavGroup? NavGroup { get; set; }
     [CascadingParameter] internal BitNavOption? Parent { get; set; }
 
     /// <summary>
@@ -67,16 +72,16 @@ public partial class BitNavOption : IDisposable
     /// <summary>
     /// Whether or not the option is in an expanded state.
     /// </summary>
-    [Parameter] 
-    public bool IsExpanded 
-    { 
+    [Parameter]
+    public bool IsExpanded
+    {
         get => isExpanded;
         set
         {
             if (value == isExpanded) return;
+
             isExpanded = value;
             _ = IsExpandedChanged.InvokeAsync(value);
-            _internalIsExpandedChanged?.Invoke(this, IsExpanded);
         }
     }
     [Parameter] public EventCallback<bool> IsExpandedChanged { get; set; }
@@ -84,7 +89,16 @@ public partial class BitNavOption : IDisposable
     /// <summary>
     /// A unique value to use as a key or id of the option.
     /// </summary>
-    [Parameter] public string? Key { get; set; }
+    [Parameter]
+    public string? Key 
+    { 
+        get => key;
+        set
+        {
+            key = value;
+            _internalKey = value ?? UniqueId.ToString();
+        }
+    }
 
     /// <summary>
     /// Text to render for this option.
@@ -110,11 +124,27 @@ public partial class BitNavOption : IDisposable
 
     protected override string RootElementClass => "bit-nvgo";
 
+    internal void SetSelected(bool value)
+    {
+        _isSelected = value;
+        StateHasChanged();
+    }
+
+    internal void Expand()
+    {
+        if (IsExpanded) return;
+
+        IsExpanded = true;
+        InternalIsExpandedChanged?.Invoke(this, true);
+
+        Parent?.Expand();
+
+        StateHasChanged();
+    }
+
     protected override async Task OnInitializedAsync()
     {
-        _internalKey = Key ?? UniqueId.ToString();
-
-        if (DefaultIsExpanded is not null)
+        if (DefaultIsExpanded is not null && IsExpandedHasBeenSet is false)
         {
             IsExpanded = DefaultIsExpanded.Value;
         }
@@ -123,12 +153,12 @@ public partial class BitNavOption : IDisposable
         {
             _depth = Parent._depth + 1;
 
-            Parent._internalIsExpandedChanged += ParentIsExpandedChanged;
+            Parent.InternalIsExpandedChanged += ParentIsExpandedChanged;
         }
 
         if (NavGroup is not null)
         {
-            NavGroup.Options.Add(this);
+            NavGroup.RegisterOption(this);
         }
 
         await base.OnInitializedAsync();
@@ -142,7 +172,7 @@ public partial class BitNavOption : IDisposable
 
         if (IsExpanded)
         {
-            _internalIsExpandedChanged?.Invoke(this, IsExpanded);
+            InternalIsExpandedChanged?.Invoke(this, IsExpanded);
         }
     }
 
@@ -150,7 +180,7 @@ public partial class BitNavOption : IDisposable
     {
         if (_parentIsExpanded && isExpanded is false)
         {
-            _internalIsExpandedChanged?.Invoke(this, isExpanded);
+            InternalIsExpandedChanged?.Invoke(this, isExpanded);
         }
 
         _parentIsExpanded = isExpanded;
@@ -160,7 +190,7 @@ public partial class BitNavOption : IDisposable
 
     private async Task HandleOnClick()
     {
-        if (IsEnabled == false) return;
+        if (IsEnabled is false) return;
         if (NavGroup is null) return;
 
         await NavGroup.OnOptionClick.InvokeAsync(this);
@@ -171,9 +201,7 @@ public partial class BitNavOption : IDisposable
         }
         else if (NavGroup.Mode == BitNavMode.Manual)
         {
-            NavGroup.SelectedKey = _internalKey;
-            await NavGroup.OnSelectOption.InvokeAsync(this);
-            StateHasChanged();
+            NavGroup.Select(this);
         }
     }
 
@@ -184,32 +212,12 @@ public partial class BitNavOption : IDisposable
         if (IsExpandedHasBeenSet && IsExpandedChanged.HasDelegate is false) return;
 
         IsExpanded = !IsExpanded;
+        InternalIsExpandedChanged?.Invoke(this, IsExpanded);
 
         await NavGroup.OnOptionToggle.InvokeAsync(this);
     }
 
-    private bool HasChevronButton()
-    {
-        return (NavGroup?.RenderType is BitNavRenderType.Normal && ChildContent is not null) || 
-               (NavGroup?.RenderType is BitNavRenderType.Grouped && ChildContent is not null && Parent is not null);
-    }
-
-    private string GetOptionClasses()
-    {
-        if (NavGroup is null) return string.Empty;
-
-        var enabledClass = NavGroup.IsEnabled is false || IsEnabled is false ? "disabled" : "";
-
-        var isSelected = NavGroup.SelectedKey == _internalKey ? "selected" : "";
-
-        var isHeader = NavGroup.RenderType == BitNavRenderType.Grouped && Parent is null ? "group-header" : "";
-
-        return $"{enabledClass} {isSelected} {isHeader}";
-    }
-
-    private static bool IsRelativeUrl(string url) => new Regex(@"!/^[a-z0-9+-.]+:\/\//i").IsMatch(url);
-
-    internal void InternalStateHasChanged() => base.StateHasChanged();
+    private static bool IsRelativeUrl(string? url) => url.HasValue() && new Regex("!/^[a-z0-9+-.]+:\\/\\//i").IsMatch(url!);
 
     public void Dispose()
     {
@@ -219,16 +227,19 @@ public partial class BitNavOption : IDisposable
 
     protected virtual void Dispose(bool disposing)
     {
-        if (disposing is false) return;
+        if (_disposed) return;
+        if (!disposing) return;
 
         if (Parent is not null)
         {
-            Parent._internalIsExpandedChanged -= ParentIsExpandedChanged;
+            Parent.InternalIsExpandedChanged -= ParentIsExpandedChanged;
         }
 
         if (NavGroup is not null)
         {
-            NavGroup.Options.Remove(this);
+            NavGroup.UnregisterOption(this);
         }
+
+        _disposed = true;
     }
 }
