@@ -44,7 +44,7 @@ public partial class BitNavOption : IDisposable
     [Parameter] public string? CollapseAriaLabel { get; set; }
 
     /// <summary>
-    /// Options to render as children of the current option.
+    /// _options to render as children of the current option.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
@@ -227,8 +227,7 @@ public partial class BitNavOption : IDisposable
 
     protected virtual void Dispose(bool disposing)
     {
-        if (_disposed) return;
-        if (!disposing) return;
+        if (disposing is false || _disposed) return;
 
         if (Parent is not null)
         {

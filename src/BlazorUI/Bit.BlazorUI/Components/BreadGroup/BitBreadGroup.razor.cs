@@ -53,7 +53,7 @@ public partial class BitBreadGroup : IDisposable
     [Parameter] public string? OverflowAriaLabel { get; set; }
 
     /// <summary>
-    /// Optional index where overflow Options will be collapsed.
+    /// Optional index where overflow _options will be collapsed.
     /// </summary>
     [Parameter] public uint OverflowIndex { get; set; }
 

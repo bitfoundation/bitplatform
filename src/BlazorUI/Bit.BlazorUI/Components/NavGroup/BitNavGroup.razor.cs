@@ -7,7 +7,7 @@ public partial class BitNavGroup : IDisposable
     private bool SelectedKeyHasBeenSet;
     private string? selectedKey;
 
-    internal IList<BitNavOption> Options = new List<BitNavOption>();
+    private IList<BitNavOption> _options = new List<BitNavOption>();
 
     private BitNavOption? _selectedOption;
     private bool _disposed;
@@ -75,7 +75,7 @@ public partial class BitNavGroup : IDisposable
             _ = SelectedKeyChanged.InvokeAsync(value);
 
             _selectedOption?.SetSelected(false);
-            _selectedOption = Options.FirstOrDefault(x => x._internalKey == value);
+            _selectedOption = _options.FirstOrDefault(x => x._internalKey == value);
             _selectedOption?.SetSelected(true);
 
             _selectedOption?.Parent?.Expand();
@@ -94,12 +94,12 @@ public partial class BitNavGroup : IDisposable
 
     internal void RegisterOption(BitNavOption option)
     {
-        Options.Add(option);
+        _options.Add(option);
     }
 
     internal void UnregisterOption(BitNavOption option)
     {
-        Options.Remove(option);
+        _options.Remove(option);
     }
 
     protected override async Task OnInitializedAsync()
@@ -128,7 +128,7 @@ public partial class BitNavGroup : IDisposable
     private void SelectOptionByCurrentUrl()
     {
         var currentUrl = _navigationManager.Uri.Replace(_navigationManager.BaseUri, "/", StringComparison.Ordinal);
-        var currentOption = Options.FirstOrDefault(option => option.Url == currentUrl);
+        var currentOption = _options.FirstOrDefault(option => option.Url == currentUrl);
 
         SelectedKey = currentOption?._internalKey;
     }
@@ -141,8 +141,7 @@ public partial class BitNavGroup : IDisposable
 
     protected virtual void Dispose(bool disposing)
     {
-        if (_disposed) return;
-        if (!disposing) return;
+        if (disposing is false || _disposed) return;
 
         _selectedOption?.Dispose();
 
