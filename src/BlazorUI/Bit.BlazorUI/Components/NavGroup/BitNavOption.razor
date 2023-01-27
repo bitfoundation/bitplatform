@@ -1,0 +1,113 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+<li @ref="RootElement" @attributes="HtmlAttributes"
+    style="@StyleBuilder.Value"
+    class="@ClassBuilder.Value"
+    aria-label="@AriaLabel"
+    role="listitem">
+
+    @if (Parent is null || _parentIsExpanded)
+    {
+        @if (NavGroup?.RenderType is BitNavRenderType.Grouped && Parent is null)
+        {
+            <button @onclick="ToggleOption"
+                    class="group-chevron-btn"
+                    type="button"
+                    tabindex="0"
+                    aria-label="@(IsExpanded ? CollapseAriaLabel : ExpandAriaLabel)"
+                    aria-expanded="@(IsExpanded ? "true" : "false")">
+                @if (NavGroup.HeaderTemplate is not null)
+                {
+                    @NavGroup.HeaderTemplate(this)
+                }
+                else
+                {
+                    <i class="bit-icon bit-icon--ChevronDown @(IsExpanded ? "expand" : "")" aria-hidden="true"></i>
+                    <span class="group-header">@Text</span>
+                }
+            </button>
+        }
+        else
+        {
+            <div style="padding: 0 10px 0 @(ChildContent is not null ? (_depth * 14) : (_depth * 14) + 30)px;"
+                 class="option-container @(_isSelected ? "selected" : "")"
+                 name="@Text">
+
+                @if (ChildContent is not null)
+                {
+                    <button @onclick="ToggleOption"
+                            class="chevron-btn"
+                            type="button"
+                            tabindex="0"
+                            aria-label="@(IsExpanded ? CollapseAriaLabel : ExpandAriaLabel)"
+                            aria-expanded="@(IsExpanded ? "true" : "false")">
+                        <i class="bit-icon bit-icon--ChevronDown @(IsExpanded ? "expand" : "")" aria-hidden="true"></i>
+                    </button>
+                }
+
+                @if (Url.HasValue() || ForceAnchor)
+                {
+                    <a @onclick="HandleOnClick"
+                       href="@(IsEnabled ? Url : null)"
+                       target="@Target"
+                       class="option"
+                       tabindex="-1"
+                       title="@(Title is not null ? Title : Text)"
+                       disabled="@(IsEnabled is false)"
+                       aria-label="@AriaLabel"
+                       aria-current="@(_isSelected ? _AriaCurrentMap[AriaCurrent] : null)"
+                       rel="@(Url.HasValue() && Target.HasValue() && IsRelativeUrl(Url) is false ? "noopener noreferrer" : null)">
+
+                        @if (NavGroup?.OptionTemplate is not null)
+                        {
+                            @NavGroup.OptionTemplate(this)
+                        }
+                        else
+                        {
+                            @if (IconName.HasValue)
+                            {
+                                <i class=@($"bit-icon bit-icon--{IconName.GetName()} option-icon") aria-hidden="true"></i>
+                            }
+                            <span class="option-txt">@Text</span>
+                        }
+                    </a>
+                }
+                else
+                {
+                    <button @onclick="HandleOnClick"
+                            class="option"
+                            title="@(Title is not null ? Title : Text)"
+                            disabled="@(IsEnabled is false)"
+                            aria-label="@AriaLabel"
+                            aria-current="@(_isSelected ? _AriaCurrentMap[AriaCurrent] : null)"
+                            tabindex="-1"
+                            type="button">
+
+                        @if (NavGroup?.OptionTemplate is not null)
+                        {
+                            @NavGroup.OptionTemplate(this)
+                        }
+                        else
+                        {
+                            @if (IconName.HasValue)
+                            {
+                                <i class=@($"bit-icon bit-icon--{IconName.GetName()} option-icon") aria-hidden="true"></i>
+                            }
+                            <span class="option-txt">@Text</span>
+                        }
+                    </button>
+                }
+            </div>
+        }
+    }
+
+    @if (ChildContent is not null)
+    {
+        <ul role="list">
+            <CascadingValue Value="this" IsFixed="true">
+                @ChildContent
+            </CascadingValue>
+        </ul>
+    }
+</li>

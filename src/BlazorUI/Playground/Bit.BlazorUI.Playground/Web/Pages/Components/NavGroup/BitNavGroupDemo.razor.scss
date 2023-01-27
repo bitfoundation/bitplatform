@@ -1,0 +1,62 @@
+﻿@import '../../../Styles/abstracts/_media-queries.scss';
+
+::deep {
+    .nav-group-custom-header {
+        font-size: 17px;
+        font-weight: 600;
+        color: green;
+    }
+
+    .nav-group-custom-option {
+        display: flex;
+        align-items: center;
+        flex-flow: row nowrap;
+        gap: 4px;
+        color: #ff7800;
+        font-weight: 600;
+    }
+}
+
+.example-box {
+    display: flex;
+    flex-direction: column;
+    width: 350px;
+
+    @include sm {
+        width: 250px;
+    }
+
+    .margin-top {
+        margin-top: 20px;
+    }
+}
+
+.events-example-box {
+    display: flex;
+    flex-direction: row;
+    gap: 100px;
+    align-items: center;
+
+    ::deep {
+        .bit-nvg {
+            width: 350px;
+        }
+    }
+
+    @include sm {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0;
+
+        ::deep {
+            .bit-nvg {
+                width: 250px;
+            }
+        }
+    }
+
+    .flex {
+        display: flex;
+        flex-direction: column;
+    }
+}

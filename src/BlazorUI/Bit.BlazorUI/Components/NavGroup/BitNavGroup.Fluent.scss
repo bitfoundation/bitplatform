@@ -1,0 +1,130 @@
+﻿@import "../../Styles/Fluent/colors.fluent.scss", "../../Styles/functions.scss";
+
+.bit-nvg {
+
+    ul {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+    }
+}
+
+.bit-nvgo {
+
+    &.bit-nvgo-fluent {
+        font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    &.bit-nvgo-disabled-fluent {
+        .option-container {
+            background-color: transparent;
+            pointer-events: none;
+            cursor: none;
+
+            .option .option-txt {
+                color: $Grey90;
+            }
+        }
+    }
+
+    li {
+        padding: 0;
+    }
+
+    .chevron-btn, .group-chevron-btn {
+        width: rem(30px);
+        font-size: rem(12px);
+        background-color: transparent;
+        color: $Grey160;
+        user-select: none;
+        cursor: pointer;
+
+        i {
+            transition: transform 0.1s linear 0s;
+            -webkit-font-smoothing: antialiased;
+
+            &.expand {
+                transform: rotate(-180deg);
+            }
+        }
+    }
+
+    .group-chevron-btn {
+        display: flex;
+        align-items: center;
+        gap: rem(10px);
+        width: 100%;
+        height: rem(44px);
+        border-bottom: rem(1px) solid $Grey30;
+
+        .group-header {
+            font-size: rem(18px);
+            font-weight: 500;
+        }
+    }
+
+    .option-container {
+        display: flex;
+        flex-flow: row nowrap;
+        width: 100%;
+        height: rem(44px);
+        border-radius: rem(2px);
+        box-sizing: border-box;
+
+        button, a {
+            background-color: transparent;
+            padding: 0;
+        }
+
+        &:hover {
+            background-color: $Grey30;
+
+            .option .option-txt {
+                color: $Primary;
+            }
+        }
+
+        &.selected {
+            background-color: $Grey30;
+            border-left: rem(2px) solid $Primary;
+
+            &:hover {
+                background-color: $Grey20;
+
+                .option .option-txt {
+                    color: $Primary;
+                }
+            }
+
+            .option .option-txt {
+                font-weight: 500;
+                color: $Black;
+            }
+        }
+    }
+
+    .option {
+        display: flex;
+        flex-flow: row nowrap;
+        align-items: center;
+        width: 100%;
+        user-select: none;
+        cursor: pointer;
+
+        .option-icon {
+            margin: 0 rem(4px);
+            color: $Primary;
+        }
+
+        .option-txt {
+            margin: 0 rem(4px);
+            font-size: rem(14px);
+            font-weight: 400;
+            color: $Grey160;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+    }
+}
