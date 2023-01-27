@@ -152,6 +152,10 @@
     align-items: center;
     padding-top: 4rem;
 
+    .sec-title {
+        color: $B1;
+    }
+
     .sec-content {
         display: flex;
         gap: 2rem;
