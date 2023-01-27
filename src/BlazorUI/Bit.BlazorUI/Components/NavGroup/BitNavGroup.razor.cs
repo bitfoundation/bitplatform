@@ -8,7 +8,6 @@ public partial class BitNavGroup : IDisposable
     private string? selectedKey;
 
     private IList<BitNavOption> _options = new List<BitNavOption>();
-
     private BitNavOption? _selectedOption;
     private bool _disposed;
 
