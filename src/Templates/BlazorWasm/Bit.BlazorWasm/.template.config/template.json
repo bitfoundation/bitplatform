@@ -6,10 +6,10 @@
         "language": "C#",
         "type": "solution"
     },
-    "identity": "Bit.BlazorWebAssembly",
-    "name": "Bit BlazorWebAssembly",
+    "identity": "Bit.BlazorWasm",
+    "name": "Bit BlazorWasm",
     "shortName": "bit-csb",
-    "sourceName": "BlazorWebAssembly",
+    "sourceName": "BlazorWasm",
     "preferNameDirectory": true,
     "symbols": {
         "skipRestore": {
