@@ -2,116 +2,112 @@
 @import '../Styles/abstracts/_media-queries.scss';
 @import '../Styles/abstracts/_functions.scss';
 
-.page {
+.page-sec {
     width: 100%;
     display: flex;
-    flex-flow: column nowrap;
-    justify-content: flex-start;
-    align-items: center;
-}
-
-.page-top-container {
-    display: flex;
-    flex-flow: column nowrap;
-    justify-content: flex-start;
-    align-items: center;
-    width: 100%;
-    height: rem(450px);
-    padding-top: rem(119px);
-    background-image: url('/images/cases/cases-header-bg.svg');
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: cover;
-
-    .page-title {
-        font-weight: 800;
-        font-size: rem(40px);
-        line-height: rem(67px);
-        color: $Primary;
-    }
-
-    .page-subtitle-container {
-        display: flex;
-        align-items: center;
-    }
-
-    .page-subtitle {
-        font-size: rem(16px);
-        line-height: rem(25px);
-
-        &:first-child {
-            color: rgba(107, 107, 107, 0.5);
-        }
-
-        &:last-child {
-            color: #6B6B6B;
-        }
-    }
-
-    .page-subtitle-arrow {
-        width: rem(14px);
-        height: rem(8px);
-        margin: 0 rem(8px);
-        background-image: url('/images/cases/arrow-right-icon.svg');
-        background-position: center;
-        background-repeat: no-repeat;
-        background-size: cover;
-    }
-}
-
-.case-list {
-    margin-top: rem(-400px);
-    z-index: 2;
-    display: flex;
-    flex-flow: column nowrap;
-    justify-content: flex-start;
-    width: 100%;
-}
-
-.case-container {
-    position: relative;
-    width: 100%;
-    margin-bottom: rem(146px);
-
-    &:first-child {
-        .curly-divider {
-            display: none;
-        }
-    }
-
-    &:nth-child(2n) {
-        .curly-divider {
-            left: 0;
-        }
-    }
-
-    &:nth-child(2n+1) {
-        .curly-divider {
-            right: 0;
-            transform: rotate(180deg);
-        }
-    }
+    max-width: rem(1440px);
+    box-sizing: border-box;
+    padding: rem(40px) rem(140px);
+    margin: 0 auto;
 
     @include lg {
-        margin-bottom: rem(76px);
+        padding: rem(32px) rem(60px);
     }
 
-    @include lt-lg {
-        margin-bottom: rem(100px);
+    @include sm {
+        padding: rem(16px) rem(30px);
     }
 }
 
-.curly-divider {
-    width: rem(153px);
-    height: rem(536px);
-    background-image: url('/images/cases/case-curly-divider-img.svg');
-    background-position: center;
+.sec-title {
+    font-weight: bold;
+    font-size: rem(44px);
+    margin-bottom: 1rem;
+    text-align: center;
+
+    @include lg {
+        font-size: rem(34px);
+    }
+
+    @include md {
+        font-size: rem(30px);
+    }
+
+    @include sm {
+        font-size: rem(26px);
+    }
+}
+
+.sec-title-underline {
+    background-color: $Y1;
+    width: rem(240px);
+    height: rem(4px);
+    margin-bottom: 2rem;
+
+    @include lg {
+        width: rem(200px);
+        height: rem(2px);
+    }
+
+    @include md {
+        width: rem(180px);
+    }
+
+    @include sm {
+        width: rem(150px);
+    }
+}
+
+.sec-desc {
+    color: $Gray2;
+    font-size: rem(20px);
+    text-align: center;
+    line-height: 2rem;
+    margin-bottom: 4rem;
+
+    @include md {
+        font-size: rem(18px);
+        line-height: rem(24px);
+    }
+
+    @include sm {
+        font-size: rem(16px);
+        line-height: rem(20px);
+    }
+}
+
+.cases-bg {
+    background-image: url('/images/cases/cases_bg.webp');
     background-repeat: no-repeat;
     background-size: cover;
-    position: absolute;
-    top: rem(-250px);
+    margin-bottom: rem(140px);
 
-    @include lt-lg {
-        display: none;
+    .cases {
+        padding-top: rem(180px);
+        display: flex;
+        flex-flow: column;
+        align-items: center;
+
+        .cases-title {
+            font-weight: 800;
+            font-size: rem(40px);
+            line-height: rem(52px);
+            color: $B2;
+            margin-bottom: rem(24px);
+        }
+
+        .cases-bread {
+            font-weight: 400;
+            font-size: rem(16px);
+            line-height: rem(24px);
+            color: $Gray2;
+        }
+    }
+}
+
+
+.all-cases {
+    .case {
+
     }
 }

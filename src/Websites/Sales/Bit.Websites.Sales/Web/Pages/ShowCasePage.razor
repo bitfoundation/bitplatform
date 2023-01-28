@@ -1,22 +1,27 @@
 ﻿@page "/cases"
 
-<section class="page">
-    <div class="page-top-container">
-        <div class="page-title">Our Cases</div>
-        <div class="page-subtitle-container">
-            <span class="page-subtitle">Home</span>
-            <span class="page-subtitle-arrow"></span>
-            <span class="page-subtitle">Cases</span>
+<div class="cases-bg">
+    <section class="page-sec cases">
+        <div class="cases-title">Our CASES</div>
+        <div class="cases-bread">Home &rarr; Cases</div>
+    </section>
+    <section class="page-sec outsource-your-concerns">
+        <div class="sec-body">
+            <div class="sec-title">&nbsp;</div>
+            <div class="sec-desc">&nbsp;</div>
         </div>
-    </div>
+    </section>
+</div>
 
-    <div class="case-list">
-        @foreach (var showCase in Cases)
-        {
-            <div class="case-container">
-                <div class="curly-divider"></div>
-                <Case ShowCase="showCase"/>
+<section class="page-sec all-cases">
+    <div class="case">
+        <div class="left-pane">
+            <div class="sec-title">Rigid Robotics</div>
+            <div class="sec-title-underline"></div>
+            <div class="sec-content">
+                We employ best practice processes and development methodologies as a foundation for rapid building of cutting-edge technology solutions in a structured and methodical way.
             </div>
-        }
+        </div>
+        <div class="right-pane"></div>
     </div>
 </section>
