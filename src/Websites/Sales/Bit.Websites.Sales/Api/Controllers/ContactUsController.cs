@@ -1,5 +1,6 @@
 ﻿using Bit.Websites.Sales.Api.Models.Emailing;
 using Bit.Websites.Sales.Api.Resources;
+using Bit.Websites.Sales.Api.Services;
 using Bit.Websites.Sales.Shared.Dtos.ContactUs;
 using FluentEmail.Core;
 
@@ -11,6 +12,8 @@ public partial class ContactUsController : ControllerBase
 {
     [AutoInject] private IFluentEmail _fluentEmail;
     [AutoInject] private IOptionsSnapshot<AppSettings> _appSettings;
+    [AutoInject] protected TelegramBotService TelegramBotService = default!;
+
 
     [HttpPost]
     public async Task<IActionResult> Create(ContactUsDto contactUsDto, CancellationToken cancellationToken)
@@ -30,5 +33,20 @@ public partial class ContactUsController : ControllerBase
             .SendAsync(cancellationToken);
 
         return Ok();
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> SendMessage(ContactUsDto contactUsDto, CancellationToken cancellationToken)
+    {
+        if (ModelState.IsValid)
+        {
+            await TelegramBotService.SendContactUsMessage(contactUsDto.Email, contactUsDto.Name, contactUsDto.Information, cancellationToken);
+
+            return Ok();
+        }
+        else
+        {
+            return BadRequest(ModelState);
+        }
     }
 }
