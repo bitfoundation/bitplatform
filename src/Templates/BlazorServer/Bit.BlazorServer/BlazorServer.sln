@@ -4,11 +4,12 @@ VisualStudioVersion = 17.0.31611.283
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{5CF43F76-BB71-4B5B-B4DF-1C753E042A8F}"
 	ProjectSection(SolutionItems) = preProject
-		..\.gitignore = ..\.gitignore
-		global.json = global.json
+		.gitignore = .gitignore
+		.\src\global.json = .\src\global.json
+		.\src\Clean.bat = .\src\Clean.bat
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorServer.Web", "BlazorServer.Web\BlazorServer.Web.csproj", "{2B232F0F-9704-451E-8E3E-313AE0BEEF03}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = ".\src\BlazorServer.Web", ".\src\BlazorServer.Web\BlazorServer.Web.csproj", "{2B232F0F-9704-451E-8E3E-313AE0BEEF03}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
