@@ -120,9 +120,12 @@
         display: flex;
         margin-bottom: rem(200px);
 
-        .left-pane {
-            flex-basis: 100%;
+        @include md {
+            margin-bottom: rem(150px);
+            flex-flow: column-reverse;
+        }
 
+        .left-pane {
             .sec-title {
                 font-size: rem(30px);
                 text-align: unset;
@@ -179,15 +182,25 @@
         }
 
         .right-pane {
-            flex-basis: 100%;
             display: flex;
             flex-flow: column;
 
             .case-bg {
-                width: rem(500px);
+                width: 100%;
                 height: rem(290px);
-                background-size: rem(510px);
+                background-repeat: no-repeat;
+                background-position: center center;
+                background-size: contain;
                 margin-bottom: 5rem;
+
+                @include lg {
+                    margin-bottom: 3rem;
+                }
+
+                @include xs {
+                    margin-bottom: 2rem;
+                    height: rem(190px);
+                }
             }
 
             .specs {
@@ -195,6 +208,13 @@
                 justify-content: center;
                 gap: 2rem;
 
+                @include lg {
+                    gap: 1rem;
+                }
+
+                @include md {
+                    display: none;
+                }
 
                 .spec {
                     background: $Gray5;
@@ -206,6 +226,11 @@
                     align-items: center;
                     width: rem(130px);
 
+                    @include lg {
+                        width: rem(120px);
+                        padding: rem(10px) rem(6px);
+                    }
+
                     .spec-title {
                         font-weight: 700;
                         font-size: rem(16px);
@@ -213,12 +238,21 @@
                         margin-bottom: rem(10px);
                         background-repeat: no-repeat;
                         padding-left: rem(28px);
+                        background-size: contain;
+
+                        @include lg {
+                            font-size: rem(14px);
+                        }
                     }
 
                     .spec-desc {
                         font-weight: 400;
                         font-size: rem(12px);
                         color: $Gray2;
+
+                        @include lg {
+                            font-size: rem(10px);
+                        }
                     }
 
                     .spec-1 {
