@@ -10,10 +10,10 @@
         <NoDefaultExcludes>true</NoDefaultExcludes>
         
         <!-- Nuget Package-->
-        <PackageId>Bit.BlazorWebAssembly</PackageId>
+        <PackageId>Bit.BlazorWasm</PackageId>
         <PackageType>Template</PackageType>
-        <Title>Bit Platform BlazorWebAssembly</Title>
-        <PackageDescription>A template for creating a simple Blazor WebAssembly app based on the Bit Platform tools</PackageDescription>
+        <Title>Bit Platform BlazorWasm</Title>
+        <PackageDescription>A template for creating a simple Blazor Wasm app based on the Bit Platform tools</PackageDescription>
         <PackageTags>Bit;c#;asp.net;core;template;web;blazor</PackageTags>
         <PackageCopyright>Copyright © Bit Platform 2023</PackageCopyright>
         <PackageIcon>bit-icon-512.png</PackageIcon>
@@ -21,12 +21,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Content Include="Bit.BlazorWebAssembly\**" Exclude="Bit.BlazorWebAssembly\.vs\**;Bit.BlazorWebAssembly\**\bin\**\*;Bit.BlazorWebAssembly\**\obj\**\*; " />
+        <Content Include="Bit.BlazorWasm\**" Exclude="Bit.BlazorWasm\.vs\**;Bit.BlazorWasm\**\bin\**\*;Bit.BlazorWasm\**\obj\**\*; " />
         <Compile Remove="**\*" />
     </ItemGroup>
 
     <ItemGroup>
-        <None Include="Bit.BlazorWebAssembly\src\BlazorWebAssembly.Web\wwwroot\images\icons\bit-icon-512.png">
+        <None Include="Bit.BlazorWasm\src\BlazorWasm.Web\wwwroot\images\icons\bit-icon-512.png">
             <Pack>True</Pack>
             <PackagePath>\</PackagePath>
         </None>
