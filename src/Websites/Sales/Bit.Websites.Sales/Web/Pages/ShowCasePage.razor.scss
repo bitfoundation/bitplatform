@@ -1,6 +1,7 @@
 ﻿@import '../Styles/abstracts/_colors.scss';
 @import '../Styles/abstracts/_media-queries.scss';
 @import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_mixins.scss';
 
 .page-sec {
     width: 100%;
@@ -76,11 +77,16 @@
     }
 }
 
+.sec-btn--primary {
+    @include PrimaryButton($IsInNavbar: false);
+}
+
+
 .cases-bg {
     background-image: url('/images/cases/cases_bg.webp');
     background-repeat: no-repeat;
     background-size: cover;
-    margin-bottom: rem(140px);
+    /*margin-bottom: rem(140px);*/
 
     .cases {
         padding-top: rem(180px);
@@ -107,7 +113,146 @@
 
 
 .all-cases {
-    .case {
+    display: flex;
+    flex-flow: column nowrap;
 
+    .case {
+        display: flex;
+        margin-bottom: rem(200px);
+
+        .left-pane {
+            flex-basis: 100%;
+
+            .sec-title {
+                font-size: rem(30px);
+                text-align: unset;
+            }
+
+            .sec-separator {
+                background-color: $Gray3;
+                width: 80%;
+                height: rem(2px);
+                margin: 2rem 0;
+            }
+
+            .tags {
+                display: flex;
+                flex-flow: row wrap;
+                gap: 1rem;
+                margin-bottom: rem(40px);
+
+                .tag {
+                    font-size: rem(14px);
+                    color: $Gray2;
+                    padding: rem(8px) rem(16px) rem(8px) rem(36px);
+                    background-color: $B6;
+                    border: 1px solid $B5;
+                    border-radius: 2px;
+                    background-repeat: no-repeat;
+                    background-position: center left rem(10px);
+                }
+
+                .tag-1 {
+                    background-image: url('/images/cases/all-cases/tag_lamp.svg');
+                }
+
+                .tag-2 {
+                    background-image: url('/images/cases/all-cases/tag_brush.svg');
+                }
+
+                .tag-3 {
+                    background-image: url('/images/cases/all-cases/tag_headphones.svg');
+                }
+
+                .tag-4 {
+                    background-image: url('/images/cases/all-cases/tag_cloud.svg');
+                }
+
+                .tag-5 {
+                    background-image: url('/images/cases/all-cases/tag_laptop.svg');
+                }
+
+                .tag-6 {
+                    background-image: url('/images/cases/all-cases/tag_mobile.svg');
+                }
+            }
+        }
+
+        .right-pane {
+            flex-basis: 100%;
+            display: flex;
+            flex-flow: column;
+
+            .case-bg {
+                width: rem(500px);
+                height: rem(290px);
+                background-size: rem(510px);
+                margin-bottom: 5rem;
+            }
+
+            .specs {
+                display: flex;
+                justify-content: center;
+                gap: 2rem;
+
+
+                .spec {
+                    background: $Gray5;
+                    border: 1px solid $Gray1;
+                    border-radius: rem(14px);
+                    padding: rem(16px) rem(10px);
+                    display: flex;
+                    flex-flow: column;
+                    align-items: center;
+                    width: rem(130px);
+
+                    .spec-title {
+                        font-weight: 700;
+                        font-size: rem(16px);
+                        color: $Gray1;
+                        margin-bottom: rem(10px);
+                        background-repeat: no-repeat;
+                        padding-left: rem(28px);
+                    }
+
+                    .spec-desc {
+                        font-weight: 400;
+                        font-size: rem(12px);
+                        color: $Gray2;
+                    }
+
+                    .spec-1 {
+                        background-image: url('images/cases/all-cases/team-members_bg.svg');
+                    }
+
+                    .spec-2 {
+                        background-image: url('images/cases/all-cases/delivery-time_bg.svg');
+                    }
+
+                    .spec-3 {
+                        background-image: url('images/cases/all-cases/delivery-time_bg.svg');
+                    }
+                }
+            }
+        }
+
+
+        &.case-rigid {
+            .case-bg {
+                background-image: url('/images/cases/all-cases/rigid_case_bg.webp');
+            }
+        }
+
+        &.case-tradeer {
+            .case-bg {
+                background-image: url('/images/cases/all-cases/tradeer_case_bg.webp');
+            }
+        }
+
+        &.case-blazorui {
+            .case-bg {
+                background-image: url('/images/cases/all-cases/blazorui_case_bg.webp');
+            }
+        }
     }
 }
