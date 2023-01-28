@@ -182,6 +182,11 @@
             background-position: top 2rem right;
             background-size: contain;
             background-repeat: no-repeat;
+            margin-right: rem(-140px);
+
+            @include lg {
+                margin-right: rem(-60px);
+            }
 
             @include md {
                 max-width: rem(420px);

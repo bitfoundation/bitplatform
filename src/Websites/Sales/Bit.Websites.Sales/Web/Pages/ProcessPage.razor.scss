@@ -169,10 +169,12 @@
             background-image: url('/images/process/sw-dev/sw_dev_bg.svg');
             background-size: contain;
             background-repeat: no-repeat;
+            margin-right: rem(-170px);
 
             @include lg {
                 max-width: rem(400px);
                 height: rem(400px);
+                margin-right: rem(-60px);
             }
 
             @include md {
