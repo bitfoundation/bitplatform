@@ -25,6 +25,7 @@
             <div class="menu-top-bar">
                 <div class="close-btn" id="menuCloseBtn" @onclick="CloseMenu"></div>
             </div>
+
             <div class="menu-content">
                 <a class="menu-lnk @(_currentUrl== "/" ? "menu-lnk--active" : "")" href="/">Home<span class="@(_currentUrl== "/" ? "menu-link-border" : "")"></span></a>
                 <a class="menu-lnk @(_currentUrl== "/cases" ? "menu-lnk--active" : "")" href="/cases">Cases<span class="@(_currentUrl== "/cases" ? "menu-link-border" : "")"></span></a>

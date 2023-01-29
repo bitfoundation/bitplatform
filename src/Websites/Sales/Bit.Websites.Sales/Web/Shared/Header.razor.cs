@@ -10,15 +10,28 @@ public partial class Header
 
     protected override void OnInitialized()
     {
-        _currentUrl = _navigationManager.Uri.Replace(_navigationManager.BaseUri, "/", StringComparison.Ordinal);
         _navigationManager.LocationChanged += OnLocationChanged;
+
+        SetCurrentUrl();
+
         base.OnInitialized();
     }
 
     private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
     {
-        _currentUrl = _navigationManager.Uri.Replace(_navigationManager.BaseUri, "/", StringComparison.Ordinal);
+        SetCurrentUrl();
+
         _ = CloseMenu();
+    }
+
+    private void SetCurrentUrl()
+    {
+        _currentUrl = _navigationManager.Uri.Replace(_navigationManager.BaseUri, "/", StringComparison.Ordinal);
+        var hashIndex = _currentUrl.IndexOf('#');
+        if (hashIndex > 0)
+        {
+            _currentUrl = _currentUrl.Substring(0, hashIndex);
+        }
     }
 
     private async Task OpenMenu()

@@ -214,7 +214,7 @@
             max-width: rem(500px);
         }
 
-        .service-card {
+        .card {
             width: calc(100% / 4);
             height: rem(220px);
             border-right: 1px solid $Gray4;
@@ -228,6 +228,7 @@
             background-position: top rem(50px) center;
             background-size: rem(95px);
             cursor: pointer;
+            color: $Black1;
 
             &:hover {
                 box-shadow: 0px 4px 40px rgba(0, 0, 0, 0.1);
@@ -247,6 +248,38 @@
                 background-position-y: rem(30px);
                 padding-top: rem(158px);
             }
+        }
+
+        .card-1 {
+            background-image: url('/images/home/services/web-development-icon.svg')
+        }
+
+        .card-2 {
+            background-image: url('/images/home/services/mobile-development-icon.svg')
+        }
+
+        .card-3 {
+            background-image: url('/images/home/services/consulting-services-icon.svg')
+        }
+
+        .card-4 {
+            background-image: url('/images/home/services/ai-icon.svg')
+        }
+
+        .card-5 {
+            background-image: url('/images/home/services/design-icon.svg')
+        }
+
+        .card-6 {
+            background-image: url('/images/home/services/support-icon.svg')
+        }
+
+        .card-7 {
+            background-image: url('/images/home/services/cloud-icon.svg')
+        }
+
+        .card-8 {
+            background-image: url('/images/home/services/game-development-icon.svg')
         }
     }
 }
