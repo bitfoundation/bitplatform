@@ -30,7 +30,7 @@
 
             <div class="todo-list-container">
                 <div class="filter-container">
-                    <BitPivot Class="filter-pivot" @bind-bind-SelectedKey="_selectedFilter" OnLinkClick="FilterViewTodoItems">
+                    <BitPivot Class="filter-pivot" @bind-SelectedKey="_selectedFilter" OnLinkClick="FilterViewTodoItems">
                         <BitPivotItem Key="@nameof(AppStrings.All)" Class="todo-pivot-tab" HeaderText="@Localizer[nameof(AppStrings.All)]" />
                         <BitPivotItem Key="@nameof(AppStrings.Active)" Class="todo-pivot-tab" HeaderText="@Localizer[nameof(AppStrings.Active)]" />
                         <BitPivotItem Key="@nameof(AppStrings.Completed)" Class="todo-pivot-tab" HeaderText="@Localizer[nameof(AppStrings.Completed)]" />
