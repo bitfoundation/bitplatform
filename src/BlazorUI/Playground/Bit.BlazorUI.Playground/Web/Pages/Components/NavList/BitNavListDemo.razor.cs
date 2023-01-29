@@ -256,7 +256,7 @@ public partial class BitNavListDemo
         {
             Name = "AriaCurrentFieldSelector",
             Type = "Expression<Func<TItem, BitNavListItemAriaCurrent>>?",
-            Href = "nav-list-item-aria-current",
+            Href = "nav-item-aria-current",
             LinkType = LinkType.Link,
             Description = "Aria-current token for active nav item. Must be a valid token value, and defaults to 'page'."
         },
@@ -392,9 +392,9 @@ public partial class BitNavListDemo
         new ComponentParameter()
         {
             Name = "Mode",
-            Type = "BitNavListMode",
-            DefaultValue = "BitNavListMode.Automatic",
-            Href = "nav-list-mode-enum",
+            Type = "BitNavMode",
+            DefaultValue = "BitNavMode.Automatic",
+            Href = "nav-mode-enum",
             LinkType = LinkType.Link,
             Description = "Determines how the navigation will be handled."
         },
@@ -419,9 +419,9 @@ public partial class BitNavListDemo
         new ComponentParameter()
         {
             Name = "RenderType",
-            Type = "BitNavListRenderType",
-            DefaultValue = "BitNavListRenderType.Normal",
-            Href = "nav-list-render-type-enum",
+            Type = "BitNavRenderType",
+            DefaultValue = "BitNavRenderType.Normal",
+            Href = "nav-render-type-enum",
             LinkType = LinkType.Link,
             Description = "The way to render nav items."
         },
@@ -501,80 +501,79 @@ public partial class BitNavListDemo
     {
         new EnumParameter()
         {
-            Id = "nav-list-item-aria-current",
-            Title = "BitNavListItemAriaCurrent Enum",
-            EnumList = new List<EnumItem>
-            {
-                new EnumItem()
-                {
-                    Name= "Page",
-                    Value="0",
-                },
-                new EnumItem()
-                {
-                    Name= "Step",
-                    Value="1",
-                },
-                new EnumItem()
-                {
-                    Name= "Location",
-                    Value="2",
-                },
-                new EnumItem()
-                {
-                    Name= "Date",
-                    Value="3",
-                },
-                new EnumItem()
-                {
-                    Name= "Time",
-                    Value="4",
-                },
-                new EnumItem()
-                {
-                    Name= "True",
-                    Value="5",
-                },
-            }
-        },
-        new EnumParameter()
-        {
-            Id = "nav-list-mode-enum",
-            Title = "BitNavListMode Enum",
+            Id = "nav-mode-enum",
+            Title = "BitNavMode Enum",
             EnumList = new List<EnumItem>()
             {
                 new EnumItem()
                 {
-                    Name= "Automatic",
-                    Description="The value of selected key will change using NavigationManager and the current url inside the component.",
-                    Value="0",
+                    Name = "Automatic",
+                    Description = "The value of selected key will change using NavigationManager and the current url inside the component.",
+                    Value = "0",
                 },
                 new EnumItem()
                 {
-                    Name= "Manual",
-                    Description="Selected key changes will be sent back to the parent component and the component won't change its value.",
-                    Value="1",
+                    Name = "Manual",
+                    Description = "Selected key changes will be sent back to the parent component and the component won't change its value.",
+                    Value = "1",
                 }
             }
         },
         new EnumParameter()
         {
-            Id = "nav-list-render-type-enum",
-            Title = "BitNavListRenderType Enum",
+            Id = "nav-render-type-enum",
+            Title = "BitNavRenderType Enum",
             EnumList = new List<EnumItem>()
             {
                 new EnumItem()
                 {
-                    Name= "Normal",
-                    Description="",
-                    Value="0",
+                    Name = "Normal",
+                    Value = "0",
                 },
                 new EnumItem()
                 {
-                    Name= "Grouped",
-                    Description="",
-                    Value="1",
+                    Name = "Grouped",
+                    Value = "1",
                 }
+            }
+        },
+        new EnumParameter()
+        {
+            Id = "nav-item-aria-current-enum",
+            Title = "BitNavItemAriaCurrent Enum",
+            EnumList = new List<EnumItem>()
+            {
+                new EnumItem()
+                {
+                    Name = "Page",
+                    Value = "0",
+                },
+                new EnumItem()
+                {
+                    Name = "Step",
+                    Value = "1",
+                },
+                new EnumItem()
+                {
+                    Name = "Location",
+                    Value = "2",
+                },
+                new EnumItem()
+                {
+                    Name = "Date",
+                    Value = "3",
+                },
+                new EnumItem()
+                {
+                    Name = "Time",
+                    Value = "4",
+                },
+                new EnumItem()
+                {
+                    Name = "True",
+                    Value = "5",
+                },
+
             }
         },
     };
@@ -658,7 +657,7 @@ private static readonly List<BitPlatformMenu> BitPlatformNavMenu = new()
             CollapseAriaLabelField=""@nameof(CarMenu.CollapsedAriaLabel)""
             ExpandAriaLabelField=""@nameof(CarMenu.ExpandedAriaLabel)""
             ItemsField=""@nameof(CarMenu.Links)""
-            RenderType=""BitNavListRenderType.Grouped"" />
+            RenderType=""BitNavRenderType.Grouped"" />
 ";
 
     private static string example2CSharpCode = @"
@@ -734,7 +733,7 @@ private static readonly List<CarMenu> CarNavMenu = new()
                 IsExpandedFieldSelector=""item => item.IsExpanded""
                 ItemsFieldSelector=""item => item.Childs""
                 DefaultSelectedItem=""FoodNavMenu[0].Childs[2]""
-                Mode=""BitNavListMode.Manual"" />
+                Mode=""BitNavMode.Manual"" />
 </div>
 
 <div class=""margin-top"">
@@ -746,7 +745,7 @@ private static readonly List<CarMenu> CarNavMenu = new()
                 IconNameFieldSelector=""item => item.Icon""
                 IsExpandedFieldSelector=""item => item.IsExpanded""
                 ItemsFieldSelector=""item => item.Childs""
-                Mode=""BitNavListMode.Manual""
+                Mode=""BitNavMode.Manual""
                 OnSelectItem=""(FoodMenu item) => SelectedFoodName = FoodMenuDropDownItems.FirstOrDefault(i => i.Text == item.Name).Text"" />
 
     <BitDropDown @bind-Value=""SelectedFoodName""
@@ -922,7 +921,7 @@ private string SelectedFoodName = FoodNavMenu[0].Childs[2].Name;
                 CollapseAriaLabelField=""@nameof(CarMenu.CollapsedAriaLabel)""
                 ExpandAriaLabelField=""@nameof(CarMenu.ExpandedAriaLabel)""
                 ItemsField=""@nameof(CarMenu.Links)""
-                RenderType=""BitNavListRenderType.Grouped"">
+                RenderType=""BitNavRenderType.Grouped"">
 
         <HeaderTemplate Context=""item"">
             <div class=""nav-list-custom-header"">
@@ -940,7 +939,7 @@ private string SelectedFoodName = FoodNavMenu[0].Childs[2].Name;
                 IconNameFieldSelector=""item => item.Icon""
                 IsExpandedFieldSelector=""item => item.IsExpanded""
                 ItemsFieldSelector=""item => item.Childs""
-                Mode=""BitNavListMode.Manual"">
+                Mode=""BitNavMode.Manual"">
 
         <ItemTemplate Context=""item"">
             <div class=""nav-list-custom-item"">
@@ -1093,7 +1092,7 @@ private static readonly List<FoodMenu> FoodNavMenu = new()
             IsExpandedFieldSelector=""item => item.IsExpanded""
             ItemsFieldSelector=""item => item.Childs""
             DefaultSelectedItem=""FoodNavMenu[0].Childs[2]""
-            Mode=""BitNavListMode.Manual""
+            Mode=""BitNavMode.Manual""
             OnItemClick=""(FoodMenu item) => ClickedItem = item""
             OnSelectItem=""(FoodMenu item) => SelectedItem = item""
             OnItemToggle=""(FoodMenu item) => ToggledItem = item"" />

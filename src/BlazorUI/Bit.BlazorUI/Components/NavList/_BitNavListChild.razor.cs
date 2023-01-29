@@ -4,14 +4,14 @@ namespace Bit.BlazorUI.Components.NavList;
 
 public partial class _BitNavListChild<TItem> where TItem : class
 {
-    private IDictionary<BitNavListItemAriaCurrent, string> _ariaCurrentMap = new Dictionary<BitNavListItemAriaCurrent, string>()
+    private IDictionary<BitNavItemAriaCurrent, string> _ariaCurrentMap = new Dictionary<BitNavItemAriaCurrent, string>()
     {
-        [BitNavListItemAriaCurrent.Page] = "page",
-        [BitNavListItemAriaCurrent.Step] = "step",
-        [BitNavListItemAriaCurrent.Location] = "location",
-        [BitNavListItemAriaCurrent.Time] = "time",
-        [BitNavListItemAriaCurrent.Date] = "date",
-        [BitNavListItemAriaCurrent.True] = "true"
+        [BitNavItemAriaCurrent.Page] = "page",
+        [BitNavItemAriaCurrent.Step] = "step",
+        [BitNavItemAriaCurrent.Location] = "location",
+        [BitNavItemAriaCurrent.Time] = "time",
+        [BitNavItemAriaCurrent.Date] = "date",
+        [BitNavItemAriaCurrent.True] = "true"
     };
 
     [CascadingParameter] protected BitNavList<TItem> Parent { get; set; } = default!;
