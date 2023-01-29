@@ -1,14 +1,11 @@
-﻿var currentUrlPath = window.location.pathname;
-window.onscroll = () => handleHeaderScroll();
-
-class App {
+﻿class App {
     public static setCookie(name: string, value: string, seconds: number) {
         const date = new Date();
         date.setSeconds(date.getSeconds() + seconds);
         document.cookie = `${name}=${value};expires=${date.toUTCString()};path=/`;
     }
 
-    public static getCookie(name: string): string | undefined {
+    public static getCookie(name: string) {
         const cookies = document.cookie.split(';');
         for (let i = 0; i < cookies.length; i++) {
             const cookie = cookies[i].split('=');
@@ -18,49 +15,31 @@ class App {
         }
     }
 
-    public static removeCookie(name: string): void {
+    public static removeCookie(name: string) {
         document.cookie = `${name}=; Max-Age=0`;
     }
 
-    public static goBack(): void {
+    public static goBack() {
         window.history.back();
     }
 
-    public static reloadPage(): void {
+    public static reloadPage() {
         location.reload();
     }
 
-    private static trim(value: string): string {
+    private static trim(value: string) {
         return value.replace(/^\s+|\s+$/g, '');
     }
 
-    public static setBodyStyle(value: string): void {
+    public static setBodyStyle(value: string) {
         document.body.setAttribute('style', value);
     }
-}
 
-//HeaderShadow======================================================================
-function handleHeaderScroll() {
-    const mainHeader = document.getElementById("mainHeader") as HTMLElement;
-    if (document.body.scrollTop > 10 || document.documentElement.scrollTop > 10) {
-        if (mainHeader.className.indexOf("header-shadow") < 0) mainHeader.className += " header-shadow";
-    } else {
-        mainHeader.className = mainHeader.className.replace(" header-shadow", "");
+    public static scrollToContactUs() {
+        document.querySelector('#contactus')?.scrollIntoView();
     }
 
-    if (currentUrlPath == "/process" || currentUrlPath == "/services" || currentUrlPath == "/about") {
-        if (document.body.scrollTop > 10 || document.documentElement.scrollTop > 10) {
-            mainHeader.className = mainHeader.className.replace(" transparent-header", "");
-        } else {
-            if (mainHeader.className.indexOf("transparent-header") < 0) mainHeader.className += " transparent-header";
-        }
-    }
-
-    if (currentUrlPath == "/") {
-        if (document.body.scrollTop > 10 || document.documentElement.scrollTop > 10) {
-            mainHeader.className = mainHeader.className.replace(" home-page-header", "");
-        } else {
-            if (mainHeader.className.indexOf("home-page-header") < 0) mainHeader.className += " home-page-header";
-        }
+    public static scrollIntoView(id: string) {
+        document.getElementById(id)?.scrollIntoView();
     }
 }

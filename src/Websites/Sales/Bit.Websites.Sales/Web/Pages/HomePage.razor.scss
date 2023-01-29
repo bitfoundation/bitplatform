@@ -311,6 +311,10 @@
         width: 100%;
         height: rem(430px);
 
+        @include lg {
+            height: rem(390px);
+        }
+
         @include md {
             height: rem(530px);
         }

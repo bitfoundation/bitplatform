@@ -55,8 +55,4 @@
         <Using Include="Bit.Websites.Sales.Web.Services.Contracts" />
         <Using Include="Bit.Websites.Sales.Web.Services.Implementations" />
     </ItemGroup>
-
-    <ItemGroup>
-        <EmbeddedResource Include="Data\Cases.json" />
-    </ItemGroup>
 </Project>

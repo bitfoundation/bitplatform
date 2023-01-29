@@ -77,6 +77,7 @@
 
 .header-btn {
     @include SecondaryButton($IsInNavbar: true);
+    background: transparent;
     margin-left: rem(60px);
 
     @include md {
@@ -179,7 +180,11 @@
     background-color: $Accent;
 }
 
-.menu-btn {
+.menu-header-btn {
+    background: transparent;
     margin-top: rem(115px);
-    @include PrimaryButton($IsInNavbar: false);
+
+    .menu-btn {
+        @include PrimaryButton($IsInNavbar: false);
+    }
 }
