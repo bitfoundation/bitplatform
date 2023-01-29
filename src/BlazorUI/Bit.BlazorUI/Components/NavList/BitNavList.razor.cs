@@ -52,7 +52,7 @@ public partial class BitNavList<TItem> : IDisposable where TItem : class
     /// Aria-current token for active nav item.
     /// Must be a valid token value, and defaults to 'page'.
     /// </summary>
-    [Parameter] public Expression<Func<TItem, BitNavListItemAriaCurrent>>? AriaCurrentFieldSelector { get; set; }
+    [Parameter] public Expression<Func<TItem, BitNavItemAriaCurrent>>? AriaCurrentFieldSelector { get; set; }
 
     /// <summary>
     /// Aria label for the item.
@@ -161,7 +161,7 @@ public partial class BitNavList<TItem> : IDisposable where TItem : class
     /// <summary>
     /// Determines how the navigation will be handled.
     /// </summary>
-    [Parameter] public BitNavListMode Mode { get; set; } = BitNavListMode.Automatic;
+    [Parameter] public BitNavMode Mode { get; set; } = BitNavMode.Automatic;
 
     /// <summary>
     /// Callback invoked when an item is clicked.
@@ -181,7 +181,7 @@ public partial class BitNavList<TItem> : IDisposable where TItem : class
     /// <summary>
     /// The way to render nav items.
     /// </summary>
-    [Parameter] public BitNavListRenderType RenderType { get; set; } = BitNavListRenderType.Normal;
+    [Parameter] public BitNavRenderType RenderType { get; set; } = BitNavRenderType.Normal;
 
     /// <summary>
     /// Selected item to show in Nav.
@@ -274,7 +274,7 @@ public partial class BitNavList<TItem> : IDisposable where TItem : class
             SetItemExpanded(item, GetIsExpanded(item) ?? false);
         }
 
-        if (Mode == BitNavListMode.Automatic)
+        if (Mode == BitNavMode.Automatic)
         {
             SetSelectedItemByCurrentUrl();
             _navigationManager.LocationChanged += OnLocationChanged;
@@ -294,7 +294,7 @@ public partial class BitNavList<TItem> : IDisposable where TItem : class
     internal string? GetText(TItem item) => item.GetValueAsObjectFromProperty(_internalTextField)?.ToString();
     internal string? GetTitle(TItem item) => item.GetValueAsObjectFromProperty(_internalTitleField)?.ToString();
     internal string? GetUrl(TItem item) => item.GetValueAsObjectFromProperty(_internalUrlField)?.ToString();
-    internal BitNavListItemAriaCurrent GetAriaCurrent(TItem item) => item.GetValueFromProperty(_internalAriaCurrentField, BitNavListItemAriaCurrent.Page);
+    internal BitNavItemAriaCurrent GetAriaCurrent(TItem item) => item.GetValueFromProperty(_internalAriaCurrentField, BitNavItemAriaCurrent.Page);
     internal string? GetExpandAriaLabel(TItem item) => item.GetValueAsObjectFromProperty(_internalExpandAriaLabelField)?.ToString();
     internal string? GetCollapseAriaLabel(TItem item) => item.GetValueAsObjectFromProperty(_internalCollapseAriaLabelField)?.ToString();
     internal string? GetAriaLabel(TItem item) => item.GetValueAsObjectFromProperty(_internalAriaLabelField)?.ToString();
@@ -377,7 +377,7 @@ public partial class BitNavList<TItem> : IDisposable where TItem : class
         {
             await ToggleItem(item);
         }
-        else if (Mode == BitNavListMode.Manual)
+        else if (Mode == BitNavMode.Manual)
         {
             SelectedItem = item;
             await OnSelectItem.InvokeAsync(item);
@@ -404,7 +404,7 @@ public partial class BitNavList<TItem> : IDisposable where TItem : class
 
     protected virtual void Dispose(bool disposing)
     {
-        if (disposing && Mode == BitNavListMode.Automatic)
+        if (disposing && Mode == BitNavMode.Automatic)
         {
             _navigationManager.LocationChanged -= OnLocationChanged;
         }
