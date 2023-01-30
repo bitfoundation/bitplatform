@@ -1,190 +1,31 @@
 ﻿@import "../../Styles/Fluent/colors.fluent.scss", "../../Styles/functions.scss";
 
-@mixin getLinkStyle($hasUrl: true, $enabled: true) {
-    position: relative;
-    display: block;
-    width: 100%;
-    height: rem(44px);
-    border: rem(1px) solid transparent;
-    border-radius: rem(2px);
-    outline: transparent;
-    box-sizing: border-box;
-    font-size: rem(14px);
-    font-weight: 400;
-    text-decoration: none;
-    text-align: center;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    cursor: pointer;
-    user-select: none;
-    white-space: nowrap;
-
-    @if $enabled {
-        color: $Grey160;
-
-        &:hover {
-            color: $Primary;
-        }
-
-        &:active {
-            color: $Black;
-
-            i {
-                color: $ThemeDarker;
-            }
-        }
-    }
-    @else {
-        color: $Grey90;
-        pointer-events: none;
-    }
-}
-
 .bit-nav {
+
     &.bit-nav-fluent {
         font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
         -webkit-font-smoothing: antialiased;
-        font-size: rem(14px);
-        font-weight: 400;
-        user-select: none;
     }
 
-    .nav-group {
-        margin: 0;
-        padding: 0;
-        border: 0;
-        font: inherit;
-        vertical-align: baseline;
-        text-decoration: none;
-    }
-
-    .group-content {
-        display: block;
-        margin-bottom: rem(40px);
-    }
-
-    .nav-items {
+    ul {
         list-style-type: none;
         padding: 0;
         margin: 0;
     }
 
-    .nav-item {
+    li {
         padding: 0;
     }
 
-    .composite-link {
-        display: block;
-        position: relative;
-        color: $Grey160;
-        cursor: pointer;
-
-        &:hover {
-            background-color: $Grey20;
-        }
-
-        &.disabled {
-            &:hover {
-                background-color: transparent;
-            }
-        }
-
-        button, a {
-            background-color: transparent;
-        }
-
-        button.selected, a.selected {
-            background-color: $Grey30;
-            font-weight: 600;
-            color: $Black;
-
-            &:after {
-                border-left: rem(2px) solid $Primary;
-                content: "";
-                position: absolute;
-                inset: 0;
-                pointer-events: none;
-            }
-
-            &:hover {
-                background-color: $Grey20;
-            }
-        }
-
-        button.link-enabled-hasurl, a.link-enabled-hasurl {
-            @include getLinkStyle()
-        }
-
-        button.link-enabled-nourl, a.link-enabled-nourl {
-            @include getLinkStyle($hasUrl:false)
-        }
-
-        button.link-disabled-nourl, a.link-disabled-nourl {
-            @include getLinkStyle($hasUrl: false, $enabled: false)
-        }
-
-        button.link-disabled-hasurl, a.link-disabled-hasurl {
-            @include getLinkStyle($enabled:false)
-        }
-    }
-
-    .link-container {
-        display: flex;
-        height: 100%;
-        flex-flow: row nowrap;
-        justify-content: flex-start;
-        align-items: center;
-
-        i {
-            font-size: rem(16px);
-            margin: 0 rem(4px);
-            height: rem(16px);
-            line-height: rem(16px);
-            text-align: center;
-            flex-shrink: 0;
-            color: $Primary;
-        }
-
-        .link-txt {
-            margin: 0 rem(4px);
-            overflow: hidden;
-            vertical-align: middle;
-            text-align: left;
-            text-overflow: ellipsis;
-        }
-    }
-
-    .chevron-btn {
-        position: absolute;
-        top: rem(1px);
-        left: rem(1px);
-        z-index: 1;
-        display: block;
-        width: rem(26px);
-        height: rem(42px);
+    .chevron-btn, .group-chevron-btn {
+        width: rem(30px);
         font-size: rem(12px);
-        font-weight: 400;
-        text-align: left;
-        line-height: rem(44px);
-        margin: 0;
-        padding: 0;
-        border: none;
-        outline: transparent;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        overflow: hidden;
+        background-color: transparent;
+        color: $Grey160;
+        user-select: none;
         cursor: pointer;
 
         i {
-            position: absolute;
-            top: 0px;
-            left: rem(8px);
-            align-items: center;
-            width: unset;
-            height: rem(44px);
-            font-size: rem(12px);
-            line-height: rem(44px);
-            speak: none;
             transition: transform 0.1s linear 0s;
             -webkit-font-smoothing: antialiased;
 
@@ -195,15 +36,90 @@
     }
 
     .group-chevron-btn {
-        position: relative;
+        display: flex;
+        align-items: center;
+        gap: rem(10px);
         width: 100%;
         height: rem(44px);
-        font-size: rem(18px);
-        margin: rem(5px) 0;
-        padding-left: rem(28px);
         border-bottom: rem(1px) solid $Grey30;
-        -webkit-font-smoothing: antialiased;
-        color: $Grey160;
-        background-color: transparent;
+
+        .group-header {
+            font-size: rem(18px);
+            font-weight: 500;
+        }
+    }
+
+    .item-container {
+        display: flex;
+        flex-flow: row nowrap;
+        width: 100%;
+        height: rem(44px);
+        border-radius: rem(2px);
+        box-sizing: border-box;
+
+        button, a {
+            background-color: transparent;
+            padding: 0;
+        }
+
+        &:hover {
+            background-color: $Grey30;
+
+            .item .item-txt {
+                color: $Primary;
+            }
+        }
+
+        &.selected {
+            background-color: $Grey30;
+            border-left: rem(2px) solid $Primary;
+
+            &:hover {
+                background-color: $Grey20;
+
+                .item .item-txt {
+                    color: $Primary;
+                }
+            }
+
+            .item .item-txt {
+                font-weight: 500;
+                color: $Black;
+            }
+        }
+
+        &.disabled {
+            background-color: transparent;
+            pointer-events: none;
+            cursor: none;
+
+            .item .item-txt {
+                color: $Grey90;
+            }
+        }
+    }
+
+    .item {
+        display: flex;
+        flex-flow: row nowrap;
+        align-items: center;
+        width: 100%;
+        user-select: none;
+        cursor: pointer;
+
+        .item-icon {
+            margin: 0 rem(4px);
+            color: $Primary;
+        }
+
+        .item-txt {
+            margin: 0 rem(4px);
+            font-size: rem(14px);
+            font-weight: 400;
+            color: $Grey160;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+        }
     }
 }

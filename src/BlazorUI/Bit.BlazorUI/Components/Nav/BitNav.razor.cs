@@ -7,6 +7,8 @@ public partial class BitNav : IDisposable
     private bool SelectedItemHasBeenSet;
     private BitNavItem? selectedItem;
 
+    private bool _disposed;
+
     [Inject] private NavigationManager _navigationManager { get; set; } = default!;
 
     /// <summary>
@@ -66,13 +68,20 @@ public partial class BitNav : IDisposable
         {
             if (value == selectedItem) return;
             selectedItem = value;
-            ExpandParents(Items);
-            SelectedItemChanged.InvokeAsync(selectedItem);
+            _ = SelectedItemChanged.InvokeAsync(value);
+            if (value is not null) ExpandParents(Items);
         }
     }
     [Parameter] public EventCallback<BitNavItem> SelectedItemChanged { get; set; }
 
     protected override string RootElementClass => "bit-nav";
+
+    internal async Task SetSelectedItem(BitNavItem item)
+    {
+        SelectedItem = item;
+        await OnSelectItem.InvokeAsync(item);
+        StateHasChanged();
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -119,35 +128,6 @@ public partial class BitNav : IDisposable
         return false;
     }
 
-    internal async Task HandleOnClick(BitNavItem item)
-    {
-        if (item.IsEnabled == false) return;
-
-        if (item.Items.Any() && item.Url.HasNoValue())
-        {
-            await ToggleItem(item);
-        }
-        else if (Mode == BitNavMode.Manual)
-        {
-            SelectedItem = item;
-
-            await OnSelectItem.InvokeAsync(item);
-            
-            StateHasChanged();
-        }
-
-        await OnItemClick.InvokeAsync(item);
-    }
-
-    internal async Task ToggleItem(BitNavItem item)
-    {
-        if (item.IsEnabled is false || item.Items.Any() is false) return;
-
-        item.IsExpanded = !item.IsExpanded;
-
-        await OnItemToggle.InvokeAsync(item);
-    }
-
     public void Dispose()
     {
         Dispose(true);
@@ -156,9 +136,13 @@ public partial class BitNav : IDisposable
 
     protected virtual void Dispose(bool disposing)
     {
-        if (disposing && Mode == BitNavMode.Automatic)
+        if (disposing is false || _disposed) return;
+
+        if (Mode == BitNavMode.Automatic)
         {
             _navigationManager.LocationChanged -= OnLocationChanged;
         }
+
+        _disposed = true;
     }
 }
