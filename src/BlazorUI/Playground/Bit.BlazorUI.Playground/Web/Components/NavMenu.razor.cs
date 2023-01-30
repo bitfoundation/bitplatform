@@ -192,17 +192,5 @@ public partial class NavMenu
         await ToggleMenu();
     }
 
-    private string GetNavMenuClass()
-    {
-        if (string.IsNullOrEmpty(searchText))
-        {
-            return "side-nav";
-        }
-        else
-        {
-            return "side-nav searched-side-nav";
-        }
-    }
-
     private static IEnumerable<BitNavItem> Flatten(IEnumerable<BitNavItem> e) => e.SelectMany(c => Flatten(c.Items)).Concat(e);
 }
