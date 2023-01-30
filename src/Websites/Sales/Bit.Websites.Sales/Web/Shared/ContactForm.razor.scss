@@ -13,8 +13,16 @@
     justify-content: flex-start;
     align-items: center;
     width: 100%;
-    padding: rem(80px);
+    padding: rem(80px) rem(140px);
     box-sizing: border-box;
+
+    @include lg {
+        padding: rem(60px) rem(60px);
+    }
+
+    @include sm {
+        padding: rem(60px) rem(30px);
+    }
 
     @include xs {
         padding: rem(60px) rem(30px);
