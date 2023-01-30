@@ -3,19 +3,19 @@
 <div class="contact-bg">
     <section class="section-container" id="contactus">
         <div class="secondary-title">START</div>
-        <div class="title">Work with us</div>
+        <div class="title">Free Consultation</div>
         <div class="title-underline"></div>
 
-        @if (string.IsNullOrWhiteSpace(_successMessage) is false)
-        {
-            <BitMessageBar MessageBarType="@BitMessageBarType.Success">@_successMessage</BitMessageBar>
-        }
-        else if(string.IsNullOrWhiteSpace(_errorMessage) is false)
-        {
-            <BitMessageBar MessageBarType="@BitMessageBarType.Error">@_errorMessage</BitMessageBar>
-        }
-
         <EditForm class="form" Model="_contactUs" OnValidSubmit="WrapHandled(DoSubmit)">
+            @if (string.IsNullOrWhiteSpace(_successMessage) is false)
+            {
+                <BitMessageBar MessageBarType="@BitMessageBarType.Success">@_successMessage</BitMessageBar>
+            }
+            else if (string.IsNullOrWhiteSpace(_errorMessage) is false)
+            {
+                <BitMessageBar MessageBarType="@BitMessageBarType.Error">@_errorMessage</BitMessageBar>
+            }
+
             <DataAnnotationsValidator />
 
             <ValidationSummary style="color:red" />

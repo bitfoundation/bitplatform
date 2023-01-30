@@ -1,5 +1,22 @@
-﻿@inherits AppComponentBase;
-@page "/case-detail/{CaseKey}"
+﻿@page "/case-detail/{CaseKey}"
+@inherits AppComponentBase
+
+<PageTitle>Bit Platform software development as a service - Case Details</PageTitle>
+<HeadContent>
+    <meta name="title" content="" />
+    <meta name="description" content="" />
+
+    <meta property="og:url" content="https://bitservices.company/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Bit Platform software development as a service" />
+    <meta property="og:title" content="Bit Platform software development as a service" />
+    <meta property="og:description" content="Bit Platform software development as a service" />
+    <meta property="og:image" content="https://bitservices.company/images/og-image.webp" />
+
+    <meta name="twitter:title" content="Bit Platform software development as a service" />
+    <meta name="twitter:description" content="Bit Platform software development as a service" />
+    <meta name="twitter:image" content="https://bitservices.company/images/og-image.webp" />
+</HeadContent>
 
 <section class="page">
     <section class="page-top-container" style="background-image: url(@($"/images/cases/{ShowCase.Key}-header-bg.svg"));">

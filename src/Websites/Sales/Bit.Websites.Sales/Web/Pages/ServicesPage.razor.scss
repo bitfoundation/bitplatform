@@ -150,14 +150,7 @@
     justify-content: flex-start;
     align-items: center;
     padding-top: 4rem;
-    background-image: url('/images/services/outsourcing/outsourcing_bg_1.svg');
-    background-size: rem(100px);
-    background-repeat: no-repeat;
-    background-position: top 5rem left;
-
-    @include md {
-        background-image: none;
-    }
+    position: relative;
 
     .sec-title {
         color: $B1;
@@ -172,7 +165,23 @@
         display: flex;
         gap: 2rem;
 
-        .steps-bg {
+        .steps-bg-1 {
+            position: absolute;
+            top: 0;
+            left: rem(-170px);
+            width: rem(500px);
+            height: rem(1000px);
+            background-image: url('/images/services/outsourcing/outsourcing_bg_1.svg');
+            background-size: rem(100px);
+            background-repeat: no-repeat;
+            background-position: top 5rem left;
+
+            @include lg {
+                display: none;
+            }
+        }
+
+        .steps-bg-2 {
             flex-basis: 100%;
             max-width: rem(500px);
             height: rem(1000px);

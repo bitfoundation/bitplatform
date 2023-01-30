@@ -12,7 +12,7 @@
             <a class="header-lnk @(_currentUrl == "/services" ? "header-lnk--active" : "")" href="/services">Services<span class="@(_currentUrl == "/services" ? "header-lnk-border" : "")"></span></a>
             <a class="header-lnk @(_currentUrl == "/about" ? "header-lnk--active" : "")" href="/about">About<span class="@(_currentUrl == "/about" ? "header-lnk-border" : "")"></span></a>
             <a class="header-lnk @(_currentUrl == "/process" ? "header-lnk--active" : "")" href="/process">Process<span class="@(_currentUrl == "/process" ? "header-lnk-border" : "")"></span></a>
-            <button class="header-btn" onclick="App.scrollToContactUs()">Contact Us</button>
+            <button class="header-btn" onclick="App.scrollToContactUs()">Free Consultation</button>
         </div>
         <div class="header-menu-btn" id="headerMenuBtn" @onclick="@OpenMenu"></div>
     </div>
@@ -33,7 +33,7 @@
                 <a class="menu-lnk @(_currentUrl== "/about" ? "menu-lnk--active" : "")" href="/about">About<span class="@(_currentUrl== "/about" ? "menu-link-border" : "")"></span></a>
                 <a class="menu-lnk @(_currentUrl== "/process" ? "menu-lnk--active" : "")" href="/process">Process<span class="@(_currentUrl== "/process" ? "menu-link-border" : "")"></span></a>
                 <button class="menu-header-btn" onclick="App.scrollToContactUs()">
-                    <a class="menu-btn" id="contactUsBtn" @onclick="CloseMenu">Contact Us</a>
+                    <a class="menu-btn" id="contactUsBtn" @onclick="CloseMenu">Free Consultation</a>
                 </button>
             </div>
         </div>
