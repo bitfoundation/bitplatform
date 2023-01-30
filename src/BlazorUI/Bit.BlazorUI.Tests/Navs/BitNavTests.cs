@@ -52,18 +52,21 @@ public class BitNavTests : BunitTestContext
             parameters.Add(p => p.Visual, visual);
         });
 
-        var enabledClass = isEnabled ? "enabled" : "disabled";
-        var hasUrlClass = hasUrl ? "hasurl" : "nourl";
+        if (isEnabled is false)
+        {
+            var element = component.Find(".item-container");
+            Assert.IsTrue(element.ClassList.Contains("disabled"));
+        }
 
         if (hasUrl)
         {
-            var element = component.Find("a");
-            Assert.IsTrue(element.ClassList.Contains($"link-{enabledClass}-{hasUrlClass}"));
+            var linkElement = component.Find("a");
+            Assert.IsNotNull(linkElement);
         }
         else
         {
-            var element = component.Find("button");
-            Assert.IsTrue(element.ClassList.Contains($"link-{enabledClass}-{hasUrlClass}"));
+            var buttonElement = component.Find("button");
+            Assert.IsNotNull(buttonElement);
         }
     }
 
@@ -227,7 +230,7 @@ public class BitNavTests : BunitTestContext
             parameters.Add(p => p.Items, items);
         });
 
-        var navLinkItem = componenet.Find(".link-enabled-nourl");
+        var navLinkItem = componenet.Find(".item");
 
         if (title is null)
         {
