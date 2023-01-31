@@ -69,7 +69,10 @@ public partial class BitNav : IDisposable
             if (value == selectedItem) return;
             selectedItem = value;
             _ = SelectedItemChanged.InvokeAsync(value);
-            if (value is not null) ExpandParents(Items);
+            if (value is not null) 
+            {
+                ExpandParents(Items);
+            }
         }
     }
     [Parameter] public EventCallback<BitNavItem> SelectedItemChanged { get; set; }
@@ -120,9 +123,15 @@ public partial class BitNav : IDisposable
     {
         foreach (var item in items)
         {
-            if (item == SelectedItem) return item.IsExpanded = true;
+            if (item == SelectedItem)
+            {
+                return item.IsExpanded = true;
+            }
 
-            if (item.Items.Any() && ExpandParents(item.Items)) return item.IsExpanded = true;
+            if (item.Items.Any() && ExpandParents(item.Items))
+            {
+                return item.IsExpanded = true;
+            }
         }
 
         return false;

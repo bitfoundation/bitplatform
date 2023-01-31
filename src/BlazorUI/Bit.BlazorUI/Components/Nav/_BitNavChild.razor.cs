@@ -16,7 +16,9 @@ public partial class _BitNavChild
         [BitNavItemAriaCurrent.True] = "true"
     };
 
-    [CascadingParameter] protected BitNav? Parent { get; set; }
+    [CascadingParameter] protected BitNav Nav { get; set; } = default!;
+
+    [CascadingParameter] protected _BitNavChild? Parent { get; set; }
 
     [Parameter] public BitNavItem Item { get; set; } = new();
 
@@ -24,30 +26,30 @@ public partial class _BitNavChild
 
     private async Task HandleOnClick()
     {
-        if (Parent is null) return;
+        if (Nav is null) return;
         if (Item.IsEnabled == false) return;
 
-        await Parent.OnItemClick.InvokeAsync(Item);
+        await Nav.OnItemClick.InvokeAsync(Item);
 
         if (Item.Items.Any() && Item.Url.HasNoValue())
         {
             await ToggleItem();
         }
-        else if (Parent.Mode == BitNavMode.Manual)
+        else if (Nav.Mode == BitNavMode.Manual)
         {
-            await Parent.SetSelectedItem(Item);
+            await Nav.SetSelectedItem(Item);
         }
     }
 
     private async Task ToggleItem()
     {
-        if (Parent is null) return;
+        if (Nav is null) return;
         if (Item.IsEnabled is false) return;
         if (Item.Items.Any() is false) return;
 
         Item.IsExpanded = !Item.IsExpanded;
 
-        await Parent.OnItemToggle.InvokeAsync(Item);
+        await Nav.OnItemToggle.InvokeAsync(Item);
     }
 
     private static bool IsRelativeUrl(string? url) => url.HasValue() && new Regex("!/^[a-z0-9+-.]+:\\/\\//i").IsMatch(url!);

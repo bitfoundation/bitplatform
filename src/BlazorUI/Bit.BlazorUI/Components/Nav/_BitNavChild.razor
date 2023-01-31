@@ -1,6 +1,6 @@
 ﻿
 <li role="listitem">
-    @if (Parent?.RenderType is BitNavRenderType.Grouped && Parent.Items.Any(i => i == Item))
+    @if (Nav.RenderType is BitNavRenderType.Grouped && Parent is null)
     {
         <button @onclick="ToggleItem"
                 class="group-chevron-btn"
@@ -8,9 +8,9 @@
                 tabindex="0"
                 aria-label="@(Item.IsExpanded ? Item.CollapseAriaLabel : Item.ExpandAriaLabel)"
                 aria-expanded="@(Item.IsExpanded ? "true" : "false")">
-            @if (Parent?.HeaderTemplate is not null)
+            @if (Nav.HeaderTemplate is not null)
             {
-                @Parent?.HeaderTemplate(Item)
+                @Nav.HeaderTemplate(Item)
             }
             else
             {
@@ -22,7 +22,7 @@
     else
     {
         <div style="padding: 0 10px 0 @(Item.Items?.Any() ?? false ? (Depth * 14) : (Depth * 14) + 30)px;"
-             class="item-container @(Item == Parent?.SelectedItem ? "selected" : "") @(Item.IsEnabled is false ? "disabled" : "")"
+             class="item-container @(Item == Nav.SelectedItem ? "selected" : "") @(Item.IsEnabled is false ? "disabled" : "")"
              name="@Item.Text">
 
             @if (Item.Items?.Any() ?? false)
@@ -47,12 +47,12 @@
                    title="@(Item.Title is not null ? Item.Title : Item.Text)"
                    disabled="@(Item.IsEnabled is false)"
                    aria-label="@Item.AriaLabel"
-                   aria-current="@(Item == Parent?.SelectedItem ? _AriaCurrentMap[Item.AriaCurrent] : null)"
+                   aria-current="@(Item == Nav.SelectedItem ? _AriaCurrentMap[Item.AriaCurrent] : null)"
                    rel="@(Item.Url.HasValue() && Item.Target.HasValue() && IsRelativeUrl(Item.Url!) is false ? "noopener noreferrer" : null)">
 
-                    @if (Parent?.ItemTemplate is not null)
+                    @if (Nav.ItemTemplate is not null)
                     {
-                        @Parent?.ItemTemplate(Item)
+                        @Nav.ItemTemplate(Item)
                     }
                     else
                     {
@@ -71,13 +71,13 @@
                         title="@(Item.Title is not null ? Item.Title : Item.Text)"
                         disabled="@(Item.IsEnabled is false)"
                         aria-label="@Item.AriaLabel"
-                        aria-current="@(Item == Parent?.SelectedItem ? _AriaCurrentMap[Item.AriaCurrent] : null)"
+                        aria-current="@(Item == Nav.SelectedItem ? _AriaCurrentMap[Item.AriaCurrent] : null)"
                         tabindex="-1"
                         type="button">
 
-                    @if (Parent?.ItemTemplate is not null)
+                    @if (Nav.ItemTemplate is not null)
                     {
-                        @Parent?.ItemTemplate(Item)
+                        @Nav.ItemTemplate(Item)
                     }
                     else
                     {
