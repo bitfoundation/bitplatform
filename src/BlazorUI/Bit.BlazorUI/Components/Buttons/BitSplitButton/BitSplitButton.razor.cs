@@ -5,12 +5,25 @@ namespace Bit.BlazorUI;
 
 public partial class BitSplitButton
 {
-    private bool _isCalloutOpen;
+    protected override bool UseVisual => false;
+
+    private bool isCalloutOpen;
     private BitSplitButtonItem? _currentItem;
     private string? _splitButtonId;
     private string? _splitButtonCalloutId;
     private string? _splitButtonOverlayId;
-    private string? _buttonStyle;
+
+    private bool _isCalloutOpen
+    {
+        get => isCalloutOpen;
+        set
+        {
+            if (isCalloutOpen == value) return;
+
+            isCalloutOpen = value;
+            ClassBuilder.Reset();
+        }
+    }
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
@@ -35,11 +48,6 @@ public partial class BitSplitButton
     [Parameter] public BitButtonType? ButtonType { get; set; }
 
     /// <summary>
-    /// The EditContext, which is set if the button is inside an <see cref="EditForm"/>
-    /// </summary>
-    [CascadingParameter] public EditContext? EditContext { get; set; }
-
-    /// <summary>
     /// The content inside the item can be customized.
     /// </summary>
     [Parameter] public RenderFragment<BitSplitButtonItem>? ItemTemplate { get; set; }
@@ -59,6 +67,18 @@ public partial class BitSplitButton
     /// </summary>
     [Parameter] public EventCallback<BitSplitButtonItem> OnClick { get; set; }
 
+    /// <summary>
+    /// The EditContext, which is set if the button is inside an <see cref="EditForm"/>
+    /// </summary>
+    [CascadingParameter] private EditContext? _editContext { get; set; }
+
+    [JSInvokable("CloseCallout")]
+    public void CloseCalloutBeforeAnotherCalloutIsOpened()
+    {
+        _isCalloutOpen = false;
+        StateHasChanged();
+    }
+
     protected override string RootElementClass => "bit-splb";
 
     protected override async Task OnInitializedAsync()
@@ -73,15 +93,24 @@ public partial class BitSplitButton
 
     protected override Task OnParametersSetAsync()
     {
-        _buttonStyle = IsEnabled
-            ? ButtonStyle is BitButtonStyle.Primary ? "primary" : "standard"
-            : null;
-
-        ButtonType ??= EditContext is null
+        ButtonType ??= _editContext is null
             ? BitButtonType.Button
             : BitButtonType.Submit;
 
         return base.OnParametersSetAsync();
+    }
+
+    protected override void RegisterComponentClasses()
+    {
+        ClassBuilder.Register(() => IsEnabled is false
+                                       ? string.Empty
+                                       : ButtonStyle == BitButtonStyle.Primary
+                                           ? "primary"
+                                           : "standard");
+
+        ClassBuilder.Register(() => _isCalloutOpen
+                                       ? "open-menu"
+                                       : string.Empty);
     }
 
     private async Task HandleOnClick(BitSplitButtonItem? item)
