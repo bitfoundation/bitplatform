@@ -2,25 +2,27 @@
 
 public partial class AppComponentBase : ComponentBase
 {
-    [AutoInject] protected IExceptionHandler ExceptionHandler { get; set; } = default!;
+    [AutoInject] protected HttpClient HttpClient = default!;
 
     [AutoInject] protected IStateService StateService = default!;
 
-    [AutoInject] protected AppAuthenticationStateProvider AuthenticationStateProvider = default!;
-
-    [AutoInject] protected HttpClient HttpClient = default!;
-
-    [AutoInject] protected IAuthTokenProvider AuthTokenProvider = default!;
+    [AutoInject] protected IPubSubService PubSubService = default!;
 
     [AutoInject] protected IConfiguration Configuration = default!;
 
-    [AutoInject] protected NavigationManager NavigationManager = default!;
+    [AutoInject] protected IJSRuntime JSRuntime { get; set; } = default!;
 
-    [AutoInject] protected IAuthenticationService AuthenticationService = default!;
+    [AutoInject] protected NavigationManager NavigationManager = default!;
+    
+    [AutoInject] protected IAuthTokenProvider AuthTokenProvider = default!;
 
     [AutoInject] protected IStringLocalizer<AppStrings> Localizer = default!;
 
-    [AutoInject] protected IJSRuntime JSRuntime { get; set; } = default!;
+    [AutoInject] protected IAuthenticationService AuthenticationService = default!;
+    
+    [AutoInject] protected IExceptionHandler ExceptionHandler { get; set; } = default!;
+    
+    [AutoInject] protected AppAuthenticationStateProvider AuthenticationStateProvider = default!;
 
     protected async sealed override Task OnInitializedAsync()
     {

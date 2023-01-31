@@ -7,31 +7,15 @@ namespace Bit.BlazorUI.Tests.Buttons;
 public class BitToggleButtonTests : BunitTestContext
 {
     [DataTestMethod,
-       DataRow(Visual.Fluent, true, true, "Button label", BitIconName.Emoji2, "title"),
-       DataRow(Visual.Fluent, true, false, "Button label", BitIconName.Emoji2, "title"),
-       DataRow(Visual.Fluent, false, true, "Button label", BitIconName.Emoji2, "title"),
-       DataRow(Visual.Fluent, false, false, "Button label", BitIconName.Emoji2, "title"),
-
-       DataRow(Visual.Cupertino, true, true, "Button label", BitIconName.Emoji2, "title"),
-       DataRow(Visual.Cupertino, true, false, "Button label", BitIconName.Emoji2, "title"),
-       DataRow(Visual.Cupertino, false, true, "Button label", BitIconName.Emoji2, "title"),
-       DataRow(Visual.Cupertino, false, false, "Button label", BitIconName.Emoji2, "title"),
-
-       DataRow(Visual.Material, true, true, "Button label", BitIconName.Emoji2, "title"),
-       DataRow(Visual.Material, true, false, "Button label", BitIconName.Emoji2, "title"),
-       DataRow(Visual.Material, false, true, "Button label", BitIconName.Emoji2, "title"),
-       DataRow(Visual.Material, false, false, "Button label", BitIconName.Emoji2, "title"),
+       DataRow(true, true, "Button label", BitIconName.Volume0, "title"),
+       DataRow(true, false, "Button label", BitIconName.Volume1, "title"),
+       DataRow(false, true, "Button label", BitIconName.Volume2, "title"),
+       DataRow(false, false, "Button label", BitIconName.Volume3, "title")
    ]
-    public void BitToggleButtonShouldHaveCorrectLabelAndIconAndTitle(Visual visual,
-        bool isChecked,
-        bool isEnabled,
-        string label,
-        BitIconName? iconName,
-        string title)
+    public void BitToggleButtonShouldHaveCorrectLabelAndIconAndTitle(bool isChecked, bool isEnabled, string label, BitIconName? iconName, string title)
     {
         var component = RenderComponent<BitToggleButton>(parameters =>
         {
-            parameters.AddCascadingValue(visual);
             parameters.Add(p => p.IsChecked, isChecked);
             parameters.Add(p => p.Label, label);
             parameters.Add(p => p.IconName, iconName);
@@ -43,10 +27,14 @@ public class BitToggleButtonTests : BunitTestContext
         var bitIconTag = component.Find(".bit-tglb > span > i");
         var bitLabelTag = component.Find(".bit-tglb > span > span");
 
-        var isEnabledClass = isEnabled ? "enabled" : "disabled";
-        var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
-
-        Assert.IsTrue(bitToggleButton.ClassList.Contains($"bit-tglb-{isEnabledClass}-{visualClass}"));
+        if (isEnabled)
+        {
+            Assert.IsFalse(bitToggleButton.ClassList.Contains("disabled"));
+        }
+        else
+        {
+            Assert.IsTrue(bitToggleButton.ClassList.Contains("disabled"));
+        }
 
         Assert.AreEqual(bitLabelTag.TextContent, label);
 

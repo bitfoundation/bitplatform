@@ -1,12 +1,8 @@
-﻿@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
-
-@namespace TodoTemplate.Client.Web.Pages
-
-@inject IHttpContextAccessor ContextAccessor
-
-@using TodoTemplate.Shared.Infra;
+﻿@using TodoTemplate.Shared.Infra;
 @using Microsoft.AspNetCore.Components.Web
-
+@namespace TodoTemplate.Client.Web.Pages
+@inject IHttpContextAccessor ContextAccessor
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @{
     var isBlazorServer = BlazorModeDetector.Current.IsBlazorServer();
     var isDefaultDeploymentType = WebAppDeploymentTypeDetector.Current.IsDefault();
@@ -40,10 +36,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <base href="~/" />
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="TodoTemplate is a project template based on ASP.NET core, identity, web api and ef core for the server side + blazor at client side. It allows you building Android, iOS, Windows, Web applications from single code base." />
-    <base href="~/" />
+    <meta name="description" content="The TodoTemplate is built with ASP.NET Core, Identity, Web API, and EF Core for the server-side, and Blazor for the client-side. It allows you to build Android, iOS, Windows, and Web applications from a single codebase." />
     <link rel="icon" href="~/favicon.ico" type="image/x-icon" asp-append-version="@shoudAddAspAppendVersion">
     <component type="typeof(HeadOutlet)" render-mode="@renderMode" />
     <link rel="apple-touch-icon" sizes="512x512" href="images/icons/bit-icon-512.png" />
@@ -60,15 +56,15 @@
             background: #0D2960;
         }
     </style>
-    @if (isDefaultDeploymentType || isPwa)
-    {
-        <component type="typeof(TodoTemplate.Client.Shared.Components.LoadingComponent)" param-Color="@("#FFF")" render-mode="@RenderMode.Static" />
-    }
     <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.min.css" asp-append-version="@shoudAddAspAppendVersion" />
     <link href="_content/TodoTemplate.Client.Shared/TodoTemplate.Client.Shared.bundle.scp.css" rel="stylesheet" asp-append-version="@shoudAddAspAppendVersion" />
 </head>
 <body>
     <div id="app-container">
+        @if (isDefaultDeploymentType || isPwa)
+        {
+            <component type="typeof(TodoTemplate.Client.Shared.LoadingComponent)" param-Color="@("#FFF")" render-mode="@RenderMode.Static" />
+        }
         @RenderBody()
     </div>
 
@@ -84,17 +80,33 @@
             {
                 <script src="_framework/blazor.webassembly.js" autostart=false></script>
                 <script src="_content/Bit.Bswup/bit-bswup.js" scope="/" sw="service-worker.js" handler="bitBswupHandler"></script>
-                <component type="typeof(Bit.Bswup.BswupProgress)" render-mode="@RenderMode.Static" param-AutoReload="true" param-AppContainer="@("#app-container")" />
+                <component type="typeof(Bit.Bswup.BswupProgress)"
+                           param-AutoReload="true"
+                           param-AppContainer="@("#app-container")"
+                           render-mode="@RenderMode.Static" />
             }
             else
             {
-                <script src="_framework/blazor.webassembly.js" asp-append-version="@shoudAddAspAppendVersion"></script>
+                <script src="_framework/blazor.webassembly.js" autostart="false" asp-append-version="@shoudAddAspAppendVersion"></script>
+                <script src="_content/Bit.Bup/bit-bup.progress.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
+                <script src="_content/Bit.Bup/bit-bup.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
+
+                @if (isSsr)
+                {
+                    <component type="typeof(BupProgressBar)" render-mode="@RenderMode.WebAssemblyPrerendered" />
+                }
+                else
+                {
+                    <link rel="stylesheet" href="_content/Bit.Bup/bit-bup.progress.min.css" asp-append-version="@shoudAddAspAppendVersion">
+                    <component type="typeof(Bit.Bup.BupProgress)" render-mode="@RenderMode.Static"
+                               param-AutoHide="true"
+                               param-HideApp="true"
+                               param-AppContainer="@("#app-container")" />
+                }
             }
         }
-
         <script src="_content/Bit.BlazorUI/scripts/bit.blazorui.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
     }
-
     <script src="_content/TodoTemplate.Client.Shared/scripts/app.js" asp-append-version="@shoudAddAspAppendVersion"></script>
 
     @if (isSsr)

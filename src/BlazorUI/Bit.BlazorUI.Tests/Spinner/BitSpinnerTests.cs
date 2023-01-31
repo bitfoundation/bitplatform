@@ -39,22 +39,22 @@ public class BitSpinnerTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow(Visual.Fluent, BitSpinnerLabelPosition.Top),
-        DataRow(Visual.Cupertino, BitSpinnerLabelPosition.Top),
-        DataRow(Visual.Material, BitSpinnerLabelPosition.Top),
+        DataRow(Visual.Fluent, BitLabelPosition.Top),
+        DataRow(Visual.Cupertino, BitLabelPosition.Top),
+        DataRow(Visual.Material, BitLabelPosition.Top),
 
-        DataRow(Visual.Fluent, BitSpinnerLabelPosition.Right),
-        DataRow(Visual.Cupertino, BitSpinnerLabelPosition.Right),
-        DataRow(Visual.Material, BitSpinnerLabelPosition.Right),
+        DataRow(Visual.Fluent, BitLabelPosition.Right),
+        DataRow(Visual.Cupertino, BitLabelPosition.Right),
+        DataRow(Visual.Material, BitLabelPosition.Right),
 
-        DataRow(Visual.Fluent, BitSpinnerLabelPosition.Left),
-        DataRow(Visual.Cupertino, BitSpinnerLabelPosition.Left),
-        DataRow(Visual.Material, BitSpinnerLabelPosition.Left),
+        DataRow(Visual.Fluent, BitLabelPosition.Left),
+        DataRow(Visual.Cupertino, BitLabelPosition.Left),
+        DataRow(Visual.Material, BitLabelPosition.Left),
 
-        DataRow(Visual.Fluent, BitSpinnerLabelPosition.Bottom),
-        DataRow(Visual.Cupertino, BitSpinnerLabelPosition.Bottom),
-        DataRow(Visual.Material, BitSpinnerLabelPosition.Bottom)]
-    public void BitSpinnerShouldRespectPosition(Visual visual, BitSpinnerLabelPosition position)
+        DataRow(Visual.Fluent, BitLabelPosition.Bottom),
+        DataRow(Visual.Cupertino, BitLabelPosition.Bottom),
+        DataRow(Visual.Material, BitLabelPosition.Bottom)]
+    public void BitSpinnerShouldRespectPosition(Visual visual, BitLabelPosition position)
     {
         var component = RenderComponent<BitSpinnerTest>(parameters =>
         {
@@ -62,7 +62,7 @@ public class BitSpinnerTests : BunitTestContext
             parameters.Add(p => p.LabelPosition, position);
         });
 
-        var positionClass = position == BitSpinnerLabelPosition.Top ? "top" : position == BitSpinnerLabelPosition.Right ? "right" : position == BitSpinnerLabelPosition.Left ? "left" : "bottom";
+        var positionClass = position == BitLabelPosition.Top ? "top" : position == BitLabelPosition.Right ? "right" : position == BitLabelPosition.Left ? "left" : "bottom";
         var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
 
         var bitSpinner = component.Find($".bit-spn-{visualClass}");

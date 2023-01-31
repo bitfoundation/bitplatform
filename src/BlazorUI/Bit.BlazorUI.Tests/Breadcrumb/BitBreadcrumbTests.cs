@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -38,16 +39,16 @@ public class BitBreadcrumbTests : BunitTestContext
             parameters.Add(p => p.DividerIcon, icon);
         });
 
-        var breadcrumbDividerIcon = component.Find(".bit-brc ul li i");
+        var breadcrumbDividerIcon = component.Find(".bit-brc ul i");
 
         Assert.IsTrue(breadcrumbDividerIcon.ClassList.Contains($"bit-icon--{icon}"));
     }
 
     [DataTestMethod,
-      DataRow(0),
-      DataRow(3)
+      DataRow((uint)0),
+      DataRow((uint)3)
    ]
-    public void BitBreadcrumbShouldRespectMaxDisplayeItems(int maxDisplayedItems)
+    public void BitBreadcrumbShouldRespectMaxDisplayeItems(uint maxDisplayedItems)
     {
         var breadcrumbItems = GetBreadcrumbItems();
 
@@ -57,11 +58,11 @@ public class BitBreadcrumbTests : BunitTestContext
             parameters.Add(p => p.MaxDisplayedItems, maxDisplayedItems);
         });
 
-        var breadcrumbElements = component.FindAll(".bit-brc .bit-brc-items-wrapper ul li");
+        var breadcrumbElements = component.FindAll(".bit-brc .items-wrapper ul li");
 
         if (maxDisplayedItems > 0)
         {
-            Assert.AreEqual(breadcrumbElements.Count, maxDisplayedItems + 1);
+            Assert.AreEqual((uint)breadcrumbElements.Count, maxDisplayedItems + 1);
         }
         else
         {
@@ -70,16 +71,16 @@ public class BitBreadcrumbTests : BunitTestContext
     }
 
     [DataTestMethod,
-      DataRow(BitIconName.ChevronDown, 2, 0),
-      DataRow(BitIconName.ChevronDown, 3, 1)
+      DataRow(BitIconName.ChevronDown, (uint)2, (uint)0),
+      DataRow(BitIconName.ChevronDown, (uint)3, (uint)1)
     ]
-    public void BitBreadcrumbShouldRespectOverflowChanges(BitIconName icon, int maxDisplayedItems, int overflowIndex)
+    public void BitBreadcrumbShouldRespectOverflowChanges(BitIconName icon, uint maxDisplayedItems, uint overflowIndex)
     {
         var component = RenderComponent<BitBreadcrumb>(parameters =>
         {
             parameters.Add(p => p.Items, GetBreadcrumbItems());
             parameters.Add(p => p.OverflowIndex, overflowIndex);
-            parameters.Add(p => p.OnRenderOverflowIcon, icon);
+            parameters.Add(p => p.OverflowIcon, icon);
             parameters.Add(p => p.MaxDisplayedItems, maxDisplayedItems);
         });
 
@@ -87,10 +88,10 @@ public class BitBreadcrumbTests : BunitTestContext
 
         Assert.IsTrue(breadcrumbOverflowIcon.ClassList.Contains($"bit-icon--{icon}"));
 
-        var breadcrumbElements = component.FindAll(".bit-brc .bit-brc-items-wrapper ul li");
-        var overflowItem = breadcrumbElements[overflowIndex];
+        var breadcrumbElements = component.FindAll(".bit-brc .items-wrapper ul li");
+        var overflowItem = breadcrumbElements[(int)overflowIndex];
 
-        Assert.AreEqual(breadcrumbElements.Count, maxDisplayedItems + 1);
+        Assert.AreEqual((uint)breadcrumbElements.Count, maxDisplayedItems + 1);
         Assert.IsTrue(overflowItem.InnerHtml.Contains("button"));
     }
 
@@ -106,23 +107,15 @@ public class BitBreadcrumbTests : BunitTestContext
 
         var breadcrumbElements = component.FindAll(".bit-brc ul li a");
 
-        var activeItemIndex = breadcrumbItems.FindLastIndex(item => item.IsCurrentItem);
+        var lastIndex = breadcrumbItems.Count - 1;
 
-        Assert.IsTrue(breadcrumbElements[activeItemIndex].GetAttribute("aria-current").Contains("page"));
-
-        for (int index = 0; index < breadcrumbElements.Count; index++)
-        {
-            if (index != activeItemIndex)
-            {
-                Assert.IsTrue(breadcrumbElements[index].GetAttribute("aria-current").Contains("undefined"));
-            }
-        }
+        Assert.IsTrue(breadcrumbElements[lastIndex].GetAttribute("aria-current").Contains("page"));
     }
 
     [DataTestMethod,
-      DataRow("Detailed label", 3)
+      DataRow("Detailed label", (uint)3)
     ]
-    public void BitBreadcrumbShouldTakeOverflowAriaLabel(string overflowAriaLabel, int maxDisplayedItems)
+    public void BitBreadcrumbShouldTakeOverflowAriaLabel(string overflowAriaLabel, uint maxDisplayedItems)
     {
         var breadcrumbItems = GetBreadcrumbItems();
 
@@ -206,27 +199,23 @@ public class BitBreadcrumbTests : BunitTestContext
             new()
             {
                 Text = "Folder 1",
-                Key = "f1",
-                href = "/components/breadcrumb",
+                Href = "/components/breadcrumb",
             },
             new()
             {
                 Text = "Folder 2 ",
-                Key = "f2",
-                href = "/components/breadcrumb",
+                Href = "/components/breadcrumb",
             },
             new()
             {
                 Text = "Folder 3",
-                Key = "f3",
-                href = "/components/breadcrumb",
+                Href = "/components/breadcrumb",
             },
             new()
             {
                 Text = "Folder 4",
-                Key = "f3",
-                href = "/components/breadcrumb",
-                IsCurrentItem = true,
+                Href = "/components/breadcrumb",
+                IsSelected = true,
             }
         };
     }

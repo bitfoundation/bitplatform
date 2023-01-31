@@ -11,13 +11,13 @@ public partial class ServerSideAuthTokenProvider : IAuthTokenProvider
     [AutoInject] private IJSRuntime _jsRuntime = default!;
     [AutoInject] private IHttpContextAccessor _httpContextAccessor = default!;
 
-    private static readonly PropertyInfo IsInitializedProp = Assembly.Load("Microsoft.AspNetCore.Components.Server")
-        .GetType("Microsoft.AspNetCore.Components.Server.Circuits.RemoteJSRuntime")
-        .GetProperty("IsInitialized");
+    private static readonly PropertyInfo IsInitializedProp = Assembly.Load("Microsoft.AspNetCore.Components.Server")!
+                                                                .GetType("Microsoft.AspNetCore.Components.Server.Circuits.RemoteJSRuntime")!
+                                                                .GetProperty("IsInitialized")!;
 
-    public async Task<string?> GetAcccessToken()
+    public async Task<string?> GetAcccessTokenAsync()
     {
-        var isInitialized = (bool)IsInitializedProp.GetValue(_jsRuntime);
+        var isInitialized = (bool)IsInitializedProp.GetValue(_jsRuntime)!;
 
         if (isInitialized)
         {
@@ -37,9 +37,9 @@ public class ServerSideAuthTokenProvider : IAuthTokenProvider
         _httpContextAccessor = httpContextAccessor;
     }
 
-    public async Task<string?> GetAcccessToken()
+    public Task<string?> GetAcccessTokenAsync()
     {
-        return _httpContextAccessor.HttpContext?.Request.Cookies["access_token"];
+        return Task.FromResult(_httpContextAccessor.HttpContext?.Request.Cookies["access_token"]);
     }
 }
 #endif

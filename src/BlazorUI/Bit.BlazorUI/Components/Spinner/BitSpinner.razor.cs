@@ -12,7 +12,7 @@ public partial class BitSpinner
     /// <summary>
     /// The position of the label in regards to the spinner animation
     /// </summary>
-    [Parameter] public BitSpinnerLabelPosition LabelPosition { get; set; }
+    [Parameter] public BitLabelPosition LabelPosition { get; set; }
 
     /// <summary>
     /// The size of spinner to render
@@ -63,19 +63,19 @@ public partial class BitSpinner
         string classLabelPosition = string.Empty;
         switch (LabelPosition)
         {
-            case BitSpinnerLabelPosition.Top:
+            case BitLabelPosition.Top:
                 classLabelPosition = "top";
                 break;
 
-            case BitSpinnerLabelPosition.Left:
+            case BitLabelPosition.Left:
                 classLabelPosition = "left";
                 break;
 
-            case BitSpinnerLabelPosition.Right:
+            case BitLabelPosition.Right:
                 classLabelPosition = "right";
                 break;
 
-            case BitSpinnerLabelPosition.Bottom:
+            case BitLabelPosition.Bottom:
                 classLabelPosition = "bottom";
                 break;
         }

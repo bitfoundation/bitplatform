@@ -96,6 +96,14 @@
         "inputFile": "Pages/Components/Nav/BitNavDemo.razor.scss"
     },
     {
+        "outputFile": "Pages/Components/NavGroup/BitNavGroupDemo.razor.css",
+        "inputFile": "Pages/Components/NavGroup/BitNavGroupDemo.razor.scss"
+    },
+    {
+        "outputFile": "Pages/Components/NavList/BitNavListDemo.razor.css",
+        "inputFile": "Pages/Components/NavList/BitNavListDemo.razor.scss"
+    },
+    {
         "outputFile": "Pages/Components/Pivot/BitPivotDemo.razor.css",
         "inputFile": "Pages/Components/Pivot/BitPivotDemo.razor.scss"
     },
@@ -168,6 +176,10 @@
         "inputFile": "Pages/Components/RadioButtonList/BitRadioButtonListDemo.razor.scss"
     },
     {
+        "outputFile": "Pages/Components/Rating/BitRatingDemo.razor.css",
+        "inputFile": "Pages/Components/Rating/BitRatingDemo.razor.scss"
+    },
+    {
         "outputFile": "Pages/Components/DropDown/BitDropDownDemo.razor.css",
         "inputFile": "Pages/Components/DropDown/BitDropDownDemo.razor.scss"
     },
@@ -196,8 +208,24 @@
         "inputFile": "Pages/Components/Accordion/BitAccordionDemo.razor.scss"
     },
     {
+        "outputFile": "Pages/Components/Breadcrumb/BitBreadcrumbDemo.razor.css",
+        "inputFile": "Pages/Components/Breadcrumb/BitBreadcrumbDemo.razor.scss"
+    },
+    {
+        "outputFile": "Pages/Components/BreadGroup/BitBreadGroupDemo.razor.css",
+        "inputFile": "Pages/Components/BreadGroup/BitBreadGroupDemo.razor.scss"
+    },
+    {
+        "outputFile": "Pages/Components/BreadList/BitBreadListDemo.razor.css",
+        "inputFile": "Pages/Components/BreadList/BitBreadListDemo.razor.scss"
+    },
+    {
         "outputFile": "Pages/Components/Icon/BitIconDemo.razor.css",
         "inputFile": "Pages/Components/Icon/BitIconDemo.razor.scss"
+    },
+    {
+        "outputFile": "Pages/Components/Link/BitLinkDemo.razor.css",
+        "inputFile": "Pages/Components/Link/BitLinkDemo.razor.scss"
     },
     {
         "outputFile": "Pages/Components/OtpInput/BitOtpInputDemo.razor.css",

@@ -29,13 +29,17 @@ public class BitActionButtonTests : BunitTestContext
             parameters.Add(p => p.OnClick, () => clicked = true);
         });
 
-        var bitButton = com.Find(".bit-actb");
-        var bitIconITag = com.Find(".bit-actb > span > i");
+        var bitButton = com.Find(".bit-acb");
+        var bitIconITag = com.Find(".bit-icon");
 
-        var isEnabledClass = isEnabled ? "enabled" : "disabled";
-        var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
-
-        Assert.IsTrue(bitButton.ClassList.Contains($"bit-actb-{isEnabledClass}-{visualClass}"));
+        if (isEnabled)
+        {
+            Assert.IsFalse(bitButton.ClassList.Contains($"disabled"));
+        }
+        else
+        {
+            Assert.IsTrue(bitButton.ClassList.Contains($"disabled"));
+        }
 
         Assert.IsTrue(bitIconITag.ClassList.Contains($"bit-icon--{iconName.GetName()}"));
 
@@ -60,7 +64,7 @@ public class BitActionButtonTests : BunitTestContext
             parameters.Add(p => p.AllowDisabledFocus, allowDisabledFocus);
         });
 
-        var bitButton = com.Find(".bit-actb");
+        var bitButton = com.Find(".bit-acb");
 
         var hasTabindexAttr = bitButton.HasAttribute("tabindex");
 
@@ -81,7 +85,7 @@ public class BitActionButtonTests : BunitTestContext
             parameters.Add(p => p.AriaDescription, ariaDescription);
         });
 
-        var bitButton = com.Find(".bit-actb");
+        var bitButton = com.Find(".bit-acb");
 
         Assert.IsTrue(bitButton.GetAttribute("aria-describedby").Contains(ariaDescription));
     }
@@ -94,7 +98,7 @@ public class BitActionButtonTests : BunitTestContext
             parameters.Add(p => p.AriaLabel, ariaLabel);
         });
 
-        var bitButton = com.Find(".bit-actb");
+        var bitButton = com.Find(".bit-acb");
 
         Assert.IsTrue(bitButton.GetAttribute("aria-label").Contains(ariaLabel));
     }
@@ -107,7 +111,7 @@ public class BitActionButtonTests : BunitTestContext
             parameters.Add(p => p.AriaHidden, ariaHidden);
         });
 
-        var bitButton = com.Find(".bit-actb");
+        var bitButton = com.Find(".bit-acb");
 
         Assert.AreEqual(bitButton.HasAttribute("aria-hidden"), expectedResult);
     }
@@ -125,7 +129,7 @@ public class BitActionButtonTests : BunitTestContext
             parameters.Add(p => p.IsEnabled, isEnabled);
         });
 
-        var bitActionButton = component.Find(".bit-actb");
+        var bitActionButton = component.Find(".bit-acb");
         var tagName = bitActionButton.TagName;
         var expectedElement = href.HasValue() && isEnabled ? "a" : "button";
 
@@ -144,7 +148,7 @@ public class BitActionButtonTests : BunitTestContext
             parameters.Add(p => p.ButtonType, buttonType);
         });
 
-        var bitActionButton = component.Find(".bit-actb");
+        var bitActionButton = component.Find(".bit-acb");
 
         var buttonTypeName = buttonType == BitButtonType.Button ? "button" : buttonType == BitButtonType.Submit ? "submit" : "reset";
         Assert.AreEqual(buttonTypeName, bitActionButton.GetAttribute("type"));
@@ -158,7 +162,7 @@ public class BitActionButtonTests : BunitTestContext
             parameters.Add(p => p.EditContext, new EditContext(this));
         });
         
-        var bitButton = com.Find(".bit-actb");
+        var bitButton = com.Find(".bit-acb");
 
         Assert.AreEqual("submit", bitButton.GetAttribute("type"));
     }
@@ -172,7 +176,7 @@ public class BitActionButtonTests : BunitTestContext
             parameters.Add(p => p.ButtonType, BitButtonType.Button);
         });
         
-        var bitButton = com.Find(".bit-actb");
+        var bitButton = com.Find(".bit-acb");
 
         Assert.AreEqual("button", bitButton.GetAttribute("type"));
     }

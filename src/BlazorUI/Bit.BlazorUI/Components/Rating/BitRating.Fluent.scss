@@ -1,12 +1,53 @@
 ﻿@import "../../Styles/Fluent/colors.fluent.scss", "../../Styles/functions.scss";
 
-.bit-rating-fluent {
-    font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
-    font-size: rem(14px);
-    font-weight: 400;
-    -webkit-font-smoothing: antialiased;
+.bit-rtg {
+    &.bit-rtg-fluent {
+        font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+        font-size: rem(14px);
+        font-weight: 400;
+        -webkit-font-smoothing: antialiased;
+    }
 
-    & > button {
+    &.bit-rtg-disabled-fluent {
+        .rate-btn {
+            cursor: not-allowed;
+            opacity: 0.65;
+            pointer-events: none;
+        }
+    }
+
+    &.bit-rtg-readonly-fluent {
+        .rate-btn {
+            cursor: default;
+            pointer-events: none;
+        }
+    }
+
+    &.bit-rtg-small-fluent {
+        .rate-btn {
+            font-size: rem(16px);
+            height: rem(16px);
+            line-height: rem(16px);
+        }
+    }
+
+    &.bit-rtg-large-fluent {
+        .rate-btn {
+            font-size: rem(20px);
+            height: rem(20px);
+            line-height: rem(20px);
+        }
+    }
+
+    &.bit-rtg-invalid-fluent {
+        .rate-icon {
+            .rate-icon-back {
+                color: $Red20;
+            }
+        }
+    }
+
+    .rate-btn {
         background-color: transparent;
         border: none;
         box-sizing: content-box;
@@ -15,25 +56,25 @@
         outline: transparent;
         padding: rem(8px) rem(2px);
         position: relative;
+    }
 
-        & > span {
-            border: 0;
-            margin: rem(-1px);
-            height: rem(1px);
-            overflow: hidden;
-            padding: 0;
-            position: absolute;
-            white-space: nowrap;
-            width: rem(1px);
-        }
+    .aria-reader {
+        border: 0;
+        margin: rem(-1px);
+        height: rem(1px);
+        overflow: hidden;
+        padding: 0;
+        position: absolute;
+        white-space: nowrap;
+        width: rem(1px);
+    }
 
-        & > div {
-            display: inline-block;
-            height: inherit;
-            position: relative;
-        }
+    .rate-icon {
+        display: inline-block;
+        height: inherit;
+        position: relative;
 
-        & .ratingStar-back {
+        .rate-icon-back {
             -webkit-font-smoothing: antialiased;
             color: $Grey130;
             display: inline-block;
@@ -47,7 +88,7 @@
             }
         }
 
-        & .ratingStar-front {
+        .rate-icon-front {
             -webkit-font-smoothing: antialiased;
             color: $Grey160;
             display: inline-block;
@@ -64,45 +105,6 @@
             &:hover {
                 color: $Dark
             }
-        }
-    }
-}
-
-.bit-rating-disabled-fluent {
-    & button {
-        cursor: not-allowed;
-        opacity: 0.65;
-        pointer-events: none;
-    }
-}
-
-.bit-rating-readonly-fluent {
-    & button {
-        cursor: default;
-        pointer-events: none;
-    }
-}
-
-.bit-rating-small-fluent {
-    & button {
-        font-size: rem(16px);
-        height: rem(16px);
-        line-height: rem(16px);
-    }
-}
-
-.bit-rating-large-fluent {
-    & button {
-        font-size: rem(20px);
-        height: rem(20px);
-        line-height: rem(20px);
-    }
-}
-
-.bit-rating-invalid-fluent {
-    button {
-        i:not(.ratingStar-front) {
-            color: $Red20;
         }
     }
 }

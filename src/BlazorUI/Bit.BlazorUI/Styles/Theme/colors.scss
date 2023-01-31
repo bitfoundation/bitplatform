@@ -1,0 +1,55 @@
+﻿:root {
+    /* ======== primary color ========= */
+    // main color
+    --clr-primary-main: #0078D4;
+    --clr-primary-dark: #106EBE;
+    --clr-primary-darker: #005A9E;
+    --clr-primary-light: #2b88d8;
+    --clr-secondary-main: var(--clr-ntr-white);
+    --clr-secondary-dark: var(--clr-ntr-gray20);
+    --clr-secondary-darker: var(--clr-ntr-gray30);
+    //background color
+    --clr-background: var(--clr-ntr-white);
+    //action
+    --clr-act-hovor-pri: var(--clr-primary-dark);
+    --clr-act-active-pri: var(--clr-primary-darker);
+    --clr-act-hovor-sec: var(--clr-secondary-dark);
+    --clr-act-active-sec: var(--clr-secondary-darker);
+    --clr-act-disabled: var(--clr-ntr-gray20);
+    --clr-act-border-hovor-sec: var(--clr-ntr-gray160);
+    --clr-act-border-active-sec: var(--clr-ntr-gray160);
+    --clr-act2-active: #004578;
+    //text
+    --clr-txt-primary: var(--clr-ntr-white);
+    --clr-txt-secondary: var(--clr-ntr-gray160);
+    --clr-txt-disabled: var(--clr-ntr-gray90);
+    //border
+    --clr-brd-primary: var(--clr-primary-main);
+    --clr-brd-secondary: var(--clr-ntr-gray110);
+    --clr-brd-disabled: var(--clr-act-disabled);
+    // neutrals color
+    --clr-ntr-black: #000000;
+    --clr-ntr-gray220: #11100f;
+    --clr-ntr-gray210: #161514;
+    --clr-ntr-gray200: #1b1a19;
+    --clr-ntr-gray190: #201f1e;
+    --clr-ntr-gray180: #252423;
+    --clr-ntr-gray170: #292827;
+    --clr-ntr-gray160: #323130;
+    --clr-ntr-gray150: #3b3a39;
+    --clr-ntr-gray140: #484644;
+    --clr-ntr-gray130: #605e5c;
+    --clr-ntr-gray120: #797775;
+    --clr-ntr-gray110: #8a8886;
+    --clr-ntr-gray100: #979593;
+    --clr-ntr-gray90: #a19f9d;
+    --clr-ntr-gray80: #b3b0ad;
+    --clr-ntr-gray70: #bebbb8;
+    --clr-ntr-gray60: #c8c6c4;
+    --clr-ntr-gray50: #d2d0ce;
+    --clr-ntr-gray40: #e1dfdd;
+    --clr-ntr-gray30: #edebe9;
+    --clr-ntr-gray20: #f3f2f1;
+    --clr-ntr-gray10: #faf9f8;
+    --clr-ntr-white: #ffffff;
+}

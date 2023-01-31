@@ -1,3 +1,34 @@
-﻿::deep .bit-srch-box {
-    margin-bottom: rem(12px);
+﻿@import '../../../Styles/abstracts/_functions.scss';
+@import '../../../Styles/abstracts/_colors.scss';
+@import '../../../Styles/abstracts/_media-queries.scss';
+
+.validation-summary {
+    border-left: rem(5px) solid $Red10;
+    background-color: $ErrorBlockRed;
+    overflow: hidden;
+    margin-bottom: rem(10px);
+
+    .validation-errors {
+        margin: rem(5px);
+    }
+}
+
+::deep .validation-message {
+    color: $Red20;
+    font-size: rem(12px);
+}
+
+.example-desc{
+    margin-bottom: rem(20px) !important;
+}
+
+.example-box {
+    display: flex;
+    gap: rem(10px);
+    width: rem(300px);
+    flex-direction: column;
+
+    @include sm {
+        width: rem(200px);
+    }
 }

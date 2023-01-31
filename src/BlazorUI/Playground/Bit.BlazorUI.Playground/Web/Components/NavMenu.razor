@@ -15,10 +15,10 @@
                       OnClear="@HandleClear" />
     </div>
     <div class="nav-menu-list">
-        <BitNav Class="@GetNavMenuClass()"
-                NavLinkItems="filteredNavLinks"
+        <BitNav Class="side-nav"
+                Items="filteredNavLinks"
                 AriaLabel="Bit Component Nav"
-                OnLinkClick="WrapHandled<BitNavLinkItem>(HandleLinkClick)">
+                OnItemClick="WrapHandled<BitNavItem>(HandleOnItemClick)">
         </BitNav>
     </div>
 </div>

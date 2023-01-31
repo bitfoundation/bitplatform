@@ -1,30 +1,37 @@
-﻿@import '../../../Styles/abstracts/_colors.scss';
-@import '../../../Styles/abstracts/_functions.scss';
+﻿@import '../../../Styles/abstracts/_functions.scss';
+@import '../../../Styles/abstracts/_colors.scss';
+@import '../../../Styles/abstracts/_media-queries.scss';
 
 .validation-summary {
     border-left: rem(5px) solid $Red10;
     background-color: $ErrorBlockRed;
     overflow: hidden;
     margin-bottom: rem(10px);
+}
+
+::deep {
+    .validation-message {
+        color: $Red20;
+        font-size: rem(12px);
+    }
 
     .validation-errors {
         margin: rem(5px);
     }
 }
 
-::deep {
-    div.validation-message {
-        color: $Red20;
-        font-size: rem(12px);
-    }
+.example-box {
+    display: flex;
+    gap: rem(10px);
+    width: rem(300px);
+    flex-direction: column;
 
-    .bit-ntf-wrapped {
-        margin-top: rem(8px);
-        margin-bottom: rem(8px);
+    @include sm {
+        width: rem(200px);
     }
+}
 
-    .bit-ntf-lbl-wrapped label {
-        height: auto;
-        width: rem(155px);
-    }
+.column {
+    display: flex;
+    flex-direction: column;
 }

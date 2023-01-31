@@ -22,7 +22,7 @@
          tabindex=@(IsEnabled ? 0 : -1)
          role="combobox"
          data-is-focusable="true"
-         aria-expanded=@(_isOpen ? "true" : "false")
+         aria-expanded=@(IsOpen ? "true" : "false")
          aria-labelledby="@GetDropdownAriaLabelledby"
          aria-required="@IsRequired"
          aria-disabled="@(IsEnabled is false)"
@@ -168,7 +168,7 @@
 
     </div>
     <select @attributes="InputHtmlAttributes" class="bit-input-hidden" multiple>
-        @foreach (BitDropDownItem item in _selectedItems)
+        @foreach (BitDropDownItem item in SelectedItems)
         {
             <option value="@item.Value" selected>@item.Text</option>
         }

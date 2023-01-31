@@ -7,27 +7,16 @@ namespace Bit.BlazorUI.Tests.Buttons;
 public class BitCompoundButtonTests : BunitTestContext
 {
     [DataTestMethod,
-        DataRow(Visual.Fluent, true, BitButtonStyle.Primary),
-        DataRow(Visual.Fluent, true, BitButtonStyle.Standard),
-        DataRow(Visual.Fluent, false, BitButtonStyle.Primary),
-        DataRow(Visual.Fluent, false, BitButtonStyle.Standard),
-
-        DataRow(Visual.Cupertino, true, BitButtonStyle.Primary),
-        DataRow(Visual.Cupertino, true, BitButtonStyle.Standard),
-        DataRow(Visual.Cupertino, false, BitButtonStyle.Primary),
-        DataRow(Visual.Cupertino, false, BitButtonStyle.Standard),
-
-        DataRow(Visual.Material, true, BitButtonStyle.Primary),
-        DataRow(Visual.Material, true, BitButtonStyle.Standard),
-        DataRow(Visual.Material, false, BitButtonStyle.Primary),
-        DataRow(Visual.Material, false, BitButtonStyle.Standard)
+        DataRow(true, BitButtonStyle.Primary),
+        DataRow(true, BitButtonStyle.Standard),
+        DataRow(false, BitButtonStyle.Primary),
+        DataRow(false, BitButtonStyle.Standard)
     ]
-    public void BitCompoundButton(Visual visual, bool isEnabled, BitButtonStyle style)
+    public void BitCompoundButtonTest(bool isEnabled, BitButtonStyle style)
     {
         var clicked = false;
         var com = RenderComponent<BitCompoundButton>(parameters =>
         {
-            parameters.AddCascadingValue(visual);
             parameters.Add(p => p.IsEnabled, isEnabled);
             parameters.Add(p => p.ButtonStyle, style);
             parameters.Add(p => p.OnClick, () => clicked = true);
@@ -35,9 +24,14 @@ public class BitCompoundButtonTests : BunitTestContext
 
         var bitButton = com.Find(".bit-cmpb");
 
-        var isEnabledClass = isEnabled ? "enabled" : "disabled";
-        var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
-        Assert.IsTrue(bitButton.ClassList.Contains($"bit-cmpb-{isEnabledClass}-{visualClass}"));
+        if (isEnabled)
+        {
+            Assert.IsFalse(bitButton.ClassList.Contains("disabled"));
+        }
+        else
+        {
+            Assert.IsTrue(bitButton.ClassList.Contains("disabled"));
+        }
 
         bitButton.Click();
 
@@ -131,27 +125,28 @@ public class BitCompoundButtonTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow(Visual.Fluent, BitButtonStyle.Primary, false),
-        DataRow(Visual.Fluent, BitButtonStyle.Standard, false),
-        DataRow(Visual.Cupertino, BitButtonStyle.Primary, false),
-        DataRow(Visual.Cupertino, BitButtonStyle.Standard, false),
-        DataRow(Visual.Material, BitButtonStyle.Primary, false),
-        DataRow(Visual.Material, BitButtonStyle.Standard, false)
+        DataRow(BitButtonStyle.Primary),
+        DataRow(BitButtonStyle.Standard),
     ]
-    public void BitCompoundButtonShouldHaveCorrectDisabledClassBasedOnButtonStyle(Visual visual, BitButtonStyle buttonStyle, bool isEnabled)
+    public void BitCompoundButtonTypeOfButtonStyleTest(BitButtonStyle buttonStyle)
     {
         var component = RenderComponent<BitCompoundButton>(parameters =>
         {
-            parameters.AddCascadingValue(visual);
             parameters.Add(p => p.ButtonStyle, buttonStyle);
-            parameters.Add(p => p.IsEnabled, isEnabled);
         });
 
         var bitCompoundButton = component.Find(".bit-cmpb");
 
-        var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
-        var buttonStyleStr = buttonStyle == BitButtonStyle.Primary ? "primary" : "standard";
-        Assert.IsTrue(bitCompoundButton.ClassList.Contains($"{buttonStyleStr}-disabled"));
+        if (buttonStyle == BitButtonStyle.Primary)
+        {
+            Assert.IsTrue(bitCompoundButton.ClassList.Contains("primary"));
+            Assert.IsFalse(bitCompoundButton.ClassList.Contains("standard"));
+        }
+        else
+        {
+            Assert.IsFalse(bitCompoundButton.ClassList.Contains("primary"));
+            Assert.IsTrue(bitCompoundButton.ClassList.Contains("standard"));
+        }
     }
 
     [DataTestMethod,

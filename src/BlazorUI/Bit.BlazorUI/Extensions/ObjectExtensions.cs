@@ -70,4 +70,9 @@ internal static class ObjectExtensions
             return (T)Convert.ChangeType(obj, targetType, CultureInfo.InvariantCulture);
         }
     }
+
+    internal static void SetValueToProperty(this object? obj, string propertyName, object value)
+    {
+        obj?.GetType().GetProperty(propertyName)?.SetValue(obj, value);
+    }
 }

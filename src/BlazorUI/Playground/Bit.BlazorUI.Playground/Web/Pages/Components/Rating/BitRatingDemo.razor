@@ -1,68 +1,141 @@
 ﻿@page "/components/rating"
 
-<ComponentDemo ComponentName="Rating" ComponentDescription="Ratings show people’s opinions of a product, helping others make more informed purchasing decisions. People can also rate products they’ve purchased."
-               ComponentParameters="componentParameters" EnumParameters="enumParameters">
-    <ComponentExampleBox Title="BitRating" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
-        <ExamplePreview>
-            <div>Large stars</div>
-            <BitRating Size="BitRatingSize.Large" @bind-Value="RatingLargeValue" AriaLabelFormat="Select {0} of {1} stars" />
+<ComponentDemo ComponentName="Rating"
+               ComponentDescription="Ratings show people’s opinions of a product, helping others make more informed purchasing decisions. People can also rate products they’ve purchased."
+               ComponentParameters="@componentParameters"
+               EnumParameters="@enumParameters">
 
-            <div>Small stars, with 0 stars allowed</div>
-            <BitRating AllowZeroStars="true" @bind-Value="RatingSmallValue" />
-            <div>10 small stars</div>
-            <div>
-                <BitRating Max="10" OnChange="@(v => RatingChangedText = $"Rating value changed to {v}")" @bind-Value="RatingBoundValue" />
-                <div class="m-t-10">
-                    <span>@RatingChangedText</span>
+    <ComponentExampleBox Title="Basic BitRating" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
+        <ExamplePreview>
+            <div class="example-box">
+                <div>
+                    <BitLabel>Basic:</BitLabel>
+                    <BitRating @bind-Value="RatingBasicValue" />
+                    <span>Rate: @RatingBasicValue</span>
                 </div>
-                <div>Disabled</div>
-                <BitRating IsEnabled="false" @bind-Value="RatingReadOnlyValue"/>
-                <div>Half star in readOnly mode</div>
-                <BitRating IsReadOnly="true" @bind-Value="RatingReadOnlyValue" GetAriaLabel="@((value, max) => $"Half star in readOnly mode rating value is {value.ToString()} of {max.ToString()}")"/>
-                <div>Custom icons</div>
-                <BitRating Icon="BitIconName.HeartFill" UnselectedIcon="BitIconName.Heart" AllowZeroStars="true" @bind-Value="RatingCustomIconValue"/>
+                <div>
+                    <BitLabel>Disabled:</BitLabel>
+                    <BitRating IsEnabled="false" @bind-Value="RatingDisabledValue" />
+                    <span>Rate: @RatingDisabledValue</span>
+                </div>
+                <div>
+                    <BitLabel>Readonly:</BitLabel>
+                    <BitRating IsReadOnly="true" @bind-Value="RatingReadonlyValue" />
+                    <span>Rate: @RatingReadonlyValue</span>
+                </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Button-controlled rating" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example2">
+    <ComponentExampleBox Title="BitRating with Max Value" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example2">
+        <ExamplePreview>
+            <div class="example-box">
+                <div>
+                    <BitLabel>Max is 6</BitLabel>
+                    <BitRating Max="6" @bind-Value="RatingMaxValue1" />
+                    <span>Rate: @RatingMaxValue1</span>
+                </div>
+                <div>
+                    <BitLabel>Max is 10</BitLabel>
+                    <BitRating Max="10" @bind-Value="RatingMaxValue2" />
+                    <span>Rate: @RatingMaxValue2</span>
+                </div>
+                <div style="width: 200px;">
+                    <BitLabel>Max is 100</BitLabel>
+                    <BitRating Max="100" @bind-Value="RatingMaxValue3" />
+                    <span>Rate: @RatingMaxValue3</span>
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="BitRating with Custom Icon" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example3">
+        <ExamplePreview>
+            <div class="example-box">
+                <div>
+                    <BitLabel>Heart:</BitLabel>
+                    <BitRating Icon="BitIconName.HeartFill" UnselectedIcon="BitIconName.Heart" @bind-Value="RatingCustomIconValue1" />
+                    <span>Rate: @RatingCustomIconValue1</span>
+                </div>
+                <div>
+                    <BitLabel>Checkbox:</BitLabel>
+                    <BitRating Icon="BitIconName.CheckboxCompositeReversed" UnselectedIcon="BitIconName.Checkbox" @bind-Value="RatingCustomIconValue2" />
+                    <span>Rate: @RatingCustomIconValue2</span>
+                </div>
+                <div>
+                    <BitLabel>Like:</BitLabel>
+                    <BitRating Icon="BitIconName.LikeSolid" UnselectedIcon="BitIconName.Dislike" @bind-Value="RatingCustomIconValue3" />
+                    <span>Rate: @RatingCustomIconValue3</span>
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="BitRating Size" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
+        <ExamplePreview>
+            <div class="example-box">
+                <div>
+                    <BitLabel>Small:</BitLabel>
+                    <BitRating Size="BitRatingSize.Small" @bind-Value="RatingSmallValue" />
+                    <span>Rate: @RatingSmallValue</span>
+                </div>
+                <div>
+                    <BitLabel>Large:</BitLabel>
+                    <BitRating Size="BitRatingSize.Large" @bind-Value="RatingLargeValue" />
+                    <span>Rate: @RatingLargeValue</span>
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Controlled BitRating" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
         <ExamplePreview>
             <div class="example-desc">BitRating component support two-way binding as well.</div>
-            <div>
-                <BitRating Icon="BitIconName.Emoji2" UnselectedIcon="BitIconName.EmojiNeutral" AllowZeroStars="true" @bind-Value="RatingOutsideValue" />
+            <div class="example-box">
                 <div>
-                    <span>RatingOutsideValue: @RatingOutsideValue</span>
+                    <BitLabel>One-way:</BitLabel>
+                    <BitRating AllowZeroStars="true" Value="RatingControlledValue1" />
+                    <BitToggleButton OnChange="(v) =>  RatingControlledValue1 = v ? 5 : 0" Label="@(RatingControlledValue1 == 5 ? "Unstar All" : "Star All")" />
                 </div>
                 <div>
-                    <BitButton OnClick="() => RatingOutsideValue = 5">Fully satisfied</BitButton>
-                    <BitButton OnClick="() => RatingOutsideValue = 0">Have no idea</BitButton>
+                    <BitLabel>Two-way:</BitLabel>
+                    <BitRating Max="6" @bind-Value="RatingControlledValue2" />
+                    <BitSpinButton Step="0.1" @bind-Value="RatingControlledValue2" />
+                </div>
+                <div>
+                    <BitLabel>OnChange:</BitLabel>
+                    <BitRating DefaultValue="2" OnChange="(v) => RatingControlledValue3 = v" />
+                    <span>Rate: @RatingControlledValue3</span>
                 </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BitRating with validation" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example3">
+    <ComponentExampleBox Title="BitRating with validation" HTMLSourceCode="@example6HTMLCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example6">
         <ExamplePreview>
             <div class="example-desc">BitRating component support validation as well.</div>
-            <div>
-                @if (string.IsNullOrEmpty(SuccessMessage))
-                {
-                    <EditForm Model="ValidationForm" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
-                        <DataAnnotationsValidator/>
+            @if (string.IsNullOrEmpty(SuccessMessage))
+            {
+                <EditForm Model="ValidationModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
 
-                        <BitRating AllowZeroStars="true" @bind-Value="ValidationForm.Value"/>
-                        <ValidationMessage For="@(() => ValidationForm.Value)"/>
+                    <DataAnnotationsValidator />
 
-                        <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
-                    </EditForm>
-                }
-                else
-                {
-                    <BitMessageBar MessageBarType="BitMessageBarType.Success" IsMultiline="false">
-                        @SuccessMessage
-                    </BitMessageBar>
-                }
-            </div>
+                    <div class="validation-summary">
+                        <ValidationSummary />
+                    </div>
+
+                    <BitRating AllowZeroStars="true" @bind-Value="ValidationModel.Value" />
+                    <ValidationMessage For="@(() => ValidationModel.Value)" />
+
+                    <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
+                </EditForm>
+            }
+            else
+            {
+                <BitMessageBar MessageBarType="BitMessageBarType.Success" IsMultiline="false">
+                    @SuccessMessage
+                </BitMessageBar>
+            }
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>

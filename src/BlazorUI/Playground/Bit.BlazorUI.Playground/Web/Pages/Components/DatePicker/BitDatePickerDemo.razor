@@ -43,30 +43,29 @@
     <ComponentExampleBox Title="Required BitDatePicker" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
         <ExamplePreview>
             <div class="example-desc">Validation will happen when the <code>Submit</code> button is clicked.</div>
-            @if (string.IsNullOrEmpty(SuccessMessage))
-            {
-                <EditForm Model="formValidationDatePickerModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
-                    <DataAnnotationsValidator />
 
-                    <div class="validation-summary">
-                        <ValidationSummary />
-                    </div>
-                    <div>
-                        <BitDatePicker Style="max-width: 300px"
-                                   @bind-Value="formValidationDatePickerModel.Date"
+            <EditForm Model="formValidationDatePickerModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
+                <DataAnnotationsValidator />
+
+                <div class="validation-summary">
+                    <ValidationSummary />
+                </div>
+                <div>
+                    <BitDatePicker @bind-Value="formValidationDatePickerModel.Date"
+                                   AllowTextInput="true"
+                                   Style="max-width: 300px"
                                    AriaLabel="Select a date"
                                    Placeholder="Select a date..."
                                    Label="Date required (with label)" />
+                    <ValidationMessage For="@(() => formValidationDatePickerModel.Date)" />
+                </div>
+                <br />
+                <BitButton ButtonType="BitButtonType.Submit">
+                    Submit
+                </BitButton>
+            </EditForm>
 
-                        <ValidationMessage For="@(() => formValidationDatePickerModel.Date)" />
-                    </div>
-                    <br />
-                    <BitButton ButtonType="BitButtonType.Submit">
-                        Submit
-                    </BitButton>
-                </EditForm>
-            }
-            else
+            @if (string.IsNullOrEmpty(SuccessMessage) is false)
             {
                 <BitMessageBar MessageBarType="BitMessageBarType.Success" IsMultiline="false">
                     @SuccessMessage
@@ -154,7 +153,7 @@
     <ComponentExampleBox Title="BitDatePicker with value two-way binding" HTMLSourceCode="@example10HTMLCode" CSharpSourceCode="@example10CSharpCode" ExampleId="example10">
         <ExamplePreview>
             <BitDatePicker Style="max-width: 300px"
-                           @bind-Value="@selectedDate"
+            @bind-Value="@selectedDate"
                            AriaLabel="Select a date"
                            Placeholder="Select a date..." />
             <BitLabel>Selected date: @selectedDate.ToString()</BitLabel>
@@ -164,14 +163,14 @@
     <ComponentExampleBox Title="Jalali BitDatePicker" HTMLSourceCode="@example11HTMLCode" ExampleId="example11">
         <ExamplePreview>
             <div class="example-desc">In this sample, you can see the usage of CultureInfoHelper class to specify a particular format for the BitDatePicker. You can also provide your own class for any custom culture of your interest. For more information, you can visit <a href="https://github.com/bitfoundation/bitplatform/blob/develop/src/BlazorUI/Bit.BlazorUI/Utils/CultureInfoHelper.cs">here</a>.</div>
-            <div class="example-desc">Please note to reduce the download size of this page, the sample is not implemented here. In order to use this example, it's required to set InvariantGlobalization to false in the project setting, which causes an extra download size for the website.</div>
+            <div class="example-desc">Please note to reduce the download size of this page, the sample is not implemented here. In order to use this example, it's required to set <b>InvariantGlobalization</b> to <b>false</b> in the project setting, which causes an extra download size for the website.</div>
         </ExamplePreview>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="Jalali BitDatePicker with Finglish names" HTMLSourceCode="@example12HTMLCode" ExampleId="example12">
         <ExamplePreview>
             <div class="example-desc">In this sample, you can see the usage of CultureInfoHelper class to specify a particular format for the BitDatePicker. You can also provide your own class for any custom culture of your interest. For more information, you can visit <a href="https://github.com/bitfoundation/bitplatform/blob/develop/src/BlazorUI/Bit.BlazorUI/Utils/CultureInfoHelper.cs">here</a>.</div>
-            <div class="example-desc">Please note to reduce the download size of this page, the sample is not implemented here. In order to use this example, it's required to set InvariantGlobalization to false in the project setting, which causes an extra download size for the website.</div>
+            <div class="example-desc">Please note to reduce the download size of this page, the sample is not implemented here. In order to use this example, it's required to set <b>InvariantGlobalization</b> to <b>false</b> in the project setting, which causes an extra download size for the website.</div>
         </ExamplePreview>
     </ComponentExampleBox>
 
@@ -235,9 +234,9 @@
     <ComponentExampleBox Title="BitDatePicker with custom left-handed icon" HTMLSourceCode="@example15HTMLCode" ExampleId="example15">
         <ExamplePreview>
             <BitDatePicker Style="max-width: 300px"
-                                AriaLabel="Select a date"
-                                IconLocation="BitIconLocation.Left"
-                                Placeholder="Select a date...">
+                           AriaLabel="Select a date"
+                           IconLocation="BitIconLocation.Left"
+                           Placeholder="Select a date...">
                 <IconFragment>
                     <img src="https://img.icons8.com/fluency/2x/calendar-13.png" width="24" height="24" />
                 </IconFragment>
@@ -248,9 +247,40 @@
     <ComponentExampleBox Title="BitDatePicker with custom icon name" HTMLSourceCode="@example16HTMLCode" ExampleId="example16">
         <ExamplePreview>
             <BitDatePicker Style="max-width: 300px"
-                                AriaLabel="Select a date"
-                                IconName="BitIconName.Airplane"
-                                Placeholder="Select a date..." />
+                           AriaLabel="Select a date"
+                           IconName="BitIconName.Airplane"
+                           Placeholder="Select a date..." />
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Custom Invalid Error Message" HTMLSourceCode="@example17HTMLCode" CSharpSourceCode="@example17CSharpCode" ExampleId="example17">
+        <ExamplePreview>
+            <div class="example-desc">The custom invalid error message will show when an invalid date is entered.</div>
+
+            <EditForm Model="formValidationDatePickerModel">
+                <DataAnnotationsValidator />
+                <div>
+                    <BitDatePicker @bind-Value="formValidationDatePickerModel.Date"
+                                   Style="max-width: 350px"
+                                   AllowTextInput="true"
+                                   Label="BitDatePicker with Custom Invalid Error Message"
+                                   InvalidErrorMessage="Invalid Date!!!" />
+                    <ValidationMessage For="@(() => formValidationDatePickerModel.Date)" />
+                </div>
+                <br />
+                <div class="validation-summary">
+                    <ValidationSummary />
+                </div>
+            </EditForm>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Responsive BitDatePicker" HTMLSourceCode="@example18HTMLCode" ExampleId="example18">
+        <ExamplePreview>
+            <BitDatePicker Style="max-width: 300px"
+                           Responsive="true"
+                           AriaLabel="Select a date"
+                           Placeholder="Select a date..." />
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>

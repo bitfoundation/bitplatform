@@ -13,17 +13,21 @@
                 aria-describedby="@AriaDescription"
                 aria-hidden="@AriaHidden"
                 tabindex="@(IsEnabled ? 0 : -1)"
-                class="operator-btn @_buttonStyle @(_currentItem?.IsEnabled is false ? "disabled" : null)"
+                class="operator-btn @(_currentItem?.IsEnabled is false ? "disabled" : null)"
                 @onclick="() => HandleOnClick(_currentItem)">
-            @_currentItem?.Text
+            @if (_currentItem?.IconName.HasValue ?? false)
+            {
+                <i class="bit-icon bit-icon--@_currentItem.IconName.GetName()"></i>
+            }
+            <span class="text">@_currentItem?.Text</span>
         </button>
         <button type="button"
                 tabindex="@(IsEnabled ? 0 : -1)"
-                class="chevron-btn @_buttonStyle @(_currentItem?.IsEnabled is false ? "disabled" : null)"
+                class="chevron-btn"
                 @onclick="ToggleCallout">
             <i class="bit-icon bit-icon--ChevronDown"></i>
         </button>
-        <span class="separator-btn @_buttonStyle @(_currentItem?.IsEnabled is false ? "disabled" : null)"></span>
+        <span class="separator-btn"></span>
     </div>
     <div id="@_splitButtonCalloutId"
          class="items"
@@ -38,7 +42,7 @@
                                 role="menuitem"
                                 aria-disabled="@item.IsEnabled"
                                 tabindex="@(item.IsEnabled ? 0 : -1)"
-                                class="item @(item.IsEnabled ? "" : "disabled")"
+                                class="item @(item.IsEnabled ? null : "disabled")"
                                 @onclick="() => HandleOnItemClick(item)">
                             @if (ItemTemplate is null)
                             {
@@ -46,7 +50,7 @@
                                 {
                                     <i class="bit-icon bit-icon--@item.IconName.GetName()"></i>
                                 }
-                                <span>
+                                <span class="item-text-container">
                                     @item.Text
                                 </span>
                             }

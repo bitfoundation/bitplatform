@@ -20,7 +20,7 @@
     width: 100%;
     box-sizing: border-box;
     border-bottom: rem(1px) solid #a19f9d;
-    margin-top: rem(32px);
+    margin-top: rem(64px);
 }
 
 .header-title {
@@ -85,13 +85,8 @@
         background-color: #f3f2f1;
     }
 
-    span {
-        i {
-            font-size: rem(18px);
-            color: $B2Color !important;
-        }
-
-        span {
+    .content-container {
+        .text {
             font-size: rem(14px);
             font-weight: 400;
             min-width: rem(80px);
@@ -102,11 +97,16 @@
         }
     }
 
-    &.bit-ico-btn-fluent {
+    .bit-icon {
+        font-size: rem(18px);
+        color: $B2Color !important;
+    }
+
+    &.bit-ico-btn {
         padding: 0 rem(25px);
     }
 
-    &.bit-tglb-fluent {
+    &.bit-tglb {
         min-width: unset;
     }
 }

@@ -1,10 +1,14 @@
-﻿using Microsoft.AspNetCore.Components;
-
+﻿
 namespace Bit.BlazorUI;
 
 public partial class BitLabel
 {
     private bool isRequired;
+
+    /// <summary>
+    /// The content of label, It can be Any custom tag or a text
+    /// </summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
     /// This attribute specifies which form element a label is bound to
@@ -24,11 +28,6 @@ public partial class BitLabel
             ClassBuilder.Reset();
         }
     }
-
-    /// <summary>
-    /// The content of label, It can be Any custom tag or a text
-    /// </summary>
-    [Parameter] public RenderFragment? ChildContent { get; set; }
 
     protected override string RootElementClass => "bit-lbl";
 

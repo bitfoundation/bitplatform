@@ -1,61 +1,76 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
-
+﻿
 namespace Bit.BlazorUI;
 
 public partial class BitPivotItem : IDisposable
 {
-    /// <summary>
-    /// The parent BitPivot component instance
-    /// </summary>
-    [CascadingParameter] public BitPivot? Pivot { get; set; }
+    private bool isSelected;
+    private bool _disposed;
+    public bool IsSelected
+    {
+        get => isSelected;
+        set
+        {
+            if (value == isSelected) return;
+            isSelected = value;
+            ClassBuilder.Reset();
+        }
+    }
 
     /// <summary>
-    /// The content of the pivot item, It can be Any custom tag or a text 
+    /// The content of the pivot item, It can be Any custom tag or a text (alias of ChildContent).
+    /// </summary>
+    [Parameter] public RenderFragment? Body { get; set; }
+
+    /// <summary>
+    /// The content of the pivot item, It can be Any custom tag or a text.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// The content of the pivot item header, It can be Any custom tag or a text
+    /// The content of the pivot item header, It can be Any custom tag or a text.
     /// </summary>
-    [Parameter] public RenderFragment? HeaderFragment { get; set; }
+    [Parameter] public RenderFragment? Header { get; set; }
 
     /// <summary>
-    /// The content of the pivot item can be Any custom tag or a text, If HeaderContent provided value of this parameter show, otherwise use ChildContent
-    /// </summary>
-    [Parameter] public RenderFragment? BodyFragment { get; set; }
-
-    /// <summary>
-    /// The text of the pivot item header, The text displayed of each pivot link
+    /// The text of the pivot item header, The text displayed of each pivot link.
     /// </summary>
     [Parameter] public string? HeaderText { get; set; }
 
     /// <summary>
-    /// The icon name for the icon shown next to the pivot link
+    /// The icon name for the icon shown next to the pivot link.
     /// </summary>
     [Parameter] public BitIconName? IconName { get; set; }
 
     /// <summary>
-    /// Defines an optional item count displayed in parentheses just after the linkText
+    /// Defines an optional item count displayed in parentheses just after the link text.
     /// </summary>
     [Parameter] public int? ItemCount { get; set; }
 
     /// <summary>
-    /// A required key to uniquely identify a pivot item
+    /// The parent BitPivot component instance.
+    /// </summary>
+    [CascadingParameter] public BitPivot? Pivot { get; set; }
+
+    /// <summary>
+    /// A required key to uniquely identify a pivot item.
     /// </summary>
     [Parameter] public string? Key { get; set; }
 
-    private bool _isSelected;
-    public bool IsSelected
+    protected override string RootElementClass => "bit-pvt-itm";
+
+    protected override void RegisterComponentClasses()
     {
-        get => _isSelected;
-        set
+        ClassBuilder.Register(() => IsSelected ? $"{RootElementClass}-selcted-{VisualClassRegistrar()}" : string.Empty);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Pivot is not null)
         {
-            if (value == _isSelected) return;
-            _isSelected = value;
-            ClassBuilder.Reset();
+            Pivot.RegisterItem(this);
         }
+
+        await base.OnInitializedAsync();
     }
 
     internal void SetState(bool status)
@@ -64,22 +79,13 @@ public partial class BitPivotItem : IDisposable
         StateHasChanged();
     }
 
-    protected override Task OnInitializedAsync()
+    private void HandleButtonClick()
     {
-        if (Pivot is not null)
-        {
-            Pivot.RegisterItem(this);
-        }
-        return base.OnInitializedAsync();
+        if (IsEnabled is false) return;
+
+        Pivot?.SelectItem(this);
     }
 
-    protected override string RootElementClass => "bit-pvt-itm";
-    protected override void RegisterComponentClasses()
-    {
-        ClassBuilder.Register(() => IsSelected ? $"{RootElementClass}-selcted-{VisualClassRegistrar()}" : string.Empty);
-    }
-
-    private bool _disposed;
     public void Dispose()
     {
         Dispose(true);
@@ -96,12 +102,5 @@ public partial class BitPivotItem : IDisposable
         }
 
         _disposed = true;
-    }
-
-    private void HandleButtonClick()
-    {
-        if (IsEnabled is false) return;
-
-        Pivot?.SelectItem(this);
     }
 }

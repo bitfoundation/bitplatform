@@ -1,39 +1,45 @@
-﻿@using AdminPanel.Shared.Dtos.Categories
-
-@page "/categories"
-@inherits AppComponentBase;
+﻿@page "/categories"
+@using AdminPanel.Shared.Dtos.Categories
+@namespace AdminPanel.Client.Shared.Pages
+@inherits AppComponentBase
 
 <PageTitle>@Localizer[nameof(AppStrings.CategoriesPageTitle)]</PageTitle>
+
 <div class="page-container">
-    @if (IsLoading)
+    @if (_isLoading)
     {
         <div class="loading-container">
             <BitSpinner Size="BitSpinnerSize.Large"></BitSpinner>
         </div>
     }
+
     <div class="page-row">
         <h1 class="page-title">@Localizer[nameof(AppStrings.Categories)]</h1>
         <BitButton OnClick="CreateCategory">@Localizer[nameof(AppStrings.AddCategory)]</BitButton>
     </div>
+
     <div class="grid">
-        <BitDataGrid ItemsProvider="@categoriesProvider" TGridItem="@CategoryDto" ResizableColumns="true" Pagination="@pagination" @ref="dataGrid">
-            <BitDataGridPropertyColumn Title="@Localizer[nameof(AppStrings.Id)]" Property="@(c => c.Id)" Sortable="true" Align="BitDataGridAlign.Left" IsDefaultSort="BitDataGridSortDirection.Ascending" Class="id-col" />
-            <BitDataGridPropertyColumn Title="@Localizer[nameof(AppStrings.Name)]" Property="@(c => c.Name)" Sortable="true" Align="BitDataGridAlign.Left">
+        <BitDataGrid @ref="_dataGrid" ItemsProvider="_categoriesProvider" TGridItem="CategoryDto" ResizableColumns="true" Pagination="_pagination">
+            <BitDataGridPropertyColumn Class="id-col" Sortable="true" Property="c => c!.Id" Align="BitDataGridAlign.Left"
+                                       Title="@Localizer[nameof(AppStrings.Id)]" IsDefaultSort="BitDataGridSortDirection.Ascending" />
+            <BitDataGridPropertyColumn Sortable="true" Property="c => c!.Name" Title="@Localizer[nameof(AppStrings.Name)]" Align="BitDataGridAlign.Left">
                 <ColumnOptions>
                     <BitSearchBox @bind-Value="CategoryNameFilter"
                                   Placeholder="@Localizer[(nameof(AppStrings.SearchOnName))]"
                                   InputHtmlAttributes="@(new Dictionary<string, object> {{"autofocus", true}})" />
                 </ColumnOptions>
             </BitDataGridPropertyColumn>
-            <BitDataGridTemplateColumn Title="@Localizer[nameof(AppStrings.Color)]" Align="BitDataGridAlign.Left">
-                <span class="color-box" style="background-color:@(context.Color)"></span>
+            <BitDataGridTemplateColumn Title="@Localizer[nameof(AppStrings.Color)]" Align="BitDataGridAlign.Left" Context="category">
+                <span class="color-box" style="background-color:@(category!.Color)"></span>
             </BitDataGridTemplateColumn>
-            <BitDataGridTemplateColumn Title="@Localizer[nameof(AppStrings.Action)]" Align="BitDataGridAlign.Center">
-                <BitIconButton Style="color:#605E5C;" IconName="BitIconName.Edit" OnClick="() => EditCategory(context)" Title="@Localizer[(nameof(AppStrings.Edit))]"/>
-                <BitIconButton Style="color:#605E5C;" IconName="BitIconName.Delete" OnClick="WrapHandled(() => DeleteCategory(context))" Title="@Localizer[(nameof(AppStrings.Delete))]"/>
+            <BitDataGridTemplateColumn Title="@Localizer[nameof(AppStrings.Action)]" Align="BitDataGridAlign.Center" Context="category">
+                <BitIconButton Style="color:#605E5C;" IconName="BitIconName.Edit" Title="@Localizer[(nameof(AppStrings.Edit))]"
+                               OnClick="() => EditCategory(category!)" />
+                <BitIconButton Style="color:#605E5C;" IconName="BitIconName.Delete" Title="@Localizer[(nameof(AppStrings.Delete))]"
+                               OnClick="WrapHandled(() => DeleteCategory(category!))" />
             </BitDataGridTemplateColumn>
         </BitDataGrid>
-        <BitDataGridPaginator Value="@pagination" />
+        <BitDataGridPaginator Value="_pagination" />
     </div>
 </div>
 

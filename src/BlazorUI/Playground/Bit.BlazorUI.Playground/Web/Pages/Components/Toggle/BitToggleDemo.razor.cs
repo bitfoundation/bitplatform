@@ -1,30 +1,24 @@
 ﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
-using Bit.BlazorUI.Playground.Web.Models;
 using Bit.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
 namespace Bit.BlazorUI.Playground.Web.Pages.Components.Toggle;
 
 public partial class BitToggleDemo
 {
-    private bool IsToggleChecked = true;
-    private bool IsToggleUnChecked;
-    private bool BindedIsToggleUnChecked;
+    private bool BasicValue;
+    private bool DisabledValue;
+    private bool OnTextValue;
+    private bool InLineLabelValue;
+    private bool DefaultTextValue;
 
+    private bool LabelTemplateValue;
+
+    private bool OneWayValue;
+    private bool TwoWayValue;
+
+    public BitToggleValidationModel ValidationForm { get; set; } = new();
     private string SuccessMessage = string.Empty;
-    public FormModel ValidationForm { get; set; }
-
-    public class FormModel
-    {
-        [Range(typeof(bool), "true", "true", ErrorMessage = "You must agree to the terms and conditions.")]
-        public bool TermsAgreement { get; set; }
-    }
-
-    protected override void OnInitialized()
-    {
-        ValidationForm = new FormModel();
-    }
 
     private async Task HandleValidSubmit()
     {
@@ -45,22 +39,7 @@ public partial class BitToggleDemo
         {
             Name = "DefaultText",
             Type = "string",
-            DefaultValue = "",
             Description = "Default text of the toggle when it is neither ON or OFF.",
-        },
-        new ComponentParameter()
-        {
-            Name = "Value",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Checked state of the toggle.",
-        },
-        new ComponentParameter()
-        {
-            Name = "ValueChanged",
-            Type = "EventCallback<bool>",
-            DefaultValue = "",
-            Description = "Callback that is called when the Value parameter changed.",
         },
         new ComponentParameter()
         {
@@ -73,150 +52,160 @@ public partial class BitToggleDemo
         {
             Name = "Label",
             Type = "string",
-            DefaultValue = "",
             Description = "Label of the toggle.",
         },
         new ComponentParameter()
         {
-            Name = "LabelFragment",
+            Name = "LabelTemplate",
             Type = "RenderFragment",
-            DefaultValue = "",
             Description = "Custom label of the toggle.",
         },
         new ComponentParameter()
         {
             Name = "OnChange",
             Type = "EventCallback<bool>",
-            DefaultValue = "",
             Description = "Callback that is called when the checked value has changed.",
         },
         new ComponentParameter()
         {
             Name = "OffText",
             Type = "string",
-            DefaultValue = "",
             Description = "Text to display when toggle is OFF.",
         },
         new ComponentParameter()
         {
             Name = "OnText",
             Type = "string",
-            DefaultValue = "",
             Description = "Text to display when toggle is ON.",
         },
         new ComponentParameter()
         {
             Name = "Role",
             Type = "string",
-            DefaultValue = "",
             Description = "Denotes role of the toggle, default is switch.",
         },
-        new ComponentParameter()
-        {
-            Name = "Visibility",
-            Type = "BitComponentVisibility",
-            LinkType = LinkType.Link,
-            Href = "#component-visibility-enum",
-            DefaultValue = "BitComponentVisibility.Visible",
-            Description = "Whether the component is Visible,Hidden,Collapsed.",
-        },
     };
 
-    private readonly List<EnumParameter> enumParameters = new()
-    {
-        new EnumParameter()
-        {
-            Id = "component-visibility-enum",
-            Title = "BitComponentVisibility Enum",
-            Description = "",
-            EnumList = new List<EnumItem>()
-            {
-                new EnumItem()
-                {
-                    Name= "Visible",
-                    Description="Show content of the component.",
-                    Value="0",
-                },
-                new EnumItem()
-                {
-                    Name= "Hidden",
-                    Description="Hide content of the component,though the space it takes on the page remains.",
-                    Value="1",
-                },
-                new EnumItem()
-                {
-                    Name= "Collapsed",
-                    Description="Hide content of the component,though the space it takes on the page gone.",
-                    Value="2",
-                }
-            }
-        }
-    };
+    #region Sample Code 1
 
-    private readonly string example1HTMLCode = @"<div>
-    <BitToggle Label=""Enabled And Checked"" @bind-Value=""IsToggleChecked"" IsEnabled=""true"" OnText=""On"" OffText=""Off"" />
+    private readonly string example1HTMLCode = @"
+<div class=""example-box"">
+    <BitToggle Label=""Basic"" @bind-Value=""BasicValue"" />
+    <BitToggle Label=""Disabled"" @bind-Value=""DisabledValue"" IsEnabled=""false"" />
+    <BitToggle Label=""OnText And OffText"" @bind-Value=""OnTextValue"" OnText=""On"" OffText=""Off"" />
+    <BitToggle Label=""Inline Label"" @bind-Value=""InLineLabelValue"" IsInlineLabel=""true"" />
+    <BitToggle @bind-Value=""DefaultTextValue"" DefaultText=""Default Text"" />
 </div>
-<div>
-    <BitToggle Label=""Enabled And Unchecked"" @bind-Value=""IsToggleUnChecked"" IsEnabled=""true"" OnText=""On"" OffText=""Off"" />
-</div>
-<div>
-    <BitToggle Label=""Disabled And Checked"" Value=""true"" IsEnabled=""false"" OnText=""On"" OffText=""Off"" />
-</div>
-<div>
-    <BitToggle Label=""Disabled And Unchecked"" Value=""false"" IsEnabled=""false"" OnText=""On"" OffText=""Off"" />
-</div>
-<div class=""m-t-15"">
-    <BitToggle Label=""With Inline Label"" @bind-Value=""IsToggleUnChecked"" IsEnabled=""true"" IsInlineLabel=""true"" OnText=""On"" OffText=""Off"" />
-</div>
-<div class=""m-t-15"">
-    <BitToggle Label=""Disabled With Inline Label"" Value=""false"" IsEnabled=""false"" IsInlineLabel=""true"" OnText=""On"" OffText=""Off"" />
-</div>
-<div class=""m-t-15"">
-    <BitToggle Label=""With Inline Label And Without OnText And OffText"" @bind-Value=""IsToggleUnChecked"" IsEnabled=""true"" IsInlineLabel=""true"" />
-</div>
-<div class=""m-t-15"">
-    <BitToggle Label=""Disabled With Inline Label And Without OnText And OffText"" Value=""false"" IsEnabled=""false"" IsInlineLabel=""true"" />
-</div>
-<div>
-    <BitToggle Label=""Enabled And Checked (ARIA 1.0 compatible)"" @bind-Value=""IsToggleChecked"" IsEnabled=""true"" OnText=""On"" OffText=""Off"" Role=""Checkbox"" />
-</div>";
+";
 
     private readonly string example1CSharpCode = @"
-private bool BindedIsToggleUnChecked = false;
-private bool IsToggleUnChecked = false;";
+private bool BasicValue;
+private bool DisabledValue;
+private bool OnTextValue;
+private bool InLineLabelValue;
+private bool DefaultTextValue;
+";
 
-    private readonly string example2HTMLCode = @"<div>
-    <BitToggle @bind-Value=""IsToggleUnChecked"" IsEnabled=""true"" OnText=""On"" OffText=""Off"">
-        <LabelFragment>
-            Custom Label
-        </LabelFragment>
+    #endregion
+
+    #region Sample Code 2
+
+    private readonly string example2HTMLCode = @"
+<div class=""example-box"">
+    <BitToggle @bind-Value=""LabelTemplateValue"">
+        <LabelTemplate>
+            <span style=""color: green;"">This is custom Label</span>
+            <BitIcon IconName=""BitIconName.Filter"" />
+        </LabelTemplate>
     </BitToggle>
 </div>
-<div>
-    <BitToggle @bind-Value=""BindedIsToggleUnChecked"" IsEnabled=""true"" OnText=""On"" OffText=""Off"" IsInlineLabel=""true"">
-        <LabelFragment>
-            Custom Inline Label
-        </LabelFragment>
-    </BitToggle>
-    <div class=""m-t-15"">
-        <BitButton Class=""m-t-15"" OnClick=""() => BindedIsToggleUnChecked = true"">Make Toggle Check</BitButton>
+";
+
+    private readonly string example2CSharpCode = @"
+private bool LabelTemplateValue;
+";
+
+    #endregion
+
+    #region Sample Code 3
+
+    private readonly string example3HTMLCode = @"
+<div class=""example-box"">
+    <div>
+        <BitToggle Value=""OneWayValue"" Label=""One-way"" OnText=""Off"" OffText=""On"" />
+        <BitToggleButton @bind-IsChecked=""OneWayValue"" Label=""@(OneWayValue ? ""Off"" : ""On"")"" />
     </div>
-</div>";
+    <div>
+        <BitToggle @bind-Value=""TwoWayValue"" Label=""Two-way"" OnText=""Off"" OffText=""On"" />
+        <BitToggleButton @bind-IsChecked=""TwoWayValue"" Label=""@(TwoWayValue ? ""Off"" : ""On"")"" />
+    </div>
+</div>
+";
 
     private readonly string example3CSharpCode = @"
-private string SuccessMessage = string.Empty;
-public FormModel ValidationForm { get; set; }
+private bool OneWayValue;
+private bool TwoWayValue;
+";
 
-public class FormModel
+    #endregion
+
+    #region Sample Code 4
+
+    private readonly string example4HTMLCode = @"
+<style>
+    .validation-summary {
+        border-left: rem(5px) solid $Red10;
+        background-color: $ErrorBlockRed;
+        overflow: hidden;
+        margin-bottom: rem(10px);
+    }
+
+    .validation-message {
+        color: $Red20;
+        font-size: rem(12px);
+    }
+
+    .validation-errors {
+        margin: rem(5px);
+    }
+</style>
+
+@if (string.IsNullOrEmpty(SuccessMessage))
+{
+    <EditForm Model=""ValidationForm"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
+        <DataAnnotationsValidator />
+
+        <div class=""validation-summary"">
+            <ValidationSummary />
+        </div>
+
+        <div>
+            <BitToggle @bind-Value=""ValidationForm.TermsAgreement"" DefaultText=""I agree with the terms and conditions."" />
+            <ValidationMessage For=""@(() => ValidationForm.TermsAgreement)"" />
+        </div>
+
+        <BitButton Style=""margin-top: 10px;"" ButtonType=""BitButtonType.Submit"">
+            Submit
+        </BitButton>
+    </EditForm>
+}
+else
+{
+    <BitMessageBar MessageBarType=""BitMessageBarType.Success"" IsMultiline=""false"">
+        @SuccessMessage
+    </BitMessageBar>
+}
+";
+
+    private readonly string example4CSharpCode = @"
+public class BitToggleValidationModel
 {
     [Range(typeof(bool), ""true"", ""true"", ErrorMessage = ""You must agree to the terms and conditions."")]
-    public bool TermsAgreement { get; set; }
+    public bool TermsAgreement { get; set; } = true;
 }
 
-protected override void OnInitialized()
-{
-    ValidationForm = new FormModel();
-}
+public BitToggleValidationModel ValidationForm { get; set; } = new();
+private string SuccessMessage = string.Empty;
 
 private async Task HandleValidSubmit()
 {
@@ -229,33 +218,8 @@ private async Task HandleValidSubmit()
 private void HandleInvalidSubmit()
 {
     SuccessMessage = string.Empty;
-}";
-
-    private readonly string example3HTMLCode = @"@if (string.IsNullOrEmpty(SuccessMessage))
-{
-    <EditForm Model=""ValidationForm"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
-        <DataAnnotationsValidator />
-
-        <div class=""validation-summary"">
-            <ValidationSummary />
-        </div>
-
-        <div>
-            <BitToggle @bind-Value=""ValidationForm.TermsAgreement"" DefaultText=""I agree with the terms and conditions."" />
-
-            <ValidationMessage For=""@(() => ValidationForm.TermsAgreement)"" />
-        </div>
-
-        <BitButton ButtonType=""BitButtonType.Submit"">
-            Submit
-        </BitButton>
-    </EditForm>
 }
-else
-{
-    <BitMessageBar MessageBarType=""BitMessageBarType.Success"" IsMultiline=""false"">
-        @SuccessMessage
-    </BitMessageBar>
-}";
+";
 
+    #endregion
 }

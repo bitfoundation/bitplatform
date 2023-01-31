@@ -7,10 +7,7 @@ namespace Bit.SourceGenerators;
 
 public static class AutoInjectNormalClassHandler
 {
-    public static string? Generate(
-        INamedTypeSymbol? attributeSymbol,
-        INamedTypeSymbol? classSymbol,
-        IReadOnlyCollection<ISymbol> eligibleMembers)
+    public static string? Generate(INamedTypeSymbol? attributeSymbol, INamedTypeSymbol? classSymbol, IReadOnlyCollection<ISymbol> eligibleMembers)
     {
         if (classSymbol is null)
         {
@@ -38,10 +35,7 @@ namespace {classNamespace}
         return source;
     }
 
-    private static string GenerateConstructor(
-        INamedTypeSymbol classSymbol,
-        IReadOnlyCollection<ISymbol> eligibleMembers,
-        IReadOnlyCollection<ISymbol> baseEligibleMembers)
+    private static string GenerateConstructor(INamedTypeSymbol classSymbol, IReadOnlyCollection<ISymbol> eligibleMembers, IReadOnlyCollection<ISymbol> baseEligibleMembers)
     {
         string generateConstructor = $@"
         [global::System.CodeDom.Compiler.GeneratedCode(""Bit.SourceGenerators"",""{BitSourceGeneratorUtil.GetPackageVersion()}"")]
@@ -49,7 +43,7 @@ namespace {classNamespace}
         [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 {"\t\t"}public {classSymbol.Name}({GenerateConstructorParameters(eligibleMembers, baseEligibleMembers)}){PassParametersToBaseClass(baseEligibleMembers)}
 {"\t\t"}{{
-    {"\t\t"}{AssignedInjectedParametersToMembers(eligibleMembers)}
+{AssignedInjectedParametersToMembers(eligibleMembers)}
 {"\t\t"}}}
 ";
         return generateConstructor;
@@ -58,9 +52,9 @@ namespace {classNamespace}
     private static string PassParametersToBaseClass(IReadOnlyCollection<ISymbol> baseEligibleMembers)
     {
         if (baseEligibleMembers.Any() is false)
-            return "";
+            return string.Empty;
 
-        StringBuilder baseConstructor = new StringBuilder();
+        StringBuilder baseConstructor = new();
 
         baseConstructor.Append(": base(");
 
@@ -78,21 +72,24 @@ namespace {classNamespace}
 
     private static string AssignedInjectedParametersToMembers(IReadOnlyCollection<ISymbol> eligibleMembers)
     {
-        StringBuilder stringBuilder = new StringBuilder();
+        StringBuilder stringBuilder = new();
         foreach (ISymbol symbol in eligibleMembers)
         {
-            stringBuilder.Append($@"{symbol.Name} = autoInjected{AutoInjectHelper.FormatMemberName(symbol.Name)};");
+            if (stringBuilder.Length > 0)
+            {
+                stringBuilder.Append('\n');
+            }
+            stringBuilder.Append("\t\t\t")
+                .Append($@"{symbol.Name} = autoInjected{AutoInjectHelper.FormatMemberName(symbol.Name)};");
         }
 
         return stringBuilder.ToString();
     }
 
-    private static string GenerateConstructorParameters(
-        IReadOnlyCollection<ISymbol> eligibleMembers,
-        IReadOnlyCollection<ISymbol> baseEligibleMembers)
+    private static string GenerateConstructorParameters(IReadOnlyCollection<ISymbol> eligibleMembers, IReadOnlyCollection<ISymbol> baseEligibleMembers)
     {
-        StringBuilder stringBuilder = new StringBuilder();
-        List<ISymbol> members = new List<ISymbol>(eligibleMembers.Count + baseEligibleMembers.Count);
+        StringBuilder stringBuilder = new();
+        List<ISymbol> members = new(eligibleMembers.Count + baseEligibleMembers.Count);
 
         members.AddRange(eligibleMembers);
         members.AddRange(baseEligibleMembers);

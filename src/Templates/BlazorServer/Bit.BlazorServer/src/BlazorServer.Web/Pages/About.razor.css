@@ -1,0 +1,250 @@
+﻿.page {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: flex-start;
+    width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+    background: linear-gradient(180deg, #F3F6F9 0%, #FFFFFF 100%);
+}
+
+.bitplatform {
+    padding-top: 5rem;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.page-section {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.page-section-contnet {
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+    width: 100%;
+    max-width: 75rem;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+    box-sizing: border-box;
+}
+
+.text--gradiant {
+    background: linear-gradient(to right, #007FFF, #0059B2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.section-title {
+    margin: 0;
+    margin-top: 0.625rem;
+    margin-bottom: 0.625rem;
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1.2;
+    color: #132F4C;
+}
+
+@media screen and (min-width: 56.3125em) and (max-width: 75em) {
+    .section-title {
+        font-size: 1.75rem;
+    }
+}
+
+@media screen and (max-width: 56.25em) {
+    .section-title {
+        font-size: 1.5rem;
+    }
+}
+
+.vision-section {
+    padding-top: 2rem;
+    padding-bottom: 3.75rem;
+}
+
+@media screen and (min-width: 56.3125em) and (max-width: 75em) {
+    .vision-section {
+        padding-top: 13rem;
+        padding-bottom: 3.75rem;
+    }
+}
+
+@media screen and (min-width: 37.5625em) and (max-width: 56.25em) {
+    .vision-section {
+        padding-top: 9.5rem;
+        padding-bottom: 1.875rem;
+    }
+}
+
+@media screen and (max-width: 37.5em) {
+    .vision-section {
+        padding-top: 11.75rem;
+        padding-bottom: 1.875rem;
+    }
+}
+
+.vision-section .page-section-contnet {
+    justify-content: center;
+    min-height: 18.75rem;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+}
+
+.vision-section .vision-title {
+    margin: 0;
+    margin-top: 0.625rem;
+    margin-bottom: 0.625rem;
+    font-size: 3.25rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: #132F4C;
+}
+
+@media screen and (min-width: 56.3125em) and (max-width: 75em) {
+    .vision-section .vision-title {
+        font-size: 2.625rem;
+    }
+}
+
+@media screen and (max-width: 56.25em) {
+    .vision-section .vision-title {
+        font-size: 2rem;
+    }
+}
+
+.values-section {
+    padding-top: 3.75rem;
+    padding-bottom: 3.75rem;
+}
+
+@media screen and (max-width: 56.25em) {
+    .values-section {
+        padding-top: 1.875rem;
+        padding-bottom: 1.875rem;
+    }
+}
+
+.values-section .card-list {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: center;
+    width: calc(100% + 20px);
+    margin-left: -20px;
+    margin-top: 1.875rem;
+    margin-bottom: 1.875rem;
+}
+
+.values-section .value-card {
+    flex-basis: calc(33.3333333333% - 20px);
+    flex-grow: 0;
+    max-width: calc(33.3333333333% - 20px);
+    min-width: 17.1875rem;
+    padding: 1.25rem;
+    margin-top: 1.25rem;
+    margin-left: 1.25rem;
+    border-radius: 0.25rem;
+    border: 0.0625rem solid #E0E3E7;
+    box-shadow: 0 1.6px 3.6px 0 rgba(0, 0, 0, 0.13), 0 0.3px 0.9px 0 rgba(0, 0, 0, 0.11);
+    box-sizing: border-box;
+    color: #1A2027;
+    transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+    background-color: #FFFFFF;
+}
+
+.values-section .value-card-title {
+    margin-bottom: 0.625rem;
+    font-size: 1.25rem;
+    line-height: 1.5;
+    letter-spacing: 0;
+    font-weight: 700;
+    color: #1A2027;
+    padding-left: 2.5rem;
+    box-sizing: border-box;
+    background-position: center left;
+    background-repeat: no-repeat;
+}
+
+.values-section .value-card-desc {
+    font-size: 1rem;
+    line-height: 1.5;
+    letter-spacing: 0;
+    font-weight: 400;
+    color: #3E5060;
+}
+
+.values-section .quality-icon {
+    background-image: url("/images/about-us/quality-icon.webp");
+    background-size: 1.75rem;
+}
+
+.values-section .integrity-icon {
+    background-image: url("/images/about-us/integrity-icon.webp");
+    background-size: 1.875rem;
+}
+
+.values-section .transparency-icon {
+    background-image: url("/images/about-us/transparency-icon.webp");
+    background-size: 1.75rem;
+}
+
+.download-section {
+    background: linear-gradient(85deg, #132f4c 0%, #173a5e 100%);
+    padding-top: 5rem;
+    padding-bottom: 5rem;
+}
+
+@media screen and (max-width: 56.25em) {
+    .download-section {
+        padding-top: 2.5rem;
+        padding-bottom: 2.5rem;
+    }
+}
+
+.download-section .download-container {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: center;
+    align-items: center;
+}
+
+.download-section .download-value {
+    width: calc(100% - 40px);
+    margin: 0;
+    line-height: 1.5;
+    font-size: 2rem;
+    letter-spacing: 0.2px;
+    color: #99ccf3;
+    font-weight: 800;
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.5rem;
+    border-bottom: 0.0625rem solid rgba(224, 224, 224, 0.4);
+    text-align: center;
+}
+
+@media screen and (min-width: 56.3125em) and (max-width: 75em) {
+    .download-section .download-value {
+        font-size: 1.75rem;
+    }
+}
+
+@media screen and (max-width: 56.25em) {
+    .download-section .download-value {
+        font-size: 1.5rem;
+    }
+}
+
+.download-section .download-name {
+    margin: 0;
+    font-size: 1.5rem;
+    line-height: 1.5;
+    letter-spacing: 0;
+    font-weight: 400;
+    color: #e0e0e0;
+}

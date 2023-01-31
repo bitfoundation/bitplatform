@@ -1,0 +1,16 @@
+﻿@namespace AdminPanel.Client.Shared
+@inherits AppComponentBase
+
+<BitModal @bind-IsOpen="IsOpen">
+    <div class="main-container">
+        <div class="header">
+            <span class="title">@Localizer[nameof(AppStrings.SignOut)]</span>
+            <BitIconButton OnClick="CloseModal" IconName="BitIconName.ChromeClose" Title="@Localizer[nameof(AppStrings.Close)]" />
+        </div>
+        <div class="body">@Localizer[nameof(AppStrings.AreYouSureYouWantToSignout)]</div>
+        <div class="btn-group">
+            <BitButton ButtonStyle="BitButtonStyle.Primary" Style="margin-right: 0.5rem" OnClick="SignOut">@Localizer[nameof(AppStrings.SignOut)]</BitButton>
+            <BitButton ButtonStyle="BitButtonStyle.Standard" OnClick="CloseModal">@Localizer[nameof(AppStrings.Cancel)]</BitButton>
+        </div>
+    </div>
+</BitModal>

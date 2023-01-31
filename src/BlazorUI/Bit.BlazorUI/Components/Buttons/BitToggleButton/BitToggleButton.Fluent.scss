@@ -1,119 +1,115 @@
-﻿@import "../../../Styles/Fluent/colors.fluent.scss", "../../../Styles/functions.scss";
+﻿@import "../../../Styles/functions.scss";
 
 .bit-tglb {
-    &.bit-tglb-fluent {
-        font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
-        text-align: center;
-        border-radius: rem(2px);
-        padding: 0 rem(16px);
-        font-size: rem(14px);
-        font-weight: 400;
-        line-height: rem(20px);
-        cursor: pointer;
-        min-height: rem(32px);
-        min-width: rem(80px);
-        text-decoration: none;
-        box-sizing: border-box;
-        display: inline-block;
-        height: 32px;
+    position: relative;
+    min-width: spacing(10);
+    min-height: spacing(4);
+    height: spacing(4);
+    padding: 0 spacing(2);
+    box-sizing: border-box;
+    font-family: $typography-button-font-family;
+    font-weight: 400;
+    font-size: spacing(1.75);
+    line-height: spacing(2.45);
+    text-decoration: none;
+    text-align: center;
+    cursor: pointer;
+    border-width: $shape-border-width;
+    border-style: $shape-border-style;
+    border-radius: $shape-border-radius;
+    display: inline-block;
 
-        > span {
-            display: flex;
-            flex-flow: row nowrap;
-            height: 100%;
-            justify-content: center;
-            align-items: center;
+    .content-container {
+        display: flex;
+        flex-flow: row nowrap;
+        height: 100%;
+        justify-content: center;
+        align-items: center;
 
-            > span {
-                margin: 0 rem(4px);
-                line-height: 100%;
-                display: block;
-                font-weight: 600;
-            }
-
-            > i {
-                font-size: rem(16px);
-                margin: 0 rem(4px);
-                height: rem(16px);
-                line-height: rem(16px);
-                text-align: center;
-                flex-shrink: 0;
-            }
+        .text {
+            line-height: 100%;
+            display: block;
+            font-weight: 600;
         }
-    }
 
-    &.bit-tglb-disabled-fluent {
-        background: $Grey20;
-        border: 1px solid $Grey20;
-        cursor: default;
-        pointer-events: none;
-
-        > span {
-            > i {
-                color: $Grey90;
-            }
+        .bit-icon {
+            font-size: spacing(2);
+            margin: 0 spacing(0.5);
+            height: spacing(2);
+            line-height: spacing(2);
+            text-align: center;
+            flex-shrink: 0;
         }
     }
 
     &.standard {
-        color: $Grey160;
-        background: $White;
-        border: 1px solid $GreyInputBorder;
+        border-color: $color-border-secondary;
+        color: $color-text-secondary;
+        background-color: $color-secondary-main;
 
         &:hover {
-            background-color: $Grey20;
-            color: $Grey190;
+            background-color: $color-action-hover-secondary;
+            color: $color-neutrals-gray190;
         }
 
         &:active {
-            background-color: $Grey30;
+            background-color: $color-action-active-secondary;
+            color: $color-neutrals-gray190;
         }
-    }
 
-    &.standard-checked {
-        background-color: $Grey30;
-        color: $Grey190;
+        &.checked {
+            background-color: $color-neutrals-gray30;
+            color: $color-neutrals-gray190;
 
-        &:hover {
-            background-color: $Grey30;
-            color: $Black;
+            &:hover {
+                background-color: $color-neutrals-gray30;
+                color: $color-neutrals-black;
+            }
         }
-    }
-
-    &.standard-disabled {
-        color: $Grey90;
     }
 
     &.primary {
-        color: $White;
-        background: $Primary;
-        border: 1px solid $Primary;
+        border-color: $color-border-primary;
+        color: $color-text-primary;
+        background-color: $color-primary-main;
 
         &:hover {
-            background-color: $DarkAlt;
-            border-color: $DarkAlt;
+            border-color: $color-action-hover-primary;
+            background-color: $color-action-hover-primary;
         }
 
         &:active {
-            background-color: $Dark;
-            border-color: $Dark;
+            border-color: $color-action-active-primary;
+            background-color: $color-action-active-primary;
+        }
+
+        &.checked {
+            background-color: $color-primary-darker;
+
+            &:hover {
+                border-color: $color-border-primary;
+                background-color: $color-action-hover-primary;
+            }
+
+            &:active {
+                border-color: $color-border-primary;
+            }
         }
     }
 
-    &.primary-checked {
-        background-color: $Dark;
+    &.disabled {
+        background-color: $color-action-disabled;
+        color: $color-text-disabled;
+        border-color: $color-border-disabled;
+        cursor: default;
+        pointer-events: none;
 
-        &:hover {
-            background-color: $Dark;
-            border-color: $Primary;
+        .bit-icon {
+            color: $color-neutrals-gray90;
         }
 
-        &:active {
-            border-color: $Primary;
+        &.primary{
+            color: $color-neutrals-gray50;
         }
-    }
-
-    &.primary-disabled {
-        color: $Grey50;
     }
 }

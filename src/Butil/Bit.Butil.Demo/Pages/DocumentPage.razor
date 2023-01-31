@@ -1,0 +1,41 @@
+﻿@page "/document"
+@using Console = Bit.Butil.Console
+
+<PageTitle>Document Samples</PageTitle>
+
+<h1>Document</h1>
+
+<h3>Open the DevTools</h3>
+
+<button @onclick=AddEvenetListener>AddEvenetListener</button>
+&nbsp;
+<button @onclick=RemoveEvenetListener>RemoveEvenetListener</button>
+
+<hr />
+
+<div>Is Registered: @isRegistered</div>
+
+@code {
+    private bool isRegistered = false;
+
+    private Action<DomKeyboardEventArgs> _handler = default!;
+
+    protected override void OnInitialized()
+    {
+        _handler = (DomKeyboardEventArgs arg) => Console.Log("KeyDown from C#:", arg.Code);
+
+        base.OnInitialized();
+    }
+
+    private void AddEvenetListener()
+    {
+        Document.AddEventListener(DomEvents.KeyDown, _handler);
+        isRegistered = true;
+    }
+
+    private void RemoveEvenetListener()
+    {
+        Document.RemoveEventListener(DomEvents.KeyDown, _handler);
+        isRegistered = false;
+    }
+}

@@ -1,0 +1,57 @@
+﻿@namespace AdminPanel.Client.Shared.Pages
+@inherits AppComponentBase
+
+<div class="card-container">
+    <div class="card">
+        <div class="card-num @(_isLoading ? "no-border" : null)">
+            @if (_isLoading)
+            {
+                <BitSpinner Size="BitSpinnerSize.Large"></BitSpinner>
+            }
+            else
+            {
+                @_data.Last30DaysProductCount
+            }
+        </div>
+        <div class="card-title">@Localizer[nameof(AppStrings.Last30DaysProductCount)]</div>
+    </div>
+    <div class="card">
+        <div class="card-num @(_isLoading ? "no-border" : null)">
+            @if (_isLoading)
+            {
+                <BitSpinner Size="BitSpinnerSize.Large"></BitSpinner>
+            }
+            else
+            {
+                @_data.TotalProducts
+            }
+        </div>
+        <div class="card-title">@Localizer[nameof(AppStrings.TotalProducts)]</div>
+    </div>
+    <div class="card">
+        <div class="card-num @(_isLoading ? "no-border" : null)">
+            @if (_isLoading)
+            {
+                <BitSpinner Size="BitSpinnerSize.Large"></BitSpinner>
+            }
+            else
+            {
+                @_data.TotalCategories
+            }
+        </div>
+        <div class="card-title">@Localizer[nameof(AppStrings.Last30DaysCategoryCount)]</div>
+    </div>
+    <div class="card">
+        <div class="card-num @(_isLoading ? "no-border" : null)">
+            @if (_isLoading)
+            {
+                <BitSpinner Size="BitSpinnerSize.Large"></BitSpinner>
+            }
+            else
+            {
+                @_data.TotalCategories
+            }
+        </div>
+        <div class="card-title">@Localizer[nameof(AppStrings.TotalCategories)]</div>
+    </div>
+</div>

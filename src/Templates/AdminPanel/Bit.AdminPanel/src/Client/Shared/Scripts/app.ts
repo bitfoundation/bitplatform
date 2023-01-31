@@ -17,16 +17,8 @@
     public static goBack(): void {
         window.history.back();
     }
-}
 
-function toggleBodyOverflow(isOverflowHidden: boolean) {
-    if (isOverflowHidden) {
-        document.body.style.overflow = "hidden";
-    } else {
-        document.body.style.overflow = "auto";
+    public static setBodyOverflow(hidden: boolean) {
+        document.body.style.overflow = hidden ? "hidden" : "auto";
     }
-}
-
-function navigateToPrevUrl() {
-    history.back();
 }

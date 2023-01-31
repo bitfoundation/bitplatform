@@ -5,7 +5,8 @@ public class TodoItemDto
 {
     public int Id { get; set; }
 
-    [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
+    [Required(ErrorMessageResourceName = nameof(AppStrings.RequiredAttribute_ValidationError))]
+    [Display(Name = nameof(AppStrings.Title))]
     public string? Title { get; set; }
 
     public DateTimeOffset Date { get; set; }
@@ -13,5 +14,5 @@ public class TodoItemDto
     public bool IsDone { get; set; }
 
     [JsonIgnore]
-    public bool IsInEditMode { get; set; }
+    public bool IsUnderEdit { get; set; }
 }

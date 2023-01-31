@@ -4,6 +4,7 @@ namespace Bit.BlazorUI;
 
 public partial class BitActionButton
 {
+    protected override bool UseVisual => false;
     private int? _tabIndex;
 
     /// <summary>
@@ -61,7 +62,7 @@ public partial class BitActionButton
     /// </summary>
     [Parameter] public string? Title { get; set; }
 
-    protected override string RootElementClass => "bit-actb";
+    protected override string RootElementClass => "bit-acb";
 
     protected override async Task OnInitializedAsync()
     {

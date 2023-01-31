@@ -1,26 +1,28 @@
 ﻿@import "../../Styles/Fluent/colors.fluent.scss", "../../Styles/functions.scss";
 
-.bit-lbl-fluent {
-    font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
-    -webkit-font-smoothing: antialiased;
-    font-size: rem(14px);
-    font-weight: 600;
-    line-height: em(20px);
-    color: $Grey160;
-    box-sizing: border-box;
-    box-shadow: none;
-    margin: 0px;
-    display: block;
-    padding: 5px 0px;
-    overflow-wrap: break-word;
-}
+.bit-lbl {
+    &.bit-lbl-fluent {
+        font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+        -webkit-font-smoothing: antialiased;
+        font-size: rem(14px);
+        font-weight: 600;
+        line-height: rem(20px);
+        color: $Grey160;
+        box-sizing: border-box;
+        box-shadow: none;
+        margin: 0;
+        display: block;
+        padding: rem(5px) 0;
+        overflow-wrap: break-word;
+    }
 
-.bit-lbl-disabled-fluent {
-    color: $Grey90;
-}
+    &.bit-lbl-disabled-fluent {
+        color: $Grey90;
+    }
 
-.bit-lbl-required-fluent::after {
-    content: "*";
-    color: $Red20;
-    margin-left: 5px;
+    &.bit-lbl-required-fluent::after {
+        content: "*";
+        color: $Red20;
+        margin-left: rem(5px);
+    }
 }

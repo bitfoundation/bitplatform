@@ -1,0 +1,141 @@
+﻿@page "/components/nav-list"
+
+<ComponentDemo ComponentName="NavList"
+               ComponentDescription="A navigation pane (Nav) provides links to the main areas of an app or site."
+               ComponentParameters="@componentParameters"
+               EnumParameters="@enumParameters">
+
+    <ComponentExampleBox Title="Basic" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
+        <ExamplePreview>
+            <div class="example-box">
+                <BitNavList Items="BitPlatformNavMenu"
+                            TextField="@nameof(BitPlatformMenu.Text)"
+                            UrlField="@nameof(BitPlatformMenu.Url)"
+                            IsEnabledField="@nameof(BitPlatformMenu.IsEnabled)"
+                            ItemsField="@nameof(BitPlatformMenu.Links)" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Grouped" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example2">
+        <ExamplePreview>
+            <div class="example-box">
+                <BitNavList Items="CarNavMenu"
+                            TextField="@nameof(CarMenu.Name)"
+                            UrlField="@nameof(CarMenu.PageUrl)"
+                            TargetField="@nameof(CarMenu.UrlTarget)"
+                            TitleField="@nameof(CarMenu.Tooltip)"
+                            IsExpandedField="@nameof(CarMenu.IsExpandedParent)"
+                            CollapseAriaLabelField="@nameof(CarMenu.CollapsedAriaLabel)"
+                            ExpandAriaLabelField="@nameof(CarMenu.ExpandedAriaLabel)"
+                            ItemsField="@nameof(CarMenu.Links)"
+                            RenderType="BitNavRenderType.Grouped" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Manual Mode" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example3">
+        <ExamplePreview>
+            <div class="example-box">
+                <div>
+                    <BitLabel>Basic</BitLabel>
+                    <BitNavList Items="FoodNavMenu"
+                                TextFieldSelector="item => item.Name"
+                                IconNameFieldSelector="item => item.Icon"
+                                IsExpandedFieldSelector="item => item.IsExpanded"
+                                ItemsFieldSelector="item => item.Childs"
+                                DefaultSelectedItem="FoodNavMenu[0].Childs[2]"
+                                Mode="BitNavMode.Manual" />
+                </div>
+
+                <div class="margin-top">
+                    <BitLabel>Two-Way Bind</BitLabel>
+
+                    <BitNavList @bind-SelectedItem="SelectedFood"
+                                Items="FoodNavMenu"
+                                TextFieldSelector="item => item.Name"
+                                IconNameFieldSelector="item => item.Icon"
+                                IsExpandedFieldSelector="item => item.IsExpanded"
+                                ItemsFieldSelector="item => item.Childs"
+                                Mode="BitNavMode.Manual"
+                                OnSelectItem="(FoodMenu item) => SelectedFoodName = FoodMenuDropDownItems.FirstOrDefault(i => i.Text == item.Name).Text" />
+
+                    <BitDropDown @bind-Value="SelectedFoodName"
+                                 Label="Select Item"
+                                 Items="FoodMenuDropDownItems"
+                                 OnSelectItem="(item) => SelectedFood = Flatten(FoodNavMenu).FirstOrDefault(i => i.Name == item.Value)" />
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Custom Templates" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
+        <ExamplePreview>
+            <div class="example-box">
+                <div>
+                    <BitLabel>Header Template (in Grouped mode)</BitLabel>
+                    <BitNavList Items="CarNavMenu"
+                                TextField="@nameof(CarMenu.Name)"
+                                UrlField="@nameof(CarMenu.PageUrl)"
+                                TargetField="@nameof(CarMenu.UrlTarget)"
+                                TitleField="@nameof(CarMenu.Tooltip)"
+                                IsExpandedField="@nameof(CarMenu.IsExpandedParent)"
+                                CollapseAriaLabelField="@nameof(CarMenu.CollapsedAriaLabel)"
+                                ExpandAriaLabelField="@nameof(CarMenu.ExpandedAriaLabel)"
+                                ItemsField="@nameof(CarMenu.Links)"
+                                RenderType="BitNavRenderType.Grouped">
+
+                        <HeaderTemplate Context="item">
+                            <div class="nav-list-custom-header">
+                                <BitIcon IconName="BitIconName.FavoriteStarFill" />
+                                <span>@item.Name</span>
+                            </div>
+                        </HeaderTemplate>
+                    </BitNavList>
+                </div>
+
+                <div class="margin-top">
+                    <BitLabel>Item Template</BitLabel>
+                    <BitNavList Items="FoodNavMenu"
+                                TextFieldSelector="item => item.Name"
+                                IconNameFieldSelector="item => item.Icon"
+                                IsExpandedFieldSelector="item => item.IsExpanded"
+                                ItemsFieldSelector="item => item.Childs"
+                                Mode="BitNavMode.Manual">
+
+                        <ItemTemplate Context="item">
+                            <div class="nav-list-custom-item">
+                                <BitCheckbox />
+                                <BitIcon IconName="@item.Icon" />
+                                <span>@item.Name</span>
+                            </div>
+                        </ItemTemplate>
+                    </BitNavList>
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Events" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
+        <ExamplePreview>
+            <div class="events-example-box">
+                <BitNavList Items="FoodNavMenu"
+                            TextFieldSelector="item => item.Name"
+                            IconNameFieldSelector="item => item.Icon"
+                            IsExpandedFieldSelector="item => item.IsExpanded"
+                            ItemsFieldSelector="item => item.Childs"
+                            DefaultSelectedItem="FoodNavMenu[0].Childs[2]"
+                            Mode="BitNavMode.Manual"
+                            OnItemClick="(FoodMenu item) => ClickedItem = item"
+                            OnSelectItem="(FoodMenu item) => SelectedItem = item"
+                            OnItemToggle="(FoodMenu item) => ToggledItem = item" />
+
+                <div class="flex">
+                    <span>Clicked Item: @ClickedItem?.Name</span>
+                    <span>Selected Item: @SelectedItem?.Name</span>
+                    <span>Toggled Item: @(ToggledItem is null ? "N/A" : $"{ToggledItem.Name} ({(ToggledItem.IsExpanded ? "Expanded" : "Collapsed")})")</span>
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+</ComponentDemo>

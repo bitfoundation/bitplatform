@@ -1,9 +1,14 @@
 ﻿using Microsoft.AspNetCore.Components.Web;
 
-namespace AdminPanel.Client.Shared.Shared;
+namespace AdminPanel.Client.Shared;
 
-public partial class MainLayout : IAsyncDisposable
+public partial class MainLayout : IDisposable
 {
+    private bool _disposed;
+    private bool _isMenuOpen;
+    private bool _isUserAuthenticated;
+    private ErrorBoundary _errorBoundaryRef = default!;
+
     [AutoInject] private IStateService _stateService = default!;
 
     [AutoInject] private IExceptionHandler _exceptionHandler = default!;
@@ -11,11 +16,6 @@ public partial class MainLayout : IAsyncDisposable
     [AutoInject] private AppAuthenticationStateProvider _authStateProvider = default!;
 
     [AutoInject] private IJSRuntime _jsRuntime = default!;
-
-    private ErrorBoundary ErrorBoundaryRef = default!;
-
-    public bool IsUserAuthenticated { get; set; }
-    public bool IsMenuOpen { get; set; } = false;
 
     protected override void OnParametersSet()
     {
@@ -32,7 +32,7 @@ public partial class MainLayout : IAsyncDisposable
         {
             _authStateProvider.AuthenticationStateChanged += VerifyUserIsAuthenticatedOrNot;
 
-            IsUserAuthenticated = await _stateService.GetValue($"{nameof(MainLayout)}-{nameof(IsUserAuthenticated)}", _authStateProvider.IsUserAuthenticated);
+            _isUserAuthenticated = await _stateService.GetValue($"{nameof(MainLayout)}-IsUserAuthenticated", _authStateProvider.IsUserAuthenticatedAsync);
 
             await base.OnInitializedAsync();
         }
@@ -46,7 +46,7 @@ public partial class MainLayout : IAsyncDisposable
     {
         try
         {
-            IsUserAuthenticated = await _authStateProvider.IsUserAuthenticated();
+            _isUserAuthenticated = await _authStateProvider.IsUserAuthenticatedAsync();
         }
         catch (Exception ex)
         {
@@ -60,12 +60,23 @@ public partial class MainLayout : IAsyncDisposable
 
     private async Task ToggleMenuHandler()
     {
-        IsMenuOpen = !IsMenuOpen;
-        await _jsRuntime.SetToggleBodyOverflow(IsMenuOpen);
+        _isMenuOpen = !_isMenuOpen;
+
+        await _jsRuntime.SetBodyOverflow(_isMenuOpen);
     }
 
-    public async ValueTask DisposeAsync()
+    public void Dispose()
     {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_disposed || disposing is false) return;
+
         _authStateProvider.AuthenticationStateChanged -= VerifyUserIsAuthenticatedOrNot;
+
+        _disposed = true;
     }
 }

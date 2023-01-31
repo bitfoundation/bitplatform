@@ -8,7 +8,7 @@
 		<Product>Bit Platform</Product>
 		<Title>$(MSBuildProjectName)</Title>
 		<Description>$(MSBuildProjectName)</Description>
-		<Copyright>Copyright © Bit Platform 2022</Copyright>
+		<Copyright>Copyright © Bit Platform 2023</Copyright>
 
 		<!-- Repo -->
 		<RepositoryUrl>https://github.com/bitfoundation/bitplatform</RepositoryUrl>
@@ -25,7 +25,7 @@
 		<PackageProjectUrl>https://github.com/bitfoundation/bitplatform</PackageProjectUrl>
 		<PackageIconUrl>https://avatars.githubusercontent.com/u/22663390</PackageIconUrl>
 
-		<ReleaseVersion>4.8.0</ReleaseVersion>
+		<ReleaseVersion>4.9.4</ReleaseVersion>
 
 		<PackageReleaseNotes>https://github.com/bitfoundation/bitplatform/releases/tag/v-$(ReleaseVersion)</PackageReleaseNotes>
 		<PackageVersion>$(ReleaseVersion)</PackageVersion>

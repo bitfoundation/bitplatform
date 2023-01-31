@@ -1,17 +1,25 @@
 ﻿@inherits AppComponentBase;
 
-<BitModal @bind-IsOpen="IsOpen">
+<BitModal @bind-IsOpen="_isOpen">
     <div class="main-container">
         <div class="header">
-            <span class="title">@Title</span>
+            <span class="title">@_title</span>
             <BitIconButton IconName="BitIconName.ChromeClose" OnClick="@(() => Confirm(false))" />
         </div>
         <div class="body">
-            @Message
+            @_message
         </div>
         <div class="btn-group">
-            <BitButton ButtonStyle="BitButtonStyle.Primary" Style="margin-right: 0.5rem" OnClick="@(() => Confirm(true))">@Localizer[nameof(AppStrings.Yes)]</BitButton>
-            <BitButton ButtonStyle="BitButtonStyle.Standard" OnClick="@(() => Confirm(false))">@Localizer[nameof(AppStrings.No)]</BitButton>
+            <BitButton ButtonStyle="BitButtonStyle.Primary"
+                       Style="margin-right: 0.5rem"
+                       OnClick="@(() => Confirm(true))">
+                @Localizer[nameof(AppStrings.Yes)]
+            </BitButton>
+
+            <BitButton ButtonStyle="BitButtonStyle.Standard"
+                       OnClick="@(() => Confirm(false))">
+                @Localizer[nameof(AppStrings.No)]
+            </BitButton>
         </div>
     </div>
 </BitModal>

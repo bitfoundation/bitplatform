@@ -1,16 +1,7 @@
 ﻿@import "../../Styles/Fluent/colors.fluent.scss", "../../Styles/functions.scss";
 
-@mixin getStyle($enabled: true,$checked: true ) {
-     label {
-        font-size: rem(14);
-        font-weight: 600;
-        box-sizing: border-box;
-        box-shadow: none;
-        margin: 0px;
-        display: inline-block;
-        padding: 5px 0px;
-        overflow-wrap: break-word;
-
+@mixin getStyle($enabled: true, $checked: true) {
+    label {
         @if $enabled {
             color: $Grey160;
         }
@@ -19,7 +10,7 @@
         }
     }
 
-    div {
+    .container {
         button {
             @if $enabled {
                 @if $checked {
@@ -28,7 +19,7 @@
                     background: $Primary;
                     justify-content: flex-end;
 
-                    span {
+                    .state {
                         background-color: $White;
                     }
 
@@ -42,14 +33,14 @@
                     cursor: pointer;
                     background: $White;
 
-                    span {
+                    .state {
                         background-color: $Grey130;
                     }
 
                     &:hover {
                         border-color: $Grey160;
 
-                        span {
+                        .state {
                             background-color: $Grey160;
                         }
                     }
@@ -62,7 +53,7 @@
                     background: $Grey60;
                     justify-content: flex-end;
 
-                    span {
+                    .state {
                         background-color: $Grey20;
                     }
                 }
@@ -71,7 +62,7 @@
                     cursor: default;
                     background: $White;
 
-                    span {
+                    .state {
                         background-color: $Grey60;
                     }
                 }
@@ -80,40 +71,113 @@
     }
 }
 
-.bit-tgl-fluent {
-    font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
-    -webkit-font-smoothing: antialiased;
-    font-size: inherit;
-    font-weight: inherit;
+.bit-tgl {
+    &.bit-tgl-fluent {
+        font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+        -webkit-font-smoothing: antialiased;
+        font-size: inherit;
+        font-weight: inherit;
+    }
 
-    div {
+    &.bit-tgl-enabled-checked-fluent {
+        @include getStyle();
+    }
+
+    &.bit-tgl-enabled-unchecked-fluent {
+        @include getStyle($enabled:true,$checked:false);
+    }
+
+    &.bit-tgl-disabled-checked-fluent {
+        @include getStyle($enabled:false,$checked:true);
+    }
+
+    &.bit-tgl-disabled-unchecked-fluent {
+        @include getStyle($enabled:false,$checked:false);
+    }
+
+    &.bit-tgl-inline-fluent {
         display: flex;
-        position: relative;
+        align-items: center;
 
         label {
-            padding: 0px;
-            margin: 0px 8px;
-            font-weight: 400;
-            user-select: none;
+            margin: 0px rem(16px) 0px 0px;
         }
+    }
+
+    &.bit-tgl-noonoff-fluent {
+        .container {
+            .state-text {
+                display: inline-block;
+                margin: 0px 0px 0px rem(16px);
+                order: 1;
+            }
+        }
+    }
+
+    &.bit-tgl-invalid-fluent {
+        &.bit-tgl-enabled-unchecked-fluent {
+            .container {
+                button {
+                    border-color: $Red20;
+                }
+
+                .state-text {
+                    color: $Red20;
+                }
+            }
+        }
+
+        &.bit-tgl-enabled-checked-fluent {
+            .container {
+                button {
+                    background-color: $Red20;
+
+                    &:hover {
+                        background-color: $PinkRed10;
+                    }
+                }
+
+                .state-text {
+                    color: $Red20;
+                }
+            }
+        }
+    }
+
+    label {
+        font-size: rem(14);
+        font-weight: 600;
+        box-sizing: border-box;
+        box-shadow: none;
+        margin: 0px;
+        display: inline-block;
+        padding: rem(5px) 0px;
+        overflow-wrap: break-word;
+    }
+
+    .container {
+        display: flex;
+        position: relative;
+        align-items: center;
 
         button {
             outline: transparent;
             position: relative;
             font-size: 20px;
             box-sizing: border-box;
-            width: 40px;
-            height: 20px;
-            border-radius: 10px;
+            width: rem(40px);
+            min-width: rem(40px);
+            height: rem(20px);
+            border-radius: rem(10px);
             transition: all 0.1s ease 0s;
             display: flex;
             align-items: center;
             padding: 0px 3px;
 
-            span {
+            .state {
                 display: block;
-                width: 12px;
-                height: 12px;
+                width: rem(12px);
+                height: rem(12px);
                 border-radius: 50%;
                 transition: all 0.1s ease 0s;
                 border-width: 6px;
@@ -122,70 +186,12 @@
                 border-color: transparent;
             }
         }
-    }
-}
 
-.bit-tgl-enabled-checked-fluent {
-    @include getStyle();
-}
-
-.bit-tgl-enabled-unchecked-fluent {
-    @include getStyle($enabled:true,$checked:false);
-}
-
-.bit-tgl-disabled-checked-fluent {
-    @include getStyle($enabled:false,$checked:true);
-}
-
-.bit-tgl-disabled-unchecked-fluent {
-    @include getStyle($enabled:false,$checked:false);
-}
-
-.bit-tgl-inline-fluent {
-    display: flex;
-    align-items: center;
-
-    & > label {
-        margin: 0px 16px 0px 0px;
-    }
-}
-
-.bit-tgl-noonoff-fluent {
-   & > div {
-        label {
-            display: inline-block;
-            margin: 0px 0px 0px 16px;
-            order: 1;
-        }
-    }
-}
-
-.bit-tgl-invalid-fluent {
-    &.bit-tgl-enabled-unchecked-fluent {
-        div {
-            button {
-                border-color: $Red20;
-            }
-
-            label {
-                color: $Red20;
-            }
-        }
-    }
-
-    &.bit-tgl-enabled-checked-fluent {
-        div {
-            button {
-                background-color: $Red20;
-
-                &:hover {
-                    background-color: $PinkRed10;
-                }
-            }
-
-            label {
-                color: $Red20;
-            }
+        .state-text {
+            padding: 0px;
+            margin: 0px rem(8px);
+            font-weight: 400;
+            user-select: none;
         }
     }
 }

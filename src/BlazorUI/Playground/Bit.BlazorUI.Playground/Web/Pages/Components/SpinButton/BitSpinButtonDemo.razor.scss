@@ -1,5 +1,6 @@
-﻿@import '../../../Styles/abstracts/_colors.scss';
-@import '../../../Styles/abstracts/_functions.scss';
+﻿@import '../../../Styles/abstracts/_functions.scss';
+@import '../../../Styles/abstracts/_colors.scss';
+@import '../../../Styles/abstracts/_media-queries.scss';
 
 .validation-summary {
     border-left: rem(5px) solid $Red10;
@@ -12,25 +13,23 @@
     }
 }
 
-::deep {
-    div.validation-message {
-        color: $Red20;
-        font-size: rem(12px);
-    }
+::deep .validation-message {
+    color: $Red20;
+    font-size: rem(12px);
+}
 
-    .custom-spb {
-        .bit-spb-wrapper input {
-            background-color: $Gray3;
-        }
-    }
+.example-box {
+    display: flex;
+    gap: rem(10px);
+    width: rem(300px);
+    flex-direction: column;
 
-    .bit-spb-wrapped {
-        margin-top: rem(8px);
-        margin-bottom: rem(8px);
+    @include sm {
+        width: rem(200px);
     }
+}
 
-    .bit-spb-lbl-wrapped label {
-        height: auto;
-        width: rem(155px);
-    }
+.column {
+    display: flex;
+    flex-direction: column;
 }

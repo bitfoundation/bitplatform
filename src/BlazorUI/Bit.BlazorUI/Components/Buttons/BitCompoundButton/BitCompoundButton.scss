@@ -1,0 +1,83 @@
+﻿@import "../../../Styles/functions.scss", "../../../Styles/general.scss";
+
+.bit-cmpb {
+    position: relative;
+    min-width: spacing(9);
+    max-width: spacing(35);
+    box-sizing: border-box;
+    font-family: $typography-button-font-family;
+    font-size: spacing(1.75);
+    font-weight: 600;
+    line-height: 100%;
+    text-decoration: none;
+    text-align: left;
+    cursor: pointer;
+    border-width: $shape-border-width;
+    border-style: $shape-border-style;
+    border-radius: $shape-border-radius;
+    padding: spacing(2) spacing(1.5);
+    display: inline-flex;
+
+    .text-container {
+        display: block;
+        @extend .no-text-select;
+
+        .primary-text {
+            display: block;
+            margin-bottom: spacing(0.625);
+        }
+
+        .secondary-text {
+            display: block;
+            font-size: spacing(1.5);
+            font-weight: 400;
+        }
+    }
+
+    &.primary {
+        color: $color-text-primary;
+        background: $color-primary-main;
+        border-color: $color-border-primary;
+
+        &:hover {
+            border-color: $color-action-hover-primary;
+            background-color: $color-action-hover-primary;
+        }
+
+        &:active {
+            border-color: $color-action-active-primary;
+            background-color: $color-action-active-primary;
+        }
+    }
+
+    &.standard {
+        border-color: $color-border-secondary;
+        color: $color-text-secondary;
+        background-color: $color-secondary-main;
+
+        &:hover {
+            border-color: $color-action-borde-hover-secondary;
+            background-color: $color-action-hover-secondary;
+        }
+
+        &:active {
+            border-color: $color-action-borde-active-secondary;
+            background-color: $color-action-active-secondary;
+        }
+    }
+
+    &.disabled {
+        border-color: $color-border-disabled;
+        background-color: $color-action-disabled;
+        cursor: default;
+        pointer-events: none;
+
+        &.primary {
+            color: $color-neutrals-gray50;
+        }
+
+        &.standard {
+            color: $color-neutrals-gray90;
+        }
+    }
+}

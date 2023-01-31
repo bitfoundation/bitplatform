@@ -48,6 +48,7 @@ jobs:
       script: |
         dotnet tool install --global dotnet-ef --version 7.0.0
         dotnet ef migrations bundle --self-contained -r linux-x64 --project src/Server/Api/AdminPanel.Server.Api.csproj
+      failOnStderr: true
 
   - task: Bash@3
     displayName: 'Install wasm-tools'
@@ -118,6 +119,7 @@ jobs:
   - script: |
       rm IdentityCertificate.pfx
       cp "$(IdentityCertificate.secureFilePath)" "IdentityCertificate.pfx"
+    failOnStderr: true
     displayName: Copy .pfx file
 
   - task: Bash@3
@@ -128,6 +130,7 @@ jobs:
         chmod +x efbundle
         ./efbundle
         rm efbundle
+      failOnStderr: true
 
   - task: AzureRmWebAppDeployment@4
     displayName: 'Deploy to App Service'
@@ -220,6 +223,7 @@ jobs:
 
   - script: |
       cp $(AndroidKeyStore.secureFilePath) src/Client/App/AdminPanel.keystore
+    failOnStderr: true
     displayName: Copy keystore to app project folder
 
   - task: FileTransform@1
@@ -250,6 +254,7 @@ jobs:
   - script: |
       mkdir drop
       cp ./src/Client/App/bin/release/net7.0-android/*-Signed.* drop/
+    failOnStderr: true
     displayName: Copy apk/aab files to drop folder
 
   - task: PublishPipelineArtifact@1
@@ -305,6 +310,7 @@ jobs:
   - script: |
       mkdir drop
       cp ./src/Client/App/bin/Release/net7.0-maccatalyst/*.pkg drop/
+    failOnStderr: true
     displayName: Copy pkg file to drop folder
 
   - task: PublishPipelineArtifact@1

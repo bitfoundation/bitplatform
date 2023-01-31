@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "Bit.Bup.Demo.Client": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

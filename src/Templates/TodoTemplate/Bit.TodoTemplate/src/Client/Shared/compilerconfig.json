@@ -12,24 +12,24 @@
         "outputFile": "Shared/MessageBox.razor.css"
     },
     {
-        "inputFile": "Components/Header.razor.scss",
-        "outputFile": "Components/Header.razor.css"
+        "inputFile": "Shared/Header.razor.scss",
+        "outputFile": "Shared/Header.razor.css"
     },
     {
-        "inputFile": "Components/Footer.razor.scss",
-        "outputFile": "Components/Footer.razor.css"
+        "inputFile": "Shared/Footer.razor.scss",
+        "outputFile": "Shared/Footer.razor.css"
     },
     {
-        "inputFile": "Components/NavMenu.razor.scss",
-        "outputFile": "Components/NavMenu.razor.css"
+        "inputFile": "Shared/NavMenu.razor.scss",
+        "outputFile": "Shared/NavMenu.razor.css"
     },
     {
-        "inputFile": "Components/SignOutConfirmModal.razor.scss",
-        "outputFile": "Components/SignOutConfirmModal.razor.css"
+        "inputFile": "Shared/SignOutConfirmModal.razor.scss",
+        "outputFile": "Shared/SignOutConfirmModal.razor.css"
     },
     {
-        "inputFile": "Components/PageNotFound.razor.scss",
-        "outputFile": "Components/PageNotFound.razor.css"
+        "inputFile": "Shared/PageNotFound.razor.scss",
+        "outputFile": "Shared/PageNotFound.razor.css"
     },
     {
         "inputFile": "Pages/HomePage.razor.scss",

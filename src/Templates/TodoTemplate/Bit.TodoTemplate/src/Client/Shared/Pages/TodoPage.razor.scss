@@ -154,14 +154,14 @@
 }
 
 .sort-drp-container {
-    @include lt-lg {
+    @media all and (max-width: #{em(550px)}) {
         position: absolute;
         top: rem(18px);
-        right: 0;
+        right: rem(5px);
     }
 
     @media all and (max-width: #{em(390px)}) {
-        top: rem(8px);
+        top: rem(10px);
     }
 }
 

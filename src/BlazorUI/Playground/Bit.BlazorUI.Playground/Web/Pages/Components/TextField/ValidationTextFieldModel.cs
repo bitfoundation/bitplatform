@@ -16,6 +16,6 @@ public class ValidationTextFieldModel
     [EmailAddress(ErrorMessage = "Invalid e-mail address.")]
     public string EmailText { get; set; }
 
-    [StringLength(5, MinimumLength = 3, ErrorMessage = "The text length much be between 3 and 5 characters in length.")]
+    [StringLength(maximumLength: 5, MinimumLength = 3, ErrorMessage = "The text length much be between 3 and 5 characters in length.")]
     public string RangeText { get; set; }
 }

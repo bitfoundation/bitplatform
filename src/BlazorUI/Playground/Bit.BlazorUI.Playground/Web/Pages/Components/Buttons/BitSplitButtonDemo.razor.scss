@@ -1,16 +1,16 @@
-﻿@import '../../../Styles/abstracts/_functions.scss';
+﻿.example-content {
+    display: flex;
+    flex-flow: row wrap;
+    gap: 4rem;
+    width: fit-content;
 
-.item-template-box {
-  display: flex;
-  width: 100%;
-}
-
-.split-btn {
-    display: inline-block;
-    margin: 0 rem(10px);
+    &.column {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 }
 
 .selected-item {
-    margin-top: rem(8px);
+    margin-top: 0.5rem;
     font-weight: 600;
 }

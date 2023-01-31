@@ -1,0 +1,64 @@
+﻿@import "../../../Styles/functions.scss";
+
+.bit-acb {
+    font-family: $typography-button-font-family;
+    font-weight: 400;
+    font-size: spacing(1.75);
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    border: none;
+    background-color: transparent;
+    box-sizing: border-box;
+    text-decoration: none;
+    height: spacing(5);
+    padding: 0 spacing(0.5);
+    color: $color-text-secondary;
+    text-align: center;
+
+    .icon-container {
+        display: flex;
+        align-items: center;
+
+        .bit-icon {
+            align-items: center;
+            justify-content: center;
+            flex-wrap: nowrap;
+            font-size: spacing(2);
+            margin: 0 spacing(0.5);
+            text-align: center;
+            flex-shrink: 0;
+            color: $color-primary-dark;
+        }
+
+        .content {
+            margin: 0 spacing(0.5);
+        }
+    }
+
+    &:hover {
+        color: $color-primary-main;
+
+        .bit-icon {
+            color: $color-primary-main;
+        }
+    }
+
+    &:active {
+        color: $color-neutrals-black;
+
+        .bit-icon {
+            color: $color-action2-active-primary;
+        }
+    }
+
+    &.disabled {
+        color: $color-text-disabled;
+        cursor: default;
+        pointer-events: none;
+
+        .bit-icon {
+            color: $color-text-disabled;
+        }
+    }
+}

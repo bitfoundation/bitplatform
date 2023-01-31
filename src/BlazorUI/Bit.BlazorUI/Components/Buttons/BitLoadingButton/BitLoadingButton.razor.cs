@@ -4,6 +4,7 @@ namespace Bit.BlazorUI;
 
 public partial class BitLoadingButton
 {
+    protected override bool UseVisual => false;
     private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
     private BitButtonSize buttonSize = BitButtonSize.Medium;
     private int? _tabIndex;
@@ -85,7 +86,7 @@ public partial class BitLoadingButton
     /// <summary>
     /// The position of the loading Label in regards to the spinner animation.
     /// </summary>
-    [Parameter] public BitSpinnerLabelPosition LoadingLabelPosition { get; set; } = BitSpinnerLabelPosition.Right;
+    [Parameter] public BitLabelPosition LoadingLabelPosition { get; set; } = BitLabelPosition.Right;
 
     /// <summary>
     /// Used to customize the content inside the Button in the Loading state.
@@ -125,15 +126,15 @@ public partial class BitLoadingButton
                                            : "standard");
 
         ClassBuilder.Register(() => ButtonSize == BitButtonSize.Small
-                               ? $"{RootElementClass}-sm-{VisualClassRegistrar()}"
-                               : ButtonSize == BitButtonSize.Medium
-                                   ? $"{RootElementClass}-md-{VisualClassRegistrar()}"
-                                   : $"{RootElementClass}-lg-{VisualClassRegistrar()}");
+                                       ? "small"
+                                       : ButtonSize == BitButtonSize.Medium
+                                           ? "medium"
+                                           : "large");
     }
 
     private string GetClassLoadingSize()
     {
-        string classSize = LoadingSpinnerSize switch
+        return LoadingSpinnerSize switch
         {
             BitSpinnerSize.XSmall => "xSmall",
             BitSpinnerSize.Small => "small",
@@ -141,34 +142,28 @@ public partial class BitLoadingButton
             BitSpinnerSize.Large => "large",
             _ => "small"
         };
-
-        return classSize;
     }
 
     private string GetClassLoadingLabelPosition()
     {
-        string classLabelPosition = LoadingLabelPosition switch
+        return LoadingLabelPosition switch
         {
-            BitSpinnerLabelPosition.Top => "top",
-            BitSpinnerLabelPosition.Right => "right",
-            BitSpinnerLabelPosition.Bottom => "bottom",
-            BitSpinnerLabelPosition.Left => "left",
+            BitLabelPosition.Top => "top",
+            BitLabelPosition.Right => "right",
+            BitLabelPosition.Bottom => "bottom",
+            BitLabelPosition.Left => "left",
             _ => "right"
         };
-
-        return classLabelPosition;
     }
 
     private string GetClassLoadingStyle()
     {
-        string classLoadingStyle = buttonStyle switch
+        return buttonStyle switch
         {
             BitButtonStyle.Primary => "primary",
             BitButtonStyle.Standard => "standard",
             _ => "primary"
         };
-
-        return classLoadingStyle;
     }
 
     protected virtual async Task HandleOnClick(MouseEventArgs e)

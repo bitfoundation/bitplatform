@@ -8,6 +8,7 @@ on:
     paths:
       - 'src/BlazorUI/**'
       - 'src/Bswup/**'
+      - 'src/Bup/**'
       - 'src/Butil/**'
       - 'src/CodeAnalyzers/**'
       - 'src/SourceGenerators/**'
@@ -58,6 +59,15 @@ jobs:
       run: dotnet msbuild src/Bswup/Bit.Bswup/Bit.Bswup.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false -m:1
     - name: dotnet pack Bswup
       run: dotnet pack src/Bswup/Bit.Bswup/Bit.Bswup.csproj --output . --configuration Release
+
+    - name: dotnet restore Bup
+      run: dotnet restore src/Bup/Bit.Bup/Bit.Bup.csproj
+    - name: dotnet msbuild Bup (1)
+      run: dotnet msbuild src/Bup/Bit.Bup/Bit.Bup.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false -m:1
+    - name: dotnet msbuild Bup (2)
+      run: dotnet msbuild src/Bup/Bit.Bup/Bit.Bup.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false -m:1
+    - name: dotnet pack Bup
+      run: dotnet pack src/Bup/Bit.Bup/Bit.Bup.csproj --output . --configuration Release
       
     - name: dotnet restore Butil
       run: dotnet restore src/Butil/Bit.Butil/Bit.Butil.csproj
@@ -87,6 +97,12 @@ jobs:
 
     - name: dotnet pack AdminPanel
       run: dotnet pack src/Templates/AdminPanel/Bit.AdminPanel.ProjectTemplate.csproj --output . --configuration Release
+
+    - name: dotnet pack BlazorServer
+      run: dotnet pack src/Templates/BlazorServer/Bit.BlazorServer.ProjectTemplate.csproj --output . --configuration Release
+
+    - name: dotnet pack BlazorWasm
+      run: dotnet pack src/Templates/BlazorWasm/Bit.BlazorWasm.ProjectTemplate.csproj --output . --configuration Release
     
     - name: dotnet nuget push
       run: dotnet nuget push *.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{secrets.NUGET_ORG_API_KEY}} --skip-duplicate

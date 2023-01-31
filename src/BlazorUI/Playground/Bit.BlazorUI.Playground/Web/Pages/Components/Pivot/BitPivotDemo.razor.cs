@@ -17,14 +17,12 @@ public partial class BitPivotDemo
         {
             Name = "ChildContent",
             Type = "RenderFragment",
-            DefaultValue = "",
             Description = "The content of pivot, It can be Any custom tag.",
         },
         new ComponentParameter()
         {
             Name = "DefaultSelectedKey",
             Type = "string",
-            DefaultValue = "",
             Description = "Default selected key for the pivot.",
         },
         new ComponentParameter()
@@ -49,7 +47,6 @@ public partial class BitPivotDemo
         {
             Name = "OnLinkClick",
             Type = "EventCallback<BitPivotItem>",
-            DefaultValue = "",
             LinkType = LinkType.Link,
             Href = "#pivotItem",
             Description = "Callback for when the selected pivot item is changed.",
@@ -67,17 +64,7 @@ public partial class BitPivotDemo
         {
             Name = "SelectedKey",
             Type = "string",
-            DefaultValue = "",
             Description = "Key of the selected pivot item. Updating this will override the Pivot's selected item state.",
-        },
-        new ComponentParameter()
-        {
-            Name = "Visibility",
-            Type = "BitComponentVisibility",
-            LinkType = LinkType.Link,
-            Href = "#component-visibility-enum",
-            DefaultValue = "BitComponentVisibility.Visible",
-            Description = "Whether the component is Visible,Hidden,Collapsed.",
         },
     };
 
@@ -89,55 +76,49 @@ public partial class BitPivotDemo
             Title = "BitPivotItem",
             Parameters = new List<ComponentParameter>()
             {
-               new ComponentParameter()
-               {
-                   Name = "ChildContent",
-                   Type = "RenderFragment",
-                   DefaultValue = "",
-                   Description = "The content of the pivot item, It can be Any custom tag or a text.",
-               },
-               new ComponentParameter()
-               {
-                   Name = "BodyFragment",
-                   Type = "RenderFragment",
-                   DefaultValue = "",
-                   Description = "The content of the pivot item can be Any custom tag or a text, If HeaderContent provided value of this parameter show, otherwise use ChildContent.",
-               },
-               new ComponentParameter()
-               {
-                   Name = "HeaderFragment",
-                   Type = "RenderFragment",
-                   DefaultValue = "",
-                   Description = "The content of the pivot item header, It can be Any custom tag or a text.",
-               },
-               new ComponentParameter()
-               {
-                   Name = "HeaderText",
-                   Type = "string",
-                   DefaultValue = "",
-                   Description = "The text of the pivot item header, The text displayed of each pivot link.",
-               },
-               new ComponentParameter()
-               {
-                   Name = "IconName",
-                   Type = "BitIconName",
-                   DefaultValue = "",
-                   Description = "The icon name for the icon shown next to the pivot link.",
-               },
-               new ComponentParameter()
-               {
-                   Name = "ItemCount",
-                   Type = "int",
-                   DefaultValue = "0",
-                   Description = "Defines an optional item count displayed in parentheses just after the linkText.",
-               },
-               new ComponentParameter()
-               {
-                   Name = "Key",
-                   Type = "string",
-                   DefaultValue = "",
-                   Description = "A required key to uniquely identify a pivot item.",
-               },
+                new ComponentParameter()
+                {
+                    Name = "Body",
+                    Type = "RenderFragment",
+                    Description = "The content of the pivot item, It can be Any custom tag or a text (alias of ChildContent).",
+                },
+                new ComponentParameter()
+                {
+                    Name = "ChildContent",
+                    Type = "RenderFragment",
+                    Description = "The content of the pivot item, It can be Any custom tag or a text.",
+                },
+                new ComponentParameter()
+                {
+                    Name = "Header",
+                    Type = "RenderFragment",
+                    Description = "The content of the pivot item header, It can be Any custom tag or a text.",
+                },
+                new ComponentParameter()
+                {
+                    Name = "HeaderText",
+                    Type = "string",
+                    Description = "The text of the pivot item header, The text displayed of each pivot link.",
+                },
+                new ComponentParameter()
+                {
+                    Name = "IconName",
+                    Type = "BitIconName",
+                    Description = "The icon name for the icon shown next to the pivot link.",
+                },
+                new ComponentParameter()
+                {
+                    Name = "ItemCount",
+                    Type = "int",
+                    DefaultValue = "0",
+                    Description = "Defines an optional item count displayed in parentheses just after the linkText.",
+                },
+                new ComponentParameter()
+                {
+                    Name = "Key",
+                    Type = "string",
+                    Description = "A required key to uniquely identify a pivot item.",
+                },
             }
         }
     };
@@ -213,33 +194,6 @@ public partial class BitPivotDemo
                 },
             }
         },
-        new EnumParameter()
-        {
-            Id = "component-visibility-enum",
-            Title = "BitComponentVisibility Enum",
-            Description = "",
-            EnumList = new List<EnumItem>()
-            {
-                new EnumItem()
-                {
-                    Name= "Visible",
-                    Description="Show content of the component.",
-                    Value="0",
-                },
-                new EnumItem()
-                {
-                    Name= "Hidden",
-                    Description="Hide content of the component,though the space it takes on the page remains.",
-                    Value="1",
-                },
-                new EnumItem()
-                {
-                    Name= "Collapsed",
-                    Description="Hide content of the component,though the space it takes on the page gone.",
-                    Value="2",
-                }
-            }
-        }
     };
 
     private void TogglePivotItemVisobility()
@@ -247,129 +201,175 @@ public partial class BitPivotDemo
         PivotItemVisibility = PivotItemVisibility == BitComponentVisibility.Visible ? BitComponentVisibility.Collapsed : BitComponentVisibility.Visible;
     }
 
-    private readonly string example1HTMLCode = @"<BitPivot>
+    private readonly string example1HtmlCode = @"
+<BitPivot>
     <BitPivotItem HeaderText=""File"">
-        Pivot #1
+        <div style=""margin-top:10px"">
+            <h1>Pivot #1</h1>
+            <p style=""white-space:pre-wrap"">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum. Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi. Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus.</p>
+        </div>
     </BitPivotItem>
     <BitPivotItem HeaderText=""Shared with me"">
-        Pivot #2
+        <div style=""margin-top:15px"">
+            <h2>Pivot #2</h2>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
+        </div>
     </BitPivotItem>
     <BitPivotItem HeaderText=""Recent"">
-        Pivot #3
+        <div style=""margin-top:10px"">
+            <h3>Pivot #3</h3>
+            <p style=""white-space:pre-wrap"">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum. Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi. Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus.<br />Suspendisse blandit erat ac lobortis pulvinar. Donec nunc leo, tempus sit amet accumsan in, sagittis sed odio. Pellentesque tristique felis sed purus pellentesque, ac dictum ex fringilla. Integer a tincidunt eros, non porttitor turpis. Sed gravida felis massa, in viverra massa aliquam sit amet. Etiam vitae dolor in velit sodales tristique id nec turpis. Proin sit amet urna sollicitudin, malesuada enim et, lacinia mi. Fusce nisl massa, efficitur sit amet elementum convallis, porttitor vel turpis. Fusce congue dui sit amet mollis pulvinar. Suspendisse vulputate leo quis nunc tincidunt, nec dictum risus congue.</p>
+        </div>
     </BitPivotItem>
 </BitPivot>";
 
-    private readonly string example2HTMLCode = @"<BitPivot OverflowBehavior=""@BitPivotOverflowBehavior.Scroll"">
-    <BitPivotItem HeaderText=""Files""
-                  IconName=""BitIconName.Info"">
-        Pivot #1
+    private readonly string example2HtmlCode = @"
+<BitPivot OverflowBehavior=""@BitPivotOverflowBehavior.Scroll"">
+    <BitPivotItem HeaderText=""Files"" IconName=""BitIconName.Info"">
+        <div style=""margin-top:10px"">
+            <h1>Pivot #1: Files</h1>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
+        </div>
     </BitPivotItem>
-    <BitPivotItem HeaderText=""Shared with me""
-                  ItemCount=""32"">
-        Pivot #2
+    <BitPivotItem HeaderText=""Shared with me"" ItemCount=""32"">
+        <div style=""margin-top:10px"">
+            <h1>Pivot #2: Shared with me</h1>
+            <p>Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel.</p>
+        </div>
     </BitPivotItem>
-    <BitPivotItem HeaderText=""Recent""
-                  IconName=""BitIconName.Info""
-                  ItemCount=""12"">
-        Pivot #3
+    <BitPivotItem HeaderText=""Recent"" IconName=""BitIconName.Info"" ItemCount=""12"">
+        <div style=""margin-top:10px"">
+            <h1>Pivot #3: Recent</h1>
+            <p>Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum.</p>
+        </div>
     </BitPivotItem>
-    <BitPivotItem HeaderText=""Some tab""
-                  IconName=""BitIconName.Info""
-                  ItemCount=""6"">
-        Pivot #4
+    <BitPivotItem HeaderText=""Some tab"" IconName=""BitIconName.Info"" ItemCount=""6"">
+        <div style=""margin-top:10px"">
+            <h1>Pivot #4: Some tab</h1>
+            <p>Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi.</p>
+        </div>
     </BitPivotItem>
-    <BitPivotItem HeaderText=""Latest""
-                  IconName=""BitIconName.Info""
-                  ItemCount=""8"">
-        Pivot #5
-    </BitPivotItem>
-    <BitPivotItem HeaderText=""I also have a custom template for icon""
-                  IconName=""BitIconName.Info""
-                  ItemCount=""45"">
-        <HeaderFragment>
-            <i class=""bit-icon bit-icon--HeartFill""></i>
-        </HeaderFragment>
-        <BodyFragment>
-            Pivot #6
-        </BodyFragment>
+    <BitPivotItem HeaderText=""Latest"" IconName=""BitIconName.Info"" ItemCount=""8"">
+        <div style=""margin-top:10px"">
+            <h1>Pivot #5: Latest</h1>
+            <p>Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus. Suspendisse blandit erat ac lobortis pulvinar.</p>
+        </div>
     </BitPivotItem>
 </BitPivot>";
 
-    private readonly string example3HTMLCode = @"<BitPivot LinkSize=""@BitPivotLinkSize.Large"">
-    <BitPivotItem HeaderText=""File"">
-        Pivot #1
+    private readonly string example3HtmlCode = @"
+<BitPivot LinkSize=""@BitPivotLinkSize.Large"">
+    <BitPivotItem HeaderText=""Large File"">
+        <div style=""margin-top:10px"">
+            <h1>Pivot #1: Large File</h1>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
+        </div>
     </BitPivotItem>
-    <BitPivotItem HeaderText=""Shared with me"">
-        Pivot #2
+    <BitPivotItem HeaderText=""Large Shared with me"">
+        <div style=""margin-top:10px"">
+            <h1>Pivot #2: Large Shared with me</h1>
+            <p>Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel.</p>
+        </div>
     </BitPivotItem>
-    <BitPivotItem HeaderText=""Recent"">
-        Pivot #3
-    </BitPivotItem>
-</BitPivot>";
-
-    private readonly string example4HTMLCode = @"<BitPivot LinkFormat=""@BitPivotLinkFormat.Tabs"">
-    <BitPivotItem HeaderText=""Foo"">
-        Pivot #1
-    </BitPivotItem>
-    <BitPivotItem HeaderText=""Bar"">
-        Pivot #2
-    </BitPivotItem>
-    <BitPivotItem HeaderText=""Bas"">
-        Pivot #3
-    </BitPivotItem>
-    <BitPivotItem HeaderText=""Biz"">
-        Pivot #4
+    <BitPivotItem HeaderText=""Large Recent"">
+        <div style=""margin-top:10px"">
+            <h1>Pivot #3: Large Recent</h1>
+            <p>Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum.</p>
+        </div>
     </BitPivotItem>
 </BitPivot>";
 
-    private readonly string example5HTMLCode = @"<BitPivot LinkFormat=""@BitPivotLinkFormat.Tabs""
-          LinkSize=""@BitPivotLinkSize.Large"">
-    <BitPivotItem HeaderText=""Foo"">
-        Pivot #1
+    private readonly string example4HtmlCode = @"
+<BitPivot LinkFormat=""@BitPivotLinkFormat.Tabs"">
+    <BitPivotItem HeaderText=""File tab"">
+        <div style=""margin-top:10px"">
+            <h1>Pivot #1: File tab</h1>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
+        </div>
     </BitPivotItem>
-    <BitPivotItem HeaderText=""Bar"">
-        Pivot #2
+    <BitPivotItem HeaderText=""Shared with me tab"">
+        <div style=""margin-top:10px"">
+            <h1>Pivot #2: Shared with me tab</h1>
+            <p>Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel.</p>
+        </div>
     </BitPivotItem>
-    <BitPivotItem HeaderText=""Bas"">
-        Pivot #3
-    </BitPivotItem>
-    <BitPivotItem HeaderText=""Biz"">
-        Pivot #4
+    <BitPivotItem HeaderText=""Recent tab"">
+        <div style=""margin-top:10px"">
+            <h1>Pivot #3: Recent tab</h1>
+            <p>Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum.</p>
+        </div>
     </BitPivotItem>
 </BitPivot>";
 
-    private readonly string example6HTMLCode = @"<BitPivot LinkFormat=""@BitPivotLinkFormat.Tabs""
-          LinkSize=""@BitPivotLinkSize.Large""
-          @bind-SelectedKey=""OverridePivotSelectedKey"">
+    private readonly string example5HtmlCode = @"
+<BitPivot LinkFormat=""@BitPivotLinkFormat.Tabs"" LinkSize=""@BitPivotLinkSize.Large"">
+    <BitPivotItem HeaderText=""Large File tab"">
+        <div style=""margin-top:10px"">
+            <h1>Pivot #1: Large File tab</h1>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
+        </div>
+    </BitPivotItem>
+    <BitPivotItem HeaderText=""Large Shared with me tab"">
+        <div style=""margin-top:10px"">
+            <h1>Pivot #2: Large Shared with me tab</h1>
+            <p>Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel.</p>
+        </div>
+    </BitPivotItem>
+    <BitPivotItem HeaderText=""Large Recent tab"">
+        <div style=""margin-top:10px"">
+            <h1>Pivot #3: Large Recent tab</h1>
+            <p>Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum.</p>
+        </div>
+    </BitPivotItem>
+</BitPivot>";
+
+    private readonly string example6HtmlCode = @"
+<BitPivot @bind-SelectedKey=""OverridePivotSelectedKey"" LinkFormat=""@BitPivotLinkFormat.Tabs"" LinkSize=""@BitPivotLinkSize.Large"">
     <BitPivotItem Key=""1"" HeaderText=""Samples"">
-        Pivot #1
+        <div style=""margin-top:10px"">
+            <h1>Pivot #1: Samples</h1>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
+        </div>
     </BitPivotItem>
     <BitPivotItem Key=""2"" HeaderText=""Files"">
-        Pivot #2
+        <div style=""margin-top:10px"">
+            <h1>Pivot #2: Files</h1>
+            <p>Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel.</p>
+        </div>
     </BitPivotItem>
     <BitPivotItem Key=""3"" HeaderText=""Recent"">
-        Pivot #3
+        <div style=""margin-top:10px"">
+            <h1>Pivot #3: Recent</h1>
+            <p>Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum.</p>
+        </div>
+    </BitPivotItem>
+    <BitPivotItem Key=""4"" HeaderText=""Last"">
+        <div style=""margin-top:10px"">
+            <h1>Pivot #4: Last</h1>
+            <p>Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi.</p>
+        </div>
     </BitPivotItem>
 </BitPivot>
-<BitButton IsEnabled=""@(OverridePivotSelectedKey != ""1"")""
-           OnClick=""() => OverridePivotSelectedKey = (((int.Parse(OverridePivotSelectedKey) + 3 - 1) % 3)).ToString()"">Prev</BitButton>
-<BitButton IsEnabled=""@(OverridePivotSelectedKey != ""3"")""
-           OnClick=""() => OverridePivotSelectedKey = (((int.Parse(OverridePivotSelectedKey) + 1 ) % 4)).ToString()"">Next</BitButton>";
+<div style=""margin-top:50px;display:flex;gap:10px"">
+    <BitButton IsEnabled=""@(OverridePivotSelectedKey != ""1"")"" ButtonStyle=""BitButtonStyle.Standard""
+                OnClick=""(() => OverridePivotSelectedKey = (int.Parse(OverridePivotSelectedKey) - 1).ToString())"">
+        <div style=""display:flex;gap:2px"">
+            <BitIcon IconName=""BitIconName.CaretSolidLeft"" /> Prev
+        </div>
+    </BitButton>
+    <BitButton IsEnabled=""@(OverridePivotSelectedKey != ""4"")"" ButtonStyle=""BitButtonStyle.Standard""
+                OnClick=""(() => OverridePivotSelectedKey = (int.Parse(OverridePivotSelectedKey) + 1).ToString())"">
+        <div style=""display:flex;gap:2px"">
+            Next <BitIcon IconName=""BitIconName.CaretSolidRight"" />
+        </div>
+    </BitButton>
+</div>";
 
     private readonly string example6CSharpCode = @"
 private string OverridePivotSelectedKey = ""1"";";
 
-    private readonly string example7HTMLCode = @"<BitPivot LinkFormat=""@BitPivotLinkFormat.Tabs""
-          DefaultSelectedKey=""Foo""
-          LinkSize=""@BitPivotLinkSize.Large""
-          HeadersOnly=""true""
-          OnLinkClick=""@(item => SelectedKey = item.Key)"">
-    <BitPivotItem HeaderText=""Foo"" Key=""Foo""></BitPivotItem>
-    <BitPivotItem HeaderText=""Bar"" Key=""Bar""></BitPivotItem>
-    <BitPivotItem HeaderText=""Bas"" Key=""Bas""></BitPivotItem>
-    <BitPivotItem HeaderText=""Biz"" Key=""Biz""></BitPivotItem>
-</BitPivot>
-<div>
+    private readonly string example7HtmlCode = @"
+<div style=""margin-bottom:25px;border:1px solid #afafaf;width:fit-content;padding:10px;"">
     @if (SelectedKey == ""Foo"")
     {
         <div>Hello I am Foo</div>
@@ -386,42 +386,243 @@ private string OverridePivotSelectedKey = ""1"";";
     {
         <div>Hello I am Biz</div>
     }
-</div>";
+</div>
+<BitPivot LinkFormat=""@BitPivotLinkFormat.Tabs""
+            DefaultSelectedKey=""Foo""
+            LinkSize=""@BitPivotLinkSize.Large""
+            HeadersOnly=""true""
+            OnLinkClick=""@(item => SelectedKey = item.Key)"">
+    <BitPivotItem HeaderText=""Foo"" Key=""Foo""></BitPivotItem>
+    <BitPivotItem HeaderText=""Bar"" Key=""Bar""></BitPivotItem>
+    <BitPivotItem HeaderText=""Bas"" Key=""Bas""></BitPivotItem>
+    <BitPivotItem HeaderText=""Biz"" Key=""Biz""></BitPivotItem>
+</BitPivot>";
 
     private readonly string example7CSharpCode = @"
 private string SelectedKey = ""Foo"";";
 
-    private readonly string example8HTMLCode = @"<div>
-    <BitPivot LinkFormat=""@BitPivotLinkFormat.Tabs""
-              LinkSize=""@BitPivotLinkSize.Large""
-              OnLinkClick=""@(item => SelectedPivotItem = item)"">
-        <BitPivotItem HeaderText=""Foo"">
-            Pivot #1
-        </BitPivotItem>
-        <BitPivotItem HeaderText=""Bar"">
-            Pivot #2
-        </BitPivotItem>
-        <BitPivotItem HeaderText=""Bas"" Key=""aaa"">
-            Pivot #3
-        </BitPivotItem>
-        <BitPivotItem Visibility=""@PivotItemVisibility"" HeaderText=""Biz"">
-            Pivot #4
-        </BitPivotItem>
-        <BitPivotItem HeaderText=""Baq"">
-            Pivot #5
-        </BitPivotItem>
-        <BitPivotItem HeaderText=""Baw"">
-            Pivot #6
-        </BitPivotItem>
-    </BitPivot>
+    private readonly string example8HtmlCode = @"
+<div style=""margin-bottom:25px"">
+    Last Pivot clicked: <strong>@SelectedPivotItem?.HeaderText</strong>
 </div>
-<BitButton OnClick=""TogglePivotItemVisobility"">Hide/Show Biz</BitButton>";
+<BitPivot LinkFormat=""@BitPivotLinkFormat.Tabs"" LinkSize=""@BitPivotLinkSize.Large"" OnLinkClick=""@(item => SelectedPivotItem = item)"">
+    <BitPivotItem HeaderText=""Foo"">
+        <div style=""margin-top:10px"">
+            <h1>Pivot #1: Foo</h1>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
+        </div>
+    </BitPivotItem>
+    <BitPivotItem HeaderText=""Bar"">
+        <div style=""margin-top:10px"">
+            <h1>Pivot #2: Bar</h1>
+            <p>Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel.</p>
+        </div>
+    </BitPivotItem>
+    <BitPivotItem HeaderText=""Bas"" Key=""aaa"">
+        <div style=""margin-top:10px"">
+            <h1>Pivot #3: Bas</h1>
+            <p>Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum.</p>
+        </div>
+    </BitPivotItem>
+    <BitPivotItem Visibility=""@PivotItemVisibility"" HeaderText=""Biz"">
+        <div style=""margin-top:10px"">
+            <h1>Pivot #4: Biz</h1>
+            <p>Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan.</p>
+        </div>
+    </BitPivotItem>
+    <BitPivotItem HeaderText=""Baq"">
+        <div style=""margin-top:10px"">
+            <h1>Pivot #5: Baq</h1>
+            <p>Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus. Suspendisse blandit erat ac lobortis pulvinar.</p>
+        </div>
+    </BitPivotItem>
+</BitPivot>";
 
     private readonly string example8CSharpCode = @"
-private BitPivotItem SelectedPivotItem;
+private BitPivotItem SelectedPivotItem;";
+
+    private readonly string example9HtmlCode = @"
+<BitPivot LinkFormat=""@BitPivotLinkFormat.Tabs"" LinkSize=""@BitPivotLinkSize.Large"">
+    <BitPivotItem HeaderText=""Foo"">
+        <div style=""margin-top:10px"">
+            <h1>Pivot #1: Foo</h1>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
+        </div>
+    </BitPivotItem>
+    <BitPivotItem HeaderText=""Bar"">
+        <div style=""margin-top:10px"">
+            <h1>Pivot #2: Bar</h1>
+            <p>Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel.</p>
+        </div>
+    </BitPivotItem>
+    <BitPivotItem Visibility=""@PivotItemVisibility"" HeaderText=""Biz"">
+        <div style=""margin-top:10px"">
+            <h1>Pivot #3: Biz</h1>
+            <p>Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan.</p>
+        </div>
+    </BitPivotItem>
+</BitPivot>
+<div style=""margin-top:50px"">
+    <BitButton ButtonStyle=""BitButtonStyle.Standard"" OnClick=""TogglePivotItemVisobility"">Hide/Show Biz</BitButton>
+</div>";
+
+    private readonly string example9CSharpCode = @"
 private BitComponentVisibility PivotItemVisibility;
 private void TogglePivotItemVisobility()
 {
     PivotItemVisibility = PivotItemVisibility == BitComponentVisibility.Visible ? BitComponentVisibility.Collapsed : BitComponentVisibility.Visible;
 }";
+
+    private readonly string example10HtmlCode = @"
+<BitPivot>
+    <BitPivotItem>
+        <Header>
+            <div>
+                <span style=""color:red"">Header #1</span>
+            </div>
+        </Header>
+        <Body>
+            <div style=""margin-top:10px"">
+                <h1>Pivot #1</h1>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
+            </div>
+        </Body>
+    </BitPivotItem>
+    <BitPivotItem ItemCount=""99"">
+        <Header>
+            <div>
+                <i style=""color:green"" class=""bit-icon bit-icon--HeartFill""></i>
+                <span style=""color:blue"">Header #2</span>
+                <i style=""color:green"" class=""bit-icon bit-icon--HeartFill""></i>
+            </div>
+        </Header>
+        <Body>
+            <div style=""margin-top:10px"">
+                <h1>Pivot #2</h1>
+                <p>Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel.</p>
+            </div>
+        </Body>
+    </BitPivotItem>
+    <BitPivotItem IconName=""BitIconName.Inbox"">
+        <Header>
+            <div>
+                <span style=""color:rebeccapurple"">Header <i style=""color:purple"" class=""bit-icon bit-icon--HeartFill""></i> #3</span>
+            </div>
+        </Header>
+        <Body>
+            <div style=""margin-top:10px"">
+                <h1>Pivot #3</h1>
+                <p>Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum.</p>
+            </div>
+        </Body>
+    </BitPivotItem>
+</BitPivot>";
+
+    private readonly string example11HtmlCode = @"
+<style>
+.subtitle {
+    padding: 20px 0 10px 0;
+}
+
+.box {
+    border: 1px solid #ccc;
+    padding: 5px 10px;
+}
+</style>
+
+<div class=""subtitle"">Pivot Position: <strong>Top</strong></div>
+<div class=""box"">
+    <BitPivot Position=""BitPivotPosition.Top"" Style=""height:200px"">
+        <BitPivotItem HeaderText=""File"">
+            <div style=""margin-top:10px"">
+                <h1>Pivot #1: File</h1>
+                <p style=""white-space:pre-wrap"">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. </p>
+            </div>
+        </BitPivotItem>
+        <BitPivotItem HeaderText=""Shared"">
+            <div style=""margin-top:15px"">
+                <h1>Pivot #2: Shared</h1>
+                <p style=""white-space:pre-wrap"">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet.</p>
+            </div>
+        </BitPivotItem>
+        <BitPivotItem HeaderText=""Recent"">
+            <div style=""margin-top:10px"">
+                <h1>Pivot #3: Recent</h1>
+                <p style=""white-space:pre-wrap"">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. </p>
+            </div>
+        </BitPivotItem>
+    </BitPivot>
+</div>
+<br />
+<div class=""subtitle"">Pivot Position: <strong>Bottom</strong></div>
+<div class=""box"">
+    <BitPivot Position=""BitPivotPosition.Bottom"" Style=""height:200px"">
+        <BitPivotItem HeaderText=""File"">
+            <div style=""margin-top:10px"">
+                <h1>Pivot #1: File</h1>
+                <p style=""white-space:pre-wrap"">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. </p>
+            </div>
+        </BitPivotItem>
+        <BitPivotItem HeaderText=""Shared"">
+            <div style=""margin-top:15px"">
+                <h1>Pivot #2: Shared</h1>
+                <p style=""white-space:pre-wrap"">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet.</p>
+            </div>
+        </BitPivotItem>
+        <BitPivotItem HeaderText=""Recent"">
+            <div style=""margin-top:10px"">
+                <h1>Pivot #3: Recent</h1>
+                <p style=""white-space:pre-wrap"">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. </p>
+            </div>
+        </BitPivotItem>
+    </BitPivot>
+</div>
+<br />
+<div class=""subtitle"">Pivot Position: <strong>Left</strong></div>
+<div class=""box"">
+    <BitPivot Position=""BitPivotPosition.Left"">
+        <BitPivotItem HeaderText=""File"">
+            <div style=""margin-top:10px"">
+                <h1>Pivot #1: File</h1>
+                <p style=""white-space:pre-wrap"">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. </p>
+            </div>
+        </BitPivotItem>
+        <BitPivotItem HeaderText=""Shared with me"" Style=""width:130px"">
+            <div style=""margin-top:15px"">
+                <h1>Pivot #2: Shared with me</h1>
+                <p style=""white-space:pre-wrap"">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet.</p>
+            </div>
+        </BitPivotItem>
+        <BitPivotItem HeaderText=""Recent"">
+            <div style=""margin-top:10px"">
+                <h1>Pivot #3: Recent</h1>
+                <p style=""white-space:pre-wrap"">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. </p>
+            </div>
+        </BitPivotItem>
+    </BitPivot>
+</div>
+<br />
+<div class=""subtitle"">Pivot Position: <strong>Right</strong></div>
+<div class=""box"">
+    <BitPivot Position=""BitPivotPosition.Right"">
+        <BitPivotItem HeaderText=""File"">
+            <div style=""margin-top:10px"">
+                <h1>Pivot #1: File</h1>
+                <p style=""white-space:pre-wrap"">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. </p>
+            </div>
+        </BitPivotItem>
+        <BitPivotItem HeaderText=""Shared with me"" Style=""width:130px"">
+            <div style=""margin-top:15px"">
+                <h1>Pivot #2: Shared with me</h1>
+                <p style=""white-space:pre-wrap"">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet.</p>
+            </div>
+        </BitPivotItem>
+        <BitPivotItem HeaderText=""Recent"">
+            <div style=""margin-top:10px"">
+                <h1>Pivot #3: Recent</h1>
+                <p style=""white-space:pre-wrap"">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. </p>
+            </div>
+        </BitPivotItem>
+    </BitPivot>
+</div>";
 }

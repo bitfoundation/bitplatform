@@ -1,0 +1,115 @@
+﻿@import '../Styles/abstracts/_media-queries.scss';
+@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_functions.scss';
+
+.main-container {
+    position: fixed;
+    left: 0;
+    top: rem(48px);
+    z-index: 16;
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    width: rem(240px);
+    height: calc(100vh - #{rem(48px)});
+    background-color: $Gray3;
+
+    @include lg {
+        width: rem(206px);
+    }
+}
+
+.main-container--closed {
+    display: none;
+
+    @include gt-md {
+        display: flex;
+    }
+}
+
+.top-container {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+    padding: rem(24px) 0 rem(12px);
+    margin-bottom: rem(20px);
+    border-bottom: rem(1px) solid $Gray4;
+
+    @include lg {
+        padding: rem(24px) 0 rem(8px);
+    }
+
+    @include lt-lg {
+        padding: rem(24px) 0 rem(16px);
+        margin-bottom: rem(24px);
+    }
+}
+
+.user-img-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: rem(56px);
+    height: rem(56px);
+    margin-bottom: rem(4px);
+    border-radius: 50%;
+    background-color: $S2Color;
+    font-size: rem(18px);
+    line-height: rem(24px);
+    color: $White;
+
+    @include lg {
+        width: rem(48px);
+        height: rem(48px);
+        margin-bottom: rem(2px);
+    }
+
+    @include lt-lg {
+        font-size: rem(20px);
+    }
+}
+
+.user-img {
+    width: rem(56px);
+    height: rem(56px);
+    border-radius: 50%;
+
+    @include lg {
+        width: rem(48px);
+        height: rem(48px);
+    }
+}
+
+.user-name {
+    margin-bottom: rem(8px);
+    font-size: rem(13px);
+    line-height: rem(21px);
+    color: $S3Color;
+
+    @include lg {
+        margin-bottom: rem(6px);
+        font-size: rem(12px);
+        line-height: rem(20px);
+    }
+
+    @include lt-lg {
+        margin-bottom: rem(6px);
+    }
+}
+
+.menu-shadow {
+    position: fixed;
+    left: 0;
+    top: rem(48px);
+    z-index: 15;
+    display: none;
+    width: 100%;
+    height: calc(100vh - #{rem(48px)});
+    background-color: rgba(0, 0, 0, 0.5);
+
+    @include lt-lg {
+        display: block;
+    }
+}

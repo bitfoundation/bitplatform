@@ -12,16 +12,16 @@ public partial class BitPersona
     private const int PRESENCE_MAX_SIZE = 40;
     private const int COIN_SIZE_PRESENCE_SCALE_FACTOR = 3;
 
+    private string? size;
+    private string? imageUrl;
+
     private bool _isLoaded;
     private bool _hasError;
     private bool _renderIcon;
-    private string? _size = string.Empty;
     private string? _iconStyle = string.Empty;
     private string? _presenceStyle = string.Empty;
     private string _internalInitials = string.Empty;
     private string? _presenceFontSize = string.Empty;
-    private string? _presenceAfterStyle = string.Empty;
-    private string? _presenceBeforeStyle = string.Empty;
     private string? _presenceHeightWidth = string.Empty;
 
     /// <summary>
@@ -47,8 +47,18 @@ public partial class BitPersona
     /// <summary>
     /// Url to the image to use, should be a square aspect ratio and big enough to fit in the image area.
     /// </summary>
+    [Parameter]
 #pragma warning disable CA1056 // URI-like properties should not be strings
-    [Parameter] public string? ImageUrl { get; set; }
+    public string? ImageUrl
+    {
+        get => imageUrl;
+        set
+        {
+            if (imageUrl == value) return;
+            imageUrl = value;
+            _hasError = false;
+        }
+    }
 #pragma warning restore CA1056 // URI-like properties should not be strings
 
     /// <summary>
@@ -62,10 +72,12 @@ public partial class BitPersona
     [Parameter]
     public string? Size
     {
-        get => _size;
+        get => size;
         set
         {
-            _size = value!;
+            if (size == value) return;
+
+            size = value;
             ClassBuilder.Reset();
         }
     }
@@ -161,7 +173,7 @@ public partial class BitPersona
                 : PRESENCE_MAX_SIZE + "px";
         }
 
-        _renderIcon = !(Size == BitPersonaSize.Size20 || Size == BitPersonaSize.Size24 || Size == BitPersonaSize.Size32) && (CoinSize == -1 || CoinSize > 32);
+        _renderIcon = (Size != BitPersonaSize.Size20 && Size != BitPersonaSize.Size24 && Size != BitPersonaSize.Size32) && (CoinSize == -1 || CoinSize > 32);
 
         _internalInitials = ImageInitials ?? GetInitials();
 
@@ -176,7 +188,9 @@ public partial class BitPersona
 
         ClassBuilder.Register(() => OnImageClick.HasDelegate ? "bit-prs-img-act" : string.Empty);
 
-        ClassBuilder.Register(() => Presence != BitPersonaPresenceStatus.None ? $"bit-prs-{Presence.ToString().ToLower()}" : string.Empty);
+        ClassBuilder.Register(() => Presence is not BitPersonaPresenceStatus.None
+                                        ? $"bit-prs-{Presence.ToString().ToLowerInvariant()}"
+                                        : string.Empty);
     }
 
     private string DetermineIcon()

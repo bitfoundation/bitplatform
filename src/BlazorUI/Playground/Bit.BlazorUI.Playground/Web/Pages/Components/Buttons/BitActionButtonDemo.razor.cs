@@ -154,6 +154,16 @@ public partial class BitActionButtonDemo
 <BitActionButton AllowDisabledFocus=""false"" IsEnabled=""false"" IconName=""BitIconName.UserRemove"">Remove user</BitActionButton>";
 
     private readonly string example2HTMLCode = @"
+<style>
+    .custom-action-button {
+        font-size: 1rem;
+        background-color: #D7D7D7;
+        border-color: #D7D7D7;
+        justify-content: center;
+        width: 14.5rem;
+        margin-top: 0.625rem;
+    }
+</style>
 <BitActionButton IconName=""BitIconName.ThisPC"" Style=""font-size:16px;border:2px solid #32385B;justify-content: center;width: 232px;"">
     Styled Action Button
 </BitActionButton>
@@ -162,9 +172,16 @@ public partial class BitActionButtonDemo
 </BitActionButton>";
 
     private readonly string example3HTMLCode = @"
-<BitActionButton IconName=""BitIconName.AddEvent"" Visibility=""BitComponentVisibility.Visible"">Add Event</BitActionButton>
-<div><span>Hidden Button: </span>[<BitActionButton Visibility=""BitComponentVisibility.Hidden"">Hidden Action Button</BitActionButton>]</div>
-<div><span>Collapsed Button: </span>[<BitActionButton Visibility=""BitComponentVisibility.Collapsed"">Collapsed Action Button</BitActionButton>]</div>";
+<style>
+    .buttons-container {
+        line-height: 3.125rem;
+    }
+</style>
+<div class=""buttons-container"">
+    <BitActionButton IconName=""BitIconName.AddEvent"" Visibility=""BitComponentVisibility.Visible"">Add Event</BitActionButton>
+    <div><span>Hidden Button: </span>[<BitActionButton Visibility=""BitComponentVisibility.Hidden"">Hidden Action Button</BitActionButton>]</div>
+    <div><span>Collapsed Button: </span>[<BitActionButton Visibility=""BitComponentVisibility.Collapsed"">Collapsed Action Button</BitActionButton>]</div>
+</div>";
 
     private readonly string example4HTMLCode = @"
 <BitActionButton IconName=""BitIconName.Library"" AriaDescription=""Detailed description used for screen reader."">

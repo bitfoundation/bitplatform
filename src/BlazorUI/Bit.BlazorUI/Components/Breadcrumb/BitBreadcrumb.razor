@@ -8,52 +8,78 @@
      class="@ClassBuilder.Value"
      aria-label="@AriaLabel">
 
-    <div class="bit-brc-items-wrapper" id=@BreadcrumbItemsWrapperId>
+    <div class="items-wrapper" id="@_wrapperId">
         <ul>
-
-            @foreach ((BitBreadcrumbItem value, int index) item in _itemsToShowInBreadcrumb.Select((item, index) => (item, index)))
+            @foreach ((BitBreadcrumbItem item, int index) in _displayItems.Select((item, index) => (item, index)))
             {
                 <li>
-                    @if (_overflowItems.Any() && item.index == OverflowIndex)
+                    @if (_overflowItems.Any() && index == _internalOverflowIndex)
                     {
-                        <button type="button" aria-label="@OverflowAriaLabel" id=@OverflowDropDownId @onclick="HandleClick">
-                            <span>
-                                <i class=@($"bit-icon bit-icon--{OnRenderOverflowIcon.GetName()}")></i>
+                        <button type="button" class="overflow-btn" aria-label="@OverflowAriaLabel" id="@_overflowDropDownId" @onclick="ToggleCallout">
+                            <span class="overflow-icon-container">
+                                <i class="@($"bit-icon bit-icon--{OverflowIcon.GetName()}")"></i>
                             </span>
                         </button>
                     }
                     else
                     {
-                        <a href="@item.value.href"
-                           onclick="@item.value.OnClick"
-                           aria-current=@(IsLastItem(item.index) ? "page" : "undefined")
-                           class=@(IsLastItem(item.index) ? "bit-brc-lst-itm" :"bit-brc-itm")>@item.value.Text</a>
+                        if (item.Href.HasValue())
+                        {
+                            <a href="@item.Href"
+                               aria-current="@(item.IsSelected ? "page" : null)"
+                               style="@item.Style @GetItemStyles(item)"
+                               class="@item.Class @GetItemClasses(item)">
+                                @item.Text
+                            </a>
+                        }
+                        else
+                        {
+                            <button aria-current="@(item.IsSelected ? "page" : null)"
+                                    style="@item.Style @GetItemStyles(item)"
+                                    class="@item.Class @GetItemClasses(item)"
+                                    @onclick="() => HandleOnItemClick(item)">
+                                @item.Text
+                            </button>
+                        }   
                     }
-
-                 @if (IsLastItem(item.index) is false)
-                 {
-                     <i class=@($"bit-icon bit-icon--{DividerIcon.GetName()}")></i>
-                 }
-
                 </li>
+
+                @if (index != _displayItems.Count - 1)
+                {
+                    <i class="@($"bit-icon bit-icon--{DividerIcon.GetName()}")"></i>
+                }
             }
         </ul>
     </div>
 
-    <div class="bit-brc-overlay"
-         id="@OverflowDropDownMenuOverlayId"
-         @onclick="CloseCallout">
-    </div>
+    <div class="overlay" id="@_overlayId" @onclick="ToggleCallout"></div>
 
-    <div class="bit-brc-overflow-menu-wrapper"
-         id="@OverflowDropDownMenuCalloutId"
+    <div class="overflow-menu-wrapper"
+         id="@_calloutId"
          tabindex="0"
          role="listbox">
         <ul>
-            @foreach ((BitBreadcrumbItem item, int index) in _overflowItems.Select((item, index) => (item, index)))
+            @foreach (var item in _overflowItems)
             {
                 <li>
-                    <a href="@item.href" @onclick="@item.OnClick">@item.Text</a>
+                    @if (item.Href.HasValue())
+                    {
+                        <a href="@item.Href"
+                           aria-current="@(item.IsSelected ? "page" : null)"
+                           style="@item.Style @GetItemStyles(item)"
+                           class="@item.Class @GetItemClasses(item)">
+                            @item.Text
+                        </a>
+                    }
+                    else
+                    {
+                        <button aria-current="@(item.IsSelected ? "page" : null)"
+                                style="@item.Style @GetItemStyles(item)"
+                                class="@item.Class @GetItemClasses(item)"
+                                @onclick="() => HandleOnItemClick(item)">
+                            @item.Text
+                        </button>
+                    }
                 </li>
             }
         </ul>

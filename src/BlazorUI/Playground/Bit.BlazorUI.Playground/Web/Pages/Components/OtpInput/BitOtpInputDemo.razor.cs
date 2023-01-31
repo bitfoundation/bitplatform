@@ -16,9 +16,27 @@ public partial class BitOtpInputDemo
     private string rightToLeftOtpInput;
     private string topToBottomOtpInput;
     private string BottomToTopOtpInput;
+    private string oneWayBindOtpInput;
     private string twoWayBindOtpInput;
+    private string onChangeBindOtpInput;
+
     private ValidationOtpInputModel validationOtpInputModel = new();
     public bool formIsValidSubmit;
+    private async Task HandleValidSubmit()
+    {
+        formIsValidSubmit = true;
+
+        await Task.Delay(3000);
+
+        formIsValidSubmit = false;
+
+        StateHasChanged();
+    }
+
+    private void HandleInvalidSubmit()
+    {
+        formIsValidSubmit = false;
+    }
 
     private readonly List<ComponentParameter> componentParameters = new()
     {
@@ -83,6 +101,12 @@ public partial class BitOtpInputDemo
             Type = "EventCallback<ClipboardEventArgs>",
             Description = "Callback for when in the OtpInput paste a content.",
         },
+        new ComponentParameter()
+        {
+            Name = "OnChange",
+            Type = "EventCallback<string?>",
+            Description = "Callback for when the OtpInput value change.",
+        },
     };
     private readonly List<EnumParameter> enumParameters = new()
     {
@@ -146,71 +170,164 @@ public partial class BitOtpInputDemo
         }
     };
 
+    #region Sample Code 1
+
     private static readonly string example1HtmlCode = @"
-<div class=""otp-input-box"">
+<div>
     <BitLabel>OtpInput</BitLabel>
     <BitOtpInput Length=""4"" @bind-Value=""basicOtpInput"" />
     <div>Output: [@basicOtpInput]</div>
 </div>
-<div class=""otp-input-box"">
+<div>
     <BitLabel>Disabled OtpInput</BitLabel>
     <BitOtpInput Length=""6"" IsEnabled=""false"" />
 </div>
 ";
+
+    #endregion
+
+    #region Sample Code 2
+
     private static readonly string example2HtmlCode = @"
-<BitOtpInput Length=""4"" AutoFocus=""true"" @bind-Value=""autoFocusOtpInput"" />
-<div>Output: [@autoFocusOtpInput]</div>
+<div>
+    <BitOtpInput Length=""4"" AutoFocus=""true"" @bind-Value=""autoFocusOtpInput"" />
+    <div>Output: [@autoFocusOtpInput]</div>
+</div>
 ";
+
+    private static readonly string example2CSharpCode = @"
+private string autoFocusOtpInput;
+";
+
+    #endregion
+
+    #region Sample Code 3
+
     private static readonly string example3HtmlCode = @"
-<div class=""otp-input-box"">
+<div>
     <BitLabel>Text</BitLabel>
     <BitOtpInput Length=""4"" InputType=""BitOtpInputType.Text"" @bind-Value=""textOtpInput"" />
     <div>Output: [@textOtpInput]</div>
 </div>
-<div class=""otp-input-box"">
+<div>
     <BitLabel>Number</BitLabel>
     <BitOtpInput Length=""4"" InputType=""BitOtpInputType.Number"" @bind-Value=""numberOtpInput"" />
     <div>Output: [@numberOtpInput]</div>
 </div>
-<div class=""otp-input-box"">
+<div>
     <BitLabel>Password</BitLabel>
     <BitOtpInput Length=""4"" InputType=""BitOtpInputType.Password"" @bind-Value=""passwordOtpInput"" />
     <div>Output: [@passwordOtpInput]</div>
 </div>
 ";
-    private static readonly string example4HtmlCode = @"
-<BitLabel>Left to right</BitLabel>
-<BitOtpInput Length=""4"" Direction=""BitOtpInputDirection.LeftToRight"" @bind-Value=""leftToRightOtpInput"" />
 
-<BitLabel>Right to left</BitLabel>
-<BitOtpInput Length=""4"" Direction=""BitOtpInputDirection.RightToLeft"" @bind-Value=""rightToLeftOtpInput"" />
-
-<BitLabel>Top to bottom</BitLabel>
-<BitOtpInput Length=""4"" Direction=""BitOtpInputDirection.TopToBottom"" @bind-Value=""topToBottomOtpInput"" />
-
-<BitLabel>Bottom to top</BitLabel>
-<BitOtpInput Length=""4"" Direction=""BitOtpInputDirection.BottomToTop"" @bind-Value=""BottomToTopOtpInput"" />
+    private static readonly string example3CSharpCode = @"
+private string textOtpInput;
+private string numberOtpInput;
+private string passwordOtpInput;
 ";
-    private static readonly string example5HtmlCode = @"
-<div class=""otp-input-box"">
-    <BitOtpInput Length=""4"" @bind-Value=""twoWayBindOtpInput"" />
+
+    #endregion
+
+    #region Sample Code 4
+
+    private static readonly string example4HtmlCode = @"
+<div>
+    <BitLabel>Left to right</BitLabel>
+    <BitOtpInput Length=""4"" Direction=""BitOtpInputDirection.LeftToRight"" @bind-Value=""leftToRightOtpInput"" />
+    <div>Output: [@leftToRightOtpInput]</div>
 </div>
 <div>
-    <BitLabel>Output:</BitLabel>
-    <BitTextField @bind-Value=""twoWayBindOtpInput"" />
+    <BitLabel>Right to left</BitLabel>
+    <BitOtpInput Length=""4"" Direction=""BitOtpInputDirection.RightToLeft"" @bind-Value=""rightToLeftOtpInput"" />
+    <div>Output: [@rightToLeftOtpInput]</div>
+</div>
+
+<div>
+    <BitLabel>Top to bottom</BitLabel>
+    <BitOtpInput Length=""4"" Direction=""BitOtpInputDirection.TopToBottom"" @bind-Value=""topToBottomOtpInput"" />
+    <div>Output: [@topToBottomOtpInput]</div>
+</div>
+<div>
+    <BitLabel>Bottom to top</BitLabel>
+    <BitOtpInput Length=""4"" Direction=""BitOtpInputDirection.BottomToTop"" @bind-Value=""BottomToTopOtpInput"" />
+    <div>Output: [@BottomToTopOtpInput]</div>
 </div>
 ";
+
+    private static readonly string example4CSharpCode = @"
+private string leftToRightOtpInput;
+private string rightToLeftOtpInput;
+private string topToBottomOtpInput;
+private string BottomToTopOtpInput;
+";
+
+    #endregion
+
+    #region Sample Code 5
+
+    private static readonly string example5HtmlCode = @"
+<div>
+    <BitLabel>One-way</BitLabel>
+    <BitOtpInput Length=""4"" Value=""@oneWayBindOtpInput"" />
+    <BitTextField Style=""margin-top: 5px;"" @bind-Value=""oneWayBindOtpInput"" />
+</div>
+<div>
+    <BitLabel>Two-way</BitLabel>
+    <BitOtpInput Length=""4"" @bind-Value=""twoWayBindOtpInput"" />
+    <BitTextField Style=""margin-top: 5px;"" @bind-Value=""twoWayBindOtpInput"" />
+</div>
+<div>
+    <BitLabel>OnChange</BitLabel>
+    <BitOtpInput Length=""4"" OnChange=""(value) => onChangeBindOtpInput = value"" />
+    <div>Output: [@onChangeBindOtpInput]</div>
+</div>
+";
+
+    private static readonly string example5CSharpCode = @"
+private string oneWayBindOtpInput;
+private string twoWayBindOtpInput;
+private string onChangeBindOtpInput;
+";
+
+    #endregion
+
+    #region Sample Code 6
+
     private static readonly string example6HtmlCode = @"
+<style>
+    .validation-summary {
+        border-left: rem(5px) solid $Red10;
+        background-color: $ErrorBlockRed;
+        overflow: hidden;
+        margin-bottom: rem(10px);
+    }
+
+    .validation-message {
+        color: $Red20;
+        font-size: rem(12px);
+    }
+
+    .validation-errors {
+        margin: rem(5px);
+    }
+</style>
+
 @if (formIsValidSubmit is false)
 {
     <EditForm Model=""validationOtpInputModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
         <DataAnnotationsValidator />
-        <div class=""otp-input-box"">
+
+        <div class=""validation-summary"">
+            <ValidationSummary />
+        </div>
+
+        <div>
             <BitOtpInput Length=""6"" @bind-Value=""validationOtpInputModel.OtpValue"" />
             <ValidationMessage For=""() => validationOtpInputModel.OtpValue"" />
-            <div>Output: [@validationOtpInputModel.OtpValue]</div>
         </div>
-        <BitButton ButtonType=""BitButtonType.Submit"">
+
+        <BitButton Style=""margin-top: 10px;"" ButtonType=""BitButtonType.Submit"">
             Submit
         </BitButton>
     </EditForm>
@@ -222,23 +339,7 @@ else
     </BitMessageBar>
 }
 ";
-    private static readonly string example2CSharpCode = @"
-private string autoFocusOtpInput;
-";
-    private static readonly string example3CSharpCode = @"
-private string textOtpInput;
-private string numberOtpInput;
-private string passwordOtpInput;
-";
-    private static readonly string example4CSharpCode = @"
-private string leftToRightOtpInput;
-private string rightToLeftOtpInput;
-private string topToBottomOtpInput;
-private string BottomToTopOtpInput;
-";
-    private static readonly string example5CSharpCode = @"
-private string twoWayBindOtpInput;
-";
+
     private static readonly string example6CSharpCode = @"
 public class ValidationOtpInputModel
 {
@@ -267,19 +368,5 @@ private void HandleInvalidSubmit()
 }
 ";
 
-    private async Task HandleValidSubmit()
-    {
-        formIsValidSubmit = true;
-
-        await Task.Delay(3000);
-
-        formIsValidSubmit = false;
-
-        StateHasChanged();
-    }
-
-    private void HandleInvalidSubmit()
-    {
-        formIsValidSubmit = false;
-    }
+    #endregion
 }

@@ -37,10 +37,14 @@ public class BitButtonTests : BunitTestContext
 
         var bitButton = com.Find(".bit-btn");
 
-        var isEnabledClass = isEnabled ? "enabled" : "disabled";
-        var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
-
-        Assert.IsTrue(bitButton.ClassList.Contains($"bit-btn-{isEnabledClass}-{visualClass}"));
+        if (isEnabled)
+        {
+            Assert.IsFalse(bitButton.ClassList.Contains("disabled"));
+        }
+        else
+        {
+            Assert.IsTrue(bitButton.ClassList.Contains("disabled"));
+        }
 
         Assert.AreEqual(bitButton.GetAttribute("title"), title);
 
@@ -71,10 +75,9 @@ public class BitButtonTests : BunitTestContext
         });
 
         var bitButton = com.Find(".bit-btn"); 
-        var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
-        var sizeClass = size == BitButtonSize.Small ? "sm" : size == BitButtonSize.Medium ? "md" : "lg";
+        var sizeClass = size == BitButtonSize.Small ? "small" : size == BitButtonSize.Medium ? "medium" : "large";
 
-        Assert.IsTrue(bitButton.ClassList.Contains($"bit-btn-{sizeClass}-{visualClass}"));
+        Assert.IsTrue(bitButton.ClassList.Contains(sizeClass));
     }
 
     [DataTestMethod,
@@ -134,18 +137,15 @@ public class BitButtonTests : BunitTestContext
 
         var bitButton = com.Find(".bit-btn");
 
-        var isEnabledClass = isEnabled ? "enabled" : "disabled";
-        var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
-
         if (isEnabled)
         {
-            Assert.IsTrue(bitButton.ClassList.Contains($"bit-btn-{visualClass}"));
             Assert.AreEqual(bitButton.GetAttribute("target"), target);
             Assert.IsTrue(bitButton.HasAttribute("href"));
+            Assert.IsFalse(bitButton.ClassList.Contains("disabled"));
         }
         else
         {
-            Assert.IsTrue(bitButton.ClassList.Contains($"bit-btn-{isEnabledClass}-{visualClass}"));
+            Assert.IsTrue(bitButton.ClassList.Contains("disabled"));
         }
 
         Assert.AreEqual(bitButton.GetAttribute("title"), title);

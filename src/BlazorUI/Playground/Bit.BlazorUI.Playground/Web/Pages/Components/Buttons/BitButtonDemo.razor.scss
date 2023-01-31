@@ -2,75 +2,55 @@
 @import '../../../Styles/abstracts/_media-queries.scss';
 @import '../../../Styles/abstracts/_functions.scss';
 
-.sample-lnk-btn {
+.buttons-container {
     display: flex;
     flex-flow: row wrap;
+    gap: 0.5rem;
 }
 
-::deep .custom-button,
-::deep .custom-button:hover {
-    height: rem(40px);
-    width: rem(166px);
-    font-size: rem(16px);
-    background-color: $B1Color;
-    border-color: $B1Color;
+.buttons-container-grid {
+    display: grid;
+    gap: 0.5rem;
 }
 
-::deep .label-btn {
-    @include sm {
-        margin-top: rem(10px);
-        width: rem(284px);
-    }
-}
-
-::deep .lnk-btn {
-    @include sm {
-        margin-top: rem(10px);
-        width: rem(240px);
-    }
-}
-
-::deep .disable-btn {
-    @include md {
-        margin-top: rem(10px);
-        width: rem(241px);
+::deep {
+    .custom-button.primary {
+        height: 2.5rem;
+        width: 10.375rem;
+        font-size: 1rem;
+        background-color: #0054C6;
+        border-color: #0054C6;
     }
 
-    @include sm {
-        margin-top: rem(10px);
-        width: rem(241px);
+    .custom-button.primary:hover {
+        background-color: #01367e;
+        border-color: #01367e;
     }
-}
 
-::deep .styled-btn {
-    @include sm {
-        margin: 0 0 rem(10px) 0;
+    .custom-btn-sm {
+        &.small {
+            padding: 4px 8px;
+            font-size: 8px;
+            line-height: 1.5;
+            border-radius: 3px;
+        }
     }
-}
 
-::deep .custom-btn-sm {
-    &.bit-btn-sm-fluent {
-        padding: 4px 8px;
-        font-size: 8px;
-        line-height: 1.5;
-        border-radius: 3px;
+    .custom-btn-md {
+        &.medium {
+            padding: 12px 24px;
+            font-size: 16px;
+            line-height: 1.4;
+            border-radius: 4px;
+        }
     }
-}
 
-::deep .custom-btn-md {
-    &.bit-btn-md-fluent {
-        padding: 12px 24px;
-        font-size: 16px;
-        line-height: 1.4;
-        border-radius: 4px;
-    }
-}
-
-::deep .custom-btn-lg {
-    &.bit-btn-lg-fluent {
-        padding: 20px 32px;
-        font-size: 32px;
-        line-height: 1.33;
-        border-radius: 6px;
+    .custom-btn-lg {
+        &.large {
+            padding: 20px 32px;
+            font-size: 32px;
+            line-height: 1.33;
+            border-radius: 6px;
+        }
     }
 }

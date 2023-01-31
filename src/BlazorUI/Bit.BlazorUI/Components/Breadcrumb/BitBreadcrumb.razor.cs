@@ -1,31 +1,40 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
-using Microsoft.JSInterop;
-
+﻿using System.Text;
 
 namespace Bit.BlazorUI;
 
-public partial class BitBreadcrumb
+public partial class BitBreadcrumb : IDisposable
 {
-    protected override string RootElementClass => "bit-brc";
+    private IList<BitBreadcrumbItem> _internalItems = new List<BitBreadcrumbItem>();
+    private IList<BitBreadcrumbItem> _displayItems = new List<BitBreadcrumbItem>();
+    private IList<BitBreadcrumbItem> _overflowItems = new List<BitBreadcrumbItem>();
+    private uint _internalOverflowIndex;
+    private uint _internalMaxDisplayedItems;
+    private DotNetObjectReference<BitBreadcrumb> _dotnetObj = default!;
+    private bool _disposed;
+    private bool _isCalloutOpen;
 
-    [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
+    private string _wrapperId => $"{UniqueId}-wrapper";
+    private string _calloutId => $"{UniqueId}-callout";
+    private string _overlayId => $"{UniqueId}-overlay";
+    private string _overflowDropDownId => $"{UniqueId}-overflow-dropdown";
+
+    [Inject] public IJSRuntime _js { get; set; } = default!;
 
     /// <summary>
-    /// Collection of breadcrumbs to render
+    /// Render a custom divider in place of the default chevron >
     /// </summary>
-#pragma warning disable CA2227 // Collection properties should be read only
+    [Parameter] public BitIconName DividerIcon { get; set; } = BitIconName.ChevronRight;
+
+    /// <summary>
+    /// Collection of breadcrumbs to render.
+    /// </summary>
     [Parameter] public IList<BitBreadcrumbItem> Items { get; set; } = new List<BitBreadcrumbItem>();
-#pragma warning restore CA2227 // Collection properties should be read only
 
     /// <summary>
     /// The maximum number of breadcrumbs to display before coalescing.
     /// If not specified, all breadcrumbs will be rendered.
     /// </summary>
-    [Parameter] public int MaxDisplayedItems { get; set; }
+    [Parameter] public uint MaxDisplayedItems { get; set; }
 
     /// <summary>
     /// Aria label for the overflow button.
@@ -35,91 +44,148 @@ public partial class BitBreadcrumb
     /// <summary>
     /// Optional index where overflow items will be collapsed.
     /// </summary>
-    [Parameter] public int OverflowIndex { get; set; }
+    [Parameter] public uint OverflowIndex { get; set; }
 
     /// <summary>
-    /// Render a custom divider in place of the default chevron >
+    /// Render a custom overflow icon in place of the default icon.
     /// </summary>
-    [Parameter] public BitIconName DividerIcon { get; set; } = BitIconName.ChevronRight;
+    [Parameter] public BitIconName OverflowIcon { get; set; } = BitIconName.More;
 
     /// <summary>
-    /// Render a custom overflow icon in place of the default icon
+    /// Callback for when the breadcrumb item clicked.
     /// </summary>
-    [Parameter] public BitIconName OnRenderOverflowIcon { get; set; } = BitIconName.More;
+    [Parameter] public EventCallback<BitBreadcrumbItem> OnItemClick { get; set; }
 
-    public string BreadcrumbItemsWrapperId { get; set; } = string.Empty;
-    public string OverflowDropDownId { get; set; } = string.Empty;
-    public string OverflowDropDownMenuCalloutId { get; set; } = string.Empty;
-    public string OverflowDropDownMenuOverlayId { get; set; } = string.Empty;
+    /// <summary>
+    /// The class HTML attribute for Selected Item.
+    /// </summary>
+    [Parameter] public string? SelectedItemClass { get; set; }
 
-    private IList<BitBreadcrumbItem> _overflowItems = new List<BitBreadcrumbItem>();
-    private IList<BitBreadcrumbItem> _itemsToShowInBreadcrumb = new List<BitBreadcrumbItem>();
-    private bool isOpen;
+    /// <summary>
+    /// The style HTML attribute for Selected Item.
+    /// </summary>
+    [Parameter] public string? SelectedItemStyle { get; set; }
+
+    protected override string RootElementClass => "bit-brc";
+
+    protected override Task OnInitializedAsync()
+    {
+        _dotnetObj = DotNetObjectReference.Create(this);
+
+        return base.OnInitializedAsync();
+    }
 
     protected override async Task OnParametersSetAsync()
     {
-        BreadcrumbItemsWrapperId = $"breadcrumb-items-wrapper-{UniqueId}";
-        OverflowDropDownId = $"overflow-dropdown-{UniqueId}";
-        OverflowDropDownMenuOverlayId = $"overflow-dropdown-overlay-{UniqueId}";
-        OverflowDropDownMenuCalloutId = $"overflow-dropdown-callout{UniqueId}";
+        bool shouldCallSetItemsToShow = false;
 
-        GetBreadcrumbItemsToShow();
+        shouldCallSetItemsToShow = _internalItems.Count != Items.Count || _internalItems.Any(item => Items.Contains(item) is false);
+        _internalItems = Items.ToList();
+
+        shouldCallSetItemsToShow = shouldCallSetItemsToShow || _internalMaxDisplayedItems != MaxDisplayedItems;
+        _internalMaxDisplayedItems = MaxDisplayedItems == 0 ? (uint)_internalItems.Count : MaxDisplayedItems;
+
+        shouldCallSetItemsToShow = shouldCallSetItemsToShow || _internalOverflowIndex != OverflowIndex;
+        _internalOverflowIndex = OverflowIndex >= _internalMaxDisplayedItems ? 0 : OverflowIndex;
+
+        if (shouldCallSetItemsToShow)
+        {
+            SetItemsToShow();
+        }
 
         await base.OnParametersSetAsync();
     }
 
-    private async Task CloseCallout()
+    private async Task ToggleCallout()
     {
-        var obj = DotNetObjectReference.Create(this);
-        await JSRuntime.InvokeVoidAsync("BitOverflowDropDownMenu.toggleOverflowDropDownMenuCallout", obj, BreadcrumbItemsWrapperId, OverflowDropDownId, OverflowDropDownMenuCalloutId, OverflowDropDownMenuOverlayId, isOpen);
-        isOpen = false;
-        StateHasChanged();
+        if (IsEnabled is false) return;
+
+        await _js.ToggleOverflowCallout(_dotnetObj, _wrapperId, _overflowDropDownId, _calloutId, _overlayId, _isCalloutOpen);
+
+        _isCalloutOpen = !_isCalloutOpen;
     }
 
-    private async Task HandleClick(MouseEventArgs e)
+    private async Task HandleOnItemClick(BitBreadcrumbItem item)
     {
-        if (IsEnabled is false || JSRuntime is null) return;
+        if (IsEnabled is false) return;
+        if (item.IsEnabled is false) return;
 
-        var obj = DotNetObjectReference.Create(this);
-        await JSRuntime.InvokeVoidAsync("BitOverflowDropDownMenu.toggleOverflowDropDownMenuCallout", obj, BreadcrumbItemsWrapperId, OverflowDropDownId, OverflowDropDownMenuCalloutId, OverflowDropDownMenuOverlayId, isOpen);
-        isOpen = !isOpen;
+        await OnItemClick.InvokeAsync(item);
     }
 
-    private IList<BitBreadcrumbItem> GetBreadcrumbItemsToShow()
+    private void SetItemsToShow()
     {
-        if (MaxDisplayedItems == 0 || MaxDisplayedItems >= Items.Count)
+        _displayItems.Clear();
+        _overflowItems.Clear();
+
+        if (_internalMaxDisplayedItems >= Items.Count)
         {
-            return _itemsToShowInBreadcrumb = Items;
+            _displayItems = Items.ToList();
+            return;
         }
 
-        _itemsToShowInBreadcrumb.Clear();
+        var overflowItemsCount = _internalItems.Count - _internalMaxDisplayedItems;
 
-        if (OverflowIndex >= MaxDisplayedItems)
-            OverflowIndex = 0;
-
-        var overflowItemsCount = Items.Count - MaxDisplayedItems;
-
-        foreach ((BitBreadcrumbItem item, int index) item in Items.Select((item, index) => (item, index)))
+        foreach ((BitBreadcrumbItem item, int index) in _internalItems.Select((item, index) => (item, index)))
         {
-            if (OverflowIndex <= item.index && item.index < overflowItemsCount + OverflowIndex)
+            if (_internalOverflowIndex <= index && index < (overflowItemsCount + _internalOverflowIndex))
             {
-                if (item.index == OverflowIndex)
-                    _itemsToShowInBreadcrumb.Add(item.item);
+                if (index == _internalOverflowIndex)
+                {
+                    _displayItems.Add(item);
+                }
 
-                _overflowItems.Add(item.item);
+                _overflowItems.Add(item);
             }
             else
             {
-                _itemsToShowInBreadcrumb.Add(item.item);
+                _displayItems.Add(item);
             }
         }
-
-        return _itemsToShowInBreadcrumb;
     }
 
-
-    private bool IsLastItem(int index)
+    private string GetItemClasses(BitBreadcrumbItem item)
     {
-        return index == _itemsToShowInBreadcrumb.Count - 1;
+        StringBuilder itemClasses = new();
+
+        itemClasses.Append("item");
+
+        if (item.IsSelected)
+        {
+            itemClasses.Append(" selected-item");
+        }
+
+        if (item.IsSelected && SelectedItemClass.HasValue())
+        {
+            itemClasses.Append($" {SelectedItemClass}");
+        }
+
+        if (item.IsEnabled is false)
+        {
+            itemClasses.Append(" disabled-item");
+        }
+
+        return itemClasses.ToString();
+    }
+
+    private string GetItemStyles(BitBreadcrumbItem item)
+    {
+        return item.IsSelected ? SelectedItemStyle ?? string.Empty : string.Empty;
+    }
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_disposed) return;
+        if (!disposing) return;
+
+        _dotnetObj.Dispose();
+
+        _disposed = true;
     }
 }

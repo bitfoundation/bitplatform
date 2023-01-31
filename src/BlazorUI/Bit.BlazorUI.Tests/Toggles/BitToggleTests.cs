@@ -1,4 +1,5 @@
-﻿using Bunit;
+﻿using System.Text;
+using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Toggles;
@@ -144,10 +145,13 @@ public class BitToggleTests : BunitTestContext
             parameters.Add(p => p.Label, label);
         });
 
-        var bitToggleButton = com.Find(".bit-tgl button");
-        var bitToggleButtonId = bitToggleButton.Id;
-        var labelId = bitToggleButtonId + "-label";
-        var stateTextId = bitToggleButtonId + "-stateText";
+        var bitToggleButton = com.Find("button");
+
+      
+        var labelId = bitToggleButton.Id.Replace("button", "label");
+        
+        var stateTextId = bitToggleButton.Id.Replace("button", "state_text");
+
         var ariaLabelledById = string.Empty;
         var stateText = (value ? onText : offText) ?? defaultText ?? string.Empty;
 
@@ -155,10 +159,13 @@ public class BitToggleTests : BunitTestContext
         {
             ariaLabelledById = labelId;
         }
+
         if (stateText.HasValue())
         {
             ariaLabelledById = ariaLabelledById.HasValue() ? $"{labelId} {stateTextId}" : stateTextId;
         }
+
+        var aa = bitToggleButton.GetAttribute("aria-labelledby");
 
         Assert.AreEqual(bitToggleButton.GetAttribute("aria-labelledby"), ariaLabelledById);
     }
@@ -175,7 +182,7 @@ public class BitToggleTests : BunitTestContext
         });
 
         var ariaChecked = value ? "true" : "false";
-        var bitToggleButton = com.Find(".bit-tgl button");
+        var bitToggleButton = com.Find("button");
         Assert.AreEqual(bitToggleButton.GetAttribute("aria-checked"), ariaChecked);
     }
 
@@ -187,7 +194,7 @@ public class BitToggleTests : BunitTestContext
             parameters.Add(p => p.Role, role);
         });
 
-        var bitToggleButton = com.Find(".bit-tgl button");
+        var bitToggleButton = com.Find("button");
         Assert.AreEqual(bitToggleButton.GetAttribute("role"), role);
     }
 
@@ -199,20 +206,20 @@ public class BitToggleTests : BunitTestContext
             parameters.Add(p => p.Label, label);
         });
 
-        var bitToggleLabel = com.Find(".bit-tgl > label");
+        var bitToggleLabel = com.Find("label");
         Assert.AreEqual(bitToggleLabel.TextContent, label);
     }
 
-    [DataTestMethod, DataRow("<div>This is labelFragment</div>")]
-    public void BitToggleMarkupLabelTest(string labelFragment)
+    [DataTestMethod, DataRow("<div>This is labelTemplate</div>")]
+    public void BitToggleMarkupLabelTest(string labelTemplate)
     {
         var com = RenderComponent<BitToggleTest>(parameters =>
         {
-            parameters.Add(p => p.LabelFragment, labelFragment);
+            parameters.Add(p => p.LabelTemplate, labelTemplate);
         });
 
-        var bitToggleLabelChild = com.Find(".bit-tgl > label").ChildNodes;
-        bitToggleLabelChild.MarkupMatches(labelFragment);
+        var bitToggleLabelChild = com.Find("label").ChildNodes;
+        bitToggleLabelChild.MarkupMatches(labelTemplate);
     }
 
     [DataTestMethod,

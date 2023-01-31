@@ -352,10 +352,10 @@ public partial class BitDateRangePicker
             return null;
         }
 
-        var valueStr = String.Format(ValueFormat, value.StartDate.GetValueOrDefault().ToString(DateFormat ?? Culture.DateTimeFormat.ShortDatePattern, Culture), "---");
+        var valueStr = string.Format(ValueFormat, value.StartDate.GetValueOrDefault(DateTimeOffset.Now).ToString(DateFormat ?? Culture.DateTimeFormat.ShortDatePattern, Culture), "---");
         if (value.EndDate is not null)
         {
-            valueStr = String.Format(ValueFormat, value.StartDate.GetValueOrDefault().ToString(DateFormat ?? Culture.DateTimeFormat.ShortDatePattern, Culture), value.EndDate.GetValueOrDefault().ToString(DateFormat ?? Culture.DateTimeFormat.ShortDatePattern, Culture));
+            valueStr = string.Format(ValueFormat, value.StartDate.GetValueOrDefault(DateTimeOffset.Now).ToString(DateFormat ?? Culture.DateTimeFormat.ShortDatePattern, Culture), value.EndDate.GetValueOrDefault(DateTimeOffset.Now).ToString(DateFormat ?? Culture.DateTimeFormat.ShortDatePattern, Culture));
         }
 
         return valueStr;
@@ -788,8 +788,8 @@ public partial class BitDateRangePicker
         if (CurrentValue is null) return false;
         if (CurrentValue.StartDate.HasValue is false || CurrentValue.EndDate.HasValue is false) return false;
 
-        var startDate = CurrentValue.StartDate.GetValueOrDefault();
-        var endDate = CurrentValue.EndDate.GetValueOrDefault();
+        var startDate = CurrentValue.StartDate.GetValueOrDefault(DateTimeOffset.Now);
+        var endDate = CurrentValue.EndDate.GetValueOrDefault(DateTimeOffset.Now);
         if (_selectedEndDateWeek is null && IsInCurrentMonth(week, day) && ((week == _selectedStartDateWeek && day > _selectedStartDateDayOfWeek) || week > _selectedStartDateWeek))
         {
             return true;
@@ -1039,7 +1039,7 @@ public partial class BitDateRangePicker
         if (CurrentValue is null) return;
         if (CurrentValue.StartDate is null) return;
 
-        var currentValue = CurrentValue.StartDate.GetValueOrDefault();
+        var currentValue = CurrentValue.StartDate.GetValueOrDefault(DateTimeOffset.Now);
         var currentValueYear = Culture.DateTimeFormat.Calendar.GetYear(currentValue.DateTime);
         var currentValueMonth = Culture.DateTimeFormat.Calendar.GetMonth(currentValue.DateTime);
         if (currentValueYear != _currentYear || currentValueMonth != _currentMonth)

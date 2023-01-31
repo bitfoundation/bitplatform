@@ -282,7 +282,7 @@
             height: 32px;
             font-size: rem(14px);
             font-weight: 400;
-            color: $Grey130;
+            color: $Grey120;
             position: relative;
             margin: 0;
             padding: 0 rem(28px) 0 rem(8px);
@@ -729,6 +729,14 @@
             margin-left: unset;
             margin-right: auto;
         }
+
+        &.bit-drp-responsive-fluent {
+            @media only screen and (max-width: #{em(639px)}) {
+                .items-wrapper {
+                    animation-name: opacity, trans-x-reverse;
+                }
+            }
+        }
     }
 }
 
@@ -757,6 +765,18 @@
 @keyframes trans-x {
     0% {
         transform: translate3d(40px, 0px, 0px);
+        pointer-events: none;
+    }
+
+    100% {
+        transform: translate3d(0px, 0px, 0px);
+        pointer-events: auto;
+    }
+}
+
+@keyframes trans-x-reverse {
+    0% {
+        transform: translate3d(-40px, 0px, 0px);
         pointer-events: none;
     }
 

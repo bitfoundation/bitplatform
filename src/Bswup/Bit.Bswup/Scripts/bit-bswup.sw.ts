@@ -36,7 +36,7 @@ async function handleInstall(e) {
     log(`installing version (${VERSION})...`);
     sendMessage({ type: 'installing', data: { version: VERSION } });
 
-    await createNewCache();
+    createNewCache();
 
     log(`installed version (${VERSION})`);
     sendMessage({ type: 'installed', data: { version: VERSION } });
@@ -88,7 +88,7 @@ function handleMessage(e) {
 // ============================================================================
 
 const DEFAULT_ASSETS_INCLUDE = [/\.dll$/, /\.pdb$/, /\.wasm/, /\.html/, /\.js$/, /\.json$/, /\.css$/, /\.woff$/, /\.png$/, /\.jpe?g$/, /\.gif$/, /\.ico$/, /\.blat$/, /\.dat$/, /\.svg$/, /\.woff2$/, /\.ttf$/];
-const DEFAULT_ASSETS_EXCLUDE = [/^_content\/Bit.Bswup\/bit-bswup.sw.js$/, /^service-worker\.js$/];
+const DEFAULT_ASSETS_EXCLUDE = [/^_content\/Bit\.Bswup\/bit-bswup\.sw\.js$/, /^_content\/Bit\.Bswup\/bit-bswup\.sw\.min\.js$/, /^service-worker\.js$/, /^service-worker\.min\.js$/];
 
 async function createNewCache() {
     const userAssetsInclude = prepareRegExpArray(self.assetsInclude);
@@ -115,35 +115,36 @@ async function createNewCache() {
     }
 
     const cache = await caches.open(CACHE_NAME);
-    return Promise.all(uniqueAssets.map(addCache));
+    uniqueAssets.map(addCache);
 
     async function addCache(asset, index) {
-        const request = new Request(asset.url, asset.hash ? { integrity: asset.hash } : {});
+        const request = new Request(asset.url, asset.hash ? { cache: 'no-cache', integrity: asset.hash } : { cache: 'no-cache' });
         const cacheUrl = `${asset.url}.${asset.hash || ''}`;
 
         if (oldCache && asset.hash) {
             const oldResponse = await oldCache.match(cacheUrl);
             if (oldResponse) {
-                await cache.put(cacheUrl, oldResponse);
+                cache.put(cacheUrl, oldResponse);
                 current++;
                 return Promise.resolve();
             }
         }
 
-        return new Promise((resolve, reject) => {
-            setTimeout(async () => {
-                try {
-                    const response = await fetch(request);
-                    if (!response.ok) throw new TypeError('Bad response status');
-                    await cache.put(cacheUrl, response);
-                    const percent = (++current) / total * 100;
-                    sendMessage({ type: 'progress', data: { asset, percent, index: current } });
-                    resolve(null);
-                } catch (err) {
-                    reject(err);
+        try {
+            const responsePromise = fetch(request);
+            responsePromise.then(response => {
+                if (!response.ok) {
+                    return Promise.reject(response.statusText);
                 }
-            }, 1.000 * (index + 1));
-        });
+                cache.put(cacheUrl, response);
+                const percent = (++current) / total * 100;
+                sendMessage({ type: 'progress', data: { asset, percent, index: current } });
+                Promise.resolve(null);
+            });
+            return responsePromise;
+        } catch (err) {
+            Promise.reject(err);
+        }
     }
 
     function distinct(assets) {

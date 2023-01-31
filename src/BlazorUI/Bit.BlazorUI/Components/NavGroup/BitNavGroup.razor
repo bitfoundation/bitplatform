@@ -1,0 +1,15 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+<nav @ref="RootElement" @attributes="HtmlAttributes"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     role="navigation"
+     aria-label="@AriaLabel">
+
+    <ul role="list">
+        <CascadingValue Value="this" IsFixed="true">
+            @ChildContent
+        </CascadingValue>
+    </ul>
+</nav>

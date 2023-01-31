@@ -1,7 +1,4 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Reflection.Emit;
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
@@ -59,6 +56,11 @@ public partial class BitOtpInput
     /// </summary>
     [Parameter] public EventCallback<ClipboardEventArgs> OnPaste { get; set; }
 
+    /// <summary>
+    /// Callback for when the OtpInput value change.
+    /// </summary>
+    [Parameter] public EventCallback<string?> OnChange { get; set; }
+
     protected override string RootElementClass => "bit-otp";
 
     protected override async Task OnInitializedAsync()
@@ -83,7 +85,19 @@ public partial class BitOtpInput
             _ => string.Empty
         };
 
+        OnValueChanging += HandleOnValueChanging;
+
         await base.OnInitializedAsync();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (CurrentValue != null && CurrentValue != string.Join("", _inputValue))
+        {
+            SetInputValue(CurrentValue);
+        }
+
+        await base.OnParametersSetAsync();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -108,20 +122,11 @@ public partial class BitOtpInput
         await base.OnAfterRenderAsync(firstRender);
     }
 
-    protected override async Task OnParametersSetAsync()
-    {
-        if (CurrentValue != null && CurrentValue != string.Join("", _inputValue))
-        {
-            await SyncCurrentValueWithArray(CurrentValue);
-        }
-
-        await base.OnParametersSetAsync();
-    }
-
     protected override void RegisterComponentClasses()
     {
         ClassBuilder.Register(() => ValueInvalid is true
-                                   ? $"{RootElementClass}-invalid-{VisualClassRegistrar()}" : string.Empty);
+                                   ? $"{RootElementClass}-invalid-{VisualClassRegistrar()}" 
+                                   : string.Empty);
 
         ClassBuilder.Register(() => Direction switch
         {
@@ -133,33 +138,61 @@ public partial class BitOtpInput
         });
     }
 
+    private void HandleOnValueChanging(object? sender, ValueChangingEventArgs<string?> args)
+    {
+        if (args.Value.HasValue() && (args.Value!.Length > Length || InputType is BitOtpInputType.Number && int.TryParse(args.Value, out _) is false))
+        {
+            args.ShouldChange = false;
+
+            if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+            if (Value == args.Value) return;
+
+            _ = ValueChanged.InvokeAsync(Value);
+        }
+    }
+
     private async Task HandleOnInput(ChangeEventArgs e, int index)
     {
-        if (IsEnabled is false) return;
+        var oldValue = _inputValue[index];
+        var newValue = e.Value!.ToString()!;
 
         _inputValue[index] = string.Empty;
-        await Task.Delay(TimeSpan.FromMilliseconds(1)); // waiting for input default behavior before setting a new value.
+        await Task.Delay(1); // waiting for input default behavior before setting a new value.
 
-        var value = e.Value!.ToString()!;
-        if (value.HasValue())
+        if (IsEnabled is false || (ValueHasBeenSet && ValueChanged.HasDelegate is false))
         {
-            int nextIndex = index + 1;
-            if (nextIndex < Length) await _inputRef[nextIndex].FocusAsync();
-            _inputValue[index] = value;
+            _inputValue[index] = oldValue;
+        }
+        else if (newValue.HasValue())
+        {
+            var diff = DiffValues(oldValue ?? string.Empty, newValue);
+
+            if (InputType is BitOtpInputType.Number && int.TryParse(diff, out _) is false)
+            {
+                _inputValue[index] = oldValue;
+            }
+            else
+            {
+                _inputValue[index] = diff;
+                int nextIndex = index + 1;
+                if (nextIndex < Length) await _inputRef[nextIndex].FocusAsync();
+            }
         }
         else
         {
             _inputValue[index] = null;
         }
 
-        await SyncCurrentValueWithArray(string.Join("", _inputValue));
+        CurrentValue = string.Join("", _inputValue);
 
         await OnInput.InvokeAsync(e);
+        await OnChange.InvokeAsync(CurrentValue);
     }
 
     private async Task HandleOnKeyDown(KeyboardEventArgs e, int index)
     {
         if (IsEnabled is false || e.Code is null) return;
+        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
         await NavigateInput(e.Code, e.Key, index);
 
@@ -192,7 +225,7 @@ public partial class BitOtpInput
             {
                 await _inputRef[nextIndex].FocusAsync();
             }
-            else if(Direction is BitOtpInputDirection.RightToLeft && previousIndex >= 0)
+            else if (Direction is BitOtpInputDirection.RightToLeft && previousIndex >= 0)
             {
                 await _inputRef[previousIndex].FocusAsync();
             }
@@ -203,7 +236,7 @@ public partial class BitOtpInput
             {
                 await _inputRef[previousIndex].FocusAsync();
             }
-            else if(Direction is BitOtpInputDirection.BottomToTop && nextIndex < Length)
+            else if (Direction is BitOtpInputDirection.BottomToTop && nextIndex < Length)
             {
                 await _inputRef[nextIndex].FocusAsync();
             }
@@ -245,32 +278,45 @@ public partial class BitOtpInput
     [JSInvokable]
     public async Task SetPastedData(string pastedValue)
     {
+        if (IsEnabled is false) return;
+        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
         if (pastedValue.HasNoValue()) return;
-
         if (InputType is BitOtpInputType.Number && int.TryParse(pastedValue, out _) is false) return;
 
-        await SyncCurrentValueWithArray(pastedValue);
+        SetInputValue(pastedValue);
+
+        CurrentValue = string.Join("", _inputValue);
+
+        await OnChange.InvokeAsync(CurrentValue);
     }
 
-    private async Task SyncCurrentValueWithArray(string currentValue)
+    private void SetInputValue(string value)
     {
-        if (IsEnabled is false) return;
-
-        var splitedCurrentValue = currentValue.Replace(" ", "", StringComparison.Ordinal).ToCharArray();
+        var chars = value.Replace(" ", "", StringComparison.Ordinal).ToCharArray();
 
         for (int i = 0; i < Length; i++)
         {
-            if (splitedCurrentValue?.Length > i)
-            {
-                _inputValue[i] = splitedCurrentValue[i].ToString();
-            }
-            else
-            {
-                _inputValue[i] = null;
-            }
+            _inputValue[i] = chars.Length > i ? chars[i].ToString() : null;
         }
+    }
 
-        CurrentValue = string.Join("", _inputValue);
+    private string DiffValues(string oldValue, string newValue)
+    {
+        if (newValue.Length == 1) return newValue;
+        if (newValue.Length < oldValue.Length) return newValue;
+
+        if (newValue[..^1] == oldValue) return newValue[^1].ToString();
+        if (newValue[1..] == oldValue) return newValue[0].ToString();
+
+        //var regex = new Regex($"({oldValue})", RegexOptions.IgnoreCase);
+        //var parts = regex.Split(newValue);
+
+        //foreach (var part in parts)
+        //{
+        //    if (string.IsNullOrEmpty(part) is false && part != oldValue) return part;
+        //}
+
+        return newValue;
     }
 
     /// <inheritdoc />

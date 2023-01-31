@@ -178,20 +178,20 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &apos;{0}&apos; and &apos;{1}&apos; do not match..
-        /// </summary>
-        public static string CompareAttribute_MustMatch {
-            get {
-                return ResourceManager.GetString("CompareAttribute_MustMatch", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Could not find a property named {0}..
         /// </summary>
         public static string CompareAttribute_UnknownProperty {
             get {
                 return ResourceManager.GetString("CompareAttribute_UnknownProperty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; and &apos;{1}&apos; do not match..
+        /// </summary>
+        public static string CompareAttribute_ValidationError {
+            get {
+                return ResourceManager.GetString("CompareAttribute_ValidationError", resourceCulture);
             }
         }
         
@@ -424,9 +424,9 @@ namespace TodoTemplate.Shared.Resources {
         /// <summary>
         ///   Looks up a localized string similar to The {0} field is not a valid e-mail address..
         /// </summary>
-        public static string EmailAddressAttribute_Invalid {
+        public static string EmailAddressAttribute_ValidationError {
             get {
-                return ResourceManager.GetString("EmailAddressAttribute_Invalid", resourceCulture);
+                return ResourceManager.GetString("EmailAddressAttribute_ValidationError", resourceCulture);
             }
         }
         
@@ -908,15 +908,6 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Passwords must be at least {0} characters..
-        /// </summary>
-        public static string PasswordTooShort {
-            get {
-                return ResourceManager.GetString("PasswordTooShort", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The {0} field is not a valid phone number..
         /// </summary>
         public static string PhoneAttribute_Invalid {
@@ -976,6 +967,15 @@ namespace TodoTemplate.Shared.Resources {
         public static string PrivacyPolicyTitle {
             get {
                 return ResourceManager.GetString("PrivacyPolicyTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Profile Image.
+        /// </summary>
+        public static string ProfileImage {
+            get {
+                return ResourceManager.GetString("ProfileImage", resourceCulture);
             }
         }
         
@@ -1268,11 +1268,20 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Send reset link.
+        ///   Looks up a localized string similar to Submit.
         /// </summary>
         public static string Submit {
             get {
                 return ResourceManager.GetString("Submit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Title.
+        /// </summary>
+        public static string Title {
+            get {
+                return ResourceManager.GetString("Title", resourceCulture);
             }
         }
         

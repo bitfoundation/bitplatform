@@ -1,6 +1,5 @@
 ﻿@page "/email-confirmation"
-
-@inherits AppComponentBase;
+@inherits AppComponentBase
 
 <PageTitle>@Localizer[nameof(AppStrings.EmailConfirmationTitle)]</PageTitle>
 
@@ -15,20 +14,21 @@
     </section>
     <section class="page-section">
         <div class="form">
-            @if (string.IsNullOrEmpty(EmailConfirmationMessage) is false)
+            @if (string.IsNullOrEmpty(_emailConfirmationMessage) is false)
             {
-                <BitMessageBar MessageBarType="@EmailConfirmationMessageType" OnDismiss="() => EmailConfirmationMessage = null">@EmailConfirmationMessage</BitMessageBar>
+                <BitMessageBar MessageBarType="@_emailConfirmationMessageType" OnDismiss="() => _emailConfirmationMessage = null">@_emailConfirmationMessage</BitMessageBar>
             }
+
             @if (EmailConfirmed)
             {
                 <h2 class="form-title">
                     @Localizer[nameof(AppStrings.EmailConfirmedSuccessfullyMessage)]
                 </h2>
                 <BitButton Class="form-submit-button"
-                       ButtonStyle="BitButtonStyle.Primary"
-                       Title="@Localizer[nameof(AppStrings.SignIn)]"
-                       AriaLabel="@Localizer[nameof(AppStrings.SignIn)]"
-                       OnClick="WrapHandled(RedirectToSignIn)">
+                           ButtonStyle="BitButtonStyle.Primary"
+                           Title="@Localizer[nameof(AppStrings.SignIn)]"
+                           AriaLabel="@Localizer[nameof(AppStrings.SignIn)]"
+                           OnClick="WrapHandled(RedirectToSignIn)">
                     <span>@Localizer[nameof(AppStrings.SignIn)]</span>
                 </BitButton>
             }
@@ -40,21 +40,13 @@
                 <div class="form-description">
                     @Localizer[nameof(AppStrings.InvalidConfirmationLinkMessage)]
                 </div>
-                <BitButton Class="form-submit-button"
-                       ButtonStyle="BitButtonStyle.Primary"
-                       IsEnabled="@(IsLoading is false)"
-                       Title="@Localizer[nameof(AppStrings.ResendEmail)]"
-                       AriaLabel="@Localizer[nameof(AppStrings.ResendEmail)]"
-                       OnClick="WrapHandled(ResendLink)">
-                    @if (IsLoading)
-                    {
-                        <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
-                    }
-                    else
-                    {
-                        <span>@Localizer[nameof(AppStrings.ResendEmail)]</span>
-                    }
-                </BitButton>
+                <BitLoadingButton IsLoading="_isLoading"
+                                  ButtonStyle="BitButtonStyle.Primary"
+                                  Title="@Localizer[nameof(AppStrings.ResendEmail)]"
+                                  AriaLabel="@Localizer[nameof(AppStrings.ResendEmail)]"
+                                  OnClick="WrapHandled(DoResendLink)">
+                    <span>@Localizer[nameof(AppStrings.ResendEmail)]</span>
+                </BitLoadingButton>
             }
         </div>
     </section>

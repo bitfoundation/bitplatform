@@ -1,0 +1,134 @@
+﻿@import "../../Styles/Fluent/colors.fluent.scss", "../../Styles/functions.scss";
+
+.bit-brl {
+    &.bit-brl-disabled-fluent {
+        .overflow-btn, .item, .selected-item, i {
+            color: $Grey60;
+            cursor: default;
+            pointer-events: none;
+            font-weight: 400;
+        }
+    }
+
+    .items-wrapper {
+        ul {
+            padding-inline-start: 0;
+
+            li {
+                display: inline-flex;
+                align-items: center;
+            }
+        }
+
+        button {
+            background-color: transparent;
+        }
+    }
+
+    .overflow-btn {
+        cursor: pointer;
+        line-height: rem(36px);
+        color: $Grey160;
+
+        .overflow-icon-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0px rem(4px);
+        }
+
+        &:hover {
+            background-color: $Grey20;
+        }
+    }
+
+    .item {
+        font-size: rem(20px);
+        font-weight: 400;
+        padding: 0 rem(8px);
+        cursor: pointer;
+        line-height: rem(36px);
+        color: $Grey130;
+
+        &:hover {
+            background-color: $Grey20;
+        }
+    }
+
+    .selected-item {
+        font-weight: 600;
+        color: $Grey160;
+    }
+
+    .disabled-item {
+        color: $Grey60;
+        cursor: default;
+        pointer-events: none;
+        font-weight: 400;
+    }
+
+    .overflow-menu-wrapper {
+        display: none;
+        position: fixed;
+        max-height: rem(744px);
+        font-size: rem(14px);
+        font-weight: 400;
+        box-sizing: border-box;
+        border-radius: 0 0 rem(2px) rem(2px);
+        box-shadow: rgba(0,0,0,0.13) 0px rem(3.2px) rem(7.2px) 0px, rgba(0,0,0,0.11) 0px rem(0.6px) rem(1.8px) 0px;
+        animation-name: opacity, trans-y;
+        animation-duration: 0.367s;
+        animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
+        animation-fill-mode: both;
+        background-color: $White;
+        z-index: 1001;
+        overflow: hidden auto;
+        -webkit-font-smoothing: antialiased;
+
+        ul {
+            padding-inline-start: 0;
+            margin: 0;
+        }
+
+        a {
+            width: 100%;
+            height: rem(36px);
+            display: flex;
+            align-items: center;
+            position: relative;
+            font-size: rem(15px);
+            text-align: left;
+            line-height: rem(20px);
+            font-weight: 400;
+            box-sizing: border-box;
+            outline: transparent;
+            border: rem(1px) solid transparent;
+            text-decoration: none;
+            padding: 0 rem(8px);
+            color: $Grey160;
+            background-color: transparent;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            cursor: pointer;
+            user-select: none;
+            min-width: rem(180px);
+            -webkit-font-smoothing: antialiased;
+
+            &:hover {
+                background-color: $Grey20;
+            }
+        }
+    }
+
+    .overlay {
+        display: none;
+        width: 100%;
+        height: 100%;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 999;
+        background-color: transparent;
+    }
+}

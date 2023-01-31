@@ -137,6 +137,15 @@
         border-radius: 50%;
         border: rem(1px) solid $Primary;
     }
+
+    .bit-prs-action-button {
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        background: unset;
+        color: white;
+    }
 }
 
 .bit-prs-fluent.bit-prs-img-act {
@@ -701,7 +710,7 @@
 
 .bit-prs-fluent.bit-prs-offline {
     .bit-prs-presence {
-        background-color: $Gray110;
+        background-color: $Grey110;
     }
 }
 

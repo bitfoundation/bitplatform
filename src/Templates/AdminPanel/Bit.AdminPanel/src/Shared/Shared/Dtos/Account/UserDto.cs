@@ -6,21 +6,21 @@ public class UserDto
 {
     public int Id { get; set; }
 
-    [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
-    [EmailAddress(ErrorMessage = nameof(AppStrings.EmailAddressAttribute_Invalid))]
+    [Required(ErrorMessageResourceName = nameof(AppStrings.RequiredAttribute_ValidationError))]
+    [EmailAddress(ErrorMessageResourceName = nameof(AppStrings.EmailAddressAttribute_ValidationError))]
     [Display(Name = nameof(AppStrings.Email))]
     public string? UserName { get; set; }
 
-    [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
-    [EmailAddress(ErrorMessage = nameof(AppStrings.EmailAddressAttribute_Invalid))]
+    [Required(ErrorMessageResourceName = nameof(AppStrings.RequiredAttribute_ValidationError))]
+    [EmailAddress(ErrorMessageResourceName = nameof(AppStrings.EmailAddressAttribute_ValidationError))]
     [Display(Name = nameof(AppStrings.Email))]
     public string? Email { get; set; }
 
-    [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
+    [Required(ErrorMessageResourceName = nameof(AppStrings.RequiredAttribute_ValidationError))]
     [Display(Name = nameof(AppStrings.Password))]
     public string? Password { get; set; }
 
-    [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
+    [Required(ErrorMessageResourceName = nameof(AppStrings.RequiredAttribute_ValidationError))]
     [Display(Name = nameof(AppStrings.FullName))]
     public string? FullName { get; set; }
 
@@ -35,10 +35,7 @@ public class UserDto
     [JsonIgnore]
     public string? GenderAsString
     {
-        get
-        {
-            return Gender?.ToString();
-        }
+        get => Gender?.ToString();
         set
         {
             if (string.IsNullOrEmpty(value) is false)

@@ -27,10 +27,10 @@ public partial class BitSpinnerDemo
         new ComponentParameter()
         {
             Name = "LabelPosition",
-            Type = "BitSpinnerLabelPosition",
+            Type = "BitLabelPosition",
             LinkType = LinkType.Link,
             Href = "#spinnerLabelPosition-enum",
-            DefaultValue = "BitSpinnerLabelPosition.Top",
+            DefaultValue = "BitLabelPosition.Top",
             Description = "The position of the label in regards to the spinner animation.",
         },
         new ComponentParameter()
@@ -85,7 +85,7 @@ public partial class BitSpinnerDemo
         new EnumParameter()
         {
             Id = "spinnerLabelPosition-enum",
-            Title = "BitSpinnerLabelPosition Enum",
+            Title = "BitLabelPosition Enum",
             Description = "",
             EnumList = new List<EnumItem>()
             {
@@ -182,8 +182,8 @@ public partial class BitSpinnerDemo
 <BitSpinner Size=""BitSpinnerSize.Medium"" />
 <BitSpinner Size=""BitSpinnerSize.Large"" />";
 
-    private readonly string example2HTMLCode = @"<BitSpinner LabelPosition=""BitSpinnerLabelPosition.Top"" Label=""I am definitely loading..."" />
-<BitSpinner LabelPosition=""BitSpinnerLabelPosition.Bottom"" Label=""Seriously, still loading..."" />
-<BitSpinner LabelPosition=""BitSpinnerLabelPosition.Left"" Label=""Wait, wait..."" />
-<BitSpinner LabelPosition=""BitSpinnerLabelPosition.Right"" Label=""Nope, still loading..."" />";
+    private readonly string example2HTMLCode = @"<BitSpinner LabelPosition=""BitLabelPosition.Top"" Label=""I am definitely loading..."" />
+<BitSpinner LabelPosition=""BitLabelPosition.Bottom"" Label=""Seriously, still loading..."" />
+<BitSpinner LabelPosition=""BitLabelPosition.Left"" Label=""Wait, wait..."" />
+<BitSpinner LabelPosition=""BitLabelPosition.Right"" Label=""Nope, still loading..."" />";
 }

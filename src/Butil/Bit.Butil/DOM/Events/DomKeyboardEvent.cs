@@ -1,15 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
+using System.Collections.Generic;
 using Microsoft.JSInterop;
 
 namespace Bit.Butil;
 
-public class DomKeyboardEventArgs
+public class DomKeyboardEventArgs : EventArgs
 {
     internal static readonly string[] SelectedMembers = new string[] { "code" };
 
-    public string Code { get; set; }
+    public string Code { get; set; } = string.Empty;
 }
 
 public static class DomKeyboardEvent
@@ -40,8 +40,6 @@ public static class DomKeyboardEvent
                         }).ToArray();
     }
 
-
-
     [JSInvokable(InvokeMethodName)]
     public static void Invoke(Guid id, DomKeyboardEventArgs args)
     {
@@ -51,8 +49,8 @@ public static class DomKeyboardEvent
 
     private class Listener
     {
-        public Action<DomKeyboardEventArgs> Action { get; set; }
-        public string Element { get; set; }
-        public object Options { get; set; }
+        public string Element { get; set; } = string.Empty;
+        public object Options { get; set; } = default!;
+        public Action<DomKeyboardEventArgs> Action { get; set; } = default!;
     }
 }

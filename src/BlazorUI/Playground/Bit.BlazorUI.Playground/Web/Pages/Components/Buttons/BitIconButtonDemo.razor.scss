@@ -1,17 +1,19 @@
-﻿@import '../../../Styles/abstracts/_colors.scss';
-@import '../../../Styles/abstracts/_functions.scss';
-
-.sample-btn {
-    text-justify: auto;
-    color: $Black1;
-    line-height: rem(50px);
+﻿.buttons-container-grid {
+    display: grid;
+    gap: 0.5rem;
 }
 
-::deep .custom-icon-button,
-::deep .custom-icon-button:hover {
-    height: rem(48px);
-    width: rem(48px);
-    border-radius: rem(5px);
-    background-color: $Gray3;
-    border-color: $Gray3;
+::deep {
+    .custom-icon-button {
+        height: 3rem;
+        width: 3rem;
+        border-radius: 0.375rem;
+        background-color: #D7D7D7;
+        border-color: #D7D7D7;
+
+        &:hover {
+            background-color: #E9E9E9;
+            border-color: #E9E9E9;
+        }
+    }
 }

@@ -1,11 +1,14 @@
-﻿<BitModal @bind-IsOpen="IsOpen">
+﻿@namespace AdminPanel.Client.Shared
+@inherits AppComponentBase
+
+<BitModal @bind-IsOpen="_isOpen">
     <div class="main">
         <div class="header">
-            <span class="title">@Title</span>
+            <span class="title">@_title</span>
             <BitIconButton IconName="BitIconName.ChromeClose" OnClick="OnCloseClick" />
         </div>
         <div class="body">
-            @Body
+            @_body
         </div>
         <div class="footer">
             <BitButton OnClick="OnOkClick">OK</BitButton>

@@ -1,17 +1,68 @@
 ﻿@page "/components/link"
 
-<ComponentDemo ComponentName="Link" ComponentDescription="Links lead to another part of an app, other pages, or help articles. They can also be used to initiate commands."
-               ComponentParameters="componentParameters" EnumParameters="enumParameters">
-    <ComponentExampleBox Title="BitLink" HTMLSourceCode="@example1HTMLCode" ExampleId="example1">
+<ComponentDemo ComponentName="Link"
+               ComponentDescription="Links lead to another part of an app, other pages, or help articles. They can also be used to initiate commands."
+               ComponentParameters="componentParameters">
+
+    <ComponentExampleBox Title="BitLink" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
             <div class="example-desc">To create a link you can use a BitLink component.</div>
-            <div>
-                <p>
-                    When a link has an href, <BitLink Href="https://github.com/bitfoundation/bitplatform" Target="_blank" HasUnderline="true">it renders as an anchor tag</BitLink>. Without an href, <BitLink HasUnderline="true">the link is rendered as a button</BitLink>.
-                    You can also use the disabled attribute to create a <BitLink Href="https://github.com/bitfoundation/bitplatform" IsEnabled="false" HasUnderline="true">disabled link</BitLink>. It's not recommended to use Links with imgs because
-                    Links are meant to render textual inline content. Buttons are inline-block or in the case of imgs, block. However, it is possible to create a linked image button by making a button with an unstyled variant and adding the img content and href source to that.
-                </p>
+            <div class="example-box">
+                <BitLink Href="https://github.com/bitfoundation/bitplatform">Basic Link</BitLink>
+                <BitLink Href="https://github.com/bitfoundation/bitplatform" IsEnabled="false">Disabled Link</BitLink>
+                <BitLink Href="https://github.com/bitfoundation/bitplatform" Target="_blank">Blank Target Link</BitLink>
+                <BitLink Href="https://github.com/bitfoundation/bitplatform" HasUnderline="true">Underlined link</BitLink>
+                <BitLink OnClick="LinkOnClick">Link with OnClick</BitLink>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
+
+    <ComponentExampleBox Title="BitLink to navigate the page" HTMLSourceCode="@example2HTMLCode" ExampleId="example2">
+        <ExamplePreview>
+            <div class="example-desc">If you start the Href parameter with a # character, it's looking for the same element id and scrolling on it.</div>
+            <BitLink Href="#end-article">Go To End of this Article</BitLink>
+            <p id="start-article">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+                amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+                sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+                turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+                ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+                Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+                Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+                efficitur.
+            </p>
+            <p>
+                Mauris at nunc eget lectus lobortis facilisis et eget magna. Vestibulum venenatis augue sapien, rhoncus
+                faucibus magna semper eget. Proin rutrum libero sagittis sapien aliquet auctor. Suspendisse tristique a
+                magna at facilisis. Duis rhoncus feugiat magna in rutrum. Suspendisse semper, dolor et vestibulum lacinia,
+                nunc felis malesuada ex, nec hendrerit justo ex et massa. Quisque quis mollis nulla. Nam commodo est ornare,
+                rhoncus odio eu, pharetra tellus. Nunc sed velit mi.
+            </p>
+            <p>
+                Sed condimentum ultricies turpis convallis pharetra. Sed sagittis quam pharetra luctus porttitor. Cras vel
+                consequat lectus. Sed nec fringilla urna, a aliquet libero. Aenean sed nisl purus. Vivamus vulputate felis
+                et odio efficitur suscipit. Ut volutpat dictum lectus, ac rutrum massa accumsan at. Sed pharetra auctor
+                finibus. In augue libero, commodo vitae nisi non, sagittis convallis ante. Phasellus malesuada eleifend
+                mollis. Curabitur ultricies leo ac metus venenatis elementum.
+            </p>
+            <p>
+                Aenean egestas quam ut erat commodo blandit. Mauris ante nisl, pellentesque sed venenatis nec, aliquet sit
+                amet enim. Praesent vitae diam non diam aliquet tristique non ut arcu. Pellentesque et ultrices eros. Fusce
+                diam metus, mattis eu luctus nec, facilisis vel erat. Nam a lacus quis tellus gravida euismod. Nulla sed sem
+                eget tortor cursus interdum. Sed vehicula tristique ultricies. Aenean libero purus, mollis quis massa quis,
+                eleifend dictum massa. Fusce eu sapien sit amet odio lacinia placerat. Mauris varius risus sed aliquet
+                cursus. Aenean lectus magna, tincidunt sit amet sodales a, volutpat ac leo. Morbi nisl sapien, tincidunt sit
+                amet mauris quis, sollicitudin auctor est.
+            </p>
+            <p id="end-article">
+                Nam id mi justo. Nam vehicula vulputate augue, ac pretium enim rutrum ultricies. Sed aliquet accumsan
+                varius. Quisque ac auctor ligula. Fusce fringilla, odio et dignissim iaculis, est lacus ultrices risus,
+                vitae condimentum enim urna eu nunc. In risus est, mattis non suscipit at, mattis ut ante. Maecenas
+                consectetur urna vel erat maximus, non molestie massa consequat. Duis a feugiat nibh. Sed a hendrerit diam,
+                a mattis est. In augue dolor, faucibus vel metus at, convallis rhoncus dui.
+            </p>
+            <BitLink Href="#start-article">Go To Start of this Article</BitLink>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
 </ComponentDemo>

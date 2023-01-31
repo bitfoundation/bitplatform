@@ -1,0 +1,20 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+@typeparam TItem
+@using Bit.BlazorUI.Components.NavList
+
+<nav @ref="RootElement" @attributes="HtmlAttributes"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     role="navigation"
+     aria-label="@AriaLabel">
+
+    <ul role="list">
+        <CascadingValue Value="this" IsFixed="true">
+            @foreach (var childItem in Items)
+            {
+                <_BitNavListChild @key="GetKey(childItem)" Item="childItem" Depth="0" />
+            }
+        </CascadingValue>
+    </ul>
+</nav>

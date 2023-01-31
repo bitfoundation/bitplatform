@@ -1,0 +1,45 @@
+﻿@namespace AdminPanel.Client.Shared
+@inherits AppComponentBase
+
+<header class="main-header">
+    <div class="header-main-container">
+        <div class="header-content-container">
+            <BitIconButton Class="header-menu-btn" IconName="BitIconName.CollapseMenu" OnClick="WrapHandled(ToggleMenu)" AriaLabel="Header menu button" />
+            <a class="header-logo" href="/" aria-label="Homepage"></a>
+            <BitBreadcrumb Items="_currentBreadcrumbItems" />
+        </div>
+
+        <div class="header-content-container" style="cursor: pointer" @onclick=@ToggleHeaderDropDown>
+            <BitPersona ImageUrl="@_profileImageUrl"
+                        Size=@BitPersonaSize.Size32
+                        Text="@(string.IsNullOrWhiteSpace(_user.FullName) ? _user.UserName : _user.FullName)"
+                        Presence="BitPersonaPresenceStatus.Online" />
+            <div class="chevron-bottom-icon @(_isHeaderDrpDownOpen ? "chevron-up-icon" : null)"></div>
+
+            @if (_isHeaderDrpDownOpen)
+            {
+                <div class="header-drp-overlay"></div>
+            
+                <section class="header-drp-wrapper" @onclick:stopPropagation="true">
+                    <div class="user-info-container">
+                        <BitPersona ImageUrl="@_profileImageUrl"
+                                    Size="@BitPersonaSize.Size48"
+                                    Text="@(string.IsNullOrWhiteSpace(_user.FullName) ? _user.UserName : _user.FullName)"
+                                    SecondaryText="@_user.UserName"
+                                    Presence="BitPersonaPresenceStatus.Online" />
+                    </div>
+                    
+                    <BitActionButton Class="edit-profile-btn" IconName="BitIconName.Edit" AriaLabel="EditProfile" OnClick="WrapHandled(OpenEditProfilePage)">
+                        @Localizer[nameof(AppStrings.EditProfileTitle)]
+                    </BitActionButton>
+                    
+                    <BitActionButton Class="sign-out-btn" IconName="BitIconName.OutOfOffice" AriaLabel="SignOut" OnClick="WrapHandled(OpenSignOutModal)">
+                        @Localizer[nameof(AppStrings.SignOut)]
+                    </BitActionButton>
+                </section>
+            }
+        </div>
+    </div>
+</header>
+
+<SignOutConfirmModal @bind-IsOpen="_isSignOutModalOpen"></SignOutConfirmModal>

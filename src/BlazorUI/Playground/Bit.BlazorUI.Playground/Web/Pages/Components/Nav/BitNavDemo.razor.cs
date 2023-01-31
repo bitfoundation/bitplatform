@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Bit.BlazorUI.Playground.Web.Models;
 using Bit.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
@@ -6,313 +7,440 @@ namespace Bit.BlazorUI.Playground.Web.Pages.Components.Nav;
 
 public partial class BitNavDemo
 {
-    private readonly List<BitNavLinkItem> BasicNavLinks = new()
-    {
-        new BitNavLinkItem
-        {
-            Name = "Home",
-            Url = "http://example.com",
-            ExpandAriaLabel = "Expand Home section",
-            CollapseAriaLabel = "Collapse Home section",
-            IsExpanded = true,
-            Links = new List<BitNavLinkItem>
-            {
-                new BitNavLinkItem { Name = "Activity", Url = "http://msn.com", Key = "key1", Target="_blank" },
-                new BitNavLinkItem { Name = "MSN", Url = "http://msn.com", Key = "key2", IsEnabled = false, Target = "_blank" }
-            }
-        },
-        new BitNavLinkItem { Name = "Documents", Url = "http://example.com", Key = "key3", Target = "_blank", IsExpanded = true },
-        new BitNavLinkItem { Name = "Pages", Url = "http://msn.com", Key = "key4", Target = "_parent" },
-        new BitNavLinkItem { Name = "Notebook", Url = "http://msn.com", Key = "key5", IsEnabled = false },
-        new BitNavLinkItem { Name = "Communication and Media", Url = "http://msn.com", Key = "key6", Target = "_top" },
-        new BitNavLinkItem { Name = "News", Title = "News", Url = "http://msn.com", Key = "key7", IconName = BitIconName.News, Target = "_self" },
-    };
 
-    private readonly List<BitNavLinkItem> NavLinksNoToolTip = new()
+    // Basic
+    private static readonly List<BitNavItem> BitPlatformNavMenu = new()
     {
-        new BitNavLinkItem
+        new BitNavItem
         {
-            Name = "Home",
-            Url = "http://example.com",
-            Title = "",
-            IsExpanded = true,
-            CollapseAriaLabel = "Collapse Home section",
-            ExpandAriaLabel = "Expand Home section",
-            Links = new List<BitNavLinkItem>
+            Text = "Bit Platform",
+            Items = new List<BitNavItem>
             {
-                new BitNavLinkItem { Name = "Activity", Url = "http://msn.com", Key = "key1", Target="_blank", Title = "" },
-                new BitNavLinkItem { Name = "MSN", Url = "http://msn.com", Key = "key2", IsEnabled = false, Target = "_blank", Title = "" }
-            }
-        },
-        new BitNavLinkItem { Name = "Shared Documents and Files", Url = "http://example.com", Key = "key3", Target = "_blank", Title = "", ItemStyle="white-space: normal;" },
-        new BitNavLinkItem { Name = "Pages", Url = "http://msn.com", Key = "key4", Target = "_parent", Title = "" },
-        new BitNavLinkItem { Name = "Notebook", Url = "http://msn.com", Key = "key5", IsEnabled = false, Title = "" },
-        new BitNavLinkItem { Name = "Communication and Media", Url = "http://msn.com", Key = "key6", Target = "_top", Title = "", ItemStyle="white-space: normal;" },
-        new BitNavLinkItem { Name = "News", Key = "key7", Url = "http://cnn.com", IconName = BitIconName.News, Target = "_self", Title = "" }
-    };
-
-    private readonly List<BitNavLinkItem> NavLinksSimilarThisApp = new()
-    {
-        new BitNavLinkItem
-        {
-            Name = "Basic Inputs",
-            CollapseAriaLabel = "Collapse Basic Inputs section",
-            IsExpanded = true,
-            Links = new List<BitNavLinkItem>
-            {
-                new BitNavLinkItem { Name= "Bottons", Key = "Bottons", Url = "components/button" },
-                new BitNavLinkItem { Name= "DropDown", Key = "DropDown", Url = "components/drop-down" },
-                new BitNavLinkItem { Name= "FileUpload", Key = "FileUpload", Url = "components/file-upload" }
-            }
-        },
-        new BitNavLinkItem
-        {
-            Name = "Items & Lists",
-            CollapseAriaLabel = "Collapse Items & Lists section",
-            IsExpanded = true,
-            Links = new List<BitNavLinkItem>
-            {
-                new BitNavLinkItem { Name = "BasicList", Key = "BasicList", Url ="components/basic-list" },
-                new BitNavLinkItem { Name = "DataGrid", Key = "DataGrid", Url ="components/data-grid" },
-                new BitNavLinkItem { Name = "Carousel", Key = "Carousel", Url ="components/carousel" }
-            }
-        },
-        new BitNavLinkItem
-        {
-            Name = "Galleries & Pickers",
-            CollapseAriaLabel = "Collapse Galleries & Pickers section",
-            IsExpanded = true,
-            Links = new List<BitNavLinkItem>
-            {
-                new BitNavLinkItem { Name = "ColorPicker", Key = "ColorPicker", Url = "components/color-picker" },
-                new BitNavLinkItem { Name = "DatePicker", Key = "DatePicker", Url = "components/date-picker" },
-                new BitNavLinkItem { Name = "Chart", Key = "Chart", Url = "components/chart" }
-            }
-        }
-    };
-
-    private readonly List<BitNavLinkItem> NavWithNestedLinks = new()
-    {
-        new()
-        {
-            Name = "Parent link 1",
-            Url = "http://example.com",
-            Key = "Key1",
-            Title = "Parent link 1",
-            CollapseAriaLabel = "Collapse Parent link 1",
-            Links = new List<BitNavLinkItem>()
-            {
-                new()
+                new BitNavItem { Text = "Home", Url = "https://bitplatform.dev/" },
+                new BitNavItem
                 {
-                    Name = "Child link 1",
-                    Url = "http://msn.com",
-                    Key = "Key1-1",
-                    Title = "Child link 1",
-                    Links = new List<BitNavLinkItem>()
+                    Text = "Products & Services",
+                    Items = new List<BitNavItem>
                     {
-                        new() { Name = "3rd level link 1", Title = "3rd level link 1", Url = "http://msn.com", Key = "Key1-1-1" },
-                        new() { Name = "3rd level link 2", Title = "3rd level link 2", Url = "http://msn.com", Key = "Key1-1-2", IsEnabled = false }
+                        new BitNavItem
+                        {
+                            Text = "Project Templates",
+                            Items = new List<BitNavItem>
+                            {
+                                new BitNavItem { Text = "TodoTemplate", Url = "https://bitplatform.dev/todo-template/overview" },
+                                new BitNavItem { Text = "AdminPanel", Url = "https://bitplatform.dev/admin-panel/overview" },
+                            }
+                        },
+                        new BitNavItem { Text = "BlazorUI", Url = "https://bitplatform.dev/components" },
+                        new BitNavItem { Text = "Cloud hosting solutions", Url = "https://bitplatform.dev/#", IsEnabled = false },
+                        new BitNavItem { Text = "Bit academy", Url = "https://bitplatform.dev/#", IsEnabled = false },
                     }
                 },
-                new() { Name = "Child link 2", Title = "Child link 2", Url = "http://msn.com", Key = "Key1-2" },
-                new() { Name = "Child link 3", Title = "Child link 3", Url = "http://msn.com", Key = "Key1-3", IsEnabled = false },
+                new BitNavItem { Text = "Pricing", Url = "https://bitplatform.dev/pricing" },
+                new BitNavItem { Text = "About", Url = "https://bitplatform.dev/about-us" },
+                new BitNavItem { Text = "Contact us", Url = "https://bitplatform.dev/contact-us" },
+            },
+        },
+        new BitNavItem
+        {
+            Text = "Community",
+            Items = new List<BitNavItem>
+            {
+                new BitNavItem { Text = "Linkedin", Url = "https://www.linkedin.com/company/bitplatformhq/about/" },
+                new BitNavItem { Text = "Twitter", Url = "https://twitter.com/bitplatformhq" },
+                new BitNavItem { Text = "Github repo", Url = "https://github.com/bitfoundation/bitplatform" },
             }
         },
-        new()
-        {
-            Name = "Parent link 2",
-            Title = "Parent link 2",
-            Url = "http://example.com",
-            Key = "Key2",
-            CollapseAriaLabel = "Collapse Parent link 2",
-            Links = new List<BitNavLinkItem>()
-            {
-                new() { Name = "Child link 4", Title = "Child link 4", Url = "http://example.com", Key = "Key2-1" }
-            }
-        }
+        new BitNavItem { Text = "Iconography", Url = "/icons" },
     };
 
-    private readonly List<BitNavLinkItem> NavLinksWithCustomHeader = new()
+    // Grouped
+    private static readonly List<BitNavItem> CarNavMenu = new()
     {
-        new BitNavLinkItem
+        new BitNavItem
         {
-            Name = "Pages",
+            Text = "Mercedes-Benz",
+            ExpandAriaLabel = "Mercedes-Benz Expanded",
+            CollapseAriaLabel = "Mercedes-Benz Collapsed",
+            Title = "Mercedes-Benz Car Models",
             IsExpanded = true,
-            Links = new List<BitNavLinkItem>
+            Items = new List<BitNavItem>
             {
-                new BitNavLinkItem { Name = "Activity", Url = "http://msn.com", Key = "Key1-1", Title = "Activity" },
-                new BitNavLinkItem { Name = "News", Title = "News", Url = "http://msn.com", Key = "Key1-2" },
+                new BitNavItem
+                {
+                    Text = "SUVs",
+                    Items = new List<BitNavItem>
+                    {
+                        new BitNavItem { Text = "GLA", Url = "https://www.mbusa.com/en/vehicles/class/gla/suv", Target = "_blank" },
+                        new BitNavItem { Text = "GLB", Url = "https://www.mbusa.com/en/vehicles/class/glb/suv", Target = "_blank" },
+                        new BitNavItem { Text = "GLC", Url = "https://www.mbusa.com/en/vehicles/class/glc/suv", Target = "_blank" },
+                    }
+                },
+                new BitNavItem
+                {
+                    Text = "Sedans & Wagons",
+                    Items = new List<BitNavItem>
+                    {
+                        new BitNavItem { Text = "A Class", Url = "https://www.mbusa.com/en/vehicles/class/a-class/sedan", Target = "_blank" },
+                        new BitNavItem { Text = "C Class", Url = "https://www.mbusa.com/en/vehicles/class/c-class/sedan", Target = "_blank" },
+                        new BitNavItem { Text = "E Class", Url = "https://www.mbusa.com/en/vehicles/class/e-class/sedan", Target = "_blank" },
+                    }
+                },
+                new BitNavItem
+                {
+                    Text = "Coupes",
+                    Items = new List<BitNavItem>
+                    {
+                        new BitNavItem { Text = "CLA Coupe", Url = "https://www.mbusa.com/en/vehicles/class/cla/coupe", Target = "_blank" },
+                        new BitNavItem { Text = "C Class Coupe", Url = "https://www.mbusa.com/en/vehicles/class/c-class/coupe", Target = "_blank" },
+                        new BitNavItem { Text = "E Class Coupe", Url = "https://www.mbusa.com/en/vehicles/class/e-class/coupe", Target = "_blank" },
+                    }
+                },
             }
         },
-        new BitNavLinkItem
+        new BitNavItem
         {
-            Name = "More pages",
-            IsExpanded = true,
-            Links = new List<BitNavLinkItem>
+            Text = "Tesla",
+            ExpandAriaLabel = "Tesla Expanded",
+            CollapseAriaLabel= "Tesla Collapsed",
+            Title = "Tesla Car Models",
+            Items = new List<BitNavItem>
             {
-                new BitNavLinkItem { Name= "Settings", Title = "Settings", Url = "http://example.com", Key = "Key2-1" },
-                new BitNavLinkItem { Name= "Notes", Title = "Notes", Url = "http://example.com", Key = "Key2-1" }
-            }
-        }
-    };
-
-    private readonly List<BitNavLinkItem> NavLinksWithManualMode = new()
-    {
-        new BitNavLinkItem
-        {
-            Name = "Home",
-            ExpandAriaLabel = "Expand Home section",
-            CollapseAriaLabel = "Collapse Home section",
-            IsExpanded = true,
-            Links = new List<BitNavLinkItem>
-            {
-                new BitNavLinkItem { Name = "Activity", Key = "key1", Target="_blank" },
-                new BitNavLinkItem { Name = "MSN", Key = "key2", IsEnabled = false, Target = "_blank" }
+                new BitNavItem { Text = "Model S", Url = "https://www.tesla.com/models", Target = "_blank" },
+                new BitNavItem { Text = "Model X", Url = "https://www.tesla.com/modelx", Target = "_blank" },
+                new BitNavItem { Text = "Model Y", Url = "https://www.tesla.com/modely", Target = "_blank" },
             }
         },
-        new BitNavLinkItem { Name = "Documents", Key = "key3", Target = "_blank", IsExpanded = true },
-        new BitNavLinkItem { Name = "Pages", Key = "key4", Target = "_parent" },
-        new BitNavLinkItem { Name = "Notebook", Key = "key5", IsEnabled = false },
-        new BitNavLinkItem { Name = "Communication and Media", Key = "key6", Target = "_top" },
-        new BitNavLinkItem { Name = "News", Title = "News", Key = "key7", IconName = BitIconName.News, Target = "_self" },
     };
 
-    private string BitNavManualModeSelectedKey = "key3";
-
-    private void HandleSelectedKeyChange(string selectedKey)
+    // Manual
+    private static readonly List<BitNavItem> FoodNavMenu = new()
     {
-        BitNavManualModeSelectedKey = selectedKey;
-    }
+        new BitNavItem
+        {
+            Text = "Fast-Food",
+            IconName = BitIconName.HeartBroken,
+            IsExpanded = true,
+            Items = new List<BitNavItem>
+            {
+                new BitNavItem
+                {
+                    Text = "Burgers",
+                    Items = new List<BitNavItem>
+                    {
+                        new BitNavItem { Text = "Beef Burger" },
+                        new BitNavItem { Text = "Veggie Burger" },
+                        new BitNavItem { Text = "Bison Burger" },
+                        new BitNavItem { Text = "Wild Salmon Burger" },
+                    }
+                },
+                new BitNavItem
+                {
+                    Text = "Pizzas",
+                    Items = new List<BitNavItem>
+                    {
+                        new BitNavItem { Text = "Cheese Pizza" },
+                        new BitNavItem { Text = "Veggie Pizza" },
+                        new BitNavItem { Text = "Pepperoni Pizza" },
+                        new BitNavItem { Text = "Meat Pizza" },
+                    }
+                },
+                new BitNavItem { Text    = "French Fries" },
+            }
+        },
+        new BitNavItem
+        {
+            Text = "Fruits",
+            IconName = BitIconName.Health,
+            Items = new List<BitNavItem>
+            {
+                new BitNavItem { Text = "Aplle" },
+                new BitNavItem { Text = "Orange" },
+                new BitNavItem { Text = "Benana" },
+            }
+        },
+        new BitNavItem { Text = "Ice Cream" },
+        new BitNavItem { Text = "Cookie" },
+    };
+
+    private static readonly List<BitDropDownItem> FoodMenuDropDownItems = new()
+    {
+        new BitDropDownItem
+        {
+            Text = "Beef Burger",
+            Value = "Beef Burger",
+        },
+        new BitDropDownItem
+        {
+            Text = "Veggie Burger",
+            Value = "Veggie Burger",
+        },
+        new BitDropDownItem
+        {
+            Text = "Bison Burger",
+            Value = "Bison Burger",
+        },
+        new BitDropDownItem
+        {
+            Text = "Wild Salmon Burger",
+            Value = "Wild Salmon Burger",
+        },
+        new BitDropDownItem
+        {
+            Text = "Cheese Pizza",
+            Value = "Cheese Pizza",
+        },
+        new BitDropDownItem
+        {
+            Text = "Veggie Pizza",
+            Value = "Veggie Pizza",
+        },
+        new BitDropDownItem
+        {
+            Text = "Pepperoni Pizza",
+            Value = "Pepperoni Pizza",
+        },
+        new BitDropDownItem
+        {
+            Text = "Meat Pizza",
+            Value = "Meat Pizza",
+        },
+        new BitDropDownItem
+        {
+            Text = "French Fries",
+            Value = "French Fries",
+        },
+        new BitDropDownItem
+        {
+            Text = "Aplle",
+            Value = "Aplle",
+        },
+        new BitDropDownItem
+        {
+            Text = "Orange",
+            Value = "Orange",
+        },
+        new BitDropDownItem
+        {
+            Text = "Benana",
+            Value = "Benana",
+        },
+        new BitDropDownItem
+        {
+            Text = "Ice Cream",
+            Value = "Ice Cream",
+        },
+        new BitDropDownItem
+        {
+            Text = "Cookie",
+            Value = "Cookie",
+        },
+    };
+    private static List<BitNavItem> Flatten(IList<BitNavItem> e) => e.SelectMany(c => Flatten(c.Items)).Concat(e).ToList();
+    private BitNavItem SelectedItemNav = FoodNavMenu[0].Items[2];
+    private string SelectedItemText = FoodNavMenu[0].Items[2].Text;
+
+    private BitNavItem ClickedItem;
+    private BitNavItem SelectedItem;
+    private BitNavItem ToggledItem;
 
     private readonly List<ComponentParameter> componentParameters = new()
     {
-        new ComponentParameter()
+        new ComponentParameter
         {
-            Name = "AriaLabel",
-            Type = "string",
-            DefaultValue = "",
-            Description = "The aria-label of the control for the benefit of screen readers.",
+            Name = "DefaultSelectedItem",
+            Type = "BitNavItem?",
+            Description = "The initially selected item in manual mode.",
+            Href = "#nav-item",
+            LinkType = LinkType.Link,
         },
-        new ComponentParameter()
+        new ComponentParameter
         {
             Name = "HeaderTemplate",
-            Type = "RenderFragment<BitNavLinkItem>",
-            DefaultValue = "",
-            LinkType = LinkType.Link,
-            Href = "#navLinkItem",
+            Type = "RenderFragment<BitNavItem>?",
             Description = "Used to customize how content inside the group header is rendered.",
         },
-        new ComponentParameter()
+        new ComponentParameter
         {
-            Name = "HtmlAttributes",
-            Type = "Dictionary<string, object>",
-            DefaultValue = "",
-            Description = "Capture and render additional attributes in addition to the component's parameters.",
-        },
-        new ComponentParameter()
-        {
-            Name = "InitialSelectedKey",
-            Type = "string",
-            DefaultValue = "",
-            Description = "(Optional) The key of the nav item initially selected in manual mode.",
-        },
-        new ComponentParameter()
-        {
-            Name = "IsEnabled",
-            Type = "bool",
-            DefaultValue = "",
-            Description = "Whether or not the component is enabled.",
-        },
-        new ComponentParameter()
-        {
-            Name = "LinkTemplate",
-            Type = "RenderFragment<BitNavLinkItem>",
-            DefaultValue = "",
-            LinkType = LinkType.Link,
-            Href = "#navLinkItem",
+            Name = "ItemTemplate",
+            Type = "RenderFragment<BitNavItem>?",
             Description = "Used to customize how content inside the link tag is rendered.",
         },
-        new ComponentParameter()
+        new ComponentParameter
+        {
+            Name = "Items",
+            Type = "IList<BitNavItem>",
+            DefaultValue = "new List<BitNavItem>()",
+            Description = "A collection of link items to display in the navigation bar.",
+        },
+        new ComponentParameter
         {
             Name = "Mode",
             Type = "BitNavMode",
             DefaultValue = "BitNavMode.Automatic",
-            LinkType = LinkType.Link,
+            Description = "Determines how the navigation will be handled. The default value is Automatic.",
             Href = "#nav-mode-enum",
-            Description = "Determines how the navigation will be handled. The default value is Automatic",
+            LinkType = LinkType.Link
         },
-        new ComponentParameter()
+        new ComponentParameter
         {
-            Name = "NavLinkItems",
-            Type = "ICollection<BitNavLinkItem>",
-            LinkType = LinkType.Link,
-            Href = "#navLinkItem",
-            DefaultValue = "",
-            Description = "A collection of link items to display in the navigation bar.",
+            Name = "OnItemClick",
+            Type = "EventCallback<BitNavItem>",
+            Description = "Callback invoked when an item is clicked.",
         },
-        new ComponentParameter()
+        new ComponentParameter
         {
-            Name = "OnLinkClick",
-            Type = "EventCallback<BitNavLinkItem>",
-            DefaultValue = "",
-            Description = "Function callback invoked when a link in the navigation is clicked.",
+            Name = "OnSelectItem",
+            Type = "EventCallback<BitNavItem>",
+            Description = "Callback invoked when an item is selected.",
         },
-        new ComponentParameter()
+        new ComponentParameter
         {
-            Name = "OnLinkExpandClick",
-            Type = "EventCallback<BitNavLinkItem>",
-            LinkType = LinkType.Link,
-            Href = "#navLinkItem",
-            DefaultValue = "",
-            Description = "Function callback invoked when the chevron on a link is clicked.",
+            Name = "OnItemToggle",
+            Type = "EventCallback<BitNavItem>",
+            Description = "Callback invoked when a group header is clicked and Expanded or Collapse.",
         },
-        new ComponentParameter()
+        new ComponentParameter
         {
             Name = "RenderType",
             Type = "BitNavRenderType",
+            DefaultValue = "BitNavRenderType.Normal",
+            Description = "The way to render nav links.",
             Href = "#nav-render-type-enum",
             LinkType = LinkType.Link,
-            DefaultValue = "RenderType.Normal",
-            Description = "The way to render nav links.",
         },
-        new ComponentParameter()
+        new ComponentParameter
         {
-            Name = "SelectedKey",
-            Type = "string",
-            DefaultValue = "",
-            Description = "The key of the nav item selected by caller.",
-        },
-        new ComponentParameter()
-        {
-            Name = "Visibility",
-            Type = "BitComponentVisibility",
-            LinkType = LinkType.Link,
-            Href = "#component-visibility-enum",
-            DefaultValue = "BitComponentVisibility.Visible",
-            Description = "Whether the component is Visible,Hidden,Collapsed.",
+            Name = "SelectedItem",
+            Type = "BitNavItem?",
+            Description = "Selected item to show in Nav.",
         },
     };
-
+    private readonly List<ComponentSubParameter> componentSubParameters = new()
+    {
+        new ComponentSubParameter()
+        {
+            Id = "nav-item",
+            Title = "BitNavItem",
+            Parameters = new List<ComponentParameter>()
+            {
+               new ComponentParameter()
+               {
+                   Name = "AriaLabel",
+                   Type = "string?",
+                   Description = "Aria label for nav link. Ignored if collapseAriaLabel or expandAriaLabel is provided",
+               },
+               new ComponentParameter()
+               {
+                   Name = "AriaCurrent",
+                   Type = "BitNavLinkItemAriaCurrent",
+                   DefaultValue = "BitNavItemAriaCurrent.Page",
+                   Description = "Aria-current token for active nav links. Must be a valid token value, and defaults to 'page'",
+                   Href = "#nav-item-aria-current-enum",
+                   LinkType = LinkType.Link,
+               },
+               new ComponentParameter()
+               {
+                   Name = "CollapseAriaLabel",
+                   Type = "string?",
+                   Description = "Aria label when items is collapsed and can be expanded.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "ExpandAriaLabel",
+                   Type = "string?",
+                   Description = "Aria label when group is collapsed and can be expanded.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "ForceAnchor",
+                   Type = "bool",
+                   Description = "(Optional) By default, any link with onClick defined will render as a button. Set this property to true to override that behavior. (Links without onClick defined will render as anchors by default.)",
+               },
+               new ComponentParameter()
+               {
+                   Name = "Items",
+                   Type = "IList<BitNavItem>",
+                   DefaultValue = "new List<BitNavItem>()",
+                   Description = "A list of items to render as children of the current item.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "IconName",
+                   Type = "BitIconName",
+                   Description = "Name of an icon to render next to this link button.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "IsExpanded",
+                   Type = "bool",
+                   Description = "Whether or not the link is in an expanded state.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "IsEnabled",
+                   Type = "bool",
+                   Description = "Whether or not the link is enabled.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "Key",
+                   Type = "string?",
+                   Description = "A unique value to use as a key or id of the item.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "Style",
+                   Type = "string?",
+                   Description = "Custom style for the each item element.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "Text",
+                   Type = "string",
+                   DefaultValue = "string.Empty",
+                   Description = "Text to render for this link.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "Title",
+                   Type = "string?",
+                   Description = "Text for title tooltip.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "Target",
+                   Type = "string?",
+                   Description = "Link target, specifies how to open the link.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "Url",
+                   Type = "string?",
+                   Description = "URL to navigate to for this link.",
+               }
+            }
+        }
+    };
     private readonly List<EnumParameter> enumParameters = new()
     {
         new EnumParameter()
         {
             Id = "nav-mode-enum",
             Title = "BitNavMode Enum",
-            Description = "",
             EnumList = new List<EnumItem>()
             {
                 new EnumItem()
                 {
-                    Name= "Automatic",
-                    Description="The value of selected key will change using NavigationManager and the current url inside the component.",
-                    Value="0",
+                    Name = "Automatic",
+                    Description = "The value of selected key will change using NavigationManager and the current url inside the component.",
+                    Value = "0",
                 },
                 new EnumItem()
                 {
-                    Name= "Manual",
-                    Description="Selected key changes will be sent back to the parent component and the component won't change its value.",
-                    Value="1",
+                    Name = "Manual",
+                    Description = "Selected key changes will be sent back to the parent component and the component won't change its value.",
+                    Value = "1",
                 }
             }
         },
@@ -320,416 +448,571 @@ public partial class BitNavDemo
         {
             Id = "nav-render-type-enum",
             Title = "BitNavRenderType Enum",
-            Description = "",
             EnumList = new List<EnumItem>()
             {
                 new EnumItem()
                 {
-                    Name= "Normal",
-                    Description="",
-                    Value="0",
+                    Name = "Normal",
+                    Value = "0",
                 },
                 new EnumItem()
                 {
-                    Name= "Grouped",
-                    Description="",
-                    Value="1",
+                    Name = "Grouped",
+                    Value = "1",
                 }
             }
         },
         new EnumParameter()
         {
-            Id = "component-visibility-enum",
-            Title = "BitComponentVisibility Enum",
-            Description = "",
+            Id = "nav-item-aria-current-enum",
+            Title = "BitNavItemAriaCurrent Enum",
             EnumList = new List<EnumItem>()
             {
                 new EnumItem()
                 {
-                    Name= "Visible",
-                    Description="Show content of the component.",
-                    Value="0",
+                    Name = "Page",
+                    Value = "0",
                 },
                 new EnumItem()
                 {
-                    Name= "Hidden",
-                    Description="Hide content of the component,though the space it takes on the page remains.",
-                    Value="1",
+                    Name = "Step",
+                    Value = "1",
                 },
                 new EnumItem()
                 {
-                    Name= "Collapsed",
-                    Description="Hide content of the component,though the space it takes on the page gone.",
-                    Value="2",
-                }
+                    Name = "Location",
+                    Value = "2",
+                },
+                new EnumItem()
+                {
+                    Name = "Date",
+                    Value = "3",
+                },
+                new EnumItem()
+                {
+                    Name = "Time",
+                    Value = "4",
+                },
+                new EnumItem()
+                {
+                    Name = "True",
+                    Value = "5",
+                },
+
             }
-        }
+        },
     };
 
-    private readonly List<ComponentSubParameter> componentSubParameters = new()
-    {
-        new ComponentSubParameter()
-        {
-            Id = "navLinkItem",
-            Title = "BitNavLinkItem",
-            Parameters = new List<ComponentParameter>()
-            {
-               new ComponentParameter()
-               {
-                   Name = "AriaCurrent",
-                   Type = "BitNavLinkItemAriaCurrent",
-                   DefaultValue = "Page",
-                   Description = "Aria-current token for active nav links. Must be a valid token value, and defaults to 'page'",
-               },
-               new ComponentParameter()
-               {
-                   Name = "AriaLabel",
-                   Type = "string",
-                   DefaultValue = "",
-                   Description = "Aria label for nav link. Ignored if collapseAriaLabel or expandAriaLabel is provided",
-               },
-               new ComponentParameter()
-               {
-                   Name = "CollapseAriaLabel",
-                   Type = "string",
-                   DefaultValue = "",
-                   Description = "ARIA label when items is collapsed and can be expanded.",
-               },
-               new ComponentParameter()
-               {
-                   Name = "ExpandAriaLabel",
-                   Type = "string",
-                   DefaultValue = "",
-                   Description = "Aria label when group is collapsed and can be expanded.",
-               },
-               new ComponentParameter()
-               {
-                   Name = "ForceAnchor",
-                   Type = "bool",
-                   DefaultValue = "",
-                   Description = "(Optional) By default, any link with onClick defined will render as a button. Set this property to true to override that behavior. (Links without onClick defined will render as anchors by default.)",
-               },
-               new ComponentParameter()
-               {
-                   Name = "IconName",
-                   Type = "BitIconName",
-                   DefaultValue = "",
-                   Description = "Name of an icon to render next to this link button.",
-               },
-               new ComponentParameter()
-               {
-                   Name = "IsCollapseByDefault",
-                   Type = "bool",
-                   DefaultValue = "",
-                   Description = "If true, the group should render collapsed by default.",
-               },
-               new ComponentParameter()
-               {
-                   Name = "IsEnabled",
-                   Type = "bool",
-                   DefaultValue = "",
-                   Description = "Whether or not the link is enabled.",
-               },
-               new ComponentParameter()
-               {
-                   Name = "IsExpanded",
-                   Type = "bool",
-                   DefaultValue = "",
-                   Description = "Whether or not the link is in an expanded state.",
-               },
-               new ComponentParameter()
-               {
-                   Name = "ItemStyle",
-                   Type = "string?",
-                   DefaultValue = "",
-                   Description = "Custom style for the each item element.",
-               },
-               new ComponentParameter()
-               {
-                   Name = "Key",
-                   Type = "string",
-                   DefaultValue = "",
-                   Description = "A unique value to use as a key or id of the item, used when rendering the list of links and for tracking the currently selected link.",
-               },
-               new ComponentParameter()
-               {
-                   Name = "Links",
-                   Type = "IEnumerable<BitNavLinkItem>",
-                   DefaultValue = "",
-                   Description = "A list of items to render as children of the current item.",
-               },
-               new ComponentParameter()
-               {
-                   Name = "Name",
-                   Type = "string",
-                   DefaultValue = "",
-                   Description = "Text to render for this link.",
-               },
-               new ComponentParameter()
-               {
-                   Name = "OnClick",
-                   Type = "Action<BitNavLinkItem>",
-                   DefaultValue = "",
-                   Description = "Callback invoked when a link in the navigation is clicked.",
-               },
-               new ComponentParameter()
-               {
-                   Name = "OnHeaderClick",
-                   Type = "Action<bool>",
-                   DefaultValue = "",
-                   Description = "Callback invoked when a group header is clicked.",
-               },
-               new ComponentParameter()
-               {
-                   Name = "Target",
-                   Type = "string",
-                   DefaultValue = "",
-                   Description = "Link target, specifies how to open the link.",
-               },
-               new ComponentParameter()
-               {
-                   Name = "Title",
-                   Type = "string",
-                   DefaultValue = "",
-                   Description = "Text for title tooltip.",
-               },
-               new ComponentParameter()
-               {
-                   Name = "Url",
-                   Type = "string",
-                   DefaultValue = "",
-                   Description = "URL to navigate to for this link.",
-               }
-            }
-        }
-    };
+    #region Sample Code 1
 
-    private static string example1HTMLCode = @"<BitNav Style=""width: 208px;
-        height: 350px;
-        box-sizing: border-box;
-        border: 1px solid #eee;
-        overflow-y: auto;""
-        NavLinkItems=""BasicNavLinks""
-        AriaLabel=""Nav basic example""
-        InitialSelectedKey=""key3"">
-</BitNav>";
-
-    private static string example2HTMLCode = @"<BitNav Style=""width: 208px;
-    height: 350px;
-    box-sizing: border-box;
-    border: 1px solid #eee;
-    overflow-y: auto;""
-    Class=""bit-nav-wrapped-link""
-    InitialSelectedKey=""key6""
-    AriaLabel=""Nav example with wrapped link text""
-    NavLinkItems=""NavLinksNoToolTip"">
-</BitNav>";
-
-    private static string example3HTMLCode = @"<BitNav Style=""width: 300px;""
-        NavLinkItems=""NavLinksSimilarThisApp""
-        RenderType=""BitNavRenderType.Grouped""
-        AriaLabel=""Nav example similar to one found in this demo page"">
-</BitNav>";
-
-    private static string example4HTMLCode = @"<BitNav NavLinkItems=""NavWithNestedLinks""
-        AriaLabel=""Nav example with nested links""
-        SelectedKey=""Key1-1-2"">
-</BitNav>";
-
-    private static string example5HTMLCode = @"<BitNav NavLinkItems=""NavLinksWithCustomHeader""
-        RenderType=""BitNavRenderType.Grouped""
-        AriaLabel=""Nav with custom group header"">
-    <HeaderTemplate Context=""link"">
-        <h3> @link.Name </h3>
-    </HeaderTemplate>
-</BitNav>";
-
-    private static string example6HTMLCode = @"<BitNav Style=""width: 208px;
-        height: 350px;
-        box-sizing: border-box;
-        border: 1px solid #eee;
-        overflow-y: auto;""
-        NavLinkItems=""NavLinksWithManualMode""
-        Mode=""BitNavMode.Manual""
-        AriaLabel=""Nav manual mode example""
-        SelectedKey=""@BitNavManualModeSelectedKey""
-        SelectedKeyChanged=""HandleSelectedKeyChange"">
-</BitNav>";
+    private static string example1HTMLCode = @"
+<BitNav Items=""BitPlatformNavMenu"" />
+";
 
     private static string example1CSharpCode = @"
-private readonly List<BitNavLinkItem> BasicNavLinks = new()
+private static readonly List<BitNavItem> BitPlatformNavMenu = new()
 {
-    new BitNavLinkItem
+    new BitNavItem
     {
-        Name = ""Home"",
-        Url = ""http://example.com"",
-        ExpandAriaLabel = ""Expand Home section"",
-        CollapseAriaLabel = ""Collapse Home section"",
-        IsExpanded = true,
-        Links = new List<BitNavLinkItem>
+        Text = ""Bit Platform"",
+        Items = new List<BitNavItem>
         {
-            new BitNavLinkItem { Name = ""Activity"", Url = ""http://msn.com"", Key = ""key1"", Target=""_blank"" },
-            new BitNavLinkItem { Name = ""MSN"", Url = ""http://msn.com"", Key = ""key2"", IsEnabled = false, Target = ""_blank"" }
-        }
-    },
-    new BitNavLinkItem { Name = ""Documents"", Url = ""http://example.com"", Key = ""key3"", Target = ""_blank"", IsExpanded = true },
-    new BitNavLinkItem { Name = ""Pages"", Url = ""http://msn.com"", Key = ""key4"", Target = ""_parent"" },
-    new BitNavLinkItem { Name = ""Notebook"", Url = ""http://msn.com"", Key = ""key5"", IsEnabled = false },
-    new BitNavLinkItem { Name = ""Communication and Media"", Url = ""http://msn.com"", Key = ""key6"", Target = ""_top"" },
-    new BitNavLinkItem { Name = ""News"", Title = ""News"", Url = ""http://msn.com"", Key = ""key7"", IconName = BitIconName.News, Target = ""_self"" },
-};";
-
-    private static string example2CSharpCode = @"
-private readonly List<BitNavLinkItem> NavLinksNoToolTip = new()
-{
-    new BitNavLinkItem
-    {
-        Name = ""Home"",
-        Url = ""http://example.com"",
-        Title = """",
-        IsExpanded = true,
-        CollapseAriaLabel = ""Collapse Home section"",
-        ExpandAriaLabel = ""Expand Home section"",
-        Links = new List<BitNavLinkItem>
-        {
-            new BitNavLinkItem { Name = ""Activity"", Url = ""http://msn.com"", Key = ""key1"", Target=""_blank"", Title = """" },
-            new BitNavLinkItem { Name = ""MSN"", Url = ""http://msn.com"", Key = ""key2"", IsEnabled = false, Target = ""_blank"", Title = """" }
-        }
-    },
-    new BitNavLinkItem { Name = ""Shared Documents and Files"", Url = ""http://example.com"", Key = ""key3"", Target = ""_blank"", Title = """", ItemStyle=""white-space: normal;"" },
-    new BitNavLinkItem { Name = ""Pages"", Url = ""http://msn.com"", Key = ""key4"", Target = ""_parent"", Title = """" },
-    new BitNavLinkItem { Name = ""Notebook"", Url = ""http://msn.com"", Key = ""key5"", IsEnabled = false, Title = """" },
-    new BitNavLinkItem { Name = ""Communication and Media"", Url = ""http://msn.com"", Key = ""key6"", Target = ""_top"", Title = """", ItemStyle=""white-space: normal;"" },
-    new BitNavLinkItem { Name = ""News"", Key = ""key7"", Url = ""http://cnn.com"", IconName = BitIconName.News, Target = ""_self"", Title = """" }
-};";
-
-    private static string example3CSharpCode = @"
-private readonly List<BitNavLinkItem> NavLinksSimilarThisApp = new()
-{
-    new BitNavLinkItem
-    {
-        Name = ""Basic Inputs"",
-        CollapseAriaLabel = ""Collapse Basic Inputs section"",
-        IsExpanded = true,
-        Links = new List<BitNavLinkItem>
-        {
-            new BitNavLinkItem { Name= ""Bottons"", Key = ""Bottons"", Url = ""components/button"" },
-            new BitNavLinkItem { Name= ""DropDown"", Key = ""DropDown"", Url = ""components/drop-down"" },
-            new BitNavLinkItem { Name= ""FileUpload"", Key = ""FileUpload"", Url = ""components/file-upload"" }
-        }
-    },
-    new BitNavLinkItem
-    {
-        Name = ""Items & Lists"",
-        CollapseAriaLabel = ""Collapse Items & Lists section"",
-        IsExpanded = true,
-        Links = new List<BitNavLinkItem>
-        {
-            new BitNavLinkItem { Name = ""BasicList"", Key = ""BasicList"", Url =""components/basic-list"" },
-            new BitNavLinkItem { Name = ""DataGrid"", Key = ""DataGrid"", Url =""components/data-grid"" },
-            new BitNavLinkItem { Name = ""Carousel"", Key = ""Carousel"", Url =""components/carousel"" }
-        }
-    },
-    new BitNavLinkItem
-    {
-        Name = ""Galleries & Pickers"",
-        CollapseAriaLabel = ""Collapse Galleries & Pickers section"",
-        IsExpanded = true,
-        Links = new List<BitNavLinkItem>
-        {
-            new BitNavLinkItem { Name = ""ColorPicker"", Key = ""ColorPicker"", Url = ""components/color-picker"" },
-            new BitNavLinkItem { Name = ""DatePicker"", Key = ""DatePicker"", Url = ""components/date-picker"" },
-            new BitNavLinkItem { Name = ""Chart"", Key = ""Chart"", Url = ""components/chart"" }
-        }
-    }
-};";
-
-    private static string example4CSharpCode = @"
-private readonly List<BitNavLinkItem> NavWithNestedLinks = new()
-{
-    new()
-    {
-        Name = ""Parent link 1"",
-        Url = ""http://example.com"",
-        Key = ""Key1"",
-        Title = ""Parent link 1"",
-        CollapseAriaLabel = ""Collapse Parent link 1"",
-        Links = new List<BitNavLinkItem>()
-        {
-            new()
+            new BitNavItem { Text = ""Home"", Url = ""https://bitplatform.dev/"" },
+            new BitNavItem
             {
-                Name = ""Child link 1"",
-                Url = ""http://msn.com"",
-                Key = ""Key1-1"",
-                Title = ""Child link 1"",
-                Links = new List<BitNavLinkItem>()
+                Text = ""Products & Services"",
+                Items = new List<BitNavItem>
                 {
-                    new() { Name = ""3rd level link 1"", Title = ""3rd level link 1"", Url = ""http://msn.com"", Key = ""Key1-1-1"" },
-                    new() { Name = ""3rd level link 2"", Title = ""3rd level link 2"", Url = ""http://msn.com"", Key = ""Key1-1-2"", IsEnabled = false }
+                    new BitNavItem
+                    {
+                        Text = ""Project Templates"",
+                        Items = new List<BitNavItem>
+                        {
+                            new BitNavItem { Text = ""TodoTemplate"", Url = ""https://bitplatform.dev/todo-template/overview"" },
+                            new BitNavItem { Text = ""AdminPanel"", Url = ""https://bitplatform.dev/admin-panel/overview"" },
+                        }
+                    },
+                    new BitNavItem { Text = ""BlazorUI"", Url = ""https://bitplatform.dev/components"" },
+                    new BitNavItem { Text = ""Cloud hosting solutions"", Url = ""https://bitplatform.dev/#"", IsEnabled = false },
+                    new BitNavItem { Text = ""Bit academy"", Url = ""https://bitplatform.dev/#"", IsEnabled = false },
                 }
             },
-            new() { Name = ""Child link 2"", Title = ""Child link 2"", Url = ""http://msn.com"", Key = ""Key1-2"" },
-            new() { Name = ""Child link 3"", Title = ""Child link 3"", Url = ""http://msn.com"", Key = ""Key1-3"", IsEnabled = false },
+            new BitNavItem { Text = ""Pricing"", Url = ""https://bitplatform.dev/pricing"" },
+            new BitNavItem { Text = ""About"", Url = ""https://bitplatform.dev/about-us"" },
+            new BitNavItem { Text = ""Contact us"", Url = ""https://bitplatform.dev/contact-us"" },
+        },
+    },
+    new BitNavItem
+    {
+        Text = ""Community"",
+        Items = new List<BitNavItem>
+        {
+            new BitNavItem { Text = ""Linkedin"", Url = ""https://www.linkedin.com/company/bitplatformhq/about/"" },
+            new BitNavItem { Text = ""Twitter"", Url = ""https://twitter.com/bitplatformhq"" },
+            new BitNavItem { Text = ""Github repo"", Url = ""https://github.com/bitfoundation/bitplatform"" },
         }
     },
-    new()
+    new BitNavItem { Text = ""Iconography"", Url = ""/icons"" },
+};
+";
+
+    #endregion
+
+    #region Sample Code 2
+
+    private static string example2HTMLCode = @"
+<BitNav Items=""CarNavMenu"" RenderType=""BitNavRenderType.Grouped"" />
+";
+
+    private static string example2CSharpCode = @"
+private static readonly List<BitNavItem> CarNavMenu = new()
+{
+    new BitNavItem
     {
-        Name = ""Parent link 2"",
-        Title = ""Parent link 2"",
-        Url = ""http://example.com"",
-        Key = ""Key2"",
-        CollapseAriaLabel = ""Collapse Parent link 2"",
-        Links = new List<BitNavLinkItem>()
+        Text = ""Mercedes-Benz"",
+        ExpandAriaLabel = ""Mercedes-Benz Expanded"",
+        CollapseAriaLabel = ""Mercedes-Benz Collapsed"",
+        Title = ""Mercedes-Benz Car Models"",
+        IsExpanded = true,
+        Items = new List<BitNavItem>
         {
-            new() { Name = ""Child link 4"", Title = ""Child link 4"", Url = ""http://example.com"", Key = ""Key2-1"" }
+            new BitNavItem
+            {
+                Text = ""SUVs"",
+                Items = new List<BitNavItem>
+                {
+                    new BitNavItem { Text = ""GLA"", Url = ""https://www.mbusa.com/en/vehicles/class/gla/suv"", Target = ""_blank"" },
+                    new BitNavItem { Text = ""GLB"", Url = ""https://www.mbusa.com/en/vehicles/class/glb/suv"", Target = ""_blank"" },
+                    new BitNavItem { Text = ""GLC"", Url = ""https://www.mbusa.com/en/vehicles/class/glc/suv"", Target = ""_blank"" },
+                }
+            },
+            new BitNavItem
+            {
+                Text = ""Sedans & Wagons"",
+                Items = new List<BitNavItem>
+                {
+                    new BitNavItem { Text = ""A Class"", Url = ""https://www.mbusa.com/en/vehicles/class/a-class/sedan"", Target = ""_blank"" },
+                    new BitNavItem { Text = ""C Class"", Url = ""https://www.mbusa.com/en/vehicles/class/c-class/sedan"", Target = ""_blank"" },
+                    new BitNavItem { Text = ""E Class"", Url = ""https://www.mbusa.com/en/vehicles/class/e-class/sedan"", Target = ""_blank"" },
+                }
+            },
+            new BitNavItem
+            {
+                Text = ""Coupes"",
+                Items = new List<BitNavItem>
+                {
+                    new BitNavItem { Text = ""CLA Coupe"", Url = ""https://www.mbusa.com/en/vehicles/class/cla/coupe"", Target = ""_blank"" },
+                    new BitNavItem { Text = ""C Class Coupe"", Url = ""https://www.mbusa.com/en/vehicles/class/c-class/coupe"", Target = ""_blank"" },
+                    new BitNavItem { Text = ""E Class Coupe"", Url = ""https://www.mbusa.com/en/vehicles/class/e-class/coupe"", Target = ""_blank"" },
+                }
+            },
         }
+    },
+    new BitNavItem
+    {
+        Text = ""Tesla"",
+        ExpandAriaLabel = ""Tesla Expanded"",
+        CollapseAriaLabel= ""Tesla Collapsed"",
+        Title = ""Tesla Car Models"",
+        Items = new List<BitNavItem>
+        {
+            new BitNavItem { Text = ""Model S"", Url = ""https://www.tesla.com/models"", Target = ""_blank"" },
+            new BitNavItem { Text = ""Model X"", Url = ""https://www.tesla.com/modelx"", Target = ""_blank"" },
+            new BitNavItem { Text = ""Model Y"", Url = ""https://www.tesla.com/modely"", Target = ""_blank"" },
+        }
+    },
+};
+";
+
+    #endregion
+
+    #region Sample Code 3
+
+    private static string example3HTMLCode = @"
+                <div>
+                    <BitLabel>Basic</BitLabel>
+                    <BitNav Items=""FoodNavMenu""
+                            DefaultSelectedItem=""FoodNavMenu[0].Items[2]""
+                            Mode=""BitNavMode.Manual"" />
+                </div>
+
+                <div class=""margin-top"">
+                    <BitLabel>Two-Way Bind</BitLabel>
+
+                    <BitNav @bind-SelectedItem=""SelectedItemNav""
+                            Items=""FoodNavMenu""
+                            Mode=""BitNavMode.Manual""
+                            OnSelectItem=""(item) => SelectedItemText = FoodMenuDropDownItems.FirstOrDefault(i => i.Text == item.Text).Text"" />
+
+                    <BitDropDown @bind-Value=""SelectedItemText""
+                                 Label=""Select Item""
+                                 Items=""FoodMenuDropDownItems""
+                                 OnSelectItem=""(item) => SelectedItemNav = Flatten(FoodNavMenu).FirstOrDefault(i => i.Text == item.Value)"" />
+                </div>
+";
+
+    private static string example3CSharpCode = @"
+private static readonly List<BitNavItem> FoodNavMenu = new()
+{
+    new BitNavItem
+    {
+        Text = ""Fast-Food"",
+        IconName = BitIconName.HeartBroken,
+        IsExpanded = true,
+        Items = new List<BitNavItem>
+        {
+            new BitNavItem
+            {
+                Text = ""Burgers"",
+                Items = new List<BitNavItem>
+                {
+                    new BitNavItem { Text = ""Beef Burger"" },
+                    new BitNavItem { Text = ""Veggie Burger"" },
+                    new BitNavItem { Text = ""Bison Burger"" },
+                    new BitNavItem { Text = ""Wild Salmon Burger"" },
+                }
+            },
+            new BitNavItem
+            {
+                Text = ""Pizzas"",
+                Items = new List<BitNavItem>
+                {
+                    new BitNavItem { Text = ""Cheese Pizza"" },
+                    new BitNavItem { Text = ""Veggie Pizza"" },
+                    new BitNavItem { Text = ""Pepperoni Pizza"" },
+                    new BitNavItem { Text = ""Meat Pizza"" },
+                }
+            },
+            new BitNavItem { Text    = ""French Fries"" },
+        }
+    },
+    new BitNavItem
+    {
+        Text = ""Fruits"",
+        IconName = BitIconName.Health,
+        Items = new List<BitNavItem>
+        {
+            new BitNavItem { Text = ""Aplle"" },
+            new BitNavItem { Text = ""Orange"" },
+            new BitNavItem { Text = ""Benana"" },
+        }
+    },
+    new BitNavItem { Text = ""Ice Cream"" },
+    new BitNavItem { Text = ""Cookie"" },
+};
+
+private static readonly List<BitDropDownItem> FoodMenuDropDownItems = new()
+{
+    new BitDropDownItem
+    {
+        Text = ""Beef Burger"",
+        Value = ""Beef Burger"",
+    },
+    new BitDropDownItem
+    {
+        Text = ""Veggie Burger"",
+        Value = ""Veggie Burger"",
+    },
+    new BitDropDownItem
+    {
+        Text = ""Bison Burger"",
+        Value = ""Bison Burger"",
+    },
+    new BitDropDownItem
+    {
+        Text = ""Wild Salmon Burger"",
+        Value = ""Wild Salmon Burger"",
+    },
+    new BitDropDownItem
+    {
+        Text = ""Cheese Pizza"",
+        Value = ""Cheese Pizza"",
+    },
+    new BitDropDownItem
+    {
+        Text = ""Veggie Pizza"",
+        Value = ""Veggie Pizza"",
+    },
+    new BitDropDownItem
+    {
+        Text = ""Pepperoni Pizza"",
+        Value = ""Pepperoni Pizza"",
+    },
+    new BitDropDownItem
+    {
+        Text = ""Meat Pizza"",
+        Value = ""Meat Pizza"",
+    },
+    new BitDropDownItem
+    {
+        Text = ""French Fries"",
+        Value = ""French Fries"",
+    },
+    new BitDropDownItem
+    {
+        Text = ""Aplle"",
+        Value = ""Aplle"",
+    },
+    new BitDropDownItem
+    {
+        Text = ""Orange"",
+        Value = ""Orange"",
+    },
+    new BitDropDownItem
+    {
+        Text = ""Benana"",
+        Value = ""Benana"",
+    },
+    new BitDropDownItem
+    {
+        Text = ""Ice Cream"",
+        Value = ""Ice Cream"",
+    },
+    new BitDropDownItem
+    {
+        Text = ""Cookie"",
+        Value = ""Cookie"",
+    },
+};
+
+private static List<BitNavItem> Flatten(IList<BitNavItem> e) => e.SelectMany(c => Flatten(c.Items)).Concat(e).ToList();
+private BitNavItem SelectedItemNav = FoodNavMenu[0].Items[2];
+private string SelectedItemText = FoodNavMenu[0].Items[2].Text;
+";
+
+    #endregion
+
+    #region Sample Code 4
+
+    private static string example4HTMLCode = @"
+<style>
+    .nav-custom-header {
+        font-size: 17px;
+        font-weight: 600;
+        color: green;
     }
-};";
+
+    .nav-custom-item {
+        display: flex;
+        align-items: center;
+        flex-flow: row nowrap;
+        gap: 4px;
+        color: #ff7800;
+        font-weight: 600;
+    }
+</style>
+
+<div>
+    <BitLabel>Header Template (in Grouped mode)</BitLabel>
+    <BitNav Items=""CarNavMenu"" RenderType=""BitNavRenderType.Grouped"">
+        <HeaderTemplate Context=""item"">
+            <div class=""nav-custom-header"">
+                <BitIcon IconName=""BitIconName.FavoriteStarFill"" />
+                <span>@item.Text</span>
+            </div>
+        </HeaderTemplate>
+    </BitNav>
+</div>
+
+<div class=""margin-top"">
+    <BitLabel>Item Template</BitLabel>
+    <BitNav Items=""FoodNavMenu"" Mode=""BitNavMode.Manual"">
+        <ItemTemplate Context=""item"">
+            <div class=""nav-custom-item @(item.IsEnabled is false ? ""disabled-item"" : """")"">
+                <BitCheckbox IsEnabled=""@(item.IsEnabled)"" />
+                @if (item.IconName.HasValue)
+                {
+                    <BitIcon IconName=""@item.IconName.Value"" />
+                }
+                <span>@item.Text</span>
+            </div>
+        </ItemTemplate>
+    </BitNav>
+</div>
+";
+
+    private static string example4CSharpCode = @"
+private static readonly List<BitNavItem> CarNavMenu = new()
+{
+    new BitNavItem
+    {
+        Text = ""Mercedes-Benz"",
+        ExpandAriaLabel = ""Mercedes-Benz Expanded"",
+        CollapseAriaLabel = ""Mercedes-Benz Collapsed"",
+        Title = ""Mercedes-Benz Car Models"",
+        IsExpanded = true,
+        Items = new List<BitNavItem>
+        {
+            new BitNavItem
+            {
+                Text = ""SUVs"",
+                Items = new List<BitNavItem>
+                {
+                    new BitNavItem { Text = ""GLA"", Url = ""https://www.mbusa.com/en/vehicles/class/gla/suv"", Target = ""_blank"" },
+                    new BitNavItem { Text = ""GLB"", Url = ""https://www.mbusa.com/en/vehicles/class/glb/suv"", Target = ""_blank"" },
+                    new BitNavItem { Text = ""GLC"", Url = ""https://www.mbusa.com/en/vehicles/class/glc/suv"", Target = ""_blank"" },
+                }
+            },
+            new BitNavItem
+            {
+                Text = ""Sedans & Wagons"",
+                Items = new List<BitNavItem>
+                {
+                    new BitNavItem { Text = ""A Class"", Url = ""https://www.mbusa.com/en/vehicles/class/a-class/sedan"", Target = ""_blank"" },
+                    new BitNavItem { Text = ""C Class"", Url = ""https://www.mbusa.com/en/vehicles/class/c-class/sedan"", Target = ""_blank"" },
+                    new BitNavItem { Text = ""E Class"", Url = ""https://www.mbusa.com/en/vehicles/class/e-class/sedan"", Target = ""_blank"" },
+                }
+            },
+            new BitNavItem
+            {
+                Text = ""Coupes"",
+                Items = new List<BitNavItem>
+                {
+                    new BitNavItem { Text = ""CLA Coupe"", Url = ""https://www.mbusa.com/en/vehicles/class/cla/coupe"", Target = ""_blank"" },
+                    new BitNavItem { Text = ""C Class Coupe"", Url = ""https://www.mbusa.com/en/vehicles/class/c-class/coupe"", Target = ""_blank"" },
+                    new BitNavItem { Text = ""E Class Coupe"", Url = ""https://www.mbusa.com/en/vehicles/class/e-class/coupe"", Target = ""_blank"" },
+                }
+            },
+        }
+    },
+    new BitNavItem
+    {
+        Text = ""Tesla"",
+        ExpandAriaLabel = ""Tesla Expanded"",
+        CollapseAriaLabel= ""Tesla Collapsed"",
+        Title = ""Tesla Car Models"",
+        Items = new List<BitNavItem>
+        {
+            new BitNavItem { Text = ""Model S"", Url = ""https://www.tesla.com/models"", Target = ""_blank"" },
+            new BitNavItem { Text = ""Model X"", Url = ""https://www.tesla.com/modelx"", Target = ""_blank"" },
+            new BitNavItem { Text = ""Model Y"", Url = ""https://www.tesla.com/modely"", Target = ""_blank"" },
+        }
+    },
+};
+
+private static readonly List<BitNavItem> FoodNavMenu = new()
+{
+    new BitNavItem
+    {
+        Text = ""Fast-Food"",
+        IconName = BitIconName.HeartBroken,
+        IsExpanded = true,
+        Items = new List<BitNavItem>
+        {
+            new BitNavItem
+            {
+                Text = ""Burgers"",
+                Items = new List<BitNavItem>
+                {
+                    new BitNavItem { Text = ""Beef Burger"" },
+                    new BitNavItem { Text = ""Veggie Burger"" },
+                    new BitNavItem { Text = ""Bison Burger"" },
+                    new BitNavItem { Text = ""Wild Salmon Burger"" },
+                }
+            },
+            new BitNavItem
+            {
+                Text = ""Pizzas"",
+                Items = new List<BitNavItem>
+                {
+                    new BitNavItem { Text = ""Cheese Pizza"" },
+                    new BitNavItem { Text = ""Veggie Pizza"" },
+                    new BitNavItem { Text = ""Pepperoni Pizza"" },
+                    new BitNavItem { Text = ""Meat Pizza"" },
+                }
+            },
+            new BitNavItem { Text    = ""French Fries"" },
+        }
+    },
+    new BitNavItem
+    {
+        Text = ""Fruits"",
+        IconName = BitIconName.Health,
+        Items = new List<BitNavItem>
+        {
+            new BitNavItem { Text = ""Aplle"" },
+            new BitNavItem { Text = ""Orange"" },
+            new BitNavItem { Text = ""Benana"" },
+        }
+    },
+    new BitNavItem { Text = ""Ice Cream"" },
+    new BitNavItem { Text = ""Cookie"" },
+};
+";
+
+    #endregion
+
+    #region Sample Code 5
+
+    private static string example5HTMLCode = @"
+<BitNav Items=""FoodNavMenu""
+        DefaultSelectedItem=""FoodNavMenu[0].Items[2]""
+        Mode=""BitNavMode.Manual""
+        OnItemClick=""(item) => ClickedItem = item""
+        OnSelectItem=""(item) => SelectedItem = item""
+        OnItemToggle=""(item) => ToggledItem = item"" />
+
+<div class=""flex"">
+    <span>Clicked Item: @ClickedItem?.Text</span>
+    <span>Selected Item: @SelectedItem?.Text</span>
+    <span>Toggled Item: @(ToggledItem is null ? ""N/A"" : $""{ToggledItem.Text} ({(ToggledItem.IsExpanded ? ""Expanded"" : ""Collapsed"")})"")</span>
+</div>
+";
 
     private static string example5CSharpCode = @"
-private readonly List<BitNavLinkItem> NavLinksWithCustomHeader = new()
+private static readonly List<BitNavItem> FoodNavMenu = new()
 {
-    new BitNavLinkItem
+    new BitNavItem
     {
-        Name = ""Pages"",
+        Text = ""Fast-Food"",
+        IconName = BitIconName.HeartBroken,
         IsExpanded = true,
-        Links = new List<BitNavLinkItem>
+        Items = new List<BitNavItem>
         {
-            new BitNavLinkItem { Name = ""Activity"", Url = ""http://msn.com"", Key = ""Key1-1"", Title = ""Activity"" },
-            new BitNavLinkItem { Name = ""News"", Title = ""News"", Url = ""http://msn.com"", Key = ""Key1-2"" },
+            new BitNavItem
+            {
+                Text = ""Burgers"",
+                Items = new List<BitNavItem>
+                {
+                    new BitNavItem { Text = ""Beef Burger"" },
+                    new BitNavItem { Text = ""Veggie Burger"" },
+                    new BitNavItem { Text = ""Bison Burger"" },
+                    new BitNavItem { Text = ""Wild Salmon Burger"" },
+                }
+            },
+            new BitNavItem
+            {
+                Text = ""Pizzas"",
+                Items = new List<BitNavItem>
+                {
+                    new BitNavItem { Text = ""Cheese Pizza"" },
+                    new BitNavItem { Text = ""Veggie Pizza"" },
+                    new BitNavItem { Text = ""Pepperoni Pizza"" },
+                    new BitNavItem { Text = ""Meat Pizza"" },
+                }
+            },
+            new BitNavItem { Text    = ""French Fries"" },
         }
     },
-    new BitNavLinkItem
+    new BitNavItem
     {
-        Name = ""More pages"",
-        IsExpanded = true,
-        Links = new List<BitNavLinkItem>
+        Text = ""Fruits"",
+        IconName = BitIconName.Health,
+        Items = new List<BitNavItem>
         {
-            new BitNavLinkItem { Name= ""Settings"", Title = ""Settings"", Url = ""http://example.com"", Key = ""Key2-1"" },
-            new BitNavLinkItem { Name= ""Notes"", Title = ""Notes"", Url = ""http://example.com"", Key = ""Key2-1"" }
+            new BitNavItem { Text = ""Aplle"" },
+            new BitNavItem { Text = ""Orange"" },
+            new BitNavItem { Text = ""Benana"" },
         }
-    }
-};";
+    },
+    new BitNavItem { Text = ""Ice Cream"" },
+    new BitNavItem { Text = ""Cookie"" },
+};
 
-    private static string example6CSharpCode = @"
-private readonly List<BitNavLinkItem> NavLinksWithManualMode = new()
-{
-    new BitNavLinkItem
-    {
-        Name = ""Home"",
-        ExpandAriaLabel = ""Expand Home section"",
-        CollapseAriaLabel = ""Collapse Home section"",
-        IsExpanded = true,
-        Links = new List<BitNavLinkItem>
-        {
-            new BitNavLinkItem { Name = ""Activity"", Key = ""key1"", Target=""_blank"" },
-            new BitNavLinkItem { Name = ""MSN"", Key = ""key2"", IsEnabled = false, Target = ""_blank"" }
-        }
-    },
-    new BitNavLinkItem { Name = ""Documents"", Key = ""key3"", Target = ""_blank"", IsExpanded = true },
-    new BitNavLinkItem { Name = ""Pages"", Key = ""key4"", Target = ""_parent"" },
-    new BitNavLinkItem { Name = ""Notebook"", Key = ""key5"", IsEnabled = false },
-    new BitNavLinkItem { Name = ""Communication and Media"", Key = ""key6"", Target = ""_top"" },
-    new BitNavLinkItem { Name = ""News"", Title = ""News"", Key = ""key7"", IconName = BitIconName.News, Target = ""_self"" },
-};";
+private BitNavItem ClickedItem;
+private BitNavItem SelectedItem;
+private BitNavItem ToggledItem;
+";
+
+    #endregion
 }

@@ -112,7 +112,7 @@ public partial class BitDatePickerDemo
             LinkType = LinkType.Link,
             Href = "#icon-location-enum",
             DefaultValue = "BitIconLocation.Left",
-            Description = "DatePicker icon location"
+            Description = "DatePicker icon location."
         },
         new ComponentParameter
         {
@@ -120,6 +120,13 @@ public partial class BitDatePickerDemo
             Type = "BitIconName",
             DefaultValue = "BitIconName.CalendarMirrored",
             Description = "Optional DatePicker icon."
+        },
+        new ComponentParameter
+        {
+            Name = "InvalidErrorMessage",
+            Type = "string",
+            DefaultValue = "string.Empty",
+            Description = "The custom validation error message for the invalid value."
         },
         new ComponentParameter()
         {
@@ -134,6 +141,13 @@ public partial class BitDatePickerDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether or not this DatePicker is open.",
+        },
+        new ComponentParameter()
+        {
+            Name = "IsResponsive",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Enables the responsive mode in small screens.",
         },
         new ComponentParameter()
         {
@@ -355,30 +369,28 @@ public partial class BitDatePickerDemo
                Placeholder=""Select a date..."" />";
 
     private readonly string example5HTMLCode = @"
-@if (string.IsNullOrEmpty(SuccessMessage))
-{
-    <EditForm Model=""formValidationDatePickerModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
-        <DataAnnotationsValidator />
+<EditForm Model=""formValidationDatePickerModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
+    <DataAnnotationsValidator />
 
-        <div class=""validation-summary"">
-            <ValidationSummary />
-        </div>
-        <div>
-            <BitDatePicker Style=""max-width: 300px"" 
-                           @bind-Value=""formValidationDatePickerModel.Date"" 
-                           AriaLabel=""Select a date""
-                           Placeholder=""Select a date...""
-                           Label=""Date required (with label)"" />
+    <div class=""validation-summary"">
+        <ValidationSummary />
+    </div>
+    <div>
+        <BitDatePicker @bind-Value=""formValidationDatePickerModel.Date""
+                       AllowTextInput=""true""
+                       Style=""max-width: 300px""
+                       AriaLabel=""Select a date""
+                       Placeholder=""Select a date...""
+                       Label=""Date required (with label)"" />
+        <ValidationMessage For=""@(() => formValidationDatePickerModel.Date)"" />
+    </div>
+    <br />
+    <BitButton ButtonType=""BitButtonType.Submit"">
+        Submit
+    </BitButton>
+</EditForm>
 
-            <ValidationMessage For=""@(() => formValidationDatePickerModel.Date)"" />
-        </div>
-        <br />
-        <BitButton ButtonType=""BitButtonType.Submit"">
-            Submit
-        </BitButton>
-    </EditForm>
-}
-else
+@if (string.IsNullOrEmpty(SuccessMessage) is false)
 {
     <BitMessageBar MessageBarType=""BitMessageBarType.Success"" IsMultiline=""false"">
         @SuccessMessage
@@ -468,14 +480,14 @@ private async Task OpenCallout()
 private DateTimeOffset? selectedDate = new DateTimeOffset(new DateTime(2020, 1, 17), DateTimeOffset.Now.Offset);";
 
     private readonly string example11HTMLCode = @"
-<BitDatePicker FormatDate=""yyyy/MM/dd hh:mm tt"" 
+<BitDatePicker DateFormat=""yyyy/MM/dd hh:mm tt"" 
                Culture=""CultureInfoHelper.GetFaIrCultureByFarsiNames()""
                GoToToday=""برو به امروز""
                Style=""max-width: 300px"">
 </BitDatePicker>";
 
     private readonly string example12HTMLCode = @"
-<BitDatePicker FormatDate=""yyyy/MM/dd hh:mm tt"" 
+<BitDatePicker DateFormat=""yyyy/MM/dd hh:mm tt"" 
                Culture=""CultureInfoHelper.GetFaIrCultureByFingilishNames()""
                GoToToday=""Boro be emrouz""
                Style=""max-width: 300px"">
@@ -593,5 +605,37 @@ private CultureInfo Culture = CultureInfo.CurrentUICulture;";
 <BitDatePicker Style=""max-width: 300px""
                AriaLabel=""Select a date""
                IconName=""BitIconName.Airplane""
+               Placeholder=""Select a date..."" />";
+
+    private readonly string example17HTMLCode = @"
+<EditForm Model=""formValidationDatePickerModel"">
+    <DataAnnotationsValidator />
+    <div>
+        <BitDatePicker @bind-Value=""formValidationDatePickerModel.Date""
+                        Style=""max-width: 350px""
+                        AllowTextInput=""true""
+                        Label=""BitDatePicker with Custom Invalid Error Message""
+                        InvalidErrorMessage=""Invalid Date!!!"" />
+        <ValidationMessage For=""@(() => formValidationDatePickerModel.Date)"" />
+    </div>
+    <br />
+    <div class=""validation-summary"">
+        <ValidationSummary />
+    </div>
+</EditForm>";
+
+    private readonly string example17CSharpCode = @"
+public class FormValidationDatePickerModel
+{
+    [Required]
+    public DateTimeOffset? Date { get; set; }
+}
+
+private FormValidationDatePickerModel formValidationDatePickerModel = new();";
+
+    private readonly string example18HTMLCode = @"
+<BitDatePicker Style=""max-width: 300px""
+               Responsive=""true""
+               AriaLabel=""Select a date""
                Placeholder=""Select a date..."" />";
 }

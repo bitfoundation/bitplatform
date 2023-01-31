@@ -3,6 +3,7 @@ namespace Bit.BlazorUI;
 
 public partial class BitToggleButton
 {
+    protected override bool UseVisual => false;
     private bool IsCheckedHasBeenSet;
     private bool isChecked;
     private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
@@ -114,19 +115,13 @@ public partial class BitToggleButton
 
     protected override void RegisterComponentClasses()
     {
-        ClassBuilder.Register(() => IsEnabled is false
-                                   ? ButtonStyle == BitButtonStyle.Primary
-                                       ? "primary-disabled"
-                                       : "standard-disabled"
-                                   : ButtonStyle == BitButtonStyle.Primary
+        ClassBuilder.Register(() => ButtonStyle == BitButtonStyle.Primary
                                        ? "primary"
                                        : "standard");
 
         ClassBuilder.Register(() => IsChecked
-                                   ? ButtonStyle == BitButtonStyle.Primary 
-                                       ? "primary-checked" 
-                                       : "standard-checked" 
-                                   : string.Empty);
+                                       ? "checked" 
+                                       : string.Empty);
     }
 
     protected virtual async Task HandleOnClick(MouseEventArgs e)

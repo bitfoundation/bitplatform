@@ -12,28 +12,29 @@
 
         <Content Remove="compilerconfig.json" />
         <None Include="compilerconfig.json" />
+        <None Include="Shared\LoadingComponent.razor.scss" />
         <Content Remove="wwwroot\appsettings.json" />
         <EmbeddedResource Include="wwwroot\appsettings.json" />
 
-        <PackageReference Include="Bit.BlazorUI" Version="4.8.0" />
-        <PackageReference Include="Bit.BlazorUI.Charts" Version="4.8.0" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="4.8.0">
+        <PackageReference Include="Bit.BlazorUI" Version="4.9.4" />
+        <PackageReference Include="Bit.BlazorUI.Charts" Version="4.9.4" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="4.9.4">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="4.8.0">
+        <PackageReference Include="Bit.SourceGenerators" Version="4.9.4">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="jose-jwt" Version="4.0.1" />
-        <PackageReference Include="LibSassBuilder" Version="2.0.2" Watch="false">
+        <PackageReference Include="jose-jwt" Version="4.1.0" />
+        <PackageReference Include="LibSassBuilder" Version="3.0.0" Watch="false">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="7.0.0" />
-        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.0" />
-        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.8.3">
+        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="7.0.2" />
+        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.2" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.2" />
+        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.9.4">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

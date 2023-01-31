@@ -5,7 +5,7 @@
 
 self.assetsInclude = [];
 self.assetsExclude = [/\.scp\.css$/, /weather\.json$/];
-self.defaultUrl = 'index.html';
+self.defaultUrl = '/';
 self.prohibitedUrls = [];
 self.assetsUrl = '/service-worker-assets.js';
 
