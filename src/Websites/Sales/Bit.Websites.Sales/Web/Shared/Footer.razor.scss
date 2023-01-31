@@ -100,6 +100,10 @@
                     height: rem(195px);
                     background-repeat: no-repeat;
                 }
+
+                &:hover {
+                    box-shadow: 0px 4px 16px rgba(0, 0, 0, 0.12);
+                }
             }
 
             .address-info {
@@ -114,7 +118,12 @@
                 }
 
                 .address {
+                    color: $B1;
                     background-image: url('/images/shared/location-icon.svg');
+
+                    &:hover {
+                        color: $B2;
+                    }
                 }
 
                 .country {
