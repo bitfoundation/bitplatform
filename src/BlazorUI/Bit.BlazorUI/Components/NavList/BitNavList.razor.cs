@@ -39,6 +39,7 @@ public partial class BitNavList<TItem> : IDisposable where TItem : class
     private string _internalItemsField = ITEMS;
 
     internal Dictionary<TItem, bool> _itemExpandStates = new();
+    private bool _disposed;
 
     [Inject] private NavigationManager _navigationManager { get; set; } = default!;
 
@@ -194,8 +195,11 @@ public partial class BitNavList<TItem> : IDisposable where TItem : class
         {
             if (value == selectedItem) return;
             selectedItem = value;
-            if (value is not null) ExpandSelectedItemParents(Items);
-            SelectedItemChanged.InvokeAsync(selectedItem);
+            _ = SelectedItemChanged.InvokeAsync(value);
+            if (value is not null)
+            {
+                ExpandParents(Items);
+            }
         }
     }
     [Parameter] public EventCallback<TItem> SelectedItemChanged { get; set; }
@@ -252,6 +256,61 @@ public partial class BitNavList<TItem> : IDisposable where TItem : class
 
     protected override string RootElementClass => "bit-nvl";
 
+    internal bool GetForceAnchor(TItem item) => item.GetValueFromProperty(_internalForceAnchorField, false);
+    internal string? GetText(TItem item) => item.GetValueAsObjectFromProperty(_internalTextField)?.ToString();
+    internal string? GetTitle(TItem item) => item.GetValueAsObjectFromProperty(_internalTitleField)?.ToString();
+    internal string? GetUrl(TItem item) => item.GetValueAsObjectFromProperty(_internalUrlField)?.ToString();
+    internal BitNavItemAriaCurrent GetAriaCurrent(TItem item) => item.GetValueFromProperty(_internalAriaCurrentField, BitNavItemAriaCurrent.Page);
+    internal string? GetExpandAriaLabel(TItem item) => item.GetValueAsObjectFromProperty(_internalExpandAriaLabelField)?.ToString();
+    internal string? GetCollapseAriaLabel(TItem item) => item.GetValueAsObjectFromProperty(_internalCollapseAriaLabelField)?.ToString();
+    internal string? GetAriaLabel(TItem item) => item.GetValueAsObjectFromProperty(_internalAriaLabelField)?.ToString();
+    internal BitIconName? GetIconName(TItem item) => item.GetValueFromProperty<BitIconName>(_internalIconNameField);
+    private bool? GetIsExpanded(TItem item) => item.GetValueFromProperty<bool?>(_internalIsExpandedField, null);
+    private void SetIsExpanded(TItem item, bool value) => item.SetValueToProperty(_internalIsExpandedField, value);
+    internal bool GetIsEnabled(TItem item) => item.GetValueFromProperty(_internalIsEnabledField, true);
+    internal string? GetStyle(TItem item) => item.GetValueAsObjectFromProperty(_internalStyleField)?.ToString();
+    internal string? GetTarget(TItem item) => item.GetValueAsObjectFromProperty(_internalTargetField)?.ToString();
+    internal IList<TItem> GetItems(TItem item) => item.GetValueFromProperty(_internalItemsField, new List<TItem>())!;
+
+    internal void SetItemExpanded(TItem item, bool value)
+    {
+        var isExpanded = GetIsExpanded(item);
+
+        if (isExpanded is not null)
+        {
+            SetIsExpanded(item, value);
+            return;
+        }
+
+        if (_itemExpandStates.ContainsKey(item))
+        {
+            _itemExpandStates[item] = value;
+        }
+        else
+        {
+            _itemExpandStates.Add(item, value);
+        }
+    }
+
+    internal bool GetItemExpanded(TItem item)
+    {
+        var isExpanded = GetIsExpanded(item);
+
+        if (isExpanded is not null)
+        {
+            return isExpanded.Value;
+        }
+
+        return _itemExpandStates[item];
+    }
+
+    internal async Task SetSelectedItem(TItem item) 
+    {
+        SelectedItem = item;
+        await OnSelectItem.InvokeAsync(item);
+        StateHasChanged();
+    }
+
     protected override async Task OnInitializedAsync()
     {
         _internalForceAnchorField = ForceAnchorFieldelector?.GetName() ?? ForceAnchorField;
@@ -290,22 +349,6 @@ public partial class BitNavList<TItem> : IDisposable where TItem : class
         await base.OnInitializedAsync();
     }
 
-    internal bool GetForceAnchor(TItem item) => item.GetValueFromProperty(_internalForceAnchorField, false);
-    internal string? GetText(TItem item) => item.GetValueAsObjectFromProperty(_internalTextField)?.ToString();
-    internal string? GetTitle(TItem item) => item.GetValueAsObjectFromProperty(_internalTitleField)?.ToString();
-    internal string? GetUrl(TItem item) => item.GetValueAsObjectFromProperty(_internalUrlField)?.ToString();
-    internal BitNavItemAriaCurrent GetAriaCurrent(TItem item) => item.GetValueFromProperty(_internalAriaCurrentField, BitNavItemAriaCurrent.Page);
-    internal string? GetExpandAriaLabel(TItem item) => item.GetValueAsObjectFromProperty(_internalExpandAriaLabelField)?.ToString();
-    internal string? GetCollapseAriaLabel(TItem item) => item.GetValueAsObjectFromProperty(_internalCollapseAriaLabelField)?.ToString();
-    internal string? GetAriaLabel(TItem item) => item.GetValueAsObjectFromProperty(_internalAriaLabelField)?.ToString();
-    internal BitIconName? GetIconName(TItem item) => item.GetValueFromProperty<BitIconName>(_internalIconNameField);
-    internal bool? GetIsExpanded(TItem item) => item.GetValueFromProperty<bool?>(_internalIsExpandedField, null);
-    private void SetIsExpanded(TItem item, bool value) => item.SetValueToProperty(_internalIsExpandedField, value);
-    internal bool GetIsEnabled(TItem item) => item.GetValueFromProperty(_internalIsEnabledField, true);
-    internal string? GetStyle(TItem item) => item.GetValueAsObjectFromProperty(_internalStyleField)?.ToString();
-    internal string? GetTarget(TItem item) => item.GetValueAsObjectFromProperty(_internalTargetField)?.ToString();
-    internal IList<TItem> GetItems(TItem item) => item.GetValueFromProperty(_internalItemsField , new List<TItem>())!;
-
     private List<TItem> Flatten(IList<TItem> e) => e.SelectMany(c => Flatten(GetItems(c))).Concat(e).ToList();
 
     private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
@@ -326,40 +369,11 @@ public partial class BitNavList<TItem> : IDisposable where TItem : class
         }
     }
 
-    private void SetItemExpanded(TItem item, bool value)
-    {
-        var isExpanded = GetIsExpanded(item);
-
-        if (isExpanded is not null)
-        {
-            SetIsExpanded(item, value);
-            return;
-        }
-
-        if (_itemExpandStates.ContainsKey(item))
-        {
-            _itemExpandStates[item] = value;
-        }
-        else
-        {
-            _itemExpandStates.Add(item, value);
-        }
-    }
-
-    internal bool GetItemExpanded(TItem item)
-    {
-        var isExpanded = GetIsExpanded(item);
-
-        if (isExpanded is not null) return isExpanded.Value;
-
-        return _itemExpandStates[item];
-    }
-
-    private bool ExpandSelectedItemParents(IList<TItem> items)
+    private bool ExpandParents(IList<TItem> items)
     {
         foreach (var parent in items)
         {
-            if (parent == SelectedItem || (GetItems(parent).Any() && ExpandSelectedItemParents(GetItems(parent))))
+            if (parent == SelectedItem || (GetItems(parent).Any() && ExpandParents(GetItems(parent))))
             {
                 SetItemExpanded(parent, true);
                 return true;
@@ -367,33 +381,6 @@ public partial class BitNavList<TItem> : IDisposable where TItem : class
         }
 
         return false;
-    }
-
-    internal async void HandleOnClick(TItem item)
-    {
-        if (GetIsEnabled(item) == false) return;
-
-        if (GetItems(item).Any() && GetUrl(item).HasNoValue())
-        {
-            await ToggleItem(item);
-        }
-        else if (Mode == BitNavMode.Manual)
-        {
-            SelectedItem = item;
-            await OnSelectItem.InvokeAsync(item);
-            StateHasChanged();
-        }
-
-        await OnItemClick.InvokeAsync(item);
-    }
-
-    internal async Task ToggleItem(TItem item)
-    {
-        if (GetIsEnabled(item) is false || GetItems(item).Any() is false) return;
-
-        SetItemExpanded(item, !GetItemExpanded(item));
-
-        await OnItemToggle.InvokeAsync(item);
     }
 
     public void Dispose()
@@ -404,9 +391,13 @@ public partial class BitNavList<TItem> : IDisposable where TItem : class
 
     protected virtual void Dispose(bool disposing)
     {
-        if (disposing && Mode == BitNavMode.Automatic)
+        if (disposing is false || _disposed) return;
+
+        if (Mode == BitNavMode.Automatic)
         {
             _navigationManager.LocationChanged -= OnLocationChanged;
         }
+
+        _disposed = true;
     }
 }

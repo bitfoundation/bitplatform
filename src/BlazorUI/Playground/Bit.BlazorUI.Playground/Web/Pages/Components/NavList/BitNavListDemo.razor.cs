@@ -899,12 +899,16 @@ private string SelectedFoodName = FoodNavMenu[0].Childs[2].Name;
     private static string example4HTMLCode = @"
 <style>
     .nav-list-custom-header {
+        font-size: 17px;
+        font-weight: 600;
         color: green;
     }
 
     .nav-list-custom-item {
         display: flex;
+        align-items: center;
         flex-flow: row nowrap;
+        gap: 4px;
         color: #ff7800;
         font-weight: 600;
     }
@@ -1100,7 +1104,7 @@ private static readonly List<FoodMenu> FoodNavMenu = new()
 <div class=""flex"">
     <span>Clicked Item: @ClickedItem?.Name</span>
     <span>Selected Item: @SelectedItem?.Name</span>
-    <span>Toggled Item: @ToggledItem?.Name</span>
+    <span>Toggled Item: @(ToggledItem is null ? ""N/A"" : $""{ToggledItem.Name} ({(ToggledItem.IsExpanded ? ""Expanded"" : ""Collapsed"")})"")</span>
 </div>
 ";
 

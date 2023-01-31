@@ -787,18 +787,18 @@ private string SelectedItemText = FoodNavMenu[0].Items[2].Text;
     private static string example4HTMLCode = @"
 <style>
     .nav-custom-header {
+        font-size: 17px;
+        font-weight: 600;
         color: green;
     }
 
     .nav-custom-item {
         display: flex;
+        align-items: center;
         flex-flow: row nowrap;
+        gap: 4px;
         color: #ff7800;
         font-weight: 600;
-
-        &.disabled-item {
-            color: #ff780061;
-        }
     }
 </style>
 

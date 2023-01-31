@@ -4,7 +4,7 @@ namespace Bit.BlazorUI.Components.NavList;
 
 public partial class _BitNavListChild<TItem> where TItem : class
 {
-    private IDictionary<BitNavItemAriaCurrent, string> _ariaCurrentMap = new Dictionary<BitNavItemAriaCurrent, string>()
+    private static Dictionary<BitNavItemAriaCurrent, string> _AriaCurrentMap = new()
     {
         [BitNavItemAriaCurrent.Page] = "page",
         [BitNavItemAriaCurrent.Step] = "step",
@@ -14,25 +14,41 @@ public partial class _BitNavListChild<TItem> where TItem : class
         [BitNavItemAriaCurrent.True] = "true"
     };
 
-    [CascadingParameter] protected BitNavList<TItem> Parent { get; set; } = default!;
+    [CascadingParameter] protected BitNavList<TItem> NavList { get; set; } = default!;
 
-    [Parameter] public int Depth { get; set; }
+    [CascadingParameter] protected _BitNavListChild<TItem>? Parent { get; set; }
 
     [Parameter] public TItem Item { get; set; } = default!;
 
-    private string GetItemClasses(TItem item)
+    [Parameter] public int Depth { get; set; }
+
+    private async void HandleOnClick()
     {
-        var enabledClass = Parent.GetIsEnabled(item) ? "enabled" : "disabled";
-        var hasUrlClass = Parent.GetUrl(item).HasNoValue() ? "nourl" : "hasurl";
+        if (NavList is null) return;
+        if (NavList.GetIsEnabled(Item) == false) return;
 
-        var isSelected = item == Parent.SelectedItem ? "selected" : "";
+        await NavList.OnItemClick.InvokeAsync(Item);
 
-        return $"link-{enabledClass}-{hasUrlClass} {isSelected}";
+        if (NavList.GetItems(Item).Any() && NavList.GetUrl(Item).HasNoValue())
+        {
+            await ToggleItem();
+        }
+        else if (NavList.Mode == BitNavMode.Manual)
+        {
+            await NavList.SetSelectedItem(Item);
+        }
     }
 
-    private static bool IsRelativeUrl(string url)
+    private async Task ToggleItem()
     {
-        var regex = new Regex(@"!/^[a-z0-9+-.]+:\/\//i");
-        return regex.IsMatch(url);
+        if (NavList is null) return;
+
+        if (NavList.GetIsEnabled(Item) is false || NavList.GetItems(Item).Any() is false) return;
+
+        NavList.SetItemExpanded(Item, !NavList.GetItemExpanded(Item));
+
+        await NavList.OnItemToggle.InvokeAsync(Item);
     }
+
+    private static bool IsRelativeUrl(string? url) => url.HasValue() && new Regex("!/^[a-z0-9+-.]+:\\/\\//i").IsMatch(url!);
 }
