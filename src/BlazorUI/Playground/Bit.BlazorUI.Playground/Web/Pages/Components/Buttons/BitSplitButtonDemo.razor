@@ -9,22 +9,22 @@
     <ComponentExampleBox Title="Basic SplitButton" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
             <div class="example-desc">To create a multi button you can use a BitSplitButton component.</div>
-            <div class="example-box">
-                <div class="example">
+            <div class="example-content">
+                <div>
                     <BitLabel>Primary</BitLabel>
                     <BitSplitButton Items="example1Items"
                                     ButtonStyle="BitButtonStyle.Primary"
                                     OnClick="(item) => BasicPrimarySelectedItem = item.Text" />
                     <div class="selected-item">Clicked item: @BasicPrimarySelectedItem</div>
                 </div>
-                <div class="example">
+                <div>
                     <BitLabel>Standard</BitLabel>
                     <BitSplitButton Items="example1Items"
                                     ButtonStyle="BitButtonStyle.Standard"
                                     OnClick="(item) => BasicStandardSelectedItem = item.Text" />
                     <div class="selected-item">Clicked item: @BasicStandardSelectedItem</div>
                 </div>
-                <div class="example">
+                <div>
                     <BitLabel>Disabled</BitLabel>
                     <BitSplitButton Items="example1Items" IsEnabled="false" />
                 </div>
@@ -35,8 +35,8 @@
     <ComponentExampleBox Title="SplitButton with IsSticky" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example2">
         <ExamplePreview>
             <div class="example-desc">You can first select the button item and then click on it to execute its onclick event.</div>
-            <div class="example-box">
-                <div class="example">
+            <div class="example-content">
+                <div>
                     <BitLabel>Primary</BitLabel>
                     <BitSplitButton Items="example2Items"
                                     ButtonStyle="BitButtonStyle.Primary"
@@ -44,7 +44,7 @@
                                     OnClick="(item) => StickyPrimarySelectedItem = item.Text" />
                     <div class="selected-item">Clicked item: @StickyPrimarySelectedItem</div>
                 </div>
-                <div class="example">
+                <div>
                     <BitLabel>Standard</BitLabel>
                     <BitSplitButton Items="example2Items"
                                     ButtonStyle="BitButtonStyle.Standard"
@@ -59,8 +59,8 @@
     <ComponentExampleBox Title="SplitButton with Item Disabled" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example3">
         <ExamplePreview>
             <div class="example-desc">You can disable the button item.</div>
-            <div class="example-box">
-                <div class="example">
+            <div class="example-content">
+                <div>
                     <BitLabel>Sticky Primary</BitLabel>
                     <BitSplitButton Items="example3Items"
                                     ButtonStyle="BitButtonStyle.Primary"
@@ -68,7 +68,7 @@
                                     OnClick="(item) => DisabledPrimarySelectedItem = item.Text" />
                     <div class="selected-item">Clicked item: @DisabledPrimarySelectedItem</div>
                 </div>
-                <div class="example">
+                <div>
                     <BitLabel>Basic Standard</BitLabel>
                     <BitSplitButton Items="example3Items"
                                     ButtonStyle="BitButtonStyle.Standard"
@@ -82,8 +82,8 @@
     <ComponentExampleBox Title="SplitButton with Item Template" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
         <ExamplePreview>
             <div class="example-desc">You can customize the button item.</div>
-            <div class="example-box">
-                <div class="example">
+            <div class="example-content">
+                <div>
                     <BitLabel>Primary</BitLabel>
                     <BitSplitButton Items="example4Items"
                                     ButtonStyle="BitButtonStyle.Primary"
@@ -99,7 +99,7 @@
                     </BitSplitButton>
                     <div class="selected-item">Clicked item: @TemplatePrimarySelectedItem</div>
                 </div>
-                <div class="example">
+                <div>
                     <BitLabel>Standard</BitLabel>
                     <BitSplitButton Items="example4Items"
                                     ButtonStyle="BitButtonStyle.Standard"

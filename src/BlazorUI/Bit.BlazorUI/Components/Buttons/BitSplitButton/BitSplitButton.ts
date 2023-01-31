@@ -46,26 +46,16 @@
             const splitButtonWrapperBottom = window.innerHeight - (splitButtonWrapperHeight + splitButtonWrapperY);
             const splitButtonWrapperRight = window.innerWidth - (splitButtonWrapperWidth + splitButtonWrapperX);
 
+            splitButtonCallout.style.left = splitButtonWrapperX + "px";
+            splitButtonCallout.style.right = "unset";
+
             if (splitButtonWrapperBottom >= splitButtonCalloutHeight) {
                 splitButtonCallout.style.top = splitButtonWrapperY + splitButtonWrapperHeight + 1 + "px";
-                splitButtonCallout.style.left = splitButtonWrapperX + "px";
-                splitButtonCallout.style.right = "unset";
                 splitButtonCallout.style.bottom = "unset";
-            } else if (splitButtonTop >= splitButtonCalloutHeight) {
-                splitButtonCallout.style.bottom = splitButtonWrapperBottom + splitButtonHeight + 1 + "px";
-                splitButtonCallout.style.left = splitButtonWrapperX + "px";
-                splitButtonCallout.style.right = "unset";
-                splitButtonCallout.style.top = "unset";
-            } else if (splitButtonWrapperRight >= splitButtonCalloutWidth) {
-                splitButtonCallout.style.left = splitButtonWrapperX + splitButtonWrapperWidth + 1 + "px";
-                splitButtonCallout.style.bottom = "2px";
-                splitButtonCallout.style.right = "unset";
-                splitButtonCallout.style.top = "unset";
+
             } else {
-                splitButtonCallout.style.left = splitButtonWrapperX - splitButtonCalloutWidth - 1 + "px";
-                splitButtonCallout.style.bottom = "2px";
+                splitButtonCallout.style.bottom = splitButtonWrapperBottom + splitButtonHeight + 1 + "px";
                 splitButtonCallout.style.top = "unset";
-                splitButtonCallout.style.right = "unset";
             }
         }
     }
