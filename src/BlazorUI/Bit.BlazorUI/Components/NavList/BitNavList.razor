@@ -11,9 +11,9 @@
 
     <ul role="list">
         <CascadingValue Value="this" IsFixed="true">
-            @foreach (var childitem in Items)
+            @foreach (var childItem in Items)
             {
-                <_BitNavListChild Item="childitem" Depth="0" />
+                <_BitNavListChild @key="GetKey(childItem)" Item="childItem" Depth="0" />
             }
         </CascadingValue>
     </ul>

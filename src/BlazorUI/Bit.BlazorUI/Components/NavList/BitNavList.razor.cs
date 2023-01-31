@@ -5,6 +5,7 @@ namespace Bit.BlazorUI;
 
 public partial class BitNavList<TItem> : IDisposable where TItem : class
 {
+    private const string KEY = "Key";
     private const string FORCE_ANCHOR = "ForceAnchor";
     private const string TEXT = "Text";
     private const string TITLE = "Title";
@@ -23,6 +24,7 @@ public partial class BitNavList<TItem> : IDisposable where TItem : class
     private bool SelectedItemHasBeenSet;
     private TItem? selectedItem;
 
+    private string _internalKeyField = KEY;
     private string _internalForceAnchorField = FORCE_ANCHOR;
     private string _internalTextField = TEXT;
     private string _internalTitleField = TITLE;
@@ -256,6 +258,7 @@ public partial class BitNavList<TItem> : IDisposable where TItem : class
 
     protected override string RootElementClass => "bit-nvl";
 
+    internal string? GetKey(TItem item) => item.GetValueFromProperty(_internalKeyField, GetText(item));
     internal bool GetForceAnchor(TItem item) => item.GetValueFromProperty(_internalForceAnchorField, false);
     internal string? GetText(TItem item) => item.GetValueAsObjectFromProperty(_internalTextField)?.ToString();
     internal string? GetTitle(TItem item) => item.GetValueAsObjectFromProperty(_internalTitleField)?.ToString();
@@ -304,7 +307,7 @@ public partial class BitNavList<TItem> : IDisposable where TItem : class
         return _itemExpandStates[item];
     }
 
-    internal async Task SetSelectedItem(TItem item) 
+    internal async Task SetSelectedItem(TItem item)
     {
         SelectedItem = item;
         await OnSelectItem.InvokeAsync(item);
