@@ -1,0 +1,16 @@
+﻿@page "/components/overlay"
+
+<ComponentDemo ComponentName="OtpInput"
+               ComponentDescription="The OTP input is used for MFA procedure of authenticating users by a one-time password.">
+
+    <ComponentExampleBox Title="Basic BitOtpInput" ExampleId="example1">
+        <ExamplePreview>
+          
+            <BitButton OnClick="() => IsVisible = true">Show Overlay</BitButton>
+
+            <BitOverlay @bind-IsVisible="IsVisible" Color="rgba(255, 99, 71, 0.4)" ZIndex="9999" />
+
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+</ComponentDemo>
