@@ -239,10 +239,23 @@
     padding-top: 4rem;
 
     .team-image {
-        background-image: url('/images/about/team-image.webp');
+        background-image: url('/images/about/team/team-1.webp');
         background-repeat: no-repeat;
         background-size: contain;
+        background-position: center;
         width: 100%;
         height: rem(654px);
+
+        @include md {
+            background-image: url('/images/about/team/team-2.webp');
+        }
+
+        @include sm {
+            background-image: url('/images/about/team/team-3.webp');
+        }
+
+        @include xs {
+            background-image: url('/images/about/team/team-4.webp');
+        }
     }
 }
