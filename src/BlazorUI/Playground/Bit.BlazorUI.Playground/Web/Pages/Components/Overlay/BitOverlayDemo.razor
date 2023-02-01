@@ -5,10 +5,49 @@
 
     <ComponentExampleBox Title="Basic BitOtpInput" ExampleId="example1">
         <ExamplePreview>
-          
-            <BitButton OnClick="() => IsVisible = true">Show Overlay</BitButton>
 
-            <BitOverlay @bind-IsVisible="IsVisible" Color="rgba(255, 99, 71, 0.4)" ZIndex="9999" />
+            <div>
+                <BitButton OnClick="() => IsVisible1 = true">Show Overlay</BitButton>
+
+                <BitOverlay @bind-IsVisible="IsVisible1" Style="background-color: rgba(255, 0, 0, 0.2); z-index: 9999;">
+                    <BitButton OnClick="() => IsVisible1 = false">Hide Overlay</BitButton>
+                </BitOverlay>
+            </div>
+
+            <div style="margin-top: 10px;">
+                <BitButton OnClick="() => IsVisible2 = true">Show Overlay</BitButton>
+
+                <BitOverlay @bind-IsVisible="IsVisible2" AutoToggleScroll="false" Style="background-color: rgba(255, 0, 0, 0.2); z-index: 9999;">
+                    <BitButton OnClick="() => IsVisible2 = false">Hide Overlay</BitButton>
+                </BitOverlay>
+            </div>
+
+            <div style="margin-top: 10px; position: relative;">
+                <BitButton OnClick="() => IsVisible3 = true">Show Overlay</BitButton>
+
+                <BitOverlay @bind-IsVisible="IsVisible3"
+                            Style="background-color: rgba(255, 0, 0, 0.2); z-index: 9999;"
+                            AbsolutePosition="true"
+                            AutoClose="false">
+                    <div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">
+                        <BitButton OnClick="() => IsVisible3 = false">Hide Overlay</BitButton>
+                    </div>
+                </BitOverlay>
+            </div>
+
+            <div style="margin-top: 10px; position: relative;">
+                <BitButton OnClick="() => IsVisible4 = true">Show Overlay</BitButton>
+
+                <BitOverlay @bind-IsVisible="IsVisible4"
+                            Style="background-color: rgba(255, 0, 0, 0.2); z-index: 9999;"
+                            AbsolutePosition="true"
+                            AutoToggleScroll="false"
+                            AutoClose="false">
+                    <div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">
+                        <BitButton OnClick="() => IsVisible4 = false">Hide Overlay</BitButton>
+                    </div>
+                </BitOverlay>
+            </div>
 
         </ExamplePreview>
     </ComponentExampleBox>

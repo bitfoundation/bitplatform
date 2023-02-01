@@ -14,4 +14,8 @@
     &.visible {
         display: block;
     }
+
+    &.absolute {
+        position: absolute;
+    }
 }
