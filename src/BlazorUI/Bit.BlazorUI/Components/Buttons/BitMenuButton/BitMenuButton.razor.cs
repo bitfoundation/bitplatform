@@ -98,6 +98,7 @@ public partial class BitMenuButton
     public void CloseCalloutBeforeAnotherCalloutIsOpened()
     {
         _isCalloutOpen = false;
+        StateHasChanged();
     }
 
     protected override string RootElementClass => "bit-mnb";
