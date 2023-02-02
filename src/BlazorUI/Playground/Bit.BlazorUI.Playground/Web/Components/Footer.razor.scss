@@ -50,6 +50,41 @@
         padding-right: rem(30px);
         padding-left: rem(30px);
     }
+
+    .address-info {
+        display: flex;
+        flex-flow: column nowrap;
+
+        a {
+            text-decoration: none;
+        }
+
+        .address, .tel, .country {
+            padding-left: rem(20px);
+            background-repeat: no-repeat;
+            background-position-y: rem(4px);
+        }
+
+        .address, .tel {
+            color: #3E5060;
+
+            &:hover {
+                color: #4A5AAB;
+            }
+        }
+
+        .address {
+            background-image: url('/images/footer/location-icon.svg');
+        }
+
+        .country {
+            font-weight: 600;
+        }
+
+        .tel {
+            background-image: url('/images/footer/tel-icon.svg');
+        }
+    }
 }
 
 .grid-container {
@@ -113,12 +148,12 @@
 }
 
 .copy-right-txt {
-    margin: 0;
     font-size: rem(14px);
     line-height: 1.5;
     letter-spacing: 0;
     font-weight: 400;
     color: #3E5060;
+    margin-bottom: rem(5px);
 }
 
 .social-link-group {
