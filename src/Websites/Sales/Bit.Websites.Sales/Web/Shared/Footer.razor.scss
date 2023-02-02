@@ -5,6 +5,7 @@
 .footer {
     display: flex;
     flex-flow: column wrap;
+    align-items: center;
     width: 100%;
     padding: rem(16px) rem(140px);
     background-color: $Gray4;
@@ -16,17 +17,19 @@
         padding: rem(32px) rem(60px);
     }
 
-    @include md {
+    @include sm {
         padding: rem(16px) rem(30px);
     }
 
     .content {
         display: flex;
         justify-content: space-between;
-        padding: rem(16px) rem(100px);
-        padding-bottom: 1rem;
+        gap: 1rem;
+        padding: rem(16px) 0;
         border-bottom: 1px solid $Gray3;
         margin-bottom: 1rem;
+        width: 100%;
+        max-width: rem(1160px);
 
         @include lg {
             padding: rem(16px) rem(0);
@@ -93,6 +96,7 @@
                 width: rem(160px);
                 height: rem(95px);
                 background-image: url('/images/shared/address_bg.webp');
+                background-repeat: no-repeat;
                 background-size: contain;
 
                 @include xs {
