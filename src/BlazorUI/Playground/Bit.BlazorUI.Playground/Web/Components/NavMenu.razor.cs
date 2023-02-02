@@ -45,7 +45,6 @@ public partial class NavMenu
                 new BitNavItem { Text = "TextField", Url = "/components/text-field" },
                 new BitNavItem { Text = "NumericTextField", Url = "/components/numeric-text-field" },
                 new BitNavItem { Text = "OtpInput", Url = "/components/otp-input" },
-                new BitNavItem { Text = "Overlay", Url = "/components/overlay" },
                 new BitNavItem { Text = "Toggle (Switch)", Url = "/components/toggle" }
             }
         },
@@ -119,6 +118,7 @@ public partial class NavMenu
             Items = new List<BitNavItem>
             {
                 new BitNavItem { Text = "Icon", Url = "/components/icon" },
+                new BitNavItem { Text = "Overlay", Url = "/components/overlay" },
             },
         },
         new BitNavItem { Text = "Icons", Url = "/icons" },

@@ -19,43 +19,41 @@ public partial class BitOverlayDemo
             Name = "AutoClose",
             Type = "bool",
             DefaultValue = "true",
-            Description = "By default, it will be closed wherever the Overlay is clicked.",
+            Description = "When true, the Overlay will be closed by clicking on it.",
         },
         new ComponentParameter()
         {
             Name = "AutoToggleScroll",
             Type = "bool",
             DefaultValue = "true",
-            Description = "When the overlay is open, the element behind it cannot be scrolled, and when the overlay is closed, it returns to its previous state.",
+            Description = "When true, the scroll behavior of the Scroller element behind the overlay will be disabled.",
         },
         new ComponentParameter()
         {
             Name = "AbsolutePosition",
             Type = "bool",
-            Description = "Set the Absolute Position style to Overlay when the Overlay is only for part of the page.",
+            Description = "When true, the Overlay will be positioned absolute instead of fixed.",
         },
         new ComponentParameter()
         {
             Name = "ChildContent",
             Type = "RenderFragment?",
-            Description = "HTML content inside the Overlay.",
+            Description = "The content of the Overlay.",
         },
         new ComponentParameter()
         {
             Name = "IsVisible",
             Type = "bool",
-            Description = "Whether to display Overlay or not.",
+            Description = "When true, the Overlay and its content will be shown.",
         },
         new ComponentParameter()
         {
             Name = "ScrollerSelector",
             Type = "string",
             DefaultValue = "body",
-            Description = "Set specific element to toggle scroll on behind of Overlay.",
+            Description = "Set the selector of the Selector element for the Overlay to disable its scroll if applicable.",
         },
     };
-
-    #region Sample Code 1
 
     private readonly string example1HTMLCode = @"
 <style>
@@ -97,10 +95,6 @@ public partial class BitOverlayDemo
     private readonly string example1CSharpCode = @"
 private bool BasicIsVisible;
 ";
-
-    #endregion
-
-    #region Sample Code 2
 
     private readonly string example2HTMLCode = @"
 <style>
@@ -151,10 +145,6 @@ private bool BasicIsVisible;
     private readonly string example2CSharpCode = @"
 private bool AutoCloseIsVisible;
 ";
-
-    #endregion
-
-    #region Sample Code 3
 
     private readonly string example3HTMLCode = @"
 <style>
@@ -221,10 +211,6 @@ private bool AutoCloseIsVisible;
 private bool AbsoluteIsVisible;
 ";
 
-    #endregion
-
-    #region Sample Code 4
-
     private readonly string example4HTMLCode = @"
 <style>
     .overlay {
@@ -266,10 +252,6 @@ private bool AbsoluteIsVisible;
     private readonly string example4CSharpCode = @"
 private bool AutoToggleIsVisible;
 ";
-
-    #endregion
-
-    #region Sample Code 5
 
     private readonly string example5HTMLCode = @"
 <style>
@@ -401,6 +383,4 @@ private bool AutoToggleIsVisible;
 private bool EnabledScrollerIsVisible;
 private bool DisabledScrollerIsVisible;
 ";
-
-    #endregion
 }
