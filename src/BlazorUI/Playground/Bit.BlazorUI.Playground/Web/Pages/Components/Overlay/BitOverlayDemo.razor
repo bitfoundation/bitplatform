@@ -24,16 +24,15 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Absolute Position" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example2">
+    <ComponentExampleBox Title="Auto Close" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example2">
         <ExamplePreview>
-            <div class="overlay-box">
-                <BitButton Class="show-overlay-btn" OnClick="() => AbsoluteIsVisible = true">Show Overlay</BitButton>
-                <BitOverlay @bind-IsVisible="AbsoluteIsVisible"
+            <div>
+                <BitButton OnClick="() => AutoCloseIsVisible = true">Show Overlay</BitButton>
+                <BitOverlay @bind-IsVisible="AutoCloseIsVisible"
                             Class="overlay"
-                            AutoClose="false"
-                            AbsolutePosition="true">
-                    <BitButton Class="close-overlay-btn" OnClick="() => AbsoluteIsVisible = false">Close Overlay</BitButton>
+                            AutoClose="false">
                     <div class="story-box">
+                        <BitButton Class="close-overlay-btn" OnClick="() => AutoCloseIsVisible = false">Close Overlay</BitButton>
                         <h3>Lorem Ipsum</h3>
                         <p>
                             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
@@ -47,7 +46,29 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Auto Toggle Scroll" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example3">
+    <ComponentExampleBox Title="Absolute Positioning" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example3">
+        <ExamplePreview>
+            <div class="overlay-box">
+                <BitButton Class="show-overlay-btn" OnClick="() => AbsoluteIsVisible = true">Show Overlay</BitButton>
+                <BitOverlay @bind-IsVisible="AbsoluteIsVisible"
+                            Class="overlay"
+                            AbsolutePosition="true">
+                    <div class="story-box">
+                        <h3>Lorem Ipsum</h3>
+                        <p>
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+                            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+                            sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+                            turpis. In hac habitasse platea dictumst.
+                        </p>
+                    </div>
+                </BitOverlay>
+                <h3>This is Container</h3>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Auto Toggle Scroll" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
         <ExamplePreview>
             <div class="example-desc">Enabled body scrolling behind of Overlay.</div>
             <div>
@@ -69,13 +90,33 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Scroller Selector" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
+    <ComponentExampleBox Title="Scroller Selector" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
         <ExamplePreview>
             <div class="example-desc">Set specific element to toggle scroll.</div>
 
             <div class="overlay-box">
-                <BitButton Class="show-overlay-btn" OnClick="() => ScrollerIsVisible = true">Show Overlay</BitButton>
-                <BitOverlay @bind-IsVisible="ScrollerIsVisible"
+                <div class="show-overlay-btn">
+                    <BitButton OnClick="() => EnabledScrollerIsVisible = true">Show with Enabled scrolling</BitButton>
+                    <BitButton OnClick="() => DisabledScrollerIsVisible = true">Show with Disabled scrolling</BitButton>
+                </div>
+
+                <BitOverlay @bind-IsVisible="EnabledScrollerIsVisible"
+                            Class="overlay"
+                            ScrollerSelector=".scroller"
+                            AbsolutePosition="true"
+                            AutoToggleScroll="false">
+                    <div class="story-box">
+                        <h3>Lorem Ipsum</h3>
+                        <p>
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+                            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+                            sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+                            turpis. In hac habitasse platea dictumst.
+                        </p>
+                    </div>
+                </BitOverlay>
+
+                <BitOverlay @bind-IsVisible="DisabledScrollerIsVisible"
                             Class="overlay"
                             ScrollerSelector=".scroller"
                             AbsolutePosition="true">
@@ -115,15 +156,6 @@
                         et odio efficitur suscipit. Ut volutpat dictum lectus, ac rutrum massa accumsan at. Sed pharetra auctor
                         finibus. In augue libero, commodo vitae nisi non, sagittis convallis ante. Phasellus malesuada eleifend
                         mollis. Curabitur ultricies leo ac metus venenatis elementum.
-                    </p>
-                    <p>
-                        Aenean egestas quam ut erat commodo blandit. Mauris ante nisl, pellentesque sed venenatis nec, aliquet sit
-                        amet enim. Praesent vitae diam non diam aliquet tristique non ut arcu. Pellentesque et ultrices eros. Fusce
-                        diam metus, mattis eu luctus nec, facilisis vel erat. Nam a lacus quis tellus gravida euismod. Nulla sed sem
-                        eget tortor cursus interdum. Sed vehicula tristique ultricies. Aenean libero purus, mollis quis massa quis,
-                        eleifend dictum massa. Fusce eu sapien sit amet odio lacinia placerat. Mauris varius risus sed aliquet
-                        cursus. Aenean lectus magna, tincidunt sit amet sodales a, volutpat ac leo. Morbi nisl sapien, tincidunt sit
-                        amet mauris quis, sollicitudin auctor est.
                     </p>
                     <p>
                         Nam id mi justo. Nam vehicula vulputate augue, ac pretium enim rutrum ultricies. Sed aliquet accumsan
