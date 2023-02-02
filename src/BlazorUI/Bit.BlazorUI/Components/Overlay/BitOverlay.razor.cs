@@ -9,27 +9,28 @@ public partial class BitOverlay
     [Inject] public IJSRuntime _js { get; set; } = default!;
 
     /// <summary>
-    /// 
-    /// </summary>
-    [Parameter] public bool AbsolutePosition { get; set; }
-
-    /// <summary>
-    /// 
+    /// By default, it will be closed wherever the Overlay is clicked.
     /// </summary>
     [Parameter] public bool AutoClose { get; set; } = true;
 
     /// <summary>
-    /// 
+    /// When the overlay is open, the element behind it cannot be scrolled, 
+    /// and when the overlay is closed, it returns to its previous state.
     /// </summary>
     [Parameter] public bool AutoToggleScroll { get; set; } = true;
 
     /// <summary>
-    /// 
+    /// Set the Absolute Position style to Overlay when the Overlay is only for part of the page.
+    /// </summary>
+    [Parameter] public bool AbsolutePosition { get; set; }
+
+    /// <summary>
+    /// HTML content inside the Overlay.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// 
+    /// Whether to display Overlay or not.
     /// </summary>
     [Parameter]
     public bool IsVisible
@@ -52,7 +53,7 @@ public partial class BitOverlay
     [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
 
     /// <summary>
-    /// 
+    /// Set specific element to toggle scroll on behind of Overlay.
     /// </summary>
     [Parameter] public string ScrollerSelector { get; set; } = "body";
 

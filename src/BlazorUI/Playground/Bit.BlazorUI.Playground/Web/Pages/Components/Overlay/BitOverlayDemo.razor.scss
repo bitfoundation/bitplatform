@@ -1,0 +1,52 @@
+﻿
+::deep {
+    .overlay {
+        background-color: rgba(0,0,0,.4);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .story-box {
+        display: flex;
+        flex-flow: column nowrap;
+        width: 85%;
+        height: 250px;
+        overflow: auto;
+        background-color: white;
+        border-top: 4px solid blue;
+        border-radius: 3px;
+        padding: 15px;
+    }
+
+    .close-overlay-btn {
+        width: fit-content;
+        position: absolute;
+        right: 0;
+        top: 0;
+    }
+
+    .show-overlay-btn {
+        width: fit-content;
+        position: absolute;
+        left: 0;
+        top: 0;
+    }
+
+
+    .scroller {
+        display: flex;
+        flex-flow: column nowrap;
+        border-radius: 3px;
+        padding: 40px 15px 15px 15px;
+        overflow: auto;
+        width: 100%;
+        height: 100%;
+    }
+}
+
+.overlay-box {
+    position: relative;
+    height: 380px;
+    border: 1px solid blue;
+}

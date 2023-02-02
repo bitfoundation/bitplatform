@@ -230,5 +230,9 @@
     {
         "outputFile": "Pages/Components/OtpInput/BitOtpInputDemo.razor.css",
         "inputFile": "Pages/Components/OtpInput/BitOtpInputDemo.razor.scss"
+    },
+    {
+        "outputFile": "Pages/Components/Overlay/BitOverlayDemo.razor.css",
+        "inputFile": "Pages/Components/Overlay/BitOverlayDemo.razor.scss"
     }
 ]
