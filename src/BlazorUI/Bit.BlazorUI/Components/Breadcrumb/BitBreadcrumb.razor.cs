@@ -177,7 +177,6 @@ public partial class BitBreadcrumb : IDisposable
     public void CloseCalloutBeforeAnotherCalloutIsOpened()
     {
         _isCalloutOpen = false;
-        StateHasChanged();
     }
 
     public void Dispose()
