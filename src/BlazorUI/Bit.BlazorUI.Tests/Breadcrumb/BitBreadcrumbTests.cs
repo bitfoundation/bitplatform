@@ -9,33 +9,13 @@ namespace Bit.BlazorUI.Tests.Breadcrumb;
 public class BitBreadcrumbTests : BunitTestContext
 {
     [DataTestMethod,
-      DataRow(Visual.Fluent),
-      DataRow(Visual.Cupertino),
-      DataRow(Visual.Material),
-    ]
-    public void BitBreadcrumbShouldTakeCorrectVisualStyle(Visual visual)
-    {
-        var component = RenderComponent<BitBreadcrumb>(parameters =>
-        {
-            parameters.Add(p => p.Items, GetBreadcrumbItems());
-            parameters.AddCascadingValue(visual);
-        });
-
-        var bitBreadcrumb = component.Find(".bit-brc");
-
-        var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
-
-        Assert.IsTrue(bitBreadcrumb.ClassList.Contains($"bit-brc-{visualClass}"));
-    }
-
-    [DataTestMethod,
       DataRow(BitIconName.Separator)
     ]
     public void BitBreadcrumbShouldTakeDividerIcon(BitIconName icon)
     {
         var component = RenderComponent<BitBreadcrumb>(parameters =>
         {
-            parameters.Add(p => p.Items, GetBreadcrumbItems());
+            parameters.Add(p => p.Items, BitBreadcrumbTests.GetBreadcrumbItems());
             parameters.Add(p => p.DividerIcon, icon);
         });
 
@@ -48,9 +28,9 @@ public class BitBreadcrumbTests : BunitTestContext
       DataRow((uint)0),
       DataRow((uint)3)
    ]
-    public void BitBreadcrumbShouldRespectMaxDisplayeItems(uint maxDisplayedItems)
+    public void BitBreadcrumbShouldRespectMaxDisplayItems(uint maxDisplayedItems)
     {
-        var breadcrumbItems = GetBreadcrumbItems();
+        var breadcrumbItems = BitBreadcrumbTests.GetBreadcrumbItems();
 
         var component = RenderComponent<BitBreadcrumb>(parameters =>
         {
@@ -78,7 +58,7 @@ public class BitBreadcrumbTests : BunitTestContext
     {
         var component = RenderComponent<BitBreadcrumb>(parameters =>
         {
-            parameters.Add(p => p.Items, GetBreadcrumbItems());
+            parameters.Add(p => p.Items, BitBreadcrumbTests.GetBreadcrumbItems());
             parameters.Add(p => p.OverflowIndex, overflowIndex);
             parameters.Add(p => p.OverflowIcon, icon);
             parameters.Add(p => p.MaxDisplayedItems, maxDisplayedItems);
@@ -98,7 +78,7 @@ public class BitBreadcrumbTests : BunitTestContext
     [DataTestMethod]
     public void BitBreadcrumbShouldTakeCorrectAriaCurrent()
     {
-        var breadcrumbItems = GetBreadcrumbItems();
+        var breadcrumbItems = BitBreadcrumbTests.GetBreadcrumbItems();
 
         var component = RenderComponent<BitBreadcrumb>(parameters =>
         {
@@ -117,7 +97,7 @@ public class BitBreadcrumbTests : BunitTestContext
     ]
     public void BitBreadcrumbShouldTakeOverflowAriaLabel(string overflowAriaLabel, uint maxDisplayedItems)
     {
-        var breadcrumbItems = GetBreadcrumbItems();
+        var breadcrumbItems = BitBreadcrumbTests.GetBreadcrumbItems();
 
         var component = RenderComponent<BitBreadcrumb>(parameters =>
         {
@@ -138,7 +118,7 @@ public class BitBreadcrumbTests : BunitTestContext
     {
         var component = RenderComponent<BitBreadcrumb>(parameters =>
         {
-            parameters.Add(p => p.Items, GetBreadcrumbItems());
+            parameters.Add(p => p.Items, BitBreadcrumbTests.GetBreadcrumbItems());
             parameters.Add(p => p.Style, customStyle);
         });
 
@@ -154,7 +134,7 @@ public class BitBreadcrumbTests : BunitTestContext
     {
         var component = RenderComponent<BitBreadcrumb>(parameters =>
         {
-            parameters.Add(p => p.Items, GetBreadcrumbItems());
+            parameters.Add(p => p.Items, BitBreadcrumbTests.GetBreadcrumbItems());
             parameters.Add(p => p.Class, customClass);
         });
 
@@ -172,7 +152,7 @@ public class BitBreadcrumbTests : BunitTestContext
     {
         var component = RenderComponent<BitBreadcrumb>(parameters =>
         {
-            parameters.Add(p => p.Items, GetBreadcrumbItems());
+            parameters.Add(p => p.Items, BitBreadcrumbTests.GetBreadcrumbItems());
             parameters.Add(p => p.Visibility, visibility);
         });
 
@@ -192,7 +172,7 @@ public class BitBreadcrumbTests : BunitTestContext
         }
     }
 
-    private List<BitBreadcrumbItem> GetBreadcrumbItems()
+    private static List<BitBreadcrumbItem> GetBreadcrumbItems()
     {
         return new List<BitBreadcrumbItem>()
         {

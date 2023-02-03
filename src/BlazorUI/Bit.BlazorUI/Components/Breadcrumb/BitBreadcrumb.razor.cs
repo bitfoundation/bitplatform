@@ -173,6 +173,12 @@ public partial class BitBreadcrumb : IDisposable
         return item.IsSelected ? SelectedItemStyle ?? string.Empty : string.Empty;
     }
 
+    [JSInvokable("CloseCallout")]
+    public void CloseCalloutBeforeAnotherCalloutIsOpened()
+    {
+        _isCalloutOpen = false;
+    }
+
     public void Dispose()
     {
         Dispose(true);
