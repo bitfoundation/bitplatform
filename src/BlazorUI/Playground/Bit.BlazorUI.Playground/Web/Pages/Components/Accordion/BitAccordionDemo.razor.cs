@@ -20,7 +20,7 @@ public partial class BitAccordionDemo
         new ComponentParameter
         {
             Name = "ChildContent",
-            Type = "string?",
+            Type = "RenderFragment?",
             Description = "The content of the Accordion."
         },
         new ComponentParameter
