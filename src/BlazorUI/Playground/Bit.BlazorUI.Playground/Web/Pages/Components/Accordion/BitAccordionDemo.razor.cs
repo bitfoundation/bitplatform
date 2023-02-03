@@ -19,15 +19,15 @@ public partial class BitAccordionDemo
         },
         new ComponentParameter
         {
-            Name = "Description",
+            Name = "ChildContent",
             Type = "string?",
-            Description = "A short description in the header of Accordion."
+            Description = "The content of the Accordion."
         },
         new ComponentParameter
         {
-            Name = "ContentTemplate",
-            Type = "RenderFragment?",
-            Description = "Used to customize how the content inside the Accordion is rendered."
+            Name = "Description",
+            Type = "string?",
+            Description = "A short description in the header of Accordion."
         },
         new ComponentParameter
         {
@@ -59,64 +59,63 @@ public partial class BitAccordionDemo
             Name = "Title",
             Type = "string?",
             Description = "Title in the header of Accordion."
-        },
-        new ComponentParameter
-        {
-            Name = "Text",
-            Type = "string?",
-            Description = "Text in the content of Accordion."
         }
     };
 
     private readonly string example1HTMLCode = @"
-<div class=""accordion-example-box"">
-    <BitAccordion Title=""Accordion 1""
-                    Text=""Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget."" />
-</div>
+<BitAccordion Title=""Accordion 1"">
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu. Integer a consequat sapien, pellentesque aliquam velit. Nullam quis ligula vitae nisi accumsan auctor. Ut faucibus nulla a est commodo, vel sagittis neque tristique. In nec urna hendrerit, iaculis turpis sed, dictum elit. Sed id sagittis nunc, vitae ornare elit. Sed consequat condimentum massa, non euismod magna gravida vitae. Donec rhoncus suscipit blandit. Nunc ultrices vulputate nisl. Duis lobortis tristique nunc, id egestas ligula condimentum quis. Integer elementum tempor cursus. Phasellus vestibulum neque non laoreet faucibus. Nunc eu congue urna, in dapibus justo.
+</BitAccordion>
 
 <div class=""example-desc"">You can define multiple accordions together.</div>
 <div class=""accordion-example-box"">
-    <BitAccordion Title=""Accordion 1""
-                    Text=""Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget."" />
-    <BitAccordion Title=""Accordion 2""
-                    Text=""Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget."" />
-    <BitAccordion Title=""Accordion 3""
-                    Text=""Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget."" />
+    <BitAccordion Title=""Accordion 1"">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu. Integer a consequat sapien, pellentesque aliquam velit. Nullam quis ligula vitae nisi accumsan auctor. Ut faucibus nulla a est commodo, vel sagittis neque tristique. In nec urna hendrerit, iaculis turpis sed, dictum elit. Sed id sagittis nunc, vitae ornare elit. Sed consequat condimentum massa, non euismod magna gravida vitae. Donec rhoncus suscipit blandit. Nunc ultrices vulputate nisl.
+    </BitAccordion>
+    <BitAccordion Title=""Accordion 2"">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu. Integer a consequat sapien, pellentesque aliquam velit. Nullam quis ligula vitae nisi accumsan auctor.
+    </BitAccordion>
+    <BitAccordion Title=""Accordion 3"">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu. Integer a consequat sapien, pellentesque aliquam velit. Nullam quis ligula vitae nisi accumsan auctor. Ut faucibus nulla a est commodo, vel sagittis neque tristique. In nec urna hendrerit, iaculis turpis sed, dictum elit. Sed id sagittis nunc, vitae ornare elit. Sed consequat condimentum massa, non euismod magna gravida vitae. Donec rhoncus suscipit blandit. Nunc ultrices vulputate nisl. Duis lobortis tristique nunc, id egestas ligula condimentum quis. Integer elementum tempor cursus. Phasellus vestibulum neque non laoreet faucibus. Nunc eu congue urna, in dapibus justo.
+    </BitAccordion>
 </div>
 ";
     private readonly string example2HTMLCode = @"
 <div class=""accordion-example-box"">
-    <BitAccordion Title=""General settings""
-                    Description=""I am an accordion""
-                    Text=""Nulla facilisi. Phasellus sollicitudin nulla et quam mattis feugiat. Aliquam eget maximus est, id dignissim quam."" />
-    <BitAccordion Title=""Users""
-                    Description=""You are currently not an owner""
-                    Text=""Donec placerat, lectus sed mattis semper, neque lectus feugiat lectus, varius pulvinar diam eros in elit. Pellentesque convallis laoreet laoreet."" />
-    <BitAccordion Title=""Advanced settings""
-                    Description=""Filtering has been entirely disabled for whole web server""
-                    Text=""Nunc vitae orci ultricies, auctor nunc in, volutpat nisl. Integer sit amet egestas eros, vitae egestas augue. Duis vel est augue."" />
-    <BitAccordion Title=""Advanced settings""
-                    Description=""Filtering has been entirely disabled for whole web server""
-                    Text=""Nunc vitae orci ultricies, auctor nunc in, volutpat nisl. Integer sit amet egestas eros, vitae egestas augue. Duis vel est augue."" />
+    <BitAccordion Title=""General settings"" Description=""I am an accordion"">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu.
+    </BitAccordion>
+    <BitAccordion Title=""Users"" Description=""You are currently not an owner"">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu. Integer a consequat sapien, pellentesque aliquam velit. Nullam quis ligula vitae nisi accumsan auctor. Ut faucibus nulla a est commodo, vel sagittis neque tristique.
+    </BitAccordion>
+    <BitAccordion Title=""Advanced settings"" Description=""Filtering has been entirely disabled for whole web server"">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu. Integer a consequat sapien, pellentesque aliquam velit. Nullam quis ligula vitae nisi accumsan auctor. Ut faucibus nulla a est commodo, vel sagittis neque tristique. In nec urna hendrerit, iaculis turpis sed, dictum elit. Sed id sagittis nunc, vitae ornare elit.
+    </BitAccordion>
+    <BitAccordion Title=""Advanced settings"" Description=""Filtering has been entirely disabled for whole web server"">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu. Integer a consequat sapien, pellentesque aliquam velit. Nullam quis ligula vitae nisi accumsan auctor. Ut faucibus nulla a est commodo, vel sagittis neque tristique. In nec urna hendrerit, iaculis turpis sed, dictum elit. Sed id sagittis nunc, vitae ornare elit. Sed consequat condimentum massa, non euismod magna gravida vitae.
+    </BitAccordion>
 </div>
 ";
     private readonly string example3HTMLCode = @"
 <div class=""accordion-example-box"">
     <BitAccordion Title=""General settings""
-                    Description=""I am an accordion""
-                    Text=""Nulla facilisi. Phasellus sollicitudin nulla et quam mattis feugiat. Aliquam eget maximus est, id dignissim quam.""
-                    OnClick=""() => controlledAccordionExpandedItem = 1""
-                    IsExpanded=""controlledAccordionExpandedItem == 1"" />
+                  Description=""I am an accordion""
+                  OnClick=""() => controlledAccordionExpandedItem = 1""
+                  IsExpanded=""controlledAccordionExpandedItem == 1"">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu. Integer a consequat sapien, pellentesque aliquam velit. Nullam quis ligula vitae nisi accumsan auctor. Ut faucibus nulla a est commodo, vel sagittis neque tristique. In nec urna hendrerit, iaculis turpis sed, dictum elit. Sed id sagittis nunc, vitae ornare elit. Sed consequat condimentum massa, non euismod magna gravida vitae. Donec rhoncus suscipit blandit. Nunc ultrices vulputate nisl.
+    </BitAccordion>
     <BitAccordion Title=""Users""
-                    Description=""You are currently not an owner""
-                    Text=""Donec placerat, lectus sed mattis semper, neque lectus feugiat lectus, varius pulvinar diam eros in elit. Pellentesque convallis laoreet laoreet.""
-                    OnClick=""() => controlledAccordionExpandedItem = 2""
-                    IsExpanded=""controlledAccordionExpandedItem == 2"" />
+                  Description=""You are currently not an owner""
+                  OnClick=""() => controlledAccordionExpandedItem = 2""
+                  IsExpanded=""controlledAccordionExpandedItem == 2"">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu. Integer a consequat sapien, pellentesque aliquam velit. Nullam quis ligula vitae nisi accumsan auctor.
+    </BitAccordion>
     <BitAccordion Title=""Advanced settings""
-                    Description=""Filtering has been entirely disabled for whole web server""
-                    Text=""Nunc vitae orci ultricies, auctor nunc in, volutpat nisl. Integer sit amet egestas eros, vitae egestas augue. Duis vel est augue.""
-                    OnClick=""() => controlledAccordionExpandedItem = 3""
-                    IsExpanded=""controlledAccordionExpandedItem == 3"" />
+                  Description=""Filtering has been entirely disabled for whole web server""
+                  OnClick=""() => controlledAccordionExpandedItem = 3""
+                  IsExpanded=""controlledAccordionExpandedItem == 3"">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu.
+    </BitAccordion>
 </div>
 ";
     private readonly string example4HTMLCode = @"
@@ -126,10 +125,11 @@ public partial class BitAccordionDemo
 </div>
 <div class=""accordion-example-box disabled-example"">
     <BitAccordion Title=""Accordion 1""
-                    Description=""I am an accordion""
-                    Text=""Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget.""
-                    IsEnabled=""@AccordionToggleIsEnabled""
-                    @bind-IsExpanded=""AccordionToggleIsEnabled"" />
+                  Description=""I am an accordion""
+                  IsEnabled=""@AccordionToggleIsEnabled""
+                  @bind-IsExpanded=""AccordionToggleIsExpanded"">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu. Integer a consequat sapien, pellentesque aliquam velit. Nullam quis ligula vitae nisi accumsan auctor. Ut faucibus nulla a est commodo, vel sagittis neque tristique. In nec urna hendrerit, iaculis turpis sed, dictum elit. Sed id sagittis nunc, vitae ornare elit.
+    </BitAccordion>
 </div>
 ";
     private readonly string example5HTMLCode = @"
@@ -163,8 +163,7 @@ public partial class BitAccordionDemo
 </style>
 
 <div class=""accordion-example-box"">
-    <BitAccordion Class=""custom-acd""
-                    Text=""Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget."">
+    <BitAccordion Class=""custom-acd"">
         <HeaderTemplate Context=""isExpanded"">
             @if (isExpanded)
             {
@@ -179,28 +178,28 @@ public partial class BitAccordionDemo
                 <span>I am an accordion</span>
             </div>
         </HeaderTemplate>
+        <ChildContent>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget.
+        </ChildContent>
     </BitAccordion>
 </div>
 
 <div class=""accordion-example-box"">
-    <BitAccordion Title=""Nature""
-                    Description=""I am an accordion"">
-        <ContentTemplate>
-            <BitCarousel AnimationDuration=""1"">
-                <BitCarouselItem>
-                    <img src=""/images/carousel/img1.jpg"">
-                </BitCarouselItem>
-                <BitCarouselItem>
-                    <img src=""/images/carousel/img2.jpg"" />
-                </BitCarouselItem>
-                <BitCarouselItem>
-                    <img src=""/images/carousel/img3.jpg"" />
-                </BitCarouselItem>
-                <BitCarouselItem>
-                    <img src=""/images/carousel/img4.jpg"" />
-                </BitCarouselItem>
-            </BitCarousel>
-        </ContentTemplate>
+    <BitAccordion Title=""Nature"" Description=""I am an accordion"">
+        <BitCarousel AnimationDuration=""1"">
+            <BitCarouselItem>
+                <img src=""/images/carousel/img1.jpg"">
+            </BitCarouselItem>
+            <BitCarouselItem>
+                <img src=""/images/carousel/img2.jpg"" />
+            </BitCarouselItem>
+            <BitCarouselItem>
+                <img src=""/images/carousel/img3.jpg"" />
+            </BitCarouselItem>
+            <BitCarouselItem>
+                <img src=""/images/carousel/img4.jpg"" />
+            </BitCarouselItem>
+        </BitCarousel>
     </BitAccordion>
 </div>
 ";
