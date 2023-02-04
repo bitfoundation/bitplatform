@@ -4,6 +4,8 @@ namespace Bit.BlazorUI;
 
 public partial class BitBreadcrumb : IDisposable
 {
+    protected override bool UseVisual => false;
+
     private IList<BitBreadcrumbItem> _internalItems = new List<BitBreadcrumbItem>();
     private IList<BitBreadcrumbItem> _displayItems = new List<BitBreadcrumbItem>();
     private IList<BitBreadcrumbItem> _overflowItems = new List<BitBreadcrumbItem>();
@@ -20,13 +22,14 @@ public partial class BitBreadcrumb : IDisposable
 
     [Inject] public IJSRuntime _js { get; set; } = default!;
 
+
     /// <summary>
-    /// Render a custom divider in place of the default chevron >
+    /// The divider icon name. The default value is BitIconName.ChevronRight.
     /// </summary>
     [Parameter] public BitIconName DividerIcon { get; set; } = BitIconName.ChevronRight;
 
     /// <summary>
-    /// Collection of breadcrumbs to render.
+    /// Collection of BreadCrumbItems to render.
     /// </summary>
     [Parameter] public IList<BitBreadcrumbItem> Items { get; set; } = new List<BitBreadcrumbItem>();
 
@@ -47,7 +50,7 @@ public partial class BitBreadcrumb : IDisposable
     [Parameter] public uint OverflowIndex { get; set; }
 
     /// <summary>
-    /// Render a custom overflow icon in place of the default icon.
+    /// The overflow icon name. The default value is BitIconName.More.
     /// </summary>
     [Parameter] public BitIconName OverflowIcon { get; set; } = BitIconName.More;
 
@@ -57,14 +60,15 @@ public partial class BitBreadcrumb : IDisposable
     [Parameter] public EventCallback<BitBreadcrumbItem> OnItemClick { get; set; }
 
     /// <summary>
-    /// The class HTML attribute for Selected Item.
+    /// The CSS class attribute for the selected item.
     /// </summary>
     [Parameter] public string? SelectedItemClass { get; set; }
 
     /// <summary>
-    /// The style HTML attribute for Selected Item.
+    /// The style attribute for selected item.
     /// </summary>
     [Parameter] public string? SelectedItemStyle { get; set; }
+
 
     protected override string RootElementClass => "bit-brc";
 

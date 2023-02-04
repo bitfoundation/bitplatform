@@ -16,17 +16,17 @@ public class BitBreadcrumbItem
     public string? Href { get; set; }
 
     /// <summary>
-    /// class HTML attribute for breadcrumb item.
+    /// CSS class attribute for breadcrumb item.
     /// </summary>
     public string? Class { get; set; }
 
     /// <summary>
-    /// Style HTML attribute for breadcrumb item.
+    /// Style attribute for breadcrumb item.
     /// </summary>
     public string? Style { get; set; }
 
     /// <summary>
-    /// Display the item as a current item.
+    /// Display the item as the selected item.
     /// </summary>
     public bool IsSelected { get; set; }
 

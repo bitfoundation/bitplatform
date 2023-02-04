@@ -9,6 +9,8 @@
 
 @import "../../Components/Accordion/BitAccordion.scss";
 @import "../../Components/Breadcrumb/BitBreadcrumb.scss";
+@import "../../Components/BreadGroup/BitBreadGroup.scss";
+@import "../../Components/BreadGroup/BitBreadOption.scss";
 @import "../../Components/Buttons/BitActionButton/BitActionButton.scss";
 @import "../../Components/Buttons/BitButton/BitButton.scss";
 @import "../../Components/Buttons/BitCompoundButton/BitCompoundButton.scss";
@@ -49,8 +51,6 @@
 @import "../../Components/Toggle/BitToggle.Fluent.scss";
 @import "../../Components/RadioButtonList/BitRadioButtonList.Fluent.scss";
 @import "../../Components/BreadList/BitBreadList.Fluent.scss";
-@import "../../Components/BreadGroup/BitBreadGroup.Fluent.scss";
-@import "../../Components/BreadGroup/BitBreadOption.Fluent.scss";
 @import "../../Components/ChoiceGroup/BitChoiceGroup.Fluent.scss";
 @import "../../Components/NumericTextField/BitNumericTextField.Fluent.scss";
 @import "../../Components/DataGrid/BitDataGrid.Fluent.scss";
