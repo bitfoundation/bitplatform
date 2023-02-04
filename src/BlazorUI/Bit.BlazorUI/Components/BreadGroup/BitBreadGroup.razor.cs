@@ -175,12 +175,28 @@ public partial class BitBreadGroup : IDisposable
             optionClasses.Append(SelectedOptionClass);
         }
 
-        return optionClasses.ToString();
+        var cls = option.InternalClassBuilder.Value;
+        if (cls.HasValue())
+        {
+            optionClasses.Append(' ');
+            optionClasses.Append(cls);
+        }
+
+        return optionClasses.ToString().Trim();
     }
 
-    private string GetOptionStyles(BitBreadOption option)
+    private string? GetOptionStyles(BitBreadOption option)
     {
-        return option.IsSelected && SelectedOptionStyle.HasValue() ? SelectedOptionStyle ?? string.Empty : string.Empty;
+        var selectedStyle = (option.IsSelected ? SelectedOptionStyle ?? string.Empty : string.Empty).Trim();
+        var optionStyle = (option.InternalStyleBuilder.Value ?? string.Empty).Trim();
+
+        if (selectedStyle.HasNoValue() && optionStyle.HasNoValue()) return null;
+
+        if (selectedStyle.HasValue() && optionStyle.HasValue()) return $"{selectedStyle};{optionStyle}";
+
+        if (selectedStyle.HasValue()) return selectedStyle;
+
+        return optionStyle;
     }
 
     [JSInvokable("CloseCallout")]

@@ -15,7 +15,10 @@
                 <li>
                     @if (_overflowItems.Any() && index == _internalOverflowIndex)
                     {
-                        <button type="button" class="overflow-btn" aria-label="@OverflowAriaLabel" id="@_overflowDropDownId" @onclick="ToggleCallout">
+                        <button id="@_overflowDropDownId"
+                                type="button"
+                                class="overflow-btn"
+                                aria-label="@OverflowAriaLabel" @onclick="ToggleCallout">
                             <span class="overflow-icon-container">
                                 <i class="@($"bit-icon bit-icon--{OverflowIcon.GetName()}")"></i>
                             </span>
@@ -27,20 +30,19 @@
                         {
                             <a href="@item.Href"
                                aria-current="@(item.IsSelected ? "page" : null)"
-                               style="@item.Style @GetItemStyles(item)"
-                               class="@item.Class @GetItemClasses(item)">
+                               style="@GetItemStyles(item)"
+                               class="@GetItemClasses(item)">
                                 @item.Text
                             </a>
                         }
                         else
                         {
                             <button aria-current="@(item.IsSelected ? "page" : null)"
-                                    style="@item.Style @GetItemStyles(item)"
-                                    class="@item.Class @GetItemClasses(item)"
-                                    @onclick="() => HandleOnItemClick(item)">
+                                    style="@GetItemStyles(item)"
+                                    class="@GetItemClasses(item)" @onclick="() => HandleOnItemClick(item)">
                                 @item.Text
                             </button>
-                        }   
+                        }
                     }
                 </li>
 
@@ -66,17 +68,16 @@
                     {
                         <a href="@item.Href"
                            aria-current="@(item.IsSelected ? "page" : null)"
-                           style="@item.Style @GetItemStyles(item)"
-                           class="@item.Class @GetItemClasses(item)">
+                           style="@GetItemStyles(item)"
+                           class="@GetItemClasses(item)">
                             @item.Text
                         </a>
                     }
                     else
                     {
                         <button aria-current="@(item.IsSelected ? "page" : null)"
-                                style="@item.Style @GetItemStyles(item)"
-                                class="@item.Class @GetItemClasses(item)"
-                                @onclick="() => HandleOnItemClick(item)">
+                                style="@GetItemStyles(item)"
+                                class="@GetItemClasses(item)" @onclick="() => HandleOnItemClick(item)">
                             @item.Text
                         </button>
                     }

@@ -2,13 +2,11 @@
 
 .bit-brg {
     &.disabled {
-        .bit-bro {
-            .overflow-btn, .option, .current-option, i {
-                color: $color-neutrals-gray60;
-                cursor: default;
-                pointer-events: none;
-                font-weight: 400;
-            }
+        .overflow-btn, .option, .selected-option, i {
+            cursor: default;
+            font-weight: 400;
+            pointer-events: none;
+            color: $color-neutrals-gray60;
         }
     }
 
@@ -25,6 +23,48 @@
         button {
             background-color: transparent;
         }
+    }
+
+    .overflow-btn {
+        cursor: pointer;
+        line-height: spacing(4.5);
+        color: $color-neutrals-gray160;
+
+        .overflow-icon-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0px spacing(0.5);
+        }
+
+        &:hover {
+            background-color: $color-neutrals-gray20;
+        }
+    }
+
+    .option {
+        cursor: pointer;
+        font-weight: 400;
+        padding: 0 spacing(1);
+        font-size: spacing(2.5);
+        line-height: spacing(4.5);
+        color: $color-neutrals-gray130;
+
+        &:hover {
+            background-color: $color-neutrals-gray20;
+        }
+    }
+
+    .selected-option, .overflow-menu-wrapper .option.selected-option {
+        font-weight: 600;
+        color: $color-neutrals-gray160;
+    }
+
+    .disabled {
+        cursor: default;
+        font-weight: 400;
+        pointer-events: none;
+        color: $color-neutrals-gray60;
     }
 
     .overflow-menu-wrapper {
@@ -48,7 +88,7 @@
             margin: 0;
         }
 
-        a, button {
+        .option {
             width: 100%;
             height: spacing(4.5);
             display: flex;

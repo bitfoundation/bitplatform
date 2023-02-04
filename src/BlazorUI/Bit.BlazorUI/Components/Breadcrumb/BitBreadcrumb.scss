@@ -55,16 +55,16 @@
         }
     }
 
-    .selected-item {
+    .selected-item, .overflow-menu-wrapper .item.selected-item {
         font-weight: 600;
         color: $color-neutrals-gray160;
     }
 
-    .disabled-item {
-        color: $color-neutrals-gray60;
+    .disabled {
         cursor: default;
         font-weight: 400;
         pointer-events: none;
+        color: $color-neutrals-gray60;
     }
 
     .overflow-menu-wrapper {

@@ -161,20 +161,36 @@ public partial class BitBreadcrumb : IDisposable
 
         if (item.IsSelected && SelectedItemClass.HasValue())
         {
-            itemClasses.Append($" {SelectedItemClass}");
+            itemClasses.Append(' ');
+            itemClasses.Append(SelectedItemClass);
         }
 
         if (item.IsEnabled is false)
         {
-            itemClasses.Append(" disabled-item");
+            itemClasses.Append(" disabled");
         }
 
-        return itemClasses.ToString();
+        if (item.Class.HasValue())
+        {
+            itemClasses.Append(' ');
+            itemClasses.Append(item.Class);
+        }
+
+        return itemClasses.ToString().Trim();
     }
 
-    private string GetItemStyles(BitBreadcrumbItem item)
+    private string? GetItemStyles(BitBreadcrumbItem item)
     {
-        return item.IsSelected ? SelectedItemStyle ?? string.Empty : string.Empty;
+        var selectedStyle = (item.IsSelected ? SelectedItemStyle ?? string.Empty : string.Empty).Trim();
+        var itemStyle = (item.Style ?? string.Empty).Trim();
+
+        if (selectedStyle.HasNoValue() && itemStyle.HasNoValue()) return null;
+
+        if (selectedStyle.HasValue() && itemStyle.HasValue()) return $"{selectedStyle};{itemStyle}";
+
+        if (selectedStyle.HasValue()) return selectedStyle;
+
+        return itemStyle;
     }
 
     [JSInvokable("CloseCallout")]

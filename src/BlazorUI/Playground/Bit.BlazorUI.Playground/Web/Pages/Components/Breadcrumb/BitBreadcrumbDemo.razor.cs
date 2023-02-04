@@ -212,19 +212,19 @@ public partial class BitBreadcrumbDemo
             {
                 Text = "Folder 2",
                 Href = "/components/breadcrumb",
-                Style = "color:red;background:darkseagreen"
+                Style = "color:red;background:greenyellow"
             },
             new()
             {
                 Text = "Folder 3",
                 Href = "/components/breadcrumb",
-                Style = "color:red;background:lawngreen"
+                Style = "color:red;background:greenyellow"
             },
             new()
             {
                 Text = "Folder 4",
                 Href = "/components/breadcrumb",
-                Style = "color:red;background:lightgreen",
+                Style = "color:red;background:greenyellow",
                 IsSelected = true
             }
         };
@@ -470,25 +470,27 @@ private List<BitBreadcrumbItem> BreadcrumbItems { get; set; } = new List<BitBrea
 
     private readonly string example4HTMLCode = @"
 <style>
-    .custom-item {
+    .bit-brc .custom-item {
         color: red;
         margin: 2px 5px;
         border-radius: 2px;
-        background: lightgreen;
-    }
-    .custom-item:hover {
-        background: greenyellow;
+        background: limegreen;
     }
 
-    .custom-selected-item {
+        .bit-brc .custom-item:hover {
+            background: greenyellow;
+        }
+
+    .bit-brc .custom-selected-item {
         color: red;
         margin: 2px 5px;
         border-radius: 2px;
-        background: lightgreen;
+        background: limegreen;
     }
-    .custom-current-item:hover {
-        background: greenyellow;
-    }
+
+        .bit-brc .custom-current-item:hover {
+            background: greenyellow;
+        }
 </style>
 
 <div>
@@ -572,25 +574,25 @@ private List<BitBreadcrumbItem> BreadcrumbItemsWithStyle { get; set; } = new Lis
     {
         Text = ""Folder 1"",
         Href = ""/components/breadcrumb"",
-        Style = ""color:red;background:lightgreen""
+        Style = ""color:red;background:greenyellow""
     },
     new()
     {
         Text = ""Folder 2"",
         Href = ""/components/breadcrumb"",
-        Style = ""color:red;background:lightgreen""
+        Style = ""color:red;background:greenyellow""
     },
     new()
     {
         Text = ""Folder 3"",
         Href = ""/components/breadcrumb"",
-        Style = ""color:red;background:lightgreen""
+        Style = ""color:red;background:greenyellow""
     },
     new()
     {
         Text = ""Folder 4"",
         Href = ""/components/breadcrumb"",
-        Style = ""color:red;background:lightgreen"",
+        Style = ""color:red;background:greenyellow"",
         IsSelected = true
     }
 };

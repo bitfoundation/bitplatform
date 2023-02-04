@@ -219,27 +219,27 @@ public partial class BitBreadGroupDemo
 
     private readonly string example4HTMLCode = @"
 <style>
-    .custom-option {
-        color: red;
-        margin: 2px 5px;
-        border-radius: 2px;
-        background: limegreen;
-
-        &:hover {
-            background: greenyellow;
+        .bit-brg .custom-option {
+            color: red;
+            margin: 2px 5px;
+            border-radius: 2px;
+            background: limegreen;
         }
-    }
 
-    .custom-selected-option {
-        color: red;
-        margin: 2px 5px;
-        border-radius: 2px;
-        background: mediumspringgreen;
+            .bit-brg .custom-option:hover {
+                background: greenyellow;
+            }
 
-        &:hover {
-            background: greenyellow;
+        .bit-brg .custom-selected-option {
+            color: red;
+            margin: 2px 5px;
+            border-radius: 2px;
+            background: mediumspringgreen;
         }
-    }
+
+            .bit-brg .custom-selected-option:hover {
+                background: greenyellow;
+            }
 </style>
 
 <div>

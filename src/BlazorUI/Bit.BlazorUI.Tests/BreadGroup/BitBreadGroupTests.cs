@@ -87,7 +87,7 @@ public class BitBreadGroupTests : BunitTestContext
     {
         var component = RenderComponent<BitBreadGroupTest>();
 
-        var breadGroupOptions = component.FindAll(".bit-brg .options-wrapper ul li");
+        var breadGroupOptions = component.FindAll(".bit-brg .options-wrapper ul li a");
 
         Assert.IsTrue(breadGroupOptions[1].ClassList.Contains("disabled"));
     }
@@ -108,7 +108,7 @@ public class BitBreadGroupTests : BunitTestContext
     {
         var component = RenderComponent<BitBreadGroupTest>();
 
-        var breadGroupOptions = component.FindAll(".bit-brg .options-wrapper ul li");
+        var breadGroupOptions = component.FindAll(".bit-brg .options-wrapper ul li a");
 
         Assert.IsTrue(breadGroupOptions[3].ClassList.Contains("custom-class-name"));
         Assert.IsTrue(breadGroupOptions[4].GetAttribute("style").Contains("background-color: red;"));
