@@ -5,6 +5,8 @@ namespace Bit.BlazorUI;
 
 public partial class BitBreadList<TItem> : IDisposable
 {
+    protected override bool UseVisual => false;
+
     private const string CLASS_FIELD = "Class";
     private const string HREF_FIELD = "Href";
     private const string IS_SELECTED_FIELD = "IsSelected";
@@ -34,6 +36,7 @@ public partial class BitBreadList<TItem> : IDisposable
     private string _overflowDropDownId => $"{UniqueId}-overflow-dropdown";
 
     [Inject] public IJSRuntime _js { get; set; } = default!;
+
 
     /// <summary>
     /// class HTML attribute for BreadList item.
@@ -143,6 +146,7 @@ public partial class BitBreadList<TItem> : IDisposable
     /// Text to display in the BreadList item.
     /// </summary>
     [Parameter] public Expression<Func<TItem, object>>? TextFieldSelector { get; set; }
+
 
     protected override string RootElementClass => "bit-brl";
 
@@ -280,6 +284,12 @@ public partial class BitBreadList<TItem> : IDisposable
     private string? GetItemText(TItem item) => item.GetValueAsObjectFromProperty(_internalTextField)?.ToString();
     private bool GetIsSelected(TItem item) => item.GetValueFromProperty(_internalIsSelectedField, false);
     private bool GetIsEnabled(TItem item) => item.GetValueFromProperty(_internalIsEnabledField, true);
+
+    [JSInvokable("CloseCallout")]
+    public void CloseCalloutBeforeAnotherCalloutIsOpened()
+    {
+        _isCalloutOpen = false;
+    }
 
     public void Dispose()
     {

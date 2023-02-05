@@ -8,34 +8,25 @@ namespace Bit.BlazorUI.Tests.BreadList;
 public class BitBreadListTests : BunitTestContext
 {
     [DataTestMethod,
-     DataRow(Visual.Fluent, true),
-     DataRow(Visual.Fluent, false),
-     DataRow(Visual.Cupertino, true),
-     DataRow(Visual.Cupertino, false),
-     DataRow(Visual.Material, true),
-     DataRow(Visual.Material, false),
+     DataRow(true),
+     DataRow(false)
    ]
-    public void BitBreadListTest(Visual visual, bool isEnabled)
+    public void BitBreadListTest(bool isEnabled)
     {
         var component = RenderComponent<BitBreadList<PageInfoModel>>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, isEnabled);
-            parameters.Add(p => p.Visual, visual);
         });
 
         var breadList = component.Find(".bit-brl");
 
-        var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
-
-        Assert.IsTrue(breadList.ClassList.Contains($"bit-brl-{visualClass}"));
-
         if (isEnabled)
         {
-            Assert.IsTrue(breadList.ClassList.Contains($"bit-brl-enabled-{visualClass}"));
+            Assert.IsFalse(breadList.ClassList.Contains($"disabled"));
         }
         else
         {
-            Assert.IsTrue(breadList.ClassList.Contains($"bit-brl-disabled-{visualClass}"));
+            Assert.IsTrue(breadList.ClassList.Contains($"disabled"));
         }
     }
 
