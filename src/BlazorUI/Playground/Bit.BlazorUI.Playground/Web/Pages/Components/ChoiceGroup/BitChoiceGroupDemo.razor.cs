@@ -7,12 +7,12 @@ namespace Bit.BlazorUI.Playground.Web.Pages.Components.ChoiceGroup;
 
 public partial class BitChoiceGroupDemo
 {
-    private string ChoiceGroupWithOptionTemplateValue;
-    private string ChoiceGroupWithOptionLabelTemplateValue;
-    private string ChoiceGroupOneWayValue;
-    private string ChoiceGroupTwoWayValue;
-    private string ChoiceGroupLayoutFlowWithOptionTemplateValue;
-    private string ChoiceGroupRtlWithOptionTemplateValue;
+    private string ChoiceGroupWithOptionTemplateValue = "Day";
+    private string ChoiceGroupWithOptionLabelTemplateValue = "Day";
+    private string ChoiceGroupOneWayValue = "A";
+    private string ChoiceGroupTwoWayValue = "A";
+    private string ChoiceGroupLayoutFlowWithOptionTemplateValue = "Day";
+    private string ChoiceGroupRtlLayoutFlowWithOptionTemplateValue = "Day";
     public ChoiceGroupValidationModel ValidationModel = new();
     public string SuccessMessage;
 
