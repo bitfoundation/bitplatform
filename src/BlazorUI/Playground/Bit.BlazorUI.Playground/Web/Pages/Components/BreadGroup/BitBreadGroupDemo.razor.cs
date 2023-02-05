@@ -98,12 +98,12 @@ public partial class BitBreadGroupDemo
     };
 
 
+    private int OptionsCount = 4;
+    private uint OverflowIndex = 2;
     private int SelectedOptionNumber = 6;
     private uint MaxDisplayedOptions = 3;
-    private uint OverflowIndex = 2;
-    private int OptionsCount = 4;
-    private int CustomizedSelectedOptionNumber = 4;
     private uint NumericTextFieldStep = 1;
+    private int CustomizedSelectedOptionNumber = 4;
 
 
     private readonly string example1HTMLCode = @"
