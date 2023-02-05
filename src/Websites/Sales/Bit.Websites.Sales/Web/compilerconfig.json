@@ -4,12 +4,8 @@
         "inputFile": "Styles/app.scss"
     },
     {
-        "outputFile": "Pages/ShowCasePage.razor.css",
-        "inputFile": "Pages/ShowCasePage.razor.scss"
-    },
-    {
-        "outputFile": "Pages/ShowCasePage.razor.css",
-        "inputFile": "Pages/ShowCasePage.razor.scss"
+        "outputFile": "Pages/CasesPage.razor.css",
+        "inputFile": "Pages/CasesPage.razor.scss"
     },
     {
         "outputFile": "Pages/ShowCaseDetailPage.razor.css",

@@ -126,6 +126,8 @@
         }
 
         .left-pane {
+            flex-basis: 100%;
+
             .sec-title {
                 font-size: rem(30px);
                 text-align: unset;
@@ -182,8 +184,10 @@
         }
 
         .right-pane {
+            flex-basis: 100%;
             display: flex;
             flex-flow: column;
+            padding-top: 6rem;
 
             .case-bg {
                 width: 100%;
@@ -273,13 +277,13 @@
 
         &.case-rigid {
             .case-bg {
-                background-image: url('/images/cases/all-cases/rigid_case_bg.webp');
+                background-image: url('/images/cases/all-cases/mining_case_bg.webp');
             }
         }
 
         &.case-tradeer {
             .case-bg {
-                background-image: url('/images/cases/all-cases/tradeer_case_bg.webp');
+                background-image: url('/images/cases/all-cases/retail_case_bg.webp');
             }
         }
 
