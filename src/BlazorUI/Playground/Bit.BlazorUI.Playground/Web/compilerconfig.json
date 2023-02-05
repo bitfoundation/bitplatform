@@ -64,6 +64,10 @@
         "inputFile": "Pages/Components/Buttons/BitMenuButtonDemo.razor.scss"
     },
     {
+        "outputFile": "Pages/Components/Buttons/MenuButtonList/BitMenuButtonListDemo.razor.css",
+        "inputFile": "Pages/Components/Buttons/MenuButtonList/BitMenuButtonListDemo.razor.scss"
+    },
+    {
         "outputFile": "Pages/Components/Buttons/BitSplitButtonDemo.razor.css",
         "inputFile": "Pages/Components/Buttons/BitSplitButtonDemo.razor.scss"
     },
