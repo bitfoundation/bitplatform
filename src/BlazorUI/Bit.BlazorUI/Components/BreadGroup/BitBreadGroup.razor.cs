@@ -1,10 +1,11 @@
-﻿using System.Linq;
-using System.Text;
+﻿using System.Text;
 
 namespace Bit.BlazorUI;
 
 public partial class BitBreadGroup : IDisposable
 {
+    protected override bool UseVisual => false;
+
     private bool _disposed;
     private bool _isCalloutOpen;
     private uint _internalOverflowIndex;
@@ -21,23 +22,14 @@ public partial class BitBreadGroup : IDisposable
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
+
     /// <summary>
-    /// The content of BitBreadGroup, common values are BitBreadGroup component.
+    /// The content of the BitBreadGroup, that are BitBreadOption components.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// The class HTML attribute for Selected Option.
-    /// </summary>
-    [Parameter] public string? SelectedOptionClass { get; set; }
-
-    /// <summary>
-    /// The style HTML attribute for Selected Option.
-    /// </summary>
-    [Parameter] public string? SelectedOptionStyle { get; set; }
-
-    /// <summary>
-    /// Render a custom divider in place of the default chevron.
+    /// The divider icon name. The default value is BitIconName.ChevronRight.
     /// </summary>
     [Parameter] public BitIconName DividerIcon { get; set; } = BitIconName.ChevronRight;
 
@@ -53,14 +45,25 @@ public partial class BitBreadGroup : IDisposable
     [Parameter] public string? OverflowAriaLabel { get; set; }
 
     /// <summary>
-    /// Optional index where overflow Options will be collapsed.
+    /// Optional index where overflow options will be collapsed.
     /// </summary>
     [Parameter] public uint OverflowIndex { get; set; }
 
     /// <summary>
-    /// Render a custom overflow icon in place of the default icon.
+    /// The overflow icon name. The default value is BitIconName.More.
     /// </summary>
     [Parameter] public BitIconName OverflowIcon { get; set; } = BitIconName.More;
+
+    /// <summary>
+    /// The CSS class attribute for the selected option.
+    /// </summary>
+    [Parameter] public string? SelectedOptionClass { get; set; }
+
+    /// <summary>
+    /// The style attribute for the selected option.
+    /// </summary>
+    [Parameter] public string? SelectedOptionStyle { get; set; }
+
 
     protected override string RootElementClass => "bit-brg";
 
@@ -172,12 +175,34 @@ public partial class BitBreadGroup : IDisposable
             optionClasses.Append(SelectedOptionClass);
         }
 
-        return optionClasses.ToString();
+        var cls = option.InternalClassBuilder.Value;
+        if (cls.HasValue())
+        {
+            optionClasses.Append(' ');
+            optionClasses.Append(cls);
+        }
+
+        return optionClasses.ToString().Trim();
     }
 
-    private string GetOptionStyles(BitBreadOption option)
+    private string? GetOptionStyles(BitBreadOption option)
     {
-        return option.IsSelected && SelectedOptionStyle.HasValue() ? SelectedOptionStyle ?? string.Empty : string.Empty;
+        var selectedStyle = (option.IsSelected ? SelectedOptionStyle ?? string.Empty : string.Empty).Trim();
+        var optionStyle = (option.InternalStyleBuilder.Value ?? string.Empty).Trim();
+
+        if (selectedStyle.HasNoValue() && optionStyle.HasNoValue()) return null;
+
+        if (selectedStyle.HasValue() && optionStyle.HasValue()) return $"{selectedStyle};{optionStyle}";
+
+        if (selectedStyle.HasValue()) return selectedStyle;
+
+        return optionStyle;
+    }
+
+    [JSInvokable("CloseCallout")]
+    public void CloseCalloutBeforeAnotherCalloutIsOpened()
+    {
+        _isCalloutOpen = false;
     }
 
     public void Dispose()

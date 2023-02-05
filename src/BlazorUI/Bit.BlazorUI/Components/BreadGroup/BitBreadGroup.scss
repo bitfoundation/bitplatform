@@ -1,8 +1,8 @@
 ﻿@import "../../Styles/functions.scss";
 
-.bit-brc {
+.bit-brg {
     &.disabled {
-        .overflow-btn, .item, .selected-item, i {
+        .overflow-btn, .option, .selected-option, i {
             cursor: default;
             font-weight: 400;
             pointer-events: none;
@@ -10,7 +10,7 @@
         }
     }
 
-    .items-wrapper {
+    .options-wrapper {
         ul {
             padding-inline-start: 0;
 
@@ -42,7 +42,7 @@
         }
     }
 
-    .item {
+    .option {
         cursor: pointer;
         font-weight: 400;
         padding: 0 spacing(1);
@@ -55,7 +55,7 @@
         }
     }
 
-    .selected-item, .overflow-menu-wrapper .item.selected-item {
+    .selected-option, .overflow-menu-wrapper .option.selected-option {
         font-weight: 600;
         color: $color-neutrals-gray160;
     }
@@ -88,7 +88,7 @@
             margin: 0;
         }
 
-        .item {
+        .option {
             width: 100%;
             height: spacing(4.5);
             display: flex;

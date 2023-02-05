@@ -1,11 +1,122 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
+using System.Collections.Generic;
 using Bit.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
 namespace Bit.BlazorUI.Playground.Web.Pages.Components.Breadcrumb;
 
 public partial class BitBreadcrumbDemo
 {
+    private readonly List<ComponentParameter> componentParameters = new()
+    {
+        new()
+        {
+            Name = "DividerIcon",
+            Type = "BitIconName",
+            DefaultValue = "BitIconName.ChevronRight",
+            Description = "The divider icon name. The default value is BitIconName.ChevronRight."
+        },
+        new()
+        {
+            Name = "Items",
+            Type = "IList<BitBreadcrumbItem>",
+            DefaultValue = "new List<BitBreadcrumbItem>()",
+            Description = "Collection of breadcrumbs to render"
+        },
+        new()
+        {
+            Name = "MaxDisplayedItems",
+            Type = "uint",
+            Description = "The maximum number of breadcrumbs to display before coalescing. If not specified, all breadcrumbs will be rendered."
+        },
+        new()
+        {
+            Name = "OverflowAriaLabel",
+            Type = "string?",
+            Description = "Aria label for the overflow button."
+        },
+        new()
+        {
+            Name = "OverflowIndex",
+            Type = "uint",
+            Description = "Optional index where overflow items will be collapsed."
+        },
+        new()
+        {
+            Name = "OverflowIcon",
+            Type = "BitIconName",
+            DefaultValue= "BitIconName.More",
+            Description = "The overflow icon name. The default value is BitIconName.More."
+        },
+        new()
+        {
+            Name = "OnItemClick",
+            Type = "EventCallback<BitBreadcrumbItem>",
+            Description = "Callback for when the breadcrumb item clicked."
+        },
+        new()
+        {
+            Name = "SelectedItemClass",
+            Type = "string?",
+            Description = "The CSS class attribute for the selected item."
+        },
+        new()
+        {
+            Name = "SelectedItemStyle",
+            Type = "string?",
+            Description = "The style attribute for selected item."
+        },
+    };
+
+    private readonly List<ComponentSubParameter> componentSubParameters = new()
+    {
+        new ComponentSubParameter()
+        {
+            Id = "bit-breadcrumb-item",
+            Title = "BitBreadcrumbItem",
+            Parameters = new List<ComponentParameter>()
+            {
+               new ComponentParameter()
+               {
+                   Name = "Text",
+                   Type = "string?",
+                   Description = "Text to display in the breadcrumb item.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "Href",
+                   Type = "string?",
+                   Description = "URL to navigate to when this breadcrumb item is clicked. If provided, the breadcrumb will be rendered as a link.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "Class",
+                   Type = "string?",
+                   Description = "CSS class attribute for breadcrumb item.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "Style",
+                   Type = "string?",
+                   Description = "Style attribute for breadcrumb item.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "IsSelected",
+                   Type = "bool",
+                   Description = "Display the item as the selected item.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "IsEnabled",
+                   Type = "bool",
+                   DefaultValue = "true",
+                   Description = "Whether an item is enabled or not.",
+               },
+            }
+        }
+    };
+
+
     public BitBreadcrumbDemo()
     {
         BreadcrumbItems = new List<BitBreadcrumbItem>
@@ -101,19 +212,19 @@ public partial class BitBreadcrumbDemo
             {
                 Text = "Folder 2",
                 Href = "/components/breadcrumb",
-                Style = "color:red;background:darkseagreen"
+                Style = "color:red;background:greenyellow"
             },
             new()
             {
                 Text = "Folder 3",
                 Href = "/components/breadcrumb",
-                Style = "color:red;background:lawngreen"
+                Style = "color:red;background:greenyellow"
             },
             new()
             {
                 Text = "Folder 4",
                 Href = "/components/breadcrumb",
-                Style = "color:red;background:lightgreen",
+                Style = "color:red;background:greenyellow",
                 IsSelected = true
             }
         };
@@ -216,117 +327,7 @@ public partial class BitBreadcrumbDemo
         BreadcrumbItemsWithCustomized.FirstOrDefault(i => i.IsSelected).IsSelected = false;
         BreadcrumbItemsWithCustomized.FirstOrDefault(i => i == item).IsSelected = true;
     }
-
-    private readonly List<ComponentParameter> componentParameters = new()
-    {
-        new()
-        {
-            Name = "DividerIcon",
-            Type = "BitIconName",
-            DefaultValue = "BitIconName.ChevronRight",
-            Description = "Render a custom divider in place of the default chevron >"
-        },
-        new()
-        {
-            Name = "Items",
-            Type = "IList<BitBreadcrumbItem>",
-            DefaultValue = "new List<BitBreadcrumbItem>()",
-            Description = "Collection of breadcrumbs to render"
-        },
-        new()
-        {
-            Name = "MaxDisplayedItems",
-            Type = "uint",
-            Description = "The maximum number of breadcrumbs to display before coalescing. If not specified, all breadcrumbs will be rendered."
-        },
-        new()
-        {
-            Name = "OverflowAriaLabel",
-            Type = "string?",
-            Description = "Aria label for the overflow button."
-        },
-        new()
-        {
-            Name = "OverflowIndex",
-            Type = "uint",
-            Description = "Optional index where overflow items will be collapsed."
-        },
-        new()
-        {
-            Name = "OverflowIcon",
-            Type = "BitIconName",
-            DefaultValue= "BitIconName.More",
-            Description = "Render a custom overflow icon in place of the default icon."
-        },
-        new()
-        {
-            Name = "OnItemClick",
-            Type = "EventCallback<BitBreadcrumbItem>",
-            Description = "Callback for when the breadcrumb item clicked."
-        },
-        new()
-        {
-            Name = "SelectedItemClass",
-            Type = "string?",
-            Description = "The class HTML attribute for Selected Item."
-        },
-        new()
-        {
-            Name = "SelectedItemStyle",
-            Type = "string?",
-            Description = "The style HTML attribute for Selected Item."
-        },
-    };
-
-    private readonly List<ComponentSubParameter> componentSubParameters = new()
-    {
-        new ComponentSubParameter()
-        {
-            Id = "bit-breadcrumb-item",
-            Title = "BitBreadcrumbItem",
-            Parameters = new List<ComponentParameter>()
-            {
-               new ComponentParameter()
-               {
-                   Name = "Text",
-                   Type = "string?",
-                   Description = "Text to display in the breadcrumb item.",
-               },
-               new ComponentParameter()
-               {
-                   Name = "Href",
-                   Type = "string?",
-                   Description = "URL to navigate to when this breadcrumb item is clicked. If provided, the breadcrumb will be rendered as a link.",
-               },
-               new ComponentParameter()
-               {
-                   Name = "Class",
-                   Type = "string?",
-                   Description = "Class HTML attribute for breadcrumb item.",
-               },
-               new ComponentParameter()
-               {
-                   Name = "Style",
-                   Type = "string?",
-                   Description = "Style HTML attribute for breadcrumb item.",
-               },
-               new ComponentParameter()
-               {
-                   Name = "IsSelected",
-                   Type = "bool",
-                   Description = "Display the item as a current item.",
-               },
-               new ComponentParameter()
-               {
-                   Name = "IsEnabled",
-                   Type = "bool",
-                   DefaultValue = "true",
-                   Description = "Whether an item is enabled or not.",
-               },
-            }
-        }
-    };
-
+    
     private readonly string BasicItemsCSharpCode = @"
 private List<BitBreadcrumbItem> BreadcrumbItems { get; set; } = new List<BitBreadcrumbItem>
 {
@@ -469,25 +470,27 @@ private List<BitBreadcrumbItem> BreadcrumbItems { get; set; } = new List<BitBrea
 
     private readonly string example4HTMLCode = @"
 <style>
-    .custom-item {
+    .bit-brc .custom-item {
         color: red;
         margin: 2px 5px;
         border-radius: 2px;
-        background: lightgreen;
-    }
-    .custom-item:hover {
-        background: greenyellow;
+        background: limegreen;
     }
 
-    .custom-selected-item {
+        .bit-brc .custom-item:hover {
+            background: greenyellow;
+        }
+
+    .bit-brc .custom-selected-item {
         color: red;
         margin: 2px 5px;
         border-radius: 2px;
-        background: lightgreen;
+        background: limegreen;
     }
-    .custom-current-item:hover {
-        background: greenyellow;
-    }
+
+        .bit-brc .custom-current-item:hover {
+            background: greenyellow;
+        }
 </style>
 
 <div>
@@ -571,25 +574,25 @@ private List<BitBreadcrumbItem> BreadcrumbItemsWithStyle { get; set; } = new Lis
     {
         Text = ""Folder 1"",
         Href = ""/components/breadcrumb"",
-        Style = ""color:red;background:lightgreen""
+        Style = ""color:red;background:greenyellow""
     },
     new()
     {
         Text = ""Folder 2"",
         Href = ""/components/breadcrumb"",
-        Style = ""color:red;background:lightgreen""
+        Style = ""color:red;background:greenyellow""
     },
     new()
     {
         Text = ""Folder 3"",
         Href = ""/components/breadcrumb"",
-        Style = ""color:red;background:lightgreen""
+        Style = ""color:red;background:greenyellow""
     },
     new()
     {
         Text = ""Folder 4"",
         Href = ""/components/breadcrumb"",
-        Style = ""color:red;background:lightgreen"",
+        Style = ""color:red;background:greenyellow"",
         IsSelected = true
     }
 };
