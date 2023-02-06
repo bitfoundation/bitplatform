@@ -6,78 +6,6 @@ namespace Bit.BlazorUI.Playground.Web.Pages.Components.Buttons;
 
 public partial class BitMenuButtonListDemo
 {
-    private string example1SelectedItem;
-    private string example2SelectedItem;
-    private string example3SelectedItem;
-    private string example4SelectedItem;
-    private string example5SelectedItem;
-    private string example6SelectedItem;
-
-    private List<ActionItem> basicMenuButton = new()
-    {
-        new ActionItem()
-        {
-            Name = "Item A",
-            Id = "A",
-            Icon = BitIconName.Emoji,
-        },
-        new ActionItem()
-        {
-            Name = "Item B",
-            Id = "B",
-            Icon = BitIconName.Emoji,
-        },
-        new ActionItem()
-        {
-            Name = "Item C",
-            Id = "C",
-            Icon = BitIconName.Emoji2
-        }
-    };
-    private List<ActionItem> disabledItemMenuButton = new()
-    {
-        new ActionItem()
-        {
-            Name = "Item A",
-            Id = "A",
-            Icon = BitIconName.Emoji
-        },
-        new ActionItem()
-        {
-            Name = "Item B",
-            Id = "B",
-            Icon = BitIconName.Emoji,
-            IsEnabled = false
-        },
-        new ActionItem()
-        {
-            Name = "Item C",
-            Id = "C",
-            Icon = BitIconName.Emoji2
-        }
-    };
-    private List<ActionItem> itemTemplateMenuButton = new()
-    {
-        new ActionItem()
-        {
-            Name = "Add",
-            Id = "add-key",
-            Icon = BitIconName.Add
-        },
-        new ActionItem()
-        {
-            Name = "Edit",
-            Id = "edit-key",
-            Icon = BitIconName.Edit
-        },
-        new ActionItem()
-        {
-            Name = "Delete",
-            Id = "delete-key",
-            Icon = BitIconName.Delete
-        }
-    };
-
     private readonly List<ComponentParameter> componentParameters = new()
     {
         new ComponentParameter
@@ -288,6 +216,79 @@ public partial class BitMenuButtonListDemo
         }
     };
 
+
+    private string example1SelectedItem;
+    private string example2SelectedItem;
+    private string example3SelectedItem;
+    private string example4SelectedItem;
+    private string example5SelectedItem;
+    private string example6SelectedItem;
+
+    private List<ActionItem> basicMenuButton = new()
+    {
+        new ActionItem()
+        {
+            Name = "Item A",
+            Id = "A",
+            Icon = BitIconName.Emoji,
+        },
+        new ActionItem()
+        {
+            Name = "Item B",
+            Id = "B",
+            Icon = BitIconName.Emoji,
+        },
+        new ActionItem()
+        {
+            Name = "Item C",
+            Id = "C",
+            Icon = BitIconName.Emoji2
+        }
+    };
+    private List<ActionItem> disabledItemMenuButton = new()
+    {
+        new ActionItem()
+        {
+            Name = "Item A",
+            Id = "A",
+            Icon = BitIconName.Emoji
+        },
+        new ActionItem()
+        {
+            Name = "Item B",
+            Id = "B",
+            Icon = BitIconName.Emoji,
+            IsEnabled = false
+        },
+        new ActionItem()
+        {
+            Name = "Item C",
+            Id = "C",
+            Icon = BitIconName.Emoji2
+        }
+    };
+    private List<ActionItem> itemTemplateMenuButton = new()
+    {
+        new ActionItem()
+        {
+            Name = "Add",
+            Id = "add-key",
+            Icon = BitIconName.Add
+        },
+        new ActionItem()
+        {
+            Name = "Edit",
+            Id = "edit-key",
+            Icon = BitIconName.Edit
+        },
+        new ActionItem()
+        {
+            Name = "Delete",
+            Id = "delete-key",
+            Icon = BitIconName.Delete
+        }
+    };
+
     private readonly string example1HTMLCode = @"
 <style>
     .example-content {
@@ -341,6 +342,62 @@ public partial class BitMenuButtonListDemo
 </div>
 <div class=""selected-item"">Selected Item: @example1SelectedItem</div>
 ";
+    private readonly string example1CSharpCode = @"
+public class ActionItem
+{
+    public string Id { get; set; }
+    public string Name { get; set; }
+    public BitIconName Icon { get; set; }
+    public bool IsEnabled { get; set; } = true;
+}
+
+private string example1SelectedItem;
+
+private List<ActionItem> basicMenuButton = new()
+{
+    new ActionItem()
+    {
+        Name = ""Item A"",
+        Id = ""A"",
+        Icon = BitIconName.Emoji,
+    },
+    new ActionItem()
+    {
+        Name = ""Item B"",
+        Id = ""B"",
+        Icon = BitIconName.Emoji,
+    },
+    new ActionItem()
+    {
+        Name = ""Item C"",
+        Id = ""C"",
+        Icon = BitIconName.Emoji2
+    }
+};
+
+private List<ActionItem> disabledItemMenuButton = new()
+{
+    new ActionItem()
+    {
+        Name = ""Item A"",
+        Id = ""A"",
+        Icon = BitIconName.Emoji
+    },
+    new ActionItem()
+    {
+        Name = ""Item B"",
+        Id = ""B"",
+        Icon = BitIconName.Emoji,
+        IsEnabled = false
+    },
+    new ActionItem()
+    {
+        Name = ""Item C"",
+        Id = ""C"",
+        Icon = BitIconName.Emoji2
+    }
+};
+";
 
     private readonly string example2HTMLCode = @"
 <style>
@@ -380,6 +437,39 @@ public partial class BitMenuButtonListDemo
                         OnItemClick=""(ActionItem item) => example2SelectedItem = item.Id"" />
 </div>
 <div class=""selected-item"">Selected Item: @example2SelectedItem</div>
+";
+    private readonly string example2CSharpCode = @"
+public class ActionItem
+{
+    public string Id { get; set; }
+    public string Name { get; set; }
+    public BitIconName Icon { get; set; }
+    public bool IsEnabled { get; set; } = true;
+}
+
+private string example2SelectedItem;
+
+private List<ActionItem> basicMenuButton = new()
+{
+    new ActionItem()
+    {
+        Name = ""Item A"",
+        Id = ""A"",
+        Icon = BitIconName.Emoji,
+    },
+    new ActionItem()
+    {
+        Name = ""Item B"",
+        Id = ""B"",
+        Icon = BitIconName.Emoji,
+    },
+    new ActionItem()
+    {
+        Name = ""Item C"",
+        Id = ""C"",
+        Icon = BitIconName.Emoji2
+    }
+};
 ";
 
     private readonly string example3HTMLCode = @"
@@ -430,6 +520,39 @@ public partial class BitMenuButtonListDemo
                         Class=""custom-menu-btn"" />
 </div>
 <div class=""selected-item"">Selected Item: @example3SelectedItem</div>
+";
+    private readonly string example3CSharpCode = @"
+public class ActionItem
+{
+    public string Id { get; set; }
+    public string Name { get; set; }
+    public BitIconName Icon { get; set; }
+    public bool IsEnabled { get; set; } = true;
+}
+
+private string example3SelectedItem;
+
+private List<ActionItem> basicMenuButton = new()
+{
+    new ActionItem()
+    {
+        Name = ""Item A"",
+        Id = ""A"",
+        Icon = BitIconName.Emoji,
+    },
+    new ActionItem()
+    {
+        Name = ""Item B"",
+        Id = ""B"",
+        Icon = BitIconName.Emoji,
+    },
+    new ActionItem()
+    {
+        Name = ""Item C"",
+        Id = ""C"",
+        Icon = BitIconName.Emoji2
+    }
+};
 ";
 
     private readonly string example4HTMLCode = @"
@@ -487,6 +610,39 @@ public partial class BitMenuButtonListDemo
 </div>
 <div class=""selected-item"">Selected Item: @example4SelectedItem</div>
 ";
+    private readonly string example4CSharpCode = @"
+public class ActionItem
+{
+    public string Id { get; set; }
+    public string Name { get; set; }
+    public BitIconName Icon { get; set; }
+    public bool IsEnabled { get; set; } = true;
+}
+
+private string example4SelectedItem;
+
+private List<ActionItem> basicMenuButton = new()
+{
+    new ActionItem()
+    {
+        Name = ""Item A"",
+        Id = ""A"",
+        Icon = BitIconName.Emoji,
+    },
+    new ActionItem()
+    {
+        Name = ""Item B"",
+        Id = ""B"",
+        Icon = BitIconName.Emoji,
+    },
+    new ActionItem()
+    {
+        Name = ""Item C"",
+        Id = ""C"",
+        Icon = BitIconName.Emoji2
+    }
+};
+";
 
     private readonly string example5HTMLCode = @"
 <style>
@@ -536,6 +692,39 @@ public partial class BitMenuButtonListDemo
     </BitMenuButtonList>
 </div>
 <div class=""selected-item"">Selected Item: @example5SelectedItem</div>
+";
+    private readonly string example5CSharpCode = @"
+public class ActionItem
+{
+    public string Id { get; set; }
+    public string Name { get; set; }
+    public BitIconName Icon { get; set; }
+    public bool IsEnabled { get; set; } = true;
+}
+
+private string example5SelectedItem;
+
+private List<ActionItem> basicMenuButton = new()
+{
+    new ActionItem()
+    {
+        Name = ""Item A"",
+        Id = ""A"",
+        Icon = BitIconName.Emoji,
+    },
+    new ActionItem()
+    {
+        Name = ""Item B"",
+        Id = ""B"",
+        Icon = BitIconName.Emoji,
+    },
+    new ActionItem()
+    {
+        Name = ""Item C"",
+        Id = ""C"",
+        Icon = BitIconName.Emoji2
+    }
+};
 ";
 
     private readonly string example6HTMLCode = @"
@@ -598,200 +787,6 @@ public partial class BitMenuButtonListDemo
 </div>
 <div class=""selected-item"">Selected Item: @example6SelectedItem</div>
 ";
-
-    private readonly string example1CSharpCode = @"
-public class ActionItem
-{
-    public string Id { get; set; }
-    public string Name { get; set; }
-    public BitIconName Icon { get; set; }
-    public bool IsEnabled { get; set; } = true;
-}
-
-private string example1SelectedItem;
-
-private List<ActionItem> basicMenuButton = new()
-{
-    new ActionItem()
-    {
-        Name = ""Item A"",
-        Id = ""A"",
-        Icon = BitIconName.Emoji,
-    },
-    new ActionItem()
-    {
-        Name = ""Item B"",
-        Id = ""B"",
-        Icon = BitIconName.Emoji,
-    },
-    new ActionItem()
-    {
-        Name = ""Item C"",
-        Id = ""C"",
-        Icon = BitIconName.Emoji2
-    }
-};
-
-private List<ActionItem> disabledItemMenuButton = new()
-{
-    new ActionItem()
-    {
-        Name = ""Item A"",
-        Id = ""A"",
-        Icon = BitIconName.Emoji
-    },
-    new ActionItem()
-    {
-        Name = ""Item B"",
-        Id = ""B"",
-        Icon = BitIconName.Emoji,
-        IsEnabled = false
-    },
-    new ActionItem()
-    {
-        Name = ""Item C"",
-        Id = ""C"",
-        Icon = BitIconName.Emoji2
-    }
-};
-";
-
-    private readonly string example2CSharpCode = @"
-public class ActionItem
-{
-    public string Id { get; set; }
-    public string Name { get; set; }
-    public BitIconName Icon { get; set; }
-    public bool IsEnabled { get; set; } = true;
-}
-
-private string example2SelectedItem;
-
-private List<ActionItem> basicMenuButton = new()
-{
-    new ActionItem()
-    {
-        Name = ""Item A"",
-        Id = ""A"",
-        Icon = BitIconName.Emoji,
-    },
-    new ActionItem()
-    {
-        Name = ""Item B"",
-        Id = ""B"",
-        Icon = BitIconName.Emoji,
-    },
-    new ActionItem()
-    {
-        Name = ""Item C"",
-        Id = ""C"",
-        Icon = BitIconName.Emoji2
-    }
-};
-";
-
-    private readonly string example3CSharpCode = @"
-public class ActionItem
-{
-    public string Id { get; set; }
-    public string Name { get; set; }
-    public BitIconName Icon { get; set; }
-    public bool IsEnabled { get; set; } = true;
-}
-
-private string example3SelectedItem;
-
-private List<ActionItem> basicMenuButton = new()
-{
-    new ActionItem()
-    {
-        Name = ""Item A"",
-        Id = ""A"",
-        Icon = BitIconName.Emoji,
-    },
-    new ActionItem()
-    {
-        Name = ""Item B"",
-        Id = ""B"",
-        Icon = BitIconName.Emoji,
-    },
-    new ActionItem()
-    {
-        Name = ""Item C"",
-        Id = ""C"",
-        Icon = BitIconName.Emoji2
-    }
-};
-";
-
-    private readonly string example4CSharpCode = @"
-public class ActionItem
-{
-    public string Id { get; set; }
-    public string Name { get; set; }
-    public BitIconName Icon { get; set; }
-    public bool IsEnabled { get; set; } = true;
-}
-
-private string example4SelectedItem;
-
-private List<ActionItem> basicMenuButton = new()
-{
-    new ActionItem()
-    {
-        Name = ""Item A"",
-        Id = ""A"",
-        Icon = BitIconName.Emoji,
-    },
-    new ActionItem()
-    {
-        Name = ""Item B"",
-        Id = ""B"",
-        Icon = BitIconName.Emoji,
-    },
-    new ActionItem()
-    {
-        Name = ""Item C"",
-        Id = ""C"",
-        Icon = BitIconName.Emoji2
-    }
-};
-";
-
-    private readonly string example5CSharpCode = @"
-public class ActionItem
-{
-    public string Id { get; set; }
-    public string Name { get; set; }
-    public BitIconName Icon { get; set; }
-    public bool IsEnabled { get; set; } = true;
-}
-
-private string example5SelectedItem;
-
-private List<ActionItem> basicMenuButton = new()
-{
-    new ActionItem()
-    {
-        Name = ""Item A"",
-        Id = ""A"",
-        Icon = BitIconName.Emoji,
-    },
-    new ActionItem()
-    {
-        Name = ""Item B"",
-        Id = ""B"",
-        Icon = BitIconName.Emoji,
-    },
-    new ActionItem()
-    {
-        Name = ""Item C"",
-        Id = ""C"",
-        Icon = BitIconName.Emoji2
-    }
-};
-";
-
     private readonly string example6CSharpCode = @"
 public class ActionItem
 {
