@@ -119,8 +119,7 @@ public partial class BitChoiceGroup
 
     private string GetOptionClasses(BitChoiceGroupOption option)
     {
-        const string itemRootElementClass = "option";
-        StringBuilder optionClasses = new(itemRootElementClass);
+        var optionClasses = new StringBuilder("option");
 
         if (OptionTemplate is not null) return optionClasses.ToString();
 
