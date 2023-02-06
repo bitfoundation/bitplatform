@@ -2,7 +2,7 @@
 using Bit.BlazorUI.Playground.Web.Models;
 using Bit.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
-namespace Bit.BlazorUI.Playground.Web.Pages.Components.Buttons.MenuButtonList;
+namespace Bit.BlazorUI.Playground.Web.Pages.Components.Buttons;
 
 public partial class BitMenuButtonListDemo
 {
@@ -13,67 +13,67 @@ public partial class BitMenuButtonListDemo
     private string example5SelectedItem;
     private string example6SelectedItem;
 
-    private List<ButtonInfo> basicMenuButton = new()
+    private List<ActionItem> basicMenuButton = new()
     {
-        new ButtonInfo()
+        new ActionItem()
         {
             Name = "Item A",
-            Key = "A",
-            Icon = BitIconName.Emoji
+            Id = "A",
+            Icon = BitIconName.Emoji,
         },
-        new ButtonInfo()
+        new ActionItem()
         {
             Name = "Item B",
-            Key = "B",
-            Icon = BitIconName.Emoji
+            Id = "B",
+            Icon = BitIconName.Emoji,
         },
-        new ButtonInfo()
+        new ActionItem()
         {
             Name = "Item C",
-            Key = "C",
+            Id = "C",
             Icon = BitIconName.Emoji2
         }
     };
-    private List<ButtonInfo> disabledItemMenuButton = new()
+    private List<ActionItem> disabledItemMenuButton = new()
     {
-        new ButtonInfo()
+        new ActionItem()
         {
             Name = "Item A",
-            Key = "A",
+            Id = "A",
             Icon = BitIconName.Emoji
         },
-        new ButtonInfo()
+        new ActionItem()
         {
             Name = "Item B",
-            Key = "B",
+            Id = "B",
             Icon = BitIconName.Emoji,
             IsEnabled = false
         },
-        new ButtonInfo()
+        new ActionItem()
         {
             Name = "Item C",
-            Key = "C",
+            Id = "C",
             Icon = BitIconName.Emoji2
         }
     };
-    private List<ButtonInfo> itemTemplateMenuButton = new()
+    private List<ActionItem> itemTemplateMenuButton = new()
     {
-        new ButtonInfo()
+        new ActionItem()
         {
             Name = "Add",
-            Key = "add-key",
+            Id = "add-key",
             Icon = BitIconName.Add
         },
-        new ButtonInfo()
+        new ActionItem()
         {
             Name = "Edit",
-            Key = "edit-key",
+            Id = "edit-key",
             Icon = BitIconName.Edit
         },
-        new ButtonInfo()
+        new ActionItem()
         {
             Name = "Delete",
-            Key = "delete-key",
+            Id = "delete-key",
             Icon = BitIconName.Delete
         }
     };
@@ -308,18 +308,24 @@ public partial class BitMenuButtonListDemo
     <BitMenuButtonList Text=""Standard""
                         ButtonStyle=""BitButtonStyle.Standard""
                         Items=""basicMenuButton""
-                        TextField=""@nameof(ButtonInfo.Name)""
-                        IconNameField=""@nameof(ButtonInfo.Icon)""
-                        OnItemClick=""(ButtonInfo item) => example1SelectedItem = item.Key"" />
+                        KeyField=""@nameof(ActionItem.Id)""
+                        IsEnabledField=""@nameof(ActionItem.IsEnabled)""
+                        TextField=""@nameof(ActionItem.Name)""
+                        IconNameField=""@nameof(ActionItem.Icon)""
+                        OnItemClick=""(ActionItem item) => example1SelectedItem = item.Id"" />
 
     <BitMenuButtonList Text=""Primary""
                         ButtonStyle=""BitButtonStyle.Primary""
                         Items=""basicMenuButton""
-                        TextField=""@nameof(ButtonInfo.Name)""
-                        IconNameField=""@nameof(ButtonInfo.Icon)""
-                        OnItemClick=""(ButtonInfo item) => example1SelectedItem = item.Key"" />
+                        KeyField=""@nameof(ActionItem.Id)""
+                        IsEnabledField=""@nameof(ActionItem.IsEnabled)""
+                        TextField=""@nameof(ActionItem.Name)""
+                        IconNameField=""@nameof(ActionItem.Icon)""
+                        OnItemClick=""(ActionItem item) => example1SelectedItem = item.Id"" />
 
     <BitMenuButtonList Items=""basicMenuButton""
+                        KeyFieldSelector=""item => item.Id""
+                        IsEnabledFieldSelector=""item => item.IsEnabled""
                         TextFieldSelector=""item => item.Name""
                         IconNameFieldSelector=""item => item.Icon""
                         Text=""Disabled""
@@ -327,9 +333,11 @@ public partial class BitMenuButtonListDemo
 
     <BitMenuButtonList Text=""Item Disabled""
                         Items=""disabledItemMenuButton""
+                        KeyFieldSelector=""item => item.Id""
+                        IsEnabledFieldSelector=""item => item.IsEnabled""
                         TextFieldSelector=""item => item.Name""
                         IconNameFieldSelector=""item => item.Icon""
-                        OnItemClick=""(ButtonInfo item) => example1SelectedItem = item.Key"" />
+                        OnItemClick=""(ActionItem item) => example1SelectedItem = item.Id"" />
 </div>
 <div class=""selected-item"">Selected Item: @example1SelectedItem</div>
 ";
@@ -355,17 +363,21 @@ public partial class BitMenuButtonListDemo
                         IconName=""BitIconName.Add""
                         ButtonStyle=""BitButtonStyle.Standard""
                         Items=""basicMenuButton""
-                        TextField=""@nameof(ButtonInfo.Name)""
-                        IconNameField=""@nameof(ButtonInfo.Icon)""
-                        OnItemClick=""(ButtonInfo item) => example2SelectedItem = item.Key"" />
+                        KeyField=""@nameof(ActionItem.Id)""
+                        IsEnabledField=""@nameof(ActionItem.IsEnabled)""
+                        TextField=""@nameof(ActionItem.Name)""
+                        IconNameField=""@nameof(ActionItem.Icon)""
+                        OnItemClick=""(ActionItem item) => example2SelectedItem = item.Id"" />
 
     <BitMenuButtonList Text=""Primary Button""
                         IconName=""BitIconName.Edit""
                         ButtonStyle=""BitButtonStyle.Primary""
                         Items=""basicMenuButton""
-                        TextField=""@nameof(ButtonInfo.Name)""
-                        IconNameField=""@nameof(ButtonInfo.Icon)""
-                        OnItemClick=""(ButtonInfo item) => example2SelectedItem = item.Key"" />
+                        KeyField=""@nameof(ActionItem.Id)""
+                        IsEnabledField=""@nameof(ActionItem.IsEnabled)""
+                        TextField=""@nameof(ActionItem.Name)""
+                        IconNameField=""@nameof(ActionItem.Icon)""
+                        OnItemClick=""(ActionItem item) => example2SelectedItem = item.Id"" />
 </div>
 <div class=""selected-item"">Selected Item: @example2SelectedItem</div>
 ";
@@ -401,16 +413,20 @@ public partial class BitMenuButtonListDemo
 <div class=""example-content"">
     <BitMenuButtonList Text=""Styled Button""
                         Items=""basicMenuButton""
-                        TextField=""@nameof(ButtonInfo.Name)""
-                        IconNameField=""@nameof(ButtonInfo.Icon)""
-                        OnItemClick=""(ButtonInfo item) => example3SelectedItem = item.Key""
+                        KeyField=""@nameof(ActionItem.Id)""
+                        IsEnabledField=""@nameof(ActionItem.IsEnabled)""
+                        TextField=""@nameof(ActionItem.Name)""
+                        IconNameField=""@nameof(ActionItem.Icon)""
+                        OnItemClick=""(ActionItem item) => example3SelectedItem = item.Id""
                         Style=""width: 200px; height: 40px; background-color: #8A8886; border-color: black;"" />
 
     <BitMenuButtonList Text=""Classed Button""
                         Items=""basicMenuButton""
-                        TextField=""@nameof(ButtonInfo.Name)""
-                        IconNameField=""@nameof(ButtonInfo.Icon)""
-                        OnItemClick=""(ButtonInfo item) => example3SelectedItem = item.Key""
+                        KeyField=""@nameof(ActionItem.Id)""
+                        IsEnabledField=""@nameof(ActionItem.IsEnabled)""
+                        TextField=""@nameof(ActionItem.Name)""
+                        IconNameField=""@nameof(ActionItem.Icon)""
+                        OnItemClick=""(ActionItem item) => example3SelectedItem = item.Id""
                         Class=""custom-menu-btn"" />
 </div>
 <div class=""selected-item"">Selected Item: @example3SelectedItem</div>
@@ -441,15 +457,19 @@ public partial class BitMenuButtonListDemo
     <div>
         <BitMenuButtonList Text=""Visible Button""
                             Items=""basicMenuButton""
-                            TextField=""@nameof(ButtonInfo.Name)""
-                            IconNameField=""@nameof(ButtonInfo.Icon)""
-                            OnItemClick=""(ButtonInfo item) => example4SelectedItem = item.Key""
+                            KeyField=""@nameof(ActionItem.Id)""
+                            IsEnabledField=""@nameof(ActionItem.IsEnabled)""
+                            TextField=""@nameof(ActionItem.Name)""
+                            IconNameField=""@nameof(ActionItem.Icon)""
+                            OnItemClick=""(ActionItem item) => example4SelectedItem = item.Id""
                             Visibility=""BitComponentVisibility.Visible"" />
     </div>
     <div>
         Hidden Button: [<BitMenuButtonList Text=""Styled Button""
                                             IconName=""BitIconName.Add""
                                             Items=""basicMenuButton""
+                                            KeyFieldSelector=""item => item.Id""
+                                            IsEnabledFieldSelector=""item => item.IsEnabled""
                                             TextFieldSelector=""item => item.Name""
                                             IconNameFieldSelector=""item => item.Icon""
                                             Visibility=""BitComponentVisibility.Hidden"" />]
@@ -458,8 +478,10 @@ public partial class BitMenuButtonListDemo
         Collapsed Button: [<BitMenuButtonList Text=""Styled Button""
                                                 IconName=""BitIconName.Add""
                                                 Items=""basicMenuButton""
-                                                TextField=""@nameof(ButtonInfo.Name)""
-                                                IconNameField=""@nameof(ButtonInfo.Icon)""
+                                                KeyField=""@nameof(ActionItem.Id)""
+                                                IsEnabledField=""@nameof(ActionItem.IsEnabled)""
+                                                TextField=""@nameof(ActionItem.Name)""
+                                                IconNameField=""@nameof(ActionItem.Icon)""
                                                 Visibility=""BitComponentVisibility.Collapsed"" />]
     </div>
 </div>
@@ -484,9 +506,11 @@ public partial class BitMenuButtonListDemo
 
 <div class=""example-content"">
     <BitMenuButtonList Items=""basicMenuButton""
-                        TextField=""@nameof(ButtonInfo.Name)""
-                        IconNameField=""@nameof(ButtonInfo.Icon)""
-                        OnItemClick=""(ButtonInfo item) => example5SelectedItem = item.Key""
+                        KeyField=""@nameof(ActionItem.Id)""
+                        IsEnabledField=""@nameof(ActionItem.IsEnabled)""
+                        TextField=""@nameof(ActionItem.Name)""
+                        IconNameField=""@nameof(ActionItem.Icon)""
+                        OnItemClick=""(ActionItem item) => example5SelectedItem = item.Id""
                         ButtonStyle=""BitButtonStyle.Standard"">
         <HeaderTemplate>
             <div style=""font-weight: bold; color: #d13438;"">
@@ -496,9 +520,11 @@ public partial class BitMenuButtonListDemo
     </BitMenuButtonList>
 
     <BitMenuButtonList Items=""basicMenuButton""
+                        KeyFieldSelector=""item => item.Id""
+                        IsEnabledFieldSelector=""item => item.IsEnabled""
                         TextFieldSelector=""item => item.Name""
                         IconNameFieldSelector=""item => item.Icon""
-                        OnItemClick=""(ButtonInfo item) => example5SelectedItem = item.Key""
+                        OnItemClick=""(ActionItem item) => example5SelectedItem = item.Id""
                         ButtonStyle=""BitButtonStyle.Primary"">
         <HeaderTemplate>
             <BitIcon IconName=""BitIconName.Warning"" />
@@ -537,14 +563,16 @@ public partial class BitMenuButtonListDemo
     <BitMenuButtonList Text=""Standard Button""
                         IconName=""BitIconName.Edit""
                         Items=""itemTemplateMenuButton""
+                        KeyFieldSelector=""item => item.Id""
+                        IsEnabledFieldSelector=""item => item.IsEnabled""
                         TextFieldSelector=""item => item.Name""
                         IconNameFieldSelector=""item => item.Icon""
-                        OnItemClick=""(ButtonInfo item) => example6SelectedItem = item.Key""
+                        OnItemClick=""(ActionItem item) => example6SelectedItem = item.Id""
                         ButtonStyle=""BitButtonStyle.Standard"">
         <ItemTemplate Context=""item"">
             <div class=""item-template-box"">
-                <span style=""color: @(item.Key == ""add-key"" ? ""green"" : item.Key == ""edit-key"" ? ""yellow"" : ""red"");"">
-                    @item.Name (@item.Key)
+                <span style=""color: @(item.Id == ""add-key"" ? ""green"" : item.Id == ""edit-key"" ? ""yellow"" : ""red"");"">
+                    @item.Name (@item.Id)
                 </span>
             </div>
         </ItemTemplate>
@@ -553,14 +581,16 @@ public partial class BitMenuButtonListDemo
     <BitMenuButtonList Text=""Primary Button""
                         IconName=""BitIconName.Edit""
                         Items=""itemTemplateMenuButton""
-                        TextField=""@nameof(ButtonInfo.Name)""
-                        IconNameField=""@nameof(ButtonInfo.Icon)""
-                        OnItemClick=""(ButtonInfo item) => example6SelectedItem = item.Key""
+                        KeyField=""@nameof(ActionItem.Id)""
+                        IsEnabledField=""@nameof(ActionItem.IsEnabled)""
+                        TextField=""@nameof(ActionItem.Name)""
+                        IconNameField=""@nameof(ActionItem.Icon)""
+                        OnItemClick=""(ActionItem item) => example6SelectedItem = item.Id""
                         ButtonStyle=""BitButtonStyle.Primary"">
         <ItemTemplate Context=""item"">
             <div class=""item-template-box"">
-                <span style=""color: @(item.Key == ""add-key"" ? ""green"" : item.Key == ""edit-key"" ? ""yellow"" : ""red"");"">
-                    @item.Name (@item.Key)
+                <span style=""color: @(item.Id == ""add-key"" ? ""green"" : item.Id == ""edit-key"" ? ""yellow"" : ""red"");"">
+                    @item.Name (@item.Id)
                 </span>
             </div>
         </ItemTemplate>
@@ -570,229 +600,227 @@ public partial class BitMenuButtonListDemo
 ";
 
     private readonly string example1CSharpCode = @"
-public class ButtonInfo
+public class ActionItem
 {
+    public string Id { get; set; }
     public string Name { get; set; }
-    public string Key { get; set; }
     public BitIconName Icon { get; set; }
     public bool IsEnabled { get; set; } = true;
 }
 
 private string example1SelectedItem;
 
-private List<ButtonInfo> basicMenuButton = new()
+private List<ActionItem> basicMenuButton = new()
 {
-    new ButtonInfo()
+    new ActionItem()
     {
         Name = ""Item A"",
-        Key = ""A"",
-        Icon = BitIconName.Emoji
+        Id = ""A"",
+        Icon = BitIconName.Emoji,
     },
-    new ButtonInfo()
+    new ActionItem()
     {
         Name = ""Item B"",
-        Key = ""B"",
-        Icon = BitIconName.Emoji
+        Id = ""B"",
+        Icon = BitIconName.Emoji,
     },
-    new ButtonInfo()
+    new ActionItem()
     {
         Name = ""Item C"",
-        Key = ""C"",
+        Id = ""C"",
         Icon = BitIconName.Emoji2
     }
 };
 
-private List<ButtonInfo> disabledItemMenuButton = new()
+private List<ActionItem> disabledItemMenuButton = new()
 {
-    new ButtonInfo()
+    new ActionItem()
     {
         Name = ""Item A"",
-        Key = ""A"",
+        Id = ""A"",
         Icon = BitIconName.Emoji
     },
-    new ButtonInfo()
+    new ActionItem()
     {
         Name = ""Item B"",
-        Key = ""B"",
+        Id = ""B"",
         Icon = BitIconName.Emoji,
         IsEnabled = false
     },
-    new ButtonInfo()
+    new ActionItem()
     {
         Name = ""Item C"",
-        Key = ""C"",
+        Id = ""C"",
         Icon = BitIconName.Emoji2
     }
 };
 ";
 
     private readonly string example2CSharpCode = @"
-public class ButtonInfo
+public class ActionItem
 {
+    public string Id { get; set; }
     public string Name { get; set; }
-    public string Key { get; set; }
     public BitIconName Icon { get; set; }
     public bool IsEnabled { get; set; } = true;
 }
 
 private string example2SelectedItem;
 
-private List<ButtonInfo> basicMenuButton = new()
+private List<ActionItem> basicMenuButton = new()
 {
-    new ButtonInfo()
+    new ActionItem()
     {
         Name = ""Item A"",
-        Key = ""A"",
-        Icon = BitIconName.Emoji
+        Id = ""A"",
+        Icon = BitIconName.Emoji,
     },
-    new ButtonInfo()
+    new ActionItem()
     {
         Name = ""Item B"",
-        Key = ""B"",
-        Icon = BitIconName.Emoji
+        Id = ""B"",
+        Icon = BitIconName.Emoji,
     },
-    new ButtonInfo()
+    new ActionItem()
     {
         Name = ""Item C"",
-        Key = ""C"",
+        Id = ""C"",
         Icon = BitIconName.Emoji2
     }
 };
 ";
 
     private readonly string example3CSharpCode = @"
-public class ButtonInfo
+public class ActionItem
 {
+    public string Id { get; set; }
     public string Name { get; set; }
-    public string Key { get; set; }
     public BitIconName Icon { get; set; }
     public bool IsEnabled { get; set; } = true;
 }
 
 private string example3SelectedItem;
 
-private List<ButtonInfo> basicMenuButton = new()
+private List<ActionItem> basicMenuButton = new()
 {
-    new ButtonInfo()
+    new ActionItem()
     {
         Name = ""Item A"",
-        Key = ""A"",
-        Icon = BitIconName.Emoji
+        Id = ""A"",
+        Icon = BitIconName.Emoji,
     },
-    new ButtonInfo()
+    new ActionItem()
     {
         Name = ""Item B"",
-        Key = ""B"",
-        Icon = BitIconName.Emoji
+        Id = ""B"",
+        Icon = BitIconName.Emoji,
     },
-    new ButtonInfo()
+    new ActionItem()
     {
         Name = ""Item C"",
-        Key = ""C"",
+        Id = ""C"",
         Icon = BitIconName.Emoji2
     }
 };
 ";
 
     private readonly string example4CSharpCode = @"
-public class ButtonInfo
+public class ActionItem
 {
+    public string Id { get; set; }
     public string Name { get; set; }
-    public string Key { get; set; }
     public BitIconName Icon { get; set; }
     public bool IsEnabled { get; set; } = true;
 }
 
 private string example4SelectedItem;
 
-private List<ButtonInfo> basicMenuButton = new()
+private List<ActionItem> basicMenuButton = new()
 {
-    new ButtonInfo()
+    new ActionItem()
     {
         Name = ""Item A"",
-        Key = ""A"",
-        Icon = BitIconName.Emoji
+        Id = ""A"",
+        Icon = BitIconName.Emoji,
     },
-    new ButtonInfo()
+    new ActionItem()
     {
         Name = ""Item B"",
-        Key = ""B"",
-        Icon = BitIconName.Emoji
+        Id = ""B"",
+        Icon = BitIconName.Emoji,
     },
-    new ButtonInfo()
+    new ActionItem()
     {
         Name = ""Item C"",
-        Key = ""C"",
+        Id = ""C"",
         Icon = BitIconName.Emoji2
     }
 };
 ";
 
     private readonly string example5CSharpCode = @"
-public class ButtonInfo
+public class ActionItem
 {
+    public string Id { get; set; }
     public string Name { get; set; }
-    public string Key { get; set; }
     public BitIconName Icon { get; set; }
     public bool IsEnabled { get; set; } = true;
 }
 
 private string example5SelectedItem;
 
-private List<ButtonInfo> basicMenuButton = new()
+private List<ActionItem> basicMenuButton = new()
 {
-    new ButtonInfo()
+    new ActionItem()
     {
         Name = ""Item A"",
-        Key = ""A"",
-        Icon = BitIconName.Emoji
+        Id = ""A"",
+        Icon = BitIconName.Emoji,
     },
-    new ButtonInfo()
+    new ActionItem()
     {
         Name = ""Item B"",
-        Key = ""B"",
-        Icon = BitIconName.Emoji
+        Id = ""B"",
+        Icon = BitIconName.Emoji,
     },
-    new ButtonInfo()
+    new ActionItem()
     {
         Name = ""Item C"",
-        Key = ""C"",
+        Id = ""C"",
         Icon = BitIconName.Emoji2
     }
 };
 ";
 
     private readonly string example6CSharpCode = @"
-public class ButtonInfo
+public class ActionItem
 {
+    public string Id { get; set; }
     public string Name { get; set; }
-    public string Key { get; set; }
     public BitIconName Icon { get; set; }
     public bool IsEnabled { get; set; } = true;
 }
 
-private string example6SelectedItem;
-
-    private List<ButtonInfo> itemTemplateMenuButton = new()
+private List<ActionItem> itemTemplateMenuButton = new()
+{
+    new ActionItem()
     {
-        new ButtonInfo()
-        {
-            Name = ""Add"",
-            Key = ""add-key"",
-            Icon = BitIconName.Add
-        },
-        new ButtonInfo()
-        {
-            Name = ""Edit"",
-            Key = ""edit-key"",
-            Icon = BitIconName.Edit
-        },
-        new ButtonInfo()
-        {
-            Name = ""Delete"",
-            Key = ""delete-key"",
-            Icon = BitIconName.Delete
-        }
-    };
+        Name = ""Add"",
+        Id = ""add-key"",
+        Icon = BitIconName.Add
+    },
+    new ActionItem()
+    {
+        Name = ""Edit"",
+        Id = ""edit-key"",
+        Icon = BitIconName.Edit
+    },
+    new ActionItem()
+    {
+        Name = ""Delete"",
+        Id = ""delete-key"",
+        Icon = BitIconName.Delete
+    }
+};
 ";
 }
