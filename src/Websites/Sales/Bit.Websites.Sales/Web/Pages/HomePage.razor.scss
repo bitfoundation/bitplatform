@@ -110,6 +110,10 @@
             width: 100%;
             max-width: rem(500px);
         }
+
+        @include xs {
+            height: rem(450px);
+        }
     }
 
     .sec-body {
@@ -132,6 +136,10 @@
             max-width: unset;
             justify-content: center;
             align-items: center;
+        }
+
+        @include xs {
+            padding-top: unset;
         }
     }
 
@@ -157,7 +165,7 @@
 
     .sec-subtitle {
         font-weight: 600;
-        font-size: rem(30px);
+        font-size: rem(26px);
         line-height: rem(40px);
         margin-bottom: rem(20px);
 
