@@ -8,6 +8,8 @@ $color-primary-lighter: var(--clr-primary-light);
 $color-secondary-main: var(--clr-secondary-main);
 $color-secondary-dark: var(--clr-secondary-dark);
 $color-secondary-darker: var(--clr-secondary-darker);
+$color-error-main: var(--clr-error-main);
+$color-error-dark: var(--clr-error-dark);
 //background color
 $color-background: var(--clr-background);
 //action
@@ -60,6 +62,7 @@ $typography-line-height: var(--tpg-line-height);
 $typography-button-font-family: var(--tpg-btn-font-family);
 $typography-button-font-weight: var(--tpg-btn-font-weight);
 $typography-button-line-height: var(--tpg-btn-line-height);
+$typography-icon-font-family: var(--tpg-ico-font-family);
 //shape
 $shape-border-radius: var(--shp-brd-radius);
 $shape-border-width: var(--shp-brd-width);
