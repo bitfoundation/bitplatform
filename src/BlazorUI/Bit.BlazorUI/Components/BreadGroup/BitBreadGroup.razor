@@ -16,20 +16,16 @@
         <ul>
             @foreach ((BitBreadOption option, int index) in _displayOptions.Select((option, index) => (option, index)))
             {
-                <li @ref="option.RootElement"
-                    @attributes="option.HtmlAttributes"
+                <li @ref="option.RootElement" @attributes="option.HtmlAttributes"
                     id="@option.UniqueId"
-                    style="@option.InternalStyleBuilder.Value"
-                    class="@option.InternalClassBuilder.Value"
                     aria-label="@option.AriaLabel">
 
                     @if (_overflowOptions.Any() && index == _internalOverflowIndex)
                     {
-                        <button type="button"
+                        <button id="@_overflowDropDownId"
+                                type="button"
                                 class="overflow-btn"
-                                aria-label="@OverflowAriaLabel"
-                                id="@_overflowDropDownId"
-                                @onclick="ToggleCallout">
+                                aria-label="@OverflowAriaLabel" @onclick="ToggleCallout">
                             <span class="overflow-icon-container">
                                 <i class="@($"bit-icon bit-icon--{OverflowIcon.GetName()}")"></i>
                             </span>
@@ -50,8 +46,7 @@
                         {
                             <button aria-current="@(option.IsSelected ? "page" : null)"
                                     style="@GetOptionStyles(option)"
-                                    class="@GetOptionClasses(option)"
-                                    @onclick="option.HandleOnOptionClick">
+                                    class="@GetOptionClasses(option)" @onclick="option.HandleOnOptionClick">
                                 @option.Text
                             </button>
                         }
@@ -75,11 +70,8 @@
         <ul>
             @foreach (var option in _overflowOptions)
             {
-                <li @ref="option.RootElement"
-                    @attributes="option.HtmlAttributes"
+                <li @ref="option.RootElement" @attributes="option.HtmlAttributes"
                     id="@option.UniqueId"
-                    style="@option.InternalStyleBuilder.Value"
-                    class="@option.InternalClassBuilder.Value"
                     aria-label="@option.AriaLabel">
 
                     @if (option.Href.HasValue())
@@ -95,8 +87,7 @@
                     {
                         <button aria-current="@(option.IsSelected ? "page" : null)"
                                 style="@GetOptionStyles(option)"
-                                class="@GetOptionClasses(option)"
-                                @onclick="option.HandleOnOptionClick">
+                                class="@GetOptionClasses(option)" @onclick="option.HandleOnOptionClick">
                             @option.Text
                         </button>
                     }

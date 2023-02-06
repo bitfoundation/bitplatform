@@ -1,222 +1,11 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
+using System.Collections.Generic;
 using Bit.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
 namespace Bit.BlazorUI.Playground.Web.Pages.Components.Breadcrumb;
 
 public partial class BitBreadcrumbDemo
 {
-    public BitBreadcrumbDemo()
-    {
-        BreadcrumbItems = new List<BitBreadcrumbItem>
-        {
-            new()
-            {
-                Text = "Folder 1",
-                Href = "/components/breadcrumb"
-            },
-            new()
-            {
-                Text = "Folder 2",
-                Href = "/components/breadcrumb"
-            },
-            new()
-            {
-                Text = "Folder 3",
-                Href = "/components/breadcrumb"
-            },
-            new()
-            {
-                Text = "Folder 4",
-                Href = "/components/breadcrumb",
-                IsSelected = true
-            }
-        };
-
-        BreadcrumbItemsDisabled = new List<BitBreadcrumbItem>
-        {
-            new()
-            {
-                Text = "Folder 1",
-                Href = "/components/breadcrumb",
-                IsEnabled = false
-            },
-            new()
-            {
-                Text = "Folder 2",
-                Href = "/components/breadcrumb",
-                IsEnabled = false
-            },
-            new()
-            {
-                Text = "Folder 3",
-                Href = "/components/breadcrumb"
-            },
-            new()
-            {
-                Text = "Folder 4",
-                Href = "/components/breadcrumb",
-                IsSelected = true
-            }
-        };
-
-        BreadcrumbItemsWithClass = new List<BitBreadcrumbItem>
-        {
-            new()
-            {
-                Text = "Folder 1",
-                Href = "/components/breadcrumb",
-                Class = "custom-item"
-            },
-            new()
-            {
-                Text = "Folder 2",
-                Href = "/components/breadcrumb",
-                Class = "custom-item"
-            },
-            new()
-            {
-                Text = "Folder 3",
-                Href = "/components/breadcrumb",
-                Class = "custom-item"
-            },
-            new()
-            {
-                Text = "Folder 4",
-                Href = "/components/breadcrumb",
-                Class = "custom-item",
-                IsSelected = true
-            }
-        };
-
-        BreadcrumbItemsWithStyle = new List<BitBreadcrumbItem>
-        {
-            new()
-            {
-                Text = "Folder 1",
-                Href = "/components/breadcrumb",
-                Style = "color:red;background:greenyellow"
-            },
-            new()
-            {
-                Text = "Folder 2",
-                Href = "/components/breadcrumb",
-                Style = "color:red;background:darkseagreen"
-            },
-            new()
-            {
-                Text = "Folder 3",
-                Href = "/components/breadcrumb",
-                Style = "color:red;background:lawngreen"
-            },
-            new()
-            {
-                Text = "Folder 4",
-                Href = "/components/breadcrumb",
-                Style = "color:red;background:lightgreen",
-                IsSelected = true
-            }
-        };
-
-        BreadcrumbItemsWithControlled = new List<BitBreadcrumbItem>
-        {
-            new()
-            {
-                Text = "Folder 1"
-            },
-            new()
-            {
-                Text = "Folder 2"
-            },
-            new()
-            {
-                Text = "Folder 3"
-            },
-            new()
-            {
-                Text = "Folder 4"
-            },
-            new()
-            {
-                Text = "Folder 5"
-            },
-            new()
-            {
-                Text = "Folder 6",
-                IsSelected = true
-            }
-        };
-
-        BreadcrumbItemsWithCustomized = new List<BitBreadcrumbItem>
-        {
-            new()
-            {
-                Text = "Folder 1"
-            },
-            new()
-            {
-                Text = "Folder 2"
-            },
-            new()
-            {
-                Text = "Folder 3"
-            },
-            new()
-            {
-                Text = "Folder 4",
-                IsSelected = true
-            }
-        };
-    }
-
-    private List<BitBreadcrumbItem> BreadcrumbItems { get; set; }
-    private List<BitBreadcrumbItem> BreadcrumbItemsDisabled { get; set; }
-    private List<BitBreadcrumbItem> BreadcrumbItemsWithClass { get; set; }
-    private List<BitBreadcrumbItem> BreadcrumbItemsWithStyle { get; set; }
-    private List<BitBreadcrumbItem> BreadcrumbItemsWithControlled { get; set; }
-    private List<BitBreadcrumbItem> BreadcrumbItemsWithCustomized { get; set; }
-
-    private void HandleOnItemClick(BitBreadcrumbItem item)
-    {
-        BreadcrumbItemsWithControlled.FirstOrDefault(i => i.IsSelected).IsSelected = false;
-        BreadcrumbItemsWithControlled.FirstOrDefault(i => i == item).IsSelected = true;
-    }
-
-    private int ItemsCount = 4;
-    private uint OverflowIndex = 2;
-    private uint MaxDisplayedItems = 3;
-    private uint NumericTextFieldStep = 1;
-    private void AddItem()
-    {
-        ItemsCount++;
-        BreadcrumbItemsWithCustomized.Add(new BitBreadcrumbItem()
-        {
-            Text = $"Folder {ItemsCount}"
-        });
-    }
-
-    private void RemoveItem()
-    {
-        if (BreadcrumbItemsWithCustomized.Count > 1)
-        {
-            ItemsCount--;
-
-            var item = BreadcrumbItemsWithCustomized[^1];
-            BreadcrumbItemsWithCustomized.Remove(item);
-
-            if (item.IsSelected)
-            {
-                BreadcrumbItemsWithCustomized[^1].IsSelected = true;
-            }
-        }
-    }
-
-    private void HandleOnItemClick_Customized(BitBreadcrumbItem item)
-    {
-        BreadcrumbItemsWithCustomized.FirstOrDefault(i => i.IsSelected).IsSelected = false;
-        BreadcrumbItemsWithCustomized.FirstOrDefault(i => i == item).IsSelected = true;
-    }
-
     private readonly List<ComponentParameter> componentParameters = new()
     {
         new()
@@ -224,7 +13,7 @@ public partial class BitBreadcrumbDemo
             Name = "DividerIcon",
             Type = "BitIconName",
             DefaultValue = "BitIconName.ChevronRight",
-            Description = "Render a custom divider in place of the default chevron >"
+            Description = "The divider icon name. The default value is BitIconName.ChevronRight."
         },
         new()
         {
@@ -256,7 +45,7 @@ public partial class BitBreadcrumbDemo
             Name = "OverflowIcon",
             Type = "BitIconName",
             DefaultValue= "BitIconName.More",
-            Description = "Render a custom overflow icon in place of the default icon."
+            Description = "The overflow icon name. The default value is BitIconName.More."
         },
         new()
         {
@@ -268,13 +57,13 @@ public partial class BitBreadcrumbDemo
         {
             Name = "SelectedItemClass",
             Type = "string?",
-            Description = "The class HTML attribute for Selected Item."
+            Description = "The CSS class attribute for the selected item."
         },
         new()
         {
             Name = "SelectedItemStyle",
             Type = "string?",
-            Description = "The style HTML attribute for Selected Item."
+            Description = "The style attribute for selected item."
         },
     };
 
@@ -302,19 +91,19 @@ public partial class BitBreadcrumbDemo
                {
                    Name = "Class",
                    Type = "string?",
-                   Description = "Class HTML attribute for breadcrumb item.",
+                   Description = "CSS class attribute for breadcrumb item.",
                },
                new ComponentParameter()
                {
                    Name = "Style",
                    Type = "string?",
-                   Description = "Style HTML attribute for breadcrumb item.",
+                   Description = "Style attribute for breadcrumb item.",
                },
                new ComponentParameter()
                {
                    Name = "IsSelected",
                    Type = "bool",
-                   Description = "Display the item as a current item.",
+                   Description = "Display the item as the selected item.",
                },
                new ComponentParameter()
                {
@@ -327,30 +116,104 @@ public partial class BitBreadcrumbDemo
         }
     };
 
-    private readonly string BasicItemsCSharpCode = @"
-private List<BitBreadcrumbItem> BreadcrumbItems { get; set; } = new List<BitBreadcrumbItem>
-{
-    new()
+
+    private readonly List<BitBreadcrumbItem> BreadcrumbItems = new()
     {
-        Text = ""Folder 1"",
-        Href = ""/components/breadcrumb""
-    },
-    new()
+        new() { Text = "Folder 1", Href = "/components/breadcrumb" },
+        new() { Text = "Folder 2", Href = "/components/breadcrumb" },
+        new() { Text = "Folder 3", Href = "/components/breadcrumb" },
+        new() { Text = "Folder 4", Href = "/components/breadcrumb", IsSelected = true }
+    };
+
+    private readonly List<BitBreadcrumbItem> BreadcrumbItemsDisabled = new()
     {
-        Text = ""Folder 2"",
-        Href = ""/components/breadcrumb""
-    },
-    new()
+        new() { Text = "Folder 1", Href = "/components/breadcrumb", IsEnabled = false },
+        new() { Text = "Folder 2", Href = "/components/breadcrumb", IsEnabled = false },
+        new() { Text = "Folder 3", Href = "/components/breadcrumb" },
+        new() { Text = "Folder 4", Href = "/components/breadcrumb", IsSelected = true }
+    };
+
+    private readonly List<BitBreadcrumbItem> BreadcrumbItemsWithClass = new()
     {
-        Text = ""Folder 3"",
-        Href = ""/components/breadcrumb""
-    },
-    new()
+        new() { Text = "Folder 1", Href = "/components/breadcrumb", Class = "custom-item" },
+        new() { Text = "Folder 2", Href = "/components/breadcrumb", Class = "custom-item" },
+        new() { Text = "Folder 3", Href = "/components/breadcrumb", Class = "custom-item" },
+        new() { Text = "Folder 4", Href = "/components/breadcrumb", Class = "custom-item", IsSelected = true }
+    };
+
+    private readonly List<BitBreadcrumbItem> BreadcrumbItemsWithStyle = new()
     {
-        Text = ""Folder 4"",
-        Href = ""/components/breadcrumb"",
-        IsSelected = true
+        new() { Text = "Folder 1", Href = "/components/breadcrumb", Style = "color:red;background:greenyellow" },
+        new() { Text = "Folder 2", Href = "/components/breadcrumb", Style = "color:red;background:greenyellow" },
+        new() { Text = "Folder 3", Href = "/components/breadcrumb", Style = "color:red;background:greenyellow" },
+        new() { Text = "Folder 4", Href = "/components/breadcrumb", Style = "color:red;background:greenyellow", IsSelected = true }
+    };
+
+    private readonly List<BitBreadcrumbItem> BreadcrumbItemsWithControlled = new()
+    {
+        new() { Text = "Folder 1" },
+        new() { Text = "Folder 2" },
+        new() { Text = "Folder 3" },
+        new() { Text = "Folder 4" },
+        new() { Text = "Folder 5" },
+        new() { Text = "Folder 6", IsSelected = true }
+    };
+
+    private readonly List<BitBreadcrumbItem> BreadcrumbItemsWithCustomized = new()
+    {
+        new() { Text = "Folder 1" },
+        new() { Text = "Folder 2" },
+        new() { Text = "Folder 3" },
+        new() { Text = "Folder 4", IsSelected = true }
+    };
+
+    private int ItemsCount = 4;
+    private uint OverflowIndex = 2;
+    private uint MaxDisplayedItems = 3;
+    private uint NumericTextFieldStep = 1;
+
+    private void HandleOnItemClick(BitBreadcrumbItem item)
+    {
+        BreadcrumbItemsWithControlled.FirstOrDefault(i => i.IsSelected).IsSelected = false;
+        item.IsSelected = true;
     }
+    private void HandleOnItemClick_Customized(BitBreadcrumbItem item)
+    {
+        BreadcrumbItemsWithCustomized.FirstOrDefault(i => i.IsSelected).IsSelected = false;
+        item.IsSelected = true;
+    }
+
+    private void AddItem()
+    {
+        ItemsCount++;
+        BreadcrumbItemsWithCustomized.Add(new BitBreadcrumbItem()
+        {
+            Text = $"Folder {ItemsCount}"
+        });
+    }
+    private void RemoveItem()
+    {
+        if (BreadcrumbItemsWithCustomized.Count > 1)
+        {
+            ItemsCount--;
+
+            var item = BreadcrumbItemsWithCustomized[^1];
+            BreadcrumbItemsWithCustomized.Remove(item);
+
+            if (item.IsSelected)
+            {
+                BreadcrumbItemsWithCustomized[^1].IsSelected = true;
+            }
+        }
+    }
+
+    private readonly string basicItemsCSharpCode = @"
+private List<BitBreadcrumbItem> BreadcrumbItems { get; set; } = new()
+{
+    new() { Text = ""Folder 1"", Href = ""/components/breadcrumb"" },
+    new() { Text = ""Folder 2"", Href = ""/components/breadcrumb"" },
+    new() { Text = ""Folder 3"", Href = ""/components/breadcrumb"" },
+    new() { Text = ""Folder 4"", Href = ""/components/breadcrumb"", IsSelected = true }
 };
 ";
 
@@ -368,58 +231,21 @@ private List<BitBreadcrumbItem> BreadcrumbItems { get; set; } = new List<BitBrea
     <BitBreadcrumb Items=""BreadcrumbItemsDisabled"" />
 </div>
 ";
-
     private readonly string example1CSharpCode = @"
-private List<BitBreadcrumbItem> BreadcrumbItems { get; set; } = new List<BitBreadcrumbItem>
+private List<BitBreadcrumbItem> BreadcrumbItems { get; set; } = new()
 {
-    new()
-    {
-        Text = ""Folder 1"",
-        Href = ""/components/breadcrumb""
-    },
-    new()
-    {
-        Text = ""Folder 2"",
-        Href = ""/components/breadcrumb""
-    },
-    new()
-    {
-        Text = ""Folder 3"",
-        Href = ""/components/breadcrumb""
-    },
-    new()
-    {
-        Text = ""Folder 4"",
-        Href = ""/components/breadcrumb"",
-        IsSelected = true
-    }
+    new() { Text = ""Folder 1"", Href = ""/components/breadcrumb"" },
+    new() { Text = ""Folder 2"", Href = ""/components/breadcrumb"" },
+    new() { Text = ""Folder 3"", Href = ""/components/breadcrumb"" },
+    new() { Text = ""Folder 4"", Href = ""/components/breadcrumb"", IsSelected = true }
 };
 
- private List<BitBreadcrumbItem> BreadcrumbItemsDisabled { get; set; } = new List<BitBreadcrumbItem>
+ private List<BitBreadcrumbItem> BreadcrumbItemsDisabled { get; set; } = new()
 {
-    new()
-    {
-        Text = ""Folder 1"",
-        Href = ""/components/breadcrumb"",
-        IsEnabled = false
-    },
-    new()
-    {
-        Text = ""Folder 2"",
-        Href = ""/components/breadcrumb"",
-        IsEnabled = false
-    },
-    new()
-    {
-        Text = ""Folder 3"",
-        Href = ""/components/breadcrumb""
-    },
-    new()
-    {
-        Text = ""Folder 4"",
-        Href = ""/components/breadcrumb"",
-        IsSelected = true
-    }
+    new() { Text = ""Folder 1"", Href = ""/components/breadcrumb"", IsEnabled = false },
+    new() { Text = ""Folder 2"", Href = ""/components/breadcrumb"", IsEnabled = false },
+    new() { Text = ""Folder 3"", Href = ""/components/breadcrumb"" },
+    new() { Text = ""Folder 4"", Href = ""/components/breadcrumb"", IsSelected = true }
 };
 ";
 
@@ -469,25 +295,27 @@ private List<BitBreadcrumbItem> BreadcrumbItems { get; set; } = new List<BitBrea
 
     private readonly string example4HTMLCode = @"
 <style>
-    .custom-item {
+    .bit-brc .custom-item {
         color: red;
         margin: 2px 5px;
         border-radius: 2px;
-        background: lightgreen;
-    }
-    .custom-item:hover {
-        background: greenyellow;
+        background: limegreen;
     }
 
-    .custom-selected-item {
+        .bit-brc .custom-item:hover {
+            background: greenyellow;
+        }
+
+    .bit-brc .custom-selected-item {
         color: red;
         margin: 2px 5px;
         border-radius: 2px;
-        background: lightgreen;
+        background: limegreen;
     }
-    .custom-current-item:hover {
-        background: greenyellow;
-    }
+
+        .bit-brc .custom-current-item:hover {
+            background: greenyellow;
+        }
 </style>
 
 <div>
@@ -509,89 +337,29 @@ private List<BitBreadcrumbItem> BreadcrumbItems { get; set; } = new List<BitBrea
                    SelectedItemStyle=""color:red;background:lightgreen"" />
 </div>
 ";
-
     private readonly string example4CSharpCode = @"
-private List<BitBreadcrumbItem> BreadcrumbItems { get; set; } = new List<BitBreadcrumbItem>
+private List<BitBreadcrumbItem> BreadcrumbItems { get; set; } = new()
 {
-    new()
-    {
-        Text = ""Folder 1"",
-        Href = ""/components/breadcrumb""
-    },
-    new()
-    {
-        Text = ""Folder 2"",
-        Href = ""/components/breadcrumb""
-    },
-    new()
-    {
-        Text = ""Folder 3"",
-        Href = ""/components/breadcrumb""
-    },
-    new()
-    {
-        Text = ""Folder 4"",
-        Href = ""/components/breadcrumb"",
-        IsSelected = true
-    }
+    new() { Text = ""Folder 1"", Href = ""/components/breadcrumb"" },
+    new() { Text = ""Folder 2"", Href = ""/components/breadcrumb"" },
+    new() { Text = ""Folder 3"", Href = ""/components/breadcrumb"" },
+    new() { Text = ""Folder 4"", Href = ""/components/breadcrumb"", IsSelected = true }
 };
 
-private List<BitBreadcrumbItem> BreadcrumbItemsWithClass { get; set; } = new List<BitBreadcrumbItem>
+private List<BitBreadcrumbItem> BreadcrumbItemsWithClass { get; set; } = new()
 {
-    new()
-    {
-        Text = ""Folder 1"",
-        Href = ""/components/breadcrumb"",
-        Class = ""custom-item""
-    },
-    new()
-    {
-        Text = ""Folder 2"",
-        Href = ""/components/breadcrumb"",
-        Class = ""custom-item""
-    },
-    new()
-    {
-        Text = ""Folder 3"",
-        Href = ""/components/breadcrumb"",
-        Class = ""custom-item""
-    },
-    new()
-    {
-        Text = ""Folder 4"",
-        Href = ""/components/breadcrumb"",
-        Class = ""custom-item"",
-        IsSelected = true
-    }
+    new() { Text = ""Folder 1"", Href = ""/components/breadcrumb"", Class = ""custom-item"" },
+    new() { Text = ""Folder 2"", Href = ""/components/breadcrumb"", Class = ""custom-item"" },
+    new() { Text = ""Folder 3"", Href = ""/components/breadcrumb"", Class = ""custom-item"" },
+    new() { Text = ""Folder 4"", Href = ""/components/breadcrumb"", Class = ""custom-item"", IsSelected = true }
 };
 
-private List<BitBreadcrumbItem> BreadcrumbItemsWithStyle { get; set; } = new List<BitBreadcrumbItem>
+private List<BitBreadcrumbItem> BreadcrumbItemsWithStyle { get; set; } = new()
 {
-    new()
-    {
-        Text = ""Folder 1"",
-        Href = ""/components/breadcrumb"",
-        Style = ""color:red;background:lightgreen""
-    },
-    new()
-    {
-        Text = ""Folder 2"",
-        Href = ""/components/breadcrumb"",
-        Style = ""color:red;background:lightgreen""
-    },
-    new()
-    {
-        Text = ""Folder 3"",
-        Href = ""/components/breadcrumb"",
-        Style = ""color:red;background:lightgreen""
-    },
-    new()
-    {
-        Text = ""Folder 4"",
-        Href = ""/components/breadcrumb"",
-        Style = ""color:red;background:lightgreen"",
-        IsSelected = true
-    }
+    new() { Text = ""Folder 1"", Href = ""/components/breadcrumb"", Style = ""color:red;background:greenyellow"" },
+    new() { Text = ""Folder 2"", Href = ""/components/breadcrumb"", Style = ""color:red;background:greenyellow"" },
+    new() { Text = ""Folder 3"", Href = ""/components/breadcrumb"", Style = ""color:red;background:greenyellow"" },
+    new() { Text = ""Folder 4"", Href = ""/components/breadcrumb"", Style = ""color:red;background:greenyellow"", IsSelected = true }
 };
 ";
 
@@ -602,41 +370,21 @@ private List<BitBreadcrumbItem> BreadcrumbItemsWithStyle { get; set; } = new Lis
                OnItemClick=""HandleOnItemClick""
                SelectedItemStyle=""color:red;background:lightgreen"" />
 ";
-
     private readonly string example5CSharpCode = @"
-private List<BitBreadcrumbItem> BreadcrumbItemsWithControlled { get; set; } = new List<BitBreadcrumbItem>
+private List<BitBreadcrumbItem> BreadcrumbItemsWithControlled { get; set; } = new()
 {
-    new()
-    {
-        Text = ""Folder 1""
-    },
-    new()
-    {
-        Text = ""Folder 2""
-    },
-    new()
-    {
-        Text = ""Folder 3""
-    },
-    new()
-    {
-        Text = ""Folder 4""
-    },
-    new()
-    {
-        Text = ""Folder 5""
-    },
-    new()
-    {
-        Text = ""Folder 6"",
-        IsSelected = true
-    }
+    new() { Text = ""Folder 1"" },
+    new() { Text = ""Folder 2"" },
+    new() { Text = ""Folder 3"" },
+    new() { Text = ""Folder 4"" },
+    new() { Text = ""Folder 5"" },
+    new() { Text = ""Folder 6"", IsSelected = true }
 };
 
 private void HandleOnItemClick(BitBreadcrumbItem item)
 {
     BreadcrumbItemsWithControlled.FirstOrDefault(i => i.IsSelected).IsSelected = false;
-    BreadcrumbItemsWithControlled.FirstOrDefault(i => i == item).IsSelected = true;
+    item.IsSelected = true;
 }
 ";
 
@@ -645,7 +393,7 @@ private void HandleOnItemClick(BitBreadcrumbItem item)
     <BitBreadcrumb Items=""@BreadcrumbItemsWithCustomized""
                     MaxDisplayedItems=""@MaxDisplayedItems""
                     OverflowIndex=""@OverflowIndex""
-                    OnItemClick=""HandleOnItemClick_Customized"" />
+                    OnItemClick=""HandleOnItemClick"" />
 </div>
 <div class=""operators"">
     <div>
@@ -658,27 +406,13 @@ private void HandleOnItemClick(BitBreadcrumbItem item)
     </div>
 </div>
 ";
-
     private readonly string example6CSharpCode = @"
-private List<BitBreadcrumbItem> BreadcrumbItemsWithCustomized { get; set; } = new List<BitBreadcrumbItem>
+private List<BitBreadcrumbItem> BreadcrumbItemsWithCustomized { get; set; } = new()
 {
-    new()
-    {
-        Text = ""Folder 1""
-    },
-    new()
-    {
-        Text = ""Folder 2""
-    },
-    new()
-    {
-        Text = ""Folder 3""
-    },
-    new()
-    {
-        Text = ""Folder 4"",
-        IsSelected = true
-    }
+    new() { Text = ""Folder 1"" },
+    new() { Text = ""Folder 2"" },
+    new() { Text = ""Folder 3"" },
+    new() { Text = ""Folder 4"", IsSelected = true }
 };
 
 private int ItemsCount = 4;
@@ -711,10 +445,10 @@ private void RemoveItem()
     }
 }
 
-private void HandleOnItemClick_Customized(BitBreadcrumbItem item)
+private void HandleOnItemClick(BitBreadcrumbItem item)
 {
     BreadcrumbItemsWithCustomized.FirstOrDefault(i => i.IsSelected).IsSelected = false;
-    BreadcrumbItemsWithCustomized.FirstOrDefault(i => i == item).IsSelected = true;
+    item.IsSelected = true;
 }
 ";
 }

@@ -1,103 +1,11 @@
-﻿using Bit.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
+﻿using System.Linq;
 using System.Collections.Generic;
-using System.Linq;
+using Bit.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
 namespace Bit.BlazorUI.Playground.Web.Pages.Components.BreadList;
 
 public partial class BitBreadListDemo
 {
-    private List<PageInfoModel> BasicBreadListItems = new()
-    {
-        new PageInfoModel { Name = "Item 1", Href = "/components/bread-list" },
-        new PageInfoModel { Name = "Item 2", Href = "/components/bread-list" },
-        new PageInfoModel { Name = "Item 3", Href = "/components/bread-list" },
-        new PageInfoModel { Name = "Item 4", Href = "/components/bread-list", IsSelected = true },
-    };
-
-    private List<PageInfoModel> BasicBreadListItemsDisabled = new()
-    {
-        new PageInfoModel { Name = "Item 1", Href = "/components/bread-list", IsEnabled = false },
-        new PageInfoModel { Name = "Item 2", Href = "/components/bread-list", IsEnabled = false },
-        new PageInfoModel { Name = "Item 3", Href = "/components/bread-list" },
-        new PageInfoModel { Name = "Item 4", Href = "/components/bread-list", IsSelected = true },
-    };
-
-    private List<PageInfoModel> BreadListItemsWithClass = new()
-    {
-        new PageInfoModel { Name = "Item 1", Href = "/components/bread-list", HtmlClass = "custom-item" },
-        new PageInfoModel { Name = "Item 2", Href = "/components/bread-list", HtmlClass = "custom-item" },
-        new PageInfoModel { Name = "Item 3", Href = "/components/bread-list", HtmlClass = "custom-item" },
-        new PageInfoModel { Name = "Item 4", Href = "/components/bread-list", HtmlClass = "custom-item", IsSelected = true },
-    };
-
-    private List<PageInfoModel> BreadListItemsWithStyle = new()
-    {
-        new PageInfoModel { Name = "Item 1", Href = "/components/bread-list", HtmlStyle = "color:red; background:greenyellow;" },
-        new PageInfoModel { Name = "Item 2", Href = "/components/bread-list", HtmlStyle = "color:red; background:greenyellow;" },
-        new PageInfoModel { Name = "Item 3", Href = "/components/bread-list", HtmlStyle = "color:red; background:greenyellow;" },
-        new PageInfoModel { Name = "Item 4", Href = "/components/bread-list", HtmlStyle = "color:red; background:greenyellow;", IsSelected = true },
-    };
-
-    private List<PageInfoModel> BreadListItemsWithControlled = new()
-    {
-        new PageInfoModel { Name = "Item 1" },
-        new PageInfoModel { Name = "Item 2" },
-        new PageInfoModel { Name = "Item 3" },
-        new PageInfoModel { Name = "Item 4" },
-        new PageInfoModel { Name = "Item 5" },
-        new PageInfoModel { Name = "Item 6", IsSelected = true },
-    };
-
-    private List<PageInfoModel> BreadListItemsWithCustomized = new()
-    {
-        new PageInfoModel { Name = "Item 1" },
-        new PageInfoModel { Name = "Item 2" },
-        new PageInfoModel { Name = "Item 3" },
-        new PageInfoModel { Name = "Item 4", IsSelected = true }
-    };
-
-    private void HandleOnItemClick(PageInfoModel item)
-    {
-        BreadListItemsWithControlled.FirstOrDefault(i => i.IsSelected).IsSelected = false;
-        BreadListItemsWithControlled.FirstOrDefault(i => i == item).IsSelected = true;
-    }
-
-    private uint ItemsCount = 4;
-    private uint MaxDisplayedItems = 3;
-    private uint OverflowIndex = 2;
-    private uint NumericTextFieldStep = 1;
-
-    private void AddItem()
-    {
-        ItemsCount++;
-        BreadListItemsWithCustomized.Add(new PageInfoModel
-        {
-            Name = $"Item {ItemsCount}"
-        });
-    }
-
-    private void RemoveItem()
-    {
-        if (BreadListItemsWithCustomized.Count > 1)
-        {
-            ItemsCount--;
-
-            var item = BreadListItemsWithCustomized[^1];
-            BreadListItemsWithCustomized.Remove(item);
-
-            if (item.IsSelected)
-            {
-                BreadListItemsWithCustomized[^1].IsSelected = true;
-            }
-        }
-    }
-
-    private void HandleOnItemClick_Customized(PageInfoModel item)
-    {
-        BreadListItemsWithCustomized.FirstOrDefault(i => i.IsSelected).IsSelected = false;
-        BreadListItemsWithCustomized.FirstOrDefault(i => i == item).IsSelected = true;
-    }
-
     private readonly List<ComponentParameter> componentParameters = new()
     {
         new()
@@ -237,32 +145,97 @@ public partial class BitBreadListDemo
         },
     };
 
-    private readonly string BasicItemsCSharpCode = @"
-public class PageInfoModel
-{
-    public string Name { get; set; }
 
-    public string Href { get; set; }
+    private readonly List<PageInfoModel> BasicBreadListItems = new()
+    {
+        new() { Name = "Item 1", Href = "/components/bread-list" },
+        new() { Name = "Item 2", Href = "/components/bread-list" },
+        new() { Name = "Item 3", Href = "/components/bread-list" },
+        new() { Name = "Item 4", Href = "/components/bread-list", IsSelected = true },
+    };
 
-    public string HtmlClass { get; set; }
+    private readonly List<PageInfoModel> BasicBreadListItemsDisabled = new()
+    {
+        new PageInfoModel { Name = "Item 1", Href = "/components/bread-list", IsEnabled = false },
+        new PageInfoModel { Name = "Item 2", Href = "/components/bread-list", IsEnabled = false },
+        new PageInfoModel { Name = "Item 3", Href = "/components/bread-list" },
+        new PageInfoModel { Name = "Item 4", Href = "/components/bread-list", IsSelected = true },
+    };
 
-    public string HtmlStyle { get; set; }
+    private readonly List<PageInfoModel> BreadListItemsWithClass = new()
+    {
+        new PageInfoModel { Name = "Item 1", Href = "/components/bread-list", HtmlClass = "custom-item" },
+        new PageInfoModel { Name = "Item 2", Href = "/components/bread-list", HtmlClass = "custom-item" },
+        new PageInfoModel { Name = "Item 3", Href = "/components/bread-list", HtmlClass = "custom-item" },
+        new PageInfoModel { Name = "Item 4", Href = "/components/bread-list", HtmlClass = "custom-item", IsSelected = true },
+    };
 
-    public bool IsSelected { get; set; }
+    private readonly List<PageInfoModel> BreadListItemsWithStyle = new()
+    {
+        new PageInfoModel { Name = "Item 1", Href = "/components/bread-list", HtmlStyle = "color:red; background:greenyellow;" },
+        new PageInfoModel { Name = "Item 2", Href = "/components/bread-list", HtmlStyle = "color:red; background:greenyellow;" },
+        new PageInfoModel { Name = "Item 3", Href = "/components/bread-list", HtmlStyle = "color:red; background:greenyellow;" },
+        new PageInfoModel { Name = "Item 4", Href = "/components/bread-list", HtmlStyle = "color:red; background:greenyellow;", IsSelected = true },
+    };
 
-    public bool IsEnabled { get; set; } = true;
-}
+    private readonly List<PageInfoModel> BreadListItemsWithControlled = new()
+    {
+        new PageInfoModel { Name = "Item 1" },
+        new PageInfoModel { Name = "Item 2" },
+        new PageInfoModel { Name = "Item 3" },
+        new PageInfoModel { Name = "Item 4" },
+        new PageInfoModel { Name = "Item 5" },
+        new PageInfoModel { Name = "Item 6", IsSelected = true },
+    };
 
-private List<PageInfoModel> BasicBreadListItems = new()
-{
-    new PageInfoModel { Name = ""Item 1"", Href = ""/components/bread-list"" },
-    new PageInfoModel { Name = ""Item 2"", Href = ""/components/bread-list"" },
-    new PageInfoModel { Name = ""Item 3"", Href = ""/components/bread-list"" },
-    new PageInfoModel { Name = ""Item 4"", Href = ""/components/bread-list"", IsSelected = true },
-};
-";
+    private readonly List<PageInfoModel> BreadListItemsWithCustomized = new()
+    {
+        new PageInfoModel { Name = "Item 1" },
+        new PageInfoModel { Name = "Item 2" },
+        new PageInfoModel { Name = "Item 3" },
+        new PageInfoModel { Name = "Item 4", IsSelected = true }
+    };
 
-    #region Sample Code 1
+    private uint ItemsCount = 4;
+    private uint OverflowIndex = 2;
+    private uint MaxDisplayedItems = 3;
+    private uint NumericTextFieldStep = 1;
+
+    private void HandleOnItemClick(PageInfoModel item)
+    {
+        BreadListItemsWithControlled.FirstOrDefault(i => i.IsSelected).IsSelected = false;
+        item.IsSelected = true;
+    }
+    private void HandleOnItemClick_Customized(PageInfoModel item)
+    {
+        BreadListItemsWithCustomized.FirstOrDefault(i => i.IsSelected).IsSelected = false;
+        item.IsSelected = true;
+    }
+
+    private void AddItem()
+    {
+        ItemsCount++;
+        BreadListItemsWithCustomized.Add(new PageInfoModel
+        {
+            Name = $"Item {ItemsCount}"
+        });
+    }
+    private void RemoveItem()
+    {
+        if (BreadListItemsWithCustomized.Count > 1)
+        {
+            ItemsCount--;
+
+            var item = BreadListItemsWithCustomized[^1];
+            BreadListItemsWithCustomized.Remove(item);
+
+            if (item.IsSelected)
+            {
+                BreadListItemsWithCustomized[^1].IsSelected = true;
+            }
+        }
+    }
+
 
     private readonly string example1HTMLCode = @"
 <div>
@@ -296,43 +269,33 @@ private List<PageInfoModel> BasicBreadListItems = new()
                   IsSelectedFieldSelector=""item => item.IsSelected"" />
 </div>
 ";
-
     private readonly string example1CSharpCode = @"
 public class PageInfoModel
 {
     public string Name { get; set; }
-
     public string Href { get; set; }
-
-    public string HtmlClass { get; set; }
-
-    public string HtmlStyle { get; set; }
-
     public bool IsSelected { get; set; }
-
+    public string HtmlClass { get; set; }
+    public string HtmlStyle { get; set; }
     public bool IsEnabled { get; set; } = true;
 }
 
 private List<PageInfoModel> BasicBreadListItems = new()
 {
-    new PageInfoModel { Name = ""Item 1"", Href = ""/components/bread-list"" },
-    new PageInfoModel { Name = ""Item 2"", Href = ""/components/bread-list"" },
-    new PageInfoModel { Name = ""Item 3"", Href = ""/components/bread-list"" },
-    new PageInfoModel { Name = ""Item 4"", Href = ""/components/bread-list"", IsSelected = true },
+    new() { Name = ""Item 1"", Href = ""/components/bread-list"" },
+    new() { Name = ""Item 2"", Href = ""/components/bread-list"" },
+    new() { Name = ""Item 3"", Href = ""/components/bread-list"" },
+    new() { Name = ""Item 4"", Href = ""/components/bread-list"", IsSelected = true },
 };
 
 private List<PageInfoModel> BasicBreadListItemsDisabled = new()
 {
-    new PageInfoModel { Name = ""Item 1"", Href = ""/components/bread-list"", IsEnabled = false },
-    new PageInfoModel { Name = ""Item 2"", Href = ""/components/bread-list"", IsEnabled = false },
-    new PageInfoModel { Name = ""Item 3"", Href = ""/components/bread-list"" },
-    new PageInfoModel { Name = ""Item 4"", Href = ""/components/bread-list"", IsSelected = true },
+    new() { Name = ""Item 1"", Href = ""/components/bread-list"", IsEnabled = false },
+    new() { Name = ""Item 2"", Href = ""/components/bread-list"", IsEnabled = false },
+    new() { Name = ""Item 3"", Href = ""/components/bread-list"" },
+    new() { Name = ""Item 4"", Href = ""/components/bread-list"", IsSelected = true },
 };
 ";
-
-    #endregion
-
-    #region Sample Code 2
 
     private readonly string example2HTMLCode = @"
 <div>
@@ -387,10 +350,25 @@ private List<PageInfoModel> BasicBreadListItemsDisabled = new()
                   OverflowIndex=""2"" />
 </div>
 ";
+    private readonly string example2CSharpCode = @"
+public class PageInfoModel
+{
+    public string Name { get; set; }
+    public string Href { get; set; }
+    public bool IsSelected { get; set; }
+    public string HtmlClass { get; set; }
+    public string HtmlStyle { get; set; }
+    public bool IsEnabled { get; set; } = true;
+}
 
-    #endregion
-
-    #region Sample Code 3
+private List<PageInfoModel> BasicBreadListItems = new()
+{
+    new PageInfoModel { Name = ""Item 1"", Href = ""/components/bread-list"" },
+    new PageInfoModel { Name = ""Item 2"", Href = ""/components/bread-list"" },
+    new PageInfoModel { Name = ""Item 3"", Href = ""/components/bread-list"" },
+    new PageInfoModel { Name = ""Item 4"", Href = ""/components/bread-list"", IsSelected = true },
+};
+";
 
     private readonly string example3HTMLCode = @"
 <div>
@@ -414,10 +392,6 @@ private List<PageInfoModel> BasicBreadListItemsDisabled = new()
                   OverflowIcon=""BitIconName.CollapseMenu"" />
 </div>
 ";
-
-    #endregion
-
-    #region Sample Code 4
 
     private readonly string example4HTMLCode = @"
 <style>
@@ -477,20 +451,14 @@ private List<PageInfoModel> BasicBreadListItemsDisabled = new()
                   SelectedItemStyle=""color:red; background:lightgreen;"" />
 </div>
 ";
-
     private readonly string example4CSharpCode = @"
 public class PageInfoModel
 {
     public string Name { get; set; }
-
     public string Href { get; set; }
-
-    public string HtmlClass { get; set; }
-
-    public string HtmlStyle { get; set; }
-
     public bool IsSelected { get; set; }
-
+    public string HtmlClass { get; set; }
+    public string HtmlStyle { get; set; }
     public bool IsEnabled { get; set; } = true;
 }
 
@@ -519,10 +487,6 @@ private List<PageInfoModel> BasicBreadListItems = new()
 };
 ";
 
-    #endregion
-
-    #region Sample Code 5
-
     private readonly string example5HTMLCode = @"
 <BitBreadList Items=""BreadListItemsWithControlled""
               TextField=""@nameof(PageInfoModel.Name)""
@@ -532,20 +496,14 @@ private List<PageInfoModel> BasicBreadListItems = new()
               OnItemClick=""(PageInfoModel item) => HandleOnItemClick(item)""
               SelectedItemStyle=""color:red; background:lightgreen;"" />
 ";
-
     private readonly string example5CSharpCode = @"
 public class PageInfoModel
 {
     public string Name { get; set; }
-
     public string Href { get; set; }
-
-    public string HtmlClass { get; set; }
-
-    public string HtmlStyle { get; set; }
-
     public bool IsSelected { get; set; }
-
+    public string HtmlClass { get; set; }
+    public string HtmlStyle { get; set; }
     public bool IsEnabled { get; set; } = true;
 }
 
@@ -562,13 +520,9 @@ private List<PageInfoModel> BreadListItemsWithControlled = new()
 private void HandleOnItemClick(PageInfoModel item)
 {
     BreadListItemsWithControlled.FirstOrDefault(i => i.IsSelected).IsSelected = false;
-    BreadListItemsWithControlled.FirstOrDefault(i => i == item).IsSelected = true;
+    item.IsSelected = true;
 }
 ";
-
-    #endregion
-
-    #region Sample Code 6
 
     private readonly string example6HTMLCode = @"
 <div>
@@ -577,7 +531,7 @@ private void HandleOnItemClick(PageInfoModel item)
                   IsSelectedField=""@nameof(PageInfoModel.IsSelected)""
                   MaxDisplayedItems=""@MaxDisplayedItems""
                   OverflowIndex=""@OverflowIndex""
-                  OnItemClick=""(PageInfoModel item) => HandleOnItemClick_Customized(item)"" />
+                  OnItemClick=""(PageInfoModel item) => HandleOnItemClick(item)"" />
 </div>
 
 <div class=""operators"">
@@ -591,7 +545,6 @@ private void HandleOnItemClick(PageInfoModel item)
     </div>
 </div>
 ";
-
     private readonly string example6CSharpCode = @"
 private List<PageInfoModel> BreadListItemsWithCustomized = new()
 {
@@ -631,12 +584,10 @@ private void RemoveItem()
     }
 }
 
-private void HandleOnItemClick_Customized(PageInfoModel item)
+private void HandleOnItemClick(PageInfoModel item)
 {
     BreadListItemsWithCustomized.FirstOrDefault(i => i.IsSelected).IsSelected = false;
-    BreadListItemsWithCustomized.FirstOrDefault(i => i == item).IsSelected = true;
+    item.IsSelected = true;
 }
 ";
-
-    #endregion
 }

@@ -1,8 +1,9 @@
-﻿
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public partial class BitBreadOption : IDisposable
 {
+    protected override bool UseVisual => false;
+
     private bool isSelected;
     private string? href;
     private string? text;
@@ -54,7 +55,7 @@ public partial class BitBreadOption : IDisposable
     }
 
     /// <summary>
-    /// Callback for when the BitBreadOption clicked and Href is empty.
+    /// Callback for when the BitBreadOption clicked.
     /// </summary>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
