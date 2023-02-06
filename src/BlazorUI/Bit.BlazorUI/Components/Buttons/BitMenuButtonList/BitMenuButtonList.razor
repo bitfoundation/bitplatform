@@ -37,12 +37,12 @@
             @foreach (TItem item in Items)
             {
                 <li role="presentation">
-                    <button type="@ButtonType?.GetValue()"
+                    <button @onclick="() => HandleOnItemClick(item)"
+                            type="@ButtonType?.GetValue()"
                             role="menuitem"
                             aria-disabled="@GetIsEnabled(item)"
                             tabindex="@(GetIsEnabled(item) ? 0 : -1)"
-                            class="item @(GetIsEnabled(item) ? "" : "disabled")"
-                        @onclick="() => HandleOnItemClick(item)">
+                            class="item @(GetIsEnabled(item) ? "" : "disabled")">
                         @if (ItemTemplate is not null)
                         {
                             @ItemTemplate(item)

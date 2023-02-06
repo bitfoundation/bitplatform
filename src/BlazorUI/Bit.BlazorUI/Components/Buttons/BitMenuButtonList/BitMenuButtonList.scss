@@ -69,7 +69,7 @@
         .items {
             opacity: 1;
             pointer-events: auto;
-            transform: translate3d(0px, 0px, 0px);
+            transform: translate3d(0, 0, 0);
         }
     }
 
@@ -112,18 +112,14 @@
         background-color: $color-neutrals-white;
         box-sizing: border-box;
         border-radius: 0 0 spacing(0.25) spacing(0.25);
-        box-shadow: rgba(0, 0, 0, 0.13) 0px spacing(0.4) spacing(0.9) 0px, rgba(0, 0, 0, 0.11) 0px spacing(0.075) spacing(0.225) 0px;
+        box-shadow: rgba(0, 0, 0, 0.13) 0 spacing(0.4) spacing(0.9) 0, rgba(0, 0, 0, 0.11) 0 spacing(0.075) spacing(0.225) 0;
         z-index: 1001;
         overflow: hidden auto;
         -webkit-font-smoothing: antialiased;
         opacity: 0;
-        transform: translate3d(0px, spacing(-1.25), 0px);
+        transform: translate3d(0, spacing(-1.25), 0);
         pointer-events: none;
-        transition: opacity 0.167s, transform 0.367s, pointer-events 0.367s;
-
-        @media only screen and (max-width: 639px) {
-            transform: translate3d(spacing(5), 0px, 0px);
-        }
+        transition: opacity 100ms, transform 300ms, pointer-events 300ms;
 
         ul {
             list-style-type: none;
