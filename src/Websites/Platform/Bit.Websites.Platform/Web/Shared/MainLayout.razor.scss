@@ -13,22 +13,17 @@
     justify-content: flex-start;
     width: 100%;
     min-height: 100vh;
-    padding-top: $HeaderHeight;
+    padding-top: rem($HeaderHeight);
     box-sizing: border-box;
     background: linear-gradient(180deg, #F3F6F9 0%, #FFFFFF 100%);
 
     @include lt-lg {
-        padding-top: rem(100px);
+        padding-top: rem(calc($HeaderHeight + $HeaderSecondRowHeight));
     }
 }
 
 .main--full-page {
-    padding-top: 0;
     background-color: $White;
-
-    @include sm {
-        padding-top: 0;
-    }
 
     .site-content {
         max-width: 100%;

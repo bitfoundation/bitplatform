@@ -83,6 +83,18 @@
     background-position: center left;
     background-repeat: no-repeat;
     background-size: cover;
+    margin-bottom: 5rem;
+
+    @include md {
+        background-size: auto;
+        height: rem(500px);
+    }
+
+    @include sm {
+        background-size: auto;
+        height: rem(500px);
+    }
+
 
     .page-section-contnet {
         display: flex;
@@ -98,7 +110,7 @@
         }
 
         @include md {
-            padding-top: rem(152px);
+            padding-top: rem(170px);
             padding-bottom: rem(28px);
         }
 
@@ -121,10 +133,6 @@
         }
 
         @include md {
-            max-width: rem(340px);
-        }
-
-        @include sm {
             max-width: 100%;
         }
     }
@@ -158,16 +166,16 @@
         margin: 0;
         margin-bottom: rem(20px);
         font-weight: 800;
-        font-size: rem(64px);
+        font-size: rem(54px);
         line-height: 1;
         color: $White;
 
-        @include lg {
-            font-size: rem(52px);
+        @include md {
+            margin-bottom: rem(40px);
         }
 
-        @include lt-lg {
-            font-size: rem(42px);
+        @include xs {
+            font-size: rem(40px);
         }
     }
 
@@ -571,7 +579,6 @@
     padding: rem(46px) rem(40px);
     box-sizing: border-box;
     background-color: $White;
-    cursor: pointer;
 
     @include md {
         padding: rem(28px) rem(25px);
@@ -581,7 +588,7 @@
         padding: rem(24px);
     }
 
-    .qoute-mark {
+    .twitter-icon {
         width: rem(48px);
         height: rem(48px);
         background-image: url('/images/home/twitter-icon.svg');
@@ -600,7 +607,6 @@
         margin-bottom: rem(14px);
         color: $Gray1;
         overflow: hidden;
-        text-align: justify;
         text-align-last: left;
         flex-grow: 1;
 
