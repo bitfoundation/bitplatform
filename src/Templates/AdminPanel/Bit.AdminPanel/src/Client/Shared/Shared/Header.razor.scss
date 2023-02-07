@@ -68,6 +68,28 @@
     }
 }
 
+::deep .header-breadcrumb {
+    &.bit-brc {
+
+        @include sm {
+            display: none;
+        }
+
+        .item {
+            font-weight: 400;
+            font-size: rem(16px);
+        }
+
+        .bit-icon {
+            font-size: rem(14px);
+        }
+
+        .selected-item {
+            font-weight: 600;
+        }
+    }
+}
+
 .img-wrapper {
     display: flex;
     justify-content: center;
