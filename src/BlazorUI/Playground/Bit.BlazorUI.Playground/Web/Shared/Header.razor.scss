@@ -6,7 +6,7 @@
 .main-header {
     position: fixed;
     top: 0;
-    z-index: 99;
+    z-index: 1001;
     width: 100%;
     transition: top 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
     -webkit-backdrop-filter: blur(20px);
@@ -56,25 +56,26 @@
 }
 
 .header-logo {
-    width: rem(30px);
-    height: rem(30px);
+    width: rem(50px);
+    height: rem(50px);
     background-image: url('/images/bit-logo.svg');
     background-position: center;
     background-repeat: no-repeat;
     background-size: contain;
     cursor: pointer;
-    margin-right: rem(20px);
+    margin-right: rem(30px);
 }
 
 .header-link {
     height: 100%;
     padding: rem(10px);
     box-sizing: border-box;
-    font-size: rem(14px);
+    font-size: rem(16px);
     line-height: 1.5;
     color: $Gray1;
     text-decoration: none;
     cursor: pointer;
+    padding-bottom: 0;
 }
 
 .header-link--active {
@@ -99,7 +100,7 @@
     justify-content: flex-start;
     align-items: center;
     width: 100%;
-    height: rem(44px);
+    height: rem($HeaderSecondRowHeight);
     padding: 0 rem(16px);
     box-sizing: border-box;
 
@@ -111,25 +112,27 @@
 .header-nav {
     position: fixed;
     z-index: 100;
-    top: rem(100px);
+    top: rem(calc($HeaderHeight + $HeaderSecondRowHeight));
     left: 0;
     display: flex;
     flex-flow: column nowrap;
     justify-content: flex-start;
     align-items: flex-start;
     width: 100%;
-    height: calc(100vh - #{rem(100px)});
+    height: calc(100vh - #{rem(calc($HeaderHeight + $HeaderSecondRowHeight))});
     padding: rem(20px);
     box-sizing: border-box;
-    background-color: $White;
+    background-color: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
 }
 
 .header-nav-link {
     padding: rem(8px) 0;
     margin-bottom: rem(16px);
-    font-size: rem(15px);
+    font-size: rem(16px);
     line-height: 1.5;
-    color: $Gray2;
+    color: $Gray1;
     text-decoration: none;
 }
 
@@ -142,11 +145,13 @@
     right: rem(10px);
     top: rem(10px);
     color: $B2Color;
+    width: rem(44px);
+    height: rem(44px);
 }
 
 ::deep .header-action-button {
-    &.bit-actb-fluent {
-        flex-direction: row-reverse;
+    &.bit-acb {
+        flex-grow: 1;
         padding: 0;
         font-size: rem(15px);
         font-weight: 600;

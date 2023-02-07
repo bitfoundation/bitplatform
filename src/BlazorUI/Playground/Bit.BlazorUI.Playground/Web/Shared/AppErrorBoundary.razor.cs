@@ -2,17 +2,14 @@
 using System.Threading.Tasks;
 using Bit.BlazorUI.Playground.Web.Services.Contracts;
 using Microsoft.AspNetCore.Components;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Bit.BlazorUI.Playground.Web.Shared;
 
 public partial class AppErrorBoundary
 {
-    [Inject]
-    private IExceptionHandler exceptionHandler { get; set; } = default!;
+    [Inject] private IExceptionHandler exceptionHandler { get; set; } = default!;
 
-    [Inject]
-    private NavigationManager navigationManager { get; set; } = default!;
+    [Inject] private NavigationManager navigationManager { get; set; } = default!;
 
     private bool ShowException { get; set; }
 
