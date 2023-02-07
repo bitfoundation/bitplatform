@@ -6,7 +6,7 @@
         <div class="header-content-container">
             <BitIconButton Class="header-menu-btn" IconName="BitIconName.CollapseMenu" OnClick="WrapHandled(ToggleMenu)" AriaLabel="Header menu button" />
             <a class="header-logo" href="/" aria-label="Homepage"></a>
-            <BitBreadcrumb Items="_currentBreadcrumbItems" />
+            <BitBreadcrumb Items="_currentBreadcrumbItems" Class="header-breadcrumb" />
         </div>
 
         <div class="header-content-container" style="cursor: pointer" @onclick=@ToggleHeaderDropDown>
