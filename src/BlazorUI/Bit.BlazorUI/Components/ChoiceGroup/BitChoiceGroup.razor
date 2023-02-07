@@ -12,27 +12,28 @@
         }
         else
         {
-            <label class="bit-chg-label" id="@GetGroupLabelId()" disabled="@(IsEnabled is false)">
+            <label class="label"
+                   id="@GetGroupLabelId()"
+                   disabled="@(IsEnabled is false)">
                 @Label
             </label>
         }
-        <div class="choice-field-group @LayoutFlow?.GetDisplayName()">
+        <div class="container @LayoutFlow.GetDisplayName()?.ToLowerInvariant()">
             @foreach (var option in Options)
             {
-                <div class="@GetOptionDivClassName(option)">
-                    <div class="bit-chgo-wrapper">
+                <div class="@GetOptionClasses(option)">
+                    <div class="option-wrapper">
                         <input @attributes="InputHtmlAttributes"
-                           id="@GetOptionInputId(option)"
-                           class="bit-chgo-input"
-                           aria-label="@GetOptionAriaLabel(option)"
-                           type="radio"
-                           checked="@GetOptionIsChecked(option)"
-                           name="@Name"
-                           value="@option.Value"
-                           hidden="hidden"
-                           required="@IsRequired"
-                           disabled="@(IsEnabled is false || option.IsEnabled is false)"
-                           @onchange="() => HandleOptionChange(option)" />
+                               id="@GetOptionInputId(option)"
+                               name="@Name"
+                               type="radio"
+                               class="input"
+                               aria-label="@GetOptionAriaLabel(option)"
+                               checked="@GetOptionIsChecked(option)"
+                               value="@option.Value"
+                               disabled="@(IsEnabled is false || option.IsEnabled is false)"
+                               required="@IsRequired"
+                               hidden="hidden" @onchange="() => HandleOptionChange(option)" />
 
                         <label for="@GetOptionInputId(option)">
                             @if (OptionTemplate is not null)
@@ -41,7 +42,7 @@
                             }
                             else
                             {
-                                <div class="@GetOptionLabelClassName(option)">
+                                <div class="option-label">
                                     @if (OptionLabelTemplate is not null)
                                     {
                                         @OptionLabelTemplate(option)
@@ -50,9 +51,9 @@
                                     {
                                         @if (option.ImageSrc.HasValue())
                                         {
-                                            <div class="bit-chgo-img-inner-field">
-                                                <div class="bit-chgo-img-wrapper">
-                                                    <div class="bit-chgo-img" style="@GetOptionImageSizeStyle(option)">
+                                            <div class="img-inner-field">
+                                                <div class="img-wrapper">
+                                                    <div class="image" style="@GetOptionImageSizeStyle(option)">
                                                         <img src="@GetOptionImageSrc(option)" alt="@option.ImageAlt">
                                                     </div>
                                                 </div>
@@ -60,23 +61,23 @@
                                         }
                                         @if (option.IconName is not null)
                                         {
-                                            <div class="bit-chgo-icon-inner-field">
-                                                <div class="bit-chgo-icon-wrapper">
+                                            <div class="icon-inner-field">
+                                                <div class="icon-wrapper">
                                                     <i aria-hidden="true" class="bit-icon bit-icon--@option.IconName.GetName()"></i>
                                                 </div>
                                             </div>
                                         }
                                         @if (option.ImageSrc.HasValue() || option.IconName is not null)
                                         {
-                                            <div class="bit-chgo-txt-wrapper">
-                                                <span class="bit-chgo-txt">
+                                            <div class="text-wrapper">
+                                                <span class="text">
                                                     @option.Text
                                                 </span>
                                             </div>
                                         }
                                         else
                                         {
-                                            <span class="bit-chgo-txt">
+                                            <span class="text">
                                                 @option.Text
                                             </span>
                                         }
