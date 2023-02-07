@@ -11,19 +11,18 @@
     //background color
     --clr-background: var(--clr-ntr-white);
     //general
-    --clr-gnr-red-main: #A4262C;
-    --clr-gnr-red-dark: #750b1c;
-    --clr-gnr-pinkred: #750b1c;
+    --clr-gnr-red: #A4262C;
+    --clr-gnr-darkred: #750b1c;
     //state
-    --clr-sta-invalid: var(--clr-gnr-red-main);
-    --clr-sta-invalid-hovor: var(--clr-gnr-red-dark);
+    --clr-sta-invalid: var(--clr-gnr-red);
+    --clr-sta-invalid-hover: var(--clr-gnr-darkred);
     //action
-    --clr-act-hovor-pri: var(--clr-primary-dark);
+    --clr-act-hover-pri: var(--clr-primary-dark);
     --clr-act-active-pri: var(--clr-primary-darker);
-    --clr-act-hovor-sec: var(--clr-secondary-dark);
+    --clr-act-hover-sec: var(--clr-secondary-dark);
     --clr-act-active-sec: var(--clr-secondary-darker);
     --clr-act-disabled: var(--clr-ntr-gray20);
-    --clr-act-border-hovor-sec: var(--clr-ntr-gray160);
+    --clr-act-border-hover-sec: var(--clr-ntr-gray160);
     --clr-act-border-active-sec: var(--clr-ntr-gray160);
     --clr-act2-active: #004578;
     //text

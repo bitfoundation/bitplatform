@@ -390,29 +390,29 @@
 
     &.invalid {
         .option-label {
-            color: $color-general-red;
+            color: $color-state-invalid;
 
             &:before {
-                border-color: $color-general-red;
+                border-color: $color-state-invalid;
             }
 
             &:after {
-                border-color: $color-general-red;
-                background-color: $color-general-red;
+                border-color: $color-state-invalid;
+                background-color: $color-state-invalid;
             }
 
             &:hover {
                 .text {
-                    color: $color-general-pinkred;
+                    color: $color-state-invalid-hover;
                 }
 
                 &:after {
-                    background-color: $color-general-pinkred;
-                    border-color: $color-general-pinkred;
+                    background-color: $color-state-invalid-hover;
+                    border-color: $color-state-invalid-hover;
                 }
 
                 &:before {
-                    border-color: $color-general-pinkred;
+                    border-color: $color-state-invalid-hover;
                 }
             }
         }
@@ -434,13 +434,13 @@
                 border-color: $color-general-red;
 
                 &:before {
-                    border-color: $color-general-pinkred;
+                    border-color: $color-state-invalid-hover;
                     opacity: 1;
                 }
 
                 &:after {
-                    border-color: $color-general-pinkred;
-                    background-color: $color-general-pinkred;
+                    border-color: $color-state-invalid-hover;
+                    background-color: $color-state-invalid-hover;
                 }
             }
         }

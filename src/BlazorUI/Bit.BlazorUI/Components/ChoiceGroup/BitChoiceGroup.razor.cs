@@ -82,8 +82,6 @@ public partial class BitChoiceGroup
     {
         ClassBuilder.Register(() => IsEnabled && Options.Any(o => o.IsEnabled) && IsRequired ? "required" : string.Empty);
 
-        ClassBuilder.Register(() => ValueInvalid is true ? "invalid" : string.Empty);
-
         ClassBuilder.Register(() => IsRtl ? "rtl" : string.Empty);
     }
 

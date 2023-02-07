@@ -9,23 +9,20 @@ $color-secondary-main: var(--clr-secondary-main);
 $color-secondary-dark: var(--clr-secondary-dark);
 $color-secondary-darker: var(--clr-secondary-darker);
 //general
-$color-general-red-main: var(--clr-gnr-red-main);
-$color-general-red-dark: var(--clr-gnr-red-dark);
+$color-general-red: var(--clr-gnr-red);
+$color-general-darkred: var(--clr-gnr-darkred);
 //state
 $color-state-invalid: var(--clr-sta-invalid);
-$color-state-invalid-hovor: var(--clr-sta-invalid-hovor);
+$color-state-invalid-hover: var(--clr-sta-invalid-hover);
 //background color
 $color-background: var(--clr-background);
-//general
-$color-general-red: var(--clr-gnr-red);
-$color-general-pinkred: var(--clr-gnr-pinkred);
 //action
-$color-action-hover-primary: var(--clr-act-hovor-pri);
+$color-action-hover-primary: var(--clr-act-hover-pri);
 $color-action-active-primary: var(--clr-act-active-pri);
-$color-action-hover-secondary: var(--clr-act-hovor-sec);
+$color-action-hover-secondary: var(--clr-act-hover-sec);
 $color-action-active-secondary: var(--clr-act-active-sec);
 $color-action-disabled: var(--clr-act-disabled);
-$color-action-borde-hover-secondary: var(--clr-act-border-hovor-sec);
+$color-action-borde-hover-secondary: var(--clr-act-border-hover-sec);
 $color-action-borde-active-secondary: var(--clr-act-border-active-sec);
 $color-action2-active-primary: var(--clr-act2-active);
 //text
