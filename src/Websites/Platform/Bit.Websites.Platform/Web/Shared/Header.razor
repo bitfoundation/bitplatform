@@ -77,9 +77,7 @@
 @if (IsHeaderMenuOpen)
 {
     <nav class="header-nav">
-        <BitIconButton Class="header-nav-close-btn"
-                   IconName="BitIconName.Cancel"
-                   OnClick="@ToggleHeaderMenu" />
+        <BitIconButton Class="header-nav-close-btn" IconName="BitIconName.Cancel" OnClick="@ToggleHeaderMenu" />
         <a class="header-nav-link @(CurrentUrl == Urls.HomePage ? "header-nav-link--active" : null)" href="@Urls.HomePage" @onclick=@ToggleHeaderMenu>Home</a>
         <div class="header-nav-link header-ps-btn @(IsProductsServicesActive() ? "header-nav-link--active" : null)">
             Products & Services

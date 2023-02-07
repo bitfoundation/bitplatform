@@ -1,14 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Bit.BlazorUI.Playground.Web.Services;
-using Bit.BlazorUI.Playground.Web.Services.Contracts;
+using System.Collections.Generic;
+using Microsoft.JSInterop;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
-using Microsoft.JSInterop;
+using Bit.BlazorUI.Playground.Web.Services;
+using Bit.BlazorUI.Playground.Web.Services.Contracts;
 
-namespace Bit.BlazorUI.Playground.Web.Components;
+namespace Bit.BlazorUI.Playground.Web.Shared;
 
 public partial class NavMenu
 {
