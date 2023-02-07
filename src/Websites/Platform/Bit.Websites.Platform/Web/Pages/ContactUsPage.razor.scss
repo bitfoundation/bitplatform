@@ -10,18 +10,8 @@
     width: 100%;
     box-sizing: border-box;
     overflow: hidden;   
-    padding-top: rem(121px);
+    padding-top: rem(60px);
     padding-bottom: rem(65px);
-
-    @include lg {
-        padding-top: rem(91px);
-        padding-bottom: rem(35px);
-    }
-
-    @include lt-lg {
-        padding-top: rem(135px);
-        padding-bottom: rem(35px);
-    }
 }
 
 .page-section {
@@ -32,52 +22,38 @@
 
 .page-section-contnet {
     display: flex;
-    flex-flow: row nowrap;
+    flex-flow: column;
     justify-content: space-between;
     align-items: flex-start;
     width: 100%;
-    max-width: rem(1200px);
+    max-width: rem(900px);
     margin-left: auto;
     margin-right: auto;
     padding-left: rem(20px);
     padding-right: rem(20px);
     box-sizing: border-box;
-
-    @include lt-lg {
-        flex-flow: column nowrap;
-        justify-content: space-between;
-        align-items: flex-start;
-    }
 }
 
 .flex-container {
-    flex-basis: calc(50% - 20px);
-    flex-grow: 0;
-    width: calc(50% - 20px);
-
-    &:last-child {
-        display: flex;
-        justify-content: flex-end;
-    }
-
-    @include lt-lg {
-        flex-basis: 100%;
-        width: 100%;
-
-        &:last-child {
-            justify-content: center;
-        }
-    }
+    width: 100%;
+    display: flex;
+    flex-flow: column;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: rem(30px);
 }
 
 .page-title {
     margin: 0;
-    margin-bottom: rem(52px);
+    margin-bottom: rem(40px);
     padding: 0;
-    font-size: rem(36px);
+    font-size: rem(48px);
     font-weight: 800;
     line-height: 1;
     color: #0a1929;
+    background: linear-gradient(to right, #007FFF, #0059B2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 
     @include lt-lg {
         margin-bottom: rem(28px);
@@ -89,9 +65,10 @@
     line-height: 1.5;
     letter-spacing: 0;
     font-weight: 400;
-    margin-top: rem(10px);
-    margin-bottom: rem(20px);
+    margin-bottom: rem(30px);
     color: $Gray1;
+    max-width: rem(500px);
+    text-align: center;
 }
 
 .email {
@@ -111,7 +88,7 @@
 
 ::deep .form {
     width: 100%;
-    max-width: rem(450px);
+    max-width: rem(600px);
     padding: rem(20px);
     box-sizing: border-box;
     background-color: $White;
@@ -120,13 +97,9 @@
     box-shadow: 0 1.6px 3.6px 0 rgb(0 0 0 / 13%), 0 0.3px 0.9px 0 rgb(0 0 0 / 11%);
     color: #1A2027;
     text-align: center;
-
-    @include lt-lg {
-        margin: rem(60px) 0;
-    }
 }
 
-::deep .bit-txt-fluent {
+::deep .bit-txt {
     margin-bottom: rem(24px);
     text-align: left;
 }
@@ -138,6 +111,6 @@
     text-align: left;
 }
 
-::deep .bit-btn-fluent {
+::deep .bit-btn {
     margin-top: rem(16px);
 }
