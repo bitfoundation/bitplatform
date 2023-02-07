@@ -8,8 +8,12 @@ $color-primary-lighter: var(--clr-primary-light);
 $color-secondary-main: var(--clr-secondary-main);
 $color-secondary-dark: var(--clr-secondary-dark);
 $color-secondary-darker: var(--clr-secondary-darker);
-$color-error-main: var(--clr-error-main);
-$color-error-dark: var(--clr-error-dark);
+//general
+$color-general-red-main: var(--clr-gnr-red-main);
+$color-general-red-dark: var(--clr-gnr-red-dark);
+//state
+$color-state-invalid: var(--clr-sta-invalid);
+$color-state-invalid-hovor: var(--clr-sta-invalid-hovor);
 //background color
 $color-background: var(--clr-background);
 //action

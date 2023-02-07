@@ -275,12 +275,6 @@ private bool IsIndeterminated = true;
         gap: 1rem;
         width: fit-content;
     }
-
-    @media screen and (max-width: 37.5em) {
-        .controlled-box {
-            flex-direction: column;
-        }
-    }
 </style>
 
 <div class=""example-content"">

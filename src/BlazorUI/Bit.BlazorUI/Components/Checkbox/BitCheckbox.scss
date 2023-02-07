@@ -57,7 +57,7 @@
 
     &.invalid {
         .checkbox {
-            border-color: $color-error-main;
+            border-color: $color-state-invalid;
         }
     }
 
@@ -89,8 +89,8 @@
 
         &.invalid {
             .checkbox {
-                background-color: $color-error-main;
-                border-color: $color-error-main;
+                background-color: $color-state-invalid;
+                border-color: $color-state-invalid;
             }
         }
 
@@ -129,10 +129,10 @@
 
         &.invalid {
             .checkbox {
-                border-color: $color-error-dark;
+                border-color: $color-state-invalid-hovor;
 
                 .bit-icon {
-                    background-color: $color-error-main;
+                    background-color: $color-state-invalid;
                 }
             }
         }
@@ -171,7 +171,7 @@
 
     @media (hover: hover) {
 
-        &.bit-chb:hover {
+        &:hover {
             .checkbox {
                 .bit-icon {
                     opacity: 1;
@@ -194,8 +194,8 @@
 
             &.invalid:hover {
                 .checkbox {
-                    border-color: $color-error-dark;
-                    background-color: $color-error-dark;
+                    border-color: $color-state-invalid-hovor;
+                    background-color: $color-state-invalid-hovor;
                 }
             }
 
@@ -227,10 +227,10 @@
 
             &.invalid:hover {
                 .checkbox {
-                    border-color: $color-error-dark;
+                    border-color: $color-state-invalid-hovor;
 
                     .bit-icon {
-                        background-color: $color-error-dark;
+                        background-color: $color-state-invalid-hovor;
                     }
                 }
             }
