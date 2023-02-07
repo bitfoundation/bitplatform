@@ -529,13 +529,11 @@ private readonly List<BitChoiceGroupOption> ChoiceGroupWithOptionTemplate = new(
         border-radius: 10px;
     }
 
-    .custom-option:hover {
-        .option-pointer {
-            border-top: 5px solid #C66;
-            border-bottom: 5px solid #6C6;
-            border-left: 5px solid #66C;
-            border-right: 5px solid #CC6;
-        }
+    .custom-option:hover .option-pointer {
+        border-top: 5px solid #C66;
+        border-bottom: 5px solid #6C6;
+        border-left: 5px solid #66C;
+        border-right: 5px solid #CC6;
     }
 
     .custom-option.selected-option {

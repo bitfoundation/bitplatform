@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Drawing;
-using Bunit;
+﻿using System.Drawing;
+using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Bunit;
 
 namespace Bit.BlazorUI.Tests.Inputs;
 
@@ -36,25 +36,25 @@ public class BitChoiceGroupTests : BunitTestContext
 
         if (isEnabled)
         {
-            Assert.IsFalse(choiceGroup.ClassList.Contains($"disabled"));
+            Assert.IsFalse(choiceGroup.ClassList.Contains("disabled"));
             if (optionIsEnabled)
             {
-                Assert.IsFalse(option.ClassList.Contains($"disabled"));
+                Assert.IsFalse(option.ClassList.Contains("disabled"));
             }
             else
             {
-                Assert.IsTrue(option.ClassList.Contains($"disabled"));
+                Assert.IsTrue(option.ClassList.Contains("disabled"));
             }
         }
         else
         {
-            Assert.IsTrue(choiceGroup.ClassList.Contains($"disabled"));
-            Assert.IsTrue(option.ClassList.Contains($"disabled"));
+            Assert.IsTrue(choiceGroup.ClassList.Contains("disabled"));
+            Assert.IsTrue(option.ClassList.Contains("disabled"));
         }
     }
 
     [DataTestMethod, DataRow("key1")]
-    public void BitChoiceGroupRespectDafaultValue(string defaultValue)
+    public void BitChoiceGroupRespectDefaultValue(string defaultValue)
     {
         var component = RenderComponent<BitChoiceGroup>(parameters =>
         {
