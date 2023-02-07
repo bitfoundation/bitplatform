@@ -44,3 +44,7 @@ function initTrustPilot() {
         thisGlobal.Trustpilot.loadFromElement(trustpilotWidgetElements[i]);
     }
 }
+
+function goToTop() {
+    window.scrollTo({ top: 0 });
+}

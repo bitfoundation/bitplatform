@@ -194,6 +194,16 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
         _value = default;
     }
 
+    protected override void OnInitialized()
+    {
+        if (UseVisual is false)
+        {
+            ClassBuilder.Register(() => ValueInvalid is true ? "invalid" : string.Empty);
+        }
+
+        base.OnInitialized();
+    }
+
     public override Task SetParametersAsync(ParameterView parameters)
     {
         var parametersDictionary = parameters.ToDictionary() as Dictionary<string, object>;

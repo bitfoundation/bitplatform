@@ -5,6 +5,8 @@ namespace Bit.BlazorUI;
 
 public partial class BitCheckbox
 {
+    protected override bool UseVisual => false;
+
     private bool IsIndeterminateHasBeenSet;
     private bool isIndeterminate;
     private BitCheckBoxSide boxSide;
@@ -49,7 +51,7 @@ public partial class BitCheckbox
     }
 
     /// <summary>
-    /// Custom icon for the check mark rendered by the checkbox instade of default check mark icon
+    /// Custom icon for the check mark rendered by the checkbox instead of default check mark icon
     /// </summary>
     [Parameter] public BitIconName CheckmarkIconName { get; set; } = BitIconName.Accept;
 
@@ -110,7 +112,7 @@ public partial class BitCheckbox
     [Parameter] public string? Name { get; set; }
 
     /// <summary>
-    ///  Callback that is called when the check box is cliced
+    ///  Callback that is called when the check box is clicked
     /// </summary>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
@@ -128,23 +130,11 @@ public partial class BitCheckbox
 
     protected override void RegisterComponentClasses()
     {
-        ClassBuilder.Register(() => IsIndeterminate ? $"{RootElementClass}-indeterminate-{VisualClassRegistrar()}" : string.Empty);
+        ClassBuilder.Register(() => IsIndeterminate ? $"indeterminate" : string.Empty);
 
-        ClassBuilder.Register(() => CurrentValue ? $"{RootElementClass}-checked-{VisualClassRegistrar()}" : string.Empty);
+        ClassBuilder.Register(() => CurrentValue ? "checked" : string.Empty);
 
-        ClassBuilder.Register(() => BoxSide == BitCheckBoxSide.End
-                                    ? $"{RootElementClass}-end-{VisualClassRegistrar()}"
-                                    : string.Empty);
-
-        ClassBuilder.Register(() => IsEnabled is false && CurrentValue
-                                    ? $"{RootElementClass}-checked-disabled-{VisualClassRegistrar()}"
-                                    : string.Empty);
-
-        ClassBuilder.Register(() => IsEnabled is false && IsIndeterminate
-                                    ? $"{RootElementClass}-indeterminate-disabled-{VisualClassRegistrar()}"
-                                    : string.Empty);
-
-        ClassBuilder.Register(() => ValueInvalid is true ? $"{RootElementClass}-invalid-{VisualClassRegistrar()}" : string.Empty);
+        ClassBuilder.Register(() => BoxSide == BitCheckBoxSide.End ? "side-end" : string.Empty);
     }
 
     protected override async Task OnInitializedAsync()

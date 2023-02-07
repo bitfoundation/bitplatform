@@ -7,7 +7,7 @@
     <ComponentExampleBox Title="BitCheckbox" HTMLSourceCode="@example1HTMLCode" ExampleId="example1">
         <ExamplePreview>
             <div class="example-desc">To create a checkbox you can use a BitCheckbox component.</div>
-            <div class="chk-box">
+            <div class="example-content">
                 <BitCheckbox Label="Basic Checkbox" />
                 <BitCheckbox Label="One-way Checked Checkbox (Fixed)" Value="true" />
                 <BitCheckbox Label="Disable Checkbox" IsEnabled="false" />
@@ -19,7 +19,7 @@
 
     <ComponentExampleBox Title="Reversed" HTMLSourceCode="@example2TMLCode" ExampleId="example2">
         <ExamplePreview>
-            <div class="chk-box">
+            <div class="example-content">
                 <BitCheckbox Label="Reversed - Basic Checkbox" BoxSide="@BitCheckBoxSide.End" />
                 <BitCheckbox Label="Reversed - One-way Checked Checkbox (Fixed)" BoxSide="@BitCheckBoxSide.End" Value="true" />
                 <BitCheckbox Label="Reversed - Disable Checkbox" BoxSide="@BitCheckBoxSide.End" IsEnabled="false" />
@@ -30,7 +30,7 @@
 
     <ComponentExampleBox Title="Indeterminate" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example3">
         <ExamplePreview>
-            <div class="chk-box">
+            <div class="example-content">
                 <BitCheckbox Label="Indeterminate checkbox" @bind-IsIndeterminate="IsIndeterminated" />
                 <BitCheckbox Label="One-way indeterminate Checkbox (Fixed)" IsIndeterminate="true" />
                 <BitCheckbox Label="Disabled indeterminate checkbox" IsIndeterminate="true" IsEnabled="false" />
@@ -40,29 +40,31 @@
 
     <ComponentExampleBox Title="Controlled BitCheckbox" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
         <ExamplePreview>
-            <div class="chk-box controlled-box">
-                <BitCheckbox Label="One-way Controlled Checkbox" Value="IsChecked_OneWay" />
-                <BitButton OnClick="() => IsChecked_OneWay = !IsChecked_OneWay">
-                    @(IsChecked_OneWay ? "Remove" : "Make") Checked
-                </BitButton>
-            </div>
-            <div class="chk-box controlled-box">
-                <BitCheckbox Label="Two-way Controlled Checkbox" @bind-Value="IsChecked_TwoWay" />
-                <BitButton OnClick="() => IsChecked_TwoWay = !IsChecked_TwoWay">
-                    @(IsChecked_TwoWay ? "Remove" : "Make") Checked
-                </BitButton>
-            </div>
-            <div class="chk-box controlled-box">
-                <BitCheckbox Label="One-way Controlled indeterminate checkbox" IsIndeterminate="IsIndeterminated_OneWay" />
-                <BitButton OnClick="() => IsIndeterminated_OneWay = !IsIndeterminated_OneWay">
-                    @(IsIndeterminated_OneWay ? "Remove" : "Make") Indeterminate
-                </BitButton>
-            </div>
-            <div class="chk-box controlled-box">
-                <BitCheckbox Label="Two-way Controlled indeterminate checkbox" @bind-IsIndeterminate="IsIndeterminated_TwoWay" />
-                <BitButton OnClick="() => IsIndeterminated_TwoWay = !IsIndeterminated_TwoWay">
-                    @(IsIndeterminated_TwoWay ? "Remove" : "Make") Indeterminate
-                </BitButton>
+            <div class="example-content">
+                <div class="controlled-box">
+                    <BitCheckbox Label="One-way Controlled Checkbox" Value="IsChecked_OneWay" />
+                    <BitButton OnClick="() => IsChecked_OneWay = !IsChecked_OneWay" ButtonSize="BitButtonSize.Small">
+                        @(IsChecked_OneWay ? "Remove" : "Make") Checked
+                    </BitButton>
+                </div>
+                <div class="controlled-box">
+                    <BitCheckbox Label="Two-way Controlled Checkbox" @bind-Value="IsChecked_TwoWay" />
+                    <BitButton OnClick="() => IsChecked_TwoWay = !IsChecked_TwoWay" ButtonSize="BitButtonSize.Small">
+                        @(IsChecked_TwoWay ? "Remove" : "Make") Checked
+                    </BitButton>
+                </div>
+                <div class="controlled-box">
+                    <BitCheckbox Label="One-way Controlled indeterminate checkbox" IsIndeterminate="IsIndeterminated_OneWay" />
+                    <BitButton OnClick="() => IsIndeterminated_OneWay = !IsIndeterminated_OneWay" ButtonSize="BitButtonSize.Small">
+                        @(IsIndeterminated_OneWay ? "Remove" : "Make") Indeterminate
+                    </BitButton>
+                </div>
+                <div class="controlled-box">
+                    <BitCheckbox Label="Two-way Controlled indeterminate checkbox" @bind-IsIndeterminate="IsIndeterminated_TwoWay" />
+                    <BitButton OnClick="() => IsIndeterminated_TwoWay = !IsIndeterminated_TwoWay" ButtonSize="BitButtonSize.Small">
+                        @(IsIndeterminated_TwoWay ? "Remove" : "Make") Indeterminate
+                    </BitButton>
+                </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -84,7 +86,7 @@
     <ComponentExampleBox Title="Custom Checkbox" HTMLSourceCode="@example6HTMLCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example6">
         <ExamplePreview>
             <div class="example-desc">You can customize the Checkbox content.</div>
-            <div class="chk-box">
+            <div class="example-content">
                 <BitCheckbox @bind-Value="IsCheckedCustomCheckBox">
                     <div class="custom-checkbox">
                         <BitIconButton Class="checked-box" IconName="@(IsCheckedCustomCheckBox ? BitIconName.Accept : BitIconName.NotSet)" />

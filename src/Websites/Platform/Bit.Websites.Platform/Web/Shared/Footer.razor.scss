@@ -17,6 +17,15 @@
     max-width: rem(1200px);
     padding: rem(40px) rem(20px) rem(80px);
     box-sizing: border-box;
+    position: relative;
+
+    .go-to-top {
+        position: absolute;
+        right: rem(2px);
+        bottom: 0;
+        background-color: $Gray3;
+        padding: rem(8px) rem(12px);
+    }
 
     &:first-child {
         display: grid;
@@ -44,7 +53,7 @@
         padding: rem(40px) rem(20px);
 
         @include sm {
-            flex-flow: column-reverse nowrap;
+            flex-flow: column nowrap;
             justify-content: flex-start;
             align-items: center;
         }
@@ -59,6 +68,10 @@
         display: flex;
         flex-flow: column nowrap;
         gap: 3px;
+
+        @include sm {
+            margin-bottom: rem(30px);
+        }
 
         a {
             text-decoration: none;
@@ -83,7 +96,7 @@
         }
 
         .country {
-            font-weight: 600;
+            /*font-weight: 600;*/
         }
 
         .tel {
@@ -158,7 +171,7 @@
     letter-spacing: 0;
     font-weight: 400;
     color: #3E5060;
-    margin-bottom: rem(7px);
+    margin-top: rem(16px);
 }
 
 .social-link-group {

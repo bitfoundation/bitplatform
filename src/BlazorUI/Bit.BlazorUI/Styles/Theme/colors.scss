@@ -11,8 +11,12 @@
     //background color
     --clr-background: var(--clr-ntr-white);
     //general
-    --clr-gnr-red: #A4262C;
+    --clr-gnr-red-main: #A4262C;
+    --clr-gnr-red-dark: #750b1c;
     --clr-gnr-pinkred: #750b1c;
+    //state
+    --clr-sta-invalid: var(--clr-gnr-red-main);
+    --clr-sta-invalid-hovor: var(--clr-gnr-red-dark);
     //action
     --clr-act-hovor-pri: var(--clr-primary-dark);
     --clr-act-active-pri: var(--clr-primary-darker);

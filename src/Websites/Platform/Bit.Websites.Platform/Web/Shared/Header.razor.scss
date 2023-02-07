@@ -9,8 +9,8 @@
     z-index: 1100;
     width: 100%;
     transition: top 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
-    -webkit-backdrop-filter: blur(20px);
     backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     box-shadow: inset 0px -1px 1px #e7ebf0;
     background-color: rgba(255, 255, 255, 0.72);
 }
@@ -56,8 +56,8 @@
 }
 
 .header-logo {
-    width: rem(30px);
-    height: rem(30px);
+    width: rem(50px);
+    height: rem(50px);
     background-image: url('/images/bit-blue-icon.svg');
     background-position: center;
     background-repeat: no-repeat;
@@ -70,7 +70,7 @@
     height: 100%;
     padding: rem(10px) rem(16px);
     box-sizing: border-box;
-    font-size: rem(14px);
+    font-size: rem(16px);
     line-height: 1.5;
     color: $Gray1;
     text-decoration: none;
@@ -100,7 +100,7 @@
     justify-content: flex-start;
     align-items: center;
     width: 100%;
-    height: rem(44px);
+    height: rem($HeaderSecondRowHeight);
     padding: 0 rem(16px);
     box-sizing: border-box;
 
@@ -112,25 +112,27 @@
 .header-nav {
     position: fixed;
     z-index: 100;
-    top: rem(100px);
+    top: rem(calc($HeaderHeight + $HeaderSecondRowHeight));
     left: 0;
     display: flex;
     flex-flow: column nowrap;
     justify-content: flex-start;
     align-items: flex-start;
     width: 100%;
-    height: calc(100vh - #{rem(100px)});
+    height: calc(100vh - #{rem(calc($HeaderHeight + $HeaderSecondRowHeight))});
     padding: rem(20px);
     box-sizing: border-box;
-    background-color: $White;
+    background-color: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
 }
 
 .header-nav-link {
     padding: rem(8px) 0;
     margin-bottom: rem(16px);
-    font-size: rem(15px);
+    font-size: rem(16px);
     line-height: 1.5;
-    color: $Gray2;
+    color: $Gray1;
     text-decoration: none;
 }
 
@@ -143,11 +145,13 @@
     right: rem(10px);
     top: rem(10px);
     color: $B6Color;
+    width: rem(44px);
+    height: rem(44px);
 }
 
 ::deep .header-action-button {
-    &.bit-actb-fluent {
-        flex-direction: row-reverse;
+    &.bit-acb {
+        flex-grow: 1;
         padding: 0;
         font-size: rem(15px);
         font-weight: 600;
