@@ -84,46 +84,22 @@
     width: 100%;
     padding-top: rem(24px);
 
-    .link-enabled-hasurl,
-    .link-enabled-nourl,
-    .link-enabled-nourl:active,
-    .link-enabled-hasurl:active {
-        .link-container {
-            color: $Gray10;
-
-            i {
-                color: $ThemeLightColor;
-            }
-        }
-    }
-
-    .composite-link {
-        a {
-            font-weight: 400;
-            font-size: rem(14px);
-            line-height: rem(20px);
-            color: $Gray10;
+    .item-container {
+        button {
+            color: $ThemeLightColor;
         }
 
         &:hover {
             background-color: $Blue1;
             color: $Gray10;
-
-            &::after {
-                border-color: $Blue1;
-            }
         }
 
-        button {
-            color: $ThemeLightColor;
-        }
-
-        a.selected {
+        &.selected {
             background-color: $Blue2;
             font-weight: 600;
             font-size: rem(14px);
             line-height: rem(20px);
-            color: $Gray10;
+            color: $ThemeLightColor;
 
             &::after {
                 border-color: $ThemeLighterAltColor;
@@ -132,6 +108,23 @@
             &:hover {
                 background-color: $Blue2;
                 color: $Gray10;
+            }
+
+            .item {
+                i, span {
+                    color: $ThemeLightColor;
+                }
+            }
+        }
+
+        .item {
+            font-weight: 400;
+            font-size: rem(14px);
+            line-height: rem(20px);
+            color: $ThemeLightColor;
+
+            i, span {
+                color: $ThemeLightColor;
             }
         }
     }

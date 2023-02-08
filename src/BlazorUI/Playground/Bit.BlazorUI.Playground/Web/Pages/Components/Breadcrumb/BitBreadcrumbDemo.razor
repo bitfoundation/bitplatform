@@ -24,7 +24,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="MaxDisplayedItems & OverflowIndex" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@BasicItemsCSharpCode" ExampleId="example2">
+    <ComponentExampleBox Title="MaxDisplayedItems & OverflowIndex" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@basicItemsCSharpCode" ExampleId="example2">
         <ExamplePreview>
             <div class="example-desc">
                 You can specify how many items are displayed among the items you have and the rest of the items are displayed as overflow.
@@ -59,7 +59,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Overflow with Icon" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@BasicItemsCSharpCode" ExampleId="example3">
+    <ComponentExampleBox Title="Overflow with Icon" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@basicItemsCSharpCode" ExampleId="example3">
         <ExamplePreview>
             <div class="example-box">
                 <div>
@@ -132,10 +132,10 @@
                         <BitButton OnClick="AddItem">Add Item</BitButton>
                         <BitButton OnClick="RemoveItem">Remove Item</BitButton>
                     </div>
-                   <div>
+                    <div>
                         <BitNumericTextField @bind-Value="MaxDisplayedItems" Step="@NumericTextFieldStep" Label="MaxDisplayedItems" ShowArrows="true" />
                         <BitNumericTextField @bind-Value="OverflowIndex" Step="@NumericTextFieldStep" Label="OverflowIndex" ShowArrows="true" />
-                   </div>
+                    </div>
                 </div>
             </div>
         </ExamplePreview>

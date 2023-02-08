@@ -5,43 +5,22 @@ namespace Bit.BlazorUI.Playground.Web.Pages.Components.BreadGroup;
 
 public partial class BitBreadGroupDemo
 {
-    private int SelectedOptionNumber = 6;
-
-    private uint MaxDisplayedOptions = 3;
-    private uint OverflowIndex = 2;
-    private int OptionsCount = 4;
-    private int CustomizedSelectedOptionNumber = 4;
-    private uint NumericTextFieldStep = 1;
-
-
     private readonly List<ComponentParameter> componentParameters = new()
     {
         new ComponentParameter
         {
             Name = "ChildContent",
             Type = "RenderFragment?",
-            Description = "The content of BitBreadGroup, common values are BitBreadGroup component.",
+            Description = "The content of the BitBreadGroup, that are BitBreadOption components.",
             LinkType = LinkType.Link,
             Href = "#bread-option"
-        },
-        new ComponentParameter
-        {
-            Name = "SelectedOptionClass",
-            Type = "string?",
-            Description = "The class HTML attribute for Selected Option."
-        },
-        new ComponentParameter
-        {
-            Name = "SelectedOptionStyle",
-            Type = "string?",
-            Description = "The style HTML attribute for Selected Option."
         },
         new ComponentParameter
         {
             Name = "DividerIcon",
             Type = "BitIconName",
             DefaultValue = "BitIconName.ChevronRight",
-            Description = "Render a custom divider in place of the default chevron."
+            Description = "The divider icon name. The default value is BitIconName.ChevronRight."
         },
         new ComponentParameter
         {
@@ -59,14 +38,26 @@ public partial class BitBreadGroupDemo
         {
             Name = "OverflowIndex",
             Type = "uint",
-            Description = "Optional index where overflow Options will be collapsed."
+            Description = "Optional index where overflow options will be collapsed."
         },
         new ComponentParameter
         {
             Name = "OverflowIcon",
             Type = "BitIconName",
             DefaultValue = "BitIconName.More",
-            Description = "Render a custom overflow icon in place of the default icon."
+            Description = "The overflow icon name. The default value is BitIconName.More."
+        },
+        new ComponentParameter
+        {
+            Name = "SelectedOptionClass",
+            Type = "string?",
+            Description = "The CSS class attribute for the selected option."
+        },
+        new ComponentParameter
+        {
+            Name = "SelectedOptionStyle",
+            Type = "string?",
+            Description = "The style attribute for the selected option."
         },
     };
 
@@ -94,7 +85,7 @@ public partial class BitBreadGroupDemo
                {
                    Name = "OnClick",
                    Type = "EventCallback<MouseEventArgs>",
-                   Description = "Callback for when the BitBreadOption clicked and Href is empty.",
+                   Description = "Callback for when the BitBreadOption clicked.",
                },
                new ComponentParameter()
                {
@@ -105,6 +96,15 @@ public partial class BitBreadGroupDemo
             }
         }
     };
+
+
+    private int OptionsCount = 4;
+    private uint OverflowIndex = 2;
+    private int SelectedOptionNumber = 6;
+    private uint MaxDisplayedOptions = 3;
+    private uint NumericTextFieldStep = 1;
+    private int CustomizedSelectedOptionNumber = 4;
+
 
     private readonly string example1HTMLCode = @"
 <div>
@@ -219,27 +219,27 @@ public partial class BitBreadGroupDemo
 
     private readonly string example4HTMLCode = @"
 <style>
-    .custom-option {
-        color: red;
-        margin: 2px 5px;
-        border-radius: 2px;
-        background: limegreen;
-
-        &:hover {
-            background: greenyellow;
+        .bit-brg .custom-option {
+            color: red;
+            margin: 2px 5px;
+            border-radius: 2px;
+            background: limegreen;
         }
-    }
 
-    .custom-selected-option {
-        color: red;
-        margin: 2px 5px;
-        border-radius: 2px;
-        background: mediumspringgreen;
+            .bit-brg .custom-option:hover {
+                background: greenyellow;
+            }
 
-        &:hover {
-            background: greenyellow;
+        .bit-brg .custom-selected-option {
+            color: red;
+            margin: 2px 5px;
+            border-radius: 2px;
+            background: mediumspringgreen;
         }
-    }
+
+            .bit-brg .custom-selected-option:hover {
+                background: greenyellow;
+            }
 </style>
 
 <div>

@@ -17,6 +17,15 @@
     max-width: rem(1200px);
     padding: rem(40px) rem(20px) rem(80px);
     box-sizing: border-box;
+    position: relative;
+
+    .go-to-top {
+        position: absolute;
+        right: rem(2px);
+        bottom: 0;
+        background-color: $Gray3;
+        padding: rem(8px) rem(12px);
+    }
 
     &:first-child {
         display: grid;
@@ -40,7 +49,7 @@
         padding: rem(40px) rem(20px);
 
         @include sm {
-            flex-flow: column-reverse nowrap;
+            flex-flow: column nowrap;
             justify-content: flex-start;
             align-items: center;
         }
@@ -49,6 +58,46 @@
     @include md {
         padding-right: rem(30px);
         padding-left: rem(30px);
+    }
+
+    .address-info {
+        display: flex;
+        flex-flow: column nowrap;
+        gap: rem(3px);
+
+        @include sm {
+            margin-bottom: rem(30px);
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        .address, .tel, .country {
+            padding-left: rem(20px);
+            background-repeat: no-repeat;
+            background-position-y: rem(4px);
+        }
+
+        .address, .tel {
+            color: #3E5060;
+
+            &:hover {
+                color: #4A5AAB;
+            }
+        }
+
+        .address {
+            background-image: url('/images/footer/location-icon.svg');
+        }
+
+        .country {
+            /*font-weight: 600;*/
+        }
+
+        .tel {
+            background-image: url('/images/footer/tel-icon.svg');
+        }
     }
 }
 
@@ -113,12 +162,12 @@
 }
 
 .copy-right-txt {
-    margin: 0;
     font-size: rem(14px);
     line-height: 1.5;
     letter-spacing: 0;
     font-weight: 400;
     color: #3E5060;
+    margin-top: rem(16px);
 }
 
 .social-link-group {

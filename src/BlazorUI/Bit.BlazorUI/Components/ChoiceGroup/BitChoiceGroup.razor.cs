@@ -1,10 +1,12 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Text;
+﻿using System.Text;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
 public partial class BitChoiceGroup
 {
+    protected override bool UseVisual => false;
+
     private bool isRequired;
 
     /// <summary>
@@ -49,7 +51,7 @@ public partial class BitChoiceGroup
     /// <summary>
     /// You can define the ChoiceGroup in Horizontal or Vertical mode.
     /// </summary>
-    [Parameter] public BitLayoutFlow? LayoutFlow { get; set; }
+    [Parameter] public BitLayoutFlow LayoutFlow { get; set; } = BitLayoutFlow.Vertical;
 
     /// <summary>
     /// Name of ChoiceGroup, this name is used to group each option into the same logical ChoiceGroup.
@@ -73,23 +75,19 @@ public partial class BitChoiceGroup
     /// </summary>
     [Parameter] public EventCallback<BitChoiceGroupOption> OnChange { get; set; }
 
+
     protected override string RootElementClass => "bit-chg";
 
     protected override void RegisterComponentClasses()
     {
-        ClassBuilder.Register(() => IsEnabled && Options.Any(o => o.IsEnabled) && IsRequired
-                                   ? $"{RootElementClass}-required-{VisualClassRegistrar()}" : string.Empty);
+        ClassBuilder.Register(() => IsEnabled && Options.Any(o => o.IsEnabled) && IsRequired ? "required" : string.Empty);
 
-        ClassBuilder.Register(() => ValueInvalid is true
-                                   ? $"{RootElementClass}-invalid-{VisualClassRegistrar()}" : string.Empty);
-
-        ClassBuilder.Register(() => IsRtl
-                                   ? $"{RootElementClass}-rtl-{VisualClassRegistrar()}" : string.Empty);
+        ClassBuilder.Register(() => IsRtl ? "rtl" : string.Empty);
     }
 
     protected override async Task OnInitializedAsync()
     {
-        if (DefaultValue.HasValue() && Options.Any(o => o.Value == DefaultValue))
+        if (ValueHasBeenSet is false && DefaultValue.HasValue() && Options.Any(o => o.Value == DefaultValue))
         {
             CurrentValue = DefaultValue;
         }
@@ -103,63 +101,44 @@ public partial class BitChoiceGroup
 
     private string GetGroupAriaLabelledBy() => AriaLabelledBy ?? GetGroupLabelId();
 
-    private string GetOptionInputId(BitChoiceGroupOption option) =>
-        option.Id ?? $"ChoiceGroupOptionInput{UniqueId}-{option.Value}";
+    private string GetOptionInputId(BitChoiceGroupOption option) => option.Id ?? $"ChoiceGroup-Input-{UniqueId}-{option.Value}";
 
-    private string GetOptionAriaLabel(BitChoiceGroupOption option) =>
-      option.AriaLabel ?? AriaLabel ?? string.Empty;
+    private string GetOptionAriaLabel(BitChoiceGroupOption option) => option.AriaLabel ?? AriaLabel ?? string.Empty;
 
-    private bool GetOptionIsChecked(BitChoiceGroupOption option) =>
-        CurrentValue.HasValue() && CurrentValue == option.Value;
+    private bool GetOptionIsChecked(BitChoiceGroupOption option) => CurrentValue.HasValue() && CurrentValue == option.Value;
 
-    private string? GetOptionImageSrc(BitChoiceGroupOption option) =>
-        GetOptionIsChecked(option) && option.SelectedImageSrc.HasValue()
-        ? option.SelectedImageSrc
-        : option.ImageSrc;
-
-    private string GetOptionLabelClassName(BitChoiceGroupOption option) =>
-        (option.ImageSrc.HasValue() || option.IconName is not null) && OptionLabelTemplate is null
-        ? "bit-chgo-lbl-with-img"
-        : "bit-chgo-lbl";
+    private string? GetOptionImageSrc(BitChoiceGroupOption option) => GetOptionIsChecked(option) && option.SelectedImageSrc.HasValue()
+                                                                        ? option.SelectedImageSrc 
+                                                                        : option.ImageSrc;
 
     private static string GetOptionImageSizeStyle(BitChoiceGroupOption option) => option.ImageSize is not null
             ? $"width:{option.ImageSize.Value.Width}px; height:{option.ImageSize.Value.Height}px;"
             : string.Empty;
 
-    private string GetOptionDivClassName(BitChoiceGroupOption option)
+    private string GetOptionClasses(BitChoiceGroupOption option)
     {
-        const string itemRootElementClass = "bit-chgo";
-        StringBuilder cssClass = new(itemRootElementClass);
+        var optionClasses = new StringBuilder("option");
 
-        if (OptionTemplate is not null) return cssClass.ToString();
+        if (OptionTemplate is not null) return optionClasses.ToString();
 
         if (GetOptionIsChecked(option))
         {
-            cssClass
-                .Append(' ')
-                .Append(itemRootElementClass)
-                .Append("-checked");
+            optionClasses.Append(" checked");
         }
 
-        if (OptionLabelTemplate is not null) return cssClass.ToString();
+        if (OptionLabelTemplate is not null) return optionClasses.ToString();
 
         if (option.IsEnabled is false || IsEnabled is false)
         {
-            cssClass
-               .Append(' ')
-               .Append(itemRootElementClass)
-               .Append("-disabled");
+            optionClasses.Append(" disabled");
         }
 
         if (option.ImageSrc.HasValue() || option.IconName is not null)
         {
-            cssClass
-                .Append(' ')
-                .Append(itemRootElementClass)
-                .Append("-with-img");
+            optionClasses.Append(" has-img");
         }
 
-        return cssClass.ToString();
+        return optionClasses.ToString();
     }
 
     private async void HandleOptionChange(BitChoiceGroupOption option)

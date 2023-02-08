@@ -7,34 +7,26 @@ namespace Bit.BlazorUI.Tests.BreadGroup;
 public class BitBreadGroupTests : BunitTestContext
 {
     [DataTestMethod,
-        DataRow(Visual.Fluent, true),
-        DataRow(Visual.Fluent, false),
-        DataRow(Visual.Cupertino, true),
-        DataRow(Visual.Cupertino, false),
-        DataRow(Visual.Material, true),
-        DataRow(Visual.Material, false),
+        DataRow(true),
+        DataRow(false)
     ]
-    public void BitBreadGroupTest(Visual visual, bool isEnabled)
+    public void BitBreadGroupTest(bool isEnabled)
     {
         var component = RenderComponent<BitBreadGroupTest>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, isEnabled);
-            parameters.Add(p => p.Visual, visual);
         });
 
         var breadList = component.Find(".bit-brg");
 
-        var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
-
-        Assert.IsTrue(breadList.ClassList.Contains($"bit-brg-{visualClass}"));
 
         if (isEnabled)
         {
-            Assert.IsTrue(breadList.ClassList.Contains($"bit-brg-enabled-{visualClass}"));
+            Assert.IsFalse(breadList.ClassList.Contains($"disabled"));
         }
         else
         {
-            Assert.IsTrue(breadList.ClassList.Contains($"bit-brg-disabled-{visualClass}"));
+            Assert.IsTrue(breadList.ClassList.Contains($"disabled"));
         }
     }
 
@@ -95,9 +87,9 @@ public class BitBreadGroupTests : BunitTestContext
     {
         var component = RenderComponent<BitBreadGroupTest>();
 
-        var breadGroupOptions = component.FindAll(".bit-brg .options-wrapper ul li");
+        var breadGroupOptions = component.FindAll(".bit-brg .options-wrapper ul li a");
 
-        Assert.IsTrue(breadGroupOptions[1].ClassList.Contains("bit-bro-disabled-fluent"));
+        Assert.IsTrue(breadGroupOptions[1].ClassList.Contains("disabled"));
     }
 
     [DataTestMethod]
@@ -116,7 +108,7 @@ public class BitBreadGroupTests : BunitTestContext
     {
         var component = RenderComponent<BitBreadGroupTest>();
 
-        var breadGroupOptions = component.FindAll(".bit-brg .options-wrapper ul li");
+        var breadGroupOptions = component.FindAll(".bit-brg .options-wrapper ul li a");
 
         Assert.IsTrue(breadGroupOptions[3].ClassList.Contains("custom-class-name"));
         Assert.IsTrue(breadGroupOptions[4].GetAttribute("style").Contains("background-color: red;"));

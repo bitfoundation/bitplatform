@@ -7,11 +7,9 @@ namespace Bit.BlazorUI.Playground.Web.Shared;
 
 public partial class MainLayout : IDisposable
 {
-    [Inject]
-    public NavigationManager NavigationManager { get; set; }
+    [Inject] public NavigationManager NavigationManager { get; set; }
 
-    [Inject]
-    private IExceptionHandler exceptionHandler { get; set; } = default!;
+    [Inject] private IExceptionHandler exceptionHandler { get; set; } = default!;
 
     public string CurrentUrl { get; set; }
 

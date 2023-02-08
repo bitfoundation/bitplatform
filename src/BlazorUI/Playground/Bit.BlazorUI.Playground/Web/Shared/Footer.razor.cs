@@ -1,9 +1,9 @@
-﻿using Bit.BlazorUI.Playground.Web.Services.Contracts;
-using Microsoft.AspNetCore.Components.Routing;
+﻿using System;
 using Microsoft.AspNetCore.Components;
-using System;
+using Microsoft.AspNetCore.Components.Routing;
+using Bit.BlazorUI.Playground.Web.Services.Contracts;
 
-namespace Bit.BlazorUI.Playground.Web.Components;
+namespace Bit.BlazorUI.Playground.Web.Shared;
 
 public partial class Footer
 {

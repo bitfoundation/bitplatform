@@ -3,6 +3,8 @@ namespace Bit.BlazorUI;
 
 public partial class BitAccordion
 {
+    protected override bool UseVisual => false;
+
     private bool IsExpandedHasBeenSet;
     private bool isExpanded;
 
@@ -12,14 +14,14 @@ public partial class BitAccordion
     [Parameter] public bool? DefaultIsExpanded { get; set; }
 
     /// <summary>
+    /// The content of the Accordion.
+    /// </summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
     /// A short description in the header of Accordion.
     /// </summary>
     [Parameter] public string? Description { get; set; }
-
-    /// <summary>
-    /// Used to customize how the content inside the Accordion is rendered.
-    /// </summary>
-    [Parameter] public RenderFragment? ContentTemplate { get; set; }
 
     /// <summary>
     /// Used to customize how the header inside the Accordion is rendered.
@@ -58,10 +60,6 @@ public partial class BitAccordion
     /// </summary>
     [Parameter] public string? Title { get; set; }
 
-    /// <summary>
-    /// Text in the content of Accordion.
-    /// </summary>
-    [Parameter] public string? Text { get; set; }
 
     protected override string RootElementClass => "bit-acd";
 
@@ -77,12 +75,12 @@ public partial class BitAccordion
 
     private async Task HandleOnClick(MouseEventArgs e)
     {
-        if (IsEnabled)
-        {
-            await OnClick.InvokeAsync(e);
-            if (IsExpandedHasBeenSet && IsExpandedChanged.HasDelegate is false) return;
-            IsExpanded = !IsExpanded;
-            await OnChange.InvokeAsync(IsExpanded);
-        }
+        if (IsEnabled is false) return;
+
+        await OnClick.InvokeAsync(e);
+        if (IsExpandedHasBeenSet && IsExpandedChanged.HasDelegate is false) return;
+
+        IsExpanded = !IsExpanded;
+        await OnChange.InvokeAsync(IsExpanded);
     }
 }

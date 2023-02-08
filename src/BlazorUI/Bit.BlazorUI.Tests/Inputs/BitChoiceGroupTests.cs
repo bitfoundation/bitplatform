@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Drawing;
-using Bunit;
+﻿using System.Drawing;
+using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Bunit;
 
 namespace Bit.BlazorUI.Tests.Inputs;
 
@@ -9,26 +9,15 @@ namespace Bit.BlazorUI.Tests.Inputs;
 public class BitChoiceGroupTests : BunitTestContext
 {
     [DataTestMethod,
-       DataRow(Visual.Fluent, true, true),
-       DataRow(Visual.Fluent, true, false),
-       DataRow(Visual.Fluent, false, true),
-       DataRow(Visual.Fluent, false, false),
-
-       DataRow(Visual.Cupertino, true, true),
-       DataRow(Visual.Cupertino, true, false),
-       DataRow(Visual.Cupertino, false, true),
-       DataRow(Visual.Cupertino, false, false),
-
-       DataRow(Visual.Material, true, true),
-       DataRow(Visual.Material, true, false),
-       DataRow(Visual.Material, false, true),
-       DataRow(Visual.Material, false, false)
+       DataRow(true, true),
+       DataRow(true, false),
+       DataRow(false, true),
+       DataRow(false, false)
    ]
-    public void BitChoiceGroupShouldRespectIsEnabled(Visual visual, bool isEnabled, bool optionIsEnabled)
+    public void BitChoiceGroupShouldRespectIsEnabled(bool isEnabled, bool optionIsEnabled)
     {
         var component = RenderComponent<BitChoiceGroup>(parameters =>
         {
-            parameters.AddCascadingValue(visual);
             parameters.Add(p => p.IsEnabled, isEnabled);
             parameters.Add(p => p.Options, new List<BitChoiceGroupOption>
             {
@@ -40,22 +29,32 @@ public class BitChoiceGroupTests : BunitTestContext
             });
         });
 
-        var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
         var isEnabledClass = isEnabled ? "enabled" : "disabled";
 
-        var bitChoiceGroup = component.Find(".bit-chg");
-        var bitChoiceGroupOption = component.Find(".bit-chgo");
+        var choiceGroup = component.Find(".bit-chg");
+        var option = component.Find(".option");
 
-        Assert.IsTrue(bitChoiceGroup.ClassList.Contains($"bit-chg-{isEnabledClass}-{visualClass}"));
-
-        if (isEnabled is false)
+        if (isEnabled)
         {
-            Assert.IsTrue(bitChoiceGroupOption.ClassList.Contains($"bit-chgo-disabled"));
+            Assert.IsFalse(choiceGroup.ClassList.Contains("disabled"));
+            if (optionIsEnabled)
+            {
+                Assert.IsFalse(option.ClassList.Contains("disabled"));
+            }
+            else
+            {
+                Assert.IsTrue(option.ClassList.Contains("disabled"));
+            }
+        }
+        else
+        {
+            Assert.IsTrue(choiceGroup.ClassList.Contains("disabled"));
+            Assert.IsTrue(option.ClassList.Contains("disabled"));
         }
     }
 
     [DataTestMethod, DataRow("key1")]
-    public void BitChoiceGroupRespectDafaultValue(string defaultValue)
+    public void BitChoiceGroupRespectDefaultValue(string defaultValue)
     {
         var component = RenderComponent<BitChoiceGroup>(parameters =>
         {
@@ -73,9 +72,9 @@ public class BitChoiceGroupTests : BunitTestContext
             });
         });
 
-        var bitChoiceGroupOption = component.Find(".bit-chgo");
+        var bitChoiceGroupOption = component.Find(".option");
 
-        Assert.IsTrue(bitChoiceGroupOption.ClassList.Contains($"bit-chgo-checked"));
+        Assert.IsTrue(bitChoiceGroupOption.ClassList.Contains("checked"));
     }
 
     [DataTestMethod, DataRow("ChoiceGroupName")]
@@ -93,7 +92,7 @@ public class BitChoiceGroupTests : BunitTestContext
             });
         });
 
-        var bitChoiceGroupOption = component.Find(".bit-chgo-input");
+        var bitChoiceGroupOption = component.Find(".input");
 
         Assert.IsTrue(bitChoiceGroupOption.HasAttribute("name"));
         Assert.AreEqual(choiceGroupName, bitChoiceGroupOption.GetAttribute("name"));
@@ -107,7 +106,7 @@ public class BitChoiceGroupTests : BunitTestContext
             parameters.Add(p => p.Label, label);
         });
 
-        var bitChoiceGroupLabel = component.Find(".bit-chg-label");
+        var bitChoiceGroupLabel = component.Find(".label");
 
         Assert.AreEqual(label, bitChoiceGroupLabel.TextContent);
     }
@@ -129,16 +128,16 @@ public class BitChoiceGroupTests : BunitTestContext
             });
         });
 
-        var bitChoiceGroupOption = component.Find(".bit-chgo");
-        Assert.IsTrue(bitChoiceGroupOption.ClassList.Contains($"bit-chgo-with-img"));
+        var bitChoiceGroupOption = component.Find(".option");
+        Assert.IsTrue(bitChoiceGroupOption.ClassList.Contains("has-img"));
 
-        var image = component.Find(".bit-chgo-img img");
+        var image = component.Find(".image img");
         Assert.IsTrue(image.HasAttribute("src"));
         Assert.AreEqual(imageSrc, image.GetAttribute("src"));
         Assert.IsTrue(image.HasAttribute("alt"));
         Assert.AreEqual(imageAlt, image.GetAttribute("alt"));
 
-        var imageContainer = component.Find(".bit-chgo-img");
+        var imageContainer = component.Find(".image");
         Assert.IsTrue(imageContainer.HasAttribute("style"));
         Assert.AreEqual($"width:{width}px; height:{height}px;", imageContainer.GetAttribute("style"));
     }
@@ -158,11 +157,11 @@ public class BitChoiceGroupTests : BunitTestContext
             });
         });
 
-        var icon = component.Find(".bit-chgo-icon-wrapper i");
+        var icon = component.Find(".icon-wrapper i");
         Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconName.GetName()}"));
     }
 
-    [DataTestMethod, 
+    [DataTestMethod,
         DataRow(true, true),
         DataRow(true, false),
         DataRow(false, true),
@@ -185,7 +184,7 @@ public class BitChoiceGroupTests : BunitTestContext
             });
         });
 
-        var bitChoiceGroupOption = component.Find(".bit-chgo-input");
+        var bitChoiceGroupOption = component.Find(".input");
 
         //TODO:
         //We need to call the Change event of each option based on clicking on the input.

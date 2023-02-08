@@ -1,27 +1,11 @@
 ﻿[
     {
-        "outputFile": "Shared/MainLayout.razor.css",
-        "inputFile": "Shared/MainLayout.razor.scss"
-    },
-    {
-        "outputFile": "Components/Footer.razor.css",
-        "inputFile": "Components/Footer.razor.scss"
-    },
-    {
-        "outputFile": "Components/NavMenu.razor.css",
-        "inputFile": "Components/NavMenu.razor.scss"
-    },
-    {
         "outputFile": "Components/ComponentDemo.razor.css",
         "inputFile": "Components/ComponentDemo.razor.scss"
     },
     {
         "outputFile": "Components/ComponentExampleBox.razor.css",
         "inputFile": "Components/ComponentExampleBox.razor.scss"
-    },
-    {
-        "outputFile": "Components/Header.razor.css",
-        "inputFile": "Components/Header.razor.scss"
     },
     {
         "outputFile": "Components/PopularComponents.razor.css",
@@ -32,8 +16,32 @@
         "inputFile": "Components/SideRail.razor.scss"
     },
     {
-        "outputFile": "Components/NotFoundComponent.razor.css",
-        "inputFile": "Components/NotFoundComponent.razor.scss"
+        "outputFile": "Shared/MainLayout.razor.css",
+        "inputFile": "Shared/MainLayout.razor.scss"
+    },
+    {
+        "outputFile": "Shared/Footer.razor.css",
+        "inputFile": "Shared/Footer.razor.scss"
+    },
+    {
+        "outputFile": "Shared/NavMenu.razor.css",
+        "inputFile": "Shared/NavMenu.razor.scss"
+    },
+    {
+        "outputFile": "Shared/Header.razor.css",
+        "inputFile": "Shared/Header.razor.scss"
+    },
+    {
+        "outputFile": "Shared/NotFoundComponent.razor.css",
+        "inputFile": "Shared/NotFoundComponent.razor.scss"
+    },
+    {
+        "outputFile": "Shared/AppErrorBoundary.razor.css",
+        "inputFile": "Shared/AppErrorBoundary.razor.scss"
+    },
+    {
+        "outputFile": "Shared/MessageBox.razor.css",
+        "inputFile": "Shared/MessageBox.razor.scss"
     },
     {
         "outputFile": "Pages/Components/Buttons/BitActionButtonDemo.razor.css",
@@ -62,6 +70,14 @@
     {
         "outputFile": "Pages/Components/Buttons/BitMenuButtonDemo.razor.css",
         "inputFile": "Pages/Components/Buttons/BitMenuButtonDemo.razor.scss"
+    },
+    {
+        "outputFile": "Pages/Components/Buttons/BitMenuButtonGroupDemo.razor.css",
+        "inputFile": "Pages/Components/Buttons/BitMenuButtonGroupDemo.razor.scss"
+    },
+    {
+        "outputFile": "Pages/Components/Buttons/BitMenuButtonListDemo.razor.css",
+        "inputFile": "Pages/Components/Buttons/BitMenuButtonListDemo.razor.scss"
     },
     {
         "outputFile": "Pages/Components/Buttons/BitSplitButtonDemo.razor.css",
@@ -138,14 +154,6 @@
     {
         "outputFile": "Pages/IconsPage.razor.css",
         "inputFile": "Pages/IconsPage.razor.scss"
-    },
-    {
-        "outputFile": "Shared/AppErrorBoundary.razor.css",
-        "inputFile": "Shared/AppErrorBoundary.razor.scss"
-    },
-    {
-        "outputFile": "Shared/MessageBox.razor.css",
-        "inputFile": "Shared/MessageBox.razor.scss"
     },
     {
         "outputFile": "Pages/Components/TextField/BitTextFieldDemo.razor.css",
@@ -230,5 +238,9 @@
     {
         "outputFile": "Pages/Components/OtpInput/BitOtpInputDemo.razor.css",
         "inputFile": "Pages/Components/OtpInput/BitOtpInputDemo.razor.scss"
+    },
+    {
+        "outputFile": "Pages/Components/Overlay/BitOverlayDemo.razor.css",
+        "inputFile": "Pages/Components/Overlay/BitOverlayDemo.razor.scss"
     }
 ]

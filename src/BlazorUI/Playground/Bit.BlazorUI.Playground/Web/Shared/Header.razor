@@ -5,7 +5,7 @@
         <div class="header-content-container">
             @if (CurrentUrl != "/")
             {
-                <BitIconButton Class="header-menu-btn" IconName=BitIconName.CollapseMenu OnClick=@WrapHandled(ToggleMenu)  AriaLabel="Header menu button"/>
+                <BitIconButton Class="header-menu-btn" IconName=BitIconName.CollapseMenu OnClick=@WrapHandled(ToggleMenu) AriaLabel="Header menu button" />
             }
             <a class="header-logo" href="/" aria-label="Homepage"></a>
             <a class="header-link @(CurrentUrl == "/" ? "header-link--active" : "")" href="/">Home</a>
@@ -17,16 +17,16 @@
     <div class="header-second-row">
         <BitActionButton Class="header-action-button"
                          IconName=@(IsHeaderMenuOpen ? BitIconName.ChevronDown : BitIconName.ChevronUp)
-                         OnClick=ToggleHeaderMenu>@GetActiveRouteName()</BitActionButton>
+                         OnClick=ToggleHeaderMenu>
+            @GetActiveRouteName()
+        </BitActionButton>
     </div>
 </header>
 
 @if (IsHeaderMenuOpen)
 {
     <nav class="header-nav">
-        <BitIconButton Class="header-nav-close-btn"
-                   IconName=BitIconName.Cancel
-                   OnClick=ToggleHeaderMenu />
+        <BitIconButton Class="header-nav-close-btn" IconName=BitIconName.Cancel OnClick=ToggleHeaderMenu />
         <a class="header-nav-link @(CurrentUrl == "/" ? "header-nav-link--active" : "")" href="/" @onclick=ToggleHeaderMenu>Home</a>
         <a class="header-nav-link @(CurrentUrl != "/" ? "header-nav-link--active" : "")" href="/overview" @onclick=ToggleHeaderMenu>Docs</a>
     </nav>

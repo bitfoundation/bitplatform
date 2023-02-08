@@ -24,16 +24,11 @@
             <i class="header-icon bit-icon bit-icon--ChevronDown"></i>
         }
     </div>
-    <div class="content @(IsExpanded ? "expanded" : "collapsed")"
-         role="region"
-         tabindex="@(IsEnabled ? 0 : -1)">
-        @if (ContentTemplate is not null)
-        {
-            @ContentTemplate
-        }
-        else
-        {
-            @Text
-        }
+    <div>
+        <div class="content @(IsExpanded ? "expanded" : "collapsed")"
+             role="region"
+             tabindex="@(IsEnabled ? 0 : -1)">
+            @ChildContent
+        </div>
     </div>
 </div>

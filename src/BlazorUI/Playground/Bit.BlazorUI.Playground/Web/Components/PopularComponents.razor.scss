@@ -259,8 +259,6 @@
     overflow: auto;
 
     .flag {
-        width: 32px;
-        height: 16px;
         vertical-align: middle;
     }
 
@@ -384,7 +382,7 @@
         }
 
         tr {
-            height: 1.8rem;
+            height: 41px;
         }
 
         tr:nth-child(even) {

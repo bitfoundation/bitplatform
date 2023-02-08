@@ -8,9 +8,9 @@ public partial class BitMenuButton
 
     private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
     private bool isCalloutOpen;
-    private string? _menuButtonId;
-    private string? _menuButtonCalloutId;
-    private string? _menuButtonOverlayId;
+    private string _menuButtonId => $"{RootElementClass}-{UniqueId}";
+    private string _menuButtonCalloutId => $"{RootElementClass}-callout-{UniqueId}";
+    private string _menuButtonOverlayId => $"{RootElementClass}-overlay-{UniqueId}";
 
     private bool _isCalloutOpen
     {
@@ -98,18 +98,10 @@ public partial class BitMenuButton
     public void CloseCalloutBeforeAnotherCalloutIsOpened()
     {
         _isCalloutOpen = false;
+        StateHasChanged();
     }
 
     protected override string RootElementClass => "bit-mnb";
-
-    protected override async Task OnInitializedAsync()
-    {
-        _menuButtonId = $"{RootElementClass}-{UniqueId}";
-        _menuButtonCalloutId = $"{RootElementClass}-callout-{UniqueId}";
-        _menuButtonOverlayId = $"{RootElementClass}-overlay-{UniqueId}";
-
-        await base.OnInitializedAsync();
-    }
 
     protected override Task OnParametersSetAsync()
     {
@@ -138,7 +130,7 @@ public partial class BitMenuButton
         if (IsEnabled is false) return;
 
         var obj = DotNetObjectReference.Create(this);
-        await _js.InvokeVoidAsync("BitMenuButton.toggleMenuButtonCallout", obj, UniqueId, _menuButtonId, _menuButtonCalloutId, _menuButtonOverlayId, _isCalloutOpen);
+        await _js.ToggleMenuButtonCallout(obj, UniqueId.ToString(), _menuButtonId, _menuButtonCalloutId, _menuButtonOverlayId, _isCalloutOpen);
         _isCalloutOpen = true;
 
         await OnClick.InvokeAsync(e);
@@ -149,7 +141,7 @@ public partial class BitMenuButton
         if (IsEnabled is false || item.IsEnabled is false) return;
 
         var obj = DotNetObjectReference.Create(this);
-        await _js.InvokeVoidAsync("BitMenuButton.toggleMenuButtonCallout", obj, UniqueId, _menuButtonId, _menuButtonCalloutId, _menuButtonOverlayId, _isCalloutOpen);
+        await _js.ToggleMenuButtonCallout(obj, UniqueId.ToString(), _menuButtonId, _menuButtonCalloutId, _menuButtonOverlayId, _isCalloutOpen);
         _isCalloutOpen = false;
 
         await OnItemClick.InvokeAsync(item);
@@ -158,7 +150,7 @@ public partial class BitMenuButton
     private async Task CloseCallout()
     {
         var obj = DotNetObjectReference.Create(this);
-        await _js.InvokeVoidAsync("BitMenuButton.toggleMenuButtonCallout", obj, UniqueId, _menuButtonId, _menuButtonCalloutId, _menuButtonOverlayId, _isCalloutOpen);
+        await _js.ToggleMenuButtonCallout(obj, UniqueId.ToString(), _menuButtonId, _menuButtonCalloutId, _menuButtonOverlayId, _isCalloutOpen);
         _isCalloutOpen = false;
     }
 }

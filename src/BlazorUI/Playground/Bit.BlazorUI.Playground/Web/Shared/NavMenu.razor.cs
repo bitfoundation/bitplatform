@@ -1,14 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Bit.BlazorUI.Playground.Web.Services;
-using Bit.BlazorUI.Playground.Web.Services.Contracts;
+using System.Collections.Generic;
+using Microsoft.JSInterop;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
-using Microsoft.JSInterop;
+using Bit.BlazorUI.Playground.Web.Services;
+using Bit.BlazorUI.Playground.Web.Services.Contracts;
 
-namespace Bit.BlazorUI.Playground.Web.Components;
+namespace Bit.BlazorUI.Playground.Web.Shared;
 
 public partial class NavMenu
 {
@@ -29,6 +29,8 @@ public partial class NavMenu
                 new BitNavItem { Text = "LoadingButton", Url = "/components/loading-button" },
                 new BitNavItem { Text = "ToggleButton", Url = "/components/toggle-button" },
                 new BitNavItem { Text = "MenuButton", Url = "/components/menu-button" },
+                new BitNavItem { Text = "MenuButtonGroup", Url = "/components/menu-button-group" },
+                new BitNavItem { Text = "MenuButtonList", Url = "/components/menu-button-list" },
                 new BitNavItem { Text = "SplitButton", Url = "/components/split-button" },
                 new BitNavItem { Text = "CheckBox", Url = "/components/check-box" },
                 new BitNavItem { Text = "ChoiceGroup", Url = "/components/choice-group" },
@@ -118,6 +120,7 @@ public partial class NavMenu
             Items = new List<BitNavItem>
             {
                 new BitNavItem { Text = "Icon", Url = "/components/icon" },
+                new BitNavItem { Text = "Overlay", Url = "/components/overlay" },
             },
         },
         new BitNavItem { Text = "Icons", Url = "/icons" },

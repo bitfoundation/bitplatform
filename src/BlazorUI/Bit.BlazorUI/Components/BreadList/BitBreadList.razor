@@ -16,7 +16,10 @@
                 <li>
                     @if (_overflowItems.Any() && index == _internalOverflowIndex)
                     {
-                        <button type="button" class="overflow-btn" aria-label="@OverflowAriaLabel" id="@_overflowDropDownId" @onclick="ToggleCallout">
+                        <button id="@_overflowDropDownId"
+                                type="button"
+                                class="overflow-btn"
+                                aria-label="@OverflowAriaLabel" @onclick="ToggleCallout">
                             <span class="overflow-icon-container">
                                 <i class="@($"bit-icon bit-icon--{OverflowIcon.GetName()}")"></i>
                             </span>
@@ -37,8 +40,7 @@
                         {
                             <button aria-current="@(GetIsSelected(item) ? "page" : null)"
                                     style="@GetItemStyles(item)"
-                                    class="@GetItemClasses(item)"
-                                    @onclick="() => HandleOnItemClick(item)">
+                                    class="@GetItemClasses(item)" @onclick="() => HandleOnItemClick(item)">
                                 @GetItemText(item)
                             </button>
                         }
@@ -63,13 +65,23 @@
             @foreach (var item in _overflowItems)
             {
                 <li>
+                    @if (GetItemHref(item).HasValue())
+                    {
                     <a href="@GetItemHref(item)"
-                       aria-current=@(GetIsSelected(item) ? "page" : null)
+                       aria-current="@(GetIsSelected(item) ? "page" : null)"
                        style="@GetItemStyles(item)"
-                       class="@GetItemClasses(item)"
-                       @onclick="() => HandleOnItemClick(item)">
+                       class="@GetItemClasses(item)">
                         @GetItemText(item)
                     </a>
+                    }
+                    else
+                    {
+                    <button aria-current="@(GetIsSelected(item) ? "page" : null)"
+                            style="@GetItemStyles(item)"
+                            class="@GetItemClasses(item)" @onclick="() => HandleOnItemClick(item)">
+                        @GetItemText(item)
+                    </button>
+                    }
                 </li>
             }
         </ul>

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 
-namespace Bit.BlazorUI.Playground.Web.Components;
+namespace Bit.BlazorUI.Playground.Web.Shared;
 
 public partial class NotFoundComponent
 {

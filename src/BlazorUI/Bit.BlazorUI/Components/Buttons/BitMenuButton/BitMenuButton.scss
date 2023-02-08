@@ -65,6 +65,14 @@
         }
     }
 
+    &.open-menu {
+        .items {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
     .menu-btn {
         display: flex;
         align-items: center;
@@ -104,24 +112,20 @@
         background-color: $color-neutrals-white;
         box-sizing: border-box;
         border-radius: 0 0 spacing(0.25) spacing(0.25);
-        box-shadow: rgba(0, 0, 0, 0.13) 0px spacing(0.4) spacing(0.9) 0px, rgba(0, 0, 0, 0.11) 0px spacing(0.075) spacing(0.225) 0px;
-        animation-name: bit-mnb-open-callout-y;
-        animation-duration: 0.367s;
-        animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
-        animation-fill-mode: both;
+        box-shadow: rgba(0, 0, 0, 0.13) 0 spacing(0.4) spacing(0.9) 0, rgba(0, 0, 0, 0.11) 0 spacing(0.075) spacing(0.225) 0;
         z-index: 1001;
         overflow: hidden auto;
         -webkit-font-smoothing: antialiased;
+        opacity: 0;
+        transform: translate3d(0, spacing(-1.25), 0);
+        pointer-events: none;
+        transition: opacity 100ms, transform 300ms, pointer-events 300ms;
 
         ul {
             list-style-type: none;
             margin: 0;
             padding: 0;
             width: 100%;
-        }
-
-        @media only screen and (max-width: 639px) {
-            animation-name: bit-mnb-open-callout-x;
         }
     }
 
@@ -172,33 +176,5 @@
         &:active {
             background-color: $color-action-active-secondary;
         }
-    }
-}
-
-@keyframes bit-mnb-open-callout-y {
-    0% {
-        opacity: 0;
-        transform: translate3d(0px, spacing(-1.25), 0px);
-        pointer-events: none;
-    }
-
-    100% {
-        opacity: 1;
-        transform: translate3d(0px, 0px, 0px);
-        pointer-events: auto;
-    }
-}
-
-@keyframes bit-mnb-open-callout-x {
-    0% {
-        opacity: 0;
-        transform: translate3d(spacing(5), 0px, 0px);
-        pointer-events: none;
-    }
-
-    100% {
-        opacity: 1;
-        transform: translate3d(0px, 0px, 0px);
-        pointer-events: auto;
     }
 }
