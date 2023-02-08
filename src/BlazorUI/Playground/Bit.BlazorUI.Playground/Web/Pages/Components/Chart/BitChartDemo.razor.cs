@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Bit.BlazorUI.Playground.Web.Models;
+﻿using System.Collections.Generic;
 using Bit.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
 namespace Bit.BlazorUI.Playground.Web.Pages.Components.Chart;

@@ -133,6 +133,7 @@
 
         BitChartBarDataset<int> dataset = new BitChartBarDataset<int>(BitChartDemoUtils.RandomScalingFactor(InitalCount))
             {
+                Label = "Dataset 1",
                 BackgroundColor = BitChartDemoColors.All.Take(InitalCount).Select(c => BitChartColorUtil.FromDrawingColor(Color.FromArgb(128, c))).ToArray()
             };
         _barChartConfigExample.Data.Labels.AddRange(BitChartDemoUtils.Months.Take(InitalCount));
