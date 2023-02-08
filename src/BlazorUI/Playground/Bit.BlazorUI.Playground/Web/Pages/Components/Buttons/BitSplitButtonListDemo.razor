@@ -1,0 +1,28 @@
+﻿@page "/components/split-button-list"
+
+<ComponentDemo ComponentName="SplitButton"
+               ComponentDescription="Buttons give people a way to trigger an action. They’re typically found in forms, dialog panels, and dialogs. Some buttons are specialized for particular tasks, such as navigation, repeated actions, or presenting menus."
+               ComponentParameters="componentParameters"
+               EnumParameters="enumParameters"
+               ComponentSubParameters="componentSubParameters">
+
+    <ComponentExampleBox Title="Basic SplitButton" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
+        <ExamplePreview>
+            <div class="example-desc">To create a multi button you can use a BitSplitButton component.</div>
+            <div class="example-content">
+                <div>
+                    <BitLabel>Primary</BitLabel>
+                    <BitSplitButtonList Items="example1Items"
+                                        ButtonStyle="BitButtonStyle.Primary"
+                                        OnClick="(SplitActionItem item) => BasicPrimarySelectedItem = item.Name"
+                                        KeyField="@nameof(SplitActionItem.Id)"
+                                        TextField="@nameof(SplitActionItem.Name)"
+                                        IconNameField="@nameof(SplitActionItem.Icon)"
+                                        IsEnabledField="@nameof(SplitActionItem.IsEnabled)"  />
+                    <div class="selected-item">Clicked item: @BasicPrimarySelectedItem</div>
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+</ComponentDemo>
