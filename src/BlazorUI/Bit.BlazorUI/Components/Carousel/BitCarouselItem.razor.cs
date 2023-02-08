@@ -2,6 +2,8 @@
 
 public partial class BitCarouselItem
 {
+    protected override bool UseVisual => false;
+
     internal int Index;
 
     [Parameter] public RenderFragment? ChildContent { get; set; }
