@@ -1,7 +1,4 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public partial class BitCarouselItem
 {
@@ -21,7 +18,7 @@ public partial class BitCarouselItem
         return base.OnInitializedAsync();
     }
 
-    protected override string RootElementClass => "bit-crsl-item";
+    protected override string RootElementClass => "bit-crsi";
 
     protected override void RegisterComponentClasses()
     {
