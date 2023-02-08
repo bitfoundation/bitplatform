@@ -1,0 +1,68 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+@typeparam TItem
+
+<div @ref="RootElement"
+     @attributes="HtmlAttributes"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     id="@UniqueId">
+    <div id="@_splitButtonOverlayId" class="overlay" @onclick="CloseCallout"></div>
+    <div id="@_splitButtonId" class="current-item">
+        <button type="@ButtonType?.GetValue()"
+                aria-label="@AriaLabel"
+                aria-describedby="@AriaDescription"
+                aria-hidden="@AriaHidden"
+                tabindex="@(IsEnabled ? 0 : -1)"
+                class="operator-btn @(GetIsEnabled(_currentItem) is false ? "disabled" : null)"
+                @onclick="() => HandleOnClick(_currentItem)">
+            @if (GetIconName(_currentItem).HasValue)
+            {
+                <i class="bit-icon bit-icon--@GetIconName(_currentItem).GetName()"></i>
+            }
+            <span class="text">@GetText(_currentItem)</span>
+        </button>
+        <button type="button"
+                tabindex="@(IsEnabled ? 0 : -1)"
+                class="chevron-btn"
+                @onclick="ToggleCallout">
+            <i class="bit-icon bit-icon--ChevronDown"></i>
+        </button>
+        <span class="separator-btn"></span>
+    </div>
+    <div id="@_splitButtonCalloutId"
+         class="items"
+         tabindex="@(IsEnabled ? 0 : -1)">
+        <ul role="presentation">
+            @foreach (TItem item in Items)
+            {
+                @if (item != _currentItem)
+                {
+                    <li role="presentation">
+                        <button type="@ButtonType?.GetValue()"
+                                role="menuitem"
+                                aria-disabled="@GetIsEnabled(item)"
+                                tabindex="@(GetIsEnabled(item) ? 0 : -1)"
+                                class="item @(GetIsEnabled(item) ? null : "disabled")"
+                        @onclick="() => HandleOnItemClick(item)">
+                            @if (ItemTemplate is null)
+                            {
+                                @if (GetIconName(item).HasValue)
+                                {
+                                    <i class="bit-icon bit-icon--@GetIconName(item).GetName()"></i>
+                                }
+                                <span class="item-text-container">
+                                    @GetText(item)
+                                </span>
+                            }
+                            else
+                            {
+                                @ItemTemplate(item)
+                            }
+                        </button>
+                    </li>
+                }
+            }
+        </ul>
+    </div>
+</div>
