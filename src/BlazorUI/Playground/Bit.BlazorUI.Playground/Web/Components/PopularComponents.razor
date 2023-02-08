@@ -90,7 +90,7 @@
                                 </ColumnOptions>
                             </BitDataGridPropertyColumn>
                                 <BitDataGridTemplateColumn Title="Flag" Align="BitDataGridAlign.Center" >
-                                <img class="flag" src="https://countryflagsapi.com/svg/@(context.Code)" />
+                                <img class="flag" src="https://flagsapi.com/@(context.Code)/shiny/32.png" />
                             </BitDataGridTemplateColumn>
                             <BitDataGridPropertyColumn Property="@(c => c.Medals.Gold)" Sortable="true" />
                             <BitDataGridPropertyColumn Property="@(c => c.Medals.Silver)" Sortable="true" />
@@ -253,8 +253,6 @@
         overflow: auto;
 
         .flag {
-            width: 32px;
-            height: 16px;
             vertical-align: middle;
         }
 
@@ -378,7 +376,7 @@
             }
 
             tr {
-                height: 1.8rem;
+                height: 41px;
             }
 
             tr:nth-child(even) {
@@ -451,7 +449,7 @@
             &lt/ColumnOptions>
         &lt/BitDataGridPropertyColumn>
         &ltBitDataGridTemplateColumn Title="Flag" Align="BitDataGridAlign.Center">
-                &ltimg class="flag" src="https://countryflagsapi.com/svg/&#64(context.Code)" />
+                       &ltimg class="flag" src="https://flagsapi.com/&#64(context.Code)/shiny/32.png" />
         &lt/BitDataGridTemplateColumn>
         &ltBitDataGridPropertyColumn Property="&#64;(c => c.Medals.Gold)" Sortable="true" />
         &ltBitDataGridPropertyColumn Property="&#64;(c => c.Medals.Silver)" Sortable="true" />
