@@ -17,7 +17,7 @@ internal static class BitColorPickerJsRuntimeExtension
         return await jsRuntime.InvokeAsync<string>("BitColorPicker.registerOnWindowMouseMoveEvent", DotNetObjectReference.Create(component), callbackName);
     }
 
-    internal static async Task AbortProcedure(this IJSRuntime jSRuntime, string abortControllerId)
+    internal static async Task AbortProcedure(this IJSRuntime jSRuntime, string? abortControllerId)
     {
         await jSRuntime.InvokeVoidAsync("BitColorPicker.abortProcedure", abortControllerId);
     }
