@@ -13,7 +13,7 @@ public partial class BitDateRangePicker
     private BitIconLocation iconLocation = BitIconLocation.Right;
     private bool isOpen;
     private CultureInfo culture = CultureInfo.CurrentUICulture;
-    
+
     private string focusClass = string.Empty;
     private string _focusClass
     {
@@ -48,10 +48,16 @@ public partial class BitDateRangePicker
 
     [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
 
+
     /// <summary>
     /// Whether the DateRangePicker allows input a date string directly or not
     /// </summary>
     [Parameter] public bool AllowTextInput { get; set; }
+
+    /// <summary>
+    /// Whether the DateRangePicker closes automatically after selecting the second value
+    /// </summary>
+    [Parameter] public bool AutoClose { get; set; } = true;
 
     /// <summary>
     /// Capture and render additional attributes in addition to the main callout's parameters
@@ -479,8 +485,11 @@ public partial class BitDateRangePicker
         else
         {
             CurrentValue.EndDate = selectedDate;
-            await JSRuntime.InvokeVoidAsync("BitDateRangePicker.toggleDateRangePickerCallout", _dotnetObj, UniqueId, CalloutId, OverlayId, IsOpen);
-            IsOpen = false;
+            if (AutoClose)
+            {
+                await JSRuntime.InvokeVoidAsync("BitDateRangePicker.toggleDateRangePickerCallout", _dotnetObj, UniqueId, CalloutId, OverlayId, IsOpen);
+                IsOpen = false;
+            }
         }
 
         if (CurrentValue.EndDate is not null && CurrentValue.StartDate > CurrentValue.EndDate)
