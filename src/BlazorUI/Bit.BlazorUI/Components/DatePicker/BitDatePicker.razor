@@ -80,7 +80,7 @@
                                         tabindex="0" 
                                         type="button" 
                                         @onclick="@ToggleMonthPickerAsOverlay">
-                                    <span id="@MonthAndYearId">@_monthTitle</span>
+                                    <span id="@MonthTitleId">@_monthTitle</span>
                                 </button>
                             }
                             else
@@ -89,7 +89,7 @@
                                      aria-live="polite" 
                                      aria-atomic="true" 
                                      tabindex="-1">
-                                    <span id="@MonthAndYearId">@_monthTitle</span>
+                                    <span id="@MonthTitleId">@_monthTitle</span>
                                 </div>
                             }
                             <div class="navigation-btn-container">
@@ -122,7 +122,7 @@
                         <table role="grid"
                                aria-readonly="true"
                                aria-multiselectable="false"
-                               aria-labelledby="@MonthAndYearId"
+                                   aria-labelledby="@MonthTitleId"
                                aria-activedescendant="@ActiveDescendantId">
                             <tbody>
                                 <tr>

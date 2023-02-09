@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using Bit.BlazorUI.Playground.Web.Models;
 using Bit.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
@@ -635,7 +635,7 @@ private FormValidationDatePickerModel formValidationDatePickerModel = new();";
 
     private readonly string example18HTMLCode = @"
 <BitDatePicker Style=""max-width: 300px""
-               Responsive=""true""
+               IsResponsive=""true""
                AriaLabel=""Select a date""
                Placeholder=""Select a date..."" />";
 }

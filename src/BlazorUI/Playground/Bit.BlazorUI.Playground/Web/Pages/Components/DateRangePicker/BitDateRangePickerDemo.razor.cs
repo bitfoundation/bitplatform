@@ -121,6 +121,13 @@ public partial class BitDateRangePickerDemo
         },
         new ComponentParameter()
         {
+            Name = "IsResponsive",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Enables the responsive mode in small screens.",
+        },
+        new ComponentParameter()
+        {
             Name = "IsUnderlined",
             Type = "bool",
             DefaultValue = "false",
@@ -572,4 +579,10 @@ private CultureInfo Culture = CultureInfo.CurrentUICulture;";
                     AriaLabel=""Select dates""
                     IconName=""BitIconName.Airplane""
                     Placeholder=""Select dates..."" />";
+
+    private readonly string example16HTMLCode = @"
+<BitDateRangePicker Style=""max-width: 300px""
+               IsResponsive=""true""
+               AriaLabel=""Select a date""
+               Placeholder=""Select a date..."" />";
 }
