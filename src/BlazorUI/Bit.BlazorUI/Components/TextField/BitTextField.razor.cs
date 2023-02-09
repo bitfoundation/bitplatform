@@ -20,6 +20,7 @@ public partial class BitTextField
     private BitTextFieldType _elementType;
     private string _focusClass = string.Empty;
 
+
     /// <summary>
     /// AutoComplete is a string that maps to the autocomplete attribute of the HTML input element.
     /// </summary>
@@ -241,6 +242,69 @@ public partial class BitTextField
         }
     }
 
+    /// <summary>
+    /// Style of the BitTextField's Label
+    /// </summary>
+    [Parameter] public string? LabelStyle { get; set; }
+
+    /// <summary>
+    /// CSS class of the BitTextField's Label
+    /// </summary>
+    [Parameter] public string? LabelClass { get; set; }
+
+    /// <summary>
+    /// Style of the BitTextField's Input
+    /// </summary>
+    [Parameter] public string? InputStyle { get; set; }
+
+    /// <summary>
+    /// CSS class of the BitTextField's Input
+    /// </summary>
+    [Parameter] public string? InputClass { get; set; }
+
+    /// <summary>
+    /// Style of the BitTextField's Prefix
+    /// </summary>
+    [Parameter] public string? PrefixStyle { get; set; }
+
+
+    /// <summary>
+    /// CSS class of the BitTextField's Prefix
+    /// </summary>
+    [Parameter] public string? PrefixClass { get; set; }
+
+    /// <summary>
+    /// Style of the BitTextField's Suffix
+    /// </summary>
+    [Parameter] public string? SuffixStyle { get; set; }
+
+    /// <summary>
+    /// CSS class of the BitTextField's Suffix
+    /// </summary>
+    [Parameter] public string? SuffixClass { get; set; }
+
+    /// <summary>
+    /// Style of the BitTextField's RevealPassword button
+    /// </summary>
+    [Parameter] public string? RevealPasswordStyle { get; set; }
+
+    /// <summary>
+    /// CSS class of the BitTextField's RevealPassword button
+    /// </summary>
+    [Parameter] public string? RevealPasswordClass { get; set; }
+
+    /// <summary>
+    /// Style of the BitTextField's Description
+    /// </summary>
+    [Parameter] public string? DescriptionStyle { get; set; }
+
+    /// <summary>
+    /// CSS class of the BitTextField's Description
+    /// </summary>
+    [Parameter] public string? DescriptionClass { get; set; }
+
+
+
     protected override string RootElementClass => "bit-txt";
 
     protected override Task OnInitializedAsync()
@@ -260,34 +324,34 @@ public partial class BitTextField
     protected override void RegisterComponentClasses()
     {
         ClassBuilder.Register(() => IsMultiline && Type == BitTextFieldType.Text
-                                    ? $"{RootElementClass}-multiline-{(IsResizable is false ? "fix-" : string.Empty)}{VisualClassRegistrar()}" 
+                                    ? $"{RootElementClass}-multiline-{(IsResizable is false ? "fix-" : string.Empty)}{VisualClassRegistrar()}"
                                     : string.Empty);
 
         ClassBuilder.Register(() => IsEnabled && IsReadonly
-                                    ? $"{RootElementClass}-readonly-{VisualClassRegistrar()}" 
+                                    ? $"{RootElementClass}-readonly-{VisualClassRegistrar()}"
                                     : string.Empty);
 
         ClassBuilder.Register(() => IsEnabled && IsRequired
-                                    ? $"{RootElementClass}-required-{VisualClassRegistrar()}" 
+                                    ? $"{RootElementClass}-required-{VisualClassRegistrar()}"
                                     : string.Empty);
 
         ClassBuilder.Register(() => IsUnderlined
-                                   ? $"{RootElementClass}-underlined-{(IsEnabled is false ? "disabled-" : string.Empty)}{VisualClassRegistrar()}" 
+                                   ? $"{RootElementClass}-underlined-{(IsEnabled is false ? "disabled-" : string.Empty)}{VisualClassRegistrar()}"
                                    : string.Empty);
 
         ClassBuilder.Register(() => HasBorder is false
                                    ? $"{RootElementClass}-no-border-{VisualClassRegistrar()}" : string.Empty);
 
         ClassBuilder.Register(() => _focusClass.HasValue()
-                                    ? $"{RootElementClass}-{(IsUnderlined ? "underlined-" : "")}{_focusClass}-{VisualClassRegistrar()}" 
+                                    ? $"{RootElementClass}-{(IsUnderlined ? "underlined-" : "")}{_focusClass}-{VisualClassRegistrar()}"
                                     : string.Empty);
 
         ClassBuilder.Register(() => ValueInvalid is true
-                                   ? $"{RootElementClass}-invalid-{VisualClassRegistrar()}" 
+                                   ? $"{RootElementClass}-invalid-{VisualClassRegistrar()}"
                                    : string.Empty);
 
         ClassBuilder.Register(() => IsRequired && Label is null
-                                   ? $"{RootElementClass}-required-no-label-{VisualClassRegistrar()}" 
+                                   ? $"{RootElementClass}-required-no-label-{VisualClassRegistrar()}"
                                    : string.Empty);
     }
 
