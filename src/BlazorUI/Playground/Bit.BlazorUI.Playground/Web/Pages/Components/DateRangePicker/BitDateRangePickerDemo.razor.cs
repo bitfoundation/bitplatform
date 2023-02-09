@@ -62,6 +62,20 @@ public partial class BitDateRangePickerDemo
         },
         new()
         {
+            Name = "GoToPrevMonthTitle",
+            Type = "string",
+            DefaultValue = "Go to today",
+            Description = "The title of the Go to previous month button.",
+        },
+        new()
+        {
+            Name = "GoToNextMonthTitle",
+            Type = "string",
+            DefaultValue = "Go to today",
+            Description = "The title of the Go to next month button.",
+        },
+        new()
+        {
             Name = "HasBorder",
             Type = "bool",
             DefaultValue = "false",

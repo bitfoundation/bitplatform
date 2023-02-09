@@ -86,6 +86,16 @@ public partial class BitDatePicker
     [Parameter] public string GoToToday { get; set; } = "Go to today";
 
     /// <summary>
+    /// The title of the Go to previous month button
+    /// </summary>
+    [Parameter] public string GoToPrevMonthTitle { get; set; } = "Go to previous month";
+
+    /// <summary>
+    /// The title of the Go to next month button
+    /// </summary>
+    [Parameter] public string GoToNextMonthTitle { get; set; } = "Go to next month";
+
+    /// <summary>
     /// Determines if the DatePicker has a border.
     /// </summary>
     [Parameter] public bool HasBorder { get; set; } = true;
