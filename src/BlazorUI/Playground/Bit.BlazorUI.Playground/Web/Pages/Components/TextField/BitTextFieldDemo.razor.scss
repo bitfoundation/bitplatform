@@ -19,6 +19,15 @@
         margin-bottom: rem(10px);
     }
 
+    .trimmed-box {
+        margin-top: rem(10px);
+        border: 1px solid $Gray3;
+    }
+
+    .form-item {
+        margin-bottom: rem(15px);
+    }
+
     ::deep {
         .bit-btn {
             width: fit-content;
@@ -35,13 +44,30 @@
             margin: rem(5px);
         }
     }
+}
 
-    .trimmed-box {
-        margin-top: rem(10px);
-        border: 1px solid $Gray3;
-    }
+.custom-wrapper {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 2rem;
 
-    .form-item {
-        margin-bottom: rem(15px);
+    ::deep {
+        .bit-txt {
+            width: 100%;
+        }
+
+        .custom-label {
+            color: blue;
+            font-weight: 900;
+            font-size: 18px;
+        }
+
+        .custom-input {
+            color: darkgreen;
+            font-weight: 900;
+            font-size: 18px;
+            padding: 1rem;
+            height: 50px;
+        }
     }
 }

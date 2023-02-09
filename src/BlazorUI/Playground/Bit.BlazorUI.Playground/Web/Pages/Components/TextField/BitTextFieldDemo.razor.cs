@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using System.Collections.Generic;
 using Bit.BlazorUI.Playground.Web.Models;
 using Bit.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
@@ -7,36 +7,9 @@ namespace Bit.BlazorUI.Playground.Web.Pages.Components.TextField;
 
 public partial class BitTextFieldDemo
 {
-    private string OneWayValue;
-    private string TwoWayValue;
-    private string OnChangeValue;
-    private string ReadOnlyValue = "this is readonly value";
-
-    private string TrimmedValue;
-    private string NotTrimmedValue;
-
-    private ValidationTextFieldModel validationTextFieldModel = new();
-    public bool formIsValidSubmit;
-    private async Task HandleValidSubmit()
-    {
-        formIsValidSubmit = true;
-
-        await Task.Delay(2000);
-
-        validationTextFieldModel = new();
-
-        formIsValidSubmit = false;
-
-        StateHasChanged();
-    }
-    private void HandleInvalidSubmit()
-    {
-        formIsValidSubmit = false;
-    }
-
     private readonly List<ComponentParameter> componentParameters = new()
     {
-        new ComponentParameter()
+        new()
         {
             Name = "AutoComplete",
             Type = "string?",
@@ -227,6 +200,78 @@ public partial class BitTextFieldDemo
             LinkType = LinkType.Link,
             Href = "#text-field-type-enum"
         },
+        new()
+        {
+            Name = "LabelStyle",
+            Type = "string?",
+            Description = "Style of the BitTextField's Label.",
+        },
+        new()
+        {
+            Name = "LabelClass",
+            Type = "string?",
+            Description = "CSS class of the BitTextField's Label.",
+        },
+        new()
+        {
+            Name = "InputStyle",
+            Type = "string?",
+            Description = "Style of the BitTextField's Input.",
+        },
+        new()
+        {
+            Name = "InputClass",
+            Type = "string?",
+            Description = "CSS class of the BitTextField's Input.",
+        },
+        new()
+        {
+            Name = "PrefixStyle",
+            Type = "string?",
+            Description = "Style of the BitTextField's Prefix.",
+        },
+        new()
+        {
+            Name = "PrefixClass",
+            Type = "string?",
+            Description = "CSS class of the BitTextField's Prefix.",
+        },
+        new()
+        {
+            Name = "SuffixStyle",
+            Type = "string?",
+            Description = "Style of the BitTextField's Suffix.",
+        },
+        new()
+        {
+            Name = "SuffixClass",
+            Type = "string?",
+            Description = "CSS class of the BitTextField's Suffix.",
+        },
+        new()
+        {
+            Name = "RevealPasswordStyle",
+            Type = "string?",
+            Description = "Style of the BitTextField's RevealPassword button.",
+        },
+        new()
+        {
+            Name = "RevealPasswordClass",
+            Type = "string?",
+            Description = "CSS class of the BitTextField's RevealPassword button.",
+        },
+        new()
+        {
+            Name = "DescriptionStyle",
+            Type = "string?",
+            Description = "Style of the BitTextField's Description.",
+        },
+        new()
+        {
+            Name = "DescriptionClass",
+            Type = "string?",
+            Description = "CSS class of the BitTextField's Description.",
+        },
     };
 
     private readonly List<EnumParameter> enumParameters = new()
@@ -278,7 +323,33 @@ public partial class BitTextFieldDemo
         }
     };
 
-    #region Sample Code 1
+
+    private string OneWayValue;
+    private string TwoWayValue;
+    private string OnChangeValue;
+    private string ReadOnlyValue = "this is readonly value";
+
+    private string TrimmedValue;
+    private string NotTrimmedValue;
+
+    private ValidationTextFieldModel validationTextFieldModel = new();
+    public bool formIsValidSubmit;
+    private async Task HandleValidSubmit()
+    {
+        formIsValidSubmit = true;
+
+        await Task.Delay(2000);
+
+        validationTextFieldModel = new();
+
+        formIsValidSubmit = false;
+
+        StateHasChanged();
+    }
+    private void HandleInvalidSubmit()
+    {
+        formIsValidSubmit = false;
+    }
 
     private readonly string example1HTMLCode = @"
 <BitTextField Placeholder=""Enter a text..."" Label=""Basic"" />
@@ -288,19 +359,11 @@ public partial class BitTextFieldDemo
 <BitTextField Placeholder=""Enter a text..."" Label=""MaxLength: 5"" MaxLength=""5"" />
 ";
 
-    #endregion
-
-    #region Sample Code 2
-
     private readonly string example2HTMLCode = @"
 <BitTextField Placeholder=""Enter a text..."" Label=""Basic"" IsUnderlined=""true"" />
 <BitTextField Placeholder=""Enter a text..."" Label=""Required"" IsUnderlined=""true"" IsRequired=""true"" />
 <BitTextField Placeholder=""Enter a text..."" Label=""Disabled"" IsUnderlined=""true"" IsEnabled=""false"" />
 ";
-
-    #endregion
-
-    #region Sample Code 3
 
     private readonly string example3HTMLCode = @"
 <BitTextField Placeholder=""Enter a text..."" Label=""Basic No Border"" HasBorder=""false"" />
@@ -308,28 +371,16 @@ public partial class BitTextFieldDemo
 <BitTextField Placeholder=""Enter a text..."" Label=""Disabled No Border"" HasBorder=""false"" IsEnabled=""false"" />
 ";
 
-    #endregion
-
-    #region Sample Code 4
-
     private readonly string example4HTMLCode = @"
 <BitTextField Placeholder=""Enter a text..."" Label=""Resizable (By default)"" IsMultiline=""true"" />
 <BitTextField Placeholder=""Enter a text..."" Label=""Unresizable (Fixed)"" IsMultiline=""true"" IsResizable=""false"" />
 <BitTextField Placeholder=""Enter a text..."" Label=""Row count (10)"" IsMultiline=""true"" Rows=""10"" />
 ";
 
-    #endregion
-
-    #region Sample Code 5
-
     private readonly string example5HTMLCode = @"
 <BitTextField Placeholder=""Enter an email..."" Label=""Email Icon"" IconName=""BitIconName.EditMail"" />
 <BitTextField Placeholder=""Enter a date..."" Label=""Calendar Icon"" IconName=""BitIconName.Calendar"" />
 ";
-
-    #endregion
-
-    #region Sample Code 6
 
     private readonly string example6HTMLCode = @"
 <BitTextField Label=""With Prefix"" Prefix=""https://"" />
@@ -337,10 +388,6 @@ public partial class BitTextFieldDemo
 <BitTextField Label=""With Prefix and Suffix"" Prefix=""https://"" Suffix="".com"" />
 <BitTextField Label=""Disabled"" Prefix=""https://"" Suffix="".com"" IsEnabled=""false"" />
 ";
-
-    #endregion
-
-    #region Sample Code 7
 
     private readonly string example7HTMLCode = @"
 <BitTextField Placeholder=""Enter a text..."">
@@ -368,18 +415,10 @@ public partial class BitTextFieldDemo
 </BitTextField>
 ";
 
-    #endregion
-
-    #region Sample Code 8
-
     private readonly string example8HTMLCode = @"
 <BitTextField Placeholder=""Enter a password..."" Label=""Password"" Type=""BitTextFieldType.Password"" />
 <BitTextField Placeholder=""Enter a password..."" Label=""Can Reveal Password"" Type=""BitTextFieldType.Password"" CanRevealPassword=""true"" />
 ";
-
-    #endregion
-
-    #region Sample Code 9
 
     private readonly string example9HTMLCode = @"
 <div>
@@ -398,17 +437,12 @@ public partial class BitTextFieldDemo
     <BitTextField Placeholder=""Enter a text..."" Label=""Readonly"" @bind-Value=""ReadOnlyValue"" IsReadonly=""true"" />
 </div>
 ";
-
     private readonly string example9CSharpCode = @"
 private string OneWayValue;
 private string TwoWayValue;
 private string OnChangeValue;
 private string ReadOnlyValue = ""this is readonly value"";
 ";
-
-    #endregion
-
-    #region Sample Code 10
 
     private readonly string example10HTMLCode = @"
 <div>
@@ -420,17 +454,40 @@ private string ReadOnlyValue = ""this is readonly value"";
     <pre class=""trimmed-box"">[@NotTrimmedValue]</pre>
 </div>
 ";
-
     private readonly string example10CSharpCode = @"
 private string TrimmedValue;
 private string NotTrimmedValue;
 ";
 
-    #endregion
-
-    #region Sample Code 11
-
     private readonly string example11HTMLCode = @"
+<style>
+    .custom-label {
+        color: blue;
+        font-weight: 900;
+        font-size: 18px;
+    }
+
+    .custom-input {
+        color: darkgreen;
+        font-weight: 900;
+        font-size: 18px;
+        padding: 1rem;
+        height: 50px;
+    }
+</style>
+
+<div class=""custom-wrapper"">
+    <BitTextField Placeholder=""Enter a text..."" Label=""Custom LabelStyle"" LabelStyle=""color:green"" />
+    <BitTextField Placeholder=""Enter a text..."" Label=""Custom LabelClass"" LabelClass=""custom-label"" />
+</div>
+
+<div class=""custom-wrapper"">
+    <BitTextField Placeholder=""Enter a text..."" Label=""Custom InputStyle"" InputStyle=""color:red"" />
+    <BitTextField Placeholder=""Enter a text..."" Label=""Custom InputClass"" InputClass=""custom-input"" />
+</div>
+";
+
+    private readonly string example12HTMLCode = @"
 <style>
     .validation-summary {
         border-left: rem(5px) solid $Red10;
@@ -493,8 +550,7 @@ else
     </BitMessageBar>
 }
 ";
-
-    private readonly string example11CSharpCode = @"
+    private readonly string example12CSharpCode = @"
 public class ValidationTextFieldModel
 {
     [Required]
@@ -533,6 +589,4 @@ private void HandleInvalidSubmit()
     formIsValidSubmit = false;
 }
 ";
-
-    #endregion
 }
