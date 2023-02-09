@@ -1,9 +1,9 @@
-﻿using Microsoft.JSInterop;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public partial class BitCarousel : IDisposable
 {
+    protected override bool UseVisual => false;
+
     private ElementReference _carousel = default!;
     private int[] _currentIndices = Array.Empty<int>();
     private int[] _othersIndices = Array.Empty<int>();
@@ -115,36 +115,33 @@ public partial class BitCarousel : IDisposable
     }
 
 
-    protected override string RootElementClass => "bit-crsl";
+    protected override string RootElementClass => "bit-csl";
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         _directionStyle = Direction == BitDirection.RightToLeft ? "direction:rtl" : "";
 
-        if (firstRender)
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (firstRender is false) return;
+
+        _dotnetObjectReference = DotNetObjectReference.Create(this);
+        _resizeObserverId = await _js.RegisterResizeObserver(RootElement, _dotnetObjectReference, "OnRootResize");
+
+        if (AutoPlay)
         {
-            _dotnetObjectReference = DotNetObjectReference.Create(this);
-            _resizeObserverId = await _js.RegisterResizeObserver(RootElement, _dotnetObjectReference, "OnRootResize");
-
-            if (AutoPlay)
-            {
-                _autoPlayTimer = new System.Timers.Timer(AutoPlayInterval);
-                _autoPlayTimer.Elapsed += AutoPlayTimerElapsed;
-                _autoPlayTimer.Start();
-            }
-
-            if (scrollItemsCount > VisibleItemsCount)
-            {
-                _internalScrollItemsCount = VisibleItemsCount;
-            }
-            await _js.PreventDefault(_carousel, "touchmove");
-
-            await ResetDimensionsAsync();
+            _autoPlayTimer = new System.Timers.Timer(AutoPlayInterval);
+            _autoPlayTimer.Elapsed += AutoPlayTimerElapsed;
+            _autoPlayTimer.Start();
         }
 
+        if (scrollItemsCount > VisibleItemsCount)
+        {
+            _internalScrollItemsCount = VisibleItemsCount;
+        }
+        await _js.PreventDefault(_carousel, "touchmove");
 
-
-        await base.OnAfterRenderAsync(firstRender);
+        await ResetDimensionsAsync();
     }
 
     private async Task ResetDimensionsAsync()
@@ -161,7 +158,6 @@ public partial class BitCarousel : IDisposable
             var item = AllItems[i];
             item.InternalStyle = $"width:{NumUtils.ToInvariantString(rect.Width / VisibleItemsCount)}px;display:block";
             item.InternalTransformStyle = $"transform:translateX({sign * 100 * i}%)";
-
         }
 
         _pagesCount = (int)Math.Ceiling((decimal)itemsCount / VisibleItemsCount);
@@ -176,6 +172,7 @@ public partial class BitCarousel : IDisposable
     {
         await ResetDimensionsAsync();
     }
+
     private void SetNavigationButtonsVisibility()
     {
         _goLeftButtonStyle = (InfiniteScrolling is false && _currentIndices[_currentIndices.Length - 1] == AllItems.Count - 1) ? "display:none" : "";
@@ -198,6 +195,7 @@ public partial class BitCarousel : IDisposable
 
         await Go();
     }
+
     private async Task Next()
     {
         var itemsCount = AllItems.Count;
@@ -210,6 +208,7 @@ public partial class BitCarousel : IDisposable
 
         await Go(true);
     }
+
     private async Task Go(bool isNext = false, int scrollCount = 0)
     {
         if (_othersIndices.Length == 0) return;
@@ -221,7 +220,7 @@ public partial class BitCarousel : IDisposable
 
         var diff = VisibleItemsCount - scrollCount;
         var newIndices = (isNext
-            ? (_currentIndices.Skip(VisibleItemsCount - diff).Take(diff)).Concat(_othersIndices)
+            ? _currentIndices.Skip(VisibleItemsCount - diff).Take(diff).Concat(_othersIndices)
             : _othersIndices.Concat(_currentIndices.Take(diff))).ToArray();
 
         var currents = _currentIndices.Select(i => AllItems[i]).ToArray();
@@ -269,8 +268,8 @@ public partial class BitCarousel : IDisposable
         SetNavigationButtonsVisibility();
 
         StateHasChanged();
-
     }
+
     private async Task GotoPage(int index)
     {
         if (index < 0)
@@ -316,6 +315,7 @@ public partial class BitCarousel : IDisposable
 
         _isPointerDown = false;
         await _js.SetStyle(_carousel, "cursor", "");
+
         if (delta < 0)
         {
             await GoLeft();
@@ -341,14 +341,7 @@ public partial class BitCarousel : IDisposable
 
     private async void AutoPlayTimerElapsed(object? sender, System.Timers.ElapsedEventArgs e)
     {
-        try
-        {
-            await InvokeAsync(Next);
-        }
-        catch
-        {
-            throw;
-        }
+        await InvokeAsync(Next);
     }
 
     private bool _disposed;
@@ -360,8 +353,7 @@ public partial class BitCarousel : IDisposable
 
     protected virtual void Dispose(bool disposing)
     {
-        if (_disposed) return;
-        if (!disposing) return;
+        if (_disposed || disposing is false) return;
 
         if (_autoPlayTimer is not null)
         {
