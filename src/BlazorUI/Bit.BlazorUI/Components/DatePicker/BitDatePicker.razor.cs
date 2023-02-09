@@ -11,7 +11,17 @@ public partial class BitDatePicker
     private BitIconLocation iconLocation = BitIconLocation.Right;
     private bool isOpen;
     private CultureInfo culture = CultureInfo.CurrentUICulture;
+
     private string focusClass = string.Empty;
+    private string _focusClass
+    {
+        get => focusClass;
+        set
+        {
+            focusClass = value;
+            ClassBuilder.Reset();
+        }
+    }
 
     private bool _isMonthPickerOverlayOnTop;
     private bool _showMonthPicker = true;
@@ -29,6 +39,8 @@ public partial class BitDatePicker
     private int _yearRangeFrom;
     private int _yearRangeTo;
     private string _monthTitle = string.Empty;
+    private DotNetObjectReference<BitDatePicker> _dotnetObj = default!;
+    private bool _disposed;
 
     [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
 
@@ -240,30 +252,23 @@ public partial class BitDatePicker
     /// </summary>
     [Parameter] public RenderFragment<int>? YearCellTemplate { get; set; }
 
-    public string ActiveDescendantId => Guid.NewGuid().ToString();
-    public string CalloutId => $"DatePicker-Callout{UniqueId}";
-    public string FocusClass
-    {
-        get => focusClass;
-        set
-        {
-            focusClass = value;
-            ClassBuilder.Reset();
-        }
-    }
-    public string LabelId => $"DatePicker-Label{UniqueId}";
-    public string MonthAndYearId => Guid.NewGuid().ToString();
-    public string OverlayId => $"DatePicker-Overlay{UniqueId}";
-    public string TextFieldId => $"DatePicker-TextField{UniqueId}";
-    public string WrapperId => $"DatePicker-Wrapper{UniqueId}";
+    public string LabelId => $"DateRangePicker-Label-{UniqueId}";
+    public string CalloutId => $"DateRangePicker-Callout-{UniqueId}";
+    public string OverlayId => $"DateRangePicker-Overlay-{UniqueId}";
+    public string WrapperId => $"DateRangePicker-Wrapper-{UniqueId}";
+    public string TextFieldId => $"DateRangePicker-TextField-{UniqueId}";
+    public string MonthTitleId => $"DateRangePicker-MonthTitle-{UniqueId}";
+    public string ActiveDescendantId => $"DateRangePicker-ActiveDescendant-{UniqueId}";
 
-    [JSInvokable("CloseCallout")]
-    public void CloseCalloutBeforeAnotherCalloutIsOpened()
-    {
-        IsOpen = false;
-    }
 
     protected override string RootElementClass { get; } = "bit-dtp";
+
+    protected override Task OnInitializedAsync()
+    {
+        _dotnetObj = DotNetObjectReference.Create(this);
+
+        return base.OnInitializedAsync();
+    }
 
     protected override void RegisterComponentClasses()
     {
@@ -282,8 +287,8 @@ public partial class BitDatePicker
         ClassBuilder.Register(() => HasBorder is false
             ? $"{RootElementClass}-no-border-{VisualClassRegistrar()}" : string.Empty);
 
-        ClassBuilder.Register(() => FocusClass.HasValue()
-            ? $"{RootElementClass}-{(IsUnderlined ? "underlined-" : null)}{FocusClass}-{VisualClassRegistrar()}" : string.Empty);
+        ClassBuilder.Register(() => _focusClass.HasValue()
+            ? $"{RootElementClass}-{(IsUnderlined ? "underlined-" : null)}{_focusClass}-{VisualClassRegistrar()}" : string.Empty);
 
         ClassBuilder.Register(() => ValueInvalid is true
                                    ? $"{RootElementClass}-invalid-{VisualClassRegistrar()}" : string.Empty);
@@ -353,9 +358,7 @@ public partial class BitDatePicker
 
         _showMonthPickerAsOverlayInternal = ShowMonthPickerAsOverlay;
 
-        var obj = DotNetObjectReference.Create(this);
-
-        await JSRuntime.InvokeVoidAsync("BitDatePicker.toggleDatePickerCallout", obj, UniqueId, CalloutId, OverlayId, IsOpen);
+        await JSRuntime.InvokeVoidAsync("BitDatePicker.toggleDatePickerCallout", _dotnetObj, UniqueId, CalloutId, OverlayId, IsOpen);
 
         if (_showMonthPickerAsOverlayInternal is false)
         {
@@ -382,7 +385,7 @@ public partial class BitDatePicker
     {
         if (IsEnabled is false) return;
 
-        FocusClass = "focused";
+        _focusClass = "focused";
         await OnFocusIn.InvokeAsync();
     }
 
@@ -390,7 +393,7 @@ public partial class BitDatePicker
     {
         if (IsEnabled is false) return;
 
-        FocusClass = string.Empty;
+        _focusClass = string.Empty;
         await OnFocusOut.InvokeAsync();
     }
 
@@ -398,7 +401,7 @@ public partial class BitDatePicker
     {
         if (IsEnabled is false) return;
 
-        FocusClass = "focused";
+        _focusClass = "focused";
         await OnFocus.InvokeAsync();
     }
 
@@ -444,8 +447,7 @@ public partial class BitDatePicker
             _currentYear--;
         }
 
-        var obj = DotNetObjectReference.Create(this);
-        await JSRuntime.InvokeVoidAsync("BitDatePicker.toggleDatePickerCallout", obj, UniqueId, CalloutId, OverlayId, IsOpen);
+        await JSRuntime.InvokeVoidAsync("BitDatePicker.toggleDatePickerCallout", _dotnetObj, UniqueId, CalloutId, OverlayId, IsOpen);
         IsOpen = false;
         _displayYear = _currentYear;
         _currentMonth = selectedMonth;
@@ -675,8 +677,7 @@ public partial class BitDatePicker
 
     private async Task CloseCallout()
     {
-        var obj = DotNetObjectReference.Create(this);
-        await JSRuntime.InvokeVoidAsync("BitDatePicker.toggleDatePickerCallout", obj, UniqueId, CalloutId, OverlayId, IsOpen);
+        await JSRuntime.InvokeVoidAsync("BitDatePicker.toggleDatePickerCallout", _dotnetObj, UniqueId, CalloutId, OverlayId, IsOpen);
         IsOpen = false;
         StateHasChanged();
     }
@@ -979,5 +980,24 @@ public partial class BitDatePicker
     {
         var currentDate = new DateTimeOffset(Culture.DateTimeFormat.Calendar.ToDateTime(_currentYear, monthIndex, 1, 0, 0, 0, 0), DateTimeOffset.Now.Offset);
         return currentDate;
+    }
+
+
+    [JSInvokable("CloseCallout")]
+    public void CloseCalloutBeforeAnotherCalloutIsOpened()
+    {
+        IsOpen = false;
+    }
+
+
+    protected override void Dispose(bool disposing)
+    {
+        base.Dispose(disposing);
+
+        if (_disposed || disposing is false) return;
+
+        _dotnetObj.Dispose();
+
+        _disposed = true;
     }
 }

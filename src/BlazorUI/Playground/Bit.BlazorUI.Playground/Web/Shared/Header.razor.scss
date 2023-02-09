@@ -111,7 +111,7 @@
 
 .header-nav {
     position: fixed;
-    z-index: 100;
+    z-index: 9999;
     top: rem(calc($HeaderHeight + $HeaderSecondRowHeight));
     left: 0;
     display: flex;
