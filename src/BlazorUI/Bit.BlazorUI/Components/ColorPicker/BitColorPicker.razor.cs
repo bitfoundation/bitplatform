@@ -4,6 +4,8 @@ namespace Bit.BlazorUI;
 
 public partial class BitColorPicker : IAsyncDisposable
 {
+    protected override bool UseVisual => false;
+
     private bool ColorHasBeenSet;
     private bool AlphaHasBeenSet;
 
@@ -14,12 +16,12 @@ public partial class BitColorPicker : IAsyncDisposable
     private string? _saturationPickerBackgroundRgbaCss;
     private bool _saturationPickerMouseDown;
     private BitColorPosition? _saturationPickerThumbPosition;
-    private BitColor _color = new BitColor();
+    private BitColor _color = new();
     private BitColorType _colorType;
     private double _hue;
     private double _selectedSaturation = 1;
     private double _selectedValue = 1;
-    private string _colorRectangleDescriptionId => $"{UniqueId}-ColorRectangle-description";
+    private string _colorRectangleDescriptionId => $"ColorRectangle-Description-{UniqueId}";
 
     public string? Hex => _color.Hex;
     public string? Rgb => _color.Rgb;
@@ -27,6 +29,7 @@ public partial class BitColorPicker : IAsyncDisposable
     public (int Hue, int Saturation, int Value) Hsv => _color.Hsv;
 
     [Inject] public IJSRuntime _js { get; set; } = default!;
+
 
     /// <summary>
     /// Indicates the Alpha value.
@@ -84,6 +87,7 @@ public partial class BitColorPicker : IAsyncDisposable
     /// Whether to show color preview box.
     /// </summary>
     [Parameter] public bool ShowPreview { get; set; }
+
 
     protected override string RootElementClass => "bit-clp";
 
@@ -211,6 +215,7 @@ public partial class BitColorPicker : IAsyncDisposable
         return ariaLabel;
     }
 
+
     [JSInvokable]
     public void OnWindowMouseUp(MouseEventArgs e)
     {
@@ -223,17 +228,11 @@ public partial class BitColorPicker : IAsyncDisposable
         await OnSaturationPickerMouseMove(e);
     }
 
+
     public async ValueTask DisposeAsync()
     {
-        if (_onWindowMouseUpAbortControllerId.HasValue())
-        {
-            await _js.AbortProcedure(_onWindowMouseUpAbortControllerId!);
-        }
-
-        if (_onWindowMouseMoveAbortControllerId.HasValue())
-        {
-            await _js.AbortProcedure(_onWindowMouseMoveAbortControllerId!);
-        }
+        await _js.AbortProcedure(_onWindowMouseUpAbortControllerId);
+        await _js.AbortProcedure(_onWindowMouseMoveAbortControllerId);
 
         GC.SuppressFinalize(this);
     }
