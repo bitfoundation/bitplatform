@@ -15,183 +15,183 @@ public partial class BitTextFieldDemo
             Type = "string?",
             Description = "AutoComplete is a string that maps to the autocomplete attribute of the HTML input element.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "CanRevealPassword",
             Type = "bool",
             Description = "Whether to show the reveal password button for input type 'password'.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "DefaultValue",
             Type = "string?",
             Description = "Default value of the text field. Only provide this if the text field is an uncontrolled component; otherwise, use the value property.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "Description",
             Type = "string?",
             Description = "Description displayed below the text field to provide additional details about what text to enter.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "DescriptionTemplate",
             Type = "RenderFragment?",
             Description = "Shows the custom description for text field.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "HasBorder",
             Type = "bool",
             DefaultValue = "true",
             Description = "Whether or not the text field is borderless.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "IsMultiline",
             Type = "bool",
             Description = "Whether or not the text field is a Multiline text field.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "IsReadonly",
             Type = "bool",
             Description = "If true, the text field is readonly.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "IsRequired",
             Type = "bool",
             Description = "Whether the associated input is required or not, add an asterisk \"*\" to its label.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "IsUnderlined",
             Type = "bool",
             Description = "Whether or not the text field is underlined.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "IsResizable",
             DefaultValue = "true",
             Type = "bool",
             Description = "For multiline text fields, whether or not the field is resizable.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "IconName",
             Type = "BitIconName?",
             Description = "The icon name for the icon shown in the far right end of the text field.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "IsTrimmed",
             Type = "bool",
             Description = "Specifies whether to remove any leading or trailing whitespace from the value.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "Label",
             Type = "string?",
             Description = "Label displayed above the text field and read by screen readers.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "LabelTemplate",
             Type = "RenderFragment?",
             Description = "Shows the custom label for text field.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "MaxLength",
             Type = "int",
             Description = "Specifies the maximum number of characters allowed in the input.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "OnFocus",
             Type = "EventCallback<FocusEventArgs>",
             Description = "Callback for when focus moves into the input.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "OnFocusIn",
             Type = "EventCallback<FocusEventArgs>",
             Description = "Callback for when focus moves into the input.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "OnFocusOut",
             Type = "EventCallback<FocusEventArgs>",
             Description = "Callback for when focus moves out of the input.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "OnKeyDown",
             Type = "EventCallback<KeyboardEventArgs>",
             Description = "Callback for when a keyboard key is pressed.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "OnKeyUp",
             Type = "EventCallback<KeyboardEventArgs>",
             Description = "Callback for When a keyboard key is released.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "OnChange",
             Type = "EventCallback<string?>",
             Description = "Callback for when the input value changes. This is called on both input and change events.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "OnClick",
             Type = "EventCallback<MouseEventArgs>",
             Description = "Callback for when the input clicked.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "Placeholder",
             Type = "string?",
             Description = "Input placeholder text.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "Prefix",
             Type = "string?",
             Description = "Prefix displayed before the text field contents. This is not included in the value. \r\n Ensure a descriptive label is present to assist screen readers, as the value does not include the prefix.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "PrefixTemplate",
             Type = "RenderFragment?",
             Description = "Shows the custom prefix for text field.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "Rows",
             Type = "int",
             Description = "For multiline text, Number of rows.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "RevealPasswordAriaLabel",
             Type = "string?",
             Description = "Suffix displayed after the text field contents. This is not included in the value. \r\n Ensure a descriptive label is present to assist screen readers, as the value does not include the suffix.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "Suffix",
             Type = "string?",
             Description = "Suffix displayed after the text field contents. This is not included in the value. \r\n Ensure a descriptive label is present to assist screen readers, as the value does not include the suffix.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "SuffixTemplate",
             Type = "RenderFragment?",
             Description = "Shows the custom suffix for text field.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "Type",
             Type = "BitTextFieldType",
@@ -276,44 +276,44 @@ public partial class BitTextFieldDemo
 
     private readonly List<EnumParameter> enumParameters = new()
     {
-        new EnumParameter()
+        new()
         {
             Id = "text-field-type-enum",
             Title = "BitTextFieldType Enum",
             Description = "",
             EnumList = new List<EnumItem>()
             {
-                new EnumItem()
+                new()
                 {
                     Name= "Text",
                     Description="The TextField characters are shown as text.",
                     Value="0",
                 },
-                new EnumItem()
+                new()
                 {
                     Name= "Password",
                     Description="The TextField characters are masked.",
                     Value="1",
                 },
-                new EnumItem()
+                new()
                 {
                     Name= "Number",
                     Description="The TextField characters are number.",
                     Value="2",
                 },
-                new EnumItem()
+                new()
                 {
                     Name= "Email",
                     Description="The TextField act as an email input.",
                     Value="3",
                 },
-                new EnumItem()
+                new()
                 {
                     Name= "Tel",
                     Description="The TextField act as a tel input.",
                     Value="4",
                 },
-                new EnumItem()
+                new()
                 {
                     Name= "Url",
                     Description="The TextField act as a url input.",
