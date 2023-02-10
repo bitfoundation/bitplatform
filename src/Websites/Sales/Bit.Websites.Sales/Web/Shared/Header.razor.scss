@@ -22,6 +22,14 @@
     @include lg {
         padding: rem(32px) rem(60px);
     }
+
+    @include md {
+        padding: rem(32px);
+    }
+
+    @include xs {
+        padding: rem(16px);
+    }
 }
 
 .logo-container {

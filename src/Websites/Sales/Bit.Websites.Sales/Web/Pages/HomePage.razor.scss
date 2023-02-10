@@ -16,7 +16,7 @@
     }
 
     @include sm {
-        padding: rem(16px) rem(30px);
+        padding: rem(16px);
     }
 }
 
@@ -196,6 +196,7 @@
             font-size: rem(18px);
             line-height: rem(28px);
             margin-bottom: rem(50px);
+            text-align: center;
         }
 
         @include sm {
@@ -275,7 +276,7 @@
         }
 
         .card-5 {
-            background-image: url('/images/home/services/design-icon.svg')
+            background-image: url('/images/home/services/uiux-icon.svg')
         }
 
         .card-6 {
