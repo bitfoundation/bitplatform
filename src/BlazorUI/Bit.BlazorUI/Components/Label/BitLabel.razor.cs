@@ -1,8 +1,9 @@
-﻿
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public partial class BitLabel
 {
+    protected override bool UseVisual => false;
+
     private bool isRequired;
 
     /// <summary>
@@ -29,10 +30,11 @@ public partial class BitLabel
         }
     }
 
+
     protected override string RootElementClass => "bit-lbl";
 
     protected override void RegisterComponentClasses()
     {
-        ClassBuilder.Register(() => IsRequired ? $"{RootElementClass}-required-{VisualClassRegistrar()}" : string.Empty);
+        ClassBuilder.Register(() => IsRequired ? "required" : string.Empty);
     }
 }

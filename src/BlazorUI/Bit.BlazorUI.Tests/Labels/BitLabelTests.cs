@@ -11,6 +11,6 @@ public class BitLabelTests : BunitTestContext
     {
         var component = RenderComponent<BitLabelTest>(parameters => parameters.Add(p => p.IsRequired, isRequired));
         var bitLabel = component.Find(".bit-lbl");
-        Assert.AreEqual(expectedResult, bitLabel.ClassList.Contains("bit-lbl-required-fluent"));
+        Assert.AreEqual(expectedResult, bitLabel.ClassList.Contains("required"));
     }
 }
