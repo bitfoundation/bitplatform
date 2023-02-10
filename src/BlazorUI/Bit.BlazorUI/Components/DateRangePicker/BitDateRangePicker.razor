@@ -95,7 +95,7 @@
                             <div class="navigation-btn-container">
                                 <button class="navigation-btn"
                                         type="button"
-                                        title="@($"Go to previous month")"
+                                        title="@GoToPrevMonthTitle"
                                         aria-disabled="@(CanMonthChange(ChangeDirection.Previous) is false)"
                                         disabled="@(CanMonthChange(ChangeDirection.Previous) is false)"
                                         @onclick="() => HandleMonthChange(ChangeDirection.Previous)">
@@ -103,7 +103,7 @@
                                 </button>
                                 <button class="navigation-btn"
                                         type="button"
-                                        title="@($"Go to next month")"
+                                        title="@GoToNextMonthTitle"
                                         aria-disabled="@(CanMonthChange(ChangeDirection.Next) is false)"
                                         disabled="@(CanMonthChange(ChangeDirection.Next) is false)"
                                         @onclick="() => HandleMonthChange(ChangeDirection.Next)">
