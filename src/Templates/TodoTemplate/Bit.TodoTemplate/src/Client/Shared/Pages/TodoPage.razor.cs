@@ -75,7 +75,7 @@ public partial class TodoPage
     {
         todoItem.IsDone = !todoItem.IsDone;
 
-        await EditTodoItem(todoItem);
+        await HttpClient.PutAsJsonAsync("TodoItem/Update", todoItem, AppJsonContext.Default.TodoItemDto);
 
         FilterViewTodoItems();
     }

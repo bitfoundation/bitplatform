@@ -59,26 +59,32 @@
         }
     }
 
-    static checkMonthPickerWidth(dateRangePickerCalloutId: string) {
+    static checkMonthPickerWidth(dateRangePickerCalloutId: string, responsive: boolean) {
 
         const dateRangePickerCallout = document.getElementById(dateRangePickerCalloutId);
-        if (dateRangePickerCallout == null)
-            return;
+
+        if (dateRangePickerCallout == null) return;
+
+        if (responsive && window.innerWidth <= 600) {
+            dateRangePickerCallout.style.width = "95%";
+            dateRangePickerCallout.style.left = "2.5%";
+            return true;
+        }
 
         const dateRangePickerCalloutWidth = dateRangePickerCallout.offsetWidth;
         const bodyWidth = document.body.offsetWidth;
-        if (dateRangePickerCalloutWidth > bodyWidth) {
-            return true;
-        } else {
-            const calloutLeft = dateRangePickerCallout.getBoundingClientRect().x;
-            if (dateRangePickerCalloutWidth + calloutLeft > bodyWidth) {
-                dateRangePickerCallout.style.left = "0";
-                dateRangePickerCallout.style.right = "0";
-                dateRangePickerCallout.style.margin = "auto";
-                dateRangePickerCallout.style.width = "fit-content";
-            }
 
-            return false;
+        if (dateRangePickerCalloutWidth > bodyWidth) return true;
+
+        const { x: calloutLeft } = dateRangePickerCallout.getBoundingClientRect();
+
+        if (dateRangePickerCalloutWidth + calloutLeft > bodyWidth) {
+            dateRangePickerCallout.style.left = "0";
+            dateRangePickerCallout.style.right = "0";
+            dateRangePickerCallout.style.margin = "auto";
+            dateRangePickerCallout.style.width = "fit-content";
         }
+
+        return false;
     }
 }

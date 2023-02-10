@@ -2,33 +2,34 @@
 @import '../../../Styles/abstracts/_functions.scss';
 @import '../../../Styles/abstracts/_media-queries.scss';
 
+.example-content {
+    display: flex;
+    flex-flow: column wrap;
+    gap: 0.5rem;
+    width: fit-content;
+    align-items: flex-start;
+}
+
 .validation-summary {
-    border-left: rem(5px) solid $Red10;
+    border-left: 0.25rem solid $Red10;
     background-color: $ErrorBlockRed;
     overflow: hidden;
-    margin-bottom: rem(10px);
+    margin-bottom: 0.8rem;
 
     .validation-errors {
-        margin: rem(5px);
+        margin: 0.25rem;
     }
 }
 
 ::deep div.validation-message {
     color: $Red20;
-    font-size: rem(12px);
-}
-
-.chk-box {
-    ::deep .bit-chb {
-        margin-bottom: rem(10px);
-    }
+    font-size: 0.75rem;
 }
 
 .controlled-box {
-    margin-bottom: rem(30px);
     display: flex;
     flex-direction: row;
-    gap: rem(10px);
+    gap: 1rem;
     width: fit-content;
 
     @include sm {
@@ -41,6 +42,7 @@
     justify-content: center;
     cursor: pointer;
     user-select: none;
+    align-items: center;
 
     ::deep .checked-box {
         border: 1px solid;

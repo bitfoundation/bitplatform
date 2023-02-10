@@ -31,3 +31,7 @@ function highlightSnippet() {
         Prism.highlightElement(el);
     });
 }
+
+function goToTop() {
+    window.scrollTo({ top: 0 });
+}

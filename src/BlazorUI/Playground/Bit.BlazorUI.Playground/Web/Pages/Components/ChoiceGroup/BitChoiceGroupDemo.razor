@@ -56,18 +56,18 @@
         <ExamplePreview>
             <div class="example-desc">Customize the ChoiceGroup Option content.</div>
             <div class="chg-box">
-                <BitChoiceGroup Label="Option Template" Options="ChoiceGroupWithOptionTemplate" @bind-Value="ChoiceGroupWithOptionTemplateValue" DefaultValue="Day">
+                <BitChoiceGroup Label="Option Template" Options="ChoiceGroupWithOptionTemplate" @bind-Value="ChoiceGroupWithOptionTemplateValue">
                     <OptionTemplate Context="option">
-                        <div class="custom-option @(ChoiceGroupWithOptionTemplateValue == option.Value ? "selected-option" : "")">
+                        <div class="custom-option @(ChoiceGroupWithOptionTemplateValue == option.Value ? "selected-option" : string.Empty)">
                             <div class="option-pointer"></div>
                             <BitIcon IconName="@option.IconName.Value" />
                             <span>@option.Text</span>
                         </div>
                     </OptionTemplate>
                 </BitChoiceGroup>
-                <BitChoiceGroup Label="Option Label Template" Options="ChoiceGroupWithOptionTemplate" @bind-Value="ChoiceGroupWithOptionLabelTemplateValue" DefaultValue="Day">
+                <BitChoiceGroup Label="Option Label Template" Options="ChoiceGroupWithOptionTemplate" @bind-Value="ChoiceGroupWithOptionLabelTemplateValue">
                     <OptionLabelTemplate Context="option">
-                        <div style="margin-left: 27px;" class="custom-option @(ChoiceGroupWithOptionLabelTemplateValue == option.Value ? "selected-option" : "")">
+                        <div style="margin-left: 27px;" class="custom-option @(ChoiceGroupWithOptionLabelTemplateValue == option.Value ? "selected-option" : string.Empty)">
                             <BitIcon IconName="@option.IconName.Value" />
                             <span>@option.Text</span>
                         </div>
@@ -81,13 +81,13 @@
         <ExamplePreview>
             <div class="chg-box">
                 <div>
-                    <BitChoiceGroup Label="One-way" Options="ChoiceGroupBasicOption" Value="@ChoiceGroupOneWayValue" DefaultValue="A" />
+                    <BitChoiceGroup Label="One-way" Options="ChoiceGroupBasicOption" Value="@ChoiceGroupOneWayValue" />
                     <div class="chg-output">
-                        <BitTextField Placeholder="A..." @bind-Value="ChoiceGroupOneWayValue" />
+                        <BitTextField @bind-Value="ChoiceGroupOneWayValue" />
                     </div>
                 </div>
                 <div>
-                    <BitChoiceGroup Label="Two-way" Options="ChoiceGroupBasicOption" @bind-Value="ChoiceGroupTwoWayValue" DefaultValue="A" />
+                    <BitChoiceGroup Label="Two-way" Options="ChoiceGroupBasicOption" @bind-Value="ChoiceGroupTwoWayValue" />
                     <div class="chg-output">
                         <BitTextField @bind-Value="ChoiceGroupTwoWayValue" />
                     </div>
@@ -96,18 +96,13 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="ChoiceGroup with LayoutFlow" HTMLSourceCode="@example8HtmlCode" CSharpSourceCode="@example8CSharpCode" ExampleId="example8">
+    <ComponentExampleBox Title="ChoiceGroup with Horizotal LayoutFlow" HTMLSourceCode="@example8HtmlCode" CSharpSourceCode="@example8CSharpCode" ExampleId="example8">
         <ExamplePreview>
-            <div class="example-desc">You can define the ChoiceGroup in Horizontal or Vertical mode.</div>
             <div class="chg-box column">
                 <BitChoiceGroup Label="Basic" Options="ChoiceGroupBasicOption" DefaultValue="A" LayoutFlow="BitLayoutFlow.Horizontal" />
-
                 <BitChoiceGroup Label="Disabled" Options="ChoiceGroupBasicOption" IsEnabled="false" DefaultValue="A" LayoutFlow="BitLayoutFlow.Horizontal" />
-
                 <BitChoiceGroup Label="Image" Options="ChoiceGroupWithImage" DefaultValue="Bar" LayoutFlow="BitLayoutFlow.Horizontal" />
-
                 <BitChoiceGroup Label="Icon" Options="ChoiceGroupWithIcon" DefaultValue="Day" LayoutFlow="BitLayoutFlow.Horizontal" />
-
                 <BitChoiceGroup Options="ChoiceGroupBasicOption" DefaultValue="A" LayoutFlow="BitLayoutFlow.Horizontal">
                     <LabelTemplate>
                         <div class="custom-label">
@@ -115,11 +110,8 @@
                         </div>
                     </LabelTemplate>
                 </BitChoiceGroup>
-
-                <BitChoiceGroup Label="Option Template"
+                <BitChoiceGroup Label="Option Template" @bind-Value="@ChoiceGroupLayoutFlowWithOptionTemplateValue"
                                 Options="ChoiceGroupWithOptionTemplate"
-                @bind-Value="ChoiceGroupLayoutFlowWithOptionTemplateValue"
-                                DefaultValue="Day"
                                 LayoutFlow="BitLayoutFlow.Horizontal">
                     <OptionTemplate Context="option">
                         <div class="custom-option @(ChoiceGroupLayoutFlowWithOptionTemplateValue == option.Value ? "selected-option" : "")">
@@ -137,13 +129,9 @@
         <ExamplePreview>
             <div class="chg-box column">
                 <BitChoiceGroup Label="Basic" Options="ChoiceGroupBasicOption" DefaultValue="A" IsRtl="true" />
-
                 <BitChoiceGroup Label="Disabled" Options="ChoiceGroupBasicOption" IsEnabled="false" DefaultValue="A" IsRtl="true" />
-
                 <BitChoiceGroup Label="Image" Options="ChoiceGroupWithImage" DefaultValue="Bar" LayoutFlow="BitLayoutFlow.Horizontal" IsRtl="true" />
-
                 <BitChoiceGroup Label="Icon" Options="ChoiceGroupWithIcon" DefaultValue="Day" LayoutFlow="BitLayoutFlow.Horizontal" IsRtl="true" />
-
                 <BitChoiceGroup Options="ChoiceGroupBasicOption" DefaultValue="A" LayoutFlow="BitLayoutFlow.Horizontal" IsRtl="true">
                     <LabelTemplate>
                         <div class="custom-label">
@@ -151,15 +139,12 @@
                         </div>
                     </LabelTemplate>
                 </BitChoiceGroup>
-
-                <BitChoiceGroup @bind-Value="ChoiceGroupRtlWithOptionTemplateValue"
-                                Label="Option Template"
+                <BitChoiceGroup Label="Option Template" @bind-Value="@ChoiceGroupRtlLayoutFlowWithOptionTemplateValue"
                                 Options="ChoiceGroupWithOptionTemplate"
-                                DefaultValue="Day"
                                 LayoutFlow="BitLayoutFlow.Horizontal"
                                 IsRtl="true">
                     <OptionTemplate Context="option">
-                        <div class="custom-option @(ChoiceGroupLayoutFlowWithOptionTemplateValue == option.Value ? "selected-option" : "")">
+                        <div class="custom-option @(ChoiceGroupRtlLayoutFlowWithOptionTemplateValue == option.Value ? "selected-option" : "")">
                             <div class="option-pointer"></div>
                             <BitIcon IconName="@option.IconName.Value" />
                             <span>@option.Text</span>
@@ -193,6 +178,8 @@
                     @SuccessMessage
                 </BitMessageBar>
             }
+            <br />
+            <BitButton ButtonStyle="BitButtonStyle.Standard" OnClick="() => { ValidationModel = new(); SuccessMessage=string.Empty; }">Reset</BitButton>
         </ExamplePreview>
     </ComponentExampleBox>
 

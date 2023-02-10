@@ -1,0 +1,191 @@
+﻿@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_media-queries.scss';
+@import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_vars.scss';
+
+.main-header {
+    position: fixed;
+    top: 0;
+    z-index: 1001;
+    width: 100%;
+    transition: top 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+    box-shadow: inset 0px -1px 1px #e7ebf0;
+    background-color: rgba(255, 255, 255, 0.72);
+}
+
+.main-header--full-page {
+    .header-main-container {
+        max-width: rem(1200px);
+    }
+}
+
+.header-main-container {
+    display: flex;
+    align-items: center;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    width: 100%;
+    min-height: rem($HeaderHeight);
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: rem(20px);
+    padding-right: rem(20px);
+    box-sizing: border-box;
+
+    @include md {
+        padding-left: rem(30px);
+        padding-right: rem(30px);
+    }
+
+    @include sm {
+        border-bottom: rem(1px) solid $B5Color;
+
+        .header-link {
+            display: none;
+        }
+    }
+}
+
+.header-content-container {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    height: 100%;
+}
+
+.header-logo {
+    width: rem(50px);
+    height: rem(50px);
+    background-image: url('/images/bit-logo.svg');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
+    cursor: pointer;
+    margin-right: rem(30px);
+}
+
+.header-link {
+    height: 100%;
+    padding: rem(10px);
+    box-sizing: border-box;
+    font-size: rem(16px);
+    line-height: 1.5;
+    color: $Gray1;
+    text-decoration: none;
+    cursor: pointer;
+    padding-bottom: 0;
+}
+
+.header-link--active {
+    color: $B2Color;
+}
+
+.github-btn {
+    width: rem(34px);
+    height: rem(34px);
+    border-radius: 50%;
+    background-image: url('/images/github-icon.webp');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    cursor: pointer;
+    margin-left: rem(10px);
+}
+
+.header-second-row {
+    display: none;
+    flex-flow: row nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+    height: rem($HeaderSecondRowHeight);
+    padding: 0 rem(16px);
+    box-sizing: border-box;
+
+    @include sm {
+        display: flex;
+    }
+}
+
+.header-nav {
+    position: fixed;
+    z-index: 9999;
+    top: rem(calc($HeaderHeight + $HeaderSecondRowHeight));
+    left: 0;
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: flex-start;
+    width: 100%;
+    height: calc(100vh - #{rem(calc($HeaderHeight + $HeaderSecondRowHeight))});
+    padding: rem(20px);
+    box-sizing: border-box;
+    background-color: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+.header-nav-link {
+    padding: rem(8px) 0;
+    margin-bottom: rem(16px);
+    font-size: rem(16px);
+    line-height: 1.5;
+    color: $Gray1;
+    text-decoration: none;
+}
+
+.header-nav-link--active {
+    color: $B2Color;
+}
+
+::deep .header-nav-close-btn {
+    position: absolute;
+    right: rem(10px);
+    top: rem(10px);
+    color: $B2Color;
+    width: rem(44px);
+    height: rem(44px);
+}
+
+::deep .header-action-button {
+    &.bit-acb {
+        flex-grow: 1;
+        padding: 0;
+        font-size: rem(15px);
+        font-weight: 600;
+        line-height: 1.5;
+        color: $Gray1;
+
+        span {
+            i {
+                font-size: rem(12px);
+                color: $Gray1;
+            }
+        }
+    }
+}
+
+::deep .header-menu-btn {
+    min-width: rem(30px);
+    min-height: rem(30px);
+    max-width: rem(30px);
+    max-height: rem(30px);
+    margin-right: rem(16px);
+    border-radius: 50%;
+    background-color: $B2Color;
+
+    .bit-icon {
+        font-size: rem(12px);
+        color: $White;
+    }
+
+    &:hover {
+        background-color: $B2Color;
+    }
+
+    @include gt-md {
+        display: none;
+    }
+}

@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using Bit.BlazorUI.Playground.Web.Models;
 using Bit.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
@@ -9,6 +9,332 @@ namespace Bit.BlazorUI.Playground.Web.Pages.Components.DatePicker;
 
 public partial class BitDatePickerDemo
 {
+
+    private readonly List<ComponentParameter> componentParameters = new()
+    {
+        new()
+        {
+            Name = "AllowTextInput",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the DatePicker allows input a date string directly or not.",
+        },
+        new()
+        {
+            Name = "CalloutHtmlAttributes",
+            Type = "Dictionary<string, object>",
+            DefaultValue = "",
+            Description = "Capture and render additional attributes in addition to the main callout's parameters."
+        },
+        new()
+        {
+            Name = "Culture",
+            Type = "CultureInfo",
+            DefaultValue = "CultureInfo.CurrentUICulture",
+            Description = "CultureInfo for the DatePicker."
+        },
+        new()
+        {
+            Name = "DateFormat",
+            Type = "string",
+            DefaultValue = "",
+            Description = @"The format of the date in the DatePicker like ""yyyy/MM/dd"".",
+        },
+        new()
+        {
+            Name = "DayCellTemplate",
+            Type = "RenderFragment<DateTimeOffset>?",
+            DefaultValue = "",
+            Description = "Used to customize how content inside the day cell is rendered."
+        },
+        new()
+        {
+            Name = "GoToToday",
+            Type = "string",
+            DefaultValue = "Go to today",
+            Description = "GoToToday text for the DatePicker.",
+        },
+        new()
+        {
+            Name = "GoToPrevMonthTitle",
+            Type = "string",
+            DefaultValue = "Go to today",
+            Description = "The title of the Go to previous month button.",
+        },
+        new()
+        {
+            Name = "GoToNextMonthTitle",
+            Type = "string",
+            DefaultValue = "Go to today",
+            Description = "The title of the Go to next month button.",
+        },
+        new()
+        {
+            Name = "HasBorder",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Determines if the DatePicker has a border.",
+        },
+        new()
+        {
+            Name = "HighlightCurrentMonth",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the month picker should highlight the current month."
+        },
+        new()
+        {
+            Name = "HighlightSelectedMonth",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the month picker should highlight the selected month."
+        },
+        new()
+        {
+            Name = "IconFragment",
+            Type = "RenderFragment?",
+            DefaultValue = "",
+            Description = "Custom DatePicker icon template."
+        },
+        new()
+        {
+            Name = "IconLocation",
+            Type = "BitIconLocation",
+            LinkType = LinkType.Link,
+            Href = "#icon-location-enum",
+            DefaultValue = "BitIconLocation.Left",
+            Description = "DatePicker icon location."
+        },
+        new()
+        {
+            Name = "IconName",
+            Type = "BitIconName",
+            DefaultValue = "BitIconName.CalendarMirrored",
+            Description = "Optional DatePicker icon."
+        },
+        new()
+        {
+            Name = "InvalidErrorMessage",
+            Type = "string",
+            DefaultValue = "string.Empty",
+            Description = "The custom validation error message for the invalid value."
+        },
+        new()
+        {
+            Name = "IsMonthPickerVisible",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the month picker is shown beside the day picker or hidden.",
+        },
+        new()
+        {
+            Name = "IsOpen",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether or not this DatePicker is open.",
+        },
+        new()
+        {
+            Name = "IsResponsive",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Enables the responsive mode in small screens.",
+        },
+        new()
+        {
+            Name = "IsUnderlined",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether or not the Textfield of the DatePicker is underlined.",
+        },
+        new()
+        {
+            Name = "Label",
+            Type = "string",
+            DefaultValue = "",
+            Description = "Label for the DatePicker.",
+        },
+        new()
+        {
+            Name = "LabelFragment",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Used to customize the label for the DatePicker."
+        },
+        new()
+        {
+            Name = "MaxDate",
+            Type = "DateTimeOffset",
+            DefaultValue = "",
+            Description = "The maximum allowable date.",
+        },
+        new()
+        {
+            Name = "MinDate",
+            Type = "DateTimeOffset",
+            DefaultValue = "",
+            Description = "The minimum allowable date.",
+        },
+        new()
+        {
+            Name = "MonthCellTemplate",
+            Type = "RenderFragment<DateTimeOffset>?",
+            DefaultValue = "",
+            Description = "Used to customize how content inside the month cell is rendered."
+        },
+        new()
+        {
+            Name = "OnClick",
+            Type = "EventCallback",
+            DefaultValue = "",
+            Description = "Callback for when clicking on DatePicker input.",
+        },
+        new()
+        {
+            Name = "OnFocusIn",
+            Type = "EventCallback",
+            DefaultValue = "",
+            Description = "Callback for when focus moves into the DatePicker input.",
+        },
+        new()
+        {
+            Name = "OnFocusOut",
+            Type = "EventCallback",
+            DefaultValue = "",
+            Description = "Callback for when clicking on DatePicker input.",
+        },
+        new()
+        {
+            Name = "OnSelectDate",
+            Type = "EventCallback<DateTimeOffset?>",
+            DefaultValue = "",
+            Description = "Callback for when the on selected date changed.",
+        },
+        new()
+        {
+            Name = "PickerAriaLabel",
+            Type = "string",
+            DefaultValue = "Calendar",
+            Description = "Aria label for date picker popup for screen reader users."
+        },
+        new()
+        {
+            Name = "Placeholder",
+            Type = "string",
+            DefaultValue = "",
+            Description = "Placeholder text for the DatePicker.",
+        },
+        new()
+        {
+            Name = "ShowCloseButton",
+            Type = "bool",
+            DefaultValue = "",
+            Description = "Whether the CalendarDay close button should be shown or not."
+        },
+        new()
+        {
+            Name = "ShowGoToToday",
+            Type = "bool",
+            DefaultValue = "true",
+            Description = "Whether the \"Go to today\" link should be shown or not."
+        },
+        new()
+        {
+            Name = "ShowMonthPickerAsOverlay",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Show month picker on top of date picker when visible.",
+        },
+        new()
+        {
+            Name = "ShowWeekNumbers",
+            Type = "bool",
+            DefaultValue = "",
+            Description = "Show week number in the year.",
+        },
+        new()
+        {
+            Name = "TabIndex",
+            Type = "int",
+            DefaultValue = "0",
+            Description = "The tabIndex of the TextField.",
+        },
+        new()
+        {
+            Name = "Value",
+            Type = "DateTimeOffset",
+            DefaultValue = "",
+            Description = "The value of DatePicker.",
+        },
+        new()
+        {
+            Name = "ValueChanged",
+            Type = "EventCallback<DateTimeOffset?>",
+            DefaultValue = "",
+            Description = "Callback for when the on date value changed.",
+        },
+        new()
+        {
+            Name = "YearCellTemplate",
+            Type = "RenderFragment<int>?",
+            DefaultValue = "",
+            Description = "Used to customize how content inside the year cell is rendered."
+        }
+    };
+
+    private readonly List<EnumParameter> enumParameters = new()
+    {
+        new()
+        {
+            Id = "component-visibility-enum",
+            Title = "BitComponentVisibility Enum",
+            Description = "",
+            EnumList = new List<EnumItem>()
+            {
+                new()
+                {
+                    Name = "Visible",
+                    Description = "Show content of the component.",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "Hidden",
+                    Description = "Hide content of the component,though the space it takes on the page remains.",
+                    Value = "1",
+                },
+                new()
+                {
+                    Name = "Collapsed",
+                    Description = "Hide content of the component,though the space it takes on the page gone.",
+                    Value = "2",
+                }
+            }
+        },
+        new()
+        {
+            Id = "icon-location-enum",
+            Title = "BitIconLocation Enum",
+            Description = "",
+            EnumList = new List<EnumItem>()
+            {
+                new()
+                {
+                    Name = "Left",
+                    Description = "Show the icon at the left side.",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "Right",
+                    Description = "Show the icon at the right side.",
+                    Value = "1",
+                }
+            }
+        }
+    };
+
+
     private DateTimeOffset? selectedDate = new DateTimeOffset(new DateTime(2020, 1, 17), DateTimeOffset.Now.Offset);
     private FormValidationDatePickerModel formValidationDatePickerModel = new();
     private string SuccessMessage = string.Empty;
@@ -32,316 +358,6 @@ public partial class BitDatePickerDemo
     {
         SuccessMessage = string.Empty;
     }
-
-    private readonly List<ComponentParameter> componentParameters = new()
-    {
-        new ComponentParameter()
-        {
-            Name = "AllowTextInput",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Whether the DatePicker allows input a date string directly or not.",
-        },
-        new ComponentParameter
-        {
-            Name = "CalloutHtmlAttributes",
-            Type = "Dictionary<string, object>",
-            DefaultValue = "",
-            Description = "Capture and render additional attributes in addition to the main callout's parameters."
-        },
-        new ComponentParameter()
-        {
-            Name = "Culture",
-            Type = "CultureInfo",
-            DefaultValue = "CultureInfo.CurrentUICulture",
-            Description = "CultureInfo for the DatePicker."
-        },
-        new ComponentParameter()
-        {
-            Name = "DateFormat",
-            Type = "string",
-            DefaultValue = "",
-            Description = @"The format of the date in the DatePicker like ""yyyy/MM/dd"".",
-        },
-        new ComponentParameter()
-        {
-            Name = "DayCellTemplate",
-            Type = "RenderFragment<DateTimeOffset>?",
-            DefaultValue = "",
-            Description = "Used to customize how content inside the day cell is rendered."
-        },
-        new ComponentParameter()
-        {
-            Name = "GoToToday",
-            Type = "string",
-            DefaultValue = "Go to today",
-            Description = "GoToToday text for the DatePicker.",
-        },
-        new ComponentParameter()
-        {
-            Name = "HasBorder",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Determines if the DatePicker has a border.",
-        },
-        new ComponentParameter
-        {
-            Name = "HighlightCurrentMonth",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Whether the month picker should highlight the current month."
-        },
-        new ComponentParameter
-        {
-            Name = "HighlightSelectedMonth",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Whether the month picker should highlight the selected month."
-        },
-        new ComponentParameter
-        {
-            Name = "IconFragment",
-            Type = "RenderFragment?",
-            DefaultValue = "",
-            Description = "Custom DatePicker icon template."
-        },
-        new ComponentParameter
-        {
-            Name = "IconLocation",
-            Type = "BitIconLocation",
-            LinkType = LinkType.Link,
-            Href = "#icon-location-enum",
-            DefaultValue = "BitIconLocation.Left",
-            Description = "DatePicker icon location."
-        },
-        new ComponentParameter
-        {
-            Name = "IconName",
-            Type = "BitIconName",
-            DefaultValue = "BitIconName.CalendarMirrored",
-            Description = "Optional DatePicker icon."
-        },
-        new ComponentParameter
-        {
-            Name = "InvalidErrorMessage",
-            Type = "string",
-            DefaultValue = "string.Empty",
-            Description = "The custom validation error message for the invalid value."
-        },
-        new ComponentParameter()
-        {
-            Name = "IsMonthPickerVisible",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Whether the month picker is shown beside the day picker or hidden.",
-        },
-        new ComponentParameter()
-        {
-            Name = "IsOpen",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Whether or not this DatePicker is open.",
-        },
-        new ComponentParameter()
-        {
-            Name = "IsResponsive",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Enables the responsive mode in small screens.",
-        },
-        new ComponentParameter()
-        {
-            Name = "IsUnderlined",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Whether or not the Textfield of the DatePicker is underlined.",
-        },
-        new ComponentParameter()
-        {
-            Name = "Label",
-            Type = "string",
-            DefaultValue = "",
-            Description = "Label for the DatePicker.",
-        },
-        new ComponentParameter
-        {
-            Name = "LabelFragment",
-            Type = "RenderFragment?",
-            DefaultValue = "null",
-            Description = "Used to customize the label for the DatePicker."
-        },
-        new ComponentParameter()
-        {
-            Name = "MaxDate",
-            Type = "DateTimeOffset",
-            DefaultValue = "",
-            Description = "The maximum allowable date.",
-        },
-        new ComponentParameter()
-        {
-            Name = "MinDate",
-            Type = "DateTimeOffset",
-            DefaultValue = "",
-            Description = "The minimum allowable date.",
-        },
-        new ComponentParameter()
-        {
-            Name = "MonthCellTemplate",
-            Type = "RenderFragment<DateTimeOffset>?",
-            DefaultValue = "",
-            Description = "Used to customize how content inside the month cell is rendered."
-        },
-        new ComponentParameter()
-        {
-            Name = "OnClick",
-            Type = "EventCallback",
-            DefaultValue = "",
-            Description = "Callback for when clicking on DatePicker input.",
-        },
-        new ComponentParameter()
-        {
-            Name = "OnFocusIn",
-            Type = "EventCallback",
-            DefaultValue = "",
-            Description = "Callback for when focus moves into the DatePicker input.",
-        },
-        new ComponentParameter()
-        {
-            Name = "OnFocusOut",
-            Type = "EventCallback",
-            DefaultValue = "",
-            Description = "Callback for when clicking on DatePicker input.",
-        },
-        new ComponentParameter()
-        {
-            Name = "OnSelectDate",
-            Type = "EventCallback<DateTimeOffset?>",
-            DefaultValue = "",
-            Description = "Callback for when the on selected date changed.",
-        },
-        new ComponentParameter
-        {
-            Name = "PickerAriaLabel",
-            Type = "string",
-            DefaultValue = "Calendar",
-            Description = "Aria label for date picker popup for screen reader users."
-        },
-        new ComponentParameter()
-        {
-            Name = "Placeholder",
-            Type = "string",
-            DefaultValue = "",
-            Description = "Placeholder text for the DatePicker.",
-        },
-        new ComponentParameter
-        {
-            Name = "ShowCloseButton",
-            Type = "bool",
-            DefaultValue = "",
-            Description = "Whether the CalendarDay close button should be shown or not."
-        },
-        new ComponentParameter
-        {
-            Name = "ShowGoToToday",
-            Type = "bool",
-            DefaultValue = "true",
-            Description = "Whether the \"Go to today\" link should be shown or not."
-        },
-        new ComponentParameter()
-        {
-            Name = "ShowMonthPickerAsOverlay",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Show month picker on top of date picker when visible.",
-        },
-        new ComponentParameter()
-        {
-            Name = "ShowWeekNumbers",
-            Type = "bool",
-            DefaultValue = "",
-            Description = "Show week number in the year.",
-        },
-        new ComponentParameter()
-        {
-            Name = "TabIndex",
-            Type = "int",
-            DefaultValue = "0",
-            Description = "The tabIndex of the TextField.",
-        },
-        new ComponentParameter()
-        {
-            Name = "Value",
-            Type = "DateTimeOffset",
-            DefaultValue = "",
-            Description = "The value of DatePicker.",
-        },
-        new ComponentParameter()
-        {
-            Name = "ValueChanged",
-            Type = "EventCallback<DateTimeOffset?>",
-            DefaultValue = "",
-            Description = "Callback for when the on date value changed.",
-        },
-        new ComponentParameter()
-        {
-            Name = "YearCellTemplate",
-            Type = "RenderFragment<int>?",
-            DefaultValue = "",
-            Description = "Used to customize how content inside the year cell is rendered."
-        }
-    };
-
-    private readonly List<EnumParameter> enumParameters = new()
-    {
-        new EnumParameter()
-        {
-            Id = "component-visibility-enum",
-            Title = "BitComponentVisibility Enum",
-            Description = "",
-            EnumList = new List<EnumItem>()
-            {
-                new EnumItem()
-                {
-                    Name= "Visible",
-                    Description="Show content of the component.",
-                    Value="0",
-                },
-                new EnumItem()
-                {
-                    Name= "Hidden",
-                    Description="Hide content of the component,though the space it takes on the page remains.",
-                    Value="1",
-                },
-                new EnumItem()
-                {
-                    Name= "Collapsed",
-                    Description="Hide content of the component,though the space it takes on the page gone.",
-                    Value="2",
-                }
-            }
-        },
-        new EnumParameter()
-        {
-            Id = "icon-location-enum",
-            Title = "BitIconLocation Enum",
-            Description = "",
-            EnumList = new List<EnumItem>()
-            {
-                new EnumItem()
-                {
-                    Name= "Left",
-                    Description="Show the icon at the left side.",
-                    Value="0",
-                },
-                new EnumItem()
-                {
-                    Name= "Right",
-                    Description="Show the icon at the right side.",
-                    Value="1",
-                }
-            }
-        }
-    };
 
     private readonly string example1HTMLCode = @"
 <BitDatePicker Style=""max-width: 300px""
@@ -635,7 +651,7 @@ private FormValidationDatePickerModel formValidationDatePickerModel = new();";
 
     private readonly string example18HTMLCode = @"
 <BitDatePicker Style=""max-width: 300px""
-               Responsive=""true""
+               IsResponsive=""true""
                AriaLabel=""Select a date""
                Placeholder=""Select a date..."" />";
 }

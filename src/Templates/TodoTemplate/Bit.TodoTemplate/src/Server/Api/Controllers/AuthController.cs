@@ -119,7 +119,7 @@ public partial class AuthController : AppControllerBase
 
         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
 
-        var resetPasswordLink = $"reset-password?email={user.Email}&token={HttpUtility.UrlEncode(token)}";
+        var resetPasswordLink = $"reset-password?email={HttpUtility.UrlEncode(user.Email)}&token={HttpUtility.UrlEncode(token)}";
 
 #if BlazorServer
         resetPasswordLink = $"{AppSettings.WebServerAddress}{resetPasswordLink}";

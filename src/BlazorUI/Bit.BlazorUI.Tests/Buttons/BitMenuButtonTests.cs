@@ -13,12 +13,12 @@ public class BitMenuButtonTests : BunitTestContext
         new BitMenuButtonItem()
         {
             Text = "Item A",
-            key = "A"
+            Key = "A"
         },
         new BitMenuButtonItem()
         {
             Text = "Item B",
-            key = "B"
+            Key = "B"
         }
     };
 

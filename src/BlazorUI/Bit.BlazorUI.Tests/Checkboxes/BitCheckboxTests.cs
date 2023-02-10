@@ -10,72 +10,61 @@ public class BitCheckboxTests : BunitTestContext
     private bool BitCheckBoxIsIndeterminate = true;
 
     [DataTestMethod,
-        DataRow(Visual.Fluent, true, true),
-        DataRow(Visual.Fluent, false, true),
-        DataRow(Visual.Fluent, true, false),
-        DataRow(Visual.Fluent, false, false),
-
-        DataRow(Visual.Cupertino, true, true),
-        DataRow(Visual.Cupertino, false, true),
-        DataRow(Visual.Cupertino, true, false),
-        DataRow(Visual.Cupertino, false, false),
-
-        DataRow(Visual.Material, true, true),
-        DataRow(Visual.Material, false, true),
-        DataRow(Visual.Material, true, false),
-        DataRow(Visual.Material, false, false),
+        DataRow(true, true),
+        DataRow(false, true),
+        DataRow(true, false),
+        DataRow(false, false),
     ]
-    public void BitCheckboxOnClickShouldWorkIfIsEnabled(Visual visual, bool defaultValue, bool isEnabled)
+    public void BitCheckboxOnClickShouldWorkIfIsEnabled(bool defaultValue, bool isEnabled)
     {
         var clicked = false;
         var changed = false;
         var component = RenderComponent<BitCheckbox>(parameters =>
         {
-            parameters.AddCascadingValue(visual);
             parameters.Add(p => p.IsEnabled, isEnabled);
             parameters.Add(p => p.DefaultValue, defaultValue);
             parameters.Add(p => p.OnClick, () => clicked = true);
             parameters.Add(p => p.OnChange, () => changed = true);
         });
 
-        var chb = component.Find(".bit-chb");
+        var checkBox = component.Find(".bit-chb");
         var chbCheckbox = component.Find("input");
-        var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
 
-        Assert.AreEqual(defaultValue, chb.ClassList.Contains($"bit-chb-checked-{visualClass}"));
+        if (isEnabled)
+        {
+            Assert.IsFalse(checkBox.ClassList.Contains("disabled"));
+        }
+        else
+        {
+            Assert.IsTrue(checkBox.ClassList.Contains("disabled"));
+        }
+
+        Assert.AreEqual(defaultValue, checkBox.ClassList.Contains("checked"));
         chbCheckbox.Click();
         Assert.AreEqual(isEnabled, clicked);
         Assert.AreEqual(isEnabled, changed);
     }
 
     [DataTestMethod,
-        DataRow(Visual.Fluent, BitCheckBoxSide.Start),
-        DataRow(Visual.Fluent, BitCheckBoxSide.End),
-
-        DataRow(Visual.Cupertino, BitCheckBoxSide.Start),
-        DataRow(Visual.Cupertino, BitCheckBoxSide.End),
-
-        DataRow(Visual.Material, BitCheckBoxSide.Start),
-        DataRow(Visual.Material, BitCheckBoxSide.End),
+        DataRow(BitCheckBoxSide.Start),
+        DataRow(BitCheckBoxSide.End),
     ]
-    public void BitCheckboxBoxSideTest(Visual visual, BitCheckBoxSide boxSide)
+    public void BitCheckboxBoxSideTest(BitCheckBoxSide boxSide)
     {
         var component = RenderComponent<BitCheckbox>(parameters =>
         {
-            parameters.AddCascadingValue(visual);
             parameters.Add(p => p.BoxSide, boxSide);
         });
 
-        var chb = component.Find(".bit-chb");
-        var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
+        var checkBox = component.Find(".bit-chb");
 
         if (boxSide is BitCheckBoxSide.End)
         {
-            Assert.IsTrue(chb.ClassList.Contains($"bit-chb-end-{visualClass}"));
+            Assert.IsTrue(checkBox.ClassList.Contains("side-end"));
         }
         else
         {
-            Assert.IsFalse(chb.ClassList.Contains($"bit-chb-end-{visualClass}"));
+            Assert.IsFalse(checkBox.ClassList.Contains("side-end"));
         }
     }
 
@@ -265,7 +254,8 @@ public class BitCheckboxTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow(BitIconName.Emoji2)
+        DataRow(BitIconName.Emoji2),
+        DataRow(BitIconName.MicrosoftFlowLogo),
     ]
     public void BitCheckboxCustomCheckmarkIconTest(BitIconName checkmarkIconName)
     {
@@ -274,7 +264,7 @@ public class BitCheckboxTests : BunitTestContext
             parameters.Add(p => p.CheckmarkIconName, checkmarkIconName);
         });
 
-        var icon = component.Find(".bit-chb-checkmark");
+        var icon = component.Find(".checkbox i.bit-icon");
 
         Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{checkmarkIconName.GetName()}"));
     }
@@ -290,7 +280,7 @@ public class BitCheckboxTests : BunitTestContext
             parameters.Add(p => p.CheckmarkIconAriaLabel, ariaLabel);
         });
 
-        var icon = component.Find(".bit-chb-checkmark");
+        var icon = component.Find(".checkbox i.bit-icon");
 
         if (ariaLabel is not null)
         {
@@ -412,36 +402,30 @@ public class BitCheckboxTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow(Visual.Fluent, true),
-        DataRow(Visual.Fluent, false),
-        DataRow(Visual.Cupertino, true),
-        DataRow(Visual.Cupertino, false),
-        DataRow(Visual.Material, true),
-        DataRow(Visual.Material, false),
+        DataRow(true),
+        DataRow(false),
     ]
-    public void BitCheckBoxValidationInvalidCssClassTest(Visual visual, bool value)
+    public void BitCheckBoxValidationInvalidCssClassTest(bool value)
     {
         var component = RenderComponent<BitCheckboxValidationTest>(parameters =>
         {
             parameters.Add(p => p.TestModel, new BitCheckboxTestModel { Value = value });
-            parameters.Add(p => p.Visual, visual);
             parameters.Add(p => p.IsEnabled, true);
         });
 
         var bitCheckBox = component.Find(".bit-chb");
-        var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
 
-        Assert.IsFalse(bitCheckBox.ClassList.Contains($"bit-chb-invalid-{visualClass}"));
+        Assert.IsFalse(bitCheckBox.ClassList.Contains("invalid"));
 
         var form = component.Find("form");
         form.Submit();
 
-        Assert.AreEqual(bitCheckBox.ClassList.Contains($"bit-chb-invalid-{visualClass}"), value);
+        Assert.AreEqual(bitCheckBox.ClassList.Contains("invalid"), value);
 
         var checkBox = component.Find("input");
         checkBox.Click();
 
-        Assert.AreEqual(bitCheckBox.ClassList.Contains($"bit-chb-invalid-{visualClass}"), !value);
+        Assert.AreEqual(bitCheckBox.ClassList.Contains("invalid"), !value);
     }
 
     private void HandleValueChanged(bool isChecked)

@@ -70,6 +70,7 @@ public partial class Header : IDisposable
             {
                 Text = Localizer[nameof(AppStrings.Home)],
                 Href = "/",
+                IsSelected = true
             }
         };
 
@@ -79,6 +80,7 @@ public partial class Header : IDisposable
             {
                 Text = Localizer[nameof(AppStrings.EditProfile)],
                 Href = "/edit-profile",
+                IsSelected = true
             }
         };
 
@@ -92,6 +94,7 @@ public partial class Header : IDisposable
             {
                 Text = Localizer[nameof(AppStrings.Products)],
                 Href = "/products",
+                IsSelected = true
             }
         };
 
@@ -105,6 +108,7 @@ public partial class Header : IDisposable
             {
                 Text = Localizer[nameof(AppStrings.Categories)],
                 Href = "/categories",
+                IsSelected = true
             }
         };
 
@@ -122,6 +126,7 @@ public partial class Header : IDisposable
             new()
             {
                 Text = Localizer[nameof(AppStrings.AddEditCategory)],
+                IsSelected = true
             }
         };
     }

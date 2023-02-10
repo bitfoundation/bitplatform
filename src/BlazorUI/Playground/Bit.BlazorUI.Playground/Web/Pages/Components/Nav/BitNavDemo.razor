@@ -9,7 +9,7 @@
     <ComponentExampleBox Title="Basic" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
             <div class="example-box">
-                <BitNav Items="BasicNavItems" />
+                <BitNav Items="BitPlatformNavMenu" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -17,7 +17,7 @@
     <ComponentExampleBox Title="Grouped" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example2">
         <ExamplePreview>
             <div class="example-box">
-                <BitNav Items="GroupedNavItems" RenderType="BitNavRenderType.Grouped" />
+                <BitNav Items="CarNavMenu" RenderType="BitNavRenderType.Grouped" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -27,8 +27,8 @@
             <div class="example-box">
                 <div>
                     <BitLabel>Basic</BitLabel>
-                    <BitNav Items="ManualNavItems"
-                            DefaultSelectedItem="ManualNavItems[0].Items[0]"
+                    <BitNav Items="FoodNavMenu"
+                            DefaultSelectedItem="FoodNavMenu[0].Items[2]"
                             Mode="BitNavMode.Manual" />
                 </div>
 
@@ -36,14 +36,14 @@
                     <BitLabel>Two-Way Bind</BitLabel>
 
                     <BitNav @bind-SelectedItem="SelectedItemNav"
-                            Items="ManualNavItems"
+                            Items="FoodNavMenu"
                             Mode="BitNavMode.Manual"
-                            OnSelectItem="(item) => SelectedItemText = DropDownItems.FirstOrDefault(i => i.Text == item.Text).Text" />
+                            OnSelectItem="(item) => SelectedItemText = FoodMenuDropDownItems.FirstOrDefault(i => i.Text == item.Text).Text" />
 
                     <BitDropDown @bind-Value="SelectedItemText"
                                  Label="Select Item"
-                                 Items="DropDownItems"
-                                 OnSelectItem="(item) => SelectedItemNav = Flatten(ManualNavItems).FirstOrDefault(i => i.Text == item.Value)" />
+                                 Items="FoodMenuDropDownItems"
+                                 OnSelectItem="(item) => SelectedItemNav = Flatten(FoodNavMenu).FirstOrDefault(i => i.Text == item.Value)" />
                 </div>
             </div>
         </ExamplePreview>
@@ -54,7 +54,7 @@
             <div class="example-box">
                 <div>
                     <BitLabel>Header Template (in Grouped mode)</BitLabel>
-                    <BitNav Items="GroupedNavItems" RenderType="BitNavRenderType.Grouped">
+                    <BitNav Items="CarNavMenu" RenderType="BitNavRenderType.Grouped">
                         <HeaderTemplate Context="item">
                             <div class="nav-custom-header">
                                 <BitIcon IconName="BitIconName.FavoriteStarFill" />
@@ -66,7 +66,7 @@
 
                 <div class="margin-top">
                     <BitLabel>Item Template</BitLabel>
-                    <BitNav Items="ManualNavItems" Mode="BitNavMode.Manual">
+                    <BitNav Items="FoodNavMenu" Mode="BitNavMode.Manual">
                         <ItemTemplate Context="item">
                             <div class="nav-custom-item @(item.IsEnabled is false ? "disabled-item" : "")">
                                 <BitCheckbox IsEnabled="@(item.IsEnabled)" />
@@ -86,8 +86,8 @@
     <ComponentExampleBox Title="Events" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
         <ExamplePreview>
             <div class="events-example-box">
-                <BitNav Items="ManualNavItems"
-                        DefaultSelectedItem="ManualNavItems[0].Items[0]"
+                <BitNav Items="FoodNavMenu"
+                        DefaultSelectedItem="FoodNavMenu[0].Items[2]"
                         Mode="BitNavMode.Manual"
                         OnItemClick="(item) => ClickedItem = item"
                         OnSelectItem="(item) => SelectedItem = item"

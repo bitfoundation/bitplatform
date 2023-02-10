@@ -9,87 +9,100 @@ namespace Bit.BlazorUI.Playground.Web.Pages.Components.DateRangePicker;
 
 public partial class BitDateRangePickerDemo
 {
-    private BitDateRangePickerValue selectedDateRange = new()
-    {
-        StartDate = new DateTimeOffset(new DateTime(2020, 1, 17), DateTimeOffset.Now.Offset),
-        EndDate = new DateTimeOffset(new DateTime(2020, 1, 25), DateTimeOffset.Now.Offset)
-    };
-    private CultureInfo Culture = CultureInfo.CurrentUICulture;
-    private BitDateRangePicker dateRangePicker;
-
     private readonly List<ComponentParameter> componentParameters = new()
     {
-        new ComponentParameter()
+        new()
         {
             Name = "AllowTextInput",
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether the DateRangePicker allows input a date string directly or not.",
         },
-        new ComponentParameter
+        new()
+        {
+            Name = "AutoClose",
+            Type = "bool",
+            DefaultValue = "true",
+            Description = "Whether the DateRangePicker closes automatically after selecting the second value or not.",
+        },
+        new()
         {
             Name = "CalloutHtmlAttributes",
             Type = "Dictionary<string, object>",
             DefaultValue = "",
             Description = "Capture and render additional attributes in addition to the main callout's parameters."
         },
-        new ComponentParameter()
+        new()
         {
             Name = "Culture",
             Type = "CultureInfo",
             DefaultValue = "CultureInfo.CurrentUICulture",
             Description = "CultureInfo for the DateRangePicker."
         },
-        new ComponentParameter()
+        new()
         {
             Name = "DayCellTemplate",
             Type = "RenderFragment<DateTimeOffset>?",
             DefaultValue = "",
             Description = "Used to customize how content inside the day cell is rendered."
         },
-        new ComponentParameter()
+        new()
         {
             Name = "DateFormat",
             Type = "string",
             DefaultValue = "",
             Description = @"Date format like ""yyyy/MM/dd"".",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "GoToToday",
             Type = "string",
             DefaultValue = "Go to today",
             Description = "GoToToday text for the DateRangePicker.",
         },
-        new ComponentParameter()
+        new()
+        {
+            Name = "GoToPrevMonthTitle",
+            Type = "string",
+            DefaultValue = "Go to today",
+            Description = "The title of the Go to previous month button.",
+        },
+        new()
+        {
+            Name = "GoToNextMonthTitle",
+            Type = "string",
+            DefaultValue = "Go to today",
+            Description = "The title of the Go to next month button.",
+        },
+        new()
         {
             Name = "HasBorder",
             Type = "bool",
             DefaultValue = "false",
             Description = "Determines if the DateRangePicker has a border.",
         },
-        new ComponentParameter
+        new()
         {
             Name = "HighlightCurrentMonth",
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether the month picker should highlight the current month."
         },
-        new ComponentParameter
+        new()
         {
             Name = "HighlightSelectedMonth",
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether the month picker should highlight the selected month."
         },
-        new ComponentParameter
+        new()
         {
             Name = "IconFragment",
             Type = "RenderFragment?",
             DefaultValue = "",
             Description = "Custom DateRangePicker icon template."
         },
-        new ComponentParameter
+        new()
         {
             Name = "IconLocation",
             Type = "BitIconLocation",
@@ -98,91 +111,98 @@ public partial class BitDateRangePickerDemo
             DefaultValue = "BitIconLocation.Left",
             Description = "DateRangePicker icon location"
         },
-        new ComponentParameter
+        new()
         {
             Name = "IconName",
             Type = "BitIconName",
             DefaultValue = "BitIconName.CalendarMirrored",
             Description = "Optional DateRangePicker icon."
         },
-        new ComponentParameter()
+        new()
         {
             Name = "IsMonthPickerVisible",
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether the month picker is shown beside the day picker or hidden.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "IsOpen",
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether or not this DateRangePicker is open.",
         },
-        new ComponentParameter()
+        new()
+        {
+            Name = "IsResponsive",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Enables the responsive mode in small screens.",
+        },
+        new()
         {
             Name = "IsUnderlined",
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether or not the Textfield of the DateRangePicker is underlined.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "Label",
             Type = "string",
             DefaultValue = "",
             Description = "Label for the DateRangePicker.",
         },
-        new ComponentParameter
+        new()
         {
             Name = "LabelFragment",
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "Used to customize the label for the DateRangePicker."
         },
-        new ComponentParameter()
+        new()
         {
             Name = "MaxDate",
             Type = "DateTimeOffset",
             DefaultValue = "",
             Description = "Maximum date for the DateRangePicker",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "MinDate",
             Type = "DateTimeOffset",
             DefaultValue = "",
             Description = "Minimum date for the DateRangePicker",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "MonthCellTemplate",
             Type = "RenderFragment<DateTimeOffset>?",
             DefaultValue = "",
             Description = "Used to customize how content inside the month cell is rendered."
         },
-        new ComponentParameter()
+        new()
         {
             Name = "OnClick",
             Type = "EventCallback",
             DefaultValue = "",
             Description = "Callback for when clicking on DateRangePicker input.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "OnFocusIn",
             Type = "EventCallback",
             DefaultValue = "",
             Description = "Callback for when focus moves into the DateRangePicker input.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "OnFocusOut",
             Type = "EventCallback",
             DefaultValue = "",
             Description = "Callback for when clicking on DateRangePicker input.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "OnSelectDate",
             Type = "EventCallback<BitDateRangePickerValue?>",
@@ -191,56 +211,56 @@ public partial class BitDateRangePickerDemo
             DefaultValue = "",
             Description = "Callback for when the on selected date changed.",
         },
-        new ComponentParameter
+        new()
         {
             Name = "PickerAriaLabel",
             Type = "string",
             DefaultValue = "Calendar",
             Description = "Aria label for date picker popup for screen reader users."
         },
-        new ComponentParameter()
+        new()
         {
             Name = "Placeholder",
             Type = "string",
             DefaultValue = "",
             Description = "Placeholder text for the DateRangePicker.",
         },
-        new ComponentParameter
+        new()
         {
             Name = "ShowCloseButton",
             Type = "bool",
             DefaultValue = "",
             Description = "Whether the CalendarDay close button should be shown or not."
         },
-        new ComponentParameter
+        new()
         {
             Name = "ShowGoToToday",
             Type = "bool",
             DefaultValue = "true",
             Description = "Whether the \"Go to today\" link should be shown or not."
         },
-        new ComponentParameter()
+        new()
         {
             Name = "ShowMonthPickerAsOverlay",
             Type = "bool",
             DefaultValue = "false",
             Description = "Show month picker on top of date picker when visible.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "ShowWeekNumbers",
             Type = "bool",
             DefaultValue = "",
             Description = "Show week number in the year.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "TabIndex",
             Type = "int",
             DefaultValue = "0",
             Description = "The tabIndex of the TextField.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "Value",
             Type = "BitDateRangePickerValue",
@@ -249,7 +269,7 @@ public partial class BitDateRangePickerDemo
             DefaultValue = "",
             Description = "The value of DateRangePicker.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "ValueChanged",
             Type = "EventCallback<BitDateRangePickerValue?>",
@@ -258,14 +278,14 @@ public partial class BitDateRangePickerDemo
             DefaultValue = "",
             Description = "Callback for when the on date value changed.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "ValueFormat",
             Type = "string",
             DefaultValue = "Start: {0} - End: {1}",
             Description = "ValueFormat for the DateRangePicker.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "YearCellTemplate",
             Type = "RenderFragment<int>?",
@@ -276,20 +296,20 @@ public partial class BitDateRangePickerDemo
 
     private readonly List<ComponentSubParameter> componentSubParameters = new()
     {
-        new ComponentSubParameter()
+        new()
         {
             Id = "dateRangePickerValue",
             Title = "BitDateRangePickerValue",
             Parameters = new List<ComponentParameter>()
             {
-               new ComponentParameter()
+               new()
                {
                    Name = "StartDate",
                    Type = "DateTimeOffset?",
                    DefaultValue = "",
                    Description = "Indicates the beginning of the date range.",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "EndDate",
                    Type = "DateTimeOffset?",
@@ -351,6 +371,18 @@ public partial class BitDateRangePickerDemo
             }
         }
     };
+
+
+
+    private BitDateRangePickerValue selectedDateRange = new()
+    {
+        StartDate = new DateTimeOffset(new DateTime(2020, 1, 17), DateTimeOffset.Now.Offset),
+        EndDate = new DateTimeOffset(new DateTime(2020, 1, 25), DateTimeOffset.Now.Offset)
+    };
+
+    private CultureInfo Culture = CultureInfo.CurrentUICulture;
+
+    private BitDateRangePicker dateRangePicker;
 
     private async Task OpenCallout()
     {
@@ -416,7 +448,6 @@ public partial class BitDateRangePickerDemo
         Custom label <BitIconButton IconName=""BitIconName.Calendar"" OnClick=""OpenCallout""></BitIconButton>
     </LabelFragment>
 </BitDateRangePicker>";
-
     private readonly string example7CSharpCode = @"
 private BitDateRangePicker dateRangePicker;
 private async Task OpenCallout()
@@ -430,7 +461,6 @@ private async Task OpenCallout()
                     AriaLabel=""select dates""
                     Placeholder=""select dates..."" />
 <BitLabel>selected date: @selectedDateRange.StartDate.ToString() - @selectedDateRange.EndDate.ToString()</BitLabel>";
-
     private readonly string example8CSharpCode = @"
 private BitDateRangePickerValue selectedDateRange = new()
 {
@@ -440,16 +470,16 @@ private BitDateRangePickerValue selectedDateRange = new()
 
     private readonly string example9HTMLCode = @"
 <BitDateRangePicker DateFormat=""yyyy/MM/dd hh:mm tt"" 
-               Culture=""CultureInfoHelper.GetFaIrCultureByFarsiNames()""
-               GoToToday=""برو به امروز""
-               Style=""max-width: 300px"">
+                    Culture=""CultureInfoHelper.GetFaIrCultureByFarsiNames()""
+                    GoToToday=""برو به امروز""
+                    Style=""max-width: 300px"">
 </BitDateRangePicker>";
 
     private readonly string example10HTMLCode = @"
 <BitDateRangePicker DateFormat=""yyyy/MM/dd hh:mm tt"" 
-               Culture=""CultureInfoHelper.GetFaIrCultureByFingilishNames()""
-               GoToToday=""Boro be emrouz""
-               Style=""max-width: 300px"">
+                    Culture=""CultureInfoHelper.GetFaIrCultureByFingilishNames()""
+                    GoToToday=""Boro be emrouz""
+                    Style=""max-width: 300px"">
 </BitDateRangePicker>";
 
     private readonly string example11HTMLCode = @"
@@ -460,8 +490,8 @@ private BitDateRangePickerValue selectedDateRange = new()
 </style>
 
 <BitDateRangePicker Style=""max-width: 300px""
-               AriaLabel=""Select dates""
-               Placeholder=""Select dates..."">
+                    AriaLabel=""Select dates""
+                    Placeholder=""Select dates..."">
     <DayCellTemplate>
         <span class=""@(context.DayOfWeek == DayOfWeek.Sunday ? ""weekend-cell"" : null)"">
             @context.Day
@@ -546,7 +576,6 @@ private BitDateRangePickerValue selectedDateRange = new()
         </YearCellTemplate>
     </BitDateRangePicker>
 </div>";
-
     private readonly string example12CSharpCode = @"
 private CultureInfo Culture = CultureInfo.CurrentUICulture;";
 
@@ -572,4 +601,16 @@ private CultureInfo Culture = CultureInfo.CurrentUICulture;";
                     AriaLabel=""Select dates""
                     IconName=""BitIconName.Airplane""
                     Placeholder=""Select dates..."" />";
+
+    private readonly string example16HTMLCode = @"
+<BitDateRangePicker Style=""max-width: 300px""
+                    IsResponsive=""true""
+                    AriaLabel=""Select a date""
+                    Placeholder=""Select a date..."" />";
+
+    private readonly string example17HTMLCode = @"
+<BitDateRangePicker Style=""max-width: 300px""
+                    AutoClose=""false""
+                    AriaLabel=""Select a date""
+                    Placeholder=""Select a date..."" />";
 }

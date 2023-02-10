@@ -6,7 +6,7 @@ namespace Bit.BlazorUI.Components.Nav;
 public partial class _BitNavChild
 #pragma warning restore CA1707 // Identifiers should not contain underscores
 {
-    private IDictionary<BitNavItemAriaCurrent, string> _ariaCurrentMap = new Dictionary<BitNavItemAriaCurrent, string>()
+    private static Dictionary<BitNavItemAriaCurrent, string> _AriaCurrentMap = new()
     {
         [BitNavItemAriaCurrent.Page] = "page",
         [BitNavItemAriaCurrent.Step] = "step",
@@ -16,25 +16,41 @@ public partial class _BitNavChild
         [BitNavItemAriaCurrent.True] = "true"
     };
 
-    [CascadingParameter] protected BitNav Parent { get; set; } = default!;
+    [CascadingParameter] protected BitNav Nav { get; set; } = default!;
+
+    [CascadingParameter] protected _BitNavChild? Parent { get; set; }
+
+    [Parameter] public BitNavItem Item { get; set; } = new();
 
     [Parameter] public int Depth { get; set; }
 
-    [Parameter] public BitNavItem Item { get; set; } = default!;
-
-    private string GetItemClasses(BitNavItem item)
+    private async Task HandleOnClick()
     {
-        var enabledClass = item.IsEnabled ? "enabled" : "disabled";
-        var hasUrlClass = item.Url.HasNoValue() ? "nourl" : "hasurl";
+        if (Nav is null) return;
+        if (Item.IsEnabled == false) return;
 
-        var isSelected = item == Parent.SelectedItem ? "selected" : "";
+        await Nav.OnItemClick.InvokeAsync(Item);
 
-        return $"link-{enabledClass}-{hasUrlClass} {isSelected}";
+        if (Item.Items.Any() && Item.Url.HasNoValue())
+        {
+            await ToggleItem();
+        }
+        else if (Nav.Mode == BitNavMode.Manual)
+        {
+            await Nav.SetSelectedItem(Item);
+        }
     }
 
-    private static bool IsRelativeUrl(string url)
+    private async Task ToggleItem()
     {
-        var regex = new Regex(@"!/^[a-z0-9+-.]+:\/\//i");
-        return regex.IsMatch(url);
+        if (Nav is null) return;
+        if (Item.IsEnabled is false) return;
+        if (Item.Items.Any() is false) return;
+
+        Item.IsExpanded = !Item.IsExpanded;
+
+        await Nav.OnItemToggle.InvokeAsync(Item);
     }
+
+    private static bool IsRelativeUrl(string? url) => url.HasValue() && new Regex("!/^[a-z0-9+-.]+:\\/\\//i").IsMatch(url!);
 }

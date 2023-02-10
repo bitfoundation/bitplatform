@@ -144,7 +144,20 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="TextField validation" HTMLSourceCode="@example11HTMLCode" CSharpSourceCode="@example11CSharpCode" ExampleId="example11">
+    <ComponentExampleBox Title="Custom Style & CSS Class" HTMLSourceCode="@example11HTMLCode" ExampleId="example11">
+        <ExamplePreview>
+            <div class="custom-wrapper">
+                <BitTextField Placeholder="Enter a text..." Label="Custom LabelStyle" LabelStyle="color:green" />
+                <BitTextField Placeholder="Enter a text..." Label="Custom LabelClass" LabelClass="custom-label" />
+            </div>
+            <div class="custom-wrapper">
+                <BitTextField Placeholder="Enter a text..." Label="Custom InputStyle" InputStyle="color:red" />
+                <BitTextField Placeholder="Enter a text..." Label="Custom InputClass" InputClass="custom-input" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="TextField validation" HTMLSourceCode="@example12HTMLCode" CSharpSourceCode="@example12CSharpCode" ExampleId="example12">
         <ExamplePreview>
             <div class="example-box">
                 @if (formIsValidSubmit is false)

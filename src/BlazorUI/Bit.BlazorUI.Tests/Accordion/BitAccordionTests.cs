@@ -7,28 +7,26 @@ namespace Bit.BlazorUI.Tests.Accordion;
 public class BitAccordionTests : BunitTestContext
 {
     [DataTestMethod,
-        DataRow(Visual.Fluent, true),
-        DataRow(Visual.Fluent, false),
-
-        DataRow(Visual.Cupertino, true),
-        DataRow(Visual.Cupertino, false),
-
-        DataRow(Visual.Material, true),
-        DataRow(Visual.Material, false)
+        DataRow(true),
+        DataRow(false),
     ]
-    public void BitAccordionTest(Visual visual, bool isEnabled)
+    public void BitAccordionIsEnabledTest(bool isEnabled)
     {
         var com = RenderComponent<BitAccordion>(parameters =>
         {
-            parameters.AddCascadingValue(visual);
             parameters.Add(p => p.IsEnabled, isEnabled);
         });
 
         var bitAccordion = com.Find(".bit-acd");
-        var isEnabledClass = isEnabled ? "enabled" : "disabled";
-        var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
 
-        Assert.IsTrue(bitAccordion.ClassList.Contains($"bit-acd-{isEnabledClass}-{visualClass}"));
+        if (isEnabled)
+        {
+            Assert.IsFalse(bitAccordion.ClassList.Contains("disabled"));
+        }
+        else
+        {
+            Assert.IsTrue(bitAccordion.ClassList.Contains("disabled"));
+        }
     }
 
     [DataTestMethod]
@@ -42,7 +40,7 @@ public class BitAccordionTests : BunitTestContext
         {
             parameters.Add(p => p.Title, title);
             parameters.Add(p => p.Description, description);
-            parameters.Add(p => p.Text, text);
+            parameters.Add(p => p.ChildContent, text);
         });
 
         var bitAccordionTitle = com.Find(".title");
@@ -135,7 +133,7 @@ public class BitAccordionTests : BunitTestContext
 
         var com = RenderComponent<BitAccordion>(parameters =>
         {
-            parameters.Add(p => p.ContentTemplate, contentHtml);
+            parameters.Add(p => p.ChildContent, contentHtml);
         });
 
         var bitAccordionContent = com.Find(".content");

@@ -206,6 +206,7 @@ public partial class BitOtpInput
 
         if ((code is "Backspace" || key is "Backspace") && previousIndex >= 0)
         {
+            await Task.Delay(1);
             await _inputRef[previousIndex].FocusAsync();
         }
         else if (code is "ArrowLeft")
