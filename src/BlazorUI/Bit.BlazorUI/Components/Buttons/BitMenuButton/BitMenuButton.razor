@@ -1,5 +1,6 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
+@typeparam TItem
 
 <div @ref="RootElement"
      @attributes="HtmlAttributes"
@@ -33,31 +34,40 @@
          class="items"
          tabindex="@(IsEnabled ? 0 : -1)">
         <ul role="presentation">
-            @foreach (BitMenuButtonItem item in Items)
+            @if (ChildContent is not null && Items.Any() is false)
             {
-                <li role="presentation">
-                    <button type="@ButtonType?.GetValue()"
-                        role="menuitem"
-                        aria-disabled="@item.IsEnabled"
-                        tabindex="@(item.IsEnabled ? 0 : -1)"
-                        class="item @(item.IsEnabled ? "" : "disabled")"
-                        @onclick="() => HandleOnItemClick(item)">
-                        @if (ItemTemplate is not null)
-                        {
-                            @ItemTemplate(item)
-                        }
-                        else
-                        {
-                            @if (item.IconName.HasValue)
+                <CascadingValue Value="this" IsFixed="true">
+                    @ChildContent
+                </CascadingValue>
+            }
+            else
+            {
+                @foreach (TItem item in Items)
+                {
+                    <li role="presentation">
+                        <button @onclick="() => HandleOnItemClick(item)"
+                                type="@ButtonType?.GetValue()"
+                                role="menuitem"
+                                aria-disabled="@GetIsEnabled(item)"
+                                tabindex="@(GetIsEnabled(item) ? 0 : -1)"
+                                class="item @(GetIsEnabled(item) ? "" : "disabled")">
+                            @if (ItemTemplate is not null)
                             {
-                                <i class="bit-icon bit-icon--@item.IconName.GetName()"></i>
+                                @ItemTemplate(item)
                             }
-                            <span class="text">
-                                @item.Text
-                            </span>
-                        }
-                    </button>
-                </li>
+                            else
+                            {
+                                @if (GetIconName(item).HasValue)
+                                {
+                                    <i class="bit-icon bit-icon--@GetIconName(item).GetName()"></i>
+                                }
+                                <span class="text">
+                                    @GetText(item)
+                                </span>
+                            }
+                        </button>
+                    </li>
+                }
             }
         </ul>
     </div>
