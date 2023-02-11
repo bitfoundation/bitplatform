@@ -6,9 +6,29 @@ namespace AdminPanel.Client.Shared.Services.Implementations;
 public partial class ExceptionHandler : IExceptionHandler
 {
     [AutoInject] IStringLocalizer<AppStrings> _localizer = default!;
+    [AutoInject] IAuthenticationService _authenticationService = default!;
+
+    async void SignOut()
+    {
+        try
+        {
+            await _authenticationService.SignOut();
+        }
+        catch (Exception exp)
+        {
+            Handle(exp);
+        }
+    }
 
     public void Handle(Exception exception, IDictionary<string, object?>? parameters = null)
     {
+        if (exception is UnauthorizedException)
+        {
+            SignOut();
+
+            return;
+        }
+
 #if DEBUG
         string exceptionMessage = (exception as KnownException)?.Message ?? exception.ToString();
         _ = MessageBox.Show(exceptionMessage, _localizer[nameof(AppStrings.Error)]);
