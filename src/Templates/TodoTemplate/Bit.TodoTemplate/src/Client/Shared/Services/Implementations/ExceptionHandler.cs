@@ -12,6 +12,8 @@ public partial class ExceptionHandler : IExceptionHandler
     {
         try
         {
+            await MessageBox.Show(_localizer[nameof(AppStrings.YouNeedToSignIn)], _localizer[nameof(AppStrings.Error)]);
+
             await _authenticationService.SignOut();
         }
         catch (Exception exp)

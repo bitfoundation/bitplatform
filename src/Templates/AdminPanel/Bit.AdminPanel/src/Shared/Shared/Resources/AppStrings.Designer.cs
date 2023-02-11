@@ -2076,5 +2076,14 @@ namespace AdminPanel.Shared.Resources {
                 return ResourceManager.GetString("YouHaveToAcceptPrivacyPolicy", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You must be signed in to continue..
+        /// </summary>
+        public static string YouNeedToSignIn {
+            get {
+                return ResourceManager.GetString("YouNeedToSignIn", resourceCulture);
+            }
+        }
     }
 }
