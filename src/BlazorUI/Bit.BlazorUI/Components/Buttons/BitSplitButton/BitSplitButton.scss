@@ -42,19 +42,19 @@
             background-color: $color-secondary-main;
 
             &:hover {
-                border-color: $color-action-borde-hover-secondary;
+                border-color: $color-action-border-hover-secondary;
                 background-color: $color-action-hover-secondary;
             }
 
             &:active {
-                border-color: $color-action-borde-active-secondary;
+                border-color: $color-action-border-active-secondary;
                 background-color: $color-action-active-secondary;
             }
         }
 
         &.open-menu {
             .chevron-btn {
-                border-color: $color-action-borde-active-secondary;
+                border-color: $color-action-border-active-secondary;
                 background-color: $color-action-active-secondary;
             }
         }

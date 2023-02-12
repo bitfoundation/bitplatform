@@ -1,8 +1,8 @@
 ﻿@import "fonts.fluent.scss";
 @import "icons.fluent.scss";
 
-@import "../Theme/colors.scss";
-@import "../Theme/typography.scss";
+@import "../Theme/theme-colors.scss";
+@import "../Theme/theme-typography.scss";
 @import "../general.scss";
 @import "general.fluent.scss";
 
@@ -33,7 +33,7 @@
 @import "../../Components/DropDown/BitDropDown.Fluent.scss";
 @import "../../Components/FileUpload/BitFileUpload.Fluent.scss";
 @import "../../Components/Label/BitLabel.scss";
-@import "../../Components/Link/BitLink.Fluent.scss";
+@import "../../Components/Link/BitLink.scss";
 @import "../../Components/Lists/BitBasicList.scss";
 @import "../../Components/MessageBar/BitMessageBar.Fluent.scss";
 @import "../../Components/Modal/BitModal.Fluent.scss";
