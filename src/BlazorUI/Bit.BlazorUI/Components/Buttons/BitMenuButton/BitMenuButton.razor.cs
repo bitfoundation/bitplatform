@@ -69,6 +69,11 @@ public partial class BitMenuButton<TItem> where TItem : class
     [Parameter] public BitButtonType? ButtonType { get; set; }
 
     /// <summary>
+    /// The content of the BitMenuButton, that are BitMenuButtonOption components.
+    /// </summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
     /// The content inside the header of MenuButton can be customized.
     /// </summary>
     [Parameter] public RenderFragment? HeaderTemplate { get; set; }
@@ -82,11 +87,6 @@ public partial class BitMenuButton<TItem> where TItem : class
     ///  List of BitMenuButtonItem to show as a item in MenuButton.
     /// </summary>
     [Parameter] public IEnumerable<TItem> Items { get; set; } = new List<TItem>();
-
-    /// <summary>
-    /// The content of the BitMenuButtonGroup, that are BitMenuButtonOption components.
-    /// </summary>
-    [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
     /// Whether or not the item is enabled.

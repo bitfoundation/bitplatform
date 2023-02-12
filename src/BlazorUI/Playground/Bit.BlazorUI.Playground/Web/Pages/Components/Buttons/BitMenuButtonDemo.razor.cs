@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Bit.BlazorUI.Playground.Web.Components;
 using Bit.BlazorUI.Playground.Web.Models;
 using Bit.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
@@ -26,19 +27,25 @@ public partial class BitMenuButtonDemo
         {
             Name = "ButtonStyle",
             Type = "BitButtonStyle",
-            LinkType = LinkType.Link,
-            Href = "#button-style-enum",
             DefaultValue = "BitButtonStyle.Primary",
             Description = "The style of button, Possible values: Primary | Standard."
+            LinkType = LinkType.Link,
+            Href = "#button-style-enum",
         },
         new ComponentParameter
         {
             Name = "ButtonType",
-            Type = "BitButtonType",
-            LinkType = LinkType.Link,
             Href = "#button-type-enum",
             DefaultValue = "BitButtonType.Button",
-            Description = "The type of the button."
+            Description = "The type of the button.",
+            Type = "BitButtonType",
+            LinkType = LinkType.Link,
+        },
+        new ComponentParameter()
+        {
+            Name = "ChildContent",
+            Type = "RenderFragment?",
+            Description = "The content of the BitMenuButton, that are BitMenuButtonOption components.",
         },
         new ComponentParameter()
         {
@@ -49,22 +56,48 @@ public partial class BitMenuButtonDemo
         new ComponentParameter()
         {
             Name = "IconName",
-            Type = "RenderFragment<BitMenuButtonItem>?",
+            Type = "RenderFragment<TItem>?",
             Description = "The content inside the item can be customized.",
         },
         new ComponentParameter
         {
             Name = "Items",
-            Type = "List<BitMenuButtonItem>",
+            Type = "List<TItem>",
             LinkType = LinkType.Link,
             Href = "#menu-button-items",
-            DefaultValue = "new List<BitMenuButtonItem>()",
+            DefaultValue = "new List<TItem>()",
             Description = "List of Item, each of which can be a Button with different action in the MenuButton."
         },
         new ComponentParameter()
         {
+            Name = "IsEnabledField",
+            Type = "string",
+            DefaultValue = "IsEnabled",
+            Description = "Whether or not the item is enabled.",
+        },
+        new ComponentParameter()
+        {
+            Name = "IsEnabledFieldSelector",
+            Type = "Expression<Func<TItem, bool>>?",
+            Description = "Whether or not the item is enabled.",
+        },
+        new ComponentParameter()
+        {
+            Name = "IconNameField",
+            Type = "string",
+            DefaultValue = "IconName",
+            Description = "Name of an icon to render next to the item text.",
+        },
+        new ComponentParameter()
+        {
+            Name = "IconNameFieldSelector",
+            Type = "Expression<Func<TItem, BitIconName>>?",
+            Description = "Name of an icon to render next to the item text.",
+        },
+        new ComponentParameter()
+        {
             Name = "ItemTemplate",
-            Type = "RenderFragment<BitMenuButtonItem>?",
+            Type = "RenderFragment<TItem>?",
             Description = "The content inside the item can be customized.",
         },
         new ComponentParameter
@@ -76,7 +109,7 @@ public partial class BitMenuButtonDemo
         new ComponentParameter
         {
             Name = "OnItemClick",
-            Type = "EventCallback<BitMenuButtonItem>",
+            Type = "EventCallback<TItem>",
             Description = "OnClick of each item returns that item with its property."
         },
         new ComponentParameter
@@ -85,6 +118,32 @@ public partial class BitMenuButtonDemo
             Type = "string?",
             Description = "The text to show inside the header of MenuButton."
         },
+        new ComponentParameter()
+        {
+            Name = "TextField",
+            Type = "string",
+            DefaultValue = "Text",
+            Description = "Name of an icon to render next to the item text.",
+        },
+        new ComponentParameter()
+        {
+            Name = "TextFieldSelector",
+            Type = "Expression<Func<TItem, string>>?",
+            Description = "Name of an icon to render next to the item text.",
+        },
+        new ComponentParameter()
+        {
+            Name = "KeyField",
+            Type = "string",
+            DefaultValue = "Key",
+            Description = "A unique value to use as a key of the item.",
+        },
+        new ComponentParameter()
+        {
+            Name = "KeyFieldSelector",
+            Type = "Expression<Func<TItem, string>>?",
+            Description = "A unique value to use as a key of the item.",
+        },
     };
     private readonly List<ComponentSubParameter> componentSubParameters = new()
     {
@@ -92,6 +151,41 @@ public partial class BitMenuButtonDemo
         {
             Id = "menu-button-items",
             Title = "BitMenuButtonItem",
+            Description = "BitMenuButtonItem is default type for item.",
+            Parameters = new List<ComponentParameter>()
+            {
+               new ComponentParameter()
+               {
+                   Name = "IconName",
+                   Type = "BitIconName?",
+                   Description = "Name of an icon to render next to the item text.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "IsEnabled",
+                   Type = "bool",
+                   DefaultValue = "true",
+                   Description = "Whether or not the item is enabled.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "Key",
+                   Type = "string?",
+                   Description = "A unique value to use as a Key of the item.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "Text",
+                   Type = "string?",
+                   Description = "Text to render in the item.",
+               }
+            }
+        },
+        new ComponentSubParameter()
+        {
+            Id = "menu-button-options",
+            Title = "BitMenuButtonOption",
+            Description = "BitMenuButtonOption is a child component for BitMenuButton.",
             Parameters = new List<ComponentParameter>()
             {
                new ComponentParameter()
@@ -171,33 +265,6 @@ public partial class BitMenuButtonDemo
                     Value="2",
                 }
             }
-        },
-        new EnumParameter()
-        {
-            Id = "component-visibility-enum",
-            Title = "BitComponentVisibility Enum",
-            Description = "",
-            EnumList = new List<EnumItem>()
-            {
-                new EnumItem()
-                {
-                    Name= "Visible",
-                    Description="Show content of the component.",
-                    Value="0",
-                },
-                new EnumItem()
-                {
-                    Name= "Hidden",
-                    Description="Hide content of the component,though the space it takes on the page remains.",
-                    Value="1",
-                },
-                new EnumItem()
-                {
-                    Name= "Collapsed",
-                    Description="Hide content of the component,though the space it takes on the page gone.",
-                    Value="2",
-                }
-            }
         }
     };
 
@@ -273,99 +340,81 @@ public partial class BitMenuButtonDemo
         }
     };
 
-    protected override async Task OnInitializedAsync()
+    private List<MenuActionItem> basicMenuButtonWithCustomType = new()
     {
-        example1HTMLCode = example1InternalItemHTMLCode;
-        example1CSharpCode = example1InternalItemCSharpCode;
+        new MenuActionItem()
+        {
+            Name = "Item A",
+            Id = "A",
+            Icon = BitIconName.Emoji
+        },
+        new MenuActionItem()
+        {
+            Name = "Item B",
+            Id = "B",
+            Icon = BitIconName.Emoji
+        },
+        new MenuActionItem()
+        {
+            Name = "Item C",
+            Id = "C",
+            Icon = BitIconName.Emoji2
+        }
+    };
+    private List<MenuActionItem> disabledItemMenuButtonWithCustomType = new()
+    {
+        new MenuActionItem()
+        {
+            Name = "Item A",
+            Id = "A",
+            Icon = BitIconName.Emoji
+        },
+        new MenuActionItem()
+        {
+            Name = "Item B",
+            Id = "B",
+            Icon = BitIconName.Emoji,
+            IsEnabled = false
+        },
+        new MenuActionItem()
+        {
+            Name = "Item C",
+            Id = "C",
+            Icon = BitIconName.Emoji2
+        }
+    };
+    private List<MenuActionItem> itemTemplateMenuButtonWithCustomType = new()
+    {
+        new MenuActionItem()
+        {
+            Name = "Add",
+            Id = "add-key",
+            Icon = BitIconName.Add
+        },
+        new MenuActionItem()
+        {
+            Name = "Edit",
+            Id = "edit-key",
+            Icon = BitIconName.Edit
+        },
+        new MenuActionItem()
+        {
+            Name = "Delete",
+            Id = "delete-key",
+            Icon = BitIconName.Delete
+        }
+    };
 
-        example2HTMLCode = example2InternalItemHTMLCode;
-        example2CSharpCode = example2InternalItemCSharpCode;
-
-        example3HTMLCode = example3InternalItemHTMLCode;
-        example3CSharpCode = example3InternalItemCSharpCode;
-
-        example4HTMLCode = example4InternalItemHTMLCode;
-        example4CSharpCode = example4InternalItemCSharpCode;
-
-        example5HTMLCode = example5InternalItemHTMLCode;
-        example5CSharpCode = example5InternalItemCSharpCode;
-
-        await base.OnInitializedAsync();
+    private void OnTabClick()
+    {
+        example1SelectedItem = string.Empty;
+        example2SelectedItem = string.Empty;
+        example3SelectedItem = string.Empty;
+        example4SelectedItem = string.Empty;
+        example5SelectedItem = string.Empty;
     }
 
-    private void SetImplementationType(BitPivotItem item)
-    {
-        if (item.Key == "internal-item")
-        {
-            example1HTMLCode = example1InternalItemHTMLCode;
-            example1CSharpCode = example1InternalItemCSharpCode;
-
-            example2HTMLCode = example2InternalItemHTMLCode;
-            example2CSharpCode = example2InternalItemCSharpCode;
-
-            example3HTMLCode = example3InternalItemHTMLCode;
-            example3CSharpCode = example3InternalItemCSharpCode;
-
-            example4HTMLCode = example4InternalItemHTMLCode;
-            example4CSharpCode = example4InternalItemCSharpCode;
-
-            example5HTMLCode = example5InternalItemHTMLCode;
-            example5CSharpCode = example5InternalItemCSharpCode;
-        }
-        else if (item.Key == "external-item")
-        {
-            example1HTMLCode = example1ExternalItemHTMLCode;
-            example1CSharpCode = example1ExternalItemCSharpCode;
-
-            example2HTMLCode = example2ExternalItemHTMLCode;
-            example2CSharpCode = example2ExternalItemCSharpCode;
-
-            example3HTMLCode = example3ExternalItemHTMLCode;
-            example3CSharpCode = example3ExternalItemCSharpCode;
-
-            example4HTMLCode = example4ExternalItemHTMLCode;
-            example4CSharpCode = example4ExternalItemCSharpCode;
-
-            example5HTMLCode = example5ExternalItemHTMLCode;
-            example5CSharpCode = example5ExternalItemCSharpCode;
-        }
-        else if (item.Key == "razor-item")
-        {
-            example1HTMLCode = example1RazorItemHTMLCode;
-            example1CSharpCode = example1RazorItemCSharpCode;
-
-            example2HTMLCode = example2RazorItemHTMLCode;
-            example2CSharpCode = example2RazorItemCSharpCode;
-
-            example3HTMLCode = example3RazorItemHTMLCode;
-            example3CSharpCode = example3RazorItemCSharpCode;
-
-            example4HTMLCode = example4RazorItemHTMLCode;
-            example4CSharpCode = example4RazorItemCSharpCode;
-
-            example5HTMLCode = example5RazorItemHTMLCode;
-            example5CSharpCode = example5RazorItemCSharpCode;
-        }
-
-        StateHasChanged();
-    }
-
-    private string example1HTMLCode;
-    private string example1CSharpCode;
-
-    private string example2HTMLCode;
-    private string example2CSharpCode;
-
-    private string example3HTMLCode;
-    private string example3CSharpCode;
-
-    private string example4HTMLCode;
-    private string example4CSharpCode;
-
-    private string example5HTMLCode;
-    private string example5CSharpCode;
-
-    private readonly string example1InternalItemHTMLCode = @"
+    private readonly string example1BitMenuButtonItemHTMLCode = @"
 <style>
     .example-content {
         display: flex;
@@ -403,7 +452,7 @@ public partial class BitMenuButtonDemo
 </div>
 <div class=""clicked-item"">Clicked Item: @example1SelectedItem</div>
 ";
-    private readonly string example1ExternalItemHTMLCode = @"
+    private readonly string example1CustomItemHTMLCode = @"
 <style>
     .example-content {
         display: flex;
@@ -453,7 +502,7 @@ public partial class BitMenuButtonDemo
 </div>
 <div class=""clicked-item"">Clicked Item: @example1SelectedItem</div>
 ";
-    private readonly string example1RazorItemHTMLCode = @"
+    private readonly string example1BitMenuButtonOptionHTMLCode = @"
 <style>
     .example-content {
         display: flex;
@@ -494,7 +543,7 @@ public partial class BitMenuButtonDemo
         <BitMenuButtonOption Text=""Item C"" Key=""C"" IconName=""BitIconName.Emoji2"" />
     </BitMenuButton>
 
-    <BitMenuButton Text=""Option Disabled""
+    <BitMenuButton Text=""Item Disabled""
                     OnItemClick=""(BitMenuButtonOption item) => example1SelectedItem = item.Key"">
         <BitMenuButtonOption Text=""Item A"" Key=""A"" IconName=""BitIconName.Emoji"" IsEnabled=""false"" />
         <BitMenuButtonOption Text=""Item B"" Key=""B"" IconName=""BitIconName.Emoji"" />
@@ -503,7 +552,7 @@ public partial class BitMenuButtonDemo
 </div>
 <div class=""clicked-item"">Clicked Item: @example1SelectedItem</div>
 ";
-    private readonly string example1InternalItemCSharpCode = @"
+    private readonly string example1BitMenuButtonItemCSharpCode = @"
 private string example1SelectedItem;
 
 private List<BitMenuButtonItem> basicMenuButton = new()
@@ -551,7 +600,7 @@ private List<BitMenuButtonItem> disabledItemMenuButton = new()
     }
 };
 ";
-    private readonly string example1ExternalItemCSharpCode = @"
+    private readonly string example1CustomItemCSharpCode = @"
 private string example1SelectedItem;
 
 public class MenuActionItem
@@ -607,11 +656,11 @@ private List<MenuActionItem> disabledItemMenuButtonWithCustomType = new()
     }
 };
 ";
-    private readonly string example1RazorItemCSharpCode = @"
+    private readonly string example1BitMenuButtonOptionCSharpCode = @"
 private string example1SelectedItem;
 ";
 
-    private readonly string example2InternalItemHTMLCode = @"
+    private readonly string example2BitMenuButtonItemHTMLCode = @"
 <style>
     .example-content {
         display: flex;
@@ -642,7 +691,7 @@ private string example1SelectedItem;
 </div>
 <div class=""clicked-item"">Clicked Item: @example2SelectedItem</div>
 ";
-    private readonly string example2ExternalItemHTMLCode = @"
+    private readonly string example2CustomItemHTMLCode = @"
 <style>
     .example-content {
         display: flex;
@@ -679,7 +728,7 @@ private string example1SelectedItem;
 </div>
 <div class=""clicked-item"">Clicked Item: @example2SelectedItem</div>
 ";
-    private readonly string example2RazorItemHTMLCode = @"
+    private readonly string example2BitMenuButtonOptionHTMLCode = @"
 <style>
     .example-content {
         display: flex;
@@ -716,7 +765,7 @@ private string example1SelectedItem;
 </div>
 <div class=""clicked-item"">Clicked Item: @example2SelectedItem</div>
 ";
-    private readonly string example2InternalItemCSharpCode = @"
+    private readonly string example2BitMenuButtonItemCSharpCode = @"
 private string example2SelectedItem;
 
 private List<BitMenuButtonItem> basicMenuButton = new()
@@ -741,7 +790,7 @@ private List<BitMenuButtonItem> basicMenuButton = new()
     }
 };
 ";
-    private readonly string example2ExternalItemCSharpCode = @"
+    private readonly string example2CustomItemCSharpCode = @"
 private string example2SelectedItem;
 
 public class MenuActionItem
@@ -774,11 +823,11 @@ private List<MenuActionItem> basicMenuButtonWithCustomType = new()
     }
 };
 ";
-    private readonly string example2RazorItemCSharpCode = @"
+    private readonly string example2BitMenuButtonOptionCSharpCode = @"
 private string example2SelectedItem;
 ";
 
-    private readonly string example3InternalItemHTMLCode = @"
+    private readonly string example3BitMenuButtonItemHTMLCode = @"
 <style>
     .example-content {
         display: flex;
@@ -807,7 +856,7 @@ private string example2SelectedItem;
 </div>
 <div class=""clicked-item"">Clicked Item: @example3SelectedItem</div>
 ";
-    private readonly string example3ExternalItemHTMLCode = @"
+    private readonly string example3CustomItemHTMLCode = @"
 <style>
     .example-content {
         display: flex;
@@ -842,7 +891,7 @@ private string example2SelectedItem;
 </div>
 <div class=""clicked-item"">Clicked Item: @example3SelectedItem</div>
 ";
-    private readonly string example3RazorItemHTMLCode = @"
+    private readonly string example3BitMenuButtonOptionHTMLCode = @"
 <style>
     .example-content {
         display: flex;
@@ -877,7 +926,7 @@ private string example2SelectedItem;
 </div>
 <div class=""clicked-item"">Clicked Item: @example3SelectedItem</div>
 ";
-    private readonly string example3InternalItemCSharpCode = @"
+    private readonly string example3BitMenuButtonItemCSharpCode = @"
 private string example3SelectedItem;
 
 private List<BitMenuButtonItem> basicMenuButton = new()
@@ -902,7 +951,7 @@ private List<BitMenuButtonItem> basicMenuButton = new()
     }
 };
 ";
-    private readonly string example3ExternalItemCSharpCode = @"
+    private readonly string example3CustomItemCSharpCode = @"
 private string example3SelectedItem;
 
 public class MenuActionItem
@@ -935,11 +984,11 @@ private List<MenuActionItem> basicMenuButtonWithCustomType = new()
     }
 };
 ";
-    private readonly string example3RazorItemCSharpCode = @"
+    private readonly string example3BitMenuButtonOptionCSharpCode = @"
 private string example3SelectedItem;
 ";
 
-    private readonly string example4InternalItemHTMLCode = @"
+    private readonly string example4BitMenuButtonItemHTMLCode = @"
 <style>
     .example-content {
         display: flex;
@@ -994,7 +1043,7 @@ private string example3SelectedItem;
 </div>
 <div class=""clicked-item"">Clicked Item: @example4SelectedItem</div>
 ";
-    private readonly string example4ExternalItemHTMLCode = @"
+    private readonly string example4CustomItemHTMLCode = @"
 <style>
     .example-content {
         display: flex;
@@ -1055,7 +1104,7 @@ private string example3SelectedItem;
 </div>
 <div class=""clicked-item"">Clicked Item: @example4SelectedItem</div>
 ";
-    private readonly string example4RazorItemHTMLCode = @"
+    private readonly string example4BitMenuButtonOptionHTMLCode = @"
 <style>
     .example-content {
         display: flex;
@@ -1120,7 +1169,7 @@ private string example3SelectedItem;
 </div>
 <div class=""clicked-item"">Clicked Item: @example4SelectedItem</div>
 ";
-    private readonly string example4InternalItemCSharpCode = @"
+    private readonly string example4BitMenuButtonItemCSharpCode = @"
 private string example4SelectedItem;
 
 private List<BitMenuButtonItem> basicMenuButton = new()
@@ -1145,7 +1194,7 @@ private List<BitMenuButtonItem> basicMenuButton = new()
     }
 };
 ";
-    private readonly string example4ExternalItemCSharpCode = @"
+    private readonly string example4CustomItemCSharpCode = @"
 private string example4SelectedItem;
 
 public class MenuActionItem
@@ -1178,11 +1227,11 @@ private List<MenuActionItem> basicMenuButtonWithCustomType = new()
     }
 };
 ";
-    private readonly string example4RazorItemCSharpCode = @"
+    private readonly string example4BitMenuButtonOptionCSharpCode = @"
 private string example4SelectedItem;
 ";
 
-    private readonly string example5InternalItemHTMLCode = @"
+    private readonly string example5BitMenuButtonItemHTMLCode = @"
 <style>
     .example-content {
         display: flex;
@@ -1234,7 +1283,7 @@ private string example4SelectedItem;
 </div>
 <div class=""clicked-item"">Clicked Item: @example5SelectedItem</div>
 ";
-    private readonly string example5ExternalItemHTMLCode = @"
+    private readonly string example5CustomItemHTMLCode = @"
 <style>
     .example-content {
         display: flex;
@@ -1292,7 +1341,7 @@ private string example4SelectedItem;
 </div>
 <div class=""clicked-item"">Clicked Item: @example5SelectedItem</div>
 ";
-    private readonly string example5RazorItemHTMLCode = @"
+    private readonly string example5BitMenuButtonOptionHTMLCode = @"
 <style>
     .example-content {
         display: flex;
@@ -1352,7 +1401,7 @@ private string example4SelectedItem;
 </div>
 <div class=""clicked-item"">Clicked Item: @example5SelectedItem</div>
 ";
-    private readonly string example5InternalItemCSharpCode = @"
+    private readonly string example5BitMenuButtonItemCSharpCode = @"
 private string example5SelectedItem;
 
 private List<BitMenuButtonItem> itemTemplateMenuButton = new()
@@ -1377,7 +1426,7 @@ private List<BitMenuButtonItem> itemTemplateMenuButton = new()
     }
 };
 ";
-    private readonly string example5ExternalItemCSharpCode = @"
+    private readonly string example5CustomItemCSharpCode = @"
 private string example5SelectedItem;
 
 public class MenuActionItem
@@ -1410,7 +1459,7 @@ private List<MenuActionItem> itemTemplateMenuButtonWithCustomType = new()
     }
 };
 ";
-    private readonly string example5RazorItemCSharpCode = @"
+    private readonly string example5BitMenuButtonOptionCSharpCode = @"
 private string example5SelectedItem;
 ";
 }
