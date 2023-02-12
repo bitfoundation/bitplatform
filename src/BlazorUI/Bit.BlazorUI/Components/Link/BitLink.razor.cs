@@ -1,18 +1,16 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
-using Microsoft.JSInterop;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public partial class BitLink
 {
-    [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
+    protected override bool UseVisual => false;
+
+    [Inject] private IJSRuntime _js { get; set; } = default!;
+
 
     /// <summary>
     /// URL the link points to
     /// </summary>
-    [Parameter] public string? Href { get; set; } = string.Empty;
+    [Parameter] public string Href { get; set; } = string.Empty;
 
     /// <summary>
     /// If Href provided, specifies how to open the link
@@ -34,6 +32,7 @@ public partial class BitLink
     /// </summary>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
+
     protected override string RootElementClass => "bit-lnk";
 
     protected override void RegisterComponentClasses()
@@ -50,6 +49,6 @@ public partial class BitLink
 
     private async Task ScrollIntoView()
     {
-        await JSRuntime.ScrollElementIntoView(Href![1..]);
+        await _js.ScrollElementIntoView(Href[1..]);
     }
 }
