@@ -42,7 +42,7 @@
                                      DefaultValue="@_sortItems[0].Value"
                                      IsResponsiveModeEnabled="true">
                             <CaretDownFragment>
-                                <BitActionButton IconName="BitIconName.Sort" Style="height:unset" />
+                                <BitActionButton IconName="BitIconName.Sort" Style="height:unset"/>
                             </CaretDownFragment>
                         </BitDropDown>
                     </div>
@@ -67,8 +67,8 @@
                         else
                         {
                             <BitBasicList Style="width: 100%; height: inherit"
-                                  Items="_viewTodoItems.ToArray()"
-                                  Virtualize="true">
+                                          Items="_viewTodoItems.ToArray()"
+                                          Virtualize="true">
                                 <RowTemplate Context="todo">
                                     <div class="todo-item" role="listitem">
                                         @if (todo.IsUnderEdit)
@@ -76,15 +76,15 @@
                                             <BitTextField Class="todo-input" @bind-Value="_underEditTodoItemTitle" />
                                             <div class="todo-item-btn-group--edit-mode">
                                                 <BitButton Title="@Localizer[nameof(AppStrings.Edit)]"
-                                               AriaLabel="@Localizer[nameof(AppStrings.Edit)]"
-                                               OnClick="WrapHandled(() => EditTodoItem(todo))">
+                                                           AriaLabel="@Localizer[nameof(AppStrings.Edit)]"
+                                                           OnClick="WrapHandled(() => EditTodoItem(todo))">
                                                     @Localizer[nameof(AppStrings.Save)]
                                                 </BitButton>
                                                 <BitButton ButtonStyle="BitButtonStyle.Standard"
-                                               Class="todo-button"
-                                               Title="@Localizer[nameof(AppStrings.Cancel)]"
-                                               AriaLabel="@Localizer[nameof(AppStrings.Cancel)]"
-                                               OnClick="WrapHandled(() => CancelEditMode(todo))">
+                                                           Class="todo-button"
+                                                           Title="@Localizer[nameof(AppStrings.Cancel)]"
+                                                           AriaLabel="@Localizer[nameof(AppStrings.Cancel)]"
+                                                           OnClick="WrapHandled(() => CancelEditMode(todo))">
                                                     @Localizer[nameof(AppStrings.Cancel)]
                                                 </BitButton>
                                             </div>
@@ -93,8 +93,8 @@
                                         {
                                             <div class="todo-info">
                                                 <BitCheckbox Label="@todo.Title"
-                                                 DefaultValue="todo.IsDone"
-                                                 OnChange="() => ToggleIsDone(todo)" />
+                                                             DefaultValue="todo.IsDone"
+                                                             OnChange="() => ToggleIsDone(todo)" />
 
                                                 <div Class="todo-item-date">
                                                     @todo.Date.ToString("MMMM dd , yyyy , dddd")
@@ -103,14 +103,14 @@
 
                                             <div class="todo-btn-group">
                                                 <BitIconButton IconName="BitIconName.Edit"
-                                                   Title="@Localizer[nameof(AppStrings.Edit)]"
-                                                   AriaLabel="@Localizer[nameof(AppStrings.Edit)]"
-                                                   OnClick="WrapHandled(() => ToggleToEditMode(todo))" />
+                                                               Title="@Localizer[nameof(AppStrings.Edit)]"
+                                                               AriaLabel="@Localizer[nameof(AppStrings.Edit)]"
+                                                               OnClick="WrapHandled(() => ToggleToEditMode(todo))" />
 
                                                 <BitIconButton IconName="BitIconName.Delete"
-                                                   Title="@Localizer[nameof(AppStrings.Remove)]"
-                                                   AriaLabel="@Localizer[nameof(AppStrings.Remove)]"
-                                                   OnClick="WrapHandled(() => DeleteTodoItem(todo))" />
+                                                               Title="@Localizer[nameof(AppStrings.Remove)]"
+                                                               AriaLabel="@Localizer[nameof(AppStrings.Remove)]"
+                                                               OnClick="WrapHandled(() => DeleteTodoItem(todo))" />
                                             </div>
                                         }
                                     </div>
