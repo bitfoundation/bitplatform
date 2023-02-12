@@ -8,7 +8,7 @@ public partial class BitBasicList<TItem>
     /// <summary>
     /// Enables virtualization in rendering the list.
     /// </summary>
-    [Parameter] public bool EnableVirtualization { get; set; } = false;
+    [Parameter] public bool EnableVirtualization { get; set; }
 
     /// <summary>
     /// Gets or sets the list of items to render.
