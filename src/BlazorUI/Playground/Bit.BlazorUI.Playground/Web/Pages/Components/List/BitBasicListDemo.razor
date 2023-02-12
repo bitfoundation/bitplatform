@@ -1,12 +1,13 @@
 ﻿@page "/components/basic-list"
 
-<ComponentDemo ComponentName="BasicList" ComponentDescription="BitBasicList provides a base component for rendering large sets of items. It’s agnostic of layout, the tile component used, and selection management."
-               ComponentParameters="componentParameters" EnumParameters="enumParameters">
+<ComponentDemo ComponentName="BasicList"
+               ComponentDescription="BitBasicList provides a base component for rendering large sets of items. It’s agnostic of layout, the tile component used, and selection management."
+               ComponentParameters="componentParameters">
     <ComponentExampleBox Title="BitBasicList" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
-            <BitBasicList Items="People1" Virtualize="true" Style="border: 1px #a19f9d solid; border-radius: 3px; ">
+            <BitBasicList Items="People1" EnableVirtualization="true" Style="border: 1px #a19f9d solid; border-radius: 3px; ">
                 <RowTemplate Context="person">
-                    <div style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
+                    <div @key="person.Id" style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
                         <img src="https://picsum.photos/100/100?random=@(person.Id)">
                         <div style="margin-left:3%; display: inline-block;">
                             <p>Id: <strong>@person.Id</strong></p>
@@ -19,11 +20,12 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Basic List without virtualization" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@exampl2CSharpCode" ExampleId="example2">
+    <ComponentExampleBox Title="Basic List without virtualization" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example2">
         <ExamplePreview>
-            <BitBasicList Items="People2" Virtualize="false" Style="border: 1px #a19f9d solid; border-radius: 3px; ">
+            <BitBasicList Items="People2" EnableVirtualization="false" Style="border: 1px #a19f9d solid; border-radius: 3px; ">
                 <RowTemplate Context="person">
                     <div style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
+                        <img src="https://picsum.photos/100/100?random=@(person.Id)">
                         <p>Id: <strong>@person.Id</strong></p>
                         <p>Full Name: <strong>@person.FirstName @person.LastName</strong></p>
                         <p>Job: <strong>@person.Job</strong></p>
@@ -35,9 +37,9 @@
 
     <ComponentExampleBox Title="Basic List with custom role and class" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example3">
         <ExamplePreview>
-            <BitBasicList Items="People1" Virtualize="true" Role="list" Style="border: 1px #a19f9d solid; border-radius: 3px;">
+            <BitBasicList Items="People1" EnableVirtualization="true" Role="list" Style="border: 1px #a19f9d solid; border-radius: 3px;">
                 <RowTemplate Context="person">
-                    <div class="lst3-list-item">
+                    <div class="list-item">
                         <span>Id: <strong>@person.Id</strong></span>
                         <span>Full Name: <strong>@person.FirstName</strong></span>
                         <span>Job: <strong>@person.Job</strong></span>
@@ -49,7 +51,7 @@
 
     <ComponentExampleBox Title="Basic List with overscan count" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
         <ExamplePreview>
-            <BitBasicList Items="People1" Virtualize="true" OverscanCount="5" ItemSize="300" Style="border: 1px #a19f9d solid; border-radius: 3px; ">
+            <BitBasicList Items="People1" EnableVirtualization="true" OverscanCount="5" ItemSize="300" Style="border: 1px #a19f9d solid; border-radius: 3px; ">
                 <RowTemplate Context="person">
                     <div style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
                         <p>Id: <strong>@person.Id</strong></p>

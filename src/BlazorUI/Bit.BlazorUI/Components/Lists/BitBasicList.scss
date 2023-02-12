@@ -1,6 +1,6 @@
-﻿@import "../../Styles/Fluent/colors.fluent.scss", "../../Styles/functions.scss";
+﻿@import "../../Styles/functions.scss";
 
-.bit-bsc-lst {
-    height: 500px;
+.bit-bsl {
     overflow: auto;
+    height: spacing(62.5);
 }
