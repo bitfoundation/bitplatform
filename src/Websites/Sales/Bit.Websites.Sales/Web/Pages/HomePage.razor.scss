@@ -82,7 +82,7 @@
 .home-bg {
     background-image: url('/images/home/home_bg.webp');
     background-repeat: no-repeat;
-    background-size: contain;
+    background-size: cover;
     margin-bottom: rem(140px);
 }
 
@@ -90,7 +90,7 @@
     flex-flow: row nowrap;
     justify-content: center;
     align-items: flex-start;
-    padding-top: rem(256px);
+    padding-top: rem(224px);
 
     @include md {
         flex-flow: column-reverse;
@@ -244,7 +244,7 @@
             }
 
             @include lg {
-                font-size: rem(14px);
+                font-size: rem(16px);
             }
 
             @include md {
@@ -568,42 +568,42 @@
 
 
     .process-card-1 {
-        background-image: url('/images/home/process/functional-specification-bg.svg');
+        background-image: url('/images/home/process/process1_bg.svg');
 
         .process-card-number {
-            background-image: url('/images/home/process/process1-white-icon.svg');
+            background-image: url('/images/home/process/process-no-1.svg');
         }
     }
 
     .process-card-2 {
-        background-image: url('/images/home/process/prototyping-bg.svg');
+        background-image: url('/images/home/process/process2_bg.svg');
 
         .process-card-number {
-            background-image: url('/images/home/process/process2-white-icon.svg');
+            background-image: url('/images/home/process/process-no-2.svg');
         }
     }
 
     .process-card-3 {
-        background-image: url('/images/home/process/settingup-team-bg.svg');
+        background-image: url('/images/home/process/process3_bg.svg');
 
         .process-card-number {
-            background-image: url('/images/home/process/process3-white-icon.svg');
+            background-image: url('/images/home/process/process-no-3.svg');
         }
     }
 
     .process-card-4 {
-        background-image: url('/images/home/process/agile-development-bg.svg');
+        background-image: url('/images/home/process/process4_bg.svg');
 
         .process-card-number {
-            background-image: url('/images/home/process/process4-white-icon.svg');
+            background-image: url('/images/home/process/process-no-4.svg');
         }
     }
 
     .process-card-5 {
-        background-image: url('/images/home/process/support-bg.svg');
+        background-image: url('/images/home/process/process5_bg.svg');
 
         .process-card-number {
-            background-image: url('/images/home/process/process5-white-icon.svg');
+            background-image: url('/images/home/process/process-no-5.svg');
         }
     }
 }

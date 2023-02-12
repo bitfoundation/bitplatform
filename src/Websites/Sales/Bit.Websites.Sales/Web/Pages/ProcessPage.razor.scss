@@ -124,7 +124,7 @@
                 }
 
                 @include sm {
-                    max-width: rem(350px);
+                    text-align: center;
                 }
             }
 
@@ -139,7 +139,10 @@
                 @include md {
                     font-size: rem(16px);
                     line-height: rem(26px);
-                    max-width: rem(600px);
+                }
+
+                @include sm {
+                    text-align: center;
                 }
             }
         }

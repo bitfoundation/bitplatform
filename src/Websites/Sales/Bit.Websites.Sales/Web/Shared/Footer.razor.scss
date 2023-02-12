@@ -12,6 +12,7 @@
     color: $Gray1;
     font-weight: 400;
     font-size: rem(14px);
+    position: relative;
 
     @include lg {
         padding: rem(32px) rem(60px);
@@ -149,5 +150,14 @@
         @include sm {
             text-align: unset;
         }
+    }
+
+    .go-to-top {
+        all:unset;
+        position: absolute;
+        right: rem(5px);
+        top: rem(-40px);
+        padding: rem(10px);
+        background-color: $Gray3;
     }
 }

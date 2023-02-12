@@ -114,16 +114,17 @@
             .sec-title {
                 font-weight: 700;
                 font-size: rem(40px);
-                line-height: rem(42px);
+                line-height: rem(52px);
                 text-align: unset;
                 margin-bottom: rem(24px);
 
                 @include md {
                     font-size: rem(26px);
+                    line-height: rem(42px);
                 }
 
                 @include sm {
-                    max-width: rem(350px);
+                    text-align: center;
                 }
             }
 
@@ -138,7 +139,10 @@
                 @include md {
                     font-size: rem(16px);
                     line-height: rem(26px);
-                    max-width: rem(600px);
+                }
+
+                @include sm {
+                    text-align: center;
                 }
             }
         }

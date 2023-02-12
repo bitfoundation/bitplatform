@@ -42,4 +42,8 @@
     public static scrollIntoView(id: string) {
         document.getElementById(id)?.scrollIntoView();
     }
+
+    public static goToTop() {
+        window.scrollTo({ top: 0 });
+    }
 }
