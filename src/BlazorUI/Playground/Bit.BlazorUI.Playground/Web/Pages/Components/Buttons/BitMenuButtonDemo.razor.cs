@@ -28,7 +28,7 @@ public partial class BitMenuButtonDemo
             Name = "ButtonStyle",
             Type = "BitButtonStyle",
             DefaultValue = "BitButtonStyle.Primary",
-            Description = "The style of button, Possible values: Primary | Standard."
+            Description = "The style of button, Possible values: Primary | Standard.",
             LinkType = LinkType.Link,
             Href = "#button-style-enum",
         },
