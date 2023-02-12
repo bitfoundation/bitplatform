@@ -78,15 +78,24 @@ public class Program
         Startup.Middlewares.Use(app, builder.Environment);
 
 #if BlazorElectron
-        Task.Run(async () => await Electron.WindowManager.CreateWindowAsync(new BrowserWindowOptions
+        Task.Run(async () =>
         {
-            AutoHideMenuBar = true,
-            BackgroundColor = "#0D2960",
-            WebPreferences = new WebPreferences
+            var window = await Electron.WindowManager.CreateWindowAsync(new BrowserWindowOptions
             {
-                NodeIntegration = false
-            }
-        }, "https://localhost:4001"));
+                AutoHideMenuBar = true,
+                BackgroundColor = "#0D2960",
+                WebPreferences = new WebPreferences
+                {
+                    NodeIntegration = false
+                }
+            }, "https://localhost:4001");
+
+            window.OnClosed += delegate
+            {
+                app.Services.GetRequiredService<IHostApplicationLifetime>().StopApplication();
+                Electron.App.Quit();
+            };
+        });
 #endif
 
         return app;

@@ -1,4 +1,5 @@
 ﻿//-:cnd:noEmit
+using System.Net;
 using System.Net.Http.Headers;
 #if MultilingualEnabled && (BlazorServer || BlazorHybrid)
 using System.Globalization;
@@ -27,6 +28,11 @@ public partial class AppHttpClientHandler : HttpClientHandler
 #endif
 
         var response = await base.SendAsync(request, cancellationToken);
+
+        if (response.StatusCode is HttpStatusCode.Unauthorized)
+        {
+            throw new UnauthorizedException();
+        }
 
         if (response.IsSuccessStatusCode is false && response.Content.Headers.ContentType?.MediaType == "application/json")
         {

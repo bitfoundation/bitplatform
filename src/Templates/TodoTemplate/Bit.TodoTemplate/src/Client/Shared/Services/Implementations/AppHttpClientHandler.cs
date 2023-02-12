@@ -1,5 +1,6 @@
 ﻿//-:cnd:noEmit
 using System.Globalization;
+using System.Net;
 using System.Net.Http.Headers;
 
 namespace TodoTemplate.Client.Shared.Services.Implementations;
@@ -25,6 +26,11 @@ public partial class AppHttpClientHandler : HttpClientHandler
 #endif
 
         var response = await base.SendAsync(request, cancellationToken);
+
+        if (response.StatusCode is HttpStatusCode.Unauthorized)
+        {
+            throw new UnauthorizedException();
+        }
 
         if (!response.IsSuccessStatusCode && response.Content.Headers.ContentType?.MediaType == "application/json")
         {

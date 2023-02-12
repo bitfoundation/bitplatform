@@ -206,7 +206,7 @@
     <value>Les mots de passe doivent avoir au moins une majuscule ('A'-'Z').</value>
     <comment>Error when passwords do not have an uppercase letter</comment>
   </data>
-  <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
+    <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
     <value>{0} doit comporter au moins {1} caractères.</value>
     <comment>Error message for passwords that are too short</comment>
   </data>
@@ -532,7 +532,7 @@ Veuillez confirmer votre email en cliquant sur le lien.</value>
   <data name="MinLengthAttribute_InvalidMinLength" xml:space="preserve">
     <value>MinLengthAttribute doit avoir une valeur de longueur égale ou supérieure à zéro.</value>
   </data>
-  <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
+    <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
     <value>Le champ {0} doit être une chaîne ou un type de tableau avec une longueur minimale de '{1}'.</value>
   </data>
   <data name="PhoneAttribute_Invalid" xml:space="preserve">
@@ -654,5 +654,8 @@ Veuillez confirmer votre email en cliquant sur le lien.</value>
   </data>
   <data name="Title" xml:space="preserve">
     <value>Titre</value>
+  </data>
+  <data name="YouNeedToSignIn" xml:space="preserve">
+    <value>Vous devez être connecté pour continuer.</value>
   </data>
 </root>

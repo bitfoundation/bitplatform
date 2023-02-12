@@ -57,7 +57,7 @@
                     }
                     else
                     {
-                        if (_viewTodoItems.Any() is false)
+                        if (_viewTodoItems?.Any() is false or null)
                         {
                             <div class="todo-list--empty-state">
                                 <img src="/_content/TodoTemplate.Client.Shared/images/backgrounds/empty-todo-list-bg.svg">
