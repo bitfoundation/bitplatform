@@ -61,5 +61,12 @@
         <BlazorWebAssemblyLazyLoad Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="System.Private.Xml.dll" />
         <BlazorWebAssemblyLazyLoad Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="System.Data.Common.dll" />
     </ItemGroup>
+
+    <ItemGroup Condition=" '$(UseElectron)' == 'true' ">
+        <Content Update="electron.manifest.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <PackageReference Include="ElectronNET.API" Version="13.5.1" />
+    </ItemGroup>
     
 </Project>

@@ -56,4 +56,11 @@
         <ProjectReference Include="..\Shared\TodoTemplate.Client.Shared.csproj" />
     </ItemGroup>
 
+    <ItemGroup Condition=" '$(UseElectron)' == 'true' ">
+        <Content Update="electron.manifest.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <PackageReference Include="ElectronNET.API" Version="13.5.1" />
+    </ItemGroup>
+
 </Project>

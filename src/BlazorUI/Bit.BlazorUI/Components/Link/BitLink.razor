@@ -5,7 +5,7 @@
 {
     @if (IsEnabled)
     {
-        if (Href!.StartsWith("#"))
+        if (Href.StartsWith("#"))
         {
             <a @ref="RootElement"
                @attributes="HtmlAttributes"
