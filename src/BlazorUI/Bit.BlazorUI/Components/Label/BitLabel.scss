@@ -1,0 +1,27 @@
+﻿@import "../../Styles/functions.scss";
+
+.bit-lbl {
+    font-family: $typography-font-family;
+    -webkit-font-smoothing: antialiased;
+    font-size: spacing(1.75);
+    font-weight: 600;
+    line-height: spacing(2.5);
+    color: $color-neutrals-gray160;
+    box-sizing: border-box;
+    box-shadow: none;
+    margin: 0;
+    display: block;
+    padding: spacing(0.625) 0;
+    overflow-wrap: break-word;
+
+
+    &.disabled {
+        color: $color-neutrals-gray90;
+    }
+
+    &.required::after {
+        content: "*";
+        color: $color-general-red;
+        margin-left: spacing(0.625);
+    }
+}
