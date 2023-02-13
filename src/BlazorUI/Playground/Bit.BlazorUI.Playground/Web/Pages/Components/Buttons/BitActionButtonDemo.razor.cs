@@ -150,6 +150,7 @@ public partial class BitActionButtonDemo
     };
 
     private readonly string example1HTMLCode = @"
+<BitActionButton IconName=""BitIconName.AddFriend"" Title=""Primary"">Create account</BitActionButton>
 <BitActionButton ButtonStyle=""BitButtonStyle.Standard"" IconName=""BitIconName.AddFriend"">Create account</BitActionButton>
 <BitActionButton ButtonStyle=""BitButtonStyle.Standard"" AllowDisabledFocus=""false"" IsEnabled=""false"" IconName=""BitIconName.UserRemove"">Remove user</BitActionButton>";
 

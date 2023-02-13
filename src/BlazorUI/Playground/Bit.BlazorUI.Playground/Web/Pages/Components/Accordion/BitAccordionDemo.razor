@@ -84,7 +84,7 @@
                 <BitAccordion Title="Accordion 1"
                               Description="I am an accordion"
                               IsEnabled="@AccordionToggleIsEnabled"
-                              @bind-IsExpanded="AccordionToggleIsExpanded">
+                @bind-IsExpanded="AccordionToggleIsExpanded">
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu. Integer a consequat sapien, pellentesque aliquam velit. Nullam quis ligula vitae nisi accumsan auctor. Ut faucibus nulla a est commodo, vel sagittis neque tristique. In nec urna hendrerit, iaculis turpis sed, dictum elit. Sed id sagittis nunc, vitae ornare elit.
                 </BitAccordion>
             </div>
@@ -99,11 +99,11 @@
                     <HeaderTemplate Context="isExpanded">
                         @if (isExpanded)
                         {
-                            <BitIconButton IconName="BitIconName.ChevronDown" />
+                            <BitIconButton ButtonStyle=BitButtonStyle.Standard IconName="BitIconName.ChevronDown" />
                         }
                         else
                         {
-                            <BitIconButton IconName="BitIconName.ChevronRight" />
+                            <BitIconButton ButtonStyle=BitButtonStyle.Standard IconName="BitIconName.ChevronRight" />
                         }
                         <div class="custom-header-intro">
                             <span class="custom-header-title">Accordion 1</span>

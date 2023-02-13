@@ -167,11 +167,11 @@ public partial class BitAccordionDemo
         <HeaderTemplate Context=""isExpanded"">
             @if (isExpanded)
             {
-                <BitIconButton IconName=""BitIconName.ChevronDown"" />
+                <BitIconButton ButtonStyle=""BitButtonStyle.Standard"" IconName=""BitIconName.ChevronDown"" />
             }
             else
             {
-                <BitIconButton IconName=""BitIconName.ChevronRight"" />
+                <BitIconButton ButtonStyle=""BitButtonStyle.Standard"" IconName=""BitIconName.ChevronRight"" />
             }
             <div class=""custom-header-intro"">
                 <span class=""custom-header-title"">Accordion 1</span>

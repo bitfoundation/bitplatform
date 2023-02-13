@@ -352,7 +352,7 @@ private bool IsCheckedLabelTemplate;
 <div class=""example-content"">
     <BitCheckbox @bind-Value=""IsCheckedCustomCheckBox"">
         <div class=""custom-checkbox"">
-            <BitIconButton Class=""checked-box"" IconName=""@(IsCheckedCustomCheckBox ? BitIconName.Accept : BitIconName.NotSet)"" />
+            <BitIconButton ButtonStyle=""BitButtonStyle.Standard""  Class=""checked-box"" IconName=""@(IsCheckedCustomCheckBox ? BitIconName.Accept : BitIconName.NotSet)"" />
             <span>
                 Customized Basic Checkbox
             </span>
@@ -363,11 +363,11 @@ private bool IsCheckedLabelTemplate;
         <div class=""custom-checkbox"">
             @if (IsIndeterminatedCustomCheckBox)
             {
-                <BitIconButton Class=""checked-box"" IconName=""BitIconName.Fingerprint"" />
+                <BitIconButton ButtonStyle=""BitButtonStyle.Standard"" Class=""checked-box"" IconName=""BitIconName.Fingerprint"" />
             }
             else
             {
-                <BitIconButton Class=""checked-box"" IconName=""@(IsCheckedCustomIndeterminateCheckBox ? BitIconName.Accept : BitIconName.NotSet)"" />
+                <BitIconButton ButtonStyle=""BitButtonStyle.Standard"" Class=""checked-box"" IconName=""@(IsCheckedCustomIndeterminateCheckBox ? BitIconName.Accept : BitIconName.NotSet)"" />
             }
             <span>
                 Customized Indeterminate checkbox
