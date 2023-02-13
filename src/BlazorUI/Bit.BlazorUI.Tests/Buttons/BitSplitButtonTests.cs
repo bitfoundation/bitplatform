@@ -30,7 +30,7 @@ public class BitSplitButtonTests : BunitTestContext
     ]
     public void BitSplitButtonTest(bool isEnabled, BitButtonStyle bitButtonStyle)
     {
-        var com = RenderComponent<BitSplitButton>(parameters =>
+        var com = RenderComponent<BitSplitButton<BitSplitButtonItem>>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, isEnabled);
             parameters.Add(p => p.ButtonStyle, bitButtonStyle);
@@ -60,7 +60,7 @@ public class BitSplitButtonTests : BunitTestContext
     {
         BitSplitButtonItem clickedItem = default!;
 
-        var com = RenderComponent<BitSplitButton>(parameters =>
+        var com = RenderComponent<BitSplitButton<BitSplitButtonItem>>(parameters =>
         {
             parameters.Add(p => p.Items, items);
             parameters.Add(p => p.IsEnabled, isEnabled);
@@ -90,7 +90,7 @@ public class BitSplitButtonTests : BunitTestContext
 
         items.Last().IsEnabled = itemIsEnabled;
 
-        var com = RenderComponent<BitSplitButton>(parameters =>
+        var com = RenderComponent<BitSplitButton<BitSplitButtonItem>>(parameters =>
         {
             parameters.Add(p => p.Items, items);
             parameters.Add(p => p.OnClick, (item) => clickedItem = item);
@@ -119,7 +119,7 @@ public class BitSplitButtonTests : BunitTestContext
     {
         BitSplitButtonItem clickedItem = default!;
 
-        var com = RenderComponent<BitSplitButton>(parameters =>
+        var com = RenderComponent<BitSplitButton<BitSplitButtonItem>>(parameters =>
         {
             parameters.Add(p => p.Items, items);
             parameters.Add(p => p.IsSticky, isSticky);
@@ -148,7 +148,7 @@ public class BitSplitButtonTests : BunitTestContext
     ]
     public void BitSplitButtonOpenMenu(bool isEnabled)
     {
-        var com = RenderComponent<BitSplitButton>(parameters =>
+        var com = RenderComponent<BitSplitButton<BitSplitButtonItem>>(parameters =>
         {
             parameters.Add(p => p.Items, items);
             parameters.Add(p => p.IsEnabled, isEnabled);
