@@ -16,7 +16,7 @@ public class BitSplitButtonItem
     /// <summary>
     /// A unique value to use as a key of the item
     /// </summary>
-    public string? key { get; set; }
+    public string? Key { get; set; }
 
     /// <summary>
     /// Whether or not the item is enabled.

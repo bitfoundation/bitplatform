@@ -13,12 +13,12 @@ public class BitSplitButtonTests : BunitTestContext
         new BitSplitButtonItem()
         {
             Text = "Item A",
-            key = "A"
+            Key = "A"
         },
         new BitSplitButtonItem()
         {
             Text = "Item B",
-            key = "B"
+            Key = "B"
         }
     };
 
