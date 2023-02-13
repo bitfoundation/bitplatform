@@ -30,7 +30,7 @@ public class BitMenuButtonTests : BunitTestContext
     ]
     public void BitMenuButtonTest(bool isEnabled, BitButtonStyle bitButtonStyle)
     {
-        var com = RenderComponent<BitMenuButton>(parameters =>
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, isEnabled);
             parameters.Add(p => p.ButtonStyle, bitButtonStyle);
@@ -58,7 +58,7 @@ public class BitMenuButtonTests : BunitTestContext
     ]
     public void BitMenuButtonShouldHasTextAndIcon(string text, BitIconName iconName)
     {
-        var com = RenderComponent<BitMenuButton>(parameters =>
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
         {
             parameters.Add(p => p.Items, items);
             parameters.Add(p => p.Text, text);
@@ -91,7 +91,7 @@ public class BitMenuButtonTests : BunitTestContext
             }
         };
 
-        var com = RenderComponent<BitMenuButton>(parameters =>
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
         {
             parameters.Add(p => p.Items, items);
         });
@@ -117,7 +117,7 @@ public class BitMenuButtonTests : BunitTestContext
 
         items.Last().IsEnabled = itemIsEnabled;
 
-        var com = RenderComponent<BitMenuButton>(parameters =>
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
         {
             parameters.Add(p => p.Items, items);
             parameters.Add(p => p.OnItemClick, (item) => clickedItem = item);
@@ -144,7 +144,7 @@ public class BitMenuButtonTests : BunitTestContext
     ]
     public void BitMenuButtonOpenMenu(bool isEnabled)
     {
-        var com = RenderComponent<BitMenuButton>(parameters =>
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
         {
             parameters.Add(p => p.Items, items);
             parameters.Add(p => p.IsEnabled, isEnabled);

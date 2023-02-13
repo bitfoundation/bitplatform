@@ -11,11 +11,11 @@
             role="menuitem"
             aria-disabled="@IsEnabled"
             tabindex="@(IsEnabled ? 0 : -1)"
-            class="option @(IsEnabled ? "" : "disabled")"
-            @onclick="() => Parent.HandleOnOptionClick(this)">
-        @if (Parent.OptionTemplate is not null)
+            class="item @(IsEnabled ? "" : "disabled")"
+            @onclick="() => Parent.HandleOnItemClick(this)">
+        @if (Parent.ItemTemplate is not null)
         {
-            @Parent.OptionTemplate(this)
+            @Parent.ItemTemplate(this)
         }
         else
         {
