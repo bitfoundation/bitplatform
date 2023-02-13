@@ -18,6 +18,7 @@ public partial class BitSplitButton<TItem> where TItem : class
     private string _internalTextField = TEXT_FIELD;
     private string _internalkeyField = KEY_FIELD;
 
+    private List<TItem> _items = new();
     private TItem? _currentItem;
     private string _splitButtonId => $"{RootElementClass}-{UniqueId}";
     private string _splitButtonCalloutId => $"{RootElementClass}-callout-{UniqueId}";
@@ -154,6 +155,17 @@ public partial class BitSplitButton<TItem> where TItem : class
         _isCalloutOpen = false;
     }
 
+    internal async void RegisterOption(BitSplitButtonOption option)
+    {
+        _items.Add((option as TItem)!);
+        _currentItem = _items.FirstOrDefault();
+    }
+
+    internal void UnregisterOption(BitSplitButtonOption option)
+    {
+        _items.Remove((option as TItem)!);
+    }
+
     protected override async Task OnInitializedAsync()
     {
         _internalIsEnabledField = IsEnabledFieldSelector?.GetName() ?? IsEnabledField;
@@ -161,7 +173,11 @@ public partial class BitSplitButton<TItem> where TItem : class
         _internalTextField = TextFieldSelector?.GetName() ?? TextField;
         _internalkeyField = KeyFieldSelector?.GetName() ?? KeyField;
 
-        _currentItem = Items.FirstOrDefault();
+        if (ChildContent is null && Items.Any())
+        {
+            _items = Items.ToList();
+            _currentItem = _items.FirstOrDefault();
+        }
 
         await base.OnInitializedAsync();
     }

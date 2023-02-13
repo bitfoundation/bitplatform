@@ -1,8 +1,12 @@
 ﻿
+using Microsoft.AspNetCore.Components;
+
 namespace Bit.BlazorUI;
 
-public partial class BitSplitButtonOption
+public partial class BitSplitButtonOption : IDisposable
 {
+    private bool _disposed;
+
     [CascadingParameter] protected BitSplitButton<BitSplitButtonOption> Parent { get; set; } = default!;
 
     /// <summary>
@@ -21,4 +25,26 @@ public partial class BitSplitButtonOption
     [Parameter] public string? Key { get; set; }
 
     protected override string RootElementClass => "bit-splo";
+
+    protected override async Task OnInitializedAsync()
+    {
+        Parent.RegisterOption(this);
+
+        await base.OnInitializedAsync();
+    }
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing is false || _disposed) return;
+
+        Parent.UnregisterOption(this);
+
+        _disposed = true;
+    }
 }

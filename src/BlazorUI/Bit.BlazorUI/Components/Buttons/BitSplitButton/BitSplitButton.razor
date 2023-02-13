@@ -2,6 +2,13 @@
 @inherits BitComponentBase
 @typeparam TItem
 
+@if (ChildContent is not null)
+{
+    <CascadingValue Value="this" IsFixed="true">
+        @ChildContent
+    </CascadingValue>
+}
+
 <div @ref="RootElement"
      @attributes="HtmlAttributes"
      style="@StyleBuilder.Value"
@@ -34,42 +41,33 @@
          class="items"
          tabindex="@(IsEnabled ? 0 : -1)">
         <ul role="presentation">
-            @if (ChildContent is not null)
+            @foreach (TItem item in _items)
             {
-                <CascadingValue Value="this" IsFixed="true">
-                    @ChildContent
-                </CascadingValue>
-            }
-            else
-            {
-                @foreach (TItem item in Items)
+                if (item != _currentItem)
                 {
-                    if (item != _currentItem)
-                    {
-                        <li role="presentation">
-                            <button @onclick="() => HandleOnItemClick(item)"
-                                    type="@ButtonType?.GetValue()"
-                                    role="menuitem"
-                                    aria-disabled="@GetIsEnabled(item)"
-                                    tabindex="@(GetIsEnabled(item) ? 0 : -1)"
-                                    class="item @(GetIsEnabled(item) ? null : "disabled")">
-                                @if (ItemTemplate is null)
+                    <li role="presentation">
+                        <button @onclick="() => HandleOnItemClick(item)"
+                                type="@ButtonType?.GetValue()"
+                                role="menuitem"
+                                aria-disabled="@GetIsEnabled(item)"
+                                tabindex="@(GetIsEnabled(item) ? 0 : -1)"
+                                class="item @(GetIsEnabled(item) ? null : "disabled")">
+                            @if (ItemTemplate is null)
+                            {
+                                @if (GetIconName(item).HasValue)
                                 {
-                                    @if (GetIconName(item).HasValue)
-                                    {
-                                        <i class="bit-icon bit-icon--@GetIconName(item).GetName()"></i>
-                                    }
-                                    <span class="item-text-container">
-                                        @GetText(item)
-                                    </span>
+                                    <i class="bit-icon bit-icon--@GetIconName(item).GetName()"></i>
                                 }
-                                else
-                                {
-                                    @ItemTemplate(item)
-                                }
-                            </button>
-                        </li>
-                    }
+                                <span class="item-text-container">
+                                    @GetText(item)
+                                </span>
+                            }
+                            else
+                            {
+                                @ItemTemplate(item)
+                            }
+                        </button>
+                    </li>
                 }
             }
         </ul>
