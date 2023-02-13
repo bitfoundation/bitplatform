@@ -25,35 +25,25 @@ public partial class BitSplitButtonDemo
         {
             Name = "ButtonStyle",
             Type = "BitButtonStyle",
+            DefaultValue = "BitButtonStyle.Primary",
+            Description = "The style of button, Possible values: Primary | Standard.",
             LinkType = LinkType.Link,
             Href = "#button-style-enum",
-            DefaultValue = "BitButtonStyle.Primary",
-            Description = "The style of button, Possible values: Primary | Standard."
         },
         new ComponentParameter
         {
             Name = "ButtonType",
             Type = "BitButtonType",
+            DefaultValue = "BitButtonType.Button",
+            Description = "The type of the button.",
             LinkType = LinkType.Link,
             Href = "#button-type-enum",
-            DefaultValue = "BitButtonType.Button",
-            Description = "The type of the button."
         },
-        new ComponentParameter
+        new ComponentParameter()
         {
-            Name = "Items",
-            Type = "List<BitSplitButtonItem>",
-            LinkType = LinkType.Link,
-            Href = "#split-button-items",
-            DefaultValue = "new List<BitSplitButtonItem>()",
-            Description = "List of Item, each of which can be a Button with different action in the SplitButton."
-        },
-        new ComponentParameter
-        {
-            Name = "IsSticky",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "If true, the current item is going to be change selected item."
+            Name = "ChildContent",
+            Type = "RenderFragment?",
+            Description = "The content of the BitSplitButton, that are BitSplitButtonOption components.",
         },
         new ComponentParameter()
         {
@@ -63,10 +53,78 @@ public partial class BitSplitButtonDemo
         },
         new ComponentParameter
         {
+            Name = "IsSticky",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "If true, the current item is going to be change selected item."
+        },
+        new ComponentParameter
+        {
+            Name = "Items",
+            Type = "List<BitSplitButtonItem>",
+            DefaultValue = "new List<BitSplitButtonItem>()",
+            Description = "List of Item, each of which can be a Button with different action in the SplitButton.",
+            LinkType = LinkType.Link,
+            Href = "#split-button-items",
+        },
+        new ComponentParameter()
+        {
+            Name = "IsEnabledField",
+            Type = "string",
+            DefaultValue = "IsEnabled",
+            Description = "Whether or not the item is enabled.",
+        },
+        new ComponentParameter()
+        {
+            Name = "IsEnabledFieldSelector",
+            Type = "Expression<Func<TItem, bool>>?",
+            Description = "Whether or not the item is enabled.",
+        },
+        new ComponentParameter()
+        {
+            Name = "IconNameField",
+            Type = "string",
+            DefaultValue = "IconName",
+            Description = "Name of an icon to render next to the item text.",
+        },
+        new ComponentParameter()
+        {
+            Name = "IconNameFieldSelector",
+            Type = "Expression<Func<TItem, BitIconName>>?",
+            Description = "Name of an icon to render next to the item text.",
+        },
+        new ComponentParameter
+        {
             Name = "OnClick",
             Type = "EventCallback<BitSplitButtonItem>",
             Description = "The callback is called when the button or button item is clicked."
-        }
+        },
+        new ComponentParameter()
+        {
+            Name = "TextField",
+            Type = "string",
+            DefaultValue = "Text",
+            Description = "Name of an icon to render next to the item text.",
+        },
+        new ComponentParameter()
+        {
+            Name = "TextFieldSelector",
+            Type = "Expression<Func<TItem, string>>?",
+            Description = "Name of an icon to render next to the item text.",
+        },
+        new ComponentParameter()
+        {
+            Name = "KeyField",
+            Type = "string",
+            DefaultValue = "Key",
+            Description = "A unique value to use as a key of the item.",
+        },
+        new ComponentParameter()
+        {
+            Name = "KeyFieldSelector",
+            Type = "Expression<Func<TItem, string>>?",
+            Description = "A unique value to use as a key of the item.",
+        },
     };
     private readonly List<ComponentSubParameter> componentSubParameters = new()
     {
@@ -74,6 +132,41 @@ public partial class BitSplitButtonDemo
         {
             Id = "split-button-items",
             Title = "BitSplitButtonItem",
+            Description = "BitSplitButtonItem is default type for item.",
+            Parameters = new List<ComponentParameter>()
+            {
+               new ComponentParameter()
+               {
+                   Name = "IconName",
+                   Type = "BitIconName?",
+                   Description = "Name of an icon to render next to the item text.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "IsEnabled",
+                   Type = "bool",
+                   DefaultValue = "true",
+                   Description = "Whether or not the item is enabled.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "Key",
+                   Type = "string?",
+                   Description = "A unique value to use as a key of the item.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "Text",
+                   Type = "string?",
+                   Description = "Text to render in the item.",
+               }
+            }
+        },
+        new ComponentSubParameter()
+        {
+            Id = "split-button-options",
+            Title = "BitSplitButtonOption",
+            Description = "BitSplitButtonOption is a child component for BitSplitButton.",
             Parameters = new List<ComponentParameter>()
             {
                new ComponentParameter()
@@ -154,33 +247,6 @@ public partial class BitSplitButtonDemo
                 }
             }
         },
-        new EnumParameter()
-        {
-            Id = "component-visibility-enum",
-            Title = "BitComponentVisibility Enum",
-            Description = "",
-            EnumList = new List<EnumItem>()
-            {
-                new EnumItem()
-                {
-                    Name= "Visible",
-                    Description="Show content of the component.",
-                    Value="0",
-                },
-                new EnumItem()
-                {
-                    Name= "Hidden",
-                    Description="Hide content of the component,though the space it takes on the page remains.",
-                    Value="1",
-                },
-                new EnumItem()
-                {
-                    Name= "Collapsed",
-                    Description="Hide content of the component,though the space it takes on the page gone.",
-                    Value="2",
-                }
-            }
-        }
     };
 
 

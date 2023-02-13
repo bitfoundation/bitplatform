@@ -58,7 +58,7 @@ public partial class BitSplitButton<TItem> where TItem : class
     [Parameter] public BitButtonType? ButtonType { get; set; }
 
     /// <summary>
-    /// 
+    /// The content of the BitSplitButton, that are BitSplitButtonOption components.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
