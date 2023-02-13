@@ -158,7 +158,11 @@ public partial class BitSplitButton<TItem> where TItem : class
     internal async void RegisterOption(BitSplitButtonOption option)
     {
         _items.Add((option as TItem)!);
-        _currentItem = _items.FirstOrDefault();
+
+        if (_currentItem is null)
+        {
+            _currentItem = _items.FirstOrDefault();
+        }
     }
 
     internal void UnregisterOption(BitSplitButtonOption option)
