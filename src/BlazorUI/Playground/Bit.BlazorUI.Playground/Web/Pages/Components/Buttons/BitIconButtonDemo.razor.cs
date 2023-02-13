@@ -143,6 +143,7 @@ public partial class BitIconButtonDemo
     };
 
     private readonly string example1HTMLCode = @"
+<BitIconButton ButtonStyle=""BitButtonStyle.Standard"" IconName=""BitIconName.Emoji"" Title=""Standard"" />
 <BitIconButton IconName=""BitIconName.Emoji"" />
 <BitIconButton IconName=""BitIconName.EmojiDisappointed"" AllowDisabledFocus=""false"" IsEnabled=""false"" />";
 

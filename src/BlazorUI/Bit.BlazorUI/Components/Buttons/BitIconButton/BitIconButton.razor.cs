@@ -5,6 +5,8 @@ namespace Bit.BlazorUI;
 public partial class BitIconButton
 {
     protected override bool UseVisual => false;
+    private BitButtonSize buttonSize = BitButtonSize.Medium;
+    private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
     private int? _tabIndex;
 
     /// <summary>
@@ -21,6 +23,34 @@ public partial class BitIconButton
     /// If true, add an aria-hidden attribute instructing screen readers to ignore the element
     /// </summary>
     [Parameter] public bool AriaHidden { get; set; }
+
+    /// <summary>
+    /// The size of button, Possible values: Small | Medium | Large
+    /// </summary>
+    [Parameter]
+    public BitButtonSize ButtonSize
+    {
+        get => buttonSize;
+        set
+        {
+            buttonSize = value;
+            ClassBuilder.Reset();
+        }
+    }
+
+    /// <summary>
+    /// The style of button, Possible values: Primary | Standard
+    /// </summary>
+    [Parameter]
+    public BitButtonStyle ButtonStyle
+    {
+        get => buttonStyle;
+        set
+        {
+            buttonStyle = value;
+            ClassBuilder.Reset();
+        }
+    }
 
     /// <summary>
     /// The type of the button
@@ -58,6 +88,21 @@ public partial class BitIconButton
     [Parameter] public string? Target { get; set; }
 
     protected override string RootElementClass => "bit-icob";
+
+    protected override void RegisterComponentClasses()
+    {
+        ClassBuilder.Register(() => IsEnabled is false
+                                       ? string.Empty
+                                       : ButtonStyle == BitButtonStyle.Primary
+                                           ? "primary"
+                                           : "standard");
+
+        ClassBuilder.Register(() => ButtonSize == BitButtonSize.Small
+                                       ? "small"
+                                       : ButtonSize == BitButtonSize.Medium
+                                           ? "medium"
+                                           : "large");
+    }
 
     protected override async Task OnInitializedAsync()
     {

@@ -1,50 +1,83 @@
 ﻿@import "../../../Styles/functions.scss";
 
 .bit-icob {
-    width: spacing(4);
-    height: spacing(4);
-    padding: 0 spacing(0.5);
+    position: relative;
     box-sizing: border-box;
     font-family: $typography-button-font-family;
-    font-size: spacing(1.75);
-    font-weight: 400;
+    font-weight: $typography-button-font-weight;
+    line-height: $typography-button-line-height;
     text-decoration: none;
     text-align: center;
     cursor: pointer;
-    border: none;
-    background-color: transparent;
-    color: $color-primary-main;
+    border-width: $shape-border-width;
+    border-radius: $shape-border-radius;
+    border-style: $shape-border-style;
     display: inline-block;
 
     .icon-container {
         display: flex;
+        align-items: center;
         height: 100%;
         flex-wrap: nowrap;
         justify-content: center;
-        align-items: center;
-
-        .bit-icon {
-            margin: 0 spacing(0.5);
-        }
-    }
-
-    &:active {
-        color: $color-primary-darker;
-        background-color: $color-neutrals-gray30;
-    }
-
-    &:hover {
-        color: $color-primary-dark;
-        background-color: $color-neutrals-gray20;
     }
 
     &.disabled {
         background: $color-neutrals-gray20;
         color: $color-neutrals-gray90;
-        border-width: $shape-border-width;
-        border-style: $shape-border-style;
         border-color: $color-border-disabled;
         cursor: default;
         pointer-events: none;
+    }
+
+    &.standard {
+        border-style: unset;
+        background-color: unset;
+        color: $color-primary-main;
+
+        &:active {
+            color: $color-primary-darker;
+            background-color: $color-neutrals-gray30;
+        }
+
+        &:hover {
+            color: $color-primary-dark;
+            background-color: $color-neutrals-gray20;
+        }
+    }
+
+    &.primary {
+        border-color: $color-border-primary;
+        color: $color-text-primary;
+        background-color: $color-primary-main;
+
+        &:hover {
+            border-color: $color-action-hover-primary;
+            background-color: $color-action-hover-primary;
+        }
+
+        &:active {
+            border-color: $color-action-active-primary;
+            background-color: $color-action-active-primary;
+        }
+    }
+
+    &.small {
+        width: 32px;
+        height: 32px;
+        font-size: spacing(1.625);
+    }
+
+    &.medium {
+        width: 38px;
+        height: 38px;
+        font-size: spacing(1.75);
+    }
+
+    &.large {
+        width: 40px;
+        height: 40px;
+        padding: spacing(1);
+        font-size: spacing(1.875);
     }
 }
