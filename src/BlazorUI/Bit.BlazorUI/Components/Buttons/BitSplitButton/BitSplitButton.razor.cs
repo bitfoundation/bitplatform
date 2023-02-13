@@ -18,7 +18,7 @@ public partial class BitSplitButton<TItem> where TItem : class
     private string _internalTextField = TEXT_FIELD;
     private string _internalkeyField = KEY_FIELD;
 
-    private TItem _currentItem = default!;
+    private TItem? _currentItem;
     private string _splitButtonId => $"{RootElementClass}-{UniqueId}";
     private string _splitButtonCalloutId => $"{RootElementClass}-callout-{UniqueId}";
     private string _splitButtonOverlayId => $"{RootElementClass}-overlay-{UniqueId}";

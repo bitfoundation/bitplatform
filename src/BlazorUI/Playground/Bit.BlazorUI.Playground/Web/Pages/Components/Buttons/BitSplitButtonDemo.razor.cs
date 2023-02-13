@@ -250,14 +250,10 @@ public partial class BitSplitButtonDemo
     };
 
 
-    private string BasicPrimarySelectedItem;
-    private string BasicStandardSelectedItem;
-    private string StickyPrimarySelectedItem;
-    private string StickyStandardSelectedItem;
-    private string DisabledPrimarySelectedItem;
-    private string DisabledStandardSelectedItem;
-    private string TemplatePrimarySelectedItem;
-    private string TemplateStandardSelectedItem;
+    private string Example1ClickedItem;
+    private string Example2ClickedItem;
+    private string Example3ClickedItem;
+    private string Example4ClickedItem;
 
     private List<BitSplitButtonItem> example1Items = new()
     {
@@ -347,6 +343,103 @@ public partial class BitSplitButtonDemo
             Key = "delete-key"
         }
     };
+
+    private List<SplitActionItem> example1CustomItems = new()
+    {
+        new SplitActionItem()
+        {
+            Name = "Item A",
+            Id = "A"
+        },
+        new SplitActionItem()
+        {
+            Name = "Item B",
+            Id = "B",
+            Icon = BitIconName.Emoji
+        },
+        new SplitActionItem()
+        {
+            Name = "Item C",
+            Id = "C",
+            Icon = BitIconName.Emoji2
+        }
+    };
+    private List<SplitActionItem> example2CustomItems = new()
+    {
+        new SplitActionItem()
+        {
+            Name = "Add",
+            Id = "add-key",
+            Icon = BitIconName.Add
+        },
+        new SplitActionItem()
+        {
+            Name = "Edit",
+            Id = "edit-key",
+            Icon = BitIconName.Edit
+        },
+        new SplitActionItem()
+        {
+            Name = "Delete",
+            Id = "delete-key",
+            Icon = BitIconName.Delete
+        }
+    };
+    private List<SplitActionItem> example3CustomItems = new()
+    {
+        new SplitActionItem()
+        {
+            Name = "Item A",
+            Id = "A",
+            Icon = BitIconName.Emoji,
+            IsEnabled = false
+        },
+        new SplitActionItem()
+        {
+            Name = "Item B",
+            Id = "B",
+            Icon = BitIconName.Emoji2
+        },
+        new SplitActionItem()
+        {
+            Name = "Item C",
+            Id = "C",
+            Icon = BitIconName.Emoji,
+            IsEnabled = false
+        },
+        new SplitActionItem()
+        {
+            Name = "Item D",
+            Id = "D",
+            Icon = BitIconName.Emoji2
+        }
+    };
+    private List<SplitActionItem> example4CustomItems = new()
+    {
+        new SplitActionItem()
+        {
+            Name = "Add",
+            Id = "add-key"
+        },
+        new SplitActionItem()
+        {
+            Name = "Edit",
+            Id = "edit-key"
+        },
+        new SplitActionItem()
+        {
+            Name = "Delete",
+            Id = "delete-key"
+        }
+    };
+
+    private void OnTabClick()
+    {
+        Example1ClickedItem = string.Empty; 
+        Example2ClickedItem = string.Empty;
+        Example3ClickedItem = string.Empty;
+        Example4ClickedItem = string.Empty;
+    }
 
     private readonly string example1HTMLCode = @"
 ";

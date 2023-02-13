@@ -34,13 +34,15 @@
          class="items"
          tabindex="@(IsEnabled ? 0 : -1)">
         <ul role="presentation">
-            @if (ChildContent is not null && Items.Any() is false)
+            @if (ChildContent is not null)
             {
-                @ChildContent
+                <CascadingValue Value="this" IsFixed="true">
+                    @ChildContent
+                </CascadingValue>
             }
             else
             {
-                foreach (TItem item in Items)
+                @foreach (TItem item in Items)
                 {
                     if (item != _currentItem)
                     {

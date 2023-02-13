@@ -37,7 +37,7 @@ public class BitSplitButtonTests : BunitTestContext
             parameters.Add(p => p.Items, items);
         });
 
-        var bitSplitButton = com.Find(".bit-splb");
+        var bitSplitButton = com.Find(".bit-spl");
 
         if (isEnabled)
         {
@@ -155,7 +155,7 @@ public class BitSplitButtonTests : BunitTestContext
         });
 
         var button = com.Find("button.chevron-btn");
-        var bitSplitButton = com.Find(".bit-splb");
+        var bitSplitButton = com.Find(".bit-spl");
         Assert.IsFalse(bitSplitButton.ClassList.Contains("open-menu"));
         button.Click();
 
