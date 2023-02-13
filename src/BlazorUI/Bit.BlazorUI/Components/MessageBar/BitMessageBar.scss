@@ -1,0 +1,154 @@
+﻿@import "../../Styles/functions.scss";
+
+.bit-msb {
+    width: 100%;
+    display: flex;
+    font-weight: 400;
+    font-size: spacing(1.5);
+    font-family: $typography-font-family;
+    min-height: spacing(4);
+
+    .multiline, .singleline {
+        width: 100%;
+    }
+
+    .content {
+        display: flex;
+        width: 100%;
+        line-height: normal;
+    }
+
+    .icon {
+        font-size: spacing(2);
+        min-width: spacing(2);
+        min-height: spacing(2);
+        display: flex;
+        flex-shrink: 0;
+        margin: spacing(1) 0 spacing(1) spacing(1.5);
+
+        .bit-icon {
+            color: $color-neutrals-gray130;
+        }
+    }
+
+    .text {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        flex: 1;
+    }
+
+    .open {
+        white-space: normal;
+    }
+
+    .innertext {
+        min-width: 0;
+        display: flex;
+        flex-grow: 1;
+        margin: spacing(1);
+        font-size: spacing(1.5);
+        font-weight: 400;
+        flex-direction: column;
+        line-height: spacing(2);
+
+        span {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    }
+
+    .actions {
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .truncate, .dismiss {
+        button {
+            outline: transparent;
+            position: relative;
+            font-size: spacing(1.75);
+            font-weight: 400;
+            box-sizing: border-box;
+            border: none;
+            display: inline-block;
+            text-decoration: none;
+            text-align: center;
+            cursor: pointer;
+            padding: spacing(1) spacing(1.5);
+            border-radius: spacing(0.25);
+            width: spacing(4);
+            height: spacing(4);
+            background-color: transparent;
+            flex-shrink: 0;
+            user-select: none;
+
+            span {
+                display: flex;
+                height: 100%;
+                flex-wrap: nowrap;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .bit-icon {
+                font-size: spacing(1.25);
+                height: spacing(1.25);
+                line-height: spacing(1.25);
+                vertical-align: middle;
+            }
+        }
+    }
+
+    .multiline {
+        .actions {
+            display: flex;
+            flex-direction: row-reverse;
+            align-items: center;
+            margin: 0 spacing(1.5) spacing(1) spacing(1);
+        }
+
+        .text {
+            span {
+                white-space: normal;
+            }
+        }
+    }
+
+    &.info {
+        color: $color-neutrals-gray160;
+        background-color: $color-neutrals-gray20;
+    }
+
+    &.error, &.blocked {
+        background-color: $color-state-error-bg;
+
+        .icon .bit-icon {
+            color: $color-state-error-dark;
+        }
+    }
+
+    &.severe-warning {
+        background-color: $color-state-severe-warning-bg;
+
+        .icon .bit-icon {
+            color: $color-state-severe-warning-dark;
+        }
+    }
+
+    &.success {
+        background-color: $color-state-success-bg;
+
+        .icon .bit-icon {
+            color: $color-state-success-dark;
+        }
+    }
+
+    &.warning {
+        background-color: $color-state-warning-bg;
+
+        .icon .bit-icon {
+            color: $color-state-warning-dark;
+        }
+    }
+}
