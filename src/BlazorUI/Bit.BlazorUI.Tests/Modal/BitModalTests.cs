@@ -9,23 +9,14 @@ public class BitModalTests : BunitTestContext
     private bool isModalOpen = true;
 
     [DataTestMethod,
-        DataRow(Visual.Fluent, null),
-        DataRow(Visual.Fluent, false),
-        DataRow(Visual.Fluent, true),
-
-        DataRow(Visual.Cupertino, null),
-        DataRow(Visual.Cupertino, false),
-        DataRow(Visual.Cupertino, true),
-
-        DataRow(Visual.Material, null),
-        DataRow(Visual.Material, false),
-        DataRow(Visual.Material, true),
+        DataRow(null),
+        DataRow(false),
+        DataRow(true)
     ]
-    public void BitModalIsAlertTest(Visual visual, bool? isAlert)
+    public void BitModalIsAlertTest(bool? isAlert)
     {
         var com = RenderComponent<BitModalTest>(parameters =>
         {
-            parameters.Add(p => p.Visual, visual);
             parameters.Add(p => p.IsAlert, isAlert);
             parameters.Add(p => p.IsOpen, true);
         });
@@ -35,76 +26,55 @@ public class BitModalTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow(Visual.Fluent, false),
-        DataRow(Visual.Fluent, true),
-
-        DataRow(Visual.Cupertino, false),
-        DataRow(Visual.Cupertino, true),
-
-        DataRow(Visual.Material, false),
-        DataRow(Visual.Material, true),
+        DataRow(false),
+        DataRow(true)
     ]
-    public void BitModalIsBlockingTest(Visual visual, bool isBlocking)
+    public void BitModalIsBlockingTest(bool isBlocking)
     {
         var com = RenderComponent<BitModal>(parameters =>
         {
-            parameters.Add(p => p.Visual, visual);
             parameters.Add(p => p.IsBlocking, isBlocking);
             parameters.Add(p => p.IsOpen, isModalOpen);
             parameters.Add(p => p.IsOpenChanged, HandleIsOpenChanged);
         });
 
-        var bitModel = com.FindAll(".bit-mdl");
-        Assert.AreEqual(bitModel.Count, 1);
+        var bitModal = com.FindAll(".bit-mdl");
+        Assert.AreEqual(bitModal.Count, 1);
 
-        var overlayElement = com.Find(".bit-mdl-overlay");
+        var overlayElement = com.Find(".overlay");
         overlayElement.Click();
 
-        bitModel = com.FindAll(".bit-mdl");
-        Assert.AreEqual(bitModel.Count, isBlocking ? 1 : 0);
+        bitModal = com.FindAll(".bit-mdl");
+        Assert.AreEqual(bitModal.Count, isBlocking ? 1 : 0);
     }
 
     [DataTestMethod,
-        DataRow(Visual.Fluent, false),
-        DataRow(Visual.Fluent, true),
-
-        DataRow(Visual.Cupertino, false),
-        DataRow(Visual.Cupertino, true),
-
-        DataRow(Visual.Material, false),
-        DataRow(Visual.Material, true),
+        DataRow(false),
+        DataRow(true)
     ]
-    public void BitModalIsModelessTest(Visual visual, bool isModeless)
+    public void BitModalIsModelessTest(bool isModeless)
     {
         var com = RenderComponent<BitModalTest>(parameters =>
         {
-            parameters.Add(p => p.Visual, visual);
             parameters.Add(p => p.IsModeless, isModeless);
             parameters.Add(p => p.IsOpen, true);
         });
 
         var element = com.Find(".bit-mdl > div");
-        Assert.AreEqual(element.Attributes["aria-modal"].Value, (!isModeless).ToString());
+        Assert.AreEqual(element.Attributes["aria-modal"].Value, (isModeless is false).ToString());
 
-        var elementOverlay = com.FindAll(".bit-mdl-overlay");
+        var elementOverlay = com.FindAll(".overlay");
         Assert.AreEqual(elementOverlay.Count, isModeless ? 0 : 1);
     }
 
     [DataTestMethod,
-        DataRow(Visual.Fluent, false),
-        DataRow(Visual.Fluent, true),
-
-        DataRow(Visual.Cupertino, false),
-        DataRow(Visual.Cupertino, true),
-
-        DataRow(Visual.Material, false),
-        DataRow(Visual.Material, true),
+        DataRow(false),
+        DataRow(true)
     ]
-    public void BitModalIsOpenTest(Visual visual, bool isOpen)
+    public void BitModalIsOpenTest(bool isOpen)
     {
         var com = RenderComponent<BitModalTest>(parameters =>
         {
-            parameters.Add(p => p.Visual, visual);
             parameters.Add(p => p.IsOpen, isOpen);
         });
 
@@ -113,23 +83,14 @@ public class BitModalTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow(Visual.Fluent, null),
-        DataRow(Visual.Fluent, ""),
-        DataRow(Visual.Fluent, "Test-S-A-Id"),
-
-        DataRow(Visual.Cupertino, null),
-        DataRow(Visual.Cupertino, ""),
-        DataRow(Visual.Cupertino, "Test-S-A-Id"),
-
-        DataRow(Visual.Material, null),
-        DataRow(Visual.Material, ""),
-        DataRow(Visual.Material, "Test-S-A-Id"),
+        DataRow(null),
+        DataRow(""),
+        DataRow("Test-S-A-Id")
     ]
-    public void BitModalSubtitleAriaIdTest(Visual visual, string subtitleAriaId)
+    public void BitModalSubtitleAriaIdTest(string subtitleAriaId)
     {
         var com = RenderComponent<BitModalTest>(parameters =>
         {
-            parameters.Add(p => p.Visual, visual);
             parameters.Add(p => p.SubtitleAriaId, subtitleAriaId);
             parameters.Add(p => p.IsOpen, true);
         });
@@ -151,23 +112,14 @@ public class BitModalTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow(Visual.Fluent, null),
-        DataRow(Visual.Fluent, ""),
-        DataRow(Visual.Fluent, "Test-T-A-Id"),
-
-        DataRow(Visual.Cupertino, null),
-        DataRow(Visual.Cupertino, ""),
-        DataRow(Visual.Cupertino, "Test-T-A-Id"),
-
-        DataRow(Visual.Material, null),
-        DataRow(Visual.Material, ""),
-        DataRow(Visual.Material, "Test-T-A-Id"),
+        DataRow(null),
+        DataRow(""),
+        DataRow("Test-T-A-Id")
     ]
-    public void BitModalTitleAriaIdTest(Visual visual, string titleAriaId)
+    public void BitModalTitleAriaIdTest(string titleAriaId)
     {
         var com = RenderComponent<BitModalTest>(parameters =>
         {
-            parameters.Add(p => p.Visual, visual);
             parameters.Add(p => p.TitleAriaId, titleAriaId);
             parameters.Add(p => p.IsOpen, true);
         });
@@ -188,130 +140,90 @@ public class BitModalTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
-        DataRow(Visual.Fluent),
-
-        DataRow(Visual.Cupertino),
-
-        DataRow(Visual.Material),
-    ]
-    public void BitModalContentTest(Visual visual)
+    [TestMethod]
+    public void BitModalContentTest()
     {
         var com = RenderComponent<BitModalTest>(parameters =>
         {
-            parameters.Add(p => p.Visual, visual);
             parameters.Add(p => p.IsOpen, true);
         });
 
-        var elementContent = com.Find(".bit-mdl-scrl-cnt");
+        var elementContent = com.Find(".scroll-content");
 
-        elementContent.MarkupMatches("<div class=\"bit-mdl-scrl-cnt\"><div>Test Content</div></div>");
+        elementContent.MarkupMatches("<div class=\"scroll-content\"><div>Test Content</div></div>");
     }
 
-    [DataTestMethod,
-        DataRow(Visual.Fluent),
-
-        DataRow(Visual.Cupertino),
-
-        DataRow(Visual.Material),
-    ]
-    public void BitModalCloseWhenClickOutOfModalTest(Visual visual)
+    [TestMethod]
+    public void BitModalCloseWhenClickOutOfModalTest()
     {
         var com = RenderComponent<BitModal>(parameters =>
         {
-            parameters.Add(p => p.Visual, visual);
             parameters.Add(p => p.IsOpen, isModalOpen);
             parameters.Add(p => p.IsOpenChanged, HandleIsOpenChanged);
         });
 
-        var bitModel = com.FindAll(".bit-mdl");
-        Assert.AreEqual(bitModel.Count, 1);
+        var bitModal = com.FindAll(".bit-mdl");
+        Assert.AreEqual(bitModal.Count, 1);
 
-        var overlayElement = com.Find(".bit-mdl-overlay");
+        var overlayElement = com.Find(".overlay");
         overlayElement.Click();
 
-        bitModel = com.FindAll(".bit-mdl");
-        Assert.AreEqual(bitModel.Count, 0);
+        bitModal = com.FindAll(".bit-mdl");
+        Assert.AreEqual(bitModal.Count, 0);
     }
 
-    [DataTestMethod,
-        DataRow(Visual.Fluent),
-
-        DataRow(Visual.Cupertino),
-
-        DataRow(Visual.Material),
-    ]
-    public void BitModalOnDismissShouldWorkCorrect(Visual visual)
+    [TestMethod]
+    public void BitModalOnDismissShouldWorkCorrect()
     {
         var com = RenderComponent<BitModalTest>(parameters =>
         {
-            parameters.Add(p => p.Visual, visual);
             parameters.Add(p => p.IsOpen, true);
         });
 
-        var overlayElement = com.Find(".bit-mdl-overlay");
+        var overlayElement = com.Find(".overlay");
+
         overlayElement.Click();
+
         Assert.AreEqual(1, com.Instance.CurrentCount);
     }
 
     [DataTestMethod,
-        DataRow(Visual.Fluent, BitModalPosition.Center),
-        DataRow(Visual.Fluent, BitModalPosition.TopLeft),
-        DataRow(Visual.Fluent, BitModalPosition.TopCenter),
-        DataRow(Visual.Fluent, BitModalPosition.TopRight),
-        DataRow(Visual.Fluent, BitModalPosition.CenterLeft),
-        DataRow(Visual.Fluent, BitModalPosition.CenterRight),
-        DataRow(Visual.Fluent, BitModalPosition.BottomLeft),
-        DataRow(Visual.Fluent, BitModalPosition.BottomCenter),
-        DataRow(Visual.Fluent, BitModalPosition.BottomRight),
-
-        DataRow(Visual.Cupertino, BitModalPosition.Center),
-        DataRow(Visual.Cupertino, BitModalPosition.TopLeft),
-        DataRow(Visual.Cupertino, BitModalPosition.TopCenter),
-        DataRow(Visual.Cupertino, BitModalPosition.TopRight),
-        DataRow(Visual.Cupertino, BitModalPosition.CenterLeft),
-        DataRow(Visual.Cupertino, BitModalPosition.CenterRight),
-        DataRow(Visual.Cupertino, BitModalPosition.BottomLeft),
-        DataRow(Visual.Cupertino, BitModalPosition.BottomCenter),
-        DataRow(Visual.Cupertino, BitModalPosition.BottomRight),
-
-        DataRow(Visual.Material, BitModalPosition.Center),
-        DataRow(Visual.Material, BitModalPosition.TopLeft),
-        DataRow(Visual.Material, BitModalPosition.TopCenter),
-        DataRow(Visual.Material, BitModalPosition.TopRight),
-        DataRow(Visual.Material, BitModalPosition.CenterLeft),
-        DataRow(Visual.Material, BitModalPosition.CenterRight),
-        DataRow(Visual.Material, BitModalPosition.BottomLeft),
-        DataRow(Visual.Material, BitModalPosition.BottomCenter),
-        DataRow(Visual.Material, BitModalPosition.BottomRight)
+        DataRow(BitModalPosition.Center),
+        DataRow(BitModalPosition.TopLeft),
+        DataRow(BitModalPosition.TopCenter),
+        DataRow(BitModalPosition.TopRight),
+        DataRow(BitModalPosition.CenterLeft),
+        DataRow(BitModalPosition.CenterRight),
+        DataRow(BitModalPosition.BottomLeft),
+        DataRow(BitModalPosition.BottomCenter),
+        DataRow(BitModalPosition.BottomRight)
     ]
-    public void BitModalPositionTest(Visual visual, BitModalPosition position)
+    public void BitModalPositionTest(BitModalPosition position)
     {
         var com = RenderComponent<BitModalTest>(parameters =>
         {
-            parameters.Add(p => p.Visual, visual);
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.Position, position);
         });
 
-        var modalElement = com.Find(".bit-mdl-modal");
+        var modalElement = com.Find(".modal");
 
         var positionClass = position switch
         {
-            BitModalPosition.Center => $"bit-mdl-position-center",
+            BitModalPosition.Center => $"center",
 
-            BitModalPosition.TopLeft => $"bit-mdl-position-topleft",
-            BitModalPosition.TopCenter => $"bit-mdl-position-topcenter",
-            BitModalPosition.TopRight => $"bit-mdl-position-topright",
+            BitModalPosition.TopLeft => $"top-left",
+            BitModalPosition.TopCenter => $"top-center",
+            BitModalPosition.TopRight => $"top-right",
 
-            BitModalPosition.CenterLeft => $"bit-mdl-position-centerleft",
-            BitModalPosition.CenterRight => $"bit-mdl-position-centerright",
+            BitModalPosition.CenterLeft => $"center-left",
+            BitModalPosition.CenterRight => $"center-right",
 
-            BitModalPosition.BottomLeft => $"bit-mdl-position-bottomleft",
-            BitModalPosition.BottomCenter => $"bit-mdl-position-bottomcenter",
-            BitModalPosition.BottomRight => $"bit-mdl-position-bottomright",
+            BitModalPosition.BottomLeft => $"bottom-left",
+            BitModalPosition.BottomCenter => $"bottom-center",
+            BitModalPosition.BottomRight => $"bottom-right",
 
-            _ => $"bit-mdl-position-center",
+            _ => $"center",
         };
 
         Assert.IsTrue(modalElement.ClassList.Contains(positionClass));

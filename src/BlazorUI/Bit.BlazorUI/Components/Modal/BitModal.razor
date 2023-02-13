@@ -3,33 +3,26 @@
 
 @if (IsOpen)
 {
-    <div 
-        @ref="RootElement"
-        @attributes="HtmlAttributes"
-        style="@StyleBuilder.Value"
-        class="@ClassBuilder.Value">
-            <div
-                role=@(IsAlertRole ? "alertdialog": "dialog")
-                aria-modal="@((!IsModeless).ToString())"
-                aria-labelledby=@TitleAriaId
-                aria-describedby=@SubtitleAriaId
-                style="outline:none;">
-                    <div 
-                        class="bit-mdl-modal @GetPositionClass()" 
-                        role="document">
-                    @if (!IsModeless)
-                    {
-                        <div
-                            class="bit-mdl-overlay"
-                            aria-hidden="true"
-                            @onclick="CloseCallout">
-                        </div>
-                    }
-                    <div class="bit-mdl-container">
-                        <div class="bit-mdl-scrl-cnt">
-                            @ChildContent
-                        </div>
+    <div @ref="RootElement" @attributes="HtmlAttributes"
+         style="@StyleBuilder.Value"
+         class="@ClassBuilder.Value">
+        <div role=@(_isAlertRole ? "alertdialog": "dialog")
+             aria-modal="@((IsModeless is false).ToString())"
+             aria-labelledby="@TitleAriaId"
+             aria-describedby="@SubtitleAriaId"
+             style="outline:none;">
+            <div class="modal @GetPositionClass()" role="document">
+                @if (IsModeless is false)
+                {
+                    <div class="overlay" aria-hidden="true" @onclick="CloseModal">
                     </div>
+                }
+
+                <div class="container">
+                    <div class="scroll-content">
+                        @ChildContent
+                    </div>
+                </div>
             </div>
         </div>
     </div>

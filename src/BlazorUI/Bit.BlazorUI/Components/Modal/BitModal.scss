@@ -1,0 +1,104 @@
+﻿@import "../../Styles/functions.scss";
+
+.bit-mdl {
+    font-family: $typography-font-family;
+    font-size: spacing(1.75);
+    font-weight: 400;
+    z-index: $space-overlay-zindex0;
+    position: fixed;
+    inset: 0;
+
+    &.absolute {
+        position: absolute;
+        z-index: unset;
+    }
+
+    .modal {
+        position: absolute;
+        display: flex;
+        height: 100%;
+        width: 100%;
+        opacity: 1;
+        pointer-events: auto;
+        background-color: transparent;
+        transition: opacity 300ms ease 0s;
+    }
+
+    .overlay {
+        position: absolute;
+        z-index: 0;
+        inset: 0;
+        background-color: rgba(0, 0, 0, 0.4);
+    }
+
+    .scroll-content {
+        flex-grow: 1;
+        overflow-y: auto;
+        max-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .container {
+        box-shadow: rgba(0, 0, 0, 22%) 0 spacing(3.25) spacing(7.25) 0, rgba(0, 0, 0, 18%) 0 spacing(0.625) spacing(1.75) 0;
+        border-radius: spacing(0.25);
+        background-color: rgb(255, 255, 255);
+        box-sizing: border-box;
+        position: relative;
+        text-align: left;
+        outline: transparent solid spacing(0.375);
+        max-height: calc(100% - spacing(4));
+        max-width: calc(100% - spacing(4));
+        min-height: spacing(14);
+        min-width: spacing(36);
+        overflow-y: auto;
+        display: flex;
+        flex-flow: column nowrap;
+        align-items: stretch;
+    }
+
+    .center {
+        align-items: center;
+        justify-content: center;
+    }
+
+    .top-left {
+        align-items: flex-start;
+        justify-content: flex-start;
+    }
+
+    .top-center {
+        align-items: flex-start;
+        justify-content: center;
+    }
+
+    .top-right {
+        align-items: flex-start;
+        justify-content: flex-end;
+    }
+
+    .center-left {
+        align-items: center;
+        justify-content: flex-start;
+    }
+
+    .center-right {
+        align-items: center;
+        justify-content: flex-end;
+    }
+
+    .bottom-left {
+        align-items: flex-end;
+        justify-content: flex-start;
+    }
+
+    .bottom-center {
+        align-items: flex-end;
+        justify-content: center;
+    }
+
+    .bottom-right {
+        align-items: flex-end;
+        justify-content: flex-end;
+    }
+}

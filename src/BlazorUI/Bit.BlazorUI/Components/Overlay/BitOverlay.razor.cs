@@ -38,14 +38,16 @@ public partial class BitOverlay
         set
         {
             if (isVisible == value) return;
+
             isVisible = value;
+
             _ = IsVisibleChanged.InvokeAsync(value);
 
             ClassBuilder.Reset();
             
             if (AutoToggleScroll)
             {
-                _js.ToggleScroll(ScrollerSelector, value);
+                _js.ToggleOverlayScroll(ScrollerSelector, value);
             }
         }
     }
