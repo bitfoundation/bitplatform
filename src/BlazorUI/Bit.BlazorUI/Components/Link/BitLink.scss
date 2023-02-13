@@ -1,0 +1,43 @@
+﻿@import "../../Styles/functions.scss";
+
+.bit-lnk {
+    font-family: $typography-font-family;
+    font-size: inherit;
+    font-weight: inherit;
+    color: $color-primary-main;
+    outline: none;
+    text-decoration: none;
+    margin: 0;
+    padding: 0;
+    background-color: transparent;
+    cursor: pointer;
+
+    &:hover, &:active, &:focus {
+        color: $color-action2-active-primary;
+    }
+
+    &:active, &:hover {
+        text-decoration: underline;
+    }
+
+    &.disabled {
+        color: $color-neutrals-gray90;
+        cursor: default;
+
+        &:hover, &:active, &:focus {
+            color: $color-neutrals-gray90;
+        }
+
+        &:hover, &:active {
+            text-decoration: none;
+        }
+    }
+
+    &.underlined {
+        text-decoration: underline;
+
+        &:hover, &:active, &:focus {
+            text-decoration: underline;
+        }
+    }
+}

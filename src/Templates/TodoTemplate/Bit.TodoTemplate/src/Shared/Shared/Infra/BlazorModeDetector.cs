@@ -23,14 +23,21 @@ public class BlazorModeDetector
         return Mode == BlazorMode.BlazorHybrid;
     }
 
+    public virtual bool IsBlazorElectron()
+    {
+        return Mode == BlazorMode.BlazorElectron;
+    }
+
     public virtual BlazorMode Mode
     {
         get
         {
-#if BlazorWebAssembly
+#if BlazorElectron
+            return BlazorMode.BlazorElectron;
+#elif BlazorWebAssembly                  
             return BlazorMode.BlazorWebAssembly;
 #elif BlazorHybrid
-                return BlazorMode.BlazorHybrid;
+            return BlazorMode.BlazorHybrid;
 #else
             return BlazorMode.BlazorServer;
 #endif

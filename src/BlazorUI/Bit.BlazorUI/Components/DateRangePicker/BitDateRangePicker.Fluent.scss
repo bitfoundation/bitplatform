@@ -101,6 +101,38 @@
             font-weight: 400;
             font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
             -webkit-font-smoothing: antialiased;
+
+            &.responsive {
+                @media only screen and (max-width: 600px) {
+                    .day-picker-wrapper {
+                        flex-grow: 1;
+
+                        th, td {
+                            width: calc(100%/7);
+                            margin: auto;
+                            font-size: 1rem;
+
+                            .day-btn {
+                                width: 100%;
+                                font-size: 1rem;
+
+                                span {
+                                    width: 100%;
+                                    height: 3rem;
+                                }
+                            }
+
+                            &.date-cell--today {
+                                border-radius: unset;
+
+                                &::after {
+                                    border-radius: unset;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         .dtrp-callout-main {
@@ -231,7 +263,7 @@
 
             .date-cell--outside-month {
                 .day-btn {
-                    color: $Grey130;
+                    color: $Grey110;
                     font-weight: 400;
                 }
             }

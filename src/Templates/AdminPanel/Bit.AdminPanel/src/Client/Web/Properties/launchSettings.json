@@ -8,6 +8,12 @@
                 "ASPNETCORE_ENVIRONMENT": "Development"
             },
             "applicationUrl": "https://localhost:4001;http://localhost:4000"
+        },
+        "AdminPanel.Client.Web.Electron": {
+            "commandName": "Executable",
+            "executablePath": "electronize",
+            "commandLineArgs": "start",
+            "workingDirectory": "."
         }
     }
 }

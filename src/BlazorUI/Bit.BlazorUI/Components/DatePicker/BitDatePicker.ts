@@ -65,14 +65,14 @@
 
         if (datePickerCallout == null) return;
 
-        const datePickerCalloutWidth = datePickerCallout.offsetWidth;
-        const bodyWidth = document.body.offsetWidth;
-
-        if (responsive && bodyWidth <= 600) {
+        if (responsive && window.innerWidth <= 600) {
             datePickerCallout.style.width = "95%";
             datePickerCallout.style.left = "2.5%";
             return true;
         }
+
+        const datePickerCalloutWidth = datePickerCallout.offsetWidth;
+        const bodyWidth = document.body.offsetWidth;
 
         if (datePickerCalloutWidth > bodyWidth) return true;
 

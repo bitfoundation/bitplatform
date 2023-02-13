@@ -14,7 +14,7 @@
         }
         else if (Label.HasValue())
         {
-            <label class="bit-txt-label" id="@_labelId" for="@_textFieldId">
+            <label style="@LabelStyle" class="bit-txt-label @LabelClass" id="@_labelId" for="@_textFieldId">
                 @Label
             </label>
         }
@@ -28,7 +28,7 @@
             }
             else if (Prefix.HasValue())
             {
-                <div class="txt-prefix">
+                <div style="@PrefixStyle" class="txt-prefix @PrefixClass">
                     <span>@Prefix</span>
                 </div>
             }
@@ -36,61 +36,64 @@
             @if (IsMultiline && Type == BitTextFieldType.Text)
             {
                 <textarea @attributes="InputHtmlAttributes"
-                      id="@_textFieldId"
-                      class="txt-field"
-                      rows="@Rows"
-                      disabled=@(!IsEnabled)
-                      readonly=@IsReadonly
-                      required=@IsRequired
-                      placeholder="@Placeholder"
-                      maxlength="@MaxLength"
-                      aria-label="@AriaLabel"
-                      aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)"
-                      aria-aria-describedby="@(Description.HasValue() || DescriptionTemplate is not null ? _descriptionId : null)"
-                      @onclick="@HandleOnClick"
-                      @onfocusin="@HandleOnFocusIn"
-                      @onfocusout="@HandleOnFocusOut"
-                      @onfocus="@HandleOnFocus"
-                      @oninput="@HandleOnChange"
-                      @onchange="@HandleOnChange"
-                      @onkeydown="@HandleOnKeyDown"
-                      @onkeyup="@HandleOnKeyUp">
+                          id="@_textFieldId"
+                          style="@InputStyle"
+                          class="txt-field @InputClass"
+                          rows="@Rows"
+                          disabled=@(!IsEnabled)
+                          readonly=@IsReadonly
+                          required=@IsRequired
+                          placeholder="@Placeholder"
+                          maxlength="@MaxLength"
+                          aria-label="@AriaLabel"
+                          aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)"
+                          aria-aria-describedby="@(Description.HasValue() || DescriptionTemplate is not null ? _descriptionId : null)"
+                          @onclick="@HandleOnClick"
+                          @onfocusin="@HandleOnFocusIn"
+                          @onfocusout="@HandleOnFocusOut"
+                          @onfocus="@HandleOnFocus"
+                          @oninput="@HandleOnChange"
+                          @onchange="@HandleOnChange"
+                          @onkeydown="@HandleOnKeyDown"
+                          @onkeyup="@HandleOnKeyUp">
                     @CurrentValue
                  </textarea>
             }
             else
             {
-                <input @attributes="InputHtmlAttributes"
-                   id="@_textFieldId"
-                   class="txt-field"
-                   disabled=@(!IsEnabled)
-                   readonly=@IsReadonly
-                   required=@IsRequired
-                   type="@_inputType"
-                   value="@CurrentValue"
-                   placeholder="@Placeholder"
-                   maxlength="@MaxLength"
-                   aria-label="@AriaLabel"
-                   aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)"
-                   aria-aria-describedby="@(Description.HasValue() || DescriptionTemplate is not null ? _descriptionId : null)"
-                   autocomplete="@AutoComplete"
-                   @onclick="@HandleOnClick"
-                   @onfocusin="@HandleOnFocusIn"
-                   @onfocusout="@HandleOnFocusOut"
-                   @onfocus="@HandleOnFocus"
-                   @oninput="@HandleOnChange"
-                   @onchange="@HandleOnChange"
-                   @onkeydown="@HandleOnKeyDown"
-                   @onkeyup="@HandleOnKeyUp" />
+                <input id="@_textFieldId"
+                       @attributes="InputHtmlAttributes"
+                       style="@InputStyle"
+                       class="txt-field @InputClass"
+                       disabled=@(!IsEnabled)
+                       readonly=@IsReadonly
+                       required=@IsRequired
+                       type="@_inputType"
+                       value="@CurrentValue"
+                       placeholder="@Placeholder"
+                       maxlength="@MaxLength"
+                       aria-label="@AriaLabel"
+                       aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)"
+                       aria-aria-describedby="@(Description.HasValue() || DescriptionTemplate is not null ? _descriptionId : null)"
+                       autocomplete="@AutoComplete"
+                       @onclick="@HandleOnClick"
+                       @onfocusin="@HandleOnFocusIn"
+                       @onfocusout="@HandleOnFocusOut"
+                       @onfocus="@HandleOnFocus"
+                       @oninput="@HandleOnChange"
+                       @onchange="@HandleOnChange"
+                       @onkeydown="@HandleOnKeyDown"
+                       @onkeyup="@HandleOnKeyUp" />
             }
 
             @if (CanRevealPassword && Type == BitTextFieldType.Password)
             {
-                <button class="password-reveal-btn"
-                    type="button"
-                    aria-label="@RevealPasswordAriaLabel"
-                    @onclick="ToggleRevealPassword"
-                    aria-pressed="@(_elementType == BitTextFieldType.Text ? "true" : "false")">
+                <button style="@RevealPasswordStyle" 
+                        class="password-reveal-btn @RevealPasswordClass"
+                        type="button"
+                        @onclick="ToggleRevealPassword"
+                        aria-label="@RevealPasswordAriaLabel"
+                        aria-pressed="@(_elementType == BitTextFieldType.Text ? "true" : "false")">
                     <span>
                         <i class="bit-icon bit-icon--@(_elementType == BitTextFieldType.Text ? "Hide" : "RedEye")" aria-hidden="true" />
                     </span>
@@ -110,7 +113,7 @@
             }
             else if (Suffix.HasValue())
             {
-                <div class="txt-suffix">
+                <div style="@SuffixStyle" class="txt-suffix @SuffixClass">
                     <span>@Suffix</span>
                 </div>
             }
@@ -128,7 +131,7 @@
             }
             else if (Description.HasValue())
             {
-                <span>@Description</span>
+                <span style="@DescriptionStyle" class="@DescriptionClass">@Description</span>
             }
         </span>
     }

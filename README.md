@@ -1,13 +1,14 @@
 # Introduction
 
 Bit platform is the home for .NET developers. 
-It offers a variety of dotnet project templates such as TodoTemplate and AdminPanel, which come equipped with common features like Sign-up & Sign-in using C#, HTML, and CSS, making it familiar for most .NET developers. With these templates, one can easily switch between Blazor Server, Blazor Web Assembly, and Blazor Hybrid:
+It offers a variety of dotnet project templates such as TodoTemplate and AdminPanel, which come equipped with common features like Sign-up & Sign-in using C#, HTML, and CSS, making it familiar for most .NET developers. With these templates, one can easily switch between Blazor Server, Blazor Web Assembly, Blazor Hybrid and Blazor Electron:
 
 * Blazor Server: Best for fast development and debugging
 * Blazor Web Assembly: Best for SPA & PWA (for production)
 * Blazor Hybrid: Provides apps for Android, iOS, macOS, and Windows with full access to platform native features!
+* Blazor Electron: Provides apps for Windows, macOS and Linux with full access to platform native features!
 
-Out-of-the-box, Bit Platform offers simple configurations for Android, iOS, and Windows apps, as well as PWA (for offline-capable web apps) and SPA with/without Pre-Rendering. These templates are powered by Bit Blazor components, which are fast and lightweight (less than 200KB) making them the best tool for developing most apps, even public websites like e-commerce.
+Out-of-the-box, Bit Platform offers simple configurations for Android, iOS, Windows and Linux apps, as well as PWA (for offline-capable web apps) and SPA with/without Pre-Rendering. These templates are powered by Bit Blazor components, which are fast and lightweight (less than 200KB) making them the best tool for developing most apps, even public websites like e-commerce.
 
 
 The following websites are developed by Bit Platform and published in Blazor Web Assembly:
@@ -24,7 +25,7 @@ The following websites are developed by Bit Platform and published in Blazor Web
 * [Admin panel multilingual web app](https://adminpanel.bitplatform.dev/)
 * [Admin panel multilingual mobile app](https://install.appcenter.ms/orgs/bitfoundation/apps/adminpanel/distribution_groups/testers)
 
-Keep in mind that if a web app is only fast in the Blazor Server mode but slow in Blazor Web Assembly mode, it will also be slow in Blazor Hybrid mode (Android, iOS, and Windows apps).
+Keep in mind that if a web app is only fast in the Blazor Server mode but slow in Blazor Web Assembly mode, it will also be slow in Blazor Hybrid mode (Android, iOS, macOS, and Windows apps) and Blazor Electron (Windows, macOS and Linux apps)
 
 ## **Contribute**
 
