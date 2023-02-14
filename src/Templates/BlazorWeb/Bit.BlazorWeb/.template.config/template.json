@@ -57,17 +57,17 @@
             "actionId": "3A7C4B45-1F5D-4A30-959A-51B88E82B5D2",
             "args": {
                 "executable": "lsb",
-                "args": "src/BlazorWeb.Web.Core",
+                "args": "src/BlazorWeb.Web",
                 "redirectStandardOutput": false,
                 "redirectStandardError": false
             },
             "manualInstructions": [
                 {
-                    "text": "Run 'lsb src/BlazorWeb.Web.Core'"
+                    "text": "Run 'lsb src/BlazorWeb.Web'"
                 }
             ],
             "continueOnError": true,
-            "description ": "Run lsb src/BlazorWeb.Web.Core"
+            "description ": "Run lsb src/BlazorWeb.Web"
         },
         {
             "condition": "(!skipRestore)",

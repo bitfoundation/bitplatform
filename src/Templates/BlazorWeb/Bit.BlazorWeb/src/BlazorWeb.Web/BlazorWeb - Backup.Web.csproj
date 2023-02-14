@@ -1,0 +1,167 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <!--If you don't need to use the time zone and your app is in WASM format, you can reduce the output size of the app by disabling the time zone.-->
+        <BlazorEnableTimeZoneSupport>true</BlazorEnableTimeZoneSupport>
+		<BlazorWebAssemblyPreserveCollationData>false</BlazorWebAssemblyPreserveCollationData>
+        <!--/-:msbuild-conditional:noEmit -->
+        <ServiceWorkerAssetsManifest Condition="'$(WebAppDeploymentType)' == 'PWA'">service-worker-assets.js</ServiceWorkerAssetsManifest>
+        <BlazorCacheBootResources Condition="'$(WebAppDeploymentType)' == 'PWA'">false</BlazorCacheBootResources>
+        <InvariantGlobalization Condition=" '$(MultilingualEnabled)' == 'false' ">true</InvariantGlobalization>
+        <BlazorWebAssemblyLoadAllGlobalizationData Condition=" '$(MultilingualEnabled)' == 'true' ">true</BlazorWebAssemblyLoadAllGlobalizationData>
+        <!-- To change MultilingualEnabled's value, checkout Directory.Build.props -->
+        <!--/+:msbuild-conditional:noEmit -->
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Watch Include="..\BlazorWeb.Web\**\*.razor" />
+        <Watch Include="..\BlazorWeb.Web\**\*.css" Exclude="node_modules\**\*;**\*.css.map;obj\**\*;bin\**\*" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!--/-:msbuild-conditional:noEmit -->
+        <!-- In the Blazor WebAssembly mode, the API project will host the web app itself -->
+        <Content Remove="compilerconfig.json" />
+        <Content Condition=" '$(BlazorMode)' != 'BlazorServer' " Remove="Pages\_Host.cshtml" />
+        <Content Condition=" '$(BlazorMode)' != 'BlazorServer' " Remove="Pages\_Layout.cshtml" />
+        <Content Remove="wwwroot\appsettings.json" />
+        <Compile Condition=" '$(BlazorMode)' != 'BlazorServer' " Remove="Services\Implementations\ServerSideAuthTokenProvider.cs" />
+        <Compile Condition=" '$(BlazorMode)' != 'BlazorServer' " Remove="Extensions\HttpRequestExtensions.cs" />
+        <!--/+:msbuild-conditional:noEmit -->
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="Scripts\app.ts" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Include="wwwroot\appsettings.json" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Include="compilerconfig.json" />
+    </ItemGroup>
+
+    <ItemGroup>
+		<PackageReference Include="Bit.Bup" Version="4.9.5" />
+        <PackageReference Include="Bit.Bswup" Version="4.9.5" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="4.9.5">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Bit.SourceGenerators" Version="4.9.5">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <!--/-:msbuild-conditional:noEmit -->
+        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.2" />
+        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.2" PrivateAssets="all" />
+        <!--/+:msbuild-conditional:noEmit -->
+
+        <Using Include="Microsoft.JSInterop" />
+        <Using Include="BlazorWeb.Web.Components" />
+        <Using Include="BlazorWeb.Web.Services.Contracts" />
+        <Using Include="BlazorWeb.Web.Services.Implementations" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" Condition="'$(WebAppDeploymentType)' == 'PWA'" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <TypeScriptCompile Include="Scripts\app.ts" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="Pages\EditProfilePage.razor.scss">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </None>
+      <None Update="Pages\EmailConfirmationPage.razor.scss">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </None>
+      <None Update="Pages\ForgotPasswordPage.razor.scss">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </None>
+      <None Update="Pages\HomePage.razor.scss">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </None>
+      <None Update="Pages\PrivacyPage.razor.scss">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </None>
+      <None Update="Pages\ResetPasswordPage.razor.scss">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </None>
+      <None Update="Pages\SignInPage.razor.scss">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </None>
+      <None Update="Pages\SignUpPage.razor.scss">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </None>
+      <None Update="Pages\TodoPage.razor.scss">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </None>
+      <None Update="Shared\AppErrorBoundary.razor.scss">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </None>
+      <None Update="Shared\Footer.razor.scss">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </None>
+      <None Update="Shared\Header.razor.scss">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </None>
+      <None Update="Shared\MainLayout.razor.scss">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </None>
+      <None Update="Shared\MessageBox.razor.scss">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </None>
+      <None Update="Shared\NavMenu.razor.scss">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </None>
+      <None Update="Shared\NotAuthorizedComponent.razor.scss">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </None>
+      <None Update="Shared\PageNotFound.razor.scss">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </None>
+      <None Update="Shared\SignOutConfirmModal.razor.scss">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </None>
+      <None Update="Styles\abstracts\_colors.scss">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </None>
+      <None Update="Styles\abstracts\_functions.scss">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </None>
+      <None Update="Styles\abstracts\_media-queries.scss">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </None>
+      <None Update="Styles\abstracts\_mixins.scss">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </None>
+    </ItemGroup>
+
+</Project>

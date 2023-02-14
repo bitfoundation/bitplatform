@@ -57,13 +57,13 @@
         }
     </style>
     <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.min.css" asp-append-version="@shoudAddAspAppendVersion" />
-    <link href="_content/BlazorWeb.Web.Core/BlazorWeb.Web.Core.bundle.scp.css" rel="stylesheet" asp-append-version="@shoudAddAspAppendVersion" />
+    <link href="BlazorWeb.Web.styles.css" rel="stylesheet" asp-append-version="@shoudAddAspAppendVersion" />
 </head>
 <body>
     <div id="app-container">
         @if (isDefaultDeploymentType || isPwa)
         {
-            <component type="typeof(BlazorWeb.Web.Core.LoadingComponent)" param-Color="@("#FFF")" render-mode="@RenderMode.Static" />
+            <component type="typeof(BlazorWeb.Web.LoadingComponent)" param-Color="@("#FFF")" render-mode="@RenderMode.Static" />
         }
         @RenderBody()
     </div>
@@ -107,7 +107,7 @@
         }
         <script src="_content/Bit.BlazorUI/scripts/bit.blazorui.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
     }
-    <script src="_content/BlazorWeb.Web.Core/scripts/app.js" asp-append-version="@shoudAddAspAppendVersion"></script>
+    <script src="scripts/app.js" asp-append-version="@shoudAddAspAppendVersion"></script>
 
     @if (isSsr)
     {

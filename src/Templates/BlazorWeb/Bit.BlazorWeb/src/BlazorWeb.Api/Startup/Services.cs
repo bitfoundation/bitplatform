@@ -8,7 +8,7 @@ using BlazorWeb.Api.Services.Implementations;
 #if BlazorWebAssembly
 using Microsoft.AspNetCore.Components;
 using BlazorWeb.Web.Services.Implementations;
-using BlazorWeb.Web.Core.Services.Implementations;
+using BlazorWeb.Web.Services.Implementations;
 #endif
 
 namespace BlazorWeb.Api.Startup;

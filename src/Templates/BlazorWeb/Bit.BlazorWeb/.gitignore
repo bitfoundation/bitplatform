@@ -226,5 +226,5 @@ profile.arm.json
 
 /src/Server/Api/Attachments/**/*.*
 
-/src/BlazorWeb.Web.Core/wwwroot/scripts/app*.js
+/src/BlazorWeb.Web/wwwroot/scripts/app*.js
 /src/BlazorWeb.Web/appsettings.json

@@ -1,0 +1,20 @@
+﻿@namespace BlazorWeb.Web
+@inherits LayoutComponentBase
+
+<Header OnToggleMenu=ToggleMenuHandler />
+
+@if (_isUserAuthenticated)
+{
+    <NavMenu @bind-IsMenuOpen=_isMenuOpen />
+}
+
+<div class="main @(_isUserAuthenticated ? "main--authenticated" : null)">
+    <div class="main-content">
+        <AppErrorBoundary>
+            @Body
+        </AppErrorBoundary>
+    </div>
+    <Footer />
+</div>
+
+<MessageBox />
