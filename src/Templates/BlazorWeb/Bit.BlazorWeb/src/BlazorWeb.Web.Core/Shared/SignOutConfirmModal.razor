@@ -1,0 +1,16 @@
+﻿@namespace BlazorWeb.Web.Core
+@inherits AppComponentBase
+
+<BitModal @bind-IsOpen="IsOpen">
+    <div class="modal-body">
+        <div class="modal-close-btn-container">
+            <BitIconButton OnClick="CloseModal" IconName="BitIconName.ChromeClose" Title="Close" />
+        </div>
+        <div class="modal-title">@Localizer[nameof(AppStrings.SignOut)]</div>
+        <div class="modal-desc">@Localizer[nameof(AppStrings.SignOutPrompt)]</div>
+        <div>
+            <BitButton ButtonStyle="BitButtonStyle.Primary" OnClick="SignOut">@Localizer[nameof(AppStrings.SignOut)]</BitButton>
+            <BitButton ButtonStyle="BitButtonStyle.Standard" OnClick="CloseModal">@Localizer[nameof(AppStrings.Cancel)]</BitButton>
+        </div>
+    </div>
+</BitModal>

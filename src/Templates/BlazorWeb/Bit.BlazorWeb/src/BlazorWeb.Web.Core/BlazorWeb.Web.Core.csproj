@@ -1,0 +1,72 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <PropertyGroup>
+        <TargetFrameworks>net7.0</TargetFrameworks>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <SupportedPlatform Include="browser" />
+
+        <Content Remove="compilerconfig.json" />
+        <None Include="compilerconfig.json" />
+        <None Include="Shared\LoadingComponent.razor.scss" />
+
+        <Content Remove="wwwroot\appsettings.json" />
+        <EmbeddedResource Include="wwwroot\appsettings.json" />
+
+        <PackageReference Include="Bit.BlazorUI" Version="4.9.5" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="4.9.5">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Bit.SourceGenerators" Version="4.9.5">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="jose-jwt" Version="4.1.0" />
+        <PackageReference Include="LibSassBuilder" Version="3.0.0" Watch="false">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="7.0.2" />
+        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.2" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.2" />
+        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.9.4">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+
+        <Using Include="Microsoft.AspNetCore.Components" />
+        <Using Include="BlazorWeb.Web.Core.Services.Contracts" />
+        <Using Include="BlazorWeb.Web.Core.Services.Implementations" />
+        <Using Include="Microsoft.Extensions.Configuration" />
+        <Using Include="Microsoft.JSInterop" />
+        <Using Include="System.Net.Http.Json" />
+        <Using Include="System.Collections.Concurrent" />
+        <Using Include="Microsoft.AspNetCore.Components.Authorization" />
+        <Using Include="BlazorWeb.Web.Core.Components" />
+        <Using Include="Bit.BlazorUI" />
+        <Using Include="Microsoft.AspNetCore.Authorization" />
+
+        <Watch Remove="*.scss" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\BlazorWeb.Shared\BlazorWeb.Shared.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Update="**\*.Designer.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>$([System.String]::Copy('%(Filename)').Replace('.Designer','')).resx</DependentUpon>
+        </Compile>
+        <EmbeddedResource Update="**\*.resx">
+            <Generator>PublicResXFileCodeGenerator</Generator>
+            <LastGenOutput>%(Filename).Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+    </ItemGroup>
+
+</Project>

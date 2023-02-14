@@ -1,0 +1,70 @@
+[
+    {
+        "inputFile": "Shared/MainLayout.razor.scss",
+        "outputFile": "Shared/MainLayout.razor.css"
+    },
+    {
+        "inputFile": "Shared/AppErrorBoundary.razor.scss",
+        "outputFile": "Shared/AppErrorBoundary.razor.css"
+    },
+    {
+        "inputFile": "Shared/MessageBox.razor.scss",
+        "outputFile": "Shared/MessageBox.razor.css"
+    },
+    {
+        "inputFile": "Shared/Header.razor.scss",
+        "outputFile": "Shared/Header.razor.css"
+    },
+    {
+        "inputFile": "Shared/Footer.razor.scss",
+        "outputFile": "Shared/Footer.razor.css"
+    },
+    {
+        "inputFile": "Shared/NavMenu.razor.scss",
+        "outputFile": "Shared/NavMenu.razor.css"
+    },
+    {
+        "inputFile": "Shared/SignOutConfirmModal.razor.scss",
+        "outputFile": "Shared/SignOutConfirmModal.razor.css"
+    },
+    {
+        "inputFile": "Shared/PageNotFound.razor.scss",
+        "outputFile": "Shared/PageNotFound.razor.css"
+    },
+    {
+        "inputFile": "Pages/HomePage.razor.scss",
+        "outputFile": "Pages/HomePage.razor.css"
+    },
+    {
+        "inputFile": "Pages/PrivacyPage.razor.scss",
+        "outputFile": "Pages/PrivacyPage.razor.css"
+    },
+    {
+        "inputFile": "Pages/SignUpPage.razor.scss",
+        "outputFile": "Pages/SignUpPage.razor.css"
+    },
+    {
+        "inputFile": "Pages/SignInPage.razor.scss",
+        "outputFile": "Pages/SignInPage.razor.css"
+    },
+    {
+        "inputFile": "Pages/EmailConfirmationPage.razor.scss",
+        "outputFile": "Pages/EmailConfirmationPage.razor.css"
+    },
+    {
+        "inputFile": "Pages/ForgotPasswordPage.razor.scss",
+        "outputFile": "Pages/ForgotPasswordPage.razor.css"
+    },
+    {
+        "inputFile": "Pages/ResetPasswordPage.razor.scss",
+        "outputFile": "Pages/ResetPasswordPage.razor.css"
+    },
+    {
+        "inputFile": "Pages/TodoPage.razor.scss",
+        "outputFile": "Pages/TodoPage.razor.css"
+    },
+    {
+        "inputFile": "Pages/EditProfilePage.razor.scss",
+        "outputFile": "Pages/EditProfilePage.razor.css"
+    }
+]
