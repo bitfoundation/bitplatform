@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <Import Project="../../Bit.Build.props" />
+    
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <IncludeBuildOutput>false</IncludeBuildOutput>
+        <ContentTargetFolders>content</ContentTargetFolders>
+        <EnableDefaultItems>false</EnableDefaultItems>
+        <NoDefaultExcludes>true</NoDefaultExcludes>
+        
+        <!-- Nuget Package-->
+        <PackageId>Bit.BlazorDual</PackageId>
+        <PackageType>Template</PackageType>
+        <Title>Bit Platform BlazorDual</Title>
+        <PackageDescription>A template for creating a dual-mode Todo Web app based on the bitplatform</PackageDescription>
+        <PackageTags>Bit;c#;asp.net;core;template;web;blazor</PackageTags>
+        <PackageCopyright>Copyright © Bit Platform 2022</PackageCopyright>
+        <PackageIcon>bit-icon-512.png</PackageIcon>
+        
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Content Include="Bit.BlazorDual\**" Exclude="Bit.BlazorDual\.vs\**;Bit.BlazorDual\**\bin\**\*;Bit.BlazorDual\**\obj\**\*; " />
+        <Compile Remove="**\*" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="Bit.BlazorDual\src\BlazorDual.Web\wwwroot\images\icons\bit-icon-512.png">
+            <Pack>True</Pack>
+            <PackagePath>\</PackagePath>
+        </None>
+    </ItemGroup>
+
+
+
+</Project>

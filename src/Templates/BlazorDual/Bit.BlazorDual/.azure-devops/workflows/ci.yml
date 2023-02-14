@@ -1,0 +1,67 @@
+trigger:
+- develop
+
+variables:
+  WEB_APP_DEPLOYMENT_TYPE: 'DefaultDeploymentType'
+
+jobs:
+- job: build_blazor_server
+  displayName: 'build blazor server'
+
+  pool:
+    vmImage: 'ubuntu-latest'
+
+  steps:
+  - task: UseDotNet@2
+    displayName: 'Setup .NET'
+    inputs:
+      useGlobalJson: true
+      workingDirectory: 'src'
+
+  - task: UseDotNet@2
+    displayName: 'Use dotnet sdk 6.x for LibSassBuilder'
+    inputs:
+      version: 6.x
+  
+  - task: Bash@3
+    displayName: 'Build'
+    inputs:
+      targetType: 'inline'
+      script: 'dotnet build src/BlazorDual.Web/BlazorDual.Web.csproj -p:Configuration=Release -p:WebAppDeploymentType="${{ variables.WEB_APP_DEPLOYMENT_TYPE }}"'
+
+
+- job: build_blazor_api_wasm
+  displayName: 'build blazor api + web assembly'
+
+  pool:
+    vmImage: 'ubuntu-latest'
+
+  steps:
+  - task: UseDotNet@2
+    displayName: 'Setup .NET'
+    inputs:
+      useGlobalJson: true
+      workingDirectory: 'src'
+
+  - task: UseDotNet@2
+    displayName: 'Use dotnet sdk 6.x for LibSassBuilder'
+    inputs:
+      version: 6.x
+
+  - task: Bash@3
+    displayName: 'Restore workloads'
+    inputs:
+      targetType: 'inline'
+      script: 'dotnet workload restore src/BlazorDual.Web/BlazorDual.Web.csproj -p:BlazorMode=BlazorWebAssembly'
+
+  - task: Bash@3
+    displayName: 'Switch to blazor web assembly'
+    inputs:
+      targetType: 'inline'
+      script: sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' src/BlazorDual.Web/BlazorDual.Web.csproj
+
+  - task: Bash@3
+    displayName: 'Build'
+    inputs:
+      targetType: 'inline'
+      script: 'dotnet build src/BlazorDual.Api/BlazorDual.Api.csproj -p:Configuration=Release -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ variables.WEB_APP_DEPLOYMENT_TYPE }}"'

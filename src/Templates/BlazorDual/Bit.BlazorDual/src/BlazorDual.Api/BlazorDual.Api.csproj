@@ -1,0 +1,100 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <!-- For razor light cshtml files -->
+        <MvcRazorExcludeRefAssembliesFromPublish>false</MvcRazorExcludeRefAssembliesFromPublish>
+        <PreserveCompilationReferences>true</PreserveCompilationReferences>
+        <PreserveCompilationContext>true</PreserveCompilationContext>
+        <!-- For razor light cshtml files -->
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!--/-:msbuild-conditional:noEmit -->
+        <!-- In the Blazor WebAssembly mode, the API project will host the web app itself -->
+        <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\BlazorDual.Web\Pages\_Host.cshtml" Link="Pages\_Host.cshtml" />
+        <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\BlazorDual.Web\Pages\_Layout.cshtml" Link="Pages\_Layout.cshtml" />
+        <Compile Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\BlazorDual.Web\Services\Implementations\ServerSideAuthTokenProvider.cs" Link="Services\Implementations\ServerSideAuthTokenProvider.cs" />
+        <Compile Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\BlazorDual.Web\Extensions\HttpRequestExtensions.cs" Link="Extensions\HttpRequestExtensions.cs" />
+        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="7.0.2" />
+        <ProjectReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\BlazorDual.Web\BlazorDual.Web.csproj" />
+        <!--/+:msbuild-conditional:noEmit -->
+
+        <EmbeddedResource Include="Resources\*.cshtml" />
+        <PackageReference Include="AutoMapper" Version="12.0.1" />
+        <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.0" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="4.9.5">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Bit.SourceGenerators" Version="4.9.5">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="FluentEmail.Razor" Version="3.0.2" />
+        <PackageReference Include="FluentEmail.Smtp" Version="3.0.2" />
+
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.2" />
+
+
+        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="7.0.2" />
+        <PackageReference Include="Microsoft.AspNetCore.OData" Version="8.0.12" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.2">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="7.0.2" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.2">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="7.0.2" />
+        <PackageReference Include="MimeTypeMapOfficial" Version="1.0.17" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+        <PackageReference Include="AspNetCore.HealthChecks.System" Version="6.0.5" />
+        <PackageReference Include="AspNetCore.HealthChecks.UI" Version="6.0.5" />
+        <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="6.0.5" />
+        <PackageReference Include="AspNetCore.HealthChecks.UI.InMemory.Storage" Version="6.0.5" />
+        <PackageReference Include="AspNetCore.HealthChecks.Network" Version="6.0.4" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="Microsoft.AspNetCore.Mvc" />
+        <Using Include="Microsoft.Extensions.Options" />
+        <Using Include="Microsoft.AspNetCore.Identity" />
+        <Using Include="Microsoft.EntityFrameworkCore" />
+        <Using Include="Microsoft.AspNetCore.OData.Query" />
+        <Using Include="Microsoft.AspNetCore.Authorization" />
+        <Using Include="Microsoft.EntityFrameworkCore.Migrations" />
+        <Using Include="Microsoft.EntityFrameworkCore.Metadata.Builders" />
+        <Using Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
+        <Using Include="AutoMapper" />
+        <Using Include="AutoMapper.QueryableExtensions" />
+        <Using Include="BlazorDual.Shared.Enums" />
+        <Using Include="BlazorDual.Api.Data" />
+        <Using Include="BlazorDual.Api.Services.Contracts" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\BlazorDual.Shared\BlazorDual.Shared.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Update="IdentityCertificate.pfx">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Update="**\*.Designer.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>$([System.String]::Copy('%(Filename)').Replace('.Designer','')).resx</DependentUpon>
+        </Compile>
+        <EmbeddedResource Update="**\*.resx">
+            <Generator>PublicResXFileCodeGenerator</Generator>
+            <LastGenOutput>%(Filename).Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+    </ItemGroup>
+
+</Project>

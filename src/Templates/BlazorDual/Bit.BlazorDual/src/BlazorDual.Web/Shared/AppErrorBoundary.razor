@@ -1,0 +1,31 @@
+﻿@namespace BlazorDual.Web
+@inherits ErrorBoundaryBase
+
+@if (CurrentException is null)
+{
+    @ChildContent
+}
+else if (ErrorContent is null)
+{
+    <div class="main">
+        <div class="header">
+            <BitIconButton OnClick="Recover" IconName="BitIconName.ChromeClose" />
+        </div>
+        <div>
+            <img src="_content/BlazorDual.Web/images/icons/error-triangle.svg" />
+        </div>
+        <h1 class="title">Oops, something went wrong...</h1>
+        @if (ShowException)
+        {
+            <div class="exception">@CurrentException?.ToString()</div>
+        }
+        <div class="buttons">
+            <BitButton OnClick="Refresh" ButtonStyle="BitButtonStyle.Primary">Refresh</BitButton>
+            <BitButton OnClick="GoHome" ButtonStyle="BitButtonStyle.Standard">Home</BitButton>
+        </div>
+    </div>
+}
+else
+{
+    @ErrorContent(CurrentException)
+}
