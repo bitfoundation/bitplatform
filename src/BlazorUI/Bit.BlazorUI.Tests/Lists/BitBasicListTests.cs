@@ -20,7 +20,7 @@ public class BitBasicListTests : BunitTestContext
         DataRow(false, null, 5),
         DataRow(false, null, null),
     ]
-    public void BitBasicListShoudRenderExpectedChildElements(bool virtualize, int? itemSize, int? overscanCount)
+    public void BitBasicListShouldRenderExpectedChildElements(bool virtualize, int? itemSize, int? overscanCount)
     {
         //https://bunit.dev/docs/test-doubles/emulating-ijsruntime.html#-jsinterop-emulation
         const double viewportHeight = 1_000_000_000;
@@ -30,14 +30,14 @@ public class BitBasicListTests : BunitTestContext
         var component = RenderComponent<BitBasicListTest>(parameters =>
         {
             parameters.Add(p => p.Virtualize, virtualize);
-            parameters.Add(p => p.Items, GetTestData(500));
+            parameters.Add(p => p.Items, BitBasicListTests.GetTestData(500));
             //ItemSize default value is 50.
             parameters.Add(p => p.ItemSize, itemSize ?? 50);
             //OverscanCount default value is 3.
             parameters.Add(p => p.OverscanCount, overscanCount ?? 3);
         });
 
-        var bitList = component.Find(".bit-bsc-lst");
+        var bitList = component.Find(".bit-bsl");
 
         if (virtualize)
         {
@@ -77,18 +77,11 @@ public class BitBasicListTests : BunitTestContext
             }
         });
 
-        var bitList = component.Find(".bit-bsc-lst");
+        var list = component.Find(".bit-bsl");
 
-        var bitLisRole = bitList.GetAttribute("role");
+        var listRole = list.GetAttribute("role");
 
-        if (role.HasNoValue())
-        {
-            Assert.AreEqual("list", bitLisRole);
-        }
-        else
-        {
-            Assert.AreEqual(role, bitLisRole);
-        }
+        Assert.AreEqual(role.HasValue() ? role : "list", listRole);
     }
 
     [DataTestMethod, DataRow(100)]
@@ -102,10 +95,10 @@ public class BitBasicListTests : BunitTestContext
 
         var bitList = component.Find("div");
 
-        Assert.IsTrue(bitList.ClassList.Contains("bit-bsc-lst"));
+        Assert.IsTrue(bitList.ClassList.Contains("bit-bsl"));
     }
 
-    private List<Person> GetTestData(int itemCount)
+    private static List<Person> GetTestData(int itemCount)
     {
         List<Person> people = new();
         for (int i = 0; i < itemCount; i++)

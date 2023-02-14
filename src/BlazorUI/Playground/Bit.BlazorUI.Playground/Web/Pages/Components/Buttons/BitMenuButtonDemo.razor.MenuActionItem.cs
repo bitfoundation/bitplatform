@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI.Playground.Web.Pages.Components.Buttons;
 
-public class ActionItem
+public class MenuActionItem
 {
     public string Id { get; set; }
     public string Name { get; set; }

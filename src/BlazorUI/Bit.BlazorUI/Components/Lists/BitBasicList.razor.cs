@@ -1,46 +1,40 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Components;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public partial class BitBasicList<TItem>
 {
+    protected override bool UseVisual => false;
+
+
     /// <summary>
-    /// list of items that want to render
+    /// Enables virtualization in rendering the list.
     /// </summary>
-#pragma warning disable CA2227 // Collection properties should be read only
+    [Parameter] public bool EnableVirtualization { get; set; }
+
+    /// <summary>
+    /// Gets or sets the list of items to render.
+    /// </summary>
     [Parameter] public ICollection<TItem> Items { get; set; } = Array.Empty<TItem>();
-#pragma warning restore CA2227 // Collection properties should be read only
 
     /// <summary>
-    /// virtualize rendering the list
-    /// UI rendering to just the parts that are currently visible
-    /// defualt is false
+    /// Gets the size of each item in pixels. Defaults to 50px.
     /// </summary>
-    [Parameter] public bool Virtualize { get; set; } = false;
+    [Parameter] public float ItemSize { get; set; } = 50f;
 
     /// <summary>
-    /// determines how many additional items are rendered before and after the visible region
-    /// defualt is 3
+    /// Gets or sets a value that determines how many additional items will be rendered before and after the visible region.
     /// </summary>
     [Parameter] public int OverscanCount { get; set; } = 3;
 
     /// <summary>
-    /// The height of each item in pixels, defualt is 50
-    /// </summary>
-    [Parameter] public int ItemSize { get; set; } = 50;
-
-    /// <summary>
-    /// content of each item
-    /// it should determin with context attribute
-    /// </summary>
-    [Parameter] public RenderFragment<TItem>? RowTemplate { get; set; }
-
-    /// <summary>
-    /// Role of the BasicList.
+    /// Gets or set the role attribute of the BasicList html element.
     /// </summary>
     [Parameter] public string Role { get; set; } = "list";
 
-    protected override string RootElementClass => "bit-bsc-lst";
+    /// <summary>
+    /// Gets or sets the Template to render each row.
+    /// </summary>
+    [Parameter] public RenderFragment<TItem> RowTemplate { get; set; } = default!;
+
+
+    protected override string RootElementClass => "bit-bsl";
 }

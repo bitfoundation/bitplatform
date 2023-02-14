@@ -3,7 +3,7 @@ namespace Bit.BlazorUI;
 
 public partial class BitMenuButtonOption
 {
-    [CascadingParameter] protected BitMenuButtonGroup Parent { get; set; } = default!;
+    [CascadingParameter] protected BitMenuButton<BitMenuButtonOption> Parent { get; set; } = default!;
 
     /// <summary>
     /// Name of an icon to render next to the option text
