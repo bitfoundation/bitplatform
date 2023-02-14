@@ -18,7 +18,8 @@ public partial class BitSplitButton<TItem> where TItem : class
     private string _internalTextField = TEXT_FIELD;
     private string _internalkeyField = KEY_FIELD;
 
-    private List<TItem> _items = new();
+    private List<TItem> _children = new();
+    private IEnumerable<TItem> _oldItems;
     private TItem? _currentItem;
 
     private string _splitButtonId => $"{RootElementClass}-{UniqueId}";
@@ -139,17 +140,17 @@ public partial class BitSplitButton<TItem> where TItem : class
 
     internal void RegisterOption(BitSplitButtonOption option)
     {
-        _items.Add((option as TItem)!);
+        _children.Add((option as TItem)!);
 
         if (_currentItem is null)
         {
-            _currentItem = _items.FirstOrDefault();
+            _currentItem = _children.FirstOrDefault();
         }
     }
 
     internal void UnregisterOption(BitSplitButtonOption option)
     {
-        _items.Remove((option as TItem)!);
+        _children.Remove((option as TItem)!);
     }
 
     protected override async Task OnInitializedAsync()
@@ -168,10 +169,11 @@ public partial class BitSplitButton<TItem> where TItem : class
             ? BitButtonType.Button
             : BitButtonType.Submit;
 
-        if (ChildContent is null && Items.Any())
+        if (ChildContent is null && Items.Any() && Items != _oldItems)
         {
-            _items = Items.ToList();
-            _currentItem = _items.FirstOrDefault();
+            _oldItems = Items;
+            _children = Items.ToList();
+            _currentItem = _children.FirstOrDefault();
         }
 
         return base.OnParametersSetAsync();

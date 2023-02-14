@@ -23,11 +23,18 @@
                 tabindex="@(IsEnabled ? 0 : -1)"
                 class="operator-btn @(_currentItem is not null && GetIsEnabled(_currentItem) is false ? "disabled" : null)"
                 @onclick="() => HandleOnClick(_currentItem)">
-            @if (_currentItem is not null && GetIconName(_currentItem).HasValue)
+            @if(ItemTemplate is not null && _currentItem is not null)
             {
-                <i class="bit-icon bit-icon--@GetIconName(_currentItem).GetName()"></i>
+                @ItemTemplate(_currentItem)
             }
-            <span class="text">@(_currentItem is not null ? GetText(_currentItem) : string.Empty)</span>
+            else
+            {
+                @if (_currentItem is not null && GetIconName(_currentItem).HasValue)
+                {
+                    <i class="bit-icon bit-icon--@GetIconName(_currentItem).GetName()"></i>
+                }
+                <span class="text">@(_currentItem is not null ? GetText(_currentItem) : string.Empty)</span>
+            }
         </button>
         <button type="button"
                 tabindex="@(IsEnabled ? 0 : -1)"
@@ -41,7 +48,7 @@
          class="items"
          tabindex="@(IsEnabled ? 0 : -1)">
         <ul role="presentation">
-            @foreach (TItem item in _items)
+            @foreach (TItem item in _children)
             {
                 if (item != _currentItem)
                 {

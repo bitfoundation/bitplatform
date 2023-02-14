@@ -250,17 +250,18 @@ public partial class BitSplitButtonDemo
     };
 
 
-    private string Example1ClickedItem;
-    private string Example2ClickedItem;
-    private string Example3ClickedItem;
-    private string Example4ClickedItem;
+    private string BasicClickedItem;
+    private string IsStickyClickedItem;
+    private string DisabledClickedItem;
+    private string TemplateClickedItem;
 
-    private List<BitSplitButtonItem> example1Items = new()
+    private List<BitSplitButtonItem> BasicItems = new()
     {
         new BitSplitButtonItem()
         {
             Text = "Item A",
-            Key = "A"
+            Key = "A",
+            IconName = BitIconName.Emoji
         },
         new BitSplitButtonItem()
         {
@@ -275,7 +276,7 @@ public partial class BitSplitButtonDemo
             IconName = BitIconName.Emoji2
         }
     };
-    private List<BitSplitButtonItem> example2Items = new()
+    private List<BitSplitButtonItem> IsStickyItems = new()
     {
         new BitSplitButtonItem()
         {
@@ -296,7 +297,7 @@ public partial class BitSplitButtonDemo
             IconName = BitIconName.Delete
         }
     };
-    private List<BitSplitButtonItem> example3Items = new()
+    private List<BitSplitButtonItem> DisabledItems = new()
     {
         new BitSplitButtonItem()
         {
@@ -325,7 +326,7 @@ public partial class BitSplitButtonDemo
             IconName = BitIconName.Emoji2
         }
     };
-    private List<BitSplitButtonItem> example4Items = new()
+    private List<BitSplitButtonItem> TemplateItems = new()
     {
         new BitSplitButtonItem()
         {
@@ -344,7 +345,7 @@ public partial class BitSplitButtonDemo
         }
     };
 
-    private List<SplitActionItem> example1CustomItems = new()
+    private List<SplitActionItem> BasicCustomItems = new()
     {
         new SplitActionItem()
         {
@@ -364,7 +365,7 @@ public partial class BitSplitButtonDemo
             Icon = BitIconName.Emoji2
         }
     };
-    private List<SplitActionItem> example2CustomItems = new()
+    private List<SplitActionItem> IsStickyCustomItems = new()
     {
         new SplitActionItem()
         {
@@ -385,7 +386,7 @@ public partial class BitSplitButtonDemo
             Icon = BitIconName.Delete
         }
     };
-    private List<SplitActionItem> example3CustomItems = new()
+    private List<SplitActionItem> DisabledCustomItems = new()
     {
         new SplitActionItem()
         {
@@ -414,7 +415,7 @@ public partial class BitSplitButtonDemo
             Icon = BitIconName.Emoji2
         }
     };
-    private List<SplitActionItem> example4CustomItems = new()
+    private List<SplitActionItem> TemplateCustomItems = new()
     {
         new SplitActionItem()
         {
@@ -435,10 +436,10 @@ public partial class BitSplitButtonDemo
 
     private void OnTabClick()
     {
-        Example1ClickedItem = string.Empty; 
-        Example2ClickedItem = string.Empty;
-        Example3ClickedItem = string.Empty;
-        Example4ClickedItem = string.Empty;
+        BasicClickedItem = string.Empty; 
+        IsStickyClickedItem = string.Empty;
+        DisabledClickedItem = string.Empty;
+        TemplateClickedItem = string.Empty;
     }
 
     private readonly string example1BitSplitButtonItemHTMLCode = @"
@@ -460,22 +461,22 @@ public partial class BitSplitButtonDemo
 <div class=""example-content"">
     <div>
         <BitLabel>Primary</BitLabel>
-        <BitSplitButton Items=""example1Items""
+        <BitSplitButton Items=""BasicItems""
                         ButtonStyle=""BitButtonStyle.Primary""
-                        OnClick=""(BitSplitButtonItem item) => Example1ClickedItem = item.Text"" />
+                        OnClick=""(BitSplitButtonItem item) => BasicClickedItem = item.Text"" />
     </div>
     <div>
         <BitLabel>Standard</BitLabel>
-        <BitSplitButton Items=""example1Items""
+        <BitSplitButton Items=""BasicItems""
                         ButtonStyle=""BitButtonStyle.Standard""
-                        OnClick=""(BitSplitButtonItem item) => Example1ClickedItem = item.Text"" />
+                        OnClick=""(BitSplitButtonItem item) => BasicClickedItem = item.Text"" />
     </div>
     <div>
         <BitLabel>Disabled</BitLabel>
-        <BitSplitButton Items=""example1Items"" IsEnabled=""false"" />
+        <BitSplitButton Items=""BasicItems"" IsEnabled=""false"" />
     </div>
 </div>
-<div class=""clicked-item"">Clicked item: @Example1ClickedItem</div>
+<div class=""clicked-item"">Clicked item: @BasicClickedItem</div>
 ";
     private readonly string example1CustomItemHTMLCode = @"
 <style>
@@ -496,32 +497,32 @@ public partial class BitSplitButtonDemo
 <div class=""example-content"">
     <div>
         <BitLabel>Primary</BitLabel>
-        <BitSplitButton Items=""example1CustomItems""
+        <BitSplitButton Items=""BasicCustomItems""
                         TextField=""@nameof(SplitActionItem.Name)""
                         KeyField=""@nameof(SplitActionItem.Id)""
                         IconNameField=""@nameof(SplitActionItem.Icon)""
                         ButtonStyle=""BitButtonStyle.Primary""
-                        OnClick=""(SplitActionItem item) => Example1ClickedItem = item.Name"" />
+                        OnClick=""(SplitActionItem item) => BasicClickedItem = item.Name"" />
     </div>
     <div>
         <BitLabel>Standard</BitLabel>
-        <BitSplitButton Items=""example1CustomItems""
+        <BitSplitButton Items=""BasicCustomItems""
                         TextFieldSelector=""item => item.Name""
                         KeyFieldSelector=""item => item.Id""
                         IconNameFieldSelector=""item => item.Icon""
                         ButtonStyle=""BitButtonStyle.Standard""
-                        OnClick=""(SplitActionItem item) => Example1ClickedItem = item.Name"" />
+                        OnClick=""(SplitActionItem item) => BasicClickedItem = item.Name"" />
     </div>
     <div>
         <BitLabel>Disabled</BitLabel>
-        <BitSplitButton Items=""example1CustomItems""
+        <BitSplitButton Items=""BasicCustomItems""
                         TextField=""@nameof(SplitActionItem.Name)""
                         KeyField=""@nameof(SplitActionItem.Id)""
                         IconNameField=""@nameof(SplitActionItem.Icon)""
                         IsEnabled=""false"" />
     </div>
 </div>
-<div class=""clicked-item"">Clicked item: @Example1ClickedItem</div>
+<div class=""clicked-item"">Clicked item: @BasicClickedItem</div>
 ";
     private readonly string example1BitSplitButtonOptionHTMLCode = @"
 <style>
@@ -543,7 +544,7 @@ public partial class BitSplitButtonDemo
     <div>
         <BitLabel>Primary</BitLabel>
         <BitSplitButton ButtonStyle=""BitButtonStyle.Primary""
-                        OnClick=""(BitSplitButtonOption item) => Example1ClickedItem = item.Text"">
+                        OnClick=""(BitSplitButtonOption item) => BasicClickedItem = item.Text"">
             <BitSplitButtonOption Text=""Item A"" Key=""A"" />
             <BitSplitButtonOption Text=""Item B"" Key=""B"" IconName=""BitIconName.Emoji"" />
             <BitSplitButtonOption Text=""Item C"" Key=""C"" IconName=""BitIconName.Emoji2"" />
@@ -552,7 +553,7 @@ public partial class BitSplitButtonDemo
     <div>
         <BitLabel>Standard</BitLabel>
         <BitSplitButton ButtonStyle=""BitButtonStyle.Standard""
-                        OnClick=""(BitSplitButtonOption item) => Example1ClickedItem = item.Text"">
+                        OnClick=""(BitSplitButtonOption item) => BasicClickedItem = item.Text"">
             <BitSplitButtonOption Text=""Item A"" Key=""A"" />
             <BitSplitButtonOption Text=""Item B"" Key=""B"" IconName=""BitIconName.Emoji"" />
             <BitSplitButtonOption Text=""Item C"" Key=""C"" IconName=""BitIconName.Emoji2"" />
@@ -561,17 +562,17 @@ public partial class BitSplitButtonDemo
     <div>
         <BitLabel>Disabled</BitLabel>
         <BitSplitButton IsEnabled=""false""
-                        OnClick=""(BitSplitButtonOption item) => Example1ClickedItem = item.Text"">
+                        OnClick=""(BitSplitButtonOption item) => BasicClickedItem = item.Text"">
             <BitSplitButtonOption Text=""Item A"" Key=""A"" />
             <BitSplitButtonOption Text=""Item B"" Key=""B"" IconName=""BitIconName.Emoji"" />
             <BitSplitButtonOption Text=""Item C"" Key=""C"" IconName=""BitIconName.Emoji2"" />
         </BitSplitButton>
     </div>
 </div>
-<div class=""clicked-item"">Clicked item: @Example1ClickedItem</div>
+<div class=""clicked-item"">Clicked item: @BasicClickedItem</div>
 ";
     private readonly string example1BitSplitButtonItemCSharpCode = @"
-private List<BitSplitButtonItem> example1Items = new()
+private List<BitSplitButtonItem> BasicItems = new()
 {
     new BitSplitButtonItem()
     {
@@ -592,7 +593,7 @@ private List<BitSplitButtonItem> example1Items = new()
     }
 };
 
-private string Example1ClickedItem;
+private string BasicClickedItem;
 ";
     private readonly string example1CustomItemCSharpCode = @"
 public class SplitActionItem
@@ -603,7 +604,7 @@ public class SplitActionItem
     public bool IsEnabled { get; set; } = true;
 }
 
-private List<SplitActionItem> example1CustomItems = new()
+private List<SplitActionItem> BasicCustomItems = new()
 {
     new SplitActionItem()
     {
@@ -624,10 +625,10 @@ private List<SplitActionItem> example1CustomItems = new()
     }
 };
 
-private string Example1ClickedItem;
+private string BasicClickedItem;
 ";
     private readonly string example1BitSplitButtonOptionCSharpCode = @"
-private string Example1ClickedItem;
+private string BasicClickedItem;
 ";
 
     private readonly string example2BitSplitButtonItemHTMLCode = @"
@@ -649,20 +650,20 @@ private string Example1ClickedItem;
 <div class=""example-content"">
     <div>
         <BitLabel>Primary</BitLabel>
-        <BitSplitButton Items=""example2Items""
+        <BitSplitButton Items=""IsStickyItems""
                         ButtonStyle=""BitButtonStyle.Primary""
                         IsSticky=""true""
-                        OnClick=""(BitSplitButtonItem item) => Example2ClickedItem = item.Text"" />
+                        OnClick=""(BitSplitButtonItem item) => IsStickyClickedItem = item.Text"" />
     </div>
     <div>
         <BitLabel>Standard</BitLabel>
-        <BitSplitButton Items=""example2Items""
+        <BitSplitButton Items=""IsStickyItems""
                         ButtonStyle=""BitButtonStyle.Standard""
                         IsSticky=""true""
-                        OnClick=""(BitSplitButtonItem item) => Example2ClickedItem = item.Text"" />
+                        OnClick=""(BitSplitButtonItem item) => IsStickyClickedItem = item.Text"" />
     </div>
 </div>
-<div class=""clicked-item"">Clicked item: @Example2ClickedItem</div>
+<div class=""clicked-item"">Clicked item: @IsStickyClickedItem</div>
 ";
     private readonly string example2CustomItemHTMLCode = @"
 <style>
@@ -683,26 +684,26 @@ private string Example1ClickedItem;
 <div class=""example-content"">
     <div>
         <BitLabel>Primary</BitLabel>
-        <BitSplitButton Items=""example2CustomItems""
+        <BitSplitButton Items=""IsStickyCustomItems""
                         TextField=""@nameof(SplitActionItem.Name)""
                         KeyField=""@nameof(SplitActionItem.Id)""
                         IconNameField=""@nameof(SplitActionItem.Icon)""
                         ButtonStyle=""BitButtonStyle.Primary""
                         IsSticky=""true""
-                        OnClick=""(SplitActionItem item) => Example2ClickedItem = item.Name"" />
+                        OnClick=""(SplitActionItem item) => IsStickyClickedItem = item.Name"" />
     </div>
     <div>
         <BitLabel>Standard</BitLabel>
-        <BitSplitButton Items=""example2CustomItems""
+        <BitSplitButton Items=""IsStickyCustomItems""
                         TextFieldSelector=""item => item.Name""
                         KeyFieldSelector=""item => item.Id""
                         IconNameFieldSelector=""item => item.Icon""
                         ButtonStyle=""BitButtonStyle.Standard""
                         IsSticky=""true""
-                        OnClick=""(SplitActionItem item) => Example2ClickedItem = item.Name"" />
+                        OnClick=""(SplitActionItem item) => IsStickyClickedItem = item.Name"" />
     </div>
 </div>
-<div class=""clicked-item"">Clicked item: @Example2ClickedItem</div>
+<div class=""clicked-item"">Clicked item: @IsStickyClickedItem</div>
 ";
     private readonly string example2BitSplitButtonOptionHTMLCode = @"
 <style>
@@ -725,7 +726,7 @@ private string Example1ClickedItem;
         <BitLabel>Primary</BitLabel>
         <BitSplitButton ButtonStyle=""BitButtonStyle.Primary""
                         IsSticky=""true""
-                        OnClick=""(BitSplitButtonOption item) => Example2ClickedItem = item.Text"">
+                        OnClick=""(BitSplitButtonOption item) => IsStickyClickedItem = item.Text"">
             <BitSplitButtonOption Text=""Add"" Key=""add-key"" IconName=""BitIconName.Add"" />
             <BitSplitButtonOption Text=""Edit"" Key=""edit-key"" IconName=""BitIconName.Edit"" />
             <BitSplitButtonOption Text=""Delete"" Key=""delete-key"" IconName=""BitIconName.Delete"" />
@@ -735,17 +736,17 @@ private string Example1ClickedItem;
         <BitLabel>Standard</BitLabel>
         <BitSplitButton ButtonStyle=""BitButtonStyle.Standard""
                         IsSticky=""true""
-                        OnClick=""(BitSplitButtonOption item) => Example2ClickedItem = item.Text"">
+                        OnClick=""(BitSplitButtonOption item) => IsStickyClickedItem = item.Text"">
             <BitSplitButtonOption Text=""Add"" Key=""add-key"" IconName=""BitIconName.Add"" />
             <BitSplitButtonOption Text=""Edit"" Key=""edit-key"" IconName=""BitIconName.Edit"" />
             <BitSplitButtonOption Text=""Delete"" Key=""delete-key"" IconName=""BitIconName.Delete"" />
         </BitSplitButton>
     </div>
 </div>
-<div class=""clicked-item"">Clicked item: @Example2ClickedItem</div>
+<div class=""clicked-item"">Clicked item: @IsStickyClickedItem</div>
 ";
     private readonly string example2BitSplitButtonItemCSharpCode = @"
-private List<BitSplitButtonItem> example2Items = new()
+private List<BitSplitButtonItem> IsStickyItems = new()
 {
     new BitSplitButtonItem()
     {
@@ -767,7 +768,7 @@ private List<BitSplitButtonItem> example2Items = new()
     }
 };
 
-private string Example2ClickedItem;
+private string IsStickyClickedItem;
 ";
     private readonly string example2CustomItemCSharpCode = @"
 public class SplitActionItem
@@ -778,7 +779,7 @@ public class SplitActionItem
     public bool IsEnabled { get; set; } = true;
 }
 
-private List<SplitActionItem> example2CustomItems = new()
+private List<SplitActionItem> IsStickyCustomItems = new()
 {
     new SplitActionItem()
     {
@@ -800,10 +801,10 @@ private List<SplitActionItem> example2CustomItems = new()
     }
 };
 
-private string Example2ClickedItem;
+private string IsStickyClickedItem;
 ";
     private readonly string example2BitSplitButtonOptionCSharpCode = @"
-private string Example2ClickedItem;
+private string IsStickyClickedItem;
 ";
 
     private readonly string example3BitSplitButtonItemHTMLCode = @"
@@ -825,19 +826,19 @@ private string Example2ClickedItem;
 <div class=""example-content"">
     <div>
         <BitLabel>Sticky Primary</BitLabel>
-        <BitSplitButton Items=""example3Items""
+        <BitSplitButton Items=""DisabledItems""
                         ButtonStyle=""BitButtonStyle.Primary""
                         IsSticky=""true""
-                        OnClick=""(BitSplitButtonItem item) => Example3ClickedItem = item.Text"" />
+                        OnClick=""(BitSplitButtonItem item) => DisabledClickedItem = item.Text"" />
     </div>
     <div>
         <BitLabel>Basic Standard</BitLabel>
-        <BitSplitButton Items=""example3Items""
+        <BitSplitButton Items=""DisabledItems""
                         ButtonStyle=""BitButtonStyle.Standard""
-                        OnClick=""(BitSplitButtonItem item) => Example3ClickedItem = item.Text"" />
+                        OnClick=""(BitSplitButtonItem item) => DisabledClickedItem = item.Text"" />
     </div>
 </div>
-<div class=""clicked-item"">Clicked item: @Example3ClickedItem</div>
+<div class=""clicked-item"">Clicked item: @DisabledClickedItem</div>
 ";
     private readonly string example3CustomItemHTMLCode = @"
 <style>
@@ -858,25 +859,25 @@ private string Example2ClickedItem;
 <div class=""example-content"">
     <div>
         <BitLabel>Sticky Primary</BitLabel>
-        <BitSplitButton Items=""example3CustomItems""
+        <BitSplitButton Items=""DisabledCustomItems""
                         TextField=""@nameof(SplitActionItem.Name)""
                         KeyField=""@nameof(SplitActionItem.Id)""
                         IconNameField=""@nameof(SplitActionItem.Icon)""
                         ButtonStyle=""BitButtonStyle.Primary""
                         IsSticky=""true""
-                        OnClick=""(SplitActionItem item) => Example3ClickedItem = item.Name"" />
+                        OnClick=""(SplitActionItem item) => DisabledClickedItem = item.Name"" />
     </div>
     <div>
         <BitLabel>Basic Standard</BitLabel>
-        <BitSplitButton Items=""example3CustomItems""
+        <BitSplitButton Items=""DisabledCustomItems""
                         TextFieldSelector=""item => item.Name""
                         KeyFieldSelector=""item => item.Id""
                         IconNameFieldSelector=""item => item.Icon""
                         ButtonStyle=""BitButtonStyle.Standard""
-                        OnClick=""(SplitActionItem item) => Example3ClickedItem = item.Name"" />
+                        OnClick=""(SplitActionItem item) => DisabledClickedItem = item.Name"" />
     </div>
 </div>
-<div class=""clicked-item"">Clicked item: @Example3ClickedItem</div>
+<div class=""clicked-item"">Clicked item: @DisabledClickedItem</div>
 ";
     private readonly string example3BitSplitButtonOptionHTMLCode = @"
 <style>
@@ -899,7 +900,7 @@ private string Example2ClickedItem;
         <BitLabel>Sticky Primary</BitLabel>
         <BitSplitButton ButtonStyle=""BitButtonStyle.Primary""
                         IsSticky=""true""
-                        OnClick=""(BitSplitButtonOption item) => Example3ClickedItem = item.Text"">
+                        OnClick=""(BitSplitButtonOption item) => DisabledClickedItem = item.Text"">
             <BitSplitButtonOption Text=""Item A"" Key=""A"" IconName=""BitIconName.Emoji"" />
             <BitSplitButtonOption Text=""Item B"" Key=""B"" IconName=""BitIconName.Emoji2"" />
             <BitSplitButtonOption Text=""Item C"" Key=""C"" IconName=""BitIconName.Emoji"" />
@@ -909,7 +910,7 @@ private string Example2ClickedItem;
     <div>
         <BitLabel>Basic Standard</BitLabel>
         <BitSplitButton ButtonStyle=""BitButtonStyle.Standard""
-                        OnClick=""(BitSplitButtonOption item) => Example3ClickedItem = item.Text"">
+                        OnClick=""(BitSplitButtonOption item) => DisabledClickedItem = item.Text"">
             <BitSplitButtonOption Text=""Item A"" Key=""A"" IconName=""BitIconName.Emoji"" />
             <BitSplitButtonOption Text=""Item B"" Key=""B"" IconName=""BitIconName.Emoji2"" />
             <BitSplitButtonOption Text=""Item C"" Key=""C"" IconName=""BitIconName.Emoji"" />
@@ -917,10 +918,10 @@ private string Example2ClickedItem;
         </BitSplitButton>
     </div>
 </div>
-<div class=""clicked-item"">Clicked item: @Example3ClickedItem</div>
+<div class=""clicked-item"">Clicked item: @DisabledClickedItem</div>
 ";
     private readonly string example3BitSplitButtonItemCSharpCode = @"
-private List<BitSplitButtonItem> example3Items = new()
+private List<BitSplitButtonItem> DisabledItems = new()
 {
     new BitSplitButtonItem()
     {
@@ -950,7 +951,7 @@ private List<BitSplitButtonItem> example3Items = new()
     }
 };
 
-private string Example3ClickedItem;
+private string DisabledClickedItem;
 ";
     private readonly string example3CustomItemCSharpCode = @"
 public class SplitActionItem
@@ -961,7 +962,7 @@ public class SplitActionItem
     public bool IsEnabled { get; set; } = true;
 }
 
-private List<SplitActionItem> example3CustomItems = new()
+private List<SplitActionItem> DisabledCustomItems = new()
 {
     new SplitActionItem()
     {
@@ -991,10 +992,10 @@ private List<SplitActionItem> example3CustomItems = new()
     }
 };
 
-private string Example3ClickedItem;
+private string DisabledClickedItem;
 ";
     private readonly string example3BitSplitButtonOptionCSharpCode = @"
-private string Example3ClickedItem;
+private string DisabledClickedItem;
 ";
 
     private readonly string example4BitSplitButtonItemHTMLCode = @"
@@ -1021,10 +1022,10 @@ private string Example3ClickedItem;
 <div class=""example-content"">
     <div>
         <BitLabel>Primary</BitLabel>
-        <BitSplitButton Items=""example4Items""
+        <BitSplitButton Items=""TemplateItems""
                         ButtonStyle=""BitButtonStyle.Primary""
                         IsSticky=""true""
-                        OnClick=""(BitSplitButtonItem item) => Example4ClickedItem = item.Text"">
+                        OnClick=""(BitSplitButtonItem item) => TemplateClickedItem = item.Text"">
             <ItemTemplate Context=""item"">
                 <div class=""item-template-box"">
                     <span style=""color: @(item.Key == ""add-key"" ? ""green"" : item.Key == ""edit-key"" ? ""yellow"" : ""red"");"">
@@ -1036,10 +1037,10 @@ private string Example3ClickedItem;
     </div>
     <div>
         <BitLabel>Standard</BitLabel>
-        <BitSplitButton Items=""example4Items""
+        <BitSplitButton Items=""TemplateItems""
                         ButtonStyle=""BitButtonStyle.Standard""
                         IsSticky=""true""
-                        OnClick=""(BitSplitButtonItem item) => Example4ClickedItem = item.Text"">
+                        OnClick=""(BitSplitButtonItem item) => TemplateClickedItem = item.Text"">
             <ItemTemplate Context=""item"">
                 @if (item.Key == ""add-key"")
                 {
@@ -1072,7 +1073,7 @@ private string Example3ClickedItem;
         </BitSplitButton>
     </div>
 </div>
-<div class=""clicked-item"">Clicked item: @Example4ClickedItem</div>
+<div class=""clicked-item"">Clicked item: @TemplateClickedItem</div>
 ";
     private readonly string example4CustomItemHTMLCode = @"
 <style>
@@ -1098,13 +1099,13 @@ private string Example3ClickedItem;
 <div class=""example-content"">
     <div>
         <BitLabel>Primary</BitLabel>
-        <BitSplitButton Items=""example4CustomItems""
+        <BitSplitButton Items=""TemplateCustomItems""
                         TextField=""@nameof(SplitActionItem.Name)""
                         KeyField=""@nameof(SplitActionItem.Id)""
                         IconNameField=""@nameof(SplitActionItem.Icon)""
                         ButtonStyle=""BitButtonStyle.Primary""
                         IsSticky=""true""
-                        OnClick=""(SplitActionItem item) => Example4ClickedItem = item.Name"">
+                        OnClick=""(SplitActionItem item) => TemplateClickedItem = item.Name"">
             <ItemTemplate Context=""item"">
                 <div class=""item-template-box"">
                     <span style=""color: @(item.Id == ""add-key"" ? ""green"" : item.Id == ""edit-key"" ? ""yellow"" : ""red"");"">
@@ -1116,13 +1117,13 @@ private string Example3ClickedItem;
     </div>
     <div>
         <BitLabel>Standard</BitLabel>
-        <BitSplitButton Items=""example4CustomItems""
+        <BitSplitButton Items=""TemplateCustomItems""
                         TextFieldSelector=""item => item.Name""
                         KeyFieldSelector=""item => item.Id""
                         IconNameFieldSelector=""item => item.Icon""
                         ButtonStyle=""BitButtonStyle.Standard""
                         IsSticky=""true""
-                        OnClick=""(SplitActionItem item) => Example4ClickedItem = item.Name"">
+                        OnClick=""(SplitActionItem item) => TemplateClickedItem = item.Name"">
             <ItemTemplate Context=""item"">
                 @if (item.Id == ""add-key"")
                 {
@@ -1155,7 +1156,7 @@ private string Example3ClickedItem;
         </BitSplitButton>
     </div>
 </div>
-<div class=""clicked-item"">Clicked item: @Example4ClickedItem</div>
+<div class=""clicked-item"">Clicked item: @TemplateClickedItem</div>
 ";
     private readonly string example4BitSplitButtonOptionHTMLCode = @"
 <style>
@@ -1183,7 +1184,7 @@ private string Example3ClickedItem;
         <BitLabel>Primary</BitLabel>
         <BitSplitButton ButtonStyle=""BitButtonStyle.Primary""
                         IsSticky=""true""
-                        OnClick=""(BitSplitButtonOption item) => Example4ClickedItem = item.Text"">
+                        OnClick=""(BitSplitButtonOption item) => TemplateClickedItem = item.Text"">
             <ItemTemplate Context=""item"">
                 <div class=""item-template-box"">
                     <span style=""color: @(item.Key == ""add-key"" ? ""green"" : item.Key == ""edit-key"" ? ""yellow"" : ""red"");"">
@@ -1202,7 +1203,7 @@ private string Example3ClickedItem;
         <BitLabel>Standard</BitLabel>
         <BitSplitButton ButtonStyle=""BitButtonStyle.Standard""
                         IsSticky=""true""
-                        OnClick=""(BitSplitButtonOption item) => Example4ClickedItem = item.Text"">
+                        OnClick=""(BitSplitButtonOption item) => TemplateClickedItem = item.Text"">
             <ItemTemplate Context=""item"">
                 @if (item.Key == ""add-key"")
                 {
@@ -1240,10 +1241,10 @@ private string Example3ClickedItem;
         </BitSplitButton>
     </div>
 </div>
-<div class=""clicked-item"">Clicked item: @Example4ClickedItem</div>
+<div class=""clicked-item"">Clicked item: @TemplateClickedItem</div>
 ";
     private readonly string example4BitSplitButtonItemCSharpCode = @"
-private List<BitSplitButtonItem> example4Items = new()
+private List<BitSplitButtonItem> TemplateItems = new()
 {
     new BitSplitButtonItem()
     {
@@ -1262,7 +1263,7 @@ private List<BitSplitButtonItem> example4Items = new()
     }
 };
 
-private string Example4ClickedItem;
+private string TemplateClickedItem;
 ";
     private readonly string example4CustomItemCSharpCode = @"
 public class SplitActionItem
@@ -1273,7 +1274,7 @@ public class SplitActionItem
     public bool IsEnabled { get; set; } = true;
 }
 
-private List<SplitActionItem> example4CustomItems = new()
+private List<SplitActionItem> TemplateCustomItems = new()
 {
     new SplitActionItem()
     {
@@ -1292,9 +1293,9 @@ private List<SplitActionItem> example4CustomItems = new()
     }
 };
 
-private string Example4ClickedItem;
+private string TemplateClickedItem;
 ";
     private readonly string example4BitSplitButtonOptionCSharpCode = @"
-private string Example4ClickedItem;
+private string TemplateClickedItem;
 ";
 }
