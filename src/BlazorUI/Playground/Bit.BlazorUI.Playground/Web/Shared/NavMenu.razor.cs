@@ -30,7 +30,6 @@ public partial class NavMenu
                 new BitNavItem { Text = "ToggleButton", Url = "/components/toggle-button" },
                 new BitNavItem { Text = "MenuButton", Url = "/components/menu-button" },
                 new BitNavItem { Text = "SplitButton", Url = "/components/split-button" },
-                new BitNavItem { Text = "SplitButtonList", Url = "/components/split-button-list" },
                 new BitNavItem { Text = "CheckBox", Url = "/components/check-box" },
                 new BitNavItem { Text = "ChoiceGroup", Url = "/components/choice-group" },
                 new BitNavItem { Text = "RadioButtonGroup", Url = "/components/radio-button-group" },

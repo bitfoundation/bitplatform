@@ -1,5 +1,13 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
+@typeparam TItem
+
+@if (ChildContent is not null)
+{
+    <CascadingValue Value="this" IsFixed="true">
+        @ChildContent
+    </CascadingValue>
+}
 
 <div @ref="RootElement"
      @attributes="HtmlAttributes"
@@ -13,13 +21,20 @@
                 aria-describedby="@AriaDescription"
                 aria-hidden="@AriaHidden"
                 tabindex="@(IsEnabled ? 0 : -1)"
-                class="operator-btn @(_currentItem?.IsEnabled is false ? "disabled" : null)"
+                class="operator-btn @(_currentItem is not null && GetIsEnabled(_currentItem) is false ? "disabled" : null)"
                 @onclick="() => HandleOnClick(_currentItem)">
-            @if (_currentItem?.IconName.HasValue ?? false)
+            @if(ItemTemplate is not null && _currentItem is not null)
             {
-                <i class="bit-icon bit-icon--@_currentItem.IconName.GetName()"></i>
+                @ItemTemplate(_currentItem)
             }
-            <span class="text">@_currentItem?.Text</span>
+            else
+            {
+                @if (_currentItem is not null && GetIconName(_currentItem).HasValue)
+                {
+                    <i class="bit-icon bit-icon--@GetIconName(_currentItem).GetName()"></i>
+                }
+                <span class="text">@(_currentItem is not null ? GetText(_currentItem) : string.Empty)</span>
+            }
         </button>
         <button type="button"
                 tabindex="@(IsEnabled ? 0 : -1)"
@@ -33,25 +48,25 @@
          class="items"
          tabindex="@(IsEnabled ? 0 : -1)">
         <ul role="presentation">
-            @foreach (BitSplitButtonItem item in Items)
+            @foreach (TItem item in _children)
             {
-                @if (item != _currentItem)
+                if (item != _currentItem)
                 {
                     <li role="presentation">
-                        <button type="@ButtonType?.GetValue()"
+                        <button @onclick="() => HandleOnItemClick(item)"
+                                type="@ButtonType?.GetValue()"
                                 role="menuitem"
-                                aria-disabled="@item.IsEnabled"
-                                tabindex="@(item.IsEnabled ? 0 : -1)"
-                                class="item @(item.IsEnabled ? null : "disabled")"
-                                @onclick="() => HandleOnItemClick(item)">
+                                aria-disabled="@GetIsEnabled(item)"
+                                tabindex="@(GetIsEnabled(item) ? 0 : -1)"
+                                class="item @(GetIsEnabled(item) ? null : "disabled")">
                             @if (ItemTemplate is null)
                             {
-                                @if (item.IconName.HasValue)
+                                @if (GetIconName(item).HasValue)
                                 {
-                                    <i class="bit-icon bit-icon--@item.IconName.GetName()"></i>
+                                    <i class="bit-icon bit-icon--@GetIconName(item).GetName()"></i>
                                 }
                                 <span class="item-text-container">
-                                    @item.Text
+                                    @GetText(item)
                                 </span>
                             }
                             else

@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI.Playground.Web.Pages.Components.Buttons;
 
-public class SplitButtonActionItem
+public class SplitActionItem
 {
     public string Id { get; set; }
     public string Name { get; set; }
