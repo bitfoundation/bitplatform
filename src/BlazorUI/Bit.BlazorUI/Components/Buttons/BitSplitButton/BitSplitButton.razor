@@ -21,13 +21,13 @@
                 aria-describedby="@AriaDescription"
                 aria-hidden="@AriaHidden"
                 tabindex="@(IsEnabled ? 0 : -1)"
-                class="operator-btn @(GetIsEnabled(_currentItem) is false ? "disabled" : null)"
+                class="operator-btn @(_currentItem is not null && GetIsEnabled(_currentItem) is false ? "disabled" : null)"
                 @onclick="() => HandleOnClick(_currentItem)">
-            @if (GetIconName(_currentItem).HasValue)
+            @if (_currentItem is not null && GetIconName(_currentItem).HasValue)
             {
                 <i class="bit-icon bit-icon--@GetIconName(_currentItem).GetName()"></i>
             }
-            <span class="text">@GetText(_currentItem)</span>
+            <span class="text">@(_currentItem is not null ? GetText(_currentItem) : string.Empty)</span>
         </button>
         <button type="button"
                 tabindex="@(IsEnabled ? 0 : -1)"

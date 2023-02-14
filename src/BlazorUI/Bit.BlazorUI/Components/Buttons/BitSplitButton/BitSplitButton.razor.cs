@@ -20,6 +20,7 @@ public partial class BitSplitButton<TItem> where TItem : class
 
     private List<TItem> _items = new();
     private TItem? _currentItem;
+
     private string _splitButtonId => $"{RootElementClass}-{UniqueId}";
     private string _splitButtonCalloutId => $"{RootElementClass}-callout-{UniqueId}";
     private string _splitButtonOverlayId => $"{RootElementClass}-overlay-{UniqueId}";
@@ -77,7 +78,6 @@ public partial class BitSplitButton<TItem> where TItem : class
     ///  List of Item, each of which can be a Button with different action in the SplitButton.
     /// </summary>
     [Parameter] public IEnumerable<TItem> Items { get; set; } = new List<TItem>();
-
     /// <summary>
     /// Whether or not the item is enabled.
     /// </summary>
@@ -137,25 +137,7 @@ public partial class BitSplitButton<TItem> where TItem : class
         StateHasChanged();
     }
 
-    internal async Task HandleOnItemClick(TItem item)
-    {
-        if (IsSticky)
-        {
-            _currentItem = item;
-        }
-        else
-        {
-            if (GetIsEnabled(item) is false) return;
-
-            await OnClick.InvokeAsync(item);
-        }
-
-        var obj = DotNetObjectReference.Create(this);
-        await _js.ToggleSplitButtonCallout(obj, UniqueId.ToString(), _splitButtonId, _splitButtonCalloutId, _splitButtonOverlayId, _isCalloutOpen);
-        _isCalloutOpen = false;
-    }
-
-    internal async void RegisterOption(BitSplitButtonOption option)
+    internal void RegisterOption(BitSplitButtonOption option)
     {
         _items.Add((option as TItem)!);
 
@@ -177,12 +159,6 @@ public partial class BitSplitButton<TItem> where TItem : class
         _internalTextField = TextFieldSelector?.GetName() ?? TextField;
         _internalkeyField = KeyFieldSelector?.GetName() ?? KeyField;
 
-        if (ChildContent is null && Items.Any())
-        {
-            _items = Items.ToList();
-            _currentItem = _items.FirstOrDefault();
-        }
-
         await base.OnInitializedAsync();
     }
 
@@ -191,6 +167,12 @@ public partial class BitSplitButton<TItem> where TItem : class
         ButtonType ??= _editContext is null
             ? BitButtonType.Button
             : BitButtonType.Submit;
+
+        if (ChildContent is null && Items.Any())
+        {
+            _items = Items.ToList();
+            _currentItem = _items.FirstOrDefault();
+        }
 
         return base.OnParametersSetAsync();
     }
@@ -248,11 +230,29 @@ public partial class BitSplitButton<TItem> where TItem : class
         return item.GetValueFromProperty(_internalIsEnabledField, true);
     }
 
-    private async Task HandleOnClick(TItem item)
+    private async Task HandleOnClick(TItem? item)
     {
-        if (IsEnabled is false || GetIsEnabled(item) is false) return;
+        if (IsEnabled is false || item is null || GetIsEnabled(item) is false) return;
 
         await OnClick.InvokeAsync(item);
+    }
+
+    private async Task HandleOnItemClick(TItem item)
+    {
+        if (IsSticky)
+        {
+            _currentItem = item;
+        }
+        else
+        {
+            if (GetIsEnabled(item) is false) return;
+
+            await OnClick.InvokeAsync(item);
+        }
+
+        var obj = DotNetObjectReference.Create(this);
+        await _js.ToggleSplitButtonCallout(obj, UniqueId.ToString(), _splitButtonId, _splitButtonCalloutId, _splitButtonOverlayId, _isCalloutOpen);
+        _isCalloutOpen = false;
     }
 
     private async Task ToggleCallout()
