@@ -68,9 +68,9 @@
         <Using Include="Microsoft.Extensions.Configuration" />
         <Using Include="Microsoft.AspNetCore.Components.Authorization" />
         <Using Include="Bit.BlazorUI" />
+        <Using Include="BlazorDual.Web.Components" />
         <Using Include="BlazorDual.Web.Services.Contracts" />
         <Using Include="BlazorDual.Web.Services.Implementations" />
-        <Using Include="BlazorDual.Web.Components" />
 
         <Watch Remove="*.scss" />
     </ItemGroup>

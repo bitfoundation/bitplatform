@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
-
     <PropertyGroup>
         <TargetFramework>net7.0</TargetFramework>
         <!-- For razor light cshtml files -->
@@ -70,8 +69,8 @@
         <Using Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
         <Using Include="AutoMapper" />
         <Using Include="AutoMapper.QueryableExtensions" />
-        <Using Include="BlazorDual.Shared.Enums" />
         <Using Include="BlazorDual.Api.Data" />
+        <Using Include="BlazorDual.Shared.Enums" />
         <Using Include="BlazorDual.Api.Services.Contracts" />
     </ItemGroup>
 
