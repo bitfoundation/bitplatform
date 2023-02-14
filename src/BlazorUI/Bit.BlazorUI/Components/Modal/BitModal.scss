@@ -41,8 +41,8 @@
 
     .container {
         box-shadow: rgba(0, 0, 0, 22%) 0 spacing(3.25) spacing(7.25) 0, rgba(0, 0, 0, 18%) 0 spacing(0.625) spacing(1.75) 0;
-        border-radius: spacing(0.25);
-        background-color: rgb(255, 255, 255);
+        border-radius: $shape-border-radius;
+        background-color: $color-neutrals-white;
         box-sizing: border-box;
         position: relative;
         text-align: left;
