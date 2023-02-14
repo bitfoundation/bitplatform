@@ -1,17 +1,12 @@
-﻿@using Blazored.Toast.Configuration
-@inherits LayoutComponentBase
+﻿@inherits LayoutComponentBase
 
-<Header></Header>
 
-<div class="main-container @(SmallPadding ? "small-pad" : "") @(RemovePadding ? "no-pad" : "")">
+<div class="main-container">
+    <Header></Header>
     <AppErrorBoundary>
         @Body
     </AppErrorBoundary>
-    <ContactForm />
     <Footer />
 </div>
 
 <MessageBox />
-<BlazoredToasts Position="ToastPosition.BottomRight"
-                Timeout="7"
-                ShowCloseButton="false" />

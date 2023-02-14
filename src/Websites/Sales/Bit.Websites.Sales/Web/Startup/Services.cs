@@ -1,6 +1,5 @@
 ﻿#if BlazorServer
 using System.IO.Compression;
-using Blazored.Toast;
 using Microsoft.AspNetCore.ResponseCompression;
 
 namespace Bit.Websites.Sales.Web.Startup;
@@ -24,7 +23,6 @@ public static class Services
         
         services.AddSharedServices();
         services.AddAppServices();
-        services.AddBlazoredToast();
     }
 }
 #endif

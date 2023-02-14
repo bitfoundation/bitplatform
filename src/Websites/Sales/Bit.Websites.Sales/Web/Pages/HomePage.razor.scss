@@ -1,70 +1,122 @@
-﻿@import '../wwwroot/styles/abstracts/_colors.scss';
-@import '../wwwroot/styles/abstracts/_media-queries.scss';
-@import '../wwwroot/styles/abstracts/_functions.scss';
-@import '../wwwroot/styles/abstracts/_mixins.scss';
+﻿@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_media-queries.scss';
+@import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_mixins.scss';
 
 .page-sec {
-    display: flex;
     width: 100%;
+    display: flex;
+    max-width: rem(1440px);
     box-sizing: border-box;
-}
-
-.to-the-moon-sec {
-    flex-flow: row nowrap;
-    justify-content: center;
-    align-items: flex-start;
-    padding: rem(78px) rem(100px) 0;
-
-    @include lt-lg {
-        flex-flow: column-reverse nowrap;
-        justify-content: flex-start;
-        align-items: center;
-    }
+    padding: rem(40px) rem(140px);
+    margin: 0 auto;
 
     @include lg {
-        padding: rem(87px) rem(92px) 0;
-    }
-
-    @include md {
-        padding: rem(55px) rem(46px) 0;
+        padding: rem(32px) rem(60px);
     }
 
     @include sm {
-        padding: rem(55px) 0 0;
+        padding: rem(16px);
+    }
+}
+
+.sec-title {
+    font-size: rem(44px);
+    font-weight: bold;
+    margin-bottom: 1rem;
+    text-align: center;
+
+    @include lg {
+        font-size: rem(34px);
+    }
+
+    @include md {
+        font-size: rem(30px);
+    }
+
+    @include sm {
+        font-size: rem(26px);
+    }
+}
+
+.sec-title-underline {
+    background-color: $Y1;
+    width: rem(240px);
+    height: rem(4px);
+    margin-bottom: 2rem;
+
+    @include lg {
+        width: rem(200px);
+        height: rem(2px);
+    }
+
+    @include md {
+        width: rem(180px);
+    }
+
+    @include sm {
+        width: rem(150px);
+    }
+}
+
+.sec-content {
+    color: $Gray2;
+    font-size: rem(20px);
+    text-align: center;
+    line-height: 2rem;
+    margin-bottom: 4rem;
+
+    @include md {
+        font-size: rem(18px);
+    }
+
+    @include sm {
+        font-size: rem(16px);
+    }
+}
+
+.sec-btn--primary {
+    @include PrimaryButton($IsInNavbar: false);
+}
+
+.home-bg {
+    background-image: url('/images/home/home_bg.webp');
+    background-repeat: no-repeat;
+    background-size: cover;
+    margin-bottom: rem(140px);
+}
+
+.to-the-moon {
+    flex-flow: row nowrap;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: rem(224px);
+
+    @include md {
+        flex-flow: column-reverse;
+        align-items: center;
+        padding-top: rem(100px);
     }
 
     .sec-bg {
-        width: rem(602px);
+        flex-grow: 1;
         height: rem(482px);
-        background-image: url('/images/home/to-the-moon-bg.svg');
-        background-position: center;
-        background-size: cover;
+        background-size: contain;
+        background-position: right;
         background-repeat: no-repeat;
-        margin-left: rem(22px);
-
-        @include lt-lg {
-            width: rem(524px);
-            height: rem(420px);
-            margin-left: 0;
-        }
-
-        @include lg {
-            margin-bottom: rem(40px);
-        }
+        background-image: url('/images/home/to-the-moon-bg.svg');
 
         @include md {
-            margin-bottom: rem(55px);
+            width: 100%;
+            max-width: rem(500px);
         }
 
-        @include sm {
-            width: 100%;
-            background-size: rem(524px) rem(420px);
-            background-position: center right rem(-210px);
-            margin-bottom: rem(38px);
+        @include xs {
+            height: rem(450px);
         }
     }
 
-    .sec-content {
+    .sec-body {
         display: flex;
         flex-flow: column nowrap;
         justify-content: flex-start;
@@ -76,39 +128,59 @@
         box-sizing: border-box;
         color: $Black;
 
-        @include lt-lg {
-            max-width: 100%;
-            margin-right: 0;
-            padding-top: 0;
+        @include lg {
+            max-width: rem(450px);
         }
 
-        @include sm {
-            padding: 0 rem(30px);
+        @include md {
+            max-width: unset;
+            justify-content: center;
+            align-items: center;
+        }
+
+        @include xs {
+            padding-top: unset;
         }
     }
 
     .sec-title {
-        font-weight: 600;
-        font-size: rem(80px);
-        line-height: rem(130px);
+        font-weight: 700;
+        font-size: rem(56px);
+        line-height: rem(80px);
+
+        @include lg {
+            font-size: rem(48px);
+            line-height: rem(64px);
+        }
+
+        @include md {
+            margin-bottom: 2rem;
+        }
 
         @include sm {
-            font-weight: normal;
-            font-size: rem(40px);
-            line-height: rem(63px);
-            margin-bottom: rem(2px);
+            font-size: rem(34px);
+            line-height: rem(48px);
         }
     }
 
     .sec-subtitle {
         font-weight: 600;
-        font-size: rem(30px);
-        line-height: rem(49px);
+        font-size: rem(26px);
+        line-height: rem(40px);
         margin-bottom: rem(20px);
 
+        @include lg {
+            font-size: rem(22px);
+            line-height: rem(32px);
+        }
+
+        @include md {
+            margin-bottom: 2rem;
+        }
+
         @include sm {
-            font-weight: normal;
-            margin-bottom: rem(11px);
+            font-size: rem(20px);
+            line-height: rem(28px);
         }
     }
 
@@ -117,705 +189,428 @@
         font-size: rem(20px);
         line-height: rem(32px);
         margin-bottom: rem(30px);
-
-        @include lg {
-            max-width: rem(763px);
-            margin-bottom: rem(60px);
-        }
+        color: $Gray1;
+        text-align: left;
 
         @include md {
-            max-width: rem(612px);
-            margin-bottom: rem(30px);
+            font-size: rem(18px);
+            line-height: rem(28px);
+            margin-bottom: rem(50px);
+            text-align: center;
         }
 
         @include sm {
-            max-width: 100%;
-            margin-bottom: rem(15px);
+            font-size: rem(14px);
+            line-height: rem(20px);
         }
     }
 }
 
-.projects-sec {
+.what-we-offer {
+    width: 100%;
+    flex-flow: column;
+    align-items: center;
+    margin-bottom: rem(140px);
+
+    .sec-card-group {
+        display: flex;
+        flex-flow: row wrap;
+        border-top: 1px solid $Gray4;
+        border-left: 1px solid $Gray4;
+        margin-bottom: rem(77px);
+
+        @include md {
+            max-width: rem(500px);
+        }
+
+        .card {
+            width: calc(100% / 4);
+            height: rem(220px);
+            border-right: 1px solid $Gray4;
+            border-bottom: 1px solid $Gray4;
+            padding: rem(178px) rem(13px) 0;
+            font-weight: bold;
+            font-size: rem(20px);
+            text-align: center;
+            background-color: transparent;
+            background-repeat: no-repeat;
+            background-position: top rem(50px) center;
+            background-size: rem(95px);
+            cursor: pointer;
+            color: $Black1;
+
+            &:hover {
+                box-shadow: 0px 4px 40px rgba(0, 0, 0, 0.1);
+            }
+
+            @include lg {
+                font-size: rem(16px);
+            }
+
+            @include md {
+                width: calc(100% / 2);
+            }
+
+            @include sm {
+                width: 100%;
+                font-size: rem(20px);
+                background-position-y: rem(30px);
+                padding-top: rem(158px);
+            }
+        }
+
+        .card-1 {
+            background-image: url('/images/home/services/web-development-icon.svg')
+        }
+
+        .card-2 {
+            background-image: url('/images/home/services/mobile-development-icon.svg')
+        }
+
+        .card-3 {
+            background-image: url('/images/home/services/consulting-services-icon.svg')
+        }
+
+        .card-4 {
+            background-image: url('/images/home/services/ai-icon.svg')
+        }
+
+        .card-5 {
+            background-image: url('/images/home/services/uiux-icon.svg')
+        }
+
+        .card-6 {
+            background-image: url('/images/home/services/support-icon.svg')
+        }
+
+        .card-7 {
+            background-image: url('/images/home/services/cloud-icon.svg')
+        }
+
+        .card-8 {
+            background-image: url('/images/home/services/game-development-icon.svg')
+        }
+    }
+}
+
+
+.success-bg {
+    background-color: $Gray5;
+    margin-bottom: rem(140px);
+
+    @include md {
+        padding-bottom: 2rem;
+    }
+}
+
+.success-story {
     flex-flow: column nowrap;
     justify-content: flex-start;
     align-items: center;
-    padding: rem(184px) rem(120px) 0;
+    padding-top: 4rem;
 
-    @include lg {
-        padding: rem(90px) rem(70px) 0;
+    .sec-carousel {
+        width: 100%;
+        background-color: $White;
+        padding: 3rem 4rem;
+        border-radius: 1rem;
     }
 
-    @include md {
-        padding: rem(90px) rem(36px) 0 0;
-    }
-
-    @include sm {
-        padding: rem(48px) rem(30px) 0;
-    }
-
-    .sec-subtitle {
-        font-size: rem(20px);
-        line-height: rem(32px);
-        color: $Black;
-        margin-bottom: rem(70px);
+    ::deep .carousel {
+        width: 100%;
+        height: rem(430px);
 
         @include lg {
-            margin-bottom: rem(114px);
-            margin-top: rem(6px);
+            height: rem(390px);
         }
 
         @include md {
-            margin-bottom: rem(45px);
-            margin-top: rem(22px);
+            height: rem(530px);
         }
 
         @include sm {
-            margin-bottom: rem(42px);
-            font-weight: bold;
+            height: rem(300px);
+        }
+
+        .slide {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: rem(20px);
+
+            @include md {
+                flex-flow: column;
+            }
+        }
+
+        .slide-image {
+            width: rem(500px);
+            height: rem(300px);
+
+            @include lg {
+                width: rem(350px);
+                height: rem(210px);
+            }
+
+            @include md {
+                width: rem(330px);
+                height: rem(200px);
+            }
+
+            @include sm {
+                width: rem(250px);
+                height: rem(160px);
+            }
+        }
+
+        .slide-content {
+            display: flex;
+            flex-flow: column nowrap;
+            justify-content: center;
+            align-items: flex-start;
+
+            @include md {
+                align-items: center;
+            }
+        }
+
+        .slide-title {
+            font-weight: 700;
+            font-size: rem(30px);
+            line-height: rem(40px);
+            color: #0065EF;
+            margin-bottom: rem(16px);
+
+            @include lg {
+                font-size: rem(26px);
+                line-height: rem(36px);
+            }
+
+            @include md {
+                font-size: rem(22px);
+                line-height: rem(32px);
+            }
+        }
+
+        .slide-title-underline {
+            width: rem(285px);
+            height: 2px;
+            background-color: $Gray4;
+            margin-bottom: 1rem;
+
+            @include md {
+                width: rem(180px);
+            }
+        }
+
+        .slide-desc {
+            font-weight: 400;
+            font-size: rem(20px);
+            line-height: rem(32px);
+            color: $Gray1;
+
+            @include md {
+                text-align: center;
+                font-size: rem(18px);
+                line-height: rem(28px);
+            }
+
+            @include sm {
+                display: none;
+            }
+        }
+    }
+
+    .prev-next {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        padding: 2rem;
+
+        @include md {
+            padding: 3rem;
+        }
+
+        button {
+            cursor: pointer;
+            width: rem(56px);
+            height: rem(56px);
+            background: transparent;
+            stroke: $Gray2;
+            padding: 0;
+
+            &:hover {
+                svg path {
+                    stroke: $B2;
+                }
+            }
         }
     }
 }
 
-.slide-container {
-    width: 100%;
-    display: flex;
-    flex-flow: row nowrap;
+.how-we-work {
+    flex-flow: column nowrap;
     justify-content: flex-start;
     align-items: center;
-    margin-bottom: rem(31px);
+    padding-top: 4rem;
 
-    @include lt-lg {
-        margin-bottom: rem(64px);
-    }
-
-    @include sm {
-        margin-bottom: rem(31px);
-    }
-
-    .slide {
-        width: 100%;
-        display: flex;
-        flex-flow: row nowrap;
-        justify-content: center;
-        align-items: center;
-
-        @include md {
-            justify-content: flex-start;
-        }
-
-        @include sm {
-            flex-flow: column nowrap;
-            justify-content: flex-start;
-        }
-    }
-
-    .slide-photo {
-        width: rem(565px);
-        height: rem(399px);
-        background-position: center;
-        background-repeat: no-repeat;
-        background-size: cover;
-        border-radius: rem(30px);
-        margin-right: rem(26px);
-
-        @include lg {
-            width: rem(377px);
-            height: rem(363px);
-            border-radius: rem(21px);
-            margin-right: rem(17px);
-        }
-
-        @include md {
-            width: rem(263px);
-            height: rem(362px);
-            border-radius: 0 rem(20px) rem(20px) 0;
-            margin-right: rem(17px);
-        }
-
-        @include sm {
-            width: rem(299px);
-            height: rem(211px);
-            border-radius: rem(10px);
-            margin-right: 0;
-            margin-bottom: rem(35px);
-        }
-    }
-
-    .slide-content {
-        width: 100%;
-        max-width: rem(567px);
+    .process-card {
+        position: relative;
         display: flex;
         flex-flow: column nowrap;
         justify-content: center;
         align-items: flex-start;
-        margin-left: rem(26px);
-
-        @include lt-lg {
-            max-width: rem(478px);
-            margin-left: rem(17px);
-        }
-
-        @include sm {
-            max-width: 100%;
-            margin-left: 0;
-        }
-    }
-
-    .slide-title {
-        font-weight: 600;
-        font-size: rem(30px);
-        line-height: rem(49px);
-        color: #F44436;
-        margin-bottom: rem(16px);
-
-        @include sm {
-            font-weight: normal;
-            margin-bottom: rem(12px);
-        }
-    }
-
-    .slide-desc {
-        font-weight: 500;
-        font-size: rem(20px);
-        line-height: rem(32px);
-        color: $Black;
-
-        @include sm {
-            font-weight: bold;
-        }
-    }
-}
-
-.slider-btn-group {
-    width: rem(1184px);
-    display: flex;
-    flex-flow: row nowrap;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: rem(46px);
-
-    @include lt-lg {
-        width: fit-content;
-    }
-
-    @include md {
-        margin-bottom: rem(37px);
-    }
-
-    .slider-btn {
-        width: rem(63px);
-        height: rem(63px);
+        width: 100%;
+        max-width: rem(1160px);
+        height: rem(228px);
+        border: 1px solid #E6E6E6;
+        border-radius: rem(15px);
+        margin-bottom: rem(20px);
+        box-sizing: border-box;
         background-color: $White;
-        background-position: center;
-        background-size: rem(30px) rem(15px);
+        background-position: center left rem(42px);
         background-repeat: no-repeat;
-        outline: none;
-        border: rem(1px) solid #ECECEC;
-        border-radius: 50%;
-        cursor: pointer;
-    }
+        background-size: rem(80px);
+        padding-left: rem(171px);
 
-    .slider-btn--prev {
-        background-image: url('/images/home/arrow-left-blue-icon.svg');
-        margin-right: rem(7px);
-    }
+        @include md {
+            padding-left: rem(150px);
+        }
 
-    .slider-btn--next {
-        background-image: url('/images/home/arrow-right-blue-icon.svg');
-        margin-left: rem(7px);
-    }
+        @include sm {
+            background-position: top rem(16px) left rem(16px);
+            background-size: rem(56px);
+            padding-left: rem(16px);
+            padding-top: rem(66px);
+        }
 
-    .slider-line {
-        width: rem(487px);
-        height: rem(1px);
-        background-color: #E7E7E7;
-
-        &:first-child {
-            margin-right: rem(24px);
+        &:hover {
+            border-width: 2px;
+            box-shadow: 0px 4px 38px rgba(0, 0, 0, 0.12);
         }
 
         &:last-child {
-            margin-left: rem(24px);
+            margin-bottom: 0;
         }
 
-        @include lt-lg {
-            display: none;
-        }
-    }
-}
+        .process-card-title {
+            font-weight: bold;
+            font-size: rem(28px);
+            line-height: rem(46px);
+            color: $Black;
+            margin-bottom: 1rem;
 
-.sec-btn--primary {
-    @include PrimaryButton($IsInNavbar: false);
-}
+            @include lg {
+                font-size: rem(22px);
+                line-height: rem(32px);
+            }
 
-.services-sec {
-    flex-flow: column nowrap;
-    justify-content: flex-start;
-    align-items: center;
-    padding-top: rem(145px);
+            @include md {
+                font-size: rem(18px);
+                line-height: rem(24px);
+            }
 
-    @include lg {
-        padding-top: rem(99px);
-    }
-
-    @include md {
-        padding-top: rem(92px);
-    }
-
-    @include sm {
-        padding-top: rem(91px);
-    }
-
-    .sec-desc {
-        width: 100%;
-        max-width: rem(803px);
-        margin-bottom: rem(80px);
-        box-sizing: border-box;
-        font-size: rem(20px);
-        line-height: rem(32px);
-        text-align: center;
-        color: $Black;
-
-        @include lt-lg {
-            margin-bottom: rem(52px);
+            @include sm {
+                font-size: rem(16px);
+                line-height: rem(20px);
+            }
         }
 
-        @include md {
-            padding: 0 rem(56px);
-        }
-
-        @include sm {
-            padding: 0 rem(12px);
-            margin-top: rem(11px);
-            margin-bottom: rem(24px);
-        }
-    }
-
-    .sec-card-group {
-        width: 100%;
-        max-width: rem(1440px);
-        display: flex;
-        flex-flow: row wrap;
-        justify-content: flex-start;
-        align-items: flex-start;
-        border-top: rem(1px) solid #EAEAEA;
-        border-left: rem(1px) solid #EAEAEA;
-        margin-bottom: rem(77px);
-
-        @include lt-lg {
-            max-width: rem(722px);
-            border-bottom: rem(1px) solid #EAEAEA;
-            border-top: none;
-        }
-
-        @include lt-lg {
-            max-width: 100%;
-        }
-    }
-}
-
-.service-card {
-    position: relative;
-    width: calc(100% / 4);
-    height: rem(260px);
-    border-right: rem(1px) solid #EAEAEA;
-    border-bottom: rem(1px) solid #EAEAEA;
-    padding: rem(178px) rem(13px) 0;
-    box-sizing: border-box;
-    font-weight: bold;
-    font-size: rem(20px);
-    line-height: rem(33px);
-    text-align: center;
-    color: $Black;
-    background-color: $White;
-    background-repeat: no-repeat;
-    background-position: top rem(50px) center;
-    background-size: rem(95px);
-    cursor: pointer;
-
-    &:hover {
-        .service-card-overlay {
-            opacity: 1;
-        }
-    }
-
-    @include lt-lg {
-        width: calc(100% / 2);
-        border-top: rem(1px) solid #EAEAEA;
-        border-bottom: none;
-    }
-
-    @include sm {
-        width: 100%;
-    }
-}
-
-.web-development-card {
-    background-image: url('/images/home/services/web-development-icon.svg');
-}
-
-.app-development-card {
-    background-image: url('/images/home/services/app-development-icon.svg');
-}
-
-.mobile-development-card {
-    background-image: url('/images/home/services/mobile-development-icon.svg');
-}
-
-.game-development-card {
-    background-image: url('/images/home/services/game-development-icon.svg');
-}
-
-.ai-card {
-    background-image: url('/images/home/services/ai-icon.svg');
-}
-
-.support-card {
-    background-image: url('/images/home/services/support-icon.svg');
-}
-
-.cloud-card {
-    background-image: url('/images/home/services/cloud-icon.svg');
-}
-
-.design-card {
-    background-image: url('/images/home/services/design-icon.svg');
-}
-
-.service-card-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 1;
-    display: flex;
-    flex-flow: column nowrap;
-    justify-content: center;
-    align-items: flex-start;
-    width: 100%;
-    height: 100%;
-    padding: rem(37px);
-    box-sizing: border-box;
-    opacity: 0;
-    background-color: #FAFAFA;
-    transition: opacity ease-in 0.3s;
-}
-
-.service-card-title {
-    width: 100%;
-    margin-bottom: rem(6px);
-    font-weight: bold;
-    font-size: rem(20px);
-    line-height: rem(33px);
-    text-align: left;
-    color: $Primary;
-}
-
-.service-card-desc {
-    width: 100%;
-    font-weight: 500;
-    font-size: rem(16px);
-    line-height: rem(26px);
-    text-align: left;
-    color: $Black;
-}
-
-.process-sec {
-    flex-flow: column nowrap;
-    justify-content: flex-start;
-    align-items: center;
-    padding-top: rem(145px);
-
-    @include lg {
-        padding: rem(99px) rem(81px) 0;
-    }
-
-    @include md {
-        padding: rem(92px) rem(30px) 0;
-    }
-
-    @include sm {
-        padding: rem(92px) rem(16px) 0;
-    }
-
-    .sec-desc {
-        width: 100%;
-        max-width: rem(798px);
-        margin-top: rem(17px);
-        margin-bottom: rem(52px);
-        box-sizing: border-box;
-        font-size: rem(20px);
-        line-height: rem(32px);
-        text-align: center;
-        color: $Black;
-
-        @include lg {
-            margin-top: rem(8px);
-            margin-bottom: rem(27px);
-        }
-
-        @include md {
-            margin-top: 0;
-            margin-bottom: rem(42px);
-            padding: 0 rem(56px);
-        }
-
-        @include sm {
-            padding: 0 rem(4px);
-            margin-top: rem(19px);
-            margin-bottom: rem(17px);
-        }
-    }
-}
-
-.process-card {
-    position: relative;
-    display: flex;
-    flex-flow: column nowrap;
-    justify-content: center;
-    align-items: flex-start;
-    width: 100%;
-    max-width: rem(887px);
-    height: rem(211px);
-    border: rem(1px) solid #E6E6E6;
-    border-radius: rem(15px);
-    padding-left: rem(171px);
-    margin-bottom: rem(20px);
-    box-sizing: border-box;
-    background-color: $White;
-    background-position: center left rem(42px);
-    background-repeat: no-repeat;
-
-    &:last-child {
-        margin-bottom: 0;
-    }
-
-    @include md {
-        padding-left: rem(130px);
-        background-position: center left rem(22px);
-    }
-
-    @include sm {
-        justify-content: flex-start;
-        align-items: center;
-        height: fit-content;
-        margin-bottom: rem(18px);
-        padding: rem(163px) rem(18px) rem(16px);
-        background-position: top rem(43px) center;
-    }
-
-    .process-card-title {
-        font-weight: bold;
-        font-size: rem(28px);
-        line-height: rem(46px);
-        color: $Black;
-
-        @include sm {
-            text-align: center;
-            margin-bottom: rem(21px);
-        }
-    }
-
-    .process-card-desc {
-        width: 100%;
-        max-width: rem(544px);
-        font-size: rem(16px);
-        line-height: rem(25px);
-        color: $Black;
-
-        @include md {
-            max-width: rem(412px);
-        }
-
-        @include sm {
-            max-width: 100%;
-            text-align: center;
-        }
-    }
-
-    .process-card-number {
-        position: absolute;
-        bottom: 0;
-        right: rem(20px);
-        background-size: contain;
-        background-position: center;
-        background-repeat: no-repeat;
-
-        @include sm {
-            display: none;
-        }
-    }
-}
-
-.process-card-1 {
-    background-image: url('/images/home/process/functional-specification-bg.svg');
-    background-size: rem(87px);
-
-    .process-card-number {
-        right: rem(23px);
-        width: rem(67px);
-        height: rem(127px);
-        background-image: url('/images/home/process/process1-white-icon.svg');
-    }
-}
-
-.process-card-2 {
-    background-image: url('/images/home/process/prototyping-bg.svg');
-    background-size: rem(87px);
-
-    .process-card-number {
-        width: rem(90px);
-        height: rem(125px);
-        background-image: url('/images/home/process/process2-white-icon.svg');
-    }
-}
-
-.process-card-3 {
-    background-image: url('/images/home/process/settingup-team-bg.svg');
-    background-size: rem(88px);
-
-    .process-card-number {
-        width: rem(87px);
-        height: rem(123px);
-        background-image: url('/images/home/process/process3-white-icon.svg');
-    }
-}
-
-.process-card-4 {
-    background-image: url('/images/home/process/agile-development-bg.svg');
-    background-size: rem(89px);
-
-    .process-card-number {
-        width: rem(95px);
-        height: rem(117px);
-        background-image: url('/images/home/process/process4-white-icon.svg');
-    }
-}
-
-.process-card-5 {
-    background-image: url('/images/home/process/support-bg.svg');
-    background-size: rem(86px);
-
-    .process-card-number {
-        width: rem(91px);
-        height: rem(124px);
-        background-image: url('/images/home/process/process5-white-icon.svg');
-    }
-}
-
-.team-sec {
-    flex-flow: column nowrap;
-    justify-content: flex-start;
-    align-items: center;
-    padding: rem(183px) rem(121px) rem(272px);
-
-    @include lg {
-        padding: rem(156px) rem(121px) rem(164px);
-    }
-
-    @include md {
-        padding: rem(86px) rem(16px) rem(164px);
-    }
-
-    @include sm {
-        padding: rem(66px) rem(16px);
-    }
-
-    .sec-content-container {
-        display: flex;
-        flex-flow: row nowrap;
-        justify-content: center;
-        align-items: center;
-        width: 100%;
-        margin-top: rem(57px);
-
-        @include lt-lg {
-            flex-flow: column-reverse nowrap;
-            justify-content: flex-start;
-            align-items: center;
-            margin-top: rem(45px);
-        }
-
-        @include sm {
-            margin-top: rem(24px);
-        }
-    }
-
-    .sec-content {
-        display: flex;
-        flex-flow: column nowrap;
-        justify-content: center;
-        align-items: flex-start;
-        width: 100%;
-        max-width: rem(545px);
-        margin-right: rem(33px);
-
-        @include lt-lg {
-            justify-content: flex-start;
-            align-items: center;
-            margin-right: 0;
-        }
-    }
-
-    .sec-title {
-        width: 100%;
-        margin-bottom: rem(8px);
-        font-weight: 600;
-        font-size: rem(30px);
-        line-height: rem(49px);
-        text-align: left;
-        color: $Black;
-
-        @include lt-lg {
-            text-align: center;
-        }
-
-        @include sm {
-            margin-bottom: rem(22px);
-            font-size: rem(20px);
-            line-height: rem(33px);
-        }
-    }
-
-    .sec-desc {
-        width: 100%;
-        margin-bottom: rem(50px);
-        font-weight: 500;
-        font-size: rem(20px);
-        line-height: rem(32px);
-        text-align: left;
-        color: $Black;
-
-        @include lt-lg {
-            text-align: center;
-        }
-
-        @include sm {
-            margin-bottom: rem(30px);
-        }
-    }
-
-    .team-photo {
-        width: rem(576px);
-        height: rem(399px);
-        margin-left: rem(33px);
-        border-radius: rem(29px);
-        background-image: url('/images/home/team-photo.svg');
-        background-position: center;
-        background-repeat: no-repeat;
-        background-size: cover;
-
-        @include lt-lg {
-            width: rem(398px);
-            height: rem(298px);
-            margin-bottom: rem(71px);
-            margin-left: 0;
-        }
-
-        @include sm {
+        .process-card-desc {
             width: 100%;
-            max-width: rem(326px);
-            height: rem(244px);
-            margin-bottom: rem(34px);
+            max-width: rem(754px);
+            font-size: rem(16px);
+            line-height: rem(25px);
+            color: $Black;
+
+            @include lg {
+                max-width: rem(412px);
+            }
+
+            @include md {
+                max-width: rem(330px);
+                font-size: rem(14px);
+                line-height: rem(22px);
+            }
+
+            @include sm {
+                max-width: unset;
+                font-size: rem(13px);
+                line-height: rem(18px);
+                padding-right: 1rem;
+            }
+        }
+
+        .process-card-number {
+            position: absolute;
+            bottom: rem(24px);
+            right: rem(40px);
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            width: rem(80px);
+            height: rem(140px);
+
+            @include md {
+                width: rem(50px);
+                height: rem(110px);
+            }
+
+            @include sm {
+                width: rem(35px);
+                height: rem(96px);
+                top: 0;
+                right: rem(24px);
+            }
         }
     }
+
+
+    .process-card-1 {
+        background-image: url('/images/home/process/process1_bg.svg');
+
+        .process-card-number {
+            background-image: url('/images/home/process/process-no-1.svg');
+        }
+    }
+
+    .process-card-2 {
+        background-image: url('/images/home/process/process2_bg.svg');
+
+        .process-card-number {
+            background-image: url('/images/home/process/process-no-2.svg');
+        }
+    }
+
+    .process-card-3 {
+        background-image: url('/images/home/process/process3_bg.svg');
+
+        .process-card-number {
+            background-image: url('/images/home/process/process-no-3.svg');
+        }
+    }
+
+    .process-card-4 {
+        background-image: url('/images/home/process/process4_bg.svg');
+
+        .process-card-number {
+            background-image: url('/images/home/process/process-no-4.svg');
+        }
+    }
+
+    .process-card-5 {
+        background-image: url('/images/home/process/process5_bg.svg');
+
+        .process-card-number {
+            background-image: url('/images/home/process/process-no-5.svg');
+        }
+    }
+}
+
+.what-our-client-says {
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    padding-top: 9rem;
 }

@@ -12,6 +12,8 @@ public class AppSettings
 
     public ReceiverEmailSetting ReceiverEmailSetting { get; set; } = default!;
 
+    public TelegramBotSettings TelegramBotSettings { get; set; } = default!;
+
     public string UserProfileImagePath { get; set; } = default!;
 
     public string WebServerAddress { get; set; } = default!;
@@ -61,4 +63,10 @@ public class EmailSettings
 public class ReceiverEmailSetting
 {
     public string Email { get; set; } = default!;
+}
+
+public class TelegramBotSettings
+{
+    public string Token { get; set; }
+    public string[] ChatIds { get; set; }
 }

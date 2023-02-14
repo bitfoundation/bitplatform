@@ -30,7 +30,6 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Blazored.Toast" Version="4.0.0" />
         <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.2" />
         <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.2" PrivateAssets="all" />
     </ItemGroup>
@@ -55,9 +54,5 @@
         <Using Include="Bit.Websites.Sales.Web.Components" />
         <Using Include="Bit.Websites.Sales.Web.Services.Contracts" />
         <Using Include="Bit.Websites.Sales.Web.Services.Implementations" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <EmbeddedResource Include="Data\Cases.json" />
     </ItemGroup>
 </Project>

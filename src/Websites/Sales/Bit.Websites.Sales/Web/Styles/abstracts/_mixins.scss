@@ -24,7 +24,7 @@
         width: rem(205px);
     }
 
-    @include md {
+    /*@include md {
         height: rem(51px);
         font-size: rem(14px);
         line-height: rem(19px);
@@ -41,10 +41,10 @@
         height: rem(39px);
         font-size: rem(9px);
         line-height: rem(12px);
-    }
+    }*/
 
     &:hover {
-        background-color: $Accent;
+        background-color: $B1;
     }
 }
 
@@ -54,9 +54,8 @@
     align-items: center;
     height: rem(54px);
     border-radius: rem(3px);
-    border: rem(2px) solid $Primary;
-    background-color: $White;
-    color: $Primary;
+    border: 1px solid $B2;
+    color: $B2;
     font-weight: 600;
     font-size: rem(16px);
     line-height: rem(22px);
@@ -87,11 +86,6 @@
         height: rem(39px);
         font-size: rem(9px);
         line-height: rem(12px);
-    }
-
-    &:hover {
-        border: rem(2px) solid $Accent;
-        color: $Accent;
     }
 }
 
