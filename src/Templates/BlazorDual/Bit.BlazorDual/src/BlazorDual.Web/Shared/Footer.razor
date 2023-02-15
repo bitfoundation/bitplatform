@@ -1,0 +1,20 @@
+﻿@namespace BlazorDual.Web
+@inherits AppComponentBase
+
+<footer class="footer">
+    <div class="footer-social-lnk-grp">
+        <BitLink Href="https://www.linkedin.com/company/bit-foundation" Target="_blank"><div class="social-lnk linkedin-lnk"></div></BitLink>
+        <BitLink Href="https://github.com/bitfoundation/bitplatform" Target="_blank"><div class="social-lnk github-lnk"></div></BitLink>
+        <BitLink Href="https://www.youtube.com/channel/UCtk33NQ91f3GOJG0HAdkdog" Target="_blank"><div class="social-lnk youtube-lnk"></div></BitLink>
+        <BitLink Href="https://twitter.com/bitplatformhq" Target="_blank"><div class="social-lnk twitter-lnk"></div></BitLink>
+    </div>
+
+    <div class="footer-content">
+        @if (SelectedCulture is not null)
+        {
+            <BitDropDown Items="GetCultures()" Class="culture-drp" @bind-Value="SelectedCulture" OnSelectItem="WrapHandled(OnCultureChanged)" />
+        }
+        <div class="footer-contact">info@bitplatform.dev</div>
+        <div class="footer-copyright">Made with <span class="text--red">♥</span> by bit platform</div>
+    </div>
+</footer>

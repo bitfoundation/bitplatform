@@ -1,0 +1,50 @@
+﻿@import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_media-queries.scss';
+
+.page-container {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    padding: rem(56px) rem(16px);
+    box-sizing: border-box;
+
+    @include lg {
+        padding: rem(48px) rem(16px);
+    }
+
+    @include sm {
+        padding: rem(40px) rem(16px);
+    }
+}
+
+.form-description {
+    font-weight: 600;
+    font-size: rem(16px);
+    line-height: rem(24px);
+    width: rem(454px);
+    height: rem(24px);
+
+    @include lg {
+        width: rem(398px);
+        height: rem(20px);
+    }
+
+    @include md {
+        width: rem(398px);
+        height: rem(20px);
+    }
+
+    @include sm {
+        width: rem(280px);
+        height: rem(40px);
+    }
+
+    @include lt-xl {
+        font-size: rem(14px);
+        line-height: rem(20px);
+    }
+}

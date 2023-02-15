@@ -1,0 +1,116 @@
+name: BlazorDual CD
+
+env:
+  WEB_APP_DEPLOYMENT_TYPE: 'DefaultDeploymentType'
+  API_SERVER_ADDRESS: 'https://web.bitplatform.dev/api/'
+  APP_SERVICE_NAME: 'app-service-td-test'
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+
+  build_blazor_api_wasm:
+    name: build blazor api + web assembly
+    runs-on: ubuntu-latest
+
+    steps:
+    
+    - name: Checkout source code
+      uses: actions/checkout@v3
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        global-json-file: src/global.json
+
+    - name: Install wasm-tools
+      run: dotnet workload install wasm-tools
+
+    - name: Switch to blazor web assembly
+      run:  sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' src/BlazorDual.Web/BlazorDual.Web.csproj
+
+    - name: Restore workloads
+      run: dotnet workload restore src/BlazorDual.Web/BlazorDual.Web.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}"
+      
+    - name: Build (To generate CSS/JS files)
+      run: dotnet build src/BlazorDual.Api/BlazorDual.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release
+
+    - name: Publish
+      run: dotnet publish src/BlazorDual.Api/BlazorDual.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/api-web
+
+    - name: Build migrations bundle
+      run: |
+        dotnet tool install --global dotnet-ef --version 7.0.0
+        dotnet ef migrations bundle --self-contained -r linux-x64 --project src/BlazorDual.Api/BlazorDual.Api.csproj
+
+    - name: Upload ef migrations bundle
+      uses: actions/upload-artifact@v3
+      with:
+        name: migrations-bundle
+        path: efbundle
+
+    - name: Upload api-web artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: api-web-bundle
+        path: ${{env.DOTNET_ROOT}}/api-web
+
+  deploy_blazor_api_wasm:
+    name: deploy blazor api + web assembly
+    needs: build_blazor_api_wasm
+    runs-on: ubuntu-latest
+    environment:
+      name: 'production'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+
+    steps:
+
+      - name: Retrieve api-web bundle
+        uses: actions/download-artifact@v2
+        with:
+          name: api-web-bundle
+
+      - name: Retrieve migrations bundle
+        uses: actions/download-artifact@v2
+        with:
+          name: migrations-bundle
+
+      - name: Update appsettings.json
+        uses: microsoft/variable-substitution@v1 
+        with:
+          files: 'appsettings.json'
+        env:
+          ConnectionStrings.SqlServerConnectionString: ${{ secrets.DB_CONNECTION_STRING }}
+          AppSettings.JwtSettings.IdentityCertificatePassword: ${{ secrets.API_IDENTITY_CERTIFICATE_PASSWORD }}
+
+      - name: Delete IdentityCertificate.pfx
+        run: |
+            rm IdentityCertificate.pfx
+
+      - name: Extract identity certificate from env
+        uses: timheuer/base64-to-file@v1
+        with:
+            fileDir: './'
+            fileName: 'IdentityCertificate.pfx'
+            encodedString: ${{ secrets.API_IDENTITY_CERTIFICATE_FILE_BASE64 }}
+
+      - name: Run migrations
+        run: |
+            chmod +x efbundle
+            ./efbundle
+            rm efbundle
+
+      - name: Deploy to Azure Web App
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ env.APP_SERVICE_NAME }}
+          slot-name: 'production'
+          publish-profile: ${{ secrets.AZURE_APP_SERVICE_PUBLISH_PROFILE }}
+          package: .

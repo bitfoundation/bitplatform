@@ -1,0 +1,28 @@
+name: BlazorDual CI
+
+env:
+  WEB_APP_DEPLOYMENT_TYPE: 'DefaultDeploymentType'
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "develop" ]
+
+jobs:
+
+  build_blazor_server:
+    name: build blazor server
+    runs-on: ubuntu-latest
+
+    steps:
+    
+    - name: Checkout source code
+      uses: actions/checkout@v3
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        global-json-file: src/global.json
+      
+    - name: Build
+      run: dotnet build src/BlazorDual.Web/BlazorDual.Web.csproj -p:Configuration=Release -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}"
