@@ -647,7 +647,7 @@ namespace BlazorDual.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to BlazorWeb Home.
+        ///   Looks up a localized string similar to BlazorDual Home.
         /// </summary>
         public static string HomeTitle {
             get {
