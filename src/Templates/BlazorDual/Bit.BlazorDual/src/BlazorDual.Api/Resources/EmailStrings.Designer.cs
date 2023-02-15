@@ -97,7 +97,7 @@ namespace BlazorDual.Api.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You&apos;re receiving this message because recently you have signed up for a BlazorWeb account.
+        ///   Looks up a localized string similar to You&apos;re receiving this message because recently you have signed up for a BlazorDual account.
         ///                    Confirm your email address by clicking the button below..
         /// </summary>
         public static string EmailConfirmationMessageBody {
@@ -107,7 +107,7 @@ namespace BlazorDual.Api.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to BlazorWeb - Reset your password.
+        ///   Looks up a localized string similar to BlazorDual - Reset your password.
         /// </summary>
         public static string ResetPasswordEmailSubject {
             get {
@@ -152,7 +152,7 @@ namespace BlazorDual.Api.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Welcome to BlazorWeb!.
+        ///   Looks up a localized string similar to Welcome to BlazorDual!.
         /// </summary>
         public static string WelcomeToApp {
             get {
