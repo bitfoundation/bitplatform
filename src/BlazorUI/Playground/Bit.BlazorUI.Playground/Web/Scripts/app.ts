@@ -35,3 +35,5 @@ function highlightSnippet() {
 function goToTop() {
     window.scrollTo({ top: 0 });
 }
+
+window.addEventListener('contextmenu', (event) => event.preventDefault());
