@@ -5,5 +5,9 @@ public enum BlazorMode
     BlazorServer = 0,
     BlazorWebAssembly = 1,
     BlazorHybrid = 2,
-    BlazorElectron = 0
+#if BlazorElectron
+    BlazorElectron = 0,
+#else
+    BlazorElectron = 3
+#endif
 }

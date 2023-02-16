@@ -4,9 +4,10 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:app="clr-namespace:Bit.BlazorUI.Playground.Web"
     xmlns:b="clr-namespace:Microsoft.AspNetCore.Components.WebView.Maui;assembly=Microsoft.AspNetCore.Components.WebView.Maui"
-    BackgroundColor="{DynamicResource PageBackgroundColor}">
+    BackgroundColor="{DynamicResource PageBackgroundColor}"
+    Loaded="ContentPage_Loaded">
 
-    <b:BlazorWebView HostPage="wwwroot/index.html">
+    <b:BlazorWebView x:Name="blazorWebView" HostPage="wwwroot/index.html">
         <b:BlazorWebView.RootComponents>
             <b:RootComponent ComponentType="{x:Type app:Main}" Selector="app" />
         </b:BlazorWebView.RootComponents>
