@@ -18,3 +18,5 @@
         window.history.back();
     }
 }
+
+window.addEventListener('contextmenu', (event) => event.preventDefault());

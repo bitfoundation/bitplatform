@@ -22,3 +22,5 @@
         document.body.style.overflow = hidden ? "hidden" : "auto";
     }
 }
+
+window.addEventListener('contextmenu', (event) => event.preventDefault());
