@@ -53,7 +53,8 @@ public partial class TodoPage
     {
         _viewTodoItems = _allTodoItems.Where(todo =>
             _selectedFilter == nameof(AppStrings.Active) ? todo.IsDone == false
-            : _selectedFilter != nameof(AppStrings.Completed) || todo.IsDone
+            : _selectedFilter == nameof(AppStrings.Completed) ? todo.IsDone
+            : true
         );
 
         if (_searchText is not null)
@@ -114,11 +115,8 @@ public partial class TodoPage
         {
             var newTodoItem = new TodoItemDto { Title = _newTodoTitle, Date = DateTimeOffset.Now };
 
-            var response = await HttpClient.PostAsJsonAsync("TodoItem/Create", newTodoItem, AppJsonContext.Default.TodoItemDto);
-
-            var content = await response.Content.ReadAsStringAsync();
-
-            newTodoItem.Id = int.Parse(content);
+            using var response = await HttpClient.PostAsJsonAsync("TodoItem/Create", newTodoItem, AppJsonContext.Default.TodoItemDto);
+            newTodoItem.Id = await response.Content.ReadFromJsonAsync<int>();
 
             _allTodoItems.Add(newTodoItem);
 
