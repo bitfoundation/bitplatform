@@ -195,6 +195,13 @@ public partial class BitNumericTextFieldDemo
             Type = "string?",
             Description = "A more descriptive title for the control, visible on its tooltip.",
         },
+        new()
+        {
+            Name = "ValidationMessage",
+            Type = "string",
+            DefaultValue="The {0} field is not valid.",
+            Description = "The message format used for invalid values entered in the input.",
+        },
     };
 
     private readonly List<ComponentSubParameter> componentSubParameters = new()

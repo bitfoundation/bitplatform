@@ -225,6 +225,13 @@ public partial class BitNumericTextField<TValue>
     /// </summary>
     [Parameter] public string? Title { get; set; }
 
+    /// <summary>
+    /// The message format used for invalid values entered in the input.
+    /// </summary>
+    [Parameter] public string ValidationMessage { get; set; } = "The {0} field is not valid.";
+
+
+
     protected override string RootElementClass => "bit-ntf";
 
     protected override void RegisterComponentClasses()
@@ -735,7 +742,7 @@ public partial class BitNumericTextField<TValue>
         }
 
         result = default;
-        validationErrorMessage = $"The {DisplayName ?? FieldIdentifier.FieldName} field is not valid.";
+        validationErrorMessage = string.Format(CultureInfo.InvariantCulture, ValidationMessage, DisplayName ?? FieldIdentifier.FieldName);
         return false;
     }
 
