@@ -123,8 +123,6 @@ public partial class BitOtpInput
 
     protected override void RegisterComponentClasses()
     {
-        ClassBuilder.Register(() => ValueInvalid is true ? "invalid" : string.Empty);
-
         ClassBuilder.Register(() => Direction switch
         {
             BitOtpInputDirection.LeftToRight => "left-to-right",
