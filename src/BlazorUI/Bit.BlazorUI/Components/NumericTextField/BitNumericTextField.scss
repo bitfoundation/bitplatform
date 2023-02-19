@@ -1,4 +1,4 @@
-﻿@import "../../Styles/Fluent/colors.fluent.scss", "../../Styles/functions.scss";
+﻿@import "../../Styles/functions.scss";
 
 .bit-ntf {
     font-family: $typography-font-family;
@@ -17,7 +17,7 @@
 
         .bit-icon {
             display: inline-block;
-            font-family: "Fabric MDL2 Assets";
+            font-family: $typography-icon-font-family;
             font-weight: normal;
             font-size: spacing(2.5);
             padding: 0 spacing(0.625);
@@ -38,7 +38,7 @@
     .wrapper {
         width: 100%;
         height: spacing(4);
-        border-radius: spacing(0.25);
+        border-radius: $shape-border-radius;
         display: flex;
         box-sizing: border-box;
         border: $shape-border-width $shape-border-style $color-neutrals-gray130;
@@ -63,7 +63,7 @@
             text-overflow: ellipsis;
             overflow: hidden;
             cursor: text;
-            border-radius: spacing(0.25) 0 0 spacing(0.25);
+            border-radius: $shape-border-radius 0 0 $shape-border-radius;
             user-select: text;
         }
 
@@ -83,7 +83,7 @@
             text-align: center;
             cursor: default;
             padding: 0;
-            border-radius: spacing(0.25);
+            border-radius: $shape-border-radius;
             width: spacing(2.875);
             height: 50%;
             background-color: transparent;
@@ -113,11 +113,11 @@
         }
 
         .arrow-up {
-            border-radius: 0 spacing(0.25) 0 0;
+            border-radius: 0 $shape-border-radius 0 0;
         }
 
         .arrow-down {
-            border-radius: 0 0 spacing(0.25) 0;
+            border-radius: 0 0 $shape-border-radius 0;
         }
     }
 

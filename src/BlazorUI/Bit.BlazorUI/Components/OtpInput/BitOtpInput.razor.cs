@@ -4,7 +4,9 @@ namespace Bit.BlazorUI;
 
 public partial class BitOtpInput
 {
-    private ElementReference[] _inputRef = default!;
+    protected override bool UseVisual => false;
+
+    private ElementReference[] _inputRefs = default!;
     private string?[] _inputValue = default!;
     private string _inputType = default!;
     private string _inputMode = default!;
@@ -61,11 +63,12 @@ public partial class BitOtpInput
     /// </summary>
     [Parameter] public EventCallback<string?> OnChange { get; set; }
 
+
     protected override string RootElementClass => "bit-otp";
 
     protected override async Task OnInitializedAsync()
     {
-        _inputRef = new ElementReference[Length];
+        _inputRefs = new ElementReference[Length];
 
         _inputValue = new string[Length];
 
@@ -102,32 +105,24 @@ public partial class BitOtpInput
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
-        {
-            if (IsEnabled)
-            {
-                if (AutoFocus)
-                {
-                    await _inputRef[0].FocusAsync();
-                }
+        await base.OnAfterRenderAsync(firstRender);
 
-                foreach (var inputRef in _inputRef)
-                {
-                    var obj = DotNetObjectReference.Create(this);
-                    await _js.SetupOtpInput(obj, inputRef);
-                }
-            }
+        if (firstRender is false || IsEnabled is false) return;
+
+        if (AutoFocus)
+        {
+            await _inputRefs[0].FocusAsync();
         }
 
-        await base.OnAfterRenderAsync(firstRender);
+        foreach (var inputRef in _inputRefs)
+        {
+            var obj = DotNetObjectReference.Create(this);
+            await _js.SetupOtpInput(obj, inputRef);
+        }
     }
 
     protected override void RegisterComponentClasses()
     {
-        ClassBuilder.Register(() => ValueInvalid is true
-                                   ? $"{RootElementClass}-invalid-{VisualClassRegistrar()}" 
-                                   : string.Empty);
-
         ClassBuilder.Register(() => Direction switch
         {
             BitOtpInputDirection.LeftToRight => "left-to-right",
@@ -140,15 +135,15 @@ public partial class BitOtpInput
 
     private void HandleOnValueChanging(object? sender, ValueChangingEventArgs<string?> args)
     {
-        if (args.Value.HasValue() && (args.Value!.Length > Length || InputType is BitOtpInputType.Number && int.TryParse(args.Value, out _) is false))
-        {
-            args.ShouldChange = false;
+        if (args.Value.HasNoValue()
+            || args.Value!.Length <= Length && (InputType is not BitOtpInputType.Number || int.TryParse(args.Value, out _))) return;
 
-            if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
-            if (Value == args.Value) return;
+        args.ShouldChange = false;
 
-            _ = ValueChanged.InvokeAsync(Value);
-        }
+        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+        if (Value == args.Value) return;
+
+        _ = ValueChanged.InvokeAsync(Value);
     }
 
     private async Task HandleOnInput(ChangeEventArgs e, int index)
@@ -165,7 +160,7 @@ public partial class BitOtpInput
         }
         else if (newValue.HasValue())
         {
-            var diff = DiffValues(oldValue ?? string.Empty, newValue);
+            var diff = BitOtpInput.DiffValues(oldValue ?? string.Empty, newValue);
 
             if (InputType is BitOtpInputType.Number && int.TryParse(diff, out _) is false)
             {
@@ -175,7 +170,7 @@ public partial class BitOtpInput
             {
                 _inputValue[index] = diff;
                 int nextIndex = index + 1;
-                if (nextIndex < Length) await _inputRef[nextIndex].FocusAsync();
+                if (nextIndex < Length) await _inputRefs[nextIndex].FocusAsync();
             }
         }
         else
@@ -207,50 +202,50 @@ public partial class BitOtpInput
         if ((code is "Backspace" || key is "Backspace") && previousIndex >= 0)
         {
             await Task.Delay(1);
-            await _inputRef[previousIndex].FocusAsync();
+            await _inputRefs[previousIndex].FocusAsync();
         }
         else if (code is "ArrowLeft")
         {
             if (Direction is BitOtpInputDirection.LeftToRight && previousIndex >= 0)
             {
-                await _inputRef[previousIndex].FocusAsync();
+                await _inputRefs[previousIndex].FocusAsync();
             }
             else if (Direction is BitOtpInputDirection.RightToLeft && nextIndex < Length)
             {
-                await _inputRef[nextIndex].FocusAsync();
+                await _inputRefs[nextIndex].FocusAsync();
             }
         }
         else if (code is "ArrowRight")
         {
             if (Direction is BitOtpInputDirection.LeftToRight && nextIndex < Length)
             {
-                await _inputRef[nextIndex].FocusAsync();
+                await _inputRefs[nextIndex].FocusAsync();
             }
             else if (Direction is BitOtpInputDirection.RightToLeft && previousIndex >= 0)
             {
-                await _inputRef[previousIndex].FocusAsync();
+                await _inputRefs[previousIndex].FocusAsync();
             }
         }
         else if (code is "ArrowUp")
         {
             if (Direction is BitOtpInputDirection.TopToBottom && previousIndex >= 0)
             {
-                await _inputRef[previousIndex].FocusAsync();
+                await _inputRefs[previousIndex].FocusAsync();
             }
             else if (Direction is BitOtpInputDirection.BottomToTop && nextIndex < Length)
             {
-                await _inputRef[nextIndex].FocusAsync();
+                await _inputRefs[nextIndex].FocusAsync();
             }
         }
         else if (code is "ArrowDown")
         {
             if (Direction is BitOtpInputDirection.TopToBottom && nextIndex < Length)
             {
-                await _inputRef[nextIndex].FocusAsync();
+                await _inputRefs[nextIndex].FocusAsync();
             }
             else if (Direction is BitOtpInputDirection.BottomToTop && previousIndex >= 0)
             {
-                await _inputRef[previousIndex].FocusAsync();
+                await _inputRefs[previousIndex].FocusAsync();
             }
         }
     }
@@ -301,21 +296,13 @@ public partial class BitOtpInput
         }
     }
 
-    private string DiffValues(string oldValue, string newValue)
+    private static string DiffValues(string oldValue, string newValue)
     {
         if (newValue.Length == 1) return newValue;
         if (newValue.Length < oldValue.Length) return newValue;
 
         if (newValue[..^1] == oldValue) return newValue[^1].ToString();
         if (newValue[1..] == oldValue) return newValue[0].ToString();
-
-        //var regex = new Regex($"({oldValue})", RegexOptions.IgnoreCase);
-        //var parts = regex.Split(newValue);
-
-        //foreach (var part in parts)
-        //{
-        //    if (string.IsNullOrEmpty(part) is false && part != oldValue) return part;
-        //}
 
         return newValue;
     }

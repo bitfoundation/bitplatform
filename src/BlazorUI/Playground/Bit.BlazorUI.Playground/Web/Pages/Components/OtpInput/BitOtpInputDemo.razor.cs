@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using System.Collections.Generic;
 using Bit.BlazorUI.Playground.Web.Models;
 using Bit.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
@@ -7,6 +7,140 @@ namespace Bit.BlazorUI.Playground.Web.Pages.Components.OtpInput;
 
 public partial class BitOtpInputDemo
 {
+    private readonly List<ComponentParameter> componentParameters = new()
+    {
+        new()
+        {
+            Name = "AutoFocus",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "If true, the first input is focused.",
+        },
+        new()
+        {
+            Name = "Direction",
+            Type = "BitOtpInputDirection",
+            LinkType = LinkType.Link,
+            Href = "#direction-enum",
+            DefaultValue = "BitOtpInputDirection.LeftToRight",
+            Description = "The OtpInput direction in four available directions.",
+        },
+        new()
+        {
+            Name = "InputType",
+            Type = "BitOtpInputType",
+            LinkType = LinkType.Link,
+            Href = "#inputType-enum",
+            DefaultValue = "BitOtpInputType.Text",
+            Description = "Type of input shown as text, number, and password.",
+        },
+        new()
+        {
+            Name = "Length",
+            Type = "int",
+            Description = "Length of input in Otp.",
+        },
+        new()
+        {
+            Name = "OnInput",
+            Type = "EventCallback<ChangeEventArgs>",
+            Description = "Callback for when OtpInput value changed.",
+        },
+        new()
+        {
+            Name = "OnKeyDown",
+            Type = "EventCallback<KeyboardEventArgs>",
+            Description = "Callback for when a keyboard key is pressed.",
+        },
+        new()
+        {
+            Name = "OnFocusIn",
+            Type = "EventCallback<FocusEventArgs>",
+            Description = "Callback for when OtpInput is focused in.",
+        },
+        new()
+        {
+            Name = "OnFocusOut",
+            Type = "EventCallback<FocusEventArgs>",
+            Description = "Callback for when OtpInput is focused out.",
+        },
+        new()
+        {
+            Name = "OnPaste",
+            Type = "EventCallback<ClipboardEventArgs>",
+            Description = "Callback for when in the OtpInput paste a content.",
+        },
+        new()
+        {
+            Name = "OnChange",
+            Type = "EventCallback<string?>",
+            Description = "Callback for when the OtpInput value change.",
+        },
+    };
+
+    private readonly List<EnumParameter> enumParameters = new()
+    {
+        new()
+        {
+            Id = "direction-enum",
+            Title = "BitOtpInputDirection Enum",
+            EnumList = new()
+            {
+                new()
+                {
+                    Name = "Text",
+                    Description = "The OtpInput characters are shown as text.",
+                    Value = "0"
+                },
+                new()
+                {
+                    Name = "Password",
+                    Description = "The OtpInput characters are masked.",
+                    Value = "1"
+                },
+                new()
+                {
+                    Name = "Number",
+                    Description = "The OtpInput characters are number.",
+                    Value = "2"
+                }
+            }
+        },
+        new()
+        {
+            Id = "inputType-enum",
+            Title = "BitOtpInputType Enum",
+            EnumList = new()
+            {
+                new()
+                {
+                    Name = "LeftToRight",
+                    Description = "The OtpInput showed in the left to right direction.",
+                    Value = "0"
+                },
+                new()
+                {
+                    Name = "RightToLeft",
+                    Description = "The OtpInput showed in the right to left direction.",
+                    Value = "1"
+                },
+                new()
+                {
+                    Name = "TopToBottom",
+                    Description = "The OtpInput showed in the top to bottom direction.",
+                    Value = "2"
+                },
+                new()
+                {
+                    Name = "BottomToTop",
+                    Description = "The OtpInput showed in the bottom to top direction.",
+                    Value = "3"
+                }
+            }
+        }
+    };
+
+
     private string basicOtpInput;
     private string autoFocusOtpInput;
     private string textOtpInput;
@@ -38,139 +172,6 @@ public partial class BitOtpInputDemo
         formIsValidSubmit = false;
     }
 
-    private readonly List<ComponentParameter> componentParameters = new()
-    {
-        new ComponentParameter()
-        {
-            Name = "AutoFocus",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "If true, the first input is focused.",
-        },
-        new ComponentParameter()
-        {
-            Name = "Direction",
-            Type = "BitOtpInputDirection",
-            LinkType = LinkType.Link,
-            Href = "#direction-enum",
-            DefaultValue = "BitOtpInputDirection.LeftToRight",
-            Description = "The OtpInput direction in four available directions.",
-        },
-        new ComponentParameter()
-        {
-            Name = "InputType",
-            Type = "BitOtpInputType",
-            LinkType = LinkType.Link,
-            Href = "#inputType-enum",
-            DefaultValue = "BitOtpInputType.Text",
-            Description = "Type of input shown as text, number, and password.",
-        },
-        new ComponentParameter()
-        {
-            Name = "Length",
-            Type = "int",
-            Description = "Length of input in Otp.",
-        },
-        new ComponentParameter()
-        {
-            Name = "OnInput",
-            Type = "EventCallback<ChangeEventArgs>",
-            Description = "Callback for when OtpInput value changed.",
-        },
-        new ComponentParameter()
-        {
-            Name = "OnKeyDown",
-            Type = "EventCallback<KeyboardEventArgs>",
-            Description = "Callback for when a keyboard key is pressed.",
-        },
-        new ComponentParameter()
-        {
-            Name = "OnFocusIn",
-            Type = "EventCallback<FocusEventArgs>",
-            Description = "Callback for when OtpInput is focused in.",
-        },
-        new ComponentParameter()
-        {
-            Name = "OnFocusOut",
-            Type = "EventCallback<FocusEventArgs>",
-            Description = "Callback for when OtpInput is focused out.",
-        },
-        new ComponentParameter()
-        {
-            Name = "OnPaste",
-            Type = "EventCallback<ClipboardEventArgs>",
-            Description = "Callback for when in the OtpInput paste a content.",
-        },
-        new ComponentParameter()
-        {
-            Name = "OnChange",
-            Type = "EventCallback<string?>",
-            Description = "Callback for when the OtpInput value change.",
-        },
-    };
-    private readonly List<EnumParameter> enumParameters = new()
-    {
-        new EnumParameter()
-        {
-            Id = "direction-enum",
-            Title = "BitOtpInputDirection Enum",
-            EnumList = new List<EnumItem>()
-            {
-                new EnumItem
-                {
-                    Name = "Text",
-                    Description = "The OtpInput characters are shown as text.",
-                    Value = "0"
-                },
-                new EnumItem
-                {
-                    Name = "Password",
-                    Description = "The OtpInput characters are masked.",
-                    Value = "1"
-                },
-                new EnumItem
-                {
-                    Name = "Number",
-                    Description = "The OtpInput characters are number.",
-                    Value = "2"
-                }
-            }
-        },
-        new EnumParameter()
-        {
-            Id = "inputType-enum",
-            Title = "BitOtpInputType Enum",
-            EnumList = new List<EnumItem>()
-            {
-                new EnumItem
-                {
-                    Name = "LeftToRight",
-                    Description = "The OtpInput showed in the left to right direction.",
-                    Value = "0"
-                },
-                new EnumItem
-                {
-                    Name = "RightToLeft",
-                    Description = "The OtpInput showed in the right to left direction.",
-                    Value = "1"
-                },
-                new EnumItem
-                {
-                    Name = "TopToBottom",
-                    Description = "The OtpInput showed in the top to bottom direction.",
-                    Value = "2"
-                },
-                new EnumItem
-                {
-                    Name = "BottomToTop",
-                    Description = "The OtpInput showed in the bottom to top direction.",
-                    Value = "3"
-                }
-            }
-        }
-    };
-
-    #region Sample Code 1
 
     private static readonly string example1HtmlCode = @"
 <div>
@@ -184,24 +185,15 @@ public partial class BitOtpInputDemo
 </div>
 ";
 
-    #endregion
-
-    #region Sample Code 2
-
     private static readonly string example2HtmlCode = @"
 <div>
     <BitOtpInput Length=""4"" AutoFocus=""true"" @bind-Value=""autoFocusOtpInput"" />
     <div>Output: [@autoFocusOtpInput]</div>
 </div>
 ";
-
     private static readonly string example2CSharpCode = @"
 private string autoFocusOtpInput;
 ";
-
-    #endregion
-
-    #region Sample Code 3
 
     private static readonly string example3HtmlCode = @"
 <div>
@@ -220,16 +212,11 @@ private string autoFocusOtpInput;
     <div>Output: [@passwordOtpInput]</div>
 </div>
 ";
-
     private static readonly string example3CSharpCode = @"
 private string textOtpInput;
 private string numberOtpInput;
 private string passwordOtpInput;
 ";
-
-    #endregion
-
-    #region Sample Code 4
 
     private static readonly string example4HtmlCode = @"
 <div>
@@ -254,17 +241,12 @@ private string passwordOtpInput;
     <div>Output: [@BottomToTopOtpInput]</div>
 </div>
 ";
-
     private static readonly string example4CSharpCode = @"
 private string leftToRightOtpInput;
 private string rightToLeftOtpInput;
 private string topToBottomOtpInput;
 private string BottomToTopOtpInput;
 ";
-
-    #endregion
-
-    #region Sample Code 5
 
     private static readonly string example5HtmlCode = @"
 <div>
@@ -283,16 +265,11 @@ private string BottomToTopOtpInput;
     <div>Output: [@onChangeBindOtpInput]</div>
 </div>
 ";
-
     private static readonly string example5CSharpCode = @"
 private string oneWayBindOtpInput;
 private string twoWayBindOtpInput;
 private string onChangeBindOtpInput;
 ";
-
-    #endregion
-
-    #region Sample Code 6
 
     private static readonly string example6HtmlCode = @"
 <style>
@@ -339,7 +316,6 @@ else
     </BitMessageBar>
 }
 ";
-
     private static readonly string example6CSharpCode = @"
 public class ValidationOtpInputModel
 {
@@ -367,6 +343,4 @@ private void HandleInvalidSubmit()
     formIsValidSubmit = false;
 }
 ";
-
-    #endregion
 }
