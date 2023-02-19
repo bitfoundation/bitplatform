@@ -13,7 +13,7 @@ public class BitBreadcrumbTests : BunitTestContext
     ]
     public void BitBreadcrumbShouldTakeDividerIcon(BitIconName icon)
     {
-        var component = RenderComponent<BitBreadcrumb>(parameters =>
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
         {
             parameters.Add(p => p.Items, BitBreadcrumbTests.GetBreadcrumbItems());
             parameters.Add(p => p.DividerIcon, icon);
@@ -32,7 +32,7 @@ public class BitBreadcrumbTests : BunitTestContext
     {
         var breadcrumbItems = BitBreadcrumbTests.GetBreadcrumbItems();
 
-        var component = RenderComponent<BitBreadcrumb>(parameters =>
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
         {
             parameters.Add(p => p.Items, breadcrumbItems);
             parameters.Add(p => p.MaxDisplayedItems, maxDisplayedItems);
@@ -56,7 +56,7 @@ public class BitBreadcrumbTests : BunitTestContext
     ]
     public void BitBreadcrumbShouldRespectOverflowChanges(BitIconName icon, uint maxDisplayedItems, uint overflowIndex)
     {
-        var component = RenderComponent<BitBreadcrumb>(parameters =>
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
         {
             parameters.Add(p => p.Items, BitBreadcrumbTests.GetBreadcrumbItems());
             parameters.Add(p => p.OverflowIndex, overflowIndex);
@@ -80,7 +80,7 @@ public class BitBreadcrumbTests : BunitTestContext
     {
         var breadcrumbItems = BitBreadcrumbTests.GetBreadcrumbItems();
 
-        var component = RenderComponent<BitBreadcrumb>(parameters =>
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
         {
             parameters.Add(p => p.Items, breadcrumbItems);
         });
@@ -99,7 +99,7 @@ public class BitBreadcrumbTests : BunitTestContext
     {
         var breadcrumbItems = BitBreadcrumbTests.GetBreadcrumbItems();
 
-        var component = RenderComponent<BitBreadcrumb>(parameters =>
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
         {
             parameters.Add(p => p.Items, breadcrumbItems);
             parameters.Add(p => p.OverflowAriaLabel, overflowAriaLabel);
@@ -116,7 +116,7 @@ public class BitBreadcrumbTests : BunitTestContext
     ]
     public void BitBreadcrumbShouldTakeCustomStyle(string customStyle)
     {
-        var component = RenderComponent<BitBreadcrumb>(parameters =>
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
         {
             parameters.Add(p => p.Items, BitBreadcrumbTests.GetBreadcrumbItems());
             parameters.Add(p => p.Style, customStyle);
@@ -132,7 +132,7 @@ public class BitBreadcrumbTests : BunitTestContext
     ]
     public void BitBreadcrumbShouldTakeCustomClass(string customClass)
     {
-        var component = RenderComponent<BitBreadcrumb>(parameters =>
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
         {
             parameters.Add(p => p.Items, BitBreadcrumbTests.GetBreadcrumbItems());
             parameters.Add(p => p.Class, customClass);
@@ -150,7 +150,7 @@ public class BitBreadcrumbTests : BunitTestContext
     ]
     public void BitBreadcrumbShouldTakeCustomVisibility(BitComponentVisibility visibility)
     {
-        var component = RenderComponent<BitBreadcrumb>(parameters =>
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
         {
             parameters.Add(p => p.Items, BitBreadcrumbTests.GetBreadcrumbItems());
             parameters.Add(p => p.Visibility, visibility);

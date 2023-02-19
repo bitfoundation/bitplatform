@@ -77,8 +77,6 @@ public partial class NavMenu
             Items = new List<BitNavItem>
             {
                 new BitNavItem { Text = "Breadcrumb", Url = "/components/breadcrumb" },
-                new BitNavItem { Text = "BreadGroup", Url = "/components/bread-group" },
-                new BitNavItem { Text = "BreadList", Url = "/components/bread-list" },
                 new BitNavItem { Text = "Nav (TreeList)", Url = "/components/nav" },
                 new BitNavItem { Text = "NavGroup (TreeList)", Url = "/components/nav-group" },
                 new BitNavItem { Text = "NavList (TreeList)", Url = "/components/nav-list" },
