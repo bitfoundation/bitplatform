@@ -8,7 +8,7 @@
      class="@ClassBuilder.Value">
     @if (IconName.HasValue || Label.HasValue() || LabelTemplate != null)
     {
-        <div class="bit-ntf-lbl-wrapper">
+        <div class="lbl-wrapper">
             @if (IconName.HasValue)
             {
                 <i class="bit-icon bit-icon--@IconName.GetName() bit-icon--l"
@@ -29,7 +29,7 @@
         </div>
     }
 
-    <div class="bit-ntf-wrapper"
+    <div class="wrapper"
          title="@Title"
          aria-label="@AriaLabel"
          aria-setsize="@AriaSetSize"
@@ -48,7 +48,7 @@
                aria-describedby="@AriaDescription"
                aria-disabled="@(IsEnabled is false)"
                disabled="@(IsEnabled is false)"
-               class="bit-ntf-input"
+               class="input"
                @ref="@_inputRef"
                @onfocus="e => HandleOnFocus(e)"
                @onblur="e => HandleOnBlur(e)"
@@ -58,9 +58,9 @@
                @attributes="@InputHtmlAttributes" />
         @if (ShowArrows)
         {
-            <span class="bit-ntf-arrows">
+            <span class="arrows">
                 <button type="button"
-                        class="bit-ntf-arrow-up"
+                        class="arrow-up"
                         disabled="@(IsEnabled is false)"
                         aria-disabled="@(IsEnabled is false)"
                         date-is-focusable="false"
@@ -70,13 +70,13 @@
                         @onmousedown="e => HandleOnMouseDown(BitNumericTextFieldAction.Increment, e)"
                         @onmouseout="HandleOnMouseUpOrOut"
                         @onmouseup="HandleOnMouseUpOrOut">
-                    <span class="bit-ntf-arrow-icon">
+                    <span class="arrow-icon">
                         <i class="bit-icon bit-icon--@IncrementIconName.GetName() bit-icon--s"></i>
                     </span>
                 </button>
 
                 <button type="button"
-                        class="bit-ntf-arrow-down"
+                        class="arrow-down"
                         disabled="@(IsEnabled is false)"
                         aria-disabled="@(IsEnabled is false)"
                         date-is-focusable="false"
@@ -86,7 +86,7 @@
                         @onmousedown="e => HandleOnMouseDown(BitNumericTextFieldAction.Decrement, e)"
                         @onmouseout="HandleOnMouseUpOrOut"
                         @onmouseup="HandleOnMouseUpOrOut">
-                    <span class="bit-ntf-arrow-icon">
+                    <span class="arrow-icon">
                         <i class="bit-icon bit-icon--@DecrementIconName.GetName() bit-icon--s"></i>
                     </span>
                 </button>
