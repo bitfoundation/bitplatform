@@ -41,7 +41,7 @@
         border-radius: spacing(0.25);
         display: flex;
         box-sizing: border-box;
-        border: spacing(0.125) solid $color-neutrals-gray130;
+        border: $shape-border-width $shape-border-style $color-neutrals-gray130;
         position: relative;
 
         .input {
@@ -132,21 +132,21 @@
 
         .wrapper {
             color: $color-neutrals-gray90;
-            border: none $color-neutrals-gray20;
-            background: none $color-neutrals-gray20;
+            border: none;
+            background: none;
             cursor: default;
 
             .input {
                 color: $color-neutrals-gray90;
                 cursor: default;
-                border: none $color-neutrals-gray20;
-                background: none $color-neutrals-gray20;
+                border: none;
+                background: none;
             }
 
             .arrow-up, .arrow-down {
                 background: $color-neutrals-gray20;
                 color: $color-neutrals-gray90;
-                border: spacing(0.125) solid $color-neutrals-gray20;
+                border: $shape-border-width $shape-border-style $color-neutrals-gray20;
                 pointer-events: none;
                 cursor: default;
             }
