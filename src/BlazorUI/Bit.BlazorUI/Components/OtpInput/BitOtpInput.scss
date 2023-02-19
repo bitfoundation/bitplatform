@@ -36,13 +36,13 @@
     }
 
     &.disabled {
-        .otp-input {
+        .input {
             background-color: $color-neutrals-gray30;
         }
     }
 
     &.invalid {
-        .otp-input {
+        .input {
             outline: none;
             border: spacing(0.25) $shape-border-style $color-state-invalid;
         }
@@ -51,7 +51,7 @@
     &.left-to-right {
         flex-direction: row;
 
-        .otp-input {
+        .input {
             margin-right: spacing(1.25);
 
             &:last-child {
@@ -64,7 +64,7 @@
         flex-direction: row-reverse;
         justify-content: flex-end;
 
-        .otp-input {
+        .input {
             margin-left: spacing(1.25);
 
             &:last-child {
@@ -76,7 +76,7 @@
     &.top-to-bottom {
         flex-direction: column;
 
-        .otp-input {
+        .input {
             margin-bottom: spacing(1.25);
 
             &:last-child {
@@ -88,7 +88,7 @@
     &.bottom-to-top {
         flex-direction: column-reverse;
 
-        .otp-input {
+        .input {
             margin-top: spacing(1.25);
 
             &:last-child {
