@@ -41,7 +41,7 @@
         border-radius: spacing(0.25);
         display: flex;
         box-sizing: border-box;
-        border: $shape-border-width solid $color-neutrals-gray130;
+        border: $shape-border-width $shape-border-style $color-neutrals-gray130;
         position: relative;
 
         .input {
@@ -146,7 +146,7 @@
             .arrow-up, .arrow-down {
                 background: $color-neutrals-gray20;
                 color: $color-neutrals-gray90;
-                border: $shape-border-width solid $color-neutrals-gray20;
+                border: $shape-border-width $shape-border-style $color-neutrals-gray20;
                 pointer-events: none;
                 cursor: default;
             }
