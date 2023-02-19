@@ -873,12 +873,12 @@ public class BitNumericTextFieldFloatTests : BunitTestContext
 
         var NumericTextField = component.Find(".bit-ntf");
 
-        Assert.IsFalse(NumericTextField.ClassList.Contains($"invalid"));
+        Assert.IsFalse(NumericTextField.ClassList.Contains("invalid"));
 
         var form = component.Find("form");
         form.Submit();
 
-        Assert.AreEqual(NumericTextField.ClassList.Contains($"invalid"), isInvalid);
+        Assert.AreEqual(NumericTextField.ClassList.Contains("invalid"), isInvalid);
 
         var input = component.Find("input");
         if (isInvalid)
@@ -892,7 +892,7 @@ public class BitNumericTextFieldFloatTests : BunitTestContext
 
         input.Blur();
 
-        Assert.AreEqual(NumericTextField.ClassList.Contains($"invalid"), !isInvalid);
+        Assert.AreEqual(NumericTextField.ClassList.Contains("invalid"), !isInvalid);
     }
 
     private float? Normalize(float? value, int precision) =>

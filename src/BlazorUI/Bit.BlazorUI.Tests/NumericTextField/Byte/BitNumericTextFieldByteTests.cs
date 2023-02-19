@@ -869,12 +869,12 @@ public class BitNumericTextFieldByteTests : BunitTestContext
 
         var NumericTextField = component.Find(".bit-ntf");
 
-        Assert.IsFalse(NumericTextField.ClassList.Contains($"invalid"));
+        Assert.IsFalse(NumericTextField.ClassList.Contains("invalid"));
 
         var form = component.Find("form");
         form.Submit();
 
-        Assert.AreEqual(NumericTextField.ClassList.Contains($"invalid"), isInvalid);
+        Assert.AreEqual(NumericTextField.ClassList.Contains("invalid"), isInvalid);
 
         var input = component.Find("input");
 
@@ -889,7 +889,7 @@ public class BitNumericTextFieldByteTests : BunitTestContext
 
         input.Blur();
 
-        Assert.AreEqual(NumericTextField.ClassList.Contains($"invalid"), !isInvalid);
+        Assert.AreEqual(NumericTextField.ClassList.Contains("invalid"), !isInvalid);
     }
 
     private byte? Normalize(byte? value, int precision) =>

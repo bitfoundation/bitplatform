@@ -229,9 +229,9 @@ public partial class BitNumericTextField<TValue>
 
     protected override void RegisterComponentClasses()
     {
-        ClassBuilder.Register(() => LabelPosition == BitNumericTextFieldLabelPosition.Left ? $"label-left" : $"label-top");
+        ClassBuilder.Register(() => LabelPosition == BitNumericTextFieldLabelPosition.Left ? "label-left" : "label-top");
 
-        ClassBuilder.Register(() => ValueInvalid is true ? $"invalid" : string.Empty);
+        ClassBuilder.Register(() => ValueInvalid is true ? "invalid" : string.Empty);
     }
 
     protected override async Task OnParametersSetAsync()
