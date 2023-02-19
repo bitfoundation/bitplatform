@@ -18,7 +18,7 @@
         width: spacing(3.75);
         height: spacing(3.75);
         box-sizing: border-box;
-        border-radius: spacing(0.25);
+        border-radius: $shape-border-radius;
         border: $shape-border-width $shape-border-style $color-neutrals-gray130;
         background-color: $color-neutrals-white;
         cursor: pointer;
