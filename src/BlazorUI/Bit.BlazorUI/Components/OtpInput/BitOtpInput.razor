@@ -11,18 +11,17 @@
     {
         int index = i;
 
-        <input class="otp-input"
+        <input class="input"
                type="@_inputType"
                inputmode="@_inputMode"
                value="@_inputValue[index]"
                disabled="@(IsEnabled is false)"
                autocomplete="@BitAutoCompleteValue.NewPassword"
-               @ref="_inputRef[index]" 
+               @ref="_inputRefs[index]" 
                @onfocusin="HandleOnFocusIn"
                @onfocusout="HandleOnFocusOut"
                @onkeydown="(e) => HandleOnKeyDown(e, index)"
                @oninput="(e) => HandleOnInput(e, index)"
                @onpaste="HandleOnPaste" />
     }
-
 </div>

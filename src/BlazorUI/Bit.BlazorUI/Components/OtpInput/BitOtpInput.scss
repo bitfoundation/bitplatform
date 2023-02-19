@@ -1,0 +1,99 @@
+﻿@import "../../Styles/functions.scss";
+
+.bit-otp {
+    font-family: $typography-font-family;
+    font-weight: 400;
+    font-size: spacing(1.75);
+    box-sizing: border-box;
+    display: flex;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+    position: relative;
+
+    .input {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: spacing(3.75);
+        height: spacing(3.75);
+        box-sizing: border-box;
+        border-radius: spacing(0.25);
+        border: $shape-border-width $shape-border-style $color-neutrals-gray130;
+        background-color: $color-neutrals-white;
+        cursor: pointer;
+        text-align: center;
+        -moz-appearance: textfield; // Firefox
+
+        &::-webkit-inner-spin-button, &::-webkit-outer-spin-button { // Chrome, Safari, Edge, Opera
+            -webkit-appearance: none
+        }
+
+        &:focus {
+            outline: none;
+            border: spacing(0.25) $shape-border-style $color-primary-main;
+        }
+    }
+
+    &.disabled {
+        .otp-input {
+            background-color: $color-neutrals-gray30;
+        }
+    }
+
+    &.invalid {
+        .otp-input {
+            outline: none;
+            border: spacing(0.25) $shape-border-style $color-state-invalid;
+        }
+    }
+
+    &.left-to-right {
+        flex-direction: row;
+
+        .otp-input {
+            margin-right: spacing(1.25);
+
+            &:last-child {
+                margin-right: unset;
+            }
+        }
+    }
+
+    &.right-to-left {
+        flex-direction: row-reverse;
+        justify-content: flex-end;
+
+        .otp-input {
+            margin-left: spacing(1.25);
+
+            &:last-child {
+                margin-left: unset;
+            }
+        }
+    }
+
+    &.top-to-bottom {
+        flex-direction: column;
+
+        .otp-input {
+            margin-bottom: spacing(1.25);
+
+            &:last-child {
+                margin-bottom: unset;
+            }
+        }
+    }
+
+    &.bottom-to-top {
+        flex-direction: column-reverse;
+
+        .otp-input {
+            margin-top: spacing(1.25);
+
+            &:last-child {
+                margin-top: unset;
+            }
+        }
+    }
+}
