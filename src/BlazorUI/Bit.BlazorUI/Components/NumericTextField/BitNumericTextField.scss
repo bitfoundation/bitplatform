@@ -1,0 +1,170 @@
+﻿@import "../../Styles/functions.scss";
+
+.bit-ntf {
+    font-family: $typography-font-family;
+    display: flex;
+    align-items: center;
+    font-size: spacing(5.125);
+    font-weight: 400;
+
+    .lbl-wrapper {
+        height: spacing(4);
+        display: inline-flex;
+        flex-flow: row nowrap;
+        justify-content: flex-start;
+        align-items: center;
+        margin-right: spacing(1.25);
+
+        .bit-icon {
+            display: inline-block;
+            font-family: $typography-icon-font-family;
+            font-weight: normal;
+            font-size: spacing(2.5);
+            padding: 0 spacing(0.625);
+        }
+
+        label {
+            font-weight: 600;
+            font-size: spacing(1.75);
+            color: $color-neutrals-gray160;
+            box-sizing: border-box;
+            box-shadow: none;
+            padding: spacing(0.625) 0;
+            line-height: spacing(2.5);
+            white-space: nowrap;
+        }
+    }
+
+    .wrapper {
+        width: 100%;
+        height: spacing(4);
+        border-radius: $shape-border-radius;
+        display: flex;
+        box-sizing: border-box;
+        border: $shape-border-width $shape-border-style $color-neutrals-gray130;
+        position: relative;
+
+        .input {
+            width: 100%;
+            box-sizing: border-box;
+            box-shadow: none;
+            border-style: none;
+            flex: 1 1 0%;
+            margin: 0;
+            font-size: spacing(1.75);
+            font-family: inherit;
+            color: $color-neutrals-gray160;
+            background-color: $color-neutrals-white;
+            height: 100%;
+            padding: 0 spacing(1) 0 spacing(1.125);
+            outline: 0;
+            display: block;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            cursor: text;
+            border-radius: $shape-border-radius 0 0 $shape-border-radius;
+            user-select: text;
+        }
+
+        .arrows {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .arrow-up, .arrow-down {
+            outline: none;
+            position: relative;
+            -webkit-font-smoothing: antialiased;
+            box-sizing: border-box;
+            border: none;
+            display: block;
+            text-decoration: none;
+            text-align: center;
+            cursor: default;
+            padding: 0;
+            border-radius: $shape-border-radius;
+            width: spacing(2.875);
+            height: 50%;
+            background-color: transparent;
+            color: $color-neutrals-gray130;
+            user-select: none;
+
+            &:hover {
+                color: $color-neutrals-gray160;
+                background-color: $color-neutrals-gray20;
+            }
+        }
+
+        .arrow-icon {
+            display: flex;
+            height: 100%;
+            flex-wrap: nowrap;
+            justify-content: center;
+            align-items: center;
+
+            .bit-icon {
+                font-size: spacing(1);
+                margin: 0;
+                height: spacing(2);
+                line-height: spacing(2);
+                flex-shrink: 0;
+            }
+        }
+
+        .arrow-up {
+            border-radius: 0 $shape-border-radius 0 0;
+        }
+
+        .arrow-down {
+            border-radius: 0 0 $shape-border-radius 0;
+        }
+    }
+
+    &.disabled {
+        .lbl-wrapper {
+            color: $color-neutrals-gray90;
+
+            label {
+                color: $color-neutrals-gray90;
+            }
+        }
+
+        .wrapper {
+            color: $color-neutrals-gray90;
+            border: none;
+            background: none;
+            cursor: default;
+
+            .input {
+                color: $color-neutrals-gray90;
+                cursor: default;
+                border: none;
+                background: none;
+            }
+
+            .arrow-up, .arrow-down {
+                background: $color-neutrals-gray20;
+                color: $color-neutrals-gray90;
+                border: $shape-border-width $shape-border-style $color-neutrals-gray20;
+                pointer-events: none;
+                cursor: default;
+            }
+        }
+    }
+
+    &.invalid {
+        .wrapper {
+            border-color: $color-state-invalid;
+        }
+    }
+
+    &.label-top {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    &.label-left {
+        flex-direction: row;
+    }
+}

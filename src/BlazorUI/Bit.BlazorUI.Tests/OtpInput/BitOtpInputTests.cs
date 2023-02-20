@@ -7,28 +7,26 @@ namespace Bit.BlazorUI.Tests.OtpInput;
 public class BitOtpInputTests : BunitTestContext
 {
     [DataTestMethod,
-    DataRow(Visual.Fluent, true),
-    DataRow(Visual.Fluent, false),
-
-    DataRow(Visual.Cupertino, true),
-    DataRow(Visual.Cupertino, false),
-
-    DataRow(Visual.Material, true),
-    DataRow(Visual.Material, false)
+    DataRow(true),
+    DataRow(false)
     ]
-    public void BitOtpInputTest(Visual visual, bool isEnabled)
+    public void BitOtpInputTest(bool isEnabled)
     {
         var com = RenderComponent<BitOtpInput>(parameters =>
         {
-            parameters.AddCascadingValue(visual);
             parameters.Add(p => p.IsEnabled, isEnabled);
         });
 
         var bitOtpInput = com.Find(".bit-otp");
-        var isEnabledClass = isEnabled ? "enabled" : "disabled";
-        var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
 
-        Assert.IsTrue(bitOtpInput.ClassList.Contains($"bit-otp-{isEnabledClass}-{visualClass}"));
+        if (isEnabled)
+        {
+            Assert.IsFalse(bitOtpInput.ClassList.Contains("disabled"));
+        }
+        else
+        {
+            Assert.IsTrue(bitOtpInput.ClassList.Contains("disabled"));
+        }
     }
 
     [DataTestMethod,
@@ -103,7 +101,7 @@ public class BitOtpInputTests : BunitTestContext
             _ => string.Empty
         };
 
-        var bitOtpInput = com.Find(".otp-input");
+        var bitOtpInput = com.Find(".input");
 
         Assert.IsTrue(bitOtpInput.GetAttribute("type").Equals(inputTypeAttribute));
         Assert.IsTrue(bitOtpInput.GetAttribute("inputmode").Equals(inputModeAttribute));
