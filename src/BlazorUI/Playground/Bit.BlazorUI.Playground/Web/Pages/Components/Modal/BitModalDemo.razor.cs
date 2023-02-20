@@ -149,6 +149,7 @@ public partial class BitModalDemo
         padding: 0 24px 24px;
         overflow-y: hidden;
         line-height: 20px;
+        max-width: 960px;
     }
 </style>
 
@@ -183,22 +184,6 @@ public partial class BitModalDemo
             finibus. In augue libero, commodo vitae nisi non, sagittis convallis ante. Phasellus malesuada eleifend
             mollis. Curabitur ultricies leo ac metus venenatis elementum.
         </p>
-        <p>
-            Aenean egestas quam ut erat commodo blandit. Mauris ante nisl, pellentesque sed venenatis nec, aliquet sit
-            amet enim. Praesent vitae diam non diam aliquet tristique non ut arcu. Pellentesque et ultrices eros. Fusce
-            diam metus, mattis eu luctus nec, facilisis vel erat. Nam a lacus quis tellus gravida euismod. Nulla sed sem
-            eget tortor cursus interdum. Sed vehicula tristique ultricies. Aenean libero purus, mollis quis massa quis,
-            eleifend dictum massa. Fusce eu sapien sit amet odio lacinia placerat. Mauris varius risus sed aliquet
-            cursus. Aenean lectus magna, tincidunt sit amet sodales a, volutpat ac leo. Morbi nisl sapien, tincidunt sit
-            amet mauris quis, sollicitudin auctor est.
-        </p>
-        <p>
-            Nam id mi justo. Nam vehicula vulputate augue, ac pretium enim rutrum ultricies. Sed aliquet accumsan
-            varius. Quisque ac auctor ligula. Fusce fringilla, odio et dignissim iaculis, est lacus ultrices risus,
-            vitae condimentum enim urna eu nunc. In risus est, mattis non suscipit at, mattis ut ante. Maecenas
-            consectetur urna vel erat maximus, non molestie massa consequat. Duis a feugiat nibh. Sed a hendrerit diam,
-            a mattis est. In augue dolor, faucibus vel metus at, convallis rhoncus dui.
-        </p>
     </div>
 </BitModal>";
     private readonly string example1CSharpCode = @"
@@ -223,8 +208,10 @@ private bool IsOpen = false;";
     }
 
     .modal-body {
-        max-width: 800px;
         padding: 0 24px 24px;
+        overflow-y: hidden;
+        line-height: 20px;
+        max-width: 960px;
     }
 </style>
 
@@ -303,8 +290,10 @@ private bool IsOpen2 = false;";
     }
 
     .modal-body {
-        max-width: 800px;
         padding: 0 24px 24px;
+        overflow-y: hidden;
+        line-height: 20px;
+        max-width: 960px;
     }
 </style>
 
@@ -423,6 +412,7 @@ private void OpenModalInPosition(BitModalPosition positionValue)
         padding: 0 24px 24px;
         overflow-y: hidden;
         line-height: 20px;
+        max-width: 960px;
     }
 </style>
 <div class=""position-btn"">

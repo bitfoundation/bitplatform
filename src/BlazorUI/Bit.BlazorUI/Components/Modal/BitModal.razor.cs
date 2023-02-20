@@ -7,10 +7,13 @@ public partial class BitModal
     private bool IsOpenHasBeenSet;
     private bool isOpen;
 
+
     private bool _isAlertRole;
+    private int _offsetTop;
+    private bool _internalIsOpen;
 
 
-    [Inject] public IJSRuntime _js { get; set; } = default!;
+    [Inject] private IJSRuntime _js { get; set; } = default!;
 
 
     /// <summary>
@@ -65,11 +68,6 @@ public partial class BitModal
             isOpen = value;
 
             _ = IsOpenChanged.InvokeAsync(value);
-
-            if (AutoToggleScroll)
-            {
-                _js.ToggleModalScroll(ScrollerSelector, value);
-            }
         }
     }
 
@@ -106,6 +104,28 @@ public partial class BitModal
     protected override void RegisterComponentClasses()
     {
         ClassBuilder.Register(() => AbsolutePosition ? "absolute" : "");
+
+        StyleBuilder.Register(() => _offsetTop > 0 ? $"top:{_offsetTop}px" : "");
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (_internalIsOpen == IsOpen) return;
+
+        _internalIsOpen = IsOpen;
+
+        _offsetTop = 0;
+
+        if (AutoToggleScroll is false) return;
+
+        _offsetTop = await _js.ToggleModalScroll(ScrollerSelector, IsOpen);
+
+        if (AbsolutePosition is false) return;
+
+        StyleBuilder.Reset();
+        StateHasChanged();
     }
 
     private void CloseModal(MouseEventArgs e)
