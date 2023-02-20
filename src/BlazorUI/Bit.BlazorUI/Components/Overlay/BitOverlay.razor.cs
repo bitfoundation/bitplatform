@@ -74,13 +74,14 @@ public partial class BitOverlay
         StyleBuilder.Register(() => _offsetTop > 0 ? $"top:{_offsetTop}px" : "");
     }
 
-    protected override async Task OnParametersSetAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await base.OnParametersSetAsync();
+        await base.OnAfterRenderAsync(firstRender);
 
         if (_internalIsVisible == IsVisible) return;
 
         _internalIsVisible = IsVisible;
+
         _offsetTop = 0;
 
         if (AutoToggleScroll is false) return;
