@@ -199,6 +199,11 @@ public partial class BitSplitButton<TItem> where TItem : class
             return splitButtonItem.IconName;
         }
 
+        if (item is BitMenuButtonOption menuButtonOption)
+        {
+            return menuButtonOption.IconName;
+        }
+
         return item.GetValueFromProperty<BitIconName>(_internalIconNameField);
     }
 
@@ -207,6 +212,11 @@ public partial class BitSplitButton<TItem> where TItem : class
         if (item is BitSplitButtonItem splitButtonItem)
         {
             return splitButtonItem.Text;
+        }
+
+        if (item is BitMenuButtonOption menuButtonOption)
+        {
+            return menuButtonOption.Text;
         }
 
         return item.GetValueAsObjectFromProperty(_internalTextField)?.ToString();
@@ -219,6 +229,11 @@ public partial class BitSplitButton<TItem> where TItem : class
             return splitButtonItem.Key;
         }
 
+        if (item is BitMenuButtonOption menuButtonOption)
+        {
+            return menuButtonOption.Key;
+        }
+
         return item.GetValueAsObjectFromProperty(_internalkeyField)?.ToString();
     }
 
@@ -227,6 +242,11 @@ public partial class BitSplitButton<TItem> where TItem : class
         if (item is BitSplitButtonItem splitButtonItem)
         {
             return splitButtonItem.IsEnabled;
+        }
+
+        if (item is BitMenuButtonOption menuButtonOption)
+        {
+            return menuButtonOption.IsEnabled;
         }
 
         return item.GetValueFromProperty(_internalIsEnabledField, true);
