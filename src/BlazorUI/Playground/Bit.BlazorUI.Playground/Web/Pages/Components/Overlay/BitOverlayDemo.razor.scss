@@ -1,8 +1,11 @@
-﻿.content {
+﻿@import "../../../Styles/abstracts/_functions.scss";
+
+.content {
     position: relative;
     display: flex;
     flex-flow: column nowrap;
     width: 85%;
+    max-width: rem(960px);
     height: rem(250px);
     background-color: white;
     border-radius: rem(3px);
