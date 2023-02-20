@@ -227,4 +227,3 @@ profile.arm.json
 /src/Server/Api/Attachments/**/*.*
 
 /src/BlazorDual.Web/wwwroot/scripts/app*.js
-/src/BlazorDual.Web/appsettings.json
