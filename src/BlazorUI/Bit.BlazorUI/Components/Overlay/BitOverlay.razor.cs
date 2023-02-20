@@ -1,12 +1,22 @@
-﻿
+﻿using System.Reflection.Emit;
+
 namespace Bit.BlazorUI;
 
 public partial class BitOverlay
 {
+    protected override bool UseVisual => false;
+
     private bool IsVisibleHasBeenSet;
+
     private bool isVisible;
 
-    [Inject] public IJSRuntime _js { get; set; } = default!;
+
+    private int _offsetTop;
+    private bool _internalIsVisible;
+
+
+    [Inject] private IJSRuntime _js { get; set; } = default!;
+
 
     /// <summary>
     /// When true, the Overlay will be closed by clicking on it.
@@ -44,11 +54,6 @@ public partial class BitOverlay
             _ = IsVisibleChanged.InvokeAsync(value);
 
             ClassBuilder.Reset();
-            
-            if (AutoToggleScroll)
-            {
-                _js.ToggleOverlayScroll(ScrollerSelector, value);
-            }
         }
     }
     [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
@@ -64,8 +69,28 @@ public partial class BitOverlay
     protected override void RegisterComponentClasses()
     {
         ClassBuilder.Register(() => IsVisible ? "visible" : "");
-
         ClassBuilder.Register(() => AbsolutePosition ? "absolute" : "");
+
+        StyleBuilder.Register(() => _offsetTop > 0 ? $"top:{_offsetTop}px" : "");
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        if (_internalIsVisible == IsVisible) return;
+
+        _internalIsVisible = IsVisible;
+        _offsetTop = 0;
+
+        if (AutoToggleScroll is false) return;
+
+        _offsetTop = await _js.ToggleOverlayScroll(ScrollerSelector, IsVisible);
+
+        if (AbsolutePosition is false) return;
+
+        StyleBuilder.Reset();
+        StateHasChanged();
     }
 
     private void CloseOverlay()
