@@ -228,4 +228,3 @@ custom.aprof
 /src/Server/Api/Attachments/**/*.*
 
 /src/Client/Shared/wwwroot/scripts/app*.js
-/src/Client/Web/appsettings.json
