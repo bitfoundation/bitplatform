@@ -1,0 +1,745 @@
+﻿@import "../../Styles/functions.scss";
+
+.bit-prs {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    box-shadow: none;
+    font-family: $typography-font-family;
+    font-weight: 400;
+    font-size: spacing(1.75);
+    color: $color-neutrals-gray160;
+
+    .coin {
+        font-size: spacing(1.75);
+        font-weight: 400;
+    }
+
+    .image-area {
+        position: absolute;
+        overflow: visible;
+        animation-name: css-0;
+        animation-duration: 0.367s;
+        animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
+        animation-fill-mode: both;
+        margin-right: spacing(1.25);
+        top: 0;
+        left: 0;
+        border: 0;
+        perspective: spacing(0.125);
+    }
+
+    .img-container {
+        position: absolute;
+        overflow: hidden;
+        animation-name: css-0;
+        animation-duration: 0.367s;
+        animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
+        animation-fill-mode: both;
+        margin-right: spacing(1.25);
+        top: 0;
+        left: 0;
+        border: 0;
+        border-radius: 50%;
+        perspective: spacing(0.125);
+        background-color: $color-primary-dark;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .initials {
+        //background-color: $DarkAlt;
+    }
+
+    .img-overlay {
+        position: absolute;
+        opacity: 0;
+    }
+
+    .img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        opacity: 1;
+        object-fit: cover;
+    }
+
+    .presence {
+        position: absolute;
+        top: auto;
+        right: spacing(-0.25);
+        bottom: spacing(-0.25);
+        border-radius: 50%;
+        border: spacing(0.25) solid $color-neutrals-white;
+        box-sizing: content-box;
+        text-align: center;
+        background-clip: border-box;
+        forced-color-adjust: none;
+    }
+
+    .icon {
+        display: inline-block;
+        font-style: normal;
+        font-weight: normal;
+        speak: none;
+        color: $color-neutrals-white;
+        vertical-align: top;
+    }
+
+    .details {
+        min-width: 0;
+        width: 100%;
+        text-align: left;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+    }
+
+    .primary-text {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: $color-neutrals-gray160;
+    }
+
+    .secondary-text {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: $color-neutrals-gray130;
+    }
+
+    .tertiary-text {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: $color-neutrals-gray130;
+    }
+
+    .optional-text {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: $color-neutrals-gray130;
+    }
+
+    .bit-ico-btn-fluent {
+        position: absolute;
+        background-color: $color-neutrals-white;
+        border-radius: 50%;
+        border: $shape-border-width solid $color-primary-main;
+    }
+
+    .action-button {
+        width: spacing(4);
+        height: spacing(4);
+        padding: 0 spacing(0.5);
+        box-sizing: border-box;
+        font-family: $typography-button-font-family;
+        font-size: spacing(1.75);
+        font-weight: 400;
+        text-decoration: none;
+        text-align: center;
+        cursor: pointer;
+        border: none;
+        background-color: transparent;
+        display: inline-block;
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        background: unset;
+        color: transparent;
+
+        &:hover {
+            color: $color-neutrals-white;
+        }
+
+        .icon-container {
+            display: flex;
+            height: 100%;
+            flex-wrap: nowrap;
+            justify-content: center;
+            align-items: center;
+
+            .bit-icon {
+                margin: 0 spacing(0.5);
+            }
+        }
+    }
+
+    &.img-act {
+        .img-container {
+            cursor: pointer;
+        }
+
+        .img-container:hover {
+            .img-overlay {
+                z-index: 1;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                width: 100%;
+                height: 100%;
+                background-color: $color-primary-dark;
+                color: $color-neutrals-white;
+                opacity: 1;
+                transition: all 0.1s linear;
+            }
+        }
+    }
+
+    &.size-20px {
+        height: spacing(2.5);
+        min-width: spacing(2.5);
+
+        .presence {
+            height: spacing(1);
+            width: spacing(1);
+            border: spacing(0.25) solid $color-neutrals-white;
+        }
+
+        .details {
+            padding: 0 spacing(1);
+        }
+
+        .primary-text {
+            font-weight: 400;
+            font-size: spacing(1.5);
+        }
+
+        .secondary-text,
+        .tertiary-text,
+        .optional-text {
+            display: none;
+        }
+    }
+
+    &.size-24px {
+        height: spacing(3);
+        min-width: spacing(3);
+
+        .image-area {
+            position: relative;
+            text-align: center;
+            flex: 0 0 auto;
+            height: spacing(3);
+            width: spacing(3);
+        }
+
+        .img-container {
+            width: spacing(3);
+            height: spacing(3);
+        }
+
+        .presence {
+            height: spacing(1);
+            width: spacing(1);
+            border: spacing(0.25) solid $color-neutrals-white;
+        }
+
+        .details {
+            padding: 0 spacing(1);
+        }
+
+        .secondary-text,
+        .tertiary-text,
+        .optional-text {
+            display: none;
+        }
+
+        .bit-ico-btn-fluent {
+            bottom: spacing(-1.5);
+            right: spacing(-1.25);
+            width: spacing(3);
+            height: spacing(3);
+        }
+
+        .initials {
+            font-size: spacing(2);
+        }
+    }
+
+    &.size-32px {
+        height: spacing(4);
+        min-width: spacing(4);
+
+        .image-area {
+            position: relative;
+            text-align: center;
+            flex: 0 0 auto;
+            height: spacing(4);
+            width: spacing(4);
+        }
+
+        .img-container {
+            width: spacing(4);
+            height: spacing(4);
+        }
+
+        .presence {
+            height: spacing(1);
+            width: spacing(1);
+            border: spacing(0.25) solid $color-neutrals-white;
+        }
+
+        .details {
+            padding: 0 spacing(1);
+        }
+
+        .secondary-text,
+        .tertiary-text,
+        .optional-text {
+            display: none;
+        }
+
+        .bit-ico-btn-fluent {
+            bottom: spacing(-1.5);
+            right: spacing(-1.25);
+            width: spacing(3);
+            height: spacing(3);
+        }
+
+        .initials {
+            font-size: spacing(1.25);
+        }
+    }
+
+    &.size-40px {
+        height: spacing(5);
+        min-width: spacing(5);
+
+        .image-area {
+            position: relative;
+            text-align: center;
+            flex: 0 0 auto;
+            height: spacing(5);
+            width: spacing(5);
+        }
+
+        .img-container {
+            width: spacing(5);
+            height: spacing(5);
+        }
+
+        .presence {
+            height: spacing(1.5);
+            width: spacing(1.5);
+            border: spacing(0.25) solid $color-neutrals-white;
+        }
+
+        .icon {
+            font-size: spacing(0.75);
+            line-height: spacing(1.5);
+        }
+
+        .details {
+            padding: 0 spacing(1.5);
+        }
+
+        .primary-text {
+            font-weight: 400;
+            font-size: spacing(1.75);
+        }
+
+        .secondary-text {
+            font-weight: 400;
+            font-size: spacing(1.5);
+        }
+
+        .tertiary-text {
+            display: none;
+        }
+
+        .optional-text {
+            display: none;
+        }
+
+        .bit-ico-btn-fluent {
+            bottom: spacing(-1.5);
+            right: spacing(-1.25);
+            width: spacing(3);
+            height: spacing(3);
+        }
+
+        .initials {
+            font-size: spacing(2.5);
+        }
+    }
+
+    &.size-48px {
+        height: spacing(6);
+        min-width: spacing(6);
+
+        .image-area {
+            position: relative;
+            text-align: center;
+            flex: 0 0 auto;
+            height: spacing(6);
+            width: spacing(6);
+        }
+
+        .img-container {
+            width: spacing(6);
+            height: spacing(6);
+        }
+
+        .presence {
+            height: spacing(1.5);
+            width: spacing(1.5);
+            border: spacing(0.25) solid $color-neutrals-white;
+        }
+
+        .icon {
+            font-size: spacing(0.75);
+            line-height: spacing(1.5);
+        }
+
+        .details {
+            padding: 0 spacing(1.5);
+        }
+
+        .primary-text {
+            font-weight: 400;
+            font-size: spacing(1.75);
+        }
+
+        .secondary-text {
+            font-weight: 400;
+            font-size: spacing(1.5);
+        }
+
+        .tertiary-text {
+            display: none;
+        }
+
+        .optional-text {
+            display: none;
+        }
+
+        .bit-ico-btn-fluent {
+            bottom: spacing(-0.75);
+            right: spacing(-0.75);
+            width: spacing(3);
+            height: spacing(3);
+        }
+
+        .initials {
+            font-size: spacing(2.75);
+        }
+    }
+
+    &.size-56px {
+        height: spacing(7);
+        min-width: spacing(7);
+
+        .image-area {
+            position: relative;
+            text-align: center;
+            flex: 0 0 auto;
+            height: spacing(7);
+            width: spacing(7);
+        }
+
+        .img-container {
+            width: spacing(7);
+            height: spacing(7);
+        }
+
+        .presence {
+            height: spacing(2);
+            width: spacing(2);
+            border: spacing(0.25) solid $color-neutrals-white;
+        }
+
+        .icon {
+            font-size: spacing(1);
+            line-height: spacing(2);
+        }
+
+        .details {
+            padding: 0 spacing(3) 0 spacing(2);
+        }
+
+        .primary-text {
+            font-weight: 400;
+            font-size: spacing(2.5);
+        }
+
+        .secondary-text {
+            font-weight: 400;
+            font-size: spacing(1.75);
+        }
+
+        .tertiary-text {
+            display: none;
+        }
+
+        .optional-text {
+            display: none;
+        }
+
+        .bit-ico-btn-fluent {
+            bottom: spacing(-0.75);
+            right: spacing(-0.75);
+            width: spacing(3);
+            height: spacing(3);
+        }
+
+        .initials {
+            font-size: spacing(3);
+        }
+    }
+
+    &.size-72px {
+        height: spacing(9);
+        min-width: spacing(9);
+
+        .image-area {
+            position: relative;
+            text-align: center;
+            flex: 0 0 auto;
+            height: spacing(9);
+            width: spacing(9);
+        }
+
+        .img-container {
+            width: spacing(9);
+            height: spacing(9);
+        }
+
+        .presence {
+            height: spacing(2.5);
+            width: spacing(2.5);
+            border: spacing(0.25) solid $color-neutrals-white;
+        }
+
+        .icon {
+            font-size: spacing(1.5);
+            line-height: spacing(2.5);
+        }
+
+        .details {
+            padding: 0 spacing(3) 0 spacing(2);
+        }
+
+        .primary-text {
+            font-weight: 400;
+            font-size: spacing(2.5);
+        }
+
+        .secondary-text {
+            font-weight: 400;
+            font-size: spacing(1.75);
+        }
+
+        .tertiary-text {
+            font-weight: 400;
+            font-size: spacing(1.75);
+            display: block;
+        }
+
+        .optional-text {
+            display: none;
+        }
+
+        .bit-ico-btn-fluent {
+            bottom: spacing(-0.25);
+            right: 0;
+            width: spacing(3.25);
+            height: spacing(3.25);
+        }
+
+        .initials {
+            font-size: spacing(3);
+        }
+    }
+
+    &.size-100px {
+        height: spacing(12.5);
+        min-width: spacing(12.5);
+
+        .image-area {
+            position: relative;
+            text-align: center;
+            flex: 0 0 auto;
+            height: spacing(12.5);
+            width: spacing(12.5);
+        }
+
+        .img-container {
+            width: spacing(12.5);
+            height: spacing(12.5);
+        }
+
+        .presence {
+            height: spacing(3.5);
+            width: spacing(3.5);
+            border: spacing(0.25) solid $color-neutrals-white;
+        }
+
+        .icon {
+            font-size: spacing(1.75);
+            line-height: spacing(3.5);
+        }
+
+        .details {
+            padding: 0 spacing(3) 0 spacing(2);
+        }
+
+        .primary-text {
+            font-weight: 400;
+            font-size: spacing(2.5);
+        }
+
+        .secondary-text {
+            font-weight: 400;
+            font-size: spacing(1.75);
+        }
+
+        .tertiary-text {
+            font-weight: 400;
+            font-size: spacing(1.75);
+            display: block;
+        }
+
+        .optional-text {
+            font-weight: 400;
+            font-size: spacing(1.75);
+            display: block;
+        }
+
+        .bit-ico-btn-fluent {
+            bottom: spacing(-0.25);
+            right: 0;
+        }
+
+        .initials {
+            font-size: spacing(3.25);
+        }
+    }
+
+    &.size-120px {
+        height: spacing(15);
+        min-width: spacing(15);
+
+        .image-area {
+            position: relative;
+            text-align: center;
+            flex: 0 0 auto;
+            height: spacing(15);
+            width: spacing(15);
+        }
+
+        .img-container {
+            width: spacing(15);
+            height: spacing(15);
+        }
+
+        .presence {
+            height: spacing(4);
+            width: spacing(4);
+            border: spacing(0.25) solid $color-neutrals-white;
+        }
+
+        .icon {
+            font-size: spacing(1.75);
+            line-height: spacing(4);
+            position: relative;
+            left: spacing(0.125);
+        }
+
+        .details {
+            padding: 0 spacing(3) 0 spacing(2);
+        }
+
+        .primary-text {
+            font-weight: 400;
+            font-size: spacing(2.5);
+        }
+
+        .secondary-text {
+            font-weight: 400;
+            font-size: spacing(1.75);
+        }
+
+        .tertiary-text {
+            font-weight: 400;
+            font-size: spacing(1.75);
+            display: block;
+        }
+
+        .optional-text {
+            font-weight: 400;
+            font-size: spacing(1.75);
+            display: block;
+        }
+
+        .bit-ico-btn-fluent {
+            bottom: spacing(-0.25);
+            right: 0;
+        }
+
+        .initials {
+            font-size: spacing(3.5);
+        }
+    }
+
+    &.Online {
+        .presence {
+            background-color: $color-general-green;
+        }
+    }
+
+    &.Away {
+        .presence {
+            background-color: $color-general-orange;
+        }
+    }
+
+    &.Blocked {
+        .presence {
+            background-color: $color-general-red2;
+
+            &::before {
+                content: "";
+                width: 100%;
+                height: 100%;
+                position: absolute;
+                top: 0;
+                left: 0;
+                border: spacing(0.25) solid $color-general-red2;
+                border-radius: 50%;
+                box-sizing: border-box;
+            }
+        }
+    }
+
+    &.Busy {
+        .presence {
+            background-color: $color-general-red2;
+        }
+    }
+
+    &.DND {
+        .presence {
+            background-color: $color-general-red3;
+        }
+    }
+
+    &.Offline {
+        .presence {
+            background-color: $color-neutrals-gray110;
+        }
+    }
+
+    &.Off {
+        .presence {
+            background-color: $color-general-magenta;
+        }
+    }
+}
