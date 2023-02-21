@@ -127,13 +127,6 @@
         color: $color-neutrals-gray130;
     }
 
-    .bit-ico-btn-fluent {
-        position: absolute;
-        background-color: $color-neutrals-white;
-        border-radius: 50%;
-        border: $shape-border-width solid $color-primary-main;
-    }
-
     .action-button {
         width: spacing(4);
         height: spacing(4);
@@ -252,13 +245,6 @@
             display: none;
         }
 
-        .bit-ico-btn-fluent {
-            bottom: spacing(-1.5);
-            right: spacing(-1.25);
-            width: spacing(3);
-            height: spacing(3);
-        }
-
         .initials {
             font-size: spacing(2);
         }
@@ -295,13 +281,6 @@
         .tertiary-text,
         .optional-text {
             display: none;
-        }
-
-        .bit-ico-btn-fluent {
-            bottom: spacing(-1.5);
-            right: spacing(-1.25);
-            width: spacing(3);
-            height: spacing(3);
         }
 
         .initials {
@@ -359,13 +338,6 @@
             display: none;
         }
 
-        .bit-ico-btn-fluent {
-            bottom: spacing(-1.5);
-            right: spacing(-1.25);
-            width: spacing(3);
-            height: spacing(3);
-        }
-
         .initials {
             font-size: spacing(2.5);
         }
@@ -419,13 +391,6 @@
 
         .optional-text {
             display: none;
-        }
-
-        .bit-ico-btn-fluent {
-            bottom: spacing(-0.75);
-            right: spacing(-0.75);
-            width: spacing(3);
-            height: spacing(3);
         }
 
         .initials {
@@ -483,13 +448,6 @@
             display: none;
         }
 
-        .bit-ico-btn-fluent {
-            bottom: spacing(-0.75);
-            right: spacing(-0.75);
-            width: spacing(3);
-            height: spacing(3);
-        }
-
         .initials {
             font-size: spacing(3);
         }
@@ -545,13 +503,6 @@
 
         .optional-text {
             display: none;
-        }
-
-        .bit-ico-btn-fluent {
-            bottom: spacing(-0.25);
-            right: 0;
-            width: spacing(3.25);
-            height: spacing(3.25);
         }
 
         .initials {
@@ -613,11 +564,6 @@
             display: block;
         }
 
-        .bit-ico-btn-fluent {
-            bottom: spacing(-0.25);
-            right: 0;
-        }
-
         .initials {
             font-size: spacing(3.25);
         }
@@ -677,11 +623,6 @@
             font-weight: 400;
             font-size: spacing(1.75);
             display: block;
-        }
-
-        .bit-ico-btn-fluent {
-            bottom: spacing(-0.25);
-            right: 0;
         }
 
         .initials {
