@@ -1,24 +1,25 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
-<div @ref="RootElement" @attributes="HtmlAttributes"
+<div @ref="RootElement"
+     @attributes="HtmlAttributes"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
 
-    <div role="presentation" class="bit-prs-coin">
+    <div role="presentation" class="coin">
         @if (Size != BitPersonaSize.Size20)
         {
             string dimension = CoinSize != -1 ? $"{CoinSize.ToString()}px" : Size!;
 
-            <div class="bit-prs-image-area" style="width:@dimension;height:@dimension">
+            <div class="image-area" style="width:@dimension;height:@dimension">
 
-                <div class="bit-prs-img-container" @onclick="HandleImageClick">
+                <div class="img-container" @onclick="HandleImageClick">
                     @if (ImageUrl is not null)
                     {
 
                         @if (OnImageClick.HasDelegate)
                         {
-                            <div class="bit-prs-img-overlay">
+                            <div class="img-overlay">
                                 @if (ImageOverlayFragment is not null)
                                 {
                                     @ImageOverlayFragment
@@ -41,12 +42,10 @@
                         {
                             <img src="@ImageUrl"
                                  style="display:@(_isLoaded ? "unset": "none")"
-                                 class="bit-prs-img"
+                                 class="img"
                                  alt="@ImageAlt"
                                  width="@dimension"
-                                 height="@dimension"
-                            @onerror="HandleOnError"
-                            @onload="HandleOnLoad" />
+                                 height="@dimension" @onerror="HandleOnError" @onload="HandleOnLoad" />
                         }
                     }
                     else
@@ -65,16 +64,17 @@
                     }
                     else
                     {
-                        <BitIconButton Class="bit-prs-action-button"
-                                       Title="Edit image"
-                                       IconName="@ActionIconName"
-                                       OnClick="HandleActionClick" />
+                        <button @onclick="HandleActionClick" class="action-button" title="Edit image">
+                            <span class="icon-container">
+                                <i class="bit-icon bit-icon--@ActionIconName.GetName()"></i>
+                            </span>
+                        </button>
                     }
                 }
                 else if (Presence != BitPersonaPresenceStatus.None)
                 {
-                    <div title=@PresenceTitle class="bit-prs-presence">
-                        <i class=@($"bit-prs-icon bit-icon--{DetermineIcon()}") role="presentation"></i>
+                    <div title=@PresenceTitle class="presence">
+                        <i class=@($"bit-icon bit-icon--{DetermineIcon()}") role="presentation"></i>
                     </div>
                 }
             </div>
@@ -83,10 +83,10 @@
         {
             if (Presence != BitPersonaPresenceStatus.None)
             {
-                <div title=@PresenceTitle class="bit-prs-presence" style="@_presenceStyle">
+                <div title=@PresenceTitle class="presence" style="@_presenceStyle">
                     @if (_renderIcon)
                     {
-                        <i class=@($"bit-prs-icon bit-icon--{DetermineIcon()}") role="presentation" style="@_iconStyle"></i>
+                        <i class=@($"bit-icon bit-icon--{DetermineIcon()}") role="presentation" style="@_iconStyle"></i>
                     }
                 </div>
             }
@@ -99,17 +99,17 @@
 
     @if (HidePersonaDetails is false)
     {
-        <div class="bit-prs-details">
-            <div dir="auto" class="bit-prs-primary-text">
+        <div class="details">
+            <div dir="auto" class="primary-text">
                 @Text
             </div>
-            <div dir="auto" class="bit-prs-secondary-text">
+            <div dir="auto" class="secondary-text">
                 @SecondaryText
             </div>
-            <div dir="auto" class="bit-prs-tertiary-text">
+            <div dir="auto" class="tertiary-text">
                 @TertiaryText
             </div>
-            <div dir="auto" class="bit-prs-optional-text">
+            <div dir="auto" class="optional-text">
                 @OptionalText
             </div>
         </div>
