@@ -1,8 +1,10 @@
-﻿
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public partial class BitPivot
 {
+    protected override bool UseVisual => false;
+
+
     private bool SelectedKeyHasBeenSet;
     private BitPivotLinkFormat linkFormat = BitPivotLinkFormat.Links;
     private BitPivotLinkSize linkSize = BitPivotLinkSize.Normal;
@@ -37,6 +39,8 @@ public partial class BitPivot
         get => linkFormat;
         set
         {
+            if (value == linkFormat) return;
+
             linkFormat = value;
             ClassBuilder.Reset();
         }
@@ -51,6 +55,8 @@ public partial class BitPivot
         get => linkSize;
         set
         {
+            if (value == linkSize) return;
+
             linkSize = value;
             ClassBuilder.Reset();
         }
@@ -65,15 +71,17 @@ public partial class BitPivot
         get => overflowBehavior;
         set
         {
+            if (value == overflowBehavior) return;
+
             overflowBehavior = value;
             ClassBuilder.Reset();
         }
     }
 
     /// <summary>
-    /// Callback for when the selected pivot item is changed
+    /// Callback for when the a pivot item is clicked.
     /// </summary>
-    [Parameter] public EventCallback<BitPivotItem> OnLinkClick { get; set; }
+    [Parameter] public EventCallback<BitPivotItem> OnItemClick { get; set; }
 
     /// <summary>
     /// Position of the pivot header
@@ -101,6 +109,7 @@ public partial class BitPivot
         set
         {
             if (value == selectedKey) return;
+
             SelectItemByKey(value);
         }
     }
@@ -111,23 +120,23 @@ public partial class BitPivot
 
     protected override void RegisterComponentClasses()
     {
-        ClassBuilder.Register(() => LinkSize == BitPivotLinkSize.Large ? $"{RootElementClass}-large-{VisualClassRegistrar()}"
-                                  : LinkSize == BitPivotLinkSize.Normal ? $"{RootElementClass}-normal-{VisualClassRegistrar()}"
+        ClassBuilder.Register(() => LinkSize == BitPivotLinkSize.Large ? "large"
+                                  : LinkSize == BitPivotLinkSize.Normal ? "normal"
                                   : string.Empty);
 
-        ClassBuilder.Register(() => LinkFormat == BitPivotLinkFormat.Links ? $"{RootElementClass}-links-{VisualClassRegistrar()}"
-                                  : LinkFormat == BitPivotLinkFormat.Tabs ? $"{RootElementClass}-tabs-{VisualClassRegistrar()}"
+        ClassBuilder.Register(() => LinkFormat == BitPivotLinkFormat.Links ? "links"
+                                  : LinkFormat == BitPivotLinkFormat.Tabs ? "tabs"
                                   : string.Empty);
 
-        ClassBuilder.Register(() => OverflowBehavior == BitPivotOverflowBehavior.Menu ? $"{RootElementClass}-menu-{VisualClassRegistrar()}"
-                                  : OverflowBehavior == BitPivotOverflowBehavior.Scroll ? $"{RootElementClass}-scroll-{VisualClassRegistrar()}"
-                                  : OverflowBehavior == BitPivotOverflowBehavior.None ? $"{RootElementClass}-none-{VisualClassRegistrar()}"
+        ClassBuilder.Register(() => OverflowBehavior == BitPivotOverflowBehavior.Menu ? "menu"
+                                  : OverflowBehavior == BitPivotOverflowBehavior.Scroll ? "scroll"
+                                  : OverflowBehavior == BitPivotOverflowBehavior.None ? "none"
                                   : string.Empty);
 
-        ClassBuilder.Register(() => Position == BitPivotPosition.Top ? $"position-top"
-                                  : Position == BitPivotPosition.Bottom ? $"position-bottom"
-                                  : Position == BitPivotPosition.Left ? $"position-left"
-                                  : Position == BitPivotPosition.Right ? $"position-right"
+        ClassBuilder.Register(() => Position == BitPivotPosition.Top ? "position-top"
+                                  : Position == BitPivotPosition.Bottom ? "position-bottom"
+                                  : Position == BitPivotPosition.Left ? "position-left"
+                                  : Position == BitPivotPosition.Right ? "position-right"
                                   : string.Empty);
     }
 
@@ -138,16 +147,16 @@ public partial class BitPivot
         return base.OnInitializedAsync();
     }
 
-    internal string GetPivotItemId(BitPivotItem item) => $"Pivot{UniqueId}-Tab{_allItems.FindIndex(i => i == item)}";
+    internal string GetPivotItemId(BitPivotItem item) => $"Pivot-{UniqueId}-Tab-{_allItems.FindIndex(i => i == item)}";
 
     internal int GetPivotItemTabIndex(BitPivotItem item) => item.IsSelected ? 0 : _allItems.FindIndex(i => i == item) == 0 ? 0 : -1;
 
-    internal async Task SelectItem(BitPivotItem item)
+    internal void SelectItem(BitPivotItem item)
     {
         if (SelectedKeyHasBeenSet && SelectedKeyChanged.HasDelegate is false) return;
 
-        _selectedItem?.SetState(false);
-        item.SetState(true);
+        _selectedItem?.SetIsSelected(false);
+        item.SetIsSelected(true);
 
         _selectedItem = item;
         selectedKey = item.Key;
@@ -155,29 +164,22 @@ public partial class BitPivot
         _ = SelectedKeyChanged.InvokeAsync(selectedKey);
 
         StateHasChanged();
-
-        await OnLinkClick.InvokeAsync(item);
     }
 
     internal void RegisterItem(BitPivotItem item)
     {
-        if (IsEnabled is false)
-        {
-            item.IsEnabled = false;
-        }
-
         if (selectedKey is null)
         {
             if (_allItems.Count == 0)
             {
-                item.SetState(true);
+                item.SetIsSelected(true);
                 _selectedItem = item;
                 StateHasChanged();
             }
         }
         else if (selectedKey == item.Key)
         {
-            item.SetState(true);
+            item.SetIsSelected(true);
             _selectedItem = item;
             StateHasChanged();
         }
@@ -200,8 +202,8 @@ public partial class BitPivot
             return;
         }
 
-        _ = SelectItem(newItem);
+        SelectItem(newItem);
     }
 
-    private string GetAriaLabelledby => $"Pivot{UniqueId}-Tab{_allItems.FindIndex(i => i == _selectedItem)}";
+    private string GetAriaLabelledby => $"Pivot-{UniqueId}-Tab-{_allItems.FindIndex(i => i == _selectedItem)}";
 }

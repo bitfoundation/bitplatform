@@ -7,32 +7,21 @@ namespace Bit.BlazorUI.Tests.Pivot;
 public class BitPivotTests : BunitTestContext
 {
     [DataTestMethod,
-     DataRow(Visual.Fluent, BitPivotLinkFormat.Links, BitPivotLinkSize.Large, BitPivotOverflowBehavior.None),
-     DataRow(Visual.Fluent, BitPivotLinkFormat.Tabs, BitPivotLinkSize.Normal, BitPivotOverflowBehavior.Scroll),
-     DataRow(Visual.Fluent, BitPivotLinkFormat.Tabs, BitPivotLinkSize.Normal, BitPivotOverflowBehavior.Menu),
-
-     DataRow(Visual.Cupertino, BitPivotLinkFormat.Links, BitPivotLinkSize.Large, BitPivotOverflowBehavior.None),
-     DataRow(Visual.Cupertino, BitPivotLinkFormat.Tabs, BitPivotLinkSize.Normal, BitPivotOverflowBehavior.Scroll),
-     DataRow(Visual.Cupertino, BitPivotLinkFormat.Tabs, BitPivotLinkSize.Normal, BitPivotOverflowBehavior.Menu),
-
-     DataRow(Visual.Material, BitPivotLinkFormat.Links, BitPivotLinkSize.Large, BitPivotOverflowBehavior.None),
-     DataRow(Visual.Material, BitPivotLinkFormat.Tabs, BitPivotLinkSize.Normal, BitPivotOverflowBehavior.Scroll),
-     DataRow(Visual.Material, BitPivotLinkFormat.Tabs, BitPivotLinkSize.Normal, BitPivotOverflowBehavior.Menu)]
-    public void BitPivotShouldRepectLinkFormatClasses(Visual visual, BitPivotLinkFormat linkFormat, BitPivotLinkSize linkSize, BitPivotOverflowBehavior overflowBehavior)
+     DataRow(BitPivotLinkFormat.Links, BitPivotLinkSize.Large, BitPivotOverflowBehavior.None),
+     DataRow(BitPivotLinkFormat.Tabs, BitPivotLinkSize.Normal, BitPivotOverflowBehavior.Scroll),
+     DataRow(BitPivotLinkFormat.Tabs, BitPivotLinkSize.Normal, BitPivotOverflowBehavior.Menu)]
+    public void BitPivotShouldRespectLinkFormatClasses(BitPivotLinkFormat linkFormat, BitPivotLinkSize linkSize, BitPivotOverflowBehavior overflowBehavior)
     {
         var component = RenderComponent<BitPivotTest>(parameters =>
         {
-            parameters.Add(p => p.Visual, visual);
             parameters.Add(p => p.LinkFormat, linkFormat);
             parameters.Add(p => p.LinkSize, linkSize);
             parameters.Add(p => p.OverflowBehavior, overflowBehavior);
         });
 
-        var visualClass = visual.ToString().ToLower();
-
-        var linkFormatClass = $"bit-pvt-{linkFormat.ToString().ToLower()}-{visualClass}";
-        var linkSizeClass = $"bit-pvt-{linkSize.ToString().ToLower()}-{visualClass}";
-        var overflowBehaviorClass = $"bit-pvt-{overflowBehavior.ToString().ToLower()}-{visualClass}";
+        var linkFormatClass = linkFormat.ToString().ToLower();
+        var linkSizeClass = linkSize.ToString().ToLower();
+        var overflowBehaviorClass = overflowBehavior.ToString().ToLower();
 
         var bitPivot = component.Find($".bit-pvt");
 
@@ -82,7 +71,7 @@ public class BitPivotTests : BunitTestContext
      DataRow(BitPivotPosition.Bottom),
      DataRow(BitPivotPosition.Left),
      DataRow(BitPivotPosition.Right)]
-    public void BitPivotShouldRepectPosition(BitPivotPosition position)
+    public void BitPivotShouldRespectPosition(BitPivotPosition position)
     {
         var component = RenderComponent<BitPivotTest>(parameters =>
         {
