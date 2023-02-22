@@ -11,9 +11,9 @@
             @ChildContent
         </div>
     </CascadingValue>
-    @if (HeadersOnly is false)
-    {
-        <div class="content-container"
+
+    @if (HeadersOnly is false) {
+        <div class="content-container@((_selectedItem?.IsEnabled??false) ? "" : " disabled")"
              role="tabpanel"
              aria-hidden="false"
              aria-labelledby="@GetAriaLabelledby">
