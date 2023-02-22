@@ -2,20 +2,20 @@
 
 .bit-mnb {
     position: relative;
-    min-width: spacing(10);
-    height: spacing(4);
-    font-family: $typography-button-font-family;
-    font-size: spacing(1.75);
-    font-weight: 400;
     display: inline-flex;
+    min-width: spacing(10);
+    box-sizing: border-box;
+    font-family: $typography-button-font-family;
+    font-weight: $typography-button-font-weight;
+    line-height: $typography-button-line-height;
     justify-content: center;
     align-items: center;
+    cursor: pointer;
     outline: transparent;
     -webkit-font-smoothing: antialiased;
     border-radius: $shape-border-radius;
     border-width: $shape-border-width;
     border-style: $shape-border-style;
-    cursor: pointer;
 
     .text {
         margin: 0 spacing(0.5);
@@ -65,6 +65,24 @@
         }
     }
 
+    &.small {
+        padding: spacing(0.25) spacing(1.25);
+        font-size: spacing(1.5);
+        line-height: spacing(2.75);
+    }
+
+    &.medium {
+        padding: spacing(0.5) spacing(2);
+        font-size: spacing(1.75);
+        line-height: spacing(3.25);
+    }
+
+    &.large {
+        padding: spacing(0.75) spacing(2.75);
+        font-size: spacing(2);
+        line-height: spacing(3.75);
+    }
+
     &.open-menu {
         .items {
             opacity: 1;
@@ -83,7 +101,9 @@
         cursor: inherit;
         pointer-events: inherit;
         color: inherit;
-        padding: 0 spacing(2);
+        font-size: inherit;
+        font-weight: inherit;
+        line-height: inherit;
 
         .text {
             margin: 0 spacing(0.5);

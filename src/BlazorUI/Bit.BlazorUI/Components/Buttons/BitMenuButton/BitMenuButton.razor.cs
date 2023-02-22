@@ -12,7 +12,7 @@ public partial class BitMenuButton<TItem> where TItem : class
     private const string KEY_FIELD = nameof(BitMenuButtonItem.Key);
 
     protected override bool UseVisual => false;
-
+    private BitButtonSize buttonSize = BitButtonSize.Medium;
     private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
     private bool isCalloutOpen;
 
@@ -48,6 +48,20 @@ public partial class BitMenuButton<TItem> where TItem : class
     /// If true, add an aria-hidden attribute instructing screen readers to ignore the element.
     /// </summary>
     [Parameter] public bool AriaHidden { get; set; }
+
+    /// <summary>
+    /// The size of button, Possible values: Small | Medium | Large
+    /// </summary>
+    [Parameter]
+    public BitButtonSize ButtonSize
+    {
+        get => buttonSize;
+        set
+        {
+            buttonSize = value;
+            ClassBuilder.Reset();
+        }
+    }
 
     /// <summary>
     /// The style of button, Possible values: Primary | Standard.
@@ -188,6 +202,12 @@ public partial class BitMenuButton<TItem> where TItem : class
                                        : ButtonStyle == BitButtonStyle.Primary
                                            ? "primary"
                                            : "standard");
+
+        ClassBuilder.Register(() => ButtonSize == BitButtonSize.Small
+                               ? "small"
+                               : ButtonSize == BitButtonSize.Medium
+                                   ? "medium"
+                                   : "large");
 
         ClassBuilder.Register(() => _isCalloutOpen
                                        ? "open-menu"
