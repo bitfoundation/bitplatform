@@ -3,36 +3,32 @@
 
 <button @ref="RootElement"
         @attributes="HtmlAttributes"
+        id="@Parent?.GetPivotItemId(this)"
         style="@StyleBuilder.Value"
         class="@ClassBuilder.Value"
         type="button"
         role="tab"
-        id="@Pivot?.GetPivotItemId(this)"
         aria-selected="@(IsSelected ? "true": "false")"
         aria-label="@AriaLabel"
         name="@HeaderText"
         data-content="@HeaderText"
-        tabindex="@Pivot?.GetPivotItemTabIndex(this)"
+        tabindex="@Parent?.GetPivotItemTabIndex(this)"
         @onclick="HandleOnClick">
     <span>
-        @if (@IconName.HasValue)
-        {
+        @if (@IconName.HasValue) {
             <span>
                 <i class="bit-icon bit-icon--@(IconName.Value.GetName())"></i>
             </span>
         }
 
-        @if (Header is not null)
-        {
+        @if (Header is not null) {
             @Header
         }
-        else if (HeaderText.HasValue())
-        {
+        else if (HeaderText.HasValue()) {
             <span>@HeaderText</span>
         }
 
-        @if (ItemCount is not null)
-        {
+        @if (ItemCount is not null) {
             <span>(@ItemCount)</span>
         }
     </span>

@@ -19,6 +19,12 @@
         position: relative;
         color: $color-neutrals-gray160;
         white-space: nowrap;
+
+        &.disabled {
+            color: $color-text-disabled;
+            cursor: default;
+            pointer-events: none;
+        }
     }
 
     &.position-top {
@@ -124,6 +130,21 @@
     }
 
     &.disabled {
+        .content-container {
+            color: $color-text-disabled;
+            cursor: default;
+            pointer-events: none;
+        }
+
+        .bit-pvi {
+            color: $color-text-disabled;
+            cursor: default;
+            pointer-events: none;
+
+            &.selected::before {
+                background-color: $color-border-disabled;
+            }
+        }
     }
 }
 
@@ -206,5 +227,12 @@
     }
 
     &.disabled {
+        color: $color-text-disabled;
+        cursor: default;
+        pointer-events: none;
+
+        &.selected::before {
+            background-color: $color-border-disabled;
+        }
     }
 }

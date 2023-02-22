@@ -192,6 +192,11 @@ public partial class BitPivot
         _allItems.Remove(item);
     }
 
+    internal void Refresh()
+    {
+        StateHasChanged();
+    }
+
     private void SelectItemByKey(string? key)
     {
         var newItem = _allItems.FirstOrDefault(i => i.Key == key);
