@@ -30,8 +30,8 @@
         <None Include="compilerconfig.json" />
         <None Include="Shared\LoadingComponent.razor.scss" />
 
-        <Content Remove="wwwroot\appsettings.json" />
-        <EmbeddedResource Include="wwwroot\appsettings.json" />
+        <Content Remove="appsettings.json" />
+        <EmbeddedResource Include="appsettings.json" />
 
         <PackageReference Include="Bit.BlazorUI" Version="4.9.6-pre-03" />
         <PackageReference Include="Bit.Bup" Version="4.9.6-pre-03" />

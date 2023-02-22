@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.OData;
 using Microsoft.AspNetCore.ResponseCompression;
 using BlazorDual.Api.Services.Implementations;
+using Microsoft.Extensions.DependencyInjection;
 #if BlazorWebAssembly
 using Microsoft.AspNetCore.Components;
 using BlazorDual.Web.Services.Implementations;
@@ -60,16 +61,7 @@ public static class Services
             {
                 options.InvalidModelStateResponseFactory = context =>
                 {
-                    throw new ResourceValidationException(context.ModelState
-                            .Select(ms => new ResourceValidationExceptionPayload
-                            {
-                                Property = ms.Key,
-                                Errors = ms.Value!.Errors.Select(e => new ResourceValidationExceptionPayloadError
-                                {
-                                    Key = e.ErrorMessage,
-                                    Message = e.ErrorMessage
-                                })
-                            }).ToList());
+                    throw new ResourceValidationException(context.ModelState.Select(ms => (ms.Key, ms.Value!.Errors.Select(e => new LocalizedString(e.ErrorMessage, e.ErrorMessage)).ToArray())).ToArray());
                 };
             });
 
