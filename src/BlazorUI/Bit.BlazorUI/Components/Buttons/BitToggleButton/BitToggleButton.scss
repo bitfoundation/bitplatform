@@ -7,7 +7,6 @@
     box-sizing: border-box;
     font-family: $typography-button-font-family;
     font-weight: $typography-button-font-weight;
-    line-height: $typography-button-line-height;
     text-decoration: none;
     text-align: center;
     cursor: pointer;
@@ -112,7 +111,7 @@
     &.medium {
         padding: spacing(0.5) spacing(2);
         font-size: spacing(1.75);
-        line-height: spacing(3.25);
+        line-height: $typography-button-line-height;
     }
 
     &.large {

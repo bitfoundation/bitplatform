@@ -7,7 +7,6 @@
     box-sizing: border-box;
     font-family: $typography-button-font-family;
     font-weight: $typography-button-font-weight;
-    line-height: $typography-button-line-height;
     text-decoration: none;
     text-align: left;
     cursor: pointer;
@@ -26,8 +25,6 @@
 
         .secondary-text {
             display: block;
-            font-size: spacing(1.5);
-            font-weight: 400;
         }
     }
 
@@ -82,17 +79,35 @@
         padding: spacing(0.25) spacing(1.25);
         font-size: spacing(1.5);
         line-height: spacing(2.75);
+
+        .secondary-text {
+            font-size: spacing(1);
+            line-height: spacing(2.25);
+            font-weight: 400;
+        }
     }
 
     &.medium {
         padding: spacing(0.5) spacing(2);
         font-size: spacing(1.75);
-        line-height: spacing(3.25);
+        line-height: $typography-button-line-height;
+
+        .secondary-text {
+            font-size: spacing(1.25);
+            line-height: spacing(2.25);
+            font-weight: 400;
+        }
     }
 
     &.large {
         padding: spacing(0.75) spacing(2.75);
         font-size: spacing(2);
         line-height: spacing(3.75);
+
+        .secondary-text {
+            font-size: spacing(1.5);
+            line-height: spacing(2.5);
+            font-weight: 400;
+        }
     }
 }

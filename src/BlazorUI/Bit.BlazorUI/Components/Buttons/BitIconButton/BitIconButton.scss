@@ -5,7 +5,6 @@
     box-sizing: border-box;
     font-family: $typography-button-font-family;
     font-weight: $typography-button-font-weight;
-    line-height: $typography-button-line-height;
     text-decoration: none;
     text-align: center;
     cursor: pointer;
@@ -49,7 +48,6 @@
     &.small {
         width: spacing(3.5);
         height: spacing(3.5);
-        padding: spacing(0.25) spacing(1.25);
         font-size: spacing(1.5);
         line-height: spacing(2.75);
     }
@@ -57,15 +55,13 @@
     &.medium {
         width: spacing(4.5);
         height: spacing(4.5);
-        padding: spacing(0.5) spacing(2);
         font-size: spacing(1.75);
-        line-height: spacing(3.25);
+        line-height: $typography-button-line-height;
     }
 
     &.large {
         width: spacing(5.5);
         height: spacing(5.5);
-        padding: spacing(0.75) spacing(2.75);
         font-size: spacing(2);
         line-height: spacing(3.75);
     }

@@ -2,11 +2,10 @@
 
 .bit-lbtn {
     position: relative;
-    min-width: spacing(8);
+    min-width: spacing(15);
     box-sizing: border-box;
     font-family: $typography-button-font-family;
     font-weight: $typography-button-font-weight;
-    line-height: $typography-button-line-height;
     text-decoration: none;
     cursor: pointer;
     white-space: nowrap;
@@ -28,18 +27,21 @@
         padding: spacing(0.25) spacing(1.25);
         font-size: spacing(1.5);
         line-height: spacing(2.75);
+        min-height: spacing(3.5);
     }
 
     &.medium {
         padding: spacing(0.5) spacing(2);
         font-size: spacing(1.75);
-        line-height: spacing(3.25);
+        line-height: $typography-button-line-height;
+        min-height: spacing(4.5);
     }
 
     &.large {
         padding: spacing(0.75) spacing(2.75);
         font-size: spacing(2);
         line-height: spacing(3.75);
+        min-height: spacing(5.5);
     }
 
     &.standard {
