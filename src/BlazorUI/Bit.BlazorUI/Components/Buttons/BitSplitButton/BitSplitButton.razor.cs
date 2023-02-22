@@ -11,6 +11,7 @@ public partial class BitSplitButton<TItem> where TItem : class
     private const string KEY_FIELD = nameof(BitSplitButtonItem.Key);
 
     protected override bool UseVisual => false;
+    private BitButtonSize buttonSize = BitButtonSize.Medium;
     private bool isCalloutOpen;
 
     private string _internalIsEnabledField = IS_ENABLED_FIELD;
@@ -49,6 +50,20 @@ public partial class BitSplitButton<TItem> where TItem : class
     /// If true, add an aria-hidden attribute instructing screen readers to ignore the element
     /// </summary>
     [Parameter] public bool AriaHidden { get; set; }
+
+    /// <summary>
+    /// The size of button, Possible values: Small | Medium | Large
+    /// </summary>
+    [Parameter]
+    public BitButtonSize ButtonSize
+    {
+        get => buttonSize;
+        set
+        {
+            buttonSize = value;
+            ClassBuilder.Reset();
+        }
+    }
 
     /// <summary>
     /// The style of button, Possible values: Primary | Standard
@@ -131,6 +146,25 @@ public partial class BitSplitButton<TItem> where TItem : class
 
     protected override string RootElementClass => "bit-spl";
 
+    protected override void RegisterComponentClasses()
+    {
+        ClassBuilder.Register(() => IsEnabled is false
+                               ? string.Empty
+                               : ButtonStyle == BitButtonStyle.Primary
+                                   ? "primary"
+                                   : "standard");
+
+        ClassBuilder.Register(() => ButtonSize == BitButtonSize.Small
+                               ? "small"
+                               : ButtonSize == BitButtonSize.Medium
+                                   ? "medium"
+                                   : "large");
+
+        ClassBuilder.Register(() => _isCalloutOpen
+                                       ? "open-menu"
+                                       : string.Empty);
+    }
+
     [JSInvokable("CloseCallout")]
     public void CloseCalloutBeforeAnotherCalloutIsOpened()
     {
@@ -177,19 +211,6 @@ public partial class BitSplitButton<TItem> where TItem : class
         }
 
         return base.OnParametersSetAsync();
-    }
-
-    protected override void RegisterComponentClasses()
-    {
-        ClassBuilder.Register(() => IsEnabled is false
-                                       ? string.Empty
-                                       : ButtonStyle == BitButtonStyle.Primary
-                                           ? "primary"
-                                           : "standard");
-
-        ClassBuilder.Register(() => _isCalloutOpen
-                                       ? "open-menu"
-                                       : string.Empty);
     }
 
     private BitIconName? GetIconName(TItem item)
