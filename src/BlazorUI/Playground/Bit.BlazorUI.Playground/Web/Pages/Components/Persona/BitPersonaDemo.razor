@@ -6,13 +6,13 @@
                EnumParameters="enumParameters">
     <ComponentExampleBox Title="Persona in various sizes" HTMLSourceCode="@example1HtmlCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
-            <BitCheckbox @bind-Value="IsHideDetails"
+            <BitCheckbox @bind-Value="IsDetailsShown"
                          Label="Include BitPersona details" />
             <div class="title">Size 24 Persona</div>
             <BitPersona ImageUrl="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"
                         Presence=@BitPersonaPresenceStatus.None
                         Size=@BitPersonaSize.Size24
-                        HidePersonaDetails="!IsHideDetails"
+                        HidePersonaDetails="!IsDetailsShown"
                         Text="Annie Lindqvist"
                         SecondaryText="secondry-text"></BitPersona>
 
@@ -20,7 +20,7 @@
             <BitPersona ImageUrl="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"
                         Presence=@BitPersonaPresenceStatus.Busy
                         Size=@BitPersonaSize.Size32
-                        HidePersonaDetails="!IsHideDetails"
+                        HidePersonaDetails="!IsDetailsShown"
                         Text="Annie Lindqvist"
                         SecondaryText="secondry-text"></BitPersona>
 
@@ -28,7 +28,7 @@
             <BitPersona ImageUrl="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"
                         Presence=@BitPersonaPresenceStatus.Away
                         Size=@BitPersonaSize.Size40
-                        HidePersonaDetails="!IsHideDetails"
+                        HidePersonaDetails="!IsDetailsShown"
                         Text="Annie Lindqvist"
                         SecondaryText="Software Engineer"></BitPersona>
 
@@ -36,7 +36,7 @@
             <BitPersona ImageUrl="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"
                         Presence=@BitPersonaPresenceStatus.Blocked
                         Size=@BitPersonaSize.Size48
-                        HidePersonaDetails="!IsHideDetails"
+                        HidePersonaDetails="!IsDetailsShown"
                         Text="Annie Lindqvist"
                         SecondaryText="Software Engineer"></BitPersona>
 
@@ -44,7 +44,7 @@
             <BitPersona ImageUrl="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"
                         Presence=@BitPersonaPresenceStatus.Online
                         Size=@BitPersonaSize.Size56
-                        HidePersonaDetails="!IsHideDetails"
+                        HidePersonaDetails="!IsDetailsShown"
                         Text="Annie Lindqvist"
                         SecondaryText="Software Engineer"></BitPersona>
 
@@ -52,7 +52,7 @@
             <BitPersona ImageUrl="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"
                         Presence=@BitPersonaPresenceStatus.Busy
                         Size=@BitPersonaSize.Size72
-                        HidePersonaDetails="!IsHideDetails"
+                        HidePersonaDetails="!IsDetailsShown"
                         Text="Annie Lindqvist"
                         SecondaryText="Software Engineer"
                         TertiaryText="In a meeting"></BitPersona>
@@ -61,7 +61,7 @@
             <BitPersona ImageUrl="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"
                         Presence=@BitPersonaPresenceStatus.Offline
                         Size=@BitPersonaSize.Size100
-                        HidePersonaDetails="!IsHideDetails"
+                        HidePersonaDetails="!IsDetailsShown"
                         Text="Annie Lindqvist"
                         SecondaryText="Software Engineer"
                         TertiaryText="In a meeting"
@@ -71,7 +71,7 @@
             <BitPersona ImageUrl="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"
                         Presence=@BitPersonaPresenceStatus.DND
                         Size=@BitPersonaSize.Size120
-                        HidePersonaDetails="!IsHideDetails"
+                        HidePersonaDetails="!IsDetailsShown"
                         Text="Annie Lindqvist"
                         SecondaryText="Software Engineer"
                         TertiaryText="In a meeting"
@@ -81,32 +81,36 @@
 
     <ComponentExampleBox Title="Persona with custom action" HTMLSourceCode="@example2HtmlCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example2">
         <ExamplePreview>
+            <div>Custom action can be revealed by hovering on the bottom of the image</div>
+            <br />
             <BitPersona ImageUrl="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"
                         Presence=@BitPersonaPresenceStatus.None
                         Size=@BitPersonaSize.Size120
                         OnActionClick="() => _actionClickCount++"
                         ActionIconName="BitIconName.Edit"
-                        HidePersonaDetails="!IsHideDetails"
+                        HidePersonaDetails="!IsDetailsShown"
                         Text="Annie Lindqvist"
                         SecondaryText="Software Engineer"
                         TertiaryText="In a meeting"
                         OptionalText="Available at 4:00pm"></BitPersona>
-            <p>ActionClickCount: @_actionClickCount</p>
+            <p>Action Click Count: @_actionClickCount</p>
         </ExamplePreview>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="Persona with image action" HTMLSourceCode="@example3HtmlCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example3">
         <ExamplePreview>
+            <div>Hover over the image to reveal the action</div>
+            <br />
             <BitPersona ImageUrl="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"
                         Presence=@BitPersonaPresenceStatus.Online
                         Size=@BitPersonaSize.Size120
                         OnImageClick="() => _imageClickCount++"
-                        HidePersonaDetails="!IsHideDetails"
+                        HidePersonaDetails="!IsDetailsShown"
                         Text="Annie Lindqvist"
                         SecondaryText="Software Engineer"
                         TertiaryText="In a meeting"
                         OptionalText="Available at 4:00pm"></BitPersona>
-            <p>ImageClickCount: @_imageClickCount</p>
+            <p>Image Click Count: @_imageClickCount</p>
         </ExamplePreview>
     </ComponentExampleBox>
 

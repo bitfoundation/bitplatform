@@ -1,20 +1,14 @@
-﻿
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public partial class BitPivotItem : IDisposable
 {
+    protected override bool UseVisual => false;
+
+    private bool IsSelectedHasBeenSet;
     private bool isSelected;
+
     private bool _disposed;
-    public bool IsSelected
-    {
-        get => isSelected;
-        set
-        {
-            if (value == isSelected) return;
-            isSelected = value;
-            ClassBuilder.Reset();
-        }
-    }
+    private bool _isEnabled;
 
     /// <summary>
     /// The content of the pivot item, It can be Any custom tag or a text (alias of ChildContent).
@@ -47,43 +41,73 @@ public partial class BitPivotItem : IDisposable
     [Parameter] public int? ItemCount { get; set; }
 
     /// <summary>
-    /// The parent BitPivot component instance.
+    /// Whether or not the item is selected.
     /// </summary>
-    [CascadingParameter] public BitPivot? Pivot { get; set; }
+    [Parameter]
+    public bool IsSelected
+    {
+        get => isSelected;
+        set
+        {
+            if (value == isSelected) return;
+
+            isSelected = value;
+            _ = IsSelectedChanged.InvokeAsync(value);
+            ClassBuilder.Reset();
+        }
+    }
+    [Parameter] public EventCallback<bool> IsSelectedChanged { get; set; }
 
     /// <summary>
     /// A required key to uniquely identify a pivot item.
     /// </summary>
     [Parameter] public string? Key { get; set; }
 
-    protected override string RootElementClass => "bit-pvt-itm";
+    
+    [CascadingParameter] private BitPivot? Parent { get; set; }
+
+
+    protected override string RootElementClass => "bit-pvi";
 
     protected override void RegisterComponentClasses()
     {
-        ClassBuilder.Register(() => IsSelected ? $"{RootElementClass}-selcted-{VisualClassRegistrar()}" : string.Empty);
+        ClassBuilder.Register(() => IsSelected ? "selected" : string.Empty);
     }
 
     protected override async Task OnInitializedAsync()
     {
-        if (Pivot is not null)
-        {
-            Pivot.RegisterItem(this);
-        }
+        Parent?.RegisterItem(this);
 
         await base.OnInitializedAsync();
     }
 
-    internal void SetState(bool status)
+    protected override async Task OnParametersSetAsync()
     {
-        IsSelected = status;
+        await base.OnParametersSetAsync();
+
+        if (IsEnabled == _isEnabled) return;
+
+        _isEnabled = IsEnabled;
+        Parent?.Refresh();
+    }
+
+    protected override void OnComponentVisibilityChanged(BitComponentVisibility visibility)
+    {
+        Parent?.Refresh();
+    }
+
+    internal void SetIsSelected(bool value)
+    {
+        IsSelected = value;
         StateHasChanged();
     }
 
-    private void HandleButtonClick()
+    private async Task HandleOnClick()
     {
-        if (IsEnabled is false) return;
+        if (IsEnabled is false || Parent is null || Parent.IsEnabled is false) return;
 
-        Pivot?.SelectItem(this);
+        Parent.SelectItem(this);
+        await Parent.OnItemClick.InvokeAsync(this);
     }
 
     public void Dispose()
@@ -96,10 +120,7 @@ public partial class BitPivotItem : IDisposable
     {
         if (_disposed) return;
 
-        if (Pivot is not null)
-        {
-            Pivot.UnregisterItem(this);
-        }
+        Parent?.UnregisterItem(this);
 
         _disposed = true;
     }
