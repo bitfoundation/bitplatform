@@ -91,6 +91,11 @@ public partial class BitPivotItem : IDisposable
         Parent?.Refresh();
     }
 
+    protected override void OnComponentVisibilityChanged(BitComponentVisibility visibility)
+    {
+        Parent?.Refresh();
+    }
+
     internal void SetIsSelected(bool value)
     {
         IsSelected = value;
