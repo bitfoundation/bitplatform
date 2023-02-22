@@ -6,6 +6,7 @@ public partial class BitToggleButton
     protected override bool UseVisual => false;
     private bool IsCheckedHasBeenSet;
     private bool isChecked;
+    private BitButtonSize buttonSize = BitButtonSize.Medium;
     private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
     private int? _tabIndex;
     
@@ -23,6 +24,20 @@ public partial class BitToggleButton
     /// If true, add an aria-hidden attribute instructing screen readers to ignore the element.
     /// </summary>
     [Parameter] public bool AriaHidden { get; set; }
+
+    /// <summary>
+    /// The size of button, Possible values: Small | Medium | Large
+    /// </summary>
+    [Parameter]
+    public BitButtonSize ButtonSize
+    {
+        get => buttonSize;
+        set
+        {
+            buttonSize = value;
+            ClassBuilder.Reset();
+        }
+    }
 
     /// <summary>
     /// The style of compound button, Possible values: Primary | Standard.
@@ -98,6 +113,23 @@ public partial class BitToggleButton
 
     protected override string RootElementClass => "bit-tglb";
 
+    protected override void RegisterComponentClasses()
+    {
+        ClassBuilder.Register(() => ButtonStyle == BitButtonStyle.Primary
+                                       ? "primary"
+                                       : "standard");
+
+        ClassBuilder.Register(() => ButtonSize == BitButtonSize.Small
+                               ? "small"
+                               : ButtonSize == BitButtonSize.Medium
+                                   ? "medium"
+                                   : "large");
+
+        ClassBuilder.Register(() => IsChecked
+                                       ? "checked"
+                                       : string.Empty);
+    }
+
     protected override async Task OnInitializedAsync()
     {
         if (IsEnabled is false)
@@ -111,17 +143,6 @@ public partial class BitToggleButton
         }
 
         await base.OnInitializedAsync();
-    }
-
-    protected override void RegisterComponentClasses()
-    {
-        ClassBuilder.Register(() => ButtonStyle == BitButtonStyle.Primary
-                                       ? "primary"
-                                       : "standard");
-
-        ClassBuilder.Register(() => IsChecked
-                                       ? "checked" 
-                                       : string.Empty);
     }
 
     protected virtual async Task HandleOnClick(MouseEventArgs e)
