@@ -1,15 +1,18 @@
-﻿using System;
-using System.Drawing;
-using Microsoft.AspNetCore.Components;
+﻿using System.Drawing;
 
 namespace Bit.BlazorUI;
 
-public class BitChoiceGroupOption
+public class BitChoiceGroupItem<TValue>
 {
     /// <summary>
     /// AriaLabel attribute for the GroupOption Option input.
     /// </summary>
     public string? AriaLabel { get; set; }
+
+    /// <summary>
+    /// Set attribute of Id for the GroupOption Option input.
+    /// </summary>
+    public string? Id { get; set; }
 
     /// <summary>
     /// Whether or not the GroupOption Option is enabled.
@@ -37,16 +40,6 @@ public class BitChoiceGroupOption
     public Size? ImageSize { get; set; }
 
     /// <summary>
-    /// Set attribute of Id for the GroupOption Option input.
-    /// </summary>
-    public string? Id { get; set; }
-
-    /// <summary>
-    /// Set attribute of Id for the GroupOption Option label.
-    /// </summary>
-    public string? LabelId { get; set; }
-
-    /// <summary>
     /// Provides a new image for the selected Option in the Image-GroupOption.
     /// </summary>
     public string? SelectedImageSrc { get; set; }
@@ -59,5 +52,5 @@ public class BitChoiceGroupOption
     /// <summary>
     /// This value is returned when GroupOption Option is Clicked.
     /// </summary>
-    public string? Value { get; set; }
+    public TValue? Value { get; set; }
 }

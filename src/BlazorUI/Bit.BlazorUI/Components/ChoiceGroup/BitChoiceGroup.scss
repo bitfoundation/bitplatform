@@ -1,49 +1,162 @@
-﻿@import "../../Styles/functions.scss";
+﻿@import "../../Styles/Fluent/colors.fluent.scss", "../../Styles/functions.scss";
 
 .bit-chg {
-    display: block;
-    font-weight: 400;
-    font-size: spacing(1.75);
-    font-family: $typography-font-family;
-    -webkit-font-smoothing: antialiased;
-
-    .label {
+    &.bit-chg-fluent {
         display: block;
-        margin: 0;
-        padding: spacing(0.625) 0;
-        box-shadow: none;
-        box-sizing: border-box;
-        font-weight: 600;
-        font-size: spacing(1.75);
-        color: $color-neutrals-gray160;
-        overflow-wrap: break-word;
+        font-size: rem(14px);
+        font-weight: 400;
+        font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+        -webkit-font-smoothing: antialiased;
     }
 
-    .container {
-        display: flex;
+    &.bit-chg-required-fluent {
+        .bit-chg-label {
+            &::after {
+                content: " *";
+                padding-right: rem(12px);
+                color: $Red20;
+            }
+        }
+    }
 
-        &.vertical {
-            flex-flow: column nowrap;
+    &.bit-chg-invalid-fluent {
+        .bit-chgi-lbl {
+            color: $Red20;
+
+            &:before {
+                border-color: $Red20;
+            }
+
+            &:after {
+                border-color: $Red20;
+                background-color: $Red20;
+            }
+
+            &:hover {
+                .bit-chgi-txt {
+                    color: $PinkRed10;
+                }
+
+                &:after {
+                    background-color: $PinkRed10;
+                    border-color: $PinkRed10;
+                }
+
+                &:before {
+                    border-color: $PinkRed10;
+                }
+            }
         }
 
-        &.horizontal {
+        .bit-chgi-lbl-with-img {
+            color: $Red20;
+            border-color: $Red20;
+
+            &:before {
+                border-color: $Red20;
+            }
+
+            &:after {
+                border-color: $Red20;
+                background-color: $Red20;
+            }
+
+            &:hover {
+                border-color: $Red20;
+
+                &:before {
+                    border-color: $PinkRed10;
+                    opacity: 1;
+                }
+
+                &:after {
+                    border-color: $PinkRed10;
+                    background-color: $PinkRed10;
+                }
+            }
+        }
+    }
+
+    &.bit-chg-rtl-fluent {
+        direction: rtl;
+
+        .bit-chgi {
+            margin-left: rem(8px);
+            margin-right: 0;
+        }
+
+        .bit-chgi-lbl {
+
+            &::before {
+                right: 0;
+            }
+
+            &:hover {
+                &:after {
+                    right: rem(5px);
+                }
+            }
+
+            .bit-chgi-txt {
+                padding-right: rem(26px);
+                padding-left: 0;
+            }
+        }
+
+        .bit-chgi-checked {
+            .bit-chgi-lbl {
+                &::after {
+                    right: rem(5px);
+                }
+            }
+        }
+    }
+
+    .bit-chg-label {
+        display: block;
+        margin: 0;
+        padding: rem(5px) 0;
+        box-shadow: none;
+        box-sizing: border-box;
+        font-size: rem(14px);
+        font-weight: 600;
+        color: $Grey160;
+        overflow-wrap: break-word;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    .choice-field-group {
+        display: flex;
+        flex-flow: column nowrap;
+
+        &.Horizontal {
             flex-flow: row wrap;
         }
     }
-
-    .option {
+    /*--- Radio button list item styles ---*/
+    .bit-chgi {
         position: relative;
         display: flex;
         align-items: center;
-        min-height: spacing(3.25);
-        margin-top: spacing(1);
-        margin-right: spacing(1);
+        min-height: rem(26px);
         border: none;
         box-sizing: border-box;
+        font-size: rem(14px);
         font-weight: 400;
-        font-size: spacing(1.75);
-        color: $color-neutrals-gray160;
-        font-family: $typography-font-family;
+        margin-top: rem(8px);
+        margin-right: rem(8px);
+        color: $Grey160;
+        font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    .bit-chgi-with-img {
+        display: inline-flex;
+        width: fit-content;
+        height: 100%;
+        padding-left: 0;
+        font-size: 0px;
+        background-color: $Grey20;
     }
 
     .input {
@@ -56,10 +169,10 @@
         opacity: 0;
     }
 
-    .option-label {
+    .bit-chgi-lbl {
         position: relative;
         display: inline-block;
-        min-height: spacing(2.5);
+        min-height: rem(20px);
         margin-top: 0;
         vertical-align: top;
         user-select: none;
@@ -71,11 +184,11 @@
             top: 0;
             left: 0;
             display: inline-block;
-            width: spacing(2.5);
-            height: spacing(2.5);
+            width: rem(20px);
+            height: rem(20px);
             border-radius: 50%;
-            border: spacing(0.125) solid $color-neutrals-gray160;
-            background-color: $color-neutrals-white;
+            border: rem(1px) solid $Grey160;
+            background-color: $White;
             box-sizing: border-box;
             transition: border-color 0.2s cubic-bezier(0.4, 0, 0.23, 1);
         }
@@ -83,7 +196,7 @@
         &:after {
             content: "";
             position: absolute;
-            left: sapcing(1.25);
+            left: rem(10px);
             right: 0;
             width: 0;
             height: 0;
@@ -92,132 +205,41 @@
             transition: border-width 0.2s cubic-bezier(0.4, 0, 0.23, 1);
         }
 
+        .txt {
+            display: inline-block;
+            padding-left: rem(26px);
+        }
+
         &:hover {
-            .text {
-                color: $color-neutrals-gray190;
+            .bit-chgi-txt {
+                color: $Grey190;
             }
 
             &:after {
                 transition-property: background-color;
-                left: spacing(0.625);
-                top: spacing(0.625);
-                width: spacing(1.25);
-                height: spacing(1.25);
-                background-color: $color-neutrals-gray130;
+                left: rem(5px);
+                top: rem(5px);
+                width: rem(10px);
+                height: rem(10px);
+                background-color: $Grey130;
             }
 
             &:before {
-                border-color: $color-neutrals-gray160;
+                border-color: $Grey160;
             }
         }
     }
 
-    .text-wrapper {
-        position: relative;
-        display: block;
-        max-width: spacing(8);
-        height: spacing(4);
-        margin: spacing(0.5) spacing(1) spacing(0.25);
-        font-size: spacing(1.75);
-        line-height: spacing(1.875);
-        font-weight: 400;
-        white-space: pre-wrap;
-        font-family: $typography-font-family;
-        overflow: hidden;
-
-        .text {
-            display: inline-block;
-            padding-left: 0;
-        }
-    }
-
-    .text {
-        display: inline-block;
-        padding-left: spacing(3.25);
-    }
-
-    .has-img {
-        display: inline-flex;
-        width: fit-content;
-        height: 100%;
-        padding-left: 0;
-        font-size: 0;
-        background-color: $color-neutrals-gray20;
-    }
-
-    .checked {
-        .option-label {
-            border-color: $color-primary-main;
-
-            &:before {
-                border-color: $color-primary-main;
-            }
-
-            &:after {
-                top: spacing(0.625);
-                left: spacing(0.625);
-                width: spacing(1.25);
-                height: spacing(1.25);
-                border: spacing(0.625) solid $color-primary-main;
-                background-color: $color-primary-main;
-            }
-
-            &:hover {
-                &:before {
-                    border-color: $color-primary-darker;
-                }
-
-                &:after {
-                    border: spacing(0.625) solid $color-primary-darker;
-                    background-color: $color-primary-darker;
-                }
-            }
-        }
-
-        &.has-img .option-label {
-            border-color: $color-primary-main;
-
-            &:before {
-                border-color: $color-primary-main;
-                opacity: 1;
-            }
-
-            &:after {
-                top: spacing(1);
-                left: auto;
-                right: spacing(1);
-                width: spacing(1.25);
-                height: spacing(1.25);
-                border: spacing(0.625) solid $color-primary-main;
-                background-color: $color-primary-main;
-            }
-
-            &:hover {
-                border-color: $color-primary-darker;
-
-                &:before {
-                    border-color: $color-primary-darker;
-                    opacity: 1;
-                }
-
-                &:after {
-                    background-color: $color-primary-darker;
-                    border-color: $color-primary-darker;
-                }
-            }
-        }
-    }
-
-    .has-img .option-label {
+    .bit-chgi-lbl-with-img {
         position: relative;
         display: flex;
         justify-content: center;
         align-items: center;
         flex-direction: column;
-        min-height: spacing(2.5);
+        min-height: rem(20px);
         margin: 0;
-        padding-top: spacing(2.75);
-        border: spacing(0.125) solid transparent;
+        padding-top: rem(22px);
+        border: rem(1px) solid transparent;
         box-sizing: content-box;
         text-align: center;
         vertical-align: top;
@@ -228,16 +250,16 @@
         &:before {
             content: "";
             position: absolute;
-            top: spacing(0.375);
+            top: rem(3px);
             left: auto;
-            right: spacing(0.375);
+            right: rem(3px);
             display: inline-block;
-            width: spacing(2.5);
-            height: spacing(2.5);
+            width: rem(20px);
+            height: rem(20px);
             border-radius: 50%;
-            border: spacing(0.125) solid $color-neutrals-gray160;
+            border: rem(1px) solid $Grey160;
             box-sizing: border-box;
-            background-color: $color-neutrals-white;
+            background-color: $White;
             transition: border-color 0.2s cubic-bezier(0.4, 0, 0.23, 1);
             opacity: 0;
         }
@@ -245,7 +267,7 @@
         &:after {
             content: "";
             position: absolute;
-            left: spacing(1.25);
+            left: rem(10px);
             right: 0;
             width: 0;
             height: 0;
@@ -255,110 +277,193 @@
         }
 
         &:hover {
-            border-color: $color-neutrals-gray160;
+            border-color: $Grey160;
 
             &:before {
-                border-color: $color-neutrals-gray160;
+                border-color: $Grey160;
                 opacity: 1;
             }
+        }
+    }
+
+    .txt-wrapper {
+        position: relative;
+        display: block;
+        max-width: rem(64px);
+        height: rem(32px);
+        margin: rem(4px) rem(8px) rem(2px);
+        font-size: rem(14px);
+        line-height: rem(15px);
+        font-weight: 400;
+        white-space: pre-wrap;
+        font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+        -webkit-font-smoothing: antialiased;
+        overflow: hidden;
+
+        .bit-chgi-txt {
+            display: inline-block;
+            padding-left: 0;
         }
     }
 
     .img-inner-field {
         position: relative;
         display: inline-block;
-        height: spacing(4);
-        padding: 0 spacing(3.75);
+        height: rem(32px);
+        padding: 0 rem(30px);
     }
 
     .img-wrapper {
-        padding-bottom: spacing(0.25);
+        padding-bottom: rem(2px);
         transition: opacity 0.2s ease;
-    }
 
-    .image {
-        display: inline-block;
-        border-style: none;
+        .img {
+            display: inline-block;
+            border-style: none;
 
-        img {
-            display: block;
-            opacity: 1;
-            height: 100%;
-            width: 100%;
+            img {
+                display: block;
+                opacity: 1;
+                height: 100%;
+                width: 100%;
+            }
         }
     }
 
     .icon-inner-field {
         position: relative;
         display: inline-block;
-        padding: 0 spacing(3.75);
+        padding: 0 rem(30px);
     }
 
     .icon-wrapper {
-        height: spacing(4);
-        font-size: spacing(4);
-        line-height: spacing(4);
+        height: rem(32px);
+        font-size: rem(32px);
+        line-height: rem(32px);
 
         i {
             display: inline-block;
+            -webkit-font-smoothing: antialiased;
             speak: none;
         }
     }
 
-    .disabled {
-        .option-label {
-            cursor: default;
-            pointer-events: none;
-            color: $color-neutrals-gray90;
+    .bit-chgi-checked {
+        .bit-chgi-lbl {
+            border-color: $Primary;
 
             &:before {
-                border-color: $color-neutrals-gray60;
+                border-color: $Primary;
             }
 
             &:after {
-                border-color: $color-neutrals-gray60;
+                top: rem(5px);
+                left: rem(5px);
+                width: rem(10px);
+                height: rem(10px);
+                border: rem(5px) solid $Primary;
+                background-color: $Primary;
             }
 
             &:hover {
-                .text {
-                    color: $color-neutrals-gray90;
+                &:before {
+                    border-color: $Dark;
                 }
 
-                &:before {
-                    border-color: $color-neutrals-gray60;
+                &:after {
+                    border: rem(5px) solid $Dark;
+                    background-color: $Dark;
                 }
             }
         }
 
-        .text {
-            color: $color-neutrals-gray90;
+        .bit-chgi-lbl-with-img {
+            border-color: $Primary;
+
+            &:before {
+                border-color: $Primary;
+                opacity: 1;
+            }
+
+            &:after {
+                top: rem(8px);
+                left: auto;
+                right: rem(8px);
+                width: rem(10px);
+                height: rem(10px);
+                border: rem(5px) solid $Primary;
+                background-color: $Primary;
+            }
+
+            &:hover {
+                border-color: $Dark;
+
+                &:before {
+                    border-color: $Dark;
+                    opacity: 1;
+                }
+
+                &:after {
+                    background-color: $Dark;
+                    border-color: $Dark;
+                }
+            }
+        }
+    }
+
+    .bit-chgi-disabled {
+        .bit-chgi-lbl {
+            cursor: default;
+            pointer-events: none;
+            color: $Grey90;
+
+            &:before {
+                border-color: $Grey60;
+            }
+
+            &:after {
+                border-color: $Grey60;
+            }
+
+            .bit-chgi-txt {
+                color: $Grey90;
+            }
+
+            &:hover {
+                .bit-chgi-txt {
+                    color: $Grey90;
+                }
+
+                &:before {
+                    border-color: $Grey60;
+                }
+            }
         }
 
-
-        &.has-img .option-label {
-            color: $color-neutrals-gray90;
+        .bit-chgi-lbl-with-img {
+            color: $Grey90;
             cursor: default;
             border-color: transparent;
 
             &:before {
-                border-color: $color-neutrals-gray60;
+                border-color: $Grey60;
             }
 
             &:hover {
                 border-color: transparent;
 
                 &:before {
-                    border-color: $color-neutrals-gray60;
+                    border-color: $Grey60;
                     opacity: 0;
                 }
             }
         }
 
-        &.checked {
-            &.has-img .option-label {
+        &.bit-chgi-checked {
+            .bit-chgi-lbl-with-img {
                 &:after {
-                    border: spacing(0.625) solid $color-neutrals-gray60;
-                    background-color: $color-neutrals-gray60;
+                    border: rem(5px) solid $Grey60;
+                    background-color: $Grey60;
                 }
 
                 &:hover {
@@ -369,114 +474,11 @@
             }
         }
 
-        .icon-wrapper {
-            color: $color-neutrals-gray90;
+        .bit-chgi-icon-wrapper {
+            color: $Grey90;
 
             i {
-                color: $color-neutrals-gray90;
-            }
-        }
-    }
-
-    &.required {
-        .label {
-            &::after {
-                content: " *";
-                padding-right: spacing(1.5);
-                color: $color-general-red;
-            }
-        }
-    }
-
-    &.invalid {
-        .option-label {
-            color: $color-state-invalid;
-
-            &:before {
-                border-color: $color-state-invalid;
-            }
-
-            &:after {
-                border-color: $color-state-invalid;
-                background-color: $color-state-invalid;
-            }
-
-            &:hover {
-                .text {
-                    color: $color-state-invalid-hover;
-                }
-
-                &:after {
-                    background-color: $color-state-invalid-hover;
-                    border-color: $color-state-invalid-hover;
-                }
-
-                &:before {
-                    border-color: $color-state-invalid-hover;
-                }
-            }
-        }
-
-        .has-img .option-label {
-            color: $color-general-red;
-            border-color: $color-general-red;
-
-            &:before {
-                border-color: $color-general-red;
-            }
-
-            &:after {
-                border-color: $color-general-red;
-                background-color: $color-general-red;
-            }
-
-            &:hover {
-                border-color: $color-general-red;
-
-                &:before {
-                    border-color: $color-state-invalid-hover;
-                    opacity: 1;
-                }
-
-                &:after {
-                    border-color: $color-state-invalid-hover;
-                    background-color: $color-state-invalid-hover;
-                }
-            }
-        }
-    }
-
-    &.rtl {
-        direction: rtl;
-
-        .option {
-            margin-left: spacing(1);
-            margin-right: 0;
-        }
-
-        .option-label {
-
-            &::before {
-                right: 0;
-            }
-
-            &:hover {
-                &:after {
-                    right: spacing(0.625);
-                }
-            }
-        }
-
-        .text {
-            padding-right: spacing(3.25);
-            padding-left: 0;
-        }
-
-        .checked {
-            .option-label {
-                &::after {
-                    right: spacing(0.625);
-                }
+                color: $Grey90;
             }
         }
     }
