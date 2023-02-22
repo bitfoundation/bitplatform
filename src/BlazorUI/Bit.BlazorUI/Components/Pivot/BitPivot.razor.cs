@@ -216,5 +216,15 @@ public partial class BitPivot
         SelectItem(newItem);
     }
 
+    private string GetSelectedItemStyle()
+    {
+        return _selectedItem?.Visibility switch
+        {
+            BitComponentVisibility.Collapsed => "visibility:hidden",
+            BitComponentVisibility.Hidden => "display:none",
+            _ => string.Empty
+        };
+    }
+
     private string GetAriaLabelledby => $"Pivot-{UniqueId}-Tab-{_allItems.FindIndex(i => i == _selectedItem)}";
 }

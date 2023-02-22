@@ -14,6 +14,7 @@
 
     @if (HeadersOnly is false) {
         <div class="content-container@((_selectedItem?.IsEnabled??false) ? "" : " disabled")"
+             style="@GetSelectedItemStyle()"
              role="tabpanel"
              aria-hidden="false"
              aria-labelledby="@GetAriaLabelledby">
