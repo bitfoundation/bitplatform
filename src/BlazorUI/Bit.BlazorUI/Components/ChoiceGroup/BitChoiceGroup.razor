@@ -16,18 +16,17 @@
      aria-label="@AriaLabel">
 
     <div role="radiogroup" aria-labelledby="@GetAriaLabelledBy()">
-        @if (LabelTemplate is not null)
-        {
-            <label class="bit-rbl-label" id="@_labelId" disabled="@(IsEnabled is false)">
+        
+        <label class="bit-rbl-label" id="@_labelId" disabled="@(IsEnabled is false)">
+            @if (LabelTemplate is not null)
+            {
                 @LabelTemplate
-            </label>
-        }
-        else if (Label.HasValue())
-        {
-            <label class="bit-rbl-label" id="@_labelId" disabled="@(IsEnabled is false)">
+            }
+            else if (Label.HasValue())
+            {
                 @Label
-            </label>
-        }
+            }
+        </label>
 
         <div class="choice-field-group @LayoutFlow?.GetDisplayName()">
             @foreach (var item in _items)

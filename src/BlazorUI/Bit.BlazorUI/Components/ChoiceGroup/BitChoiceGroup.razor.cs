@@ -29,8 +29,7 @@ public partial class BitChoiceGroup<TItem> where TItem : class
     private string _internalTextField = TEXT_FIELD;
     private string _internalValueField = VALUE_FIELD;
 
-    private string _labelId => $"{UniqueId}_label";
-
+    private string _labelId = default!;
     private List<TItem> _items = new();
     private IEnumerable<TItem>? _oldItems;
 
@@ -235,6 +234,8 @@ public partial class BitChoiceGroup<TItem> where TItem : class
         _internalTextField = TextFieldSelector?.GetName() ?? TextField;
         _internalValueField = ValueFieldSelector?.GetName() ?? ValueField;
 
+        _labelId = $"ChoiceGroup-{UniqueId}-Label";
+
         if (ValueHasBeenSet is false && DefaultValue.HasValue() && Items.Any(item => GetValue(item) == DefaultValue))
         {
             CurrentValue = DefaultValue;
@@ -245,18 +246,17 @@ public partial class BitChoiceGroup<TItem> where TItem : class
 
     protected override async Task OnParametersSetAsync()
     {
-        if (ChildContent is null && Items.Any() && Items != _oldItems)
-        {
-            _oldItems = Items;
-            _items = Items.ToList();
-
-            if (ValueHasBeenSet is false && DefaultValue.HasValue() && _items.Any(item => GetValue(item) == DefaultValue))
-            {
-                CurrentValue = DefaultValue;
-            }
-        }
-
         await base.OnParametersSetAsync();
+
+        if (ChildContent is not null || Items.Any() is false || Items == _oldItems) return;
+
+        _oldItems = Items;
+        _items = Items.ToList();
+
+        if (ValueHasBeenSet is false && DefaultValue.HasValue() && _items.Any(item => GetValue(item) == DefaultValue))
+        {
+            CurrentValue = DefaultValue;
+        }
     }
 
     protected override void RegisterComponentClasses()
@@ -413,7 +413,7 @@ public partial class BitChoiceGroup<TItem> where TItem : class
         return item.GetValueFromProperty<string>(_internalValueField);
     }
 
-    private string? GetInputId(TItem item) => $"chg_{UniqueId}_{GetValue(item)}";
+    private string? GetInputId(TItem item) => $"ChoiceGroup-{UniqueId}-Input-{GetValue(item)}";
 
     private bool GetIsCheckedItem(TItem item)
     {
@@ -479,5 +479,5 @@ public partial class BitChoiceGroup<TItem> where TItem : class
         await OnChange.InvokeAsync(e);
     }
 
-    private string GetAriaLabelledBy() => Label.HasValue() || LabelTemplate is not null ? _labelId : AriaLabelledBy;
+    private string GetAriaLabelledBy() => AriaLabelledBy ?? _labelId;
 }
