@@ -492,7 +492,7 @@ public partial class BitChoiceGroupDemo
 <BitChoiceGroup Label=""Pick one"" Items=""ChoiceGroupBasicItems"" DefaultValue=""@(""A"")"" />
 ";
     private readonly string example1BitChoiceGroupItemCSharpCode = @"
-private readonly List<BitChoiceGroupItem> ChoiceGroupBasicItems = new()
+private readonly List<BitChoiceGroupItem> ChoiceGroupBasicItems<string> = new()
 {
     new() { Text = ""Option A"", Value = ""A"" },
     new() { Text = ""Option B"", Value = ""B"" },
@@ -512,14 +512,14 @@ private readonly List<BitChoiceGroupItem> ChoiceGroupBasicItems = new()
                 DefaultValue=""@(""A"")"" />
 ";
     private readonly string example2BitChoiceGroupItemCSharpCode = @"
-private readonly List<BitChoiceGroupItem> ChoiceGroupBasicItems = new()
+private readonly List<BitChoiceGroupItem> ChoiceGroupBasicItems<string> = new()
 {
     new() { Text = ""Option A"", Value = ""A"" },
     new() { Text = ""Option B"", Value = ""B"" },
     new() { Text = ""Option C"", Value = ""C"" },
     new() { Text = ""Option D"", Value = ""D"" }
 };
-private readonly List<BitChoiceGroupItem> ChoiceGroupDisabledItems = new()
+private readonly List<BitChoiceGroupItem> ChoiceGroupDisabledItems<string> = new()
 {
     new() { Text = ""Option A"", Value = ""A"" },
     new() { Text = ""Option B"", Value = ""B"" },
@@ -532,7 +532,7 @@ private readonly List<BitChoiceGroupItem> ChoiceGroupDisabledItems = new()
 <BitChoiceGroup Label=""Pick one image"" Items=""ChoiceGroupImageItems"" DefaultValue=""@(""Bar"")"" />
 ";
     private readonly string example3BitChoiceGroupItemCSharpCode = @"
-private readonly List<BitChoiceGroupItem> ChoiceGroupImageItems = new()
+private readonly List<BitChoiceGroupItem> ChoiceGroupImageItems<string> = new()
 {
     new BitChoiceGroupItem()
     {
@@ -559,7 +559,7 @@ private readonly List<BitChoiceGroupItem> ChoiceGroupImageItems = new()
 <BitChoiceGroup Label=""Pick one icon"" Items=""ChoiceGroupIconItems"" DefaultValue=""@(""Day"")"" />
 ";
     private readonly string example4BitChoiceGroupItemCSharpCode = @"
-private readonly List<BitChoiceGroupItem> ChoiceGroupIconItems = new()
+private readonly List<BitChoiceGroupItem> ChoiceGroupIconItems<string> = new()
 {
     new() { Text = ""Day"", Value = ""Day"", IconName = BitIconName.CalendarDay },
     new() { Text = ""Week"", Value = ""Week"", IconName = BitIconName.CalendarWeek },
@@ -584,7 +584,7 @@ private readonly List<BitChoiceGroupItem> ChoiceGroupIconItems = new()
 </BitChoiceGroup>
 ";
     private readonly string example5BitChoiceGroupItemCSharpCode = @"
-private readonly List<BitChoiceGroupItem> ChoiceGroupBasicItems = new()
+private readonly List<BitChoiceGroupItem> ChoiceGroupBasicItems<string> = new()
 {
     new() { Text = ""Option A"", Value = ""A"" },
     new() { Text = ""Option B"", Value = ""B"" },
@@ -653,7 +653,7 @@ private readonly List<BitChoiceGroupItem> ChoiceGroupBasicItems = new()
 </BitChoiceGroup>
 ";
     private readonly string example6BitChoiceGroupItemCSharpCode = @"
-private readonly List<BitChoiceGroupItem> ChoiceGroupItemsTemplate = new()
+private readonly List<BitChoiceGroupItem> ChoiceGroupItemsTemplate<string> = new()
 {
     new() { Text = ""Day"", Value = ""Day"", IconName = BitIconName.CalendarDay },
     new() { Text = ""Week"", Value = ""Week"", IconName = BitIconName.CalendarWeek },
@@ -683,7 +683,7 @@ private string ChoiceGroupWithOptionLabelTemplateValue = ""Day"";
 </div>
 ";
     private readonly string example7BitChoiceGroupItemCSharpCode = @"
-private readonly List<BitChoiceGroupItem> ChoiceGroupBasicItems = new()
+private readonly List<BitChoiceGroupItem> ChoiceGroupBasicItems<string> = new()
 {
     new() { Text = ""Option A"", Value = ""A"" },
     new() { Text = ""Option B"", Value = ""B"" },
@@ -720,7 +720,7 @@ private string ChoiceGroupTwoWayValue = ""A"";
 </BitChoiceGroup>
 ";
     private readonly string example8BitChoiceGroupItemCSharpCode = @"
-private readonly List<BitChoiceGroupItem> ChoiceGroupBasicItems = new()
+private readonly List<BitChoiceGroupItem> ChoiceGroupBasicItems<string> = new()
 {
     new() { Text = ""Option A"", Value = ""A"" },
     new() { Text = ""Option B"", Value = ""B"" },
@@ -728,7 +728,7 @@ private readonly List<BitChoiceGroupItem> ChoiceGroupBasicItems = new()
     new() { Text = ""Option D"", Value = ""D"" }
 };
 
-private readonly List<BitChoiceGroupItem> ChoiceGroupImageItems = new()
+private readonly List<BitChoiceGroupItem> ChoiceGroupImageItems<string> = new()
 {
     new BitChoiceGroupItem()
     {
@@ -750,14 +750,14 @@ private readonly List<BitChoiceGroupItem> ChoiceGroupImageItems = new()
     }
 };
 
-private readonly List<BitChoiceGroupItem> ChoiceGroupIconItems = new()
+private readonly List<BitChoiceGroupItem> ChoiceGroupIconItems<string> = new()
 {
     new() { Text = ""Day"", Value = ""Day"", IconName = BitIconName.CalendarDay },
     new() { Text = ""Week"", Value = ""Week"", IconName = BitIconName.CalendarWeek },
     new() { Text = ""Month"", Value = ""Month"", IconName = BitIconName.Calendar, IsEnabled = false }
 };
 
-private readonly List<BitChoiceGroupItem> ChoiceGroupItemsTemplate = new()
+private readonly List<BitChoiceGroupItem> ChoiceGroupItemsTemplate<string> = new()
 {
     new() { Text = ""Day"", Value = ""Day"", IconName = BitIconName.CalendarDay },
     new() { Text = ""Week"", Value = ""Week"", IconName = BitIconName.CalendarWeek },
@@ -793,7 +793,7 @@ private string ChoiceGroupLayoutFlowWithOptionTemplateValue = ""Day"";
 </BitChoiceGroup>
 ";
     private readonly string example9BitChoiceGroupItemCSharpCode = @"
-private readonly List<BitChoiceGroupItem> ChoiceGroupBasicItems = new()
+private readonly List<BitChoiceGroupItem> ChoiceGroupBasicItems<string> = new()
 {
     new() { Text = ""Option A"", Value = ""A"" },
     new() { Text = ""Option B"", Value = ""B"" },
@@ -801,7 +801,7 @@ private readonly List<BitChoiceGroupItem> ChoiceGroupBasicItems = new()
     new() { Text = ""Option D"", Value = ""D"" }
 };
 
-private readonly List<BitChoiceGroupItem> ChoiceGroupImageItems = new()
+private readonly List<BitChoiceGroupItem> ChoiceGroupImageItems<string> = new()
 {
     new BitChoiceGroupItem()
     {
@@ -823,14 +823,14 @@ private readonly List<BitChoiceGroupItem> ChoiceGroupImageItems = new()
     }
 };
 
-private readonly List<BitChoiceGroupItem> ChoiceGroupIconItems = new()
+private readonly List<BitChoiceGroupItem> ChoiceGroupIconItems<string> = new()
 {
     new() { Text = ""Day"", Value = ""Day"", IconName = BitIconName.CalendarDay },
     new() { Text = ""Week"", Value = ""Week"", IconName = BitIconName.CalendarWeek },
     new() { Text = ""Month"", Value = ""Month"", IconName = BitIconName.Calendar, IsEnabled = false }
 };
 
-private readonly List<BitChoiceGroupItem> ChoiceGroupItemsTemplate = new()
+private readonly List<BitChoiceGroupItem> ChoiceGroupItemsTemplate<string> = new()
 {
     new() { Text = ""Day"", Value = ""Day"", IconName = BitIconName.CalendarDay },
     new() { Text = ""Week"", Value = ""Week"", IconName = BitIconName.CalendarWeek },
@@ -865,7 +865,7 @@ else
 <BitButton ButtonStyle=""BitButtonStyle.Standard"" OnClick=""() => { ValidationModel = new(); SuccessMessage=string.Empty; }"">Reset</BitButton>
 ";
     private readonly string example10BitChoiceGroupItemCSharpCode = @"
-private readonly List<BitChoiceGroupItem> ChoiceGroupBasicItems = new()
+private readonly List<BitChoiceGroupItem> ChoiceGroupBasicItems<string> = new()
 {
     new() { Text = ""Option A"", Value = ""A"" },
     new() { Text = ""Option B"", Value = ""B"" },
