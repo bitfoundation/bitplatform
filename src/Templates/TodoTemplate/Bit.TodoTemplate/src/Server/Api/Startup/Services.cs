@@ -1,5 +1,6 @@
 ﻿//-:cnd:noEmit
 using System.IO.Compression;
+using System.Linq;
 using System.Net.Mail;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.OData;
@@ -60,16 +61,7 @@ public static class Services
             {
                 options.InvalidModelStateResponseFactory = context =>
                 {
-                    throw new ResourceValidationException(context.ModelState
-                            .Select(ms => new ResourceValidationExceptionPayload
-                            {
-                                Property = ms.Key,
-                                Errors = ms.Value!.Errors.Select(e => new ResourceValidationExceptionPayloadError
-                                {
-                                    Key = e.ErrorMessage,
-                                    Message = e.ErrorMessage
-                                })
-                            }).ToList());
+                    throw new ResourceValidationException(context.ModelState.Select(ms => (ms.Key, ms.Value!.Errors.Select(e => new LocalizedString(e.ErrorMessage, e.ErrorMessage)).ToArray())).ToArray());
                 };
             });
 

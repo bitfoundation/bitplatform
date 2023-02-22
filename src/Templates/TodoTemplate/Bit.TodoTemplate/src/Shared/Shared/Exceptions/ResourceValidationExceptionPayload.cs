@@ -4,12 +4,17 @@ public class ResourceValidationExceptionPayload
 {
     public string? ResourceTypeName { get; set; } = "*";
 
-    public string? Property { get; set; } = "*";
-
-    public IEnumerable<ResourceValidationExceptionPayloadError> Errors { get; set; } = Array.Empty<ResourceValidationExceptionPayloadError>();
+    public List<ResourceValidationExceptionPropertyErrors> Details { get; set; } = new();
 }
 
-public class ResourceValidationExceptionPayloadError
+public class ResourceValidationExceptionPropertyErrors
+{
+    public string? Property { get; set; } = "*";
+
+    public List<ResourceValidationExceptionPropertyError> Messages { get; set; } = new();
+}
+
+public class ResourceValidationExceptionPropertyError
 {
     public string? Key { get; set; }
 
