@@ -2,7 +2,7 @@
 
 namespace Bit.BlazorUI;
 
-public class BitChoiceGroupItem
+public class BitChoiceGroupItem<TValue>
 {
     /// <summary>
     /// AriaLabel attribute for the GroupOption Option input.
@@ -10,7 +10,7 @@ public class BitChoiceGroupItem
     public string? AriaLabel { get; set; }
 
     /// <summary>
-    /// Uniqe id for item.
+    /// Set attribute of Id for the GroupOption Option input.
     /// </summary>
     public string? Id { get; set; }
 
@@ -52,5 +52,5 @@ public class BitChoiceGroupItem
     /// <summary>
     /// This value is returned when GroupOption Option is Clicked.
     /// </summary>
-    public string? Value { get; set; }
+    public TValue? Value { get; set; }
 }

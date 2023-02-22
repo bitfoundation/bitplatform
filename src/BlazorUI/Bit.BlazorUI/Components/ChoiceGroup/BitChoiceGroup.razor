@@ -1,6 +1,7 @@
 ﻿@namespace Bit.BlazorUI
-@inherits BitInputBase<string?>
+@inherits BitInputBase<TValue>
 @typeparam TItem
+@typeparam TValue
 
 @if (ChildContent is not null)
 {

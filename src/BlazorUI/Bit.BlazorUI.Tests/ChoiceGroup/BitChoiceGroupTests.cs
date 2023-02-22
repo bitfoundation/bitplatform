@@ -21,7 +21,7 @@ public class BitChoiceGroupTests : BunitTestContext
     ]
     public void BitChoiceGroupShouldTakeCorrectVisualStyle(Visual visual, bool isEnabled)
     {
-        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem>>(parameters =>
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
         {
             parameters.Add(p => p.Items, GetChoiceGroupItems());
             parameters.Add(p => p.IsEnabled, isEnabled);
@@ -46,7 +46,7 @@ public class BitChoiceGroupTests : BunitTestContext
     {
         var choiceGroupItems = GetChoiceGroupItems();
 
-        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem>>(parameters =>
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
         {
             parameters.Add(p => p.Items, choiceGroupItems);
         });
@@ -61,7 +61,7 @@ public class BitChoiceGroupTests : BunitTestContext
     {
         var choiceGroupItems = GetChoiceGroupItems();
 
-        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem>>(parameters =>
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
         {
             parameters.Add(p => p.Items, choiceGroupItems);
         });
@@ -86,7 +86,7 @@ public class BitChoiceGroupTests : BunitTestContext
     {
         var choiceGroupItems = GetChoiceGroupItems();
 
-        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem>>(parameters =>
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
         {
             parameters.Add(p => p.Items, choiceGroupItems);
             parameters.Add(p => p.IsEnabled, isEnabled);
@@ -121,7 +121,7 @@ public class BitChoiceGroupTests : BunitTestContext
     {
         var choiceGroupItems = GetChoiceGroupItems();
 
-        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem>>(parameters =>
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
         {
             parameters.Add(p => p.Items, choiceGroupItems);
         });
@@ -148,7 +148,7 @@ public class BitChoiceGroupTests : BunitTestContext
     ]
     public void BitChoiceGroupShouldTakeSize(int width, int height)
     {
-        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem>>(parameters =>
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
         {
             parameters.Add(p => p.Items, GetChoiceGroupItems());
         });
@@ -166,7 +166,7 @@ public class BitChoiceGroupTests : BunitTestContext
     ]
     public void BitChoiceGroupShouldTakeCorrectLabel(string label)
     {
-        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem>>(parameters =>
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
         {
             parameters.Add(p => p.Items, GetChoiceGroupItems());
             parameters.Add(p => p.Label, label);
@@ -181,7 +181,7 @@ public class BitChoiceGroupTests : BunitTestContext
     ]
     public void BitChoiceGroupShouldTakeCorrectLabelContent(string labelContent)
     {
-        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem>>(parameters =>
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
         {
             parameters.Add(p => p.Items, GetChoiceGroupItems());
             parameters.Add(p => p.LabelTemplate, labelContent);
@@ -196,7 +196,7 @@ public class BitChoiceGroupTests : BunitTestContext
     ]
     public void BitChoiceGroupShouldTakeCorrectArials(string ariaLabelledBy)
     {
-        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem>>(parameters =>
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
         {
             parameters.Add(p => p.Items, GetChoiceGroupItems());
             parameters.Add(p => p.AriaLabelledBy, ariaLabelledBy);
@@ -211,7 +211,7 @@ public class BitChoiceGroupTests : BunitTestContext
     ]
     public void BitChoiceGroupShouldTakeCustomStyle(string customStyle)
     {
-        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem>>(parameters =>
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
         {
             parameters.Add(p => p.Items, GetChoiceGroupItems());
             parameters.Add(p => p.Style, customStyle);
@@ -226,7 +226,7 @@ public class BitChoiceGroupTests : BunitTestContext
     ]
     public void BitChoiceGroupShouldTakeCustomClass(string customClass)
     {
-        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem>>(parameters =>
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
         {
             parameters.Add(p => p.Items, GetChoiceGroupItems());
             parameters.Add(p => p.Class, customClass);
@@ -243,7 +243,7 @@ public class BitChoiceGroupTests : BunitTestContext
     ]
     public void BitChoiceGroupShouldTakeCustomVisibility(BitComponentVisibility visibility)
     {
-        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem>>(parameters =>
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
         {
             parameters.Add(p => p.Items, GetChoiceGroupItems());
             parameters.Add(p => p.Visibility, visibility);
@@ -265,9 +265,9 @@ public class BitChoiceGroupTests : BunitTestContext
         }
     }
 
-    private List<BitChoiceGroupItem> GetChoiceGroupItems()
+    private List<BitChoiceGroupItem<string>> GetChoiceGroupItems()
     {
-        return new List<BitChoiceGroupItem>()
+        return new List<BitChoiceGroupItem<string>>()
         {
             new()
             {

@@ -5,18 +5,18 @@ using System.Linq.Expressions;
 
 namespace Bit.BlazorUI;
 
-public partial class BitChoiceGroup<TItem> where TItem : class
+public partial class BitChoiceGroup<TItem, TValue> where TItem : class
 {
-    private const string ARIA_LABEL_FIELD = nameof(BitChoiceGroupItem.AriaLabel);
-    private const string ID_FIELD = nameof(BitChoiceGroupItem.Id);
-    private const string IS_ENABLED_FIELD = nameof(BitChoiceGroupItem.IsEnabled);
-    private const string IMAGE_SRC_FIELD = nameof(BitChoiceGroupItem.ImageSrc);
-    private const string IMAGE_ALT_FIELD = nameof(BitChoiceGroupItem.ImageAlt);
-    private const string IMAGE_SIZE_FIELD = nameof(BitChoiceGroupItem.ImageSize);
-    private const string ICON_NAME_FIELD = nameof(BitChoiceGroupItem.IconName);
-    private const string SELECTED_IMAGE_SRC_FIELD = nameof(BitChoiceGroupItem.SelectedImageSrc);
-    private const string TEXT_FIELD = nameof(BitChoiceGroupItem.Text);
-    private const string VALUE_FIELD = nameof(BitChoiceGroupItem.Value);
+    private const string ARIA_LABEL_FIELD = nameof(BitChoiceGroupItem<TValue>.AriaLabel);
+    private const string ID_FIELD = nameof(BitChoiceGroupItem<TValue>.Id);
+    private const string IS_ENABLED_FIELD = nameof(BitChoiceGroupItem<TValue>.IsEnabled);
+    private const string IMAGE_SRC_FIELD = nameof(BitChoiceGroupItem<TValue>.ImageSrc);
+    private const string IMAGE_ALT_FIELD = nameof(BitChoiceGroupItem<TValue>.ImageAlt);
+    private const string IMAGE_SIZE_FIELD = nameof(BitChoiceGroupItem<TValue>.ImageSize);
+    private const string ICON_NAME_FIELD = nameof(BitChoiceGroupItem<TValue>.IconName);
+    private const string SELECTED_IMAGE_SRC_FIELD = nameof(BitChoiceGroupItem<TValue>.SelectedImageSrc);
+    private const string TEXT_FIELD = nameof(BitChoiceGroupItem<TValue>.Text);
+    private const string VALUE_FIELD = nameof(BitChoiceGroupItem<TValue>.Value);
 
     private bool isRequired;
 
@@ -46,19 +46,19 @@ public partial class BitChoiceGroup<TItem> where TItem : class
     [Parameter] public string AriaLabelField { get; set; } = ARIA_LABEL_FIELD;
 
     /// <summary>
-    /// The field from the model that will be enable item.
+    /// The name of the field from the model that will be enable item.
     /// </summary>
     [Parameter] public Expression<Func<TItem, string>>? AriaLabelFieldSelector { get; set; }
 
     /// <summary>
-    /// The content of RadioButtonGroup, common values are RadioButtonGroup component.
+    /// The content of ChoiceGroup, common values are RadioButtonGroup component.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
     /// Default selected item for ChoiceGroup.
     /// </summary>
-    [Parameter] public string? DefaultValue { get; set; }
+    [Parameter] public TValue? DefaultValue { get; set; }
 
     /// <summary>
     /// Sets the data source that populates the items of the list.
@@ -212,15 +212,15 @@ public partial class BitChoiceGroup<TItem> where TItem : class
     /// <summary>
     /// The field from the model that will be the underlying value.
     /// </summary>
-    [Parameter] public Expression<Func<TItem, string>>? ValueFieldSelector { get; set; }
+    [Parameter] public Expression<Func<TItem, TValue>>? ValueFieldSelector { get; set; }
 
     protected override string RootElementClass => "bit-chg";
 
-    internal void RegisterOption(BitChoiceGroupOption option)
+    internal void RegisterOption(BitChoiceGroupOption<TValue> option)
     {
         _items.Add((option as TItem)!);
 
-        if (CurrentValue.HasNoValue() && DefaultValue.HasValue() && ValueHasBeenSet is false && _items.Any(item => GetValue(item) == DefaultValue))
+        if (CurrentValue is null && DefaultValue is not null && ValueHasBeenSet is false && _items.Any(item => EqualityComparer<TValue>.Default.Equals(GetValue(item), DefaultValue)))
         {
             CurrentValue = DefaultValue;
         }
@@ -228,7 +228,7 @@ public partial class BitChoiceGroup<TItem> where TItem : class
         StateHasChanged();
     }
 
-    internal void UnregisterOption(BitChoiceGroupOption option)
+    internal void UnregisterOption(BitChoiceGroupOption<TValue> option)
     {
         _items.Remove((option as TItem)!);
         StateHasChanged();
@@ -249,7 +249,7 @@ public partial class BitChoiceGroup<TItem> where TItem : class
 
         _labelId = $"ChoiceGroup-{UniqueId}-Label";
 
-        if (ValueHasBeenSet is false && DefaultValue.HasValue() && Items.Any(item => GetValue(item) == DefaultValue))
+        if (ValueHasBeenSet is false && DefaultValue is not null && Items.Any(item => EqualityComparer<TValue>.Default.Equals(GetValue(item), DefaultValue)))
         {
             CurrentValue = DefaultValue;
         }
@@ -266,7 +266,7 @@ public partial class BitChoiceGroup<TItem> where TItem : class
         _oldItems = Items;
         _items = Items.ToList();
 
-        if (ValueHasBeenSet is false && DefaultValue.HasValue() && _items.Any(item => GetValue(item) == DefaultValue))
+        if (ValueHasBeenSet is false && DefaultValue is not null && _items.Any(item => EqualityComparer<TValue>.Default.Equals(GetValue(item), DefaultValue)))
         {
             CurrentValue = DefaultValue;
         }
@@ -287,18 +287,14 @@ public partial class BitChoiceGroup<TItem> where TItem : class
                                    : string.Empty);
     }
 
-    /// <inheritdoc />
-    protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out string result, [NotNullWhen(false)] out string? validationErrorMessage)
-        => throw new NotSupportedException($"This component does not parse string inputs. Bind to the '{nameof(CurrentValue)}' property, not '{nameof(CurrentValueAsString)}'.");
-
     private string? GetAriaLabel(TItem item)
     {
-        if (item is BitChoiceGroupItem choiceGroupItem)
+        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
         {
             return choiceGroupItem.AriaLabel;
         }
 
-        if (item is BitChoiceGroupOption choiceGroupOption)
+        if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
         {
             return choiceGroupOption.AriaLabel;
         }
@@ -308,12 +304,12 @@ public partial class BitChoiceGroup<TItem> where TItem : class
 
     private string? GetId(TItem item)
     {
-        if (item is BitChoiceGroupItem choiceGroupItem)
+        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
         {
             return choiceGroupItem.Id;
         }
 
-        if (item is BitChoiceGroupOption choiceGroupOption)
+        if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
         {
             return choiceGroupOption.Id;
         }
@@ -323,12 +319,12 @@ public partial class BitChoiceGroup<TItem> where TItem : class
 
     private bool GetIsEnabled(TItem item)
     {
-        if (item is BitChoiceGroupItem choiceGroupItem)
+        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
         {
             return choiceGroupItem.IsEnabled;
         }
 
-        if (item is BitChoiceGroupOption choiceGroupOption)
+        if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
         {
             return choiceGroupOption.IsEnabled;
         }
@@ -338,12 +334,12 @@ public partial class BitChoiceGroup<TItem> where TItem : class
 
     private string? GetImageSrc(TItem item)
     {
-        if (item is BitChoiceGroupItem choiceGroupItem)
+        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
         {
             return choiceGroupItem.ImageSrc;
         }
 
-        if (item is BitChoiceGroupOption choiceGroupOption)
+        if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
         {
             return choiceGroupOption.ImageSrc;
         }
@@ -353,12 +349,12 @@ public partial class BitChoiceGroup<TItem> where TItem : class
 
     private string? GetImageAlt(TItem item)
     {
-        if (item is BitChoiceGroupItem choiceGroupItem)
+        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
         {
             return choiceGroupItem.ImageAlt;
         }
 
-        if (item is BitChoiceGroupOption choiceGroupOption)
+        if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
         {
             return choiceGroupOption.ImageAlt;
         }
@@ -368,12 +364,12 @@ public partial class BitChoiceGroup<TItem> where TItem : class
 
     private Size GetImageSize(TItem item)
     {
-        if (item is BitChoiceGroupItem choiceGroupItem)
+        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
         {
             return choiceGroupItem.ImageSize ?? new Size(0, 0);
         }
 
-        if (item is BitChoiceGroupOption choiceGroupOption)
+        if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
         {
             return choiceGroupOption.ImageSize ?? new Size(0, 0);
         }
@@ -383,12 +379,12 @@ public partial class BitChoiceGroup<TItem> where TItem : class
 
     private BitIconName? GetIconName(TItem item)
     {
-        if (item is BitChoiceGroupItem choiceGroupItem)
+        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
         {
             return choiceGroupItem.IconName;
         }
 
-        if (item is BitChoiceGroupOption choiceGroupOption)
+        if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
         {
             return choiceGroupOption.IconName;
         }
@@ -398,12 +394,12 @@ public partial class BitChoiceGroup<TItem> where TItem : class
 
     private string? GetSelectedImageSrc(TItem item)
     {
-        if (item is BitChoiceGroupItem choiceGroupItem)
+        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
         {
             return choiceGroupItem.SelectedImageSrc;
         }
 
-        if (item is BitChoiceGroupOption choiceGroupOption)
+        if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
         {
             return choiceGroupOption.SelectedImageSrc;
         }
@@ -413,12 +409,12 @@ public partial class BitChoiceGroup<TItem> where TItem : class
 
     private string? GetText(TItem item)
     {
-        if (item is BitChoiceGroupItem choiceGroupItem)
+        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
         {
             return choiceGroupItem.Text;
         }
 
-        if (item is BitChoiceGroupOption choiceGroupOption)
+        if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
         {
             return choiceGroupOption.Text;
         }
@@ -426,19 +422,19 @@ public partial class BitChoiceGroup<TItem> where TItem : class
         return item.GetValueFromProperty<string>(_internalTextField);
     }
 
-    private string? GetValue(TItem item)
+    private TValue? GetValue(TItem item)
     {
-        if (item is BitChoiceGroupItem choiceGroupItem)
+        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
         {
             return choiceGroupItem.Value;
         }
 
-        if (item is BitChoiceGroupOption choiceGroupOption)
+        if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
         {
             return choiceGroupOption.Value;
         }
 
-        return item.GetValueFromProperty<string>(_internalValueField);
+        return item.GetValueFromProperty<TValue>(_internalValueField);
     }
 
     private string? GetInputId(TItem item) => GetId(item) ?? $"ChoiceGroup-{UniqueId}-Input-{GetValue(item)}";
@@ -447,11 +443,16 @@ public partial class BitChoiceGroup<TItem> where TItem : class
     {
         if (CurrentValue is null) return false;
 
+        return EqualityComparer<TValue>.Default.Equals(GetValue(item), Value);
+    }
+
+    private bool ItemValueEqualityComparer(TItem item, TValue? value)
+    {
         var itemValue = GetValue(item);
 
         if (itemValue is null) return false;
 
-        return itemValue == Value;
+        return EqualityComparer<TValue>.Default.Equals(itemValue, value);
     }
 
     private string GetDivClassNameItem(TItem item)
@@ -502,10 +503,14 @@ public partial class BitChoiceGroup<TItem> where TItem : class
     {
         if (IsEnabled is false) return;
 
-        CurrentValue = e.Value?.ToString();
+        CurrentValue = e.Value.ConvertTo<TValue>();
 
         await OnChange.InvokeAsync(e);
     }
 
     private string GetAriaLabelledBy() => AriaLabelledBy ?? _labelId;
+
+    /// <inheritdoc />
+    protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? validationErrorMessage)
+        => throw new NotSupportedException($"This component does not parse string inputs. Bind to the '{nameof(CurrentValue)}' property, not '{nameof(CurrentValueAsString)}'.");
 }

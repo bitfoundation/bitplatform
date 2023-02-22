@@ -2,11 +2,11 @@
 
 namespace Bit.BlazorUI;
 
-public partial class BitChoiceGroupOption : IDisposable
+public partial class BitChoiceGroupOption<TValue> : IDisposable
 {
     private bool _disposed;
 
-    [CascadingParameter] protected BitChoiceGroup<BitChoiceGroupOption> Parent { get; set; } = default!;
+    [CascadingParameter] protected BitChoiceGroup<BitChoiceGroupOption<TValue>, TValue> Parent { get; set; } = default!;
 
     /// <summary>
     /// Used to customize the label for the RadioButtonOption.
@@ -14,7 +14,7 @@ public partial class BitChoiceGroupOption : IDisposable
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// Uniqe id for item.
+    /// Set attribute of Id for the GroupOption Option input.
     /// </summary>
     [Parameter] public string? Id { get; set; }
 
@@ -51,7 +51,7 @@ public partial class BitChoiceGroupOption : IDisposable
     /// <summary>
     /// This value is returned when GroupOption Option is Clicked.
     /// </summary>
-    [Parameter] public string? Value { get; set; }
+    [Parameter] public TValue? Value { get; set; }
 
     protected override string RootElementClass => "bit-chgo";
 
