@@ -2,21 +2,18 @@
 
 .bit-cmpb {
     position: relative;
+    display: inline-flex;
     min-width: spacing(9);
-    max-width: spacing(35);
     box-sizing: border-box;
     font-family: $typography-button-font-family;
-    font-size: spacing(1.75);
-    font-weight: 600;
-    line-height: 100%;
+    font-weight: $typography-button-font-weight;
+    line-height: $typography-button-line-height;
     text-decoration: none;
     text-align: left;
     cursor: pointer;
     border-width: $shape-border-width;
     border-style: $shape-border-style;
     border-radius: $shape-border-radius;
-    padding: spacing(2) spacing(1.5);
-    display: inline-flex;
 
     .text-container {
         display: block;
@@ -79,5 +76,23 @@
         &.standard {
             color: $color-neutrals-gray90;
         }
+    }
+
+    &.small {
+        padding: spacing(0.25) spacing(1.25);
+        font-size: spacing(1.5);
+        line-height: spacing(2.75);
+    }
+
+    &.medium {
+        padding: spacing(0.5) spacing(2);
+        font-size: spacing(1.75);
+        line-height: spacing(3.25);
+    }
+
+    &.large {
+        padding: spacing(0.75) spacing(2.75);
+        font-size: spacing(2);
+        line-height: spacing(3.75);
     }
 }
