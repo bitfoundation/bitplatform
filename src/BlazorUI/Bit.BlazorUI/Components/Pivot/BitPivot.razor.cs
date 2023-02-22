@@ -120,24 +120,30 @@ public partial class BitPivot
 
     protected override void RegisterComponentClasses()
     {
-        ClassBuilder.Register(() => LinkSize == BitPivotLinkSize.Large ? "large"
-                                  : LinkSize == BitPivotLinkSize.Normal ? "normal"
-                                  : string.Empty);
-
-        ClassBuilder.Register(() => LinkFormat == BitPivotLinkFormat.Links ? "links"
-                                  : LinkFormat == BitPivotLinkFormat.Tabs ? "tabs"
-                                  : string.Empty);
-
-        ClassBuilder.Register(() => OverflowBehavior == BitPivotOverflowBehavior.Menu ? "menu"
-                                  : OverflowBehavior == BitPivotOverflowBehavior.Scroll ? "scroll"
-                                  : OverflowBehavior == BitPivotOverflowBehavior.None ? "none"
-                                  : string.Empty);
-
-        ClassBuilder.Register(() => Position == BitPivotPosition.Top ? "position-top"
-                                  : Position == BitPivotPosition.Bottom ? "position-bottom"
-                                  : Position == BitPivotPosition.Left ? "position-left"
-                                  : Position == BitPivotPosition.Right ? "position-right"
-                                  : string.Empty);
+        ClassBuilder.Register(() => LinkSize switch
+        {
+            BitPivotLinkSize.Large => "large",
+            BitPivotLinkSize.Normal => "normal",
+            _ => string.Empty
+        }).Register(() => LinkFormat switch
+        {
+            BitPivotLinkFormat.Links => "links",
+            BitPivotLinkFormat.Tabs => "tabs",
+            _ => string.Empty
+        }).Register(() => OverflowBehavior switch
+        {
+            BitPivotOverflowBehavior.Menu => "menu",
+            BitPivotOverflowBehavior.Scroll => "scroll",
+            BitPivotOverflowBehavior.None => "none",
+            _ => string.Empty
+        }).Register(() => Position switch
+        {
+            BitPivotPosition.Top => "position-top",
+            BitPivotPosition.Bottom => "position-bottom",
+            BitPivotPosition.Left => "position-left",
+            BitPivotPosition.Right => "position-right",
+            _ => string.Empty
+        });
     }
 
     protected override Task OnInitializedAsync()
