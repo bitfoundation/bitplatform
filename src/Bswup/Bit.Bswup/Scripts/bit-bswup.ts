@@ -1,4 +1,6 @@
-﻿; (function () {
+﻿declare const Blazor: any;
+
+; (function () {
     const bitBswupScript = document.currentScript;
 
     window.addEventListener('load', runBswup);
@@ -99,16 +101,14 @@
         function startBlazor() {
             const scriptTags = [].slice.call(document.scripts);
 
-            const blazorWasmScriptTag = scriptTags.find(s => s.src && s.src.indexOf('_framework/blazor.webassembly.js') !== -1);
+            const blazorWasmScriptTag = scriptTags.find(s => s.src && s.src.indexOf(options.blazorScript) !== -1);
             if (!blazorWasmScriptTag) {
-                warn('"blazor.webassembly.js" script tag not found!');
-                return;
+                return warn(`blazor script (${options.blazorScript}) not found!`);
             }
 
             const autostart = blazorWasmScriptTag.attributes['autostart'];
             if (!autostart || autostart.value !== 'false') {
-                warn('no "autostart=false" found on "blazor.webassembly.js" script tag!');
-                return;
+                return warn('no "autostart=false" found on the blazor script tag!');
             }
 
             if (navigator.serviceWorker.controller) {
@@ -117,22 +117,33 @@
         }
 
         function extract(): BswupOptions {
+            const defaultoptions = {
+                log: 'info',
+                sw: 'service-worker.js',
+                scope: '/',
+                handler: (...args: any[]) => { },
+                blazorScript: '_framework/blazor.webassembly.js',
+            }
+
             const optionsAttribute = (bitBswupScript.attributes)['options'];
             const optionsName = (optionsAttribute || {}).value || 'bitBswup';
-            const options = (window[optionsName] || {}) as BswupOptions;
+            const options = (window[optionsName] || defaultoptions) as BswupOptions;
 
             const logAttribute = bitBswupScript.attributes['log'];
-            options.log = (logAttribute && logAttribute.value) || options.log || 'info';
+            options.log = (logAttribute && logAttribute.value) || options.log;
 
             const swAttribute = bitBswupScript.attributes['sw'];
-            options.sw = (swAttribute && swAttribute.value) || options.sw || 'service-worker.js';
+            options.sw = (swAttribute && swAttribute.value) || options.sw;
 
             const scopeAttribute = bitBswupScript.attributes['scope'];
-            options.scope = (scopeAttribute && scopeAttribute.value) || options.scope || '/';
+            options.scope = (scopeAttribute && scopeAttribute.value) || options.scope;
 
             const handlerAttribute = bitBswupScript.attributes['handler'];
             const handlerName = (handlerAttribute && handlerAttribute.value) || 'bitBswupHandler';
             options.handler = (window[handlerName] || options.handler) as (...args: any[]) => void;
+
+            const blazorScriptAttribute = bitBswupScript.attributes['blazorScript'];
+            options.blazorScript = (blazorScriptAttribute && blazorScriptAttribute.value) || options.blazorScript;
 
             if (!options.handler || typeof options.handler !== 'function') {
                 warn('progress handler not found or is not a function!');
@@ -205,11 +216,10 @@
 
 }());
 
-declare const Blazor: any;
-
 interface BswupOptions {
     log: 'none' | 'info' | 'verbose' | 'debug' | 'error'
     sw: string
     scope: string
     handler(...args: any[]): void
+    blazorScript: string
 }
