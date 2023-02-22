@@ -79,6 +79,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Tooling.CodeGenerator", "Tooling\Bit.Tooling.CodeGenerator\Bit.Tooling.CodeGenerator.csproj", "{4F71F2A4-01C2-4D5A-941C-57C78D2CC469}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Tooling.CodeGenerator.Task", "Tooling\Bit.Tooling.CodeGenerator.Task\Bit.Tooling.CodeGenerator.Task.csproj", "{A763FB6E-449A-4055-9024-82D6443065D3}"
+	ProjectSection(ProjectDependencies) = postProject
+		{4F71F2A4-01C2-4D5A-941C-57C78D2CC469} = {4F71F2A4-01C2-4D5A-941C-57C78D2CC469}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.TSClient.Core", "Client\TypeScript\Bit.TSClient.Core\Bit.TSClient.Core.csproj", "{39803EC6-1CC8-4A81-950F-6ED6144785CD}"
 EndProject

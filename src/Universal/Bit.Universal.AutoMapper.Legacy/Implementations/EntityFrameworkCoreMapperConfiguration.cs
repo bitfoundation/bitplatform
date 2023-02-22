@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
 using Bit.Model.Contracts;
+using Bit.Model.Implementations;
 using System;
 using System.Collections;
 using System.Linq;
+using System.Reflection;
 
 namespace Bit.Data.EntityFrameworkCore.Implementations
 {
@@ -20,7 +22,7 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
                 if (type != typeof(string) && typeof(IEnumerable).IsAssignableFrom(type))
                     type = type.HasElementType ? type.GetElementType()! : type.GetGenericArguments().ExtendedSingle($"Getting element type of {p.DestinationName}");
 
-                return typeof(IDto).IsAssignableFrom(type);
+                return DtoMetadataWorkspace.Current.IsDto(type.GetTypeInfo());
             }, (p, conf) =>
             {
                 conf.ExplicitExpansion();

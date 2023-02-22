@@ -15,7 +15,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Bit.Client.Xamarin.Controls" Version="13.1.0" />
+		<PackageReference Include="Bit.Client.Xamarin.Controls" Version="13.2.0" />
 		<PackageReference Include="Fody" Version="6.6.4">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

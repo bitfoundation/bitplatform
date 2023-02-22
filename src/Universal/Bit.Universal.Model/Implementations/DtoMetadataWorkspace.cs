@@ -76,7 +76,7 @@ namespace Bit.Model.Implementations
                 return props.Where(IsKeyByConvention).ToArray();
         }
 
-        public virtual object[] GetKeys(IDto dto)
+        public virtual object[] GetKeys(object dto)
         {
             if (dto == null)
                 throw new ArgumentNullException(nameof(dto));

@@ -9,7 +9,7 @@ using System.Reflection;
 namespace Bit.Model.Implementations
 {
     public class DefaultDtoEntityMapper<TDto, TEntity> : IDtoEntityMapper<TDto, TEntity>
-        where TDto : class, IDto
+        where TDto : class
         where TEntity : class, IEntity
     {
         private static readonly bool _entityTypeAndDtoTypeAreEqual = typeof(TEntity).GetTypeInfo() == typeof(TDto).GetTypeInfo();

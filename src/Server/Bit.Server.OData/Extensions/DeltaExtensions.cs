@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.OData
     public static class DeltaExtensions
     {
         public static void Patch<TDto, TEntity>(this Delta<TDto> sourceDto, TEntity destinationEntity)
-            where TDto : class, IDto
+            where TDto : class
             where TEntity : class, IEntity
         {
             if (sourceDto == null)
@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.OData
         }
 
         public static bool IsChangedProperty<TDto>(this Delta<TDto> dto, Expression<Func<TDto, object>> prop)
-            where TDto : class, IDto
+            where TDto : class
         {
             if (dto == null)
                 throw new ArgumentNullException(nameof(dto));

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using AutoMapper.Internal;
 using Bit.Model.Contracts;
+using Bit.Model.Implementations;
 using System;
 using System.Collections;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -19,7 +20,7 @@ namespace Bit.Data.EntityFramework.Implementations
             {
                 return (p.DestinationMember.GetCustomAttribute<ForeignKeyAttribute>() != null || p.DestinationMember.GetCustomAttribute<InversePropertyAttribute>() != null)
                        && !typeof(IEnumerable).IsAssignableFrom(p.DestinationMember.ReflectedType)
-                       && typeof(IDto).IsAssignableFrom(p.DestinationMember.ReflectedType);
+                       && DtoMetadataWorkspace.Current.IsDto(p.DestinationMember.ReflectedType!.GetTypeInfo());
             }
 
 #if DotNetStandard2_0 || UAP10_0_17763

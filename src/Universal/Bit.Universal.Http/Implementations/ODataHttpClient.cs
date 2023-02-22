@@ -15,7 +15,6 @@ using System.Threading.Tasks;
 namespace Bit.Http.Implementations
 {
     public class ODataHttpClient<TDto>
-        where TDto : IDto
     {
         public virtual string ODataRoute { get; }
         public virtual string ControllerName { get; }

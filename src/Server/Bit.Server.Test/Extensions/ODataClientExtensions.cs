@@ -8,7 +8,7 @@ namespace Simple.OData.Client
     public static class ODataClientExtensions
     {
         public static IBoundClient<TDto> Controller<TController, TDto>(this IODataClient client)
-            where TDto : class, IDto
+            where TDto : class
             where TController : DtoController<TDto>
         {
             if (client == null)

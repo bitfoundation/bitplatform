@@ -16,7 +16,7 @@ using System.Web.Http;
 namespace Bit.OData.ODataControllers
 {
     public class DtoSetController<TDto, TEntity, TKey> : DtoController<TDto>
-        where TDto : class, IDto
+        where TDto : class
         where TEntity : class, IEntity
     {
         public virtual IRepository<TEntity> Repository { get; set; } = default!;
