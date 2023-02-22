@@ -8,6 +8,7 @@ namespace Bit.BlazorUI;
 public partial class BitChoiceGroup<TItem> where TItem : class
 {
     private const string ARIA_LABEL_FIELD = nameof(BitChoiceGroupItem.AriaLabel);
+    private const string ID_FIELD = nameof(BitChoiceGroupItem.Id);
     private const string IS_ENABLED_FIELD = nameof(BitChoiceGroupItem.IsEnabled);
     private const string IMAGE_SRC_FIELD = nameof(BitChoiceGroupItem.ImageSrc);
     private const string IMAGE_ALT_FIELD = nameof(BitChoiceGroupItem.ImageAlt);
@@ -20,6 +21,7 @@ public partial class BitChoiceGroup<TItem> where TItem : class
     private bool isRequired;
 
     private string _internalAriaLabelField = ARIA_LABEL_FIELD;
+    private string _internalIdField = ID_FIELD;
     private string _internalIsEnabledField = IS_ENABLED_FIELD;
     private string _internalImageSrcField = IMAGE_SRC_FIELD;
     private string _internalImageAltField = IMAGE_ALT_FIELD;
@@ -96,6 +98,16 @@ public partial class BitChoiceGroup<TItem> where TItem : class
     /// The field from the model that will be enable item.
     /// </summary>
     [Parameter] public Expression<Func<TItem, bool>>? IsEnabledFieldSelector { get; set; }
+
+    /// <summary>
+    /// The name of the field from the model that will be the id.
+    /// </summary>
+    [Parameter] public string IdField { get; set; } = ID_FIELD;
+
+    /// <summary>
+    /// The name of the field from the model that will be the id.
+    /// </summary>
+    [Parameter] public Expression<Func<TItem, string>>? IdFieldSelector { get; set; }
 
     /// <summary>
     /// The name of the field from the model that will be the BitIconName.
@@ -225,6 +237,7 @@ public partial class BitChoiceGroup<TItem> where TItem : class
     protected override async Task OnInitializedAsync()
     {
         _internalAriaLabelField = AriaLabelFieldSelector?.GetName() ?? AriaLabelField;
+        _internalIdField = IdFieldSelector?.GetName() ?? IdField;
         _internalIsEnabledField = IsEnabledFieldSelector?.GetName() ?? IsEnabledField;
         _internalIconNameField = IconNameFieldSelector?.GetName() ?? IconNameField;
         _internalImageSrcField = ImageSrcFieldSelector?.GetName() ?? ImageSrcField;
@@ -291,6 +304,21 @@ public partial class BitChoiceGroup<TItem> where TItem : class
         }
 
         return item.GetValueFromProperty<string>(_internalAriaLabelField);
+    }
+
+    private string? GetId(TItem item)
+    {
+        if (item is BitChoiceGroupItem choiceGroupItem)
+        {
+            return choiceGroupItem.Id;
+        }
+
+        if (item is BitChoiceGroupOption choiceGroupOption)
+        {
+            return choiceGroupOption.Id;
+        }
+
+        return item.GetValueFromProperty<string>(_internalIdField);
     }
 
     private bool GetIsEnabled(TItem item)
@@ -413,7 +441,7 @@ public partial class BitChoiceGroup<TItem> where TItem : class
         return item.GetValueFromProperty<string>(_internalValueField);
     }
 
-    private string? GetInputId(TItem item) => $"ChoiceGroup-{UniqueId}-Input-{GetValue(item)}";
+    private string? GetInputId(TItem item) => GetId(item) ?? $"ChoiceGroup-{UniqueId}-Input-{GetValue(item)}";
 
     private bool GetIsCheckedItem(TItem item)
     {

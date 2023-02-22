@@ -10,6 +10,11 @@ public class BitChoiceGroupItem
     public string? AriaLabel { get; set; }
 
     /// <summary>
+    /// Uniqe id for item.
+    /// </summary>
+    public string? Id { get; set; }
+
+    /// <summary>
     /// Whether or not the GroupOption Option is enabled.
     /// </summary>
     public bool IsEnabled { get; set; } = true;

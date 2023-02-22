@@ -14,6 +14,11 @@ public partial class BitChoiceGroupOption : IDisposable
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
+    /// Uniqe id for item.
+    /// </summary>
+    [Parameter] public string? Id { get; set; }
+
+    /// <summary>
     /// The icon to show as Option content.
     /// </summary>
     [Parameter] public BitIconName? IconName { get; set; }
