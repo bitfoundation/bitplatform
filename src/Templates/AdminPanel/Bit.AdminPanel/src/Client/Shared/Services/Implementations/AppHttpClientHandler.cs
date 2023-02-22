@@ -13,7 +13,7 @@ public partial class AppHttpClientHandler : HttpClientHandler
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        if (request.Headers.Authorization is null && OperatingSystem.IsBrowser() is false)
+        if (request.Headers.Authorization is null)
         {
             var access_token = await _tokenProvider.GetAcccessTokenAsync();
             if (access_token is not null)
@@ -34,7 +34,7 @@ public partial class AppHttpClientHandler : HttpClientHandler
             throw new UnauthorizedException();
         }
 
-        if (response.IsSuccessStatusCode is false && response.Content.Headers.ContentType?.MediaType == "application/json")
+        if (!response.IsSuccessStatusCode && response.Content.Headers.ContentType?.MediaType?.Contains("application/json", StringComparison.InvariantCultureIgnoreCase) is true)
         {
             if (response.Headers.TryGetValues("Request-ID", out IEnumerable<string>? values) && values is not null && values.Any())
             {
@@ -51,7 +51,7 @@ public partial class AppHttpClientHandler : HttpClientHandler
 
                 if (exceptionType == typeof(ResourceValidationException))
                 {
-                    args.Add(restError.Details);
+                    args.Add(restError.Payload);
                 }
 
                 throw (Exception)(Activator.CreateInstance(exceptionType, args.ToArray()) ?? new Exception());

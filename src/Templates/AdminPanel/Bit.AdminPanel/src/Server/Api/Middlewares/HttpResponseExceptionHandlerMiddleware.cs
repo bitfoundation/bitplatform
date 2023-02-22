@@ -47,7 +47,7 @@ public class HttpResponseExceptionHandlerMiddleware
 
             if (exception is ResourceValidationException validationException)
             {
-                restExceptionPayload.Details = validationException.Details;
+                restExceptionPayload.Payload = validationException.Payload;
             }
 
             context.Response.StatusCode = statusCode;

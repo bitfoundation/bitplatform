@@ -8,5 +8,5 @@ public class RestExceptionPayload
 
     public string? Message { get; set; }
 
-    public List<ResourceValidationExceptionPayload> Details { get; set; } = new();
+    public ResourceValidationExceptionPayload Payload { get; set; } = new();
 }
