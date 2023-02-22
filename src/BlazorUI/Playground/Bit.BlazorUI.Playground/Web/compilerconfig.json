@@ -172,20 +172,12 @@
         "inputFile": "Pages/Components/Checkbox/BitCheckboxDemo.razor.scss"
     },
     {
-        "outputFile": "Pages/Components/RadioButtonList/BitRadioButtonListDemo.razor.css",
-        "inputFile": "Pages/Components/RadioButtonList/BitRadioButtonListDemo.razor.scss"
-    },
-    {
         "outputFile": "Pages/Components/Rating/BitRatingDemo.razor.css",
         "inputFile": "Pages/Components/Rating/BitRatingDemo.razor.scss"
     },
     {
         "outputFile": "Pages/Components/DropDown/BitDropDownDemo.razor.css",
         "inputFile": "Pages/Components/DropDown/BitDropDownDemo.razor.scss"
-    },
-    {
-        "outputFile": "Pages/Components/RadioButtonGroup/BitRadioButtonGroupDemo.razor.css",
-        "inputFile": "Pages/Components/RadioButtonGroup/BitRadioButtonGroupDemo.razor.scss"
     },
     {
         "outputFile": "Pages/Components/Persona/BitPersonaDemo.razor.css",

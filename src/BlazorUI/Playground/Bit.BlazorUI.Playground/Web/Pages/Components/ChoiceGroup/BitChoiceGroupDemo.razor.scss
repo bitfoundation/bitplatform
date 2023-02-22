@@ -2,20 +2,22 @@
 @import '../../../Styles/abstracts/_functions.scss';
 @import '../../../Styles/abstracts/_media-queries.scss';
 
-.validation-summary {
-    border-left: rem(5px) solid $Red10;
-    background-color: $ErrorBlockRed;
-    overflow: hidden;
-    margin-bottom: rem(10px);
-
-    .validation-errors {
-        margin: rem(5px);
+::deep {
+    .validation-message {
+        color: $Red20;
+        font-size: rem(12px);
     }
-}
 
-::deep div.validation-message {
-    color: $Red20;
-    font-size: rem(12px);
+    .validation-summary {
+        border-left: rem(5px) solid $Red10;
+        background-color: $ErrorBlockRed;
+        overflow: hidden;
+        margin-bottom: rem(10px);
+
+        .validation-errors {
+            margin: rem(5px);
+        }
+    }
 }
 
 .chg-box {
