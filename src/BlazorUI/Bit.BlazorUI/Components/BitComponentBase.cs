@@ -167,9 +167,12 @@ public abstract partial class BitComponentBase : ComponentBase
         RegisterComponentStyles();
         StyleBuilder
             .Register(() => style)
-            .Register(() => visibility == BitComponentVisibility.Hidden ? "visibility:hidden" :
-                            visibility == BitComponentVisibility.Collapsed ? "display:none" :
-                            string.Empty);
+            .Register(() => visibility switch
+            {
+                BitComponentVisibility.Hidden => "visibility:hidden",
+                BitComponentVisibility.Collapsed => "display:none",
+                _ => string.Empty
+            });
 
         if (UseVisual)
         {
@@ -184,9 +187,9 @@ public abstract partial class BitComponentBase : ComponentBase
               .Register(() => RootElementClass)
               .Register(() => (IsEnabled ? string.Empty : "disabled"));
         }
-       
 
-        
+
+
         RegisterComponentClasses();
         ClassBuilder.Register(() => @class);
 
