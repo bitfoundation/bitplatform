@@ -136,6 +136,67 @@
                     <div class="clicked-item">Clicked Item: @example5SelectedItem</div>
                 </ExamplePreview>
             </ComponentExampleBox>
+
+            <ComponentExampleBox Title="BitMenuButton in different sizes" HTMLSourceCode="@example6BitMenuButtonItemHTMLCode" CSharpSourceCode="@example6BitMenuButtonItemCSharpCode" ExampleId="example6">
+                <ExamplePreview>
+                    <div class="example-desc">BitMenuButton can get different sizes using the <code>ButtonSize</code> parameter.</div>
+                    <div class="buttons-container-grid">
+                        <div>
+                            <BitLabel>Small size</BitLabel>
+                            <BitMenuButton Text="Button"
+                                           ButtonSize="BitButtonSize.Small"
+                                           Items="basicMenuButton"
+                                           OnItemClick="(BitMenuButtonItem item) => example1SelectedItem = item.Key" />
+                        </div>
+                        <div>
+                            <BitLabel>Medium size</BitLabel>
+                            <BitMenuButton Text="Button"
+                                           ButtonSize="BitButtonSize.Medium"
+                                           Items="basicMenuButton"
+                                           OnItemClick="(BitMenuButtonItem item) => example1SelectedItem = item.Key" />
+                        </div>
+                        <div>
+                            <BitLabel>Large size</BitLabel>
+                            <BitMenuButton Text="Button"
+                                           ButtonSize="BitButtonSize.Large"
+                                           Items="basicMenuButton"
+                                           OnItemClick="(BitMenuButtonItem item) => example1SelectedItem = item.Key" />
+                        </div>
+                    </div>
+                </ExamplePreview>
+            </ComponentExampleBox>
+
+            <ComponentExampleBox Title="Customized BitMenuButton in different sizes" HTMLSourceCode="@example7BitMenuButtonItemHTMLCode" CSharpSourceCode="@example7BitMenuButtonItemCSharpCode" ExampleId="example6">
+                <ExamplePreview>
+                    <div class="example-desc">BitMenuButton can be customized easily in different sizes by overriding a certain CSS class.</div>
+                    <div class="buttons-container-grid">
+                        <div>
+                            <BitLabel>Small size</BitLabel>
+                            <BitMenuButton Text="Button"
+                                           Class="custom-btn-sm"
+                                           ButtonSize="BitButtonSize.Small"
+                                           Items="basicMenuButton"
+                                           OnItemClick="(BitMenuButtonItem item) => example1SelectedItem = item.Key" />
+                        </div>
+                        <div>
+                            <BitLabel>Medium size</BitLabel>
+                            <BitMenuButton Text="Button"
+                                           Class="custom-btn-md"
+                                           ButtonSize="BitButtonSize.Medium"
+                                           Items="basicMenuButton"
+                                           OnItemClick="(BitMenuButtonItem item) => example1SelectedItem = item.Key" />
+                        </div>
+                        <div>
+                            <BitLabel>Large size</BitLabel>
+                            <BitMenuButton Text="Button"
+                                           Class="custom-btn-lg"
+                                           ButtonSize="BitButtonSize.Large"
+                                           Items="basicMenuButton"
+                                           OnItemClick="(BitMenuButtonItem item) => example1SelectedItem = item.Key" />
+                        </div>
+                    </div>
+                </ExamplePreview>
+            </ComponentExampleBox>
         </BitPivotItem>
 
         <BitPivotItem HeaderText="Custom Item">
@@ -301,6 +362,85 @@
                         </BitMenuButton>
                     </div>
                     <div class="clicked-item">Clicked Item: @example5SelectedItem</div>
+                </ExamplePreview>
+            </ComponentExampleBox>
+
+            <ComponentExampleBox Title="BitMenuButton in different sizes" HTMLSourceCode="@example6CustomItemHTMLCode" CSharpSourceCode="@example6CustomItemCSharpCode" ExampleId="example6">
+                <ExamplePreview>
+                    <div class="example-desc">BitMenuButton can get different sizes using the <code>ButtonSize</code> parameter.</div>
+                    <div class="buttons-container-grid">
+                        <div>
+                            <BitLabel>Small size</BitLabel>
+                            <BitMenuButton Text="Button"
+                                           ButtonSize="BitButtonSize.Small"
+                                           Items="basicMenuButtonWithCustomType"
+                                           TextField="@nameof(MenuActionItem.Name)"
+                                           KeyField="@nameof(MenuActionItem.Id)"
+                                           IconNameField="@nameof(MenuActionItem.Icon)"
+                                           OnItemClick="(MenuActionItem item) => example1SelectedItem = item.Id" />
+                        </div>
+                        <div>
+                            <BitLabel>Medium size</BitLabel>
+                            <BitMenuButton Text="Button"
+                                           ButtonSize="BitButtonSize.Medium"
+                                           Items="basicMenuButtonWithCustomType"
+                                           TextField="@nameof(MenuActionItem.Name)"
+                                           KeyField="@nameof(MenuActionItem.Id)"
+                                           IconNameField="@nameof(MenuActionItem.Icon)"
+                                           OnItemClick="(MenuActionItem item) => example1SelectedItem = item.Id" />
+                        </div>
+                        <div>
+                            <BitLabel>Large size</BitLabel>
+                            <BitMenuButton Text="Button"
+                                           ButtonSize="BitButtonSize.Large"
+                                           Items="basicMenuButtonWithCustomType"
+                                           TextField="@nameof(MenuActionItem.Name)"
+                                           KeyField="@nameof(MenuActionItem.Id)"
+                                           IconNameField="@nameof(MenuActionItem.Icon)"
+                                           OnItemClick="(MenuActionItem item) => example1SelectedItem = item.Id" />
+                        </div>
+                    </div>
+                </ExamplePreview>
+            </ComponentExampleBox>
+
+            <ComponentExampleBox Title="Customized BitMenuButton in different sizes" HTMLSourceCode="@example7CustomItemHTMLCode" CSharpSourceCode="@example7CustomItemCSharpCode" ExampleId="example6">
+                <ExamplePreview>
+                    <div class="example-desc">BitMenuButton can be customized easily in different sizes by overriding a certain CSS class.</div>
+                    <div class="buttons-container-grid">
+                        <div>
+                            <BitLabel>Small size</BitLabel>
+                            <BitMenuButton Text="Button"
+                                           Class="custom-btn-sm"
+                                           ButtonSize="BitButtonSize.Small"
+                                           Items="basicMenuButtonWithCustomType"
+                                           TextField="@nameof(MenuActionItem.Name)"
+                                           KeyField="@nameof(MenuActionItem.Id)"
+                                           IconNameField="@nameof(MenuActionItem.Icon)"
+                                           OnItemClick="(MenuActionItem item) => example1SelectedItem = item.Id" />
+                        </div>
+                        <div>
+                            <BitLabel>Medium size</BitLabel>
+                            <BitMenuButton Text="Button"
+                                           Class="custom-btn-md"
+                                           ButtonSize="BitButtonSize.Medium"
+                                           Items="basicMenuButtonWithCustomType"
+                                           TextField="@nameof(MenuActionItem.Name)"
+                                           KeyField="@nameof(MenuActionItem.Id)"
+                                           IconNameField="@nameof(MenuActionItem.Icon)"
+                                           OnItemClick="(MenuActionItem item) => example1SelectedItem = item.Id" />
+                        </div>
+                        <div>
+                            <BitLabel>Large size</BitLabel>
+                            <BitMenuButton Text="Button"
+                                           Class="custom-btn-lg"
+                                           ButtonSize="BitButtonSize.Large"
+                                           Items="basicMenuButtonWithCustomType"
+                                           TextField="@nameof(MenuActionItem.Name)"
+                                           KeyField="@nameof(MenuActionItem.Id)"
+                                           IconNameField="@nameof(MenuActionItem.Icon)"
+                                           OnItemClick="(MenuActionItem item) => example1SelectedItem = item.Id" />
+                        </div>
+                    </div>
                 </ExamplePreview>
             </ComponentExampleBox>
         </BitPivotItem>
@@ -474,6 +614,85 @@
                         </BitMenuButton>
                     </div>
                     <div class="clicked-item">Clicked Item: @example5SelectedItem</div>
+                </ExamplePreview>
+            </ComponentExampleBox>
+
+            <ComponentExampleBox Title="BitMenuButton in different sizes" HTMLSourceCode="@example6BitMenuButtonOptionHTMLCode" CSharpSourceCode="@example6BitMenuButtonOptionCSharpCode" ExampleId="example6">
+                <ExamplePreview>
+                    <div class="example-desc">BitMenuButton can get different sizes using the <code>ButtonSize</code> parameter.</div>
+                    <div class="buttons-container-grid">
+                        <div>
+                            <BitLabel>Small size</BitLabel>
+                            <BitMenuButton Text="Button"
+                                           ButtonSize="BitButtonSize.Small"
+                                           OnItemClick="(BitMenuButtonOption item) => example1SelectedItem = item.Key">
+                                <BitMenuButtonOption Text="Item A" Key="A" IconName="BitIconName.Emoji" />
+                                <BitMenuButtonOption Text="Item B" Key="B" IconName="BitIconName.Emoji" />
+                                <BitMenuButtonOption Text="Item C" Key="C" IconName="BitIconName.Emoji2" />
+                            </BitMenuButton>
+                        </div>
+                        <div>
+                            <BitLabel>Medium size</BitLabel>
+                            <BitMenuButton Text="Button"
+                                           ButtonSize="BitButtonSize.Medium"
+                                           OnItemClick="(BitMenuButtonOption item) => example1SelectedItem = item.Key">
+                                <BitMenuButtonOption Text="Item A" Key="A" IconName="BitIconName.Emoji" />
+                                <BitMenuButtonOption Text="Item B" Key="B" IconName="BitIconName.Emoji" />
+                                <BitMenuButtonOption Text="Item C" Key="C" IconName="BitIconName.Emoji2" />
+                            </BitMenuButton>
+                        </div>
+                        <div>
+                            <BitLabel>Large size</BitLabel>
+                            <BitMenuButton Text="Button"
+                                           ButtonSize="BitButtonSize.Large"
+                                           OnItemClick="(BitMenuButtonOption item) => example1SelectedItem = item.Key">
+                                <BitMenuButtonOption Text="Item A" Key="A" IconName="BitIconName.Emoji" />
+                                <BitMenuButtonOption Text="Item B" Key="B" IconName="BitIconName.Emoji" />
+                                <BitMenuButtonOption Text="Item C" Key="C" IconName="BitIconName.Emoji2" />
+                            </BitMenuButton>
+                        </div>
+                    </div>
+                </ExamplePreview>
+            </ComponentExampleBox>
+
+            <ComponentExampleBox Title="Customized BitMenuButton in different sizes" HTMLSourceCode="@example7BitMenuButtonOptionHTMLCode" CSharpSourceCode="@example7BitMenuButtonOptionCSharpCode" ExampleId="example6">
+                <ExamplePreview>
+                    <div class="example-desc">BitMenuButton can be customized easily in different sizes by overriding a certain CSS class.</div>
+                    <div class="buttons-container-grid">
+                        <div>
+                            <BitLabel>Small size</BitLabel>
+                            <BitMenuButton Text="Button"
+                                           Class="custom-btn-sm"
+                                           ButtonSize="BitButtonSize.Small"
+                                           OnItemClick="(BitMenuButtonOption item) => example1SelectedItem = item.Key">
+                                <BitMenuButtonOption Text="Item A" Key="A" IconName="BitIconName.Emoji" />
+                                <BitMenuButtonOption Text="Item B" Key="B" IconName="BitIconName.Emoji" />
+                                <BitMenuButtonOption Text="Item C" Key="C" IconName="BitIconName.Emoji2" />
+                            </BitMenuButton>
+                        </div>
+                        <div>
+                            <BitLabel>Medium size</BitLabel>
+                            <BitMenuButton Text="Button"
+                                           Class="custom-btn-md"
+                                           ButtonSize="BitButtonSize.Medium"
+                                           OnItemClick="(BitMenuButtonOption item) => example1SelectedItem = item.Key">
+                                <BitMenuButtonOption Text="Item A" Key="A" IconName="BitIconName.Emoji" />
+                                <BitMenuButtonOption Text="Item B" Key="B" IconName="BitIconName.Emoji" />
+                                <BitMenuButtonOption Text="Item C" Key="C" IconName="BitIconName.Emoji2" />
+                            </BitMenuButton>
+                        </div>
+                        <div>
+                            <BitLabel>Large size</BitLabel>
+                            <BitMenuButton Text="Button"
+                                           Class="custom-btn-lg"
+                                           ButtonSize="BitButtonSize.Large"
+                                           OnItemClick="(BitMenuButtonOption item) => example1SelectedItem = item.Key">
+                                <BitMenuButtonOption Text="Item A" Key="A" IconName="BitIconName.Emoji" />
+                                <BitMenuButtonOption Text="Item B" Key="B" IconName="BitIconName.Emoji" />
+                                <BitMenuButtonOption Text="Item C" Key="C" IconName="BitIconName.Emoji2" />
+                            </BitMenuButton>
+                        </div>
+                    </div>
                 </ExamplePreview>
             </ComponentExampleBox>
         </BitPivotItem>

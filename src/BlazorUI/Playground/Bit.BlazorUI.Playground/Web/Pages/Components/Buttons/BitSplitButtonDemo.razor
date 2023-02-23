@@ -138,6 +138,67 @@
                     <div class="clicked-item">Clicked item: @TemplateClickedItem</div>
                 </ExamplePreview>
             </ComponentExampleBox>
+
+            <ComponentExampleBox Title="BitSplitButton in different sizes" HTMLSourceCode="@example5BitSplitButtonItemHTMLCode" CSharpSourceCode="@example5BitSplitButtonItemCSharpCode" ExampleId="example5">
+                <ExamplePreview>
+                    <div class="example-desc">BitSplitButton can get different sizes using the <code>ButtonSize</code> parameter.</div>
+                    <div class="buttons-container-grid">
+                        <div>
+                            <BitLabel>Small size</BitLabel>
+                            <BitSplitButton Items="BasicItems"
+                                            ButtonSize="BitButtonSize.Small"
+                                            ButtonStyle="BitButtonStyle.Primary"
+                                            OnClick="(BitSplitButtonItem item) => BasicClickedItem = item.Text" />
+                        </div>
+                        <div>
+                            <BitLabel>Medium size</BitLabel>
+                            <BitSplitButton Items="BasicItems"
+                                            ButtonSize="BitButtonSize.Medium"
+                                            ButtonStyle="BitButtonStyle.Primary"
+                                            OnClick="(BitSplitButtonItem item) => BasicClickedItem = item.Text" />
+                        </div>
+                        <div>
+                            <BitLabel>Large size</BitLabel>
+                            <BitSplitButton Items="BasicItems"
+                                            ButtonSize="BitButtonSize.Large"
+                                            ButtonStyle="BitButtonStyle.Primary"
+                                            OnClick="(BitSplitButtonItem item) => BasicClickedItem = item.Text" />
+                        </div>
+                    </div>
+                </ExamplePreview>
+            </ComponentExampleBox>
+
+            <ComponentExampleBox Title="Customized BitSplitButton in different sizes" HTMLSourceCode="@example6BitSplitButtonItemHTMLCode" CSharpSourceCode="@example6BitSplitButtonItemCSharpCode" ExampleId="example6">
+                <ExamplePreview>
+                    <div class="example-desc">BitSplitButton can be customized easily in different sizes by overriding a certain CSS class.</div>
+                    <div class="buttons-container-grid">
+                        <div>
+                            <BitLabel>Small size</BitLabel>
+                            <BitSplitButton Items="BasicItems"
+                                            Class="custom-btn-sm"
+                                            ButtonSize="BitButtonSize.Small"
+                                            ButtonStyle="BitButtonStyle.Primary"
+                                            OnClick="(BitSplitButtonItem item) => BasicClickedItem = item.Text" />
+                        </div>
+                        <div>
+                            <BitLabel>Medium size</BitLabel>
+                            <BitSplitButton Items="BasicItems"
+                                            Class="custom-btn-md"
+                                            ButtonSize="BitButtonSize.Medium"
+                                            ButtonStyle="BitButtonStyle.Primary"
+                                            OnClick="(BitSplitButtonItem item) => BasicClickedItem = item.Text" />
+                        </div>
+                        <div>
+                            <BitLabel>Large size</BitLabel>
+                            <BitSplitButton Items="BasicItems"
+                                            Class="custom-btn-lg"
+                                            ButtonSize="BitButtonSize.Large"
+                                            ButtonStyle="BitButtonStyle.Primary"
+                                            OnClick="(BitSplitButtonItem item) => BasicClickedItem = item.Text" />
+                        </div>
+                    </div>
+                </ExamplePreview>
+            </ComponentExampleBox>
         </BitPivotItem>
 
         <BitPivotItem HeaderText="Custom Item">
@@ -297,6 +358,85 @@
                         </div>
                     </div>
                     <div class="clicked-item">Clicked item: @TemplateClickedItem</div>
+                </ExamplePreview>
+            </ComponentExampleBox>
+
+            <ComponentExampleBox Title="BitSplitButton in different sizes" HTMLSourceCode="@example5CustomItemHTMLCode" CSharpSourceCode="@example5CustomItemCSharpCode" ExampleId="example5">
+                <ExamplePreview>
+                    <div class="example-desc">BitSplitButton can get different sizes using the <code>ButtonSize</code> parameter.</div>
+                    <div class="buttons-container-grid">
+                        <div>
+                            <BitLabel>Small size</BitLabel>
+                            <BitSplitButton Items="BasicCustomItems"
+                                            ButtonSize="BitButtonSize.Small"
+                                            TextField="@nameof(SplitActionItem.Name)"
+                                            KeyField="@nameof(SplitActionItem.Id)"
+                                            IconNameField="@nameof(SplitActionItem.Icon)"
+                                            ButtonStyle="BitButtonStyle.Primary"
+                                            OnClick="(SplitActionItem item) => BasicClickedItem = item.Name" />
+                        </div>
+                        <div>
+                            <BitLabel>Medium size</BitLabel>
+                            <BitSplitButton Items="BasicCustomItems"
+                                            ButtonSize="BitButtonSize.Medium"
+                                            TextField="@nameof(SplitActionItem.Name)"
+                                            KeyField="@nameof(SplitActionItem.Id)"
+                                            IconNameField="@nameof(SplitActionItem.Icon)"
+                                            ButtonStyle="BitButtonStyle.Primary"
+                                            OnClick="(SplitActionItem item) => BasicClickedItem = item.Name" />
+                        </div>
+                        <div>
+                            <BitLabel>Large size</BitLabel>
+                            <BitSplitButton Items="BasicCustomItems"
+                                            ButtonSize="BitButtonSize.Large"
+                                            TextField="@nameof(SplitActionItem.Name)"
+                                            KeyField="@nameof(SplitActionItem.Id)"
+                                            IconNameField="@nameof(SplitActionItem.Icon)"
+                                            ButtonStyle="BitButtonStyle.Primary"
+                                            OnClick="(SplitActionItem item) => BasicClickedItem = item.Name" />
+                        </div>
+                    </div>
+                </ExamplePreview>
+            </ComponentExampleBox>
+
+            <ComponentExampleBox Title="Customized BitSplitButton in different sizes" HTMLSourceCode="@example6CustomItemHTMLCode" CSharpSourceCode="@example6CustomItemCSharpCode" ExampleId="example6">
+                <ExamplePreview>
+                    <div class="example-desc">BitSplitButton can be customized easily in different sizes by overriding a certain CSS class.</div>
+                    <div class="buttons-container-grid">
+                        <div>
+                            <BitLabel>Small size</BitLabel>
+                            <BitSplitButton Items="BasicCustomItems"
+                                            Class="custom-btn-sm"
+                                            ButtonSize="BitButtonSize.Small"
+                                            TextField="@nameof(SplitActionItem.Name)"
+                                            KeyField="@nameof(SplitActionItem.Id)"
+                                            IconNameField="@nameof(SplitActionItem.Icon)"
+                                            ButtonStyle="BitButtonStyle.Primary"
+                                            OnClick="(SplitActionItem item) => BasicClickedItem = item.Name" />
+                        </div>
+                        <div>
+                            <BitLabel>Medium size</BitLabel>
+                            <BitSplitButton Items="BasicCustomItems"
+                                            Class="custom-btn-md"
+                                            ButtonSize="BitButtonSize.Medium"
+                                            TextField="@nameof(SplitActionItem.Name)"
+                                            KeyField="@nameof(SplitActionItem.Id)"
+                                            IconNameField="@nameof(SplitActionItem.Icon)"
+                                            ButtonStyle="BitButtonStyle.Primary"
+                                            OnClick="(SplitActionItem item) => BasicClickedItem = item.Name" />
+                        </div>
+                        <div>
+                            <BitLabel>Large size</BitLabel>
+                            <BitSplitButton Items="BasicCustomItems"
+                                            Class="custom-btn-lg"
+                                            ButtonSize="BitButtonSize.Large"
+                                            TextField="@nameof(SplitActionItem.Name)"
+                                            KeyField="@nameof(SplitActionItem.Id)"
+                                            IconNameField="@nameof(SplitActionItem.Icon)"
+                                            ButtonStyle="BitButtonStyle.Primary"
+                                            OnClick="(SplitActionItem item) => BasicClickedItem = item.Name" />
+                        </div>
+                    </div>
                 </ExamplePreview>
             </ComponentExampleBox>
         </BitPivotItem>
@@ -463,6 +603,85 @@
                         </div>
                     </div>
                     <div class="clicked-item">Clicked item: @TemplateClickedItem</div>
+                </ExamplePreview>
+            </ComponentExampleBox>
+
+            <ComponentExampleBox Title="BitSplitButton in different sizes" HTMLSourceCode="@example5BitSplitButtonOptionHTMLCode" CSharpSourceCode="@example5BitSplitButtonOptionCSharpCode" ExampleId="example5">
+                <ExamplePreview>
+                    <div class="example-desc">BitSplitButton can get different sizes using the <code>ButtonSize</code> parameter.</div>
+                    <div class="buttons-container-grid">
+                        <div>
+                            <BitLabel>Small size</BitLabel>
+                            <BitSplitButton ButtonStyle="BitButtonStyle.Primary"
+                                            ButtonSize="BitButtonSize.Small"
+                                            OnClick="(BitSplitButtonOption item) => BasicClickedItem = item.Text">
+                                <BitSplitButtonOption Text="Item A" Key="A" />
+                                <BitSplitButtonOption Text="Item B" Key="B" IconName="BitIconName.Emoji" />
+                                <BitSplitButtonOption Text="Item C" Key="C" IconName="BitIconName.Emoji2" />
+                            </BitSplitButton>
+                        </div>
+                        <div>
+                            <BitLabel>Medium size</BitLabel>
+                            <BitSplitButton ButtonStyle="BitButtonStyle.Primary"
+                                            ButtonSize="BitButtonSize.Medium"
+                                            OnClick="(BitSplitButtonOption item) => BasicClickedItem = item.Text">
+                                <BitSplitButtonOption Text="Item A" Key="A" />
+                                <BitSplitButtonOption Text="Item B" Key="B" IconName="BitIconName.Emoji" />
+                                <BitSplitButtonOption Text="Item C" Key="C" IconName="BitIconName.Emoji2" />
+                            </BitSplitButton>
+                        </div>
+                        <div>
+                            <BitLabel>Large size</BitLabel>
+                            <BitSplitButton ButtonStyle="BitButtonStyle.Primary"
+                                            ButtonSize="BitButtonSize.Large"
+                                            OnClick="(BitSplitButtonOption item) => BasicClickedItem = item.Text">
+                                <BitSplitButtonOption Text="Item A" Key="A" />
+                                <BitSplitButtonOption Text="Item B" Key="B" IconName="BitIconName.Emoji" />
+                                <BitSplitButtonOption Text="Item C" Key="C" IconName="BitIconName.Emoji2" />
+                            </BitSplitButton>
+                        </div>
+                    </div>
+                </ExamplePreview>
+            </ComponentExampleBox>
+
+            <ComponentExampleBox Title="Customized BitSplitButton in different sizes" HTMLSourceCode="@example6BitSplitButtonOptionHTMLCode" CSharpSourceCode="@example6BitSplitButtonOptionCSharpCode" ExampleId="example6">
+                <ExamplePreview>
+                    <div class="example-desc">BitSplitButton can be customized easily in different sizes by overriding a certain CSS class.</div>
+                    <div class="buttons-container-grid">
+                        <div>
+                            <BitLabel>Small size</BitLabel>
+                            <BitSplitButton ButtonStyle="BitButtonStyle.Primary"
+                                            Class="custom-btn-sm"
+                                            ButtonSize="BitButtonSize.Small"
+                                            OnClick="(BitSplitButtonOption item) => BasicClickedItem = item.Text">
+                                <BitSplitButtonOption Text="Item A" Key="A" />
+                                <BitSplitButtonOption Text="Item B" Key="B" IconName="BitIconName.Emoji" />
+                                <BitSplitButtonOption Text="Item C" Key="C" IconName="BitIconName.Emoji2" />
+                            </BitSplitButton>
+                        </div>
+                        <div>
+                            <BitLabel>Medium size</BitLabel>
+                            <BitSplitButton ButtonStyle="BitButtonStyle.Primary"
+                                            Class="custom-btn-md"
+                                            ButtonSize="BitButtonSize.Medium"
+                                            OnClick="(BitSplitButtonOption item) => BasicClickedItem = item.Text">
+                                <BitSplitButtonOption Text="Item A" Key="A" />
+                                <BitSplitButtonOption Text="Item B" Key="B" IconName="BitIconName.Emoji" />
+                                <BitSplitButtonOption Text="Item C" Key="C" IconName="BitIconName.Emoji2" />
+                            </BitSplitButton>
+                        </div>
+                        <div>
+                            <BitLabel>Large size</BitLabel>
+                            <BitSplitButton ButtonStyle="BitButtonStyle.Primary"
+                                            Class="custom-btn-lg"
+                                            ButtonSize="BitButtonSize.Large"
+                                            OnClick="(BitSplitButtonOption item) => BasicClickedItem = item.Text">
+                                <BitSplitButtonOption Text="Item A" Key="A" />
+                                <BitSplitButtonOption Text="Item B" Key="B" IconName="BitIconName.Emoji" />
+                                <BitSplitButtonOption Text="Item C" Key="C" IconName="BitIconName.Emoji2" />
+                            </BitSplitButton>
+                        </div>
+                    </div>
                 </ExamplePreview>
             </ComponentExampleBox>
         </BitPivotItem>

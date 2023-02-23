@@ -70,4 +70,52 @@
             <BitIconButton IconName="BitIconName.Emoji2" Title="I'm Happy" />
         </ExamplePreview>
     </ComponentExampleBox>
+
+    <ComponentExampleBox Title="BitIconButton in different sizes" HTMLSourceCode="@example7HTMLCode" ExampleId="example7">
+        <ExamplePreview>
+            <div class="example-desc">BitIconButton can get different sizes using the <code>ButtonSize</code> parameter.</div>
+            <div class="buttons-container-grid">
+                <div>
+                    <BitLabel>Small size</BitLabel>
+                    <BitIconButton ButtonSize="BitButtonSize.Small" IconName="BitIconName.Emoji" />
+
+                </div>
+                <div>
+                    <BitLabel>Medium size</BitLabel>
+                    <BitIconButton ButtonSize="BitButtonSize.Medium" IconName="BitIconName.Emoji" />
+
+                </div>
+                <div>
+                    <BitLabel>Large size</BitLabel>
+                    <BitIconButton ButtonSize="BitButtonSize.Large" IconName="BitIconName.Emoji" />
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Customized BitIconButton in different sizes" HTMLSourceCode="@example8HTMLCode" ExampleId="example8">
+        <ExamplePreview>
+            <div class="example-desc">BitIconButton can be customized easily in different sizes by overriding a certain CSS class.</div>
+            <div class="buttons-container-grid">
+                <div>
+                    <BitLabel>Small size</BitLabel>
+                    <BitIconButton Class="custom-btn-sm"
+                                   ButtonSize="BitButtonSize.Small" IconName="BitIconName.Emoji" />
+
+                </div>
+                <div>
+                    <BitLabel>Medium size</BitLabel>
+                    <BitIconButton Class="custom-btn-md"
+                                   ButtonSize="BitButtonSize.Medium" IconName="BitIconName.Emoji" />
+
+                </div>
+                <div>
+                    <BitLabel>Large size</BitLabel>
+                    <BitIconButton Class="custom-btn-lg"
+                                   ButtonSize="BitButtonSize.Large" IconName="BitIconName.Emoji" />
+
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
 </ComponentDemo>
