@@ -6,6 +6,7 @@
         <BlazorEnableTimeZoneSupport>true</BlazorEnableTimeZoneSupport>
         <BlazorWebAssemblyPreserveCollationData>false</BlazorWebAssemblyPreserveCollationData>
         <InvariantGlobalization>true</InvariantGlobalization>
+        <EmccInitialHeapSize Condition="'$(EmccInitialHeapSize)' == ''">16777216</EmccInitialHeapSize>
     </PropertyGroup>
 
     <ItemGroup>
@@ -21,12 +22,12 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.BlazorUI" Version="4.9.6-pre-03" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="4.9.6-pre-03">
+        <PackageReference Include="Bit.BlazorUI" Version="4.9.6-pre-04" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="4.9.6-pre-04">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="4.9.6-pre-03">
+        <PackageReference Include="Bit.SourceGenerators" Version="4.9.6-pre-04">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

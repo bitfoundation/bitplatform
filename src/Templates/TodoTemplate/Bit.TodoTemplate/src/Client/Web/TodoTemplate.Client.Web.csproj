@@ -11,6 +11,7 @@
         <InvariantGlobalization Condition=" '$(MultilingualEnabled)' == 'false' ">true</InvariantGlobalization>
         <BlazorWebAssemblyLoadAllGlobalizationData Condition=" '$(MultilingualEnabled)' == 'true' ">true</BlazorWebAssemblyLoadAllGlobalizationData>
         <!-- To change MultilingualEnabled's value, checkout Directory.Build.props -->
+        <EmccInitialHeapSize Condition="'$(EmccInitialHeapSize)' == ''">16777216</EmccInitialHeapSize>
         <!--/+:msbuild-conditional:noEmit -->
     </PropertyGroup>
 
@@ -30,13 +31,13 @@
     </ItemGroup>
 
     <ItemGroup>
-		<PackageReference Include="Bit.Bup" Version="4.9.6-pre-03" />
-        <PackageReference Include="Bit.Bswup" Version="4.9.6-pre-03" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="4.9.6-pre-03">
+		<PackageReference Include="Bit.Bup" Version="4.9.6-pre-04" />
+        <PackageReference Include="Bit.Bswup" Version="4.9.6-pre-04" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="4.9.6-pre-04">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="4.9.6-pre-03">
+        <PackageReference Include="Bit.SourceGenerators" Version="4.9.6-pre-04">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

@@ -92,6 +92,8 @@
             {
                 <script src="_framework/blazor.webassembly.js" autostart=false></script>
                 <script src="_content/Bit.Bswup/bit-bswup.js" scope="/" sw="service-worker.js" handler="bitBswupHandler"></script>
+                <script src="_content/Bit.Bswup/bit-bswup.progress.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
+                <link href="_content/Bit.Bswup/bit-bswup.progress.min.css" rel="stylesheet" asp-append-version="@shoudAddAspAppendVersion">
                 <component type="typeof(Bit.Bswup.BswupProgress)"
                            param-AutoReload="true"
                            param-AppContainer="@("#app-container")"
