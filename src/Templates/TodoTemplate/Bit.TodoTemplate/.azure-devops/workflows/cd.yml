@@ -61,7 +61,7 @@ jobs:
     inputs:
       fileType: 'json'
       folderPath: './'
-      targetFiles: 'src/Client/Shared/wwwroot/appsettings.json'
+      targetFiles: 'src/Client/Shared/appsettings.json'
 
   - task: Bash@3
     displayName: 'Build (To generate CSS/JS files)'
@@ -171,7 +171,7 @@ jobs:
     inputs:
       fileType: 'json'
       folderPath: './'
-      targetFiles: 'src/Client/Shared/wwwroot/appsettings.json'
+      targetFiles: 'src/Client/Shared/appsettings.json'
 
   - task: Bash@3
     displayName: 'Restore workloads'
@@ -238,7 +238,7 @@ jobs:
     inputs:
       fileType: 'json'
       folderPath: './'
-      targetFiles: 'src/Client/Shared/wwwroot/appsettings.json'
+      targetFiles: 'src/Client/Shared/appsettings.json'
   
   - task: Bash@3
     displayName: 'Build (To generate CSS/JS files)'
@@ -294,7 +294,7 @@ jobs:
     inputs:
       fileType: 'json'
       folderPath: './'
-      targetFiles: 'src/Client/Shared/wwwroot/appsettings.json'
+      targetFiles: 'src/Client/Shared/appsettings.json'
 
   - task: Bash@3
     displayName: 'Restore workloads'
