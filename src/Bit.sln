@@ -21,13 +21,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Playground", "Playground", 
 		BlazorUI\Playground\README.md = BlazorUI\Playground\README.md
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{8C9FF7C8-6A83-427C-A704-E4061822718D}"
-	ProjectSection(SolutionItems) = preProject
-		..\.github\workflows\Bit.ci.yml = ..\.github\workflows\Bit.ci.yml
-		..\.github\workflows\nuget.org.yml = ..\.github\workflows\nuget.org.yml
-		..\.github\workflows\Prerelease.nuget.org.yml = ..\.github\workflows\Prerelease.nuget.org.yml
-	EndProjectSection
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Websites", "Websites", "{293480D2-1505-4C9F-B2B9-D78CA5573866}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.BlazorUI", "BlazorUI\Bit.BlazorUI\Bit.BlazorUI.csproj", "{48C1BB77-8B36-4EAD-B52F-CDC8A875D120}"
@@ -1323,7 +1316,6 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{23426B1A-CC46-4D11-B233-208A57B2BCA2} = {DC165533-038F-4D71-9BA1-44CF254E116F}
-		{8C9FF7C8-6A83-427C-A704-E4061822718D} = {7B24BEC3-93BA-4789-B009-71A778ADA56F}
 		{48C1BB77-8B36-4EAD-B52F-CDC8A875D120} = {DC165533-038F-4D71-9BA1-44CF254E116F}
 		{FA10EFB6-6DA4-48BA-8969-8C605581B33F} = {DC165533-038F-4D71-9BA1-44CF254E116F}
 		{1CE27D53-9365-469B-9DD9-4F435C81DC21} = {23426B1A-CC46-4D11-B233-208A57B2BCA2}
