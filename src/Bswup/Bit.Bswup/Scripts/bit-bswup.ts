@@ -4,7 +4,6 @@
     const bitBswupScript = document.currentScript;
 
     window.addEventListener('load', runBswup);
-    (window as any).startBswupProgress = startBswupProgress;
 
     function runBswup() {
         if (!('serviceWorker' in navigator)) {
@@ -35,7 +34,7 @@
                 if (reg.installing) {
                     handle('installing', {});
                 } else {
-                    handle('installed', { reload: () => reload() });
+                    handle('installed');
                 }
             }
 
@@ -72,11 +71,11 @@
             }
 
             if (type === 'progress') {
-                handle('progress', data);
+                handle('progress', { ...data, reload: () => reload() });
             }
 
             if (type === 'installed') {
-                handle('installed', { ...data, reload: () => reload() });
+                handle('installed', data);
             }
 
             if (type === 'activate') {
@@ -169,51 +168,6 @@
             console.warn(`BitBswup: ${text}`);
         }
     }
-
-    function startBswupProgress(autoReload: boolean, showLogs: boolean, showAssets: boolean, appContainerSelector: string) {
-        var appEl = document.querySelector(appContainerSelector) as HTMLElement;
-        var progressEl = document.getElementById('bit-bswup');
-        var progressBar = document.getElementById('bit-bswup-progress-bar');
-        var percentLabel = document.getElementById('bit-bswup-percent');
-        var reloadButton = document.getElementById('bit-bswup-reload');
-        var assetsUl = document.getElementById('bit-bswup-assets');
-        (window as any).bitBswupHandler = bitBswupHandler;
-
-        function bitBswupHandler(type, data) {
-            switch (type) {
-                case 'updatefound':
-                    return showLogs ? console.log('new version is downloading...') : undefined;
-                case 'statechange':
-                    return showLogs ? console.log('new version state has changed to:', data.currentTarget.state) : undefined;
-                case 'controllerchange':
-                    return showLogs ? console.log('sw controller changed:', data) : undefined;
-                case 'installing':
-                    appEl.style.display = 'none';
-                    progressEl.style.display = 'block';
-                    return showLogs ? console.log('installing new version:', data.version) : undefined;
-                case 'installed':
-                    if (autoReload) {
-                        return data.reload();
-                    }
-                    reloadButton.style.display = 'inline';
-                    reloadButton.onclick = data.reload;
-                    return showLogs ? console.log('new version installed:', data.version) : undefined;
-                case 'progress':
-                    if (showAssets) {
-                        const li = document.createElement('li');
-                        li.innerHTML = `${data.index}: <b>${data.asset.url}</b>: ${data.asset.hash}`
-                        assetsUl.prepend(li);
-                    }
-                    const percent = Math.round(data.percent);
-                    progressBar.style.width = `${percent}%`;
-                    percentLabel.innerHTML = `${percent}%`;
-                    return showLogs ? console.log('asset downloaded:', data) : undefined;
-                case 'activate':
-                    return showLogs ? console.log('new version activated:', data.version) : undefined;
-            }
-        }
-    };
-
 }());
 
 interface BswupOptions {

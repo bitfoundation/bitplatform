@@ -2,77 +2,29 @@
     [Parameter] public bool AutoReload { get; set; } = true;
     [Parameter] public bool ShowAssets { get; set; } = false;
     [Parameter] public bool ShowLogs { get; set; } = false;
+    [Parameter] public bool HideApp { get; set; } = false;
     [Parameter] public string AppContainer { get; set; } = "#app";
+    [Parameter] public RenderFragment ChildContent { get; set; } = default!;
 }
 
-<style>
-    #bit-bswup {
-        display: none;
-        position: fixed;
-        background: #fff;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        padding: 20px;
-        text-align: center;
-        font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
-    }
-
-    .bit-bswup-container {
-        width: 70%;
-        margin: 0 auto;
-        margin-top: 45px;
-    }
-
-    .bit-bswup-title {
-        font-size: 20px;
-    }
-
-    #bit-bswup-percent {
-        font-size: 18px;
-        margin-top: 15px;
-    }
-
-    .bit-bswup-description {
-        font-size: 14px;
-        margin-bottom: 20px;
-    }
-
-    .bit-bswup-progress {
-        background-color: rgb(237, 235, 233);
-    }
-
-    #bit-bswup-progress-bar {
-        background-color: rgb(0, 120, 212);
-        border-radius: 10px;
-        height: 2px;
-    }
-
-    #bit-bswup-reload {
-        display: none;
-        margin-bottom: 8px;
-    }
-
-    #bit-bswup-assets {
-        font-size: 10px;
-        overflow: auto;
-        height: 50vh;
-        text-align: left;
-    }
-</style>
-
 <div id="bit-bswup">
-    <div class="bit-bswup-container">
-        <p class="bit-bswup-title">New version is available</p>
-        <p class="bit-bswup-description">Downloading updates, please wait...</p>
-        <div class="bit-bswup-progress">
-            <div id="bit-bswup-progress-bar" style="width: 0%"></div>
+    @if (ChildContent is not null) 
+    {
+        @ChildContent
+    }
+    else 
+    {
+        <div class="bit-bswup-container">
+            <p class="bit-bswup-title">New version is available</p>
+            <p class="bit-bswup-description">Downloading updates, please wait...</p>
+            <div class="bit-bswup-progress">
+                <div id="bit-bswup-progress-bar" style="width: 0%"></div>
+            </div>
+            <p id="bit-bswup-percent">0 %</p>
+            <button id="bit-bswup-reload">Reload</button>
+            <ul id="bit-bswup-assets" style="display: @(ShowAssets ? "block" : "none");"></ul>
         </div>
-        <p id="bit-bswup-percent">0 %</p>
-        <button id="bit-bswup-reload">Reload</button>
-        <ul id="bit-bswup-assets" style="display: @(ShowAssets ? "block" : "none");"></ul>
-    </div>
-    <img style="display: none" src="" 
-         onerror="startBswupProgress(@(AutoReload ? "true" : "false"), @(ShowLogs ? "true" : "false"), @(ShowAssets ? "true" : "false"), '@(AppContainer)')">
+    }
+    <img style="display: none" src=""
+         onerror="startBswupProgress(@(AutoReload ? "true" : "false"), @(ShowLogs ? "true" : "false"), @(ShowAssets ? "true" : "false"), '@(AppContainer)', @(HideApp ? "true" : "false"))">
 </div>
