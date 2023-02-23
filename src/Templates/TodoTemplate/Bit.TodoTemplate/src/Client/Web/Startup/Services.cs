@@ -14,7 +14,7 @@ public static class Services
         {
             HttpClient httpClient = new(sp.GetRequiredService<AppHttpClientHandler>())
             {
-                BaseAddress = new Uri($"{sp.GetRequiredService<IConfiguration>()["ApiServerAddress"] ?? throw new InvalidOperationException("ApiServerAddress config could not be found")}")
+                BaseAddress = new Uri($"{sp.GetRequiredService<IConfiguration>().GetApiServerAddress()}")
             };
 
             return httpClient;

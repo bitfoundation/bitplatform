@@ -42,7 +42,6 @@
         <Using Include="Microsoft.AspNetCore.Components" />
         <Using Include="TodoTemplate.Client.Shared.Services.Contracts" />
         <Using Include="TodoTemplate.Client.Shared.Services.Implementations" />
-        <Using Include="Microsoft.Extensions.Configuration" />
         <Using Include="Microsoft.JSInterop" />
         <Using Include="System.Net.Http.Json" />
         <Using Include="System.Collections.Concurrent" />

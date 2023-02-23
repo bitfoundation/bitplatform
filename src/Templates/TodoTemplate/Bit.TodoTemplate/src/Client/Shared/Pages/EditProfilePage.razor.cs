@@ -28,8 +28,8 @@ public partial class EditProfilePage
 
             var access_token = await StateService.GetValue($"{nameof(EditProfilePage)}-access_token", AuthTokenProvider.GetAcccessTokenAsync);
 
-            _profileImageUploadUrl = $"{GetApiServerAddress()}Attachment/UploadProfileImage?access_token={access_token}";
-            _profileImageUrl = $"{GetApiServerAddress()}Attachment/GetProfileImage?access_token={access_token}";
+            _profileImageUploadUrl = $"{Configuration.GetApiServerAddress()}Attachment/UploadProfileImage?access_token={access_token}";
+            _profileImageUrl = $"{Configuration.GetApiServerAddress()}Attachment/GetProfileImage?access_token={access_token}";
             _profileImageRemoveUrl = $"Attachment/RemoveProfileImage?access_token={access_token}";
         }
         finally

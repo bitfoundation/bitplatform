@@ -65,7 +65,6 @@
         <Using Include="Microsoft.JSInterop" />
         <Using Include="Microsoft.AspNetCore.Components" />
         <Using Include="Microsoft.AspNetCore.Authorization" />
-        <Using Include="Microsoft.Extensions.Configuration" />
         <Using Include="Microsoft.AspNetCore.Components.Authorization" />
         <Using Include="Bit.BlazorUI" />
         <Using Include="BlazorDual.Web.Components" />

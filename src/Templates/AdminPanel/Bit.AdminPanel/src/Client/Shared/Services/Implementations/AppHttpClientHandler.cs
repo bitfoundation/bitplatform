@@ -34,7 +34,7 @@ public partial class AppHttpClientHandler : HttpClientHandler
             throw new UnauthorizedException();
         }
 
-        if (!response.IsSuccessStatusCode && response.Content.Headers.ContentType?.MediaType?.Contains("application/json", StringComparison.InvariantCultureIgnoreCase) is true)
+        if (response.IsSuccessStatusCode is false && response.Content.Headers.ContentType?.MediaType?.Contains("application/json", StringComparison.InvariantCultureIgnoreCase) is true)
         {
             if (response.Headers.TryGetValues("Request-ID", out IEnumerable<string>? values) && values is not null && values.Any())
             {

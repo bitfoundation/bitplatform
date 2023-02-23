@@ -166,9 +166,4 @@ public partial class AppComponentBase : ComponentBase
             }
         };
     }
-
-    protected string GetApiServerAddress()
-    {
-        return Configuration.GetValue<string>("ApiServerAddress") ?? throw new InvalidOperationException("ApiServerAddress config could not be found");
-    }
 }
