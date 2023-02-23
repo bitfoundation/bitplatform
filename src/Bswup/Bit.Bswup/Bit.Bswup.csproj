@@ -35,8 +35,4 @@
         <None Include="bundleconfig.json" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Styles\" />
-    </ItemGroup>
-
 </Project>
