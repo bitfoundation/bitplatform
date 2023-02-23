@@ -4,8 +4,7 @@
 <PageTitle>@Localizer[nameof(AppStrings.EditProfileTitle)]</PageTitle>
 
 <div class="page-container">
-    @if (string.IsNullOrEmpty(_editProfileMessage) is false)
-    {
+    @if (string.IsNullOrEmpty(_editProfileMessage) is false) {
         <BitMessageBar MessageBarType="@_editProfileMessageType" OnDismiss="() => _editProfileMessage = null">@_editProfileMessage</BitMessageBar>
     }
 
@@ -13,14 +12,12 @@
         <BitIconButton Class="back-btn" OnClick=@GoBack IconName="BitIconName.Back" Title="Back" />
         <h1 class="page-title">@Localizer[nameof(AppStrings.EditProfileTitle)]</h1>
     </div>
-    @if (_isLoadingData)
-    {
+    @if (_isLoadingData) {
         <div class="loading-container">
             <BitSpinner Size="BitSpinnerSize.Large"></BitSpinner>
         </div>
     }
-    else
-    {
+    else {
         <div class="form-profile-container">
             <BitPersona ImageUrl="@(_user.ProfileImageName is not null ? $"{_profileImageUrl}&file={_user.ProfileImageName}" : null)"
                         Size=@BitPersonaSize.Size72
@@ -30,8 +27,7 @@
         </div>
 
         <div class="form-input-container">
-            @if (_user.ProfileImageName is not null)
-            {
+            @if (_user.ProfileImageName is not null) {
                 <BitLoadingButton IsLoading="_isRemoving"
                                   ButtonStyle="BitButtonStyle.Standard"
                                   OnClick="RemoveProfileImage">
@@ -70,11 +66,13 @@
             </div>
 
             <div class="form-choice-container">
-                <BitRadioButtonGroup Label="@Localizer[nameof(AppStrings.Gender)]" @bind-Value="_userToEdit.GenderAsString">
-                    <BitRadioButtonOption Value="@Gender.Male.ToString()" Text="@Localizer[nameof(AppStrings.GenderMale)]" AriaLabel="@Localizer[nameof(AppStrings.GenderMale)]" />
-                    <BitRadioButtonOption Value="@Gender.Female.ToString()" Text="@Localizer[nameof(AppStrings.GenderFemale)]" AriaLabel="@Localizer[nameof(AppStrings.GenderFemale)]" />
-                    <BitRadioButtonOption Value="@Gender.Custom.ToString()" Text="@Localizer[nameof(AppStrings.GenderCustom)]" AriaLabel="@Localizer[nameof(AppStrings.GenderCustom)]" />
-                </BitRadioButtonGroup>
+                <BitChoiceGroup TItem="BitChoiceGroupOption<string?>" TValue="string"
+                                Label="@Localizer[nameof(AppStrings.Gender)]"
+                                @bind-Value="_userToEdit.GenderAsString">
+                    <BitChoiceGroupOption Value="@Gender.Male.ToString()" Text="@Localizer[nameof(AppStrings.GenderMale)]" AriaLabel="@Localizer[nameof(AppStrings.GenderMale)]" />
+                    <BitChoiceGroupOption Value="@Gender.Female.ToString()" Text="@Localizer[nameof(AppStrings.GenderFemale)]" AriaLabel="@Localizer[nameof(AppStrings.GenderFemale)]" />
+                    <BitChoiceGroupOption Value="@Gender.Custom.ToString()" Text="@Localizer[nameof(AppStrings.GenderCustom)]" AriaLabel="@Localizer[nameof(AppStrings.GenderCustom)]" />
+                </BitChoiceGroup>
                 <ValidationMessage For="@(() => _userToEdit.Gender)" />
             </div>
 
