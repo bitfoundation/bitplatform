@@ -68,7 +68,7 @@ public partial class AddOrEditCategoryPage
         {
             _saveMessageType = BitMessageBarType.Error;
 
-            _saveMessage = string.Join(Environment.NewLine, e.Payload.Details.SelectMany(d => d.Messages).Select(e => e.Message));
+            _saveMessage = string.Join(Environment.NewLine, e.Payload.Details.SelectMany(d => d.Errors).Select(e => e.Message));
         }
         catch (KnownException e)
         {

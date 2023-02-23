@@ -25,13 +25,13 @@ public class ResourceValidationException : RestException
     }
 
     public ResourceValidationException(string resourceTypeName, (string propName, LocalizedString[] errorMessages)[] details)
-        : this(new ResourceValidationExceptionPayload()
+        : this(new ErrorResourcePayload()
         {
             ResourceTypeName = resourceTypeName,
-            Details = details.Select(propErrors => new ResourceValidationExceptionPropertyErrors
+            Details = details.Select(propErrors => new PropertyErrorResourceCollection
             {
-                Property = propErrors.propName,
-                Messages = propErrors.errorMessages.Select(e => new ResourceValidationExceptionPropertyError()
+                Name = propErrors.propName,
+                Errors = propErrors.errorMessages.Select(e => new ErrorResource()
                 {
                     Key = e.Name,
                     Message = e.Value
@@ -42,13 +42,13 @@ public class ResourceValidationException : RestException
 
     }
 
-    public ResourceValidationException(ResourceValidationExceptionPayload payload)
+    public ResourceValidationException(ErrorResourcePayload payload)
         : this(message: nameof(ResourceNotFoundException), payload)
     {
 
     }
 
-    public ResourceValidationException(string message, ResourceValidationExceptionPayload payload)
+    public ResourceValidationException(string message, ErrorResourcePayload payload)
         : base(message)
     {
         Payload = payload;
@@ -59,7 +59,7 @@ public class ResourceValidationException : RestException
     {
     }
 
-    public ResourceValidationExceptionPayload Payload { get; set; } = new ResourceValidationExceptionPayload();
+    public ErrorResourcePayload Payload { get; set; } = new ErrorResourcePayload();
 
     public override HttpStatusCode StatusCode => HttpStatusCode.BadRequest;
 }

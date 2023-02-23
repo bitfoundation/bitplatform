@@ -1,6 +1,6 @@
 ﻿namespace BlazorDual.Shared.Exceptions;
 
-public class RestExceptionPayload
+public class RestErrorInfo
 {
     public string? ExceptionType { get; set; }
 
@@ -8,5 +8,5 @@ public class RestExceptionPayload
 
     public string? Message { get; set; }
 
-    public ResourceValidationExceptionPayload Payload { get; set; } = new();
+    public ErrorResourcePayload Payload { get; set; } = new();
 }
