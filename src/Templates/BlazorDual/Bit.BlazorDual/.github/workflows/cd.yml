@@ -38,6 +38,13 @@ jobs:
     - name: Restore workloads
       run: dotnet workload restore src/BlazorDual.Web/BlazorDual.Web.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}"
       
+    - name: Update appsettings.json api server address
+      uses: microsoft/variable-substitution@v1 
+      with:
+        files: 'src/Client/Shared/appsettings.json'
+      env:
+        ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
+
     - name: Build (To generate CSS/JS files)
       run: dotnet build src/BlazorDual.Api/BlazorDual.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release
 

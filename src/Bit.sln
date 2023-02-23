@@ -297,6 +297,22 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorDual.Shared", "Templa
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorDual.Web", "Templates\BlazorDual\Bit.BlazorDual\src\BlazorDual.Web\BlazorDual.Web.csproj", "{A9A5D4CF-F2A5-4088-93D2-7E5A28580B53}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".azure-devops", ".azure-devops", "{51FC3C7A-E553-4C98-B8EF-CD8DBEF08154}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{20C9DA20-C7DA-4842-9D90-085B57DEA880}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{677B433E-6E3F-4CEF-9EA3-2190D1EAD69C}"
+	ProjectSection(SolutionItems) = preProject
+		Templates\BlazorDual\Bit.BlazorDual\.github\workflows\cd.yml = Templates\BlazorDual\Bit.BlazorDual\.github\workflows\cd.yml
+		Templates\BlazorDual\Bit.BlazorDual\.github\workflows\ci.yml = Templates\BlazorDual\Bit.BlazorDual\.github\workflows\ci.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{B1EECB57-EEA6-4316-BC13-E6D9D6B297BE}"
+	ProjectSection(SolutionItems) = preProject
+		Templates\BlazorDual\Bit.BlazorDual\.azure-devops\workflows\cd.yml = Templates\BlazorDual\Bit.BlazorDual\.azure-devops\workflows\cd.yml
+		Templates\BlazorDual\Bit.BlazorDual\.azure-devops\workflows\ci.yml = Templates\BlazorDual\Bit.BlazorDual\.azure-devops\workflows\ci.yml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1392,6 +1408,10 @@ Global
 		{FCD49D2B-5A28-4919-A334-A3F9E46B7495} = {C6624DE1-7886-444E-BB96-380B807593BD}
 		{51F3127E-6848-468F-A133-F4C67BEC0E24} = {C6624DE1-7886-444E-BB96-380B807593BD}
 		{A9A5D4CF-F2A5-4088-93D2-7E5A28580B53} = {C6624DE1-7886-444E-BB96-380B807593BD}
+		{51FC3C7A-E553-4C98-B8EF-CD8DBEF08154} = {C6624DE1-7886-444E-BB96-380B807593BD}
+		{20C9DA20-C7DA-4842-9D90-085B57DEA880} = {C6624DE1-7886-444E-BB96-380B807593BD}
+		{677B433E-6E3F-4CEF-9EA3-2190D1EAD69C} = {20C9DA20-C7DA-4842-9D90-085B57DEA880}
+		{B1EECB57-EEA6-4316-BC13-E6D9D6B297BE} = {51FC3C7A-E553-4C98-B8EF-CD8DBEF08154}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DA107107-478F-477A-872B-787CEA7DD9B8}

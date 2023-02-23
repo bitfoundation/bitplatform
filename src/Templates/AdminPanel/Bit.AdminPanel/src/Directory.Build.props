@@ -60,6 +60,7 @@
         <Using Include="AdminPanel.Shared.Exceptions" />
         <Using Include="AdminPanel.Shared.Resources" />
         <Using Include="Microsoft.Extensions.Localization" />
+        <Using Include="Microsoft.Extensions.Configuration" />
         <Using Include="AdminPanel.Shared.Infra" />
     </ItemGroup>
     

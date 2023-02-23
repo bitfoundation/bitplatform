@@ -45,7 +45,6 @@
 
     <ItemGroup>
 
-        <Using Include="Microsoft.Extensions.Configuration" />
         <Using Include="AdminPanel.Client.Shared.Components" />
         <Using Include="AdminPanel.Client.Shared.Services.Implementations" />
         <Using Include="AdminPanel.Client.Shared.Services.Contracts" />

@@ -60,6 +60,7 @@
         <Using Include="TodoTemplate.Shared.Exceptions" />
         <Using Include="TodoTemplate.Shared.Resources" />
         <Using Include="Microsoft.Extensions.Localization" />
+        <Using Include="Microsoft.Extensions.Configuration" />
         <Using Include="TodoTemplate.Shared.Infra" />
     </ItemGroup>
 

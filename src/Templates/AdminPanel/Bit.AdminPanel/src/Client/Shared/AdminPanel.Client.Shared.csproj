@@ -13,8 +13,8 @@
         <Content Remove="compilerconfig.json" />
         <None Include="compilerconfig.json" />
         <None Include="Shared\LoadingComponent.razor.scss" />
-        <Content Remove="wwwroot\appsettings.json" />
-        <EmbeddedResource Include="wwwroot\appsettings.json" />
+        <Content Remove="appsettings.json" />
+        <EmbeddedResource Include="appsettings.json" />
 
         <PackageReference Include="Bit.BlazorUI" Version="4.9.6-pre-03" />
         <PackageReference Include="Bit.BlazorUI.Charts" Version="4.9.6-pre-03" />
@@ -42,7 +42,6 @@
         <Using Include="Microsoft.AspNetCore.Components" />
         <Using Include="AdminPanel.Client.Shared.Services.Contracts" />
         <Using Include="AdminPanel.Client.Shared.Services.Implementations" />
-        <Using Include="Microsoft.Extensions.Configuration" />
         <Using Include="Microsoft.JSInterop" />
         <Using Include="System.Net.Http.Json" />
         <Using Include="System.Collections.Concurrent" />

@@ -56,7 +56,7 @@ public partial class NavMenu : IDisposable
             await HttpClient.GetFromJsonAsync("User/GetCurrentUser", AppJsonContext.Default.UserDto)) ?? new();
 
         var access_token = await StateService.GetValue($"{nameof(NavMenu)}-access_token", AuthTokenProvider.GetAcccessTokenAsync);
-        _profileImageUrlBase = $"{GetBaseUrl()}Attachment/GetProfileImage?access_token={access_token}&file=";
+        _profileImageUrlBase = $"{Configuration.GetApiServerAddress()}Attachment/GetProfileImage?access_token={access_token}&file=";
 
         SetProfileImageUrl();
     }
@@ -64,15 +64,6 @@ public partial class NavMenu : IDisposable
     private void SetProfileImageUrl()
     {
         _profileImageUrl = _user.ProfileImageName is not null ? _profileImageUrlBase + _user.ProfileImageName : null;
-    }
-
-    private string GetBaseUrl()
-    {
-#if BlazorWebAssembly
-        return "/api/";
-#else
-        return Configuration.GetValue<string>("ApiServerAddress") ?? string.Empty;
-#endif
     }
 
     private async Task HandleOnItemClick(BitNavItem item)

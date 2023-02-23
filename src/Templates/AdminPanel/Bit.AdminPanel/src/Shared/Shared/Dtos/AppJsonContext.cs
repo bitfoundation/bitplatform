@@ -25,7 +25,7 @@ namespace AdminPanel.Shared.Dtos;
 [JsonSerializable(typeof(SignInResponseDto))]
 [JsonSerializable(typeof(SignUpRequestDto))]
 [JsonSerializable(typeof(EditUserDto))]
-[JsonSerializable(typeof(RestExceptionPayload))]
+[JsonSerializable(typeof(RestErrorInfo))]
 [JsonSerializable(typeof(EmailConfirmedRequestDto))]
 [JsonSerializable(typeof(SendConfirmationEmailRequestDto))]
 [JsonSerializable(typeof(SendResetPasswordEmailRequestDto))]
