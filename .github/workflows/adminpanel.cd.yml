@@ -1,0 +1,304 @@
+name: AdminPanel CD
+
+# https://bitplatform.dev/admin-panel/dev-ops
+
+env:
+  WEB_APP_DEPLOYMENT_TYPE: 'DefaultDeploymentType'
+  API_SERVER_ADDRESS: 'https://adminpanel.bitplatform.dev/api/'
+  APP_SERVICE_NAME: 'app-service-ad-test'
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+
+  build_blazor_api_wasm:
+    name: build blazor api + web assembly
+    runs-on: ubuntu-latest
+
+    steps:
+    
+    - name: Checkout source code
+      uses: actions/checkout@v3
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        global-json-file: src/global.json
+
+    - name: Install wasm-tools
+      run: dotnet workload install wasm-tools
+
+    - name: Switch to blazor web assembly
+      run:  sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' src/Client/Web/AdminPanel.Client.Web.csproj
+
+    - name: Restore workloads
+      run: dotnet workload restore src/Client/Web/AdminPanel.Client.Web.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}"
+
+    - name: Update appsettings.json api server address
+      uses: microsoft/variable-substitution@v1 
+      with:
+        files: 'src/Client/Shared/appsettings.json'
+      env:
+        ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
+      
+    - name: Build (To generate CSS/JS files)
+      run: dotnet build src/Server/Api/AdminPanel.Server.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release
+
+    - name: Publish
+      run: dotnet publish src/Server/Api/AdminPanel.Server.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/api-web
+
+    - name: Build migrations bundle
+      run: |
+        dotnet tool install --global dotnet-ef --version 7.0.0
+        dotnet ef migrations bundle --self-contained -r linux-x64 --project src/Server/Api/AdminPanel.Server.Api.csproj
+
+    - name: Upload ef migrations bundle
+      uses: actions/upload-artifact@v3
+      with:
+        name: migrations-bundle
+        path: efbundle
+
+    - name: Upload api-web artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: api-web-bundle
+        path: ${{env.DOTNET_ROOT}}/api-web
+
+  deploy_blazor_api_wasm:
+    name: deploy blazor api + web assembly
+    needs: build_blazor_api_wasm
+    runs-on: ubuntu-latest
+    environment:
+      name: 'production'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+
+    steps:
+
+      - name: Retrieve api-web bundle
+        uses: actions/download-artifact@v2
+        with:
+          name: api-web-bundle
+
+      - name: Retrieve migrations bundle
+        uses: actions/download-artifact@v2
+        with:
+          name: migrations-bundle
+
+      - name: Update appsettings.json
+        uses: microsoft/variable-substitution@v1 
+        with:
+          files: 'appsettings.json'
+        env:
+          ConnectionStrings.SqlServerConnectionString: ${{ secrets.DB_CONNECTION_STRING }}
+          AppSettings.JwtSettings.IdentityCertificatePassword: ${{ secrets.API_IDENTITY_CERTIFICATE_PASSWORD }}
+
+      - name: Delete IdentityCertificate.pfx
+        run: |
+            rm IdentityCertificate.pfx
+
+      - name: Extract identity certificate from env
+        uses: timheuer/base64-to-file@v1
+        with:
+            fileDir: './'
+            fileName: 'IdentityCertificate.pfx'
+            encodedString: ${{ secrets.API_IDENTITY_CERTIFICATE_FILE_BASE64 }}
+
+      - name: Run migrations
+        run: |
+            chmod +x efbundle
+            ./efbundle
+            rm efbundle
+
+      - name: Deploy to Azure Web App
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ env.APP_SERVICE_NAME }}
+          slot-name: 'production'
+          publish-profile: ${{ secrets.AZURE_APP_SERVICE_PUBLISH_PROFILE }}
+          package: .
+
+  build_blazor_hybrid_windows:
+    name: build blazor hybrid (windows)
+    runs-on: windows-latest
+  
+    steps:
+     
+    - name: Checkout source code
+      uses: actions/checkout@v3
+     
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        global-json-file: src/global.json
+  
+    - name: Update appsettings.json api server address
+      uses: microsoft/variable-substitution@v1 
+      with:
+        files: 'src/Client/Shared/appsettings.json'
+      env:
+        ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
+  
+    - name: Restore workloads
+      run: dotnet workload restore src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-windows10.0.19041.0
+  
+    - name: Build (To generate CSS/JS files)
+      run: dotnet build src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -f net7.0-windows10.0.19041.0
+  
+    - name: Build exe
+      run: dotnet build src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -f net7.0-windows10.0.19041.0
+  
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: win-exe-bundle
+        path: src/Client/App/bin/release/net7.0-windows10.0.19041.0/win10-x86
+  
+  build_blazor_hybrid_android:
+    name: build blazor hybrid (android)
+    runs-on: windows-latest
+  
+    steps:
+     
+    - name: Checkout source code
+      uses: actions/checkout@v3
+     
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        global-json-file: src/global.json
+  
+    - name: Extract Android signing key from env
+      uses: timheuer/base64-to-file@v1
+      with:
+          fileDir: './src/Client/App/'
+          fileName: 'AdminPanel.keystore'
+          encodedString: ${{ secrets.ANDROID_RELEASE_KEYSTORE_FILE_BASE64 }}
+  
+    - name: Update appsettings.json api server address
+      uses: microsoft/variable-substitution@v1 
+      with:
+        files: 'src/Client/Shared/appsettings.json'
+      env:
+        ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
+  
+    - name: Restore workloads
+      run: dotnet workload restore src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-android
+  
+    - name: Build (To generate CSS/JS files)
+      run: dotnet build src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:RunAOTCompilation=false -f net7.0-android
+  
+    - name: Build aab
+      run: dotnet build src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="AdminPanel.keystore" -p:AndroidSigningKeyAlias=AdminPanel -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -f net7.0-android
+  
+    - name: Build apk
+      run: dotnet build src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="AdminPanel.keystore" -p:AndroidSigningKeyAlias=AdminPanel -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -f net7.0-android
+  
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: android-bundle
+        path: src/Client/App/bin/release/net7.0-android/*-Signed.*
+  
+  build_blazor_hybrid_maccatalyst:
+     name: build blazor hybrid (maccatalyst)
+     runs-on: macos-latest
+   
+     steps:
+      
+     - name: Checkout source code
+       uses: actions/checkout@v3
+      
+     - name: Setup .NET
+       uses: actions/setup-dotnet@v3
+       with:
+         global-json-file: src/global.json
+   
+     - name: Update appsettings.json api server address
+       uses: microsoft/variable-substitution@v1 
+       with:
+         files: 'src/Client/Shared/appsettings.json'
+       env:
+         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
+   
+     - name: Restore workloads
+       run: dotnet workload restore src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-maccatalyst
+   
+     - name: Build (To generate CSS/JS files)
+       run: dotnet build src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:CreatePackage=true -f net7.0-maccatalyst
+   
+     - name: Build pkg
+       run: dotnet build src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:CreatePackage=true -f net7.0-maccatalyst
+   
+     - name: Upload artifact
+       uses: actions/upload-artifact@v2
+       with:
+         name: mac-pkg-bundle
+         path: src/Client/App/bin/release/net7.0-maccatalyst/*.pkg
+  
+  build_blazor_hybrid_iOS:
+    name: build blazor hybrid (iOS)
+    runs-on: macos-12
+  
+    steps:
+     
+    - name: Checkout source code
+      uses: actions/checkout@v3
+     
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        global-json-file: src/global.json
+  
+    - name: Update appsettings.json api server address
+      uses: microsoft/variable-substitution@v1 
+      with:
+        files: 'src/Client/Shared/appsettings.json'
+      env:
+        ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
+
+    - name: Install the Apple certificate and provisioning profile
+      env:
+          BUILD_CERTIFICATE_FILE_BASE64: ${{ secrets.iOS_BUILD_CERTIFICATE_FILE_BASE64 }}
+          P12_PASSWORD: ${{ secrets.iOS_P12_PASSWORD }}
+          BUILD_PROVISION_PROFILE_FILE_BASE64: ${{ secrets.iOS_BUILD_PROVISION_PROFILE_FILE_BASE64 }}
+          KEYCHAIN_PASSWORD: ${{ secrets.iOS_KEYCHAIN_PASSWORD }}
+      run: |
+          # create variables
+          CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
+          PP_PATH=$RUNNER_TEMP/build_pp.mobileprovision
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+          # import certificate and provisioning profile from secrets
+          echo -n "$BUILD_CERTIFICATE_FILE_BASE64" | base64 --decode --output $CERTIFICATE_PATH
+          echo -n "$BUILD_PROVISION_PROFILE_FILE_BASE64" | base64 --decode --output $PP_PATH
+          # create temporary keychain
+          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          # import certificate to keychain
+          security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+          security list-keychain -d user -s $KEYCHAIN_PATH
+          # apply provisioning profile
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
+  
+    - name: Restore workloads
+      run: dotnet workload restore src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-ios
+  
+    - name: Build (To generate CSS/JS files)
+      run: dotnet build src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:RuntimeIdentifier=ios-arm64 -f net7.0-ios
+  
+    - name: Build ipa
+      run: dotnet build src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:RuntimeIdentifier=ios-arm64 -p:ArchiveOnBuild=true -f net7.0-ios
+  
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: iOS-bundle
+        path: src/Client/App/bin/release/net7.0-ios
