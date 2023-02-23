@@ -19,9 +19,13 @@
             padding: 20px;
             text-align: center;
             display: none;
+            font-family: Arial, Helvetica, sans-serif;
         }
 
         .bit-bswup-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             width: 70%;
             margin: 0 auto;
             margin-top: 45px;
@@ -39,16 +43,16 @@
 
         .bit-bswup-progress {
             border: 1px solid #ebebff;
-            background-color: #f9f9f9;
+            background-color: #eee;
             border-radius: 4px;
             width: 100%;
-            height: 21px;
+            height: 5px;
         }
 
         #bit-bswup-progress-bar {
             background-color: #538fc3;
             border-radius: 2px;
-            height: 19px;
+            height: 5px;
         }
 
         #bit-bswup-reload {
@@ -102,10 +106,10 @@
                     progressEl.style.display = 'block';
                     return console.log('installing new version:', data.version);
                 case 'installed':
-                    reloadButton.style.display = 'block';
                     console.log('new version installed:', data.version)
+                    //reloadButton.style.display = 'block';
+                    //reloadButton.onclick = data.reload;
                     // data.reload();
-                    reloadButton.onclick = data.reload;
                     return;
                 case 'progress':
                     const li = document.createElement('li');
@@ -114,6 +118,10 @@
                     const percent = Math.round(data.percent);
                     progressBar.style.width = `${percent}%`;
                     percentLabel.innerHTML = `${percent} %`;
+                    if (percent >= 100) {
+                        reloadButton.style.display = 'block';
+                        reloadButton.onclick = data.reload;
+                    }
                     return console.log('asset downloaded:', data);
                 case 'activate':
                     return console.log('new version activated:', data.version);

@@ -32,8 +32,6 @@ public partial class NavMenu
                 new BitNavItem { Text = "SplitButton", Url = "/components/split-button" },
                 new BitNavItem { Text = "CheckBox", Url = "/components/check-box" },
                 new BitNavItem { Text = "ChoiceGroup", Url = "/components/choice-group" },
-                new BitNavItem { Text = "RadioButtonGroup", Url = "/components/radio-button-group" },
-                new BitNavItem { Text = "RadioButtonList", Url = "/components/radio-button-list" },
                 new BitNavItem { Text = "DropDown", Url = "/components/drop-down" },
                 new BitNavItem { Text = "FileUpload", Url = "/components/file-upload" },
                 new BitNavItem { Text = "Label",  Url = "/components/label" },

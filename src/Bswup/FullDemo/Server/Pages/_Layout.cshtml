@@ -13,6 +13,9 @@
     <title>Bit Bswup Demo</title>
     <base href="~/" />
     <link rel="icon" href="~/favicon.ico" type="image/x-icon" asp-append-version="true">
+    <link rel="stylesheet" href="Bit.Bswup.Demo.Client.styles.css" asp-append-version="true" />
+    @*<link rel="stylesheet" href="_content/Bit.Bswup/bit-bswup.progress.min.css" asp-append-version="true">*@
+    <script src="_content/Bit.Bswup/bit-bswup.progress.min.js" asp-append-version="true"></script>
 </head>
 <body>
 
@@ -21,16 +24,17 @@
     </div>
 
     <script src="_framework/blazor.webassembly.js" autostart="false" asp-append-version="true"></script>
-    <script src="_content/Bit.Bswup/bit-bswup.js"
+    <script src="_content/Bit.Bswup/bit-bswup.js" asp-append-version="true"
             scope="/"
             log="none"
             sw="service-worker.js"
             handler="bitBswupHandler"></script>
 
-    <component type="typeof(Bit.Bswup.BswupProgress)" render-mode="@RenderMode.Static"
-                param-AutoReload="false"
+    <component type="typeof(Bit.Bswup.Demo.Client.Shared.DemoBswupProgressBar)" render-mode="@RenderMode.WebAssemblyPrerendered" />
+    @*<component type="typeof(Bit.Bswup.BswupProgress)" render-mode="@RenderMode.Static"
+                param-AutoReload="true"
                 param-ShowAssets="false"
-                param-ShowLogs="false"
-                param-AppContainer="@("#app-container")" />
+                param-ShowLogs="true"
+                param-AppContainer="@("#app-container")" />*@
 </body>
 </html>

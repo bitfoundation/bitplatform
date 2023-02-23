@@ -1,0 +1,76 @@
+﻿/*::deep #bit-bswup {
+    display: none;
+    position: fixed;
+    left: 0;
+    bottom: 50px;
+    text-align: center;
+    width: 200px;
+    font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+}
+
+    ::deep #bit-bswup .bswup-container {
+        width: 80%;
+        margin: 0 auto;
+    }
+
+    ::deep #bit-bswup .bswup-title {
+        color: white;
+        font-size: 14px;
+        margin-bottom: 1px;
+    }
+
+    ::deep #bit-bswup .bswup-progress {
+        background-color: rgb(237, 235, 233);
+    }
+
+    ::deep #bit-bswup #bit-bswup-progress-bar {
+        background-color: rgb(0, 120, 212);
+        border-radius: 10px;
+        height: 3px;
+    }*/
+
+::deep #bit-bswup {
+    display: none;
+    position: fixed;
+    left: 50%;
+    top: 2px;
+    transform: translateX(-50%);
+    text-align: center;
+    z-index: 999999;
+    font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+}
+
+    ::deep #bit-bswup .bswup-container {
+        position: relative;
+        display: block;
+        width: 3rem;
+        height: 3rem;
+    }
+
+        ::deep #bit-bswup .bswup-container circle {
+            fill: none;
+            stroke: #e0e0e0;
+            stroke-width: 0.2rem;
+            transform-origin: 50% 50%;
+            transform: rotate(-90deg);
+        }
+
+            ::deep #bit-bswup .bswup-container circle:last-child {
+                stroke: #1b6ec2;
+                stroke-dasharray: calc(3.141 * var(--bit-bswup-percent, 0%) * 0.8), 500%;
+                transition: stroke-dasharray 0.05s ease-in-out;
+            }
+
+    ::deep #bit-bswup .bswup-progress-text {
+        position: absolute;
+        text-align: center;
+        font-weight: normal;
+        font-size: 12px;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+        ::deep #bit-bswup .bswup-progress-text::after {
+            content: var(--bit-bswup-percent-text, "");
+        }

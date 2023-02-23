@@ -32,7 +32,7 @@
 
             const autostart = blazorWasmScriptTag.attributes['autostart'];
             if (!autostart || autostart.value !== 'false') {
-                warn('no "autostart=false" found on blazor script tag!');
+                warn('no "autostart=false" found on the blazor script tag!');
                 return;
             }
 
@@ -59,7 +59,7 @@
             options.handler = (window[handlerName] || options.handler) as (...args: any[]) => void;
 
             const blazorScriptAttribute = bitBupScript.attributes['blazorScript'];
-            options.log = (blazorScriptAttribute && blazorScriptAttribute.value) || options.blazorScript;
+            options.blazorScript = (blazorScriptAttribute && blazorScriptAttribute.value) || options.blazorScript;
 
             if (!options.handler || typeof options.handler !== 'function') {
                 console.warn('BitBup: progress handler not found or is not a function!');
