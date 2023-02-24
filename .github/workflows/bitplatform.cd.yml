@@ -33,23 +33,23 @@ jobs:
       run: dotnet workload install wasm-tools
 
     - name: Switch to blazor web assembly
-      run:  sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' src/Websites/Platform/Bit.WebSites.Platform/Web/Bit.Websites.Platform.Web.csproj
+      run:  sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' src/Websites/Platform/Bit.Websites.Platform/Web/Bit.Websites.Platform.Web.csproj
 
     - name: Restore workloads
-      run: dotnet workload restore src/Websites/Platform/Bit.WebSites.Platform/Web/Bit.Websites.Platform.Web.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}"
+      run: dotnet workload restore src/Websites/Platform/Bit.Websites.Platform/Web/Bit.Websites.Platform.Web.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}"
 
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
       with:
-        files: 'src/Websites/Platform/Bit.WebSites.Platform/Web/appsettings.json'
+        files: 'src/Websites/Platform/Bit.Websites.Platform/Web/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
       
     - name: Build (To generate CSS/JS files)
-      run: dotnet build src/Websites/Platform/Bit.WebSites.Platform/Api/Bit.Websites.Platform.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release -p:MultilingualEnabled=true
+      run: dotnet build src/Websites/Platform/Bit.Websites.Platform/Api/Bit.Websites.Platform.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release -p:MultilingualEnabled=true
 
     - name: Publish
-      run: dotnet publish src/Websites/Platform/Bit.WebSites.Platform/Api/Bit.Websites.Platform.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release -p:MultilingualEnabled=true --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/api-web
+      run: dotnet publish src/Websites/Platform/Bit.Websites.Platform/Api/Bit.Websites.Platform.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release -p:MultilingualEnabled=true --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/api-web
 
     - name: Upload api-web artifact
       uses: actions/upload-artifact@v3
