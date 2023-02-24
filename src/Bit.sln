@@ -112,12 +112,14 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Platform", "Platform", "{0691024C-D19B-41C0-AA76-7CBC1A875831}"
 	ProjectSection(SolutionItems) = preProject
 		Websites\Platform\Directory.Build.props = Websites\Platform\Directory.Build.props
+		Websites\Platform\global.json = Websites\Platform\global.json
 		Websites\Platform\README.md = Websites\Platform\README.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sales", "Sales", "{9FBD6994-1614-454B-9F04-D5F282405E9E}"
 	ProjectSection(SolutionItems) = preProject
 		Websites\Sales\Directory.Build.props = Websites\Sales\Directory.Build.props
+		Websites\Sales\global.json = Websites\Sales\global.json
 		Websites\Sales\README.md = Websites\Sales\README.md
 	EndProjectSection
 EndProject
