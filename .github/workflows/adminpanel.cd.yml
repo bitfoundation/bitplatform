@@ -115,6 +115,9 @@ jobs:
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
   
+    - name: Install Maui
+      run: dotnet workload install maui
+
     - name: Restore workloads
       run: dotnet workload restore src/Templates/AdminPanel/Bit.AdminPanel/src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-windows10.0.19041.0
   
@@ -158,6 +161,9 @@ jobs:
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
   
+    - name: Install Maui
+      run: dotnet workload install maui
+
     - name: Restore workloads
       run: dotnet workload restore src/Templates/AdminPanel/Bit.AdminPanel/src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-android
   
