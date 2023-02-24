@@ -165,7 +165,7 @@ jobs:
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
         with:
-          app-name: 'app-service-td-test'
+          app-name: 'app-service-pwa-td-test'
           slot-name: 'production'
           publish-profile: ${{ secrets.TODO_PWA_AZURE_APP_SERVICE_PUBLISH_PROFILE }}
           package: .
