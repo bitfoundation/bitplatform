@@ -60,7 +60,7 @@ jobs:
 
   deploy_blazor_api_wasm_ssr:
     name: deploy blazor api + web assembly (ssr)
-    needs: build_blazor_api_wasm
+    needs: build_blazor_api_wasm_ssr
     runs-on: ubuntu-latest
     environment:
       name: 'production'
@@ -137,7 +137,7 @@ jobs:
 
   deploy_blazor_api_wasm_pwa:
     name: deploy blazor api + web assembly
-    needs: build_blazor_api_wasm
+    needs: build_blazor_api_wasm_pwa
     runs-on: ubuntu-latest
     environment:
       name: 'production'
