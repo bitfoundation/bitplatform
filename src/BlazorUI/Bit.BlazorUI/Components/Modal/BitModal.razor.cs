@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-public partial class BitModal
+public partial class BitModal : IDisposable
 {
     protected override bool UseVisual => false;
 
@@ -8,9 +8,11 @@ public partial class BitModal
     private bool isOpen;
 
 
-    private bool _isAlertRole;
+    private bool _disposed;
     private int _offsetTop;
+    private bool _isAlertRole;
     private bool _internalIsOpen;
+    private string _containerId = default!;
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
@@ -32,7 +34,12 @@ public partial class BitModal
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// Determines the ARIA role of the dialog (alertdialog/dialog). If this is set, it will override the ARIA role determined by IsBlocking and IsModeless.
+    /// The CSS selector of the drag element. by default it's the Modal container.
+    /// </summary>
+    [Parameter] public string? DragElementSelector { get; set; }
+
+    /// <summary>
+    /// Determines the ARIA role of the Modal (alertdialog/dialog). If this is set, it will override the ARIA role determined by IsBlocking and IsModeless.
     /// </summary>
     [Parameter]
     public bool? IsAlert
@@ -45,17 +52,22 @@ public partial class BitModal
     }
 
     /// <summary>
-    /// Whether the dialog can be light dismissed by clicking outside the dialog (on the overlay).
+    /// Whether the modal can be light dismissed by clicking outside the Modal (on the overlay).
     /// </summary>
     [Parameter] public bool IsBlocking { get; set; }
 
     /// <summary>
-    /// Whether the dialog should be modeless (e.g. not dismiss when focusing/clicking outside of the dialog). if true: IsBlocking is ignored, there will be no overlay.
+    /// Whether the Modal can be dragged around.
+    /// </summary>
+    [Parameter] public bool IsDraggable { get; set; }
+
+    /// <summary>
+    /// Whether the Modal should be modeless (e.g. not dismiss when focusing/clicking outside of the Modal). if true: IsBlocking is ignored, there will be no overlay.
     /// </summary>
     [Parameter] public bool IsModeless { get; set; }
 
     /// <summary>
-    /// Whether the dialog is displayed.
+    /// Whether the Modal is displayed.
     /// </summary>
     [Parameter]
     public bool IsOpen
@@ -108,24 +120,48 @@ public partial class BitModal
         StyleBuilder.Register(() => _offsetTop > 0 ? $"top:{_offsetTop}px" : "");
     }
 
+    protected override Task OnInitializedAsync()
+    {
+        _containerId = $"BitModal-{UniqueId}-Container";
+
+        return base.OnInitializedAsync();
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
 
-        if (_internalIsOpen == IsOpen) return;
+        if (_internalIsOpen != IsOpen)
+        {
+            _internalIsOpen = IsOpen;
 
-        _internalIsOpen = IsOpen;
+            if (IsOpen)
+            {
+                if (IsDraggable)
+                {
+                    _ = _js.SetupDragDrop(_containerId, GetDragElementSelector());
+                }
+                else
+                {
+                    _ = _js.RemoveDragDrop(_containerId, GetDragElementSelector());
+                }
+            }
+            else
+            {
+                _ = _js.RemoveDragDrop(_containerId, GetDragElementSelector());
+            }
 
-        _offsetTop = 0;
+            _offsetTop = 0;
 
-        if (AutoToggleScroll is false) return;
+            if (AutoToggleScroll is false) return;
 
-        _offsetTop = await _js.ToggleModalScroll(ScrollerSelector, IsOpen);
+            _offsetTop = await _js.ToggleModalScroll(ScrollerSelector, IsOpen);
 
-        if (AbsolutePosition is false) return;
+            if (AbsolutePosition is false) return;
 
-        StyleBuilder.Reset();
-        StateHasChanged();
+            StyleBuilder.Reset();
+            StateHasChanged();
+        }
     }
 
     private void CloseModal(MouseEventArgs e)
@@ -156,4 +192,22 @@ public partial class BitModal
 
         _ => $"center",
     };
+
+    private string GetDragElementSelector() => DragElementSelector ?? $"#{_containerId}";
+
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_disposed || disposing is false) return;
+
+        _ = _js.RemoveDragDrop(_containerId, GetDragElementSelector());
+
+        _disposed = true;
+    }
 }
