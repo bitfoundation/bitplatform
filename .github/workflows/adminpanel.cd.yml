@@ -29,29 +29,29 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-        global-json-file: src/global.json
+        global-json-file: src/Templates/AdminPanel/Bit.AdminPanel/src/global.json
 
     - name: Install wasm-tools
       run: dotnet workload install wasm-tools
 
     - name: Switch to blazor web assembly
-      run:  sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' src/Client/Web/AdminPanel.Client.Web.csproj
+      run:  sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' src/Templates/AdminPanel/Bit.AdminPanel/src/Client/Web/AdminPanel.Client.Web.csproj
 
     - name: Restore workloads
-      run: dotnet workload restore src/Client/Web/AdminPanel.Client.Web.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}"
+      run: dotnet workload restore src/Templates/AdminPanel/Bit.AdminPanel/src/Client/Web/AdminPanel.Client.Web.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}"
 
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
       with:
-        files: 'src/Client/Shared/appsettings.json'
+        files: 'src/Templates/AdminPanel/Bit.AdminPanel/src/Client/Shared/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
       
     - name: Build (To generate CSS/JS files)
-      run: dotnet build src/Server/Api/AdminPanel.Server.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release -p:MultilingualEnabled=true
+      run: dotnet build src/Templates/AdminPanel/Bit.AdminPanel/src/Server/Api/AdminPanel.Server.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release -p:MultilingualEnabled=true
 
     - name: Publish
-      run: dotnet publish src/Server/Api/AdminPanel.Server.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release -p:MultilingualEnabled=true --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/api-web
+      run: dotnet publish src/Templates/AdminPanel/Bit.AdminPanel/src/Server/Api/AdminPanel.Server.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release -p:MultilingualEnabled=true --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/api-web
 
     - name: Upload api-web artifact
       uses: actions/upload-artifact@v3
@@ -73,14 +73,6 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: api-web-bundle
-
-      - name: Update appsettings.json
-        uses: microsoft/variable-substitution@v1 
-        with:
-          files: 'appsettings.json'
-        env:
-          ConnectionStrings.SqlServerConnectionString: ${{ secrets.DB_CONNECTION_STRING }}
-          AppSettings.JwtSettings.IdentityCertificatePassword: ${{ secrets.API_IDENTITY_CERTIFICATE_PASSWORD }}
 
       - name: Delete IdentityCertificate.pfx
         run: |
@@ -114,29 +106,29 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-        global-json-file: src/global.json
+        global-json-file: src/Templates/AdminPanel/Bit.AdminPanel/src/global.json
   
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
       with:
-        files: 'src/Client/Shared/appsettings.json'
+        files: 'src/Templates/AdminPanel/Bit.AdminPanel/src/Client/Shared/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
   
     - name: Restore workloads
-      run: dotnet workload restore src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-windows10.0.19041.0
+      run: dotnet workload restore src/Templates/AdminPanel/Bit.AdminPanel/src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-windows10.0.19041.0
   
     - name: Build (To generate CSS/JS files)
-      run: dotnet build src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -p:MultilingualEnabled=true -f net7.0-windows10.0.19041.0
+      run: dotnet build src/Templates/AdminPanel/Bit.AdminPanel/src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -p:MultilingualEnabled=true -f net7.0-windows10.0.19041.0
   
     - name: Build exe
-      run: dotnet build src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -p:MultilingualEnabled=true -f net7.0-windows10.0.19041.0
+      run: dotnet build src/Templates/AdminPanel/Bit.AdminPanel/src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -p:MultilingualEnabled=true -f net7.0-windows10.0.19041.0
   
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
         name: win-exe-bundle
-        path: src/Client/App/bin/release/net7.0-windows10.0.19041.0/win10-x86
+        path: src/Templates/AdminPanel/Bit.AdminPanel/src/Client/App/bin/release/net7.0-windows10.0.19041.0/win10-x86
   
   build_blazor_hybrid_android:
     name: build blazor hybrid (android)
@@ -150,39 +142,39 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-        global-json-file: src/global.json
+        global-json-file: src/Templates/AdminPanel/Bit.AdminPanel/src/global.json
   
     - name: Extract Android signing key from env
       uses: timheuer/base64-to-file@v1
       with:
-          fileDir: './src/Client/App/'
+          fileDir: './src/Templates/AdminPanel/Bit.AdminPanel/src/Client/App/'
           fileName: 'AdminPanel.keystore'
           encodedString: ${{ secrets.ANDROID_RELEASE_KEYSTORE_FILE_BASE64 }}
   
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
       with:
-        files: 'src/Client/Shared/appsettings.json'
+        files: 'src/Templates/AdminPanel/Bit.AdminPanel/src/Client/Shared/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
   
     - name: Restore workloads
-      run: dotnet workload restore src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-android
+      run: dotnet workload restore src/Templates/AdminPanel/Bit.AdminPanel/src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-android
   
     - name: Build (To generate CSS/JS files)
-      run: dotnet build src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:RunAOTCompilation=false -p:MultilingualEnabled=true -f net7.0-android
+      run: dotnet build src/Templates/AdminPanel/Bit.AdminPanel/src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:RunAOTCompilation=false -p:MultilingualEnabled=true -f net7.0-android
   
     - name: Build aab
-      run: dotnet build src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="AdminPanel.keystore" -p:AndroidSigningKeyAlias=AdminPanel -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:MultilingualEnabled=true -f net7.0-android
+      run: dotnet build src/Templates/AdminPanel/Bit.AdminPanel/src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="AdminPanel.keystore" -p:AndroidSigningKeyAlias=AdminPanel -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:MultilingualEnabled=true -f net7.0-android
   
     - name: Build apk
-      run: dotnet build src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="AdminPanel.keystore" -p:AndroidSigningKeyAlias=AdminPanel -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:MultilingualEnabled=true -f net7.0-android
+      run: dotnet build src/Templates/AdminPanel/Bit.AdminPanel/src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="AdminPanel.keystore" -p:AndroidSigningKeyAlias=AdminPanel -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:MultilingualEnabled=true -f net7.0-android
   
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
         name: android-bundle
-        path: src/Client/App/bin/release/net7.0-android/*-Signed.*
+        path: src/Templates/AdminPanel/Bit.AdminPanel/src/Client/App/bin/release/net7.0-android/*-Signed.*
   
   build_blazor_hybrid_maccatalyst:
      name: build blazor hybrid (maccatalyst)
@@ -196,26 +188,26 @@ jobs:
      - name: Setup .NET
        uses: actions/setup-dotnet@v3
        with:
-         global-json-file: src/global.json
+         global-json-file: src/Templates/AdminPanel/Bit.AdminPanel/src/global.json
    
      - name: Update appsettings.json api server address
        uses: microsoft/variable-substitution@v1 
        with:
-         files: 'src/Client/Shared/appsettings.json'
+         files: 'src/Templates/AdminPanel/Bit.AdminPanel/src/Client/Shared/appsettings.json'
        env:
          ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
    
      - name: Restore workloads
-       run: dotnet workload restore src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-maccatalyst
+       run: dotnet workload restore src/Templates/AdminPanel/Bit.AdminPanel/src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-maccatalyst
    
      - name: Build (To generate CSS/JS files)
-       run: dotnet build src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:CreatePackage=true -p:MultilingualEnabled=true -f net7.0-maccatalyst
+       run: dotnet build src/Templates/AdminPanel/Bit.AdminPanel/src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:CreatePackage=true -p:MultilingualEnabled=true -f net7.0-maccatalyst
    
      - name: Build pkg
-       run: dotnet build src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:CreatePackage=true -p:MultilingualEnabled=true -f net7.0-maccatalyst
+       run: dotnet build src/Templates/AdminPanel/Bit.AdminPanel/src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:CreatePackage=true -p:MultilingualEnabled=true -f net7.0-maccatalyst
    
      - name: Upload artifact
        uses: actions/upload-artifact@v2
        with:
          name: mac-pkg-bundle
-         path: src/Client/App/bin/release/net7.0-maccatalyst/*.pkg
+         path: src/Templates/AdminPanel/Bit.AdminPanel/src/Client/App/bin/release/net7.0-maccatalyst/*.pkg
