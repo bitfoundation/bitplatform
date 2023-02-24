@@ -1,0 +1,168 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitInputBase<TimeSpan?>
+
+<div @ref="RootElement"
+     @attributes="HtmlAttributes"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     id="@UniqueId">
+
+    @if (LabelFragment is not null)
+    {
+        <label class="label" id="@LabelId" for="@TextFieldId">
+            @LabelFragment
+        </label>
+    }
+    else if (Label.HasValue())
+    {
+        <label class="label" id="@LabelId" for="@TextFieldId">
+            @Label
+        </label>
+    }
+
+    <div class="wrapper"
+         id="@WrapperId"
+         aria-owns="@(IsOpen ? CalloutId : null)"
+         @onclick="HandleClick">
+
+        <div class="field-grp @(AllowTextInput ? "editable-input" : null)">
+            <input @attributes="InputHtmlAttributes"
+                   id="@TextFieldId"
+                   disabled=@(IsEnabled is false)
+                   role="combobox"
+                   readonly=@(AllowTextInput is false)
+                   type="text"
+                   value="@CurrentValueAsString"
+                   placeholder="@Placeholder"
+                   tabindex="@TabIndex"
+                   aria-label="@AriaLabel"
+                   aria-labelledby="@(Label.HasValue() ? LabelId : null)"
+                   aria-expanded="@(IsOpen ? "true" : "false")"
+                   aria-haspopup="dialog"
+                   aria-controls="@(IsOpen ? CalloutId : null)"
+                   @onfocusin="@HandleFocusIn"
+                   @onfocusout="@HandleFocusOut"
+                   @onfocus="@HandleFocus"
+                   @oninput="@HandleChange" />
+
+            @if (IconFragment is not null)
+            {
+                @IconFragment
+            }
+            else
+            {
+                <i class="bit-icon bit-icon--@IconName.GetName()" aria-hidden="true"></i>
+            }
+        </div>
+    </div>
+
+    <div class="overlay"
+         id="@OverlayId"
+         @onclick="CloseCallout">
+    </div>
+
+    <div class="callout @(IsResponsive ? "responsive" : string.Empty)" id="@CalloutId">
+        <div class="callout-main" role="dialog" @attributes=@CalloutHtmlAttributes aria-label="@PickerAriaLabel">
+            <div aria-hidden="true" tabindex="0" data-is-visible="true" style="pointer-events: none; position: fixed;"></div>
+            <div class="group"
+                 role="group"
+                 aria-label="">
+
+                <div class="toolbar">
+                    <div class="hour-minute">
+                        @if (TimeEditMode == BitTimeEditMode.Normal)
+                        {
+                            <button type="button" class="text @(_currentView == BitTimePickerDial.Hours ? string.Empty : "inactive")" @onclick="HandleOnClickHour">
+                                @GetHourString()
+                            </button>
+                            <span class="text">:</span>
+                            <button type="button" class="text @(_currentView == BitTimePickerDial.Minutes ? string.Empty : " inactive")" @onclick="HandleOnClickMinute">
+                                @GetMinuteString()
+                            </button>
+                        }
+                        else
+                        {
+                            <span class="text">@GetHourString():@GetMinuteString()</span>
+                        }
+                    </div>
+                    @if (AmPm)
+                    {
+                        <div class="am-pm">
+                            <button type="button" class="text @(IsAm() ? string.Empty : "inactive")" @onclick="HandleOnClickAm">AM</button>
+                            <button type="button" class="text @(IsAm() is false ? string.Empty : "inactive")" @onclick="HandleOnClickPm">PM</button>
+                        </div>
+                    }
+                </div>
+                <div class="clock" @onmousedown="OnMouseDown" @onmouseup="HandleOnMouseUp">
+                    <div class="pin"></div>
+                    <div class="pointer @(_isMouseDown ? string.Empty : "animation")" style="height: @GetPointerHeight(); transform: @GetPointerRotation()">
+                        <div class="thumb @GetClockPointerThumbClass()"></div>
+                    </div>
+                    @if (_currentView == BitTimePickerDial.Hours)
+                    {
+                        <div class="dial">
+                            @if (AmPm)
+                            {
+                                @*Hours from 1 to 12*@
+                                for (int i = 1; i <= 12; ++i)
+                                {
+                                    var angle = (6 - i) * 30;
+                                    <p class="number @GetNumberClass(i)" style="@GetTransformStyle(angle, 109, 0, 5)">@i</p>
+                                }
+                                for (int i = 1; i <= 12; ++i)
+                                {
+                                    var _i = i;
+                                    <div class="stick hour" style="@($"transform: rotateZ({_i * 30}deg);")" @onclick="(async () => await HandleOnClickHour(_i))" @onmouseover="(async () => await HandleOnMouseOverHour(_i))" @onclick:stopPropagation="true"></div>
+                                }
+                            }
+                            else
+                            {
+                                @*Hours from 13 to 24 (00)*@
+                                for (int i = 1; i <= 12; ++i)
+                                {
+                                    var _i = i;
+                                    var angle = (6 - _i) * 30;
+                                    <p class="number @GetNumberClass((_i + 12) % 24)" style="@GetTransformStyle(angle, 109, 0, 5)">@(((_i + 12) % 24).ToString("D2"))</p>
+                                }
+                                @*Hours from 1 to 12*@
+                                for (int i = 1; i <= 12; ++i)
+                                {
+                                    var _i = i;
+                                    var angle = (6 - _i) * 30;
+                                    <p class="number @GetNumberClass(_i)" style="@GetTransformStyle(angle, 74, 0, 40)">@(_i.ToString("D2"))</p>
+                                }
+                                for (int i = 1; i <= 12; ++i)
+                                {
+                                    var _i = i;
+                                    <div class="stick" style="@($"transform: rotateZ({_i * 30}deg);")">
+                                        <div class="inner" @onclick="(async () => await HandleOnClickHour(_i))" @onmouseover="(async () => await HandleOnMouseOverHour(_i))" @onclick:stopPropagation="true"></div>
+                                        <div class="outer" @onclick="(async () => await HandleOnClickHour((_i + 12) % 24))" @onmouseover="(async () => await HandleOnMouseOverHour((_i + 12) % 24))" @onclick:stopPropagation="true"></div>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    }
+                    else if (_currentView == BitTimePickerDial.Minutes)
+                    {
+                        <div class="dial">
+                            @*Minutes from 05 to 60 (00) - step 5*@
+                            @for (int i = 0; i < 12; ++i)
+                            {
+                                var _i = i;
+                                var angle = (6 - _i) * 30;
+                                <p class="number @GetNumberClass(_i * 5)" style="@GetTransformStyle(angle, 109, 0, 5)">@((_i * 5).ToString("D2"))</p>
+                            }
+                            @for (int i = 0; i < 60; ++i)
+                            {
+                                var _i = i;
+                                <div class="stick minute" style="@($"transform: rotateZ({_i * 6}deg);")" @onclick="(async () => await HandleOnClickMinute(_i))" @onmouseover="(async () => await HandleOnMouseOverMinute(_i))" @onclick:stopPropagation="true"></div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+            <div aria-hidden="true" tabindex="0" style="pointer-events: none; position: fixed;"></div>
+        </div>
+    </div>
+
+</div>
