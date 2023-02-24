@@ -131,37 +131,36 @@ public partial class BitModal : IDisposable
     {
         await base.OnAfterRenderAsync(firstRender);
 
-        if (_internalIsOpen != IsOpen)
-        {
-            _internalIsOpen = IsOpen;
+        if (_internalIsOpen == IsOpen) return;
 
-            if (IsOpen)
+        _internalIsOpen = IsOpen;
+
+        if (IsOpen)
+        {
+            if (IsDraggable)
             {
-                if (IsDraggable)
-                {
-                    _ = _js.SetupDragDrop(_containerId, GetDragElementSelector());
-                }
-                else
-                {
-                    _ = _js.RemoveDragDrop(_containerId, GetDragElementSelector());
-                }
+                _ = _js.SetupDragDrop(_containerId, GetDragElementSelector());
             }
             else
             {
                 _ = _js.RemoveDragDrop(_containerId, GetDragElementSelector());
             }
-
-            _offsetTop = 0;
-
-            if (AutoToggleScroll is false) return;
-
-            _offsetTop = await _js.ToggleModalScroll(ScrollerSelector, IsOpen);
-
-            if (AbsolutePosition is false) return;
-
-            StyleBuilder.Reset();
-            StateHasChanged();
         }
+        else
+        {
+            _ = _js.RemoveDragDrop(_containerId, GetDragElementSelector());
+        }
+
+        _offsetTop = 0;
+
+        if (AutoToggleScroll is false) return;
+
+        _offsetTop = await _js.ToggleModalScroll(ScrollerSelector, IsOpen);
+
+        if (AbsolutePosition is false) return;
+
+        StyleBuilder.Reset();
+        StateHasChanged();
     }
 
     private void CloseModal(MouseEventArgs e)
