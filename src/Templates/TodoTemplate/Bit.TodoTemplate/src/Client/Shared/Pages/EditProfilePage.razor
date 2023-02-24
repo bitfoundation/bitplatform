@@ -74,12 +74,13 @@
                 </div>
 
                 <div class="form-choice-container">
-                    <BitRadioButtonGroup Label="@Localizer[nameof(AppStrings.Gender)]" @bind-Value="_userToEdit.GenderAsString">
-                        <BitRadioButtonOption Value="@Gender.Male.ToString()" Text="@Localizer[nameof(AppStrings.GenderMale)]" AriaLabel="@Localizer[nameof(AppStrings.GenderMale)]"></BitRadioButtonOption>
-                        <BitRadioButtonOption Value="@Gender.Female.ToString()" Text="Famale" AriaLabel="@Localizer[nameof(AppStrings.GenderFemale)]"></BitRadioButtonOption>
-                        <BitRadioButtonOption Value="@Gender.Custom.ToString()" Text="Custom" AriaLabel="@Localizer[nameof(AppStrings.GenderCustom)]"></BitRadioButtonOption>
-                    </BitRadioButtonGroup>
-                    <ValidationMessage For="@(() => _userToEdit.Gender)" />
+                    <BitChoiceGroup TItem="BitChoiceGroupOption<string?>" TValue="string"
+                                    Label="@Localizer[nameof(AppStrings.Gender)]"
+                                    @bind-Value="_userToEdit.GenderAsString">
+                        <BitChoiceGroupOption Value="@Gender.Male.ToString()" Text="@Localizer[nameof(AppStrings.GenderMale)]" AriaLabel="@Localizer[nameof(AppStrings.GenderMale)]" />
+                        <BitChoiceGroupOption Value="@Gender.Female.ToString()" Text="@Localizer[nameof(AppStrings.GenderFemale)]" AriaLabel="@Localizer[nameof(AppStrings.GenderFemale)]" />
+                        <BitChoiceGroupOption Value="@Gender.Custom.ToString()" Text="@Localizer[nameof(AppStrings.GenderCustom)]" AriaLabel="@Localizer[nameof(AppStrings.GenderCustom)]" />
+                    </BitChoiceGroup>
                 </div>
 
                 <BitLoadingButton IsLoading="_isSaving"
