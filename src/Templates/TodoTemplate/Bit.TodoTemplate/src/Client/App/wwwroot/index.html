@@ -7,6 +7,13 @@
     <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.min.css" />
     <link href="_content/TodoTemplate.Client.Shared/TodoTemplate.Client.Shared.bundle.scp.css" rel="stylesheet" />
     <style>
+        * {
+            -webkit-user-drag: none;
+            -webkit-user-select: none;
+            overscroll-behavior: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
         html, body, #app-container {
             background: #0D2960;
             margin: 0;
@@ -139,6 +146,9 @@
     <script src="_framework/blazor.webview.js" autostart="false"></script>
     <script src="_content/Bit.BlazorUI/scripts/bit.blazorui.min.js"></script>
     <script src="_content/TodoTemplate.Client.Shared/scripts/app.js"></script>
+    <script>
+        window.addEventListener('contextmenu', (event) => event.preventDefault());
+    </script>
 
 </body>
 

@@ -1,8 +1,10 @@
 ﻿
 namespace Bit.BlazorUI;
 
-public partial class BitMenuButtonOption
+public partial class BitMenuButtonOption : IDisposable
 {
+    private bool _disposed;
+
     [CascadingParameter] protected BitMenuButton<BitMenuButtonOption> Parent { get; set; } = default!;
 
     /// <summary>
@@ -21,4 +23,26 @@ public partial class BitMenuButtonOption
     [Parameter] public string? Key { get; set; }
 
     protected override string RootElementClass => "bit-mbgo";
+
+    protected override async Task OnInitializedAsync()
+    {
+        Parent.RegisterOption(this);
+
+        await base.OnInitializedAsync();
+    }
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing is false || _disposed) return;
+
+        Parent.UnregisterOption(this);
+
+        _disposed = true;
+    }
 }

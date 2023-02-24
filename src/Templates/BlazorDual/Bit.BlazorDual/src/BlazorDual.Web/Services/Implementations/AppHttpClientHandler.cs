@@ -11,7 +11,7 @@ public partial class AppHttpClientHandler : HttpClientHandler
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        if (request.Headers.Authorization is null && OperatingSystem.IsBrowser() is false)
+        if (request.Headers.Authorization is null)
         {
             var access_token = await _tokenProvider.GetAcccessTokenAsync();
             if (access_token is not null)
@@ -32,19 +32,19 @@ public partial class AppHttpClientHandler : HttpClientHandler
             throw new UnauthorizedException();
         }
 
-        if (!response.IsSuccessStatusCode && response.Content.Headers.ContentType?.MediaType == "application/json")
+        if (response.IsSuccessStatusCode is false && response.Content.Headers.ContentType?.MediaType?.Contains("application/json", StringComparison.InvariantCultureIgnoreCase) is true)
         {
             if (response.Headers.TryGetValues("Request-ID", out IEnumerable<string>? values) && values is not null && values.Any())
             {
-                RestExceptionPayload restError = await response.Content.ReadFromJsonAsync(AppJsonContext.Default.RestExceptionPayload);
+                RestErrorInfo restError = await response.Content.ReadFromJsonAsync(AppJsonContext.Default.RestErrorInfo);
 
-                Type exceptionType = typeof(RestExceptionPayload).Assembly.GetType(restError.ExceptionType) ?? typeof(UnknownException);
+                Type exceptionType = typeof(RestErrorInfo).Assembly.GetType(restError.ExceptionType) ?? typeof(UnknownException);
 
                 var args = new List<object> { typeof(KnownException).IsAssignableFrom(exceptionType) ? new LocalizedString(restError.Key!, restError.Message!) : restError.Message };
 
                 if (exceptionType == typeof(ResourceValidationException))
                 {
-                    args.Add(restError.Details);
+                    args.Add(restError.Payload);
                 }
 
                 Exception exp = (Exception)Activator.CreateInstance(exceptionType, args.ToArray());

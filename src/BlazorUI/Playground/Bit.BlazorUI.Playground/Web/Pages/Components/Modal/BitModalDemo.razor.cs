@@ -31,6 +31,13 @@ public partial class BitModalDemo
         },
         new()
         {
+            Name = "DragElementSelector",
+            Type = "string?",
+            DefaultValue = "",
+            Description = "The CSS selector of the drag element. by default the Modal container is the drag element.",
+        },
+        new()
+        {
             Name = "IsAlert",
             Type = "bool?",
             DefaultValue = "",
@@ -42,6 +49,13 @@ public partial class BitModalDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether the dialog can be light dismissed by clicking outside the dialog (on the overlay).",
+        },
+        new()
+        {
+            Name = "IsDraggable",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the Modal can be dragged around.",
         },
         new()
         {
@@ -126,6 +140,9 @@ public partial class BitModalDemo
     private bool IsOpen4 = false;
     private bool IsOpenInPosition = false;
     private BitModalPosition position;
+    private bool IsDraggable = false;
+    private bool IsOpen5 = false;
+    private bool IsOpen6 = false;
 
     private void OpenModalInPosition(BitModalPosition positionValue)
     {
@@ -149,6 +166,7 @@ public partial class BitModalDemo
         padding: 0 24px 24px;
         overflow-y: hidden;
         line-height: 20px;
+        max-width: 960px;
     }
 </style>
 
@@ -183,22 +201,6 @@ public partial class BitModalDemo
             finibus. In augue libero, commodo vitae nisi non, sagittis convallis ante. Phasellus malesuada eleifend
             mollis. Curabitur ultricies leo ac metus venenatis elementum.
         </p>
-        <p>
-            Aenean egestas quam ut erat commodo blandit. Mauris ante nisl, pellentesque sed venenatis nec, aliquet sit
-            amet enim. Praesent vitae diam non diam aliquet tristique non ut arcu. Pellentesque et ultrices eros. Fusce
-            diam metus, mattis eu luctus nec, facilisis vel erat. Nam a lacus quis tellus gravida euismod. Nulla sed sem
-            eget tortor cursus interdum. Sed vehicula tristique ultricies. Aenean libero purus, mollis quis massa quis,
-            eleifend dictum massa. Fusce eu sapien sit amet odio lacinia placerat. Mauris varius risus sed aliquet
-            cursus. Aenean lectus magna, tincidunt sit amet sodales a, volutpat ac leo. Morbi nisl sapien, tincidunt sit
-            amet mauris quis, sollicitudin auctor est.
-        </p>
-        <p>
-            Nam id mi justo. Nam vehicula vulputate augue, ac pretium enim rutrum ultricies. Sed aliquet accumsan
-            varius. Quisque ac auctor ligula. Fusce fringilla, odio et dignissim iaculis, est lacus ultrices risus,
-            vitae condimentum enim urna eu nunc. In risus est, mattis non suscipit at, mattis ut ante. Maecenas
-            consectetur urna vel erat maximus, non molestie massa consequat. Duis a feugiat nibh. Sed a hendrerit diam,
-            a mattis est. In augue dolor, faucibus vel metus at, convallis rhoncus dui.
-        </p>
     </div>
 </BitModal>";
     private readonly string example1CSharpCode = @"
@@ -223,8 +225,10 @@ private bool IsOpen = false;";
     }
 
     .modal-body {
-        max-width: 800px;
         padding: 0 24px 24px;
+        overflow-y: hidden;
+        line-height: 20px;
+        max-width: 960px;
     }
 </style>
 
@@ -303,8 +307,10 @@ private bool IsOpen2 = false;";
     }
 
     .modal-body {
-        max-width: 800px;
         padding: 0 24px 24px;
+        overflow-y: hidden;
+        line-height: 20px;
+        max-width: 960px;
     }
 </style>
 
@@ -423,6 +429,7 @@ private void OpenModalInPosition(BitModalPosition positionValue)
         padding: 0 24px 24px;
         overflow-y: hidden;
         line-height: 20px;
+        max-width: 960px;
     }
 </style>
 <div class=""position-btn"">
@@ -438,7 +445,7 @@ private void OpenModalInPosition(BitModalPosition positionValue)
 <BitModal @bind-IsOpen=""IsOpenInPosition"" Position=""position"">
     <div class=""modal-header"">
         <span>Modal positioning</span>
-        <BitIconButton OnClick=@(()=>IsOpenInPosition=false) IconName=""BitIconName.ChromeClose"" Title=""Close"" />
+        <BitIconButton OnClick=@(() => IsOpenInPosition = false) IconName=""BitIconName.ChromeClose"" Title=""Close"" />
     </div>
     <div class=""modal-body"">
         BitModal with custom positioning. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
@@ -453,4 +460,82 @@ private void OpenModalInPosition(BitModalPosition positionValue)
     IsOpenInPosition = true;
     position = positionValue;
 }";
+
+    private readonly string example5HTMLCode = @"
+<style>
+    .position-btn {
+        display: flex;
+        flex-flow: column nowrap;
+        gap: 1rem;
+    }
+
+    .position-btn div {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .modal-header {
+        display: flex;
+        align-items: center;
+        font-size: 24px;
+        font-weight: 600;
+        border-top: 4px solid #0054C6;
+        justify-content: space-between;
+        padding: 12px 12px 14px 24px;
+    }
+
+    .modal-body {
+        padding: 0 24px 24px;
+        overflow-y: hidden;
+        line-height: 20px;
+        max-width: 960px;
+    }
+</style>
+<BitToggle Label=""Is Draggable?"" @bind-Value=""IsDraggable"" />
+<br />
+<BitButton OnClick=""() => IsOpen5 = true"">Open Modal</BitButton>
+<BitModal @bind-IsOpen=""IsOpen5"" IsDraggable=""IsDraggable"">
+    <div class=""modal-header"">
+        <span>Draggble Modal</span>
+        <BitIconButton OnClick=@(() => IsOpen5 = false) IconName=""BitIconName.ChromeClose"" Title=""Close"" />
+    </div>
+    <div class=""modal-body"">
+        <p>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+            sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+            turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+            ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+            Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+            Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+            efficitur.
+        </p>
+    </div>
+</BitModal>
+<hr style=""border-color:white"" />
+<div class=""example-desc"">Using custom drag element.</div>
+<BitButton OnClick=""() => IsOpen6 = true"">Open Modal</BitButton>
+<BitModal @bind-IsOpen=""IsOpen6"" IsDraggable=""true"" DragElementSelector="".modal-header-drag"">
+    <div class=""modal-header modal-header-drag"">
+        <span>Draggble Modal with custom drag element</span>
+        <BitIconButton OnClick=@(() => IsOpen6 = false) IconName=""BitIconName.ChromeClose"" Title=""Close"" />
+    </div>
+    <div class=""modal-body"">
+        <p>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+            sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+            turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+            ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+            Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+            Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+            efficitur.
+        </p>
+    </div>
+</BitModal>";
+    private readonly string example5CSharpCode = @"
+private bool IsDraggable = false;
+private bool IsOpen5 = false;
+private bool IsOpen6 = false;
+";
 }

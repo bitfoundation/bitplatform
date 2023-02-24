@@ -61,7 +61,7 @@
                                   DefaultSelectedKey="Overview"
                                   LinkSize="@BitPivotLinkSize.Large"
                                   HeadersOnly="true"
-                                  OnLinkClick="@(item => PivotSelectedKey = item.Key)">
+                                  OnItemClick="@(item => PivotSelectedKey = item.Key)">
                             <BitPivotItem HeaderText="Overview" Key="Overview"></BitPivotItem>
                             <BitPivotItem HeaderText="Features" Key="Features"></BitPivotItem>
                             <BitPivotItem HeaderText="Comments" Key="Comments"></BitPivotItem>
@@ -179,12 +179,6 @@
                         <BitLink Class="component-list-item" Href="/components/choice-group" title="ChoiceGroup">
                             <span>ChoiceGroup</span>
                         </BitLink>
-                        <BitLink Class="component-list-item" Href="/components/radio-button-group" title="RadioButtonGroup">
-                            <span>RadioButtonGroup</span>
-                        </BitLink>
-                        <BitLink Class="component-list-item" Href="/components/radio-button-list" title="RadioButtonList">
-                            <span>RadioButtonList</span>
-                        </BitLink>
                         <BitLink Class="component-list-item" Href="/components/drop-down" title="DropDown">
                             <span>DropDown</span>
                             <div class="components-label featured">featured</div>
@@ -281,12 +275,6 @@
                         </BitLink>
                         <BitLink Class="component-list-item" Href="/components/breadcrumb" title="Breadcrumb">
                             <span>Breadcrumb</span>
-                        </BitLink>
-                        <BitLink Class="component-list-item" Href="/components/bread-group" title="BreadGroup">
-                            <span>BreadGroup</span>
-                        </BitLink>
-                        <BitLink Class="component-list-item" Href="/components/bread-list" title="BreadList">
-                            <span>BreadList</span>
                         </BitLink>
                     </div>
                 </div>

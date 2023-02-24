@@ -27,8 +27,8 @@
 
 		<ReleaseVersion>4.9.6</ReleaseVersion>
 
-		<PackageReleaseNotes>https://github.com/bitfoundation/bitplatform/releases/tag/v-$(ReleaseVersion)-pre-02</PackageReleaseNotes>
-		<PackageVersion>$(ReleaseVersion)-pre-02</PackageVersion>
+		<PackageReleaseNotes>https://github.com/bitfoundation/bitplatform/releases/tag/v-$(ReleaseVersion)-pre-05</PackageReleaseNotes>
+		<PackageVersion>$(ReleaseVersion)-pre-05</PackageVersion>
 
 		<!-- Version -->
 		<Version Condition=" '$(Configuration)' == 'Release' ">$(ReleaseVersion).$([System.DateTime]::Now.ToString(HHmm))</Version>
@@ -37,7 +37,7 @@
 		<NeutralLanguage>en</NeutralLanguage>
 		<LangVersion>preview</LangVersion>
 		<Nullable>enable</Nullable>
-		<NoWarn>$(NoWarn);NU1605;CS1591;NU1701;NU1605;CA1303;CA2007;CA1014;CA2227</NoWarn>
+		<NoWarn>$(NoWarn);NU1605;CS1591;NU1701;NU1605;CA1303;CA2007;CA1014;CA2227;BL0007</NoWarn>
 		<!-- https://stackoverflow.com/a/46815541/2720104 -->
 		<DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
 		<EmbedAllSources>True</EmbedAllSources>

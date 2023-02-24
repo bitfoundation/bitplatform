@@ -115,7 +115,8 @@ public partial class TodoPage
         {
             var newTodoItem = new TodoItemDto { Title = _newTodoTitle, Date = DateTimeOffset.Now };
 
-            await HttpClient.PostAsJsonAsync("TodoItem/Create", newTodoItem, AppJsonContext.Default.TodoItemDto);
+            using var response = await HttpClient.PostAsJsonAsync("TodoItem/Create", newTodoItem, AppJsonContext.Default.TodoItemDto);
+            newTodoItem.Id = await response.Content.ReadFromJsonAsync<int>();
 
             _allTodoItems.Add(newTodoItem);
 

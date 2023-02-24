@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using System.Collections.Generic;
 using Bit.BlazorUI.Playground.Web.Models;
 using Bit.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
@@ -7,51 +7,276 @@ namespace Bit.BlazorUI.Playground.Web.Pages.Components.NumericTextField;
 
 public partial class BitNumericTextFieldDemo
 {
-    #region Example 1
+    private readonly List<ComponentParameter> componentParameters = new()
+    {
+        new()
+        {
+            Name = "AriaDescription",
+            Type = "string?",
+            Description = "Detailed description of the input for the benefit of screen readers.",
+        },
+        new()
+        {
+            Name = "AriaPositionInSet",
+            Type = "int?",
+            Description = "The position in the parent set (if in a set).",
+        },
+        new()
+        {
+            Name = "AriaSetSize",
+            Type = "int?",
+            Description = "The total size of the parent set (if in a set).",
+        },
+        new()
+        {
+            Name = "AriaValueNow",
+            Type = "TValue?",
+            Description = "Sets the control's aria-valuenow. Providing this only makes sense when using as a controlled component.",
+        },
+        new()
+        {
+            Name = "AriaValueText",
+            Type = "string?",
+            Description = "Sets the control's aria-valuetext.",
+        },
+        new()
+        {
+            Name = "ChangeHandler",
+            Type = "EventCallback<BitNumericTextFieldAction>",
+            Description = "",
+        },
+        new()
+        {
+            Name = "DefaultValue",
+            Type = "TValue?",
+            Description = "Initial value of the numeric text field.",
+        },
+        new()
+        {
+            Name = "DecrementAriaLabel",
+            Type = "string?",
+            Description = "Accessible label text for the decrement button (for screen reader users).",
+        },
+        new()
+        {
+            Name = "DecrementIconName",
+            Type = "BitIconName",
+            DefaultValue = "BitIconName.ChevronDownSmall",
+            Description = "Custom icon name for the decrement button.",
+        },
+        new()
+        {
+            Name = "IconName",
+            Type = "BitIconName?",
+            Description = "Icon name for an icon to display alongside the numeric text field's label.",
+        },
+        new()
+        {
+            Name = "IconAriaLabel",
+            Type = "string",
+            DefaultValue = "string.Empty",
+            Description = "The aria label of the icon for the benefit of screen readers.",
+        },
+        new()
+        {
+            Name = "IncrementAriaLabel",
+            Type = "string?",
+            Description = "Accessible label text for the increment button (for screen reader users).",
+        },
+        new()
+        {
+            Name = "IncrementIconName",
+            Type = "BitIconName",
+            DefaultValue = "BitIconName.ChevronUpSmall",
+            Description = "Custom icon name for the increment button.",
+        },
+        new()
+        {
+            Name = "Label",
+            Type = "string",
+            DefaultValue = "string.Empty",
+            Description = "Descriptive label for the numeric text field, Label displayed above the numeric text field and read by screen readers.",
+        },
+        new()
+        {
+            Name = "LabelTemplate",
+            Type = "RenderFragment?",
+            Description = "Shows the custom Label for numeric text field. If you don't call default label, ensure that you give your custom label an id and that you set the input's aria-labelledby prop to that id.",
+        },
+        new()
+        {
+            Name = "LabelPosition",
+            Type = "BitNumericTextFieldLabelPosition",
+            DefaultValue = "BitNumericTextFieldLabelPosition.Top",
+            Description = "The position of the label in regards to the numeric textfield.",
+            LinkType = LinkType.Link,
+            Href = "#labelPosition-enum"
+        },
+        new()
+        {
+            Name = "Min",
+            Type = "TValue?",
+            Description = "Min value of the numeric text field. If not provided, the numeric text field has minimum value.",
+        },
+        new()
+        {
+            Name = "Max",
+            Type = "TValue?",
+            Description = "Max value of the numeric text field. If not provided, the numeric text field has max value.",
+        },
+        new()
+        {
+            Name = "OnChange",
+            Type = "EventCallback<TValue>",
+            Description = "Callback for when the numeric text field value change.",
+        },
+        new()
+        {
+            Name = "OnFocus",
+            Type = "EventCallback<FocusEventArgs>",
+            Description = "Callback for when focus moves into the input.",
+        },
+        new()
+        {
+            Name = "OnBlur",
+            Type = "EventCallback<FocusEventArgs>",
+            Description = "Callback for when the control loses focus.",
+        },
+        new()
+        {
+            Name = "OnDecrement",
+            Type = "EventCallback<BitNumericTextFieldChangeValue<TValue>>",
+            Description = "Callback for when the decrement button or down arrow key is pressed.",
+            LinkType = LinkType.Link,
+            Href = "#Bit-NumericTextField-ChangeValue"
+        },
+        new()
+        {
+            Name = "OnIncrement",
+            Type = "EventCallback<BitNumericTextFieldChangeValue<TValue>>",
+            Description = "Callback for when the increment button or up arrow key is pressed.",
+            LinkType = LinkType.Link,
+            Href = "#Bit-NumericTextField-ChangeValue"
+        },
+        new()
+        {
+            Name = "Precision",
+            Type = "int?",
+            Description = "How many decimal places the value should be rounded to.",
+        },
+        new()
+        {
+            Name = "Placeholder",
+            Type = "string?",
+            Description = "Input placeholder text.",
+        },
+        new()
+        {
+            Name = "Step",
+            Type = "TValue?",
+            Description = "Difference between two adjacent values of the numeric text field.",
+        },
+        new()
+        {
+            Name = "Suffix",
+            Type = "string",
+            DefaultValue = "string.Empty",
+            Description = "A text is shown after the numeric text field value.",
+        },
+        new()
+        {
+            Name = "ShowArrows",
+            Type = "bool",
+            Description = "Whether to show the up/down spinner arrows (buttons).",
+        },
+        new()
+        {
+            Name = "Title",
+            Type = "string?",
+            Description = "A more descriptive title for the control, visible on its tooltip.",
+        },
+        new()
+        {
+            Name = "ValidationMessage",
+            Type = "string",
+            DefaultValue="The {0} field is not valid.",
+            Description = "The message format used for invalid values entered in the input.",
+        },
+    };
+
+    private readonly List<ComponentSubParameter> componentSubParameters = new()
+    {
+        new()
+        {
+            Id = "Bit-NumericTextField-ChangeValue",
+            Title = "BitNumericTextFieldChangeValue",
+            Parameters = new List<ComponentParameter>()
+            {
+               new()
+               {
+                   Name = "Value",
+                   Type = "T?",
+               },
+               new()
+               {
+                   Name = "MouseEventArgs",
+                   Type = "MouseEventArgs?",
+               },
+               new()
+               {
+                   Name = "KeyboardEventArgs",
+                   Type = "KeyboardEventArgs?",
+               },
+            }
+        }
+    };
+
+    private readonly List<EnumParameter> enumParameters = new()
+    {
+        new()
+        {
+            Id = "labelPosition-enum",
+            Title = "BitNumericTextFieldLabelPosition Enum",
+            Description = "",
+            EnumList = new List<EnumItem>()
+            {
+                new()
+                {
+                    Name= "Top",
+                    Description="The label shows on the top of the numeric textfield.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Left",
+                    Description="The label shows on the left side of the numeric textfield.",
+                    Value="1",
+                }
+            }
+        }
+    };
+
+
 
     private int BasicValue;
     private int DisabledValue;
     private int LabelAndIconValue;
     private int LabelLeftValue;
 
-    #endregion
-
-    #region Example 2
-
     private int LabelTemplateValue;
-
-    #endregion
-
-    #region Example 3
 
     private int SpinArrowValue;
     private int SpinArrowWithIconValue;
-
-    #endregion
-
-    #region Example 4
 
     private int MinMaxValue1;
     private int MinMaxValue2;
     private decimal MinMaxValue3;
 
-    #endregion
-
-    #region Example 5
-
     private int SuffixValue1;
     private decimal SuffixValue2;
 
-    #endregion
-
-    #region Example 6
-
     private double OneWayValue;
     private double TwoWayValue;
-
-    #endregion
-
-    #region Example 7
 
     private double ArrowsEventBindedValue;
     private double ArrowsEventReturnedValue;
@@ -83,10 +308,6 @@ public partial class BitNumericTextFieldDemo
         OnChangeCounter++;
     }
 
-    #endregion
-
-    #region Example 8
-
     private string SuccessMessage = string.Empty;
     private BitNumericTextFieldValidationModel ValidationModel = new();
 
@@ -103,251 +324,6 @@ public partial class BitNumericTextFieldDemo
         SuccessMessage = string.Empty;
     }
 
-    #endregion
-
-    private readonly List<ComponentParameter> componentParameters = new()
-    {
-        new ComponentParameter()
-        {
-            Name = "AriaDescription",
-            Type = "string?",
-            Description = "Detailed description of the input for the benefit of screen readers.",
-        },
-        new ComponentParameter()
-        {
-            Name = "AriaPositionInSet",
-            Type = "int?",
-            Description = "The position in the parent set (if in a set).",
-        },
-        new ComponentParameter()
-        {
-            Name = "AriaSetSize",
-            Type = "int?",
-            Description = "The total size of the parent set (if in a set).",
-        },
-        new ComponentParameter()
-        {
-            Name = "AriaValueNow",
-            Type = "TValue?",
-            Description = "Sets the control's aria-valuenow. Providing this only makes sense when using as a controlled component.",
-        },
-        new ComponentParameter()
-        {
-            Name = "AriaValueText",
-            Type = "string?",
-            Description = "Sets the control's aria-valuetext.",
-        },
-        new ComponentParameter()
-        {
-            Name = "ChangeHandler",
-            Type = "EventCallback<BitNumericTextFieldAction>",
-            Description = "",
-        },
-        new ComponentParameter()
-        {
-            Name = "DefaultValue",
-            Type = "TValue?",
-            Description = "Initial value of the numeric text field.",
-        },
-        new ComponentParameter()
-        {
-            Name = "DecrementAriaLabel",
-            Type = "string?",
-            Description = "Accessible label text for the decrement button (for screen reader users).",
-        },
-        new ComponentParameter()
-        {
-            Name = "DecrementIconName",
-            Type = "BitIconName",
-            DefaultValue = "BitIconName.ChevronDownSmall",
-            Description = "Custom icon name for the decrement button.",
-        },
-        new ComponentParameter()
-        {
-            Name = "IconName",
-            Type = "BitIconName?",
-            Description = "Icon name for an icon to display alongside the numeric text field's label.",
-        },
-        new ComponentParameter()
-        {
-            Name = "IconAriaLabel",
-            Type = "string",
-            DefaultValue = "string.Empty",
-            Description = "The aria label of the icon for the benefit of screen readers.",
-        },
-        new ComponentParameter()
-        {
-            Name = "IncrementAriaLabel",
-            Type = "string?",
-            Description = "Accessible label text for the increment button (for screen reader users).",
-        },
-        new ComponentParameter()
-        {
-            Name = "IncrementIconName",
-            Type = "BitIconName",
-            DefaultValue = "BitIconName.ChevronUpSmall",
-            Description = "Custom icon name for the increment button.",
-        },
-        new ComponentParameter()
-        {
-            Name = "Label",
-            Type = "string",
-            DefaultValue = "string.Empty",
-            Description = "Descriptive label for the numeric text field, Label displayed above the numeric text field and read by screen readers.",
-        },
-        new ComponentParameter()
-        {
-            Name = "LabelTemplate",
-            Type = "RenderFragment?",
-            Description = "Shows the custom Label for numeric text field. If you don't call default label, ensure that you give your custom label an id and that you set the input's aria-labelledby prop to that id.",
-        },
-        new ComponentParameter()
-        {
-            Name = "LabelPosition",
-            Type = "BitNumericTextFieldLabelPosition",
-            DefaultValue = "BitNumericTextFieldLabelPosition.Top",
-            Description = "The position of the label in regards to the numeric textfield.",
-            LinkType = LinkType.Link,
-            Href = "#labelPosition-enum"
-        },
-        new ComponentParameter()
-        {
-            Name = "Min",
-            Type = "TValue?",
-            Description = "Min value of the numeric text field. If not provided, the numeric text field has minimum value.",
-        },
-        new ComponentParameter()
-        {
-            Name = "Max",
-            Type = "TValue?",
-            Description = "Max value of the numeric text field. If not provided, the numeric text field has max value.",
-        },
-        new ComponentParameter()
-        {
-            Name = "OnChange",
-            Type = "EventCallback<TValue>",
-            Description = "Callback for when the numeric text field value change.",
-        },
-        new ComponentParameter()
-        {
-            Name = "OnFocus",
-            Type = "EventCallback<FocusEventArgs>",
-            Description = "Callback for when focus moves into the input.",
-        },
-        new ComponentParameter()
-        {
-            Name = "OnBlur",
-            Type = "EventCallback<FocusEventArgs>",
-            Description = "Callback for when the control loses focus.",
-        },
-        new ComponentParameter()
-        {
-            Name = "OnDecrement",
-            Type = "EventCallback<BitNumericTextFieldChangeValue<TValue>>",
-            Description = "Callback for when the decrement button or down arrow key is pressed.",
-            LinkType = LinkType.Link,
-            Href = "#Bit-NumericTextField-ChangeValue"
-        },
-        new ComponentParameter()
-        {
-            Name = "OnIncrement",
-            Type = "EventCallback<BitNumericTextFieldChangeValue<TValue>>",
-            Description = "Callback for when the increment button or up arrow key is pressed.",
-            LinkType = LinkType.Link,
-            Href = "#Bit-NumericTextField-ChangeValue"
-        },
-        new ComponentParameter()
-        {
-            Name = "Precision",
-            Type = "int?",
-            Description = "How many decimal places the value should be rounded to.",
-        },
-        new ComponentParameter()
-        {
-            Name = "Placeholder",
-            Type = "string?",
-            Description = "Input placeholder text.",
-        },
-        new ComponentParameter()
-        {
-            Name = "Step",
-            Type = "TValue?",
-            Description = "Difference between two adjacent values of the numeric text field.",
-        },
-        new ComponentParameter()
-        {
-            Name = "Suffix",
-            Type = "string",
-            DefaultValue = "string.Empty",
-            Description = "A text is shown after the numeric text field value.",
-        },
-        new ComponentParameter()
-        {
-            Name = "ShowArrows",
-            Type = "bool",
-            Description = "Whether to show the up/down spinner arrows (buttons).",
-        },
-        new ComponentParameter()
-        {
-            Name = "Title",
-            Type = "string?",
-            Description = "A more descriptive title for the control, visible on its tooltip.",
-        },
-    };
-
-    private readonly List<ComponentSubParameter> componentSubParameters = new()
-    {
-        new ComponentSubParameter()
-        {
-            Id = "Bit-NumericTextField-ChangeValue",
-            Title = "BitNumericTextFieldChangeValue",
-            Parameters = new List<ComponentParameter>()
-            {
-               new ComponentParameter()
-               {
-                   Name = "Value",
-                   Type = "T?",
-               },
-               new ComponentParameter()
-               {
-                   Name = "MouseEventArgs",
-                   Type = "MouseEventArgs?",
-               },
-               new ComponentParameter()
-               {
-                   Name = "KeyboardEventArgs",
-                   Type = "KeyboardEventArgs?",
-               },
-            }
-        }
-    };
-
-    private readonly List<EnumParameter> enumParameters = new()
-    {
-        new EnumParameter()
-        {
-            Id = "labelPosition-enum",
-            Title = "BitNumericTextFieldLabelPosition Enum",
-            Description = "",
-            EnumList = new List<EnumItem>()
-            {
-                new EnumItem()
-                {
-                    Name= "Top",
-                    Description="The label shows on the top of the numeric textfield.",
-                    Value="0",
-                },
-                new EnumItem()
-                {
-                    Name= "Left",
-                    Description="The label shows on the left side of the numeric textfield.",
-                    Value="1",
-                }
-            }
-        }
-    };
-
-    #region Example Code 1
 
     private readonly string example1HTMLCode = @"
 <BitNumericTextField @bind-Value=""BasicValue""
@@ -373,17 +349,12 @@ public partial class BitNumericTextFieldDemo
                      Label=""Label Left""
                      LabelPosition=""BitNumericTextFieldLabelPosition.Left"" />
 ";
-
     private readonly string example1CSharpCode = @"
 private int BasicValue;
 private int DisabledValue;
 private int LabelAndIconValue;
 private int LabelLeftValue;
 ";
-
-    #endregion
-
-    #region Example Code 2
 
     private readonly string example2HTMLCode = @"
 <BitNumericTextField @bind-Value=""LabelTemplateValue"" Placeholder=""Enter a number..."" Step=""@(1)"">
@@ -393,14 +364,9 @@ private int LabelLeftValue;
     </LabelTemplate>
 </BitNumericTextField>
 ";
-
     private readonly string example2CSharpCode = @"
 private int LabelTemplateValue;
 ";
-
-    #endregion
-
-    #region Example Code 3
 
     private readonly string example3HTMLCode = @"
 <BitNumericTextField @bind-Value=""SpinArrowValue""
@@ -417,15 +383,10 @@ private int LabelTemplateValue;
                      IncrementIconName=""BitIconName.LikeSolid""
                      DecrementIconName=""BitIconName.DislikeSolid"" />
 ";
-
     private readonly string example3CSharpCode = @"
 private int SpinArrowValue;
 private int SpinArrowWithIconValue;
 ";
-
-    #endregion
-
-    #region Example Code 4
 
     private readonly string example4HTMLCode = @"
 <BitNumericTextField @bind-Value=""MinMaxValue1""
@@ -449,16 +410,11 @@ private int SpinArrowWithIconValue;
                      Min=""-1""
                      Max=""1"" />
 ";
-
     private readonly string example4CSharpCode = @"
 private int MinMaxValue1;
 private int MinMaxValue2;
 private decimal MinMaxValue3;
 ";
-
-    #endregion
-
-    #region Example Code 5
 
     private readonly string example5HTMLCode = @"
 <BitNumericTextField @bind-Value=""SuffixValue1""
@@ -477,15 +433,10 @@ private decimal MinMaxValue3;
                      DefaultValue=""50""
                      Suffix="" kg"" />
 ";
-
     private readonly string example5CSharpCode = @"
 private int SuffixValue1;
 private decimal SuffixValue2;
 ";
-
-    #endregion
-
-    #region Example Code 6
 
     private readonly string example6HTMLCode = @"
 <div>
@@ -503,15 +454,10 @@ private decimal SuffixValue2;
     <BitRating @bind-Value=""TwoWayValue"" />
 </div>
 ";
-
     private readonly string example6CSharpCode = @"
 private double OneWayValue;
 private double TwoWayValue;
 ";
-
-    #endregion
-
-    #region Example Code 7
 
     private readonly string example7HTMLCode = @"
 <div class=""column"">
@@ -537,7 +483,6 @@ private double TwoWayValue;
     <span>Returned Value: @OnChangeEventReturnedValue</span>
 </div>
 ";
-
     private readonly string example7CSharpCode = @"
 private double ArrowsEventBindedValue;
 private double ArrowsEventReturnedValue;
@@ -569,10 +514,6 @@ private void HandleOnChangeEvent(double value)
     OnChangeCounter++;
 }
 ";
-
-    #endregion
-
-    #region Example Code 8
 
     private readonly string example8HTMLCode = @"
 <style>
@@ -620,7 +561,6 @@ else
     </BitMessageBar>
 }
 ";
-
     private readonly string example8CSharpCode = @"
 public class BitNumericTextFieldValidationModel
 {
@@ -645,6 +585,4 @@ private void HandleInvalidSubmit()
     SuccessMessage = string.Empty;
 }
 ";
-
-    #endregion
 }

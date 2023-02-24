@@ -6,7 +6,7 @@ namespace Bit.BlazorUI.Playground.Web.Pages.Components.Persona;
 
 public partial class BitPersonaDemo
 {
-    public bool IsHideDetails { get; set; } = true;
+    public bool IsDetailsShown { get; set; } = true;
     private readonly List<ComponentParameter> componentParameters = new()
     {
         new ComponentParameter()

@@ -24,6 +24,8 @@ public abstract partial class BitComponentBase : ComponentBase
         get => visual;
         set
         {
+            if (visual == value) return;
+
             visual = value;
             ClassBuilder.Reset();
         }
@@ -38,6 +40,8 @@ public abstract partial class BitComponentBase : ComponentBase
         get => style;
         set
         {
+            if (style == value) return;
+
             style = value;
             StyleBuilder.Reset();
         }
@@ -52,6 +56,8 @@ public abstract partial class BitComponentBase : ComponentBase
         get => @class;
         set
         {
+            if (@class == value) return;
+
             @class = value;
             ClassBuilder.Reset();
         }
@@ -66,6 +72,8 @@ public abstract partial class BitComponentBase : ComponentBase
         get => isEnabled;
         set
         {
+            if (isEnabled == value) return;
+
             isEnabled = value;
             ClassBuilder.Reset();
         }
@@ -81,6 +89,7 @@ public abstract partial class BitComponentBase : ComponentBase
         set
         {
             if (visibility == value) return;
+
             visibility = value;
             OnComponentVisibilityChanged(value);
             StyleBuilder.Reset();
@@ -158,9 +167,12 @@ public abstract partial class BitComponentBase : ComponentBase
         RegisterComponentStyles();
         StyleBuilder
             .Register(() => style)
-            .Register(() => visibility == BitComponentVisibility.Hidden ? "visibility:hidden" :
-                            visibility == BitComponentVisibility.Collapsed ? "display:none" :
-                            string.Empty);
+            .Register(() => visibility switch
+            {
+                BitComponentVisibility.Hidden => "visibility:hidden",
+                BitComponentVisibility.Collapsed => "display:none",
+                _ => string.Empty
+            });
 
         if (UseVisual)
         {
@@ -175,9 +187,9 @@ public abstract partial class BitComponentBase : ComponentBase
               .Register(() => RootElementClass)
               .Register(() => (IsEnabled ? string.Empty : "disabled"));
         }
-       
 
-        
+
+
         RegisterComponentClasses();
         ClassBuilder.Register(() => @class);
 

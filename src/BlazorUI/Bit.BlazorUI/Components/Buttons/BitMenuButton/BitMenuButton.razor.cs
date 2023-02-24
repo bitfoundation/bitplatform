@@ -37,6 +37,9 @@ public partial class BitMenuButton<TItem> where TItem : class
         }
     }
 
+    private List<TItem> _items = new();
+    private IEnumerable<TItem> _oldItems = default!;
+
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
     /// <summary>
@@ -162,6 +165,18 @@ public partial class BitMenuButton<TItem> where TItem : class
         StateHasChanged();
     }
 
+    internal void RegisterOption(BitMenuButtonOption option)
+    {
+        _items.Add((option as TItem)!);
+        StateHasChanged();
+    }
+
+    internal void UnregisterOption(BitMenuButtonOption option)
+    {
+        _items.Remove((option as TItem)!);
+        StateHasChanged();
+    }
+
     protected override async Task OnInitializedAsync()
     {
         _internalIsEnabledField = IsEnabledFieldSelector?.GetName() ?? IsEnabledField;
@@ -177,6 +192,12 @@ public partial class BitMenuButton<TItem> where TItem : class
         ButtonType ??= _editContext is null
             ? BitButtonType.Button
             : BitButtonType.Submit;
+
+        if (ChildContent is null && Items.Any() && Items != _oldItems)
+        {
+            _oldItems = Items;
+            _items = Items.ToList();
+        }
 
         return base.OnParametersSetAsync();
     }
@@ -201,6 +222,11 @@ public partial class BitMenuButton<TItem> where TItem : class
             return bitMenuButtonItem.IconName;
         }
 
+        if (item is BitMenuButtonOption menuButtonOption)
+        {
+            return menuButtonOption.IconName;
+        }
+
         return item.GetValueFromProperty<BitIconName>(_internalIconNameField);
     } 
 
@@ -209,6 +235,11 @@ public partial class BitMenuButton<TItem> where TItem : class
         if (item is BitMenuButtonItem bitMenuButtonItem)
         {
             return bitMenuButtonItem.Text;
+        }
+
+        if (item is BitMenuButtonOption menuButtonOption)
+        {
+            return menuButtonOption.Text;
         }
 
         return item.GetValueAsObjectFromProperty(_internalTextField)?.ToString();
@@ -221,6 +252,11 @@ public partial class BitMenuButton<TItem> where TItem : class
             return bitMenuButtonItem.Key;
         }
 
+        if (item is BitMenuButtonOption menuButtonOption)
+        {
+            return menuButtonOption.Key;
+        }
+
         return item.GetValueAsObjectFromProperty(_internalkeyField)?.ToString();
     }
 
@@ -229,6 +265,11 @@ public partial class BitMenuButton<TItem> where TItem : class
         if (item is BitMenuButtonItem bitMenuButtonItem)
         {
             return bitMenuButtonItem.IsEnabled;
+        }
+
+        if (item is BitMenuButtonOption menuButtonOption)
+        {
+            return menuButtonOption.IsEnabled;
         }
 
         return item.GetValueFromProperty(_internalIsEnabledField, true);

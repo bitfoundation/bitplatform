@@ -1,59 +1,59 @@
-﻿
-::deep {
-    .overlay {
-        background-color: rgba(0,0,0,.4);
-        z-index: 9999;
-        align-items: center;
-        justify-content: center;
-    }
+﻿@import "../../../Styles/abstracts/_functions.scss";
 
-    .story-box {
-        position: relative;
-        display: flex;
-        flex-flow: column nowrap;
-        width: 85%;
-        height: 250px;
-        overflow: auto;
-        background-color: white;
-        border-top: 4px solid blue;
-        border-radius: 3px;
-        padding: 15px;
-    }
-
-    .close-overlay-btn {
-        width: fit-content;
-        position: absolute;
-        top: 15px;
-        right: 10px;
-    }
-
-    .show-overlay-btn {
-        display: flex;
-        flex-flow: row wrap;
-        gap: 5px;
-        width: fit-content;
-        position: absolute;
-        top: 15px;
-        left: 10px;
-    }
-
-    .scroller {
-        display: flex;
-        flex-flow: column nowrap;
-        border-radius: 3px;
-        padding: 90px 15px 15px 15px;
-        overflow: auto;
-        width: 100%;
-        height: 100%;
-    }
+.content {
+    position: relative;
+    display: flex;
+    flex-flow: column nowrap;
+    width: 85%;
+    max-width: rem(960px);
+    height: rem(250px);
+    background-color: white;
+    border-radius: rem(3px);
+    padding: rem(15px);
 }
 
-.overlay-box {
+.scroller {
+    margin-top: rem(15px);
+    align-items: center;
+    position: relative;
+    height: rem(480px);
+    border: rem(2px) solid green;
+    background-color: #eee;
+    border-radius: rem(3px);
+    padding: rem(15px);
+    overflow: auto;
+}
+
+.container {
     display: flex;
     justify-content: center;
     align-items: center;
     position: relative;
-    height: 480px;
-    border: 1px solid blue;
-    background-color: lightgray;
+    height: rem(480px);
+    border: rem(2px) solid blue;
+    background-color: #eee;
+}
+
+::deep {
+    .overlay {
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(0,0,0,.4);
+    }
+
+    .close-button {
+        position: absolute;
+        right: rem(10px);
+    }
+
+    .show-button {
+        display: flex;
+        flex-flow: row wrap;
+        gap: rem(5px);
+        width: fit-content;
+        position: absolute;
+        top: rem(15px);
+        left: rem(10px);
+    }
 }

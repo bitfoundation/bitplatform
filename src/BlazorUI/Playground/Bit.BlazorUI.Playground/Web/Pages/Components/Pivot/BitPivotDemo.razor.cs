@@ -6,26 +6,21 @@ namespace Bit.BlazorUI.Playground.Web.Pages.Components.Pivot;
 
 public partial class BitPivotDemo
 {
-    private string SelectedKey = "Foo";
-    private BitPivotItem SelectedPivotItem;
-    private string OverridePivotSelectedKey = "1";
-    private BitComponentVisibility PivotItemVisibility;
-
     private readonly List<ComponentParameter> componentParameters = new()
     {
-        new ComponentParameter()
+        new()
         {
             Name = "ChildContent",
             Type = "RenderFragment",
             Description = "The content of pivot, It can be Any custom tag.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "DefaultSelectedKey",
             Type = "string",
             Description = "Default selected key for the pivot.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "LinkFormat",
             Type = "BitLinkFormat",
@@ -34,7 +29,7 @@ public partial class BitPivotDemo
             Href = "#linkFormat-enum",
             Description = "Pivot link format, display mode for the pivot links.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "LinkSize",
             Type = "BitLinkSize",
@@ -43,15 +38,15 @@ public partial class BitPivotDemo
             Href = "#linkSize-enum",
             Description = "Pivot link size.",
         },
-        new ComponentParameter()
+        new()
         {
-            Name = "OnLinkClick",
+            Name = "OnItemClick",
             Type = "EventCallback<BitPivotItem>",
             LinkType = LinkType.Link,
             Href = "#pivotItem",
-            Description = "Callback for when the selected pivot item is changed.",
+            Description = "Callback for when the a pivot item is clicked.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "OverflowBehavior",
             Type = "BitOverflowBehavior",
@@ -60,7 +55,7 @@ public partial class BitPivotDemo
             Href = "#overflowBehavior-enum",
             Description = "Overflow behavior when there is not enough room to display all of the links/tabs.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "SelectedKey",
             Type = "string",
@@ -70,75 +65,75 @@ public partial class BitPivotDemo
 
     private readonly List<ComponentSubParameter> componentSubParameters = new()
     {
-        new ComponentSubParameter()
+        new()
         {
             Id = "pivotItem",
             Title = "BitPivotItem",
-            Parameters = new List<ComponentParameter>()
+            Parameters = new()
             {
-                new ComponentParameter()
+                new()
                 {
                     Name = "Body",
                     Type = "RenderFragment",
                     Description = "The content of the pivot item, It can be Any custom tag or a text (alias of ChildContent).",
                 },
-                new ComponentParameter()
+                new()
                 {
                     Name = "ChildContent",
                     Type = "RenderFragment",
                     Description = "The content of the pivot item, It can be Any custom tag or a text.",
                 },
-                new ComponentParameter()
+                new()
                 {
                     Name = "Header",
                     Type = "RenderFragment",
                     Description = "The content of the pivot item header, It can be Any custom tag or a text.",
                 },
-                new ComponentParameter()
+                new()
                 {
                     Name = "HeaderText",
                     Type = "string",
                     Description = "The text of the pivot item header, The text displayed of each pivot link.",
                 },
-                new ComponentParameter()
+                new()
                 {
                     Name = "IconName",
                     Type = "BitIconName",
                     Description = "The icon name for the icon shown next to the pivot link.",
                 },
-                new ComponentParameter()
+                new()
                 {
                     Name = "ItemCount",
                     Type = "int",
                     DefaultValue = "0",
                     Description = "Defines an optional item count displayed in parentheses just after the linkText.",
                 },
-                new ComponentParameter()
+                new()
                 {
                     Name = "Key",
                     Type = "string",
                     Description = "A required key to uniquely identify a pivot item.",
-                },
+                }
             }
         }
     };
 
     private readonly List<EnumParameter> enumParameters = new()
     {
-        new EnumParameter()
+        new()
         {
             Id = "linkFormat-enum",
             Title = "BitLinkFormat Enum",
             Description = "",
-            EnumList = new List<EnumItem>()
+            EnumList = new()
             {
-                new EnumItem()
+                new()
                 {
                     Name= "Tabs",
                     Description="Display Pivot Links as Tabs.",
                     Value="0",
                 },
-                new EnumItem()
+                new()
                 {
                     Name= "Links",
                     Description="Display Pivot Links as links.",
@@ -146,20 +141,20 @@ public partial class BitPivotDemo
                 },
             }
         },
-        new EnumParameter()
+        new()
         {
             Id = "linkSize-enum",
             Title = "BitLinkSize Enum",
             Description = "",
-            EnumList = new List<EnumItem>()
+            EnumList = new()
             {
-                new EnumItem()
+                new()
                 {
                     Name= "Normal",
                     Description="Display Link using normal font size.",
                     Value="0",
                 },
-                new EnumItem()
+                new()
                 {
                     Name= "Large",
                     Description="Display links using large font size.",
@@ -167,26 +162,26 @@ public partial class BitPivotDemo
                 },
             }
         },
-        new EnumParameter()
+        new()
         {
             Id = "overflowBehavior-enum",
             Title = "BitOverflowBehavior Enum",
             Description = "",
-            EnumList = new List<EnumItem>()
+            EnumList = new()
             {
-                new EnumItem()
+                new()
                 {
                     Name= "None",
                     Description="Pivot links will overflow the container and may not be visible.",
                     Value="0",
                 },
-                new EnumItem()
+                new()
                 {
                     Name= "Menu",
                     Description="Display an overflow menu that contains the tabs that don't fit.",
                     Value="1",
                 },
-                new EnumItem()
+                new()
                 {
                     Name= "Scroll",
                     Description="Display a scroll bar below of the tabs for moving between them.",
@@ -196,10 +191,19 @@ public partial class BitPivotDemo
         },
     };
 
-    private void TogglePivotItemVisobility()
+
+    private string SelectedKey = "Foo";
+    private BitPivotItem SelectedPivotItem;
+    private string OverridePivotSelectedKey = "1";
+    private BitComponentVisibility PivotItemVisibility;
+    private bool PivotEnabled = true;
+    private bool PivotItemEnabled = true;
+
+    private void TogglePivotItemVisibility()
     {
         PivotItemVisibility = PivotItemVisibility == BitComponentVisibility.Visible ? BitComponentVisibility.Collapsed : BitComponentVisibility.Visible;
     }
+
 
     private readonly string example1HtmlCode = @"
 <BitPivot>
@@ -364,7 +368,6 @@ public partial class BitPivotDemo
         </div>
     </BitButton>
 </div>";
-
     private readonly string example6CSharpCode = @"
 private string OverridePivotSelectedKey = ""1"";";
 
@@ -397,7 +400,6 @@ private string OverridePivotSelectedKey = ""1"";";
     <BitPivotItem HeaderText=""Bas"" Key=""Bas""></BitPivotItem>
     <BitPivotItem HeaderText=""Biz"" Key=""Biz""></BitPivotItem>
 </BitPivot>";
-
     private readonly string example7CSharpCode = @"
 private string SelectedKey = ""Foo"";";
 
@@ -437,7 +439,6 @@ private string SelectedKey = ""Foo"";";
         </div>
     </BitPivotItem>
 </BitPivot>";
-
     private readonly string example8CSharpCode = @"
 private BitPivotItem SelectedPivotItem;";
 
@@ -465,7 +466,6 @@ private BitPivotItem SelectedPivotItem;";
 <div style=""margin-top:50px"">
     <BitButton ButtonStyle=""BitButtonStyle.Standard"" OnClick=""TogglePivotItemVisobility"">Hide/Show Biz</BitButton>
 </div>";
-
     private readonly string example9CSharpCode = @"
 private BitComponentVisibility PivotItemVisibility;
 private void TogglePivotItemVisobility()
@@ -625,4 +625,32 @@ private void TogglePivotItemVisobility()
         </BitPivotItem>
     </BitPivot>
 </div>";
+
+    private readonly string example12HtmlCode = @"
+<BitButton OnClick=""() => PivotEnabled = !PivotEnabled"">Toggle Pivot's IsEnabled</BitButton>
+<BitButton OnClick=""() => PivotItemEnabled = !PivotItemEnabled"">Toggle Pivot Item's IsEnabled</BitButton>
+
+<BitPivot IsEnabled=""PivotEnabled"">
+    <BitPivotItem HeaderText=""File"">
+        <div style=""margin-top:10px"">
+            <h1>Pivot #1</h1>
+            <p style=""white-space:pre-wrap"">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum. Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi. Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus.</p>
+        </div>
+    </BitPivotItem>
+    <BitPivotItem HeaderText=""Shared with me"" IsEnabled=""PivotItemEnabled"">
+        <div style=""margin-top:15px"">
+            <h2>Pivot #2</h2>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
+        </div>
+    </BitPivotItem>
+    <BitPivotItem HeaderText=""Recent"">
+        <div style=""margin-top:10px"">
+            <h3>Pivot #3</h3>
+            <p style=""white-space:pre-wrap"">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum. Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi. Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus.<br />Suspendisse blandit erat ac lobortis pulvinar. Donec nunc leo, tempus sit amet accumsan in, sagittis sed odio. Pellentesque tristique felis sed purus pellentesque, ac dictum ex fringilla. Integer a tincidunt eros, non porttitor turpis. Sed gravida felis massa, in viverra massa aliquam sit amet. Etiam vitae dolor in velit sodales tristique id nec turpis. Proin sit amet urna sollicitudin, malesuada enim et, lacinia mi. Fusce nisl massa, efficitur sit amet elementum convallis, porttitor vel turpis. Fusce congue dui sit amet mollis pulvinar. Suspendisse vulputate leo quis nunc tincidunt, nec dictum risus congue.</p>
+        </div>
+    </BitPivotItem>
+</BitPivot>";
+    private readonly string example12CSharpCode = @"
+private bool PivotEnabled = true;
+private bool PivotItemEnabled = true;";
 }

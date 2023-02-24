@@ -39,7 +39,7 @@ public class HttpResponseExceptionHandlerMiddleware
                 message = localizer[message];
             }
 
-            RestExceptionPayload restExceptionPayload = new RestExceptionPayload
+            RestErrorInfo restExceptionPayload = new RestErrorInfo
             {
                 Key = key,
                 Message = message,
@@ -48,7 +48,7 @@ public class HttpResponseExceptionHandlerMiddleware
 
             if (exception is ResourceValidationException validationException)
             {
-                restExceptionPayload.Details = validationException.Details;
+                restExceptionPayload.Payload = validationException.Payload;
             }
 
             context.Response.StatusCode = statusCode;

@@ -5,6 +5,7 @@
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @{
     var isBlazorServer = BlazorModeDetector.Current.IsBlazorServer();
+    var isElectron = BlazorModeDetector.Current.IsBlazorElectron();
     var isDefaultDeploymentType = WebAppDeploymentTypeDetector.Current.IsDefault();
     var isStatic = WebAppDeploymentTypeDetector.Current.IsStatic();
     var isSsr = WebAppDeploymentTypeDetector.Current.IsSsr();
@@ -47,6 +48,17 @@
     {
         <link rel="manifest" href="manifest.json">
     }
+    @if (isElectron)
+    {
+        <style>
+            * {
+                -webkit-user-drag: none;
+                -webkit-user-select: none;
+                overscroll-behavior: none;
+                -webkit-tap-highlight-color: transparent;
+            }
+        </style>
+    }
     <style>
         html, body, #app-container {
             margin: 0;
@@ -80,6 +92,8 @@
             {
                 <script src="_framework/blazor.webassembly.js" autostart=false></script>
                 <script src="_content/Bit.Bswup/bit-bswup.js" scope="/" sw="service-worker.js" handler="bitBswupHandler"></script>
+                <script src="_content/Bit.Bswup/bit-bswup.progress.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
+                <link href="_content/Bit.Bswup/bit-bswup.progress.min.css" rel="stylesheet" asp-append-version="@shoudAddAspAppendVersion">
                 <component type="typeof(Bit.Bswup.BswupProgress)"
                            param-AutoReload="true"
                            param-AppContainer="@("#app-container")"

@@ -1,17 +1,22 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text.RegularExpressions;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
 public partial class BitNumericTextField<TValue>
 {
+    protected override bool UseVisual => false;
+
     const int INITIAL_STEP_DELAY = 400;
     const int STEP_DELAY = 75;
-    private BitNumericTextFieldLabelPosition labelPosition = BitNumericTextFieldLabelPosition.Top;
+
+
     private TValue? step;
     private TValue? min;
     private TValue? max;
+    private BitNumericTextFieldLabelPosition labelPosition = BitNumericTextFieldLabelPosition.Top;
+
     private double _internalStep;
     private double? _internalMin;
     private double? _internalMax;
@@ -220,17 +225,20 @@ public partial class BitNumericTextField<TValue>
     /// </summary>
     [Parameter] public string? Title { get; set; }
 
+    /// <summary>
+    /// The message format used for invalid values entered in the input.
+    /// </summary>
+    [Parameter] public string ValidationMessage { get; set; } = "The {0} field is not valid.";
+
+
+
     protected override string RootElementClass => "bit-ntf";
 
     protected override void RegisterComponentClasses()
     {
-        ClassBuilder.Register(() => LabelPosition == BitNumericTextFieldLabelPosition.Left
-                                            ? $"{RootElementClass}-label-left-{VisualClassRegistrar()}"
-                                            : $"{RootElementClass}-label-top-{VisualClassRegistrar()}");
+        ClassBuilder.Register(() => LabelPosition == BitNumericTextFieldLabelPosition.Left ? "label-left" : "label-top");
 
-        ClassBuilder.Register(() => ValueInvalid is true
-                                            ? $"{RootElementClass}-invalid-{VisualClassRegistrar()}"
-                                            : string.Empty);
+        ClassBuilder.Register(() => ValueInvalid is true ? "invalid" : string.Empty);
     }
 
     protected override async Task OnParametersSetAsync()
@@ -734,7 +742,7 @@ public partial class BitNumericTextField<TValue>
         }
 
         result = default;
-        validationErrorMessage = $"The {DisplayName ?? FieldIdentifier.FieldName} field is not valid.";
+        validationErrorMessage = string.Format(CultureInfo.InvariantCulture, ValidationMessage, DisplayName ?? FieldIdentifier.FieldName);
         return false;
     }
 

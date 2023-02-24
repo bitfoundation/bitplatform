@@ -14,11 +14,10 @@
             <div class="modal @GetPositionClass()" role="document">
                 @if (IsModeless is false)
                 {
-                    <div class="overlay" aria-hidden="true" @onclick="CloseModal">
-                    </div>
+                    <div class="overlay" aria-hidden="true" @onclick="CloseModal" />
                 }
 
-                <div class="container">
+                <div id="@_containerId" class="container">
                     <div class="scroll-content">
                         @ChildContent
                     </div>

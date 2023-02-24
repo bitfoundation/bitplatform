@@ -15,11 +15,7 @@
     padding: 0 rem(24px) rem(24px);
     overflow-y: hidden;
     line-height: rem(20px);
-}
-
-.modal-body-2 {
-    max-width: rem(800px);
-    padding: 0 rem(24px) rem(24px);
+    max-width: rem(960px);
 }
 
 .btn-container {
@@ -44,7 +40,7 @@
     position: relative;
     width: 100%;
     height: rem(400px);
-    border: 2px lightgreen solid;
+    border: rem(2px) lightgreen solid;
     background-color: #eee;
     overflow: auto;
 }

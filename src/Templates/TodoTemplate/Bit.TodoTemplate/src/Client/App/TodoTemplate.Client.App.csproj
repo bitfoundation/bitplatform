@@ -58,7 +58,6 @@
         <!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
         <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
 
-        <Using Include="Microsoft.Extensions.Configuration" />
         <Using Include="TodoTemplate.Client.Shared.Components" />
         <Using Include="TodoTemplate.Client.Shared.Services.Implementations" />
         <Using Include="TodoTemplate.Client.Shared.Services.Contracts" />
@@ -66,12 +65,12 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.BlazorUI" Version="4.9.6-pre-02" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="4.9.6-pre-02">
+        <PackageReference Include="Bit.BlazorUI" Version="4.9.6-pre-05" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="4.9.6-pre-05">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="4.9.6-pre-02">
+        <PackageReference Include="Bit.SourceGenerators" Version="4.9.6-pre-05">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

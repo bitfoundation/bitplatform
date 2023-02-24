@@ -12,6 +12,7 @@
         <InvariantGlobalization Condition="'$(MultilingualEnabled)' == 'false'">true</InvariantGlobalization>
         <BlazorWebAssemblyLoadAllGlobalizationData Condition="'$(MultilingualEnabled)' == 'true'">true</BlazorWebAssemblyLoadAllGlobalizationData>
         <!-- To change MultilingualEnabled's value, checkout Directory.Build.props -->
+        <EmccInitialHeapSize Condition="'$(EmccInitialHeapSize)' == ''">16777216</EmccInitialHeapSize>
         <!--/+:msbuild-conditional:noEmit -->
     </PropertyGroup>
 
@@ -30,17 +31,17 @@
         <None Include="compilerconfig.json" />
         <None Include="Shared\LoadingComponent.razor.scss" />
 
-        <Content Remove="wwwroot\appsettings.json" />
-        <EmbeddedResource Include="wwwroot\appsettings.json" />
+        <Content Remove="appsettings.json" />
+        <EmbeddedResource Include="appsettings.json" />
 
-        <PackageReference Include="Bit.BlazorUI" Version="4.9.6-pre-02" />
-        <PackageReference Include="Bit.Bup" Version="4.9.6-pre-02" />
-        <PackageReference Include="Bit.Bswup" Version="4.9.6-pre-02" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="4.9.6-pre-02">
+        <PackageReference Include="Bit.BlazorUI" Version="4.9.6-pre-05" />
+        <PackageReference Include="Bit.Bup" Version="4.9.6-pre-05" />
+        <PackageReference Include="Bit.Bswup" Version="4.9.6-pre-05" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="4.9.6-pre-05">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="4.9.6-pre-02">
+        <PackageReference Include="Bit.SourceGenerators" Version="4.9.6-pre-05">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -49,13 +50,13 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="7.0.2" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="7.0.3" />
         <!--/-:msbuild-conditional:noEmit -->
-        <PackageReference Condition="'$(BlazorMode)' == 'BlazorWebAssembly'" Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.2" />
-        <PackageReference Condition="'$(BlazorMode)' == 'BlazorWebAssembly'" Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.2" PrivateAssets="all" />
+        <PackageReference Condition="'$(BlazorMode)' == 'BlazorWebAssembly'" Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.3" />
+        <PackageReference Condition="'$(BlazorMode)' == 'BlazorWebAssembly'" Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.3" PrivateAssets="all" />
         <!--/+:msbuild-conditional:noEmit -->
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.2" />
-        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.9.4">
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.3" />
+        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.9.5">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -65,7 +66,6 @@
         <Using Include="Microsoft.JSInterop" />
         <Using Include="Microsoft.AspNetCore.Components" />
         <Using Include="Microsoft.AspNetCore.Authorization" />
-        <Using Include="Microsoft.Extensions.Configuration" />
         <Using Include="Microsoft.AspNetCore.Components.Authorization" />
         <Using Include="Bit.BlazorUI" />
         <Using Include="BlazorDual.Web.Components" />

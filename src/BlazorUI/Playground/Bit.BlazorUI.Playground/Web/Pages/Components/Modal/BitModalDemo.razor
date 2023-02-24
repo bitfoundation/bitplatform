@@ -36,22 +36,6 @@
                             finibus. In augue libero, commodo vitae nisi non, sagittis convallis ante. Phasellus malesuada eleifend
                             mollis. Curabitur ultricies leo ac metus venenatis elementum.
                         </p>
-                        <p>
-                            Aenean egestas quam ut erat commodo blandit. Mauris ante nisl, pellentesque sed venenatis nec, aliquet sit
-                            amet enim. Praesent vitae diam non diam aliquet tristique non ut arcu. Pellentesque et ultrices eros. Fusce
-                            diam metus, mattis eu luctus nec, facilisis vel erat. Nam a lacus quis tellus gravida euismod. Nulla sed sem
-                            eget tortor cursus interdum. Sed vehicula tristique ultricies. Aenean libero purus, mollis quis massa quis,
-                            eleifend dictum massa. Fusce eu sapien sit amet odio lacinia placerat. Mauris varius risus sed aliquet
-                            cursus. Aenean lectus magna, tincidunt sit amet sodales a, volutpat ac leo. Morbi nisl sapien, tincidunt sit
-                            amet mauris quis, sollicitudin auctor est.
-                        </p>
-                        <p>
-                            Nam id mi justo. Nam vehicula vulputate augue, ac pretium enim rutrum ultricies. Sed aliquet accumsan
-                            varius. Quisque ac auctor ligula. Fusce fringilla, odio et dignissim iaculis, est lacus ultrices risus,
-                            vitae condimentum enim urna eu nunc. In risus est, mattis non suscipit at, mattis ut ante. Maecenas
-                            consectetur urna vel erat maximus, non molestie massa consequat. Duis a feugiat nibh. Sed a hendrerit diam,
-                            a mattis est. In augue dolor, faucibus vel metus at, convallis rhoncus dui.
-                        </p>
                     </div>
                 </BitModal>
             </div>
@@ -71,7 +55,7 @@
                         <span>IsBlocking = true</span>
                         <BitIconButton OnClick=@(()=> IsOpen1 = false) IconName="BitIconName.ChromeClose" Title="Close" />
                     </div>
-                    <div class="modal-body-2">
+                    <div class="modal-body">
                         <p>
                             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
                             amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
@@ -89,7 +73,7 @@
                         <span>AutoToggleScroll = false</span>
                         <BitIconButton OnClick=@(()=> IsOpen2 = false) IconName="BitIconName.ChromeClose" Title="Close" />
                     </div>
-                    <div class="modal-body-2">
+                    <div class="modal-body">
                         <p>
                             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
                             amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
@@ -109,7 +93,7 @@
     <ComponentExampleBox Title="Absolute positioning" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example3">
         <ExamplePreview>
             <div class="example-desc">BitModal has an abosolute position option to further customize it's location.</div>
-            
+
             <div class="btn-container">
                 <BitButton OnClick=@(() => IsOpen3 = true)>Open Modal (AbsolutePosition = true)</BitButton>
                 <BitButton OnClick=@(() => IsOpen4 = true)>Open Modal (ScrollerSelector)</BitButton>
@@ -121,7 +105,7 @@
                         <span>AbsolutePosition=true & IsModeless=true</span>
                         <BitIconButton OnClick=@(()=> IsOpen3 = false) IconName="BitIconName.ChromeClose" Title="Close" />
                     </div>
-                    <div class="modal-body-2">
+                    <div class="modal-body">
                         <p>
                             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
                             amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
@@ -140,7 +124,7 @@
                         <span>ScrollerSelector</span>
                         <BitIconButton OnClick=@(()=> IsOpen4 = false) IconName="BitIconName.ChromeClose" Title="Close" />
                     </div>
-                    <div class="modal-body-2">
+                    <div class="modal-body">
                         <p>
                             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
                             amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
@@ -210,10 +194,59 @@
                 <BitModal @bind-IsOpen="IsOpenInPosition" Position="position">
                     <div class="modal-header">
                         <span>Modal positioning</span>
-                        <BitIconButton OnClick=@(()=>IsOpenInPosition=false) IconName="BitIconName.ChromeClose" Title="Close" />
+                        <BitIconButton OnClick=@(() => IsOpenInPosition = false) IconName="BitIconName.ChromeClose" Title="Close" />
                     </div>
                     <div class="modal-body">
                         BitModal with custom positioning. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                    </div>
+                </BitModal>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Draggable BitModal" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
+        <ExamplePreview>
+            <div>
+                <BitToggle Label="Is Draggable?" @bind-Value="IsDraggable" />
+                <br />
+                <BitButton OnClick="() => IsOpen5 = true">Open Modal</BitButton>
+                <BitModal @bind-IsOpen="IsOpen5" IsDraggable="IsDraggable">
+                    <div class="modal-header">
+                        <span>Draggble Modal</span>
+                        <BitIconButton OnClick=@(() => IsOpen5 = false) IconName="BitIconName.ChromeClose" Title="Close" />
+                    </div>
+                    <div class="modal-body">
+                        <p>
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+                            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+                            sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+                            turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+                            ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+                            Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+                            Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+                            efficitur.
+                        </p>
+                    </div>
+                </BitModal>
+                <hr style="border-color:white" />
+                <div class="example-desc">Using custom drag element.</div>
+                <BitButton OnClick="() => IsOpen6 = true">Open Modal</BitButton>
+                <BitModal @bind-IsOpen="IsOpen6" IsDraggable="true" DragElementSelector=".modal-header-drag">
+                    <div class="modal-header modal-header-drag">
+                        <span>Draggble Modal with custom drag element</span>
+                        <BitIconButton OnClick=@(() => IsOpen6 = false) IconName="BitIconName.ChromeClose" Title="Close" />
+                    </div>
+                    <div class="modal-body">
+                        <p>
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+                            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+                            sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+                            turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+                            ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+                            Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+                            Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+                            efficitur.
+                        </p>
                     </div>
                 </BitModal>
             </div>
