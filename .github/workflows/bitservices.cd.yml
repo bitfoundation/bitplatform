@@ -1,4 +1,4 @@
-name: Bit Services CD
+name: BitServices.Company CD
 
 env:
   WEB_APP_DEPLOYMENT_TYPE: 'SSR'
