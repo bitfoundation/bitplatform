@@ -48,6 +48,15 @@ public partial class BitToggleButtonDemo
         },
         new ComponentParameter()
         {
+            Name = "ButtonSize",
+            Type = "BitButtonSize",
+            LinkType = LinkType.Link,
+            Href = "#button-size-enum",
+            DefaultValue = "BitButtonSize.Medium",
+            Description = "The size of button, Possible values: Small | Medium | Large.",
+        },
+        new ComponentParameter()
+        {
             Name = "ButtonStyle",
             Type = "BitButtonStyle",
             LinkType = LinkType.Link,
@@ -131,6 +140,33 @@ public partial class BitToggleButtonDemo
 
     private readonly List<EnumParameter> enumParameters = new()
     {
+        new EnumParameter()
+        {
+            Id = "button-size-enum",
+            Title = "BitButtonSize Enum",
+            Description = "",
+            EnumList = new List<EnumItem>()
+            {
+                new EnumItem()
+                {
+                    Name= "Small",
+                    Description="The button size is small.",
+                    Value="0",
+                },
+                new EnumItem()
+                {
+                    Name= "Medium",
+                    Description="The button size is medium.",
+                    Value="1",
+                },
+                new EnumItem()
+                {
+                    Name= "Large",
+                    Description="The button size is large.",
+                    Value="2",
+                }
+            }
+        },
         new EnumParameter()
         {
             Id = "button-style-enum",
@@ -316,4 +352,82 @@ private bool ToggleButtonDefaultValue = true;";
 
     private readonly string example5CSharpCode = @"
 private bool ToggleButtonChecked = false;";
+
+    private readonly string example6HTMLCode = @"
+<div class=""buttons-container-grid"">
+    <div>
+        <BitLabel>Small size</BitLabel>
+        <BitToggleButton ButtonSize=""BitButtonSize.Small"" @bind-IsChecked=""ToggleButtonTwoWayValue""
+                         Label=""@(ToggleButtonTwoWayValue ? ""Mute"" : ""Unmute"")""
+                         IconName=""@(ToggleButtonTwoWayValue ? BitIconName.MicOff : BitIconName.Microphone)"">
+        </BitToggleButton>
+    </div>
+    <div>
+        <BitLabel>Medium size</BitLabel>
+        <BitToggleButton ButtonSize=""BitButtonSize.Medium"" @bind-IsChecked=""ToggleButtonTwoWayValue""
+                         Label=""@(ToggleButtonTwoWayValue ? ""Mute"" : ""Unmute"")""
+                         IconName=""@(ToggleButtonTwoWayValue ? BitIconName.MicOff : BitIconName.Microphone)"">
+        </BitToggleButton>
+    </div>
+    <div>
+        <BitLabel>Large size</BitLabel>
+        <BitToggleButton ButtonSize=""BitButtonSize.Large"" @bind-IsChecked=""ToggleButtonTwoWayValue""
+                         Label=""@(ToggleButtonTwoWayValue ? ""Mute"" : ""Unmute"")""
+                         IconName=""@(ToggleButtonTwoWayValue ? BitIconName.MicOff : BitIconName.Microphone)"">
+        </BitToggleButton>
+    </div>
+</div>;";
+
+    private readonly string example7HTMLCode = @"
+<style>
+    .buttons-container-grid {
+        display: grid;
+        gap: 0.5rem;
+    }
+    
+    .custom-btn-sm.small {
+        padding: 4px 8px;
+        font-size: 8px;
+        line-height: 1.5;
+        border-radius: 3px;
+    }
+    
+    .custom-btn-md.medium {
+        padding: 12px 24px;
+        font-size: 16px;
+        line-height: 1.4;
+        border-radius: 4px;
+    }
+    
+    .custom-btn-lg.large {
+        padding: 20px 32px;
+        font-size: 32px;
+        line-height: 1.33;
+        border-radius: 6px;
+    }
+</style>
+
+<div class=""buttons-container-grid"">
+    <div>
+        <BitLabel>Small size</BitLabel>
+        <BitToggleButton Class=""custom-btn-sm"" ButtonSize=""BitButtonSize.Small"" @bind-IsChecked=""ToggleButtonTwoWayValue""
+                         Label=""@(ToggleButtonTwoWayValue ? ""Mute"" : ""Unmute"")""
+                         IconName=""@(ToggleButtonTwoWayValue ? BitIconName.MicOff : BitIconName.Microphone)"">
+        </BitToggleButton>
+    </div>
+    <div>
+        <BitLabel>Medium size</BitLabel>
+        <BitToggleButton Class=""custom-btn-md"" ButtonSize=""BitButtonSize.Medium"" @bind-IsChecked=""ToggleButtonTwoWayValue""
+                         Label=""@(ToggleButtonTwoWayValue ? ""Mute"" : ""Unmute"")""
+                         IconName=""@(ToggleButtonTwoWayValue ? BitIconName.MicOff : BitIconName.Microphone)"">
+        </BitToggleButton>
+    </div>
+    <div>
+        <BitLabel>Large size</BitLabel>
+        <BitToggleButton Class=""custom-btn-lg"" ButtonSize=""BitButtonSize.Large"" @bind-IsChecked=""ToggleButtonTwoWayValue""
+                         Label=""@(ToggleButtonTwoWayValue ? ""Mute"" : ""Unmute"")""
+                         IconName=""@(ToggleButtonTwoWayValue ? BitIconName.MicOff : BitIconName.Microphone)"">
+        </BitToggleButton>
+    </div>
+</div>;";
 }

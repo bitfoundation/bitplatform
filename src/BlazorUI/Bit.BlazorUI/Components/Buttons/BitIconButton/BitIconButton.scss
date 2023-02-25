@@ -1,20 +1,17 @@
 ﻿@import "../../../Styles/functions.scss";
 
 .bit-icob {
-    width: spacing(4);
-    height: spacing(4);
-    padding: 0 spacing(0.5);
+    display: inline-block;
     box-sizing: border-box;
     font-family: $typography-button-font-family;
-    font-size: spacing(1.75);
-    font-weight: 400;
+    font-weight: $typography-button-font-weight;
     text-decoration: none;
     text-align: center;
     cursor: pointer;
+    border-radius: $shape-border-radius;
     border: none;
     background-color: transparent;
     color: $color-primary-main;
-    display: inline-block;
 
     .icon-container {
         display: flex;
@@ -46,5 +43,26 @@
         border-color: $color-border-disabled;
         cursor: default;
         pointer-events: none;
+    }
+
+    &.small {
+        width: spacing(3.5);
+        height: spacing(3.5);
+        font-size: spacing(1.5);
+        line-height: spacing(2.75);
+    }
+
+    &.medium {
+        width: spacing(4.5);
+        height: spacing(4.5);
+        font-size: spacing(1.75);
+        line-height: $typography-button-line-height;
+    }
+
+    &.large {
+        width: spacing(5.5);
+        height: spacing(5.5);
+        font-size: spacing(2);
+        line-height: spacing(3.75);
     }
 }
