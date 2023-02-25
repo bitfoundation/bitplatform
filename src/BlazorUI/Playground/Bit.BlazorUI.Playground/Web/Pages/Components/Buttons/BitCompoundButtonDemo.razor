@@ -69,4 +69,62 @@
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
+
+    <ComponentExampleBox Title="BitCompoundButton in different sizes" HTMLSourceCode="@example6HTMLCode" ExampleId="example6">
+        <ExamplePreview>
+            <div class="example-desc">BitCompoundButton can get different sizes using the <code>ButtonSize</code> parameter.</div>
+            <div class="buttons-container-grid">
+                <div>
+                    <BitLabel>Small size</BitLabel>
+                    <BitCompoundButton ButtonSize=BitButtonSize.Small
+                                       Text="Primary"
+                                       SecondaryText="This Button is a compound button">
+                    </BitCompoundButton>
+                </div>
+                <div>
+                    <BitLabel>Medium size</BitLabel>
+                    <BitCompoundButton ButtonSize=BitButtonSize.Medium
+                                       Text="Primary"
+                                       SecondaryText="This Button is a compound button">
+                    </BitCompoundButton>
+                </div>
+                <div>
+                    <BitLabel>Large size</BitLabel>
+                    <BitCompoundButton ButtonSize=BitButtonSize.Large
+                                       Text="Primary"
+                                       SecondaryText="This Button is a compound button">
+                    </BitCompoundButton>
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Customized BitCompoundButton in different sizes" HTMLSourceCode="@example7HTMLCode" ExampleId="example7">
+        <ExamplePreview>
+            <div class="example-desc">BitCompoundButton can be customized easily in different sizes by overriding a certain CSS class.</div>
+            <div class="buttons-container-grid">
+                <div>
+                    <BitLabel>Small size</BitLabel>
+                    <BitCompoundButton Class="custom-btn-sm" ButtonSize=BitButtonSize.Small
+                                       Text="Primary"
+                                       SecondaryText="This Button is a compound button">
+                    </BitCompoundButton>
+                </div>
+                <div>
+                    <BitLabel>Medium size</BitLabel>
+                    <BitCompoundButton Class="custom-btn-md" ButtonSize=BitButtonSize.Medium
+                                       Text="Primary"
+                                       SecondaryText="This Button is a compound button">
+                    </BitCompoundButton>
+                </div>
+                <div>
+                    <BitLabel>Large size</BitLabel>
+                    <BitCompoundButton Class="custom-btn-lg" ButtonSize=BitButtonSize.Large
+                                       Text="Primary"
+                                       SecondaryText="This Button is a compound button">
+                    </BitCompoundButton>
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
 </ComponentDemo>

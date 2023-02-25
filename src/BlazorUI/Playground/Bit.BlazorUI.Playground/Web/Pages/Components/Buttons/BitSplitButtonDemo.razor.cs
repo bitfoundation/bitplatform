@@ -21,6 +21,15 @@ public partial class BitSplitButtonDemo
             DefaultValue = "false",
             Description = "If true, add an aria-hidden attribute instructing screen readers to ignore the element."
         },
+        new ComponentParameter()
+        {
+            Name = "ButtonSize",
+            Type = "BitButtonSize",
+            LinkType = LinkType.Link,
+            Href = "#button-size-enum",
+            DefaultValue = "BitButtonSize.Medium",
+            Description = "The size of button, Possible values: Small | Medium | Large.",
+        },
         new ComponentParameter
         {
             Name = "ButtonStyle",
@@ -199,6 +208,33 @@ public partial class BitSplitButtonDemo
     };
     private readonly List<EnumParameter> enumParameters = new()
     {
+        new EnumParameter()
+        {
+            Id = "button-size-enum",
+            Title = "BitButtonSize Enum",
+            Description = "",
+            EnumList = new List<EnumItem>()
+            {
+                new EnumItem()
+                {
+                    Name= "Small",
+                    Description="The button size is small.",
+                    Value="0",
+                },
+                new EnumItem()
+                {
+                    Name= "Medium",
+                    Description="The button size is medium.",
+                    Value="1",
+                },
+                new EnumItem()
+                {
+                    Name= "Large",
+                    Description="The button size is large.",
+                    Value="2",
+                }
+            }
+        },
         new EnumParameter()
         {
             Id = "button-style-enum",
@@ -436,7 +472,7 @@ public partial class BitSplitButtonDemo
 
     private void OnTabClick()
     {
-        BasicClickedItem = string.Empty; 
+        BasicClickedItem = string.Empty;
         IsStickyClickedItem = string.Empty;
         DisabledClickedItem = string.Empty;
         TemplateClickedItem = string.Empty;
@@ -1296,6 +1332,386 @@ private List<SplitActionItem> TemplateCustomItems = new()
 private string TemplateClickedItem;
 ";
     private readonly string example4BitSplitButtonOptionCSharpCode = @"
+private string TemplateClickedItem;
+";
+
+    private readonly string example5BitSplitButtonItemHTMLCode = @"
+<div class=""buttons-container-grid"">
+    <div>
+        <BitLabel>Small size</BitLabel>
+        <BitSplitButton Items=""BasicItems""
+                        ButtonSize=""BitButtonSize.Small""
+                        ButtonStyle=""BitButtonStyle.Primary""
+                        OnClick=""(BitSplitButtonItem item) => BasicClickedItem = item.Text"" />
+    </div>
+    <div>
+        <BitLabel>Medium size</BitLabel>
+        <BitSplitButton Items=""BasicItems""
+                        ButtonSize=""BitButtonSize.Medium""
+                        ButtonStyle=""BitButtonStyle.Primary""
+                        OnClick=""(BitSplitButtonItem item) => BasicClickedItem = item.Text"" />
+    </div>
+    <div>
+        <BitLabel>Large size</BitLabel>
+        <BitSplitButton Items=""BasicItems""
+                        ButtonSize=""BitButtonSize.Large""
+                        ButtonStyle=""BitButtonStyle.Primary""
+                        OnClick=""(BitSplitButtonItem item) => BasicClickedItem = item.Text"" />
+    </div>
+</div>";
+    private readonly string example5CustomItemHTMLCode = @"
+ <div class=""buttons-container-grid"">
+    <div>
+        <BitLabel>Small size</BitLabel>
+        <BitSplitButton Items=""BasicCustomItems""
+                        ButtonSize=""BitButtonSize.Small""
+                        TextField=""@nameof(SplitActionItem.Name)""
+                        KeyField=""@nameof(SplitActionItem.Id)""
+                        IconNameField=""@nameof(SplitActionItem.Icon)""
+                        ButtonStyle=""BitButtonStyle.Primary""
+                        OnClick=""(SplitActionItem item) => BasicClickedItem = item.Name"" />
+    </div>
+    <div>
+        <BitLabel>Medium size</BitLabel>
+        <BitSplitButton Items=""BasicCustomItems""
+                        ButtonSize=""BitButtonSize.Medium""
+                        TextField=""@nameof(SplitActionItem.Name)""
+                        KeyField=""@nameof(SplitActionItem.Id)""
+                        IconNameField=""@nameof(SplitActionItem.Icon)""
+                        ButtonStyle=""BitButtonStyle.Primary""
+                        OnClick=""(SplitActionItem item) => BasicClickedItem = item.Name"" />
+    </div>
+    <div>
+        <BitLabel>Large size</BitLabel>
+        <BitSplitButton Items=""BasicCustomItems""
+                        ButtonSize=""BitButtonSize.Large""
+                        TextField=""@nameof(SplitActionItem.Name)""
+                        KeyField=""@nameof(SplitActionItem.Id)""
+                        IconNameField=""@nameof(SplitActionItem.Icon)""
+                        ButtonStyle=""BitButtonStyle.Primary""
+                        OnClick=""(SplitActionItem item) => BasicClickedItem = item.Name"" />
+    </div>
+</div>";
+    private readonly string example5BitSplitButtonOptionHTMLCode = @"
+<div class=""buttons-container-grid"">
+    <div>
+        <BitLabel>Small size</BitLabel>
+        <BitSplitButton ButtonStyle=""BitButtonStyle.Primary""
+                        ButtonSize=""BitButtonSize.Small""
+                        OnClick=""(BitSplitButtonOption item) => BasicClickedItem = item.Text"">
+            <BitSplitButtonOption Text=""Item A"" Key=""A"" />
+            <BitSplitButtonOption Text=""Item B"" Key=""B"" IconName=""BitIconName.Emoji"" />
+            <BitSplitButtonOption Text=""Item C"" Key=""C"" IconName=""BitIconName.Emoji2"" />
+        </BitSplitButton>
+    </div>
+    <div>
+        <BitLabel>Medium size</BitLabel>
+        <BitSplitButton ButtonStyle=""BitButtonStyle.Primary""
+                        ButtonSize=""BitButtonSize.Medium""
+                        OnClick=""(BitSplitButtonOption item) => BasicClickedItem = item.Text"">
+            <BitSplitButtonOption Text=""Item A"" Key=""A"" />
+            <BitSplitButtonOption Text=""Item B"" Key=""B"" IconName=""BitIconName.Emoji"" />
+            <BitSplitButtonOption Text=""Item C"" Key=""C"" IconName=""BitIconName.Emoji2"" />
+        </BitSplitButton>
+    </div>
+    <div>
+        <BitLabel>Large size</BitLabel>
+        <BitSplitButton ButtonStyle=""BitButtonStyle.Primary""
+                        ButtonSize=""BitButtonSize.Large""
+                        OnClick=""(BitSplitButtonOption item) => BasicClickedItem = item.Text"">
+            <BitSplitButtonOption Text=""Item A"" Key=""A"" />
+            <BitSplitButtonOption Text=""Item B"" Key=""B"" IconName=""BitIconName.Emoji"" />
+            <BitSplitButtonOption Text=""Item C"" Key=""C"" IconName=""BitIconName.Emoji2"" />
+        </BitSplitButton>
+    </div>
+</div>";
+    private readonly string example5BitSplitButtonItemCSharpCode = @"
+private List<BitSplitButtonItem> TemplateItems = new()
+{
+    new BitSplitButtonItem()
+    {
+        Text = ""Add"",
+        Key = ""add-key""
+    },
+    new BitSplitButtonItem()
+    {
+        Text = ""Edit"",
+        Key = ""edit-key""
+    },
+    new BitSplitButtonItem()
+    {
+        Text = ""Delete"",
+        Key = ""delete-key""
+    }
+};
+
+private string TemplateClickedItem;
+";
+    private readonly string example5CustomItemCSharpCode = @"
+public class SplitActionItem
+{
+    public string Id { get; set; }
+    public string Name { get; set; }
+    public BitIconName Icon { get; set; }
+    public bool IsEnabled { get; set; } = true;
+}
+
+private List<SplitActionItem> TemplateCustomItems = new()
+{
+    new SplitActionItem()
+    {
+        Name = ""Add"",
+        Id = ""add-key""
+    },
+    new SplitActionItem()
+    {
+        Name = ""Edit"",
+        Id = ""edit-key""
+    },
+    new SplitActionItem()
+    {
+        Name = ""Delete"",
+        Id = ""delete-key""
+    }
+};
+
+private string TemplateClickedItem;
+";
+    private readonly string example5BitSplitButtonOptionCSharpCode = @"
+private string TemplateClickedItem;
+";
+
+    private readonly string example6BitSplitButtonItemHTMLCode = @"
+<style>
+    .custom-btn-sm {
+        &.small {
+            height: 38px;
+            font-size: 8px;
+            line-height: 1.5;
+        }
+    }
+
+    .custom-btn-md {
+        &.medium {
+            height: 48px;
+            font-size: 16px;
+            line-height: 1.4;
+        }
+    }
+
+    .custom-btn-lg {
+        &.large {
+            height:50px;
+            font-size: 30px;
+            line-height: 1.33;
+        }
+    }
+</style>
+
+<div class=""buttons-container-grid"">
+    <div>
+        <BitLabel>Small size</BitLabel>
+        <BitSplitButton Items=""BasicItems""
+                        Class=""custom-btn-sm""
+                        ButtonSize=""BitButtonSize.Small""
+                        ButtonStyle=""BitButtonStyle.Primary""
+                        OnClick=""(BitSplitButtonItem item) => BasicClickedItem = item.Text"" />
+    </div>
+    <div>
+        <BitLabel>Medium size</BitLabel>
+        <BitSplitButton Items=""BasicItems""
+                        Class=""custom-btn-md""
+                        ButtonSize=""BitButtonSize.Medium""
+                        ButtonStyle=""BitButtonStyle.Primary""
+                        OnClick=""(BitSplitButtonItem item) => BasicClickedItem = item.Text"" />
+    </div>
+    <div>
+        <BitLabel>Large size</BitLabel>
+        <BitSplitButton Items=""BasicItems""
+                        Class=""custom-btn-lg""
+                        ButtonSize=""BitButtonSize.Large""
+                        ButtonStyle=""BitButtonStyle.Primary""
+                        OnClick=""(BitSplitButtonItem item) => BasicClickedItem = item.Text"" />
+    </div>
+</div>
+";
+    private readonly string example6CustomItemHTMLCode = @"
+<style>
+    .custom-btn-sm {
+        &.small {
+            height: 38px;
+            font-size: 8px;
+            line-height: 1.5;
+        }
+    }
+
+    .custom-btn-md {
+        &.medium {
+            height: 48px;
+            font-size: 16px;
+            line-height: 1.4;
+        }
+    }
+
+    .custom-btn-lg {
+        &.large {
+            height:50px;
+            font-size: 30px;
+            line-height: 1.33;
+        }
+    }
+</style>
+
+<div class=""buttons-container-grid"">
+    <div>
+        <BitLabel>Small size</BitLabel>
+        <BitSplitButton Items=""BasicCustomItems""
+                        Class=""custom-btn-sm""
+                        ButtonSize=""BitButtonSize.Small""
+                        TextField=""@nameof(SplitActionItem.Name)""
+                        KeyField=""@nameof(SplitActionItem.Id)""
+                        IconNameField=""@nameof(SplitActionItem.Icon)""
+                        ButtonStyle=""BitButtonStyle.Primary""
+                        OnClick=""(SplitActionItem item) => BasicClickedItem = item.Name"" />
+    </div>
+    <div>
+        <BitLabel>Medium size</BitLabel>
+        <BitSplitButton Items=""BasicCustomItems""
+                        Class=""custom-btn-md""
+                        ButtonSize=""BitButtonSize.Medium""
+                        TextField=""@nameof(SplitActionItem.Name)""
+                        KeyField=""@nameof(SplitActionItem.Id)""
+                        IconNameField=""@nameof(SplitActionItem.Icon)""
+                        ButtonStyle=""BitButtonStyle.Primary""
+                        OnClick=""(SplitActionItem item) => BasicClickedItem = item.Name"" />
+    </div>
+    <div>
+        <BitLabel>Large size</BitLabel>
+        <BitSplitButton Items=""BasicCustomItems""
+                        Class=""custom-btn-lg""
+                        ButtonSize=""BitButtonSize.Large""
+                        TextField=""@nameof(SplitActionItem.Name)""
+                        KeyField=""@nameof(SplitActionItem.Id)""
+                        IconNameField=""@nameof(SplitActionItem.Icon)""
+                        ButtonStyle=""BitButtonStyle.Primary""
+                        OnClick=""(SplitActionItem item) => BasicClickedItem = item.Name"" />
+</div>
+</div>";
+    private readonly string example6BitSplitButtonOptionHTMLCode = @"
+<style>
+    .custom-btn-sm {
+        &.small {
+            height: 38px;
+            font-size: 8px;
+            line-height: 1.5;
+        }
+    }
+
+    .custom-btn-md {
+        &.medium {
+            height: 48px;
+            font-size: 16px;
+            line-height: 1.4;
+        }
+    }
+
+    .custom-btn-lg {
+        &.large {
+            height:50px;
+            font-size: 30px;
+            line-height: 1.33;
+        }
+    }
+</style>
+
+<div class=""buttons-container-grid"">
+    <div>
+        <BitLabel>Small size</BitLabel>
+        <BitSplitButton ButtonStyle=""BitButtonStyle.Primary""
+                        Class=""custom-btn-sm""
+                        ButtonSize=""BitButtonSize.Small""
+                        OnClick=""(BitSplitButtonOption item) => BasicClickedItem = item.Text"">
+            <BitSplitButtonOption Text=""Item A"" Key=""A"" />
+            <BitSplitButtonOption Text=""Item B"" Key=""B"" IconName=""BitIconName.Emoji"" />
+            <BitSplitButtonOption Text=""Item C"" Key=""C"" IconName=""BitIconName.Emoji2"" />
+        </BitSplitButton>
+    </div>
+    <div>
+        <BitLabel>Medium size</BitLabel>
+        <BitSplitButton ButtonStyle=""BitButtonStyle.Primary""
+                        Class=""custom-btn-md""
+                        ButtonSize=""BitButtonSize.Medium""
+                        OnClick=""(BitSplitButtonOption item) => BasicClickedItem = item.Text"">
+            <BitSplitButtonOption Text=""Item A"" Key=""A"" />
+            <BitSplitButtonOption Text=""Item B"" Key=""B"" IconName=""BitIconName.Emoji"" />
+            <BitSplitButtonOption Text=""Item C"" Key=""C"" IconName=""BitIconName.Emoji2"" />
+        </BitSplitButton>
+    </div>
+    <div>
+        <BitLabel>Large size</BitLabel>
+        <BitSplitButton ButtonStyle=""BitButtonStyle.Primary""
+                        Class=""custom-btn-lg""
+                        ButtonSize=""BitButtonSize.Large""
+                        OnClick=""(BitSplitButtonOption item) => BasicClickedItem = item.Text"">
+            <BitSplitButtonOption Text=""Item A"" Key=""A"" />
+            <BitSplitButtonOption Text=""Item B"" Key=""B"" IconName=""BitIconName.Emoji"" />
+            <BitSplitButtonOption Text=""Item C"" Key=""C"" IconName=""BitIconName.Emoji2"" />
+        </BitSplitButton>
+    </div>
+</div>";
+    private readonly string example6BitSplitButtonItemCSharpCode = @"
+private List<BitSplitButtonItem> TemplateItems = new()
+{
+    new BitSplitButtonItem()
+    {
+        Text = ""Add"",
+        Key = ""add-key""
+    },
+    new BitSplitButtonItem()
+    {
+        Text = ""Edit"",
+        Key = ""edit-key""
+    },
+    new BitSplitButtonItem()
+    {
+        Text = ""Delete"",
+        Key = ""delete-key""
+    }
+};
+
+private string TemplateClickedItem;
+";
+    private readonly string example6CustomItemCSharpCode = @"
+public class SplitActionItem
+{
+    public string Id { get; set; }
+    public string Name { get; set; }
+    public BitIconName Icon { get; set; }
+    public bool IsEnabled { get; set; } = true;
+}
+
+private List<SplitActionItem> TemplateCustomItems = new()
+{
+    new SplitActionItem()
+    {
+        Name = ""Add"",
+        Id = ""add-key""
+    },
+    new SplitActionItem()
+    {
+        Name = ""Edit"",
+        Id = ""edit-key""
+    },
+    new SplitActionItem()
+    {
+        Name = ""Delete"",
+        Id = ""delete-key""
+    }
+};
+
+private string TemplateClickedItem;
+";
+    private readonly string example6BitSplitButtonOptionCSharpCode = @"
 private string TemplateClickedItem;
 ";
 }

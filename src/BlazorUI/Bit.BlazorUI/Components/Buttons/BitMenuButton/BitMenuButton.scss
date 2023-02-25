@@ -2,28 +2,19 @@
 
 .bit-mnb {
     position: relative;
-    min-width: spacing(10);
-    height: spacing(4);
-    font-family: $typography-button-font-family;
-    font-size: spacing(1.75);
-    font-weight: 400;
     display: inline-flex;
+    min-width: spacing(10);
+    box-sizing: border-box;
+    font-family: $typography-button-font-family;
+    font-weight: $typography-button-font-weight;
     justify-content: center;
     align-items: center;
+    cursor: pointer;
     outline: transparent;
     -webkit-font-smoothing: antialiased;
     border-radius: $shape-border-radius;
     border-width: $shape-border-width;
     border-style: $shape-border-style;
-    cursor: pointer;
-
-    .text {
-        margin: 0 spacing(0.5);
-    }
-
-    .bit-icon {
-        margin: spacing(0.25) spacing(0.5) 0 spacing(0.5);
-    }
 
     &.disabled {
         color: $color-text-disabled;
@@ -65,6 +56,24 @@
         }
     }
 
+    &.small {
+        padding: spacing(0.25) spacing(1.25);
+        font-size: spacing(1.5);
+        line-height: spacing(2.75);
+    }
+
+    &.medium {
+        padding: spacing(0.5) spacing(2);
+        font-size: spacing(1.75);
+        line-height: $typography-button-line-height;
+    }
+
+    &.large {
+        padding: spacing(0.75) spacing(2.75);
+        font-size: spacing(2);
+        line-height: spacing(3.75);
+    }
+
     &.open-menu {
         .items {
             opacity: 1;
@@ -79,19 +88,14 @@
         justify-content: center;
         background-color: transparent;
         width: 100%;
-        height: 100%;
         cursor: inherit;
         pointer-events: inherit;
         color: inherit;
-        padding: 0 spacing(2);
-
-        .text {
-            margin: 0 spacing(0.5);
-        }
-
-        .bit-icon {
-            margin: spacing(0.25) spacing(0.5) 0 spacing(0.5);
-        }
+        font-size: inherit;
+        font-weight: inherit;
+        line-height: inherit;
+        gap: spacing(1);
+        padding: 0;
     }
 
     .overlay {
@@ -133,22 +137,21 @@
         display: flex;
         background-color: transparent;
         width: 100%;
-        height: spacing(4.5);
-        line-height: spacing(4.5);
         align-items: center;
         text-align: left;
         cursor: pointer;
-        padding: 0 spacing(1) 0 spacing(0.5);
         border: none;
         color: $color-text-secondary;
+        gap: spacing(1);
+        line-height: inherit;
+        font-size: inherit;
+        padding: spacing(1);
 
         .bit-icon {
             color: $color-primary-main;
-            margin: 0 spacing(0.5);
         }
 
         .text {
-            margin: 0 spacing(0.5);
             vertical-align: middle;
             display: inline-block;
             flex-grow: 1;
