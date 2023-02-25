@@ -168,7 +168,7 @@ public partial class BitDatePicker
     [Parameter] public bool IsResponsive { get; set; }
 
     /// <summary>
-    /// Whether or not the Text field of the DatePicker is underlined.
+    /// Whether or not the Textfield of the DatePicker is underlined.
     /// </summary>
     [Parameter] public bool IsUnderlined { get; set; }
 
@@ -180,7 +180,7 @@ public partial class BitDatePicker
     /// <summary>
     /// Shows the custom label for text field
     /// </summary>
-    [Parameter] public RenderFragment? LabelTemplate { get; set; }
+    [Parameter] public RenderFragment? LabelFragment { get; set; }
 
     /// <summary>
     /// MaxDate for the DatePicker

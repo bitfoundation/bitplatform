@@ -7,10 +7,10 @@
      class="@ClassBuilder.Value"
      id="@UniqueId">
 
-    @if (LabelTemplate is not null)
+    @if (LabelFragment is not null)
     {
         <label class="dtp-label" id="@LabelId" for="@TextFieldId">
-            @LabelTemplate
+            @LabelFragment
         </label>
     }
     else if (Label.HasValue())

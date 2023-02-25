@@ -42,7 +42,7 @@ public partial class BitTimePicker
     /// <summary>
     /// Shows the custom label for text field
     /// </summary>
-    [Parameter] public RenderFragment? LabelFragment { get; set; }
+    [Parameter] public RenderFragment? LabelTemplate { get; set; }
 
     /// <summary>
     /// If true, sets 12 hour selection clock.
