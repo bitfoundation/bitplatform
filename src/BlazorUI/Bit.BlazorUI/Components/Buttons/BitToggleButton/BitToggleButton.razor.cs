@@ -34,6 +34,8 @@ public partial class BitToggleButton
         get => buttonSize;
         set
         {
+            if (buttonSize == value) return;
+
             buttonSize = value;
             ClassBuilder.Reset();
         }
@@ -119,11 +121,14 @@ public partial class BitToggleButton
                                        ? "primary"
                                        : "standard");
 
-        ClassBuilder.Register(() => ButtonSize == BitButtonSize.Small
-                               ? "small"
-                               : ButtonSize == BitButtonSize.Medium
-                                   ? "medium"
-                                   : "large");
+        ClassBuilder.Register(() =>
+         ButtonSize switch
+         {
+             BitButtonSize.Small => "small",
+             BitButtonSize.Medium => "medium",
+             BitButtonSize.Large => "large",
+             _ => "small"
+         });
 
         ClassBuilder.Register(() => IsChecked
                                        ? "checked"

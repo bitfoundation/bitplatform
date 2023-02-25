@@ -58,6 +58,8 @@ public partial class BitMenuButton<TItem> where TItem : class
         get => buttonSize;
         set
         {
+            if (buttonSize == value) return;
+
             buttonSize = value;
             ClassBuilder.Reset();
         }
@@ -203,11 +205,14 @@ public partial class BitMenuButton<TItem> where TItem : class
                                            ? "primary"
                                            : "standard");
 
-        ClassBuilder.Register(() => ButtonSize == BitButtonSize.Small
-                               ? "small"
-                               : ButtonSize == BitButtonSize.Medium
-                                   ? "medium"
-                                   : "large");
+        ClassBuilder.Register(() =>
+         ButtonSize switch
+         {
+             BitButtonSize.Small => "small",
+             BitButtonSize.Medium => "medium",
+             BitButtonSize.Large => "large",
+             _ => "small"
+         });
 
         ClassBuilder.Register(() => _isCalloutOpen
                                        ? "open-menu"
