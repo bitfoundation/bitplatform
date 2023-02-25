@@ -93,7 +93,7 @@
     <ComponentExampleBox Title="Absolute positioning" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example3">
         <ExamplePreview>
             <div class="example-desc">BitModal has an abosolute position option to further customize it's location.</div>
-            
+
             <div class="btn-container">
                 <BitButton OnClick=@(() => IsOpen3 = true)>Open Modal (AbsolutePosition = true)</BitButton>
                 <BitButton OnClick=@(() => IsOpen4 = true)>Open Modal (ScrollerSelector)</BitButton>
@@ -194,10 +194,59 @@
                 <BitModal @bind-IsOpen="IsOpenInPosition" Position="position">
                     <div class="modal-header">
                         <span>Modal positioning</span>
-                        <BitIconButton OnClick=@(()=>IsOpenInPosition=false) IconName="BitIconName.ChromeClose" Title="Close" />
+                        <BitIconButton OnClick=@(() => IsOpenInPosition = false) IconName="BitIconName.ChromeClose" Title="Close" />
                     </div>
                     <div class="modal-body">
                         BitModal with custom positioning. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                    </div>
+                </BitModal>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Draggable BitModal" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
+        <ExamplePreview>
+            <div>
+                <BitToggle Label="Is Draggable?" @bind-Value="IsDraggable" />
+                <br />
+                <BitButton OnClick="() => IsOpen5 = true">Open Modal</BitButton>
+                <BitModal @bind-IsOpen="IsOpen5" IsDraggable="IsDraggable">
+                    <div class="modal-header">
+                        <span>Draggble Modal</span>
+                        <BitIconButton OnClick=@(() => IsOpen5 = false) IconName="BitIconName.ChromeClose" Title="Close" />
+                    </div>
+                    <div class="modal-body">
+                        <p>
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+                            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+                            sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+                            turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+                            ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+                            Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+                            Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+                            efficitur.
+                        </p>
+                    </div>
+                </BitModal>
+                <hr style="border-color:white" />
+                <div class="example-desc">Using custom drag element.</div>
+                <BitButton OnClick="() => IsOpen6 = true">Open Modal</BitButton>
+                <BitModal @bind-IsOpen="IsOpen6" IsDraggable="true" DragElementSelector=".modal-header-drag">
+                    <div class="modal-header modal-header-drag">
+                        <span>Draggble Modal with custom drag element</span>
+                        <BitIconButton OnClick=@(() => IsOpen6 = false) IconName="BitIconName.ChromeClose" Title="Close" />
+                    </div>
+                    <div class="modal-body">
+                        <p>
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+                            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+                            sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+                            turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+                            ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+                            Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+                            Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+                            efficitur.
+                        </p>
                     </div>
                 </BitModal>
             </div>

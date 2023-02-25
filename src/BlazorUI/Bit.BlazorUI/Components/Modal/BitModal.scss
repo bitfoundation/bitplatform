@@ -46,17 +46,7 @@
         border-radius: $shape-border-radius;
         background-color: $color-neutrals-white;
         box-sizing: border-box;
-        position: relative;
-        text-align: left;
-        outline: transparent solid spacing(0.375);
-        max-height: calc(100% - spacing(4));
-        max-width: calc(100% - spacing(4));
-        min-height: spacing(14);
-        min-width: spacing(36);
-        overflow-y: auto;
-        display: flex;
-        flex-flow: column nowrap;
-        align-items: stretch;
+        position: absolute;
     }
 
     .center {
