@@ -6,7 +6,7 @@
 .main-header {
     position: fixed;
     top: 0;
-    z-index: 1001;
+    z-index: 2;
     width: 100%;
     transition: top 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
     -webkit-backdrop-filter: blur(20px);
@@ -111,7 +111,7 @@
 
 .header-nav {
     position: fixed;
-    z-index: 100;
+    z-index: 9999;
     top: rem(calc($HeaderHeight + $HeaderSecondRowHeight));
     left: 0;
     display: flex;

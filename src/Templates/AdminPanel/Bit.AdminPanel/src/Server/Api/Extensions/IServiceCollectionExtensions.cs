@@ -53,7 +53,7 @@ public static class IServiceCollectionExtensions
         {
             var certificatePath = Path.Combine(Directory.GetCurrentDirectory(), "IdentityCertificate.pfx");
             RSA? rsaPrivateKey;
-            using (X509Certificate2 signingCert = new X509Certificate2(certificatePath, appsettings.JwtSettings.IdentityCertificatePassword))
+            using (X509Certificate2 signingCert = new X509Certificate2(certificatePath, appsettings.JwtSettings.IdentityCertificatePassword, X509KeyStorageFlags.EphemeralKeySet))
             {
                 rsaPrivateKey = signingCert.GetRSAPrivateKey();
             }

@@ -196,7 +196,7 @@
                                 IconLocation="BitIconLocation.Left"
                                 Placeholder="Select dates...">
                 <IconFragment>
-                    <img src="https://img.icons8.com/fluency/2x/calendar-13.png" width="24" height="24"/>
+                    <img src="https://img.icons8.com/fluency/2x/calendar-13.png" width="24" height="24" />
                 </IconFragment>
             </BitDateRangePicker>
         </ExamplePreview>
@@ -208,6 +208,27 @@
                                 AriaLabel="Select dates"
                                 IconName="BitIconName.Airplane"
                                 Placeholder="Select dates..." />
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Responsive BitDateRangePicker" HTMLSourceCode="@example16HTMLCode" ExampleId="example16">
+        <ExamplePreview>
+            <BitDateRangePicker Style="max-width: 300px"
+                                IsResponsive="true"
+                                AriaLabel="Select a date"
+                                Placeholder="Select a date..." />
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="AutoClose" HTMLSourceCode="@example17HTMLCode" ExampleId="example17">
+        <ExamplePreview>
+            <div class="example-desc">
+                You can disable the auto-close feature
+            </div>
+            <BitDateRangePicker Style="max-width: 300px"
+                                AutoClose="false"
+                                AriaLabel="Select a date"
+                                Placeholder="Select a date..." />
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>

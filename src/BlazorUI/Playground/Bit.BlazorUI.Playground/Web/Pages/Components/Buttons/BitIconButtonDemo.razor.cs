@@ -31,6 +31,15 @@ public partial class BitIconButtonDemo
         },
         new ComponentParameter()
         {
+            Name = "ButtonSize",
+            Type = "BitButtonSize",
+            LinkType = LinkType.Link,
+            Href = "#button-size-enum",
+            DefaultValue = "BitButtonSize.Medium",
+            Description = "The size of button, Possible values: Small | Medium | Large.",
+        },
+        new ComponentParameter()
+        {
             Name = "ButtonType",
             Type = "BitButtonType",
             LinkType = LinkType.Link,
@@ -86,6 +95,33 @@ public partial class BitIconButtonDemo
 
     private readonly List<EnumParameter> enumParameters = new()
     {
+        new EnumParameter()
+        {
+            Id = "button-size-enum",
+            Title = "BitButtonSize Enum",
+            Description = "",
+            EnumList = new List<EnumItem>()
+            {
+                new EnumItem()
+                {
+                    Name= "Small",
+                    Description="The button size is small.",
+                    Value="0",
+                },
+                new EnumItem()
+                {
+                    Name= "Medium",
+                    Description="The button size is medium.",
+                    Value="1",
+                },
+                new EnumItem()
+                {
+                    Name= "Large",
+                    Description="The button size is large.",
+                    Value="2",
+                }
+            }
+        },
         new EnumParameter()
         {
             Id = "button-type-enum",
@@ -200,4 +236,71 @@ public partial class BitIconButtonDemo
 
     private readonly string example6HTMLCode = @"
 <BitIconButton IconName=""BitIconName.Emoji2"" Title=""I'm Happy"" />";
+
+    private readonly string example7HTMLCode = @"
+<div class=""buttons-container-grid"">
+    <div>
+        <BitLabel>Small size</BitLabel>
+        <BitIconButton ButtonSize=""BitButtonSize.Small"" IconName=""BitIconName.Emoji"" />
+
+    </div>
+    <div>
+        <BitLabel>Medium size</BitLabel>
+        <BitIconButton ButtonSize=""BitButtonSize.Medium"" IconName=""BitIconName.Emoji"" />
+
+    </div>
+    <div>
+        <BitLabel>Large size</BitLabel>
+        <BitIconButton ButtonSize=""BitButtonSize.Large"" IconName=""BitIconName.Emoji"" />
+    </div>
+</div>";
+    private readonly string example8HTMLCode = @"
+<style>
+    .buttons-container-grid {
+        display: grid;
+        gap: 0.5rem;
+    }
+    
+    .custom-btn-sm.small {
+        padding: 4px 8px;
+        font-size: 8px;
+        line-height: 1.5;
+        border-radius: 3px;
+    }
+    
+    .custom-btn-md.medium {
+        padding: 12px 24px;
+        font-size: 16px;
+        line-height: 1.4;
+        border-radius: 4px;
+    }
+    
+    .custom-btn-lg.large {
+        padding: 20px 32px;
+        font-size: 32px;
+        line-height: 1.33;
+        border-radius: 6px;
+    }
+</style>
+
+<div class=""buttons-container-grid"">
+    <div>
+        <BitLabel>Small size</BitLabel>
+        <BitIconButton Class=""custom-btn-sm""
+                       ButtonSize=""BitButtonSize.Small"" IconName=""BitIconName.Emoji"" />
+
+    </div>
+    <div>
+        <BitLabel>Medium size</BitLabel>
+        <BitIconButton Class=""custom-btn-md""
+                       ButtonSize=""BitButtonSize.Medium"" IconName=""BitIconName.Emoji"" />
+
+    </div>
+    <div>
+        <BitLabel>Large size</BitLabel>
+        <BitIconButton Class=""custom-btn-lg""
+                       ButtonSize=""BitButtonSize.Large"" IconName=""BitIconName.Emoji"" />
+
+    </div>
+</div>";
 }

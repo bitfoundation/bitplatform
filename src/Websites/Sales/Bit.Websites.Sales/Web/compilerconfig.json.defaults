@@ -6,7 +6,8 @@
             "style": "expanded",
             "sourceMapUrls": "relative",
             "relativeUrls": true,
-            "sourceMap": false
+            "sourceMap": false,
+            "useNodeSass": false
         },
         "nodesass": {
             "autoPrefix": "",

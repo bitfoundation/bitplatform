@@ -13,25 +13,6 @@ public class BitColorPickerTests : BunitTestContext
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
     }
 
-    [DataTestMethod, 
-        DataRow(Visual.Fluent),
-        DataRow(Visual.Cupertino),
-        DataRow(Visual.Material)
-    ]
-    public void BitColorPickerMustRespectBasicClasses(Visual visual)
-    {
-        var cut = RenderComponent<BitColorPickerTest>(parameters =>
-        {
-            parameters.Add(p => p.Visual, visual);
-            parameters.Add(p => p.Color, "rgb(255,255,255)");
-        });
-
-        var BitColorPicker = cut.Find(".bit-clp");
-        var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
-
-        Assert.IsTrue(BitColorPicker.ClassList.Contains($"bit-clp-{visualClass}") && BitColorPicker.ClassList.Contains($"bit-clp"));
-    }
-
     [DataTestMethod,
         DataRow(true),
         DataRow(false)

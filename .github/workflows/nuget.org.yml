@@ -103,6 +103,9 @@ jobs:
 
     - name: dotnet pack BlazorWasm
       run: dotnet pack src/Templates/BlazorWasm/Bit.BlazorWasm.ProjectTemplate.csproj --output . --configuration Release
+
+    - name: dotnet pack BlazorDual
+      run: dotnet pack src/Templates/BlazorDual/Bit.BlazorDual.ProjectTemplate.csproj --output . --configuration Release
     
     - name: dotnet nuget push
       run: dotnet nuget push *.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{secrets.NUGET_ORG_API_KEY}} --skip-duplicate

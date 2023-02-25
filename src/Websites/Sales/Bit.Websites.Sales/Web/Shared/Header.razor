@@ -1,0 +1,41 @@
+﻿@inherits AppComponentBase
+
+<header class="header" id="mainHeader">
+    <div class="header-container">
+        <div class="logo-container">
+            <a class="bit-logo" href="/"></a>
+        </div>
+
+        <div class="header-content">
+            <a class="header-lnk @(_currentUrl == "/" ? "header-lnk--active" : "")" href="/">Home<span class="@(_currentUrl == "/" ? "header-lnk-border" : "")"></span></a>
+            <a class="header-lnk @(_currentUrl == "/cases" ? "header-lnk--active" : "")" href="/cases">Cases<span class="@(_currentUrl == "/cases" ? "header-lnk-border" : "")"></span></a>
+            <a class="header-lnk @(_currentUrl == "/services" ? "header-lnk--active" : "")" href="/services">Services<span class="@(_currentUrl == "/services" ? "header-lnk-border" : "")"></span></a>
+            <a class="header-lnk @(_currentUrl == "/about" ? "header-lnk--active" : "")" href="/about">About<span class="@(_currentUrl == "/about" ? "header-lnk-border" : "")"></span></a>
+            <a class="header-lnk @(_currentUrl == "/process" ? "header-lnk--active" : "")" href="/process">Process<span class="@(_currentUrl == "/process" ? "header-lnk-border" : "")"></span></a>
+            <button class="header-btn" onclick="App.scrollToContactUs()">Free Consultation</button>
+        </div>
+        <div class="header-menu-btn" id="headerMenuBtn" @onclick="@OpenMenu"></div>
+    </div>
+</header>
+
+@if (_isMenuOpen)
+{
+    <section class="menu-shadow" id="menuShadow" @onclick="CloseMenu">
+        <div class="menu" id="menu" @onclick:stopPropagation="true">
+            <div class="menu-top-bar">
+                <div class="close-btn" id="menuCloseBtn" @onclick="CloseMenu"></div>
+            </div>
+
+            <div class="menu-content">
+                <a class="menu-lnk @(_currentUrl== "/" ? "menu-lnk--active" : "")" href="/">Home<span class="@(_currentUrl== "/" ? "menu-link-border" : "")"></span></a>
+                <a class="menu-lnk @(_currentUrl== "/cases" ? "menu-lnk--active" : "")" href="/cases">Cases<span class="@(_currentUrl== "/cases" ? "menu-link-border" : "")"></span></a>
+                <a class="menu-lnk @(_currentUrl== "/services" ? "menu-lnk--active" : "")" href="/services">Services<span class="@(_currentUrl== "/services" ? "menu-link-border" : "")"></span></a>
+                <a class="menu-lnk @(_currentUrl== "/about" ? "menu-lnk--active" : "")" href="/about">About<span class="@(_currentUrl== "/about" ? "menu-link-border" : "")"></span></a>
+                <a class="menu-lnk @(_currentUrl== "/process" ? "menu-lnk--active" : "")" href="/process">Process<span class="@(_currentUrl== "/process" ? "menu-link-border" : "")"></span></a>
+                <button class="menu-header-btn" onclick="App.scrollToContactUs()">
+                    <a class="menu-btn" id="contactUsBtn" @onclick="CloseMenu">Free Consultation</a>
+                </button>
+            </div>
+        </div>
+    </section>
+}

@@ -5,34 +5,32 @@
      @attributes="HtmlAttributes"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
-     aria-describedby="@GetAriaDescribedby"
-     role="@GetRootElementRole">
+     aria-describedby="@AriaDescribedby"
+     role="@RootElementRole">
 
     @if (IsMultiline)
     {
-        <div class=@($"{RootElementClass}-multiline")>
-            <div class=@($"{RootElementClass}-content")>
-
-                <div class=@($"{RootElementClass}-icon") aria-hidden="true">
-                    <i class=@($"bit-icon bit-icon--{messageBarIcon.GetName()}")></i>
+        <div class="multiline">
+            <div class="content">
+                <div class="icon" aria-hidden="true">
+                    <i class="bit-icon bit-icon--@messageBarIcon.GetName()"></i>
                 </div>
 
-                <div class=@($"{RootElementClass}-text")
+                <div class="text"
                      id="@LabelId"
                      role="@(Role is not null ? Role : GetTextRole())"
                      aria-live="@GetAnnouncementPriority()">
-                    <span class=@($"{RootElementClass}-innertext")>
+                    <span class="innertext">
                         <span>
                             @ChildContent
                         </span>
                     </span>
                 </div>
 
-                @*DismissSingleLine*@
                 @if (HasDismiss)
                 {
-                    <div class=@($"{RootElementClass}-dismiss")>
-                        <button @onclick="@OnDismiss"
+                    <div class="dismiss">
+                        <button @onclick="OnDismiss"
                                 type="button"
                                 title="@(DismissButtonAriaLabel.HasValue() ? DismissButtonAriaLabel : null)"
                                 aria-label="@(DismissButtonAriaLabel.HasValue() ? DismissButtonAriaLabel : null)">
@@ -43,58 +41,51 @@
                     </div>
                 }
             </div>
+
             @if (Actions is not null)
             {
-                <div class=@($"{RootElementClass}-actions")>@Actions</div>
+                <div class="actions">@Actions</div>
             }
         </div>
     }
     else
     {
-        <div class=@($"{RootElementClass}-singleline")>
-            <div class=@($"{RootElementClass}-content")>
-
-                @*Icon*@
-                <div class=@($"{RootElementClass}-icon") aria-hidden="true">
-                    <i class=@($"bit-icon bit-icon--{messageBarIcon}")></i>
+        <div class="singleline">
+            <div class="content">
+                <div class="icon" aria-hidden="true">
+                    <i class="bit-icon bit-icon--@messageBarIcon"></i>
                 </div>
-
-                @*ChildContent*@
-                <div class=@($"{RootElementClass}-text {(ExpandSingleLine ? $"{RootElementClass}-open": "")}")
+                <div class="text @(ExpandSingleLine ? "open": string.Empty)"
                      id="@LabelId"
                      role="@(Role is not null ? Role : GetTextRole())"
                      aria-live="@GetAnnouncementPriority()">
-                    <span class=@($"{RootElementClass}-innertext")>
+                    <span class="innertext">
                         <span>
                             @ChildContent
                         </span>
                     </span>
                 </div>
 
-                @*Action*@
                 @if (Actions is not null)
                 {
-                    <div class=@($"{RootElementClass}-actions")>@Actions</div>
+                    <div class="actions">@Actions</div>
                 }
-
-                @*ExpandSingleLine*@
                 else if (Truncated)
                 {
-                    <div class=@($"{RootElementClass}-truncate")>
-                        <button @onclick="@ToggleExpandSingleLine"
+                    <div class="truncate">
+                        <button @onclick="ToggleExpandSingleLine"
                                 type="button"
                                 aria-label="@(OverflowButtonAriaLabel.HasValue()? OverflowButtonAriaLabel : null)"
                                 aria-expanded="@(ExpandSingleLine ? "true" : "false")">
-                            <i class=@($"bit-icon bit-icon--{(ExpandSingleLine ? BitIconName.DoubleChevronUp : BitIconName.DoubleChevronDown).GetName()}") aria-hidden="true"></i>
+                            <i class="bit-icon bit-icon--@((ExpandSingleLine ? BitIconName.DoubleChevronUp : BitIconName.DoubleChevronDown).GetName())" aria-hidden="true"></i>
                         </button>
                     </div>
                 }
 
-                @*DismissSingleLine*@
                 @if (HasDismiss)
                 {
-                    <div class=@($"{RootElementClass}-dismiss")>
-                        <button @onclick="@OnDismiss"
+                    <div class="dismiss">
+                        <button @onclick="OnDismiss"
                                 type="button"
                                 title="@(DismissButtonAriaLabel.HasValue() ? DismissButtonAriaLabel : null)"
                                 aria-label="@(DismissButtonAriaLabel.HasValue() ? DismissButtonAriaLabel : null)">

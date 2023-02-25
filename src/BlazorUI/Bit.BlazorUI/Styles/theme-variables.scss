@@ -1,0 +1,90 @@
+﻿$spacing-scaling-factor: var(--spa-scaling-factor);
+/*---- Color ----*/
+$color-primary-main: var(--clr-primary-main);
+$color-primary-dark: var(--clr-primary-dark);
+$color-primary-darker: var(--clr-primary-darker);
+$color-primary-light: var(--clr-primary-light);
+$color-primary-lighter: var(--clr-primary-light);
+$color-secondary-main: var(--clr-secondary-main);
+$color-secondary-dark: var(--clr-secondary-dark);
+$color-secondary-darker: var(--clr-secondary-darker);
+//general
+$color-general-red: var(--clr-gnr-red);
+$color-general-darkred: var(--clr-gnr-darkred);
+$color-general-red2: var(--clr-gnr-red2);
+$color-general-red3: var(--clr-gnr-red3);
+$color-general-green: var(--clr-gnr-green);
+$color-general-orange: var(--clr-gnr-orange);
+$color-general-magenta: var(--clr-gnr-magenta);
+//state
+$color-state-invalid: var(--clr-sta-invalid);
+$color-state-invalid-hover: var(--clr-sta-invalid-hover);
+$color-state-error: var(--clr-sta-error);
+$color-state-error-bg: var(--clr-sta-error-bg);
+$color-state-error-dark: var(--clr-sta-error-dark);
+$color-state-severe-warning-bg: var(--clr-sta-severe-warning-bg);
+$color-state-severe-warning-dark: var(--clr-sta-severe-warning-dark);
+$color-state-success-bg: var(--clr-sta-success-bg);
+$color-state-success-dark: var(--clr-sta-success-dark);
+$color-state-warning-bg: var(--clr-sta-warning-bg);
+$color-state-warning-dark: var(--clr-sta-warning-dark);
+//background color
+$color-background: var(--clr-background);
+//action
+$color-action-hover-primary: var(--clr-act-hover-pri);
+$color-action-active-primary: var(--clr-act-active-pri);
+$color-action-hover-secondary: var(--clr-act-hover-sec);
+$color-action-active-secondary: var(--clr-act-active-sec);
+$color-action-disabled: var(--clr-act-disabled);
+$color-action-border-hover-secondary: var(--clr-act-border-hover-sec);
+$color-action-border-active-secondary: var(--clr-act-border-active-sec);
+$color-action2-active-primary: var(--clr-act2-active);
+//text
+$color-text-primary: var(--clr-txt-primary);
+$color-text-secondary: var(--clr-txt-secondary);
+$color-text-disabled: var(--clr-txt-disabled);
+//border
+$color-border-primary: var(--clr-brd-primary);
+$color-border-secondary: var(--clr-brd-secondary);
+$color-border-disabled: var(--clr-brd-disabled);
+//neutrals
+$color-neutrals-white: var(--clr-ntr-white);
+$color-neutrals-black: var(--clr-ntr-black);
+$color-neutrals-gray10: var(--clr-ntr-gray10);
+$color-neutrals-gray20: var(--clr-ntr-gray20);
+$color-neutrals-gray30: var(--clr-ntr-gray30);
+$color-neutrals-gray40: var(--clr-ntr-gray40);
+$color-neutrals-gray50: var(--clr-ntr-gray50);
+$color-neutrals-gray60: var(--clr-ntr-gray60);
+$color-neutrals-gray70: var(--clr-ntr-gray70);
+$color-neutrals-gray80: var(--clr-ntr-gray80);
+$color-neutrals-gray90: var(--clr-ntr-gray90);
+$color-neutrals-gray100: var(--clr-ntr-gray100);
+$color-neutrals-gray110: var(--clr-ntr-gray110);
+$color-neutrals-gray120: var(--clr-ntr-gray120);
+$color-neutrals-gray130: var(--clr-ntr-gray130);
+$color-neutrals-gray140: var(--clr-ntr-gray140);
+$color-neutrals-gray150: var(--clr-ntr-gray150);
+$color-neutrals-gray160: var(--clr-ntr-gray160);
+$color-neutrals-gray170: var(--clr-ntr-gray170);
+$color-neutrals-gray180: var(--clr-ntr-gray180);
+$color-neutrals-gray190: var(--clr-ntr-gray190);
+$color-neutrals-gray200: var(--clr-ntr-gray200);
+$color-neutrals-gray210: var(--clr-ntr-gray210);
+$color-neutrals-gray220: var(--clr-ntr-gray220);
+
+/*---- Typography ----*/
+$typography-font-family: var(--tpg-font-family);
+$typography-font-weight: var(--tpg-font-weight);
+$typography-line-height: var(--tpg-line-height);
+$typography-button-font-family: var(--tpg-btn-font-family);
+$typography-button-font-weight: var(--tpg-btn-font-weight);
+$typography-button-line-height: var(--tpg-btn-line-height);
+$typography-icon-font-family: var(--tpg-ico-font-family);
+//shape
+$shape-border-radius: var(--shp-brd-radius);
+$shape-border-width: var(--shp-brd-width);
+$shape-border-style: var(--shp-brd-style);
+//spacing
+$space-overlay-zindex0: var(--spa-ovr-zindex0);
+$space-overlay-zindex1: var(--spa-ovr-zindex1);

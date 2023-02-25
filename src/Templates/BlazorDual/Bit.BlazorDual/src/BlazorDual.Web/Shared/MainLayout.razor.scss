@@ -1,0 +1,180 @@
+﻿@import '../Styles/abstracts/_media-queries.scss';
+@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_functions.scss';
+
+::deep * {
+    box-sizing: border-box;
+}
+
+::deep h1, h2, h3, h4, h5 {
+    margin: 0;
+}
+
+::deep p {
+    margin: 0;
+}
+
+.main {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    padding-top: rem(48px);
+    box-sizing: border-box;
+    background-color: $SecondaryColor;
+    font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+}
+
+.main--authenticated {
+    width: calc(100% - #{rem(240px)});
+    margin-left: rem(240px);
+
+    @include lg {
+        width: calc(100% - #{rem(206px)});
+        margin-left: rem(206px);
+    }
+
+    @include lt-lg {
+        width: 100%;
+        margin-left: 0;
+    }
+}
+
+.main-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 138px);
+
+    @include lg {
+        min-height: calc(100vh - 134px);
+    }
+
+    @include md {
+        min-height: calc(100vh - 134px);
+    }
+}
+
+@media all and (max-width: #{em(370px)}) {
+    .main--authenticated {
+        padding-top: rem(84px);
+    }
+
+    .main {
+        padding-top: rem(84px);
+        min-height: calc(100vh - 170px);
+    }
+
+    .main-content {
+        min-height: calc(100vh - 170px);
+    }
+}
+
+::deep .form-title {
+    margin-bottom: rem(25px);
+    font-weight: 600;
+    font-size: rem(28px);
+    line-height: rem(44px);
+    color: $SecondaryColor;
+
+    @include lg {
+        font-size: rem(24px);
+        line-height: rem(36px);
+    }
+
+    @include md {
+        font-size: rem(22px);
+        line-height: rem(36px);
+    }
+
+    @include sm {
+        font-size: rem(20px);
+        line-height: rem(32px);
+    }
+}
+
+::deep .form-input-container {
+    display: flex;
+    flex-flow: column nowrap;
+    width: 100%;
+    max-width: rem(340px);
+    margin-bottom: rem(21px);
+
+    @include lt-xl {
+        max-width: rem(300px);
+    }
+
+    @include sm {
+        max-width: 100%;
+    }
+}
+
+::deep .form-input-container--no-margin {
+    margin-bottom: 0;
+}
+
+::deep .form-input-error, ::deep .validation-message {
+    font-size: rem(12px);
+    line-height: rem(16px);
+    color: $Red;
+    text-align: left;
+}
+
+::deep .form-checkbox {
+    width: 100%;
+    max-width: rem(340px);
+
+    @include lt-xl {
+        max-width: rem(300px);
+    }
+
+    @include sm {
+        max-width: 100%;
+    }
+}
+
+::deep .form-submit-button {
+    margin-top: rem(20px);
+}
+
+::deep .form-message-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-radius: rem(4px) rem(4px) 0 0;
+}
+
+::deep .form--white {
+    position: relative;
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    max-width: rem(608px);
+    border-radius: rem(4px);
+    padding: rem(48px) rem(5px);
+    box-sizing: border-box;
+    background-color: $Gray6;
+    text-align: center;
+
+    @include lg {
+        padding: rem(48px) rem(5px);
+    }
+
+    @include md {
+        padding: rem(48px) rem(5px);
+    }
+
+    @include sm {
+        padding: rem(32px) rem(14px);
+    }
+
+    .bit-lbl-fluent,
+    .bit-txt-label {
+        text-align: left;
+    }
+}
+
+::deep .bit-file-upload-lbl {
+    padding: 0;
+}

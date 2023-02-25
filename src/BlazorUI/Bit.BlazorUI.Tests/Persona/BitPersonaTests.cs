@@ -7,54 +7,50 @@ namespace Bit.BlazorUI.Tests.Persona;
 public class BitPersonaTests : BunitTestContext
 {
     [DataTestMethod,
-     DataRow(Visual.Fluent, true),
-     DataRow(Visual.Fluent, false),
-
-     DataRow(Visual.Cupertino, true),
-     DataRow(Visual.Cupertino, false),
-
-     DataRow(Visual.Material, true),
-     DataRow(Visual.Material, false)
+     DataRow(true),
+     DataRow(false)
    ]
-    public void BitPersonaShouldTakeCorrectVisual(Visual visual, bool isEnabled)
+    public void BitPersonaShouldTakeCorrectVisual(bool isEnabled)
     {
         var component = RenderComponent<BitPersonaTest>(parameters =>
         {
-            parameters.Add(p => p.Visual, visual);
             parameters.Add(p => p.IsEnable, isEnabled);
         });
 
         var persona = component.Find(".bit-prs");
 
-        var enabledClass = isEnabled ? "enabled" : "disabled";
-        var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
-
-        Assert.IsTrue(persona.ClassList.Contains($"bit-prs-{enabledClass}-{visualClass}"));
+        if (isEnabled)
+        {
+            Assert.IsFalse(persona.ClassList.Contains("disabled"));
+        }
+        else
+        {
+            Assert.IsTrue(persona.ClassList.Contains("disabled"));
+        }
     }
 
     [DataTestMethod,
         DataRow("Text", "SecondaryText", "TertiaryText", "OptionalText"),
         DataRow(null, null, null, null)]
-    public void BitPersonaShouldCurrectWorkText(string text, string secondaryText, string tertiaryText, string optionalText)
+    public void BitPersonaShouldAddCorrectDetailsText(string text, string secondaryText, string tertiaryText, string optionalText)
     {
-        var component = RenderComponent<BitPersonaTest>(
-               parameters =>
-               {
-                   parameters.Add(p => p.Text, text);
-                   parameters.Add(p => p.SecondaryText, secondaryText);
-                   parameters.Add(p => p.TertiaryText, tertiaryText);
-                   parameters.Add(p => p.OptionalText, optionalText);
-               });
+        var component = RenderComponent<BitPersonaTest>(parameters =>
+        {
+            parameters.Add(p => p.Text, text);
+            parameters.Add(p => p.SecondaryText, secondaryText);
+            parameters.Add(p => p.TertiaryText, tertiaryText);
+            parameters.Add(p => p.OptionalText, optionalText);
+        });
 
-        var textClassName = component.Find(".bit-prs-primary-text");
-        var secendryTextClassName = component.Find(".bit-prs-secondary-text");
-        var tertiaryTextClassName = component.Find(".bit-prs-tertiary-text");
-        var optionalTextClassName = component.Find(".bit-prs-optional-text");
+        var primaryEl = component.Find(".primary-text");
+        var secondaryEl = component.Find(".secondary-text");
+        var tertiaryTextEl = component.Find(".tertiary-text");
+        var optionalTextEl = component.Find(".optional-text");
 
-        Assert.AreEqual(text, textClassName.TextContent.HasValue() ? textClassName.TextContent : null);
-        Assert.AreEqual(secondaryText, secendryTextClassName.TextContent.HasValue() ? secendryTextClassName.TextContent : null);
-        Assert.AreEqual(tertiaryText, tertiaryTextClassName.TextContent.HasValue() ? tertiaryTextClassName.TextContent : null);
-        Assert.AreEqual(optionalText, optionalTextClassName.TextContent.HasValue() ? optionalTextClassName.TextContent : null);
+        Assert.AreEqual(text, primaryEl.TextContent.HasValue() ? primaryEl.TextContent : null);
+        Assert.AreEqual(secondaryText, secondaryEl.TextContent.HasValue() ? secondaryEl.TextContent : null);
+        Assert.AreEqual(tertiaryText, tertiaryTextEl.TextContent.HasValue() ? tertiaryTextEl.TextContent : null);
+        Assert.AreEqual(optionalText, optionalTextEl.TextContent.HasValue() ? optionalTextEl.TextContent : null);
     }
 
     [DataTestMethod,
@@ -80,9 +76,9 @@ public class BitPersonaTests : BunitTestContext
               });
 
         var presenceStatusClassName = DetermineIcon(presenceStatus, isOutOfOffice);
-        var personaStatus = component.Find(".bit-prs-presence > i");
+        var personaStatus = component.Find(".presence > i");
 
-        Assert.AreEqual($"bit-prs-icon bit-icon--{presenceStatusClassName}", personaStatus.GetAttribute("class"));
+        Assert.AreEqual($"bit-icon bit-icon--{presenceStatusClassName}", personaStatus.GetAttribute("class"));
     }
 
     [DataTestMethod,
@@ -103,7 +99,7 @@ public class BitPersonaTests : BunitTestContext
              });
 
         var persona = component.Find(".bit-prs");
-        var personaSizeClass = $"bit-prs-{size}";
+        var personaSizeClass = $"size-{size}";
 
         Assert.IsTrue(persona.ClassList.Contains(personaSizeClass));
     }
@@ -111,20 +107,20 @@ public class BitPersonaTests : BunitTestContext
     [DataTestMethod,
         DataRow("Image url"),
         DataRow(null)]
-    public void BitPersonaImageTest(string imageurl)
+    public void BitPersonaImageTest(string imageUrl)
     {
         var component = RenderComponent<BitPersonaTest>(
              parameters =>
              {
-                 parameters.Add(p => p.ImageUrl, imageurl);
+                 parameters.Add(p => p.ImageUrl, imageUrl);
              });
 
-        if (imageurl.HasValue())
+        if (imageUrl.HasValue())
         {
-            var personaImage = component.Find(".bit-prs-img");
+            var personaImage = component.Find(".img");
             var imageSrc = personaImage.GetAttribute("src");
 
-            Assert.AreEqual(imageurl, imageSrc);
+            Assert.AreEqual(imageUrl, imageSrc);
         }
     }
 
@@ -144,22 +140,20 @@ public class BitPersonaTests : BunitTestContext
                 parameters.Add(p => p.Presence, presenceStatus);
             });
 
-        var precenseTitleClassName = component.Find(".bit-prs-presence");
+        var precenseTitleClassName = component.Find(".presence");
         var title = precenseTitleClassName.GetAttribute("title");
 
         Assert.AreEqual(presenceTitle, title);
     }
     private string DetermineIcon(BitPersonaPresenceStatus presence, bool isOutofOffice)
     {
-        string oofIcon = "presence_oof";
-
         return presence switch
         {
             BitPersonaPresenceStatus.Online => "presence_available",
             BitPersonaPresenceStatus.Busy => "presence_busy",
-            BitPersonaPresenceStatus.Away => isOutofOffice ? oofIcon : "presence_away",
+            BitPersonaPresenceStatus.Away => isOutofOffice ? "presence_oof" : "presence_away",
             BitPersonaPresenceStatus.DND => "presence_dnd",
-            BitPersonaPresenceStatus.Offline => isOutofOffice ? oofIcon : "presence_offline",
+            BitPersonaPresenceStatus.Offline => isOutofOffice ? "presence_oof" : "presence_offline",
             _ => "presence_unknown",
         };
     }

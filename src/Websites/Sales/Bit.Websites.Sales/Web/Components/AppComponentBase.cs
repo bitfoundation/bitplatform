@@ -2,9 +2,11 @@
 
 public partial class AppComponentBase : ComponentBase
 {
-    [AutoInject] private IExceptionHandler exceptionHandler = default!;
+    [AutoInject] private IExceptionHandler _exceptionHandler = default!;
+    [AutoInject] private NavigationManager _navigationManager = default!;
+    [AutoInject] private IJSRuntime _js = default!;
 
-    protected async sealed override Task OnInitializedAsync()
+    protected sealed override async Task OnInitializedAsync()
     {
         try
         {
@@ -13,11 +15,11 @@ public partial class AppComponentBase : ComponentBase
         }
         catch (Exception exp)
         {
-            exceptionHandler.Handle(exp);
+            _exceptionHandler.Handle(exp);
         }
     }
 
-    protected async sealed override Task OnParametersSetAsync()
+    protected sealed override async Task OnParametersSetAsync()
     {
         try
         {
@@ -26,8 +28,21 @@ public partial class AppComponentBase : ComponentBase
         }
         catch (Exception exp)
         {
-            exceptionHandler.Handle(exp);
+            _exceptionHandler.Handle(exp);
         }
+    }
+
+    protected sealed override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        var currentUrl = _navigationManager.Uri.Replace(_navigationManager.BaseUri, "/", StringComparison.Ordinal);
+        var hashIndex = currentUrl.LastIndexOf('#');
+        if (hashIndex > 0)
+        {
+            var elementId = currentUrl.Substring(hashIndex + 1);
+            _ = _js.InvokeVoidAsync("App.scrollIntoView", elementId);
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
     }
 
     /// <summary>
@@ -59,7 +74,7 @@ public partial class AppComponentBase : ComponentBase
             }
             catch (Exception exp)
             {
-                exceptionHandler.Handle(exp);
+                _exceptionHandler.Handle(exp);
             }
         };
     }
@@ -77,7 +92,7 @@ public partial class AppComponentBase : ComponentBase
             }
             catch (Exception exp)
             {
-                exceptionHandler.Handle(exp);
+                _exceptionHandler.Handle(exp);
             }
         };
     }
@@ -95,7 +110,7 @@ public partial class AppComponentBase : ComponentBase
             }
             catch (Exception exp)
             {
-                exceptionHandler.Handle(exp);
+                _exceptionHandler.Handle(exp);
             }
         };
     }
@@ -113,7 +128,7 @@ public partial class AppComponentBase : ComponentBase
             }
             catch (Exception exp)
             {
-                exceptionHandler.Handle(exp);
+                _exceptionHandler.Handle(exp);
             }
         };
     }

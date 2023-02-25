@@ -1,91 +1,103 @@
 ﻿@namespace Bit.BlazorUI
-@inherits BitInputBase<string?>
+@inherits BitInputBase<TValue>
+@typeparam TItem
+@typeparam TValue
+
+@if (ChildContent is not null)
+{
+    <CascadingValue Value="this" IsFixed="true">
+        @ChildContent
+    </CascadingValue>
+}
 
 <div @ref="RootElement"
      @attributes="HtmlAttributes"
      style="@StyleBuilder.Value"
-     class="@ClassBuilder.Value">
-    <div role="radiogroup" aria-labelledby="@GetGroupAriaLabelledBy()">
-        @if (LabelTemplate is not null)
-        {
-            @LabelTemplate
-        }
-        else
-        {
-            <label class="label"
-                   id="@GetGroupLabelId()"
-                   disabled="@(IsEnabled is false)">
-                @Label
-            </label>
-        }
-        <div class="container @LayoutFlow.GetDisplayName()?.ToLowerInvariant()">
-            @foreach (var option in Options)
-            {
-                <div class="@GetOptionClasses(option)">
-                    <div class="option-wrapper">
-                        <input @attributes="InputHtmlAttributes"
-                               id="@GetOptionInputId(option)"
-                               name="@Name"
-                               type="radio"
-                               class="input"
-                               aria-label="@GetOptionAriaLabel(option)"
-                               checked="@GetOptionIsChecked(option)"
-                               value="@option.Value"
-                               disabled="@(IsEnabled is false || option.IsEnabled is false)"
-                               required="@IsRequired"
-                               hidden="hidden" @onchange="() => HandleOptionChange(option)" />
+     class="@ClassBuilder.Value"
+     aria-label="@AriaLabel">
 
-                        <label for="@GetOptionInputId(option)">
-                            @if (OptionTemplate is not null)
-                            {
-                                @OptionTemplate(option)
-                            }
-                            else
-                            {
-                                <div class="option-label">
-                                    @if (OptionLabelTemplate is not null)
+    <div role="radiogroup" aria-labelledby="@GetAriaLabelledBy()">
+        
+        <label class="bit-rbl-label" id="@_labelId" disabled="@(IsEnabled is false)">
+            @if (LabelTemplate is not null)
+            {
+                @LabelTemplate
+            }
+            else if (Label.HasValue())
+            {
+                @Label
+            }
+        </label>
+
+        <div class="choice-field-group @LayoutFlow?.GetDisplayName()">
+            @foreach (var item in _items)
+            {
+                <div class="@GetDivClassNameItem(item)">
+                    <input @attributes="InputHtmlAttributes"
+                           @onclick="HandleClick"
+                           @onchange="() => HandleChange(new ChangeEventArgs { Value = GetValue(item) })"
+                           id="@GetInputId(item)"
+                           class="input"
+                           aria-label="@GetAriaLabel(item)"
+                           type="radio"
+                           checked=@GetIsCheckedItem(item)
+                           name="@Name"
+                           value="@GetValue(item)?.ToString()"
+                           required="@IsRequired"
+                           disabled="@(GetIsEnabled(item) is false)"
+                           hidden />
+
+                    <label for="@GetInputId(item)">
+                        @if (ItemTemplate is not null)
+                        {
+                            @ItemTemplate(item)
+                        }
+                        else
+                        {
+                            <div class="@GetLabelClassNameItem(item)">
+
+                                @if (ItemLabelTemplate is not null)
+                                {
+                                    @ItemLabelTemplate(item)
+                                }
+                                else
+                                {
+                                    @if (GetImageSrc(item).HasValue())
                                     {
-                                        @OptionLabelTemplate(option)
+                                        <div class="img-inner-field">
+                                            <div class="img-wrapper">
+                                                <div class="img" style="@($"width:{GetImageSize(item).Width}px; height:{GetImageSize(item).Height}px;")">
+                                                    <img src="@(GetIsCheckedItem(item) ? GetSelectedImageSrc(item) : GetImageSrc(item))" alt="@GetImageAlt(item)">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                    @if (GetIconName(item).HasValue)
+                                    {
+                                        <div class="icon-inner-field">
+                                            <div class="icon-wrapper">
+                                                <i aria-hidden="true" class="bit-icon bit-icon--@GetIconName(item).GetName()"></i>
+                                            </div>
+                                        </div>
+                                    }
+                                    @if (GetImageSrc(item).HasValue() || GetIconName(item).HasValue)
+                                    {
+                                        <div class="txt-wrapper">
+                                            <span class="txt">
+                                                @GetText(item)
+                                            </span>
+                                        </div>
                                     }
                                     else
                                     {
-                                        @if (option.ImageSrc.HasValue())
-                                        {
-                                            <div class="img-inner-field">
-                                                <div class="img-wrapper">
-                                                    <div class="image" style="@GetOptionImageSizeStyle(option)">
-                                                        <img src="@GetOptionImageSrc(option)" alt="@option.ImageAlt">
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        }
-                                        @if (option.IconName is not null)
-                                        {
-                                            <div class="icon-inner-field">
-                                                <div class="icon-wrapper">
-                                                    <i aria-hidden="true" class="bit-icon bit-icon--@option.IconName.GetName()"></i>
-                                                </div>
-                                            </div>
-                                        }
-                                        @if (option.ImageSrc.HasValue() || option.IconName is not null)
-                                        {
-                                            <div class="text-wrapper">
-                                                <span class="text">
-                                                    @option.Text
-                                                </span>
-                                            </div>
-                                        }
-                                        else
-                                        {
-                                            <span class="text">
-                                                @option.Text
-                                            </span>
-                                        }
+                                        <span class="txt">
+                                            @GetText(item)
+                                        </span>
                                     }
-                                </div>
-                            }
-                        </label>
-                    </div>
+                                }
+                            </div>
+                        }
+                    </label>
                 </div>
             }
         </div>

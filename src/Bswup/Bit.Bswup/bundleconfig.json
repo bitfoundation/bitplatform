@@ -1,14 +1,26 @@
 [
-  {
-    "outputFileName": "wwwroot/bit-bswup.min.js",
-    "inputFiles": [
-      "wwwroot/bit-bswup.js"
-    ]
-  },
-  {
-    "outputFileName": "wwwroot/bit-bswup.sw.min.js",
-    "inputFiles": [
-      "wwwroot/bit-bswup.sw.js"
-    ]
-  }
+    {
+        "outputFileName": "wwwroot/bit-bswup.min.js",
+        "inputFiles": [
+            "wwwroot/bit-bswup.js"
+        ]
+    },
+    {
+        "outputFileName": "wwwroot/bit-bswup.progress.min.js",
+        "inputFiles": [
+            "wwwroot/bit-bswup.progress.js"
+        ]
+    },
+    {
+        "outputFileName": "wwwroot/bit-bswup.progress.min.css",
+        "inputFiles": [
+            "Styles/bit-bswup.progress.css"
+        ]
+    },
+    {
+        "outputFileName": "wwwroot/bit-bswup.sw.min.js",
+        "inputFiles": [
+            "wwwroot/bit-bswup.sw.js"
+        ]
+    }
 ]

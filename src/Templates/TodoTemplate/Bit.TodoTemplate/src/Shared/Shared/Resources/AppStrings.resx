@@ -206,7 +206,7 @@
     <value>Passwords must have at least one uppercase ('A'-'Z').</value>
     <comment>Error when passwords do not have an uppercase letter</comment>
   </data>
-  <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
+    <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
     <value>{0} must be at least {1} characters.</value>
     <comment>Error message for passwords that are too short</comment>
   </data>
@@ -535,7 +535,7 @@ Please confirm your email by clicking on the link.</value>
   <data name="MinLengthAttribute_InvalidMinLength" xml:space="preserve">
     <value>MinLengthAttribute must have a Length value that is zero or greater.</value>
   </data>
-  <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
+    <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
     <value>The field {0} must be a string or array type with a minimum length of '{1}'.</value>
   </data>
   <data name="PhoneAttribute_Invalid" xml:space="preserve">
@@ -648,5 +648,8 @@ Please confirm your email by clicking on the link.</value>
   </data>
   <data name="Title" xml:space="preserve">
     <value>Title</value>
+  </data>
+  <data name="YouNeedToSignIn" xml:space="preserve">
+    <value>You must be signed in to continue.</value>
   </data>
 </root>

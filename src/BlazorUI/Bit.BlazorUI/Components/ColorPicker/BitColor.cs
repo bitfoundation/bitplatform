@@ -1,5 +1,4 @@
-﻿using System;
-using System.Drawing;
+﻿using System.Drawing;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
@@ -113,19 +112,19 @@ internal class BitColor
         {
             if (color.StartsWith("#", StringComparison.InvariantCultureIgnoreCase))
             {
-                Red = int.Parse(color.AsSpan(1, 2), NumberStyles.AllowHexSpecifier);
-                Green = int.Parse(color.AsSpan(3, 2), NumberStyles.AllowHexSpecifier);
-                Blue = int.Parse(color.AsSpan(5, 2), NumberStyles.AllowHexSpecifier);
+                Red = int.Parse(color.AsSpan(1, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+                Green = int.Parse(color.AsSpan(3, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+                Blue = int.Parse(color.AsSpan(5, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
             }
             else if (color.Contains("rgb", StringComparison.InvariantCultureIgnoreCase))
             {
                 Regex rx = new Regex(@"\(([^)]+)\)");
-                var mathedColor = rx.Match(color).Value;
+                var matchedColor = rx.Match(color).Value;
 
-                mathedColor = mathedColor.Trim('(');
-                mathedColor = mathedColor.Trim(')');
+                matchedColor = matchedColor.Trim('(');
+                matchedColor = matchedColor.Trim(')');
 
-                var colorString = mathedColor.Split(",");
+                var colorString = matchedColor.Split(",");
                 if (colorString.Length >= 3)
                 {
                     Red = int.Parse(colorString[0], CultureInfo.InvariantCulture);

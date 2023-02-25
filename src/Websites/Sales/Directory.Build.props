@@ -3,7 +3,7 @@
     <PropertyGroup>
         <BlazorMode>BlazorServer</BlazorMode>
         <!-- You can use either BlazorServer or BlazorWebAssembly or BlazorHybrid -->
-        <WebAppDeploymentType>DefaultDeploymentType</WebAppDeploymentType>
+        <WebAppDeploymentType>SSR</WebAppDeploymentType>
         <!-- You can choose either Static, DefaultDeploymentType, PWA or SSR -->
         <!-- Learn more about blazor modes & deployment types at https://bitplatform.dev/todo-template/hosting-models -->
         <DefineConstants Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' ">$(DefineConstants);BlazorWebAssembly</DefineConstants>

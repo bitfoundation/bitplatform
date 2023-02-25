@@ -1,5 +1,6 @@
 ﻿using System.IO.Compression;
 using System.Net.Mail;
+using Bit.Websites.Sales.Api.Services;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.ResponseCompression;
 #if BlazorWebAssembly
@@ -39,7 +40,8 @@ public static class Services
         services.AddRazorPages();
         services.AddMvcCore();
 #endif
-
+        services.AddHttpClient<TelegramBotApiClient>();
+        services.AddScoped<TelegramBotService>();
         services.AddCors();
 
         services

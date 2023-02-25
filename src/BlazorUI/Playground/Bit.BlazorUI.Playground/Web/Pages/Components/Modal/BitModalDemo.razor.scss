@@ -15,12 +15,32 @@
     padding: 0 rem(24px) rem(24px);
     overflow-y: hidden;
     line-height: rem(20px);
+    max-width: rem(960px);
+}
+
+.btn-container {
+    display: flex;
+    flex-flow: row wrap;
+    gap: 1rem;
 }
 
 .position-btn {
     display: flex;
     flex-flow: column nowrap;
-    justify-content: space-between;
-    width: fit-content;
-    height: rem(150px);
+    gap: 1rem;
+
+    div {
+        display: flex;
+        justify-content: space-between;
+    }
+}
+
+.relative-container {
+    margin-top: 1rem;
+    position: relative;
+    width: 100%;
+    height: rem(400px);
+    border: rem(2px) lightgreen solid;
+    background-color: #eee;
+    overflow: auto;
 }

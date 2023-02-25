@@ -1,18 +1,16 @@
 ﻿@import "../../../Styles/functions.scss";
 
 .bit-acb {
-    font-family: $typography-button-font-family;
-    font-weight: 400;
-    font-size: spacing(1.75);
     display: inline-flex;
+    box-sizing: border-box;
+    font-family: $typography-button-font-family;
+    font-weight: $typography-button-font-weight;
+    text-decoration: none;
     align-items: center;
     cursor: pointer;
+    border-radius: $shape-border-radius;
     border: none;
     background-color: transparent;
-    box-sizing: border-box;
-    text-decoration: none;
-    height: spacing(5);
-    padding: 0 spacing(0.5);
     color: $color-text-secondary;
     text-align: center;
 
@@ -24,7 +22,6 @@
             align-items: center;
             justify-content: center;
             flex-wrap: nowrap;
-            font-size: spacing(2);
             margin: 0 spacing(0.5);
             text-align: center;
             flex-shrink: 0;
@@ -60,5 +57,23 @@
         .bit-icon {
             color: $color-text-disabled;
         }
+    }
+
+    &.small {
+        padding: spacing(0.25) spacing(1.25);
+        font-size: spacing(1.5);
+        line-height: spacing(2.75);
+    }
+
+    &.medium {
+        padding: spacing(0.5) spacing(2);
+        font-size: spacing(1.75);
+        line-height: $typography-button-line-height;
+    }
+
+    &.large {
+        padding: spacing(0.75) spacing(2.75);
+        font-size: spacing(2);
+        line-height: spacing(3.75);
     }
 }

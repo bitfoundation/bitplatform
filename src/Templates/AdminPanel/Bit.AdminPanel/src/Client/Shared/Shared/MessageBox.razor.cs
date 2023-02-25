@@ -9,9 +9,15 @@ public partial class MessageBox : IDisposable
     private string? _body;
     private bool _disposed;
 
+    private static TaskCompletionSource<object?>? _tsc;
+
     public static async Task Show(string message, string title = "")
     {
+        _tsc = new TaskCompletionSource<object?>();
+
         await OnShow.Invoke(message, title);
+
+        await _tsc.Task;
     }
 
     protected override Task OnInitAsync()
@@ -38,11 +44,13 @@ public partial class MessageBox : IDisposable
     private void OnCloseClick()
     {
         _isOpen = false;
+        _tsc?.SetResult(null);
     }
 
     private void OnOkClick()
     {
         _isOpen = false;
+        _tsc?.SetResult(null);
     }
 
     public void Dispose()

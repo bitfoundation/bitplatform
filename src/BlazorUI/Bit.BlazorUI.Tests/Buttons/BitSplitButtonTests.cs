@@ -13,12 +13,12 @@ public class BitSplitButtonTests : BunitTestContext
         new BitSplitButtonItem()
         {
             Text = "Item A",
-            key = "A"
+            Key = "A"
         },
         new BitSplitButtonItem()
         {
             Text = "Item B",
-            key = "B"
+            Key = "B"
         }
     };
 
@@ -30,14 +30,14 @@ public class BitSplitButtonTests : BunitTestContext
     ]
     public void BitSplitButtonTest(bool isEnabled, BitButtonStyle bitButtonStyle)
     {
-        var com = RenderComponent<BitSplitButton>(parameters =>
+        var com = RenderComponent<BitSplitButton<BitSplitButtonItem>>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, isEnabled);
             parameters.Add(p => p.ButtonStyle, bitButtonStyle);
             parameters.Add(p => p.Items, items);
         });
 
-        var bitSplitButton = com.Find(".bit-splb");
+        var bitSplitButton = com.Find(".bit-spl");
 
         if (isEnabled)
         {
@@ -60,7 +60,7 @@ public class BitSplitButtonTests : BunitTestContext
     {
         BitSplitButtonItem clickedItem = default!;
 
-        var com = RenderComponent<BitSplitButton>(parameters =>
+        var com = RenderComponent<BitSplitButton<BitSplitButtonItem>>(parameters =>
         {
             parameters.Add(p => p.Items, items);
             parameters.Add(p => p.IsEnabled, isEnabled);
@@ -90,7 +90,7 @@ public class BitSplitButtonTests : BunitTestContext
 
         items.Last().IsEnabled = itemIsEnabled;
 
-        var com = RenderComponent<BitSplitButton>(parameters =>
+        var com = RenderComponent<BitSplitButton<BitSplitButtonItem>>(parameters =>
         {
             parameters.Add(p => p.Items, items);
             parameters.Add(p => p.OnClick, (item) => clickedItem = item);
@@ -119,7 +119,7 @@ public class BitSplitButtonTests : BunitTestContext
     {
         BitSplitButtonItem clickedItem = default!;
 
-        var com = RenderComponent<BitSplitButton>(parameters =>
+        var com = RenderComponent<BitSplitButton<BitSplitButtonItem>>(parameters =>
         {
             parameters.Add(p => p.Items, items);
             parameters.Add(p => p.IsSticky, isSticky);
@@ -148,14 +148,14 @@ public class BitSplitButtonTests : BunitTestContext
     ]
     public void BitSplitButtonOpenMenu(bool isEnabled)
     {
-        var com = RenderComponent<BitSplitButton>(parameters =>
+        var com = RenderComponent<BitSplitButton<BitSplitButtonItem>>(parameters =>
         {
             parameters.Add(p => p.Items, items);
             parameters.Add(p => p.IsEnabled, isEnabled);
         });
 
         var button = com.Find("button.chevron-btn");
-        var bitSplitButton = com.Find(".bit-splb");
+        var bitSplitButton = com.Find(".bit-spl");
         Assert.IsFalse(bitSplitButton.ClassList.Contains("open-menu"));
         button.Click();
 

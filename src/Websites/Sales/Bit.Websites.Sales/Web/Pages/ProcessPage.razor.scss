@@ -1,466 +1,409 @@
-﻿@import '../wwwroot/styles/abstracts/_colors.scss';
-@import '../wwwroot/styles/abstracts/_media-queries.scss';
-@import '../wwwroot/styles/abstracts/_functions.scss';
+﻿@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_media-queries.scss';
+@import '../Styles/abstracts/_functions.scss';
 
-.page-top-section {
-    position: relative;
+.page-sec {
     width: 100%;
-    height: rem(654px);
-    background-image: url('/images/process/header-bg.png');
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: cover;
+    display: flex;
+    max-width: rem(1440px);
+    box-sizing: border-box;
+    padding: rem(40px) rem(140px);
+    margin: 0 auto;
+
+    @include lg {
+        padding: rem(32px) rem(60px);
+    }
 
     @include sm {
-        height: rem(520px);
-    }
-
-    .section-content {
-        position: absolute;
-        top: 0;
-        left: 0;
-        z-index: 1;
-        display: flex;
-        flex-flow: column nowrap;
-        justify-content: flex-start;
-        align-items: flex-start;
-        width: 100%;
-        height: 100%;
-        padding: rem(250px) 0 0 rem(130px);
-        box-sizing: border-box;
-        background-color: rgba(0, 0, 0, 0.65);
-
-        @include lg {
-            padding: rem(250px) 0 0 rem(84px);
-        }
-
-        @include md {
-            padding: rem(250px) 0 0 rem(61px);
-        }
-
-        @include sm {
-            padding: rem(192px) rem(30px) 0 rem(30px);
-        }
-    }
-
-    .section-title {
-        margin-bottom: rem(6px);
-        font-weight: bold;
-        font-size: rem(40px);
-        line-height: rem(66px);
-        color: $White;
-
-        @include sm {
-            font-size: rem(24px);
-            line-height: rem(34px);
-        }
-    }
-
-    .section-desc {
-        max-width: rem(666px);
-        font-size: rem(22px);
-        line-height: rem(35px);
-        color: $White;
-
-        @include md {
-            max-width: rem(518px);
-        }
-
-        @include sm {
-            max-width: 100%;
-            font-size: rem(18px);
-            line-height: rem(29px);
-        }
+        padding: rem(16px);
     }
 }
 
-.page-top-content {
-    position: relative;
-    display: flex;
-    flex-flow: column nowrap;
-    justify-content: flex-start;
-    align-items: center;
-    width: 100%;
-    padding: rem(60px) rem(130px) rem(30px);
-    box-sizing: border-box;
+.sec-title {
+    font-weight: bold;
+    font-size: rem(44px);
+    margin-bottom: 1rem;
+    text-align: center;
 
     @include lg {
-        padding: rem(79px) rem(84px) rem(30px);
+        font-size: rem(34px);
     }
 
     @include md {
-        padding: rem(79px) rem(61px) rem(30px);
+        font-size: rem(30px);
     }
 
     @include sm {
-        padding: rem(34px) rem(30px) rem(30px);
+        font-size: rem(26px);
     }
 }
 
-.paragraph-container {
-    display: flex;
-    flex-flow: column nowrap;
-    justify-content: flex-start;
-    align-items: flex-start;
-    width: 100%;
-    //max-width: rem(1022px);
-    margin-bottom: rem(25px);
-    padding-right: rem(300px);
-    box-sizing: border-box;
+.sec-title-underline {
+    background-color: $Y1;
+    width: rem(240px);
+    height: rem(4px);
+    margin-bottom: 2rem;
 
-    @include lt-lg {
-        max-width: 100%;
-        padding-right: 0;
+    @include lg {
+        width: rem(200px);
+        height: rem(2px);
+    }
+
+    @include md {
+        width: rem(180px);
     }
 
     @include sm {
-        margin-bottom: rem(38px);
+        width: rem(150px);
     }
+}
 
-    .paragraph-title-green {
-        width: rem(155px);
-        margin-bottom: rem(14px);
-        padding-bottom: rem(6px);
-        border-bottom: rem(1px) solid #707070;
-        font-weight: bold;
-        font-size: rem(30px);
-        line-height: rem(49px);
-        color: #24D07D;
-    }
+.sec-desc {
+    color: $Gray2;
+    font-size: rem(20px);
+    text-align: center;
+    line-height: 2rem;
+    margin-bottom: 4rem;
 
-    .paragraph-title {
-        width: 100%;
-        font-weight: bold;
-        font-size: rem(30px);
-        line-height: rem(49px);
-        color: $Black;
-        margin-bottom: rem(6px);
-    }
-
-    .paragraph-text {
-        width: 100%;
-        text-align: left;
+    @include md {
         font-size: rem(18px);
-        line-height: rem(29px);
-        color: $Black;
-
-        @include sm {
-            font-weight: bold;
-            font-size: rem(18px);
-            line-height: rem(30px);
-        }
-    }
-}
-
-.paragraph-container--first {
-    margin-bottom: rem(40px);
-    padding-right: 0;
-
-    @include md {
-        margin-bottom: rem(12px);
+        line-height: rem(24px);
     }
 
     @include sm {
-        margin-bottom: rem(400x);
-    }
-
-    .paragraph-title {
-        font-size: rem(40px);
-        line-height: rem(66px);
-        margin-bottom: rem(7px);
-
-        @include md {
-            font-size: rem(34px);
-            line-height: rem(56px);
-            margin-bottom: 0;
-        }
-
-        @include md {
-            font-size: rem(30px);
-            line-height: rem(40px);
-        }
-    }
-
-    .paragraph-text {
-        font-weight: 500;
-        font-size: rem(22px);
-        line-height: rem(35px);
-
-        @include sm {
-            font-size: rem(18px);
-            line-height: rem(29px);
-        }
+        font-size: rem(16px);
+        line-height: rem(20px);
     }
 }
 
-.process-divider {
-    position: absolute;
-    right: 0;
-    top: rem(425px);
-    width: rem(395px);
-    height: rem(386px);
-    background-image: url('/images/process/process-bg.svg');
-    background-position: center;
+
+.process-bg {
+    background-image: url('/images/process/process_bg.webp');
     background-repeat: no-repeat;
     background-size: cover;
+    margin-bottom: rem(140px);
 
-    @include lt-lg {
-        display: none;
-    }
-
-    @include sm {
-        display: block;
-        width: rem(315px);
-        height: rem(305px);
-        top: rem(260px);
-    }
-}
-
-.people-section {
-    display: flex;
-    flex-flow: column nowrap;
-    justify-content: flex-start;
-    align-items: center;
-    width: 100%;
-    margin: rem(20px) 0 rem(80px);
-
-    @include lg {
-        margin: rem(40px) 0 rem(40px);
-    }
-
-    @include md {
-        margin: rem(65px) 0 rem(80px);
-    }
-
-    @include sm {
-        margin: rem(13px) 0 rem(42px);
-    }
-
-    .people-box-group {
+    .process {
+        padding-top: rem(180px);
         display: flex;
-        flex-flow: row wrap;
-        justify-content: center;
-        align-items: flex-start;
-        width: 100%;
-        margin-top: rem(51px);
-    }
-
-    .people-box {
-        display: flex;
-        flex-flow: column nowrap;
-        justify-content: flex-start;
+        flex-flow: column;
         align-items: center;
-        width: rem(366px);
-        height: rem(474px);
-        border: rem(1px) solid #E7E7E7;
-        border-radius: rem(20px);
-        padding: rem(212px) rem(16px) 0;
-        margin: 0 rem(23px) rem(48px);
-        box-sizing: border-box;
-        text-align: center;
-        background-repeat: no-repeat;
 
-        @include lg {
-            margin: 0 rem(23px) rem(40px);
+        .process-title {
+            font-weight: 800;
+            font-size: rem(40px);
+            line-height: rem(52px);
+            color: $B2;
+            margin-bottom: rem(24px);
         }
 
-        @include md {
-            margin-bottom: rem(32px);
-        }
-
-        @include sm {
-            width: 100%;
-            max-width: rem(366px);
-            min-height: rem(474px);
-            height: auto;
-            margin: 0 0 rem(32px) 0;
-        }
-
-        .people-box-title {
-            font-weight: bold;
-            font-size: rem(24px);
-            line-height: rem(39px);
-            color: $Black;
-            margin-bottom: rem(12px);
-        }
-
-        .people-box-desc {
+        .process-bread {
+            font-weight: 400;
             font-size: rem(16px);
-            line-height: rem(25px);
-            text-align: center;
-            color: $Black;
-            margin-bottom: rem(30px);
+            line-height: rem(24px);
+            color: $Gray2;
         }
     }
 
-    .developer-box {
-        background-image: url('/images/process/developer-bg.svg');
-        background-position: top rem(69px) center;
-        background-size: rem(248px) rem(121px);
-    }
+    .success-is-journey {
+        flex-flow: row nowrap;
+        justify-content: flex-start;
+        align-items: flex-start;
+        padding-top: rem(96px);
 
-    .pm-box {
-        background-image: url('/images/process/project-manager-bg.svg');
-        background-position: top rem(51px) center;
-        background-size: rem(245px) rem(132px);
-    }
+        .sec-body {
+            .sec-title {
+                font-weight: 700;
+                font-size: rem(40px);
+                line-height: rem(42px);
+                text-align: unset;
+                margin-bottom: rem(24px);
 
-    .qa-box {
-        background-image: url('/images/process/qa-tester-bg.svg');
-        background-position: top rem(51px) center;
-        background-size: rem(225px) rem(132px);
-    }
+                @include md {
+                    font-size: rem(26px);
+                }
 
-    .sm-box {
-        background-image: url('/images/process/scrum-master-bg.svg');
-        background-position: top rem(32px) center;
-        background-size: rem(253px) rem(143px);
-    }
+                @include sm {
+                    text-align: center;
+                }
+            }
 
-    .designer-box {
-        background-image: url('/images/process/desiner-bg.svg');
-        background-position: top rem(32pxpx) center;
-        background-size: rem(237px) rem(142px);
+            .sec-desc {
+                font-weight: 400;
+                font-size: rem(20px);
+                line-height: rem(32px);
+                text-align: unset;
+                color: $Gray1;
+                max-width: rem(880px);
+
+                @include md {
+                    font-size: rem(16px);
+                    line-height: rem(26px);
+                }
+
+                @include sm {
+                    text-align: center;
+                }
+            }
+        }
     }
 }
 
-.benefit-section {
-    display: flex;
+.sw-dev-cycle {
     flex-flow: column nowrap;
     justify-content: flex-start;
     align-items: center;
-    width: 100%;
+    padding-top: 4rem;
 
-    .benefit-box {
+    .sec-title {
+        color: $B1;
+    }
+
+    .sec-content {
         display: flex;
-        flex-flow: column nowrap;
-        justify-content: center;
-        align-items: flex-start;
-        width: 100%;
-        max-width: rem(882px);
-        min-height: rem(208px);
-        padding: 0 rem(20px) 0 rem(193px);
-        border: rem(1px) solid #E7E7E7;
-        border-radius: rem(20px);
-        margin-bottom: rem(33px);
-        box-sizing: border-box;
-        background-repeat: no-repeat;
+        gap: 2rem;
 
-        @include lg {
-            max-width: rem(830px);
-            padding: 0 rem(20px) 0 rem(181px);
+        .steps-bg {
+            flex-basis: 100%;
+            max-width: rem(500px);
+            height: rem(500px);
+            top: 0;
+            position: sticky;
+            background-image: url('/images/process/sw-dev/sw_dev_bg.svg');
+            background-size: contain;
+            background-repeat: no-repeat;
+            margin-right: rem(-170px);
+
+            @include lg {
+                max-width: rem(400px);
+                height: rem(400px);
+                margin-right: rem(-60px);
+            }
+
+            @include md {
+                max-width: rem(330px);
+                height: rem(330px);
+            }
+
+            @include sm {
+                display: none;
+            }
         }
 
-        @include md {
-            justify-content: flex-start;
-            max-width: rem(383px);
-            margin-bottom: rem(40px);
-            padding: rem(157px) rem(30px) rem(30px);
+        .steps-container {
+            flex-basis: 100%;
+
+            .step {
+                padding-left: rem(60px);
+                background-position-y: rem(3px);
+                background-repeat: no-repeat;
+                margin-bottom: 3rem;
+
+                .step-title {
+                    font-weight: 700;
+                    font-size: rem(30px);
+                    padding-bottom: 1rem;
+
+                    @include md {
+                        font-size: rem(24px);
+                    }
+
+                    @include sm {
+                        font-size: rem(22px);
+                    }
+                }
+
+                .step-desc {
+                    font-weight: 400;
+                    font-size: rem(18px);
+                    line-height: rem(28px);
+                    color: $Gray1;
+
+                    @include md {
+                        font-size: rem(15px);
+                        line-height: rem(20px);
+                    }
+
+                    @include sm {
+                    }
+                }
+            }
+
+            .step-1 {
+                background-image: url('/images/process/sw-dev/sw_dev_1.svg');
+            }
+
+            .step-2 {
+                background-image: url('/images/process/sw-dev/sw_dev_2.svg');
+            }
+
+            .step-3 {
+                background-image: url('/images/process/sw-dev/sw_dev_3.svg');
+            }
+
+            .step-4 {
+                background-image: url('/images/process/sw-dev/sw_dev_4.svg');
+            }
+
+            .step-5 {
+                background-image: url('/images/process/sw-dev/sw_dev_5.svg');
+            }
         }
+    }
+}
+
+.people-behind-the-art {
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    padding-top: 4rem;
+
+    .sec-content {
+        display: flex;
+        gap: 2rem;
 
         @include sm {
-            justify-content: flex-start;
-            max-width: rem(383px);
-            margin-bottom: rem(29px);
-            padding: rem(157px) rem(22px) rem(22px);
+            flex-flow: column;
+            align-items: center;
         }
 
-        .benefit-box-title {
-            width: 100%;
-            font-weight: bold;
-            font-size: rem(22px);
-            line-height: rem(36px);
-            color: $Black;
-            margin-bottom: rem(6px);
+        .sec-bg {
+            flex-basis: 100%;
+            max-width: rem(550px);
+            height: rem(400px);
+            top: 0;
+            position: sticky;
+            background-image: url('/images/process/people/people_bg.webp');
+            background-size: contain;
+            background-repeat: no-repeat;
 
-            @include lt-lg {
-                text-align: center;
-                margin-bottom: rem(15px);
+            @include lg {
+                max-width: rem(450px);
+                height: rem(350px);
+            }
+
+            @include md {
+                max-width: rem(400px);
+                height: rem(300px);
+            }
+
+            @include sm {
+                flex-basis: unset;
+                top: unset;
+                position: unset;
+                width: 100%;
+                height: rem(300px);
             }
         }
 
-        .benefit-box-desc {
-            width: 100%;
-            font-size: rem(16px);
-            line-height: rem(25px);
-            color: $Black;
+        .arts-container {
+            flex-basis: 100%;
 
-            @include lt-lg {
-                text-align: center;
-                margin-bottom: rem(30px);
+            @include sm {
+                flex-basis: unset;
             }
         }
     }
+}
 
-    .benefit-box-1 {
-        margin-top: rem(50px);
-        background-image: url('/images/process/handshake-icon.svg');
-        background-position: center left rem(48px);
-        background-size: rem(111px) rem(73px);
+.our-benefit {
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    padding-top: 4rem;
+    margin-bottom: 5rem;
 
-        @include lg {
-            background-position: center left rem(45px);
-            background-size: rem(104px) rem(73px);
-        }
-
-        @include lt-lg {
-            background-position: top rem(51px) center;
-            background-size: rem(104px) rem(73px);
-        }
+    .sec-content {
+        margin-top: 2rem;
+        display: flex;
+        flex-flow: row nowrap;
+        gap: 2rem;
 
         @include md {
-            margin-top: rem(60px);
-        }
-    }
-
-    .benefit-box-2 {
-        background-image: url('/images/process/transparency-icon.svg');
-        background-position: center left rem(51px);
-        background-size: rem(99px) rem(99px);
-
-        @include lg {
-            background-position: center left rem(48px);
-            background-size: rem(93px) rem(99px);
+            flex-flow: column;
         }
 
-        @include lt-lg {
-            background-position: top rem(48px) center;
-            background-size: rem(93px) rem(99px);
+        .benefit-card {
+            width: calc(33% - 1rem);
+            display: flex;
+            flex-flow: column nowrap;
+            align-items: center;
+            border: 1px solid $Gray4;
+            border-radius: rem(15px);
+            background-position: top 2rem center;
+            background-repeat: no-repeat;
+            background-size: rem(150px);
+            padding: 14rem 2rem 2rem 2rem;
+
+            @include md {
+                width: 100%;
+                align-items: flex-start;
+                background-position: top 2rem left 2rem;
+                padding: 4rem 2rem 2rem 13rem;
+            }
+
+            @include sm {
+                background-size: rem(100px);
+                padding: 2rem 2rem 2rem 10rem;
+                background-position: top 2rem left 2rem;
+            }
+
+            @include xs {
+                background-size: rem(70px);
+                padding: 6rem 1rem 1rem 1rem;
+                background-position: top 1rem left 1rem;
+            }
+
+            &:hover {
+                box-shadow: 0px 4px 38px rgba(0, 0, 0, 0.12);
+            }
+
+            .card-title {
+                font-weight: 700;
+                font-size: rem(20px);
+                color: $Black1;
+                margin-bottom: 1rem;
+                text-align: center;
+
+                @include sm {
+                    font-size: rem(18px);
+                }
+
+                @include xs {
+                    font-size: rem(16px);
+                    text-align: unset;
+                }
+            }
+
+            .card-desc {
+                width: 100%;
+                font-weight: 400;
+                font-size: rem(16px);
+                line-height: rem(24px);
+                color: $Gray1;
+                text-align: center;
+
+                @include md {
+                    text-align: left;
+                }
+
+                @include sm {
+                    font-size: rem(14px);
+                    line-height: rem(20px);
+                }
+            }
         }
-    }
 
-    .benefit-box-3 {
-        background-image: url('/images/process/invoice-icon.svg');
-        background-position: center left rem(65px);
-        background-size: rem(82px) rem(95px);
-
-        @include lg {
-            background-position: center left rem(61px);
-            background-size: rem(77px) rem(95px);
+        .benefit-card-1 {
+            background-image: url('/images/process/benefit/benefit_card_1.svg');
         }
 
-        @include lt-lg {
-            background-position: top rem(51px) center;
-            background-size: rem(77px) rem(95px);
+        .benefit-card-2 {
+            background-image: url('/images/process/benefit/benefit_card_2.svg');
         }
-    }
-}
 
-//Minor-Media-Queries===========================================================
-@media all and (max-width: em(660px)) {
-    .process-divider {
-        top: rem(300px);
-    }
-}
-
-@media all and (max-width: em(480px)) {
-    .process-divider {
-        top: rem(400px);
-    }
-}
-
-@media all and (max-width: em(410px)) {
-    .process-divider {
-        top: rem(480px);
+        .benefit-card-3 {
+            background-image: url('/images/process/benefit/benefit_card_3.svg');
+        }
     }
 }

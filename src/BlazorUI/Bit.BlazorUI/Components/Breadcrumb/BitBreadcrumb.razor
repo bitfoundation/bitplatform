@@ -1,5 +1,13 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
+@typeparam TItem
+
+@if (ChildContent is not null)
+{
+    <CascadingValue Value="this" IsFixed="true">
+        @ChildContent
+    </CascadingValue>
+}
 
 <div @ref="RootElement"
      @attributes="HtmlAttributes"
@@ -10,7 +18,7 @@
 
     <div class="items-wrapper" id="@_wrapperId">
         <ul>
-            @foreach ((BitBreadcrumbItem item, int index) in _displayItems.Select((item, index) => (item, index)))
+            @foreach ((TItem item, int index) in _displayItems.Select((item, index) => (item, index)))
             {
                 <li>
                     @if (_overflowItems.Any() && index == _internalOverflowIndex)
@@ -26,21 +34,21 @@
                     }
                     else
                     {
-                        if (item.Href.HasValue())
+                        if (GetItemHref(item).HasValue())
                         {
-                            <a href="@item.Href"
-                               aria-current="@(item.IsSelected ? "page" : null)"
+                            <a href="@GetItemHref(item)"
+                               aria-current="@(GetIsSelected(item) ? "page" : null)"
                                style="@GetItemStyles(item)"
                                class="@GetItemClasses(item)">
-                                @item.Text
+                                @GetItemText(item)
                             </a>
                         }
                         else
                         {
-                            <button aria-current="@(item.IsSelected ? "page" : null)"
+                            <button aria-current="@(GetIsSelected(item) ? "page" : null)"
                                     style="@GetItemStyles(item)"
                                     class="@GetItemClasses(item)" @onclick="() => HandleOnItemClick(item)">
-                                @item.Text
+                                @GetItemText(item)
                             </button>
                         }
                     }
@@ -64,21 +72,21 @@
             @foreach (var item in _overflowItems)
             {
                 <li>
-                    @if (item.Href.HasValue())
+                    @if (GetItemHref(item).HasValue())
                     {
-                        <a href="@item.Href"
-                           aria-current="@(item.IsSelected ? "page" : null)"
+                        <a href="@GetItemHref(item)"
+                           aria-current="@(GetIsSelected(item) ? "page" : null)"
                            style="@GetItemStyles(item)"
                            class="@GetItemClasses(item)">
-                            @item.Text
+                            @GetItemText(item)
                         </a>
                     }
                     else
                     {
-                        <button aria-current="@(item.IsSelected ? "page" : null)"
+                        <button aria-current="@(GetIsSelected(item) ? "page" : null)"
                                 style="@GetItemStyles(item)"
                                 class="@GetItemClasses(item)" @onclick="() => HandleOnItemClick(item)">
-                            @item.Text
+                            @GetItemText(item)
                         </button>
                     }
                 </li>

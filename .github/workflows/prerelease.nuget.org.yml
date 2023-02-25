@@ -1,0 +1,103 @@
+name: Prerelease nuget packages
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v-*'
+
+jobs:
+  build-publish:
+    name: build & publish
+    runs-on: windows-latest
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@v2
+      
+    - name: Setup .NET 6.0.x
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.0.x
+        
+    - name: Setup .NET 7.0.x
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 7.0.x
+        include-prerelease: true
+
+    - name: dotnet restore BlazorUI
+      run: dotnet restore src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj
+    - name: dotnet msbuild BlazorUI (1)
+      run: dotnet msbuild src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false -m:1
+    - name: dotnet msbuild BlazorUI (2)
+      run: dotnet msbuild src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false -m:1
+    - name: dotnet pack BlazorUI
+      run: dotnet pack src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj --output . --configuration Release
+      
+    - name: dotnet restore BlazorUI.Charts
+      run: dotnet restore src/BlazorUI/Bit.BlazorUI.Charts/Bit.BlazorUI.Charts.csproj
+    - name: dotnet msbuild BlazorUI.Charts (1)
+      run: dotnet msbuild src/BlazorUI/Bit.BlazorUI.Charts/Bit.BlazorUI.Charts.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false -m:1
+    - name: dotnet msbuild BlazorUI.Charts (2)
+      run: dotnet msbuild src/BlazorUI/Bit.BlazorUI.Charts/Bit.BlazorUI.Charts.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false -m:1
+    - name: dotnet pack BlazorUI.Charts
+      run: dotnet pack src/BlazorUI/Bit.BlazorUI.Charts/Bit.BlazorUI.Charts.csproj --output . --configuration Release
+      
+    - name: dotnet restore Bswup
+      run: dotnet restore src/Bswup/Bit.Bswup/Bit.Bswup.csproj
+    - name: dotnet msbuild Bswup (1)
+      run: dotnet msbuild src/Bswup/Bit.Bswup/Bit.Bswup.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false -m:1
+    - name: dotnet msbuild Bswup (2)
+      run: dotnet msbuild src/Bswup/Bit.Bswup/Bit.Bswup.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false -m:1
+    - name: dotnet pack Bswup
+      run: dotnet pack src/Bswup/Bit.Bswup/Bit.Bswup.csproj --output . --configuration Release
+
+    - name: dotnet restore Bup
+      run: dotnet restore src/Bup/Bit.Bup/Bit.Bup.csproj
+    - name: dotnet msbuild Bup (1)
+      run: dotnet msbuild src/Bup/Bit.Bup/Bit.Bup.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false -m:1
+    - name: dotnet msbuild Bup (2)
+      run: dotnet msbuild src/Bup/Bit.Bup/Bit.Bup.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false -m:1
+    - name: dotnet pack Bup
+      run: dotnet pack src/Bup/Bit.Bup/Bit.Bup.csproj --output . --configuration Release
+      
+    - name: dotnet restore Butil
+      run: dotnet restore src/Butil/Bit.Butil/Bit.Butil.csproj
+    - name: dotnet msbuild Butil (1)
+      run: dotnet msbuild src/Butil/Bit.Butil/Bit.Butil.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false -m:1
+    - name: dotnet msbuild Butil (2)
+      run: dotnet msbuild src/Butil/Bit.Butil/Bit.Butil.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false -m:1
+    - name: dotnet pack Butil
+      run: dotnet pack src/Butil/Bit.Butil/Bit.Butil.csproj --output . --configuration Release
+            
+    - name: dotnet restore CodeAnalyzers
+      run: dotnet restore src/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj
+    - name: dotnet msbuild CodeAnalyzers
+      run: dotnet msbuild src/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false
+    - name: dotnet pack CodeAnalyzer
+      run: dotnet pack src/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj --output . --configuration Release
+      
+    - name: dotnet restore SourceGenerators
+      run: dotnet restore src/SourceGenerators/Bit.SourceGenerators/Bit.SourceGenerators.csproj
+    - name: dotnet msbuild SourceGenerators
+      run: dotnet msbuild src/SourceGenerators/Bit.SourceGenerators/Bit.SourceGenerators.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false
+    - name: dotnet pack SourceGenerators
+      run: dotnet pack src/SourceGenerators/Bit.SourceGenerators/Bit.SourceGenerators.csproj --output . --configuration Release
+
+    - name: dotnet pack TodoTemplate
+      run: dotnet pack src/Templates/TodoTemplate/Bit.TodoTemplate.ProjectTemplate.csproj --output . --configuration Release
+
+    - name: dotnet pack AdminPanel
+      run: dotnet pack src/Templates/AdminPanel/Bit.AdminPanel.ProjectTemplate.csproj --output . --configuration Release
+
+    - name: dotnet pack BlazorServer
+      run: dotnet pack src/Templates/BlazorServer/Bit.BlazorServer.ProjectTemplate.csproj --output . --configuration Release
+
+    - name: dotnet pack BlazorWasm
+      run: dotnet pack src/Templates/BlazorWasm/Bit.BlazorWasm.ProjectTemplate.csproj --output . --configuration Release
+
+    - name: dotnet pack BlazorDual
+      run: dotnet pack src/Templates/BlazorDual/Bit.BlazorDual.ProjectTemplate.csproj --output . --configuration Release
+      
+    - name: dotnet nuget push
+      run: dotnet nuget push *.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{secrets.NUGET_ORG_API_KEY}} --skip-duplicate

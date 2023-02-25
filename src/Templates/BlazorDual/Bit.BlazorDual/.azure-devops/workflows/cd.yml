@@ -1,0 +1,149 @@
+trigger:
+- main
+
+variables:
+  WEB_APP_DEPLOYMENT_TYPE: 'DefaultDeploymentType'
+  APP_SERVICE_NAME: 'app-service-td-test'
+  AZURE_SUBSCRIPTION: 'td-test-service-connection' # https://learn.microsoft.com/en-us/azure/devops/pipelines/library/service-endpoints?view=azure-devops&tabs=yaml#azure-resource-manager-service-connection
+  ConnectionStrings.SqlServerConnectionString: $(DB_CONNECTION_STRING)
+  AppSettings.JwtSettings.IdentityCertificatePassword: $(API_IDENTITY_CERTIFICATE_PASSWORD)
+  ApiServerAddress: 'https://web.bitplatform.dev/api/'
+
+jobs:
+
+- job: build_blazor_api_wasm
+  displayName: 'build blazor api + web assembly'
+
+  pool:
+    vmImage: 'ubuntu-latest'
+
+  steps:
+  - task: UseDotNet@2
+    displayName: 'Setup .NET'
+    inputs:
+      useGlobalJson: true
+      workingDirectory: 'src'
+
+  - task: UseDotNet@2
+    displayName: 'Use dotnet sdk 6.x for LibSassBuilder'
+    inputs:
+      version: 6.x
+
+  - task: Bash@3
+    displayName: 'Switch to blazor web assembly'
+    inputs:
+      targetType: 'inline'
+      script: sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' src/BlazorDual.Web/BlazorDual.Web.csproj
+
+  - task: Bash@3
+    displayName: 'Restore workloads'
+    inputs:
+      targetType: 'inline'
+      script: 'dotnet workload restore src/BlazorDual.Web/BlazorDual.Web.csproj -p:BlazorMode=BlazorWebAssembly'
+
+  - task: Bash@3
+    displayName: 'Build migrations bundle'
+    inputs:
+      targetType: 'inline'
+      script: |
+        dotnet tool install --global dotnet-ef --version 7.0.0
+        dotnet ef migrations bundle --self-contained -r linux-x64 --project src/BlazorDual.Api/BlazorDual.Api.csproj
+      failOnStderr: true
+
+  - task: Bash@3
+    displayName: 'Install wasm-tools'
+    inputs:
+      targetType: 'inline'
+      script: dotnet workload install wasm-tools
+
+  - task: FileTransform@1
+    displayName: Update appsettings.json
+    inputs:
+      fileType: 'json'
+      folderPath: './'
+      targetFiles: 'src/Client/Shared/appsettings.json'
+
+  - task: Bash@3
+    displayName: 'Build (To generate CSS/JS files)'
+    inputs:
+      targetType: 'inline'
+      script: 'dotnet build src/BlazorDual.Web/BlazorDual.Web.csproj -p:Configuration=Release -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ variables.WEB_APP_DEPLOYMENT_TYPE }}"'
+
+  - task: Bash@3
+    displayName: 'Publish'
+    inputs:
+      targetType: 'inline'
+      script: 'dotnet publish src/BlazorDual.Api/BlazorDual.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ variables.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release --self-contained -r linux-x64 -o api-web'
+
+  - task: PublishPipelineArtifact@1
+    displayName: Upload api-web artifact
+    inputs:
+      targetPath: 'api-web'
+      artifact: 'api-web-bundle'
+      publishLocation: 'pipeline'
+  
+  - task: PublishPipelineArtifact@1
+    displayName: Upload ef migrations bundle
+    inputs:
+      targetPath: 'efbundle'
+      artifact: 'migrations-bundle'
+      publishLocation: 'pipeline'
+
+- job: deploy_blazor_api_wasm
+  dependsOn: build_blazor_api_wasm
+  displayName: 'deploy blazor api + web assembly'
+
+  pool:
+    vmImage: 'ubuntu-latest'
+
+  steps:
+
+  - task: DownloadPipelineArtifact@2
+    displayName: Retrieve api-web bundle
+    inputs:
+      artifact: 'api-web-bundle'
+      path: ./
+
+  - task: DownloadPipelineArtifact@2
+    displayName: Retrieve migrations bundle
+    inputs:
+      artifact: 'migrations-bundle'
+      path: ./
+
+  - task: FileTransform@1
+    displayName: Update appsettings.json
+    inputs:
+      fileType: 'json'
+      folderPath: './'
+      targetFiles: 'appsettings.json'
+
+  - task: DownloadSecureFile@1
+    displayName: Download .pfx file
+    name: IdentityCertificate
+    inputs:
+      secureFile: 'IdentityCertificate.pfx'
+          
+  - script: |
+      rm IdentityCertificate.pfx
+      cp "$(IdentityCertificate.secureFilePath)" "IdentityCertificate.pfx"
+    failOnStderr: true
+    displayName: Copy .pfx file
+
+  - task: Bash@3
+    displayName: 'Run migrations'
+    inputs:
+      targetType: 'inline'
+      script: |
+        chmod +x efbundle
+        ./efbundle
+        rm efbundle
+      failOnStderr: true
+
+  - task: AzureRmWebAppDeployment@4
+    displayName: 'Deploy to App Service'
+    inputs:
+      ConnectionType: 'AzureRM'
+      azureSubscription: '$(AZURE_SUBSCRIPTION)'
+      appType: 'webAppLinux'
+      WebAppName: '$(APP_SERVICE_NAME)'
+      packageForLinux: '.'

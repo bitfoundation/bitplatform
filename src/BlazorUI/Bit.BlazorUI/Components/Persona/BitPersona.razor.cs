@@ -1,11 +1,15 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace Bit.BlazorUI;
 
 public partial class BitPersona
 {
+    protected override bool UseVisual => false;
+
+
     private readonly Regex MULTIPLE_WHITESPACES_REGEX = new(@"\s+");
-    private readonly Regex PHONE_NUMBER_REGEX = new(@"^\d+[\d\s]*(:?ext|x|)\s*\d+$");
+    //private readonly Regex PHONE_NUMBER_REGEX = new(@"^\d+[\d\s]*(:?ext|x|)\s*\d+$");
     private readonly Regex UNWANTED_CHARS_REGEX = new(@"\([^)]*\)|[\0-\u001F\!-/:-@\[-`\{-\u00BF\u0250-\u036F\uD800-\uFFFF]");
     private readonly Regex UNSUPPORTED_TEXT_REGEX = new(@"[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\u1100-\u11FF\u3130-\u318F\uA960-\uA97F\uAC00-\uD7AF\uD7B0-\uD7FF\u3040-\u309F\u30A0-\u30FF\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF]|[\uD840-\uD869][\uDC00-\uDED6]");
 
@@ -55,6 +59,7 @@ public partial class BitPersona
         set
         {
             if (imageUrl == value) return;
+
             imageUrl = value;
             _hasError = false;
         }
@@ -160,6 +165,7 @@ public partial class BitPersona
     /// </summary>
     [Parameter] public RenderFragment? ImageOverlayFragment { get; set; }
 
+
     protected override Task OnParametersSetAsync()
     {
         if (CoinSize != -1)
@@ -184,28 +190,24 @@ public partial class BitPersona
 
     protected override void RegisterComponentClasses()
     {
-        ClassBuilder.Register(() => Size.HasValue() ? $"bit-prs-{Size}" : string.Empty);
+        ClassBuilder.Register(() => Size.HasValue() ? $"size-{Size}" : string.Empty);
 
-        ClassBuilder.Register(() => OnImageClick.HasDelegate ? "bit-prs-img-act" : string.Empty);
+        ClassBuilder.Register(() => OnImageClick.HasDelegate ? "img-act" : string.Empty);
 
-        ClassBuilder.Register(() => Presence is not BitPersonaPresenceStatus.None
-                                        ? $"bit-prs-{Presence.ToString().ToLowerInvariant()}"
-                                        : string.Empty);
+        ClassBuilder.Register(() => Presence is not BitPersonaPresenceStatus.None ? Presence.ToString() : string.Empty);
     }
 
     private string DetermineIcon()
     {
         if (Presence == BitPersonaPresenceStatus.None) return string.Empty;
 
-        string oofIcon = "presence_oof";
-
         return Presence switch
         {
             BitPersonaPresenceStatus.Online => "presence_available",
             BitPersonaPresenceStatus.Busy => "presence_busy",
-            BitPersonaPresenceStatus.Away => IsOutOfOffice ? oofIcon : "presence_away",
+            BitPersonaPresenceStatus.Away => IsOutOfOffice ? "presence_oof" : "presence_away",
             BitPersonaPresenceStatus.DND => "presence_dnd",
-            BitPersonaPresenceStatus.Offline => IsOutOfOffice ? oofIcon : "presence_offline",
+            BitPersonaPresenceStatus.Offline => IsOutOfOffice ? "presence_oof" : "presence_offline",
             _ => "presence_unknown",
         };
     }

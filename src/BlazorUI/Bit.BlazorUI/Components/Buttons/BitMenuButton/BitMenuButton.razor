@@ -1,5 +1,13 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
+@typeparam TItem
+
+@if (ChildContent is not null)
+{
+    <CascadingValue Value="this" IsFixed="true">
+        @ChildContent
+    </CascadingValue>
+}
 
 <div @ref="RootElement"
      @attributes="HtmlAttributes"
@@ -33,27 +41,27 @@
          class="items"
          tabindex="@(IsEnabled ? 0 : -1)">
         <ul role="presentation">
-            @foreach (BitMenuButtonItem item in Items)
+            @foreach (TItem item in _items)
             {
                 <li role="presentation">
-                    <button type="@ButtonType?.GetValue()"
-                        role="menuitem"
-                        aria-disabled="@item.IsEnabled"
-                        tabindex="@(item.IsEnabled ? 0 : -1)"
-                        class="item @(item.IsEnabled ? "" : "disabled")"
-                        @onclick="() => HandleOnItemClick(item)">
+                    <button @onclick="() => HandleOnItemClick(item)"
+                            type="@ButtonType?.GetValue()"
+                            role="menuitem"
+                            aria-disabled="@GetIsEnabled(item)"
+                            tabindex="@(GetIsEnabled(item) ? 0 : -1)"
+                            class="item @(GetIsEnabled(item) ? "" : "disabled")">
                         @if (ItemTemplate is not null)
                         {
                             @ItemTemplate(item)
                         }
                         else
                         {
-                            @if (item.IconName.HasValue)
+                            @if (GetIconName(item).HasValue)
                             {
-                                <i class="bit-icon bit-icon--@item.IconName.GetName()"></i>
+                                <i class="bit-icon bit-icon--@GetIconName(item).GetName()"></i>
                             }
                             <span class="text">
-                                @item.Text
+                                @GetText(item)
                             </span>
                         }
                     </button>

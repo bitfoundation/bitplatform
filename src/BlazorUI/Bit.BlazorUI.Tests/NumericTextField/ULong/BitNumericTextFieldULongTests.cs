@@ -52,8 +52,8 @@ public class BitNumericTextFieldULongTests : BunitTestContext
             parameters.Add(p => p.ShowArrows, arrows);
         });
 
-        var arrowButtonHolder = component.FindAll(".bit-ntf-arrows");
-        var arrowButtons = component.FindAll(".bit-ntf-arrows button");
+        var arrowButtonHolder = component.FindAll(".arrows");
+        var arrowButtons = component.FindAll(".arrows button");
 
         if (arrows)
         {
@@ -203,26 +203,20 @@ public class BitNumericTextFieldULongTests : BunitTestContext
     }
 
     [DataTestMethod,
-     DataRow(Visual.Fluent, BitNumericTextFieldLabelPosition.Left),
-     DataRow(Visual.Fluent, BitNumericTextFieldLabelPosition.Top),
-     DataRow(Visual.Cupertino, BitNumericTextFieldLabelPosition.Left),
-     DataRow(Visual.Cupertino, BitNumericTextFieldLabelPosition.Top),
-     DataRow(Visual.Material, BitNumericTextFieldLabelPosition.Left),
-     DataRow(Visual.Material, BitNumericTextFieldLabelPosition.Top),
+     DataRow(BitNumericTextFieldLabelPosition.Left),
+     DataRow(BitNumericTextFieldLabelPosition.Top)
     ]
-    public void BitNumericTextFieldShouldHaveLabelPositionClassName(Visual visual, BitNumericTextFieldLabelPosition labelPosition)
+    public void BitNumericTextFieldShouldHaveLabelPositionClassName(BitNumericTextFieldLabelPosition labelPosition)
     {
         var component = RenderComponent<BitNumericTextFieldULongTest>(parameters =>
         {
-            parameters.Add(p => p.Visual, visual);
             parameters.Add(p => p.LabelPosition, labelPosition);
         });
 
         var labelPositionClass = labelPosition == BitNumericTextFieldLabelPosition.Left ? "left" : "top";
-        var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
 
         var numericTextFieldButton = component.Find(".bit-ntf");
-        Assert.IsTrue(numericTextFieldButton.ClassList.Contains($"bit-ntf-label-{labelPositionClass}-{visualClass}"));
+        Assert.IsTrue(numericTextFieldButton.ClassList.Contains($"label-{labelPositionClass}"));
     }
 
     [DataTestMethod,
@@ -257,7 +251,7 @@ public class BitNumericTextFieldULongTests : BunitTestContext
             parameters.Add(p => p.AriaPositionInSet, ariaPositionInSet);
         });
 
-        var ntfWrapper = component.Find(".bit-ntf-wrapper");
+        var ntfWrapper = component.Find(".wrapper");
 
         if (string.IsNullOrEmpty(title) is false)
         {
@@ -859,33 +853,27 @@ public class BitNumericTextFieldULongTests : BunitTestContext
     }
 
     [DataTestMethod,
-     DataRow(Visual.Fluent, 2),
-     DataRow(Visual.Fluent, 8),
-     DataRow(Visual.Cupertino, 2),
-     DataRow(Visual.Cupertino, 8),
-     DataRow(Visual.Material, 2),
-     DataRow(Visual.Material, 8),
+     DataRow(2),
+     DataRow(8)
     ]
-    public void BitNumericTextFieldValidationInvalidCssClassTest(Visual visual, int value)
+    public void BitNumericTextFieldValidationInvalidCssClassTest(int value)
     {
         var component = RenderComponent<BitNumericTextFieldULongValidationTest>(parameters =>
         {
             parameters.Add(p => p.TestModel, new BitNumericTextFieldULongTestModel { Value = (ulong)value });
             parameters.Add(p => p.IsEnabled, true);
-            parameters.Add(p => p.Visual, visual);
         });
 
         var isInvalid = value < 6 || value > 18;
 
         var NumericTextField = component.Find(".bit-ntf");
-        var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
 
-        Assert.IsFalse(NumericTextField.ClassList.Contains($"bit-ntf-invalid-{visualClass}"));
+        Assert.IsFalse(NumericTextField.ClassList.Contains("invalid"));
 
         var form = component.Find("form");
         form.Submit();
 
-        Assert.AreEqual(NumericTextField.ClassList.Contains($"bit-ntf-invalid-{visualClass}"), isInvalid);
+        Assert.AreEqual(NumericTextField.ClassList.Contains("invalid"), isInvalid);
 
         var input = component.Find("input");
         if (isInvalid)
@@ -899,7 +887,7 @@ public class BitNumericTextFieldULongTests : BunitTestContext
 
         input.Blur();
 
-        Assert.AreEqual(NumericTextField.ClassList.Contains($"bit-ntf-invalid-{visualClass}"), !isInvalid);
+        Assert.AreEqual(NumericTextField.ClassList.Contains("invalid"), !isInvalid);
     }
 
     private ulong? Normalize(ulong? value, int precision) =>

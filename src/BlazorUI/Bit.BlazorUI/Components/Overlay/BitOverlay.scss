@@ -1,0 +1,16 @@
+﻿
+.bit-ovl {
+    display: none;
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    inset: 0;
+
+    &.visible {
+        display: flex;
+    }
+
+    &.absolute {
+        position: absolute;
+    }
+}

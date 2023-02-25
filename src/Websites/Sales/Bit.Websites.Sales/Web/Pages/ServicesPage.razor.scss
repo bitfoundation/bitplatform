@@ -1,401 +1,289 @@
-﻿@import '../wwwroot/styles/abstracts/_colors.scss';
-@import '../wwwroot/styles/abstracts/_media-queries.scss';
-@import '../wwwroot/styles/abstracts/_functions.scss';
+﻿@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_media-queries.scss';
+@import '../Styles/abstracts/_functions.scss';
 
-.page-top-section {
-    position: relative;
+.page-sec {
     width: 100%;
-    height: rem(654px);
-    background-image: url('/images/services/header-bg.png');
-    background-position: center;
+    display: flex;
+    max-width: rem(1440px);
+    box-sizing: border-box;
+    padding: rem(40px) rem(140px);
+    margin: 0 auto;
+
+    @include lg {
+        padding: rem(32px) rem(60px);
+    }
+
+    @include sm {
+        padding: rem(16px);
+    }
+}
+
+.sec-title {
+    font-weight: bold;
+    font-size: rem(44px);
+    margin-bottom: 1rem;
+    text-align: center;
+
+    @include lg {
+        font-size: rem(34px);
+    }
+
+    @include md {
+        font-size: rem(30px);
+    }
+
+    @include sm {
+        font-size: rem(26px);
+    }
+}
+
+.sec-title-underline {
+    background-color: $Y1;
+    width: rem(240px);
+    height: rem(4px);
+    margin-bottom: 2rem;
+
+    @include lg {
+        width: rem(200px);
+        height: rem(2px);
+    }
+
+    @include md {
+        width: rem(180px);
+    }
+
+    @include sm {
+        width: rem(150px);
+    }
+}
+
+.sec-desc {
+    color: $Gray2;
+    font-size: rem(20px);
+    text-align: center;
+    line-height: 2rem;
+    margin-bottom: 4rem;
+
+    @include md {
+        font-size: rem(18px);
+        line-height: rem(24px);
+    }
+
+    @include sm {
+        font-size: rem(16px);
+        line-height: rem(20px);
+    }
+}
+
+.services-bg {
+    background-image: url('/images/services/services_bg.webp');
     background-repeat: no-repeat;
     background-size: cover;
+    margin-bottom: rem(140px);
 
-    @include sm {
-        height: rem(520px);
-    }
-
-    .section-content {
-        position: absolute;
-        top: 0;
-        left: 0;
-        z-index: 1;
+    .services {
+        padding-top: rem(180px);
         display: flex;
-        flex-flow: column nowrap;
-        justify-content: flex-start;
-        align-items: flex-start;
-        width: 100%;
-        height: 100%;
-        padding: rem(226px) 0 0 rem(130px);
-        box-sizing: border-box;
-        background-color: rgba(0, 0, 0, 0.65);
+        flex-flow: column;
+        align-items: center;
 
-        @include lg {
-            padding: rem(226px) 0 0 rem(84px);
-        }
-
-        @include md {
-            padding: rem(196px) 0 0 rem(61px);
-        }
-
-        @include sm {
-            padding: rem(122px) rem(30px) 0 rem(30px);
-        }
-    }
-
-    .section-title {
-        max-width: rem(718px);
-        margin-bottom: rem(17px);
-        font-weight: bold;
-        font-size: rem(40px);
-        line-height: rem(55px);
-        color: $White;
-
-        @include md {
-            max-width: rem(576px);
-            margin-bottom: rem(32px);
-        }
-
-        @include sm {
-            max-width: 100%;
-            margin-bottom: rem(22px);
-            font-weight: normal;
-            font-size: rem(24px);
-            line-height: rem(34px);
-        }
-    }
-
-    .section-desc {
-        max-width: rem(692px);
-        font-size: rem(22px);
-        line-height: rem(35px);
-        color: $White;
-
-        @include lg {
-            max-width: rem(665px);
-        }
-
-        @include md {
-            max-width: rem(576px);
-        }
-
-        @include sm {
-            max-width: 100%;
-            font-weight: bold;
-            font-size: rem(18px);
-            line-height: rem(30px);
-        }
-    }
-}
-
-.page-content {
-    position: relative;
-    display: flex;
-    flex-flow: column nowrap;
-    justify-content: flex-start;
-    align-items: center;
-    width: 100%;
-    padding: rem(86px) rem(237px) rem(120px) rem(130px);
-    box-sizing: border-box;
-
-    @include lg {
-        padding: rem(78px) rem(84px) 0 rem(84px);
-    }
-
-    @include md {
-        padding: rem(78px) rem(61px) 0 rem(61px);
-    }
-
-    @include sm {
-        padding: rem(78px) rem(30px) 0 rem(30px);
-    }
-}
-
-.paragraph-container {
-    position: relative;
-    display: flex;
-    flex-flow: column nowrap;
-    justify-content: flex-start;
-    align-items: flex-start;
-    width: 100%;
-    //max-width: rem(1022px);
-    margin-bottom: rem(95px);
-    padding-right: rem(316px);
-    box-sizing: border-box;
-
-    @include lt-lg {
-        max-width: 100%;
-        padding-right: 0;
-    }
-
-    @include lg {
-        margin-bottom: rem(56px);
-    }
-
-    @include md {
-        margin-bottom: rem(36px);
-    }
-
-    @include sm {
-        margin-bottom: rem(22px);
-    }
-
-    &:first-child {
-        padding: 0;
-
-        .paragraph-title {
+        .services-title {
+            font-weight: 800;
             font-size: rem(40px);
-            line-height: rem(66px);
-            margin-bottom: rem(7px);
-
-            @include sm {
-                font-size: rem(30px);
-                line-height: rem(40px);
-            }
-        }
-    }
-
-    &:last-child {
-        margin-bottom: rem(34px);
-
-        @include md {
+            line-height: rem(52px);
+            color: $B2;
             margin-bottom: rem(24px);
         }
 
-        @include md {
-            margin-bottom: rem(17px);
+        .services-bread {
+            font-weight: 400;
+            font-size: rem(16px);
+            line-height: rem(24px);
+            color: $Gray2;
         }
     }
 
-    .paragraph-title {
-        width: 100%;
-        text-align: left;
-        font-weight: bold;
-        font-size: rem(33px);
-        line-height: rem(54px);
-        color: $Black;
-        margin-bottom: rem(10px);
+    .outsource-your-concerns {
+        flex-flow: row nowrap;
+        justify-content: flex-start;
+        align-items: flex-start;
+        padding-top: rem(96px);
 
-        @include sm {
-            font-size: rem(30px);
-            line-height: rem(40px);
-        }
-    }
+        .sec-body {
+            .sec-title {
+                font-weight: 700;
+                font-size: rem(40px);
+                line-height: rem(52px);
+                text-align: unset;
+                margin-bottom: rem(24px);
 
-    .paragraph-text {
-        width: 100%;
-        text-align: left;
-        font-weight: 500;
-        font-size: rem(22px);
-        line-height: rem(35px);
-        color: $Black;
+                @include md {
+                    font-size: rem(26px);
+                    line-height: rem(42px);
+                }
 
-        @include sm {
-            font-weight: bold;
-            font-size: rem(18px);
-            line-height: rem(30px);
-        }
-    }
+                @include sm {
+                    text-align: center;
+                }
+            }
 
-    .paragraph-link {
-        color: $Primary;
-        text-decoration: underline;
+            .sec-desc {
+                font-weight: 400;
+                font-size: rem(20px);
+                line-height: rem(32px);
+                text-align: unset;
+                color: $Gray1;
+                max-width: rem(880px);
 
-        @include sm {
-            display: none;
+                @include md {
+                    font-size: rem(16px);
+                    line-height: rem(26px);
+                }
+
+                @include sm {
+                    text-align: center;
+                }
+            }
         }
     }
 }
 
-.toggle-item-container {
-    display: flex;
+.outsourcing {
     flex-flow: column nowrap;
     justify-content: flex-start;
-    align-items: flex-start;
-    width: 100%;
-    //max-width: rem(1022px);
-    margin-bottom: rem(37px);
-    padding-bottom: rem(37px);
-    border-bottom: rem(1px) solid #D0D1D3;
-    box-sizing: border-box;
+    align-items: center;
+    padding-top: 4rem;
+    position: relative;
 
-    &:last-child {
-        border-bottom: none;
+    .sec-title {
+        color: $B1;
+        margin-bottom: rem(32px);
     }
 
-    @include lt-lg {
-        max-width: 100%;
+    .sec-desc {
+        max-width: rem(900px);
     }
 
-    @include sm {
-        margin-bottom: rem(46px);
-        padding-bottom: rem(46px);
-    }
-
-    .toggle-title {
+    .sec-content {
         display: flex;
-        align-items: center;
-        padding-left: rem(54px);
-        font-weight: bold;
-        font-size: rem(30px);
-        line-height: rem(49px);
-        color: #434750;
-        background-image: url('/images/services/arrow-right-icon.svg');
-        background-position: center left;
-        background-repeat: no-repeat;
-        background-size: rem(36px);
-        user-select: none;
-        cursor: pointer;
+        gap: 2rem;
 
-        @include sm {
-            padding-left: rem(48px);
-            font-weight: normal;
-            font-size: rem(24px);
-            line-height: rem(38px);
-        }
-    }
+        .steps-bg-1 {
+            z-index: -1;
+            position: absolute;
+            top: 0;
+            left: rem(-170px);
+            width: rem(500px);
+            height: rem(1000px);
+            background-image: url('/images/services/outsourcing/outsourcing_bg_1.svg');
+            background-size: rem(100px);
+            background-repeat: no-repeat;
+            background-position: top 5rem left;
 
-    .toggle {
-        + label {
-            ~ [data-toggle-target] {
+            @include lg {
                 display: none;
             }
         }
 
-        &:checked {
-            + label {
-                background-image: url('/images/services/arrow-down-icon.svg');
+        .steps-bg-2 {
+            flex-basis: 100%;
+            max-width: rem(500px);
+            height: rem(1000px);
+            top: 0;
+            position: sticky;
+            background-image: url('/images/services/outsourcing/outsourcing_bg_2.webp');
+            background-position: top 2rem right;
+            background-size: contain;
+            background-repeat: no-repeat;
+            margin-right: rem(-140px);
+
+            @include lg {
+                margin-right: rem(-60px);
             }
 
-            ~ [data-toggle-target] {
-                display: flex;
+            @include md {
+                max-width: rem(420px);
+                height: rem(890px);
+                flex-basis: 60%;
+            }
+
+            @include sm {
+                display: none;
             }
         }
-    }
 
-    .toggle-content {
-        flex-flow: column nowrap;
-        justify-content: flex-start;
-        align-items: flex-start;
-        width: 100%;
-        padding: rem(11px) rem(50px) 0 rem(54px);
-        box-sizing: border-box;
+        .steps-container {
+            flex-basis: 100%;
 
-        @include lt-lg {
-            padding-right: 0;
+            .step {
+                background-position-y: rem(5px);
+                background-repeat: no-repeat;
+                margin-bottom: 3rem;
+
+                .step-title {
+                    font-weight: 700;
+                    font-size: rem(30px);
+                    padding-bottom: 1rem;
+
+                    @include md {
+                        font-size: rem(24px);
+                    }
+
+                    @include sm {
+                        font-size: rem(22px);
+                    }
+                }
+
+                .step-desc {
+                    font-weight: 400;
+                    font-size: rem(18px);
+                    line-height: rem(28px);
+                    color: $Gray1;
+
+                    @include md {
+                        font-size: rem(15px);
+                        line-height: rem(20px);
+                    }
+
+                    @include sm {
+                    }
+
+                    a {
+                        color: $B3;
+                        line-height: 3rem;
+                    }
+                }
+            }
         }
 
-        @include sm {
-            padding-left: rem(48px);
+        .solutions-container {
+            padding-top: 2rem;
+            padding-left: 2rem;
+
+            @include xs {
+                padding-left: unset;
+            }
+
+            ::deep {
+                .tags {
+                    display: flex;
+                    flex-flow: row wrap;
+                    gap: 1rem;
+                    margin-top: rem(10px);
+
+                    .tag {
+                        font-size: rem(14px);
+                        color: $Gray2;
+                        padding: rem(4px) rem(10px);
+                        background-color: $B6;
+                        border: 1px solid $B5;
+                        border-radius: 2px;
+                        background-repeat: no-repeat;
+                        background-position: center left rem(10px);
+                    }
+                }
+            }
         }
-    }
-
-    .toggle-content-text {
-        width: 100%;
-        font-weight: 500;
-        font-size: rem(18px);
-        line-height: rem(29px);
-        color: #81848B;
-
-        @include sm {
-            font-weight: bold;
-            font-size: rem(16px);
-            line-height: rem(26px);
-        }
-    }
-
-    .toggle-content-tech-group {
-        display: flex;
-        flex-flow: row wrap;
-        justify-content: flex-start;
-        align-items: flex-start;
-        margin-top: rem(24px);
-    }
-
-    .tech-item {
-        display: flex;
-        align-items: center;
-        height: rem(40px);
-        border: rem(1px) solid rgba(28, 91, 255, 0.08);
-        border-radius: rem(97px);
-        padding: 0 rem(24px);
-        margin-right: rem(16px);
-        margin-bottom: rem(5px);
-        box-sizing: border-box;
-        font-size: rem(16px);
-        line-height: rem(25px);
-        color: $Black;
-        background-color: rgba(28, 91, 255, 0.06);
-
-        @include sm {
-            font-weight: bold;
-            line-height: rem(26px);
-        }
-    }
-}
-
-.people-divider {
-    position: absolute;
-    right: 0;
-    top: rem(200px);
-    width: rem(574px);
-    height: rem(969px);
-    background-image: url('/images/services/people-bg.svg');
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: cover;
-
-    @include lt-lg {
-        display: none;
-    }
-}
-
-.curly-divider--right {
-    position: absolute;
-    right: rem(-84px);
-    top: rem(-245px);
-    display: none;
-    width: rem(88px);
-    height: rem(433px);
-    background-image: url('/images/services/curly-divider.svg');
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: contain;
-    transform: rotate(180deg);
-
-    @include lg {
-        display: block;
-    }
-}
-
-.curly-divider--left {
-    position: absolute;
-    left: rem(-130px);
-    top: 0;
-    width: rem(100px);
-    height: rem(433px);
-    background-image: url('/images/services/curly-divider.svg');
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: contain;
-
-    @include lg {
-        width: rem(73px);
-        left: rem(-84px);
-    }
-
-    @include lg {
-        width: rem(73px);
-        left: rem(-61px);
-    }
-
-    @include sm {
-        display: none;
-    }
-}
-
-@media all and (max-width: em(366px)) {
-    .page-top-section {
-        height: rem(650px);
     }
 }

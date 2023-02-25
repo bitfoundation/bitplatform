@@ -14,15 +14,15 @@
         <None Include="compilerconfig.json" />
         <None Include="Shared\LoadingComponent.razor.scss" />
 
-        <Content Remove="wwwroot\appsettings.json" />
-        <EmbeddedResource Include="wwwroot\appsettings.json" />
+        <Content Remove="appsettings.json" />
+        <EmbeddedResource Include="appsettings.json" />
 
-        <PackageReference Include="Bit.BlazorUI" Version="4.9.5" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="4.9.5">
+        <PackageReference Include="Bit.BlazorUI" Version="4.9.6" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="4.9.6">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="4.9.5">
+        <PackageReference Include="Bit.SourceGenerators" Version="4.9.6">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -31,10 +31,10 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="7.0.2" />
-        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.2" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.2" />
-        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.9.4">
+        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="7.0.3" />
+        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.3" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.3" />
+        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.9.5">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -42,7 +42,6 @@
         <Using Include="Microsoft.AspNetCore.Components" />
         <Using Include="TodoTemplate.Client.Shared.Services.Contracts" />
         <Using Include="TodoTemplate.Client.Shared.Services.Implementations" />
-        <Using Include="Microsoft.Extensions.Configuration" />
         <Using Include="Microsoft.JSInterop" />
         <Using Include="System.Net.Http.Json" />
         <Using Include="System.Collections.Concurrent" />

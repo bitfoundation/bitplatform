@@ -1,0 +1,29 @@
+﻿@namespace BlazorDual.Web
+@inherits AppComponentBase;
+
+@if (IsMenuOpen)
+{
+    <div class="menu-shadow" @onclick=CloseMenu></div>
+}
+
+<section class="main-container @(IsMenuOpen ? null : "main-container--closed")">
+    <div class="top-container">
+        <BitPersona ImageUrl="@_profileImageUrl"
+                    Size=@BitPersonaSize.Size48
+                    Text="@_user.FullName"
+                    SecondaryText="@_user.UserName"
+                    Presence="BitPersonaPresenceStatus.Online" />
+        <BitActionButton IconName="BitIconName.Edit"
+                         Href="/edit-profile"
+                         OnClick=CloseMenu>
+            @Localizer[nameof(AppStrings.EditProfileTitle)]
+        </BitActionButton>
+    </div>
+    <BitNav Items="_navItems"
+            AriaLabel="NavMenu"
+            DefaultSelectedItem="_navItems[0]"
+            OnItemClick="HandleOnItemClick">
+    </BitNav>
+</section>
+
+<SignOutConfirmModal @bind-IsOpen=_isSignOutModalOpen></SignOutConfirmModal>

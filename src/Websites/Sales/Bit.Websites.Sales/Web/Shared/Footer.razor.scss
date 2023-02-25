@@ -1,0 +1,163 @@
+﻿@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_media-queries.scss';
+@import '../Styles/abstracts/_functions.scss';
+
+.footer {
+    display: flex;
+    flex-flow: column wrap;
+    align-items: center;
+    width: 100%;
+    padding: rem(16px) rem(140px);
+    background-color: $Gray4;
+    color: $Gray1;
+    font-weight: 400;
+    font-size: rem(14px);
+    position: relative;
+
+    @include lg {
+        padding: rem(32px) rem(60px);
+    }
+
+    @include sm {
+        padding: rem(16px) rem(30px);
+    }
+
+    .content {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: rem(16px) 0;
+        border-bottom: 1px solid $Gray3;
+        margin-bottom: 1rem;
+        width: 100%;
+        max-width: rem(1160px);
+
+        @include lg {
+            padding: rem(16px) rem(0);
+        }
+
+        @include sm {
+            flex-flow: column;
+            gap: 1rem;
+        }
+
+        .info {
+            display: flex;
+            flex-flow: column;
+            gap: 0.5rem;
+
+            .bit-logo {
+                width: rem(36px);
+                height: rem(24px);
+                background-image: url('/images/shared/bit-logo.png');
+            }
+
+            .desc {
+            }
+
+            .socials {
+                display: flex;
+                gap: 1rem;
+
+                a {
+                    width: rem(40px);
+                    height: rem(40px);
+                    background-repeat: no-repeat;
+                    background-size: rem(28px);
+                    background-position: center center;
+                }
+
+                .email {
+                    background-image: url('/images/shared/email-icon.svg');
+                }
+
+                .whatsapp {
+                    background-image: url('/images/shared/whatsapp-icon.svg');
+                }
+
+                .linkedin {
+                    background-image: url('/images/shared/linkedin-icon.svg');
+                }
+
+                .github {
+                    background-image: url('/images/shared/github-icon.svg');
+                }
+            }
+        }
+
+        .addresses {
+            display: flex;
+            gap: 1rem;
+
+            @include xs {
+                flex-flow: column-reverse;
+            }
+
+            .address-bg {
+                width: rem(160px);
+                height: rem(95px);
+                background-image: url('/images/shared/address_bg.webp');
+                background-repeat: no-repeat;
+                background-size: contain;
+
+                @include xs {
+                    width: 100%;
+                    height: rem(195px);
+                    background-repeat: no-repeat;
+                }
+
+                &:hover {
+                    /*box-shadow: 0px 4px 16px rgba(0, 0, 0, 0.12);*/
+                }
+            }
+
+            .address-info {
+                display: flex;
+                flex-flow: column nowrap;
+                gap: rem(10px);
+
+                .address, .tel, .country {
+                    padding-left: rem(20px);
+                    background-repeat: no-repeat;
+                    background-position-y: rem(1px);
+                }
+
+                .address {
+                    color: $B1;
+                    background-image: url('/images/shared/location-icon.svg');
+
+                    &:hover {
+                        color: $B2;
+                    }
+                }
+
+                .country {
+                    font-weight: 600;
+                }
+
+                .tel {
+                    background-image: url('/images/shared/tel-icon.svg');
+                }
+            }
+        }
+    }
+
+    .copyright {
+        text-align: center;
+        font-weight: 400;
+        font-size: rem(10px);
+
+        @include sm {
+            text-align: unset;
+        }
+    }
+
+    .go-to-top {
+        all:unset;
+        position: absolute;
+        right: rem(5px);
+        top: rem(-40px);
+        padding: rem(10px);
+        background-color: $Gray3;
+    }
+}

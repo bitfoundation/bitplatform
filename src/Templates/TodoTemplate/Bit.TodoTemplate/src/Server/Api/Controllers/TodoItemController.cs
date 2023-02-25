@@ -29,7 +29,7 @@ public partial class TodoItemController : AppControllerBase
     }
 
     [HttpPost]
-    public async Task Create(TodoItemDto dto, CancellationToken cancellationToken)
+    public async Task<int> Create(TodoItemDto dto, CancellationToken cancellationToken)
     {
         var todoItemToAdd = Mapper.Map<TodoItem>(dto);
 
@@ -38,6 +38,8 @@ public partial class TodoItemController : AppControllerBase
         await DbContext.TodoItems.AddAsync(todoItemToAdd, cancellationToken);
 
         await DbContext.SaveChangesAsync(cancellationToken);
+
+        return todoItemToAdd.Id;
     }
 
     [HttpPut]

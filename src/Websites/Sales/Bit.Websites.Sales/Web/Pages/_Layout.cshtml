@@ -38,16 +38,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <base href="~/" />
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <base href="~/" />
+    <link rel="apple-touch-icon" sizes="512x512" href="images/icons/bit-icon-512.png" />
     <link rel="icon" href="~/favicon.ico" type="image/x-icon" asp-append-version="@shoudAddAspAppendVersion">
     <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.min.css" asp-append-version="@shoudAddAspAppendVersion" />
-    <link rel="stylesheet" href="_content/Blazored.Toast/blazored-toast.min.css" asp-append-version="@shoudAddAspAppendVersion" />
-    <link href="styles/app.min.css" rel="stylesheet" asp-append-version="@shoudAddAspAppendVersion" />
-    <link href="Bit.Websites.Sales.Web.styles.css" rel="stylesheet" asp-append-version="@shoudAddAspAppendVersion" />
+    <link rel="stylesheet" href="styles/app.min.css" asp-append-version="@shoudAddAspAppendVersion" />
+    <link rel="stylesheet" href="Bit.Websites.Sales.Web.styles.css" asp-append-version="@shoudAddAspAppendVersion" />
     <component type="typeof(HeadOutlet)" render-mode="@renderMode" />
-    <link rel="apple-touch-icon" sizes="512x512" href="images/icons/bit-icon-512.png" />
 </head>
 <body>
 
@@ -58,7 +57,7 @@
         @RenderBody()
     </div>
 
-    @if (!isStatic)
+    @if (isStatic is false)
     {
         @if (isBlazorServer)
         {
@@ -71,8 +70,7 @@
 
         <script src="_content/Bit.BlazorUI/scripts/bit.blazorui.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
     }
-    <script src="https://unpkg.com/embla-carousel/embla-carousel.umd.js"></script>
-    <script src="scripts/app.es5.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
+    <script src="scripts/app.js" asp-append-version="@shoudAddAspAppendVersion"></script>
 
     @if (isSsr)
     {

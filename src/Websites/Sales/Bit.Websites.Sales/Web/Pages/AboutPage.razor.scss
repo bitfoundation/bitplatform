@@ -1,467 +1,268 @@
-﻿@import '../wwwroot/styles/abstracts/_colors.scss';
-@import '../wwwroot/styles/abstracts/_media-queries.scss';
-@import '../wwwroot/styles/abstracts/_functions.scss';
+﻿@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_media-queries.scss';
+@import '../Styles/abstracts/_functions.scss';
 
-.page-top-section {
-    position: relative;
+.page-sec {
     width: 100%;
-    height: rem(654px);
-    background-image: url('/images/services/header-bg.png');
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: cover;
+    display: flex;
+    max-width: rem(1440px);
+    box-sizing: border-box;
+    padding: rem(40px) rem(140px);
+    margin: 0 auto;
+
+    @include lg {
+        padding: rem(32px) rem(60px);
+    }
 
     @include sm {
-        height: rem(520px);
+        padding: rem(16px);
+    }
+}
+
+.sec-title {
+    font-weight: bold;
+    font-size: rem(44px);
+    margin-bottom: 1rem;
+    text-align: center;
+
+    @include lg {
+        font-size: rem(34px);
     }
 
-    .section-content {
-        position: absolute;
-        top: 0;
-        left: 0;
-        z-index: 1;
+    @include md {
+        font-size: rem(30px);
+    }
+
+    @include sm {
+        font-size: rem(26px);
+    }
+}
+
+.sec-title-underline {
+    background-color: $Y1;
+    width: rem(240px);
+    height: rem(4px);
+    margin-bottom: 2rem;
+
+    @include lg {
+        width: rem(200px);
+        height: rem(2px);
+    }
+
+    @include md {
+        width: rem(180px);
+    }
+
+    @include sm {
+        width: rem(150px);
+    }
+}
+
+.sec-content {
+    color: $Gray2;
+    font-size: rem(20px);
+    text-align: center;
+    line-height: 2rem;
+    margin-bottom: 4rem;
+
+    @include md {
+        font-size: rem(18px);
+    }
+
+    @include sm {
+        font-size: rem(16px);
+    }
+}
+
+
+.about-bg {
+    background-image: url('/images/about/about_bg.webp');
+    background-repeat: no-repeat;
+    background-size: cover;
+    margin-bottom: rem(140px);
+
+    .about-us {
+        padding-top: rem(180px);
         display: flex;
-        flex-flow: column nowrap;
+        flex-flow: column;
+        align-items: center;
+
+        .about-title {
+            font-weight: 800;
+            font-size: rem(40px);
+            line-height: rem(52px);
+            color: $B2;
+            margin-bottom: rem(24px);
+        }
+
+        .about-bread {
+            font-weight: 400;
+            font-size: rem(16px);
+            line-height: rem(24px);
+            color: $Gray2;
+        }
+    }
+
+    .evolve-with-bit {
+        flex-flow: row nowrap;
         justify-content: flex-start;
         align-items: flex-start;
-        width: 100%;
-        height: 100%;
-        padding: rem(256px) 0 0 rem(130px);
-        box-sizing: border-box;
-        background-color: rgba(0, 0, 0, 0.65);
+        padding-top: rem(96px);
 
-        @include lg {
-            padding: rem(246px) 0 0 rem(84px);
-        }
+        .sec-body {
+            .sec-title {
+                font-weight: 700;
+                font-size: rem(40px);
+                line-height: rem(52px);
+                text-align: unset;
+                margin-bottom: rem(24px);
 
-        @include md {
-            padding: rem(210px) 0 0 rem(61px);
-        }
+                @include sm {
+                    font-size: rem(34px);
+                    text-align: center;
+                }
+            }
 
-        @include sm {
-            padding: rem(188px) rem(30px) 0 rem(30px);
-        }
-    }
+            .sec-desc {
+                font-weight: 400;
+                font-size: rem(20px);
+                line-height: rem(32px);
+                color: $Gray1;
+                max-width: rem(880px);
 
-    .section-title {
-        margin-bottom: rem(17px);
-        font-weight: bold;
-        font-size: rem(40px);
-        line-height: rem(55px);
-        color: $White;
-
-        @include sm {
-            margin-bottom: rem(22px);
-            font-weight: normal;
-            font-size: rem(24px);
-            line-height: rem(34px);
-        }
-    }
-
-    .section-desc {
-        max-width: rem(692px);
-        font-size: rem(22px);
-        line-height: rem(35px);
-        color: $White;
-
-        @include md {
-            max-width: rem(504px);
-        }
-
-        @include sm {
-            max-width: 100%;
-            font-size: rem(18px);
-            line-height: rem(30px);
-            font-weight: bold;
+                @include sm {
+                    font-size: rem(18px);
+                    text-align: center;
+                }
+            }
         }
     }
 }
 
-.page-top-content {
-    display: flex;
+.what-we-guarantee {
     flex-flow: column nowrap;
     justify-content: flex-start;
     align-items: center;
-    width: 100%;
-    padding: rem(100px);
-    box-sizing: border-box;
+    padding-top: 4rem;
 
-    @include lg {
-        padding: rem(106px) rem(93px);
-    }
-
-    @include md {
-        padding: rem(100px) rem(74px);
-    }
-
-    @include sm {
-        padding: rem(72px) rem(30px);
-    }
-
-    .content-container {
+    .guarantee-card-group {
         display: flex;
         flex-flow: row wrap;
-        justify-content: flex-start;
-        align-items: flex-start;
-        width: 100%;
-        max-width: rem(1200px);
-        margin-top: rem(90px);
-
-        //@include lt-lg {
-        //    justify-content: center;
-        //}
-
-        @include sm {
-            margin-top: rem(62px);
-        }
-    }
-
-    .item-container {
-        display: flex;
-        flex-flow: column nowrap;
-        justify-content: flex-start;
-        align-items: flex-start;
-        width: 50%;
-        max-width: rem(580px);
-        min-height: rem(280px);
-        margin-bottom: rem(74px);
-
-        &:nth-child(2n) {
-            margin-left: rem(40px);
-
-            //@include lt-lg {
-            //    margin-left: 0;
-            //}
-        }
-
-        //@include lt-lg {
-        //    width: 100%;
-        //    max-width: rem(850px);
-        //    min-height: auto;
-        //    margin-bottom: rem(65px);
-        //}
+        gap: 2rem;
 
         @include md {
-            margin-bottom: rem(50px);
-        }
-
-        @include sm {
-            margin-bottom: rem(70px);
+            justify-content: center;
         }
     }
 
-    .item-title {
+    .guarantee-card {
+        width: calc(50% - 1rem);
         display: flex;
-        flex-flow: row nowrap;
-        justify-content: flex-start;
-        align-items: center;
-        width: 100%;
-        font-weight: bold;
-        font-size: rem(35px);
-        line-height: rem(58px);
-        color: $Black;
-        margin-bottom: rem(20px);
+        flex-flow: column nowrap;
+        align-items: flex-start;
+        border: 1px solid $B5;
+        border-radius: rem(15px);
+        background-position: top left;
+        background-repeat: no-repeat;
+        background-size: rem(220px);
+        padding: 2rem;
+        //background-color: $B5;
 
-        @include sm {
-            flex-flow: column nowrap;
-            justify-content: flex-start;
-            align-items: center;
-            margin-bottom: rem(12px);
-            text-align: center;
+        @include md {
+            width: calc(100% - 2rem);
         }
 
-        .item-icon {
-            width: rem(100px);
-            height: rem(100px);
-            margin-right: rem(20px);
-            border-radius: rem(10px);
-            background-position: center;
-            background-repeat: no-repeat;
-            background-color: $BackgroundBlue;
+        @include sm {
+            background-size: rem(180px);
+            background-position: top left rem(-25px);
+            padding: rem(24px);
+        }
+
+        &:hover {
+            box-shadow: 0px 4px 38px rgba(0, 0, 0, 0.12);
+        }
+
+        .guarantee-card-title {
+            font-weight: 700;
+            font-size: rem(30px);
+            line-height: rem(40px);
+            color: $Black;
+            padding-top: rem(40px);
+            padding-left: rem(170px);
+            margin-bottom: 3rem;
 
             @include sm {
-                margin-right: 0;
-                margin-bottom: rem(20px);
+                font-size: rem(24px);
+                padding-top: rem(10px);
+                padding-left: rem(110px);
+                margin-bottom: 3rem;
+            }
+
+            @include xs {
+                font-size: rem(20px);
+                padding-left: rem(80px);
             }
         }
 
-        .quality-icon {
-            background-image: url('/images/about/quality-icon.svg');
-            background-size: rem(66px);
-        }
+        .guarantee-card-desc {
+            width: 100%;
+            font-weight: 400;
+            font-size: rem(22px);
+            line-height: rem(32px);
+            color: $Gray1;
 
-        .performance-icon {
-            background-image: url('/images/about/performance-icon.svg');
-            background-size: rem(74px);
-        }
-
-        .integrity-icon {
-            background-image: url('/images/about/integrity-icon.svg');
-            background-size: rem(62px);
-        }
-
-        .sustainability-icon {
-            background-image: url('/images/about/sustainability-icon.svg');
-            background-size: rem(77px);
-        }
-
-        .skills-icon {
-            background-image: url('/images/about/skills-icon.svg');
-            background-size: rem(71px);
+            @include sm {
+                font-size: rem(16px);
+            }
         }
     }
 
-    .item-desc {
-        width: 100%;
-        font-weight: 500;
-        font-size: rem(22px);
-        line-height: rem(35px);
-        color: $Gray;
 
-        @include sm {
-            text-align: center;
-        }
+    .guarantee-card-1 {
+        background-image: url('/images/about/guarantee/customer-first_bg.svg');
+    }
+
+    .guarantee-card-2 {
+        background-image: url('/images/about/guarantee/performance_bg.svg');
+    }
+
+    .guarantee-card-3 {
+        background-image: url('/images/about/guarantee/integrity_bg.svg');
+    }
+
+    .guarantee-card-4 {
+        background-image: url('/images/about/guarantee/quality_bg.svg');
+    }
+
+    .guarantee-card-5 {
+        background-image: url('/images/about/guarantee/technical-skill_bg.svg');
     }
 }
 
-.people-section {
-    display: flex;
+.our-team {
     flex-flow: column nowrap;
     justify-content: flex-start;
     align-items: center;
-    width: 100%;
-    overflow: hidden;
+    padding-top: 4rem;
 
-    .section-desc {
-        max-width: rem(1022px);
-        font-weight: 500;
-        font-size: rem(22px);
-        line-height: rem(35px);
-        text-align: center;
-        color: $Black;
-
-        //@include lt-lg {
-        //    display: none;
-        //}
-    }
-
-    .photo-container {
-        position: relative;
-        width: rem(1200px);
-        height: rem(618px);
-        margin: rem(72px) 0 rem(208px);
-
-        @include lg {
-            margin: rem(106px) 0 rem(182px);
-        }
+    .team-image {
+        background-image: url('/images/about/team/team-1.webp');
+        background-repeat: no-repeat;
+        background-size: contain;
+        background-position: center;
+        width: 100%;
+        height: rem(654px);
 
         @include md {
-            width: rem(836px);
-            height: rem(430px);
-            margin: rem(98px) 0 rem(92px);
+            background-image: url('/images/about/team/team-2.webp');
         }
 
         @include sm {
-            width: rem(836px);
-            height: rem(430px);
-            margin: rem(56px) 0 rem(131px);
+            background-image: url('/images/about/team/team-3.webp');
         }
-    }
 
-    .photo {
-        position: absolute;
-        border-radius: 50%;
-        box-shadow: 0px 4px 100px #EAEAEA;
-        background-position: center;
-        background-size: cover;
-        background-repeat: no-repeat;
-        background-color: orange;
-    }
-
-    .photo-1 {
-        width: rem(272px);
-        height: rem(272px);
-        left: rem(16px);
-        top: rem(17px);
-        background-image: url();
-
-        @include lt-lg {
-            width: rem(189px);
-            height: rem(189px);
-            left: rem(11px);
-            top: rem(11px);
+        @include xs {
+            background-image: url('/images/about/team/team-4.webp');
         }
-    }
-
-    .photo-2 {
-        width: rem(228px);
-        height: rem(228px);
-        left: rem(478px);
-        top: rem(61px);
-        background-image: url();
-
-        @include lt-lg {
-            width: rem(158px);
-            height: rem(158px);
-            left: rem(333px);
-            top: rem(42px);
-        }
-    }
-
-    .photo-3 {
-        width: rem(200px);
-        height: rem(200px);
-        right: rem(43px);
-        top: 0;
-        background-image: url();
-
-        @include lt-lg {
-            width: rem(139px);
-            height: rem(139px);
-            right: rem(30px);
-            top: 0;
-        }
-    }
-
-    .photo-4 {
-        width: rem(210px);
-        height: rem(210px);
-        left: rem(227px);
-        top: rem(277px);
-        background-image: url();
-
-        @include lt-lg {
-            width: rem(146px);
-            height: rem(146px);
-            left: rem(158px);
-            top: rem(193px);
-        }
-    }
-
-    .photo-5 {
-        width: rem(192px);
-        height: rem(192px);
-        right: rem(272px);
-        top: rem(212px);
-        background-image: url();
-
-        @include lt-lg {
-            width: rem(134px);
-            height: rem(134px);
-            right: rem(189px);
-            top: rem(147px);
-        }
-    }
-
-    .photo-6 {
-        width: rem(200px);
-        height: rem(200px);
-        left: 0;
-        bottom: 0;
-        background-image: url();
-
-        @include lt-lg {
-            width: rem(139px);
-            height: rem(139px);
-        }
-    }
-
-    .photo-7 {
-        width: rem(200px);
-        height: rem(200px);
-        left: rem(468px);
-        bottom: rem(11px);
-        background-image: url();
-
-        @include lt-lg {
-            width: rem(139px);
-            height: rem(139px);
-            left: rem(326px);
-            bottom: rem(7px);
-        }
-    }
-
-    .photo-8 {
-        width: rem(272px);
-        height: rem(272px);
-        right: 0;
-        bottom: rem(7px);
-        background-image: url();
-
-        @include lt-lg {
-            width: rem(189px);
-            height: rem(189px);
-            bottom: rem(5px);
-        }
-    }
-}
-
-.qoute-section {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    padding: rem(150px) rem(292px);
-    box-sizing: border-box;
-    background-color: $BackgroundBlue;
-
-    @include lg {
-        padding: rem(210px) rem(85px);
-    }
-
-    @include md {
-        padding: rem(271px) rem(72px);
-    }
-
-    @include sm {
-        padding: rem(184px) rem(26px);
-    }
-
-    .qoute-text {
-        position: relative;
-        width: 100%;
-        max-width: rem(856px);
-        font-weight: bold;
-        font-size: rem(35px);
-        line-height: rem(58px);
-        text-align: center;
-        color: $Black;
-    }
-
-    .qoute-icon {
-        position: absolute;
-        width: rem(148px);
-        height: rem(138px);
-        background-image: url('/images/about/qoute-icon.svg');
-        background-position: center;
-        background-size: contain;
-        background-repeat: no-repeat;
-    }
-
-    .top-quote-icon {
-        transform: rotate(180deg);
-        right: rem(-192px);
-        top: rem(-95px);
-
-        //@include lt-lg {
-        //    right: 0;
-        //    top: rem(-148px);
-        //}
-    }
-
-    .bottom-quote-icon {
-        left: rem(-192px);
-        bottom: rem(-95px);
-
-        //@include lt-lg {
-        //    left: 0;
-        //    bottom: rem(-148px);
-        //}
-    }
-}
-
-@media all and (max-width: em(470px)) {
-    .page-top-section {
-        height: rem(735px);
     }
 }

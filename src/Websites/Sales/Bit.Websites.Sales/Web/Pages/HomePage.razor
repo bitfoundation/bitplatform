@@ -1,148 +1,177 @@
-﻿@inherits AppComponentBase
-@page "/"
+﻿@page "/"
+@inherits AppComponentBase
 
-<section class="page-sec to-the-moon-sec">
+<PageTitle>Bit Platform software development as a service</PageTitle>
+<HeadContent>
+    <meta name="title" content="" />
+    <meta name="description" content="" />
+    
+    <meta property="og:url" content="https://bitservices.company/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Bit Platform software development as a service" />
+    <meta property="og:title" content="Bit Platform software development as a service" />
+    <meta property="og:description" content="Bit Platform software development as a service" />
+    <meta property="og:image" content="https://bitservices.company/images/og-image.webp" />
+    
+    <meta name="twitter:title" content="Bit Platform software development as a service" />
+    <meta name="twitter:description" content="Bit Platform software development as a service" />
+    <meta name="twitter:image" content="https://bitservices.company/images/og-image.webp" />
+</HeadContent>
+
+<div class="home-bg">
+    <section class="page-sec to-the-moon">
+        <div class="sec-body">
+            <div class="sec-title">To the Moon</div>
+            <div class="sec-subtitle">Through the Clouds</div>
+            <div class="sec-desc">
+                Bit is a digital innovation company with software development at its core. We help out our customers innovate with designing and building their digital products efficiently with our Agile mindset and lean processes.
+            </div>
+            <a class="sec-btn--primary" href="/cases">See Our Showcases</a>
+        </div>
+        <div class="sec-bg"></div>
+    </section>
+</div>
+
+<section class="page-sec what-we-offer">
+    <div class="sec-title">WHAT WE OFFER</div>
+    <div class="sec-title-underline"></div>
     <div class="sec-content">
-        <div class="sec-title">To the Moon</div>
-        <div class="sec-subtitle">through the Clouds.</div>
-        <div class="sec-desc">Bit is a digital innovation company with software development at its core. We help out our customers innovate with designing and building their digital products efficiently with our Agile mindset and lean processes.</div>
-        <a class="sec-btn--primary" href="/cases">See Our Showcases</a>
+        At Bit, we are experts in providing a wide range of software development services. Whether you're unsure of which service best suits your needs, our team is here to help. Schedule a free online consultation with us today to get started.
     </div>
-    <div class="sec-bg"></div>
-</section>
-
-<section class="page-sec projects-sec">
-    <div class="title-container--primary">
-        <div class="title--primary">Our </div>
-        <div class="title--primary">Projects<span class="title-border--primary"></span></div>
-    </div>
-    <div class="sec-subtitle">Your story will go up there</div>
-    <BitCarousel InfiniteSliding="true" Style="width:500px">
-        @foreach (var showCase in Cases)
-        {
-            <BitCarouselItem>
-                <div class="slide-photo" style="background-image: url(@($"/images/home/slide.svg"))"></div>
-                <div class="slide-content">
-                    <div class="slide-title">@showCase.Name</div>
-                    <div class="slide-desc">@showCase.Description</div>
-                </div>
-            </BitCarouselItem>
-        }
-    </BitCarousel>
-    <a class="sec-btn--primary" href="/cases">See Our Showcases</a>
-</section>
-
-<section class="page-sec services-sec">
-    <div class="title-container--primary">
-        <div class="title--primary">Our </div>
-        <div class="title--primary">Services<span class="title-border--primary"></span></div>
-    </div>
-    <div class="sec-desc">Bit provides a wide range of services. you find everything you need here. We build prototypes and test your products to make sure they are perfect.</div>
     <div class="sec-card-group">
-        <div class="service-card web-development-card">
-            Web development
-            <div class="service-card-overlay">
-                <div class="service-card-title">Web development</div>
-                <div class="service-card-desc">We offer custom web development services to ensure your website is tailored to your unique business needs, responsive across all devices, and visually stunning. Let us help you build a website that truly reflects the unique nature of your business.</div>
-            </div>
-        </div>
-        <div class="service-card app-development-card">
-            App development
-            <div class="service-card-overlay">
-                <div class="service-card-title">App development</div>
-                <div class="service-card-desc">Bit's team of experts provides exceptional mobile app development services, so you don't have to look elsewhere. Let us help bring your vision to life and deliver a smooth user experience for your mobile audience.</div>
-            </div>
-        </div>
-        <div class="service-card mobile-development-card">
-            Mobile development
-            <div class="service-card-overlay">
-                <div class="service-card-title">Mobile development</div>
-                <div class="service-card-desc">Bit's team of experts provides exceptional mobile app development services, so you don't have to look elsewhere. Let us help bring your vision to life and deliver a smooth user experience for your mobile audience.</div>
-            </div>
-        </div>
-        <div class="service-card ai-card">
-            Artificial intelligence
-            <div class="service-card-overlay">
-                <div class="service-card-title">Artificial intelligence</div>
-                <div class="service-card-desc">AI made everything easier and more efficient. With Bit, you can have it on-board too. Remote device management, wireless connectivity and smart monitoring can be run through artificial intelligence more easily. </div>
-            </div>
-        </div>
-        <div class="service-card design-card">
-            UI/ UX design
-            <div class="service-card-overlay">
-                <div class="service-card-title">UI/ UX design</div>
-                <div class="service-card-desc">Our team of UI/UX experts creates unique, aesthetically pleasing and functional websites, applications and webpages that accurately reflect your business, ensuring an outstanding user experience for your clients and users.</div>
-            </div>
-        </div>
-        <div class="service-card support-card">
-            Technical support
-            <div class="service-card-overlay">
-                <div class="service-card-title">Technical support</div>
-                <div class="service-card-desc">Free up your time by entrusting our support service to handle any operational issues, allowing you to focus on expanding your business.</div>
-            </div>
-        </div>
-        <div class="service-card cloud-card">
-            Cloud base solutions
-            <div class="service-card-overlay">
-                <div class="service-card-title">cloud base solutions</div>
-                <div class="service-card-desc">Unlock the full potential of your business with our high-performance cloud solutions. Unlike traditional options, cloud solutions offer limitless scalability and power. Bit offers cutting-edge technology to ensure that your business is both agile and efficient.</div>
-            </div>
-        </div>
-        <div class="service-card game-development-card">
-            Game development
-            <div class="service-card-overlay">
-                <div class="service-card-title">Game development</div>
-                <div class="service-card-desc">Let Bit bring your game vision to life with our expert team of 2D and 3D game developers. Experience captivating and engaging gameplay with our industry-leading expertise.</div>
-            </div>
-        </div>
+        <a href="/services#solutions" class="card card-1">Web development</a>
+        <a href="/services#solutions" class="card card-2">Mobile development</a>
+        <a href="/services#solutions" class="card card-3">Consulting services</a>
+        <a href="/services#solutions" class="card card-4">Artificial intelligence</a>
+        <a href="/services#solutions" class="card card-5">UI/ UX design</a>
+        <a href="/services#solutions" class="card card-6">Technical support</a>
+        <a href="/services#solutions" class="card card-7">Cloud base solutions</a>
+        <a href="/services#solutions" class="card card-8">Game development</a>
     </div>
-    <a class="sec-btn--primary" href="/services">Services</a>
+    <a class="sec-btn--primary" href="/services">Explore More</a>
 </section>
 
-<section class="page-sec process-sec">
-    <div class="title-container--primary">
-        <div class="title--primary">Our </div>
-        <div class="title--primary">Process<span class="title-border--primary"></span></div>
+@*<div class="success-bg">
+    <section class="page-sec success-story">
+        <div class="sec-title">OUR SUCCESS STORIES</div>
+        <div class="sec-title-underline"></div>
+        <div class="sec-content">
+            Your story will go up there.
+        </div>
+        <div class="sec-carousel">
+            <BitCarousel Class="carousel" ShowNextPrev="false" InfiniteScrolling="true" @ref="_carouselRef">
+                    <BitCarouselItem>
+                        <div class="slide">
+                            <img class="slide-image" src="/images/home/MacBook Pro 16 inch.png" alt="Mining Solutions" />
+                            <div class="slide-content">
+                                <div class="slide-title">Mining Solutions</div>
+                                <div class="slide-title-underline"></div>
+                                <div class="slide-desc">
+                                    Mining Solutions is an Advanced Mining Technology Group based in Vancouver, BC, Canada comprised of experts with more than 15 years of experience 
+                                    in open-pit mining technology and business innovation. ​
+                                    With installations in North America, Central America, South America, and Australia, our technology and expertise are field-proven.​
+                                </div>
+                            </div>
+                        </div>
+                    </BitCarouselItem>
+                    <BitCarouselItem>
+                        <div class="slide">
+                            <img class="slide-image" src="/images/home/MacBook Pro 16 inch.png" alt="Mining Solutions" />
+                            <div class="slide-content">
+                                <div class="slide-title">Mining Solutions</div>
+                                <div class="slide-title-underline"></div>
+                                <div class="slide-desc">
+                                    Mining Solutions is an Advanced Mining Technology Group based in Vancouver, BC, Canada comprised of experts with more than 15 years of experience 
+                                    in open-pit mining technology and business innovation. ​
+                                    With installations in North America, Central America, South America, and Australia, our technology and expertise are field-proven.​
+                                </div>
+                            </div>
+                        </div>
+                    </BitCarouselItem>
+                    <BitCarouselItem>
+                        <div class="slide">
+                            <img class="slide-image" src="/images/home/MacBook Pro 16 inch.png" alt="Mining Solutions" />
+                            <div class="slide-content">
+                                <div class="slide-title">Mining Solutions</div>
+                                <div class="slide-title-underline"></div>
+                                <div class="slide-desc">
+                                    Mining Solutions is an Advanced Mining Technology Group based in Vancouver, BC, Canada comprised of experts with more than 15 years of experience 
+                                    in open-pit mining technology and business innovation. ​
+                                    With installations in North America, Central America, South America, and Australia, our technology and expertise are field-proven.​
+                                </div>
+                            </div>
+                        </div>
+                    </BitCarouselItem>
+            </BitCarousel>
+        </div>
+        <div class="prev-next">
+            <button @onclick="() => _carouselRef!.GoPrev()">
+                <svg fill="none" width="56" height="56">
+                    <path d="M28 49.0004C39.598 49.0004 49 39.5984 49 28.0004C49 16.4024 39.598 7.00037 28 7.00037C16.402 7.00037 7 16.4024 7 28.0004C7 39.5984 16.402 49.0004 28 49.0004Z" stroke-width="2" stroke-miterlimit="10" />
+                    <path d="M26.6656 35.4159L19.25 28.0003L26.6656 20.5847" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M19.25 27.9999H36.75" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+
+            </button>
+            <button @onclick="() => _carouselRef!.GoNext()">
+                <svg fill="none" width="56" height="56">
+                    <path d="M28 49.0004C39.598 49.0004 49 39.5984 49 28.0004C49 16.4024 39.598 7.00037 28 7.00037C16.402 7.00037 7 16.4024 7 28.0004C7 39.5984 16.402 49.0004 28 49.0004Z" stroke-width="2" stroke-miterlimit="10" />
+                    <path d="M29.3345 35.4159L36.7501 27.9999L29.3345 20.584" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M19.25 27.9999H36.75" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+            </button>
+        </div>
+        <a class="sec-btn--primary" href="/cases">See Our Showcases</a>
+    </section>
+</div>*@
+
+<section class="page-sec how-we-work">
+    <div class="sec-title">HOW WE WORK</div>
+    <div class="sec-title-underline"></div>
+    <div class="sec-content">
+        Our team at Bit is dedicated to delivering cutting-edge technology solutions through the implementation of best practices and methodologies for rapid, efficient results in a structured and methodical way.
     </div>
-    <div class="sec-desc">Our process begins with creating a comprehensive roadmap for your business. We then work closely with you to bring your ideas to fruition by building a polished prototype that perfectly aligns with your vision and exceeds your expectations.</div>
     <div class="process-card process-card-1">
-        <div class="process-card-title">Functional Specification</div>
-        <div class="process-card-desc">This is the initial step in the development process where the goals and requirements of the project are defined and a map is created to guide the development process.</div>
+        <div class="process-card-title">Discovery</div>
+        <div class="process-card-desc">
+            This phase ensures a successful outcome by gathering and analyzing data, conducting research, and identifying project scope, timelines, and budget. It leads to a clear project plan that aligns with the clients' business needs, goals and objectives.
+        </div>
         <div class="process-card-number"></div>
     </div>
     <div class="process-card process-card-2">
-        <div class="process-card-title">Prototyping</div>
-        <div class="process-card-desc">This stage involves creating a prototype or demo of the product to be developed. Feedback is gathered at this stage and changes are made as needed.</div>
+        <div class="process-card-title">Product Design</div>
+        <div class="process-card-desc">
+            Transforming ideas into tangible, user-centered solutions that deliver an optimal experience. Through iterative testing and validation, we ensure the final design exceeds expectations.
+        </div>
         <div class="process-card-number"></div>
     </div>
     <div class="process-card process-card-3">
         <div class="process-card-title">Setting Up Your Team</div>
-        <div class="process-card-desc">A dedicated, talented, and exclusive team is set up for the project. The team composition can be chosen based on budget and deadlines are established.</div>
+        <div class="process-card-desc">
+            A dedicated, talented, and exclusive team is set up for the project. The team composition can be chosen based on budget and deadlines are established.
+        </div>
         <div class="process-card-number"></div>
     </div>
     <div class="process-card process-card-4">
         <div class="process-card-title">Agile Software Development</div>
-        <div class="process-card-desc">This approach is used to speed up the development process, ensuring that the product is sustainable, well-designed, and delivered quickly.</div>
+        <div class="process-card-desc">
+            At Bit, we assemble dedicated teams of experts, tailored to your specific project needs and budget. We handpick the right team members to ensure successful delivery and set clear deadlines for completion.
+        </div>
         <div class="process-card-number"></div>
     </div>
     <div class="process-card process-card-5">
-        <div class="process-card-title">Technical And Marketing Support</div>
-        <div class="process-card-desc">After launch, services such as SEO, marketing, performance monitoring, and upgrades are provided to ensure the success of the product in the market.</div>
+        <div class="process-card-title">Technical Support</div>
+        <div class="process-card-desc">
+            Bit provides comprehensive support for your software, including technical assistance, SEO, performance monitoring, upgrades, and maintenance to ensure its success in the market.
+        </div>
         <div class="process-card-number"></div>
     </div>
 </section>
 
-<section class="page-sec team-sec">
-    <div class="title-container--primary">
-        <div class="title--primary">Who </div>
-        <div class="title--primary">We Are?<span class="title-border--primary"></span></div>
+@*<section class="page-sec what-our-client-says">
+    <div class="sec-title">WHAT OUR CLIENT SAYS</div>
+    <div class="sec-title-underline"></div>
+    <div class="sec-content">
+        [ lets see what our client says about us ]
     </div>
-    <div class="sec-content-container">
-        <div class="sec-content">
-            <div class="sec-title">DoorDash / Food delivey app</div>
-            <div class="sec-desc">Bit  is a full-service software developing agency. Our job is to make your dream business come true. We have combined quality with performance and made a new standard out of it. Bit gathered talents so you don't need to look for them elsewhere. We help you to build your website, your application, UI/UX and your future. It's a new world and new worlds need robust solutions.</div>
-            <a class="sec-btn--primary" href="/about">Meet Our Team</a>
-        </div>
-        <div class="team-photo"></div>
-    </div>
-</section>
+</section>*@

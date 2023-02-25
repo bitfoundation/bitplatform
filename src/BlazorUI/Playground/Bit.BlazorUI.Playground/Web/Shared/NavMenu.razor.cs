@@ -29,13 +29,9 @@ public partial class NavMenu
                 new BitNavItem { Text = "LoadingButton", Url = "/components/loading-button" },
                 new BitNavItem { Text = "ToggleButton", Url = "/components/toggle-button" },
                 new BitNavItem { Text = "MenuButton", Url = "/components/menu-button" },
-                new BitNavItem { Text = "MenuButtonGroup", Url = "/components/menu-button-group" },
-                new BitNavItem { Text = "MenuButtonList", Url = "/components/menu-button-list" },
                 new BitNavItem { Text = "SplitButton", Url = "/components/split-button" },
                 new BitNavItem { Text = "CheckBox", Url = "/components/check-box" },
                 new BitNavItem { Text = "ChoiceGroup", Url = "/components/choice-group" },
-                new BitNavItem { Text = "RadioButtonGroup", Url = "/components/radio-button-group" },
-                new BitNavItem { Text = "RadioButtonList", Url = "/components/radio-button-list" },
                 new BitNavItem { Text = "DropDown", Url = "/components/drop-down" },
                 new BitNavItem { Text = "FileUpload", Url = "/components/file-upload" },
                 new BitNavItem { Text = "Label",  Url = "/components/label" },
@@ -79,8 +75,6 @@ public partial class NavMenu
             Items = new List<BitNavItem>
             {
                 new BitNavItem { Text = "Breadcrumb", Url = "/components/breadcrumb" },
-                new BitNavItem { Text = "BreadGroup", Url = "/components/bread-group" },
-                new BitNavItem { Text = "BreadList", Url = "/components/bread-list" },
                 new BitNavItem { Text = "Nav (TreeList)", Url = "/components/nav" },
                 new BitNavItem { Text = "NavGroup (TreeList)", Url = "/components/nav-group" },
                 new BitNavItem { Text = "NavList (TreeList)", Url = "/components/nav-list" },

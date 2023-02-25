@@ -33,6 +33,8 @@ public partial class BitButton
         get => buttonSize;
         set
         {
+            if (buttonSize == value) return;
+
             buttonSize = value;
             ClassBuilder.Reset();
         }
@@ -97,11 +99,12 @@ public partial class BitButton
                                            ? "primary"
                                            : "standard");
 
-        ClassBuilder.Register(() => ButtonSize == BitButtonSize.Small
-                                       ? "small"
-                                       : ButtonSize == BitButtonSize.Medium
-                                           ? "medium"
-                                           : "large");
+        ClassBuilder.Register(() => ButtonSize switch
+        {
+            BitButtonSize.Small => "small",
+            BitButtonSize.Large => "large",
+            _ => "medium"
+        });
     }
 
     protected override async Task OnInitializedAsync()

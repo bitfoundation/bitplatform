@@ -1,0 +1,198 @@
+﻿@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_media-queries.scss';
+@import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_mixins.scss';
+
+.header {
+    top: 0;
+    width: 100%;
+    position: absolute;
+    background: transparent;
+}
+
+.header-container {
+    display: flex;
+    align-items: center;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    max-width: rem(1440px);
+    padding: rem(40px) rem(140px);
+    margin: 0 auto;
+
+    @include lg {
+        padding: rem(32px) rem(60px);
+    }
+
+    @include md {
+        padding: rem(32px);
+    }
+
+    @include xs {
+        padding: rem(16px);
+    }
+}
+
+.logo-container {
+    flex-grow: 1;
+    display: flex;
+}
+
+.header-shadow {
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.07);
+}
+
+.bit-logo {
+    width: rem(36px);
+    height: rem(24px);
+    background-image: url('/images/shared/bit-logo.png');
+}
+
+.header-content {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+
+    @include md {
+        display: none;
+    }
+}
+
+.header-lnk {
+    position: relative;
+    margin-left: rem(52px);
+    font-weight: 600;
+    font-size: rem(16px);
+    line-height: rem(22px);
+    color: $Gray1;
+
+    &:hover {
+        color: $B2;
+    }
+}
+
+.header-lnk--active {
+    color: $B2;
+}
+
+.header-lnk-border {
+    position: absolute;
+    top: rem(30px);
+    left: 0;
+    width: 100%;
+    height: rem(4px);
+    background-color: $B2;
+}
+
+.header-btn {
+    @include SecondaryButton($IsInNavbar: true);
+    background: transparent;
+    margin-left: rem(60px);
+
+    @include md {
+        margin-left: rem(32px);
+    }
+}
+
+.header-menu-btn {
+    position: absolute;
+    transform: translateY(-50%);
+    top: 50%;
+    display: none;
+    width: rem(32px);
+    height: rem(32px);
+    background-image: url('/images/shared/menu-icon.svg');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: rem(24px);
+    cursor: pointer;
+
+    @include md {
+        display: inline-block;
+        right: rem(22px);
+    }
+}
+
+.menu-shadow {
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-start;
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 110;
+}
+
+.menu {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+    max-width: rem(360px);
+    height: 100%;
+    background-color: $White;
+}
+
+.menu-top-bar {
+    position: relative;
+    width: 100%;
+    height: rem(100px);
+    border: rem(1px) solid #E7E7E7;
+    box-sizing: border-box;
+}
+
+.close-btn {
+    position: absolute;
+    transform: translateY(-50%);
+    top: 50%;
+    left: rem(26px);
+    width: rem(32px);
+    height: rem(32px);
+    background-image: url('/images/shared/menu-close-icon.svg');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: rem(14px);
+    cursor: pointer;
+}
+
+.menu-content {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+    padding-top: rem(36px);
+}
+
+.menu-lnk {
+    position: relative;
+    font-size: rem(22px);
+    line-height: rem(35px);
+    margin-bottom: rem(35px);
+    color: $Black;
+}
+
+.menu-lnk--active {
+    color: $B2;
+}
+
+.menu-link-border {
+    width: 100%;
+    height: rem(4px);
+    position: absolute;
+    top: rem(30px);
+    left: 0;
+    background-color: $B2;
+}
+
+.menu-header-btn {
+    background: transparent;
+    margin-top: rem(115px);
+
+    .menu-btn {
+        @include PrimaryButton($IsInNavbar: false);
+    }
+}
