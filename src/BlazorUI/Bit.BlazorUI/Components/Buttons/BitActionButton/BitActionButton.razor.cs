@@ -83,14 +83,12 @@ public partial class BitActionButton
 
     protected override void RegisterComponentClasses()
     {
-        ClassBuilder.Register(() =>
-         ButtonSize switch
-         {
-             BitButtonSize.Small => "small",
-             BitButtonSize.Medium => "medium",
-             BitButtonSize.Large => "large",
-             _ => "small"
-         });
+        ClassBuilder.Register(() => ButtonSize switch
+        {
+            BitButtonSize.Small => "small",
+            BitButtonSize.Large => "large",
+            _ => "medium"
+        });
     }
 
     protected override async Task OnInitializedAsync()

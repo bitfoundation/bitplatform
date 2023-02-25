@@ -121,14 +121,12 @@ public partial class BitToggleButton
                                        ? "primary"
                                        : "standard");
 
-        ClassBuilder.Register(() =>
-         ButtonSize switch
-         {
-             BitButtonSize.Small => "small",
-             BitButtonSize.Medium => "medium",
-             BitButtonSize.Large => "large",
-             _ => "small"
-         });
+        ClassBuilder.Register(() => ButtonSize switch
+        {
+            BitButtonSize.Small => "small",
+            BitButtonSize.Large => "large",
+            _ => "medium"
+        });
 
         ClassBuilder.Register(() => IsChecked
                                        ? "checked"

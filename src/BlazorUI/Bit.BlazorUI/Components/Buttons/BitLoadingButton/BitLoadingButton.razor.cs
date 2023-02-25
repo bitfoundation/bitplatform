@@ -127,13 +127,11 @@ public partial class BitLoadingButton
                                            ? "primary"
                                            : "standard");
 
-        ClassBuilder.Register(() =>
-         ButtonSize switch
+        ClassBuilder.Register(() => ButtonSize switch
         {
             BitButtonSize.Small => "small",
-            BitButtonSize.Medium => "medium",
             BitButtonSize.Large => "large",
-            _ => "small"
+            _ => "medium"
         });
     }
 
