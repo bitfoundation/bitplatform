@@ -20,7 +20,7 @@ public partial class BitTimePickerDemo
         },
         new()
         {
-            Name = "LabelFragment",
+            Name = "LabelTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "Used to customize the label for the TimePicker."
@@ -34,11 +34,11 @@ public partial class BitTimePickerDemo
         },
         new()
         {
-            Name = "TimeEditMode",
-            Type = "BitTimeEditMode",
+            Name = "EditMode",
+            Type = "BitTimePickerEditMode",
             LinkType = LinkType.Link,
             Href = "#edit-mode-enum",
-            DefaultValue = "BitTimeEditMode.Normal",
+            DefaultValue = "BitTimePickerEditMode.Normal",
             Description = "Choose the edition mode. By default, you can edit hours and minutes."
         },
         new()
@@ -259,7 +259,7 @@ public partial class BitTimePickerDemo
         new()
         {
             Id = "edit-mode-enum",
-            Title = "BitTimeEditMode Enum",
+            Title = "BitTimePickerEditMode Enum",
             Description = "",
             EnumList = new List<EnumItem>()
             {

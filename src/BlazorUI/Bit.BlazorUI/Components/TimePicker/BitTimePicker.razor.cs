@@ -19,7 +19,7 @@ public partial class BitTimePicker
     private int _initialMinute;
     private int? _hour;
     private int? _minute;
-    private BitTimePickerDial _currentView = BitTimePickerDial.Hours;
+    private BitTimePickerDialMode _currentView = BitTimePickerDialMode.Hours;
     private DotNetObjectReference<BitTimePicker> _dotnetObj = default!;
     private string _timeFormat => TimeFormat ?? (AmPm ? FORMAT_12_HOURS : FORMAT_24_HOURS);
     private string _focusClass
@@ -52,7 +52,7 @@ public partial class BitTimePicker
     /// <summary>
     /// Choose the edition mode. By default, you can edit hours and minutes.
     /// </summary>
-    [Parameter] public BitTimeEditMode TimeEditMode { get; set; } = BitTimeEditMode.Normal;
+    [Parameter] public BitTimePickerEditMode EditMode { get; set; } = BitTimePickerEditMode.Normal;
 
     /// <summary>
     /// Whether the TimePicker allows input a date string directly or not
@@ -192,13 +192,13 @@ public partial class BitTimePicker
     /// </summary>
     [Parameter] public bool AutoClose { get; set; }
 
-    public string LabelId => $"TimePicker-Label-{UniqueId}";
-    public string TextFieldId => $"TimePicker-TextField-{UniqueId}";
-    public string WrapperId => $"TimePicker-Wrapper-{UniqueId}";
-    public string CalloutId => $"TimePicker-Callout-{UniqueId}";
-    public string OverlayId => $"TimePicker-Overlay-{UniqueId}";
+    public string? LabelId { get; private set; }
+    public string? TextFieldId { get; private set; }
+    public string? WrapperId { get; private set; }
+    public string? CalloutId { get; private set; }
+    public string? OverlayId { get; private set; }
 
-    protected override string RootElementClass => "bit-tp";
+    protected override string RootElementClass => "bit-tpc";
 
     [JSInvokable("CloseCallout")]
     public void CloseCalloutBeforeAnotherCalloutIsOpened()
@@ -208,6 +208,12 @@ public partial class BitTimePicker
 
     protected override void OnInitialized()
     {
+        LabelId = $"TimePicker-Label-{UniqueId}";
+        TextFieldId = $"TimePicker-TextField-{UniqueId}";
+        WrapperId = $"TimePicker-Wrapper-{UniqueId}";
+        CalloutId = $"TimePicker-Callout-{UniqueId}";
+        OverlayId = $"TimePicker-Overlay-{UniqueId}";
+
         _hour = CurrentValue?.Hours;
         _minute = CurrentValue?.Minutes;
 
@@ -232,7 +238,7 @@ public partial class BitTimePicker
         ClassBuilder.Register(() => _focusClass);
     }
 
-    private async Task HandleFocusIn()
+    private async Task HandleOnFocusIn()
     {
         if (IsEnabled is false) return;
 
@@ -240,7 +246,7 @@ public partial class BitTimePicker
         await OnFocusIn.InvokeAsync();
     }
 
-    private async Task HandleFocusOut()
+    private async Task HandleOnFocusOut()
     {
         if (IsEnabled is false) return;
 
@@ -248,7 +254,7 @@ public partial class BitTimePicker
         await OnFocusOut.InvokeAsync();
     }
 
-    private async Task HandleFocus()
+    private async Task HandleOnFocus()
     {
         if (IsEnabled is false) return;
 
@@ -263,7 +269,7 @@ public partial class BitTimePicker
         StateHasChanged();
     }
 
-    private async Task HandleChange(ChangeEventArgs e)
+    private async Task HandleOnChange(ChangeEventArgs e)
     {
         if (IsEnabled is false) return;
         if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
@@ -273,7 +279,7 @@ public partial class BitTimePicker
         await OnSelectTime.InvokeAsync(CurrentValue);
     }
 
-    private async Task HandleClick()
+    private async Task HandleOnClick()
     {
         if (IsEnabled is false) return;
 
@@ -284,97 +290,49 @@ public partial class BitTimePicker
         await OnClick.InvokeAsync();
     }
 
-    private string GetTransformStyle(double angle, double radius, double offsetX, double offsetY)
+    private string GetTransformStyle(int index, double radius, double offsetX, double offsetY)
     {
-        angle = angle / 180 * Math.PI;
+        double angle = (6 - index) * 30 / 180d * Math.PI;
         var x = (Math.Sin(angle) * radius + offsetX).ToString("F3", CultureInfo.InvariantCulture);
         var y = ((Math.Cos(angle) + 1) * radius + offsetY).ToString("F3", CultureInfo.InvariantCulture);
-        return $"transform: translate({x}px, {y}px);";
+        return $"{x}px, {y}px";
     }
 
-    private string GetNumberClass(int number)
+    private string GetHoursMinutesClass(int value) =>
+        (_currentView == BitTimePickerDialMode.Hours && GetHours() == value) || (_currentView == BitTimePickerDialMode.Minutes && _minute == value)
+            ? "selected"
+            : string.Empty;
+
+    private int GetClockHandHeightPercent() => (_currentView == BitTimePickerDialMode.Hours && AmPm is false && _hour > 0 && _hour < 13) ? 26 : 40;
+
+    private double GetPointerDegree() => _currentView switch
     {
-        if (_currentView == BitTimePickerDial.Hours)
-        {
-            var h = _hour.GetValueOrDefault();
-            if (AmPm)
-            {
-                h = _hour.GetValueOrDefault() % 12;
-                if (h == 0)
-                    h = 12;
-            }
-            if (h == number)
-                return $"selected";
-        }
-        else if (_currentView == BitTimePickerDial.Minutes && _minute == number)
-        {
-            return $"selected";
-        }
+        BitTimePickerDialMode.Hours => (_hour.GetValueOrDefault() * 30) % 360,
+        BitTimePickerDialMode.Minutes => (_minute.GetValueOrDefault() * 6) % 360,
+        _ => 0
+    };
 
-        return string.Empty;
-    }
-
-    private string GetPointerHeight()
+    private async Task HandleOnHourClick(int hour)
     {
-        var height = 40;
-        if (_currentView == BitTimePickerDial.Minutes)
-            height = 40;
-        if (_currentView == BitTimePickerDial.Hours)
-        {
-            if (!AmPm && _hour > 0 && _hour < 13)
-                height = 26;
-            else
-                height = 40;
-        }
-        return $"{height}%;";
-    }
-
-    private string GetPointerRotation()
-    {
-        double deg = 0;
-        if (_currentView == BitTimePickerDial.Hours)
-            deg = (_hour.GetValueOrDefault() * 30) % 360;
-        if (_currentView == BitTimePickerDial.Minutes)
-            deg = (_minute.GetValueOrDefault() * 6) % 360;
-        return $"rotateZ({deg}deg);";
-    }
-
-    private string GetClockPointerThumbClass()
-    {
-        double deg = 0;
-        if (_currentView == BitTimePickerDial.Hours)
-            deg = (_hour.GetValueOrDefault() * 30) % 360;
-        if (_currentView == BitTimePickerDial.Minutes)
-            deg = (_minute.GetValueOrDefault() * 6) % 360;
-
-        if (deg % 30 == 0)
-        {
-            return string.Empty;
-        }
-        else
-        {
-            return "min";
-        }
-    }
-
-    private async Task HandleOnClickHour(int value)
-    {
-        var hour = value;
+        _hour = hour;
         if (AmPm)
         {
-            if (IsAm() && value == 12)
-                hour = 0;
-            else if (IsAm() is false && value < 12)
-                hour = value + 12;
+            if (IsAm() && _hour == 12)
+            {
+                _hour = 0;
+            }
+            else if (IsAm() is false && _hour < 12)
+            {
+                _hour += 12;
+            }
         }
-        _hour = hour;
         await UpdateCurrentValue();
 
-        if (TimeEditMode == BitTimeEditMode.Normal)
+        if (EditMode == BitTimePickerEditMode.Normal)
         {
-            _currentView = BitTimePickerDial.Minutes;
+            _currentView = BitTimePickerDialMode.Minutes;
         }
-        else if (TimeEditMode == BitTimeEditMode.OnlyHours)
+        else if (EditMode == BitTimePickerEditMode.OnlyHours)
         {
             if (AutoClose)
             {
@@ -383,23 +341,20 @@ public partial class BitTimePicker
         }
     }
 
-    private async Task HandleOnMouseOverHour(int value)
+    private async Task HandleOnHourMouseOver(int hour)
     {
-        if (_isMouseDown)
-        {
-            _hour = value;
-            await UpdateCurrentValue();
-        }
+        if (_isMouseDown is false) return;
+
+        _hour = hour;
+        await UpdateCurrentValue();
     }
 
-    private void OnMouseDown(MouseEventArgs e)
-    {
-        _isMouseDown = true;
-    }
+    private void HandleOnMouseDown(MouseEventArgs e) => _isMouseDown = true;
 
     private async Task HandleOnMouseUp(MouseEventArgs e)
     {
-        if (_isMouseDown && _currentView == BitTimePickerDial.Minutes && _minute != _initialMinute || _currentView == BitTimePickerDial.Hours && _hour != _initialHour && TimeEditMode == BitTimeEditMode.OnlyHours)
+        if ((_isMouseDown && _currentView == BitTimePickerDialMode.Minutes && _minute != _initialMinute) ||
+            (_currentView == BitTimePickerDialMode.Hours && _hour != _initialHour && EditMode == BitTimePickerEditMode.OnlyHours))
         {
             _isMouseDown = false;
             if (AutoClose)
@@ -410,22 +365,21 @@ public partial class BitTimePicker
 
         _isMouseDown = false;
 
-        if (_currentView == BitTimePickerDial.Hours && _hour != _initialHour && TimeEditMode == BitTimeEditMode.Normal)
+        if (_currentView == BitTimePickerDialMode.Hours && _hour != _initialHour && EditMode == BitTimePickerEditMode.Normal)
         {
-            _currentView = BitTimePickerDial.Minutes;
+            _currentView = BitTimePickerDialMode.Minutes;
         }
     }
 
-    private async Task HandleOnMouseOverMinute(int value)
+    private async Task HandleOnMinuteMouseOver(int value)
     {
-        if (_isMouseDown)
-        {
-            _minute = value;
-            await UpdateCurrentValue();
-        }
+        if (_isMouseDown is false) return;
+
+        _minute = value;
+        await UpdateCurrentValue();
     }
 
-    private async Task HandleOnClickMinute(int value)
+    private async Task HandleOnMinuteClick(int value)
     {
         _minute = value;
         await UpdateCurrentValue();
@@ -438,61 +392,46 @@ public partial class BitTimePicker
 
     private async Task UpdateCurrentValue()
     {
-        if (_hour.HasValue is false || _minute.HasValue is false)
-        {
-            CurrentValue = null;
-        }
-        else
-        {
-            CurrentValue = new TimeSpan(_hour.Value, _minute.Value, 0);
-        }
+        CurrentValue = (_hour.HasValue is false || _minute.HasValue is false) ? null : new TimeSpan(_hour.Value, _minute.Value, 0);
 
         await OnSelectTime.InvokeAsync(CurrentValue);
     }
 
     private string GetHourString()
     {
-        if (CurrentValue.HasValue is false)
-            return "--";
-        var h = AmPm ? GetAmPmHour(CurrentValue.Value) : CurrentValue.Value.Hours;
-        return Math.Min(23, Math.Max(0, h)).ToString(CultureInfo.InvariantCulture);
+        if (CurrentValue.HasValue is false) return "--";
+
+        var hours = AmPm ? GetAmPmHours(CurrentValue.Value.Hours) : CurrentValue.Value.Hours;
+        return Math.Min(23, Math.Max(0, hours)).ToString(CultureInfo.InvariantCulture);
     }
 
-    private string GetMinuteString()
+    private string GetMinuteString() => CurrentValue.HasValue ? $"{Math.Min(59, Math.Max(0, CurrentValue.Value.Minutes)):D2}" : "--";
+
+    private int GetAmPmHours(int hours)
     {
-        if (CurrentValue.HasValue is false)
-            return "--";
-        return $"{Math.Min(59, Math.Max(0, CurrentValue.Value.Minutes)):D2}";
+        var result = hours % 12;
+        return result == 0 ? 12 : result;
     }
 
-    private int GetAmPmHour(TimeSpan time)
-    {
-        var hour = time.Hours % 12;
-        if (hour == 0)
-            hour = 12;
-        return hour;
-    }
+    private int GetHours() => AmPm ? GetAmPmHours(_hour.GetValueOrDefault()) : _hour.GetValueOrDefault();
 
-    private void HandleOnClickHour()
-    {
-        _currentView = BitTimePickerDial.Hours;
-    }
+    private void HandleOnHourClick() => _currentView = BitTimePickerDialMode.Hours;
 
-    private void HandleOnClickMinute()
-    {
-        _currentView = BitTimePickerDial.Minutes;
-    }
+    private void HandleOnMinuteClick() => _currentView = BitTimePickerDialMode.Minutes;
 
-    private async Task HandleOnClickAm()
+    private async Task HandleOnAmClick()
     {
         _hour %= 12;  // "12:-- am" is "00:--" in 24h
         await UpdateCurrentValue();
     }
 
-    private async Task HandleOnClickPm()
+    private async Task HandleOnPmClick()
     {
         if (_hour <= 12) // "12:-- pm" is "12:--" in 24h
+        {
             _hour += 12;
+        }
+
         _hour %= 24;
         await UpdateCurrentValue();
     }
@@ -507,7 +446,7 @@ public partial class BitTimePicker
 
     public async Task OpenCallout()
     {
-        await HandleClick();
+        await HandleOnClick();
     }
 
     /// <inheritdoc />
@@ -538,25 +477,19 @@ public partial class BitTimePicker
 
     protected override string? FormatValueAsString(TimeSpan? value)
     {
-        if (value.HasValue)
-        {
-            DateTime time = DateTime.Today.Add(value.Value);
-            return time.ToString(_timeFormat ?? Culture.DateTimeFormat.ShortTimePattern, Culture);
-        }
-        else
-        {
-            return null;
-        }
+        if (value.HasValue is false) return null;
+
+        DateTime time = DateTime.Today.Add(value.Value);
+        return time.ToString(_timeFormat ?? Culture.DateTimeFormat.ShortTimePattern, Culture);
     }
 
     protected override void Dispose(bool disposing)
     {
-        if (disposing)
-        {
-            OnValueChanged -= HandleOnValueChanged;
-            _dotnetObj.Dispose();
-        }
-
         base.Dispose(disposing);
+
+        if (disposing) return;
+
+        OnValueChanged -= HandleOnValueChanged;
+        _dotnetObj.Dispose();
     }
 }
