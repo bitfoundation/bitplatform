@@ -96,4 +96,62 @@
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
+
+    <ComponentExampleBox Title="BitActionButton in different sizes" HTMLSourceCode="@example6HTMLCode" ExampleId="example6">
+        <ExamplePreview>
+            <div class="example-desc">BitActionButton can get different sizes using the <code>ButtonSize</code> parameter.</div>
+            <div class="buttons-container-grid">
+                <div>
+                    <BitLabel>Small size</BitLabel>
+                    <BitToggleButton ButtonSize=BitButtonSize.Small @bind-IsChecked="ToggleButtonTwoWayValue"
+                                     Label="@(ToggleButtonTwoWayValue ? "Mute" : "Unmute")"
+                                     IconName=@(ToggleButtonTwoWayValue ? BitIconName.MicOff : BitIconName.Microphone)>
+                    </BitToggleButton>
+                </div>
+                <div>
+                    <BitLabel>Medium size</BitLabel>
+                    <BitToggleButton ButtonSize=BitButtonSize.Medium @bind-IsChecked="ToggleButtonTwoWayValue"
+                                     Label="@(ToggleButtonTwoWayValue ? "Mute" : "Unmute")"
+                                     IconName=@(ToggleButtonTwoWayValue ? BitIconName.MicOff : BitIconName.Microphone)>
+                    </BitToggleButton>
+                </div>
+                <div>
+                    <BitLabel>Large size</BitLabel>
+                    <BitToggleButton ButtonSize=BitButtonSize.Large @bind-IsChecked="ToggleButtonTwoWayValue"
+                                     Label="@(ToggleButtonTwoWayValue ? "Mute" : "Unmute")"
+                                     IconName=@(ToggleButtonTwoWayValue ? BitIconName.MicOff : BitIconName.Microphone)>
+                    </BitToggleButton>
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Customized BitActionButton in different sizes" HTMLSourceCode="@example7HTMLCode" ExampleId="example7">
+        <ExamplePreview>
+            <div class="example-desc">BitActionButton can be customized easily in different sizes by overriding a certain CSS class.</div>
+            <div class="buttons-container-grid">
+                <div>
+                    <BitLabel>Small size</BitLabel>
+                    <BitToggleButton Class="custom-btn-sm" ButtonSize=BitButtonSize.Small @bind-IsChecked="ToggleButtonTwoWayValue"
+                                     Label="@(ToggleButtonTwoWayValue ? "Mute" : "Unmute")"
+                                     IconName=@(ToggleButtonTwoWayValue ? BitIconName.MicOff : BitIconName.Microphone)>
+                    </BitToggleButton>
+                </div>
+                <div>
+                    <BitLabel>Medium size</BitLabel>
+                    <BitToggleButton Class="custom-btn-md" ButtonSize=BitButtonSize.Medium @bind-IsChecked="ToggleButtonTwoWayValue"
+                                     Label="@(ToggleButtonTwoWayValue ? "Mute" : "Unmute")"
+                                     IconName=@(ToggleButtonTwoWayValue ? BitIconName.MicOff : BitIconName.Microphone)>
+                    </BitToggleButton>
+                </div>
+                <div>
+                    <BitLabel>Large size</BitLabel>
+                    <BitToggleButton Class="custom-btn-lg" ButtonSize=BitButtonSize.Large @bind-IsChecked="ToggleButtonTwoWayValue"
+                                     Label="@(ToggleButtonTwoWayValue ? "Mute" : "Unmute")"
+                                     IconName=@(ToggleButtonTwoWayValue ? BitIconName.MicOff : BitIconName.Microphone)>
+                    </BitToggleButton>
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
 </ComponentDemo>

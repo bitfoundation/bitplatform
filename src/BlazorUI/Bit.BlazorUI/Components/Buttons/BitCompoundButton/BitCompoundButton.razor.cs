@@ -5,6 +5,7 @@ namespace Bit.BlazorUI;
 public partial class BitCompoundButton
 {
     protected override bool UseVisual => false;
+    private BitButtonSize buttonSize = BitButtonSize.Medium;
     private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
     private int? _tabIndex;
 
@@ -22,6 +23,22 @@ public partial class BitCompoundButton
     /// If true, add an aria-hidden attribute instructing screen readers to ignore the element
     /// </summary>
     [Parameter] public bool AriaHidden { get; set; }
+
+    /// <summary>
+    /// The size of button, Possible values: Small | Medium | Large
+    /// </summary>
+    [Parameter]
+    public BitButtonSize ButtonSize
+    {
+        get => buttonSize;
+        set
+        {
+            if (buttonSize == value) return;
+
+            buttonSize = value;
+            ClassBuilder.Reset();
+        }
+    }
 
     /// <summary>
     /// The style of compound button, Possible values: Primary | Standard
@@ -84,6 +101,13 @@ public partial class BitCompoundButton
         ClassBuilder.Register(() => ButtonStyle == BitButtonStyle.Primary
                                         ? "primary"
                                         : "standard");
+
+        ClassBuilder.Register(() => ButtonSize switch
+        {
+            BitButtonSize.Small => "small",
+            BitButtonSize.Large => "large",
+            _ => "medium"
+        });
     }
 
     protected override async Task OnInitializedAsync()

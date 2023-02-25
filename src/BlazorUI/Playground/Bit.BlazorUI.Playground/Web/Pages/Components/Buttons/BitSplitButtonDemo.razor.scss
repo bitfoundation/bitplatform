@@ -15,3 +15,29 @@
     display: flex;
     width: 100%;
 }
+
+::deep {
+    .custom-btn-sm {
+        &.small {
+            height: 38px;
+            font-size: 8px;
+            line-height: 1.5;
+        }
+    }
+
+    .custom-btn-md {
+        &.medium {
+            height: 48px;
+            font-size: 16px;
+            line-height: 1.4;
+        }
+    }
+
+    .custom-btn-lg {
+        &.large {
+            height:50px;
+            font-size: 30px;
+            line-height: 1.33;
+        }
+    }
+}

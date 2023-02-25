@@ -5,8 +5,8 @@ namespace Bit.BlazorUI;
 public partial class BitLoadingButton
 {
     protected override bool UseVisual => false;
-    private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
     private BitButtonSize buttonSize = BitButtonSize.Medium;
+    private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
     private int? _tabIndex;
 
     /// <summary>
@@ -30,6 +30,22 @@ public partial class BitLoadingButton
     [Parameter] public BitButtonType? ButtonType { get; set; }
 
     /// <summary>
+    /// The size of button, Possible values: Small | Medium | Large.
+    /// </summary>
+    [Parameter]
+    public BitButtonSize ButtonSize
+    {
+        get => buttonSize;
+        set
+        {
+            if (buttonSize == value) return;
+
+            buttonSize = value;
+            ClassBuilder.Reset();
+        }
+    }
+
+    /// <summary>
     /// The style of button, Possible values: Primary | Standard.
     /// </summary>
     [Parameter]
@@ -39,20 +55,6 @@ public partial class BitLoadingButton
         set
         {
             buttonStyle = value;
-            ClassBuilder.Reset();
-        }
-    }
-
-    /// <summary>
-    /// The size of button, Possible values: Small | Medium | Large.
-    /// </summary>
-    [Parameter]
-    public BitButtonSize ButtonSize
-    {
-        get => buttonSize;
-        set
-        {
-            buttonSize = value;
             ClassBuilder.Reset();
         }
     }
@@ -125,11 +127,12 @@ public partial class BitLoadingButton
                                            ? "primary"
                                            : "standard");
 
-        ClassBuilder.Register(() => ButtonSize == BitButtonSize.Small
-                                       ? "small"
-                                       : ButtonSize == BitButtonSize.Medium
-                                           ? "medium"
-                                           : "large");
+        ClassBuilder.Register(() => ButtonSize switch
+        {
+            BitButtonSize.Small => "small",
+            BitButtonSize.Large => "large",
+            _ => "medium"
+        });
     }
 
     private string GetClassLoadingSize()

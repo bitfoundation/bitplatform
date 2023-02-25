@@ -36,13 +36,13 @@
                 <span class="text">@(_currentItem is not null ? GetText(_currentItem) : string.Empty)</span>
             }
         </button>
+        <span class="separator-btn"></span>
         <button type="button"
                 tabindex="@(IsEnabled ? 0 : -1)"
                 class="chevron-btn"
                 @onclick="ToggleCallout">
             <i class="bit-icon bit-icon--ChevronDown"></i>
         </button>
-        <span class="separator-btn"></span>
     </div>
     <div id="@_splitButtonCalloutId"
          class="items"

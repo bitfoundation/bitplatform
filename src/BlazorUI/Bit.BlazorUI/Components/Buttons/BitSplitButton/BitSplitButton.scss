@@ -2,10 +2,10 @@
 
 .bit-spl {
     position: relative;
-    font-family: $typography-button-font-family;
-    font-size: spacing(1.75);
-    font-weight: 400;
     display: inline-flex;
+    min-width: spacing(10);
+    font-family: $typography-button-font-family;
+    font-weight: $typography-button-font-weight;
     outline: transparent;
     -webkit-font-smoothing: antialiased;
 
@@ -85,17 +85,45 @@
         }
     }
 
+    &.small {
+        font-size: spacing(1.5);
+        line-height: spacing(2.75);
+
+        .operator-btn {
+            padding: spacing(0.25) spacing(1.25);
+        }
+    }
+
+    &.medium {
+        font-size: spacing(1.75);
+        line-height: $typography-button-line-height;
+
+        .operator-btn {
+            padding: spacing(0.5) spacing(2);
+        }
+    }
+
+    &.large {
+        font-size: spacing(2);
+        line-height: spacing(3.75);
+
+        .operator-btn {
+            padding: spacing(0.75) spacing(2.75);
+        }
+    }
+
     .operator-btn, .chevron-btn {
+        font-size: inherit;
+        line-height: inherit;
         box-sizing: border-box;
         display: inline-block;
         text-decoration: none;
         text-align: center;
         cursor: pointer;
-        height: spacing(4);
         user-select: none;
         border-width: $shape-border-width;
         border-style: $shape-border-style;
-        border-radius: spacing(0.25);
+        border-radius: $shape-border-radius;
 
         &.disabled {
             border-color: $color-border-disabled;
@@ -108,37 +136,25 @@
 
     .operator-btn {
         display: flex;
+        gap: spacing(1);
         align-items: center;
         justify-content: center;
-        padding: 0 spacing(2);
         min-width: spacing(10);
         border-right: none;
         border-top-right-radius: 0;
         border-bottom-right-radius: 0;
-
-        .text {
-            margin: 0 spacing(0.5);
-        }
-
-        .bit-icon {
-            margin: spacing(0.25) spacing(0.5) 0 spacing(0.5);
-        }
     }
 
     .chevron-btn {
-        padding: spacing(0.75);
         width: spacing(4);
+        padding: 0;
         border-left: none;
         border-top-left-radius: 0;
         border-bottom-left-radius: 0;
     }
 
     .separator-btn {
-        position: absolute;
         width: spacing(0.125);
-        right: spacing(4);
-        top: spacing(1);
-        bottom: spacing(1);
         background-color: $color-neutrals-gray60;
 
         &.primary {
@@ -175,22 +191,21 @@
         display: flex;
         background-color: transparent;
         width: 100%;
-        height: spacing(4.5);
-        line-height: spacing(4.5);
         align-items: center;
         text-align: left;
         cursor: pointer;
-        padding: 0 spacing(1) 0 spacing(0.5);
         border: none;
         color: $color-text-secondary;
+        gap: spacing(1);
+        line-height: inherit;
+        font-size: inherit;
+        padding: spacing(1);
 
         .bit-icon {
             color: $color-primary-main;
-            margin: 0 spacing(0.5);
         }
 
         .item-text-container {
-            margin: 0 spacing(0.5);
             vertical-align: middle;
             display: inline-block;
             flex-grow: 1;
