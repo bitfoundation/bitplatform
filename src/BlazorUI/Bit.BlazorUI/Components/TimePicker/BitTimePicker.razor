@@ -1,0 +1,157 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitInputBase<TimeSpan?>
+
+<div @ref="RootElement"
+     @attributes="HtmlAttributes"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     id="@UniqueId">
+
+    @if (LabelTemplate is not null)
+    {
+        <label class="label" id="@LabelId" for="@TextFieldId">
+            @LabelTemplate
+        </label>
+    }
+    else if (Label.HasValue())
+    {
+        <label class="label" id="@LabelId" for="@TextFieldId">
+            @Label
+        </label>
+    }
+
+    <div class="wrapper" id="@WrapperId" aria-owns="@(IsOpen ? CalloutId : null)" @onclick="HandleOnClick">
+        <div class="field-grp @(AllowTextInput ? "editable-input" : null)">
+            <input @attributes="InputHtmlAttributes"
+                   id="@TextFieldId"
+                   disabled=@(IsEnabled is false)
+                   role="combobox"
+                   readonly=@(AllowTextInput is false)
+                   type="text"
+                   value="@CurrentValueAsString"
+                   placeholder="@Placeholder"
+                   tabindex="@TabIndex"
+                   aria-label="@AriaLabel"
+                   aria-labelledby="@(Label.HasValue() ? LabelId : null)"
+                   aria-expanded="@(IsOpen ? "true" : "false")"
+                   aria-haspopup="dialog"
+                   aria-controls="@(IsOpen ? CalloutId : null)"
+                   @onfocusin="@HandleOnFocusIn"
+                   @onfocusout="@HandleOnFocusOut"
+                   @onfocus="@HandleOnFocus"
+                   @oninput="@HandleOnChange" />
+
+            @if (IconFragment is not null)
+            {
+                @IconFragment
+            }
+            else
+            {
+                <i class="bit-icon bit-icon--@IconName.GetName()" aria-hidden="true"></i>
+            }
+        </div>
+    </div>
+
+    <div class="overlay" id="@OverlayId" @onclick="CloseCallout"></div>
+
+    <div class="callout @(IsResponsive ? "responsive" : string.Empty)" id="@CalloutId">
+        <div class="callout-main" role="dialog" @attributes=@CalloutHtmlAttributes aria-label="@PickerAriaLabel">
+            <div aria-hidden="true" tabindex="0" data-is-visible="true" style="pointer-events: none; position: fixed;"></div>
+            <div class="group"
+                 role="group"
+                 aria-label="">
+
+                <div class="toolbar">
+                    <div class="hour-minute">
+                        @if (EditMode == BitTimePickerEditMode.Normal)
+                        {
+                            <button type="button" class="text @(_currentView == BitTimePickerDialMode.Hours ? string.Empty : "inactive")" @onclick="HandleOnHourClick">
+                                @GetHourString()
+                            </button>
+                            <span class="text">:</span>
+                            <button type="button" class="text @(_currentView == BitTimePickerDialMode.Minutes ? string.Empty : " inactive")" @onclick="HandleOnMinuteClick">
+                                @GetMinuteString()
+                            </button>
+                        }
+                        else
+                        {
+                            <span class="text">@GetHourString():@GetMinuteString()</span>
+                        }
+                    </div>
+                    @if (AmPm)
+                    {
+                        <div class="am-pm">
+                            <button type="button" class="text @(IsAm() ? string.Empty : "inactive")" @onclick="HandleOnAmClick">AM</button>
+                            <button type="button" class="text @(IsAm() is false ? string.Empty : "inactive")" @onclick="HandleOnPmClick">PM</button>
+                        </div>
+                    }
+                </div>
+                <div class="clock" @onmousedown="HandleOnMouseDown" @onmouseup="HandleOnMouseUp">
+                    <div class="pin"></div>
+                    @{
+                        var deg = GetPointerDegree();
+                    }
+                    <div class="pointer@(_isMouseDown ? string.Empty : " animation")" style="height: @(GetClockHandHeightPercent())%; transform: rotateZ(@(deg)deg);">
+                        <div class="thumb@(deg % 30 == 0 ? string.Empty : " min")"></div>
+                    </div>
+                    @if (_currentView == BitTimePickerDialMode.Hours)
+                    {
+                        <div class="dial">
+                            @if (AmPm)
+                            {
+                                @*Hours from 1 to 12*@
+                                for (int i = 1; i <= 12; ++i)
+                                {
+                                    <p class="number @GetHoursMinutesClass(i)" style="transform: translate(@GetTransformStyle(i, 109, 0, 5));">@i</p>
+                                }
+                                for (int i = 1; i <= 12; ++i)
+                                {
+                                    var _i = i;
+                                    <div class="stick hour" style="@($"transform: rotateZ({_i * 30}deg);")" @onclick="(() => HandleOnHourClick(_i))" @onpointerover="(() => HandleOnHourMouseOver(_i))" @onclick:stopPropagation="true"></div>
+                                }
+                            }
+                            else
+                            {
+                                @*Hours from 13 to 24 (00)*@
+                                for (int i = 1; i <= 12; ++i)
+                                {
+                                    <p class="number @GetHoursMinutesClass((i + 12) % 24)" style="transform: translate(@GetTransformStyle(i, 109, 0, 5))">@(((i + 12) % 24).ToString("D2"))</p>
+                                }
+                                @*Hours from 1 to 12*@
+                                for (int i = 1; i <= 12; ++i)
+                                {
+                                    <p class="number @GetHoursMinutesClass(i)" style="transform: translate(@GetTransformStyle(i, 74, 0, 40))">@(i.ToString("D2"))</p>
+                                }
+                                for (int i = 1; i <= 12; ++i)
+                                {
+                                    var _i = i;
+                                    <div class="stick" style="@($"transform: rotateZ({_i * 30}deg);")">
+                                        <div class="inner" @onclick="(() => HandleOnHourClick(_i))" @onpointerover="(() => HandleOnHourMouseOver(_i))" @onclick:stopPropagation="true"></div>
+                                        <div class="outer" @onclick="(() => HandleOnHourClick((_i + 12) % 24))" @onpointerover="(() => HandleOnHourMouseOver((_i + 12) % 24))" @onclick:stopPropagation="true"></div>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    }
+                    else if (_currentView == BitTimePickerDialMode.Minutes)
+                    {
+                        <div class="dial">
+                            @*Minutes from 05 to 60 (00) - step 5*@
+                            @for (int i = 0; i < 12; ++i)
+                            {
+                                <p class="number @GetHoursMinutesClass(i * 5)" style="transform: translate(@GetTransformStyle(i, 109, 0, 5))">@((i * 5).ToString("D2"))</p>
+                            }
+                            @for (int i = 0; i < 60; ++i)
+                            {
+                                var _i = i;
+                                <div class="stick minute" style="@($"transform: rotateZ({_i * 6}deg);")" @onclick="(() => HandleOnMinuteClick(_i))" @onpointerover="(() => HandleOnMinuteMouseOver(_i))" @onclick:stopPropagation="true"></div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+            <div aria-hidden="true" tabindex="0" style="pointer-events: none; position: fixed;"></div>
+        </div>
+    </div>
+
+</div>
