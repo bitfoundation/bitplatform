@@ -61,14 +61,16 @@ public partial class BitProgressIndicator
     /// </summary>
     [Parameter] public RenderFragment<BitProgressIndicator>? ProgressTemplate { get; set; }
 
-    private string? LabelId => Label.HasValue() ? $"ProgressIndicator-{UniqueId}-Label" : null;
-    private string? DescriptionId => Description.HasValue() ? $"ProgressIndicator-{UniqueId}-Description" : null;
+    private string? LabelId => Label.HasValue() || LabelTemplate is not null 
+                                ? $"ProgressIndicator-{UniqueId}-Label" : null;
+    private string? DescriptionId => Description.HasValue() || DescriptionTemplate is not null 
+                                        ? $"ProgressIndicator-{UniqueId}-Description" : null;
 
     protected override string RootElementClass => "bit-pin";
 
     protected override void RegisterComponentClasses()
     {
-        ClassBuilder.Register(() => PercentComplete is not null  ? string.Empty : $"indeterminate");
+        ClassBuilder.Register(() => PercentComplete is not null  ? string.Empty : "indeterminate");
     }
 
     private static double Normalize(double? value) => Math.Clamp(value ?? 0, 0, 100);
