@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using System.Collections.Generic;
 using Bit.BlazorUI.Playground.Web.Models;
 using Bit.BlazorUI.Playground.Web.Pages.Components.ComponentDemoBase;
 
@@ -7,67 +7,73 @@ namespace Bit.BlazorUI.Playground.Web.Pages.Components.ProgressIndicator;
 
 public partial class BitProgressIndicatorDemo
 {
-    private string description = "Push button to start!";
 
     private readonly List<ComponentParameter> componentParameters = new()
     {
-        new ComponentParameter()
+        new()
         {
             Name = "AriaValueText",
             Type = "string",
             DefaultValue = "",
             Description = "Text alternative of the progress status, used by screen readers for reading the value of the progress.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "BarHeight",
             Type = "int",
             DefaultValue = "2",
             Description = "Height of the ProgressIndicator.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "Description",
             Type = "string",
             DefaultValue = "",
             Description = "Text describing or supplementing the operation.",
         },
-        new ComponentParameter()
+        new()
+        {
+            Name = "DescriptionTemplate",
+            Type = "RenderFragment",
+            DefaultValue = "",
+            Description = "Custom template for describing or supplementing the operation.",
+        },
+        new()
         {
             Name = "IsProgressHidden",
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether or not to hide the progress state.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "Label",
             Type = "string",
             DefaultValue = "",
             Description = "Label to display above the component.",
         },
-        new ComponentParameter()
+        new()
         {
-            Name = "LabelFragment",
+            Name = "LabelTemplate",
             Type = "RenderFragment",
             DefaultValue = "",
             Description = "Custom label template to display above the component.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "PercentComplete",
             Type = "double",
             DefaultValue = "0",
             Description = "Percentage of the operation's completeness, numerically between 0 and 100. If this is not set, the indeterminate progress animation will be shown instead.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "ProgressTemplate",
             Type = "RenderFragment<BitProgressIndicator>",
             DefaultValue = "",
             Description = "A custom template for progress track.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "Visibility",
             Type = "BitComponentVisibility",
@@ -109,7 +115,8 @@ public partial class BitProgressIndicatorDemo
         }
     };
 
-    public int CompletedPercent { get; set; }
+    private int CompletedPercent;
+    private string Description = "Push button to start!";
 
     private async Task StartProgress()
     {
@@ -119,13 +126,13 @@ public partial class BitProgressIndicatorDemo
         {
             if (CompletedPercent == 100)
             {
-                description = $"Completed !";
+                Description = $"Completed !";
                 break;
             }
             else
             {
                 CompletedPercent++;
-                description = $"{CompletedPercent}%";
+                Description = $"{CompletedPercent}%";
             }
 
             StateHasChanged();
@@ -133,14 +140,17 @@ public partial class BitProgressIndicatorDemo
         }
     }
 
-    private readonly string example1HTMLCode = @"<BitProgressIndicator Label=""Example title"" Description=""@description"" PercentComplete=""@CompletedPercent"" BarHeight=""50""></BitProgressIndicator>
+    private readonly string example1HTMLCode = @"
+<BitProgressIndicator Label=""Example title""
+                      Description=""@Description""
+                      PercentComplete=""@CompletedPercent""
+                      BarHeight=""50"" />
 <div>
     <BitButton OnClick=""@StartProgress"">Start Progress</BitButton>
 </div>";
-
     private readonly string example1CSharpCode = @"
-private string description = ""Push button to start!"";
-public int CompletedPercent { get; set; }
+private int CompletedPercent;
+private string Description = ""Push button to start!"";
 private async Task StartProgress()
 {
     CompletedPercent = 0;
@@ -148,13 +158,13 @@ private async Task StartProgress()
     {
         if (CompletedPercent == 100)
         {
-                description = $""Completed !"";
+                Description = $""Completed !"";
                 break;
         }
         else
         {
                 CompletedPercent++;
-                description = $""{CompletedPercent}%"";
+                Description = $""{CompletedPercent}%"";
         }
 
         StateHasChanged();
@@ -162,5 +172,9 @@ private async Task StartProgress()
     }
 }";
 
-    private readonly string example2HTMLCode = @"<BitProgressIndicator Label=""Example title"" Description=""Example description"" BarHeight=""20""></BitProgressIndicator>";
+    private readonly string example2HTMLCode = @"
+<BitProgressIndicator Label=""Example title""
+                      Description=""Example description"" 
+                      BarHeight=""20"" />
+";
 }
