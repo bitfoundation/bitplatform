@@ -7,6 +7,115 @@ namespace Bit.BlazorUI.Playground.Web.Pages.Components.Rating;
 
 public partial class BitRatingDemo
 {
+    private readonly List<ComponentParameter> componentParameters = new()
+    {
+        new()
+        {
+            Name = "AllowZeroStars",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Allow the initial rating value be 0. Note that a value of 0 still won't be selectable by mouse or keyboard.",
+        },
+        new()
+        {
+            Name = "AriaLabelFormat",
+            Type = "string",
+            DefaultValue = "",
+            Description = "Optional label format for each individual rating star (not the rating control as a whole) that will be read by screen readers.",
+        },
+        new()
+        {
+            Name = "DefaultValue",
+            Type = "double",
+            DefaultValue = "0",
+            Description = "Default rating. Must be a number between min and max. Only provide this if the Rating is an uncontrolled component; otherwise, use the rating property.",
+        },
+        new()
+        {
+            Name = "GetAriaLabel",
+            Type = "Func<double, double, string>",
+            DefaultValue = "",
+            Description = "Optional callback to set the aria-label for rating control in readOnly mode. Also used as a fallback aria-label if ariaLabel prop is not provided.",
+        },
+        new()
+        {
+            Name = "Icon",
+            Type = "BitIcon",
+            DefaultValue = "FavoriteStarFill",
+            Description = "Custom icon name for unselected rating elements, If unset, default will be the FavoriteStar icon.",
+        },
+        new()
+        {
+            Name = "IsReadOnly",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "A flag to mark rating control as readOnly.",
+        },
+        new()
+        {
+            Name = "Max",
+            Type = "int",
+            DefaultValue = "5",
+            Description = "Maximum rating. Must be >= min (0 if AllowZeroStars is true, 1 otherwise).",
+        },
+        new()
+        {
+            Name = "OnChange",
+            Type = "EventCallback<double>",
+            DefaultValue = "",
+            Description = "Callback that is called when the rating has changed.",
+        },
+        new()
+        {
+            Name = "Value",
+            Type = "double",
+            DefaultValue = "0",
+            Description = "Current rating value. Must be a number between min (0 if AllowZeroStars is true, 1 otherwise) and max.",
+        },
+        new()
+        {
+            Name = "Size",
+            Type = "BitRatingSize",
+            DefaultValue = "BitRatingSize.small",
+            LinkType = LinkType.Link,
+            Href = "#rating-size-enum",
+            Description = "Size of rating.",
+        },
+        new()
+        {
+            Name = "UnselectedIcon",
+            Type = "BitIconName",
+            DefaultValue = "BitIconName.FavoriteStar",
+            Description = "Custom icon name for unselected rating elements, If unset, default will be the FavoriteStar icon.",
+        }
+    };
+
+    private readonly List<EnumParameter> enumParameters = new()
+    {
+        new()
+        {
+            Id = "rating-size-enum",
+            Title = "BitRatingSize Enum",
+            Description = "",
+            EnumList = new List<EnumItem>()
+            {
+                new()
+                {
+                    Name = "Small",
+                    Description = "Display rating icon using small size.",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "Large",
+                    Description = " Display rating icon using large size.",
+                    Value = "1",
+                },
+            }
+        }
+    };
+
+
     private double RatingBasicValue;
     private double RatingDisabledValue = 2;
     private double RatingReadonlyValue = 3.5;
@@ -43,116 +152,6 @@ public partial class BitRatingDemo
         SuccessMessage = string.Empty;
     }
 
-    private readonly List<ComponentParameter> componentParameters = new()
-    {
-        new ComponentParameter()
-        {
-            Name = "AllowZeroStars",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Allow the initial rating value be 0. Note that a value of 0 still won't be selectable by mouse or keyboard.",
-        },
-        new ComponentParameter()
-        {
-            Name = "AriaLabelFormat",
-            Type = "string",
-            DefaultValue = "",
-            Description = "Optional label format for each individual rating star (not the rating control as a whole) that will be read by screen readers.",
-        },
-        new ComponentParameter()
-        {
-            Name = "DefaultValue",
-            Type = "double",
-            DefaultValue = "0",
-            Description = "Default rating. Must be a number between min and max. Only provide this if the Rating is an uncontrolled component; otherwise, use the rating property.",
-        },
-        new ComponentParameter()
-        {
-            Name = "GetAriaLabel",
-            Type = "Func<double, double, string>",
-            DefaultValue = "",
-            Description = "Optional callback to set the aria-label for rating control in readOnly mode. Also used as a fallback aria-label if ariaLabel prop is not provided.",
-        },
-        new ComponentParameter()
-        {
-            Name = "Icon",
-            Type = "BitIcon",
-            DefaultValue = "FavoriteStarFill",
-            Description = "Custom icon name for unselected rating elements, If unset, default will be the FavoriteStar icon.",
-        },
-        new ComponentParameter()
-        {
-            Name = "IsReadOnly",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "A flag to mark rating control as readOnly.",
-        },
-        new ComponentParameter()
-        {
-            Name = "Max",
-            Type = "int",
-            DefaultValue = "5",
-            Description = "Maximum rating. Must be >= min (0 if AllowZeroStars is true, 1 otherwise).",
-        },
-        new ComponentParameter()
-        {
-            Name = "OnChange",
-            Type = "EventCallback<double>",
-            DefaultValue = "",
-            Description = "Callback that is called when the rating has changed.",
-        },
-        new ComponentParameter()
-        {
-            Name = "Value",
-            Type = "double",
-            DefaultValue = "0",
-            Description = "Current rating value. Must be a number between min (0 if AllowZeroStars is true, 1 otherwise) and max.",
-        },
-        new ComponentParameter()
-        {
-            Name = "Size",
-            Type = "BitRatingSize",
-            DefaultValue = "BitRatingSize.small",
-            LinkType = LinkType.Link,
-            Href = "#rating-size-enum",
-            Description = "Size of rating.",
-        },
-        new ComponentParameter()
-        {
-            Name = "UnselectedIcon",
-            Type = "BitIconName",
-            DefaultValue = "BitIconName.FavoriteStar",
-            Description = "Custom icon name for unselected rating elements, If unset, default will be the FavoriteStar icon.",
-        }
-    };
-
-    private readonly List<EnumParameter> enumParameters = new()
-    {
-        new EnumParameter()
-        {
-            Id = "rating-size-enum",
-            Title = "BitRatingSize Enum",
-            Description = "",
-            EnumList = new List<EnumItem>()
-            {
-                new EnumItem()
-                {
-                    Name = "Small",
-                    Description = "Display rating icon using small size.",
-                    Value = "0",
-                },
-                new EnumItem()
-                {
-                    Name = "Large",
-                    Description = " Display rating icon using large size.",
-                    Value = "1",
-                },
-            }
-        }
-    };
-
-    #region Example Code 1
-
     private readonly string example1HTMLCode = @"
 <div>
     <BitLabel>Basic:</BitLabel>
@@ -170,16 +169,11 @@ public partial class BitRatingDemo
     <span>Rate: @RatingReadonlyValue</span>
 </div>
 ";
-
     private readonly string example1CSharpCode = @"
 private double RatingBasicValue;
 private double RatingDisabledValue = 2;
 private double RatingReadonlyValue = 3.5;
 ";
-
-    #endregion
-
-    #region Example Code 2
 
     private readonly string example2HTMLCode = @"
 <div>
@@ -198,16 +192,11 @@ private double RatingReadonlyValue = 3.5;
     <span>Rate: @RatingMaxValue3</span>
 </div>
 ";
-
     private readonly string example2CSharpCode = @"
 private double RatingMaxValue1 = 2.5;
 private double RatingMaxValue2 = 5;
 private double RatingMaxValue3 = 15;
 ";
-
-    #endregion
-
-    #region Example Code 3
 
     private readonly string example3HTMLCode = @"
 <div>
@@ -226,16 +215,11 @@ private double RatingMaxValue3 = 15;
     <span>Rate: @RatingCustomIconValue3</span>
 </div>
 ";
-
     private readonly string example3CSharpCode = @"
 private double RatingCustomIconValue1 = 1.5;
 private double RatingCustomIconValue2 = 2;
 private double RatingCustomIconValue3 = 3;
 ";
-
-    #endregion
-
-    #region Example Code 4
 
     private readonly string example4HTMLCode = @"
 <div>
@@ -249,15 +233,10 @@ private double RatingCustomIconValue3 = 3;
     <span>Rate: @RatingLargeValue</span>
 </div>
 ";
-
     private readonly string example4CSharpCode = @"
 private double RatingSmallValue = 3;
 private double RatingLargeValue = 3;
 ";
-
-    #endregion
-
-    #region Example Code 5
 
     private readonly string example5HTMLCode = @"
 <div>
@@ -276,16 +255,11 @@ private double RatingLargeValue = 3;
     <span>Rate: @RatingControlledValue3</span>
 </div>
 ";
-
     private readonly string example5CSharpCode = @"
 private double RatingControlledValue1 = 0;
 private double RatingControlledValue2 = 3;
 private double RatingControlledValue3;
 ";
-
-    #endregion
-
-    #region Example Code 6
 
     private readonly string example6HTMLCode = @"
 @if (string.IsNullOrEmpty(SuccessMessage))
@@ -311,7 +285,6 @@ else
     </BitMessageBar>
 }
 ";
-
     private readonly string example6CSharpCode = @"
 public class BitRatingDemoFormModel
 {
@@ -336,6 +309,4 @@ private void HandleInvalidSubmit()
     SuccessMessage = string.Empty;
 }
 ";
-
-    #endregion
 }

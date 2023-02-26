@@ -1,12 +1,16 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
 public partial class BitRating
 {
+    protected override bool UseVisual => false;
+
+
     private bool isReadOnly;
+
+    private bool _disposed;
+
 
     /// <summary>
     /// Allow the initial rating value be 0. Note that a value of 0 still won't be selectable by mouse or keyboard.
@@ -40,6 +44,8 @@ public partial class BitRating
         get => isReadOnly;
         set
         {
+            if (isReadOnly == value) return;
+
             isReadOnly = value;
             ClassBuilder.Reset();
         }
@@ -70,6 +76,7 @@ public partial class BitRating
     /// </summary>
     [Parameter] public BitIconName UnselectedIcon { get; set; } = BitIconName.FavoriteStar;
 
+
     protected override async Task OnInitializedAsync()
     {
         OnValueChanged += HandleOnValueChanged;
@@ -90,17 +97,11 @@ public partial class BitRating
 
     protected override void RegisterComponentClasses()
     {
-        ClassBuilder.Register(() => IsReadOnly
-                                            ? $"{RootElementClass}-readonly-{VisualClassRegistrar()}"
-                                            : string.Empty);
+        ClassBuilder.Register(() => IsReadOnly ? "readonly" : string.Empty);
 
-        ClassBuilder.Register(() => Size == BitRatingSize.Large
-                                            ? $"{RootElementClass}-large-{VisualClassRegistrar()}"
-                                            : $"{RootElementClass}-small-{VisualClassRegistrar()}");
+        ClassBuilder.Register(() => Size == BitRatingSize.Large ? "large" : "small");
 
-        ClassBuilder.Register(() => ValueInvalid is true
-                                            ? $"{RootElementClass}-invalid-{VisualClassRegistrar()}"
-                                            : string.Empty);
+        ClassBuilder.Register(() => ValueInvalid is true ? "invalid" : string.Empty);
     }
 
     private void HandleOnValueChanged(object? sender, EventArgs args) => ClassBuilder.Reset();
@@ -117,7 +118,7 @@ public partial class BitRating
         }
     }
 
-    private double GetPercentageOf(int index)
+    private double GetPercentage(int index)
     {
         double fullRating = Math.Ceiling(CurrentValue);
 
@@ -136,7 +137,7 @@ public partial class BitRating
         return fullStar;
     }
 
-    private async Task HandleClick(int index)
+    private async Task HandleOnClick(int index)
     {
         if (index > Max ||
             index < (AllowZeroStars ? 0 : 1) ||
@@ -166,11 +167,15 @@ public partial class BitRating
 
     protected override void Dispose(bool disposing)
     {
+        if (_disposed) return;
+
         if (disposing)
         {
             OnValueChanged -= HandleOnValueChanged;
             OnValueChanging -= HandleOnValueChanging;
         }
+
+        _disposed = true;
 
         base.Dispose(disposing);
     }
