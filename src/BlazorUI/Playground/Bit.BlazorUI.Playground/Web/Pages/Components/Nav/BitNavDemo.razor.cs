@@ -9,74 +9,256 @@ public partial class BitNavDemo
 {
     private readonly List<ComponentParameter> componentParameters = new()
     {
-        new ComponentParameter
+        new ComponentParameter()
+        {
+            Name = "AriaCurrentField",
+            Type = "string",
+            DefaultValue = "AriaCurrent",
+            Description = "Aria-current token for active nav item. Must be a valid token value, and defaults to 'page'."
+        },
+        new ComponentParameter()
+        {
+            Name = "AriaCurrentFieldSelector",
+            Type = "Expression<Func<TItem, BitNavListItemAriaCurrent>>?",
+            Href = "nav-item-aria-current",
+            LinkType = LinkType.Link,
+            Description = "Aria-current token for active nav item. Must be a valid token value, and defaults to 'page'."
+        },
+        new ComponentParameter()
+        {
+            Name = "AriaLabelField",
+            Type = "string",
+            DefaultValue = "AriaLabel",
+            Description = "Aria label for the item. Ignored if collapseAriaLabel or expandAriaLabel is provided."
+        },
+        new ComponentParameter()
+        {
+            Name = "AriaLabelFieldSelector",
+            Type = "Expression<Func<TItem, object>>?",
+            Description = "Aria label for the item. Ignored if collapseAriaLabel or expandAriaLabel is provided."
+        },
+        new ComponentParameter()
         {
             Name = "DefaultSelectedItem",
-            Type = "BitNavItem?",
-            Description = "The initially selected item in manual mode.",
-            Href = "#nav-item",
-            LinkType = LinkType.Link,
+            Type = "TItem?",
+            Description = "The initially selected item in manual mode."
         },
-        new ComponentParameter
+        new ComponentParameter()
+        {
+            Name = "CollapseAriaLabelField",
+            Type = "string",
+            DefaultValue = "CollapseAriaLabel",
+            Description = "Aria label when group is collapsed."
+        },
+        new ComponentParameter()
+        {
+            Name = "CollapseAriaLabelFieldSelector",
+            Type = "Expression<Func<TItem, object>>?",
+            Description = "Aria label when group is collapsed."
+        },
+        new ComponentParameter()
+        {
+            Name = "ExpandAriaLabelField",
+            Type = "string",
+            DefaultValue = "ExpandAriaLabel",
+            Description = "Aria label when group is expanded."
+        },
+        new ComponentParameter()
+        {
+            Name = "ExpandAriaLabelFieldSelector",
+            Type = "Expression<Func<TItem, object>>?",
+            Description = "Aria label when group is expanded."
+        },
+        new ComponentParameter()
+        {
+            Name = "ForceAnchorField",
+            Type = "string",
+            DefaultValue = "ForceAnchor",
+            Description = "(Optional) By default, any link with onClick defined will render as a button. Set this property to true to override that behavior. (Links without onClick defined will render as anchors by default.)"
+        },
+        new ComponentParameter()
+        {
+            Name = "ForceAnchorFieldelector",
+            Type = "Expression<Func<TItem, object>>?",
+            Description = "(Optional) By default, any link with onClick defined will render as a button. Set this property to true to override that behavior. (Links without onClick defined will render as anchors by default.)"
+        },
+        new ComponentParameter()
         {
             Name = "HeaderTemplate",
-            Type = "RenderFragment<BitNavItem>?",
-            Description = "Used to customize how content inside the group header is rendered.",
+            Type = "RenderFragment<TItem>?",
+            Description = "Used to customize how content inside the group header is rendered."
         },
-        new ComponentParameter
+        new ComponentParameter()
         {
             Name = "ItemTemplate",
-            Type = "RenderFragment<BitNavItem>?",
-            Description = "Used to customize how content inside the link tag is rendered.",
+            Type = "RenderFragment<TItem>?",
+            Description = "Used to customize how content inside the item is rendered."
         },
-        new ComponentParameter
+        new ComponentParameter()
         {
             Name = "Items",
-            Type = "IList<BitNavItem>",
-            DefaultValue = "new List<BitNavItem>()",
-            Description = "A collection of link items to display in the navigation bar.",
+            Type = "IList<TItem>",
+            DefaultValue = "new List<TItem>()",
+            Description = "A collection of item to display in the navigation bar."
         },
-        new ComponentParameter
+        new ComponentParameter()
+        {
+            Name = "ItemsField",
+            Type = "string",
+            DefaultValue = "Items",
+            Description = "A list of items to render as children of the current item."
+        },
+        new ComponentParameter()
+        {
+            Name = "ItemsFieldSelector",
+            Type = "Expression<Func<TItem, IList<TItem>>>?",
+            Description = "A list of items to render as children of the current item."
+        },
+        new ComponentParameter()
+        {
+            Name = "IconNameField",
+            Type = "string",
+            DefaultValue = "IconName",
+            Description = "Name of an icon to render next to the item button."
+        },
+        new ComponentParameter()
+        {
+            Name = "IconNameFieldSelector",
+            Type = "Expression<Func<TItem, BitIconName>>?",
+            Description = "Name of an icon to render next to the item button."
+        },
+        new ComponentParameter()
+        {
+            Name = "IsExpandedField",
+            Type = "string",
+            DefaultValue = "IsExpanded",
+            Description = "Whether or not the group is in an expanded state."
+        },
+        new ComponentParameter()
+        {
+            Name = "IsExpandedFieldSelector",
+            Type = "Expression<Func<TItem, bool>>?",
+            Description = "Whether or not the group is in an expanded state."
+        },
+        new ComponentParameter()
+        {
+            Name = "IsEnabledField",
+            Type = "string",
+            DefaultValue = "IsEnabled",
+            Description = "Whether or not the item is disabled."
+        },
+        new ComponentParameter()
+        {
+            Name = "IsEnabledFieldSelector",
+            Type = "Expression<Func<TItem, bool>>?",
+            Description = "Whether or not the item is disabled."
+        },
+        new ComponentParameter()
         {
             Name = "Mode",
             Type = "BitNavMode",
             DefaultValue = "BitNavMode.Automatic",
-            Description = "Determines how the navigation will be handled. The default value is Automatic.",
-            Href = "#nav-mode-enum",
-            LinkType = LinkType.Link
+            Href = "nav-mode-enum",
+            LinkType = LinkType.Link,
+            Description = "Determines how the navigation will be handled."
         },
-        new ComponentParameter
+        new ComponentParameter()
         {
             Name = "OnItemClick",
-            Type = "EventCallback<BitNavItem>",
-            Description = "Callback invoked when an item is clicked.",
+            Type = "EventCallback<TItem>",
+            Description = "Callback invoked when an item is clicked."
         },
-        new ComponentParameter
+        new ComponentParameter()
         {
             Name = "OnSelectItem",
-            Type = "EventCallback<BitNavItem>",
-            Description = "Callback invoked when an item is selected.",
+            Type = "EventCallback<TItem>",
+            Description = "Callback invoked when an item is selected."
         },
-        new ComponentParameter
+        new ComponentParameter()
         {
             Name = "OnItemToggle",
-            Type = "EventCallback<BitNavItem>",
-            Description = "Callback invoked when a group header is clicked and Expanded or Collapse.",
+            Type = "EventCallback<TItem>",
+            Description = "Callback invoked when a group header is clicked and Expanded or Collapse."
         },
-        new ComponentParameter
+        new ComponentParameter()
         {
             Name = "RenderType",
             Type = "BitNavRenderType",
             DefaultValue = "BitNavRenderType.Normal",
-            Description = "The way to render nav links.",
-            Href = "#nav-render-type-enum",
+            Href = "nav-render-type-enum",
             LinkType = LinkType.Link,
+            Description = "The way to render nav items."
         },
-        new ComponentParameter
+        new ComponentParameter()
         {
             Name = "SelectedItem",
-            Type = "BitNavItem?",
-            Description = "Selected item to show in Nav.",
+            Type = "TItem?",
+            Description = "Selected item to show in Nav."
+        },
+        new ComponentParameter()
+        {
+            Name = "StyleField",
+            Type = "string",
+            DefaultValue = "Style",
+            Description = "Custom style for the each item element."
+        },
+        new ComponentParameter()
+        {
+            Name = "StyleFieldSelector",
+            Type = "Expression<Func<TItem, object>>?",
+            Description = "Custom style for the each item element."
+        },
+        new ComponentParameter()
+        {
+            Name = "TextField",
+            Type = "string",
+            DefaultValue = "Name",
+            Description = "Text to render for the item."
+        },
+        new ComponentParameter()
+        {
+            Name = "TextFieldSelector",
+            Type = "Expression<Func<TItem, object>>?",
+            Description = "Text to render for the item."
+        },
+        new ComponentParameter()
+        {
+            Name = "TitleField",
+            Type = "string",
+            DefaultValue= "Title",
+            Description = "Text for the item tooltip."
+        },
+        new ComponentParameter()
+        {
+            Name = "TitleFieldSelector",
+            Type = "Expression<Func<TItem, object>>?",
+            Description = "Text for the item tooltip."
+        },
+        new ComponentParameter()
+        {
+            Name = "TargetField",
+            Type = "string",
+            DefaultValue = "Target",
+            Description = "Link target, specifies how to open the item link."
+        },
+        new ComponentParameter()
+        {
+            Name = "TargetFieldSelector",
+            Type = "Expression<Func<TItem, object>>?",
+            Description = "Link target, specifies how to open the item link."
+        },
+        new ComponentParameter()
+        {
+            Name = "UrlField",
+            Type = "string",
+            DefaultValue = "Url",
+            Description = "URL to navigate for the item link."
+        },
+        new ComponentParameter()
+        {
+            Name = "UrlFieldSelector",
+            Type = "Expression<Func<TItem, object>>?",
+            Description = "URL to navigate for the item link."
         },
     };
     private readonly List<ComponentSubParameter> componentSubParameters = new()
@@ -85,6 +267,109 @@ public partial class BitNavDemo
         {
             Id = "nav-item",
             Title = "BitNavItem",
+            Parameters = new List<ComponentParameter>()
+            {
+               new ComponentParameter()
+               {
+                   Name = "AriaLabel",
+                   Type = "string?",
+                   Description = "Aria label for nav link. Ignored if collapseAriaLabel or expandAriaLabel is provided",
+               },
+               new ComponentParameter()
+               {
+                   Name = "AriaCurrent",
+                   Type = "BitNavLinkItemAriaCurrent",
+                   DefaultValue = "BitNavItemAriaCurrent.Page",
+                   Description = "Aria-current token for active nav links. Must be a valid token value, and defaults to 'page'",
+                   Href = "#nav-item-aria-current-enum",
+                   LinkType = LinkType.Link,
+               },
+               new ComponentParameter()
+               {
+                   Name = "CollapseAriaLabel",
+                   Type = "string?",
+                   Description = "Aria label when items is collapsed and can be expanded.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "ExpandAriaLabel",
+                   Type = "string?",
+                   Description = "Aria label when group is collapsed and can be expanded.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "ForceAnchor",
+                   Type = "bool",
+                   Description = "(Optional) By default, any link with onClick defined will render as a button. Set this property to true to override that behavior. (Links without onClick defined will render as anchors by default.)",
+               },
+               new ComponentParameter()
+               {
+                   Name = "Items",
+                   Type = "IList<BitNavItem>",
+                   DefaultValue = "new List<BitNavItem>()",
+                   Description = "A list of items to render as children of the current item.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "IconName",
+                   Type = "BitIconName",
+                   Description = "Name of an icon to render next to this link button.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "IsExpanded",
+                   Type = "bool",
+                   Description = "Whether or not the link is in an expanded state.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "IsEnabled",
+                   Type = "bool",
+                   Description = "Whether or not the link is enabled.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "Key",
+                   Type = "string?",
+                   Description = "A unique value to use as a key or id of the item.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "Style",
+                   Type = "string?",
+                   Description = "Custom style for the each item element.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "Text",
+                   Type = "string",
+                   DefaultValue = "string.Empty",
+                   Description = "Text to render for this link.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "Title",
+                   Type = "string?",
+                   Description = "Text for title tooltip.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "Target",
+                   Type = "string?",
+                   Description = "Link target, specifies how to open the link.",
+               },
+               new ComponentParameter()
+               {
+                   Name = "Url",
+                   Type = "string?",
+                   Description = "URL to navigate to for this link.",
+               }
+            }
+        },
+        new ComponentSubParameter()
+        {
+            Id = "nav-option",
+            Title = "BitNavOption",
             Parameters = new List<ComponentParameter>()
             {
                new ComponentParameter()
@@ -267,7 +552,7 @@ public partial class BitNavDemo
     };
 
 
-    #region Basic
+    #region NavItem
 
     // Basic
     private static readonly List<BitNavItem> BitPlatformNavMenu = new()
@@ -434,7 +719,7 @@ public partial class BitNavDemo
 
     #endregion
 
-    #region List
+    #region Custom Item
 
     // Basic
     private static readonly List<BitPlatformMenu> CustomBitPlatformNavMenu = new()
@@ -601,7 +886,7 @@ public partial class BitNavDemo
 
     #endregion
 
-    #region Option
+    #region NavOption
 
     private string SelectedOptionKey;
 
