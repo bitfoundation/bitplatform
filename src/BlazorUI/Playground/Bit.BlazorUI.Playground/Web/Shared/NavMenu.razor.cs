@@ -76,8 +76,6 @@ public partial class NavMenu
             {
                 new BitNavItem { Text = "Breadcrumb", Url = "/components/breadcrumb" },
                 new BitNavItem { Text = "Nav (TreeList)", Url = "/components/nav" },
-                new BitNavItem { Text = "NavGroup (TreeList)", Url = "/components/nav-group" },
-                new BitNavItem { Text = "NavList (TreeList)", Url = "/components/nav-list" },
                 new BitNavItem { Text = "Pivot (Tab)", Url = "/components/pivot" },
             }
         },

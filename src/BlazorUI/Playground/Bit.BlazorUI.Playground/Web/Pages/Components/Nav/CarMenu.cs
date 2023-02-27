@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Bit.BlazorUI.Playground.Web.Pages.Components.NavList;
+namespace Bit.BlazorUI.Playground.Web.Pages.Components.Nav;
 
 public class CarMenu
 {
