@@ -33,7 +33,7 @@ public partial class BitNavOption : IDisposable
     [Parameter] public bool ForceAnchor { get; set; }
 
     /// <summary>
-    /// 
+    /// Items to render as children.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 

@@ -71,6 +71,9 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
     /// </summary>
     [Parameter] public Expression<Func<TItem, string>>? AriaLabelFieldSelector { get; set; }
 
+    /// <summary>
+    /// Items to render as children.
+    /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
@@ -261,12 +264,12 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
     [Parameter] public Expression<Func<TItem, string>>? UrlFieldSelector { get; set; }
 
     /// <summary>
-    /// 
+    /// A unique value to use as a key or id of the item.
     /// </summary>
     [Parameter] public string KeyField { get; set; } = KEY_FIELD;
 
     /// <summary>
-    /// 
+    /// A unique value to use as a key or id of the item.
     /// </summary>
     [Parameter] public Expression<Func<TItem, string>>? KeyFieldSelector { get; set; }
 
