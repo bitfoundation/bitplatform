@@ -22,11 +22,11 @@
     }
     else
     {
-        <div style="padding: 0 10px 0 @(Nav.GetItems(Item).Any() ? (Depth * 14) : (Depth * 14) + 30)px;"
+        <div style="padding: 0 10px 0 @(Nav.GetChildItems(Item).Any() ? (Depth * 14) : (Depth * 14) + 30)px;"
              class="item-container @(Item == Nav.SelectedItem ? "selected" : "") @(Nav.GetIsEnabled(Item) is false ? "disabled" : "")"
              name="@Nav.GetText(Item)">
 
-            @if (Nav.GetItems(Item).Any())
+            @if (Nav.GetChildItems(Item).Any())
             {
                 <button @onclick="ToggleItem"
                         class="chevron-btn"
@@ -93,11 +93,11 @@
         </div>
     }
 
-    @if ((Nav.GetItems(Item).Any()) && (Nav.GetItemExpanded(Item)))
+    @if ((Nav.GetChildItems(Item).Any()) && (Nav.GetItemExpanded(Item)))
     {
         <ul role="list">
             <CascadingValue Value="this" IsFixed="true">
-                @foreach (var childItem in Nav.GetItems(Item))
+                @foreach (var childItem in Nav.GetChildItems(Item))
                 {
                     <_BitNavChild @key="Nav.GetKey(childItem)" Item="childItem" Depth="Depth + 1" />
                 }

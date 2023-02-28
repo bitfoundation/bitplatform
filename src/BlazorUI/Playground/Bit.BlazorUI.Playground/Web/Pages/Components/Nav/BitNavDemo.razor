@@ -30,7 +30,7 @@
                         <div>
                             <BitLabel>Basic</BitLabel>
                             <BitNav Items="FoodNavMenu"
-                                    DefaultSelectedItem="FoodNavMenu[0].Items[2]"
+                                    DefaultSelectedItem="FoodNavMenu[0].ChildItems[2]"
                                     Mode="BitNavMode.Manual" />
                         </div>
 
@@ -89,7 +89,7 @@
                 <ExamplePreview>
                     <div class="events-example-box">
                         <BitNav Items="FoodNavMenu"
-                                DefaultSelectedItem="FoodNavMenu[0].Items[2]"
+                                DefaultSelectedItem="FoodNavMenu[0].ChildItems[2]"
                                 Mode="BitNavMode.Manual"
                                 OnItemClick="(BitNavItem item) => ClickedItem = item"
                                 OnSelectItem="(BitNavItem item) => SelectedItem = item"
@@ -113,7 +113,7 @@
                                 TextField="@nameof(BitPlatformMenu.Text)"
                                 UrlField="@nameof(BitPlatformMenu.Url)"
                                 IsEnabledField="@nameof(BitPlatformMenu.IsEnabled)"
-                                ItemsField="@nameof(BitPlatformMenu.Links)" />
+                                ChildItemsField="@nameof(BitPlatformMenu.Links)" />
                     </div>
                 </ExamplePreview>
             </ComponentExampleBox>
@@ -129,7 +129,7 @@
                                 IsExpandedField="@nameof(CarMenu.IsExpandedParent)"
                                 CollapseAriaLabelField="@nameof(CarMenu.CollapsedAriaLabel)"
                                 ExpandAriaLabelField="@nameof(CarMenu.ExpandedAriaLabel)"
-                                ItemsField="@nameof(CarMenu.Links)"
+                                ChildItemsField="@nameof(CarMenu.Links)"
                                 RenderType="BitNavRenderType.Grouped" />
                     </div>
                 </ExamplePreview>
@@ -144,7 +144,7 @@
                                     TextFieldSelector="item => item.Name"
                                     IconNameFieldSelector="item => item.Icon"
                                     IsExpandedFieldSelector="item => item.IsExpanded"
-                                    ItemsFieldSelector="item => item.Childs"
+                                    ChildItemsFieldSelector="item => item.Childs"
                                     DefaultSelectedItem="CustomFoodNavMenu[0].Childs[2]"
                                     Mode="BitNavMode.Manual" />
                         </div>
@@ -157,7 +157,7 @@
                                     TextFieldSelector="item => item.Name"
                                     IconNameFieldSelector="item => item.Icon"
                                     IsExpandedFieldSelector="item => item.IsExpanded"
-                                    ItemsFieldSelector="item => item.Childs"
+                                    ChildItemsFieldSelector="item => item.Childs"
                                     Mode="BitNavMode.Manual"
                                     OnSelectItem="(FoodMenu item) => CustomSelectedFoodName = FoodMenuDropDownItems.FirstOrDefault(i => i.Text == item.Name).Text" />
 
@@ -183,7 +183,7 @@
                                     IsExpandedField="@nameof(CarMenu.IsExpandedParent)"
                                     CollapseAriaLabelField="@nameof(CarMenu.CollapsedAriaLabel)"
                                     ExpandAriaLabelField="@nameof(CarMenu.ExpandedAriaLabel)"
-                                    ItemsField="@nameof(CarMenu.Links)"
+                                    ChildItemsField="@nameof(CarMenu.Links)"
                                     RenderType="BitNavRenderType.Grouped">
 
                                 <HeaderTemplate Context="item">
@@ -201,7 +201,7 @@
                                     TextFieldSelector="item => item.Name"
                                     IconNameFieldSelector="item => item.Icon"
                                     IsExpandedFieldSelector="item => item.IsExpanded"
-                                    ItemsFieldSelector="item => item.Childs"
+                                    ChildItemsFieldSelector="item => item.Childs"
                                     Mode="BitNavMode.Manual">
 
                                 <ItemTemplate Context="item">
@@ -224,7 +224,7 @@
                                 TextFieldSelector="item => item.Name"
                                 IconNameFieldSelector="item => item.Icon"
                                 IsExpandedFieldSelector="item => item.IsExpanded"
-                                ItemsFieldSelector="item => item.Childs"
+                                ChildItemsFieldSelector="item => item.Childs"
                                 DefaultSelectedItem="CustomFoodNavMenu[0].Childs[2]"
                                 Mode="BitNavMode.Manual"
                                 OnItemClick="(FoodMenu item) => CustomClickedItem = item"

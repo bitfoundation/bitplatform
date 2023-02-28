@@ -24,13 +24,6 @@ public partial class _BitNavChild<TItem> where TItem : class
 
     [Parameter] public int Depth { get; set; }
 
-    protected override Task OnInitializedAsync()
-    {
-        var aa = Nav.GetItems(Item);
-
-        return base.OnInitializedAsync();
-    }
-
     private async void HandleOnClick()
     {
         if (Nav is null) return;
@@ -38,7 +31,7 @@ public partial class _BitNavChild<TItem> where TItem : class
 
         await Nav.OnItemClick.InvokeAsync(Item);
 
-        if (Nav.GetItems(Item).Any() && Nav.GetUrl(Item).HasNoValue())
+        if (Nav.GetChildItems(Item).Any() && Nav.GetUrl(Item).HasNoValue())
         {
             await ToggleItem();
         }
@@ -52,7 +45,7 @@ public partial class _BitNavChild<TItem> where TItem : class
     {
         if (Nav is null) return;
 
-        if (Nav.GetIsEnabled(Item) is false || Nav.GetItems(Item).Any() is false) return;
+        if (Nav.GetIsEnabled(Item) is false || Nav.GetChildItems(Item).Any() is false) return;
 
         Nav.SetItemExpanded(Item, !Nav.GetItemExpanded(Item));
 

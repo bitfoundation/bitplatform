@@ -5,7 +5,7 @@ public partial class BitNavOption : IDisposable
 {
     private bool _disposed;
 
-    public IList<BitNavOption> Items { get; set; } = new List<BitNavOption>();
+    internal IList<BitNavOption> Items { get; set; } = new List<BitNavOption>();
 
     [CascadingParameter] protected BitNav<BitNavOption> Nav { get; set; } = default!;
     [CascadingParameter] protected BitNavOption? Parent { get; set; }
