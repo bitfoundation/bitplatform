@@ -167,16 +167,13 @@ public partial class BitRating
 
     protected override void Dispose(bool disposing)
     {
-        if (_disposed) return;
+        base.Dispose(disposing);
 
-        if (disposing)
-        {
-            OnValueChanged -= HandleOnValueChanged;
-            OnValueChanging -= HandleOnValueChanging;
-        }
+        if (_disposed || disposing is false) return;
+
+        OnValueChanged -= HandleOnValueChanged;
+        OnValueChanging -= HandleOnValueChanging;
 
         _disposed = true;
-
-        base.Dispose(disposing);
     }
 }

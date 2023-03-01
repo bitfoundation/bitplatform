@@ -352,7 +352,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
 
     protected virtual void Dispose(bool disposing)
     {
-        if (_disposed) return;
+        if (_disposed || disposing is false) return;
 
         // When initialization in the SetParametersAsync method fails, the EditContext property can remain equal to null
         if (EditContext is not null)
