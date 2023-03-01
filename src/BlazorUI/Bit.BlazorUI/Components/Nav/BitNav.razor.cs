@@ -57,7 +57,7 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
     /// Aria-current token for active nav item.
     /// Must be a valid token value, and defaults to 'page'.
     /// </summary>
-    [Parameter] public Expression<Func<TItem, BitNavItemAriaCurrent>>? AriaCurrentFieldSelector { get; set; }
+    [Parameter] public Expression<Func<TItem, BitNavAriaCurrent>>? AriaCurrentFieldSelector { get; set; }
 
     /// <summary>
     /// Aria label for the item.
@@ -352,7 +352,7 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
         return item.GetValueFromProperty<string>(_internalUrlField);
     }
 
-    internal BitNavItemAriaCurrent GetAriaCurrent(TItem item)
+    internal BitNavAriaCurrent GetAriaCurrent(TItem item)
     {
         if (item is BitNavItem navItem)
         {
@@ -364,7 +364,7 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
             return navOption.AriaCurrent;
         }
 
-        return item.GetValueFromProperty(_internalAriaCurrentField, BitNavItemAriaCurrent.Page);
+        return item.GetValueFromProperty(_internalAriaCurrentField, BitNavAriaCurrent.Page);
     }
 
     internal string? GetExpandAriaLabel(TItem item)

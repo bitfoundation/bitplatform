@@ -6,14 +6,14 @@ namespace Bit.BlazorUI.Components.Nav;
 public partial class _BitNavChild<TItem> where TItem : class
 #pragma warning restore CA1707 // Identifiers should not contain underscores
 {
-    private static Dictionary<BitNavItemAriaCurrent, string> _AriaCurrentMap = new()
+    private static Dictionary<BitNavAriaCurrent, string> _AriaCurrentMap = new()
     {
-        [BitNavItemAriaCurrent.Page] = "page",
-        [BitNavItemAriaCurrent.Step] = "step",
-        [BitNavItemAriaCurrent.Location] = "location",
-        [BitNavItemAriaCurrent.Time] = "time",
-        [BitNavItemAriaCurrent.Date] = "date",
-        [BitNavItemAriaCurrent.True] = "true"
+        [BitNavAriaCurrent.Page] = "page",
+        [BitNavAriaCurrent.Step] = "step",
+        [BitNavAriaCurrent.Location] = "location",
+        [BitNavAriaCurrent.Time] = "time",
+        [BitNavAriaCurrent.Date] = "date",
+        [BitNavAriaCurrent.True] = "true"
     };
 
     [CascadingParameter] protected BitNav<TItem> Nav { get; set; } = default!;
