@@ -104,14 +104,6 @@
         "inputFile": "Pages/Components/Nav/BitNavDemo.razor.scss"
     },
     {
-        "outputFile": "Pages/Components/NavGroup/BitNavGroupDemo.razor.css",
-        "inputFile": "Pages/Components/NavGroup/BitNavGroupDemo.razor.scss"
-    },
-    {
-        "outputFile": "Pages/Components/NavList/BitNavListDemo.razor.css",
-        "inputFile": "Pages/Components/NavList/BitNavListDemo.razor.scss"
-    },
-    {
         "outputFile": "Pages/Components/Pivot/BitPivotDemo.razor.css",
         "inputFile": "Pages/Components/Pivot/BitPivotDemo.razor.scss"
     },

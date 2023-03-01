@@ -97,7 +97,7 @@ public class BitNavTests : BunitTestContext
                 CollapseAriaLabel = collapseAriaLabel,
                 ExpandAriaLabel = expandAriaLabel,
                 IsExpanded = isExpanded,
-                Items = new List<BitNavItem>()
+                ChildItems = new List<BitNavItem>()
                 {
                     new BitNavItem() { Text = "Activity", Url = "http://msn.com", Title = "Activity" }
                 }
@@ -167,7 +167,7 @@ public class BitNavTests : BunitTestContext
     {
         var items = new List<BitNavItem>()
         {
-            new() { Text = "Test1", Items = new List<BitNavItem>() { new() { Text = "Test2" } } }
+            new() { Text = "Test1", ChildItems = new List<BitNavItem>() { new() { Text = "Test2" } } }
         };
 
         var componenet = RenderComponent<BitNavTest>(parameters =>
@@ -193,7 +193,7 @@ public class BitNavTests : BunitTestContext
             new() {
                 Text = "Test1",
                 IsExpanded = true,
-                Items = new List<BitNavItem>() { new() { Text = "Test2", ForceAnchor = isForced } }
+                ChildItems = new List<BitNavItem>() { new() { Text = "Test2", ForceAnchor = isForced } }
             }
         };
 

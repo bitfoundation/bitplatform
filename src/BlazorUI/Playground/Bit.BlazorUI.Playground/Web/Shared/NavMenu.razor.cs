@@ -20,7 +20,7 @@ public partial class NavMenu
         new BitNavItem
         {
             Text = "Basic Inputs",
-            Items = new List<BitNavItem>
+            ChildItems = new List<BitNavItem>
             {
                 new BitNavItem { Text = "Button", Url = "/components/button" },
                 new BitNavItem { Text = "ActionButton", Url = "/components/action-button" },
@@ -49,7 +49,7 @@ public partial class NavMenu
         new BitNavItem
         {
             Text = "Galleries & Pickers",
-            Items = new List<BitNavItem>
+            ChildItems = new List<BitNavItem>
             {
                 new BitNavItem { Text = "ColorPicker", Url = "/components/color-picker" },
                 new BitNavItem { Text = "DatePicker", Url = "/components/date-picker" },
@@ -61,7 +61,7 @@ public partial class NavMenu
         new BitNavItem
         {
             Text = "Items & Lists",
-            Items = new List<BitNavItem>
+            ChildItems = new List<BitNavItem>
             {
                 new BitNavItem { Text = "BasicList", Url = "/components/basic-list" },
                 new BitNavItem { Text = "DataGrid", Url = "/components/data-grid" },
@@ -73,19 +73,17 @@ public partial class NavMenu
         new BitNavItem
         {
             Text = "Commands, Menus & Navs",
-            Items = new List<BitNavItem>
+            ChildItems = new List<BitNavItem>
             {
                 new BitNavItem { Text = "Breadcrumb", Url = "/components/breadcrumb" },
                 new BitNavItem { Text = "Nav (TreeList)", Url = "/components/nav" },
-                new BitNavItem { Text = "NavGroup (TreeList)", Url = "/components/nav-group" },
-                new BitNavItem { Text = "NavList (TreeList)", Url = "/components/nav-list" },
                 new BitNavItem { Text = "Pivot (Tab)", Url = "/components/pivot" },
             }
         },
         new BitNavItem
         {
             Text = "Notification & Engagement",
-            Items = new List<BitNavItem>
+            ChildItems = new List<BitNavItem>
             {
                 new BitNavItem { Text = "MessageBar", Url = "/components/message-bar" }
             }
@@ -93,7 +91,7 @@ public partial class NavMenu
         new BitNavItem
         {
             Text = "Progress",
-            Items = new List<BitNavItem>
+            ChildItems = new List<BitNavItem>
             {
                 new BitNavItem{ Text = "ProgressIndicator", Url = "/components/progress-indicator" },
                 new BitNavItem{ Text = "Spinner (BusyIndicator)", Url = "/components/spinner" },
@@ -103,7 +101,7 @@ public partial class NavMenu
         new BitNavItem
         {
             Text = "Surfaces",
-            Items = new List<BitNavItem>
+            ChildItems = new List<BitNavItem>
             {
                 new BitNavItem { Text = "Accordion (Expander)", Url = "/components/accordion" },
                 new BitNavItem { Text = "Modal", Url = "/components/modal" },
@@ -112,7 +110,7 @@ public partial class NavMenu
         new BitNavItem
         {
             Text = "Utilities",
-            Items = new List<BitNavItem>
+            ChildItems = new List<BitNavItem>
             {
                 new BitNavItem { Text = "Icon", Url = "/components/icon" },
                 new BitNavItem { Text = "Overlay", Url = "/components/overlay" },
@@ -190,5 +188,5 @@ public partial class NavMenu
         await ToggleMenu();
     }
 
-    private static IEnumerable<BitNavItem> Flatten(IEnumerable<BitNavItem> e) => e.SelectMany(c => Flatten(c.Items)).Concat(e);
+    private static IEnumerable<BitNavItem> Flatten(IEnumerable<BitNavItem> e) => e.SelectMany(c => Flatten(c.ChildItems)).Concat(e);
 }

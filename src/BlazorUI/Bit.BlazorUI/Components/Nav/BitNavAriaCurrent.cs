@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-public enum BitNavItemAriaCurrent
+public enum BitNavAriaCurrent
 {
     Page,
     Step,

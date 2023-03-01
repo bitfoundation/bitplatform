@@ -104,7 +104,7 @@ public partial class PopularComponents
             ExpandAriaLabel = "Expand Home section",
             CollapseAriaLabel = "Collapse Home section",
             IsExpanded = true,
-            Items = new List<BitNavItem>
+            ChildItems = new List<BitNavItem>
             {
                 new BitNavItem { Text = "Activity", Url = "http://msn.com", Target="_blank" },
                 new BitNavItem { Text = "MSN", Url = "http://msn.com", IsEnabled = false, Target = "_blank" }

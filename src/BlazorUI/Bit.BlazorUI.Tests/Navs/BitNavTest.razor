@@ -3,8 +3,8 @@
             RenderType="@RenderType"
             Items="Items"
             SelectedItem="@SelectedItem"
-            OnItemClick="OnItemClick"
-            OnItemExpand="OnItemExpand"
+            OnItemClick="(BitNavItem item) => OnItemClick(item)"
+            OnItemToggle="(BitNavItem item) => OnItemExpand(item)"
             Mode="@Mode">
     </BitNav>
 </CascadingValue>
