@@ -1,0 +1,218 @@
+﻿@font-face {
+  font-family: "Segoe UI";
+  src: local("Segoe UI Semilight"), url("../fonts/segoe-ui-semilight.woff2") format("woff2");
+  font-weight: 200;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Segoe UI";
+  src: local("Segoe UI Light"), url("../fonts/segoe-ui-light.woff2") format("woff2");
+  font-weight: 300;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Segoe UI";
+  src: local("Segoe UI"), url("../fonts/segoe-ui-normal.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Segoe UI";
+  src: local("Segoe UI Semibold"), url("../fonts/segoe-ui-semibold.woff2") format("woff2");
+  font-weight: 600;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Segoe UI";
+  src: local("Segoe UI Bold"), url("../fonts/segoe-ui-bold.woff2") format("woff2");
+  font-weight: 700;
+  font-display: swap;
+}
+.main {
+  display: flex;
+  justify-content: flex-start;
+  width: 100%;
+  min-height: 100vh;
+  padding-top: 4.0625rem;
+  box-sizing: border-box;
+  background: linear-gradient(180deg, #F3F6F9 0%, #FFFFFF 100%);
+}
+@media screen and (max-width: 37.5em) {
+  .main {
+    padding-top: 6.8125rem;
+  }
+}
+
+.main--full-page {
+  background-color: #FFFFFF;
+}
+.main--full-page .site-content {
+  max-width: 100%;
+  padding-left: 0;
+  padding-right: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+@media screen and (max-width: 75em) {
+  .main--full-page .site-content {
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+}
+@media screen and (min-width: 56.3125em) and (max-width: 75em) {
+  .main--full-page .site-content {
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+@media screen and (min-width: 37.5625em) and (max-width: 56.25em) {
+  .main--full-page .site-content {
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+@media screen and (max-width: 37.5em) {
+  .main--full-page .site-content {
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+@media all and (min-width: 1620px) {
+  .main--full-page .site-content {
+    max-width: 100%;
+  }
+}
+
+.site-content {
+  position: relative;
+  width: 100%;
+  max-width: calc(100% - 300px);
+  padding-left: 3.75rem;
+  padding-right: 3.75rem;
+  padding-top: 4.0625rem;
+  padding-bottom: 4.0625rem;
+  margin: 0 auto;
+}
+@media screen and (max-width: 75em) {
+  .site-content {
+    padding-top: 2.1875rem;
+    padding-bottom: 2.1875rem;
+  }
+}
+@media screen and (min-width: 56.3125em) and (max-width: 75em) {
+  .site-content {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+@media screen and (min-width: 37.5625em) and (max-width: 56.25em) {
+  .site-content {
+    max-width: 100%;
+    padding-left: 1.875rem;
+    padding-right: 1.875rem;
+  }
+}
+@media screen and (max-width: 37.5em) {
+  .site-content {
+    max-width: 100%;
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+}
+@media all and (min-width: 1621px) {
+  .site-content {
+    max-width: 82.5rem;
+  }
+}
+
+::deep a {
+  text-decoration: none;
+}
+
+::deep .example-desc {
+  margin-bottom: 0.5rem;
+}
+
+::deep pre {
+  position: relative;
+  display: flex;
+  flex-flow: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  width: 100%;
+  max-height: 29rem;
+  min-height: 4.375rem;
+  margin: 0;
+  padding: 24px 80px 24px 24px;
+  box-sizing: border-box;
+  direction: ltr;
+  overflow: auto;
+  font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+  border: 0.0625rem solid #a19f9d;
+  border-top: none;
+}
+::deep pre::-webkit-scrollbar {
+  width: 0.40625rem;
+  background-color: #FFFFFF;
+}
+::deep pre::-webkit-scrollbar-track {
+  background-color: #FFFFFF;
+}
+::deep pre::-webkit-scrollbar-thumb {
+  background-color: #c8c6c4;
+  border-radius: 0.5rem;
+  border: 0.25rem solid #c8c6c4;
+}
+::deep pre::-webkit-scrollbar-button {
+  display: none;
+}
+::deep pre::-webkit-scrollbar-thumb:hover {
+  background-color: #5CA1FF;
+  border-radius: 0.5rem;
+  border: 0.25rem solid #5CA1FF;
+}
+::deep pre::-webkit-scrollbar:horizontal {
+  height: 0.5rem;
+}
+
+::deep code {
+  line-height: 1.5;
+  font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+}
+::deep code span {
+  font-family: inherit;
+}
+
+::deep .hljs {
+  overflow-x: unset !important;
+  padding: 0 !important;
+  background-color: transparent !important;
+}
+
+::deep .status-bar-safe-area {
+  display: none;
+}
+
+@supports (-webkit-touch-callout: none) {
+  ::deep .status-bar-safe-area {
+    display: flex;
+    position: sticky;
+    top: 0;
+    height: env(safe-area-inset-top);
+    background-color: #f7f7f7;
+    width: 100%;
+    z-index: 1;
+  }
+  ::deep .flex-column, ::deep .navbar-brand {
+    padding-left: env(safe-area-inset-left);
+  }
+}
+::deep ::-webkit-scrollbar-track {
+  background-color: #fff;
+}
+
+::deep ::-webkit-scrollbar-thumb {
+  background-color: #c8c6c4;
+  border-radius: 16px;
+  border: 4px solid #c8c6c4;
+}

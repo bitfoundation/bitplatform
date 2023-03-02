@@ -1,0 +1,82 @@
+﻿.page-container {
+  width: 100%;
+}
+
+.page-title {
+  margin: 0;
+  margin-bottom: 3.25rem;
+  padding: 0;
+  font-size: 2.25rem;
+  font-weight: 800;
+  line-height: 1;
+  color: #0a1929;
+}
+@media screen and (max-width: 56.25em) {
+  .page-title {
+    margin-bottom: 1.75rem;
+  }
+}
+
+.page-section {
+  position: relative;
+  width: 100%;
+  padding: 1.75rem;
+  margin-bottom: 1.75rem;
+  border-radius: 0.25rem;
+  border: 0.0625rem solid #E0E3E7;
+  box-shadow: 0 1.6px 3.6px 0 rgba(0, 0, 0, 0.13), 0 0.3px 0.9px 0 rgba(0, 0, 0, 0.11);
+  box-sizing: border-box;
+  background-clip: padding-box;
+  background-color: #FFFFFF;
+}
+
+.section-title {
+  padding: 0;
+  margin-bottom: 1.25rem;
+  font-weight: 700;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: #1a2027;
+}
+
+.section-desc {
+  width: 100%;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 2rem;
+  color: #2E2E2E;
+}
+
+.txt--blue {
+  color: #5CA1FF;
+}
+
+.code-box {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
+  margin: 1rem 0;
+  padding: 0.5rem;
+  box-sizing: border-box;
+  font-size: 0.875rem;
+  color: rgb(50, 49, 48);
+  font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+  background-color: rgb(250, 249, 248);
+  overflow-x: auto;
+  border-left: 0.1875rem solid #515151;
+}
+
+.gitpod-section {
+  display: flex;
+  align-items: center;
+}
+.gitpod-section .gitpod-icon {
+  background-image: url("/images/icon/gitpod-icon.webp");
+  display: inline-block;
+  background-repeat: no-repeat;
+  background-size: contain;
+  width: 2.1875rem;
+  height: 2.1875rem;
+  margin-right: 0.75rem;
+}

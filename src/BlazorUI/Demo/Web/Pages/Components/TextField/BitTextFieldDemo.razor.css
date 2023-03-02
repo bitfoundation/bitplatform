@@ -1,0 +1,57 @@
+﻿.example-box {
+  display: flex;
+  gap: 0.9375rem;
+  width: 18.75rem;
+  flex-direction: column;
+}
+@media screen and (max-width: 37.5em) {
+  .example-box {
+    width: 12.5rem;
+  }
+}
+.example-box .validation-summary {
+  border-left: 0.3125rem solid #d13438;
+  background-color: #FDE7E9;
+  overflow: hidden;
+  margin-bottom: 0.625rem;
+}
+.example-box .trimmed-box {
+  margin-top: 0.625rem;
+  border: 1px solid #D7D7D7;
+}
+.example-box .form-item {
+  margin-bottom: 0.9375rem;
+}
+.example-box ::deep .bit-btn {
+  width: fit-content;
+}
+.example-box ::deep .validation-message {
+  color: #A4262C;
+  font-size: 0.75rem;
+  line-height: normal;
+  margin-top: 0.3125rem;
+}
+.example-box ::deep .validation-errors {
+  margin: 0.3125rem;
+}
+
+.custom-wrapper {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+.custom-wrapper ::deep .bit-txt {
+  width: 100%;
+}
+.custom-wrapper ::deep .custom-label {
+  color: blue;
+  font-weight: 900;
+  font-size: 18px;
+}
+.custom-wrapper ::deep .custom-input {
+  color: darkgreen;
+  font-weight: 900;
+  font-size: 18px;
+  padding: 1rem;
+  height: 50px;
+}

@@ -1,0 +1,30 @@
+﻿.buttons-container {
+  line-height: 3.125rem;
+}
+
+::deep .custom-action-button {
+  font-size: 1rem;
+  background-color: #D7D7D7;
+  border-color: #D7D7D7;
+  justify-content: center;
+  width: 14.5rem;
+  margin-top: 0.625rem;
+}
+::deep .custom-btn-sm.small {
+  padding: 4px 8px;
+  font-size: 8px;
+  line-height: 1.5;
+  border-radius: 3px;
+}
+::deep .custom-btn-md.medium {
+  padding: 12px 24px;
+  font-size: 16px;
+  line-height: 1.4;
+  border-radius: 4px;
+}
+::deep .custom-btn-lg.large {
+  padding: 20px 32px;
+  font-size: 32px;
+  line-height: 1.33;
+  border-radius: 6px;
+}

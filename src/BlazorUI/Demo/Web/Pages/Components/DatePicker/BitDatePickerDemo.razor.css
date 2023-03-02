@@ -1,0 +1,52 @@
+﻿.validation-summary {
+  border-left: 0.3125rem solid #d13438;
+  background-color: #FDE7E9;
+  overflow: hidden;
+  margin-bottom: 0.625rem;
+}
+.validation-summary .validation-errors {
+  margin: 0.3125rem;
+}
+
+::deep div.validation-message {
+  color: #A4262C;
+  font-size: 0.75rem;
+}
+
+.weekend-cell {
+  color: red;
+}
+
+.custom-day-cell {
+  position: relative;
+  width: 44px !important;
+  height: 44px !important;
+}
+
+.discount-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: inline-flex;
+  align-items: center;
+  width: fit-content !important;
+  height: 16px !important;
+  border-radius: 2px;
+  padding: 0 4px;
+  background-color: red;
+  color: white;
+  font-size: 8px;
+}
+
+.year-suffix {
+  position: absolute;
+  bottom: 10px;
+  right: -12px;
+  height: 12px;
+  color: gray;
+  font-size: 8px;
+}
+
+.date-picker-wrapper ::deep .bit-dtp.bit-dtp-fluent .day-picker-wrapper .week-day-label {
+  width: 44px;
+}
