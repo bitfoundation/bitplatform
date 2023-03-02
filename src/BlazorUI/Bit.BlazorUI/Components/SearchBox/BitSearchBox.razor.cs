@@ -4,24 +4,34 @@ namespace Bit.BlazorUI;
 
 public partial class BitSearchBox
 {
-    private string _inputId = string.Empty;
-    private ElementReference _inputRef = default!;
+    protected override bool UseVisual => false;
+
+
     private bool disableAnimation;
     private bool isUnderlined;
     private bool inputHasFocus;
-    private bool showIcon;
+    private bool fixedIcon;
+
+
+    private bool _disposed;
+    private string _inputId = string.Empty;
+    private ElementReference _inputRef = default!;
+
 
     private bool InputHasFocus
     {
         get => inputHasFocus;
         set
         {
+            if (inputHasFocus == value) return;
+
             inputHasFocus = value;
             ClassBuilder.Reset();
         }
     }
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
+
 
     /// <summary>
     /// Specifies the value of the autocomplete attribute of the input component.
@@ -42,7 +52,25 @@ public partial class BitSearchBox
         get => disableAnimation;
         set
         {
+            if (disableAnimation == value) return;
+
             disableAnimation = value;
+            ClassBuilder.Reset();
+        }
+    }
+
+    /// <summary>
+    /// Whether or not to make the icon be always visible (it hides by default when the search box is focused).
+    /// </summary>
+    [Parameter]
+    public bool FixedIcon
+    {
+        get => fixedIcon;
+        set
+        {
+            if (fixedIcon == value) return;
+
+            fixedIcon = value;
             ClassBuilder.Reset();
         }
     }
@@ -56,6 +84,8 @@ public partial class BitSearchBox
         get => isUnderlined;
         set
         {
+            if (isUnderlined == value) return;
+
             isUnderlined = value;
             ClassBuilder.Reset();
         }
@@ -91,18 +121,20 @@ public partial class BitSearchBox
     /// </summary>
     [Parameter] public string? Placeholder { get; set; }
 
-    /// <summary>
-    /// Whether or not to make the icon be always visible (it hides by default when the search box is focused).
-    /// </summary>
-    [Parameter]
-    public bool ShowIcon
+
+    protected override string RootElementClass => "bit-srb";
+
+    protected override void RegisterComponentClasses()
     {
-        get => showIcon;
-        set
-        {
-            showIcon = value;
-            ClassBuilder.Reset();
-        }
+        ClassBuilder.Register(() => CurrentValue.HasValue() ? $"{(FixedIcon ? "fixed-icon-" : string.Empty)}has-value" : string.Empty);
+
+        ClassBuilder.Register(() => DisableAnimation ? "no-animation" : string.Empty);
+
+        ClassBuilder.Register(() => IsUnderlined ? "underlined" : string.Empty);
+
+        ClassBuilder.Register(() => InputHasFocus ? $"{(FixedIcon ? "fixed-icon-" : string.Empty)}focused" : string.Empty);
+
+        ClassBuilder.Register(() => ValueInvalid is true ? "invalid" : string.Empty);
     }
 
     protected override Task OnInitializedAsync()
@@ -114,55 +146,24 @@ public partial class BitSearchBox
 
         OnValueChanged += HandleOnValueChanged;
 
-        _inputId = $"{RootElementClass}-{UniqueId}";
+        _inputId = $"SearchBox-{UniqueId}-Input";
 
         return base.OnInitializedAsync();
     }
 
-    protected override string RootElementClass => "bit-srb";
-
-    protected override void RegisterComponentClasses()
-    {
-        ClassBuilder.Register(() => CurrentValue.HasValue()
-                                    ? $"{RootElementClass}{(ShowIcon ? "-fixed-icon" : string.Empty)}-has-value-{VisualClassRegistrar()}"
-                                    : string.Empty);
-
-        ClassBuilder.Register(() => DisableAnimation
-                                    ? $"{RootElementClass}-no-animation-{VisualClassRegistrar()}"
-                                    : string.Empty);
-
-        ClassBuilder.Register(() => IsUnderlined
-                                    ? $"{RootElementClass}-underlined-{VisualClassRegistrar()}"
-                                    : string.Empty);
-
-        ClassBuilder.Register(() => InputHasFocus
-                                    ? $"{RootElementClass}{(ShowIcon ? "-fixed-icon" : string.Empty)}-focused-{VisualClassRegistrar()}"
-                                    : string.Empty);
-
-        ClassBuilder.Register(() => ValueInvalid is true
-                                    ? $"{RootElementClass}-invalid-{VisualClassRegistrar()}"
-                                    : string.Empty);
-    }
-
     private void HandleOnValueChanged(object? sender, EventArgs args) => ClassBuilder.Reset();
 
-    private void HandleInputFocusIn()
-    {
-        InputHasFocus = true;
-    }
+    private void HandleInputFocusIn() => InputHasFocus = true;
 
-    private void HandleInputFocusOut()
-    {
-        InputHasFocus = false;
-    }
+    private void HandleInputFocusOut() => InputHasFocus = false;
 
     private async Task HandleOnClear()
     {
-        await HandleOnChange(new ChangeEventArgs { Value = string.Empty });
-
-        await OnClear.InvokeAsync();
+        await HandleOnChange(new() { Value = string.Empty });
 
         await _inputRef.FocusAsync();
+
+        await OnClear.InvokeAsync();
     }
 
     private async Task HandleOnChange(ChangeEventArgs e)
@@ -179,14 +180,14 @@ public partial class BitSearchBox
     {
         if (IsEnabled is false) return;
 
-        if (eventArgs.Code == "Escape")
+        if (eventArgs.Key == "Escape")
         {
             CurrentValueAsString = string.Empty;
             //await _inputRef.FocusAsync(); // is it required when the keydown event is captured on the input itself?
             await OnEscape.InvokeAsync();
             await OnClear.InvokeAsync();
         }
-        else if (eventArgs.Code == "Enter")
+        else if (eventArgs.Key == "Enter")
         {
             CurrentValueAsString = await _js.GetProperty(_inputRef, "value");
             await OnSearch.InvokeAsync(CurrentValue);
@@ -203,11 +204,12 @@ public partial class BitSearchBox
 
     protected override void Dispose(bool disposing)
     {
-        if (disposing)
-        {
-            OnValueChanged -= HandleOnValueChanged;
-        }
-
         base.Dispose(disposing);
+
+        if (_disposed || disposing is false) return;
+
+        OnValueChanged -= HandleOnValueChanged;
+
+        _disposed = true;
     }
 }
