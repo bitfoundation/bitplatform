@@ -90,7 +90,7 @@ public partial class BitSearchBoxDemo
     private string OnChangeSearchValue;
     private string OnSearchValue;
 
-    private ValidationSearchBoxModel ValidationSearchBoxModel = new();
+    private readonly ValidationSearchBoxModel ValidationSearchBoxModel = new();
 
 
     private readonly string example1HTMLCode = @"
@@ -154,10 +154,10 @@ private string OnSearchValue;
 ";
 
     private readonly string example5HTMLCode = @"
-<EditForm Model=""validationSearchBoxModel"">
+<EditForm Model=""ValidationSearchBoxModel"">
     <DataAnnotationsValidator />
-    <BitSearchBox Placeholder=""Search"" DefaultValue=""This is default value"" @bind-Value=""validationSearchBoxModel.Text"" />
-    <ValidationMessage For=""() => validationSearchBoxModel.Text"" />
+    <BitSearchBox Placeholder=""Search"" DefaultValue=""This is default value"" @bind-Value=""ValidationSearchBoxModel.Text"" />
+    <ValidationMessage For=""() => ValidationSearchBoxModel.Text"" />
 </EditForm>
 ";
     private readonly string example5CSharpCode = @"
@@ -167,6 +167,6 @@ public class ValidationSearchBoxModel
     public string Text { get; set; }
 }
 
-private ValidationSearchBoxModel validationSearchBoxModel = new();
+private ValidationSearchBoxModel ValidationSearchBoxModel = new();
 ";
 }

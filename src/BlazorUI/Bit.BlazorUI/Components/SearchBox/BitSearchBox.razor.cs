@@ -133,8 +133,6 @@ public partial class BitSearchBox
         ClassBuilder.Register(() => IsUnderlined ? "underlined" : string.Empty);
 
         ClassBuilder.Register(() => InputHasFocus ? $"{(FixedIcon ? "fixed-icon-" : string.Empty)}focused" : string.Empty);
-
-        ClassBuilder.Register(() => ValueInvalid is true ? "invalid" : string.Empty);
     }
 
     protected override Task OnInitializedAsync()

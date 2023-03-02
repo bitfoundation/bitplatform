@@ -1,4 +1,4 @@
-﻿@import "../../Styles/Fluent/colors.fluent.scss", "../../Styles/functions.scss";
+﻿@import "../../Styles/functions.scss";
 
 .bit-srb {
     display: flex;
@@ -45,7 +45,6 @@
             display: inline-block;
             width: unset;
             height: unset;
-            -webkit-font-smoothing: antialiased;
             color: $color-primary-main;
             speak: none;
             opacity: 1;

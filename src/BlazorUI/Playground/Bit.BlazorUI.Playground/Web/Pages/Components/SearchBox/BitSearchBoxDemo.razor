@@ -55,7 +55,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BitSearchBox Binding" ExampleId="example4">
+    <ComponentExampleBox Title="BitSearchBox Binding" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
         <ExamplePreview>
             <div class="example-box">
                 <div>
@@ -69,7 +69,7 @@
                     <span>Search Value: @OnChangeSearchValue</span>
                 </div>
                 <div>
-                    <BitLabel>OnSearch (Serach by Enter)</BitLabel>
+                    <BitLabel>OnSearch (Search by Enter)</BitLabel>
                     <BitSearchBox Placeholder="Search" OnSearch="(s) => OnSearchValue = s" OnClear="() => OnSearchValue = string.Empty" />
                     <span>Search Value: @OnSearchValue</span>
                 </div>
