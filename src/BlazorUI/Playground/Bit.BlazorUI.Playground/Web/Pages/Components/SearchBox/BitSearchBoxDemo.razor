@@ -41,7 +41,7 @@
             <div class="example-box">
                 <div>
                     <BitLabel>SearchBox with fixed icon</BitLabel>
-                    <BitSearchBox Placeholder="Search" ShowIcon="true" />
+                    <BitSearchBox Placeholder="Search" FixedIcon="true" />
                 </div>
                 <div>
                     <BitLabel>SearchBox without icon animation</BitLabel>
@@ -55,7 +55,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BitSearchBox Binding" ExampleId="example4">
+    <ComponentExampleBox Title="BitSearchBox Binding" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
         <ExamplePreview>
             <div class="example-box">
                 <div>
@@ -69,7 +69,7 @@
                     <span>Search Value: @OnChangeSearchValue</span>
                 </div>
                 <div>
-                    <BitLabel>OnSearch (Serach by Enter)</BitLabel>
+                    <BitLabel>OnSearch (Search by Enter)</BitLabel>
                     <BitSearchBox Placeholder="Search" OnSearch="(s) => OnSearchValue = s" OnClear="() => OnSearchValue = string.Empty" />
                     <span>Search Value: @OnSearchValue</span>
                 </div>
@@ -81,10 +81,10 @@
         <ExamplePreview>
             <div class="example-desc">The BitSearchBox supports DataAnnotation validation in the Blazor EditForm. It provides snappy validation feedback as you type.</div>
             <div class="example-box">
-                <EditForm Model="validationSearchBoxModel">
+                <EditForm Model="ValidationSearchBoxModel">
                     <DataAnnotationsValidator />
-                    <BitSearchBox Placeholder="Search" DefaultValue="This is default value" @bind-Value="validationSearchBoxModel.Text" />
-                    <ValidationMessage For="() => validationSearchBoxModel.Text" />
+                    <BitSearchBox Placeholder="Search" DefaultValue="This is default value" @bind-Value="ValidationSearchBoxModel.Text" />
+                    <ValidationMessage For="() => ValidationSearchBoxModel.Text" />
                 </EditForm>
             </div>
         </ExamplePreview>
