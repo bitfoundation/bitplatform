@@ -245,11 +245,11 @@ _book
 /src/Bswup/Bit.Bswup/wwwroot/**/*.css
 /src/Butil/Bit.Butil/wwwroot/**/*.js
 
-/src/BlazorUI/Demo/Bit.BlazorUI.Demo/Web/**/**/*.css
-/src/BlazorUI/Demo/Bit.BlazorUI.Demo/Web/wwwroot/**/*.js
-/src/BlazorUI/Demo/Bit.BlazorUI.Demo/Api/BitFileUploaderFiles
-/src/BlazorUI/Demo/Bit.BlazorUI.Demo/Api/Properties/PublishProfiles/*.*
-/src/BlazorUI/Demo/Bit.BlazorUI.Demo/Api/Properties/ServiceDependencies/*.*
+/src/BlazorUI/Demo/Web/**/**/*.css
+/src/BlazorUI/Demo/Web/wwwroot/**/*.js
+/src/BlazorUI/Demo/Api/BitFileUploaderFiles
+/src/BlazorUI/Demo/Api/Properties/PublishProfiles/*.*
+/src/BlazorUI/Demo/Api/Properties/ServiceDependencies/*.*
 
 custom.aprof
 
