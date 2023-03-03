@@ -1,5 +1,7 @@
 ﻿@page "/pricing"
 
+@inherits AppComponentBase
+
 <div class="page-container">
     <section class="page-section main-section">
         <div class="page-section-contnet">
@@ -45,7 +47,7 @@
                         <div>Pro support</div>
                         <div>with 48 hours response time</div>
                     </div>
-                    <BitButton OnClick=@(() => ShowBuyModal("Pro", "300"))>Buy</BitButton>
+                    <BitButton OnClick=@(WrapHandled(() => ShowBuyModal("Pro", "300")))>Buy</BitButton>
                 </div>
 
                 <div class="plan-card">
@@ -60,7 +62,7 @@
                         <div>Priority customer support</div>
                         <div>with 24 hours response time</div>
                     </div>
-                    <BitButton OnClick=@(() => ShowBuyModal("Ultimate", "1200"))>Buy</BitButton>
+                    <BitButton OnClick=@(WrapHandled(() => ShowBuyModal("Ultimate", "1200")))>Buy</BitButton>
                 </div>
 
                 <div class="plan-card">
@@ -73,7 +75,7 @@
                         <div>Everthing from other packages</div>
                         <div>Customized needs & agreements</div>
                     </div>
-                    <BitButton OnClick=@(() => ShowBuyModal("Custom", "?"))>Buy</BitButton>
+                    <BitButton OnClick=@(WrapHandled(() => ShowBuyModal("Custom", "?")))>Buy</BitButton>
                 </div>
             </div>
         </div>
@@ -87,7 +89,7 @@
             <div class="package-name">
                 $@_selectedPackagePrice<span class="grey-txt">/month</span>
             </div>
-            <BitIconButton OnClick=@CloseModal IconName="BitIconName.ChromeClose" />
+            <BitIconButton OnClick=@WrapHandled(CloseModal) IconName="BitIconName.ChromeClose" />
             <BitTextField @bind-Value="@BuyPackageModel.Email"
                           Type="BitTextFieldType.Email"
                           Label="Email"
