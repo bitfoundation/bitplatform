@@ -272,8 +272,5 @@ _book
 
 custom.aprof
 
-/src/Websites/Platform/Bit.Websites.Platform/Web/**/*.css
-/src/Websites/Platform/Bit.Websites.Platform/Web/wwwroot/**/*.js
-
 /src/Websites/Sales/Bit.Websites.Sales/Web/**/*.css
 /src/Websites/Sales/Bit.Websites.Sales/Web/wwwroot/**/*.js

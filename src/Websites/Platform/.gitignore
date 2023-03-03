@@ -224,5 +224,4 @@ profile.arm.json
 *Resource.designer.cs
 /**/*.css
 
-/Bit.Websites.Platform/Server/Api/Attachments/**/*.*
 /Bit.Websites.Platform/Web/wwwroot/scripts/app*.js

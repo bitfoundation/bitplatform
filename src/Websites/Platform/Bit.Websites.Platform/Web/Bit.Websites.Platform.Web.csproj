@@ -16,7 +16,6 @@
         <!-- In the Blazor WebAssembly mode, the API project will host the web app itself -->
         <Content Condition="'$(BlazorMode)' != 'BlazorServer'" Remove="Pages\_Host.cshtml" />
         <Content Condition="'$(BlazorMode)' != 'BlazorServer'" Remove="Pages\_Layout.cshtml" />
-        <Compile Condition="'$(BlazorMode)' != 'BlazorServer'" Remove="Services\Implementations\ServerSideAuthTokenProvider.cs" />
         <Compile Condition="'$(BlazorMode)' != 'BlazorServer'" Remove="Extensions\HttpRequestExtensions.cs" />
     </ItemGroup>
 

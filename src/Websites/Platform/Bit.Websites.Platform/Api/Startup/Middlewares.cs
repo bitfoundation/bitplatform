@@ -65,10 +65,7 @@ public class Middlewares
 
         app.UseSwagger();
 
-        app.UseSwaggerUI(options =>
-        {
-            options.InjectJavascript("/swagger/swagger-utils.js");
-        });
+        app.UseSwaggerUI();
 
         app.UseEndpoints(endpoints =>
         {
