@@ -1,7 +1,4 @@
 ﻿#if BlazorServer
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Hosting;
-
 namespace Bit.Websites.Platform.Web.Startup;
 
 public class Middlewares
@@ -25,6 +22,16 @@ public class Middlewares
         app.UseStaticFiles();
 
         app.UseRouting();
+
+#if MultilingualEnabled
+        var supportedCultures = CultureInfoManager.SupportedCultures.Select(sc => CultureInfoManager.CreateCultureInfo(sc.code)).ToArray();
+        app.UseRequestLocalization(new RequestLocalizationOptions
+        {
+            SupportedCultures = supportedCultures,
+            SupportedUICultures = supportedCultures,
+            ApplyCurrentCultureToResponseHeaders = true
+        }.SetDefaultCulture(CultureInfoManager.DefaultCulture.code));
+#endif
 
         app.UseEndpoints(endpoints =>
         {

@@ -1,13 +1,11 @@
 ﻿using Bit.Websites.Platform.Api.Services;
-using Bit.Websites.Platform.Shared.Dtos.ContactUs;
 using Bit.Websites.Platform.Shared.Dtos.SupportPackage;
-using Microsoft.AspNetCore.Mvc;
 
 namespace Bit.Websites.Platform.Api.Controllers;
 
 [Route("api/[controller]/[action]")]
 [ApiController]
-public partial class SupportPackageController : ControllerBase
+public partial class SupportPackageController : AppControllerBase
 {
     [AutoInject] protected TelegramBotService TelegramBotService = default!;
 

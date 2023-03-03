@@ -1,12 +1,8 @@
-﻿using System;
-using System.Threading.Tasks;
-using Bit.Websites.Platform.Web.Services;
-using Microsoft.AspNetCore.Components;
+﻿using Bit.Websites.Platform.Web.Services;
+using Bit.Websites.Platform.Web.Shared;
 using Microsoft.AspNetCore.Components.Routing;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.JSInterop;
 
-namespace Bit.Websites.Platform.Web.Shared;
+namespace Bit.Websites.Platform.Web;
 
 public partial class Header : IDisposable
 {

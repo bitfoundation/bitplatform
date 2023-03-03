@@ -1,4 +1,6 @@
-﻿@inherits LayoutComponentBase
+﻿@namespace Bit.Websites.Platform.Web
+
+@inherits LayoutComponentBase
 
 <Header />
 
@@ -8,8 +10,12 @@
         <NavMenu />
     }
     <div class="site-content">
-        @Body
+        <AppErrorBoundary>
+                @Body
+        </AppErrorBoundary>
     </div>
 </div>
 
 <Footer />
+
+<MessageBox />
