@@ -247,6 +247,24 @@ _book
 
 /src/BlazorUI/Demo/Web/**/**/*.css
 /src/BlazorUI/Demo/Web/wwwroot/**/*.js
+/src/BlazorUI/Demo/App/Styles
+/src/BlazorUI/Demo/App/Shared
+/src/BlazorUI/Demo/App/Services
+/src/BlazorUI/Demo/App/Scripts
+/src/BlazorUI/Demo/App/Pages
+/src/BlazorUI/Demo/App/Models
+/src/BlazorUI/Demo/App/Extensions
+/src/BlazorUI/Demo/App/Components
+/src/BlazorUI/Demo/App/wwwroot/styles
+/src/BlazorUI/Demo/App/wwwroot/scripts
+/src/BlazorUI/Demo/App/wwwroot/images
+/src/BlazorUI/Demo/App/wwwroot/fonts
+/src/BlazorUI/Demo/App/tsconfig.json
+/src/BlazorUI/Demo/App/_Imports.razor
+/src/BlazorUI/Demo/App/Main.razor
+/src/BlazorUI/Demo/App/compilerconfig.json.defaults
+/src/BlazorUI/Demo/App/compilerconfig.json
+/src/BlazorUI/Demo/App/appsettings.json
 /src/BlazorUI/Demo/Api/BitFileUploaderFiles
 /src/BlazorUI/Demo/Api/Properties/PublishProfiles/*.*
 /src/BlazorUI/Demo/Api/Properties/ServiceDependencies/*.*
