@@ -44,7 +44,6 @@ public static class Services
             // for other usages of httpclient, for example calling 3rd party apis, either use services.AddHttpClient("NamedHttpClient") or services.AddHttpClient<TypedHttpClient>();
         });
         services.AddRazorPages();
-        services.AddMvcCore();
 #endif
 
         services.AddHttpClient<TelegramBotApiClient>();
