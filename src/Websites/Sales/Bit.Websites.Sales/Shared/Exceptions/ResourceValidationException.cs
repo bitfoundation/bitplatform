@@ -6,40 +6,52 @@ namespace Bit.Websites.Sales.Shared.Exceptions;
 [Serializable]
 public class ResourceValidationException : RestException
 {
-    public ResourceValidationException(params string[] errorMessages)
-        : this(errorMessages.Select(errMsg => (string.Empty, string.Empty, new[] { errMsg })).ToArray())
+    public ResourceValidationException(params LocalizedString[] errorMessages)
+    : this(new[] { ("*", errorMessages) })
     {
 
     }
 
-    public ResourceValidationException(params (string propName, string errorMessages)[] errors)
-        : this(errors.Select(err => (err.propName, string.Empty, new[] { err.errorMessages })).ToArray())
+    public ResourceValidationException((string propName, LocalizedString[] errorMessages)[] details)
+        : this("*", details)
     {
 
     }
 
-    public ResourceValidationException(params (string propName, Type resourceType, string errorMessages)[] errors)
-        : this(errors.Select(err => (err.propName, err.resourceType.Name, new[] { err.errorMessages })).ToArray())
+    public ResourceValidationException(Type resourceType, (string propName, LocalizedString[] errorMessages)[] details)
+        : this(resourceType.FullName!, details)
     {
 
     }
 
-    public ResourceValidationException(params (string propName, string resourceTypeName, string[] errorMessages)[] errors)
-        : this(new List<ResourceValidationExceptionPayload>(errors
-                .Select(e => new ResourceValidationExceptionPayload
+    public ResourceValidationException(string resourceTypeName, (string propName, LocalizedString[] errorMessages)[] details)
+        : this(new ErrorResourcePayload()
+        {
+            ResourceTypeName = resourceTypeName,
+            Details = details.Select(propErrors => new PropertyErrorResourceCollection
+            {
+                Name = propErrors.propName,
+                Errors = propErrors.errorMessages.Select(e => new ErrorResource()
                 {
-                    ResourceTypeName = e.resourceTypeName,
-                    Property = e.propName,
-                    Messages = e.errorMessages
-                })))
+                    Key = e.Name,
+                    Message = e.Value
+                }).ToList()
+            }).ToList()
+        })
     {
 
     }
 
-    public ResourceValidationException(List<ResourceValidationExceptionPayload> error)
-        : base(message: nameof(ResourceValidationException))
+    public ResourceValidationException(ErrorResourcePayload payload)
+        : this(message: nameof(ResourceNotFoundException), payload)
     {
-        Details = error;
+
+    }
+
+    public ResourceValidationException(string message, ErrorResourcePayload payload)
+        : base(message)
+    {
+        Payload = payload;
     }
 
     protected ResourceValidationException(SerializationInfo info, StreamingContext context)
@@ -47,7 +59,7 @@ public class ResourceValidationException : RestException
     {
     }
 
-    public List<ResourceValidationExceptionPayload> Details { get; set; } = new List<ResourceValidationExceptionPayload>();
+    public ErrorResourcePayload Payload { get; set; } = new ErrorResourcePayload();
 
     public override HttpStatusCode StatusCode => HttpStatusCode.BadRequest;
 }

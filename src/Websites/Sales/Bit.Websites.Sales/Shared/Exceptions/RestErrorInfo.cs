@@ -1,10 +1,12 @@
 ﻿namespace Bit.Websites.Sales.Shared.Exceptions;
 
-public class RestExceptionPayload
+public class RestErrorInfo
 {
     public string? ExceptionType { get; set; }
 
+    public string? Key { get; set; }
+
     public string? Message { get; set; }
 
-    public List<ResourceValidationExceptionPayload> Details { get; set; } = new();
+    public ErrorResourcePayload Payload { get; set; } = new();
 }

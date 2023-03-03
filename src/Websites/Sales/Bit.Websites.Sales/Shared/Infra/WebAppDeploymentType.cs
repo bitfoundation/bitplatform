@@ -2,7 +2,6 @@
 
 public enum WebAppDeploymentType
 {
-    Default,
     Ssr,
     Static
 }
