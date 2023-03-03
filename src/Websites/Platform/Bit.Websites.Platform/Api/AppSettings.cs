@@ -2,7 +2,15 @@
 
 public class AppSettings
 {
+    public HealthCheckSettings HealthCheckSettings { get; set; } = default!;
+
     public TelegramBotSettings TelegramBotSettings { get; set; } = default!;
+
+}
+
+public class HealthCheckSettings
+{
+    public bool EnableHealthChecks { get; set; }
 }
 
 public class TelegramBotSettings

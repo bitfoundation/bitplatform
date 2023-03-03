@@ -8,8 +8,12 @@
         <NavMenu />
     }
     <div class="site-content">
-        @Body
+        <AppErrorBoundary>
+                @Body
+        </AppErrorBoundary>
     </div>
 </div>
 
 <Footer />
+
+<MessageBox />
