@@ -14,7 +14,7 @@ public class Services
 {
     public static void Add(IServiceCollection services, IConfiguration configuration)
     {
-        services.AddPlaygroundServices();
+        services.AddBitPlatformServices();
 
         services.AddHttpContextAccessor();
 

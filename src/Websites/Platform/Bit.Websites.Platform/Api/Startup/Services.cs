@@ -22,7 +22,7 @@ public static class Services
             return new HttpClient { BaseAddress = new Uri($"{c.GetRequiredService<NavigationManager>().BaseUri}api/") };
         });
         services.AddRazorPages();
-        services.AddPlaygroundServices();
+        services.AddBitPlatformServices();
 #endif
         services.AddHttpClient<TelegramBotApiClient>();
         services.AddScoped<TelegramBotService>();
