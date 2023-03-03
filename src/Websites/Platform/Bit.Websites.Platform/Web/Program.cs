@@ -26,7 +26,7 @@ public class Program
         var builder = WebAssemblyHostBuilder.CreateDefault(args);
         builder.Services.AddSingleton(new HttpClient { BaseAddress = new Uri($"{builder.HostEnvironment.BaseAddress}api/") });
 
-        builder.Services.AddPlaygroundServices();
+        builder.Services.AddBitPlatformServices();
 
         return builder.Build();
     }
