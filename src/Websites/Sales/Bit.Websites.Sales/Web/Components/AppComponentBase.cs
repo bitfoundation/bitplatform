@@ -46,18 +46,18 @@ public partial class AppComponentBase : ComponentBase
 
     protected async override Task OnAfterRenderAsync(bool firstRender)
     {
+        var currentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
+        var hashIndex = currentUrl.LastIndexOf('#');
+        if (hashIndex > 0)
+        {
+            var elementId = currentUrl.Substring(hashIndex + 1);
+            _ = JSRuntime.InvokeVoidAsync("App.scrollIntoView", elementId);
+        }
+
         if (firstRender)
         {
             try
             {
-                var currentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
-                var hashIndex = currentUrl.LastIndexOf('#');
-                if (hashIndex > 0)
-                {
-                    var elementId = currentUrl.Substring(hashIndex + 1);
-                    _ = JSRuntime.InvokeVoidAsync("App.scrollIntoView", elementId);
-                }
-
                 await OnAfterFirstRenderAsync();
             }
             catch (Exception exp)
