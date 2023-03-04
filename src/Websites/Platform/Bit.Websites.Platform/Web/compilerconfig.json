@@ -4,16 +4,28 @@
         "inputFile": "wwwroot/scripts/app.js"
     },
     {
-        "outputFile": "Shared/MainLayout.razor.css",
-        "inputFile": "Shared/MainLayout.razor.scss"
+        "outputFile": "Shared/AppErrorBoundary.razor.css",
+        "inputFile": "Shared/AppErrorBoundary.razor.scss"
+    },
+    {
+        "outputFile": "Shared/Footer.razor.css",
+        "inputFile": "Shared/Footer.razor.scss"
     },
     {
         "outputFile": "Shared/Header.razor.css",
         "inputFile": "Shared/Header.razor.scss"
     },
     {
-        "outputFile": "Shared/Footer.razor.css",
-        "inputFile": "Shared/Footer.razor.scss"
+        "outputFile": "Shared/LoadingComponent.razor.css",
+        "inputFile": "Shared/LoadingComponent.razor.scss"
+    },
+    {
+        "outputFile": "Shared/MessageBox.razor.css",
+        "inputFile": "Shared/MessageBox.razor.scss"
+    },
+    {
+        "outputFile": "Shared/MainLayout.razor.css",
+        "inputFile": "Shared/MainLayout.razor.scss"
     },
     {
         "outputFile": "Shared/NavigationButtons.razor.css",
@@ -28,16 +40,12 @@
         "inputFile": "Shared/NotFoundComponent.razor.scss"
     },
     {
-        "outputFile": "Pages/HomePage.razor.css",
-        "inputFile": "Pages/HomePage.razor.scss"
-    },
-    {
         "outputFile": "Pages/AdminPanel/CacheMechanismPage.razor.css",
         "inputFile": "Pages/AdminPanel/CacheMechanismPage.razor.scss"
     },
     {
-        "outputFile": "Pages/AdminPanel/MultilingualismPage.razor.css",
-        "inputFile": "Pages/AdminPanel/MultilingualismPage.razor.scss"
+        "outputFile": "Pages/AdminPanel/ContributePage.razor.css",
+        "inputFile": "Pages/AdminPanel/ContributePage.razor.scss"
     },
     {
         "outputFile": "Pages/AdminPanel/DatabasePage.razor.css",
@@ -52,6 +60,10 @@
         "inputFile": "Pages/AdminPanel/DevelopmentPrerequisitesPage.razor.scss"
     },
     {
+        "outputFile": "Pages/AdminPanel/DevOpsPage.razor.css",
+        "inputFile": "Pages/AdminPanel/DevOpsPage.razor.scss"
+    },
+    {
         "outputFile": "Pages/AdminPanel/ExceptionHandlingPage.razor.css",
         "inputFile": "Pages/AdminPanel/ExceptionHandlingPage.razor.scss"
     },
@@ -62,6 +74,10 @@
     {
         "outputFile": "Pages/AdminPanel/HostingModelsPage.razor.css",
         "inputFile": "Pages/AdminPanel/HostingModelsPage.razor.scss"
+    },
+    {
+        "outputFile": "Pages/AdminPanel/MultilingualismPage.razor.css",
+        "inputFile": "Pages/AdminPanel/MultilingualismPage.razor.scss"
     },
     {
         "outputFile": "Pages/AdminPanel/OverviewPage.razor.css",
@@ -84,8 +100,8 @@
         "inputFile": "Pages/TodoTemplate/CacheMechanismPage.razor.scss"
     },
     {
-        "outputFile": "Pages/TodoTemplate/MultilingualismPage.razor.css",
-        "inputFile": "Pages/TodoTemplate/MultilingualismPage.razor.scss"
+        "outputFile": "Pages/TodoTemplate/ContributePage.razor.css",
+        "inputFile": "Pages/TodoTemplate/ContributePage.razor.scss"
     },
     {
         "outputFile": "Pages/TodoTemplate/DatabasePage.razor.css",
@@ -100,6 +116,10 @@
         "inputFile": "Pages/TodoTemplate/DevelopmentPrerequisitesPage.razor.scss"
     },
     {
+        "outputFile": "Pages/TodoTemplate/DevOpsPage.razor.css",
+        "inputFile": "Pages/TodoTemplate/DevOpsPage.razor.scss"
+    },
+    {
         "outputFile": "Pages/TodoTemplate/ExceptionHandlingPage.razor.css",
         "inputFile": "Pages/TodoTemplate/ExceptionHandlingPage.razor.scss"
     },
@@ -110,6 +130,10 @@
     {
         "outputFile": "Pages/TodoTemplate/HostingModelsPage.razor.css",
         "inputFile": "Pages/TodoTemplate/HostingModelsPage.razor.scss"
+    },
+    {
+        "outputFile": "Pages/TodoTemplate/MultilingualismPage.razor.css",
+        "inputFile": "Pages/TodoTemplate/MultilingualismPage.razor.scss"
     },
     {
         "outputFile": "Pages/TodoTemplate/OverviewPage.razor.css",
@@ -128,35 +152,23 @@
         "inputFile": "Pages/TodoTemplate/SettingsPage.razor.scss"
     },
     {
-        "outputFile": "Pages/AdminPanel/ContributePage.razor.css",
-        "inputFile": "Pages/AdminPanel/ContributePage.razor.scss"
-    },
-    {
-        "outputFile": "Pages/PricingPage.razor.css",
-        "inputFile": "Pages/PricingPage.razor.scss"
-    },
-    {
         "outputFile": "Pages/AboutUsPage.razor.css",
         "inputFile": "Pages/AboutUsPage.razor.scss"
-    },
-    {
-        "outputFile": "Pages/ContactUsPage.razor.css",
-        "inputFile": "Pages/ContactUsPage.razor.scss"
     },
     {
         "outputFile": "Pages/ComponentsPage.razor.css",
         "inputFile": "Pages/ComponentsPage.razor.scss"
     },
     {
-        "outputFile": "Pages/TodoTemplate/ContributePage.razor.css",
-        "inputFile": "Pages/TodoTemplate/ContributePage.razor.scss"
+        "outputFile": "Pages/ContactUsPage.razor.css",
+        "inputFile": "Pages/ContactUsPage.razor.scss"
     },
     {
-        "outputFile": "Pages/AdminPanel/DevOpsPage.razor.css",
-        "inputFile": "Pages/AdminPanel/DevOpsPage.razor.scss"
+        "outputFile": "Pages/HomePage.razor.css",
+        "inputFile": "Pages/HomePage.razor.scss"
     },
     {
-        "outputFile": "Pages/TodoTemplate/DevOpsPage.razor.css",
-        "inputFile": "Pages/TodoTemplate/DevOpsPage.razor.scss"
+        "outputFile": "Pages/PricingPage.razor.css",
+        "inputFile": "Pages/PricingPage.razor.scss"
     }
 ]
