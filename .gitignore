@@ -270,6 +270,3 @@ _book
 /src/BlazorUI/Demo/Api/Properties/ServiceDependencies/*.*
 
 custom.aprof
-
-/src/Websites/Platform/Bit.Websites.Platform/Web/**/*.css
-/src/Websites/Platform/Bit.Websites.Platform/Web/wwwroot/**/*.js
