@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 
-namespace Bit.Websites.Platform.Web.Shared;
+namespace Bit.Websites.Platform.Web;
 
 public partial class NavMenu
 {

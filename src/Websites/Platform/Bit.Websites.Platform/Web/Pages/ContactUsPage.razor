@@ -1,5 +1,7 @@
 ﻿@page "/contact-us"
 
+@inherits AppComponentBase
+
 <div class="page-container">
     <section class="page-section">
         <div class="page-section-contnet">
@@ -10,7 +12,7 @@
             </div>
 
             <div class="flex-container">
-                <EditForm Model="ContactUsModel" OnValidSubmit="SendMessage" class="form">
+                <EditForm Model="ContactUsModel" OnValidSubmit="WrapHandled(SendMessage)" class="form">
                     <DataAnnotationsValidator />
 
                     <h2>Have any feedbacks?</h2>

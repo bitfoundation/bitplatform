@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Microsoft.Extensions.DependencyInjection;
+﻿namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
 /// This attribute can be applied on either fields or properties to generate the rest of the required codes using Bit.SourceGenerators.

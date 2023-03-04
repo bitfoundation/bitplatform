@@ -1,0 +1,29 @@
+﻿@import '../Styles/abstracts/_functions.scss';
+
+.main {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    padding: rem(10px);
+}
+
+.header {
+    display: flex;
+}
+
+.title {
+    flex-grow: 1;
+}
+
+.body {
+    display: flex;
+    flex-grow: 1;
+    margin: rem(10px) 0;
+    white-space: pre;
+    overflow: auto;
+}
+
+.footer {
+    display: flex;
+    justify-content: center;
+}

@@ -1,6 +1,10 @@
-﻿@if (isNavOpen)
+﻿@namespace Bit.Websites.Platform.Web
+
+@inherits AppComponentBase
+
+@if (isNavOpen)
 {
-    <div class="nav-menu-shadow nav-menu--mobile" @onclick="@ToggleMenu"></div>
+    <div class="nav-menu-shadow nav-menu--mobile" @onclick="@WrapHandled(ToggleMenu)"></div>
 }
 <div class="nav-menu @(isNavOpen is false ? "nav-menu--desktop" : null)">
     <div class="search-box-container">
@@ -16,7 +20,7 @@
         <BitNav Class="@GetNavMenuClass()"
                 Items="filteredNavLinks"
                 AriaLabel="Bit Component Nav"
-                OnItemClick="HandleLinkClick">
+                OnItemClick="@((item) => WrapHandled(() => HandleLinkClick(item)))">
         </BitNav>
     </div>
 </div>

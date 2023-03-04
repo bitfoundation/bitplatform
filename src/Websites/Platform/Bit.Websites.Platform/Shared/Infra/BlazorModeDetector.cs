@@ -1,5 +1,8 @@
-﻿namespace Bit.Websites.Platform.Shared;
+﻿namespace Bit.Websites.Platform.Shared.Infra;
 
+/// <summary>
+/// https://bitplatform.dev/todo-template/hosting-models
+/// </summary>
 public class BlazorModeDetector
 {
     public static BlazorModeDetector Current { get; set; } = new BlazorModeDetector();
@@ -18,7 +21,7 @@ public class BlazorModeDetector
     {
         get
         {
-#if BlazorWebAssembly
+#if BlazorWebAssembly                  
             return BlazorMode.BlazorWebAssembly;
 #else
             return BlazorMode.BlazorServer;
@@ -26,10 +29,3 @@ public class BlazorModeDetector
         }
     }
 }
-
-public enum BlazorMode
-{
-    BlazorServer,
-    BlazorWebAssembly
-}
-
