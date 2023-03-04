@@ -8,110 +8,107 @@ namespace Bit.BlazorUI.Tests.Pickers;
 [TestClass]
 public class BitDatePickerTests : BunitTestContext
 {
-    [DataTestMethod, DataRow("<div>This is labelFragment</div>")]
-    public void BitDatePickerShouldRenderLabelFragment(string labelFragment)
+    [DataTestMethod,
+        DataRow(true),
+        DataRow(false),
+    ]
+    public void BitDatePickerTest(bool isEnabled)
     {
-        var component = RenderComponent<BitDatePickerTest>(parameters =>
+        var component = RenderComponent<BitDatePicker>(parameters =>
         {
-            parameters.Add(p => p.LabelFragment, labelFragment);
+            parameters.Add(p => p.IsEnabled, isEnabled);
+        });
+
+        var bitDatePicker = component.Find(".bit-dtp");
+
+        if (isEnabled)
+        {
+            Assert.IsFalse(bitDatePicker.ClassList.Contains("disabled"));
+        }
+        else
+        {
+            Assert.IsTrue(bitDatePicker.ClassList.Contains("disabled"));
+        }
+    }
+
+    [DataTestMethod, DataRow("<div>This is labelTemplate</div>")]
+    public void BitDatePickerShouldRenderLabelTemplate(string labelTemplate)
+    {
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.LabelTemplate, labelTemplate);
         });
 
         var bitDatePickerLabelChild = component.Find(".bit-dtp > label").ChildNodes;
-        bitDatePickerLabelChild.MarkupMatches(labelFragment);
-    }
-
-    [DataTestMethod,
-      DataRow(Visual.Fluent, true),
-      DataRow(Visual.Fluent, false),
-
-      DataRow(Visual.Cupertino, true),
-      DataRow(Visual.Cupertino, false),
-
-      DataRow(Visual.Material, true),
-      DataRow(Visual.Material, false)
-    ]
-    public void BitDatePickerShouldTakeCorrectVisual(Visual visual, bool isEnabled)
-    {
-        var component = RenderComponent<BitDatePickerTest>(
-            parameters =>
-            {
-                parameters.Add(p => p.Visual, visual);
-                parameters.Add(p => p.IsEnabled, isEnabled);
-            });
-
-        var bitDatePicker = component.Find(".bit-dtp");
-        var datePickerIsEnabledClass = isEnabled ? "enabled" : "disabled";
-        var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
-
-        Assert.IsTrue(bitDatePicker.ClassList.Contains($"bit-dtp-{datePickerIsEnabledClass}-{visualClass}"));
+        bitDatePickerLabelChild.MarkupMatches(labelTemplate);
     }
 
     [DataTestMethod, DataRow("go to today text")]
     public void BitDatePickerShouldGiveValueToGoToToday(string goToToday)
     {
-        var component = RenderComponent<BitDatePickerTest>(
-            parameters =>
-            {
-                parameters.Add(p => p.GoToToday, goToToday);
-                parameters.Add(p => p.IsOpen, true);
-            });
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.GoToToday, goToToday);
+            parameters.Add(p => p.IsOpen, true);
+        });
 
         var goToTodayButton = component.Find(".go-today-btn");
 
-        Assert.AreEqual(goToToday, goToTodayButton.TextContent);
+        Assert.AreEqual(goToTodayButton.TextContent, goToToday);
     }
 
     [DataTestMethod,
-      DataRow(true, 1),
-      DataRow(false, 0)
+        DataRow(true, 1),
+        DataRow(false, 0)
     ]
     public void BitDatePickerShouldHandleOnClickEvent(bool isEnabled, int count)
     {
+        int clickedValue = 0;
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
-        var component = RenderComponent<BitDatePickerTest>(
-            parameters =>
-            {
-                parameters.Add(p => p.IsEnabled, isEnabled);
-            });
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.OnClick, () => clickedValue++);
+        });
 
-        var bitDatePickerInput = component.Find(".dtp-wrapper");
+        var bitDatePickerInput = component.Find(".wrapper");
         bitDatePickerInput.Click();
 
-        Assert.AreEqual(component.Instance.ClickedValue, count);
+        Assert.AreEqual(count, clickedValue);
     }
 
     [DataTestMethod,
-      DataRow(true, 1),
-      DataRow(false, 0)
+        DataRow(true, 1),
+        DataRow(false, 0)
     ]
     public void BitDatePickerCalendarItemsShouldRespectIsEnabled(bool isEnabled, int count)
     {
+        int selectedDateValue = 0;
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
-        var component = RenderComponent<BitDatePickerTest>(
-           parameters =>
-           {
-               parameters.Add(p => p.IsOpen, true);
-               parameters.Add(p => p.IsEnabled, isEnabled);
-           });
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.OnSelectDate, () => selectedDateValue++);
+        });
 
         var dateItems = component.FindAll(".day-btn");
 
         Random random = new();
         int randomNumber = random.Next(0, dateItems.Count - 1);
         dateItems[randomNumber].Click();
-        Assert.AreEqual(component.Instance.SelectedDateValue, count);
+        Assert.AreEqual(count, selectedDateValue);
     }
 
     [DataTestMethod]
     public void BitDatePickerCalendarSelectTodayDate()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
-        var component = RenderComponent<BitDatePicker>(
-           parameters =>
-           {
-               parameters.Add(p => p.IsOpen, true);
-               parameters.Add(p => p.IsEnabled, true);
-           });
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.IsEnabled, true);
+        });
 
         Assert.IsNull(component.Instance.Value);
 
@@ -127,12 +124,11 @@ public class BitDatePickerTests : BunitTestContext
     public void BitDatePickerCalendarWithCustomCultureInfo()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
-        var component = RenderComponent<BitDatePickerTest>(
-           parameters =>
-           {
-               parameters.Add(p => p.IsOpen, true);
-               parameters.Add(p => p.Culture, CultureInfoHelper.GetFaIrCultureByFingilishNames());
-           });
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.Culture, CultureInfoHelper.GetFaIrCultureByFingilishNames());
+        });
 
         var monthButtons = component.FindAll(".month-picker-wrapper .grid-container .btn-row button");
 
@@ -156,12 +152,12 @@ public class BitDatePickerTests : BunitTestContext
         var form = component.Find("form");
         form.Submit();
 
-        Assert.AreEqual(component.Instance.ValidCount, 0);
-        Assert.AreEqual(component.Instance.InvalidCount, 1);
+        Assert.AreEqual(0, component.Instance.ValidCount);
+        Assert.AreEqual(1, component.Instance.InvalidCount);
 
         //open date picker
-        var datepicker = component.Find(".dtp-wrapper");
-        datepicker.Click();
+        var datePicker = component.Find(".wrapper");
+        datePicker.Click();
 
         //select today
         var today = component.Find(".date-cell--today button.day-btn");
@@ -169,8 +165,8 @@ public class BitDatePickerTests : BunitTestContext
 
         form.Submit();
 
-        Assert.AreEqual(component.Instance.ValidCount, 1);
-        Assert.AreEqual(component.Instance.InvalidCount, 1);
+        Assert.AreEqual(1, component.Instance.ValidCount);
+        Assert.AreEqual(1, component.Instance.InvalidCount);
         Assert.AreEqual(component.Instance.ValidCount, component.Instance.InvalidCount);
     }
 
@@ -191,11 +187,11 @@ public class BitDatePickerTests : BunitTestContext
         form.Submit();
 
         Assert.IsTrue(inputDate.HasAttribute("aria-invalid"));
-        Assert.AreEqual(inputDate.GetAttribute("aria-invalid"), "true");
+        Assert.AreEqual("true", inputDate.GetAttribute("aria-invalid"));
 
         //open date picker
-        var datepicker = component.Find(".dtp-wrapper");
-        datepicker.Click();
+        var datePicker = component.Find(".wrapper");
+        datePicker.Click();
 
         //select today
         var today = component.Find(".date-cell--today button.day-btn");
@@ -206,54 +202,46 @@ public class BitDatePickerTests : BunitTestContext
         Assert.IsFalse(inputDate.HasAttribute("aria-invalid"));
     }
 
-    [DataTestMethod,
-        DataRow(Visual.Fluent),
-        DataRow(Visual.Cupertino),
-        DataRow(Visual.Material),
-    ]
-    public void BitDatePickerValidationInvalidCssClassTest(Visual visual)
+    [DataTestMethod]
+    public void BitDatePickerValidationInvalidCssClassTest()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
         var component = RenderComponent<BitDatePickerValidationTest>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, true);
-            parameters.Add(p => p.Visual, visual);
             parameters.Add(p => p.TestModel, new BitDatePickerTestModel());
         });
 
         var bitDatePicker = component.Find(".bit-dtp");
-        var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
 
-        Assert.IsFalse(bitDatePicker.ClassList.Contains($"bit-dtp-invalid-{visualClass}"));
+        Assert.IsFalse(bitDatePicker.ClassList.Contains("invalid"));
 
         var form = component.Find("form");
         form.Submit();
 
-        Assert.IsTrue(bitDatePicker.ClassList.Contains($"bit-dtp-invalid-{visualClass}"));
+        Assert.IsTrue(bitDatePicker.ClassList.Contains("invalid"));
 
         //open date picker
-        var datepicker = component.Find(".dtp-wrapper");
-        datepicker.Click();
+        var datePicker = component.Find(".wrapper");
+        datePicker.Click();
 
         //select today
         var today = component.Find(".date-cell--today button.day-btn");
         today.Click();
 
-        Assert.IsFalse(bitDatePicker.ClassList.Contains($"bit-dtp-invalid-{visualClass}"));
+        Assert.IsFalse(bitDatePicker.ClassList.Contains("invalid"));
     }
 
-    [DataTestMethod,
-        DataRow("DatePicker")
-    ]
+    [DataTestMethod, DataRow("DatePicker")]
     public void BitDatePickerAriaLabelTest(string pickerAriaLabel)
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
-        var component = RenderComponent<BitDatePickerTest>(parameters =>
+        var component = RenderComponent<BitDatePicker>(parameters =>
         {
             parameters.Add(p => p.PickerAriaLabel, pickerAriaLabel);
         });
 
-        var bitDatePickerCallout = component.Find(".dtp-callout-main");
+        var bitDatePickerCallout = component.Find(".callout-main");
         var calloutAriaLabel = bitDatePickerCallout.GetAttribute("aria-label");
 
         Assert.AreEqual(pickerAriaLabel, calloutAriaLabel);
@@ -266,7 +254,7 @@ public class BitDatePickerTests : BunitTestContext
     public void BitDatePickerShowGoToTodayTest(bool showGoToToday)
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
-        var component = RenderComponent<BitDatePickerTest>(parameters =>
+        var component = RenderComponent<BitDatePicker>(parameters =>
         {
             parameters.Add(p => p.ShowGoToToday, showGoToToday);
         });
@@ -290,7 +278,7 @@ public class BitDatePickerTests : BunitTestContext
     public void BitDatePickerShowCloseButtonTest(bool showCloseButton)
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
-        var component = RenderComponent<BitDatePickerTest>(parameters =>
+        var component = RenderComponent<BitDatePicker>(parameters =>
         {
             parameters.Add(p => p.ShowCloseButton, showCloseButton);
         });
@@ -314,7 +302,7 @@ public class BitDatePickerTests : BunitTestContext
     public void BitDatePickerHighlightCurrentMonthTest(bool highlightCurrentMonth)
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
-        var component = RenderComponent<BitDatePickerTest>(parameters =>
+        var component = RenderComponent<BitDatePicker>(parameters =>
         {
             parameters.Add(p => p.HighlightCurrentMonth, highlightCurrentMonth);
         });
@@ -338,7 +326,7 @@ public class BitDatePickerTests : BunitTestContext
     public void BitDatePickerHighlightSelectedMonthTest(bool highlightSelectedMonth)
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
-        var component = RenderComponent<BitDatePickerTest>(parameters =>
+        var component = RenderComponent<BitDatePicker>(parameters =>
         {
             parameters.Add(p => p.HighlightSelectedMonth, highlightSelectedMonth);
         });
@@ -365,12 +353,12 @@ public class BitDatePickerTests : BunitTestContext
             {"style", "color: blue" }
         };
 
-        var component = RenderComponent<BitDatePickerTest>(parameters =>
+        var component = RenderComponent<BitDatePicker>(parameters =>
         {
             parameters.Add(p => p.CalloutHtmlAttributes, calloutHtmlAttributes);
         });
 
-        var bitDatePickerCallout = component.Find(".dtp-callout-main");
+        var bitDatePickerCallout = component.Find(".callout-main");
         var calloutStyle = bitDatePickerCallout.GetAttribute("style");
 
         Assert.AreEqual("color: blue", calloutStyle);
