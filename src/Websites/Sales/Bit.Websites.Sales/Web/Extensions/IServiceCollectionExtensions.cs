@@ -1,23 +1,14 @@
-﻿namespace Microsoft.Extensions.DependencyInjection;
+﻿using Bit.Websites.Sales.Web.Services.Implementations;
+
+namespace Microsoft.Extensions.DependencyInjection;
 
 public static class IServiceCollectionExtensions
 {
-    public static IServiceCollection AddAppServices(this IServiceCollection services)
+    public static IServiceCollection AddClientSharedServices(this IServiceCollection services)
     {
         services.AddScoped<IStateService, StateService>();
         services.AddScoped<IExceptionHandler, ExceptionHandler>();
-
-#if BlazorServer
-        services.AddScoped(sp =>
-        {
-            HttpClient httpClient = new(sp.GetRequiredService<AppHttpClientHandler>())
-            {
-                BaseAddress = new Uri($"{sp.GetRequiredService<IConfiguration>()["ApiServerAddress"]}")
-            };
-
-            return httpClient;
-        });
-#endif
+        services.AddScoped<IPubSubService, PubSubService>();
 
         services.AddTransient<AppHttpClientHandler>();
 

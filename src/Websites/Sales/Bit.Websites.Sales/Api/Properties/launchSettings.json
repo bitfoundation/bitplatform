@@ -5,11 +5,12 @@
             "dotnetRunMessages": true,
             "launchBrowser": true,
             "applicationUrl": "https://localhost:5001;http://localhost:5000",
+            "launchUrl": "swagger",
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development"
             }
         },
-        // This configuration allows debugging the Blazor Web Assembly
+        // This configuration allows debugging the Blazor WebAssembly
         "Bit.Websites.Sales.Api-BlazorWebAssembly": {
             "commandName": "Project",
             "dotnetRunMessages": true,

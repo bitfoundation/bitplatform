@@ -1,6 +1,6 @@
 ﻿using Bit.Websites.Sales.Shared.Dtos.ContactUs;
 
-namespace Bit.Websites.Sales.Web.Shared;
+namespace Bit.Websites.Sales.Web;
 
 public partial class ContactForm
 {
@@ -32,7 +32,7 @@ public partial class ContactForm
         }
         catch (KnownException e)
         {
-            _errorMessage = ErrorStrings.ResourceManager.Translate(e.Message);
+            _errorMessage = AppStrings.ResourceManager.Translate(e.Message);
         }
         finally
         {

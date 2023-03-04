@@ -1,27 +1,15 @@
-﻿@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
-
+﻿@using Bit.Websites.Sales.Shared.Infra;
 @using Microsoft.AspNetCore.Components.Web
-@using Bit.Websites.Sales.Shared.Infra
-
 @namespace Bit.Websites.Sales.Web.Pages
-
 @inject IHttpContextAccessor ContextAccessor
-
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @{
     var isBlazorServer = BlazorModeDetector.Current.IsBlazorServer();
-    var isDefaultDeploymentType = WebAppDeploymentTypeDetector.Current.IsDefault();
     var isStatic = WebAppDeploymentTypeDetector.Current.IsStatic();
     var isSsr = WebAppDeploymentTypeDetector.Current.IsSsr();
     var shoudAddAspAppendVersion = true;
-    RenderMode renderMode = isStatic
-                            ? RenderMode.Static
-                            : isBlazorServer
-                            ? isDefaultDeploymentType
-                            ? RenderMode.Server
-                            : RenderMode.ServerPrerendered
-                            : isDefaultDeploymentType
-                            ? RenderMode.WebAssembly
-                            : RenderMode.WebAssemblyPrerendered;
+    RenderMode renderMode = isBlazorServer ? RenderMode.ServerPrerendered : RenderMode.WebAssemblyPrerendered;
+
 
     if (renderMode is RenderMode.ServerPrerendered or RenderMode.WebAssemblyPrerendered)
     {
@@ -30,9 +18,9 @@
         if (shouldRenderStaticMode is not null && shouldRenderStaticMode.Value)
         {
             renderMode = RenderMode.Static;
+            isStatic = true;
         }
     }
-
 }
 
 <!DOCTYPE html>
@@ -41,19 +29,16 @@
     <base href="~/" />
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="apple-touch-icon" sizes="512x512" href="images/icons/bit-icon-512.png" />
+    <meta name="description" content="The Bit.Websites.Sales is built with ASP.NET Core, Identity, Web API, and EF Core for the server-side, and Blazor for the client-side. It allows you to build a multi-mode Web applications from a single codebase." />
     <link rel="icon" href="~/favicon.ico" type="image/x-icon" asp-append-version="@shoudAddAspAppendVersion">
+    <component type="typeof(HeadOutlet)" render-mode="@renderMode" />
+    <link rel="apple-touch-icon" sizes="512x512" href="images/icons/bit-icon-512.png" />
     <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.min.css" asp-append-version="@shoudAddAspAppendVersion" />
     <link rel="stylesheet" href="styles/app.min.css" asp-append-version="@shoudAddAspAppendVersion" />
-    <link rel="stylesheet" href="Bit.Websites.Sales.Web.styles.css" asp-append-version="@shoudAddAspAppendVersion" />
-    <component type="typeof(HeadOutlet)" render-mode="@renderMode" />
+    <link href="Bit.Websites.Sales.Web.styles.css" rel="stylesheet" asp-append-version="@shoudAddAspAppendVersion" />
 </head>
 <body>
-
     <div id="app-container">
-        <div class="lds-wrapper">
-            <div class="lds-grid"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
-        </div>
         @RenderBody()
     </div>
 
@@ -65,9 +50,23 @@
         }
         else
         {
-            <script src="_framework/blazor.webassembly.js" asp-append-version="@shoudAddAspAppendVersion"></script>   
-        }
+            <script src="_framework/blazor.webassembly.js" autostart="false" asp-append-version="@shoudAddAspAppendVersion"></script>
+            <script src="_content/Bit.Bup/bit-bup.progress.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
+            <script src="_content/Bit.Bup/bit-bup.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
 
+            @if (isSsr)
+            {
+                <component type="typeof(BupProgressBar)" render-mode="@RenderMode.WebAssemblyPrerendered" />
+            }
+            else
+            {
+                <link rel="stylesheet" href="_content/Bit.Bup/bit-bup.progress.min.css" asp-append-version="@shoudAddAspAppendVersion">
+                <component type="typeof(Bit.Bup.BupProgress)" render-mode="@RenderMode.Static"
+                            param-AutoHide="true"
+                            param-HideApp="true"
+                            param-AppContainer="@("#app-container")" />
+            }
+        }
         <script src="_content/Bit.BlazorUI/scripts/bit.blazorui.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
     }
     <script src="scripts/app.js" asp-append-version="@shoudAddAspAppendVersion"></script>
