@@ -1,14 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
+﻿using System.Globalization;
 
 namespace Bit.BlazorUI;
 
 public partial class BitSlider
 {
+    protected override bool UseVisual => false;
+
+
     private bool ValueHasBeenSet;
     private bool UpperValueHasBeenSet;
     private bool LowerValueHasBeenSet;
@@ -24,18 +22,22 @@ public partial class BitSlider
     private string? styleProgress;
     private string? styleContainer;
     private int inputHeight;
+    private bool isVertical;
+    private bool isRanged;
     private readonly string sliderBoxId = $"Slider{Guid.NewGuid()}";
 
     private ElementReference ContainerRef { get; set; }
     private ElementReference TitleRef { get; set; }
     private ElementReference ValueLabelRef { get; set; }
 
-    [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
+    [Inject] private IJSRuntime _js { get; set; } = default!;
+
 
     /// <summary>
-    /// The initial upper value of the Slider is ranged is true
+    ///  A text description of the Slider number value for the benefit of screen readers
+    ///  This should be used when the Slider number value is not accurately represented by a number
     /// </summary>
-    [Parameter] public double? DefaultUpperValue { get; set; }
+    [Parameter] public Func<double, string>? AriaValueText { get; set; }
 
     /// <summary>
     /// The initial lower value of the Slider is ranged is true
@@ -43,9 +45,91 @@ public partial class BitSlider
     [Parameter] public double? DefaultLowerValue { get; set; }
 
     /// <summary>
+    /// The initial upper value of the Slider is ranged is true
+    /// </summary>
+    [Parameter] public double? DefaultUpperValue { get; set; }
+
+    /// <summary>
     /// The initial value of the Slider
     /// </summary>
     [Parameter] public double? DefaultValue { get; set; }
+
+    /// <summary>
+    /// Whether to attach the origin of slider to zero
+    /// </summary>
+    [Parameter] public bool IsOriginFromZero { get; set; }
+
+    /// <summary>
+    /// If ranged is true, display two thumbs that allow the lower and upper bounds of a range to be selected
+    /// </summary>
+    [Parameter]
+    public bool IsRanged
+    {
+        get => isRanged;
+        set
+        {
+            if (isRanged == value) return;
+
+            isRanged = value;
+            ClassBuilder.Reset();
+        }
+    }
+
+    /// <summary>
+    /// Whether to render the Slider as readonly
+    /// </summary>
+    [Parameter]
+    public bool IsReadonly
+    {
+        get => isReadOnly;
+        set
+        {
+            if (isReadOnly == value) return;
+
+            isReadOnly = value;
+            ClassBuilder.Reset();
+        }
+    }
+
+    /// <summary>
+    /// Whether to render the slider vertically
+    /// </summary>
+    [Parameter]
+    public bool IsVertical
+    {
+        get => isVertical;
+        set
+        {
+            if (isVertical == value) return;
+
+            isVertical = value;
+            ClassBuilder.Reset();
+        }
+    }
+
+    /// <summary>
+    /// Description label of the Slider
+    /// </summary>
+    [Parameter] public string? Label { get; set; }
+
+    /// <summary>
+    /// The initial lower value of the Slider is ranged is true
+    /// </summary>
+    [Parameter]
+    public double? LowerValue
+    {
+        get => lowerValue;
+        set
+        {
+            if (value == lowerValue) return;
+            lowerValue = value;
+            SetInputValueOnRanged(lower: value);
+            ClassBuilder.Reset();
+            FillSlider();
+            _ = LowerValueChanged.InvokeAsync(value);
+        }
+    }
+    [Parameter] public EventCallback<double?> LowerValueChanged { get; set; }
 
     /// <summary>
     /// The min value of the Slider
@@ -56,6 +140,45 @@ public partial class BitSlider
     /// The max value of the Slider
     /// </summary>
     [Parameter] public double Max { get; set; } = 10;
+
+    /// <summary>
+    /// Callback when the value has been changed. This will be called on every individual step
+    /// </summary>
+    [Parameter] public EventCallback<ChangeEventArgs> OnChange { get; set; }
+
+    /// <summary>
+    /// The initial range value of the Slider. Use this parameter to set value for both LowerValue and UpperValue
+    /// </summary>
+    [Parameter]
+    public BitSliderRangeValue? RangeValue
+    {
+        get => new() { Lower = lowerValue, Upper = upperValue };
+        set
+        {
+            if (value?.Lower == lowerValue && value?.Upper == upperValue) return;
+            if (value is null || (value.Lower.HasValue is false && lowerValue.HasValue) || (value.Upper.HasValue is false && upperValue.HasValue)) return;
+
+            lowerValue = value.Lower;
+            upperValue = value.Upper;
+            SetInputValueOnRanged(value.Lower, value.Upper);
+            ClassBuilder.Reset();
+            FillSlider();
+            _ = RangeValueChanged.InvokeAsync(value);
+        }
+    }
+    [Parameter] public EventCallback<BitSliderRangeValue?> RangeValueChanged { get; set; }
+
+    /// <summary>
+    /// Whether to show the value on the right of the Slider
+    /// </summary>
+    [Parameter] public bool ShowValue { get; set; } = true;
+
+    /// <summary>
+    /// Additional parameter for the Slider box
+    /// </summary>
+#pragma warning disable CA2227 // Collection properties should be read only
+    [Parameter] public Dictionary<string, object>? SliderBoxHtmlAttributes { get; set; }
+#pragma warning restore CA2227 // Collection properties should be read only
 
     /// <summary>
     /// The difference between the two adjacent values of the Slider
@@ -79,34 +202,7 @@ public partial class BitSlider
             _ = UpperValueChanged.InvokeAsync(value);
         }
     }
-
-    /// <summary>
-    /// Callback for when lower value changed
-    /// </summary>
     [Parameter] public EventCallback<double?> UpperValueChanged { get; set; }
-
-    /// <summary>
-    /// The initial lower value of the Slider is ranged is true
-    /// </summary>
-    [Parameter]
-    public double? LowerValue
-    {
-        get => lowerValue;
-        set
-        {
-            if (value == lowerValue) return;
-            lowerValue = value;
-            SetInputValueOnRanged(lower: value);
-            ClassBuilder.Reset();
-            FillSlider();
-            _ = LowerValueChanged.InvokeAsync(value);
-        }
-    }
-
-    /// <summary>
-    /// Callback for when lower value changed
-    /// </summary>
-    [Parameter] public EventCallback<double?> LowerValueChanged { get; set; }
 
     /// <summary>
     /// The initial value of the Slider
@@ -124,124 +220,38 @@ public partial class BitSlider
             _ = ValueChanged.InvokeAsync(value);
         }
     }
-
-    /// <summary>
-    /// Callback for when the value changed
-    /// </summary>
     [Parameter] public EventCallback<double?> ValueChanged { get; set; }
-
-    /// <summary>
-    /// The initial range value of the Slider. Use this parameter to set value for both LowerValue and UpperValue
-    /// </summary>
-    [Parameter]
-    public BitSliderRangeValue? RangeValue
-    {
-        get => new() { Lower = lowerValue, Upper = upperValue };
-        set
-        {
-            if (value?.Lower == lowerValue && value?.Upper == upperValue) return;
-            if (value is null || (value.Lower.HasValue is false && lowerValue.HasValue) || (value.Upper.HasValue is false && upperValue.HasValue)) return;
-
-            lowerValue = value.Lower;
-            upperValue = value.Upper;
-            SetInputValueOnRanged(value.Lower, value.Upper);
-            ClassBuilder.Reset();
-            FillSlider();
-            _ = RangeValueChanged.InvokeAsync(value);
-        }
-    }
-
-    /// <summary>
-    /// Callback for when range value changed
-    /// </summary>
-    [Parameter] public EventCallback<BitSliderRangeValue?> RangeValueChanged { get; set; }
-
-    /// <summary>
-    /// Whether to attach the origin of slider to zero
-    /// </summary>
-    [Parameter] public bool IsOriginFromZero { get; set; }
-
-    /// <summary>
-    /// Description label of the Slider
-    /// </summary>
-    [Parameter] public string? Label { get; set; }
-
-    /// <summary>
-    /// If ranged is true, display two thumbs that allow the lower and upper bounds of a range to be selected
-    /// </summary>
-    [Parameter] public bool IsRanged { get; set; }
-
-    /// <summary>
-    /// Whether to show the value on the right of the Slider
-    /// </summary>
-    [Parameter] public bool ShowValue { get; set; } = true;
-
-    /// <summary>
-    /// Whether to render the slider vertically
-    /// </summary>
-    [Parameter] public bool IsVertical { get; set; }
 
     /// <summary>
     /// Custom formatter for the Slider value
     /// </summary>
     [Parameter] public string? ValueFormat { get; set; }
 
-    /// <summary>
-    /// Callback when the value has been changed. This will be called on every individual step
-    /// </summary>
-    [Parameter] public EventCallback<ChangeEventArgs> OnChange { get; set; }
-
-    /// <summary>
-    ///  A text description of the Slider number value for the benefit of screen readers
-    ///  This should be used when the Slider number value is not accurately represented by a number
-    /// </summary>
-    [Parameter] public Func<double, string>? AriaValueText { get; set; }
-
-    /// <summary>
-    /// Additional parameter for the Slider box
-    /// </summary>
-#pragma warning disable CA2227 // Collection properties should be read only
-    [Parameter] public Dictionary<string, object>? SliderBoxHtmlAttributes { get; set; }
-#pragma warning restore CA2227 // Collection properties should be read only
-
-    /// <summary>
-    /// Whether to render the Slider as readonly
-    /// </summary>
-    [Parameter]
-    public bool IsReadonly
-    {
-        get => isReadOnly;
-        set
-        {
-            isReadOnly = value;
-            ClassBuilder.Reset();
-        }
-    }
 
     protected override string RootElementClass => "bit-slider";
 
     protected override void RegisterComponentClasses()
     {
-        ClassBuilder.Register(() => IsReadonly
-                                            ? $"{RootElementClass}-readonly-{VisualClassRegistrar()}"
-                                            : string.Empty);
+        ClassBuilder.Register(() => IsReadonly ? "readonly" : string.Empty);
 
-        var rangedClass = IsRanged ? "-ranged" : null;
-        ClassBuilder.Register(() => IsVertical
-                                            ? $"{RootElementClass}{rangedClass}-vertical"
-                                            : $"{RootElementClass}{rangedClass}-horizontal");
+        ClassBuilder.Register(() =>
+        {
+            var rangedClass = IsRanged ? "-ranged" : null;
+            return IsVertical ? $"{rangedClass}-vertical" : $"{rangedClass}-horizontal";
+        });
+
     }
 
     protected override void OnInitialized()
     {
-        if (UpperValue.HasValue is false && DefaultUpperValue.HasValue)
-        {
-            UpperValue = DefaultUpperValue.Value;
-        }
-
         if (LowerValue.HasValue is false && DefaultLowerValue.HasValue)
         {
             LowerValue = DefaultLowerValue.Value;
+        }
+
+        if (UpperValue.HasValue is false && DefaultUpperValue.HasValue)
+        {
+            UpperValue = DefaultUpperValue.Value;
         }
 
         if (IsRanged)
@@ -263,87 +273,86 @@ public partial class BitSlider
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender && IsVertical)
-        {
-            if (IsRanged)
-            {
-                inputHeight = await JSRuntime.GetClientHeight(RootElement);
-
-                if (Label.HasValue())
-                {
-                    var titleHeight = await JSRuntime.GetClientHeight(TitleRef);
-                    inputHeight -= titleHeight;
-                }
-
-                if (ShowValue)
-                {
-                    var valueLabelHeight = await JSRuntime.GetClientHeight(ValueLabelRef);
-                    inputHeight -= (valueLabelHeight * 2);
-                }
-            }
-            else
-            {
-                inputHeight = await JSRuntime.GetClientHeight(ContainerRef);
-            }
-            FillSlider();
-        }
         await base.OnAfterRenderAsync(firstRender);
+
+        if (firstRender is false || IsVertical is false) return;
+
+        if (IsRanged)
+        {
+            inputHeight = await _js.GetClientHeight(RootElement);
+
+            if (Label.HasValue())
+            {
+                var titleHeight = await _js.GetClientHeight(TitleRef);
+                inputHeight -= titleHeight;
+            }
+
+            if (ShowValue)
+            {
+                var valueLabelHeight = await _js.GetClientHeight(ValueLabelRef);
+                inputHeight -= (valueLabelHeight * 2);
+            }
+        }
+        else
+        {
+            inputHeight = await _js.GetClientHeight(ContainerRef);
+        }
+
+        FillSlider();
     }
 
     private async Task HandleInput(ChangeEventArgs e)
     {
-        if (IsEnabled)
-        {
-            if (!IsRanged)
-            {
-                Value = Convert.ToDouble(e.Value, CultureInfo.InvariantCulture);
-                FillSlider();
-            }
-            else
-            {
-                UpperValue = null;
-                LowerValue = null;
-            }
+        if (IsEnabled is false) return;
 
-            await OnChange.InvokeAsync(e);
+        if (IsRanged)
+        {
+            UpperValue = null;
+            LowerValue = null;
         }
+        else
+        {
+            Value = Convert.ToDouble(e.Value, CultureInfo.InvariantCulture);
+            FillSlider();
+        }
+
+        await OnChange.InvokeAsync(e);
     }
 
     private async Task HandleInput(ChangeEventArgs e, bool isFirstInput)
     {
-        if (IsEnabled)
+        if (IsEnabled is false) return;
+
+        if (IsRanged)
         {
-            if (IsRanged)
+            if (isFirstInput)
             {
-                if (isFirstInput)
-                {
-                    firstInputValue = Convert.ToDouble(e.Value, CultureInfo.InvariantCulture);
-                }
-                else
-                {
-                    secondInputValue = Convert.ToDouble(e.Value, CultureInfo.InvariantCulture);
-                }
-
-                if (firstInputValue < secondInputValue)
-                {
-                    LowerValue = firstInputValue;
-                    UpperValue = secondInputValue;
-                }
-                else
-                {
-                    LowerValue = secondInputValue;
-                    UpperValue = firstInputValue;
-                }
-
-                FillSlider();
+                firstInputValue = Convert.ToDouble(e.Value, CultureInfo.InvariantCulture);
             }
             else
             {
-                Value = null;
+                secondInputValue = Convert.ToDouble(e.Value, CultureInfo.InvariantCulture);
             }
 
-            await OnChange.InvokeAsync(e);
+            if (firstInputValue < secondInputValue)
+            {
+                LowerValue = firstInputValue;
+                UpperValue = secondInputValue;
+            }
+            else
+            {
+                LowerValue = secondInputValue;
+                UpperValue = firstInputValue;
+            }
+
+            FillSlider();
         }
+        else
+        {
+            Value = null;
+        }
+
+        await OnChange.InvokeAsync(e);
     }
 
     private void FillSlider()
@@ -391,27 +400,18 @@ public partial class BitSlider
 
     private string? GetValueDisplay(double? val)
     {
-        if (ValueFormat.HasNoValue())
-        {
-            return $"{val}";
-        }
-        else if (ValueFormat!.Contains('p', StringComparison.CurrentCultureIgnoreCase))
+        if (ValueFormat.HasNoValue()) return $"{val}";
+
+        if (ValueFormat!.Contains('p', StringComparison.CurrentCultureIgnoreCase))
         {
             int digitCount = $"{(Max - 1)}".Length;
             return (val.GetValueOrDefault() / Math.Pow(10, digitCount)).ToString(ValueFormat, CultureInfo.InvariantCulture);
         }
-        else
-        {
-            return val.GetValueOrDefault().ToString(ValueFormat, CultureInfo.InvariantCulture);
-        }
+
+        return val.GetValueOrDefault().ToString(ValueFormat, CultureInfo.InvariantCulture);
     }
 
-    private string GetAriaValueText(double value)
-    {
-        return AriaValueText != null ? AriaValueText(value) : value.ToString(CultureInfo.InvariantCulture);
-    }
+    private string GetAriaValueText(double value) => AriaValueText != null ? AriaValueText(value) : value.ToString(CultureInfo.InvariantCulture);
 
-    private bool GetAriaDisabled => !IsEnabled;
     private int? GetTabIndex => IsEnabled ? 0 : null;
-    private bool GetDataIsFocusable => !IsEnabled;
 }

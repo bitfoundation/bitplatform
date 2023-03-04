@@ -47,8 +47,8 @@
                        disabled=@(!IsEnabled)
                        role="slider"
                        tabindex="@GetTabIndex"
-                       data-is-focusable="@GetDataIsFocusable"
-                       aria-disabled="@GetAriaDisabled"
+                       data-is-focusable="@(IsEnabled is false)"
+                       aria-disabled="@(IsEnabled is false)"
                        aria-label="@Label"
                        aria-valuemin="@Min"
                        aria-valuemax="@Max"
@@ -64,8 +64,8 @@
                        disabled=@(!IsEnabled)
                        role="slider"
                        tabindex="@GetTabIndex"
-                       data-is-focusable="@GetDataIsFocusable"
-                       aria-disabled="@GetAriaDisabled"
+                       data-is-focusable="@(IsEnabled is false)"
+                       aria-disabled="@(IsEnabled is false)"
                        aria-label="@Label"
                        aria-valuemin="@Min"
                        aria-valuemax="@Max"
