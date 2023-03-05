@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Xml;
 
 namespace Bit.BlazorUI;
 
@@ -12,23 +13,27 @@ public partial class BitSlider
     private bool LowerValueHasBeenSet;
     private bool RangeValueHasBeenSet;
 
-    private double? firstInputValue;
-    private double? secondInputValue;
-    private double? upperValue;
+    private bool isRanged;
+    private bool isReadOnly;
+    private bool isVertical;
     private double? lowerValue;
+    private double? upperValue;
     private double? value;
 
-    private bool isReadOnly;
-    private string? styleProgress;
-    private string? styleContainer;
-    private int inputHeight;
-    private bool isVertical;
-    private bool isRanged;
-    private readonly string sliderBoxId = $"Slider{Guid.NewGuid()}";
+    private double? _firstInputValue;
+    private double? _secondInputValue;
+    private string? _styleProgress;
+    private string? _styleContainer;
+    private int _inputHeight;
+    private string _sliderBoxId = default!;
+    private string _minInputId = default!;
+    private string _maxInputId = default!;
+
 
     private ElementReference ContainerRef { get; set; }
-    private ElementReference TitleRef { get; set; }
+    private ElementReference LabelRef { get; set; }
     private ElementReference ValueLabelRef { get; set; }
+
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
@@ -122,9 +127,9 @@ public partial class BitSlider
         set
         {
             if (value == lowerValue) return;
+
             lowerValue = value;
             SetInputValueOnRanged(lower: value);
-            ClassBuilder.Reset();
             FillSlider();
             _ = LowerValueChanged.InvokeAsync(value);
         }
@@ -161,7 +166,6 @@ public partial class BitSlider
             lowerValue = value.Lower;
             upperValue = value.Upper;
             SetInputValueOnRanged(value.Lower, value.Upper);
-            ClassBuilder.Reset();
             FillSlider();
             _ = RangeValueChanged.InvokeAsync(value);
         }
@@ -195,9 +199,9 @@ public partial class BitSlider
         set
         {
             if (value == upperValue) return;
+
             upperValue = value;
             SetInputValueOnRanged(upper: value);
-            ClassBuilder.Reset();
             FillSlider();
             _ = UpperValueChanged.InvokeAsync(value);
         }
@@ -214,8 +218,8 @@ public partial class BitSlider
         set
         {
             if (value == this.value) return;
+
             this.value = value;
-            ClassBuilder.Reset();
             FillSlider();
             _ = ValueChanged.InvokeAsync(value);
         }
@@ -228,7 +232,7 @@ public partial class BitSlider
     [Parameter] public string? ValueFormat { get; set; }
 
 
-    protected override string RootElementClass => "bit-slider";
+    protected override string RootElementClass => "bit-sld";
 
     protected override void RegisterComponentClasses()
     {
@@ -236,14 +240,18 @@ public partial class BitSlider
 
         ClassBuilder.Register(() =>
         {
-            var rangedClass = IsRanged ? "-ranged" : null;
-            return IsVertical ? $"{rangedClass}-vertical" : $"{rangedClass}-horizontal";
+            var rangedClass = IsRanged ? "ranged" : null;
+            var orientationClass = IsVertical ? "vertical" : "horizontal";
+            return $"{rangedClass}-{orientationClass}";
         });
-
     }
 
     protected override void OnInitialized()
     {
+        _sliderBoxId = $"Slider-{UniqueId}";
+        _minInputId = $"{_sliderBoxId}-input-min";
+        _maxInputId = $"{_sliderBoxId}-input-max";
+
         if (LowerValue.HasValue is false && DefaultLowerValue.HasValue)
         {
             LowerValue = DefaultLowerValue.Value;
@@ -256,11 +264,11 @@ public partial class BitSlider
 
         if (IsRanged)
         {
-            SetInputValueOnRanged(lowerValue, upperValue);
+            SetInputValueOnRanged(LowerValue, UpperValue);
         }
         else if (Value.HasValue is false)
         {
-            value = DefaultValue.GetValueOrDefault(Min);
+            Value = DefaultValue.GetValueOrDefault(Min);
         }
 
         if (IsVertical is false)
@@ -279,39 +287,44 @@ public partial class BitSlider
 
         if (IsRanged)
         {
-            inputHeight = await _js.GetClientHeight(RootElement);
+            _inputHeight = await _js.GetClientHeight(RootElement);
 
             if (Label.HasValue())
             {
-                var titleHeight = await _js.GetClientHeight(TitleRef);
-                inputHeight -= titleHeight;
+                var titleHeight = await _js.GetClientHeight(LabelRef);
+                _inputHeight -= titleHeight;
             }
 
             if (ShowValue)
             {
                 var valueLabelHeight = await _js.GetClientHeight(ValueLabelRef);
-                inputHeight -= (valueLabelHeight * 2);
+                _inputHeight -= (valueLabelHeight * 2);
             }
         }
         else
         {
-            inputHeight = await _js.GetClientHeight(ContainerRef);
+            _inputHeight = await _js.GetClientHeight(ContainerRef);
         }
 
         FillSlider();
     }
 
-    private async Task HandleInput(ChangeEventArgs e)
+    private async Task HandleOnInput(ChangeEventArgs e)
     {
         if (IsEnabled is false) return;
 
         if (IsRanged)
         {
+            if (UpperValueHasBeenSet && UpperValueChanged.HasDelegate is false) return;
+            if (LowerValueHasBeenSet && LowerValueChanged.HasDelegate is false) return;
+
             UpperValue = null;
             LowerValue = null;
         }
         else
         {
+            if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+
             Value = Convert.ToDouble(e.Value, CultureInfo.InvariantCulture);
             FillSlider();
         }
@@ -319,36 +332,41 @@ public partial class BitSlider
         await OnChange.InvokeAsync(e);
     }
 
-    private async Task HandleInput(ChangeEventArgs e, bool isFirstInput)
+    private async Task HandleOnInput(ChangeEventArgs e, bool isFirstInput)
     {
         if (IsEnabled is false) return;
 
         if (IsRanged)
         {
+            if (UpperValueHasBeenSet && UpperValueChanged.HasDelegate is false) return;
+            if (LowerValueHasBeenSet && LowerValueChanged.HasDelegate is false) return;
+
             if (isFirstInput)
             {
-                firstInputValue = Convert.ToDouble(e.Value, CultureInfo.InvariantCulture);
+                _firstInputValue = Convert.ToDouble(e.Value, CultureInfo.InvariantCulture);
             }
             else
             {
-                secondInputValue = Convert.ToDouble(e.Value, CultureInfo.InvariantCulture);
+                _secondInputValue = Convert.ToDouble(e.Value, CultureInfo.InvariantCulture);
             }
 
-            if (firstInputValue < secondInputValue)
+            if (_firstInputValue < _secondInputValue)
             {
-                LowerValue = firstInputValue;
-                UpperValue = secondInputValue;
+                LowerValue = _firstInputValue;
+                UpperValue = _secondInputValue;
             }
             else
             {
-                LowerValue = secondInputValue;
-                UpperValue = firstInputValue;
+                LowerValue = _secondInputValue;
+                UpperValue = _firstInputValue;
             }
 
             FillSlider();
         }
         else
         {
+            if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+            
             Value = null;
         }
 
@@ -359,10 +377,10 @@ public partial class BitSlider
     {
         if (IsRanged)
         {
-            styleProgress = $"--l: {firstInputValue}; --h: {secondInputValue}; --min: {Min}; --max: {Max}";
+            _styleProgress = $"--l: {_firstInputValue}; --h: {_secondInputValue}; --min: {Min}; --max: {Max}";
             if (IsVertical)
             {
-                styleContainer = $"width: {inputHeight}px; height: {inputHeight}px;";
+                _styleContainer = $"width: {_inputHeight}px; height: {_inputHeight}px;";
                 StateHasChanged();
             }
         }
@@ -370,12 +388,12 @@ public partial class BitSlider
         {
             if (IsVertical)
             {
-                styleProgress = $"--value: {Value}; --min: {Min}; --max: {Max}; width: {inputHeight}px; transform: rotate(270deg) translateX(-{(inputHeight - 12)}px);";
+                _styleProgress = $"--value: {Value}; --min: {Min}; --max: {Max}; width: {_inputHeight}px; transform: rotate(270deg) translateX(-{(_inputHeight - 12)}px);";
                 StateHasChanged();
             }
             else
             {
-                styleProgress = $"--value: {Value}; --min: {Min}; --max: {Max};";
+                _styleProgress = $"--value: {Value}; --min: {Min}; --max: {Max};";
             }
         }
     }
@@ -383,32 +401,32 @@ public partial class BitSlider
     private void SetInputValueOnRanged(double? lower = null, double? upper = null)
     {
         var defaultValue = Min > 0 || Max < 0 ? Min : 0;
-        lower = lower.GetValueOrDefault(lowerValue ?? defaultValue);
-        upper = upper.GetValueOrDefault(upperValue ?? defaultValue);
+        lower = lower.GetValueOrDefault(LowerValue ?? defaultValue);
+        upper = upper.GetValueOrDefault(UpperValue ?? defaultValue);
 
         if (upper > lower)
         {
-            firstInputValue = lower;
-            secondInputValue = upper;
+            _firstInputValue = lower;
+            _secondInputValue = upper;
         }
         else
         {
-            firstInputValue = upper;
-            secondInputValue = lower;
+            _firstInputValue = upper;
+            _secondInputValue = lower;
         }
     }
 
-    private string? GetValueDisplay(double? val)
+    private string? GetValueDisplay(double? value)
     {
-        if (ValueFormat.HasNoValue()) return $"{val}";
+        if (ValueFormat.HasNoValue()) return $"{value}";
 
         if (ValueFormat!.Contains('p', StringComparison.CurrentCultureIgnoreCase))
         {
             int digitCount = $"{(Max - 1)}".Length;
-            return (val.GetValueOrDefault() / Math.Pow(10, digitCount)).ToString(ValueFormat, CultureInfo.InvariantCulture);
+            return (value.GetValueOrDefault() / Math.Pow(10, digitCount)).ToString(ValueFormat, CultureInfo.InvariantCulture);
         }
 
-        return val.GetValueOrDefault().ToString(ValueFormat, CultureInfo.InvariantCulture);
+        return value.GetValueOrDefault().ToString(ValueFormat, CultureInfo.InvariantCulture);
     }
 
     private string GetAriaValueText(double value) => AriaValueText != null ? AriaValueText(value) : value.ToString(CultureInfo.InvariantCulture);

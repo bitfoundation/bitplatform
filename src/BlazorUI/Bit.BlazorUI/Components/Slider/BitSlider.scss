@@ -1,12 +1,12 @@
 ﻿@import "../../Styles/Fluent/colors.fluent.scss", "../../Styles/functions.scss";
 
-$BgDefult: $Grey90;
-$BgTrack: $Grey130;
+$BgDefult: $color-neutrals-gray90;
+$BgTrack: $color-neutrals-gray130;
 $BgHover: $BlizzardBlue;
 $BgTrackHover: $DarkAlt;
 
-.bit-slider-fluent {
-    font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+.bit-slider {
+    font-family: $typography-font-family;
 
     input {
         --range: calc(var(--max) - var(--min));
@@ -19,19 +19,19 @@ $BgTrackHover: $DarkAlt;
     }
     /*webkit*/
     input::-webkit-slider-thumb {
-        width: rem(16px);
-        height: rem(16px);
-        margin-top: rem(-6px);
-        border: rem(2px) solid $BgTrack;
-        border-radius: rem(10px);
+        width: spacing(2);
+        height: spacing(2);
+        margin-top: spacing(-0.75);
+        border: spacing(0.25) $shape-border-style $BgTrack;
+        border-radius: spacing(10px);
         box-sizing: border-box;
         background: $White;
         -webkit-appearance: none;
     }
 
     input::-webkit-slider-runnable-track {
-        height: rem(4px);
-        border-radius: rem(4px);
+        height: spacing(4px);
+        border-radius: spacing(4px);
         background: $BgDefult;
         box-shadow: none;
     }
@@ -41,18 +41,18 @@ $BgTrackHover: $DarkAlt;
     }
     /*mozilla*/
     input::-moz-range-thumb {
-        width: rem(16px);
-        height: rem(16px);
+        width: spacing(2);
+        height: spacing(2);
         margin-top: calc(max((1rem - 1px - 0px)*.5,0px) - 2rem*.5);
-        border: rem(2px) solid $BgTrack;
-        border-radius: rem(10px);
+        border: spacing(2px) solid $BgTrack;
+        border-radius: spacing(10px);
         box-sizing: border-box;
         background: $White;
     }
 
     input::-moz-range-track {
-        height: rem(4px);
-        border-radius: rem(4px);
+        height: spacing(4px);
+        border-radius: spacing(4px);
         background: $BgDefult;
         box-shadow: none;
     }
@@ -72,25 +72,25 @@ $BgTrackHover: $DarkAlt;
     }
 
     input::-ms-thumb {
-        width: rem(16px);
-        height: rem(16px);
+        width: spacing(2);
+        height: spacing(2);
         margin-top: calc(max((1rem - 1px - 0px)*.5,0px) - 2rem*.5);
-        border: rem(2px) solid $BgTrack;
-        border-radius: rem(10px);
+        border: spacing(2px) solid $BgTrack;
+        border-radius: spacing(10px);
         box-sizing: border-box;
         background: $White;
     }
 
     input::-ms-track {
-        height: rem(4px);
-        border-radius: rem(4px);
+        height: spacing(4px);
+        border-radius: spacing(4px);
         background: $BgDefult;
         box-shadow: none;
     }
 
     input::-ms-fill-lower {
-        height: rem(4px);
-        border-radius: rem(4px);
+        height: spacing(4px);
+        border-radius: spacing(4px);
         background: $BgDefult;
         box-shadow: none;
     }
@@ -110,7 +110,7 @@ $BgTrackHover: $DarkAlt;
     box-shadow: none;
     overflow-wrap: break-word;
     -webkit-font-smoothing: antialiased;
-    font-size: rem(14px);
+    font-size: spacing(14px);
     font-weight: 600;
     color: $Grey90;
 }
@@ -130,12 +130,12 @@ $BgTrackHover: $DarkAlt;
 
 .bit-slider-value {
     display: block;
-    width: rem(40px);
-    margin: 0 rem(8px);
-    padding: rem(5px) 0;
+    width: spacing(40px);
+    margin: 0 spacing(8px);
+    padding: spacing(5px) 0;
     box-sizing: border-box;
     box-shadow: none;
-    font-size: rem(14px);
+    font-size: spacing(14px);
     font-weight: 600;
     color: $Grey90;
     overflow-wrap: break-word;
@@ -154,7 +154,7 @@ input::-webkit-slider-thumb {
     /* get rid of Firefox thumb border */
     border-radius: 0;
     /* get rid of Firefox corner rounding */
-    background: linear-gradient(90deg, $White rem(2px), transparent 0) calc(1rem - 1px), radial-gradient(circle, var(--col) calc(1rem - 1px), transparent 1rem);
+    background: linear-gradient(90deg, $White spacing(2px), transparent 0) calc(1rem - 1px), radial-gradient(circle, var(--col) calc(1rem - 1px), transparent 1rem);
     pointer-events: auto;
 }
 
@@ -165,7 +165,7 @@ input::-moz-range-thumb {
     /* get rid of Firefox thumb border */
     border-radius: 0;
     /* get rid of Firefox corner rounding */
-    background: linear-gradient(90deg, $White rem(2px), transparent 0) calc(1rem - 1px), radial-gradient(circle, var(--col) calc(1rem - 1px), transparent 1rem);
+    background: linear-gradient(90deg, $White spacing(2px), transparent 0) calc(1rem - 1px), radial-gradient(circle, var(--col) calc(1rem - 1px), transparent 1rem);
     pointer-events: auto;
 }
 
@@ -183,12 +183,12 @@ input::-moz-range-thumb {
 
     .bit-slider-value {
         text-align: center;
-        padding-top: rem(50px);
+        padding-top: spacing(50px);
         box-sizing: border-box;
     }
 
     .bit-slider-container {
-        width: rem(50px);
+        width: spacing(50px);
         height: 100%;
         margin-left: 0;
         display: block;
@@ -196,15 +196,15 @@ input::-moz-range-thumb {
 
     input {
         transform-origin: left;
-        margin: 0 rem(25px);
-        margin-top: rem(10px);
-        height: rem(60px);
+        margin: 0 spacing(25px);
+        margin-top: spacing(10px);
+        height: spacing(60px);
     }
 
     .zero-tick {
-        width: rem(14px);
-        height: rem(1px);
-        margin-left: rem(18px);
+        width: spacing(14px);
+        height: spacing(1px);
+        margin-left: spacing(18px);
     }
 }
 
@@ -215,8 +215,8 @@ input::-moz-range-thumb {
     }
 
     .zero-tick {
-        width: rem(1px);
-        height: rem(16px);
+        width: spacing(1px);
+        height: spacing(2);
     }
 }
 
@@ -238,12 +238,12 @@ input::-moz-range-thumb {
         position: relative;
         margin: 1em auto;
         width: 100%;
-        background: linear-gradient(0deg, $BgDefult rem(4px), transparent 0);
+        background: linear-gradient(0deg, $BgDefult spacing(4px), transparent 0);
     }
 
     .bit-slider-box::before,
     .bit-slider-box::after {
-        height: rem(4px);
+        height: spacing(4px);
         grid-column: 1/span 2;
         grid-row: 3;
         background: $BgTrack;
@@ -290,10 +290,10 @@ input::-moz-range-thumb {
     }
 
     .zero-tick {
-        width: rem(16px);
-        height: rem(1px);
-        margin-top: rem(1px);
-        margin-left: rem(18px);
+        width: spacing(2);
+        height: spacing(1px);
+        margin-top: spacing(1px);
+        margin-left: spacing(18px);
         transform: rotate(270deg);
     }
 }
@@ -311,12 +311,12 @@ input::-moz-range-thumb {
         position: relative;
         margin: 1em auto;
         width: 100%;
-        background: linear-gradient(0deg, $BgDefult rem(4px), transparent 0);
+        background: linear-gradient(0deg, $BgDefult spacing(4px), transparent 0);
     }
 
     .bit-slider-box::before,
     .bit-slider-box::after {
-        height: rem(4px);
+        height: spacing(4px);
         grid-column: 1/span 2;
         grid-row: 3;
         background: $BgTrack;
@@ -359,9 +359,9 @@ input::-moz-range-thumb {
     }
 
     .zero-tick {
-        width: rem(1px);
-        height: rem(16px);
-        margin-top: rem(-5px);
+        width: spacing(1px);
+        height: spacing(2);
+        margin-top: spacing(-5px);
     }
 }
 
@@ -427,7 +427,7 @@ input::-moz-range-thumb {
 .bit-slider-enabled-fluent.bit-slider-ranged-horizontal,
 .bit-slider-enabled-fluent.bit-slider-ranged-vertical {
     .bit-slider-box:hover {
-        background: linear-gradient(0deg, $BgHover rem(4px), transparent 0);
+        background: linear-gradient(0deg, $BgHover spacing(4px), transparent 0);
     }
 
     .bit-slider-box:hover::before,
