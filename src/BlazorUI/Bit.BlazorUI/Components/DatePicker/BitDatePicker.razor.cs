@@ -694,7 +694,7 @@ public partial class BitDatePicker
         {
             className = "date-cell--outside-month";
         }
-        else if (IsInCurrentMonth(week, day) && todayYear == _currentYear && todayMonth == _currentMonth && todayDay == currentDay)
+        else if (todayYear == _currentYear && todayMonth == _currentMonth && todayDay == currentDay)
         {
             className = "date-cell--today";
         }
