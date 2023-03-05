@@ -29,9 +29,9 @@ public partial class BitSlider
     private string _maxInputId = default!;
 
 
-    private ElementReference _containerRef { get; set; }
-    private ElementReference _labelRef { get; set; }
-    private ElementReference _valueLabelRef { get; set; }
+    private ElementReference _labelRef;
+    private ElementReference _containerRef;
+    private ElementReference _valueLabelRef;
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
