@@ -50,13 +50,13 @@ jobs:
       run: dotnet build src/Websites/Platform/Bit.Websites.Platform/Api/Bit.Websites.Platform.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release -p:MultilingualEnabled=true
 
     - name: Publish
-      run: dotnet publish src/Websites/Platform/Bit.Websites.Platform/Api/Bit.Websites.Platform.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release -p:MultilingualEnabled=true --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/api-web
+      run: dotnet publish src/Websites/Platform/Bit.Websites.Platform/Api/Bit.Websites.Platform.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release -p:MultilingualEnabled=true --self-contained -r linux-x64 -o api-web
 
     - name: Upload api-web artifact
       uses: actions/upload-artifact@v3
       with:
         name: api-web-bundle
-        path: ${{env.DOTNET_ROOT}}/api-web
+        path: api-web
 
   deploy_blazor_api_wasm:
     name: deploy blazor api + web assembly
