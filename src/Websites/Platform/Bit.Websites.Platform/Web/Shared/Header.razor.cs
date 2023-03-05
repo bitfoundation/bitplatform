@@ -36,21 +36,21 @@ public partial class Header : IDisposable
     {
         if (CurrentUrl.Contains("admin-panel") || CurrentUrl.Contains("todo-template"))
         {
-            return "Prodocus & Services";
+            return "Products & Services";
         }
         else return CurrentUrl switch
         {
             Urls.HomePage => "Home",
-            Urls.Components => "Prodocus & Services",
-            Urls.CloudHostingSolutins => "Prodocus & Services",
-            Urls.Support => "Prodocus & Services",
-            Urls.Academy => "Prodocus & Services",
+            Urls.Components => "Products & Services",
+            Urls.CloudHostingSolutins => "Products & Services",
+            Urls.Support => "Products & Services",
+            Urls.Academy => "Products & Services",
             Urls.Pricing => "Pricing",
             Urls.AboutUs => "About us",
             Urls.ContactUs => "Contact us",
             Urls.Blogs => "Blogs",
             Urls.Videos => "Videos",
-            _ => "Prodocus & Services",
+            _ => "Products & Services",
         };
     }
 

@@ -2,44 +2,68 @@
 
 public partial class AppComponentBase : ComponentBase
 {
-    [AutoInject] private IExceptionHandler _exceptionHandler = default!;
-    [AutoInject] private NavigationManager _navigationManager = default!;
-    [AutoInject] private IJSRuntime _js = default!;
+    [AutoInject] protected HttpClient HttpClient = default!;
 
-    protected sealed override async Task OnInitializedAsync()
+    [AutoInject] protected IStateService StateService = default!;
+
+    [AutoInject] protected IPubSubService PubSubService = default!;
+
+    [AutoInject] protected IConfiguration Configuration = default!;
+
+    [AutoInject] protected IJSRuntime JSRuntime { get; set; } = default!;
+
+    [AutoInject] protected NavigationManager NavigationManager = default!;
+    
+    [AutoInject] protected IStringLocalizer<AppStrings> Localizer = default!;
+    
+    [AutoInject] protected IExceptionHandler ExceptionHandler { get; set; } = default!;
+    
+    protected async sealed override Task OnInitializedAsync()
     {
         try
         {
-            await base.OnInitializedAsync();
             await OnInitAsync();
+            await base.OnInitializedAsync();
         }
         catch (Exception exp)
         {
-            _exceptionHandler.Handle(exp);
+            ExceptionHandler.Handle(exp);
         }
     }
 
-    protected sealed override async Task OnParametersSetAsync()
+    protected async sealed override Task OnParametersSetAsync()
     {
         try
         {
-            await base.OnParametersSetAsync();
             await OnParamsSetAsync();
+            await base.OnParametersSetAsync();
         }
         catch (Exception exp)
         {
-            _exceptionHandler.Handle(exp);
+            ExceptionHandler.Handle(exp);
         }
     }
 
-    protected sealed override async Task OnAfterRenderAsync(bool firstRender)
+    protected async override Task OnAfterRenderAsync(bool firstRender)
     {
-        var currentUrl = _navigationManager.Uri.Replace(_navigationManager.BaseUri, "/", StringComparison.Ordinal);
+        var currentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
         var hashIndex = currentUrl.LastIndexOf('#');
         if (hashIndex > 0)
         {
             var elementId = currentUrl.Substring(hashIndex + 1);
-            _ = _js.InvokeVoidAsync("App.scrollIntoView", elementId);
+            _ = JSRuntime.InvokeVoidAsync("App.scrollIntoView", elementId);
+        }
+
+        if (firstRender)
+        {
+            try
+            {
+                await OnAfterFirstRenderAsync();
+            }
+            catch (Exception exp)
+            {
+                ExceptionHandler.Handle(exp);
+            }
         }
 
         await base.OnAfterRenderAsync(firstRender);
@@ -62,6 +86,14 @@ public partial class AppComponentBase : ComponentBase
     }
 
     /// <summary>
+    /// Method invoked after first time the component has been rendered.
+    /// </summary>
+    protected virtual Task OnAfterFirstRenderAsync()
+    {
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
     /// Executes passed action while catching all possible exceptions to prevent app crash.
     /// </summary>
     public virtual Action WrapHandled(Action action)
@@ -74,7 +106,7 @@ public partial class AppComponentBase : ComponentBase
             }
             catch (Exception exp)
             {
-                _exceptionHandler.Handle(exp);
+                ExceptionHandler.Handle(exp);
             }
         };
     }
@@ -92,7 +124,7 @@ public partial class AppComponentBase : ComponentBase
             }
             catch (Exception exp)
             {
-                _exceptionHandler.Handle(exp);
+                ExceptionHandler.Handle(exp);
             }
         };
     }
@@ -110,7 +142,7 @@ public partial class AppComponentBase : ComponentBase
             }
             catch (Exception exp)
             {
-                _exceptionHandler.Handle(exp);
+                ExceptionHandler.Handle(exp);
             }
         };
     }
@@ -128,7 +160,7 @@ public partial class AppComponentBase : ComponentBase
             }
             catch (Exception exp)
             {
-                _exceptionHandler.Handle(exp);
+                ExceptionHandler.Handle(exp);
             }
         };
     }

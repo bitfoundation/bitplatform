@@ -1,16 +1,11 @@
 ﻿namespace Bit.Websites.Sales.Shared.Infra;
 
 /// <summary>
-/// https://bitplatform.dev/todo-template/getting-started
+/// https://bitplatform.dev/todo-template/hosting-models
 /// </summary>
 public class WebAppDeploymentTypeDetector
 {
     public static WebAppDeploymentTypeDetector Current { get; set; } = new WebAppDeploymentTypeDetector();
-
-    public virtual bool IsDefault()
-    {
-        return Mode == WebAppDeploymentType.Default;
-    }
 
     public virtual bool IsStatic()
     {
@@ -28,10 +23,8 @@ public class WebAppDeploymentTypeDetector
         {
 #if SSR
             return WebAppDeploymentType.Ssr;
-#elif Static
-            return WebAppDeploymentType.Static;
 #else
-            return WebAppDeploymentType.Default;
+            return WebAppDeploymentType.Static;
 #endif
         }
     }

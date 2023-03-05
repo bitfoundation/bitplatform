@@ -1,4 +1,4 @@
-﻿namespace Bit.Websites.Sales.Web.Shared;
+﻿namespace Bit.Websites.Sales.Web;
 
 public partial class Header
 {

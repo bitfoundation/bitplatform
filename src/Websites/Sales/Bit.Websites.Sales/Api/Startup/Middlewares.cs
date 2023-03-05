@@ -9,7 +9,7 @@ public class Middlewares
     public static void Use(IApplicationBuilder app, IHostEnvironment env, IConfiguration configuration)
     {
         app.UseForwardedHeaders();
-        
+
         if (env.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();
@@ -26,15 +26,9 @@ public class Middlewares
         app.UseBlazorFrameworkFiles();
 #endif
 
-        app.UseSwagger();
-
-        app.UseSwaggerUI(options =>
-        {
-            options.InjectJavascript("/swagger/swagger-utils.js");
-        });
-
         if (env.IsDevelopment() is false)
         {
+            app.UseHttpsRedirection();
             app.UseResponseCompression();
         }
 
@@ -51,13 +45,27 @@ public class Middlewares
             }
         });
 
-        app.UseHttpResponseExceptionHandler();
         app.UseRouting();
 
-        // 0.0.0.0 is for the Blazor Hybrid mode (Android, iOS, Windows apps)
-        app.UseCors(options => options.WithOrigins("https://localhost:4001", "https://0.0.0.0").AllowAnyHeader().AllowAnyMethod().AllowCredentials());
+        app.UseCors(options => options.WithOrigins("https://localhost:4001").AllowAnyHeader().AllowAnyMethod().AllowCredentials());
 
         app.UseResponseCaching();
+
+#if MultilingualEnabled
+        var supportedCultures = CultureInfoManager.SupportedCultures.Select(sc => CultureInfoManager.CreateCultureInfo(sc.code)).ToArray();
+        app.UseRequestLocalization(new RequestLocalizationOptions
+        {
+            SupportedCultures = supportedCultures,
+            SupportedUICultures = supportedCultures,
+            ApplyCurrentCultureToResponseHeaders = true
+        }.SetDefaultCulture(CultureInfoManager.DefaultCulture.code));
+#endif
+
+        app.UseHttpResponseExceptionHandler();
+
+        app.UseSwagger();
+
+        app.UseSwaggerUI();
 
         app.UseEndpoints(endpoints =>
         {

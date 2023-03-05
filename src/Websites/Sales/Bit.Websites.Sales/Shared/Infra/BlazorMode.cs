@@ -2,6 +2,6 @@
 
 public enum BlazorMode
 {
-    BlazorServer,
-    BlazorWebAssembly
+    BlazorServer = 0,
+    BlazorWebAssembly = 1
 }

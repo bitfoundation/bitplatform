@@ -1,26 +1,27 @@
 ﻿using System.Diagnostics;
-using Bit.Websites.Sales.Web.Shared;
 
 namespace Bit.Websites.Sales.Web.Services.Implementations;
 
-public class ExceptionHandler : IExceptionHandler
+public partial class ExceptionHandler : IExceptionHandler
 {
+    [AutoInject] IStringLocalizer<AppStrings> _localizer = default!;
+
     public void Handle(Exception exception, IDictionary<string, object?>? parameters = null)
     {
 #if DEBUG
-        MessageBox.Show(exception.ToString(), "Error");
-        Console.WriteLine(exception.ToString());
+        string exceptionMessage = (exception as KnownException)?.Message ?? exception.ToString();
+        _ = MessageBox.Show(exceptionMessage, _localizer[nameof(AppStrings.Error)]);
+        Console.WriteLine(exceptionMessage);
         Debugger.Break();
 #else
-        if (exception is KnownException)
+        if (exception is KnownException knownException)
         {
-            MessageBox.Show(exception.Message, "Error");
+            _ = MessageBox.Show(knownException.Message, _localizer[nameof(AppStrings.Error)]);
         }
         else
         {
-            MessageBox.Show("Unknown error.", "Error");
+            _ = MessageBox.Show(_localizer[nameof(AppStrings.UnknownException)], _localizer[nameof(AppStrings.Error)]);
         }
 #endif
-
     }
 }
