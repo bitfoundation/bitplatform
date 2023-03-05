@@ -1,7 +1,6 @@
 ﻿using System.Linq;
-using Bunit;
-using Bunit.Extensions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Bunit;
 
 namespace Bit.BlazorUI.Tests.Sliders;
 
@@ -15,155 +14,110 @@ public class BitSliderTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow(Visual.Fluent, false),
-        DataRow(Visual.Fluent, true),
-
-        DataRow(Visual.Cupertino, false),
-        DataRow(Visual.Cupertino, true),
-
-        DataRow(Visual.Material, false),
-        DataRow(Visual.Material, true),
+        DataRow(false),
+        DataRow(true)
     ]
-    public void BitSliderVerticalTest(Visual visual, bool vertical)
+    public void BitSliderVerticalTest(bool vertical)
     {
         var com = RenderComponent<BitSliderTest>(parameters =>
         {
-            parameters.Add(p => p.Visual, visual);
             parameters.Add(p => p.Vertical, vertical);
         });
 
-        var bitSlider = com.Find(".bit-slider");
-        Assert.IsTrue(bitSlider.ClassList.Contains($"bit-slider-{(vertical ? "vertical" : "horizontal")}"));
+        var bitSlider = com.Find(".bit-sld");
+        Assert.IsTrue(bitSlider.ClassList.Contains($"{(vertical ? "vertical" : "horizontal")}"));
     }
 
     [DataTestMethod,
-        DataRow(Visual.Fluent, false),
-        DataRow(Visual.Fluent, true),
-
-        DataRow(Visual.Cupertino, false),
-        DataRow(Visual.Cupertino, true),
-
-        DataRow(Visual.Material, false),
-        DataRow(Visual.Material, true),
+        DataRow(false),
+        DataRow(true)
     ]
-    public void BitSliderRangedVerticalTest(Visual visual, bool vertical)
+    public void BitSliderRangedVerticalTest(bool vertical)
     {
         var com = RenderComponent<BitSliderTest>(parameters =>
         {
-            parameters.Add(p => p.Visual, visual);
             parameters.Add(p => p.Vertical, vertical);
             parameters.Add(p => p.Ranged, true);
         });
 
-        var bitSlider = com.Find(".bit-slider");
-        Assert.IsTrue(bitSlider.ClassList.Contains($"bit-slider-ranged-{(vertical ? "vertical" : "horizontal")}"));
+        var bitSlider = com.Find(".bit-sld");
+        Assert.IsTrue(bitSlider.ClassList.Contains($"ranged-{(vertical ? "vertical" : "horizontal")}"));
     }
 
     [DataTestMethod,
-        DataRow(Visual.Fluent, false),
-        DataRow(Visual.Fluent, true),
-
-        DataRow(Visual.Cupertino, false),
-        DataRow(Visual.Cupertino, true),
-
-        DataRow(Visual.Material, false),
-        DataRow(Visual.Material, true),
+        DataRow(false),
+        DataRow(true)
     ]
-    public void BitSliderEnabledTest(Visual visual, bool isEnabled)
+    public void BitSliderEnabledTest(bool isEnabled)
     {
         var com = RenderComponent<BitSliderTest>(parameters =>
         {
-            parameters.Add(p => p.Visual, visual);
             parameters.Add(p => p.IsEnabled, isEnabled);
         });
 
-        var bitSlider = com.Find(".bit-slider");
+        var bitSlider = com.Find(".bit-sld");
 
-        var isEnabledClass = isEnabled ? "enabled" : "disabled";
-        var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
+        if (isEnabled)
+        {
+            Assert.IsFalse(bitSlider.ClassList.Contains("disabled"));
+        }
+        else
+        {
+            Assert.IsTrue(bitSlider.ClassList.Contains("disabled"));
+        }
 
-        Assert.IsTrue(bitSlider.ClassList.Contains($"bit-slider-{isEnabledClass}-{visualClass}"));
     }
 
     [DataTestMethod,
-        DataRow(Visual.Fluent, false),
-        DataRow(Visual.Fluent, true),
-
-        DataRow(Visual.Cupertino, false),
-        DataRow(Visual.Cupertino, true),
-
-        DataRow(Visual.Material, false),
-        DataRow(Visual.Material, true),
+        DataRow(false),
+        DataRow(true)
     ]
-    public void BitSliderRangedTest(Visual visual, bool ranged)
+    public void BitSliderRangedTest(bool ranged)
     {
         var com = RenderComponent<BitSliderTest>(parameters =>
         {
-            parameters.Add(p => p.Visual, visual);
             parameters.Add(p => p.Ranged, ranged);
         });
 
-        var bitSlider = com.Find(".bit-slider");
+        var bitSlider = com.Find(".bit-sld");
 
-        Assert.IsTrue(!ranged || bitSlider.ClassList.Contains($"bit-slider-ranged-horizontal"));
-        Assert.AreEqual(bitSlider.GetElementsByTagName("input").Count(), ranged ? 2 : 1);
+        Assert.IsTrue(ranged is false || bitSlider.ClassList.Contains($"ranged-horizontal"));
+        Assert.AreEqual(bitSlider.GetElementsByTagName("input").Length, ranged ? 2 : 1);
     }
 
     [DataTestMethod,
-        DataRow(Visual.Fluent, null, 3),
-        DataRow(Visual.Fluent, 2, null),
-        DataRow(Visual.Fluent, 2, 3),
-        DataRow(Visual.Fluent, null, null),
-
-        DataRow(Visual.Cupertino, null, 3),
-        DataRow(Visual.Cupertino, 2, null),
-        DataRow(Visual.Cupertino, 2, 3),
-        DataRow(Visual.Cupertino, null, null),
-
-        DataRow(Visual.Material, null, 3),
-        DataRow(Visual.Material, 2, null),
-        DataRow(Visual.Material, 2, 3),
-        DataRow(Visual.Material, null, null)
+        DataRow(null, 3),
+        DataRow(2, null),
+        DataRow(2, 3),
+        DataRow(null, null)
     ]
-    public void BitSliderDefaultLowerValueTest(Visual visual, int? lowerValue, int? defaultLowerValue)
+    public void BitSliderDefaultLowerValueTest(int? lowerValue, int? defaultLowerValue)
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.AddCascadingValue(visual);
             parameters.Add(p => p.LowerValue, lowerValue);
             parameters.Add(p => p.DefaultLowerValue, defaultLowerValue);
             parameters.Add(p => p.ShowValue, true);
             parameters.Add(p => p.IsRanged, true);
         });
 
-        // Find fisrt label with valueLabel css class
-        var label = com.Find(".bit-slider-value");
+        // Find first label with valueLabel css class
+        var label = com.Find(".value-label");
 
         var actualValue = lowerValue.HasValue ? lowerValue : defaultLowerValue;
         Assert.AreEqual(label.TextContent, actualValue.GetValueOrDefault().ToString());
     }
 
     [DataTestMethod,
-        DataRow(Visual.Fluent, null, 3),
-        DataRow(Visual.Fluent, 2, null),
-        DataRow(Visual.Fluent, 2, 3),
-        DataRow(Visual.Fluent, null, null),
-
-        DataRow(Visual.Cupertino, null, 3),
-        DataRow(Visual.Cupertino, 2, null),
-        DataRow(Visual.Cupertino, 2, 3),
-        DataRow(Visual.Cupertino, null, null),
-
-        DataRow(Visual.Material, null, 3),
-        DataRow(Visual.Material, 2, null),
-        DataRow(Visual.Material, 2, 3),
-        DataRow(Visual.Material, null, null)
+        DataRow(null, 3),
+        DataRow(2, null),
+        DataRow(2, 3),
+        DataRow(null, null)
     ]
-    public void BitSliderDefaultUpperValueTest(Visual visual, int? upperValue, int? defaultUpperValue)
+    public void BitSliderDefaultUpperValueTest(int? upperValue, int? defaultUpperValue)
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.AddCascadingValue(visual);
             parameters.Add(p => p.UpperValue, upperValue);
             parameters.Add(p => p.DefaultUpperValue, defaultUpperValue);
             parameters.Add(p => p.ShowValue, true);
@@ -171,7 +125,7 @@ public class BitSliderTests : BunitTestContext
         });
 
         // Find labels with valueLabel css class
-        var labels = com.FindAll(".bit-slider-value");
+        var labels = com.FindAll(".value-label");
 
         var actualValue = upperValue.HasValue ? upperValue : defaultUpperValue;
 
@@ -180,215 +134,151 @@ public class BitSliderTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow(Visual.Fluent, null),
-        DataRow(Visual.Fluent, 2),
-
-        DataRow(Visual.Cupertino, null),
-        DataRow(Visual.Cupertino, 2),
-
-        DataRow(Visual.Material, null),
-        DataRow(Visual.Material, 2),
+        DataRow(null),
+        DataRow(2)
     ]
-    public void BitSliderLowerValueTest(Visual visual, int? lowerValue)
+    public void BitSliderLowerValueTest(int? lowerValue)
     {
         var com = RenderComponent<BitSliderTest>(parameters =>
         {
-            parameters.Add(p => p.Visual, visual);
             parameters.Add(p => p.LowerValue, lowerValue);
             parameters.Add(p => p.UpperValue, 6);
             parameters.Add(p => p.ShowValue, true);
             parameters.Add(p => p.Ranged, true);
         });
 
-        var label = com.Find(".bit-slider-value");
+        var label = com.Find(".value-label");
 
         Assert.AreEqual(label.TextContent, lowerValue.GetValueOrDefault().ToString());
     }
 
     [DataTestMethod,
-        DataRow(Visual.Fluent, null),
-        DataRow(Visual.Fluent, 2),
-
-        DataRow(Visual.Cupertino, null),
-        DataRow(Visual.Cupertino, 2),
-
-        DataRow(Visual.Material, null),
-        DataRow(Visual.Material, 2),
+        DataRow(null),
+        DataRow(2),
     ]
-    public void BitSliderUpperValueTest(Visual visual, int? defaultUpperValue)
+    public void BitSliderUpperValueTest(int? defaultUpperValue)
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.Visual, visual);
             parameters.Add(p => p.DefaultUpperValue, defaultUpperValue);
             parameters.Add(p => p.ShowValue, true);
             parameters.Add(p => p.IsRanged, true);
         });
 
         // Find labels with valueLabel css class
-        var labels = com.FindAll(".bit-slider-value");
+        var labels = com.FindAll(".value-label");
 
         Assert.AreEqual(labels.Count, 2);
-        Assert.AreEqual(labels.Last().TextContent, defaultUpperValue.GetValueOrDefault().ToString());
+        Assert.AreEqual(labels[^1].TextContent, defaultUpperValue.GetValueOrDefault().ToString());
     }
 
     [DataTestMethod,
-        DataRow(Visual.Fluent, null, null),
-        DataRow(Visual.Fluent, 2, null),
-        DataRow(Visual.Fluent, null, 6),
-        DataRow(Visual.Fluent, 2, 6),
-
-        DataRow(Visual.Cupertino, null, null),
-        DataRow(Visual.Cupertino, 2, null),
-        DataRow(Visual.Cupertino, null, 6),
-        DataRow(Visual.Cupertino, 2, 6),
-
-        DataRow(Visual.Material, null, null),
-        DataRow(Visual.Material, 2, null),
-        DataRow(Visual.Material, null, 6),
-        DataRow(Visual.Material, 2, 6),
+        DataRow(null, null),
+        DataRow(2, null),
+        DataRow(null, 6),
+        DataRow(2, 6)
     ]
-    public void BitSliderLowerAndUpperValueTest(Visual visual, int? lowerValue, int? upperValue)
+    public void BitSliderLowerAndUpperValueTest(int? lowerValue, int? upperValue)
     {
         var com = RenderComponent<BitSliderTest>(parameters =>
         {
-            parameters.Add(p => p.Visual, visual);
             parameters.Add(p => p.RangeValue, new BitSliderRangeValue { Lower = lowerValue, Upper = upperValue });
             parameters.Add(p => p.ShowValue, true);
             parameters.Add(p => p.Ranged, true);
         });
 
         // Find labels with valueLabel css class
-        var labels = com.FindAll(".bit-slider-value");
+        var labels = com.FindAll(".value-label");
 
         Assert.AreEqual(labels.Count, 2);
-        Assert.AreEqual(labels.First().TextContent, lowerValue.GetValueOrDefault().ToString());
-        Assert.AreEqual(labels.Last().TextContent, upperValue.GetValueOrDefault().ToString());
+        Assert.AreEqual(labels[0].TextContent, lowerValue.GetValueOrDefault().ToString());
+        Assert.AreEqual(labels[^1].TextContent, upperValue.GetValueOrDefault().ToString());
     }
 
     [DataTestMethod,
-        DataRow(Visual.Fluent, null),
-        DataRow(Visual.Fluent, 2),
-
-        DataRow(Visual.Cupertino, null),
-        DataRow(Visual.Cupertino, 2),
-
-        DataRow(Visual.Material, null),
-        DataRow(Visual.Material, 2),
+        DataRow(null),
+        DataRow(2)
     ]
-    public void BitSliderDefaultValueTest(Visual visual, int? defaultValue)
+    public void BitSliderDefaultValueTest(int? defaultValue)
     {
-        var com = RenderComponent<BitSliderTest>(parameters =>
+        var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.Visual, visual);
             parameters.Add(p => p.DefaultValue, defaultValue);
             parameters.Add(p => p.ShowValue, true);
         });
 
-        // Find fisrt label with valueLabel css class
-        var label = com.Find(".bit-slider-value");
+        // Find first label with valueLabel css class
+        var label = com.Find(".value-label");
 
-        Assert.AreEqual(label.TextContent, defaultValue.GetValueOrDefault().ToString());
+        Assert.AreEqual(defaultValue.GetValueOrDefault().ToString(), label.TextContent);
     }
 
     [DataTestMethod,
-        DataRow(Visual.Fluent, null),
-        DataRow(Visual.Fluent, 2),
-
-        DataRow(Visual.Cupertino, null),
-        DataRow(Visual.Cupertino, 2),
-
-        DataRow(Visual.Material, null),
-        DataRow(Visual.Material, 2),
+        DataRow(null),
+        DataRow(2)
     ]
-    public void BitSliderVerticalDefaultValueTest(Visual visual, int? defaultValue)
+    public void BitSliderVerticalDefaultValueTest(int? defaultValue)
     {
-        var com = RenderComponent<BitSliderTest>(parameters =>
+        var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.Visual, visual);
             parameters.Add(p => p.DefaultValue, defaultValue);
-            parameters.Add(p => p.Vertical, true);
+            parameters.Add(p => p.IsVertical, true);
             parameters.Add(p => p.ShowValue, true);
         });
 
-        // Find fisrt label with valueLabel css class
-        var label = com.Find(".bit-slider-value");
+        // Find first label with valueLabel css class
+        var label = com.Find(".value-label");
 
-        Assert.AreEqual(label.TextContent, defaultValue.GetValueOrDefault().ToString());
+        Assert.AreEqual(defaultValue.GetValueOrDefault().ToString(), label.TextContent);
     }
 
     [DataTestMethod,
-        DataRow(Visual.Fluent, null),
-        DataRow(Visual.Fluent, 2),
-
-        DataRow(Visual.Cupertino, null),
-        DataRow(Visual.Cupertino, 2),
-
-        DataRow(Visual.Material, null),
-        DataRow(Visual.Material, 2),
+        DataRow(null),
+        DataRow(2)
     ]
-    public void BitSliderValueTest(Visual visual, int? value)
+    public void BitSliderValueTest(int? value)
     {
         var com = RenderComponent<BitSliderTest>(parameters =>
         {
-            parameters.Add(p => p.Visual, visual);
             parameters.Add(p => p.Value, value);
             parameters.Add(p => p.ShowValue, true);
         });
 
-        // Find fisrt label with valueLabel css class
-        var label = com.Find(".bit-slider-value");
+        // Find first label with valueLabel css class
+        var label = com.Find(".value-label");
 
         Assert.AreEqual(label.TextContent, value.GetValueOrDefault().ToString());
     }
 
     [DataTestMethod,
-        DataRow(Visual.Fluent, null),
-        DataRow(Visual.Fluent, 2),
-
-        DataRow(Visual.Cupertino, null),
-        DataRow(Visual.Cupertino, 2),
-
-        DataRow(Visual.Material, null),
-        DataRow(Visual.Material, 2),
+        DataRow(null),
+        DataRow(2)
     ]
-    public void BitSliderVerticalValueTest(Visual visual, int? value)
+    public void BitSliderVerticalValueTest(int? value)
     {
         var com = RenderComponent<BitSliderTest>(parameters =>
         {
-            parameters.Add(p => p.Visual, visual);
             parameters.Add(p => p.Value, value);
             parameters.Add(p => p.Vertical, true);
             parameters.Add(p => p.ShowValue, true);
         });
 
-        // Find fisrt label with valueLabel css class
-        var label = com.Find(".bit-slider-value");
+        // Find first label with valueLabel css class
+        var label = com.Find(".value-label");
 
         Assert.AreEqual(label.TextContent, value.GetValueOrDefault().ToString());
     }
 
     [DataTestMethod,
-        DataRow(Visual.Fluent, false, null),
-        DataRow(Visual.Fluent, true, null),
-        DataRow(Visual.Fluent, false, 2),
-        DataRow(Visual.Fluent, true, 2),
-
-        DataRow(Visual.Cupertino, false, null),
-        DataRow(Visual.Cupertino, true, null),
-        DataRow(Visual.Cupertino, false, 2),
-        DataRow(Visual.Cupertino, true, 2),
-
-        DataRow(Visual.Material, false, null),
-        DataRow(Visual.Material, true, null),
-        DataRow(Visual.Material, false, 2),
-        DataRow(Visual.Material, true, 2),
+        DataRow(false, null),
+        DataRow(true, null),
+        DataRow(false, 2),
+        DataRow(true, 2)
     ]
-    public void BitSliderStepTest(Visual visual, bool ranged, int? step)
+    public void BitSliderStepTest(bool ranged, int? step)
     {
         var com = RenderComponent<BitSliderTest>(parameters =>
         {
-            parameters.Add(p => p.Visual, visual);
             parameters.Add(p => p.Ranged, ranged);
             if (step.HasValue)
             {
@@ -396,36 +286,29 @@ public class BitSliderTests : BunitTestContext
             }
         });
 
-        var inputs = com.FindAll(".bit-slider input");
+        var inputs = com.FindAll(".bit-sld input");
         Assert.AreEqual(inputs.Count, ranged ? 2 : 1);
 
         foreach (var input in inputs)
         {
-            Assert.AreEqual(input.GetAttribute("step"), (step.HasValue ? step.Value : com.Instance.Step).ToString());
+            Assert.AreEqual(input.GetAttribute("step"), (step ?? com.Instance.Step).ToString());
         }
     }
 
     [DataTestMethod,
-        DataRow(Visual.Fluent, false, 4, 8),
-        DataRow(Visual.Fluent, true, 4, 8),
-
-        DataRow(Visual.Cupertino, false, 4, 8),
-        DataRow(Visual.Cupertino, true, 4, 8),
-
-        DataRow(Visual.Material, false, 4, 8),
-        DataRow(Visual.Material, true, 4, 8)
+        DataRow(false, 4, 8),
+        DataRow(true, 4, 8)
     ]
-    public void BitSliderMinMaxTest(Visual visual, bool ranged, int min, int max)
+    public void BitSliderMinMaxTest(bool ranged, int min, int max)
     {
         var com = RenderComponent<BitSliderTest>(parameters =>
         {
-            parameters.Add(p => p.Visual, visual);
             parameters.Add(p => p.Ranged, ranged);
             parameters.Add(p => p.Min, min);
             parameters.Add(p => p.Max, max);
         });
 
-        var inputs = com.FindAll(".bit-slider input");
+        var inputs = com.FindAll(".bit-sld input");
         Assert.AreEqual(inputs.Count, ranged ? 2 : 1);
 
         foreach (var input in inputs)
@@ -436,26 +319,19 @@ public class BitSliderTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow(Visual.Fluent, null),
-        DataRow(Visual.Fluent, "Bit Title"),
-
-        DataRow(Visual.Cupertino, null),
-        DataRow(Visual.Cupertino, "Bit Title"),
-
-        DataRow(Visual.Material, null),
-        DataRow(Visual.Material, "Bit Title")
+        DataRow(null),
+        DataRow("Bit Title")
     ]
-    public void BitSliderLabelTest(Visual visual, string label)
+    public void BitSliderLabelTest(string label)
     {
-        var com = RenderComponent<BitSliderTest>(parameters =>
+        var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.Visual, visual);
             parameters.Add(p => p.Label, label);
         });
 
         // Find all labels with title css class
         // Method 'FindAll' is used because if the component does not have a label, the element will not be rendered. 
-        var labelElements = com.FindAll(".bit-slider-title");
+        var labelElements = com.FindAll(".label");
         var labelElement = labelElements.SingleOrDefault();
 
         if (label.HasValue())
@@ -470,31 +346,20 @@ public class BitSliderTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow(Visual.Fluent, false, false),
-        DataRow(Visual.Fluent, true, false),
-        DataRow(Visual.Fluent, false, true),
-        DataRow(Visual.Fluent, true, true),
-
-        DataRow(Visual.Cupertino, false, false),
-        DataRow(Visual.Cupertino, true, false),
-        DataRow(Visual.Cupertino, false, true),
-        DataRow(Visual.Cupertino, true, true),
-
-        DataRow(Visual.Material, false, false),
-        DataRow(Visual.Material, true, false),
-        DataRow(Visual.Material, false, true),
-        DataRow(Visual.Material, true, true),
+        DataRow(false, false),
+        DataRow(true, false),
+        DataRow(false, true),
+        DataRow(true, true)
     ]
-    public void BitSliderShowValueTest(Visual visual, bool ranged, bool showValue)
+    public void BitSliderShowValueTest(bool ranged, bool showValue)
     {
         var com = RenderComponent<BitSliderTest>(parameters =>
         {
-            parameters.Add(p => p.Visual, visual);
             parameters.Add(p => p.Ranged, ranged);
             parameters.Add(p => p.ShowValue, showValue);
         });
 
-        var labels = com.FindAll(".bit-slider-value");
+        var labels = com.FindAll(".value-label");
 
         if (showValue)
         {
@@ -508,26 +373,15 @@ public class BitSliderTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow(Visual.Fluent, false, false),
-        DataRow(Visual.Fluent, true, false),
-        DataRow(Visual.Fluent, false, true),
-        DataRow(Visual.Fluent, true, true),
-
-        DataRow(Visual.Cupertino, false, false),
-        DataRow(Visual.Cupertino, true, false),
-        DataRow(Visual.Cupertino, false, true),
-        DataRow(Visual.Cupertino, true, true),
-
-        DataRow(Visual.Material, false, false),
-        DataRow(Visual.Material, true, false),
-        DataRow(Visual.Material, false, true),
-        DataRow(Visual.Material, true, true),
+        DataRow(false, false),
+        DataRow(true, false),
+        DataRow(false, true),
+        DataRow(true, true)
     ]
-    public void BitSliderOriginFromZeroTest(Visual visual, bool ranged, bool originFromZero)
+    public void BitSliderOriginFromZeroTest(bool ranged, bool originFromZero)
     {
         var com = RenderComponent<BitSliderTest>(parameters =>
         {
-            parameters.Add(p => p.Visual, visual);
             parameters.Add(p => p.Ranged, ranged);
             parameters.Add(p => p.OriginFromZero, originFromZero);
         });
@@ -538,40 +392,22 @@ public class BitSliderTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow(Visual.Fluent, false, null),
-        DataRow(Visual.Fluent, true, null),
-        DataRow(Visual.Fluent, false, "P01"),
-        DataRow(Visual.Fluent, true, "P01"),
-
-        DataRow(Visual.Cupertino, false, null),
-        DataRow(Visual.Cupertino, true, null),
-        DataRow(Visual.Cupertino, false, "P01"),
-        DataRow(Visual.Cupertino, true, "P01"),
-
-        DataRow(Visual.Material, false, null),
-        DataRow(Visual.Material, true, null),
-        DataRow(Visual.Material, false, "P01"),
-        DataRow(Visual.Material, true, "P01"),
+        DataRow(false, null),
+        DataRow(true, null),
+        DataRow(false, "P01"),
+        DataRow(true, "P01")
     ]
-    public void BitSliderValueFormatTest(Visual visual, bool ranged, string valueFormat)
+    public void BitSliderValueFormatTest(bool ranged, string valueFormat)
     {
         var com = RenderComponent<BitSliderTest>(parameters =>
         {
-            parameters.Add(p => p.Visual, visual);
             parameters.Add(p => p.ShowValue, true);
             parameters.Add(p => p.Ranged, ranged);
             parameters.Add(p => p.ValueFormat, valueFormat);
         });
 
-        var labels = com.FindAll(".bit-slider-value");
+        var labels = com.FindAll(".value-label");
 
-        if (valueFormat.HasNoValue())
-        {
-            Assert.AreEqual(labels.Count(l => !l.TextContent.Contains("%")), ranged ? 2 : 1);
-        }
-        else
-        {
-            Assert.AreEqual(labels.Count(l => l.TextContent.Contains("%")), ranged ? 2 : 1);
-        }
+        Assert.AreEqual(labels.Count(l => l.TextContent.Contains('%') == valueFormat.HasValue()), ranged ? 2 : 1);
     }
 }

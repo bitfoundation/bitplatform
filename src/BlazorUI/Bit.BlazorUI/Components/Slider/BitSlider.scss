@@ -2,10 +2,10 @@
 
 $BgDefult: $color-neutrals-gray90;
 $BgTrack: $color-neutrals-gray130;
-$BgHover: $BlizzardBlue;
-$BgTrackHover: $DarkAlt;
+$BgHover: $color-general-lightblue;
+$BgTrackHover: $color-primary-dark;
 
-.bit-slider {
+.bit-sld {
     font-family: $typography-font-family;
 
     input {
@@ -23,15 +23,16 @@ $BgTrackHover: $DarkAlt;
         height: spacing(2);
         margin-top: spacing(-0.75);
         border: spacing(0.25) $shape-border-style $BgTrack;
-        border-radius: spacing(10px);
+        border-radius: spacing(1.25);
         box-sizing: border-box;
-        background: $White;
+        background: $color-neutrals-white;
         -webkit-appearance: none;
+        pointer-events: auto;
     }
 
     input::-webkit-slider-runnable-track {
-        height: spacing(4px);
-        border-radius: spacing(4px);
+        height: spacing(0.5);
+        border-radius: spacing(0.5);
         background: $BgDefult;
         box-shadow: none;
     }
@@ -44,15 +45,16 @@ $BgTrackHover: $DarkAlt;
         width: spacing(2);
         height: spacing(2);
         margin-top: calc(max((1rem - 1px - 0px)*.5,0px) - 2rem*.5);
-        border: spacing(2px) solid $BgTrack;
-        border-radius: spacing(10px);
+        border: spacing(0.25) solid $BgTrack;
+        border-radius: spacing(1.25);
         box-sizing: border-box;
-        background: $White;
+        background: $color-neutrals-white;
+        pointer-events: unset;
     }
 
     input::-moz-range-track {
-        height: spacing(4px);
-        border-radius: spacing(4px);
+        height: spacing(0.5);
+        border-radius: spacing(0.5);
         background: $BgDefult;
         box-shadow: none;
     }
@@ -75,22 +77,22 @@ $BgTrackHover: $DarkAlt;
         width: spacing(2);
         height: spacing(2);
         margin-top: calc(max((1rem - 1px - 0px)*.5,0px) - 2rem*.5);
-        border: spacing(2px) solid $BgTrack;
-        border-radius: spacing(10px);
+        border: spacing(0.25) $shape-border-style $BgTrack;
+        border-radius: spacing(1.25);
         box-sizing: border-box;
-        background: $White;
+        pointer-events: unset;
     }
 
     input::-ms-track {
-        height: spacing(4px);
-        border-radius: spacing(4px);
+        height: spacing(0.5);
+        border-radius: spacing(0.5);
         background: $BgDefult;
         box-shadow: none;
     }
 
     input::-ms-fill-lower {
-        height: spacing(4px);
-        border-radius: spacing(4px);
+        height: spacing(0.5);
+        border-radius: spacing(0.5);
         background: $BgDefult;
         box-shadow: none;
     }
@@ -100,283 +102,9 @@ $BgTrackHover: $DarkAlt;
     input {
         -webkit-appearance: none;
     }
-}
-
-.bit-slider-title {
-    display: block;
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    box-shadow: none;
-    overflow-wrap: break-word;
-    -webkit-font-smoothing: antialiased;
-    font-size: spacing(14px);
-    font-weight: 600;
-    color: $Grey90;
-}
-
-.bit-slider-disabled-fluent {
-    pointer-events: none;
-    cursor: not-allowed;
-    opacity: 0.65;
-}
-
-.bit-slider-container {
-    display: flex;
-    align-items: center;
-    padding: 0;
-    position: relative;
-}
-
-.bit-slider-value {
-    display: block;
-    width: spacing(40px);
-    margin: 0 spacing(8px);
-    padding: spacing(5px) 0;
-    box-sizing: border-box;
-    box-shadow: none;
-    font-size: spacing(14px);
-    font-weight: 600;
-    color: $Grey90;
-    overflow-wrap: break-word;
-    white-space: nowrap;
-    -webkit-font-smoothing: antialiased;
-}
-
-.bit-slider [id=multi-lbl] {
-    grid-column: 1/span 2;
-}
-
-input::-webkit-slider-thumb {
-    width: 2rem;
-    height: 4rem;
-    border: none;
-    /* get rid of Firefox thumb border */
-    border-radius: 0;
-    /* get rid of Firefox corner rounding */
-    background: linear-gradient(90deg, $White spacing(2px), transparent 0) calc(1rem - 1px), radial-gradient(circle, var(--col) calc(1rem - 1px), transparent 1rem);
-    pointer-events: auto;
-}
-
-input::-moz-range-thumb {
-    width: 2rem;
-    height: 4rem;
-    border: none;
-    /* get rid of Firefox thumb border */
-    border-radius: 0;
-    /* get rid of Firefox corner rounding */
-    background: linear-gradient(90deg, $White spacing(2px), transparent 0) calc(1rem - 1px), radial-gradient(circle, var(--col) calc(1rem - 1px), transparent 1rem);
-    pointer-events: auto;
-}
-
-//ZeroTick
-.zero-tick {
-    position: absolute;
-    background-color: $Grey20;
-    z-index: 9999;
-}
-
-.bit-slider-vertical {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-
-    .bit-slider-value {
-        text-align: center;
-        padding-top: spacing(50px);
-        box-sizing: border-box;
-    }
-
-    .bit-slider-container {
-        width: spacing(50px);
-        height: 100%;
-        margin-left: 0;
-        display: block;
-    }
-
-    input {
-        transform-origin: left;
-        margin: 0 spacing(25px);
-        margin-top: spacing(10px);
-        height: spacing(60px);
-    }
-
-    .zero-tick {
-        width: spacing(14px);
-        height: spacing(1px);
-        margin-left: spacing(18px);
-    }
-}
-
-.bit-slider-horizontal {
-    input {
-        width: 100%;
-        flex-grow: 1;
-    }
-
-    .zero-tick {
-        width: spacing(1px);
-        height: spacing(2);
-    }
-}
-
-.bit-slider-ranged-vertical {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-
-    .bit-slider-value {
-        text-align: center;
-    }
-
-    .bit-slider-box {
-        --dif: calc(var(--max) - var(--min));
-        display: grid;
-        grid-template: repeat(2, -webkit-max-content) 4px/1fr 1fr;
-        grid-template: repeat(2, max-content) 4px/1fr 1fr;
-        position: relative;
-        margin: 1em auto;
-        width: 100%;
-        background: linear-gradient(0deg, $BgDefult spacing(4px), transparent 0);
-    }
-
-    .bit-slider-box::before,
-    .bit-slider-box::after {
-        height: spacing(4px);
-        grid-column: 1/span 2;
-        grid-row: 3;
-        background: $BgTrack;
-        content: "";
-    }
-
-    .bit-slider-box::before {
-        width: calc((var(--h) - var(--l))/var(--dif)*100%);
-        margin-left: calc((var(--l) - var(--min))/var(--dif)*100%);
-    }
-
-    .bit-slider-box::after {
-        width: calc((var(--l) - var(--h))/var(--dif)*100%);
-        margin-left: calc((var(--h) - var(--min))/var(--dif)*100%);
-    }
-
-    .bit-slider-container {
-        transform: rotate(270deg);
-    }
-
-    input {
-        grid-column: 1/span 2;
-        grid-row: 3;
-        z-index: 1;
-        top: 0;
-        left: 0;
-        margin: 0;
-        background: none;
-        /* get rid of white Chrome background */
-        --col: #000;
-        pointer-events: none;
-    }
-
-    input::-webkit-slider-runnable-track {
-        width: 100%;
-        height: 100%;
-        background: none;
-    }
-
-    input::-moz-range-track {
-        width: 100%;
-        height: 100%;
-        background: none;
-    }
-
-    .zero-tick {
-        width: spacing(2);
-        height: spacing(1px);
-        margin-top: spacing(1px);
-        margin-left: spacing(18px);
-        transform: rotate(270deg);
-    }
-}
-
-.bit-slider-ranged-horizontal {
-    .bit-slider-container {
-        display: flex;
-    }
-
-    .bit-slider-box {
-        --dif: calc(var(--max) - var(--min));
-        display: grid;
-        grid-template: repeat(2, -webkit-max-content) 4px/1fr 1fr;
-        grid-template: repeat(2, max-content) 4px/1fr 1fr;
-        position: relative;
-        margin: 1em auto;
-        width: 100%;
-        background: linear-gradient(0deg, $BgDefult spacing(4px), transparent 0);
-    }
-
-    .bit-slider-box::before,
-    .bit-slider-box::after {
-        height: spacing(4px);
-        grid-column: 1/span 2;
-        grid-row: 3;
-        background: $BgTrack;
-        content: "";
-    }
-
-    .bit-slider-box::before {
-        width: calc((var(--h) - var(--l))/var(--dif)*100%);
-        margin-left: calc((var(--l) - var(--min))/var(--dif)*100%);
-    }
-
-    .bit-slider-box::after {
-        width: calc((var(--l) - var(--h))/var(--dif)*100%);
-        margin-left: calc((var(--h) - var(--min))/var(--dif)*100%);
-    }
-
-    input {
-        grid-column: 1/span 2;
-        grid-row: 3;
-        z-index: 1;
-        top: 0;
-        left: 0;
-        margin: 0;
-        background: none;
-        /* get rid of white Chrome background */
-        --col: #000;
-        pointer-events: none;
-    }
-
-    input::-webkit-slider-runnable-track {
-        width: 100%;
-        height: 100%;
-        background: none;
-    }
-
-    input::-moz-range-track {
-        width: 100%;
-        height: 100%;
-        background: none;
-    }
-
-    .zero-tick {
-        width: spacing(1px);
-        height: spacing(2);
-        margin-top: spacing(-5px);
-    }
-}
-
-.bit-slider-enabled-fluent {
-    .bit-slider-title,
-    .bit-slider-value {
-        color: $Grey160;
-    }
-
-    .zero-tick {
-        background-color: $Grey60;
-    }
 
     input:hover .zero-tick {
-        background-color: $ThemeLighter;
+        background-color: $color-secondary-light;
     }
 
     input::-webkit-slider-thumb:hover,
@@ -422,16 +150,259 @@ input::-moz-range-thumb {
     input:active::-ms-fill-lower {
         background: $BgTrackHover;
     }
-}
 
-.bit-slider-enabled-fluent.bit-slider-ranged-horizontal,
-.bit-slider-enabled-fluent.bit-slider-ranged-vertical {
-    .bit-slider-box:hover {
-        background: linear-gradient(0deg, $BgHover spacing(4px), transparent 0);
+    .label {
+        display: block;
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        box-shadow: none;
+        overflow-wrap: break-word;
+        -webkit-font-smoothing: antialiased;
+        font-size: spacing(1.75);
+        font-weight: 600;
+        color: $color-neutrals-gray160;
     }
 
-    .bit-slider-box:hover::before,
-    .bit-slider-box:hover::after {
-        background: $BgTrackHover;
+    .container {
+        display: flex;
+        align-items: center;
+        padding: 0;
+        position: relative;
+    }
+
+    .value-label {
+        display: block;
+        width: spacing(5);
+        margin: 0 spacing(1);
+        padding: spacing(0.625) 0;
+        box-sizing: border-box;
+        box-shadow: none;
+        font-size: spacing(1.75);
+        font-weight: 600;
+        color: $color-neutrals-gray160;
+        overflow-wrap: break-word;
+        white-space: nowrap;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    .zero-tick {
+        position: absolute;
+        background-color: $color-neutrals-gray60;
+        z-index: 9999;
+    }
+
+    &.disabled {
+        pointer-events: none;
+        cursor: not-allowed;
+        opacity: 0.65;
+
+        .label,
+        .value-label {
+            color: $color-neutrals-gray90;
+        }
+
+        .zero-tick {
+            background-color: $color-neutrals-gray20;
+        }
+    }
+
+    &.vertical {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+        .value-label {
+            text-align: center;
+            padding-top: spacing(6.25);
+            box-sizing: border-box;
+        }
+
+        .container {
+            width: spacing(6.25);
+            height: 100%;
+            margin-left: 0;
+            display: block;
+        }
+
+        input {
+            transform-origin: left;
+            margin: 0 spacing(3.125);
+            margin-top: spacing(1.25);
+            height: spacing(7.5);
+        }
+
+        .zero-tick {
+            width: spacing(1.75);
+            height: spacing(0.125);
+            margin-left: spacing(2.25);
+        }
+    }
+
+    &.horizontal {
+        input {
+            width: 100%;
+            flex-grow: 1;
+        }
+
+        .zero-tick {
+            width: spacing(0.125);
+            height: spacing(2);
+        }
+    }
+
+    &.ranged-vertical {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+        .value-label {
+            text-align: center;
+        }
+
+        .box {
+            --dif: calc(var(--max) - var(--min));
+            display: grid;
+            grid-template: repeat(2, -webkit-max-content) 4px/1fr 1fr;
+            grid-template: repeat(2, max-content) 4px/1fr 1fr;
+            position: relative;
+            margin: 1em auto;
+            background: linear-gradient(0deg, $BgDefult spacing(0.5), transparent 0);
+        }
+
+        .box::before,
+        .box::after {
+            height: spacing(0.5);
+            grid-column: 1/span 2;
+            grid-row: 3;
+            background: $BgTrack;
+            content: "";
+        }
+
+        .box::before {
+            width: calc((var(--h) - var(--l))/var(--dif)*100%);
+            margin-left: calc((var(--l) - var(--min))/var(--dif)*100%);
+        }
+
+        .box::after {
+            width: calc((var(--l) - var(--h))/var(--dif)*100%);
+            margin-left: calc((var(--h) - var(--min))/var(--dif)*100%);
+        }
+
+        .container {
+            flex-grow: 1;
+            margin: 1rem 0;
+            transform: rotate(270deg);
+        }
+
+        input {
+            grid-column: 1/span 2;
+            grid-row: 3;
+            z-index: 1;
+            top: 0;
+            left: 0;
+            margin: 0;
+            background: none;
+            --col: #000;
+        }
+
+        input::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 100%;
+            background: none;
+        }
+
+        input::-moz-range-track {
+            width: 100%;
+            height: 100%;
+            background: none;
+        }
+
+        .zero-tick {
+            width: spacing(2);
+            height: spacing(0.125);
+            margin-top: spacing(0.125);
+            margin-left: spacing(2.25);
+            transform: rotate(270deg);
+        }
+    }
+
+    &.ranged-horizontal {
+        .box {
+            --dif: calc(var(--max) - var(--min));
+            display: grid;
+            grid-template: repeat(2, -webkit-max-content) 4px/1fr 1fr;
+            grid-template: repeat(2, max-content) 4px/1fr 1fr;
+            position: relative;
+            margin: 1em auto;
+            width: 100%;
+            background: linear-gradient(0deg, $BgDefult spacing(0.5), transparent 0);
+        }
+
+        .box::before,
+        .box::after {
+            height: spacing(0.5);
+            grid-column: 1/span 2;
+            grid-row: 3;
+            background: $BgTrack;
+            content: "";
+        }
+
+        .box::before {
+            width: calc((var(--h) - var(--l))/var(--dif)*100%);
+            margin-left: calc((var(--l) - var(--min))/var(--dif)*100%);
+        }
+
+        .box::after {
+            width: calc((var(--l) - var(--h))/var(--dif)*100%);
+            margin-left: calc((var(--h) - var(--min))/var(--dif)*100%);
+        }
+
+        input {
+            grid-column: 1/span 2;
+            grid-row: 3;
+            z-index: 1;
+            top: 0;
+            left: 0;
+            margin: 0;
+            background: none;
+            /* get rid of white Chrome background */
+            --col: #000;
+        }
+
+        input::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 100%;
+            background: none;
+        }
+
+        input::-moz-range-track {
+            width: 100%;
+            height: 100%;
+            background: none;
+        }
+
+        .zero-tick {
+            width: spacing(0.125);
+            height: spacing(2);
+            margin-top: spacing(-0.625);
+        }
+    }
+
+    &.ranged-horizontal,
+    &.ranged-vertical {
+        input {
+            pointer-events: none;
+        }
+
+        .box:hover {
+            background: linear-gradient(0deg, $BgHover spacing(0.5), transparent 0);
+        }
+
+        .box:hover::before,
+        .box:hover::after {
+            background: $BgTrackHover;
+        }
     }
 }

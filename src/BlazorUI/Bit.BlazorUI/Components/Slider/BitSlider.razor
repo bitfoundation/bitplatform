@@ -43,7 +43,7 @@
                        max="@Max"
                        step="@Step"
                        @bind-value="@_firstInputValue"
-                       @oninput="@(args => HandleOnInput(args, true))"
+                       @oninput="@(args => HandleOnRangeInput(args, true))"
                        disabled=@(!IsEnabled)
                        role="slider"
                        tabindex="@GetTabIndex"
@@ -60,7 +60,7 @@
                        max="@Max"
                        step="@Step"
                        @bind-value="@_secondInputValue"
-                       @oninput="@(args => HandleOnInput(args, false))"
+                       @oninput="@(args => HandleOnRangeInput(args, false))"
                        disabled=@(!IsEnabled)
                        role="slider"
                        tabindex="@GetTabIndex"

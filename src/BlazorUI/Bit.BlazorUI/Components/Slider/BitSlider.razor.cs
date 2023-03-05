@@ -45,17 +45,17 @@ public partial class BitSlider
     [Parameter] public Func<double, string>? AriaValueText { get; set; }
 
     /// <summary>
-    /// The initial lower value of the Slider is ranged is true
+    /// The default lower value of the ranged Slider.
     /// </summary>
     [Parameter] public double? DefaultLowerValue { get; set; }
 
     /// <summary>
-    /// The initial upper value of the Slider is ranged is true
+    /// The default upper value of the ranged Slider.
     /// </summary>
     [Parameter] public double? DefaultUpperValue { get; set; }
 
     /// <summary>
-    /// The initial value of the Slider
+    /// The default value of the Slider.
     /// </summary>
     [Parameter] public double? DefaultValue { get; set; }
 
@@ -118,7 +118,7 @@ public partial class BitSlider
     [Parameter] public string? Label { get; set; }
 
     /// <summary>
-    /// The initial lower value of the Slider is ranged is true
+    /// The lower value of the ranged Slider.
     /// </summary>
     [Parameter]
     public double? LowerValue
@@ -152,7 +152,7 @@ public partial class BitSlider
     [Parameter] public EventCallback<ChangeEventArgs> OnChange { get; set; }
 
     /// <summary>
-    /// The initial range value of the Slider. Use this parameter to set value for both LowerValue and UpperValue
+    /// The initial range value of the Slider. Use this parameter to set value for both LowerValue and UpperValue.
     /// </summary>
     [Parameter]
     public BitSliderRangeValue? RangeValue
@@ -190,7 +190,7 @@ public partial class BitSlider
     [Parameter] public double Step { get; set; } = 1;
 
     /// <summary>
-    /// The initial upper value of the Slider is ranged is true
+    /// The upper value of the ranged Slider.
     /// </summary>
     [Parameter]
     public double? UpperValue
@@ -209,7 +209,7 @@ public partial class BitSlider
     [Parameter] public EventCallback<double?> UpperValueChanged { get; set; }
 
     /// <summary>
-    /// The initial value of the Slider
+    /// The value of the Slider
     /// </summary>
     [Parameter]
     public double? Value
@@ -238,12 +238,7 @@ public partial class BitSlider
     {
         ClassBuilder.Register(() => IsReadonly ? "readonly" : string.Empty);
 
-        ClassBuilder.Register(() =>
-        {
-            var rangedClass = IsRanged ? "ranged" : null;
-            var orientationClass = IsVertical ? "vertical" : "horizontal";
-            return $"{rangedClass}-{orientationClass}";
-        });
+        ClassBuilder.Register(() => $"{(IsRanged ? "ranged-" : null)}{(IsVertical ? "vertical" : "horizontal")}");
     }
 
     protected override void OnInitialized()
@@ -312,63 +307,42 @@ public partial class BitSlider
     private async Task HandleOnInput(ChangeEventArgs e)
     {
         if (IsEnabled is false) return;
+        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
-        if (IsRanged)
-        {
-            if (UpperValueHasBeenSet && UpperValueChanged.HasDelegate is false) return;
-            if (LowerValueHasBeenSet && LowerValueChanged.HasDelegate is false) return;
-
-            UpperValue = null;
-            LowerValue = null;
-        }
-        else
-        {
-            if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
-
-            Value = Convert.ToDouble(e.Value, CultureInfo.InvariantCulture);
-            FillSlider();
-        }
+        Value = Convert.ToDouble(e.Value, CultureInfo.InvariantCulture);
+        FillSlider();
 
         await OnChange.InvokeAsync(e);
     }
 
-    private async Task HandleOnInput(ChangeEventArgs e, bool isFirstInput)
+    private async Task HandleOnRangeInput(ChangeEventArgs e, bool isFirstInput)
     {
         if (IsEnabled is false) return;
+        if (LowerValueHasBeenSet && LowerValueChanged.HasDelegate is false) return;
+        if (UpperValueHasBeenSet && UpperValueChanged.HasDelegate is false) return;
 
-        if (IsRanged)
+        if (isFirstInput)
         {
-            if (UpperValueHasBeenSet && UpperValueChanged.HasDelegate is false) return;
-            if (LowerValueHasBeenSet && LowerValueChanged.HasDelegate is false) return;
-
-            if (isFirstInput)
-            {
-                _firstInputValue = Convert.ToDouble(e.Value, CultureInfo.InvariantCulture);
-            }
-            else
-            {
-                _secondInputValue = Convert.ToDouble(e.Value, CultureInfo.InvariantCulture);
-            }
-
-            if (_firstInputValue < _secondInputValue)
-            {
-                LowerValue = _firstInputValue;
-                UpperValue = _secondInputValue;
-            }
-            else
-            {
-                LowerValue = _secondInputValue;
-                UpperValue = _firstInputValue;
-            }
-
-            FillSlider();
+            _firstInputValue = Convert.ToDouble(e.Value, CultureInfo.InvariantCulture);
         }
         else
         {
-            if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
-            
-            Value = null;
+            _secondInputValue = Convert.ToDouble(e.Value, CultureInfo.InvariantCulture);
         }
+
+        if (_firstInputValue < _secondInputValue)
+        {
+            LowerValue = _firstInputValue;
+            UpperValue = _secondInputValue;
+        }
+        else
+        {
+            LowerValue = _secondInputValue;
+            UpperValue = _firstInputValue;
+        }
+
+        FillSlider();
+
 
         await OnChange.InvokeAsync(e);
     }
