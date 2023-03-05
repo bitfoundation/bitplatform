@@ -27,7 +27,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-        global-json-file: src/Websites/Sales/global.json
+        global-json-file: src/Websites/Sales/Bit.Websites.Sales/global.json
 
     - name: Install wasm-tools
       run: dotnet workload install wasm-tools
