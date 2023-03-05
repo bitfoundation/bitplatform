@@ -5,7 +5,7 @@
                ComponentParameters="componentParameters" EnumParameters="enumParameters">
     <ComponentExampleBox Title="Default BitDatePicker" HTMLSourceCode="@example1HTMLCode" ExampleId="example1">
         <ExamplePreview>
-            <BitDatePicker Style="max-width: 300px"
+            <BitDatePicker Style="max-width: 350px"
                            AriaLabel="Select a date"
                            Placeholder="Select a date..." />
         </ExamplePreview>
@@ -14,7 +14,7 @@
     <ComponentExampleBox Title="Disabled BitDatePicker" HTMLSourceCode="@example2HTMLCode" ExampleId="example2">
         <ExamplePreview>
             <BitDatePicker IsEnabled=false
-                           Style="max-width: 300px"
+                           Style="max-width: 350px"
                            AriaLabel="Select a date"
                            Placeholder="Select a date..." />
         </ExamplePreview>
@@ -23,7 +23,7 @@
     <ComponentExampleBox Title="Disabled BitDatePicker with label" HTMLSourceCode="@example3HTMLCode" ExampleId="example3">
         <ExamplePreview>
             <BitDatePicker IsEnabled=false
-                           Style="max-width: 300px"
+                           Style="max-width: 350px"
                            Label="Start date"
                            AriaLabel="Select a date"
                            Placeholder="Select a date..." />
@@ -32,7 +32,7 @@
 
     <ComponentExampleBox Title="BitDatePicker with week numbers" HTMLSourceCode="@example4HTMLCode" ExampleId="example4">
         <ExamplePreview>
-            <BitDatePicker Style="max-width: 300px"
+            <BitDatePicker Style="max-width: 350px"
                            ShowWeekNumbers=true
                            ShowMonthPickerAsOverlay=true
                            AriaLabel="Select a date"
@@ -53,7 +53,7 @@
                 <div>
                     <BitDatePicker @bind-Value="formValidationDatePickerModel.Date"
                                    AllowTextInput="true"
-                                   Style="max-width: 300px"
+                                   Style="max-width: 350px"
                                    AriaLabel="Select a date"
                                    Placeholder="Select a date..."
                                    Label="Date required (with label)" />
@@ -80,7 +80,7 @@
                 The input field will open the BitDatePicker, and clicking the field again will dismiss the BitDatePicker and
                 allow text input. Please note to use this feature, you must enter the date in the exact <code>DateFormat</code> provided for the BitDatePicker.
             </div>
-            <BitDatePicker Style="max-width: 300px"
+            <BitDatePicker Style="max-width: 350px"
                            AllowTextInput=true
                            HighlightSelectedMonth=true
                            Label="Start date"
@@ -94,7 +94,7 @@
                 Applications can customize how dates are formatted and parsed. Formatted dates can be ambiguous, so the control will avoid parsing the formatted strings of dates selected using the UI when text input is allowed.
                 In this example, we are formatting and parsing dates as dd=MM(yy).
             </div>
-            <BitDatePicker Style="max-width: 300px"
+            <BitDatePicker Style="max-width: 350px"
                            AriaLabel="Select a date."
                            Placeholder="Select a date..."
                            DateFormat="dd=MM(yy)" />
@@ -113,19 +113,19 @@
                 In the third example, the allowed dates are between 1 year after now and 5 years before now.
                 <br />
             </div>
-            <BitDatePicker Style="max-width: 300px"
+            <BitDatePicker Style="max-width: 350px"
                            AriaLabel="Select a date"
                            Placeholder="Select a date..."
                            MaxDate="DateTimeOffset.Now.AddDays(5)"
                            MinDate="DateTimeOffset.Now.AddDays(-5)" />
             <br />
-            <BitDatePicker Style="max-width: 300px"
+            <BitDatePicker Style="max-width: 350px"
                            AriaLabel="Select a date"
                            Placeholder="Select a date..."
                            MaxDate="DateTimeOffset.Now.AddMonths(1)"
                            MinDate="DateTimeOffset.Now.AddMonths(-2)" />
             <br />
-            <BitDatePicker Style="max-width: 300px"
+            <BitDatePicker Style="max-width: 350px"
                            AriaLabel="Select a date"
                            Placeholder="Select a date..."
                            MaxDate="DateTimeOffset.Now.AddYears(1)"
@@ -140,19 +140,19 @@
                 This functionality has been implemented using a public API provided in the BitDatePicker.
             </div>
             <BitDatePicker @ref="datePicker"
-                           Style="max-width: 300px"
+                           Style="max-width: 350px"
                            AriaLabel="Select a date"
                            Placeholder="Select a date...">
-                <LabelFragment>
+                <LabelTemplate>
                     Custom label <BitIconButton IconName="BitIconName.Calendar" OnClick="OpenCallout"></BitIconButton>
-                </LabelFragment>
+                </LabelTemplate>
             </BitDatePicker>
         </ExamplePreview>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="BitDatePicker with value two-way binding" HTMLSourceCode="@example10HTMLCode" CSharpSourceCode="@example10CSharpCode" ExampleId="example10">
         <ExamplePreview>
-            <BitDatePicker Style="max-width: 300px"
+            <BitDatePicker Style="max-width: 350px"
             @bind-Value="@selectedDate"
                            AriaLabel="Select a date"
                            Placeholder="Select a date..." />
@@ -179,7 +179,7 @@
             <div class="example-desc">
                 In this sample, you can see how to implement a custom template for day cells of the BitDatePicker which have some specific style class for the weekend.
             </div>
-            <BitDatePicker Style="max-width: 300px"
+            <BitDatePicker Style="max-width: 350px"
                            AriaLabel="Select a date"
                            Placeholder="Select a date...">
                 <DayCellTemplate>
@@ -197,7 +197,7 @@
                 In this sample, you can see how to implement a totally custom template for day, month, and year cells of the BitDatePicker which will display a discount badge for some days, a Xmas badge for the first month of the year, and a AC suffix for years.
             </div>
             <div class="date-picker-wrapper">
-                <BitDatePicker Style="max-width: 300px"
+                <BitDatePicker Style="max-width: 350px"
                                AriaLabel="Select a date"
                                Placeholder="Select a date...">
                     <DayCellTemplate>
@@ -233,20 +233,20 @@
 
     <ComponentExampleBox Title="BitDatePicker with custom left-handed icon" HTMLSourceCode="@example15HTMLCode" ExampleId="example15">
         <ExamplePreview>
-            <BitDatePicker Style="max-width: 300px"
+            <BitDatePicker Style="max-width: 350px"
                            AriaLabel="Select a date"
                            IconLocation="BitIconLocation.Left"
                            Placeholder="Select a date...">
-                <IconFragment>
+                <IconTemplate>
                     <img src="https://img.icons8.com/fluency/2x/calendar-13.png" width="24" height="24" />
-                </IconFragment>
+                </IconTemplate>
             </BitDatePicker>
         </ExamplePreview>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="BitDatePicker with custom icon name" HTMLSourceCode="@example16HTMLCode" ExampleId="example16">
         <ExamplePreview>
-            <BitDatePicker Style="max-width: 300px"
+            <BitDatePicker Style="max-width: 350px"
                            AriaLabel="Select a date"
                            IconName="BitIconName.Airplane"
                            Placeholder="Select a date..." />
@@ -277,7 +277,7 @@
 
     <ComponentExampleBox Title="Responsive BitDatePicker" HTMLSourceCode="@example18HTMLCode" ExampleId="example18">
         <ExamplePreview>
-            <BitDatePicker Style="max-width: 300px"
+            <BitDatePicker Style="max-width: 350px"
                            IsResponsive="true"
                            AriaLabel="Select a date"
                            Placeholder="Select a date..." />

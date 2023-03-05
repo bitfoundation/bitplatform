@@ -91,7 +91,7 @@ public partial class BitDatePickerDemo
         },
         new()
         {
-            Name = "IconFragment",
+            Name = "IconTemplate",
             Type = "RenderFragment?",
             DefaultValue = "",
             Description = "Custom DatePicker icon template."
@@ -145,7 +145,7 @@ public partial class BitDatePickerDemo
             Name = "IsUnderlined",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether or not the Textfield of the DatePicker is underlined.",
+            Description = "Whether or not the Text field of the DatePicker is underlined.",
         },
         new()
         {
@@ -156,7 +156,7 @@ public partial class BitDatePickerDemo
         },
         new()
         {
-            Name = "LabelFragment",
+            Name = "LabelTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "Used to customize the label for the DatePicker."
@@ -360,25 +360,25 @@ public partial class BitDatePickerDemo
     }
 
     private readonly string example1HTMLCode = @"
-<BitDatePicker Style=""max-width: 300px""
+<BitDatePicker Style=""max-width: 350px""
                AriaLabel=""Select a date""
                Placeholder=""Select a date..."" />";
 
     private readonly string example2HTMLCode = @"
 <BitDatePicker IsEnabled=false
-               Style=""max-width: 300px""
+               Style=""max-width: 350px""
                AriaLabel=""Select a date""
                Placeholder=""Select a date..."" />";
 
     private readonly string example3HTMLCode = @"
 <BitDatePicker IsEnabled=false
-               Style=""max-width: 300px""
+               Style=""max-width: 350px""
                Label=""Start date""
                AriaLabel=""Select a date""
                Placeholder=""Select a date..."" />";
 
     private readonly string example4HTMLCode = @"
-<BitDatePicker Style=""max-width: 300px""
+<BitDatePicker Style=""max-width: 350px""
                ShowWeekNumbers=true
                ShowMonthPickerAsOverlay=true
                AriaLabel=""Select a date""
@@ -394,7 +394,7 @@ public partial class BitDatePickerDemo
     <div>
         <BitDatePicker @bind-Value=""formValidationDatePickerModel.Date""
                        AllowTextInput=""true""
-                       Style=""max-width: 300px""
+                       Style=""max-width: 350px""
                        AriaLabel=""Select a date""
                        Placeholder=""Select a date...""
                        Label=""Date required (with label)"" />
@@ -437,32 +437,32 @@ private void HandleInvalidSubmit()
 }";
 
     private readonly string example6HTMLCode = @"
-<BitDatePicker Style=""max-width: 300px""
+<BitDatePicker Style=""max-width: 350px""
                AllowTextInput=true
                HighlightSelectedMonth=true
                Label=""Start date""
                AriaLabel=""Select a date"" />";
 
     private readonly string example7HTMLCode = @"
-<BitDatePicker Style=""max-width: 300px""
+<BitDatePicker Style=""max-width: 350px""
                AriaLabel=""Select a date.""
                Placeholder=""Select a date...""
                DateFormat=""dd=MM(yy)"" />";
 
     private readonly string example8HTMLCode = @"
-<BitDatePicker Style=""max-width: 300px""
+<BitDatePicker Style=""max-width: 350px""
                AriaLabel=""Select a date""
                Placeholder=""Select a date...""
                MaxDate=""DateTimeOffset.Now.AddDays(5)""
                MinDate=""DateTimeOffset.Now.AddDays(-5)"" />
 <br />
-<BitDatePicker Style=""max-width: 300px""
+<BitDatePicker Style=""max-width: 350px""
                AriaLabel=""Select a date""
                Placeholder=""Select a date...""
                MaxDate=""DateTimeOffset.Now.AddMonths(1)""
                MinDate=""DateTimeOffset.Now.AddMonths(-2)"" />
 <br />
-<BitDatePicker Style=""max-width: 300px""
+<BitDatePicker Style=""max-width: 350px""
                AriaLabel=""Select a date""
                Placeholder=""Select a date...""
                MaxDate=""DateTimeOffset.Now.AddYears(1)""
@@ -470,12 +470,12 @@ private void HandleInvalidSubmit()
 
     private readonly string example9HTMLCode = @"
 <BitDatePicker @ref=""datePicker""
-               Style=""max-width: 300px""
+               Style=""max-width: 350px""
                AriaLabel=""Select a date""
                Placeholder=""Select a date..."">
-    <LabelFragment>
+    <LabelTemplate>
         Custom label <BitIconButton IconName=""BitIconName.Calendar"" OnClick=""OpenCallout""></BitIconButton>
-    </LabelFragment>
+    </LabelTemplate>
 </BitDatePicker>";
 
     private readonly string example9CSharpCode = @"
@@ -486,7 +486,7 @@ private async Task OpenCallout()
 }";
 
     private readonly string example10HTMLCode = @"
-<BitDatePicker Style=""max-width: 300px""
+<BitDatePicker Style=""max-width: 350px""
                @bind-Value=""@selectedDate"" 
                AriaLabel=""Select a date""
                Placeholder=""Select a date..."" />
@@ -499,14 +499,14 @@ private DateTimeOffset? selectedDate = new DateTimeOffset(new DateTime(2020, 1, 
 <BitDatePicker DateFormat=""yyyy/MM/dd hh:mm tt"" 
                Culture=""CultureInfoHelper.GetFaIrCultureByFarsiNames()""
                GoToToday=""برو به امروز""
-               Style=""max-width: 300px"">
+               Style=""max-width: 350px"">
 </BitDatePicker>";
 
     private readonly string example12HTMLCode = @"
 <BitDatePicker DateFormat=""yyyy/MM/dd hh:mm tt"" 
                Culture=""CultureInfoHelper.GetFaIrCultureByFingilishNames()""
                GoToToday=""Boro be emrouz""
-               Style=""max-width: 300px"">
+               Style=""max-width: 350px"">
 </BitDatePicker>";
 
     private readonly string example13HTMLCode = @"
@@ -516,7 +516,7 @@ private DateTimeOffset? selectedDate = new DateTimeOffset(new DateTime(2020, 1, 
 }
 </style>
 
-<BitDatePicker Style=""max-width: 300px""
+<BitDatePicker Style=""max-width: 350px""
                AriaLabel=""Select a date""
                Placeholder=""Select a date..."">
     <DayCellTemplate>
@@ -572,7 +572,7 @@ private DateTimeOffset? selectedDate = new DateTimeOffset(new DateTime(2020, 1, 
 </style>
 
 <div class=""date-picker-wrapper"">
-    <BitDatePicker Style=""max-width: 300px""
+    <BitDatePicker Style=""max-width: 350px""
                    AriaLabel=""Select a date""
                    Placeholder=""Select a date..."">
         <DayCellTemplate>
@@ -608,17 +608,17 @@ private DateTimeOffset? selectedDate = new DateTimeOffset(new DateTime(2020, 1, 
 private CultureInfo Culture = CultureInfo.CurrentUICulture;";
 
     private readonly string example15HTMLCode = @"
-<BitDatePicker Style=""max-width: 300px""
+<BitDatePicker Style=""max-width: 350px""
                     AriaLabel=""Select a date""
                     IconLocation=""BitIconLocation.Left""
                     Placeholder=""Select a date..."">
-    <IconFragment>
+    <IconTemplate>
         <img src=""https://img.icons8.com/fluency/2x/calendar-13.png"" width=""24"" height=""24"" />
-    </IconFragment>
+    </IconTemplate>
 </BitDatePicker>";
 
     private readonly string example16HTMLCode = @"
-<BitDatePicker Style=""max-width: 300px""
+<BitDatePicker Style=""max-width: 350px""
                AriaLabel=""Select a date""
                IconName=""BitIconName.Airplane""
                Placeholder=""Select a date..."" />";
@@ -650,7 +650,7 @@ public class FormValidationDatePickerModel
 private FormValidationDatePickerModel formValidationDatePickerModel = new();";
 
     private readonly string example18HTMLCode = @"
-<BitDatePicker Style=""max-width: 300px""
+<BitDatePicker Style=""max-width: 350px""
                IsResponsive=""true""
                AriaLabel=""Select a date""
                Placeholder=""Select a date..."" />";
