@@ -7,21 +7,21 @@
      style="@StyleBuilder.Value">
     @if (Label.HasValue())
     {
-        <label class="label" @ref="LabelRef">@Label</label>
+        <label class="label" @ref="_labelRef">@Label</label>
     }
 
     @if (IsRanged)
     {
         @if (ShowValue && IsVertical)
         {
-            <label @ref="ValueLabelRef"
+            <label @ref="_valueLabelRef"
                    class="value-label"
                    for="@_sliderBoxId">
                 @GetValueDisplay(upperValue.GetValueOrDefault())
             </label>
         }
 
-        <div @ref="ContainerRef"
+        <div @ref="_containerRef"
              class="container"
              style="@(IsVertical ? _styleContainer : null)">
             @if (ShowValue && IsVertical is false)
@@ -85,7 +85,7 @@
     }
     else
     {
-        <div @ref="ContainerRef"
+        <div @ref="_containerRef"
              class="container">
             @if (IsOriginFromZero)
             {

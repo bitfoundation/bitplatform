@@ -17,15 +17,15 @@ public class BitSliderTests : BunitTestContext
         DataRow(false),
         DataRow(true)
     ]
-    public void BitSliderVerticalTest(bool vertical)
+    public void BitSliderVerticalTest(bool isVertical)
     {
         var com = RenderComponent<BitSliderTest>(parameters =>
         {
-            parameters.Add(p => p.Vertical, vertical);
+            parameters.Add(p => p.IsVertical, isVertical);
         });
 
         var bitSlider = com.Find(".bit-sld");
-        Assert.IsTrue(bitSlider.ClassList.Contains($"{(vertical ? "vertical" : "horizontal")}"));
+        Assert.IsTrue(bitSlider.ClassList.Contains(isVertical ? "vertical" : "horizontal"));
     }
 
     [DataTestMethod,
@@ -36,7 +36,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSliderTest>(parameters =>
         {
-            parameters.Add(p => p.Vertical, vertical);
+            parameters.Add(p => p.IsVertical, vertical);
             parameters.Add(p => p.Ranged, true);
         });
 
@@ -259,7 +259,7 @@ public class BitSliderTests : BunitTestContext
         var com = RenderComponent<BitSliderTest>(parameters =>
         {
             parameters.Add(p => p.Value, value);
-            parameters.Add(p => p.Vertical, true);
+            parameters.Add(p => p.IsVertical, true);
             parameters.Add(p => p.ShowValue, true);
         });
 

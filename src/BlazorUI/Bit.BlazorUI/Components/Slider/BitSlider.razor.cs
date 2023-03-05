@@ -1,5 +1,4 @@
 ﻿using System.Globalization;
-using System.Xml;
 
 namespace Bit.BlazorUI;
 
@@ -30,9 +29,9 @@ public partial class BitSlider
     private string _maxInputId = default!;
 
 
-    private ElementReference ContainerRef { get; set; }
-    private ElementReference LabelRef { get; set; }
-    private ElementReference ValueLabelRef { get; set; }
+    private ElementReference _containerRef { get; set; }
+    private ElementReference _labelRef { get; set; }
+    private ElementReference _valueLabelRef { get; set; }
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
@@ -286,19 +285,19 @@ public partial class BitSlider
 
             if (Label.HasValue())
             {
-                var titleHeight = await _js.GetClientHeight(LabelRef);
+                var titleHeight = await _js.GetClientHeight(_labelRef);
                 _inputHeight -= titleHeight;
             }
 
             if (ShowValue)
             {
-                var valueLabelHeight = await _js.GetClientHeight(ValueLabelRef);
+                var valueLabelHeight = await _js.GetClientHeight(_valueLabelRef);
                 _inputHeight -= (valueLabelHeight * 2);
             }
         }
         else
         {
-            _inputHeight = await _js.GetClientHeight(ContainerRef);
+            _inputHeight = await _js.GetClientHeight(_containerRef);
         }
 
         FillSlider();
