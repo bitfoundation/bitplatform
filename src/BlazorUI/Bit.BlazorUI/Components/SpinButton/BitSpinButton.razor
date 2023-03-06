@@ -8,7 +8,7 @@
 
     @if (IconName.HasValue || Label.HasValue() || LabelTemplate is not null)
     {
-        <div class="bit-spb-lbl-wrapper">
+        <div class="label-wrapper">
             @if (IconName.HasValue)
             {
                 <i class="bit-icon bit-icon--@IconName.GetName() bit-icon--l"
@@ -33,7 +33,7 @@
         </div>
     }
 
-    <div class="bit-spb-wrapper"
+    <div class="wrapper"
          title="@Title"
          aria-label="@AriaLabel"
          aria-setsize="@AriaSetSize"
