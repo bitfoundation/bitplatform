@@ -8,7 +8,7 @@
 
     @if (IconName.HasValue || Label.HasValue() || LabelTemplate is not null)
     {
-        <div class="bit-spb-lbl-wrapper">
+        <div class="label-wrapper">
             @if (IconName.HasValue)
             {
                 <i class="bit-icon bit-icon--@IconName.GetName() bit-icon--l"
@@ -33,7 +33,7 @@
         </div>
     }
 
-    <div class="bit-spb-wrapper"
+    <div class="wrapper"
          title="@Title"
          aria-label="@AriaLabel"
          aria-setsize="@AriaSetSize"
@@ -61,7 +61,7 @@
                @onkeydown="e => HandleOnKeyDown(e)" />
         <span class="operators">
             <button type="button"
-                    class="Chevron-btn"
+                    class="chevron-btn"
                     disabled="@(IsEnabled is false)"
                     aria-disabled="@(IsEnabled is false)"
                     date-is-focusable="false"
@@ -71,13 +71,13 @@
                     @onmousedown="e => HandleOnMouseDown(BitSpinButtonAction.Increment, e)"
                     @onmouseout="HandleOnMouseUpOrOut"
                     @onmouseup="HandleOnMouseUpOrOut">
-                <span class="Chevron-icon-wrapper">
+                <span class="chevron-icon-wrapper">
                     <i class="bit-icon bit-icon--@IncrementButtonIconName.GetName() bit-icon--s"></i>
                 </span>
             </button>
 
             <button type="button"
-                    class="Chevron-btn"
+                    class="chevron-btn"
                     disabled="@(IsEnabled is false)"
                     aria-disabled="@(IsEnabled is false)"
                     date-is-focusable="false"
@@ -87,7 +87,7 @@
                     @onmousedown="e => HandleOnMouseDown(BitSpinButtonAction.Decrement, e)"
                     @onmouseout="HandleOnMouseUpOrOut"
                     @onmouseup="HandleOnMouseUpOrOut">
-                <span class="Chevron-icon-wrapper">
+                <span class="chevron-icon-wrapper">
                     <i class="bit-icon bit-icon--@DecrementButtonIconName.GetName() bit-icon--s"></i>
                 </span>
             </button>

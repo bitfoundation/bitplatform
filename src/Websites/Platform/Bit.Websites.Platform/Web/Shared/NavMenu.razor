@@ -20,7 +20,7 @@
         <BitNav Class="@GetNavMenuClass()"
                 Items="filteredNavLinks"
                 AriaLabel="Bit Component Nav"
-                OnItemClick="@((item) => WrapHandled(() => HandleLinkClick(item)))">
+                OnItemClick="@((BitNavItem item) => WrapHandled(() => HandleLinkClick(item)))">
         </BitNav>
     </div>
 </div>

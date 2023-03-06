@@ -5,8 +5,8 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".SolutionItems", ".SolutionItems", "{5CF43F76-BB71-4B5B-B4DF-1C753E042A8F}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
-		Directory.Build.props = Directory.Build.props
-		global.json = global.json
+		Bit.Websites.Platform\Directory.Build.props = Bit.Websites.Platform\Directory.Build.props
+		Bit.Websites.Platform\global.json = Bit.Websites.Platform\global.json
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Websites.Platform.Shared", "Bit.Websites.Platform\Shared\Bit.Websites.Platform.Shared.csproj", "{96AD9FD3-0E03-4E35-8157-89E854AA407F}"

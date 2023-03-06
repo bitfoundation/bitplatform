@@ -7,86 +7,86 @@
      style="@StyleBuilder.Value">
     @if (Label.HasValue())
     {
-        <label class="bit-slider-title" @ref="TitleRef">@Label</label>
+        <label class="label" @ref="_labelRef">@Label</label>
     }
 
     @if (IsRanged)
     {
         @if (ShowValue && IsVertical)
         {
-            <label @ref="ValueLabelRef"
-                   class="bit-slider-value"
-                   for="@sliderBoxId">
+            <label @ref="_valueLabelRef"
+                   class="value-label"
+                   for="@_sliderBoxId">
                 @GetValueDisplay(upperValue.GetValueOrDefault())
             </label>
         }
 
-        <div @ref="ContainerRef"
-             class="bit-slider-container"
-             style="@(IsVertical ? styleContainer : null)">
+        <div @ref="_containerRef"
+             class="container"
+             style="@(IsVertical ? _styleContainer : null)">
             @if (ShowValue && IsVertical is false)
             {
-                <label class="bit-slider-value">@GetValueDisplay(lowerValue.GetValueOrDefault())</label>
+                <label class="value-label">@GetValueDisplay(lowerValue.GetValueOrDefault())</label>
             }
-            <div id="@sliderBoxId"
-                 class="bit-slider-box"
-                 style="@styleProgress"
+            <div id="@_sliderBoxId"
+                 class="box"
+                 style="@_styleProgress"
                  @attributes="@SliderBoxHtmlAttributes">
                 @if (IsOriginFromZero)
                 {
                     <span class="zero-tick" style="left: calc(50% - 1px);"></span>
                 }
 
-                <input id="@($"min-{sliderBoxId}")"
+                <input id="@_minInputId"
                        type="range"
                        min="@Min"
                        max="@Max"
                        step="@Step"
-                       @bind-value="@firstInputValue"
-                       @oninput="@(args => HandleInput(args, true))"
+                       @bind-value="@_firstInputValue"
+                       @oninput="@(args => HandleOnRangeInput(args, true))"
                        disabled=@(!IsEnabled)
                        role="slider"
                        tabindex="@GetTabIndex"
-                       data-is-focusable="@GetDataIsFocusable"
-                       aria-disabled="@GetAriaDisabled"
+                       data-is-focusable="@(IsEnabled is false)"
+                       aria-disabled="@(IsEnabled is false)"
                        aria-label="@Label"
                        aria-valuemin="@Min"
                        aria-valuemax="@Max"
-                       aria-valuetext="@GetAriaValueText(firstInputValue.GetValueOrDefault())"
-                       aria-valuenow="@firstInputValue" />
-                <input id="@($"max-{sliderBoxId}")"
+                       aria-valuetext="@GetAriaValueText(_firstInputValue.GetValueOrDefault())"
+                       aria-valuenow="@_firstInputValue" />
+                <input id="@_maxInputId"
                        type="range"
                        min="@Min"
                        max="@Max"
                        step="@Step"
-                       @bind-value="@secondInputValue"
-                       @oninput="@(args => HandleInput(args, false))"
+                       @bind-value="@_secondInputValue"
+                       @oninput="@(args => HandleOnRangeInput(args, false))"
                        disabled=@(!IsEnabled)
                        role="slider"
                        tabindex="@GetTabIndex"
-                       data-is-focusable="@GetDataIsFocusable"
-                       aria-disabled="@GetAriaDisabled"
+                       data-is-focusable="@(IsEnabled is false)"
+                       aria-disabled="@(IsEnabled is false)"
                        aria-label="@Label"
                        aria-valuemin="@Min"
                        aria-valuemax="@Max"
-                       aria-valuetext="@GetAriaValueText(secondInputValue.GetValueOrDefault())"
-                       aria-valuenow="@secondInputValue" />
+                       aria-valuetext="@GetAriaValueText(_secondInputValue.GetValueOrDefault())"
+                       aria-valuenow="@_secondInputValue" />
             </div>
             @if (ShowValue && IsVertical is false)
             {
-                <label class="bit-slider-value">@GetValueDisplay(upperValue.GetValueOrDefault())</label>
+                <label class="value-label">@GetValueDisplay(upperValue.GetValueOrDefault())</label>
             }
         </div>
 
         @if (ShowValue && IsVertical)
         {
-            <label class="bit-slider-value">@GetValueDisplay(lowerValue.GetValueOrDefault())</label>
+            <label class="value-label">@GetValueDisplay(lowerValue.GetValueOrDefault())</label>
         }
     }
     else
     {
-        <div @ref="ContainerRef"
-             class="bit-slider-container">
+        <div @ref="_containerRef"
+             class="container">
             @if (IsOriginFromZero)
             {
                 <span class="zero-tick" style="@(IsVertical ? "top: calc(50% - -2px);" : "left: calc(50% - 29px);")"></span>
@@ -97,18 +97,18 @@
                    max="@Max"
                    step="@Step"
                    @bind-value="@Value"
-                   @oninput="@HandleInput"
-                   style="@styleProgress"
-                   disabled=@(!IsEnabled) />
+                   @oninput="@HandleOnInput"
+                   style="@_styleProgress"
+                   disabled=@(IsEnabled is false) />
 
             @if (ShowValue && IsVertical is false)
             {
-                <label class="bit-slider-value">@GetValueDisplay(Value.GetValueOrDefault())</label>
+                <label class="value-label">@GetValueDisplay(Value.GetValueOrDefault())</label>
             }
         </div>
         @if (ShowValue && IsVertical)
         {
-            <label class="bit-slider-value">@GetValueDisplay(Value.GetValueOrDefault())</label>
+            <label class="value-label">@GetValueDisplay(Value.GetValueOrDefault())</label>
         }
     }
 </div>
