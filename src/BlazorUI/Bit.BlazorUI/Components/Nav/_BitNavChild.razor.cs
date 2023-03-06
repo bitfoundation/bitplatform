@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using System.Text;
+﻿using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Bit.BlazorUI;
@@ -54,7 +53,7 @@ public partial class _BitNavChild<TItem> where TItem : class
         await Nav.OnItemToggle.InvokeAsync(Item);
     }
 
-    private string GetItemClasses()
+    private string GetItemContainerClasses()
     {
         var sb = new StringBuilder();
 
@@ -66,19 +65,45 @@ public partial class _BitNavChild<TItem> where TItem : class
         if (Nav.SelectedItem == Item)
         {
             sb.Append("selected ");
-            sb.Append(Nav.ClassStyles?.SelectedItem?.Class);
+            sb.Append(Nav.ClassStyles?.SelectedItemContainer?.Class);
             sb.Append(' ');
         }
 
-        sb.Append(Nav.ClassStyles?.Item?.Class);
+        sb.Append(Nav.ClassStyles?.ItemContainer?.Class);
+
+        return sb.ToString();
+    }
+    private string GetItemContainerStyles()
+    {
+        var sb = new StringBuilder();
+        sb.Append(Nav.ClassStyles?.ItemContainer?.Style);
+
+        if (Nav.SelectedItem == Item)
+        {
+            sb.Append(' ');
+            sb.Append(Nav.ClassStyles?.SelectedItemContainer?.Style);
+        }
 
         return sb.ToString();
     }
 
-    private string GetItemStyles()
+    private string GetItemClasses()
     {
         var sb = new StringBuilder();
         sb.Append(Nav.ClassStyles?.Item?.Class);
+
+        if (Nav.SelectedItem == Item)
+        {
+            sb.Append(' ');
+            sb.Append(Nav.ClassStyles?.SelectedItem?.Class);
+        }
+
+        return sb.ToString();
+    }
+    private string GetItemStyles()
+    {
+        var sb = new StringBuilder();
+        sb.Append(Nav.ClassStyles?.Item?.Style);
 
         if (Nav.SelectedItem == Item)
         {
@@ -88,6 +113,7 @@ public partial class _BitNavChild<TItem> where TItem : class
 
         return sb.ToString();
     }
+
 
     private static bool IsRelativeUrl(string? url) => url.HasValue() && new Regex("!/^[a-z0-9+-.]+:\\/\\//i").IsMatch(url!);
 }

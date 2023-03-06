@@ -103,6 +103,17 @@
                     </div>
                 </ExamplePreview>
             </ComponentExampleBox>
+
+            <ComponentExampleBox Title="Custom Styles" HTMLSourceCode="@example6NavItemHTMLCode" CSharpSourceCode="@example6NavItemCSharpCode" ExampleId="example6">
+                <ExamplePreview>
+                    <div class="example-box">
+                        <BitNav Items="BitPlatformNavMenu"
+                                ClassStyles="@(new() { ItemContainer = new() { Style="border:1px solid green;margin:2px" },
+                                                       ToggleButton = new() { Style="color:cyan" },
+                                                       Item = new() { Style="color:red" } })" />
+                    </div>
+                </ExamplePreview>
+            </ComponentExampleBox>
         </BitPivotItem>
 
         <BitPivotItem HeaderText="Custom Item">
@@ -239,6 +250,21 @@
                     </div>
                 </ExamplePreview>
             </ComponentExampleBox>
+
+            <ComponentExampleBox Title="Custom Styles" HTMLSourceCode="@example6CustomItemHTMLCode" CSharpSourceCode="@example6CustomItemCSharpCode" ExampleId="example6">
+                <ExamplePreview>
+                    <div class="example-box">
+                        <BitNav Items="CustomBitPlatformNavMenu"
+                                TextField="@nameof(BitPlatformMenu.Text)"
+                                UrlField="@nameof(BitPlatformMenu.Url)"
+                                IsEnabledField="@nameof(BitPlatformMenu.IsEnabled)"
+                                ChildItemsField="@nameof(BitPlatformMenu.Links)"
+                                ClassStyles="@(new() { ItemContainer = new() { Style="border:1px solid green;margin:2px" },
+                                                       ToggleButton = new() { Style="color:cyan" },
+                                                       Item = new() { Style="color:red" } })" />
+                    </div>
+                </ExamplePreview>
+            </ComponentExampleBox>
         </BitPivotItem>
 
         <BitPivotItem HeaderText="BitNavOption">
@@ -340,7 +366,7 @@
                                     <BitNavOption Text="French Fries" Key="French Fries" />
                                 </BitNavOption>
                                 <BitNavOption Text="Fruits">
-                                    <BitNavOption Text="Aplle" Key="Aplle" />
+                                    <BitNavOption Text="Apple" Key="Apple" />
                                     <BitNavOption Text="Orange" Key="Orange" />
                                     <BitNavOption Text="Benana" Key="Benana" />
                                 </BitNavOption>
@@ -512,6 +538,45 @@
                             <span>Selected Option: @SelectedOption?.Text</span>
                             <span>Toggled Option: @(ToggledOption is null ? "N/A" : $"{ToggledOption.Text} ({(ToggledOption.IsExpanded ? "Expanded" : "Collapsed")})")</span>
                         </div>
+                    </div>
+                </ExamplePreview>
+            </ComponentExampleBox>
+
+            <ComponentExampleBox Title="Custom Styles" HTMLSourceCode="@example6NavOptionHTMLCode" ExampleId="example6">
+                <ExamplePreview>
+                    <div class="example-box">
+                        <BitNav TItem="BitNavOption"
+                                ClassStyles="@(new() { ItemContainer = new() { Style="border:1px solid green;margin:2px" },
+                                                       ToggleButton = new() { Style="color:cyan" },
+                                                       Item = new() { Style="color:red" } })">
+                            <BitNavOption Text="Bit Platform"
+                                          ExpandAriaLabel="Bit Platform Expanded"
+                                          CollapseAriaLabel="Bit Platform Collapsed">
+                                <BitNavOption Text="Home" Url="https://bitplatform.dev/" Target="_blank" />
+                                <BitNavOption Text="Products & Services">
+                                    <BitNavOption Text="Project Templates">
+                                        <BitNavOption Text="TodoTemplate" Url="https://bitplatform.dev/todo-template/overview" Target="_blank" />
+                                        <BitNavOption Text="AdminPanel" Url="https://bitplatform.dev/admin-panel/overview" Target="_blank" />
+                                    </BitNavOption>
+                                    <BitNavOption Text="BlazorUI" Url="https://bitplatform.dev/components" Target="_blank" />
+                                    <BitNavOption Text="Cloud hosting solutions" IsEnabled="false" />
+                                    <BitNavOption Text="Bit academy" IsEnabled="false" />
+                                </BitNavOption>
+                                <BitNavOption Text="Pricing" Url="https://bitplatform.dev/pricing" Target="_blank" />
+                                <BitNavOption Text="About" Url="https://bitplatform.dev/about-us" Target="_blank" />
+                                <BitNavOption Text="Contact us" Url="https://bitplatform.dev/contact-us" Target="_blank" />
+                            </BitNavOption>
+
+                            <BitNavOption Text="Community"
+                                          ExpandAriaLabel="Community Expanded"
+                                          CollapseAriaLabel="Community Collapsed">
+                                <BitNavOption Text="Linkedin" Url="https://www.linkedin.com/company/bitplatformhq/about" Target="_blank" />
+                                <BitNavOption Text="Twitter" Url="https://twitter.com/bitplatformhq" Target="_blank" />
+                                <BitNavOption Text="Github repo" Url="https://github.com/bitfoundation/bitplatform" Target="_blank" />
+                            </BitNavOption>
+
+                            <BitNavOption Text="Iconography" Url="/icons" Target="_blank" />
+                        </BitNav>
                     </div>
                 </ExamplePreview>
             </ComponentExampleBox>
