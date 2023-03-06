@@ -1,46 +1,43 @@
 ﻿<EditForm Model="@TestModel" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit">
     <DataAnnotationsValidator />
 
-    <CascadingValue Value="Visual">
-        <BitSpinButton Min="@Min"
-                       Max="@Max"
-                       Step="@Step"
-                       @bind-Value="@TestModel.Value"
-                       IsEnabled="@IsEnabled"
-                       AriaDescription="@AriaDescription"
-                       AriaPositionInSet="@AriaPositionInSet"
-                       AriaSetSize="@AriaSetSize"
-                       AriaValueNow="@AriaValueNow"
-                       AriaValueText="@AriaValueText"
-                       AriaLabel="@AriaLabel"
-                       Suffix="@Suffix"
-                       LabelPosition="@LabelPosition"
-                       IconName="@IconName"
-                       IconAriaLabel="@IconAriaLabel"
-                       DecrementButtonIconName="@DecrementButtonIconName"
-                       IncrementButtonIconName="@IncrementButtonIconName"
-                       DecrementButtonAriaLabel="@DecrementButtonAriaLabel"
-                       IncrementButtonAriaLabel="@IncrementButtonAriaLabel"
-                       Label="@Label"
-                       InputHtmlAttributes="@InputHtmlAttributes"
-                       Title="@Title"
-                       Precision="@Precision"
-                       DefaultValue="@DefaultValue"
-                       OnChange="@HandleChange"
-                       OnBlur="@HandleBlur"
-                       OnFocus="@HandleFocus"
-                       OnIncrement="HandleIncrement"
-                       OnDecrement="@HandleDecrement">
-            <LabelFragment>
-                @LabelFragment
-            </LabelFragment>
-        </BitSpinButton>
-    </CascadingValue>
+    <BitSpinButton Min="@Min"
+                   Max="@Max"
+                   Step="@Step"
+                   @bind-Value="@TestModel.Value"
+                   IsEnabled="@IsEnabled"
+                   AriaDescription="@AriaDescription"
+                   AriaPositionInSet="@AriaPositionInSet"
+                   AriaSetSize="@AriaSetSize"
+                   AriaValueNow="@AriaValueNow"
+                   AriaValueText="@AriaValueText"
+                   AriaLabel="@AriaLabel"
+                   Suffix="@Suffix"
+                   LabelPosition="@LabelPosition"
+                   IconName="@IconName"
+                   IconAriaLabel="@IconAriaLabel"
+                   DecrementButtonIconName="@DecrementButtonIconName"
+                   IncrementButtonIconName="@IncrementButtonIconName"
+                   DecrementButtonAriaLabel="@DecrementButtonAriaLabel"
+                   IncrementButtonAriaLabel="@IncrementButtonAriaLabel"
+                   Label="@Label"
+                   InputHtmlAttributes="@InputHtmlAttributes"
+                   Title="@Title"
+                   Precision="@Precision"
+                   DefaultValue="@DefaultValue"
+                   OnChange="@HandleChange"
+                   OnBlur="@HandleBlur"
+                   OnFocus="@HandleFocus"
+                   OnIncrement="HandleIncrement"
+                   OnDecrement="@HandleDecrement">
+        <LabelTemplate>
+            @LabelFragment
+        </LabelTemplate>
+    </BitSpinButton>
 
 </EditForm>
 
 @code {
-    [Parameter] public Visual Visual { get; set; }
     [Parameter] public BitSpinButtonLabelPosition LabelPosition { get; set; } = BitSpinButtonLabelPosition.Left;
     [Parameter] public string AriaDescription { get; set; }
     [Parameter] public int? AriaPositionInSet { get; set; }
