@@ -71,7 +71,7 @@
             display: flex;
             flex-direction: column;
 
-            .Chevron-btn {
+            .chevron-btn {
                 outline: none;
                 position: relative;
                 -webkit-font-smoothing: antialiased;
@@ -94,7 +94,7 @@
                     background-color: $color-neutrals-gray20;
                 }
 
-                .Chevron-icon-wrapper {
+                .chevron-icon-wrapper {
                     display: flex;
                     height: 100%;
                     flex-wrap: nowrap;
@@ -156,7 +156,7 @@
                 & button {
                     background: $color-neutrals-gray20;
                     color: $color-neutrals-gray90;
-                    border: 1px solid $color-neutrals-gray20;
+                    border: $shape-border-width $shape-border-style $color-neutrals-gray20;
                     cursor: default;
                     pointer-events: none;
                 }
