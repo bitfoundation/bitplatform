@@ -47,10 +47,10 @@ jobs:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
       
     - name: Build (To generate CSS/JS files)
-      run: dotnet build src/Websites/Sales/Bit.Websites.Sales/Api/Bit.Websites.Sales.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release -p:MultilingualEnabled=true
+      run: dotnet build src/Websites/Sales/Bit.Websites.Sales/Api/Bit.Websites.Sales.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release
 
     - name: Publish
-      run: dotnet publish src/Websites/Sales/Bit.Websites.Sales/Api/Bit.Websites.Sales.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release -p:MultilingualEnabled=true --self-contained -r linux-x64 -o api-web
+      run: dotnet publish src/Websites/Sales/Bit.Websites.Sales/Api/Bit.Websites.Sales.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release --self-contained -r linux-x64 -o api-web
 
     - name: Upload api-web artifact
       uses: actions/upload-artifact@v3
