@@ -1,4 +1,5 @@
-﻿@typeparam TItem
+﻿@namespace Bit.BlazorUI
+@typeparam TItem
 
 <li role="listitem">
     @if (Nav.RenderType is BitNavRenderType.Grouped && Parent is null)
@@ -22,8 +23,8 @@
     }
     else
     {
-        <div style="padding: 0 10px 0 @(Nav.GetChildItems(Item).Any() ? (Depth * 14) : (Depth * 14) + 30)px;"
-             class="item-container @(Item == Nav.SelectedItem ? "selected" : "") @(Nav.GetIsEnabled(Item) is false ? "disabled" : "")"
+        <div style="padding: 0 10px 0 @(Nav.GetChildItems(Item).Any() ? (Depth * 14) : (Depth * 14) + 30)px;@GetItemStyles()"
+             class="item-container @GetItemClasses()"
              name="@Nav.GetText(Item)">
 
             @if (Nav.GetChildItems(Item).Any())

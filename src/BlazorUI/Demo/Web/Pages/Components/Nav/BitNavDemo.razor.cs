@@ -78,7 +78,7 @@ public partial class BitNavDemo
         },
         new ComponentParameter()
         {
-            Name = "ForceAnchorFieldelector",
+            Name = "ForceAnchorFieldSelector",
             Type = "Expression<Func<TItem, object>>?",
             Description = "(Optional) By default, any link with onClick defined will render as a button. Set this property to true to override that behavior. (Links without onClick defined will render as anchors by default.)"
         },
