@@ -7,55 +7,6 @@
     font-size: spacing(5);
     font-weight: 400;
 
-    &.label-top {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    &.label-left {
-        flex-direction: row;
-    }
-
-    &.disabled {
-        .label-wrapper {
-            color: $color-neutrals-gray90;
-
-            label {
-                color: $color-neutrals-gray90;
-            }
-        }
-
-        .wrapper {
-            color: $color-neutrals-gray90;
-            cursor: default;
-            border: none $color-neutrals-gray20;
-            background: none $color-neutrals-gray20;
-
-            & input {
-                color: $color-neutrals-gray90;
-                cursor: default;
-                border: none $color-neutrals-gray20;
-                background: none $color-neutrals-gray20;
-            }
-
-            & span {
-                & button {
-                    background: $color-neutrals-gray20;
-                    color: $color-neutrals-gray90;
-                    border: 1px solid $color-neutrals-gray20;
-                    cursor: default;
-                    pointer-events: none;
-                }
-            }
-        }
-    }
-
-    &.invalid {
-        .wrapper {
-            border-color: $color-general-red;
-        }
-    }
-
     .label-wrapper {
         height: spacing(4);
         display: inline-flex;
@@ -167,6 +118,55 @@
             &:nth-child(2) {
                 border-radius: 0 0 $shape-border-radius 0;
             }
+        }
+    }
+
+    &.label-top {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    &.label-left {
+        flex-direction: row;
+    }
+
+    &.disabled {
+        .label-wrapper {
+            color: $color-neutrals-gray90;
+
+            label {
+                color: $color-neutrals-gray90;
+            }
+        }
+
+        .wrapper {
+            color: $color-neutrals-gray90;
+            cursor: default;
+            border: none $color-neutrals-gray20;
+            background: none $color-neutrals-gray20;
+
+            & input {
+                color: $color-neutrals-gray90;
+                cursor: default;
+                border: none $color-neutrals-gray20;
+                background: none $color-neutrals-gray20;
+            }
+
+            & span {
+                & button {
+                    background: $color-neutrals-gray20;
+                    color: $color-neutrals-gray90;
+                    border: 1px solid $color-neutrals-gray20;
+                    cursor: default;
+                    pointer-events: none;
+                }
+            }
+        }
+    }
+
+    &.invalid {
+        .wrapper {
+            border-color: $color-general-red;
         }
     }
 }
