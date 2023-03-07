@@ -37,7 +37,7 @@
 
     <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">
         <!-- Workaround for MacCatalyst app title -->
-        <AssemblyName>Bit BlazorUI Components</AssemblyName>
+        <AssemblyName>BitBlazorUIComponents</AssemblyName>
     </PropertyGroup>
 
     <PropertyGroup Condition="$(TargetFramework.Contains('-android')) and '$(Configuration)' == 'Release'">
