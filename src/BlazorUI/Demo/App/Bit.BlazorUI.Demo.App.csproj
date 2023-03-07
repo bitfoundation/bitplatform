@@ -14,7 +14,7 @@
         <AssemblyName>Bit.BlazorUI.Demo.Web</AssemblyName>
 
         <!-- Display name -->
-        <ApplicationTitle>Bit BlazorUI Components</ApplicationTitle>
+        <ApplicationTitle>BitBlazorUIDemo</ApplicationTitle>
 
         <!-- App Identifier -->
         <ApplicationId>com.bitplatform.BlazorUI.Demo</ApplicationId>
@@ -37,7 +37,7 @@
 
     <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">
         <!-- Workaround for MacCatalyst app title -->
-        <AssemblyName>BitBlazorUIComponents</AssemblyName>
+        <AssemblyName>BitBlazorUIDemo</AssemblyName>
     </PropertyGroup>
 
     <PropertyGroup Condition="$(TargetFramework.Contains('-android')) and '$(Configuration)' == 'Release'">
