@@ -1,4 +1,4 @@
-﻿@import "../../Styles/Fluent/colors.fluent.scss", "../../Styles/functions.scss";
+﻿@import "../../Styles/functions.scss";
 
 .bit-spn {
     display: flex;
@@ -7,27 +7,27 @@
     .spinner {
         animation: bit-spn-animation 1.3s linear infinite;
         animation-timing-function: cubic-bezier(0.53, 0.21, 0.29, 0.67);
-        border: rem(16px) solid $Grey60;
-        border-top: rem(16px) solid $Primary;
+        border: spacing(2) solid $color-neutrals-gray60;
+        border-top: spacing(2) solid $color-primary-main;
         border-radius: 50%;
-        border-width: rem(1.5px);
+        border-width: spacing(0.1875);
     }
 
     .label {
-        color: $Primary;
-        font-size: rem(12px);
-        margin: rem(2px) rem(8px);
+        color: $color-primary-main;
+        font-size: spacing(1.5);
+        margin: spacing(0.25) spacing(1);
         text-align: center;
     }
 
     .aria-label {
-        border: 0px;
-        height: 1px;
-        margin: -1px;
+        border: 0;
+        height: spacing(0.125);
+        margin: spacing(-0.125);
         overflow: hidden;
-        padding: 0px;
+        padding: 0;
         position: absolute;
-        width: 1px;
+        width: spacing(0.125);
     }
 
     &.top {
@@ -35,7 +35,7 @@
         flex-direction: column-reverse;
 
         .label {
-            margin: 0 0 rem(8px);
+            margin: 0 0 spacing(1);
         }
     }
 
@@ -44,7 +44,7 @@
         flex-direction: column;
 
         .label {
-            margin: rem(8px) 0 0;
+            margin: spacing(1) 0 0;
         }
     }
 
@@ -53,7 +53,7 @@
         flex-direction: row;
 
         .label {
-            margin: 0 0 0 rem(8px);
+            margin: 0 0 0 spacing(1);
         }
     }
 
@@ -62,35 +62,35 @@
         flex-direction: row-reverse;
 
         .label {
-            margin: 0 rem(8px) 0 0;
+            margin: 0 spacing(1) 0 0;
         }
     }
 
     &.large {
         .spinner {
-            height: rem(28px);
-            width: rem(28px);
+            height: spacing(3.5);
+            width: spacing(3.5);
         }
     }
 
     &.medium {
         .spinner {
-            height: rem(20px);
-            width: rem(20px);
+            height: spacing(2.5);
+            width: spacing(2.5);
         }
     }
 
     &.small {
         .spinner {
-            height: rem(16px);
-            width: rem(16px);
+            height: spacing(2);
+            width: spacing(2);
         }
     }
 
     &.x-small {
         .spinner {
-            height: rem(12px);
-            width: rem(12px);
+            height: spacing(1.5);
+            width: spacing(1.5);
         }
     }
 }
