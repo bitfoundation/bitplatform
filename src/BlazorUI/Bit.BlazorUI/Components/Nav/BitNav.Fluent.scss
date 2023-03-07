@@ -65,7 +65,7 @@
         &:hover {
             background-color: $Grey30;
 
-            .item .item-txt {
+            .item {
                 color: $Primary;
             }
         }
@@ -77,12 +77,12 @@
             &:hover {
                 background-color: $Grey20;
 
-                .item .item-txt {
+                .item {
                     color: $Primary;
                 }
             }
 
-            .item .item-txt {
+            .item {
                 font-weight: 500;
                 color: $Black;
             }
@@ -93,7 +93,7 @@
             pointer-events: none;
             cursor: none;
 
-            .item .item-txt {
+            .item {
                 color: $Grey90;
             }
         }
@@ -106,20 +106,17 @@
         width: 100%;
         user-select: none;
         cursor: pointer;
+        margin: 0 rem(4px);
+        font-size: rem(14px);
+        font-weight: 400;
+        color: $Grey160;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
 
         .item-icon {
             margin: 0 rem(4px);
             color: $Primary;
-        }
-
-        .item-txt {
-            margin: 0 rem(4px);
-            font-size: rem(14px);
-            font-weight: 400;
-            color: $Grey160;
-            text-overflow: ellipsis;
-            overflow: hidden;
-            white-space: nowrap;
         }
     }
 }
