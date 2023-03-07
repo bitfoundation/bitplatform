@@ -36,6 +36,8 @@
     </PropertyGroup>
 
     <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">
+        <!-- Workaround for inspect MacCatalyst app in Safari -->
+        <CodeSignEntitlements Condition="'$(Configuration)' == 'Debug'">Platforms/MacCatalyst/Entitlements.Debug.plist</CodeSignEntitlements>
         <!-- Workaround for MacCatalyst app title -->
         <AssemblyName>BitBlazorUIDemo</AssemblyName>
     </PropertyGroup>
