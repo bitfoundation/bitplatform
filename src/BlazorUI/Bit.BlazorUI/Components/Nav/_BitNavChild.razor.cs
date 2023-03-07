@@ -64,9 +64,9 @@ public partial class _BitNavChild<TItem> where TItem : class
 
         if (Nav.SelectedItem == Item)
         {
-            sb.Append("selected ");
-            sb.Append(Nav.ClassStyles?.SelectedItemContainer?.Class);
-            sb.Append(' ');
+            sb.Append("selected ")
+              .Append(Nav.ClassStyles?.SelectedItemContainer?.Class)
+              .Append(' ');
         }
 
         sb.Append(Nav.ClassStyles?.ItemContainer?.Class);
@@ -80,8 +80,8 @@ public partial class _BitNavChild<TItem> where TItem : class
 
         if (Nav.SelectedItem == Item)
         {
-            sb.Append(' ');
-            sb.Append(Nav.ClassStyles?.SelectedItemContainer?.Style);
+            sb.Append(' ')
+              .Append(Nav.ClassStyles?.SelectedItemContainer?.Style);
         }
 
         return sb.ToString();
@@ -94,8 +94,8 @@ public partial class _BitNavChild<TItem> where TItem : class
 
         if (Nav.SelectedItem == Item)
         {
-            sb.Append(' ');
-            sb.Append(Nav.ClassStyles?.SelectedItem?.Class);
+            sb.Append(' ')
+              .Append(Nav.ClassStyles?.SelectedItem?.Class);
         }
 
         return sb.ToString();
@@ -107,8 +107,8 @@ public partial class _BitNavChild<TItem> where TItem : class
 
         if (Nav.SelectedItem == Item)
         {
-            sb.Append(' ');
-            sb.Append(Nav.ClassStyles?.SelectedItem?.Style);
+            sb.Append(' ')
+              .Append(Nav.ClassStyles?.SelectedItem?.Style);
         }
 
         return sb.ToString();
