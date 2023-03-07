@@ -111,7 +111,7 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
     /// (Optional) By default, any link with onClick defined will render as a button. Set this property to true to override that behavior. 
     /// (Links without onClick defined will render as anchors by default.)
     /// </summary>
-    [Parameter] public Expression<Func<TItem, bool>>? ForceAnchorFieldelector { get; set; }
+    [Parameter] public Expression<Func<TItem, bool>>? ForceAnchorFieldSelector { get; set; }
 
     /// <summary>
     /// Used to customize how content inside the group header is rendered.
@@ -234,6 +234,11 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
     /// Custom style for the each item element.
     /// </summary>
     [Parameter] public Expression<Func<TItem, string>>? StyleFieldSelector { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for different parts of the component
+    /// </summary>
+    [Parameter] public BitNavClassStylePairs? ClassStyles { get; set; }
 
     /// <summary>
     /// Text for the item tooltip.
@@ -570,7 +575,7 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
 
     protected override async Task OnInitializedAsync()
     {
-        _internalForceAnchorField = ForceAnchorFieldelector?.GetName() ?? ForceAnchorField;
+        _internalForceAnchorField = ForceAnchorFieldSelector?.GetName() ?? ForceAnchorField;
         _internalTextField = TextFieldSelector?.GetName() ?? TextField;
         _internalTitleField = TitleFieldSelector?.GetName() ?? TitleField;
         _internalUrlField = UrlFieldSelector?.GetName() ?? UrlField;

@@ -1,4 +1,5 @@
-﻿@typeparam TItem
+﻿@namespace Bit.BlazorUI
+@typeparam TItem
 
 <li role="listitem">
     @if (Nav.RenderType is BitNavRenderType.Grouped && Parent is null)
@@ -22,14 +23,15 @@
     }
     else
     {
-        <div style="padding: 0 10px 0 @(Nav.GetChildItems(Item).Any() ? (Depth * 14) : (Depth * 14) + 30)px;"
-             class="item-container @(Item == Nav.SelectedItem ? "selected" : "") @(Nav.GetIsEnabled(Item) is false ? "disabled" : "")"
+        <div style="padding: 0 10px 0 @(Nav.GetChildItems(Item).Any() ? (Depth * 14) : (Depth * 14) + 30)px;@GetItemContainerStyles()"
+             class="item-container @GetItemContainerClasses()"
              name="@Nav.GetText(Item)">
 
             @if (Nav.GetChildItems(Item).Any())
             {
                 <button @onclick="ToggleItem"
-                        class="chevron-btn"
+                        style="@Nav.ClassStyles?.ToggleButton?.Style"
+                        class="chevron-btn @Nav.ClassStyles?.ToggleButton?.Class"
                         type="button"
                         tabindex="0"
                         aria-label="@(Nav.GetItemExpanded(Item) ? Nav.GetCollapseAriaLabel(Item) : Nav.GetExpandAriaLabel(Item))"
@@ -43,7 +45,8 @@
                 <a @onclick="HandleOnClick"
                    href="@(Nav.GetIsEnabled(Item) ? Nav.GetUrl(Item) : null)"
                    target="@Nav.GetTarget(Item)"
-                   class="item"
+                   style="@GetItemStyles()"
+                   class="item @GetItemClasses()"
                    tabindex="-1"
                    title="@(Nav.GetTitle(Item) is not null ? Nav.GetTitle(Item) : Nav.GetText(Item))"
                    disabled="@(Nav.GetIsEnabled(Item) is false)"
@@ -61,14 +64,15 @@
                         {
                             <i class=@($"bit-icon bit-icon--{Nav.GetIconName(Item).GetName()} item-icon") aria-hidden="true"></i>
                         }
-                        <span class="item-txt">@Nav.GetText(Item)</span>
+                        <span>@Nav.GetText(Item)</span>
                     }
                 </a>
             }
             else
             {
                 <button @onclick="HandleOnClick"
-                        class="item"
+                        style="@GetItemStyles()"
+                        class="item @GetItemClasses()"
                         title="@(Nav.GetTitle(Item) is not null ? Nav.GetTitle(Item) : Nav.GetText(Item))"
                         disabled="@(Nav.GetIsEnabled(Item) is false)"
                         aria-label="@Nav.GetAriaLabel(Item)"
@@ -86,7 +90,7 @@
                         {
                             <i class=@($"bit-icon bit-icon--{Nav.GetIconName(Item).GetName()} item-icon") aria-hidden="true"></i>
                         }
-                        <span class="item-txt">@Nav.GetText(Item)</span>
+                        <span>@Nav.GetText(Item)</span>
                     }
                 </button>
             }

@@ -426,7 +426,7 @@
     }
 }
 
-::deep .bit-lnk-fluent {
+::deep .bit-lnk {
     display: flex;
     align-items: center;
 
@@ -543,15 +543,15 @@
     margin-bottom: rem(40px);
 }
 
-::deep .bit-cmpb-fluent {
+::deep .bit-cmpb {
     margin-right: rem(10px);
 }
 
-::deep .bit-slider-fluent {
+::deep .bit-sld {
     width: 100%;
 }
 
-::deep .bit-pi-fluent {
+::deep .bit-pin {
     margin-bottom: rem(30px);
     width: rem(360px);
 }

@@ -34,7 +34,7 @@ public class BitNavItem
     /// <summary>
     /// A list of items to render as children of the current item
     /// </summary>
-    public IList<BitNavItem> ChildItems { get; set; } = new List<BitNavItem>();
+    public List<BitNavItem> ChildItems { get; set; } = new List<BitNavItem>();
 
     /// <summary>
     /// Name of an icon to render next to this link button
