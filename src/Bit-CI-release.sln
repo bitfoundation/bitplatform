@@ -63,15 +63,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Server", "Server", "{7C0021
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{C9CF6A3F-147C-4897-BB16-488D4969E672}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.BlazorUI.Demo.Web.Shared", "BlazorUI\Demo\Shared\Shared\Bit.BlazorUI.Demo.Web.Shared.csproj", "{3F61EBDB-CD9D-47D7-A7AE-1020071FAEB3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.BlazorUI.Demo.Shared", "BlazorUI\Demo\Shared\Shared\Bit.BlazorUI.Demo.Shared.csproj", "{3F61EBDB-CD9D-47D7-A7AE-1020071FAEB3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.BlazorUI.Demo.Web.Server.Api", "BlazorUI\Demo\Server\Api\Bit.BlazorUI.Demo.Web.Server.Api.csproj", "{C39BE03D-69E3-4554-87CD-84A46D29CAB7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.BlazorUI.Demo.Server.Api", "BlazorUI\Demo\Server\Api\Bit.BlazorUI.Demo.Server.Api.csproj", "{C39BE03D-69E3-4554-87CD-84A46D29CAB7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.BlazorUI.Demo.Web.Client.Web", "BlazorUI\Demo\Client\Web\Bit.BlazorUI.Demo.Web.Client.Web.csproj", "{715FBCC1-11D7-4BE0-A9C1-6DF4829700B1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.BlazorUI.Demo.Client.Web", "BlazorUI\Demo\Client\Web\Bit.BlazorUI.Demo.Client.Web.csproj", "{715FBCC1-11D7-4BE0-A9C1-6DF4829700B1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.BlazorUI.Demo.Web.Client.Shared", "BlazorUI\Demo\Client\Shared\Bit.BlazorUI.Demo.Web.Client.Shared.csproj", "{DF4531EA-9772-4B99-8F2C-D97D3F5BA727}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.BlazorUI.Demo.Client.Shared", "BlazorUI\Demo\Client\Shared\Bit.BlazorUI.Demo.Client.Shared.csproj", "{DF4531EA-9772-4B99-8F2C-D97D3F5BA727}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.BlazorUI.Demo.Web.Client.App", "BlazorUI\Demo\Client\App\Bit.BlazorUI.Demo.Web.Client.App.csproj", "{C4A38F78-0269-4B3F-9184-3FBDCABB8D1D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.BlazorUI.Demo.Client.App", "BlazorUI\Demo\Client\App\Bit.BlazorUI.Demo.Client.App.csproj", "{C4A38F78-0269-4B3F-9184-3FBDCABB8D1D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
