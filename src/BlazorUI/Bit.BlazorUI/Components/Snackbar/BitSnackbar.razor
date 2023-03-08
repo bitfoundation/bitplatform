@@ -1,0 +1,41 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+@if (_isOpen)
+{
+    <div @ref="RootElement" @attributes="@HtmlAttributes"
+         class="@ClassBuilder.Value"
+         style="@StyleBuilder.Value">
+
+        <button class="close-btn" @onclick="Dismiss">
+            <i class="bit-icon close-icon bit-icon--@(DismissIconName is not null ? DismissIconName.GetName() : "ChromeClose")"></i>
+        </button>
+
+        @if (TitleTemplate is not null)
+        {
+            @TitleTemplate(_title)
+        }
+        else if (_title.HasValue())
+        {
+            <label class="title-txt">
+                @_title
+            </label>
+        }
+
+        @if (BodyTemplate is not null)
+        {
+            @BodyTemplate(_body)
+        }
+        else if (_body.HasValue())
+        {
+            <span class="body-txt">
+                @_body
+            </span>
+        }
+
+        @if (AutoDismiss)
+        {
+            <span class="progress-bar" style="transition-duration: @($"{AutoDismissTime.TotalSeconds}s"); width: @(_isProgressBarFullWidth ? "100%" : "")"></span>
+        }
+    </div>
+}

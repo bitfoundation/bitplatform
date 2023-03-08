@@ -1,0 +1,121 @@
+﻿@page "/components/snackbar"
+
+<ComponentDemo ComponentName="Snackbar"
+               ComponentDescription="Snackbars provide brief notifications. The component is also known as a toast."
+               ComponentParameters="@componentParameters"
+               EnumParameters="@enumParameters">
+
+    <ComponentExampleBox Title="Type" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
+        <ExamplePreview>
+            <div class="example-box">
+                <div>
+                    <BitButton OnClick="OpenNormalType">Info</BitButton>
+                    <BitSnackbar @ref="NormalType" Type="BitSnackbarType.Info" />
+                </div>
+
+                <div>
+                    <BitButton OnClick="OpenSuccessType">Success</BitButton>
+                    <BitSnackbar @ref="SuccessType" Type="BitSnackbarType.Success" />
+                </div>
+
+                <div>
+                    <BitButton OnClick="OpenWarningType">Warning</BitButton>
+                    <BitSnackbar @ref="WarningType" Type="BitSnackbarType.Warning" />
+                </div>
+
+                <div>
+                    <BitButton OnClick="OpenErrorType">Error</BitButton>
+                    <BitSnackbar @ref="ErrorType" Type="BitSnackbarType.Error" />
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Position" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example2">
+        <ExamplePreview>
+            <div class="example-box">
+                <div>
+                    <BitButton OnClick="OpenTopLeftPosition">Top-Left</BitButton>
+                    <BitSnackbar @ref="TopLeftPosition" Type="BitSnackbarType.Info" Position="BitSnackbarPosition.TopLeft" />
+                </div>
+
+                <div>
+                    <BitButton OnClick="OpenTopCenterPosition">Top-Center</BitButton>
+                    <BitSnackbar @ref="TopCenterPosition" Type="BitSnackbarType.Success" Position="BitSnackbarPosition.TopCenter" />
+                </div>
+
+                <div>
+                    <BitButton OnClick="OpenTopRightPosition">Top-Right</BitButton>
+                    <BitSnackbar @ref="TopRightPosition" Type="BitSnackbarType.Warning" Position="BitSnackbarPosition.TopRight" />
+                </div>
+
+                <div>
+                    <BitButton OnClick="OpenBottomLeftPosition">Bottom-Left</BitButton>
+                    <BitSnackbar @ref="BottomLeftPosition" Type="BitSnackbarType.Info" Position="BitSnackbarPosition.BottomLeft" />
+                </div>
+
+                <div>
+                    <BitButton OnClick="OpenBottomCenterPosition">Bottom-Center</BitButton>
+                    <BitSnackbar @ref="BottomCenterPosition" Type="BitSnackbarType.Success" Position="BitSnackbarPosition.BottomCenter" />
+                </div>
+
+                <div>
+                    <BitButton OnClick="OpenBottomRightPosition">Bottom-Right</BitButton>
+                    <BitSnackbar @ref="BottomRightPosition" Type="BitSnackbarType.Warning" Position="BitSnackbarPosition.BottomRight" />
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Dismiss" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example3">
+        <ExamplePreview>
+            <div class="example-box">
+                <div>
+                    <BitButton OnClick="OpenNonAutoDismiss">Non-AutoDismiss</BitButton>
+                    <BitSnackbar @ref="NonAutoDismiss" AutoDismiss="false" />
+                </div>
+
+                <div>
+                    <BitButton OnClick="OpenAutoDismissTime">AutoDismissTime (10 Seconds)</BitButton>
+                    <BitSnackbar @ref="AutoDismissTime" AutoDismissTime="TimeSpan.FromSeconds(10)" />
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Customized" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
+        <ExamplePreview>
+            <div class="example-box">
+                <div>
+                    <BitButton OnClick="OpenDismissIconName">DismissIconName</BitButton>
+                    <BitSnackbar @ref="DismissIconName" DismissIconName="BitIconName.Go" />
+                </div>
+
+                <div>
+                    <BitButton OnClick="OpenTitleTemplate">TitleTemplate</BitButton>
+                    <BitSnackbar @ref="TitleTemplate" AutoDismiss="false">
+                        <TitleTemplate Context="title">
+                            <div style="display: flex; flex-direction: row; gap: 10px;">
+                                <span>@title</span>
+                                <BitProgressIndicator BarHeight="20" Style="width: 40px;" />
+                            </div>
+                        </TitleTemplate>
+                    </BitSnackbar>
+                </div>
+
+                <div>
+                    <BitButton OnClick="OpenBodyTemplate">BodyTemplate</BitButton>
+                    <BitSnackbar @ref="BodyTemplate" AutoDismiss="false">
+                        <BodyTemplate Context="body">
+                            <span style="font-size: 12px; margin-bottom: 5px;">@body</span>
+                            <div style="display: flex; gap: 10px;">
+                                <BitButton>Yes</BitButton>
+                                <BitButton>No</BitButton>
+                            </div>
+                        </BodyTemplate>
+                    </BitSnackbar>
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+</ComponentDemo>

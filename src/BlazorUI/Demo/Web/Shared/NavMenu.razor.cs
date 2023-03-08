@@ -85,7 +85,8 @@ public partial class NavMenu
             Text = "Notification & Engagement",
             ChildItems = new List<BitNavItem>
             {
-                new BitNavItem { Text = "MessageBar", Url = "/components/message-bar" }
+                new BitNavItem { Text = "MessageBar", Url = "/components/message-bar" },
+                new BitNavItem { Text = "Snackbar", Url = "/components/snackbar" },
             }
         },
         new BitNavItem

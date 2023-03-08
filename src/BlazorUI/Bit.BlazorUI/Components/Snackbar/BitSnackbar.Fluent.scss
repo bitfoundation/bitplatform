@@ -1,0 +1,107 @@
+﻿@import "../../Styles/Fluent/colors.fluent.scss", "../../Styles/functions.scss";
+
+.bit-snb {
+
+    &.bit-snb-fluent {
+        display: flex;
+        flex-flow: column nowrap;
+        position: fixed;
+        z-index: 1000;
+        min-width: 220px;
+        min-height: 70px;
+        padding: 10px;
+        color: black;
+        border-radius: 3px;
+    }
+
+    &.info {
+        background-color: $color-neutrals-gray20;
+
+        .progress-bar {
+            background-color: $color-neutrals-gray80;
+        }
+    }
+
+    &.success {
+        background-color: $color-state-success-bg;
+
+        .progress-bar {
+            background-color: $color-state-success-dark;
+        }
+    }
+
+    &.warning {
+        background-color: $color-state-severe-warning-bg;
+
+        .progress-bar {
+            background-color: $color-state-severe-warning-dark;
+        }
+    }
+
+    &.error {
+        background-color: $color-state-error-bg;
+
+        .progress-bar {
+            background-color: $color-state-error-dark;
+        }
+    }
+
+    &.top-center {
+        top: 50px;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    &.top-right {
+        top: 50px;
+        right: 50px;
+    }
+
+    &.top-left {
+        top: 50px;
+        left: 50px;
+    }
+
+    &.bottom-center {
+        bottom: 50px;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    &.bottom-right {
+        bottom: 50px;
+        right: 50px;
+    }
+
+    &.bottom-left {
+        bottom: 50px;
+        left: 50px;
+    }
+
+    .title-txt {
+        font-size: 16px;
+        font-weight: 500;
+    }
+
+    .body-txt {
+        font-size: 12px;
+    }
+
+    .close-btn {
+        background-color: inherit;
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        cursor: pointer;
+        border-radius: 3px;
+    }
+
+    .progress-bar {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 0;
+        height: 5px;
+        transition: width;
+    }
+}
