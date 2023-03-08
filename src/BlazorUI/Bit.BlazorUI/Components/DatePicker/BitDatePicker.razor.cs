@@ -347,10 +347,7 @@ public partial class BitDatePicker
     protected override string? FormatValueAsString(DateTimeOffset? value) =>
         value.HasValue ? value.Value.ToString(DateFormat ?? Culture.DateTimeFormat.ShortDatePattern, Culture) : null;
 
-    public async Task OpenCallout()
-    {
-        await HandleOnClick();
-    }
+    public Task OpenCallout() => HandleOnClick();
 
     private async Task HandleOnClick()
     {
@@ -372,7 +369,7 @@ public partial class BitDatePicker
 
         IsOpen = !IsOpen;
 
-        if (IsOpen && CurrentValue != null)
+        if (IsOpen && CurrentValue.HasValue)
         {
             CheckCurrentCalendarMatchesCurrentValue();
         }
@@ -430,9 +427,7 @@ public partial class BitDatePicker
     private async Task SelectDate(int dayIndex, int weekIndex)
     {
         if (IsEnabled is false) return;
-
         if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
-
         if (IsWeekDayOutOfMinAndMaxDate(dayIndex, weekIndex)) return;
 
         _currentDay = _currentMonthCalendar[weekIndex, dayIndex];
@@ -511,7 +506,6 @@ public partial class BitDatePicker
         _currentYear = _displayYear = year;
         ChangeYearRanges(_currentYear - 1);
         CreateMonthCalendar(_currentYear, _currentMonth);
-
         ToggleBetweenMonthAndYearPicker();
     }
 
@@ -551,10 +545,9 @@ public partial class BitDatePicker
 
     private void HandleGoToToday()
     {
-        if (IsEnabled)
-        {
-            CreateMonthCalendar(DateTime.Now);
-        }
+        if (IsEnabled is false) return;
+
+        CreateMonthCalendar(DateTime.Now);
     }
 
     private void CreateMonthCalendar(DateTime dateTime)
@@ -633,7 +626,6 @@ public partial class BitDatePicker
     private void SetSelectedDateInMonthCalendar()
     {
         if (Culture is null) return;
-
         if (CurrentValue.HasValue is false || (_selectedDateWeek.HasValue && _selectedDateDayOfWeek.HasValue)) return;
 
         var year = Culture.DateTimeFormat.Calendar.GetYear(CurrentValue.Value.DateTime);
@@ -748,15 +740,9 @@ public partial class BitDatePicker
         return $"{_currentMonthCalendar[week, day]}, {Culture.DateTimeFormat.GetMonthName(month)}, {year}";
     }
 
-    private bool IsMonthSelected(int month)
-    {
-        return month == _currentMonth;
-    }
+    private bool IsMonthSelected(int month) => month == _currentMonth;
 
-    private bool IsYearSelected(int year)
-    {
-        return year == _currentYear;
-    }
+    private bool IsYearSelected(int year) => year == _currentYear;
 
     private bool IsGoTodayDisabled()
     {
@@ -802,9 +788,7 @@ public partial class BitDatePicker
     }
 
     private void ToggleMonthPickerAsOverlay()
-    {
-        _isMonthPickerOverlayOnTop = !_isMonthPickerOverlayOnTop;
-    }
+        => _isMonthPickerOverlayOnTop = _isMonthPickerOverlayOnTop is false;
 
     private int GetValueForComparison(int firstDay)
     {
@@ -904,6 +888,7 @@ public partial class BitDatePicker
         var currentValueYear = Culture.DateTimeFormat.Calendar.GetYear(currentValue.DateTime);
         var currentValueMonth = Culture.DateTimeFormat.Calendar.GetMonth(currentValue.DateTime);
         var currentValueDay = Culture.DateTimeFormat.Calendar.GetDayOfMonth(currentValue.DateTime);
+
         if (currentValueYear != _currentYear || currentValueMonth != _currentMonth || (AllowTextInput && currentValueDay != _currentDay))
         {
             _currentYear = currentValueYear;
@@ -949,18 +934,10 @@ public partial class BitDatePicker
     }
 
     private DateTimeOffset GetMonthCellDate(int monthIndex)
-    {
-        var currentDate = new DateTimeOffset(Culture.DateTimeFormat.Calendar.ToDateTime(_currentYear, monthIndex, 1, 0, 0, 0, 0), DateTimeOffset.Now.Offset);
-        return currentDate;
-    }
-
+        => new DateTimeOffset(Culture.DateTimeFormat.Calendar.ToDateTime(_currentYear, monthIndex, 1, 0, 0, 0, 0), DateTimeOffset.Now.Offset);
 
     [JSInvokable("CloseCallout")]
-    public void CloseCalloutBeforeAnotherCalloutIsOpened()
-    {
-        IsOpen = false;
-    }
-
+    public void CloseCalloutBeforeAnotherCalloutIsOpened() => IsOpen = false;
 
     protected override void Dispose(bool disposing)
     {

@@ -1,9 +1,10 @@
-﻿using Microsoft.AspNetCore.Components;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public partial class BitSpinner
 {
+    protected override bool UseVisual => false;
+
+
     /// <summary>
     /// Politeness setting for label update announcement.
     /// </summary>
@@ -24,62 +25,27 @@ public partial class BitSpinner
     /// </summary>
     [Parameter] public string? Label { get; set; }
 
+
     protected override string RootElementClass => "bit-spn";
 
     protected override void RegisterComponentClasses()
     {
-        ClassBuilder.Register(GetClassSize);
-        ClassBuilder.Register(GetClassLabelPosition);
-    }
-
-    private string GetClassSize()
-    {
-        string classSize = string.Empty;
-
-        switch (Size)
+        ClassBuilder.Register(() => Size switch
         {
-            case BitSpinnerSize.XSmall:
-                classSize = "xSmall";
-                break;
+            BitSpinnerSize.XSmall => "x-small",
+            BitSpinnerSize.Small => "small",
+            BitSpinnerSize.Medium => "medium",
+            BitSpinnerSize.Large => "large",
+            _ => string.Empty
+        });
 
-            case BitSpinnerSize.Small:
-                classSize = "small";
-                break;
-
-            case BitSpinnerSize.Medium:
-                classSize = "medium";
-                break;
-
-            case BitSpinnerSize.Large:
-                classSize = "large";
-                break;
-        }
-
-        return $"{RootElementClass}-{classSize}-{VisualClassRegistrar()}";
-    }
-
-    private string GetClassLabelPosition()
-    {
-        string classLabelPosition = string.Empty;
-        switch (LabelPosition)
+        ClassBuilder.Register(() => LabelPosition switch
         {
-            case BitLabelPosition.Top:
-                classLabelPosition = "top";
-                break;
-
-            case BitLabelPosition.Left:
-                classLabelPosition = "left";
-                break;
-
-            case BitLabelPosition.Right:
-                classLabelPosition = "right";
-                break;
-
-            case BitLabelPosition.Bottom:
-                classLabelPosition = "bottom";
-                break;
-        }
-
-        return $"{RootElementClass}-{classLabelPosition}-{VisualClassRegistrar()}";
+            BitLabelPosition.Top => "top",
+            BitLabelPosition.Left => "left",
+            BitLabelPosition.Right => "right",
+            BitLabelPosition.Bottom => "bottom",
+            _ => string.Empty
+        });
     }
 }

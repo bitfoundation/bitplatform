@@ -4,8 +4,12 @@
 <dict>
 	<key>UIDeviceFamily</key>
 	<array>
-		<integer>1</integer>
-		<integer>2</integer>
+		<!-- Targets iPhone -->
+        <integer>1</integer>
+        <!-- Targets iPad -->
+        <integer>2</integer>
+        <!-- Targets macOS -->
+        <integer>6</integer>
 	</array>
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>

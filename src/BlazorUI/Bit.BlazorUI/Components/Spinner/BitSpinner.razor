@@ -5,16 +5,18 @@
      @attributes="HtmlAttributes"
      class="@ClassBuilder.Value"
      style="@StyleBuilder.Value">
-    <div></div>
+
+    <div class="spinner"></div>
+
     @if (Label.HasValue())
     {
-        <div>@Label</div>
+        <div class="label">@Label</div>
     }
 
     @if (AriaLabel.HasValue())
     {
         <div role="status" aria-live="@AriaLive">
-            <div>@AriaLabel</div>
+            <div class="aria-label">@AriaLabel</div>
         </div>
     }
 </div>
