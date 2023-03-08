@@ -6,7 +6,7 @@ namespace Bit.Websites.Sales.Shared.Dtos;
 /// https://devblogs.microsoft.com/dotnet/try-the-new-system-text-json-source-generator/
 /// </summary>
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
-[JsonSerializable(typeof(RestExceptionPayload))]
+[JsonSerializable(typeof(RestErrorInfo))]
 [JsonSerializable(typeof(ContactUsDto))]
 public partial class AppJsonContext : JsonSerializerContext
 {

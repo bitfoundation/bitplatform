@@ -14,7 +14,7 @@
         <AssemblyName>Bit.BlazorUI.Demo.Web</AssemblyName>
 
         <!-- Display name -->
-        <ApplicationTitle>Bit BlazorUI Components</ApplicationTitle>
+        <ApplicationTitle>BitBlazorUIDemo</ApplicationTitle>
 
         <!-- App Identifier -->
         <ApplicationId>com.bitplatform.BlazorUI.Demo</ApplicationId>
@@ -33,6 +33,11 @@
         <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</SupportedOSPlatformVersion>
         <TargetPlatformMinVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</TargetPlatformMinVersion>
         <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">
+        <!-- Workaround for MacCatalyst app title -->
+        <AssemblyName>BitBlazorUIDemo</AssemblyName>
     </PropertyGroup>
 
     <PropertyGroup Condition="$(TargetFramework.Contains('-android')) and '$(Configuration)' == 'Release'">
@@ -61,6 +66,7 @@
         <!-- Images -->
         <MauiImage Include="Resources\Images\*" />
 
+        <!-- Fonts -->
         <MauiFont Include="Resources\Fonts\*" />
 
         <!-- Raw Assets (also remove the "Resources\Raw" prefix) -->

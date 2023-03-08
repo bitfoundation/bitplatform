@@ -1,20 +1,27 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text.RegularExpressions;
+using System.Diagnostics.CodeAnalysis;
+using System.Xml;
 
 namespace Bit.BlazorUI;
 
 public partial class BitSpinButton
 {
+    protected override bool UseVisual => false;
+
+
     private const int INITIAL_STEP_DELAY = 400;
     private const int STEP_DELAY = 75;
+
     private BitSpinButtonLabelPosition labelPosition = BitSpinButtonLabelPosition.Top;
+
     private double _min;
     private double _max;
     private int _precision;
     private string? _intermediateValue;
     private Timer? _mouseDownTimer;
-    private string _inputId = $"input-{Guid.NewGuid()}";
+    private string _inputId = default!;
+
     private ElementReference _inputRef;
     private ElementReference _buttonIncrement;
     private ElementReference _buttonDecrement;
@@ -109,6 +116,8 @@ public partial class BitSpinButton
         get => labelPosition;
         set
         {
+            if (labelPosition == value) return;
+
             labelPosition = value;
             ClassBuilder.Reset();
         }
@@ -169,21 +178,44 @@ public partial class BitSpinButton
     /// </summary>
     [Parameter] public string? Title { get; set; }
 
+    /// <summary>
+    /// The message format used for invalid values entered in the input.
+    /// </summary>
+    [Parameter] public string ValidationMessage { get; set; } = "The {DisplayName ?? FieldIdentifier.FieldName} field is not valid.";
+
     protected override string RootElementClass => "bit-spb";
+
+    protected override void RegisterComponentClasses()
+    {
+        ClassBuilder.Register(() => LabelPosition == BitSpinButtonLabelPosition.Left ? "label-left" : "label-top");
+    }
+
+    protected override Task OnInitializedAsync()
+    {
+        _inputId = $"SpinButton-{UniqueId}-Input";
+
+        return base.OnInitializedAsync();
+    }
 
     protected override async Task OnParametersSetAsync()
     {
-        _min = Min.HasValue ? Min.Value : double.MinValue;
-        _max = Max.HasValue ? Max.Value : double.MaxValue;
-
-        if (_min > _max)
+        if (_min != Min || _max != Max)
         {
-            _min += _max;
-            _max = _min - _max;
-            _min -= _max;
+            _min = Min ?? double.MinValue;
+            _max = Max ?? double.MaxValue;
+
+            if (_min > _max)
+            {
+                _min += _max;
+                _max = _min - _max;
+                _min -= _max;
+            }
         }
 
-        _precision = Precision is not null ? Precision.Value : CalculatePrecision(Step);
+        if (_precision != Precision)
+        {
+            _precision = Precision is not null ? Precision.Value : CalculatePrecision(Step);
+        }
 
         if (ValueHasBeenSet is false)
         {
@@ -224,17 +256,6 @@ public partial class BitSpinButton
         await base.OnParametersSetAsync();
     }
 
-    protected override void RegisterComponentClasses()
-    {
-        ClassBuilder.Register(() => LabelPosition == BitSpinButtonLabelPosition.Left
-                                    ? $"{RootElementClass}-label-left-{VisualClassRegistrar()}"
-                                    : $"{RootElementClass}-label-top-{VisualClassRegistrar()}");
-
-        ClassBuilder.Register(() => ValueInvalid is true
-                                    ? $"{RootElementClass}-invalid-{VisualClassRegistrar()}"
-                                    : string.Empty);
-    }
-
     private async Task HandleOnMouseDown(BitSpinButtonAction action, MouseEventArgs e)
     {
         //Change focus from input to spin button
@@ -259,10 +280,7 @@ public partial class BitSpinButton
         }, null, INITIAL_STEP_DELAY, STEP_DELAY);
     }
 
-    private void HandleOnMouseUpOrOut()
-    {
-        if (_mouseDownTimer is not null) _mouseDownTimer.Dispose();
-    }
+    private void HandleOnMouseUpOrOut() => _mouseDownTimer?.Dispose();
 
     private void HandleOnChange(ChangeEventArgs e)
     {
@@ -387,28 +405,6 @@ public partial class BitSpinButton
         await _js.SelectText(_inputRef);
     }
 
-    private static int CalculatePrecision(double value)
-    {
-        var regex = new Regex(@"[1-9]([0]+$)|\.([0-9]*)");
-        if (regex.IsMatch(value.ToString(CultureInfo.InvariantCulture)) is false) return 0;
-
-        var matches = regex.Matches(value.ToString(CultureInfo.InvariantCulture));
-        if (matches.Count == 0) return 0;
-
-        var groups = matches[0].Groups;
-        if (groups[1] != null && groups[1].Length != 0)
-        {
-            return -groups[1].Length;
-        }
-
-        if (groups[2] != null && groups[2].Length != 0)
-        {
-            return groups[2].Length;
-        }
-
-        return 0;
-    }
-
     private void SetValue(double value)
     {
         value = Normalize(value);
@@ -429,27 +425,7 @@ public partial class BitSpinButton
         SetDisplayValue();
     }
 
-    private void SetDisplayValue()
-    {
-        _intermediateValue = CurrentValueAsString + Suffix;
-    }
-
-    private static string? GetCleanValue(string? value)
-    {
-        if (value.HasNoValue()) return value;
-
-        if (char.IsDigit(value![0]))
-        {
-            Regex pattern = new Regex(@"-?\d+(?:\.\d+)?");
-            var match = pattern.Match(value);
-            if (match.Success)
-            {
-                return match.Value;
-            }
-        }
-
-        return value;
-    }
+    private void SetDisplayValue() => _intermediateValue = CurrentValueAsString + Suffix;
 
     private async Task CheckIntermediateValueAndSetValue()
     {
@@ -473,7 +449,48 @@ public partial class BitSpinButton
     private double? GetAriaValueNow => AriaValueNow is not null ? AriaValueNow : Suffix.HasNoValue() ? CurrentValue : null;
     private string? GetAriaValueText => AriaValueText.HasValue() ? AriaValueText : Suffix.HasValue() ? CurrentValueAsString + Suffix : null;
     private string? GetIconRole => IconAriaLabel.HasValue() ? "img" : null;
-    private string GetLabelId => Label.HasValue() ? $"label{Guid.NewGuid()}" : string.Empty;
+    private string GetLabelId => Label.HasValue() ? $"SpinButton-{UniqueId}-Label" : string.Empty;
+
+
+    private static int CalculatePrecision(double value)
+    {
+        var regex = new Regex(@"[1-9]([0]+$)|\.([0-9]*)");
+        if (regex.IsMatch(value.ToString(CultureInfo.InvariantCulture)) is false) return 0;
+
+        var matches = regex.Matches(value.ToString(CultureInfo.InvariantCulture));
+        if (matches.Count == 0) return 0;
+
+        var groups = matches[0].Groups;
+        if (groups[1] != null && groups[1].Length != 0)
+        {
+            return -groups[1].Length;
+        }
+
+        if (groups[2] != null && groups[2].Length != 0)
+        {
+            return groups[2].Length;
+        }
+
+        return 0;
+    }
+
+    private static string? GetCleanValue(string? value)
+    {
+        if (value.HasNoValue()) return value;
+
+        if (char.IsDigit(value![0]))
+        {
+            Regex pattern = new Regex(@"-?\d+(?:\.\d+)?");
+            var match = pattern.Match(value);
+            if (match.Success)
+            {
+                return match.Value;
+            }
+        }
+
+        return value;
+    }
+
 
     /// <inheritdoc />
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out double result, [NotNullWhen(false)] out string? validationErrorMessage)
@@ -486,17 +503,20 @@ public partial class BitSpinButton
         }
 
         result = default;
-        validationErrorMessage = $"The {DisplayName ?? FieldIdentifier.FieldName} field is not valid.";
+        validationErrorMessage = string.Format(CultureInfo.InvariantCulture, ValidationMessage, DisplayName ?? FieldIdentifier.FieldName);
         return false;
     }
 
+
+    private bool _disposed;
     protected override void Dispose(bool disposing)
     {
-        if (disposing)
-        {
-            _mouseDownTimer?.Dispose();
-        }
-
         base.Dispose(disposing);
+
+        if (_disposed || disposing is false) return;
+
+        _mouseDownTimer?.Dispose();
+
+        _disposed = true;
     }
 }

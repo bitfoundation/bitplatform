@@ -1,23 +1,19 @@
-﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.3.32519.111
+VisualStudioVersion = 17.0.31611.283
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B5BAA564-5C7B-4F69-9B5A-911140952CEC}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".SolutionItems", ".SolutionItems", "{5CF43F76-BB71-4B5B-B4DF-1C753E042A8F}"
 	ProjectSection(SolutionItems) = preProject
-		..\..\.editorconfig = ..\..\.editorconfig
-		..\..\..\.gitignore = ..\..\..\.gitignore
-		..\..\Bit.Build.props = ..\..\Bit.Build.props
-		Directory.Build.props = Directory.Build.props
-		..\..\global.json = ..\..\global.json
-		README.md = README.md
+		.gitignore = .gitignore
+		Bit.Websites.Platform\Directory.Build.props = Bit.Websites.Platform\Directory.Build.props
+		Bit.Websites.Platform\global.json = Bit.Websites.Platform\global.json
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Websites.Platform.Api", "Bit.Websites.Platform\Api\Bit.Websites.Platform.Api.csproj", "{AA2DEE9D-FB5F-405A-A6A2-16406E59ADD6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Websites.Platform.Shared", "Bit.Websites.Platform\Shared\Bit.Websites.Platform.Shared.csproj", "{96AD9FD3-0E03-4E35-8157-89E854AA407F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Websites.Platform.Shared", "Bit.Websites.Platform\Shared\Bit.Websites.Platform.Shared.csproj", "{74E7C674-B696-4A95-8E6B-A05F67EA49EA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Websites.Platform.Web", "Bit.Websites.Platform\Web\Bit.Websites.Platform.Web.csproj", "{E18A3B5B-5AAF-4BBB-B8F4-2539278EE4C5}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Websites.Platform.Web", "Bit.Websites.Platform\Web\Bit.Websites.Platform.Web.csproj", "{5F9CCF18-BBCD-4000-9FAF-A7488C3FD7BB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Websites.Platform.Api", "Bit.Websites.Platform\Api\Bit.Websites.Platform.Api.csproj", "{0AC1B4C6-4043-4F37-A146-E408B157409C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,23 +21,23 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{AA2DEE9D-FB5F-405A-A6A2-16406E59ADD6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AA2DEE9D-FB5F-405A-A6A2-16406E59ADD6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AA2DEE9D-FB5F-405A-A6A2-16406E59ADD6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AA2DEE9D-FB5F-405A-A6A2-16406E59ADD6}.Release|Any CPU.Build.0 = Release|Any CPU
-		{74E7C674-B696-4A95-8E6B-A05F67EA49EA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{74E7C674-B696-4A95-8E6B-A05F67EA49EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{74E7C674-B696-4A95-8E6B-A05F67EA49EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{74E7C674-B696-4A95-8E6B-A05F67EA49EA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5F9CCF18-BBCD-4000-9FAF-A7488C3FD7BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5F9CCF18-BBCD-4000-9FAF-A7488C3FD7BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5F9CCF18-BBCD-4000-9FAF-A7488C3FD7BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5F9CCF18-BBCD-4000-9FAF-A7488C3FD7BB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{96AD9FD3-0E03-4E35-8157-89E854AA407F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{96AD9FD3-0E03-4E35-8157-89E854AA407F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{96AD9FD3-0E03-4E35-8157-89E854AA407F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{96AD9FD3-0E03-4E35-8157-89E854AA407F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E18A3B5B-5AAF-4BBB-B8F4-2539278EE4C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E18A3B5B-5AAF-4BBB-B8F4-2539278EE4C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E18A3B5B-5AAF-4BBB-B8F4-2539278EE4C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E18A3B5B-5AAF-4BBB-B8F4-2539278EE4C5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0AC1B4C6-4043-4F37-A146-E408B157409C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0AC1B4C6-4043-4F37-A146-E408B157409C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0AC1B4C6-4043-4F37-A146-E408B157409C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0AC1B4C6-4043-4F37-A146-E408B157409C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {212E5FD1-A5C6-4E2E-84AC-D9F11F52F3E0}
+		SolutionGuid = {61F7FB11-1E47-470C-91E2-47F8143E1572}
 	EndGlobalSection
 EndGlobal

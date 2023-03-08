@@ -1,26 +1,41 @@
-﻿namespace Bit.Websites.Sales.Web.Services.Implementations;
+﻿using System.Net;
+using System.Globalization;
+using System.Net.Http.Headers;
 
-public class AppHttpClientHandler : HttpClientHandler
+namespace Bit.Websites.Sales.Web.Services.Implementations;
+
+public partial class AppHttpClientHandler : HttpClientHandler
 {
-
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
+#if MultilingualEnabled && BlazorServer
+        string cultureCookie = $"c={CultureInfo.CurrentCulture.Name}|uic={CultureInfo.CurrentCulture.Name}";
+        request.Headers.Add("Cookie", $".AspNetCore.Culture={cultureCookie}");
+#endif
+
         var response = await base.SendAsync(request, cancellationToken);
 
-        if (!response.IsSuccessStatusCode && response.Content.Headers.ContentType?.MediaType == "application/json")
+        if (response.StatusCode is HttpStatusCode.Unauthorized)
+        {
+            throw new UnauthorizedException();
+        }
+
+        if (response.IsSuccessStatusCode is false && response.Content.Headers.ContentType?.MediaType?.Contains("application/json", StringComparison.InvariantCultureIgnoreCase) is true)
         {
             if (response.Headers.TryGetValues("Request-ID", out IEnumerable<string>? values) && values is not null && values.Any())
             {
-                RestExceptionPayload restError = await response.Content.ReadFromJsonAsync(AppJsonContext.Default.RestExceptionPayload);
+                RestErrorInfo restError = await response.Content.ReadFromJsonAsync(AppJsonContext.Default.RestErrorInfo);
 
-                Type exceptionType = typeof(RestExceptionPayload).Assembly.GetType(restError.ExceptionType) ?? typeof(UnknownException);
+                Type exceptionType = typeof(RestErrorInfo).Assembly.GetType(restError.ExceptionType) ?? typeof(UnknownException);
 
-                Exception exp = (Exception)Activator.CreateInstance(exceptionType, args: new object[] { restError.Message });
+                var args = new List<object> { typeof(KnownException).IsAssignableFrom(exceptionType) ? new LocalizedString(restError.Key!, restError.Message!) : restError.Message };
 
-                if (exp is ResourceValidationException resValidationException)
+                if (exceptionType == typeof(ResourceValidationException))
                 {
-                    resValidationException.Details = restError.Details;
+                    args.Add(restError.Payload);
                 }
+
+                Exception exp = (Exception)Activator.CreateInstance(exceptionType, args.ToArray());
 
                 throw exp;
             }

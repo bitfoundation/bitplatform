@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
+using System.Collections.Generic;
 using Bit.BlazorUI.Demo.Web.Models;
 using Bit.BlazorUI.Demo.Web.Pages.Components.ComponentDemoBase;
 
@@ -9,14 +9,14 @@ public partial class BitNavDemo
 {
     private readonly List<ComponentParameter> componentParameters = new()
     {
-        new ComponentParameter()
+        new()
         {
             Name = "AriaCurrentField",
             Type = "string",
             DefaultValue = "AriaCurrent",
             Description = "Aria-current token for active nav item. Must be a valid token value, and defaults to 'page'."
         },
-        new ComponentParameter()
+        new()
         {
             Name = "AriaCurrentFieldSelector",
             Type = "Expression<Func<TItem, BitNavListItemAriaCurrent>>?",
@@ -24,136 +24,136 @@ public partial class BitNavDemo
             LinkType = LinkType.Link,
             Description = "Aria-current token for active nav item. Must be a valid token value, and defaults to 'page'."
         },
-        new ComponentParameter()
+        new()
         {
             Name = "AriaLabelField",
             Type = "string",
             DefaultValue = "AriaLabel",
             Description = "Aria label for the item. Ignored if collapseAriaLabel or expandAriaLabel is provided."
         },
-        new ComponentParameter()
+        new()
         {
             Name = "AriaLabelFieldSelector",
             Type = "Expression<Func<TItem, object>>?",
             Description = "Aria label for the item. Ignored if collapseAriaLabel or expandAriaLabel is provided."
         },
-        new ComponentParameter()
+        new()
         {
             Name = "DefaultSelectedItem",
             Type = "TItem?",
             Description = "The initially selected item in manual mode."
         },
-        new ComponentParameter()
+        new()
         {
             Name = "CollapseAriaLabelField",
             Type = "string",
             DefaultValue = "CollapseAriaLabel",
             Description = "Aria label when group is collapsed."
         },
-        new ComponentParameter()
+        new()
         {
             Name = "CollapseAriaLabelFieldSelector",
             Type = "Expression<Func<TItem, object>>?",
             Description = "Aria label when group is collapsed."
         },
-        new ComponentParameter()
+        new()
         {
             Name = "ExpandAriaLabelField",
             Type = "string",
             DefaultValue = "ExpandAriaLabel",
             Description = "Aria label when group is expanded."
         },
-        new ComponentParameter()
+        new()
         {
             Name = "ExpandAriaLabelFieldSelector",
             Type = "Expression<Func<TItem, object>>?",
             Description = "Aria label when group is expanded."
         },
-        new ComponentParameter()
+        new()
         {
             Name = "ForceAnchorField",
             Type = "string",
             DefaultValue = "ForceAnchor",
             Description = "(Optional) By default, any link with onClick defined will render as a button. Set this property to true to override that behavior. (Links without onClick defined will render as anchors by default.)"
         },
-        new ComponentParameter()
+        new()
         {
-            Name = "ForceAnchorFieldelector",
+            Name = "ForceAnchorFieldSelector",
             Type = "Expression<Func<TItem, object>>?",
             Description = "(Optional) By default, any link with onClick defined will render as a button. Set this property to true to override that behavior. (Links without onClick defined will render as anchors by default.)"
         },
-        new ComponentParameter()
+        new()
         {
             Name = "HeaderTemplate",
             Type = "RenderFragment<TItem>?",
             Description = "Used to customize how content inside the group header is rendered."
         },
-        new ComponentParameter()
+        new()
         {
             Name = "ItemTemplate",
             Type = "RenderFragment<TItem>?",
             Description = "Used to customize how content inside the item is rendered."
         },
-        new ComponentParameter()
+        new()
         {
             Name = "Items",
             Type = "IList<TItem>",
             DefaultValue = "new List<TItem>()",
             Description = "A collection of item to display in the navigation bar."
         },
-        new ComponentParameter()
+        new()
         {
             Name = "ChildItemsField",
             Type = "string",
             DefaultValue = "Items",
             Description = "A list of items to render as children of the current item."
         },
-        new ComponentParameter()
+        new()
         {
             Name = "ChildItemsFieldSelector",
             Type = "Expression<Func<TItem, IList<TItem>>>?",
             Description = "A list of items to render as children of the current item."
         },
-        new ComponentParameter()
+        new()
         {
             Name = "IconNameField",
             Type = "string",
             DefaultValue = "IconName",
             Description = "Name of an icon to render next to the item button."
         },
-        new ComponentParameter()
+        new()
         {
             Name = "IconNameFieldSelector",
             Type = "Expression<Func<TItem, BitIconName>>?",
             Description = "Name of an icon to render next to the item button."
         },
-        new ComponentParameter()
+        new()
         {
             Name = "IsExpandedField",
             Type = "string",
             DefaultValue = "IsExpanded",
             Description = "Whether or not the group is in an expanded state."
         },
-        new ComponentParameter()
+        new()
         {
             Name = "IsExpandedFieldSelector",
             Type = "Expression<Func<TItem, bool>>?",
             Description = "Whether or not the group is in an expanded state."
         },
-        new ComponentParameter()
+        new()
         {
             Name = "IsEnabledField",
             Type = "string",
             DefaultValue = "IsEnabled",
             Description = "Whether or not the item is disabled."
         },
-        new ComponentParameter()
+        new()
         {
             Name = "IsEnabledFieldSelector",
             Type = "Expression<Func<TItem, bool>>?",
             Description = "Whether or not the item is disabled."
         },
-        new ComponentParameter()
+        new()
         {
             Name = "Mode",
             Type = "BitNavMode",
@@ -162,25 +162,25 @@ public partial class BitNavDemo
             LinkType = LinkType.Link,
             Description = "Determines how the navigation will be handled."
         },
-        new ComponentParameter()
+        new()
         {
             Name = "OnItemClick",
             Type = "EventCallback<TItem>",
             Description = "Callback invoked when an item is clicked."
         },
-        new ComponentParameter()
+        new()
         {
             Name = "OnSelectItem",
             Type = "EventCallback<TItem>",
             Description = "Callback invoked when an item is selected."
         },
-        new ComponentParameter()
+        new()
         {
             Name = "OnItemToggle",
             Type = "EventCallback<TItem>",
             Description = "Callback invoked when a group header is clicked and Expanded or Collapse."
         },
-        new ComponentParameter()
+        new()
         {
             Name = "RenderType",
             Type = "BitNavRenderType",
@@ -189,72 +189,72 @@ public partial class BitNavDemo
             LinkType = LinkType.Link,
             Description = "The way to render nav items."
         },
-        new ComponentParameter()
+        new()
         {
             Name = "SelectedItem",
             Type = "TItem?",
             Description = "Selected item to show in Nav."
         },
-        new ComponentParameter()
+        new()
         {
             Name = "StyleField",
             Type = "string",
             DefaultValue = "Style",
             Description = "Custom style for the each item element."
         },
-        new ComponentParameter()
+        new()
         {
             Name = "StyleFieldSelector",
             Type = "Expression<Func<TItem, object>>?",
             Description = "Custom style for the each item element."
         },
-        new ComponentParameter()
+        new()
         {
             Name = "TextField",
             Type = "string",
             DefaultValue = "Name",
             Description = "Text to render for the item."
         },
-        new ComponentParameter()
+        new()
         {
             Name = "TextFieldSelector",
             Type = "Expression<Func<TItem, object>>?",
             Description = "Text to render for the item."
         },
-        new ComponentParameter()
+        new()
         {
             Name = "TitleField",
             Type = "string",
             DefaultValue= "Title",
             Description = "Text for the item tooltip."
         },
-        new ComponentParameter()
+        new()
         {
             Name = "TitleFieldSelector",
             Type = "Expression<Func<TItem, object>>?",
             Description = "Text for the item tooltip."
         },
-        new ComponentParameter()
+        new()
         {
             Name = "TargetField",
             Type = "string",
             DefaultValue = "Target",
             Description = "Link target, specifies how to open the item link."
         },
-        new ComponentParameter()
+        new()
         {
             Name = "TargetFieldSelector",
             Type = "Expression<Func<TItem, object>>?",
             Description = "Link target, specifies how to open the item link."
         },
-        new ComponentParameter()
+        new()
         {
             Name = "UrlField",
             Type = "string",
             DefaultValue = "Url",
             Description = "URL to navigate for the item link."
         },
-        new ComponentParameter()
+        new()
         {
             Name = "UrlFieldSelector",
             Type = "Expression<Func<TItem, object>>?",
@@ -263,19 +263,19 @@ public partial class BitNavDemo
     };
     private readonly List<ComponentSubParameter> componentSubParameters = new()
     {
-        new ComponentSubParameter()
+        new()
         {
             Id = "nav-item",
             Title = "BitNavItem",
-            Parameters = new List<ComponentParameter>()
+            Parameters = new()
             {
-               new ComponentParameter()
+               new()
                {
                    Name = "AriaLabel",
                    Type = "string?",
                    Description = "Aria label for nav link. Ignored if collapseAriaLabel or expandAriaLabel is provided",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "AriaCurrent",
                    Type = "BitNavLinkItemAriaCurrent",
@@ -284,81 +284,81 @@ public partial class BitNavDemo
                    Href = "#nav-item-aria-current-enum",
                    LinkType = LinkType.Link,
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "CollapseAriaLabel",
                    Type = "string?",
                    Description = "Aria label when items is collapsed and can be expanded.",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "ExpandAriaLabel",
                    Type = "string?",
                    Description = "Aria label when group is collapsed and can be expanded.",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "ForceAnchor",
                    Type = "bool",
                    Description = "(Optional) By default, any link with onClick defined will render as a button. Set this property to true to override that behavior. (Links without onClick defined will render as anchors by default.)",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "ChildItems",
                    Type = "IList<BitNavItem>",
                    DefaultValue = "new List<BitNavItem>()",
                    Description = "A list of items to render as children of the current item.",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "IconName",
                    Type = "BitIconName",
                    Description = "Name of an icon to render next to this link button.",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "IsExpanded",
                    Type = "bool",
                    Description = "Whether or not the link is in an expanded state.",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "IsEnabled",
                    Type = "bool",
                    Description = "Whether or not the link is enabled.",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "Key",
                    Type = "string?",
                    Description = "A unique value to use as a key or id of the item.",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "Style",
                    Type = "string?",
                    Description = "Custom style for the each item element.",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "Text",
                    Type = "string",
                    DefaultValue = "string.Empty",
                    Description = "Text to render for this link.",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "Title",
                    Type = "string?",
                    Description = "Text for title tooltip.",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "Target",
                    Type = "string?",
                    Description = "Link target, specifies how to open the link.",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "Url",
                    Type = "string?",
@@ -370,15 +370,15 @@ public partial class BitNavDemo
         {
             Id = "nav-option",
             Title = "BitNavOption",
-            Parameters = new List<ComponentParameter>()
+            Parameters = new()
             {
-               new ComponentParameter()
+               new()
                {
                    Name = "AriaLabel",
                    Type = "string?",
                    Description = "Aria label for nav link. Ignored if collapseAriaLabel or expandAriaLabel is provided",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "AriaCurrent",
                    Type = "BitNavLinkItemAriaCurrent",
@@ -387,80 +387,80 @@ public partial class BitNavDemo
                    Href = "#nav-item-aria-current-enum",
                    LinkType = LinkType.Link,
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "ChildContent",
                    Type = "RenderFragment?",
                    Description = "Items to render as children.",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "CollapseAriaLabel",
                    Type = "string?",
                    Description = "Aria label when items is collapsed and can be expanded.",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "ExpandAriaLabel",
                    Type = "string?",
                    Description = "Aria label when group is collapsed and can be expanded.",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "ForceAnchor",
                    Type = "bool",
                    Description = "(Optional) By default, any link with onClick defined will render as a button. Set this property to true to override that behavior. (Links without onClick defined will render as anchors by default.)",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "IconName",
                    Type = "BitIconName",
                    Description = "Name of an icon to render next to this link button.",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "IsExpanded",
                    Type = "bool",
                    Description = "Whether or not the link is in an expanded state.",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "IsEnabled",
                    Type = "bool",
                    Description = "Whether or not the link is enabled.",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "Key",
                    Type = "string?",
                    Description = "A unique value to use as a key or id of the item.",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "Style",
                    Type = "string?",
                    Description = "Custom style for the each item element.",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "Text",
                    Type = "string",
                    DefaultValue = "string.Empty",
                    Description = "Text to render for this link.",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "Title",
                    Type = "string?",
                    Description = "Text for title tooltip.",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "Target",
                    Type = "string?",
                    Description = "Link target, specifies how to open the link.",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "Url",
                    Type = "string?",
@@ -471,19 +471,19 @@ public partial class BitNavDemo
     };
     private readonly List<EnumParameter> enumParameters = new()
     {
-        new EnumParameter()
+        new()
         {
             Id = "nav-mode-enum",
             Title = "BitNavMode Enum",
-            EnumList = new List<EnumItem>()
+            EnumList = new()
             {
-                new EnumItem()
+                new()
                 {
                     Name = "Automatic",
                     Description = "The value of selected key will change using NavigationManager and the current url inside the component.",
                     Value = "0",
                 },
-                new EnumItem()
+                new()
                 {
                     Name = "Manual",
                     Description = "Selected key changes will be sent back to the parent component and the component won't change its value.",
@@ -491,56 +491,56 @@ public partial class BitNavDemo
                 }
             }
         },
-        new EnumParameter()
+        new()
         {
             Id = "nav-render-type-enum",
             Title = "BitNavRenderType Enum",
-            EnumList = new List<EnumItem>()
+            EnumList = new()
             {
-                new EnumItem()
+                new()
                 {
                     Name = "Normal",
                     Value = "0",
                 },
-                new EnumItem()
+                new()
                 {
                     Name = "Grouped",
                     Value = "1",
                 }
             }
         },
-        new EnumParameter()
+        new()
         {
             Id = "nav-item-aria-current-enum",
             Title = "BitNavItemAriaCurrent Enum",
-            EnumList = new List<EnumItem>()
+            EnumList = new()
             {
-                new EnumItem()
+                new()
                 {
                     Name = "Page",
                     Value = "0",
                 },
-                new EnumItem()
+                new()
                 {
                     Name = "Step",
                     Value = "1",
                 },
-                new EnumItem()
+                new()
                 {
                     Name = "Location",
                     Value = "2",
                 },
-                new EnumItem()
+                new()
                 {
                     Name = "Date",
                     Value = "3",
                 },
-                new EnumItem()
+                new()
                 {
                     Name = "Time",
                     Value = "4",
                 },
-                new EnumItem()
+                new()
                 {
                     Name = "True",
                     Value = "5",
@@ -551,7 +551,6 @@ public partial class BitNavDemo
     };
 
 
-    #region NavItem
 
     // Basic
     private static readonly List<BitNavItem> BitPlatformNavMenu = new()
@@ -559,18 +558,18 @@ public partial class BitNavDemo
         new ()
         {
             Text = "Bit Platform",
-            ChildItems = new List<BitNavItem>
+            ChildItems = new()
             {
                 new() { Text = "Home", Url = "https://bitplatform.dev/" },
                 new()
                 {
                     Text = "Products & Services",
-                    ChildItems = new List<BitNavItem>
+                    ChildItems = new()
                     {
                         new()
                         {
                             Text = "Project Templates",
-                            ChildItems = new List<BitNavItem>
+                            ChildItems = new()
                             {
                                 new() { Text = "TodoTemplate", Url = "https://bitplatform.dev/todo-template/overview" },
                                 new() { Text = "AdminPanel", Url = "https://bitplatform.dev/admin-panel/overview" },
@@ -589,16 +588,15 @@ public partial class BitNavDemo
         new()
         {
             Text = "Community",
-            ChildItems = new List<BitNavItem>
+            ChildItems = new()
             {
-                new() { Text = "Linkedin", Url = "https://www.linkedin.com/company/bitplatformhq/about/" },
+                new() { Text = "LinkedIn", Url = "https://www.linkedin.com/company/bitplatformhq/about/" },
                 new() { Text = "Twitter", Url = "https://twitter.com/bitplatformhq" },
-                new() { Text = "Github repo", Url = "https://github.com/bitfoundation/bitplatform" },
+                new() { Text = "GitHub repo", Url = "https://github.com/bitfoundation/bitplatform" },
             }
         },
         new() { Text = "Iconography", Url = "/icons" },
     };
-
     // Grouped
     private static readonly List<BitNavItem> CarNavMenu = new()
     {
@@ -609,12 +607,12 @@ public partial class BitNavDemo
             CollapseAriaLabel = "Mercedes-Benz Collapsed",
             Title = "Mercedes-Benz Car Models",
             IsExpanded = true,
-            ChildItems = new List<BitNavItem>
+            ChildItems = new()
             {
                 new()
                 {
                     Text = "SUVs",
-                    ChildItems = new List<BitNavItem>
+                    ChildItems = new()
                     {
                         new() { Text = "GLA", Url = "https://www.mbusa.com/en/vehicles/class/gla/suv", Target = "_blank" },
                         new() { Text = "GLB", Url = "https://www.mbusa.com/en/vehicles/class/glb/suv", Target = "_blank" },
@@ -624,7 +622,7 @@ public partial class BitNavDemo
                 new()
                 {
                     Text = "Sedans & Wagons",
-                    ChildItems = new List<BitNavItem>
+                    ChildItems = new()
                     {
                         new() { Text = "A Class", Url = "https://www.mbusa.com/en/vehicles/class/a-class/sedan", Target = "_blank" },
                         new() { Text = "C Class", Url = "https://www.mbusa.com/en/vehicles/class/c-class/sedan", Target = "_blank" },
@@ -634,7 +632,7 @@ public partial class BitNavDemo
                 new()
                 {
                     Text = "Coupes",
-                    ChildItems = new List<BitNavItem>
+                    ChildItems = new()
                     {
                         new() { Text = "CLA Coupe", Url = "https://www.mbusa.com/en/vehicles/class/cla/coupe", Target = "_blank" },
                         new() { Text = "C Class Coupe", Url = "https://www.mbusa.com/en/vehicles/class/c-class/coupe", Target = "_blank" },
@@ -657,7 +655,6 @@ public partial class BitNavDemo
             }
         },
     };
-
     // Manual
     private static readonly List<BitNavItem> FoodNavMenu = new()
     {
@@ -666,12 +663,12 @@ public partial class BitNavDemo
             Text = "Fast-Food",
             IconName = BitIconName.HeartBroken,
             IsExpanded = true,
-            ChildItems = new List<BitNavItem>
+            ChildItems = new()
             {
-                new() 
+                new()
                 {
                     Text = "Burgers",
-                    ChildItems = new List<BitNavItem>
+                    ChildItems = new()
                     {
                         new() { Text = "Beef Burger" },
                         new() { Text = "Veggie Burger" },
@@ -682,7 +679,7 @@ public partial class BitNavDemo
                 new()
                 {
                     Text = "Pizzas",
-                    ChildItems = new List<BitNavItem>
+                    ChildItems = new()
                     {
                         new() { Text = "Cheese Pizza" },
                         new() { Text = "Veggie Pizza" },
@@ -697,11 +694,11 @@ public partial class BitNavDemo
         {
             Text = "Fruits",
             IconName = BitIconName.Health,
-            ChildItems = new List<BitNavItem>
+            ChildItems = new()
             {
-                new() { Text = "Aplle" },
+                new() { Text = "Apple" },
                 new() { Text = "Orange" },
-                new() { Text = "Benana" },
+                new() { Text = "Banana" },
             }
         },
         new() { Text = "Ice Cream" },
@@ -716,9 +713,7 @@ public partial class BitNavDemo
     private BitNavItem SelectedItem;
     private BitNavItem ToggledItem;
 
-    #endregion
 
-    #region Custom Item
 
     // Basic
     private static readonly List<BitPlatformMenu> CustomBitPlatformNavMenu = new()
@@ -726,18 +721,18 @@ public partial class BitNavDemo
         new()
         {
             Text = "Bit Platform",
-            Links = new List<BitPlatformMenu>
+            Links = new()
             {
                 new() { Text = "Home", Url = "https://bitplatform.dev/" },
                 new()
                 {
                     Text = "Products & Services",
-                    Links = new List<BitPlatformMenu>
+                    Links = new()
                     {
                         new()
                         {
                             Text = "Project Templates",
-                            Links = new List<BitPlatformMenu>
+                            Links = new()
                             {
                                 new() { Text = "TodoTemplate", Url = "https://bitplatform.dev/todo-template/overview" },
                                 new() { Text = "AdminPanel", Url = "https://bitplatform.dev/admin-panel/overview" },
@@ -756,7 +751,7 @@ public partial class BitNavDemo
         new()
         {
             Text = "Community",
-            Links = new List<BitPlatformMenu>
+            Links = new()
             {
                 new() { Text = "Linkedin", Url = "https://www.linkedin.com/company/bitplatformhq/about/" },
                 new() { Text = "Twitter", Url = "https://twitter.com/bitplatformhq" },
@@ -765,7 +760,6 @@ public partial class BitNavDemo
         },
         new() { Text = "Iconography", Url = "/icons" },
     };
-
     // Grouped
     private static readonly List<CarMenu> CustomCarNavMenu = new()
     {
@@ -776,12 +770,12 @@ public partial class BitNavDemo
             CollapsedAriaLabel = "Mercedes-Benz Collapsed",
             Tooltip = "Mercedes-Benz Car Models",
             IsExpandedParent = true,
-            Links = new List<CarMenu>
+            Links = new()
             {
                 new()
                 {
                     Name = "SUVs",
-                    Links = new List<CarMenu>
+                    Links = new()
                     {
                         new() { Name = "GLA", PageUrl = "https://www.mbusa.com/en/vehicles/class/gla/suv", UrlTarget = "_blank" },
                         new() { Name = "GLB", PageUrl = "https://www.mbusa.com/en/vehicles/class/glb/suv", UrlTarget = "_blank" },
@@ -791,7 +785,7 @@ public partial class BitNavDemo
                 new()
                 {
                     Name = "Sedans & Wagons",
-                    Links = new List<CarMenu>
+                    Links = new()
                     {
                         new() { Name = "A Class", PageUrl = "https://www.mbusa.com/en/vehicles/class/a-class/sedan", UrlTarget = "_blank" },
                         new() { Name = "C Class", PageUrl = "https://www.mbusa.com/en/vehicles/class/c-class/sedan", UrlTarget = "_blank" },
@@ -801,7 +795,7 @@ public partial class BitNavDemo
                 new()
                 {
                     Name = "Coupes",
-                    Links = new List<CarMenu>
+                    Links = new()
                     {
                         new() { Name = "CLA Coupe", PageUrl = "https://www.mbusa.com/en/vehicles/class/cla/coupe", UrlTarget = "_blank" },
                         new() { Name = "C Class Coupe", PageUrl = "https://www.mbusa.com/en/vehicles/class/c-class/coupe", UrlTarget = "_blank" },
@@ -816,7 +810,7 @@ public partial class BitNavDemo
             ExpandedAriaLabel = "Tesla Expanded",
             CollapsedAriaLabel = "Tesla Collapsed",
             Tooltip = "Tesla Car Models",
-            Links = new List<CarMenu>
+            Links = new()
             {
                 new() { Name = "Model S", PageUrl = "https://www.tesla.com/models", UrlTarget = "_blank" },
                 new() { Name = "Model X", PageUrl = "https://www.tesla.com/modelx", UrlTarget = "_blank" },
@@ -824,7 +818,6 @@ public partial class BitNavDemo
             }
         },
     };
-
     // Manual
     private static readonly List<FoodMenu> CustomFoodNavMenu = new()
     {
@@ -833,12 +826,12 @@ public partial class BitNavDemo
             Name = "Fast-Food",
             Icon = BitIconName.HeartBroken,
             IsExpanded = true,
-            Childs = new List<FoodMenu>
+            Childs = new()
             {
                 new()
                 {
                     Name = "Burgers",
-                    Childs = new List<FoodMenu>
+                    Childs = new()
                     {
                         new() { Name = "Beef Burger" },
                         new() { Name = "Veggie Burger" },
@@ -849,7 +842,7 @@ public partial class BitNavDemo
                 new()
                 {
                     Name = "Pizzas",
-                    Childs = new List<FoodMenu>
+                    Childs = new()
                     {
                         new() { Name = "Cheese Pizza" },
                         new() { Name = "Veggie Pizza" },
@@ -864,11 +857,11 @@ public partial class BitNavDemo
         {
             Name = "Fruits",
             Icon = BitIconName.Health,
-            Childs = new List<FoodMenu>
+            Childs = new()
             {
-                new() { Name = "Aplle" },
+                new() { Name = "Apple" },
                 new() { Name = "Orange" },
-                new() { Name = "Benana" },
+                new() { Name = "Banana" },
             }
         },
         new() { Name = "Ice Cream" },
@@ -883,9 +876,7 @@ public partial class BitNavDemo
     private FoodMenu CustomSelectedItem;
     private FoodMenu CustomToggledItem;
 
-    #endregion
 
-    #region NavOption
 
     private string SelectedOptionKey;
 
@@ -893,7 +884,6 @@ public partial class BitNavDemo
     private BitNavOption SelectedOption;
     private BitNavOption ToggledOption;
 
-    #endregion
 
     private static readonly List<BitDropDownItem> FoodMenuDropDownItems = new()
     {
@@ -944,8 +934,8 @@ public partial class BitNavDemo
         },
         new BitDropDownItem
         {
-            Text = "Aplle",
-            Value = "Aplle",
+            Text = "Apple",
+            Value = "Apple",
         },
         new BitDropDownItem
         {
@@ -954,8 +944,8 @@ public partial class BitNavDemo
         },
         new BitDropDownItem
         {
-            Text = "Benana",
-            Value = "Benana",
+            Text = "Banana",
+            Value = "Banana",
         },
         new BitDropDownItem
         {
@@ -1379,9 +1369,9 @@ private static readonly List<BitNavItem> FoodNavMenu = new()
         IconName = BitIconName.Health,
         ChildItems = new List<BitNavItem>
         {
-            new() { Text = ""Aplle"" },
+            new() { Text = ""Apple"" },
             new() { Text = ""Orange"" },
-            new() { Text = ""Benana"" },
+            new() { Text = ""Banana"" },
         }
     },
     new() { Text = ""Ice Cream"" },
@@ -1457,6 +1447,62 @@ private BitNavItem ClickedItem;
 private BitNavItem SelectedItem;
 private BitNavItem ToggledItem;
 ";
+
+    private static string example6NavItemHTMLCode = @"
+<div class=""example-box"">
+    <BitNav Items=""BitPlatformNavMenu""
+            ClassStyles=""@(new() { ItemContainer = new() { Style=""border:1px solid green;margin:2px"" },
+                                    ToggleButton = new() { Style=""color:cyan"" },
+                                    Item = new() { Style=""color:red"" } })"" />
+</div>";
+    private static string example6NavItemCSharpCode = @"
+private static readonly List<BitNavItem> BitPlatformNavMenu = new()
+{
+    new ()
+    {
+        Text = ""Bit Platform"",
+        ChildItems = new List<BitNavItem>
+        {
+            new() { Text = ""Home"", Url = ""https://bitplatform.dev/"" },
+            new()
+            {
+                Text = ""Products & Services"",
+                ChildItems = new List<BitNavItem>
+                {
+                    new()
+                    {
+                        Text = ""Project Templates"",
+                        ChildItems = new List<BitNavItem>
+                        {
+                            new() { Text = ""TodoTemplate"", Url = ""https://bitplatform.dev/todo-template/overview"" },
+                            new() { Text = ""AdminPanel"", Url = ""https://bitplatform.dev/admin-panel/overview"" },
+                        }
+                    },
+                    new() { Text = ""BlazorUI"", Url = ""https://bitplatform.dev/components"" },
+                    new() { Text = ""Cloud hosting solutions"", Url = ""https://bitplatform.dev/#"", IsEnabled = false },
+                    new() { Text = ""Bit academy"", Url = ""https://bitplatform.dev/#"", IsEnabled = false },
+                }
+            },
+            new() { Text = ""Pricing"", Url = ""https://bitplatform.dev/pricing"" },
+            new() { Text = ""About"", Url = ""https://bitplatform.dev/about-us"" },
+            new() { Text = ""Contact us"", Url = ""https://bitplatform.dev/contact-us"" },
+        },
+    },
+    new()
+    {
+        Text = ""Community"",
+        ChildItems = new List<BitNavItem>
+        {
+            new() { Text = ""Linkedin"", Url = ""https://www.linkedin.com/company/bitplatformhq/about/"" },
+            new() { Text = ""Twitter"", Url = ""https://twitter.com/bitplatformhq"" },
+            new() { Text = ""Github repo"", Url = ""https://github.com/bitfoundation/bitplatform"" },
+        }
+    },
+    new() { Text = ""Iconography"", Url = ""/icons"" },
+};
+";
+
+
 
     private static string example1CustomItemHTMLCode = @"
 <BitNav Items=""CustomBitPlatformNavMenu""
@@ -2040,6 +2086,74 @@ private FoodMenu CustomSelectedItem;
 private FoodMenu CustomToggledItem;
 ";
 
+    private static string example6CustomItemHTMLCode = @"
+<div class=""example-box"">
+    <BitNav Items=""CustomBitPlatformNavMenu""
+            TextField=""@nameof(BitPlatformMenu.Text)""
+            UrlField=""@nameof(BitPlatformMenu.Url)""
+            IsEnabledField=""@nameof(BitPlatformMenu.IsEnabled)""
+            ChildItemsField=""@nameof(BitPlatformMenu.Links)""
+            ClassStyles=""@(new() { ItemContainer = new() { Style=""border:1px solid green;margin:2px"" },
+                                    ToggleButton = new() { Style=""color:cyan"" },
+                                    Item = new() { Style=""color:red"" } })"" />
+</div>";
+    private static string example6CustomItemCSharpCode = @"
+public class BitPlatformMenu
+{
+    public string Text { get; set; } = string.Empty;
+    public string Url { get; set; }
+    public bool IsEnabled { get; set; } = true;
+    public List<BitPlatformMenu> Links { get; set; } = new();
+}
+
+private static readonly List<BitPlatformMenu> CustomBitPlatformNavMenu = new()
+{
+    new()
+    {
+        Text = ""Bit Platform"",
+        Links = new List<BitPlatformMenu>
+        {
+            new() { Text = ""Home"", Url = ""https://bitplatform.dev/"" },
+            new()
+            {
+                Text = ""Products & Services"",
+                Links = new List<BitPlatformMenu>
+                {
+                    new()
+                    {
+                        Text = ""Project Templates"",
+                        Links = new List<BitPlatformMenu>
+                        {
+                            new() { Text = ""TodoTemplate"", Url = ""https://bitplatform.dev/todo-template/overview"" },
+                            new() { Text = ""AdminPanel"", Url = ""https://bitplatform.dev/admin-panel/overview"" },
+                        }
+                    },
+                    new() { Text = ""BlazorUI"", Url = ""https://bitplatform.dev/components"" },
+                    new() { Text = ""Cloud hosting solutions"", Url = ""https://bitplatform.dev/#"", IsEnabled = false },
+                    new() { Text = ""Bit academy"", Url = ""https://bitplatform.dev/#"", IsEnabled = false },
+                }
+            },
+            new() { Text = ""Pricing"", Url = ""https://bitplatform.dev/pricing"" },
+            new() { Text = ""About"", Url = ""https://bitplatform.dev/about-us"" },
+            new() { Text = ""Contact us"", Url = ""https://bitplatform.dev/contact-us"" },
+        },
+    },
+    new()
+    {
+        Text = ""Community"",
+        Links = new List<BitPlatformMenu>
+        {
+            new() { Text = ""Linkedin"", Url = ""https://www.linkedin.com/company/bitplatformhq/about/"" },
+            new() { Text = ""Twitter"", Url = ""https://twitter.com/bitplatformhq"" },
+            new() { Text = ""Github repo"", Url = ""https://github.com/bitfoundation/bitplatform"" },
+        }
+    },
+    new() { Text = ""Iconography"", Url = ""/icons"" },
+};
+";
+
+
+
     private static string example1NavOptionHTMLCode = @"
 <BitNav TItem=""BitNavOption"">
     <BitNavOption Text=""Bit Platform""
@@ -2301,4 +2415,40 @@ private BitNavOption ClickedOption;
 private BitNavOption SelectedOption;
 private BitNavOption ToggledOption;
 ";
+
+    private static string example6NavOptionHTMLCode = @"
+<div class=""example-box"">
+    <BitNav TItem=""BitNavOption""
+            ClassStyles=""@(new() { ItemContainer = new() { Style=""border:1px solid green;margin:2px"" },
+                                    ToggleButton = new() { Style=""color:cyan"" },
+                                    Item = new() { Style=""color:red"" } })"">
+        <BitNavOption Text=""Bit Platform""
+                        ExpandAriaLabel=""Bit Platform Expanded""
+                        CollapseAriaLabel=""Bit Platform Collapsed"">
+            <BitNavOption Text=""Home"" Url=""https://bitplatform.dev/"" Target=""_blank"" />
+            <BitNavOption Text=""Products & Services"">
+                <BitNavOption Text=""Project Templates"">
+                    <BitNavOption Text=""TodoTemplate"" Url=""https://bitplatform.dev/todo-template/overview"" Target=""_blank"" />
+                    <BitNavOption Text=""AdminPanel"" Url=""https://bitplatform.dev/admin-panel/overview"" Target=""_blank"" />
+                </BitNavOption>
+                <BitNavOption Text=""BlazorUI"" Url=""https://bitplatform.dev/components"" Target=""_blank"" />
+                <BitNavOption Text=""Cloud hosting solutions"" IsEnabled=""false"" />
+                <BitNavOption Text=""Bit academy"" IsEnabled=""false"" />
+            </BitNavOption>
+            <BitNavOption Text=""Pricing"" Url=""https://bitplatform.dev/pricing"" Target=""_blank"" />
+            <BitNavOption Text=""About"" Url=""https://bitplatform.dev/about-us"" Target=""_blank"" />
+            <BitNavOption Text=""Contact us"" Url=""https://bitplatform.dev/contact-us"" Target=""_blank"" />
+        </BitNavOption>
+
+        <BitNavOption Text=""Community""
+                        ExpandAriaLabel=""Community Expanded""
+                        CollapseAriaLabel=""Community Collapsed"">
+            <BitNavOption Text=""Linkedin"" Url=""https://www.linkedin.com/company/bitplatformhq/about"" Target=""_blank"" />
+            <BitNavOption Text=""Twitter"" Url=""https://twitter.com/bitplatformhq"" Target=""_blank"" />
+            <BitNavOption Text=""Github repo"" Url=""https://github.com/bitfoundation/bitplatform"" Target=""_blank"" />
+        </BitNavOption>
+
+        <BitNavOption Text=""Iconography"" Url=""/icons"" Target=""_blank"" />
+    </BitNav>
+</div>";
 }

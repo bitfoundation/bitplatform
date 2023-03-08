@@ -1,6 +1,7 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Text;
+using System.Text.RegularExpressions;
 
-namespace Bit.BlazorUI.Components.Nav;
+namespace Bit.BlazorUI;
 
 #pragma warning disable CA1707 // Identifiers should not contain underscores
 public partial class _BitNavChild<TItem> where TItem : class
@@ -51,6 +52,68 @@ public partial class _BitNavChild<TItem> where TItem : class
 
         await Nav.OnItemToggle.InvokeAsync(Item);
     }
+
+    private string GetItemContainerClasses()
+    {
+        var sb = new StringBuilder();
+
+        if (Nav.GetIsEnabled(Item) is false)
+        {
+            sb.Append("disabled ");
+        }
+
+        if (Nav.SelectedItem == Item)
+        {
+            sb.Append("selected ")
+              .Append(Nav.ClassStyles?.SelectedItemContainer?.Class)
+              .Append(' ');
+        }
+
+        sb.Append(Nav.ClassStyles?.ItemContainer?.Class);
+
+        return sb.ToString();
+    }
+    private string GetItemContainerStyles()
+    {
+        var sb = new StringBuilder();
+        sb.Append(Nav.ClassStyles?.ItemContainer?.Style);
+
+        if (Nav.SelectedItem == Item)
+        {
+            sb.Append(' ')
+              .Append(Nav.ClassStyles?.SelectedItemContainer?.Style);
+        }
+
+        return sb.ToString();
+    }
+
+    private string GetItemClasses()
+    {
+        var sb = new StringBuilder();
+        sb.Append(Nav.ClassStyles?.Item?.Class);
+
+        if (Nav.SelectedItem == Item)
+        {
+            sb.Append(' ')
+              .Append(Nav.ClassStyles?.SelectedItem?.Class);
+        }
+
+        return sb.ToString();
+    }
+    private string GetItemStyles()
+    {
+        var sb = new StringBuilder();
+        sb.Append(Nav.ClassStyles?.Item?.Style);
+
+        if (Nav.SelectedItem == Item)
+        {
+            sb.Append(' ')
+              .Append(Nav.ClassStyles?.SelectedItem?.Style);
+        }
+
+        return sb.ToString();
+    }
+
 
     private static bool IsRelativeUrl(string? url) => url.HasValue() && new Regex("!/^[a-z0-9+-.]+:\\/\\//i").IsMatch(url!);
 }

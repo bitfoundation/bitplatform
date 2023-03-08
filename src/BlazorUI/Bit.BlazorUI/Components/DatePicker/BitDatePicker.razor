@@ -7,24 +7,24 @@
      class="@ClassBuilder.Value"
      id="@UniqueId">
 
-    @if (LabelFragment is not null)
+    @if (LabelTemplate is not null)
     {
-        <label class="dtp-label" id="@LabelId" for="@TextFieldId">
-            @LabelFragment
+        <label class="label" id="@LabelId" for="@TextFieldId">
+            @LabelTemplate
         </label>
     }
     else if (Label.HasValue())
     {
-        <label class="dtp-label" id="@LabelId" for="@TextFieldId">
+        <label class="label" id="@LabelId" for="@TextFieldId">
             @Label
         </label>
     }
-    <div class="dtp-wrapper"
+    <div class="wrapper"
          id="@WrapperId"
          aria-owns="@(IsOpen ? CalloutId : null)"
-         @onclick="HandleClick">
+         @onclick="HandleOnClick">
 
-        <div class="dtp-field-grp @(AllowTextInput ? "editable-input" : null)">
+        <div class="field-grp @(AllowTextInput ? "editable-input" : null)">
             <input @attributes="InputHtmlAttributes"
                    id="@TextFieldId"
                    disabled=@(IsEnabled is false)
@@ -39,14 +39,14 @@
                    aria-expanded="@(IsOpen ? "true" : "false")"
                    aria-haspopup="dialog"
                    aria-controls="@(IsOpen ? CalloutId : null)"
-                   @onfocusin="@HandleFocusIn"
-                   @onfocusout="@HandleFocusOut"
-                   @onfocus="@HandleFocus"
-                   @oninput="@HandleChange" />
+                   @onfocusin="@HandleOnFocusIn"
+                   @onfocusout="@HandleOnFocusOut"
+                   @onfocus="@HandleOnFocus"
+                   @oninput="@HandleOnChange" />
 
-            @if (IconFragment is not null)
+            @if (IconTemplate is not null)
             {
-                @IconFragment
+                @IconTemplate
             }
             else
             {
@@ -55,18 +55,15 @@
         </div>
     </div>
 
-    <div class="dtp-overlay"
-         id="@OverlayId"
-         @onclick="CloseCallout">
-    </div>
+    <div class="overlay" id="@OverlayId" @onclick="CloseCallout"></div>
 
-    <div class="dtp-callout @(IsResponsive ? "responsive" : string.Empty)" id="@CalloutId">
-        <div class="dtp-callout-main" role="dialog" @attributes=@CalloutHtmlAttributes aria-label="@PickerAriaLabel">
+    <div class="callout@(IsResponsive ? " responsive" : string.Empty)" id="@CalloutId">
+        <div class="callout-main" role="dialog" @attributes=@CalloutHtmlAttributes aria-label="@PickerAriaLabel">
             <div aria-hidden="true" tabindex="0" data-is-visible="true" style="pointer-events: none; position: fixed;"></div>
-            <div class="dtp-group"
+            <div class="group"
                  role="group"
                  aria-label="">
-                <div aria-live="polite" aria-atomic="true">Selected date @CurrentValueAsString</div>
+                <div class="selected-date" aria-live="polite" aria-atomic="true">Selected date @CurrentValueAsString</div>
                 @if ((_showMonthPickerAsOverlayInternal && _isMonthPickerOverlayOnTop is false) || _showMonthPickerAsOverlayInternal is false)
                 {
                     <div class="day-picker-wrapper">
@@ -98,7 +95,7 @@
                                         title="@GoToPrevMonthTitle"
                                         aria-disabled="@(CanMonthChange(ChangeDirection.Previous) is false)"
                                         disabled="@(CanMonthChange(ChangeDirection.Previous) is false)"
-                                        @onclick="() => HandleMonthChange(ChangeDirection.Previous)">
+                                        @onclick="() => HandleOnMonthChange(ChangeDirection.Previous)">
                                     <i class="bit-icon" aria-hidden="true"></i>
                                 </button>
                                 <button class="navigation-btn"
@@ -106,7 +103,7 @@
                                         title="@GoToNextMonthTitle"
                                         aria-disabled="@(CanMonthChange(ChangeDirection.Next) is false)"
                                         disabled="@(CanMonthChange(ChangeDirection.Next) is false)"
-                                        @onclick="() => HandleMonthChange(ChangeDirection.Next)">
+                                        @onclick="() => HandleOnMonthChange(ChangeDirection.Next)">
                                     <i class="bit-icon" aria-hidden="true"></i>
                                 </button>
                                 @if (ShowCloseButton)
@@ -192,7 +189,7 @@
                         {
                             <button class="go-today-btn"
                                     type="button"
-                                    disabled="@IsGoTodayDisabeld()"
+                                    disabled="@IsGoTodayDisabled()"
                                     @onclick="HandleGoToToday">
                                 @GoToToday
                             </button>
@@ -288,7 +285,7 @@
                                             disabled="@(CanYearRangeChange(ChangeDirection.Previous) is false)"
                                             type="button"
                                             title="previous year range @(_yearRangeFrom - 12) - @(_yearRangeFrom - 1)"
-                                            @onclick="() => HandleYearRangeChange(ChangeDirection.Previous)">
+                                            @onclick="() => HandleOnYearRangeChange(ChangeDirection.Previous)">
                                             <i class="bit-icon" aria-hidden="true"></i>
                                     </button>
                                     <button class="navigation-btn"
@@ -296,7 +293,7 @@
                                             aria-disabled="@(CanYearRangeChange(ChangeDirection.Next) is false)"
                                             disabled="@(CanYearRangeChange(ChangeDirection.Next) is false)"
                                             title="next year range @(_yearRangeFrom + 12) - @(_yearRangeTo + 12)"
-                                            @onclick="() => HandleYearRangeChange(ChangeDirection.Next)">
+                                            @onclick="() => HandleOnYearRangeChange(ChangeDirection.Next)">
                                             <i class="bit-icon" aria-hidden="true"></i>
                                     </button>
                                 </div>
@@ -334,7 +331,7 @@
                         @if (ShowGoToToday) {
                             <button class="go-today-btn"
                                     type="button"
-                                    disabled="@IsGoTodayDisabeld()"
+                                    disabled="@IsGoTodayDisabled()"
                                     @onclick="HandleGoToToday">
                                 @GoToToday
                             </button>

@@ -1,16 +1,12 @@
 ﻿@page "/"
-
+@using Bit.Websites.Platform.Web;
+@using Bit.Websites.Platform.Shared.Infra;
 @namespace Bit.Websites.Platform.Web.Pages
-
-@using Bit.Websites.Platform.Web
-@using Bit.Websites.Platform.Shared;
-@using Microsoft.AspNetCore.Http
-
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
-
 @{
     Layout = "_Layout";
     var isBlazorServer = BlazorModeDetector.Current.IsBlazorServer();
+    var isStatic = WebAppDeploymentTypeDetector.Current.IsStatic();
     RenderMode renderMode = isBlazorServer ? RenderMode.ServerPrerendered : RenderMode.WebAssemblyPrerendered;
 
     if (renderMode is RenderMode.ServerPrerendered or RenderMode.WebAssemblyPrerendered)
@@ -22,5 +18,4 @@
     }
 }
 
-<component type="typeof(App)"
-           render-mode="@renderMode" />
+<component type="typeof(App)" render-mode="@renderMode" />
