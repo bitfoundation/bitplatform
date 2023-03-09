@@ -50,7 +50,7 @@ public class BitToggleTests : BunitTestContext
 
         if (onText.HasNoValue() || offText.HasNoValue())
         {
-            Assert.IsTrue(bitToggle.ClassList.Contains($"noonoff"));
+            Assert.IsTrue(bitToggle.ClassList.Contains("noonoff"));
         }
     }
 
