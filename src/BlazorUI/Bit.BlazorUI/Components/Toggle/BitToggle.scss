@@ -112,10 +112,8 @@
                 height: spacing(1.5);
                 border-radius: 50%;
                 transition: all 0.1s ease 0s;
-                border-width: spacing(0.75);
-                border-style: solid;
+                border: spacing(0.75) $shape-border-style transparent;
                 box-sizing: border-box;
-                border-color: transparent;
             }
         }
 
