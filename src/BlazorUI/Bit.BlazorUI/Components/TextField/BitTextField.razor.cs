@@ -14,6 +14,7 @@ public partial class BitTextField
     private bool isUnderlined;
     private bool isResizable = true;
     private BitTextFieldType type = BitTextFieldType.Text;
+    private string focusClass = string.Empty;
 
     private string _textFieldId = string.Empty;
     private string _inputType = string.Empty;
@@ -21,15 +22,15 @@ public partial class BitTextField
     private string _descriptionId = string.Empty;
     private bool _isPasswordRevealed;
     private BitTextFieldType _elementType;
-    private string _focusClass = string.Empty;
-    private string FocusClass
+
+    private string _focusClass
     {
-        get => _focusClass;
+        get => focusClass;
         set
         {
-            if (_focusClass == value) return;
+            if (focusClass == value) return;
 
-            _focusClass = value;
+            focusClass = value;
             ClassBuilder.Reset();
         }
     }
@@ -348,7 +349,7 @@ public partial class BitTextField
 
         ClassBuilder.Register(() => HasBorder is false ? "no-border" : string.Empty);
 
-        ClassBuilder.Register(() => FocusClass);
+        ClassBuilder.Register(() => _focusClass);
 
         ClassBuilder.Register(() => IsRequired && Label is null ? "required-no-label" : string.Empty);
     }
@@ -391,7 +392,7 @@ public partial class BitTextField
     {
         if (IsEnabled is false) return;
 
-        FocusClass = "focused";
+        _focusClass = "focused";
         ClassBuilder.Reset();
         await OnFocusIn.InvokeAsync(e);
     }
@@ -400,7 +401,7 @@ public partial class BitTextField
     {
         if (IsEnabled is false) return;
 
-        FocusClass = string.Empty;
+        _focusClass = string.Empty;
         ClassBuilder.Reset();
         await OnFocusOut.InvokeAsync(e);
     }
@@ -409,7 +410,7 @@ public partial class BitTextField
     {
         if (IsEnabled is false) return;
 
-        FocusClass = "focused";
+        _focusClass = "focused";
         ClassBuilder.Reset();
         await OnFocus.InvokeAsync(e);
     }
