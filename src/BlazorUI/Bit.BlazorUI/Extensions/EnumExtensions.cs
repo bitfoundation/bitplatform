@@ -14,10 +14,10 @@ internal static class EnumExtensions
         if (enumValue is null) return null;
 
         var name = enumValue.GetType()
-                              .GetMember(enumValue.ToString())
-                              .FirstOrDefault()?
-                              .GetCustomAttribute<DisplayAttribute>()?
-                              .GetName();
+                            .GetMember(enumValue.ToString())
+                            .FirstOrDefault()?
+                            .GetCustomAttribute<DisplayAttribute>()?
+                            .GetName();
 
         string? displayName = null;
 
