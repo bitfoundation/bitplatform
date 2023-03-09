@@ -8,7 +8,7 @@
     <div class="wrapper">
         @if (LabelTemplate is not null)
         {
-            <label class="label" id="@_labelId" for="@_textFieldId">
+            <label style="@LabelStyle" class="label @LabelClass" id="@_labelId" for="@_textFieldId">
                 @LabelTemplate
             </label>
         }

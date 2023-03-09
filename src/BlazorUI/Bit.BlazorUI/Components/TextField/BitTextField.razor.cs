@@ -333,17 +333,11 @@ public partial class BitTextField
 
         ClassBuilder.Register(() => IsEnabled && IsRequired ? "required" : string.Empty);
 
-        ClassBuilder.Register(() => IsUnderlined ?
-                                    $"underlined{(IsEnabled is false ? "-disabled" : string.Empty)}"
-                                    : string.Empty);
+        ClassBuilder.Register(() => IsUnderlined ? "underlined" : string.Empty);
 
         ClassBuilder.Register(() => HasBorder is false ? "no-border" : string.Empty);
 
-        ClassBuilder.Register(() => _focusClass.HasValue()
-                                    ? $"{(IsUnderlined ? "underlined-" : "")}{_focusClass}"
-                                    : string.Empty);
-
-        ClassBuilder.Register(() => ValueInvalid is true ? "invalid" : string.Empty);
+        ClassBuilder.Register(() => _focusClass.HasValue() ? _focusClass : string.Empty);
 
         ClassBuilder.Register(() => IsRequired && Label is null ? "required-no-label" : string.Empty);
     }
@@ -395,7 +389,7 @@ public partial class BitTextField
     {
         if (IsEnabled is false) return;
 
-        _focusClass = "";
+        _focusClass = string.Empty;
         ClassBuilder.Reset();
         await OnFocusOut.InvokeAsync(e);
     }
