@@ -1,16 +1,22 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
+﻿using System.Globalization;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
 public partial class BitToggle
 {
+    protected override bool UseVisual => false;
+
+
+    private bool _disposed;
     private string? _labelledById;
     private string? _stateText;
-    private string? _buttonId => $"{UniqueId}_button";
-    private string? _labelId => $"{UniqueId}_label";
-    private string? _stateTextId => $"{UniqueId}_state_text";
+    private string? _buttonId;
+    private string? _labelId;
+    private string? _stateTextId;
     private string? _ariaChecked => CurrentValueAsString;
+
+
 
     /// <summary>
     /// Default text of the toggle when it is neither ON or OFF.
@@ -53,16 +59,9 @@ public partial class BitToggle
     /// </summary>
     [Parameter] public string? Role { get; set; } = "switch";
 
+
+
     protected override string RootElementClass => "bit-tgl";
-
-    protected override async Task OnInitializedAsync()
-    {
-        SetTexts();
-
-        OnValueChanged += HandleOnValueChanged;
-
-        await base.OnInitializedAsync();
-    }
 
     protected override void RegisterComponentClasses()
     {
@@ -70,32 +69,42 @@ public partial class BitToggle
         {
             var isCheckedClass = Value ? "checked" : "unchecked";
             var isEnabledClass = IsEnabled ? "enabled" : "disabled";
-            return $"{RootElementClass}-{isEnabledClass}-{isCheckedClass}-{VisualClassRegistrar()}";
+            return $"{isEnabledClass}-{isCheckedClass}";
         });
 
-        ClassBuilder.Register(() => IsInlineLabel
-                                    ? $"{RootElementClass}-inline-{VisualClassRegistrar()}" 
-                                    : string.Empty);
+        ClassBuilder.Register(() => IsInlineLabel ? "inline" : string.Empty);
 
-        ClassBuilder.Register(() => OnText.HasNoValue() || OffText.HasNoValue()
-                                    ? $"{RootElementClass}-noonoff-{VisualClassRegistrar()}" 
-                                    : string.Empty);
-
-        ClassBuilder.Register(() => ValueInvalid is true 
-                                    ? $"{RootElementClass}-invalid-{VisualClassRegistrar()}" 
-                                    : string.Empty);
+        ClassBuilder.Register(() => OnText.HasNoValue() || OffText.HasNoValue() ? "noonoff" : string.Empty);
     }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _buttonId = $"Toggle-{UniqueId}-Button";
+        _labelId = $"Toggle-{UniqueId}-Label";
+        _stateTextId = $"Toggle-{UniqueId}-StateText";
+
+        SetTexts();
+
+        OnValueChanged += HandleOnValueChanged;
+
+        await base.OnInitializedAsync();
+    }
+
+
 
     private void HandleOnValueChanged(object? sender, EventArgs args)
     {
         SetTexts();
+
         ClassBuilder.Reset();
     }
 
     protected virtual async Task HandleOnClick(MouseEventArgs e)
     {
         if (IsEnabled is false || ValueChanged.HasDelegate is false) return;
+
         CurrentValue = !CurrentValue;
+
         await OnChange.InvokeAsync(CurrentValue);
     }
 
@@ -103,16 +112,16 @@ public partial class BitToggle
     {
         _stateText = (CurrentValue ? OnText : OffText) ?? DefaultText;
 
-        if (AriaLabel.HasNoValue())
+        if (AriaLabel.HasValue()) return;
+
+        if (Label.HasValue())
         {
-            if (Label.HasValue())
-            {
-                _labelledById = _labelId;
-            }
-            if (_stateText.HasValue())
-            {
-                _labelledById = _labelledById.HasValue() ? $"{_labelId} {_stateTextId}" : _stateTextId;
-            }
+            _labelledById = _labelId;
+        }
+
+        if (_stateText.HasValue())
+        {
+            _labelledById = _labelledById.HasValue() ? $"{_labelId} {_stateTextId}" : _stateTextId;
         }
     }
 
@@ -122,13 +131,15 @@ public partial class BitToggle
     protected override bool TryParseValueFromString(string? value, out bool result, [NotNullWhen(false)] out string? validationErrorMessage)
         => throw new NotSupportedException($"This component does not parse string inputs. Bind to the '{nameof(CurrentValue)}' property, not '{nameof(CurrentValueAsString)}'.");
 
+
     protected override void Dispose(bool disposing)
     {
-        if (disposing)
-        {
-            OnValueChanged -= HandleOnValueChanged;
-        }
-
         base.Dispose(disposing);
+
+        if (_disposed || disposing is false) return;
+
+        OnValueChanged -= HandleOnValueChanged;
+
+        _disposed = true;
     }
 }
