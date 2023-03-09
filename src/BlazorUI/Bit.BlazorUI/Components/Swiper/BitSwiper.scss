@@ -1,13 +1,9 @@
-﻿@import "../../Styles/Fluent/colors.fluent.scss";
-@import "../../Styles/functions.scss";
+﻿@import "../../Styles/functions.scss";
 
 .bit-swp {
     margin: auto;
     overflow: hidden;
     position: relative;
-
-    &.bit-swp-fluent {
-    }
 
     .swiper {
         width: 100%;
@@ -15,7 +11,7 @@
         cursor: grab;
         display: flex;
         user-select: none;
-        transform: translateX(0px);
+        transform: translateX(0);
         transition-duration: 300ms;
         transition-timing-function: ease-out;
         transition-property: transform, -webkit-transform;
@@ -23,7 +19,7 @@
 
     .right-btn,
     .left-btn {
-        font-size: 1.5rem;
+        font-size: spacing(3);
         cursor: pointer;
         position: absolute;
         top: 0;
@@ -34,7 +30,7 @@
         justify-content: center;
         width: 10%;
         padding: 0;
-        color: $White;
+        color: $color-neutrals-white;
         text-align: center;
         background: 0 0;
         border: 0;
@@ -59,25 +55,29 @@
 
     .dots {
         text-align: center;
-        margin-top: rem(10px);
+        margin-top: spacing(1.25);
 
         > div {
             cursor: pointer;
-            height: rem(10px);
-            width: rem(10px);
-            margin: 0 rem(4px);
-            background-color: $Grey120;
+            height: spacing(1.25);
+            width: spacing(1.25);
+            margin: 0 spacing(0.5);
+            background-color: $color-neutrals-gray120;
             border-radius: 50%;
             display: inline-block;
             transition: background-color 0.6s ease;
 
             &:hover {
-                background-color: $Grey160;
+                background-color: $color-neutrals-gray160;
             }
 
             &.current, &.current:hover {
-                background-color: $Primary;
+                background-color: $color-primary-main;
             }
         }
+    }
+
+    .bit-swpi {
+        flex-shrink: 0;
     }
 }

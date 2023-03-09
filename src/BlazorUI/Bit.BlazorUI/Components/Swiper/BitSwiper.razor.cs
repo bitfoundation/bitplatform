@@ -4,6 +4,9 @@ namespace Bit.BlazorUI;
 
 public partial class BitSwiper : IDisposable
 {
+    protected override bool UseVisual => false;
+
+
     private double _lastX;
     private bool _disposed;
     private int _pagesCount;
@@ -76,20 +79,14 @@ public partial class BitSwiper : IDisposable
     /// </summary>
     [Parameter] public BitDirection Direction { get; set; } = BitDirection.LeftToRight;
 
+
+
     public async Task GoPrev() => await Go(false);
 
     public async Task GoNext() => await Go(true);
 
-    public async Task GoTo(int index)
-    {
-        await GotoPage(index - 1);
-    }
+    public async Task GoTo(int index) => await GotoPage(index - 1);
 
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
 
 
     internal void RegisterItem(BitSwiperItem item)
@@ -99,30 +96,9 @@ public partial class BitSwiper : IDisposable
         AllItems.Add(item);
     }
 
-    internal void UnregisterItem(BitSwiperItem carouselItem)
-    {
-        AllItems.Remove(carouselItem);
-    }
+    internal void UnregisterItem(BitSwiperItem carouselItem) => AllItems.Remove(carouselItem);
 
-    protected virtual void Dispose(bool disposing)
-    {
-        if (_disposed) return;
-        if (!disposing) return;
 
-        if (_autoPlayTimer is not null)
-        {
-            _autoPlayTimer.Elapsed -= AutoPlayTimerElapsed;
-            _autoPlayTimer.Dispose();
-        }
-
-        if (_dotnetObjectReference is not null)
-        {
-            _dotnetObjectReference.Dispose();
-            _ = _js.UnregisterResizeObserver(RootElement, _resizeObserverId);
-        }
-
-        _disposed = true;
-    }
 
     protected override string RootElementClass => "bit-swp";
 
@@ -139,8 +115,8 @@ public partial class BitSwiper : IDisposable
 
         var itemsCount = AllItems.Count;
         _internalScrollItemsCount = ScrollItemsCount < 1 ? 1
-                                    : ScrollItemsCount > itemsCount ? itemsCount
-                                    : ScrollItemsCount;
+                                  : ScrollItemsCount > itemsCount ? itemsCount
+                                  : ScrollItemsCount;
 
         if (firstRender)
         {
@@ -162,12 +138,37 @@ public partial class BitSwiper : IDisposable
         await base.OnAfterRenderAsync(firstRender);
     }
 
+
+
     [JSInvokable("OnRootResize")]
     public async Task OnRootResize(ContentRect rect)
     {
         await GetDimensions();
         await Swipe(0);
     }
+
+    [JSInvokable("HandlePointerLeave")]
+    public async Task HandlePointerLeave(double clientX)
+    {
+        if (_isPointerDown is false) return;
+
+        _isPointerDown = false;
+        await _js.SetStyle(_swiper, "cursor", "");
+
+        var time = (DateTime.Now.Ticks - _pointerDownTime) / 10_000;
+        var distance = Math.Abs(clientX - _pointerDownX);
+
+        await GetDimensions();
+
+        var swipeSpeed = distance / time;
+
+        var transitionTime = swipeSpeed > 2 ? 300 : swipeSpeed > 1 ? 600 : 1000;
+        await _js.SetStyle(_swiper, "transitionDuration", $"{transitionTime}ms");
+
+        var x = -(_lastDiffX / Math.Abs(_lastDiffX)) * (_swiperEffectiveWidth * swipeSpeed / 10) + _translateX;
+        await Swipe(x);
+    }
+
 
 
     private async void AutoPlayTimerElapsed(object? sender, ElapsedEventArgs e) => await InvokeAsync(async () => await Go(true));
@@ -189,7 +190,7 @@ public partial class BitSwiper : IDisposable
         var scrollX = _swiperWidth / AllItems.Count * _internalScrollItemsCount;
         var passedSlidesX = (int)(_translateX / scrollX);
         var x = sign * scrollX + passedSlidesX * scrollX;
-        
+
         await Swipe(x);
     }
 
@@ -230,32 +231,7 @@ public partial class BitSwiper : IDisposable
         await _js.SetStyle(_swiper, "transitionDuration", "");
     }
 
-    private async Task HandlePointerUp(MouseEventArgs e)
-    {
-        await HandlePointerLeave(e.ClientX);
-    }
-
-    [JSInvokable]
-    public async Task HandlePointerLeave(double clientX)
-    {
-        if (_isPointerDown is false) return;
-
-        _isPointerDown = false;
-        await _js.SetStyle(_swiper, "cursor", "");
-
-        var time = (DateTime.Now.Ticks - _pointerDownTime) / 10_000;
-        var distance = Math.Abs(clientX - _pointerDownX);
-
-        await GetDimensions();
-
-        var swipeSpeed = distance / time;
-
-        var transitionTime = swipeSpeed > 2 ? 300 : swipeSpeed > 1 ? 600 : 1000;
-        await _js.SetStyle(_swiper, "transitionDuration", $"{transitionTime}ms");
-
-        var x = -(_lastDiffX / Math.Abs(_lastDiffX)) * (_swiperEffectiveWidth * swipeSpeed / 10) + _translateX;
-        await Swipe(x);
-    }
+    private async Task HandlePointerUp(MouseEventArgs e) => await HandlePointerLeave(e.ClientX);
 
     private async Task Swipe(double x)
     {
@@ -286,4 +262,29 @@ public partial class BitSwiper : IDisposable
         _translateX = dimensions?.SwiperTranslateX ?? 0;
     }
 
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_disposed || disposing is false) return;
+
+        if (_autoPlayTimer is not null)
+        {
+            _autoPlayTimer.Elapsed -= AutoPlayTimerElapsed;
+            _autoPlayTimer.Dispose();
+        }
+
+        if (_dotnetObjectReference is not null)
+        {
+            _dotnetObjectReference.Dispose();
+            _ = _js.UnregisterResizeObserver(RootElement, _resizeObserverId);
+        }
+
+        _disposed = true;
+    }
 }
