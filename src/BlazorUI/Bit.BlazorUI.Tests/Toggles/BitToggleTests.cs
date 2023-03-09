@@ -1,5 +1,4 @@
-﻿using System.Text;
-using Bunit;
+﻿using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Toggles;
@@ -8,26 +7,15 @@ namespace Bit.BlazorUI.Tests.Toggles;
 public class BitToggleTests : BunitTestContext
 {
     [DataTestMethod,
-       DataRow(Visual.Fluent, true, true),
-       DataRow(Visual.Fluent, true, false),
-       DataRow(Visual.Fluent, false, true),
-       DataRow(Visual.Fluent, false, false),
-
-       DataRow(Visual.Cupertino, true, true),
-       DataRow(Visual.Cupertino, true, false),
-       DataRow(Visual.Cupertino, false, true),
-       DataRow(Visual.Cupertino, false, false),
-
-       DataRow(Visual.Material, true, true),
-       DataRow(Visual.Material, true, false),
-       DataRow(Visual.Material, false, true),
-       DataRow(Visual.Material, false, false),
+       DataRow(true, true),
+       DataRow(true, false),
+       DataRow(false, true),
+       DataRow(false, false)
    ]
-    public void BitToggleTest(Visual visual, bool isEnabled, bool value)
+    public void BitToggleTest(bool isEnabled, bool value)
     {
         var com = RenderComponent<BitToggleTest>(parameters =>
         {
-            parameters.Add(p => p.Visual, visual);
             parameters.Add(p => p.IsEnabled, isEnabled);
             parameters.Add(p => p.Value, value);
         });
@@ -35,83 +23,52 @@ public class BitToggleTests : BunitTestContext
         var bitToggle = com.Find(".bit-tgl");
 
         var isEnabledClass = isEnabled ? "enabled" : "disabled";
-        var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
-        var ischeckedClass = value ? "checked" : "unchecked";
+        var isCheckedClass = value ? "checked" : "unchecked";
 
-        Assert.IsTrue(bitToggle.ClassList.Contains($"bit-tgl-{isEnabledClass}-{ischeckedClass}-{visualClass}"));
+        Assert.IsTrue(bitToggle.ClassList.Contains($"{isEnabledClass}-{isCheckedClass}"));
     }
 
     [DataTestMethod,
-        DataRow(Visual.Fluent, "", ""),
-        DataRow(Visual.Fluent, "", null),
-        DataRow(Visual.Fluent, null, ""),
-        DataRow(Visual.Fluent, null, null),
-        DataRow(Visual.Fluent, "On", "Off"),
-        DataRow(Visual.Fluent, "On", ""),
-        DataRow(Visual.Fluent, "On", null),
-        DataRow(Visual.Fluent, "", "Off"),
-        DataRow(Visual.Fluent, null, "Off"),
-
-        DataRow(Visual.Cupertino, "", ""),
-        DataRow(Visual.Cupertino, "", null),
-        DataRow(Visual.Cupertino, null, ""),
-        DataRow(Visual.Cupertino, null, null),
-        DataRow(Visual.Cupertino, "On", "Off"),
-        DataRow(Visual.Cupertino, "On", ""),
-        DataRow(Visual.Cupertino, "On", null),
-        DataRow(Visual.Cupertino, "", "Off"),
-        DataRow(Visual.Cupertino, null, "Off"),
-
-        DataRow(Visual.Material, "", ""),
-        DataRow(Visual.Material, "", null),
-        DataRow(Visual.Material, null, ""),
-        DataRow(Visual.Material, null, null),
-        DataRow(Visual.Material, "On", "Off"),
-        DataRow(Visual.Material, "On", ""),
-        DataRow(Visual.Material, "On", null),
-        DataRow(Visual.Material, "", "Off"),
-        DataRow(Visual.Material, null, "Off"),
+        DataRow("", ""),
+        DataRow("", null),
+        DataRow(null, ""),
+        DataRow(null, null),
+        DataRow("On", "Off"),
+        DataRow("On", ""),
+        DataRow("On", null),
+        DataRow("", "Off"),
+        DataRow(null, "Off")
     ]
-    public void BitToggle_WithoutOnOffText_ShouldHaveClassName(Visual visual, string onText, string offText)
+    public void BitToggleWithoutOnOffTextShouldHaveClassName(string onText, string offText)
     {
         var com = RenderComponent<BitToggleTest>(parameters =>
         {
-            parameters.Add(p => p.Visual, visual);
             parameters.Add(p => p.OnText, onText);
             parameters.Add(p => p.OffText, offText);
         });
         var bitToggle = com.Find(".bit-tgl");
 
-        var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
-
         if (onText.HasNoValue() || offText.HasNoValue())
         {
-            Assert.IsTrue(bitToggle.ClassList.Contains($"bit-tgl-noonoff-{visualClass}"));
+            Assert.IsTrue(bitToggle.ClassList.Contains($"noonoff"));
         }
     }
 
     [DataTestMethod,
-      DataRow(Visual.Fluent, true),
-      DataRow(Visual.Fluent, false),
-      DataRow(Visual.Cupertino, true),
-      DataRow(Visual.Cupertino, false),
-      DataRow(Visual.Material, true),
-      DataRow(Visual.Material, false),
+      DataRow(true),
+      DataRow(false)
     ]
-    public void BitToggle_InlineLabrl_ShouldHaveClassName(Visual visual, bool isInlioneLabel)
+    public void BitToggleInlineLabelShouldHaveClassName(bool isInlineLabel)
     {
         var com = RenderComponent<BitToggleTest>(parameters =>
         {
-            parameters.Add(p => p.Visual, visual);
-            parameters.Add(p => p.IsInlineLabel, isInlioneLabel);
+            parameters.Add(p => p.IsInlineLabel, isInlineLabel);
         });
         var bitToggle = com.Find(".bit-tgl");
 
-        var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
-
-        if (isInlioneLabel)
+        if (isInlineLabel)
         {
-            Assert.IsTrue(bitToggle.ClassList.Contains($"bit-tgl-inline-{visualClass}"));
+            Assert.IsTrue(bitToggle.ClassList.Contains("inline"));
         }
     }
 
@@ -133,7 +90,7 @@ public class BitToggleTests : BunitTestContext
         DataRow(true, "on", "on", "This is the Third defaultText", "This is the Third label"),
         DataRow(false, "off", "off", "This is the fourth defaultText", "This is the fourth label")
     ]
-    public void BitToggleAriaLabelledyTest(bool value, string onText, string offText, string defaultText, string label)
+    public void BitToggleAriaLabelledbyTest(bool value, string onText, string offText, string defaultText, string label)
     {
         var com = RenderComponent<BitToggleTest>(parameters =>
         {
@@ -148,9 +105,9 @@ public class BitToggleTests : BunitTestContext
         var bitToggleButton = com.Find("button");
 
       
-        var labelId = bitToggleButton.Id.Replace("button", "label");
+        var labelId = bitToggleButton.Id.Replace("Button", "Label");
         
-        var stateTextId = bitToggleButton.Id.Replace("button", "state_text");
+        var stateTextId = bitToggleButton.Id.Replace("Button", "StateText");
 
         var ariaLabelledById = string.Empty;
         var stateText = (value ? onText : offText) ?? defaultText ?? string.Empty;
@@ -280,35 +237,29 @@ public class BitToggleTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow(Visual.Fluent, true),
-        DataRow(Visual.Fluent, false),
-        DataRow(Visual.Cupertino, true),
-        DataRow(Visual.Cupertino, false),
-        DataRow(Visual.Material, true),
-        DataRow(Visual.Material, false),
+        DataRow(true),
+        DataRow(false)
     ]
-    public void BitToggleValidationInvalidCssClassTest(Visual visual, bool value)
+    public void BitToggleValidationInvalidCssClassTest(bool value)
     {
         var com = RenderComponent<BitToggleValidationTest>(parameters =>
         {
             parameters.Add(p => p.TestModel, new BitToggleTestModel { Value = value });
-            parameters.Add(p => p.Visual, visual);
             parameters.Add(p => p.IsEnabled, true);
         });
 
         var bitToggle = com.Find(".bit-tgl");
-        var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
 
-        Assert.IsFalse(bitToggle.ClassList.Contains($"bit-tgl-invalid-{visualClass}"));
+        Assert.IsFalse(bitToggle.ClassList.Contains("invalid"));
 
         var form = com.Find("form");
         form.Submit();
 
-        Assert.AreEqual(bitToggle.ClassList.Contains($"bit-tgl-invalid-{visualClass}"), value);
+        Assert.AreEqual(bitToggle.ClassList.Contains("invalid"), value);
 
         var button = com.Find("button");
         button.Click();
 
-        Assert.AreEqual(bitToggle.ClassList.Contains($"bit-tgl-invalid-{visualClass}"), !value);
+        Assert.AreEqual(bitToggle.ClassList.Contains("invalid"), !value);
     }
 }
