@@ -121,7 +121,7 @@ jobs:
       with:
         files: 'src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/Shared/appsettings.json'
       env:
-        ApiServerAddress: 'https://todo-app.bitplatform.dev/api/'
+        ApiServerAddress: 'api/'
 
     - name: Build (To generate CSS/JS files)
       run: dotnet build src/Templates/TodoTemplate/Bit.TodoTemplate/src/Server/Api/TodoTemplate.Server.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="PWA" -p:Configuration=Release
