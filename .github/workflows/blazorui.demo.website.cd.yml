@@ -61,7 +61,7 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: api-web-bundle
-        path: src/BlazorUI/Demo/Server/Api/api-web
+        path: api-web
 
   deploy_blazor_api_wasm:
     name: deploy blazor api + web assembly
