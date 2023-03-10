@@ -6,10 +6,6 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BlazorUI", "BlazorUI", "{DC165533-038F-4D71-9BA1-44CF254E116F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Demo", "Demo", "{23426B1A-CC46-4D11-B233-208A57B2BCA2}"
-	ProjectSection(SolutionItems) = preProject
-		BlazorUI\Demo\Directory.Build.props = BlazorUI\Demo\Directory.Build.props
-		BlazorUI\Demo\global.json = BlazorUI\Demo\global.json
-	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.BlazorUI", "BlazorUI\Bit.BlazorUI\Bit.BlazorUI.csproj", "{48C1BB77-8B36-4EAD-B52F-CDC8A875D120}"
 EndProject

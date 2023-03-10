@@ -32,7 +32,7 @@ public static class MauiProgram
         {
             HttpClient httpClient = new(sp.GetRequiredService<AppHttpClientHandler>())
             {
-                BaseAddress = new Uri($"{sp.GetRequiredService<IConfiguration>().GetApiServerAddress()}")
+                BaseAddress = new Uri(sp.GetRequiredService<IConfiguration>().GetApiServerAddress())
             };
 
             return httpClient;
