@@ -52,10 +52,10 @@ jobs:
         ApiServerAddress: 'api/'
       
     - name: Build (To generate CSS/JS files)
-      run: dotnet build src/BlazorUI/Demo/Server/Api/Bit.BlazorUI.Demo.Server.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release
+      run: dotnet build src/BlazorUI/Demo/Server/Api/Bit.BlazorUI.Demo.Server.Api.csproj  -m:1 -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release
 
     - name: Publish
-      run: dotnet publish src/BlazorUI/Demo/Server/Api/Bit.BlazorUI.Demo.Server.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/api-web
+      run: dotnet publish src/BlazorUI/Demo/Server/Api/Bit.BlazorUI.Demo.Server.Api.csproj  -m:1 -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/api-web
 
     - name: Upload api-web artifact
       uses: actions/upload-artifact@v3
@@ -126,10 +126,10 @@ jobs:
       run: dotnet workload restore src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-windows10.0.19041.0
   
     - name: Build (To generate CSS/JS files)
-      run: dotnet build src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -f net7.0-windows10.0.19041.0
+      run: dotnet build src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj  -m:1 -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -f net7.0-windows10.0.19041.0
   
     - name: Build exe
-      run: dotnet build src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -f net7.0-windows10.0.19041.0
+      run: dotnet build src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj  -m:1 -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -f net7.0-windows10.0.19041.0
   
     - name: Upload artifact
       uses: actions/upload-artifact@v2
@@ -172,13 +172,13 @@ jobs:
       run: dotnet workload restore src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-android
   
     - name: Build (To generate CSS/JS files)
-      run: dotnet build src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:RunAOTCompilation=false -f net7.0-android
+      run: dotnet build src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj  -m:1 -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:RunAOTCompilation=false -f net7.0-android
   
     - name: Build aab
-      run: dotnet build src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="BitBlazorUIDemo.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -f net7.0-android
+      run: dotnet build src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj  -m:1 -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="BitBlazorUIDemo.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -f net7.0-android
   
     - name: Build apk
-      run: dotnet build src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="BitBlazorUIDemo.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -f net7.0-android
+      run: dotnet build src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj  -m:1 -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="BitBlazorUIDemo.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -f net7.0-android
   
     - name: Upload artifact
       uses: actions/upload-artifact@v2
