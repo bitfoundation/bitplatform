@@ -39,28 +39,21 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
         {
             if (OnValueChanging is not null)
             {
-                var valueChangingEventArgs = new ValueChangingEventArgs<TValue>
-                {
-                    Value = value
-                };
+                var valueChangingEventArgs = new ValueChangingEventArgs<TValue> { Value = value };
 
                 OnValueChanging(this, valueChangingEventArgs);
 
-                if (valueChangingEventArgs.ShouldChange is false)
-                {
-                    return;
-                }
+                if (valueChangingEventArgs.ShouldChange is false) return;
             }
 
             var hasChanged = EqualityComparer<TValue>.Default.Equals(value, _value) is false;
-            if (hasChanged)
-            {
-                _value = value;
+            if (hasChanged is false) return;
 
-                if (OnValueChanged is not null)
-                {
-                    OnValueChanged(this, EventArgs.Empty);
-                }
+            _value = value;
+
+            if (OnValueChanged is not null)
+            {
+                OnValueChanged(this, EventArgs.Empty);
             }
         }
     }
@@ -100,16 +93,15 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
         set
         {
             var hasChanged = EqualityComparer<TValue>.Default.Equals(value, _value) is false;
-            if (hasChanged)
-            {
-                _value = value;
-                _ = ValueChanged.InvokeAsync(_value);
-                EditContext?.NotifyFieldChanged(FieldIdentifier);
+            if (hasChanged is false) return;
 
-                if (OnValueChanged is not null)
-                {
-                    OnValueChanged(this, EventArgs.Empty);
-                }
+            _value = value;
+            _ = ValueChanged.InvokeAsync(_value);
+            EditContext?.NotifyFieldChanged(FieldIdentifier);
+
+            if (OnValueChanged is not null)
+            {
+                OnValueChanged(this, EventArgs.Empty);
             }
         }
     }
