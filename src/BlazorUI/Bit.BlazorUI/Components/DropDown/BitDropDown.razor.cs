@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 
@@ -7,6 +6,8 @@ namespace Bit.BlazorUI;
 
 public partial class BitDropDown
 {
+    protected override bool UseVisual => false;
+
     private bool IsOpenHasBeenSet;
     private bool ValuesHasBeenSet;
     private bool SelectedItemHasBeenSet;
@@ -176,7 +177,7 @@ public partial class BitDropDown
     /// <summary>
     /// Optional custom template for label
     /// </summary>
-    [Parameter] public RenderFragment? LabelFragment { get; set; }
+    [Parameter] public RenderFragment? LabelTemplate { get; set; }
 
     /// <summary>
     /// Optional custom template for selected option displayed in after selection
@@ -191,7 +192,7 @@ public partial class BitDropDown
     /// <summary>
     /// Optional custom template for chevron icon
     /// </summary>
-    [Parameter] public RenderFragment? CaretDownFragment { get; set; }
+    [Parameter] public RenderFragment? CaretDownTemplate { get; set; }
 
     /// <summary>
     /// Optional chevron icon
@@ -221,18 +222,18 @@ public partial class BitDropDown
     /// <summary>
     /// virtualize rendering the list
     /// UI rendering to just the parts that are currently visible
-    /// defualt is false
+    /// default is false
     /// </summary>
     [Parameter] public bool Virtualize { get; set; }
 
     /// <summary>
     /// determines how many additional items are rendered before and after the visible region
-    /// defualt is 3
+    /// default is 3
     /// </summary>
     [Parameter] public int OverscanCount { get; set; } = 3;
 
     /// <summary>
-    /// The height of each item in pixels, defualt is 35
+    /// The height of each item in pixels, default is 35
     /// </summary>
     [Parameter] public int ItemSize { get; set; } = 35;
 
@@ -298,7 +299,7 @@ public partial class BitDropDown
         get => isRtl;
         set
         {
-            if(isRtl == value) return;
+            if (isRtl == value) return;
 
             isRtl = value;
             ClassBuilder.Reset();
@@ -306,16 +307,16 @@ public partial class BitDropDown
     }
 
     /// <summary>
-    /// Darpdown opening direction
+    /// Drop-down opening direction
     /// </summary>
     [Parameter] public BitDropDirection DropDirection { get; set; } = BitDropDirection.TopAndBottom;
 
-    public string? Text { get; set; }
-    public string DropDownId { get; set; } = string.Empty;
-    public string DropdownLabelId { get; set; } = string.Empty;
-    public string DropDownOptionId { get; set; } = string.Empty;
-    public string DropDownCalloutId { get; set; } = string.Empty;
-    public string DropDownOverlayId { get; set; } = string.Empty;
+    public string? Text { get; private set; }
+    public string? DropDownId { get; private set; }
+    public string? DropdownLabelId { get; private set; }
+    public string? DropDownOptionId { get; private set; }
+    public string? DropDownCalloutId { get; private set; }
+    public string? DropDownOverlayId { get; private set; }
 
     [JSInvokable("CloseCallout")]
     public void CloseCalloutBeforeAnotherCalloutIsOpened()
@@ -330,29 +331,15 @@ public partial class BitDropDown
 
     protected override void RegisterComponentClasses()
     {
-        ClassBuilder.Register(() => SelectedItems.Any()
-            ? $"{RootElementClass}-has-value-{VisualClassRegistrar()}"
-            : string.Empty);
+        ClassBuilder.Register(() => SelectedItems.Any() ? "has-value" : string.Empty);
 
-        ClassBuilder.Register(() => IsOpen
-            ? $"{RootElementClass}-opened-{VisualClassRegistrar()}"
-            : string.Empty);
+        ClassBuilder.Register(() => IsOpen ? "opened" : string.Empty);
 
-        ClassBuilder.Register(() => IsResponsiveModeEnabled
-            ? $"{RootElementClass}-responsive-{VisualClassRegistrar()}"
-            : string.Empty);
+        ClassBuilder.Register(() => IsResponsiveModeEnabled ? "responsive" : string.Empty);
 
-        ClassBuilder.Register(() => IsMultiSelect
-            ? $"{RootElementClass}-multi-{VisualClassRegistrar()}"
-            : string.Empty);
+        ClassBuilder.Register(() => IsMultiSelect ? "multi" : string.Empty);
 
-        ClassBuilder.Register(() => ValueInvalid is true
-            ? $"{RootElementClass}-invalid-{VisualClassRegistrar()}"
-            : string.Empty);
-
-        ClassBuilder.Register(() => IsRtl
-            ? $"rtl"
-            : string.Empty);
+        ClassBuilder.Register(() => IsRtl ? "rtl" : string.Empty);
     }
 
     protected override void OnInitialized()
@@ -444,8 +431,7 @@ public partial class BitDropDown
         if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
         var obj = DotNetObjectReference.Create(this);
-        await _js.InvokeVoidAsync("BitDropDown.toggleDropDownCallout",
-            obj, UniqueId, DropDownId, DropDownCalloutId, DropDownOverlayId, _scrollWrapperElement, DropDirection, IsOpen, IsResponsiveModeEnabled, IsRtl);
+        await _js.InvokeVoidAsync("BitDropDown.toggleDropDownCallout", obj, UniqueId, DropDownId, DropDownCalloutId, DropDownOverlayId, _scrollWrapperElement, DropDirection, IsOpen, IsResponsiveModeEnabled, IsRtl);
         IsOpen = !IsOpen;
         await OnClick.InvokeAsync(e);
         await FocusOnSearchBox();
@@ -576,25 +562,13 @@ public partial class BitDropDown
         }
     }
 
-    private void ClearAllItemsIsSelected()
-    {
-        Items?.ForEach(i => i.IsSelected = false);
-    }
+    private void ClearAllItemsIsSelected() => Items?.ForEach(i => i.IsSelected = false);
 
-    private void HandleSearchBoxFocusIn()
-    {
-        _inputSearchHasFocus = true;
-    }
+    private void HandleSearchBoxFocusIn() => _inputSearchHasFocus = true;
 
-    private void HandleSearchBoxFocusOut()
-    {
-        _inputSearchHasFocus = false;
-    }
+    private void HandleSearchBoxFocusOut() => _inputSearchHasFocus = false;
 
-    private async Task HandleSearchBoxOnClear()
-    {
-        await ClearSearchBox();
-    }
+    private Task HandleSearchBoxOnClear() => ClearSearchBox();
 
     private async Task HandleFilterChange(ChangeEventArgs e)
     {
@@ -610,13 +584,11 @@ public partial class BitDropDown
     {
         if (IsEnabled is false) return;
         if (ShowSearchBox is false) return;
+        if (_searchText.HasNoValue()) return;
 
-        if (_searchText.HasValue())
-        {
-            _searchText = null;
-            await OnSearch.InvokeAsync(_searchText);
-            await SearchVirtualized();
-        }
+        _searchText = null;
+        await OnSearch.InvokeAsync(_searchText);
+        await SearchVirtualized();
     }
 
     private async ValueTask FocusOnSearchBox()
@@ -641,7 +613,7 @@ public partial class BitDropDown
         }
     }
 
-    private string GetSearchBoxClasses() => $"search-box {(_searchText.HasValue() ? "search-has-value" : null)} {(_inputSearchHasFocus ? "search-focused" : null)}";
+    private string GetSearchBoxClasses() => $"search-box{(_searchText.HasValue() ? " has-value" : null)}{(_inputSearchHasFocus ? " focused" : null)}";
 
     private string GetDropdownAriaLabelledby => Label.HasValue() ? $"{DropDownId}-label {DropDownId}-option" : $"{DropDownId}-option";
 
@@ -649,10 +621,7 @@ public partial class BitDropDown
 
     private int? GetTotalItems()
     {
-        if (Items is null)
-        {
-            return null;
-        }
+        if (Items is null) return null;
 
         if (_totalItems.HasValue is false)
         {
@@ -664,25 +633,16 @@ public partial class BitDropDown
 
     private string GetCssClassForItem(BitDropDownItem item)
     {
-        StringBuilder stringBuilder = new StringBuilder("drp-chb");
-        stringBuilder.Append(' ').Append("drp-chb");
+        StringBuilder stringBuilder = new StringBuilder("checkbox-wrapper");
 
         if (item.IsSelected)
         {
             stringBuilder
-                .Append(' ').Append("drp-slc")
-                .Append(' ').Append("drp-chb-checked");
+                .Append(' ').Append("selected")
+                .Append(' ').Append("checked");
         }
 
-        if (item.IsEnabled is false && item.IsSelected)
-        {
-            stringBuilder
-                .Append(' ').Append("drp-chb-checked-disabled");
-        }
-
-        stringBuilder
-            .Append(' ').Append("drp-chb-")
-            .Append(item.IsEnabled ? "enabled" : "disabled");
+        stringBuilder.Append(' ').Append(item.IsEnabled ? "enabled" : "disabled");
 
         return stringBuilder.ToString();
     }
@@ -698,19 +658,13 @@ public partial class BitDropDown
     // Gets called both by RefreshDataCoreAsync and directly by the Virtualize child component during scrolling
     private async ValueTask<ItemsProviderResult<(int index, BitDropDownItem item)>> ProvideVirtualizedItems(ItemsProviderRequest request)
     {
-        if (ItemsProvider is null)
-        {
-            return default;
-        }
+        if (ItemsProvider is null) return default;
 
         // Debounce the requests. This eliminates a lot of redundant queries at the cost of slight lag after interactions.
         // TODO: Consider making this configurable, or smarter (e.g., doesn't delay on first call in a batch, then the amount
         // of delay increases if you rapidly issue repeated requests, such as when scrolling a long way)
         await Task.Delay(100);
-        if (request.CancellationToken.IsCancellationRequested)
-        {
-            return default;
-        }
+        if (request.CancellationToken.IsCancellationRequested) return default;
 
         // Combine the query parameters from Virtualize with the ones from PaginationState
         var providerRequest = new BitDropDownItemsProviderRequest<BitDropDownItem>(request.StartIndex, request.Count, _searchText, request.CancellationToken);

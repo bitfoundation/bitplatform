@@ -61,7 +61,7 @@
                          AriaLabel="Custom dropdown"
                          Style="width: 100%; max-width: 290px; margin:20px 0 20px 0">
                 <TextTemplate>
-                    <div class="dropdown-customized-style">
+                    <div>
                         <i class="bit-icon bit-icon--@((context.Items.Find(i => i.Value == context.Value).Data as DropDownItemData).IconName)"
                            aria-hidden="true"
                            title="@((context.Items.Find(i => i.Value == context.Value).Data as DropDownItemData).IconName)"></i>
@@ -69,16 +69,16 @@
                     </div>
                 </TextTemplate>
                 <PlaceholderTemplate>
-                    <div class="dropdown-customized-style">
+                    <div>
                         <i class="bit-icon bit-icon--MessageFill" aria-hidden="true"></i>
                         <span>@context.Placeholder</span>
                     </div>
                 </PlaceholderTemplate>
-                <CaretDownFragment>
+                <CaretDownTemplate>
                     <i class="bit-icon bit-icon--CirclePlus"></i>
-                </CaretDownFragment>
+                </CaretDownTemplate>
                 <ItemTemplate>
-                    <div class="dropdown-customized-style">
+                    <div style="display: flex; flex-flow: row nowrap; justify-content: flex-start; align-items: center; gap: 10px;">
                         <i class="bit-icon bit-icon--@((context.Data as DropDownItemData).IconName)"
                            aria-hidden="true"
                            title="@((context.Data as DropDownItemData).IconName)"></i>
@@ -92,12 +92,12 @@
                          Label="Custom Label"
                          AriaLabel="Custom dropdown label"
                          Style="width: 100%; max-width: 290px; margin:0 0 20px 0">
-                <LabelFragment>
+                <LabelTemplate>
                     <label>Custom label</label>
                     <button type="button" title="Info" aria-label="Info" class="custom-drp-lbl-ic">
                         <i class="bit-icon bit-icon--Info"></i>
                     </button>
-                </LabelFragment>
+                </LabelTemplate>
             </BitDropDown>
 
             <BitDropDown Items="GetCustomDropdownItems()"
