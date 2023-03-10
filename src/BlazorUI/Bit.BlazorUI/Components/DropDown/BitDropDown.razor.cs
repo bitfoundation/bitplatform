@@ -21,6 +21,12 @@ public partial class BitDropDown
     private List<string> values = new();
     private List<BitDropDownItem> selectedItems = new();
 
+    private string? _text;
+    private string? _dropDownId;
+    private string? _dropdownLabelId;
+    private string? _dropDownOptionId;
+    private string? _dropDownCalloutId;
+    private string? _dropDownOverlayId;
     private bool _isValuesChanged;
     private bool _inputSearchHasFocus;
     private string? _searchText;
@@ -311,12 +317,6 @@ public partial class BitDropDown
     /// </summary>
     [Parameter] public BitDropDirection DropDirection { get; set; } = BitDropDirection.TopAndBottom;
 
-    public string? Text { get; private set; }
-    public string? DropDownId { get; private set; }
-    public string? DropdownLabelId { get; private set; }
-    public string? DropDownOptionId { get; private set; }
-    public string? DropDownCalloutId { get; private set; }
-    public string? DropDownOverlayId { get; private set; }
 
     [JSInvokable("CloseCallout")]
     public void CloseCalloutBeforeAnotherCalloutIsOpened()
@@ -344,11 +344,11 @@ public partial class BitDropDown
 
     protected override void OnInitialized()
     {
-        DropDownId = $"Dropdown{UniqueId}";
-        DropDownOptionId = $"{DropDownId}-option";
-        DropdownLabelId = Label.HasValue() ? $"{DropDownId}-label" : string.Empty;
-        DropDownOverlayId = $"{DropDownId}-overlay";
-        DropDownCalloutId = $"{DropDownId}-list";
+        _dropDownId = $"Dropdown{UniqueId}";
+        _dropDownOptionId = $"{_dropDownId}-option";
+        _dropdownLabelId = Label.HasValue() ? $"{_dropDownId}-label" : string.Empty;
+        _dropDownOverlayId = $"{_dropDownId}-overlay";
+        _dropDownCalloutId = $"{_dropDownId}-list";
 
         if (ItemsProvider is null && Items is null)
         {
@@ -419,7 +419,7 @@ public partial class BitDropDown
 
         var obj = DotNetObjectReference.Create(this);
         await _js.InvokeVoidAsync("BitDropDown.toggleDropDownCallout",
-            obj, UniqueId, DropDownId, DropDownCalloutId, DropDownOverlayId, _scrollWrapperElement, DropDirection, IsOpen, IsResponsiveModeEnabled, IsRtl);
+            obj, UniqueId, _dropDownId, _dropDownCalloutId, _dropDownOverlayId, _scrollWrapperElement, DropDirection, IsOpen, IsResponsiveModeEnabled, IsRtl);
 
         IsOpen = false;
         StateHasChanged();
@@ -431,7 +431,7 @@ public partial class BitDropDown
         if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
         var obj = DotNetObjectReference.Create(this);
-        await _js.InvokeVoidAsync("BitDropDown.toggleDropDownCallout", obj, UniqueId, DropDownId, DropDownCalloutId, DropDownOverlayId, _scrollWrapperElement, DropDirection, IsOpen, IsResponsiveModeEnabled, IsRtl);
+        await _js.InvokeVoidAsync("BitDropDown.toggleDropDownCallout", obj, UniqueId, _dropDownId, _dropDownCalloutId, _dropDownOverlayId, _scrollWrapperElement, DropDirection, IsOpen, IsResponsiveModeEnabled, IsRtl);
         IsOpen = !IsOpen;
         await OnClick.InvokeAsync(e);
         await FocusOnSearchBox();
@@ -468,7 +468,7 @@ public partial class BitDropDown
             }
             ClassBuilder.Reset();
 
-            Text = string.Join(MultiSelectDelimiter, SelectedItems.Select(i => i.Text));
+            _text = string.Join(MultiSelectDelimiter, SelectedItems.Select(i => i.Text));
 
             Values = SelectedItems.Select(i => i.Value).ToList();
             await OnSelectItem.InvokeAsync(selectedItem);
@@ -490,10 +490,10 @@ public partial class BitDropDown
             SelectedItems.Add(selectedItem);
             ClassBuilder.Reset();
 
-            Text = selectedItem.Text;
+            _text = selectedItem.Text;
             CurrentValueAsString = selectedItem.Value;
             var obj = DotNetObjectReference.Create(this);
-            await _js.InvokeVoidAsync("BitDropDown.toggleDropDownCallout", obj, UniqueId, DropDownId, DropDownCalloutId, DropDownOverlayId, _scrollWrapperElement, DropDirection, IsOpen, IsResponsiveModeEnabled, IsRtl);
+            await _js.InvokeVoidAsync("BitDropDown.toggleDropDownCallout", obj, UniqueId, _dropDownId, _dropDownCalloutId, _dropDownOverlayId, _scrollWrapperElement, DropDirection, IsOpen, IsResponsiveModeEnabled, IsRtl);
             IsOpen = false;
             await ClearSearchBox();
 
@@ -549,16 +549,16 @@ public partial class BitDropDown
         {
             if (IsMultiSelect)
             {
-                Text = string.Join(MultiSelectDelimiter, SelectedItems.Select(i => i.Text));
+                _text = string.Join(MultiSelectDelimiter, SelectedItems.Select(i => i.Text));
             }
             else
             {
-                Text = SelectedItems.SingleOrDefault()?.Text ?? string.Empty;
+                _text = SelectedItems.SingleOrDefault()?.Text ?? string.Empty;
             }
         }
         else
         {
-            Text = string.Empty;
+            _text = string.Empty;
         }
     }
 
@@ -615,7 +615,7 @@ public partial class BitDropDown
 
     private string GetSearchBoxClasses() => $"search-box{(_searchText.HasValue() ? " has-value" : null)}{(_inputSearchHasFocus ? " focused" : null)}";
 
-    private string GetDropdownAriaLabelledby => Label.HasValue() ? $"{DropDownId}-label {DropDownId}-option" : $"{DropDownId}-option";
+    private string GetDropdownAriaLabelledby => Label.HasValue() ? $"{_dropDownId}-label {_dropDownId}-option" : $"{_dropDownId}-option";
 
     private int? GetItemPosInSet(BitDropDownItem item) => Items is null ? null : Items.FindAll(i => i.ItemType == BitDropDownItemType.Normal).IndexOf(item) + 1;
 

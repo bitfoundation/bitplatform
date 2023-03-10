@@ -880,7 +880,7 @@ private List<BitDropDownItem> GetDropdownItems()
              AriaLabel=""Custom dropdown""
              Style=""width: 100%; max-width: 290px; margin:20px 0 20px 0"">
     <TextTemplate>
-        <div>
+        <div style=""display: flex; gap: 10px; align-items: center;"">
             <i class=""bit-icon bit-icon--@((context.Items.Find(i => i.Value == context.Value).Data as DropDownItemData).IconName)""
                aria-hidden=""true""
                title=""@((context.Items.Find(i => i.Value == context.Value).Data as DropDownItemData).IconName)""></i>
@@ -888,7 +888,7 @@ private List<BitDropDownItem> GetDropdownItems()
         </div>
     </TextTemplate>
     <PlaceholderTemplate>
-        <div>
+        <div style=""display: flex; gap: 10px; align-items: center;"">
             <i class=""bit-icon bit-icon--MessageFill"" aria-hidden=""true""></i>
             <span>@context.Placeholder</span>
         </div>

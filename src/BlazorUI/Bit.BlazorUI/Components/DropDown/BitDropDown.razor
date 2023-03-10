@@ -6,17 +6,17 @@
      class="@ClassBuilder.Value">
     @if (LabelTemplate is not null)
     {
-        <label class="label" id="@DropdownLabelId">@LabelTemplate</label>
+        <label class="label" id="@_dropdownLabelId">@LabelTemplate</label>
     }
     else if (Label.HasValue())
     {
-        <label class="label" id="@DropdownLabelId">@Label</label>
+        <label class="label" id="@_dropdownLabelId">@Label</label>
     }
 
-    <div class="overlay" id="@DropDownOverlayId" @onclick="CloseCallout"></div>
+    <div class="overlay" id="@_dropDownOverlayId" @onclick="CloseCallout"></div>
 
     <div class="wrapper"
-         id="@DropDownId"
+         id="@_dropDownId"
          tabindex=@(IsEnabled ? 0 : -1)
          role="combobox"
          data-is-focusable="true"
@@ -25,15 +25,15 @@
          aria-required="@IsRequired"
          aria-disabled="@(IsEnabled is false)"
          aria-haspopup="listbox"
-         aria-controls="@(IsOpen ? $"{DropDownId}-list" : null)"
+         aria-controls="@(IsOpen ? $"{_dropDownId}-list" : null)"
          title="@Title"
          @onclick="HandleClick">
         <span class="text-container"
-              id="@DropDownOptionId"
+              id="@_dropDownOptionId"
               aria-live="polite"
               aria-atomic="true"
               aria-invalid="false">
-            @if (Text.HasValue())
+            @if (_text.HasValue())
             {
                 @if (TextTemplate is not null)
                 {
@@ -41,7 +41,7 @@
                 }
                 else
                 {
-                    @Text
+                    @_text
                 }
             }
             else
@@ -69,10 +69,10 @@
     </div>
 
     <div class="items-wrapper"
-         id="@DropDownCalloutId"
+         id="@_dropDownCalloutId"
          tabindex="0"
          role="listbox"
-         aria-labelledby="@DropdownLabelId">
+         aria-labelledby="@_dropdownLabelId">
         @if (IsResponsiveModeEnabled)
         {
             <div class="responsive-label-container">
@@ -131,7 +131,7 @@
             </div>
         }
 
-        <div @ref="_scrollWrapperElement" id="@DropDownCalloutId" class="scroll-wrapper">
+        <div @ref="_scrollWrapperElement" id="@_dropDownCalloutId" class="scroll-wrapper">
             @if (Virtualize)
             {
                 if (ItemsProvider is null)
