@@ -32,7 +32,6 @@ public class Program
 
         builder.Services.AddSingleton(sp => new HttpClient(sp.GetRequiredService<AppHttpClientHandler>()) { BaseAddress = new Uri(builder.Configuration.GetApiServerAddress()) });
         builder.Services.AddScoped<Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader>();
-        builder.Services.AddTransient<IAuthTokenProvider, ClientSideAuthTokenProvider>();
 
         builder.Services.AddSharedServices();
         builder.Services.AddClientSharedServices();
