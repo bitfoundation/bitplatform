@@ -1,5 +1,4 @@
-﻿using System.Drawing;
-using Bit.BlazorUI.Demo.Client.Shared.Pages.Components.ComponentDemoBase;
+﻿using Bit.BlazorUI.Demo.Client.Shared.Pages.Components.ComponentDemoBase;
 
 namespace Bit.BlazorUI.Demo.Client.Shared.Pages.Components.ChoiceGroup;
 

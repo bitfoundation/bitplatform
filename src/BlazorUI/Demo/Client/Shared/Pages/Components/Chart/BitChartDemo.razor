@@ -1,5 +1,4 @@
 ﻿@page "/components/chart"
-@using System.Drawing
 
 <ComponentDemo ComponentName="BitChart" ComponentDescription="Simple and flexible charting component for data visualization, which supports eight chart types: bar, line, area, pie, bubble, radar, polar, and scatter."
                ComponentParameters="componentParameters">
@@ -134,7 +133,7 @@
         BitChartBarDataset<int> dataset = new BitChartBarDataset<int>(BitChartDemoUtils.RandomScalingFactor(InitalCount))
             {
                 Label = "Dataset 1",
-                BackgroundColor = BitChartDemoColors.All.Take(InitalCount).Select(c => BitChartColorUtil.FromDrawingColor(Color.FromArgb(128, c))).ToArray()
+                BackgroundColor = BitChartDemoColors.All.Take(InitalCount).Select(c => BitChartColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(128, c))).ToArray()
             };
         _barChartConfigExample.Data.Labels.AddRange(BitChartDemoUtils.Months.Take(InitalCount));
         _barChartConfigExample.Data.Datasets.Add(dataset);
@@ -162,7 +161,7 @@
         IDataset<int> dataset1 = new BitChartBarDataset<int>(BitChartDemoUtils.RandomScalingFactor(InitalCount, -100), horizontal: true)
             {
                 Label = "My first dataset",
-                BackgroundColor = BitChartColorUtil.FromDrawingColor(Color.FromArgb(128, BitChartDemoColors.Red)),
+                BackgroundColor = BitChartColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(128, BitChartDemoColors.Red)),
                 BorderColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Red),
                 BorderWidth = 1
             };
@@ -170,7 +169,7 @@
         IDataset<int> dataset2 = new BitChartBarDataset<int>(BitChartDemoUtils.RandomScalingFactor(InitalCount, -100), horizontal: true)
             {
                 Label = "My second dataset",
-                BackgroundColor = BitChartColorUtil.FromDrawingColor(Color.FromArgb(128, BitChartDemoColors.Blue)),
+                BackgroundColor = BitChartColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(128, BitChartDemoColors.Blue)),
                 BorderColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Blue),
                 BorderWidth = 1
             };
@@ -328,7 +327,7 @@
 
         BitChartPieDataset<int> dataset = new BitChartPieDataset<int>(BitChartDemoUtils.RandomScalingFactor(InitalCount))
             {
-                BackgroundColor = BitChartDemoColors.All.Take(InitalCount).Select(c => BitChartColorUtil.FromDrawingColor(Color.FromArgb(220, c))).ToArray()
+                BackgroundColor = BitChartDemoColors.All.Take(InitalCount).Select(c => BitChartColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(220, c))).ToArray()
             };
         _pieChartConfigExample.Data.Labels.AddRange(BitChartDemoUtils.Months.Take(InitalCount));
         _pieChartConfigExample.Data.Datasets.Add(dataset);
@@ -351,7 +350,7 @@
 
         BitChartPieDataset<int> dataset = new BitChartPieDataset<int>(BitChartDemoUtils.RandomScalingFactor(InitalCount))
             {
-                BackgroundColor = BitChartDemoColors.All.Take(InitalCount).Select(c => BitChartColorUtil.FromDrawingColor(Color.FromArgb(220, c))).ToArray()
+                BackgroundColor = BitChartDemoColors.All.Take(InitalCount).Select(c => BitChartColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(220, c))).ToArray()
             };
         _doughnutChartConfigExample.Data.Labels.AddRange(BitChartDemoUtils.Months.Take(InitalCount));
         _doughnutChartConfigExample.Data.Datasets.Add(dataset);
@@ -381,11 +380,11 @@
 
     private void AddBarDataset()
     {
-        Color color = BitChartDemoColors.All[_barChartConfigExample.Data.Datasets.Count % BitChartDemoColors.All.Count];
+        System.Drawing.Color color = BitChartDemoColors.All[_barChartConfigExample.Data.Datasets.Count % BitChartDemoColors.All.Count];
         IDataset<int> dataset = new BitChartBarDataset<int>(BitChartDemoUtils.RandomScalingFactor(_barChartConfigExample.Data.Labels.Count))
             {
                 Label = $"Dataset {_barChartConfigExample.Data.Datasets.Count + 1}",
-                BackgroundColor = BitChartColorUtil.FromDrawingColor(Color.FromArgb(128, color)),
+                BackgroundColor = BitChartColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(128, color)),
                 BorderColor = BitChartColorUtil.FromDrawingColor(color),
                 BorderWidth = 1
             };

@@ -1,6 +1,4 @@
-﻿using System.Drawing;
-
-namespace Bit.BlazorUI.Demo.Client.Shared.Pages.Components.Chart;
+﻿namespace Bit.BlazorUI.Demo.Client.Shared.Pages.Components.Chart;
 
 public static class BitChartDemoColors
 {

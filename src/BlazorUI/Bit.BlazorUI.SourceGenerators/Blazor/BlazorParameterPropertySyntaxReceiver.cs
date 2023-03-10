@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Bit.BlazorUI.SourceGenerators;
+namespace Bit.BlazorUI.SourceGenerators.Blazor;
 
 public class BlazorParameterPropertySyntaxReceiver : ISyntaxContextReceiver
 {

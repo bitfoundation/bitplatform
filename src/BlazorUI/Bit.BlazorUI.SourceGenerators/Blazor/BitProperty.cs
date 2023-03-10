@@ -1,6 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 
-namespace Bit.BlazorUI.SourceGenerators;
+namespace Bit.BlazorUI.SourceGenerators.Blazor;
 
 public class BitProperty
 {

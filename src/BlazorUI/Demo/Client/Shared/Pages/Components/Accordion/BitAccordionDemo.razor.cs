@@ -187,16 +187,16 @@ public partial class BitAccordionDemo
     <BitAccordion Title=""Nature"" Description=""I am an accordion"">
         <BitCarousel AnimationDuration=""1"">
             <BitCarouselItem>
-                <img src=""/images/carousel/img1.jpg"">
+                <img src=""images/carousel/img1.jpg"">
             </BitCarouselItem>
             <BitCarouselItem>
-                <img src=""/images/carousel/img2.jpg"" />
+                <img src=""images/carousel/img2.jpg"" />
             </BitCarouselItem>
             <BitCarouselItem>
-                <img src=""/images/carousel/img3.jpg"" />
+                <img src=""images/carousel/img3.jpg"" />
             </BitCarouselItem>
             <BitCarouselItem>
-                <img src=""/images/carousel/img4.jpg"" />
+                <img src=""images/carousel/img4.jpg"" />
             </BitCarouselItem>
         </BitCarousel>
     </BitAccordion>

@@ -16,15 +16,16 @@
         <Content Remove="appsettings.json" />
         <EmbeddedResource Include="appsettings.json" />
 
-        <PackageReference Include="Bit.CodeAnalyzers" Version="4.9.6">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="4.9.6">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
+        <ProjectReference Include="..\..\..\Bit.BlazorUI.Charts\Bit.BlazorUI.Charts.csproj" />
+        <ProjectReference Include="..\..\..\Bit.BlazorUI.SourceGenerators\Bit.BlazorUI.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+        <ProjectReference Include="..\..\..\Bit.BlazorUI\Bit.BlazorUI.csproj" />
+        <ProjectReference Include="..\..\Shared\Shared\Bit.BlazorUI.Demo.Shared.csproj" />
 
+        <PackageReference Include="Bit.CodeAnalyzers" Version="4.9.7-pre-01">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        
         <PackageReference Include="BuildWebCompiler2022" Version="1.14.10">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -62,13 +63,6 @@
         <Using Include="Microsoft.Maui.Media" />
         <Using Include="Microsoft.Maui.Networking" />
         <Using Include="Microsoft.Maui.Storage" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <ProjectReference Include="..\..\..\Bit.BlazorUI.Charts\Bit.BlazorUI.Charts.csproj" />
-        <ProjectReference Include="..\..\..\Bit.BlazorUI.SourceGenerators\Bit.BlazorUI.SourceGenerators.csproj" />
-        <ProjectReference Include="..\..\..\Bit.BlazorUI\Bit.BlazorUI.csproj" />
-        <ProjectReference Include="..\..\Shared\Shared\Bit.BlazorUI.Demo.Shared.csproj" />
     </ItemGroup>
 
     <ItemGroup>

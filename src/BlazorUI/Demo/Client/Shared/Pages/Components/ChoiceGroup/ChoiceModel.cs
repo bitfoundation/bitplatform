@@ -1,6 +1,4 @@
-﻿using System.Drawing;
-
-namespace Bit.BlazorUI.Demo.Client.Shared.Pages.Components.ChoiceGroup;
+﻿namespace Bit.BlazorUI.Demo.Client.Shared.Pages.Components.ChoiceGroup;
 
 public class ChoiceModel
 {
