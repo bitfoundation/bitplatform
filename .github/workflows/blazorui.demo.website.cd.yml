@@ -78,17 +78,6 @@ jobs:
         with:
           name: api-web-bundle
 
-      - name: Delete IdentityCertificate.pfx
-        run: |
-            rm IdentityCertificate.pfx
-
-      - name: Extract identity certificate from env
-        uses: timheuer/base64-to-file@v1
-        with:
-            fileDir: './'
-            fileName: 'IdentityCertificate.pfx'
-            encodedString: ${{ secrets.API_IDENTITY_CERTIFICATE_FILE_BASE64 }}
-
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
