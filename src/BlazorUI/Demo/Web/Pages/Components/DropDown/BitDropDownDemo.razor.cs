@@ -400,7 +400,7 @@ public partial class BitDropDownDemo
     {
         new ComponentParameter()
         {
-            Name = "CaretDownFragment",
+            Name = "CaretDownTemplate",
             Type = "RenderFragment",
             DefaultValue = "",
             Description = "Optional custom template for chevron icon.",
@@ -470,7 +470,7 @@ public partial class BitDropDownDemo
         },
         new ComponentParameter()
         {
-            Name = "LabelFragment",
+            Name = "LabelTemplate",
             Type = "RenderFragment",
             DefaultValue = "",
             Description = "Optional custom template for label.",
@@ -671,8 +671,6 @@ public partial class BitDropDownDemo
         }
     };
 
-    #region Example Code 1
-
     private readonly string example1HTMLCode = @"<BitDropDown Label=""Basic Uncontrolled""
              Items=""GetDropdownItems()""
              Placeholder=""Select an option""
@@ -739,10 +737,6 @@ private List<BitDropDownItem> GetDropdownItems()
     };
 }";
 
-    #endregion
-
-    #region Example Code 2
-
     private readonly string example2HTMLCode = @"<BitDropDown Label=""Single-select Controlled""
              Items=""GetDropdownItems()""
              Placeholder=""Select an option""
@@ -796,10 +790,6 @@ private List<BitDropDownItem> GetDropdownItems()
         }
     };
 }";
-
-    #endregion
-
-    #region Example Code 3
 
     private readonly string example3HTMLCode = @"<BitDropDown Label=""Multi-select controlled""
              Items=""GetDropdownItems()""
@@ -856,17 +846,41 @@ private List<BitDropDownItem> GetDropdownItems()
     };
 }";
 
-    #endregion
+    private readonly string example4HTMLCode = @"
+<style>
+    .custom-drp-lbl-ic {
+        width: 32px;
+        height: 32px;
+        outline: transparent;
+        font-size: 14px;
+        font-weight: 400;
+        box-sizing: border-box;
+        border: none;
+        display: inline-block;
+        text-decoration: none;
+        text-align: center;
+        cursor: pointer;
+        padding: 0 4px;
+        border-radius: 2px;
+        background-color: transparent;
+        color: #0078d4;
+        margin-bottom: -8px;
+        user-select: none;
+    }
 
-    #region Example Code 4
+    .custom-drp-lbl-ic:hover {
+        color: #106EBE;
+        background-color: #f3f2f1;
+    }
+</style>
 
-    private readonly string example4HTMLCode = @"<BitDropDown Label=""Custom Controlled""
+<BitDropDown Label=""Custom Controlled""
              Items=""GetCustomDropdownItems()""
              Placeholder=""Select an option""
              AriaLabel=""Custom dropdown""
              Style=""width: 100%; max-width: 290px; margin:20px 0 20px 0"">
     <TextTemplate>
-        <div>
+        <div style=""display: flex; gap: 10px; align-items: center;"">
             <i class=""bit-icon bit-icon--@((context.Items.Find(i => i.Value == context.Value).Data as DropDownItemData).IconName)""
                aria-hidden=""true""
                title=""@((context.Items.Find(i => i.Value == context.Value).Data as DropDownItemData).IconName)""></i>
@@ -874,16 +888,16 @@ private List<BitDropDownItem> GetDropdownItems()
         </div>
     </TextTemplate>
     <PlaceholderTemplate>
-        <div>
+        <div style=""display: flex; gap: 10px; align-items: center;"">
             <i class=""bit-icon bit-icon--MessageFill"" aria-hidden=""true""></i>
             <span>@context.Placeholder</span>
         </div>
     </PlaceholderTemplate>
-    <CaretDownFragment>
+    <CaretDownTemplate>
         <i class=""bit-icon bit-icon--CirclePlus""></i>
-    </CaretDownFragment>
+    </CaretDownTemplate>
     <ItemTemplate>
-        <div style=""display: flex; flex-flow: row nowrap; justify-content: flex-start; align-items: center;"">
+        <div style=""display: flex; flex-flow: row nowrap; justify-content: flex-start; align-items: center; gap: 10px;"">
             <i class=""bit-icon bit-icon--@((context.Data as DropDownItemData).IconName)""
                aria-hidden=""true""
                title=""@((context.Data as DropDownItemData).IconName)""></i>
@@ -897,12 +911,12 @@ private List<BitDropDownItem> GetDropdownItems()
              Label=""Custom Label""
              AriaLabel=""Custom dropdown label""
              Style=""width: 100%; max-width: 290px; margin:0 0 20px 0"">
-    <LabelFragment>
+    <LabelTemplate>
         <label>Custom label</label>
         <button type=""button"" title=""Info"" aria-label=""Info"" class=""custom-drp-lbl-ic"">
             <i class=""bit-icon bit-icon--Info""></i>
         </button>
-    </LabelFragment>
+    </LabelTemplate>
 </BitDropDown>
 
 <BitDropDown Items=""GetCustomDropdownItems()""
@@ -1037,11 +1051,30 @@ private List<BitDropDownItem> GetCustomDropdownItems()
     };
 }";
 
-    #endregion
+    private readonly string example5HTMLCode = @"
+<style>
+    .grid-wrap {
+        display: grid;
+        grid-template-columns: auto auto;
+    }
 
-    #region Example Code 5
+        .grid-wrap .cascading-dropdowns-info {
+            padding-top: 1.875rem;
+        }
 
-    private readonly string example5HTMLCode = @"<div class=""grid-wrap"">
+    @media screen and (max-width: 37.5em) {
+        .grid-wrap {
+            display: block;
+            grid-template-columns: none;
+        }
+
+            .grid-wrap .cascading-dropdowns-info {
+                padding-top: 0;
+            }
+    }
+</style>
+
+<div class=""grid-wrap"">
     <div>
         <BitDropDown Label=""Category""
                         Items=""Categories""
@@ -1088,10 +1121,6 @@ protected override void OnInitialized()
 
     base.OnInitialized();
 }";
-
-    #endregion
-
-    #region Example Code 6
 
     private readonly string example6HTMLCode = @"@if (string.IsNullOrEmpty(SuccessMessage))
 {
@@ -1230,10 +1259,6 @@ private List<BitDropDownItem> GetProductDropdownItems()
     };
 }";
 
-    #endregion
-
-    #region Example Code 7
-
     private readonly string example7HTMLCode = @"<BitDropDown Label=""Responsive DropDown""
              Items=""GetDropdownItems()""
              Placeholder=""Select an option""
@@ -1287,10 +1312,6 @@ private List<BitDropDownItem> GetDropdownItems()
         }
     };
 }";
-
-    #endregion
-
-    #region Example Code 8
 
     private readonly string example8HTMLCode = @"<BitDropDown Label=""Single-select Controlled with search box""
                 Items=""GetDropdownItems()""
@@ -1358,10 +1379,6 @@ private List<BitDropDownItem> GetDropdownItems()
     };
 }";
 
-    #endregion
-
-    #region Example Code 9
-
     private readonly string example9HTMLCode = @"<BitDropDown Label=""Single-select Controlled with virtualization""
                 Items=""LargeListOfCategoriesForSingleSelect""
                 Virtualize=""true""
@@ -1403,10 +1420,6 @@ protected override void OnInitialized()
 
     base.OnInitialized();
 }";
-
-    #endregion
-
-    #region Example Code 10
 
     private readonly string example10HTMLCode = @"<BitDropDown Label=""Single-select Controlled with virtualization""
                 ItemsProvider=""LoadDropdownItems""
@@ -1465,10 +1478,6 @@ protected override void OnInitialized()
         return BitDropDownItemsProviderResult.From(new List<BitDropDownItem>(), 0);
     }
 }";
-
-    #endregion
-
-    #region Example Code 11
 
     private readonly string example11HTMLCode = @"<BitDropDown Label=""Single-select with Rtl direction""
                 Items=""GetArabicDropdownItems()""
@@ -1536,10 +1545,6 @@ protected override void OnInitialized()
     };
 }";
 
-    #endregion
-
-    #region Example Code 12
-
     private readonly string example12HTMLCode = @"<BitDropDown Label=""Single-select Controlled with auto drop direction""
                 Items=""LargeListOfCategoriesDropDirection""
                 Virtualize=""true""
@@ -1575,6 +1580,4 @@ protected override void OnInitialized()
 
     base.OnInitialized();
 }";
-
-    #endregion
 }
