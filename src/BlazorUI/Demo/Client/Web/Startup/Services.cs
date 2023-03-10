@@ -1,7 +1,6 @@
 ﻿#if BlazorServer
 using System.IO.Compression;
 using Microsoft.AspNetCore.ResponseCompression;
-using Bit.BlazorUI.Demo.Client.Web.Services.Implementations;
 
 namespace Bit.BlazorUI.Demo.Client.Web.Startup;
 
@@ -31,7 +30,6 @@ public static class Services
         })
             .Configure<BrotliCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest)
             .Configure<GzipCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest);
-        services.AddTransient<IAuthTokenProvider, ServerSideAuthTokenProvider>();
 
         services.AddSharedServices();
         services.AddClientSharedServices();

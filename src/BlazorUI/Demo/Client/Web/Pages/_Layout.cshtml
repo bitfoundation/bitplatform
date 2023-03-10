@@ -2,8 +2,12 @@
 @using Microsoft.AspNetCore.Components.Web
 @namespace Bit.BlazorUI.Demo.Client.Web.Pages
 @inject IHttpContextAccessor ContextAccessor
+@inject IConfiguration Configuration
+
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @{
+    var googleTagContainerID = @Configuration.GetSection("GoogleTagManager")["ContainerID"];
+
     var isBlazorServer = BlazorModeDetector.Current.IsBlazorServer();
     var isElectron = BlazorModeDetector.Current.IsBlazorElectron();
     var isDefaultDeploymentType = WebAppDeploymentTypeDetector.Current.IsDefault();
@@ -40,14 +44,11 @@
     <base href="~/" />
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="The Bit.BlazorUI.Demo is built with ASP.NET Core, Identity, Web API, and EF Core for the server-side, and Blazor for the client-side. It allows you to build Android, iOS, Windows, and Web applications from a single codebase." />
+    <meta name="description" content="Bit's Blazor UI components are native, easy-to-customize, and work seamlessly in all Blazor modes (WASM, Server, Hybrid, pre-rendering), saving you time and making development enjoyable." />
     <link rel="icon" href="~/favicon.ico" type="image/x-icon" asp-append-version="@shoudAddAspAppendVersion">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/themes/prism.min.css" />
     <component type="typeof(HeadOutlet)" render-mode="@renderMode" />
     <link rel="apple-touch-icon" sizes="512x512" href="images/icons/bit-icon-512.png" />
-    @if (isPwa)
-    {
-        <link rel="manifest" href="manifest.json">
-    }
     @if (isElectron)
     {
         <style>
@@ -60,12 +61,25 @@
         </style>
     }
     <style>
-        html, body, #app-container {
+        * {
+            font-family: "Segoe UI";
+            box-sizing: border-box;
+        }
+
+        html, body {
+            -webkit-font-smoothing: antialiased;
+            -webkit-tap-highlight-color: transparent;
+            height: 100%;
+            width: 100%;
             margin: 0;
             padding: 0;
-            width: 100%;
-            height: 100%;
-            background: #0D2960;
+            color: #323130;
+            font-size: 1rem;
+            line-height: 1.5;
+            letter-spacing: 0;
+            font-weight: 400;
+            scroll-margin-top: calc(56px + 32px);
+            background-color: #fff;
         }
     </style>
     <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.min.css" asp-append-version="@shoudAddAspAppendVersion" />
@@ -73,7 +87,7 @@
 </head>
 <body>
     <div id="app-container">
-        @if (isDefaultDeploymentType || isPwa)
+        @if (isDefaultDeploymentType)
         {
             <component type="typeof(Bit.BlazorUI.Demo.Client.Shared.LoadingComponent)" param-Color="@("#FFF")" render-mode="@RenderMode.Static" />
         }
@@ -88,37 +102,27 @@
         }
         else
         {
-            @if (isPwa)
+            <script src="_framework/blazor.webassembly.js" autostart="false" asp-append-version="@shoudAddAspAppendVersion"></script>
+            <script src="_content/Bit.Bup/bit-bup.progress.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
+            <script src="_content/Bit.Bup/bit-bup.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
+
+            @if (isSsr)
             {
-                <script src="_framework/blazor.webassembly.js" autostart=false></script>
-                <script src="_content/Bit.Bswup/bit-bswup.js" scope="/" sw="service-worker.js" handler="bitBswupHandler"></script>
-                <script src="_content/Bit.Bswup/bit-bswup.progress.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
-                <link href="_content/Bit.Bswup/bit-bswup.progress.min.css" rel="stylesheet" asp-append-version="@shoudAddAspAppendVersion">
-                <component type="typeof(Bit.Bswup.BswupProgress)"
-                           param-AutoReload="true"
-                           param-AppContainer="@("#app-container")"
-                           render-mode="@RenderMode.Static" />
+                <component type="typeof(BupProgressBar)" render-mode="@RenderMode.WebAssemblyPrerendered" />
             }
             else
             {
-                <script src="_framework/blazor.webassembly.js" autostart="false" asp-append-version="@shoudAddAspAppendVersion"></script>
-                <script src="_content/Bit.Bup/bit-bup.progress.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
-                <script src="_content/Bit.Bup/bit-bup.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
-
-                @if (isSsr)
-                {
-                    <component type="typeof(BupProgressBar)" render-mode="@RenderMode.WebAssemblyPrerendered" />
-                }
-                else
-                {
-                    <link rel="stylesheet" href="_content/Bit.Bup/bit-bup.progress.min.css" asp-append-version="@shoudAddAspAppendVersion">
-                    <component type="typeof(Bit.Bup.BupProgress)" render-mode="@RenderMode.Static"
-                               param-AutoHide="true"
-                               param-HideApp="true"
-                               param-AppContainer="@("#app-container")" />
-                }
+                <link rel="stylesheet" href="_content/Bit.Bup/bit-bup.progress.min.css" asp-append-version="@shoudAddAspAppendVersion">
+                <component type="typeof(Bit.Bup.BupProgress)" render-mode="@RenderMode.Static"
+                   param-AutoHide="true"
+                   param-HideApp="true"
+                   param-AppContainer="@("#app-container")" />
             }
         }
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/prism.min.js" data-manual></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/components/prism-csharp.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/components/prism-cshtml.min.js"></script>
         <script src="_content/Bit.BlazorUI/scripts/bit.blazorui.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
     }
     <script src="_content/Bit.BlazorUI.Demo.Client.Shared/scripts/app.js" asp-append-version="@shoudAddAspAppendVersion"></script>
@@ -127,5 +131,17 @@
     {
         <persist-component-state />
     }
+
+    <!-- Google Tag Manager -->
+    <script>
+        (function (w, d, s, l, i) {
+            w[l] = w[l] || []; w[l].push({
+                'gtm.start':
+                    new Date().getTime(), event: 'gtm.js'
+            }); var f = d.getElementsByTagName(s)[0],
+                j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+                    'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+        })(window, document, 'script', 'dataLayer', '@googleTagContainerID');</script>
+    <!-- End Google Tag Manager -->
 </body>
 </html>
