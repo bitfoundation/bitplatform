@@ -2,7 +2,6 @@ name: Platform Website CD
 
 env:
   WEB_APP_DEPLOYMENT_TYPE: 'SSR'
-  API_SERVER_ADDRESS: 'https://bitplatform.dev/api/'
   APP_SERVICE_NAME: 'bitplatform'
 
 on:
@@ -44,7 +43,7 @@ jobs:
       with:
         files: 'src/Websites/Platform/Bit.Websites.Platform/Web/appsettings.json'
       env:
-        ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
+        ApiServerAddress: '/api/'
       
     - name: Build (To generate CSS/JS files)
       run: dotnet build src/Websites/Platform/Bit.Websites.Platform/Api/Bit.Websites.Platform.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release
