@@ -88,7 +88,7 @@
         }
 
         .address {
-            background-image: url('/images/footer/location-icon.svg');
+            background-image: url('images/footer/location-icon.svg');
         }
 
         .country {
@@ -96,7 +96,7 @@
         }
 
         .tel {
-            background-image: url('/images/footer/tel-icon.svg');
+            background-image: url('images/footer/tel-icon.svg');
         }
     }
 }
@@ -120,7 +120,7 @@
     width: rem(32px);
     height: rem(27px);
     margin-bottom: rem(20px);
-    background-image: url('/images/bit-logo.svg');
+    background-image: url('images/bit-logo.svg');
     background-position: center;
     background-repeat: no-repeat;
     background-size: contain;
@@ -194,7 +194,7 @@
 }
 
 .twitter-link {
-    background-image: url('/images/footer/twitter-icon.svg');
+    background-image: url('images/footer/twitter-icon.svg');
 
     &:hover {
         background-color: #1DA1F2;
@@ -202,7 +202,7 @@
 }
 
 .github-link {
-    background-image: url('/images/footer/github-icon.svg');
+    background-image: url('images/footer/github-icon.svg');
 
     &:hover {
         background-color: #171515;
@@ -210,7 +210,7 @@
 }
 
 .youtube-link {
-    background-image: url('/images/footer/youtube-icon.svg');
+    background-image: url('images/footer/youtube-icon.svg');
 
     &:hover {
         background-color: #FF0000;
@@ -218,7 +218,7 @@
 }
 
 .linkedin-link {
-    background-image: url('/images/footer/linkedin-icon.svg');
+    background-image: url('images/footer/linkedin-icon.svg');
 
     &:hover {
         background-color: #0077B5;
