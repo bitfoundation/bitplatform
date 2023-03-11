@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.ComponentModel.DataAnnotations;
 
-[assembly: InternalsVisibleTo("Bit.BlazorUI.Demo.Web")]
+[assembly: InternalsVisibleTo("Bit.BlazorUI.Demo.Client.Shared")]
 namespace Bit.BlazorUI;
 
 internal static class EnumExtensions

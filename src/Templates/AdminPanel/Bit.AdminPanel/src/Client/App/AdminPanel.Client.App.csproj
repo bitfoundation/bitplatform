@@ -30,8 +30,6 @@
     <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">
         <!-- Workaround for inspect MacCatalyst app in Safari -->
         <CodeSignEntitlements Condition="'$(Configuration)' == 'Debug'">Platforms/MacCatalyst/Entitlements.Debug.plist</CodeSignEntitlements>
-        <!-- Workaround for MacCatalyst app title -->
-        <AssemblyName>AdminPanel</AssemblyName>
     </PropertyGroup>
 
     <PropertyGroup Condition="$(TargetFramework.Contains('-android')) and '$(Configuration)' == 'Release'">
