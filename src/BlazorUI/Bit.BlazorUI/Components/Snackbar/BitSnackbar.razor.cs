@@ -1,21 +1,11 @@
-﻿using System.Threading;
-using System.Timers;
-
+﻿
 namespace Bit.BlazorUI;
 
-public partial class BitSnackbar : IDisposable
+public partial class BitSnackbar
 {
-    private BitSnackbarType type = BitSnackbarType.Info;
     private BitSnackbarPosition position = BitSnackbarPosition.BottomRight;
 
-    private bool _disposed;
-    private System.Timers.Timer _timer = default!;
-    private int _dismissCounter = default!;
-    private bool _isProgressBarFullWidth;
-
-    private bool _isOpen;
-    private string _title = default!;
-    private string _body = default!;
+    private List<BitSnackbarItem> _items = new();
 
     /// <summary>
     /// Whether or not to dismiss itself automatically.
@@ -57,39 +47,62 @@ public partial class BitSnackbar : IDisposable
     }
 
     /// <summary>
-    /// The type of Snackbar to show.
-    /// </summary>
-    [Parameter]
-    public BitSnackbarType Type
-    {
-        get => type;
-        set
-        {
-            type = value;
-            ClassBuilder.Reset();
-        }
-    }
-
-    /// <summary>
     /// Used to customize how content inside the Title is rendered. 
     /// </summary>
     [Parameter] public RenderFragment<string>? TitleTemplate { get; set; }
 
     protected override string RootElementClass => "bit-snb";
 
-    public async Task Show(string title, string body = "")
+    public async Task Show(string body)
     {
-        if (AutoDismiss)
+        await Task.Run(() =>
         {
-            _timer = new System.Timers.Timer();
-            _timer.Interval = 1000;
-            _timer.Elapsed += TimerElapsed;
-            _timer.Start();
-        }
+            _items.Add(new BitSnackbarItem(this)
+            {
+                Body = body,
+            });
+        });
 
-        _title = title;
-        _body = body;
-        _isOpen = true;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public async Task Show(string title, string body)
+    {
+        await Task.Run(() =>
+        {
+            _items.Add(new BitSnackbarItem(this)
+            {
+                Title = title,
+                Body = body,
+            });
+        });
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public async Task Show(BitSnackbarType type, string title, string body)
+    {
+        await Task.Run(() =>
+        {
+            _items.Add(new BitSnackbarItem(this)
+            {
+                Type = type,
+                Title = title,
+                Body = body,
+            });
+        });
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    internal async Task Dismiss(BitSnackbarItem item)
+    {
+        await OnDismiss.InvokeAsync();
+
+        await Task.Run(() =>
+        {
+            _items.Remove(item);
+        });
 
         await InvokeAsync(StateHasChanged);
     }
@@ -103,80 +116,23 @@ public partial class BitSnackbar : IDisposable
                                   : Position is BitSnackbarPosition.BottomRight ? "bottom-right"
                                   : Position is BitSnackbarPosition.BottomLeft ? "bottom-left"
                                   : string.Empty);
-
-        ClassBuilder.Register(() => Type is BitSnackbarType.Info ? "info"
-                                  : Type is BitSnackbarType.Success ? "success"
-                                  : Type is BitSnackbarType.Warning ? "warning"
-                                  : Type is BitSnackbarType.Error ? "error"
-                                  : string.Empty);
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    private static string GetItemClasses(BitSnackbarItem item)
     {
-        await base.OnAfterRenderAsync(firstRender);
-
-        if (_isOpen)
-        {
-            await Task.Delay(10);
-            _isProgressBarFullWidth = true;
-        }
-        else
-        {
-            _isProgressBarFullWidth = false;
-        }
-
-        StateHasChanged();
+        return item.Type is BitSnackbarType.Info ? "info"
+             : item.Type is BitSnackbarType.Success ? "success"
+             : item.Type is BitSnackbarType.Warning ? "warning"
+             : item.Type is BitSnackbarType.Error ? "error"
+             : string.Empty;
     }
 
-    private async void TimerElapsed(object? sender, ElapsedEventArgs e)
+    private static BitIconName GetIconName(BitSnackbarItem item)
     {
-        _dismissCounter++;
-
-        if (_dismissCounter == AutoDismissTime.Seconds)
-        {
-            await Dismiss();
-        }
-    }
-
-    private async Task Dismiss()
-    {
-        await OnDismiss.InvokeAsync();
-
-        if (AutoDismiss && _timer is not null)
-        {
-            _timer.Elapsed -= TimerElapsed;
-            _timer.Stop();
-            _timer.Close();
-        }
-
-        _isOpen = false;
-
-        await InvokeAsync(StateHasChanged);
-    }
-
-    private BitIconName GetIconName() => Type is BitSnackbarType.Info ? BitIconName.Info
-                                       : Type is BitSnackbarType.Success ? BitIconName.Completed
-                                       : Type is BitSnackbarType.Warning ? BitIconName.Warning
-                                       : Type is BitSnackbarType.Error ? BitIconName.Error
-                                       : BitIconName.Info;
-
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (disposing is false || _disposed) return;
-
-        if (AutoDismiss && _timer is not null)
-        {
-            _timer.Elapsed -= TimerElapsed;
-            _timer.Stop();
-            _timer.Close();
-        }
-
-        _disposed = true;
+        return item.Type is BitSnackbarType.Info ? BitIconName.Info
+             : item.Type is BitSnackbarType.Success ? BitIconName.Completed
+             : item.Type is BitSnackbarType.Warning ? BitIconName.Warning
+             : item.Type is BitSnackbarType.Error ? BitIconName.Error
+             : BitIconName.Info;
     }
 }

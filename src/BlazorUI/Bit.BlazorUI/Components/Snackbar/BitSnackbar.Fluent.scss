@@ -5,103 +5,128 @@
     &.bit-snb-fluent {
         display: flex;
         flex-flow: column nowrap;
+        gap: rem(10px);
         position: fixed;
         z-index: 1000;
-        min-width: 220px;
-        min-height: 70px;
-        padding: 10px;
-        color: black;
-        border-radius: 3px;
-    }
-
-    &.info {
-        background-color: $color-neutrals-gray20;
-
-        .progress-bar {
-            background-color: $color-neutrals-gray80;
-        }
-    }
-
-    &.success {
-        background-color: $color-state-success-bg;
-
-        .progress-bar {
-            background-color: $color-state-success-dark;
-        }
-    }
-
-    &.warning {
-        background-color: $color-state-severe-warning-bg;
-
-        .progress-bar {
-            background-color: $color-state-severe-warning-dark;
-        }
-    }
-
-    &.error {
-        background-color: $color-state-error-bg;
-
-        .progress-bar {
-            background-color: $color-state-error-dark;
-        }
     }
 
     &.top-center {
-        top: 50px;
+        top: rem(50px);
         left: 50%;
         transform: translateX(-50%);
     }
 
     &.top-right {
-        top: 50px;
-        right: 50px;
+        top: rem(50px);
+        right: rem(50px);
     }
 
     &.top-left {
-        top: 50px;
-        left: 50px;
+        top: rem(50px);
+        left: rem(50px);
     }
 
     &.bottom-center {
-        bottom: 50px;
+        bottom: rem(50px);
         left: 50%;
         transform: translateX(-50%);
     }
 
     &.bottom-right {
-        bottom: 50px;
-        right: 50px;
+        bottom: rem(50px);
+        right: rem(50px);
     }
 
     &.bottom-left {
-        bottom: 50px;
-        left: 50px;
+        bottom: rem(50px);
+        left: rem(50px);
     }
 
-    .title-txt {
-        font-size: 16px;
-        font-weight: 500;
-    }
+    .item {
+        display: flex;
+        flex-flow: column nowrap;
+        justify-content: space-between;
+        position: relative;
+        width: rem(220px);
+        min-height: rem(70px);
+        padding: rem(10px);
+        color: black;
+        border-radius: rem(3px);
 
-    .body-txt {
-        font-size: 12px;
-    }
+        &.info {
+            background-color: $color-neutrals-gray20;
 
-    .close-btn {
-        background-color: inherit;
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        cursor: pointer;
-        border-radius: 3px;
-    }
+            .progress-bar {
+                background-color: $color-neutrals-gray80;
+            }
+        }
 
-    .progress-bar {
-        position: absolute;
-        bottom: 0;
-        left: 0;
+        &.success {
+            background-color: $color-state-success-bg;
+
+            .progress-bar {
+                background-color: $color-state-success-dark;
+            }
+        }
+
+        &.warning {
+            background-color: $color-state-severe-warning-bg;
+
+            .progress-bar {
+                background-color: $color-state-severe-warning-dark;
+            }
+        }
+
+        &.error {
+            background-color: $color-state-error-bg;
+
+            .progress-bar {
+                background-color: $color-state-error-dark;
+            }
+        }
+
+        .header {
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: space-between;
+            gap: rem(10px);
+
+            .title-txt {
+                font-size: rem(16px);
+                font-weight: 500;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+                overflow: hidden;
+            }
+
+            .close-btn {
+                background-color: inherit;
+                cursor: pointer;
+                border-radius: rem(3px);
+            }
+        }
+
+        .body-txt {
+            font-size: rem(12px);
+        }
+
+        .progress-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: rem(5px);
+            width: 100%;
+            animation-name: snackbar-progressor;
+        }
+    }
+}
+
+@keyframes snackbar-progressor {
+    from {
         width: 0;
-        height: 5px;
-        transition: width;
+    }
+
+    to {
+        width: 100%;
     }
 }

@@ -145,95 +145,48 @@ public partial class BitSnackbarDemo
     };
 
 
-    private BitSnackbar NormalType;
-    private BitSnackbar SuccessType;
-    private BitSnackbar WarningType;
-    private BitSnackbar ErrorType;
+    private BitSnackbar SnackbarTypeRef;
+    private async void OpenSnackbarType(BitSnackbarType type)
+    {
+        await SnackbarTypeRef.Show(type, "This is title", "This is body");
+    }
 
-    private BitSnackbar TopLeftPosition;
-    private BitSnackbar TopCenterPosition;
-    private BitSnackbar TopRightPosition;
-    private BitSnackbar BottomLeftPosition;
-    private BitSnackbar BottomCenterPosition;
-    private BitSnackbar BottomRightPosition;
+
+    private BitSnackbar SnackbarPositionRef;
+    private BitSnackbarPosition SnackbarPosition;
+    private async void OpenSnackbarPosition(BitSnackbarPosition position)
+    {
+        SnackbarPosition = position;
+        await SnackbarPositionRef.Show("This is title", "This is body");
+    }
+
 
     private BitSnackbar NonAutoDismiss;
     private BitSnackbar AutoDismissTime;
-
-    private BitSnackbar DismissIconName;
-    private BitSnackbar TitleTemplate;
-    private BitSnackbar BodyTemplate;
-
-    private async void OpenNormalType()
-    {
-        await NormalType.Show("This is title", "This is body");
-    }
-
-    private async void OpenSuccessType()
-    {
-        await SuccessType.Show("This is title", "This is body");
-    }
-
-    private async void OpenWarningType()
-    {
-        await WarningType.Show("This is title", "This is body");
-    }
-
-    private async void OpenErrorType()
-    {
-        await ErrorType.Show("This is title", "This is body");
-    }
-
-    private async void OpenTopLeftPosition()
-    {
-        await TopLeftPosition.Show("This is title", "This is body");
-    }
-
-    private async void OpenTopCenterPosition()
-    {
-        await TopCenterPosition.Show("This is title", "This is body");
-    }
-
-    private async void OpenTopRightPosition()
-    {
-        await TopRightPosition.Show("This is title", "This is body");
-    }
-
-    private async void OpenBottomLeftPosition()
-    {
-        await BottomLeftPosition.Show("This is title", "This is body");
-    }
-
-    private async void OpenBottomCenterPosition()
-    {
-        await BottomCenterPosition.Show("This is title", "This is body");
-    }
-
-    private async void OpenBottomRightPosition()
-    {
-        await BottomRightPosition.Show("This is title", "This is body");
-    }
-
     private async void OpenNonAutoDismiss()
     {
         await NonAutoDismiss.Show("This is title", "This is body");
     }
-
     private async void OpenAutoDismissTime()
     {
         await AutoDismissTime.Show("This is title", "This is body");
     }
 
+
+    private BitSnackbar DismissIconName;
+    private BitSnackbar TitleTemplate;
+    private BitSnackbar BodyTemplate;
+    private string BodyTemplateYesAnswer = "Yes";
+    private string BodyTemplateNoAnswer = "No";
+    private string BodyTemplateAnswer;
     private async void OpenTitleTemplate()
     {
         await TitleTemplate.Show("This is title", "This is body");
     }
-
     private async void OpenBodyTemplate()
     {
         await BodyTemplate.Show("This is title", "This is body");
     }
-
     private async void OpenDismissIconName()
     {
         await DismissIconName.Show("This is title", "This is body");
