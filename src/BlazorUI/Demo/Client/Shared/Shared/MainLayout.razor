@@ -1,0 +1,19 @@
+﻿@namespace Bit.BlazorUI.Demo.Client.Shared
+@inherits LayoutComponentBase
+
+<Header />
+
+<div class="main @(CurrentUrl == "/" || CurrentUrl == "/icons" ? "main--full-page" : null)">
+    @if (CurrentUrl != "/")
+    {
+        <NavMenu />
+    }
+    <div class="site-content">
+        <AppErrorBoundary>
+            @Body
+        </AppErrorBoundary>
+    </div>
+</div>
+
+<MessageBox />
+<Footer />

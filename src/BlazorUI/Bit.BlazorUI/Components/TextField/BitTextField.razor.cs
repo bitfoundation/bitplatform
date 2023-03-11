@@ -4,6 +4,9 @@ namespace Bit.BlazorUI;
 
 public partial class BitTextField
 {
+    protected override bool UseVisual => false;
+
+
     private bool hasBorder = true;
     private bool isMultiline;
     private bool isReadonly;
@@ -11,6 +14,7 @@ public partial class BitTextField
     private bool isUnderlined;
     private bool isResizable = true;
     private BitTextFieldType type = BitTextFieldType.Text;
+    private string focusClass = string.Empty;
 
     private string _textFieldId = string.Empty;
     private string _inputType = string.Empty;
@@ -18,7 +22,18 @@ public partial class BitTextField
     private string _descriptionId = string.Empty;
     private bool _isPasswordRevealed;
     private BitTextFieldType _elementType;
-    private string _focusClass = string.Empty;
+
+    private string _focusClass
+    {
+        get => focusClass;
+        set
+        {
+            if (focusClass == value) return;
+
+            focusClass = value;
+            ClassBuilder.Reset();
+        }
+    }
 
 
     /// <summary>
@@ -55,6 +70,8 @@ public partial class BitTextField
         get => hasBorder;
         set
         {
+            if (hasBorder == value) return;
+
             hasBorder = value;
             ClassBuilder.Reset();
         }
@@ -69,6 +86,8 @@ public partial class BitTextField
         get => isMultiline;
         set
         {
+            if (isMultiline == value) return;
+
             isMultiline = value;
             ClassBuilder.Reset();
         }
@@ -83,6 +102,8 @@ public partial class BitTextField
         get => isReadonly;
         set
         {
+            if (isReadonly == value) return;
+
             isReadonly = value;
             ClassBuilder.Reset();
         }
@@ -97,6 +118,8 @@ public partial class BitTextField
         get => isRequired;
         set
         {
+            if (isRequired == value) return;
+
             isRequired = value;
             ClassBuilder.Reset();
         }
@@ -111,6 +134,8 @@ public partial class BitTextField
         get => isUnderlined;
         set
         {
+            if (isUnderlined == value) return;
+
             isUnderlined = value;
             ClassBuilder.Reset();
         }
@@ -125,6 +150,8 @@ public partial class BitTextField
         get => isResizable;
         set
         {
+            if (isResizable == value) return;
+
             isResizable = value;
             ClassBuilder.Reset();
         }
@@ -236,6 +263,8 @@ public partial class BitTextField
         get => type;
         set
         {
+            if (type == value) return;
+
             type = value;
             SetElementType();
             ClassBuilder.Reset();
@@ -266,7 +295,6 @@ public partial class BitTextField
     /// Style of the BitTextField's Prefix
     /// </summary>
     [Parameter] public string? PrefixStyle { get; set; }
-
 
     /// <summary>
     /// CSS class of the BitTextField's Prefix
@@ -307,6 +335,25 @@ public partial class BitTextField
 
     protected override string RootElementClass => "bit-txt";
 
+    protected override void RegisterComponentClasses()
+    {
+        ClassBuilder.Register(() => IsMultiline && Type == BitTextFieldType.Text
+                                    ? $"multiline{(IsResizable is false ? "-fix" : string.Empty)}"
+                                    : string.Empty);
+
+        ClassBuilder.Register(() => IsEnabled && IsReadonly ? "readonly" : string.Empty);
+
+        ClassBuilder.Register(() => IsEnabled && IsRequired ? "required" : string.Empty);
+
+        ClassBuilder.Register(() => IsUnderlined ? "underlined" : string.Empty);
+
+        ClassBuilder.Register(() => HasBorder is false ? "no-border" : string.Empty);
+
+        ClassBuilder.Register(() => _focusClass);
+
+        ClassBuilder.Register(() => IsRequired && Label is null ? "required-no-label" : string.Empty);
+    }
+
     protected override Task OnInitializedAsync()
     {
         if (CurrentValueAsString.HasNoValue() && DefaultValue.HasValue())
@@ -314,46 +361,14 @@ public partial class BitTextField
             CurrentValueAsString = DefaultValue;
         }
 
-        _textFieldId = $"TextField_{UniqueId}";
-        _labelId = $"TextFieldLabel_{UniqueId}";
-        _descriptionId = $"TextFieldDescription_{UniqueId}";
+        _textFieldId = $"TextField-{UniqueId}";
+        _labelId = $"TextField-{UniqueId}-Label";
+        _descriptionId = $"TextField-{UniqueId}-Description";
 
         return base.OnInitializedAsync();
     }
 
-    protected override void RegisterComponentClasses()
-    {
-        ClassBuilder.Register(() => IsMultiline && Type == BitTextFieldType.Text
-                                    ? $"{RootElementClass}-multiline-{(IsResizable is false ? "fix-" : string.Empty)}{VisualClassRegistrar()}"
-                                    : string.Empty);
 
-        ClassBuilder.Register(() => IsEnabled && IsReadonly
-                                    ? $"{RootElementClass}-readonly-{VisualClassRegistrar()}"
-                                    : string.Empty);
-
-        ClassBuilder.Register(() => IsEnabled && IsRequired
-                                    ? $"{RootElementClass}-required-{VisualClassRegistrar()}"
-                                    : string.Empty);
-
-        ClassBuilder.Register(() => IsUnderlined
-                                   ? $"{RootElementClass}-underlined-{(IsEnabled is false ? "disabled-" : string.Empty)}{VisualClassRegistrar()}"
-                                   : string.Empty);
-
-        ClassBuilder.Register(() => HasBorder is false
-                                   ? $"{RootElementClass}-no-border-{VisualClassRegistrar()}" : string.Empty);
-
-        ClassBuilder.Register(() => _focusClass.HasValue()
-                                    ? $"{RootElementClass}-{(IsUnderlined ? "underlined-" : "")}{_focusClass}-{VisualClassRegistrar()}"
-                                    : string.Empty);
-
-        ClassBuilder.Register(() => ValueInvalid is true
-                                   ? $"{RootElementClass}-invalid-{VisualClassRegistrar()}"
-                                   : string.Empty);
-
-        ClassBuilder.Register(() => IsRequired && Label is null
-                                   ? $"{RootElementClass}-required-no-label-{VisualClassRegistrar()}"
-                                   : string.Empty);
-    }
 
     private void SetElementType()
     {
@@ -375,32 +390,29 @@ public partial class BitTextField
 
     private async Task HandleOnFocusIn(FocusEventArgs e)
     {
-        if (IsEnabled)
-        {
-            _focusClass = "focused";
-            ClassBuilder.Reset();
-            await OnFocusIn.InvokeAsync(e);
-        }
+        if (IsEnabled is false) return;
+
+        _focusClass = "focused";
+        ClassBuilder.Reset();
+        await OnFocusIn.InvokeAsync(e);
     }
 
     private async Task HandleOnFocusOut(FocusEventArgs e)
     {
-        if (IsEnabled)
-        {
-            _focusClass = "";
-            ClassBuilder.Reset();
-            await OnFocusOut.InvokeAsync(e);
-        }
+        if (IsEnabled is false) return;
+
+        _focusClass = string.Empty;
+        ClassBuilder.Reset();
+        await OnFocusOut.InvokeAsync(e);
     }
 
     private async Task HandleOnFocus(FocusEventArgs e)
     {
-        if (IsEnabled)
-        {
-            _focusClass = "focused";
-            ClassBuilder.Reset();
-            await OnFocus.InvokeAsync(e);
-        }
+        if (IsEnabled is false) return;
+
+        _focusClass = "focused";
+        ClassBuilder.Reset();
+        await OnFocus.InvokeAsync(e);
     }
 
     private async Task HandleOnChange(ChangeEventArgs e)
@@ -414,26 +426,23 @@ public partial class BitTextField
 
     private async Task HandleOnKeyDown(KeyboardEventArgs e)
     {
-        if (IsEnabled)
-        {
-            await OnKeyDown.InvokeAsync(e);
-        }
+        if (IsEnabled is false) return;
+
+        await OnKeyDown.InvokeAsync(e);
     }
 
     private async Task HandleOnKeyUp(KeyboardEventArgs e)
     {
-        if (IsEnabled)
-        {
-            await OnKeyUp.InvokeAsync(e);
-        }
+        if (IsEnabled is false) return;
+
+        await OnKeyUp.InvokeAsync(e);
     }
 
     private async Task HandleOnClick(MouseEventArgs e)
     {
-        if (IsEnabled)
-        {
-            await OnClick.InvokeAsync(e);
-        }
+        if (IsEnabled is false) return;
+
+        await OnClick.InvokeAsync(e);
     }
 
     public void ToggleRevealPassword()

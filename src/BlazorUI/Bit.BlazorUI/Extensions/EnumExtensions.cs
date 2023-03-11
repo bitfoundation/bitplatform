@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.ComponentModel.DataAnnotations;
 
-[assembly: InternalsVisibleTo("Bit.BlazorUI.Demo.Web")]
+[assembly: InternalsVisibleTo("Bit.BlazorUI.Demo.Client.Shared")]
 namespace Bit.BlazorUI;
 
 internal static class EnumExtensions
@@ -14,10 +14,10 @@ internal static class EnumExtensions
         if (enumValue is null) return null;
 
         var name = enumValue.GetType()
-                              .GetMember(enumValue.ToString())
-                              .FirstOrDefault()?
-                              .GetCustomAttribute<DisplayAttribute>()?
-                              .GetName();
+                            .GetMember(enumValue.ToString())
+                            .FirstOrDefault()?
+                            .GetCustomAttribute<DisplayAttribute>()?
+                            .GetName();
 
         string? displayName = null;
 

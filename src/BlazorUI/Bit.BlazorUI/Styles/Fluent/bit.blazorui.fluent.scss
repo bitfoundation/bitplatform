@@ -6,7 +6,6 @@
 @import "../general.scss";
 @import "general.fluent.scss";
 
-
 @import "../../Components/Accordion/BitAccordion.scss";
 @import "../../Components/Breadcrumb/BitBreadcrumb.scss";
 @import "../../Components/Buttons/BitActionButton/BitActionButton.scss";
@@ -21,10 +20,13 @@
 @import "../../Components/Checkbox/BitCheckbox.scss";
 @import "../../Components/ChoiceGroup/BitChoiceGroup.scss";
 @import "../../Components/ColorPicker/BitColorPicker.scss";
+@import "../../Components/DataGrid/BitDataGrid.Fluent.scss";
+@import "../../Components/DataGrid/Pagination/BitDataGridPaginator.Fluent.scss";
 @import "../../Components/DatePicker/BitDatePicker.scss";
 @import "../../Components/DateRangePicker/BitDateRangePicker.Fluent.scss";
-@import "../../Components/DropDown/BitDropDown.Fluent.scss";
+@import "../../Components/DropDown/BitDropDown.scss";
 @import "../../Components/FileUpload/BitFileUpload.Fluent.scss";
+@import "../../Components/Icon/BitIcon.scss";
 @import "../../Components/Label/BitLabel.scss";
 @import "../../Components/Link/BitLink.scss";
 @import "../../Components/Lists/BitBasicList.scss";
@@ -43,11 +45,7 @@
 @import "../../Components/Snackbar/BitSnackbar.Fluent.scss";
 @import "../../Components/SpinButton/BitSpinButton.scss";
 @import "../../Components/Spinner/BitSpinner.scss";
-@import "../../Components/Swiper/BitSwiper.Fluent.scss";
-@import "../../Components/Swiper/BitSwiperItem.Fluent.scss";
-@import "../../Components/TextField/BitTextField.Fluent.scss";
-@import "../../Components/Toggle/BitToggle.Fluent.scss";
-@import "../../Components/DataGrid/BitDataGrid.Fluent.scss";
-@import "../../Components/DataGrid/Pagination/BitDataGridPaginator.Fluent.scss";
-@import "../../Components/Icon/BitIcon.scss";
+@import "../../Components/Swiper/BitSwiper.scss";
+@import "../../Components/TextField/BitTextField.scss";
 @import "../../Components/TimePicker/BitTimePicker.scss";
+@import "../../Components/Toggle/BitToggle.scss";

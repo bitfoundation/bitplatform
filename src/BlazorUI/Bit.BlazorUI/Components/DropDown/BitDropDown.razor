@@ -4,21 +4,19 @@
      id="@UniqueId"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
-    @if (LabelFragment is not null)
+    @if (LabelTemplate is not null)
     {
-        <label class="lbl" id="@DropdownLabelId">@LabelFragment</label>
+        <label class="label" id="@_dropdownLabelId">@LabelTemplate</label>
     }
     else if (Label.HasValue())
     {
-        <label class="lbl" id="@DropdownLabelId">@Label</label>
+        <label class="label" id="@_dropdownLabelId">@Label</label>
     }
 
-    <div class="drp-overlay"
-         id="@DropDownOverlayId"
-         @onclick="CloseCallout"></div>
+    <div class="overlay" id="@_dropDownOverlayId" @onclick="CloseCallout"></div>
 
-    <div class="drp-wrapper"
-         id="@DropDownId"
+    <div class="wrapper"
+         id="@_dropDownId"
          tabindex=@(IsEnabled ? 0 : -1)
          role="combobox"
          data-is-focusable="true"
@@ -27,15 +25,15 @@
          aria-required="@IsRequired"
          aria-disabled="@(IsEnabled is false)"
          aria-haspopup="listbox"
-         aria-controls="@(IsOpen ? $"{DropDownId}-list" : null)"
+         aria-controls="@(IsOpen ? $"{_dropDownId}-list" : null)"
          title="@Title"
          @onclick="HandleClick">
-        <span class="drp-wrapper-txt"
-              id="@DropDownOptionId"
+        <span class="text-container"
+              id="@_dropDownOptionId"
               aria-live="polite"
               aria-atomic="true"
               aria-invalid="false">
-            @if (Text.HasValue())
+            @if (_text.HasValue())
             {
                 @if (TextTemplate is not null)
                 {
@@ -43,7 +41,7 @@
                 }
                 else
                 {
-                    @Text
+                    @_text
                 }
             }
             else
@@ -58,10 +56,10 @@
                 }
             }
         </span>
-        <span class="drp-wrapper-ic">
-            @if (CaretDownFragment is not null)
+        <span class="icon-container">
+            @if (CaretDownTemplate is not null)
             {
-                @CaretDownFragment
+                @CaretDownTemplate
             }
             else
             {
@@ -71,20 +69,20 @@
     </div>
 
     <div class="items-wrapper"
-         id="@DropDownCalloutId"
+         id="@_dropDownCalloutId"
          tabindex="0"
          role="listbox"
-         aria-labelledby="@DropdownLabelId">
+         aria-labelledby="@_dropdownLabelId">
         @if (IsResponsiveModeEnabled)
         {
-            <div class="responsive-label-contianer">
-                @if (LabelFragment is not null)
+            <div class="responsive-label-container">
+                @if (LabelTemplate is not null)
                 {
-                    <label class="lbl">@LabelFragment</label>
+                    <label class="label">@LabelTemplate</label>
                 }
                 else if (Label.HasValue())
                 {
-                    <label class="lbl">@Label</label>
+                    <label class="label">@Label</label>
                 }
                 <button class="close-btn"
                     type="button"
@@ -117,8 +115,8 @@
                    @oninput="@HandleFilterChange" />
                 @if (_searchText.HasValue())
                 {
-                    <div class="search-clear-btn-container">
-                        <button class="search-clear-btn"
+                    <div class="clear-btn-container">
+                        <button class="clear-btn"
                         type="button"
                         aria-label="Clear text"
                         aria-hidden="true"
@@ -133,7 +131,7 @@
             </div>
         }
 
-        <div @ref="_scrollWrapperElement" id="@DropDownCalloutId" class="scroll-wrapper">
+        <div @ref="_scrollWrapperElement" id="@_dropDownCalloutId" class="scroll-wrapper">
             @if (Virtualize)
             {
                 if (ItemsProvider is null)
@@ -189,14 +187,14 @@
             @if (IsMultiSelect)
             {
                 <div style="@(dropDownItem.item.IsHidden ? "display: none" : string.Empty)" class="@GetCssClassForItem(dropDownItem.item)">
-                    <label class="drp-chb-lbl" @onclick="@((e) => HandleItemClick(dropDownItem.item))">
-                        <div class="drp-chb-checkbox">
-                            <i class="drp-chb-checkmark bit-icon bit-icon--Accept"
+                    <label class="checkbox-container" @onclick="@((e) => HandleItemClick(dropDownItem.item))">
+                        <div class="checkbox">
+                            <i class="checkmark bit-icon bit-icon--Accept"
                                aria-hidden="true"
                                aria-label="@dropDownItem.item.Text"></i>
                         </div>
 
-                        <span class="drp-chb-txt no-text-select">
+                        <span class="text no-text-select">
                             @if (ItemTemplate is not null)
                             {
                                 @ItemTemplate(dropDownItem.item)
@@ -211,7 +209,7 @@
             }
             else
             {
-                <button class="drp-item @(dropDownItem.item.IsSelected ? "drp-slc" : string.Empty)"
+                <button class="item @(dropDownItem.item.IsSelected ? "selected" : string.Empty)"
                         style="@(dropDownItem.item.IsHidden ? "display: none" : string.Empty)"
                         type="button"
                         role="option"

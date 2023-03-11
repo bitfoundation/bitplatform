@@ -26,6 +26,9 @@ jobs:
 
     - name: Install wasm-tools
       run: dotnet workload install wasm-tools
+
+    - name: Install maui
+      run: dotnet workload restore src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj
       
     - name: Restore prerelease
       run: dotnet restore src/Bit-CI-release.sln
@@ -57,6 +60,9 @@ jobs:
     
     - name: Install wasm-tools
       run: dotnet workload install wasm-tools
+
+    - name: Install maui
+      run: dotnet workload restore src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj
 
     - name: Restore
       run: dotnet restore src/Bit-CI.sln
