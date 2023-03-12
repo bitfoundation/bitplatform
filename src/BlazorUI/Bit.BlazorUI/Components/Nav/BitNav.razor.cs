@@ -5,6 +5,9 @@ namespace Bit.BlazorUI;
 
 public partial class BitNav<TItem> : IDisposable where TItem : class
 {
+    protected override bool UseVisual => false;
+
+
     private const string KEY_FIELD = nameof(BitNavItem.Key);
     private const string FORCE_ANCHOR_FIELD = nameof(BitNavItem.ForceAnchor);
     private const string TEXT_FIELD = nameof(BitNavItem.Text);
@@ -45,7 +48,11 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
     internal Dictionary<TItem, bool> _itemExpandStates = new();
     private bool _disposed;
 
+
+
     [Inject] private NavigationManager _navigationManager { get; set; } = default!;
+
+
 
     /// <summary>
     /// Aria-current token for active nav item.
@@ -77,9 +84,19 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// The initially selected item in manual mode.
+    /// A list of items to render as children of the current item.
     /// </summary>
-    [Parameter] public TItem? DefaultSelectedItem { get; set; }
+    [Parameter] public string ChildItemsField { get; set; } = CHILD_ITEMS_FIELD;
+
+    /// <summary>
+    /// A list of items to render as children of the current item.
+    /// </summary>
+    [Parameter] public Expression<Func<TItem, IList<TItem>>>? ChildItemsFieldSelector { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for different parts of the component.
+    /// </summary>
+    [Parameter] public BitNavClassStyles? ClassStyles { get; set; }
 
     /// <summary>
     /// Aria label when group is collapsed.
@@ -90,6 +107,11 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
     /// Aria label when group is collapsed.
     /// </summary>
     [Parameter] public Expression<Func<TItem, object>>? CollapseAriaLabelFieldSelector { get; set; }
+
+    /// <summary>
+    /// The initially selected item in manual mode.
+    /// </summary>
+    [Parameter] public TItem? DefaultSelectedItem { get; set; }
 
     /// <summary>
     /// Aria label when group is expanded.
@@ -117,26 +139,6 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
     /// Used to customize how content inside the group header is rendered.
     /// </summary>
     [Parameter] public RenderFragment<TItem>? HeaderTemplate { get; set; }
-
-    /// <summary>
-    /// Used to customize how content inside the item is rendered.
-    /// </summary>
-    [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
-
-    /// <summary>
-    /// A collection of item to display in the navigation bar.
-    /// </summary>
-    [Parameter] public IList<TItem> Items { get; set; } = new List<TItem>();
-
-    /// <summary>
-    /// A list of items to render as children of the current item.
-    /// </summary>
-    [Parameter] public string ChildItemsField { get; set; } = CHILD_ITEMS_FIELD;
-
-    /// <summary>
-    /// A list of items to render as children of the current item.
-    /// </summary>
-    [Parameter] public Expression<Func<TItem, IList<TItem>>>? ChildItemsFieldSelector { get; set; }
 
     /// <summary>
     /// Name of an icon to render next to the item button.
@@ -169,6 +171,26 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
     [Parameter] public Expression<Func<TItem, bool>>? IsEnabledFieldSelector { get; set; }
 
     /// <summary>
+    /// A collection of item to display in the navigation bar.
+    /// </summary>
+    [Parameter] public IList<TItem> Items { get; set; } = new List<TItem>();
+
+    /// <summary>
+    /// Used to customize how content inside the item is rendered.
+    /// </summary>
+    [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
+
+    /// <summary>
+    /// A unique value to use as a key or id of the item.
+    /// </summary>
+    [Parameter] public string KeyField { get; set; } = KEY_FIELD;
+
+    /// <summary>
+    /// A unique value to use as a key or id of the item.
+    /// </summary>
+    [Parameter] public Expression<Func<TItem, string>>? KeyFieldSelector { get; set; }
+
+    /// <summary>
     /// Determines how the navigation will be handled.
     /// </summary>
     [Parameter] public BitNavMode Mode { get; set; } = BitNavMode.Automatic;
@@ -179,14 +201,14 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
     [Parameter] public EventCallback<TItem> OnItemClick { get; set; }
 
     /// <summary>
-    /// Callback invoked when an item is selected.
-    /// </summary>
-    [Parameter] public EventCallback<TItem> OnSelectItem { get; set; }
-
-    /// <summary>
     /// Callback invoked when a group header is clicked and Expanded or Collapse.
     /// </summary>
     [Parameter] public EventCallback<TItem> OnItemToggle { get; set; }
+
+    /// <summary>
+    /// Callback invoked when an item is selected.
+    /// </summary>
+    [Parameter] public EventCallback<TItem> OnSelectItem { get; set; }
 
     /// <summary>
     /// The way to render nav items.
@@ -216,16 +238,6 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
     [Parameter] public EventCallback<TItem> SelectedItemChanged { get; set; }
 
     /// <summary>
-    /// Text to render for the item.
-    /// </summary>
-    [Parameter] public string TextField { get; set; } = TEXT_FIELD;
-
-    /// <summary>
-    /// Text to render for the item.
-    /// </summary>
-    [Parameter] public Expression<Func<TItem, string>>? TextFieldSelector { get; set; }
-
-    /// <summary>
     /// Custom style for the each item element.
     /// </summary>
     [Parameter] public string StyleField { get; set; } = STYLE_FIELD;
@@ -234,21 +246,6 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
     /// Custom style for the each item element.
     /// </summary>
     [Parameter] public Expression<Func<TItem, string>>? StyleFieldSelector { get; set; }
-
-    /// <summary>
-    /// Custom CSS classes/styles for different parts of the component
-    /// </summary>
-    [Parameter] public BitNavClassStylePairs? ClassStyles { get; set; }
-
-    /// <summary>
-    /// Text for the item tooltip.
-    /// </summary>
-    [Parameter] public string TitleField { get; set; } = TITLE_FIELD;
-
-    /// <summary>
-    /// Text for the item tooltip.
-    /// </summary>
-    [Parameter] public Expression<Func<TItem, string>>? TitleFieldSelector { get; set; }
 
     /// <summary>
     /// Link target, specifies how to open the item link.
@@ -261,6 +258,26 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
     [Parameter] public Expression<Func<TItem, string>>? TargetFieldSelector { get; set; }
 
     /// <summary>
+    /// Text to render for the item.
+    /// </summary>
+    [Parameter] public string TextField { get; set; } = TEXT_FIELD;
+
+    /// <summary>
+    /// Text to render for the item.
+    /// </summary>
+    [Parameter] public Expression<Func<TItem, string>>? TextFieldSelector { get; set; }
+
+    /// <summary>
+    /// Text for the item tooltip.
+    /// </summary>
+    [Parameter] public string TitleField { get; set; } = TITLE_FIELD;
+
+    /// <summary>
+    /// Text for the item tooltip.
+    /// </summary>
+    [Parameter] public Expression<Func<TItem, string>>? TitleFieldSelector { get; set; }
+
+    /// <summary>
     /// URL to navigate for the item link.
     /// </summary>
     [Parameter] public string UrlField { get; set; } = URL_FIELD;
@@ -270,17 +287,7 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
     /// </summary>
     [Parameter] public Expression<Func<TItem, string>>? UrlFieldSelector { get; set; }
 
-    /// <summary>
-    /// A unique value to use as a key or id of the item.
-    /// </summary>
-    [Parameter] public string KeyField { get; set; } = KEY_FIELD;
 
-    /// <summary>
-    /// A unique value to use as a key or id of the item.
-    /// </summary>
-    [Parameter] public Expression<Func<TItem, string>>? KeyFieldSelector { get; set; }
-
-    protected override string RootElementClass => "bit-nav";
 
     internal string? GetKey(TItem item)
     {
@@ -573,6 +580,10 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
         StateHasChanged();
     }
 
+
+
+    protected override string RootElementClass => "bit-nav";
+
     protected override async Task OnInitializedAsync()
     {
         _internalForceAnchorField = ForceAnchorFieldSelector?.GetName() ?? ForceAnchorField;
@@ -629,6 +640,8 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
         await base.OnParametersSetAsync();
     }
 
+
+
     private List<TItem> Flatten(IList<TItem> e) => e.SelectMany(c => Flatten(GetChildItems(c))).Concat(e).ToList();
 
     private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
@@ -662,6 +675,8 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
 
         return false;
     }
+
+
 
     public void Dispose()
     {

@@ -1,16 +1,13 @@
-﻿<CascadingValue Value="Visual">
-    <BitNav AriaLabel="@AriaLabel"
-            RenderType="@RenderType"
-            Items="Items"
-            SelectedItem="@SelectedItem"
-            OnItemClick="(BitNavItem item) => OnItemClick(item)"
-            OnItemToggle="(BitNavItem item) => OnItemExpand(item)"
-            Mode="@Mode">
-    </BitNav>
-</CascadingValue>
+﻿<BitNav AriaLabel="@AriaLabel"
+        RenderType="@RenderType"
+        Items="Items"
+        SelectedItem="@SelectedItem"
+        OnItemClick="(BitNavItem item) => OnItemClick(item)"
+        OnItemToggle="(BitNavItem item) => OnItemExpand(item)"
+        Mode="@Mode">
+</BitNav>
 
 @code {
-    [Parameter] public Visual Visual { get; set; }
     [Parameter] public string AriaLabel { get; set; }
     [Parameter] public BitNavRenderType RenderType { get; set; }
     [Parameter] public IList<BitNavItem> Items { get; set; } = new List<BitNavItem>();

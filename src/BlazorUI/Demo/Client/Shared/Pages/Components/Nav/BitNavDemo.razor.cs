@@ -37,9 +37,31 @@ public partial class BitNavDemo
         },
         new()
         {
-            Name = "DefaultSelectedItem",
-            Type = "TItem?",
-            Description = "The initially selected item in manual mode."
+            Name = "ChildContent",
+            Type = "RenderFragment?",
+            Description = "Items to render as children.",
+        },
+        new()
+        {
+            Name = "ChildItemsField",
+            Type = "string",
+            DefaultValue = "Items",
+            Description = "A list of items to render as children of the current item."
+        },
+        new()
+        {
+            Name = "ChildItemsFieldSelector",
+            Type = "Expression<Func<TItem, IList<TItem>>>?",
+            Description = "A list of items to render as children of the current item."
+        },
+        new()
+        {
+            Name = "ClassStyles",
+            Type = "BitNavClassStyles",
+            DefaultValue = "",
+            Href = "class-styles",
+            LinkType = LinkType.Link,
+            Description = "Custom CSS classes/styles for different parts of the component."
         },
         new()
         {
@@ -53,6 +75,12 @@ public partial class BitNavDemo
             Name = "CollapseAriaLabelFieldSelector",
             Type = "Expression<Func<TItem, object>>?",
             Description = "Aria label when group is collapsed."
+        },
+        new()
+        {
+            Name = "DefaultSelectedItem",
+            Type = "TItem?",
+            Description = "The initially selected item in manual mode."
         },
         new()
         {
@@ -85,32 +113,6 @@ public partial class BitNavDemo
             Name = "HeaderTemplate",
             Type = "RenderFragment<TItem>?",
             Description = "Used to customize how content inside the group header is rendered."
-        },
-        new()
-        {
-            Name = "ItemTemplate",
-            Type = "RenderFragment<TItem>?",
-            Description = "Used to customize how content inside the item is rendered."
-        },
-        new()
-        {
-            Name = "Items",
-            Type = "IList<TItem>",
-            DefaultValue = "new List<TItem>()",
-            Description = "A collection of item to display in the navigation bar."
-        },
-        new()
-        {
-            Name = "ChildItemsField",
-            Type = "string",
-            DefaultValue = "Items",
-            Description = "A list of items to render as children of the current item."
-        },
-        new()
-        {
-            Name = "ChildItemsFieldSelector",
-            Type = "Expression<Func<TItem, IList<TItem>>>?",
-            Description = "A list of items to render as children of the current item."
         },
         new()
         {
@@ -153,6 +155,34 @@ public partial class BitNavDemo
         },
         new()
         {
+            Name = "Items",
+            Type = "IList<TItem>",
+            DefaultValue = "new List<TItem>()",
+            Href="nav-item",
+            LinkType = LinkType.Link,
+            Description = "A collection of item to display in the navigation bar."
+        },
+        new()
+        {
+            Name = "ItemTemplate",
+            Type = "RenderFragment<TItem>?",
+            Description = "Used to customize how content inside the item is rendered."
+        },
+        new()
+        {
+            Name = "KeyField",
+            Type = "string",
+            DefaultValue = "Key",
+            Description = "A unique value to use as a key or id of the item."
+        },
+        new()
+        {
+            Name = "KeyFieldSelector",
+            Type = "Expression<Func<TItem, bool>>?",
+            Description = "A unique value to use as a key or id of the item."
+        },
+        new()
+        {
             Name = "Mode",
             Type = "BitNavMode",
             DefaultValue = "BitNavMode.Automatic",
@@ -168,15 +198,15 @@ public partial class BitNavDemo
         },
         new()
         {
-            Name = "OnSelectItem",
-            Type = "EventCallback<TItem>",
-            Description = "Callback invoked when an item is selected."
-        },
-        new()
-        {
             Name = "OnItemToggle",
             Type = "EventCallback<TItem>",
             Description = "Callback invoked when a group header is clicked and Expanded or Collapse."
+        },
+        new()
+        {
+            Name = "OnSelectItem",
+            Type = "EventCallback<TItem>",
+            Description = "Callback invoked when an item is selected."
         },
         new()
         {
@@ -257,7 +287,7 @@ public partial class BitNavDemo
             Name = "UrlFieldSelector",
             Type = "Expression<Func<TItem, object>>?",
             Description = "URL to navigate for the item link."
-        },
+        }
     };
     private readonly List<ComponentSubParameter> componentSubParameters = new()
     {
@@ -364,7 +394,7 @@ public partial class BitNavDemo
                }
             }
         },
-        new ComponentSubParameter()
+        new ()
         {
             Id = "nav-option",
             Title = "BitNavOption",
@@ -384,12 +414,6 @@ public partial class BitNavDemo
                    Description = "Aria-current token for active nav links. Must be a valid token value, and defaults to 'page'",
                    Href = "#nav-item-aria-current-enum",
                    LinkType = LinkType.Link,
-               },
-               new()
-               {
-                   Name = "ChildContent",
-                   Type = "RenderFragment?",
-                   Description = "Items to render as children.",
                },
                new()
                {
@@ -463,6 +487,74 @@ public partial class BitNavDemo
                    Name = "Url",
                    Type = "string?",
                    Description = "URL to navigate to for this link.",
+               }
+            }
+        },
+        new()
+        {
+            Id = "class-styles",
+            Title = "BitNavClassStyles",
+            Parameters = new()
+            {
+               new()
+               {
+                   Name = "Item",
+                   Type = "BitClassStylePair?",
+                   Description = "Custom CSS classes/styles for item.",
+                   Href = "class-style-pair",
+                   LinkType = LinkType.Link
+               },
+               new()
+               {
+                   Name = "SelectedItem",
+                   Type = "BitClassStylePair?",
+                   Description = "Custom CSS classes/styles for selected item.",
+                   Href = "class-style-pair",
+                   LinkType = LinkType.Link
+               },
+               new()
+               {
+                   Name = "ItemContainer",
+                   Type = "BitClassStylePair?",
+                   Description = "Custom CSS classes/styles for item container.",
+                   Href = "class-style-pair",
+                   LinkType = LinkType.Link,
+               },
+               new()
+               {
+                   Name = "SelectedItemContainer",
+                   Type = "BitClassStylePair?",
+                   Description = "Custom CSS classes/styles for selected item container.",
+                   Href = "class-style-pair",
+                   LinkType = LinkType.Link
+               },
+               new()
+               {
+                   Name = "ToggleButton",
+                   Type = "BitClassStylePair?",
+                   Description = "Custom CSS classes/styles for toggle button.",
+                   Href = "class-style-pair",
+                   LinkType = LinkType.Link
+               },
+            }
+        },
+        new()
+        {
+            Id = "class-style-pair",
+            Title = "BitClassStylePair",
+            Parameters = new()
+            {
+               new()
+               {
+                   Name = "Class",
+                   Type = "string?",
+                   Description = "Custom CSS class."
+               },
+               new()
+               {
+                   Name = "Style",
+                   Type = "string?",
+                   Description = "Custom CSS style."
                }
             }
         }
@@ -553,7 +645,7 @@ public partial class BitNavDemo
     // Basic
     private static readonly List<BitNavItem> BitPlatformNavMenu = new()
     {
-        new ()
+        new()
         {
             Text = "Bit Platform",
             ChildItems = new()
@@ -704,8 +796,8 @@ public partial class BitNavDemo
     };
 
     private static List<BitNavItem> Flatten(IList<BitNavItem> e) => e.SelectMany(c => Flatten(c.ChildItems)).Concat(e).ToList();
-    private BitNavItem SelectedItemNav = FoodNavMenu[0].ChildItems[2];
-    private string SelectedItemText = FoodNavMenu[0].ChildItems[2].Text;
+    private BitNavItem? SelectedItemNav = FoodNavMenu[0].ChildItems[2];
+    private string? SelectedItemText = FoodNavMenu[0].ChildItems[2].Text;
 
     private BitNavItem ClickedItem;
     private BitNavItem SelectedItem;
@@ -867,8 +959,8 @@ public partial class BitNavDemo
     };
 
     private static List<FoodMenu> Flatten(IList<FoodMenu> e) => e.SelectMany(c => Flatten(c.Childs)).Concat(e).ToList();
-    private FoodMenu CustomSelectedFood = CustomFoodNavMenu[0].Childs[2];
-    private string CustomSelectedFoodName = CustomFoodNavMenu[0].Childs[2].Name;
+    private FoodMenu? CustomSelectedFood = CustomFoodNavMenu[0].Childs[2];
+    private string? CustomSelectedFoodName = CustomFoodNavMenu[0].Childs[2].Name;
 
     private FoodMenu CustomClickedItem;
     private FoodMenu CustomSelectedItem;
@@ -885,72 +977,72 @@ public partial class BitNavDemo
 
     private static readonly List<BitDropDownItem> FoodMenuDropDownItems = new()
     {
-        new BitDropDownItem
+        new()
         {
             Text = "Beef Burger",
             Value = "Beef Burger",
         },
-        new BitDropDownItem
+        new()
         {
             Text = "Veggie Burger",
             Value = "Veggie Burger",
         },
-        new BitDropDownItem
+        new()
         {
             Text = "Bison Burger",
             Value = "Bison Burger",
         },
-        new BitDropDownItem
+        new()
         {
             Text = "Wild Salmon Burger",
             Value = "Wild Salmon Burger",
         },
-        new BitDropDownItem
+        new()
         {
             Text = "Cheese Pizza",
             Value = "Cheese Pizza",
         },
-        new BitDropDownItem
+        new()
         {
             Text = "Veggie Pizza",
             Value = "Veggie Pizza",
         },
-        new BitDropDownItem
+        new()
         {
             Text = "Pepperoni Pizza",
             Value = "Pepperoni Pizza",
         },
-        new BitDropDownItem
+        new()
         {
             Text = "Meat Pizza",
             Value = "Meat Pizza",
         },
-        new BitDropDownItem
+        new()
         {
             Text = "French Fries",
             Value = "French Fries",
         },
-        new BitDropDownItem
+        new()
         {
             Text = "Apple",
             Value = "Apple",
         },
-        new BitDropDownItem
+        new()
         {
             Text = "Orange",
             Value = "Orange",
         },
-        new BitDropDownItem
+        new()
         {
             Text = "Banana",
             Value = "Banana",
         },
-        new BitDropDownItem
+        new()
         {
             Text = "Ice Cream",
             Value = "Ice Cream",
         },
-        new BitDropDownItem
+        new()
         {
             Text = "Cookie",
             Value = "Cookie",
@@ -1145,72 +1237,72 @@ private static readonly List<BitNavItem> FoodNavMenu = new()
 
 private static readonly List<BitDropDownItem> FoodMenuDropDownItems = new()
 {
-    new BitDropDownItem
+    new()
     {
         Text = ""Beef Burger"",
         Value = ""Beef Burger"",
     },
-    new BitDropDownItem
+    new()
     {
         Text = ""Veggie Burger"",
         Value = ""Veggie Burger"",
     },
-    new BitDropDownItem
+    new()
     {
         Text = ""Bison Burger"",
         Value = ""Bison Burger"",
     },
-    new BitDropDownItem
+    new()
     {
         Text = ""Wild Salmon Burger"",
         Value = ""Wild Salmon Burger"",
     },
-    new BitDropDownItem
+    new()
     {
         Text = ""Cheese Pizza"",
         Value = ""Cheese Pizza"",
     },
-    new BitDropDownItem
+    new()
     {
         Text = ""Veggie Pizza"",
         Value = ""Veggie Pizza"",
     },
-    new BitDropDownItem
+    new()
     {
         Text = ""Pepperoni Pizza"",
         Value = ""Pepperoni Pizza"",
     },
-    new BitDropDownItem
+    new()
     {
         Text = ""Meat Pizza"",
         Value = ""Meat Pizza"",
     },
-    new BitDropDownItem
+    new()
     {
         Text = ""French Fries"",
         Value = ""French Fries"",
     },
-    new BitDropDownItem
+    new()
     {
         Text = ""Aplle"",
         Value = ""Aplle"",
     },
-    new BitDropDownItem
+    new()
     {
         Text = ""Orange"",
         Value = ""Orange"",
     },
-    new BitDropDownItem
+    new()
     {
         Text = ""Benana"",
         Value = ""Benana"",
     },
-    new BitDropDownItem
+    new()
     {
         Text = ""Ice Cream"",
         Value = ""Ice Cream"",
     },
-    new BitDropDownItem
+    new()
     {
         Text = ""Cookie"",
         Value = ""Cookie"",
@@ -1738,72 +1830,72 @@ private static readonly List<FoodMenu> CustomFoodNavMenu = new()
 
 private static readonly List<BitDropDownItem> FoodMenuDropDownItems = new()
 {
-    new BitDropDownItem
+    new()
     {
         Text = ""Beef Burger"",
         Value = ""Beef Burger"",
     },
-    new BitDropDownItem
+    new()
     {
         Text = ""Veggie Burger"",
         Value = ""Veggie Burger"",
     },
-    new BitDropDownItem
+    new()
     {
         Text = ""Bison Burger"",
         Value = ""Bison Burger"",
     },
-    new BitDropDownItem
+    new()
     {
         Text = ""Wild Salmon Burger"",
         Value = ""Wild Salmon Burger"",
     },
-    new BitDropDownItem
+    new()
     {
         Text = ""Cheese Pizza"",
         Value = ""Cheese Pizza"",
     },
-    new BitDropDownItem
+    new()
     {
         Text = ""Veggie Pizza"",
         Value = ""Veggie Pizza"",
     },
-    new BitDropDownItem
+    new()
     {
         Text = ""Pepperoni Pizza"",
         Value = ""Pepperoni Pizza"",
     },
-    new BitDropDownItem
+    new()
     {
         Text = ""Meat Pizza"",
         Value = ""Meat Pizza"",
     },
-    new BitDropDownItem
+    new()
     {
         Text = ""French Fries"",
         Value = ""French Fries"",
     },
-    new BitDropDownItem
+    new()
     {
         Text = ""Aplle"",
         Value = ""Aplle"",
     },
-    new BitDropDownItem
+    new()
     {
         Text = ""Orange"",
         Value = ""Orange"",
     },
-    new BitDropDownItem
+    new()
     {
         Text = ""Benana"",
         Value = ""Benana"",
     },
-    new BitDropDownItem
+    new()
     {
         Text = ""Ice Cream"",
         Value = ""Ice Cream"",
     },
-    new BitDropDownItem
+    new()
     {
         Text = ""Cookie"",
         Value = ""Cookie"",
