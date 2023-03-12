@@ -2,46 +2,18 @@
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Bit.BlazorUI.Tests.Navs;
+namespace Bit.BlazorUI.Tests.Nav;
 
 [TestClass]
 public class BitNavTests : BunitTestContext
 {
     [DataTestMethod,
-       DataRow(Visual.Fluent),
-       DataRow(Visual.Cupertino),
-       DataRow(Visual.Material),
-    ]
-    public void BitNavVisualClassTest(Visual visual)
-    {
-        var component = RenderComponent<BitNavTest>(parameters =>
-        {
-            parameters.Add(p => p.Visual, visual);
-        });
-
-        var bitNav = component.Find(".bit-nav");
-        var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
-
-        Assert.IsTrue(bitNav.ClassList.Contains($"bit-nav-{visualClass}"));
-    }
-
-    [DataTestMethod,
-      DataRow(Visual.Fluent, false, true),
-      DataRow(Visual.Fluent, false, false),
-      DataRow(Visual.Fluent, true, true),
-      DataRow(Visual.Fluent, true, false),
-
-      DataRow(Visual.Cupertino, false, true),
-      DataRow(Visual.Cupertino, false, false),
-      DataRow(Visual.Cupertino, true, true),
-      DataRow(Visual.Cupertino, true, false),
-
-      DataRow(Visual.Material, false, true),
-      DataRow(Visual.Material, false, false),
-      DataRow(Visual.Material, true, true),
-      DataRow(Visual.Material, true, false),
+      DataRow(false, true),
+      DataRow(false, false),
+      DataRow(true, true),
+      DataRow(true, false)
   ]
-    public void BitNavLinkItemMainClassTest(Visual visual, bool isEnabled, bool hasUrl)
+    public void BitNavLinkItemMainClassTest(bool isEnabled, bool hasUrl)
     {
         string url = hasUrl ? "https://www.google.com/" : null;
         var navLinkItems = new List<BitNavItem> { new BitNavItem { Text = "test", IsEnabled = isEnabled, Url = url } };
@@ -49,7 +21,6 @@ public class BitNavTests : BunitTestContext
         var component = RenderComponent<BitNavTest>(parameters =>
         {
             parameters.Add(p => p.Items, navLinkItems);
-            parameters.Add(p => p.Visual, visual);
         });
 
         if (isEnabled is false)

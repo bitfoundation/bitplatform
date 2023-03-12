@@ -1,11 +1,7 @@
-﻿@import "../../Styles/Fluent/colors.fluent.scss", "../../Styles/functions.scss";
+﻿@import "../../Styles/functions.scss";
 
 .bit-nav {
-
-    &.bit-nav-fluent {
-        font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
-        -webkit-font-smoothing: antialiased;
-    }
+    font-family: $typography-font-family;
 
     ul {
         list-style-type: none;
@@ -18,16 +14,15 @@
     }
 
     .chevron-btn, .group-chevron-btn {
-        width: rem(30px);
-        font-size: rem(12px);
+        width: spacing(3.75);
+        font-size: spacing(1.5);
         background-color: transparent;
-        color: $Grey160;
+        color: $color-neutrals-gray160;
         user-select: none;
         cursor: pointer;
 
         i {
             transition: transform 0.1s linear 0s;
-            -webkit-font-smoothing: antialiased;
 
             &.expand {
                 transform: rotate(-180deg);
@@ -38,13 +33,13 @@
     .group-chevron-btn {
         display: flex;
         align-items: center;
-        gap: rem(10px);
+        gap: spacing(1.25);
         width: 100%;
-        height: rem(44px);
-        border-bottom: rem(1px) solid $Grey30;
+        height: spacing(5.5);
+        border-bottom: $shape-border-width $shape-border-style $color-neutrals-gray30;
 
         .group-header {
-            font-size: rem(18px);
+            font-size: spacing(2.25);
             font-weight: 500;
         }
     }
@@ -53,8 +48,8 @@
         display: flex;
         flex-flow: row nowrap;
         width: 100%;
-        height: rem(44px);
-        border-radius: rem(2px);
+        height: spacing(5.5);
+        border-radius: $shape-border-radius;
         box-sizing: border-box;
 
         button, a {
@@ -63,28 +58,28 @@
         }
 
         &:hover {
-            background-color: $Grey30;
+            background-color: $color-neutrals-gray30;
 
             .item {
-                color: $Primary;
+                color: $color-primary-main;
             }
         }
 
         &.selected {
-            background-color: $Grey30;
-            border-left: rem(2px) solid $Primary;
+            background-color: $color-neutrals-gray30;
+            border-left: spacing(0.25) $shape-border-style $color-primary-main;
 
             &:hover {
-                background-color: $Grey20;
+                background-color: $color-neutrals-gray20;
 
                 .item {
-                    color: $Primary;
+                    color: $color-primary-main;
                 }
             }
 
             .item {
                 font-weight: 500;
-                color: $Black;
+                color: $color-neutrals-black;
             }
         }
 
@@ -94,7 +89,7 @@
             cursor: none;
 
             .item {
-                color: $Grey90;
+                color: $color-neutrals-gray90;
             }
         }
     }
@@ -106,17 +101,17 @@
         width: 100%;
         user-select: none;
         cursor: pointer;
-        margin: 0 rem(4px);
-        font-size: rem(14px);
+        margin: 0 spacing(0.5);
+        font-size: spacing(1.75);
         font-weight: 400;
-        color: $Grey160;
+        color: $color-neutrals-gray160;
         text-overflow: ellipsis;
         overflow: hidden;
         white-space: nowrap;
 
         .item-icon {
-            margin: 0 rem(4px);
-            color: $Primary;
+            margin: 0 spacing(0.5);
+            color: $color-primary-main;
         }
     }
 }

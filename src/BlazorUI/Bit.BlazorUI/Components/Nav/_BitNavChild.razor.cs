@@ -17,13 +17,16 @@ public partial class _BitNavChild<TItem> where TItem : class
         [BitNavAriaCurrent.True] = "true"
     };
 
+
     [CascadingParameter] protected BitNav<TItem> Nav { get; set; } = default!;
 
     [CascadingParameter] protected _BitNavChild<TItem>? Parent { get; set; }
 
+
     [Parameter] public TItem Item { get; set; } = default!;
 
     [Parameter] public int Depth { get; set; }
+
 
     private async void HandleOnClick()
     {

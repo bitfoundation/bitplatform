@@ -34,13 +34,17 @@
                                     Mode="BitNavMode.Manual" />
                         </div>
 
+                        <br />
+                        <hr style="width:100%"/>
+                        <br />
+
                         <div class="margin-top">
                             <BitLabel>Two-Way Bind</BitLabel>
 
                             <BitNav @bind-SelectedItem="SelectedItemNav"
                                     Items="FoodNavMenu"
                                     Mode="BitNavMode.Manual"
-                                    OnSelectItem="(BitNavItem item) => SelectedItemText = FoodMenuDropDownItems.FirstOrDefault(i => i.Text == item.Text).Text" />
+                                    OnSelectItem="(BitNavItem item) => SelectedItemText = FoodMenuDropDownItems.FirstOrDefault(i => i.Text == item.Text)?.Text" />
 
                             <BitDropDown @bind-Value="SelectedItemText"
                                          Label="Select Item"
@@ -170,7 +174,7 @@
                                     IsExpandedFieldSelector="item => item.IsExpanded"
                                     ChildItemsFieldSelector="item => item.Childs"
                                     Mode="BitNavMode.Manual"
-                                    OnSelectItem="(FoodMenu item) => CustomSelectedFoodName = FoodMenuDropDownItems.FirstOrDefault(i => i.Text == item.Name).Text" />
+                                    OnSelectItem="(FoodMenu item) => CustomSelectedFoodName = FoodMenuDropDownItems.FirstOrDefault(i => i.Text == item.Name)?.Text" />
 
                             <BitDropDown @bind-Value="CustomSelectedFoodName"
                                          Label="Select Item"
