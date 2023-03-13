@@ -25,6 +25,7 @@
         listeners['pointerdown'] = handlePointerDown;
         dragElement.addEventListener('pointerdown', handlePointerDown);
         dragElement.style.cursor = 'move';
+        dragElement.classList.add('no-touch-action');
 
         function handlePointerDown(e: PointerEvent) {
             //e.preventDefault();
@@ -68,6 +69,7 @@
 
         dragElement.removeEventListener('pointerdown', listeners['pointerdown']);
         dragElement.style.cursor = '';
+        dragElement.classList.remove('no-touch-action');
 
         document.removeEventListener('pointermove', listeners['pointermove']);
 
