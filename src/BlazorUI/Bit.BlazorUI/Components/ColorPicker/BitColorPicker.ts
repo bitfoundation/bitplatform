@@ -1,14 +1,14 @@
 ﻿class BitColorPicker {
     static listOfAbortControllers: BitAbortController[] = [];
 
-    static registerOnWindowMouseUpEvent(dotnetHelper: DotNetObject, callback: string): string {
+    static registerOnWindowPointerUpEvent(dotnetHelper: DotNetObject, callback: string): string {
         const controller = new BitAbortController();
 
         const listenerOptions = new BitEventListenerOptions();
         listenerOptions.signal = controller.abortController.signal;
 
         document.addEventListener('pointerup', e => {
-            const eventArgs = BitColorPicker.toMouseEventArgsMapper(e);
+            const eventArgs = BitColorPicker.toPointerEventArgsMapper(e);
             dotnetHelper.invokeMethodAsync(callback, eventArgs);
         }, listenerOptions);
 
@@ -17,14 +17,14 @@
         return controller.id;
     }
 
-    static registerOnWindowMouseMoveEvent(dotnetHelper: DotNetObject, callback: string): string {
+    static registerOnWindowPointerMoveEvent(dotnetHelper: DotNetObject, callback: string): string {
         const controller = new BitAbortController();
 
         const listenerOptions = new BitEventListenerOptions();
         listenerOptions.signal = controller.abortController.signal;
 
         document.addEventListener('pointermove', e => {
-            const eventArgs = BitColorPicker.toMouseEventArgsMapper(e);
+            const eventArgs = BitColorPicker.toPointerEventArgsMapper(e);
             dotnetHelper.invokeMethodAsync(callback, eventArgs);
         }, listenerOptions);
 
@@ -33,7 +33,7 @@
         return controller.id;
     }
 
-    static toMouseEventArgsMapper(e: MouseEvent): object {
+    static toPointerEventArgsMapper(e: MouseEvent): object {
         return {
             altKey: e.altKey,
             button: e.button,

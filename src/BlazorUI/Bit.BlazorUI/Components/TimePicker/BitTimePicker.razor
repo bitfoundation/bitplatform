@@ -86,12 +86,12 @@
                         </div>
                     }
                 </div>
-                <div class="clock" @onmousedown="HandleOnMouseDown" @onmouseup="HandleOnMouseUp">
+                <div class="clock" @onpointerdown="HandleOnPointerDown" @onpointerup="HandleOnPointerUp">
                     <div class="pin"></div>
                     @{
                         var deg = GetPointerDegree();
                     }
-                    <div class="pointer@(_isMouseDown ? string.Empty : " animation")" style="height: @(GetClockHandHeightPercent())%; transform: rotateZ(@(deg)deg);">
+                    <div class="pointer@(_isPointerDown ? string.Empty : " animation")" style="height: @(GetClockHandHeightPercent())%; transform: rotateZ(@(deg)deg);">
                         <div class="thumb@(deg % 30 == 0 ? string.Empty : " min")"></div>
                     </div>
                     @if (_currentView == BitTimePickerDialMode.Hours)
@@ -107,7 +107,7 @@
                                 for (int i = 1; i <= 12; ++i)
                                 {
                                     var _i = i;
-                                    <div class="stick hour" style="@($"transform: rotateZ({_i * 30}deg);")" @onclick="(() => HandleOnHourClick(_i))" @onpointerover="(() => HandleOnHourMouseOver(_i))" @onclick:stopPropagation="true"></div>
+                                    <div class="stick hour" style="@($"transform: rotateZ({_i * 30}deg);")" @onclick="(() => HandleOnHourClick(_i))" @onpointerover="(() => HandleOnHourPointerOver(_i))" @onclick:stopPropagation="true"></div>
                                 }
                             }
                             else
@@ -126,8 +126,8 @@
                                 {
                                     var _i = i;
                                     <div class="stick" style="@($"transform: rotateZ({_i * 30}deg);")">
-                                        <div class="inner" @onclick="(() => HandleOnHourClick(_i))" @onpointerover="(() => HandleOnHourMouseOver(_i))" @onclick:stopPropagation="true"></div>
-                                        <div class="outer" @onclick="(() => HandleOnHourClick((_i + 12) % 24))" @onpointerover="(() => HandleOnHourMouseOver((_i + 12) % 24))" @onclick:stopPropagation="true"></div>
+                                        <div class="inner" @onclick="(() => HandleOnHourClick(_i))" @onpointerover="(() => HandleOnHourPointerOver(_i))" @onclick:stopPropagation="true"></div>
+                                        <div class="outer" @onclick="(() => HandleOnHourClick((_i + 12) % 24))" @onpointerover="(() => HandleOnHourPointerOver((_i + 12) % 24))" @onclick:stopPropagation="true"></div>
                                     </div>
                                 }
                             }
@@ -144,7 +144,7 @@
                             @for (int i = 0; i < 60; ++i)
                             {
                                 var _i = i;
-                                <div class="stick minute" style="@($"transform: rotateZ({_i * 6}deg);")" @onclick="(() => HandleOnMinuteClick(_i))" @onpointerover="(() => HandleOnMinuteMouseOver(_i))" @onclick:stopPropagation="true"></div>
+                                <div class="stick minute" style="@($"transform: rotateZ({_i * 6}deg);")" @onclick="(() => HandleOnMinuteClick(_i))" @onpointerover="(() => HandleOnMinutePointerOver(_i))" @onclick:stopPropagation="true"></div>
                             }
                         </div>
                     }

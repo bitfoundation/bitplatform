@@ -68,9 +68,9 @@
                     tabindex="-1"
                     aria-label="@IncrementButtonAriaLabel"
                     @ref="_buttonIncrement"
-                    @onmousedown="e => HandleOnMouseDown(BitSpinButtonAction.Increment, e)"
-                    @onmouseout="HandleOnMouseUpOrOut"
-                    @onmouseup="HandleOnMouseUpOrOut">
+                    @onpointerdown="e => HandleOnPointerDown(BitSpinButtonAction.Increment, e)"
+                    @onpointerout="HandleOnPointerUpOrOut"
+                    @onpointerup="HandleOnPointerUpOrOut">
                 <span class="chevron-icon-wrapper">
                     <i class="bit-icon bit-icon--@IncrementButtonIconName.GetName() bit-icon--s"></i>
                 </span>
@@ -84,9 +84,9 @@
                     tabindex="-1"
                     aria-label="@DecrementButtonAriaLabel"
                     @ref="_buttonDecrement"
-                    @onmousedown="e => HandleOnMouseDown(BitSpinButtonAction.Decrement, e)"
-                    @onmouseout="HandleOnMouseUpOrOut"
-                    @onmouseup="HandleOnMouseUpOrOut">
+                    @onpointerdown="e => HandleOnPointerDown(BitSpinButtonAction.Decrement, e)"
+                    @onpointerout="HandleOnPointerUpOrOut"
+                    @onpointerup="HandleOnPointerUpOrOut">
                 <span class="chevron-icon-wrapper">
                     <i class="bit-icon bit-icon--@DecrementButtonIconName.GetName() bit-icon--s"></i>
                 </span>

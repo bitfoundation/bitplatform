@@ -67,9 +67,9 @@
                         tabindex="-1"
                         aria-label="@IncrementAriaLabel"
                         @ref="_buttonIncrement"
-                        @onmousedown="e => HandleOnMouseDown(BitNumericTextFieldAction.Increment, e)"
-                        @onmouseout="HandleOnMouseUpOrOut"
-                        @onmouseup="HandleOnMouseUpOrOut">
+                        @onpointerdown="e => HandleOnPointerDown(BitNumericTextFieldAction.Increment, e)"
+                        @onpointerout="HandleOnPointerUpOrOut"
+                        @onpointerup="HandleOnPointerUpOrOut">
                     <span class="arrow-icon">
                         <i class="bit-icon bit-icon--@IncrementIconName.GetName() bit-icon--s"></i>
                     </span>
@@ -83,9 +83,9 @@
                         tabindex="-1"
                         aria-label="@DecrementAriaLabel"
                         @ref="_buttonDecrement"
-                        @onmousedown="e => HandleOnMouseDown(BitNumericTextFieldAction.Decrement, e)"
-                        @onmouseout="HandleOnMouseUpOrOut"
-                        @onmouseup="HandleOnMouseUpOrOut">
+                        @onpointerdown="e => HandleOnPointerDown(BitNumericTextFieldAction.Decrement, e)"
+                        @onpointerout="HandleOnPointerUpOrOut"
+                        @onpointerup="HandleOnPointerUpOrOut">
                     <span class="arrow-icon">
                         <i class="bit-icon bit-icon--@DecrementIconName.GetName() bit-icon--s"></i>
                     </span>
