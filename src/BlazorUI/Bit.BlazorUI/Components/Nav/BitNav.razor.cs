@@ -293,12 +293,12 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
     {
         if (item is BitNavItem navItem)
         {
-            return navItem.Key;
+            return navItem.Key ?? navItem.Text;
         }
 
         if (item is BitNavOption navOption)
         {
-            return navOption.Key;
+            return navOption.Key ?? navOption.Text;
         }
 
         return item.GetValueFromProperty(_internalKeyField, GetText(item) ?? string.Empty);
