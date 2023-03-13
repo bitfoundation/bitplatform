@@ -10,6 +10,14 @@
     width: 100%;
     height: 100%;
 
+    .no-touch-action {
+        touch-action: none;
+
+        * {
+            touch-action: none;
+        }
+    }
+
     &.absolute {
         position: absolute;
         z-index: unset;
