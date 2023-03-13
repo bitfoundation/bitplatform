@@ -346,7 +346,7 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
             return navOption.Title;
         }
 
-        return item.GetValueFromProperty<string>(_internalTitleField);
+        return item.GetValueFromProperty<string?>(_internalTitleField);
     }
 
     internal string? GetUrl(TItem item)
@@ -361,7 +361,7 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
             return navOption.Url;
         }
 
-        return item.GetValueFromProperty<string>(_internalUrlField);
+        return item.GetValueFromProperty<string?>(_internalUrlField);
     }
 
     internal BitNavAriaCurrent GetAriaCurrent(TItem item)
@@ -391,7 +391,7 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
             return navOption.ExpandAriaLabel;
         }
 
-        return item.GetValueFromProperty<string>(_internalExpandAriaLabelField);
+        return item.GetValueFromProperty<string?>(_internalExpandAriaLabelField);
     }
 
     internal string? GetCollapseAriaLabel(TItem item)
@@ -406,7 +406,7 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
             return navOption.CollapseAriaLabel;
         }
 
-        return item.GetValueFromProperty<string>(_internalCollapseAriaLabelField);
+        return item.GetValueFromProperty<string?>(_internalCollapseAriaLabelField);
     }
 
     internal string? GetAriaLabel(TItem item)
@@ -421,7 +421,7 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
             return navOption.AriaLabel;
         }
 
-        return item.GetValueFromProperty<string>(_internalAriaLabelField);
+        return item.GetValueFromProperty<string?>(_internalAriaLabelField);
     }
 
     internal BitIconName? GetIconName(TItem item)
@@ -436,7 +436,7 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
             return navOption.IconName;
         }
 
-        return item.GetValueFromProperty<BitIconName>(_internalIconNameField);
+        return item.GetValueFromProperty<BitIconName?>(_internalIconNameField);
     }
 
     private bool? GetIsExpanded(TItem item)
@@ -496,7 +496,7 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
             return navOption.Style;
         }
 
-        return item.GetValueFromProperty<string>(_internalStyleField);
+        return item.GetValueFromProperty<string?>(_internalStyleField);
     }
 
     internal string? GetTarget(TItem item)
@@ -511,7 +511,7 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
             return navOption.Target;
         }
 
-        return item.GetValueFromProperty<string>(_internalTargetField);
+        return item.GetValueFromProperty<string?>(_internalTargetField);
     }
 
     internal List<TItem> GetChildItems(TItem item)

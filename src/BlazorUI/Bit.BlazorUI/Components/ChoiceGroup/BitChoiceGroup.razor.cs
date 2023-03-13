@@ -299,7 +299,7 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
             return choiceGroupOption.AriaLabel;
         }
 
-        return item.GetValueFromProperty<string>(_internalAriaLabelField);
+        return item.GetValueFromProperty<string?>(_internalAriaLabelField);
     }
 
     private string? GetId(TItem item)
@@ -314,7 +314,7 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
             return choiceGroupOption.Id;
         }
 
-        return item.GetValueFromProperty<string>(_internalIdField);
+        return item.GetValueFromProperty<string?>(_internalIdField);
     }
 
     private bool GetIsEnabled(TItem item)
@@ -344,7 +344,7 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
             return choiceGroupOption.ImageSrc;
         }
 
-        return item.GetValueFromProperty<string>(_internalImageSrcField);
+        return item.GetValueFromProperty<string?>(_internalImageSrcField);
     }
 
     private string? GetImageAlt(TItem item)
@@ -359,7 +359,7 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
             return choiceGroupOption.ImageAlt;
         }
 
-        return item.GetValueFromProperty<string>(_internalImageAltField);
+        return item.GetValueFromProperty<string?>(_internalImageAltField);
     }
 
     private Size GetImageSize(TItem item)
@@ -404,7 +404,7 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
             return choiceGroupOption.SelectedImageSrc;
         }
 
-        return item.GetValueFromProperty<string>(_internalSelectedImageSrcField);
+        return item.GetValueFromProperty<string?>(_internalSelectedImageSrcField);
     }
 
     private string? GetText(TItem item)
@@ -419,7 +419,7 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
             return choiceGroupOption.Text;
         }
 
-        return item.GetValueFromProperty<string>(_internalTextField);
+        return item.GetValueFromProperty<string?>(_internalTextField);
     }
 
     private TValue? GetValue(TItem item)
@@ -434,7 +434,7 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
             return choiceGroupOption.Value;
         }
 
-        return item.GetValueFromProperty<TValue>(_internalValueField);
+        return item.GetValueFromProperty<TValue?>(_internalValueField);
     }
 
     private string? GetInputId(TItem item) => GetId(item) ?? $"ChoiceGroup-{UniqueId}-Input-{GetValue(item)}";
