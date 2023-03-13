@@ -14,7 +14,7 @@ public partial class BitTimePicker
     private BitIconLocation iconLocation = BitIconLocation.Right;
     private string focusClass = string.Empty;
 
-    private bool _isMouseDown;
+    private bool _isPointerDown;
     private int _initialHour;
     private int _initialMinute;
     private int? _hour;
@@ -341,29 +341,29 @@ public partial class BitTimePicker
         }
     }
 
-    private async Task HandleOnHourMouseOver(int hour)
+    private async Task HandleOnHourPointerOver(int hour)
     {
-        if (_isMouseDown is false) return;
+        if (_isPointerDown is false) return;
 
         _hour = hour;
         await UpdateCurrentValue();
     }
 
-    private void HandleOnMouseDown(MouseEventArgs e) => _isMouseDown = true;
+    private void HandleOnPointerDown(MouseEventArgs e) => _isPointerDown = true;
 
-    private async Task HandleOnMouseUp(MouseEventArgs e)
+    private async Task HandleOnPointerUp(MouseEventArgs e)
     {
-        if ((_isMouseDown && _currentView == BitTimePickerDialMode.Minutes && _minute != _initialMinute) ||
+        if ((_isPointerDown && _currentView == BitTimePickerDialMode.Minutes && _minute != _initialMinute) ||
             (_currentView == BitTimePickerDialMode.Hours && _hour != _initialHour && EditMode == BitTimePickerEditMode.OnlyHours))
         {
-            _isMouseDown = false;
+            _isPointerDown = false;
             if (AutoClose)
             {
                 await CloseCallout();
             }
         }
 
-        _isMouseDown = false;
+        _isPointerDown = false;
 
         if (_currentView == BitTimePickerDialMode.Hours && _hour != _initialHour && EditMode == BitTimePickerEditMode.Normal)
         {
@@ -371,9 +371,9 @@ public partial class BitTimePicker
         }
     }
 
-    private async Task HandleOnMinuteMouseOver(int value)
+    private async Task HandleOnMinutePointerOver(int value)
     {
-        if (_isMouseDown is false) return;
+        if (_isPointerDown is false) return;
 
         _minute = value;
         await UpdateCurrentValue();

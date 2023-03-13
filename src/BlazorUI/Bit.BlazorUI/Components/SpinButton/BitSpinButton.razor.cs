@@ -19,7 +19,7 @@ public partial class BitSpinButton
     private double _max;
     private int _precision;
     private string? _intermediateValue;
-    private Timer? _mouseDownTimer;
+    private Timer? _pointerDownTimer;
     private string _inputId = default!;
 
     private ElementReference _inputRef;
@@ -256,7 +256,7 @@ public partial class BitSpinButton
         await base.OnParametersSetAsync();
     }
 
-    private async Task HandleOnMouseDown(BitSpinButtonAction action, MouseEventArgs e)
+    private async Task HandleOnPointerDown(BitSpinButtonAction action, MouseEventArgs e)
     {
         //Change focus from input to spin button
         if (action == BitSpinButtonAction.Increment)
@@ -268,19 +268,19 @@ public partial class BitSpinButton
             await _buttonDecrement.FocusAsync();
         }
 
-        await HandleMouseDownAction(action, e);
+        await HandlePointerDownAction(action, e);
 
-        _mouseDownTimer = new Timer(async (_) =>
+        _pointerDownTimer = new Timer(async (_) =>
         {
             await InvokeAsync(async () =>
             {
-                await HandleMouseDownAction(action, e);
+                await HandlePointerDownAction(action, e);
                 StateHasChanged();
             });
         }, null, INITIAL_STEP_DELAY, STEP_DELAY);
     }
 
-    private void HandleOnMouseUpOrOut() => _mouseDownTimer?.Dispose();
+    private void HandleOnPointerUpOrOut() => _pointerDownTimer?.Dispose();
 
     private void HandleOnChange(ChangeEventArgs e)
     {
@@ -290,7 +290,7 @@ public partial class BitSpinButton
         _intermediateValue = GetCleanValue(e.Value?.ToString());
     }
 
-    private async Task HandleMouseDownAction(BitSpinButtonAction action, MouseEventArgs e)
+    private async Task HandlePointerDownAction(BitSpinButtonAction action, MouseEventArgs e)
     {
         if (IsEnabled is false) return;
         if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
@@ -515,7 +515,7 @@ public partial class BitSpinButton
 
         if (_disposed || disposing is false) return;
 
-        _mouseDownTimer?.Dispose();
+        _pointerDownTimer?.Dispose();
 
         _disposed = true;
     }

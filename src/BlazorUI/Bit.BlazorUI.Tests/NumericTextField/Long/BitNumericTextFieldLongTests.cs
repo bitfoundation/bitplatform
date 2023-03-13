@@ -315,7 +315,7 @@ public class BitNumericTextFieldLongTests : BunitTestContext
         var increaseButton = component.FindAll("button")[0];
         for (int i = 0; i < countOfClicks; i++)
         {
-            increaseButton.MouseDown();
+            increaseButton.PointerDown();
         }
 
         Assert.AreEqual(countOfClicks, component.Instance.OnIncrementEventCounter);
@@ -336,7 +336,7 @@ public class BitNumericTextFieldLongTests : BunitTestContext
         var onDecrementEventCounterInitValue = component.Instance.OnDecrementEventCounter;
         for (int i = 0; i < countOfClicks; i++)
         {
-            decreaseButton.MouseDown();
+            decreaseButton.PointerDown();
         }
 
         Assert.AreEqual(onDecrementEventCounterInitValue - countOfClicks, component.Instance.OnDecrementEventCounter);
@@ -476,7 +476,7 @@ public class BitNumericTextFieldLongTests : BunitTestContext
 
         var input = component.Find("input");
         var incrementButton = component.FindAll("button")[0];
-        incrementButton.MouseDown();
+        incrementButton.PointerDown();
         var inputValue = input.GetAttribute("value");
         var expectedResult = defaultValue + step <= max ? defaultValue + step : defaultValue;
 
@@ -527,7 +527,7 @@ public class BitNumericTextFieldLongTests : BunitTestContext
 
         var input = component.Find("input");
         var decrementButton = component.FindAll("button")[1];
-        decrementButton.MouseDown();
+        decrementButton.PointerDown();
         var inputValue = input.GetAttribute("value");
         var expectedResult = defaultValue - step >= min ? defaultValue - step : defaultValue;
 
@@ -684,7 +684,7 @@ public class BitNumericTextFieldLongTests : BunitTestContext
         var incrementButton = component.FindAll("button")[0];
         for (var i = 0; i < countOfIncrements; i++)
         {
-            incrementButton.MouseDown();
+            incrementButton.PointerDown();
         }
 
         var expectedValue = value + (step * countOfIncrements);
@@ -711,7 +711,7 @@ public class BitNumericTextFieldLongTests : BunitTestContext
      DataRow(3, 1, 100, 475),
      DataRow(3, 1, 100, 550)
     ]
-    public void BitNumericTextFieldContinuousIncrementOnMouseDownTest(long defaultValue, long step, long max, int timeout)
+    public void BitNumericTextFieldContinuousIncrementOnPointerDownTest(long defaultValue, long step, long max, int timeout)
     {
         var component = RenderComponent<BitNumericTextField<long>>(parameters =>
         {
@@ -726,7 +726,7 @@ public class BitNumericTextFieldLongTests : BunitTestContext
         var initialIncrementCount = timeout / 400;
         var continuousIncrementCount = timeout >= 400 ? (timeout - 400) / 75 : 0;
         var expectedResult = defaultValue + step * (initialIncrementCount + continuousIncrementCount);
-        incrementButton.MouseDown();
+        incrementButton.PointerDown();
 
         component.WaitForAssertion(() => Assert.AreEqual(expectedResult.ToString(), input.GetAttribute("value")),
             TimeSpan.FromMilliseconds(timeout));
@@ -737,7 +737,7 @@ public class BitNumericTextFieldLongTests : BunitTestContext
      DataRow(50, 1, 0, 475),
      DataRow(50, 1, 0, 550)
     ]
-    public void BitNumericTextFieldContinuousDecrementOnMouseDownTest(long defaultValue, long step, long min, int timeout)
+    public void BitNumericTextFieldContinuousDecrementOnPointerDownTest(long defaultValue, long step, long min, int timeout)
     {
         var component = RenderComponent<BitNumericTextField<long>>(parameters =>
         {
@@ -752,7 +752,7 @@ public class BitNumericTextFieldLongTests : BunitTestContext
         var initialDecrementCount = timeout / 400;
         var continuousDecrementCount = timeout >= 400 ? (timeout - 400) / 75 : 0;
         var expectedResult = defaultValue - step * (initialDecrementCount + continuousDecrementCount);
-        incrementButton.MouseDown();
+        incrementButton.PointerDown();
 
         component.WaitForAssertion(() => Assert.AreEqual(expectedResult.ToString(), input.GetAttribute("value")),
             TimeSpan.FromMilliseconds(timeout));

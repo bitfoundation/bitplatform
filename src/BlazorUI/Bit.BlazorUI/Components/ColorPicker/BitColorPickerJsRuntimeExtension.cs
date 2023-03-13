@@ -7,14 +7,14 @@ namespace Microsoft.JSInterop;
 
 internal static class BitColorPickerJsRuntimeExtension
 {
-    internal static async Task<string> RegisterOnWindowMouseUpEvent(this IJSRuntime jsRuntime, BitComponentBase component, string callbackName)
+    internal static async Task<string> RegisterOnWindowPointerUpEvent(this IJSRuntime jsRuntime, BitComponentBase component, string callbackName)
     {
-        return await jsRuntime.InvokeAsync<string>("BitColorPicker.registerOnWindowMouseUpEvent", DotNetObjectReference.Create(component), callbackName);
+        return await jsRuntime.InvokeAsync<string>("BitColorPicker.registerOnWindowPointerUpEvent", DotNetObjectReference.Create(component), callbackName);
     }
 
-    internal static async Task<string> RegisterOnWindowMouseMoveEvent(this IJSRuntime jsRuntime, BitComponentBase component, string callbackName)
+    internal static async Task<string> RegisterOnWindowPointerMoveEvent(this IJSRuntime jsRuntime, BitComponentBase component, string callbackName)
     {
-        return await jsRuntime.InvokeAsync<string>("BitColorPicker.registerOnWindowMouseMoveEvent", DotNetObjectReference.Create(component), callbackName);
+        return await jsRuntime.InvokeAsync<string>("BitColorPicker.registerOnWindowPointerMoveEvent", DotNetObjectReference.Create(component), callbackName);
     }
 
     internal static async Task AbortProcedure(this IJSRuntime jSRuntime, string? abortControllerId)

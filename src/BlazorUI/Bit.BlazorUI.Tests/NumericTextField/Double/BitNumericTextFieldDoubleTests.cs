@@ -316,7 +316,7 @@ public class BitNumericTextFieldDoubleTests : BunitTestContext
         var increaseButton = component.FindAll("button")[0];
         for (int i = 0; i < countOfClicks; i++)
         {
-            increaseButton.MouseDown();
+            increaseButton.PointerDown();
         }
 
         Assert.AreEqual(countOfClicks, component.Instance.OnIncrementEventCounter);
@@ -337,7 +337,7 @@ public class BitNumericTextFieldDoubleTests : BunitTestContext
         var onDecrementEventCounterInitValue = component.Instance.OnDecrementEventCounter;
         for (int i = 0; i < countOfClicks; i++)
         {
-            decreaseButton.MouseDown();
+            decreaseButton.PointerDown();
         }
 
         Assert.AreEqual(onDecrementEventCounterInitValue - countOfClicks, component.Instance.OnDecrementEventCounter);
@@ -483,7 +483,7 @@ public class BitNumericTextFieldDoubleTests : BunitTestContext
 
         var input = component.Find("input");
         var incrementButton = component.FindAll("button")[0];
-        incrementButton.MouseDown();
+        incrementButton.PointerDown();
         var inputValue = input.GetAttribute("value");
         var expectedResult = defaultValue + step <= max ? defaultValue + step : defaultValue;
 
@@ -535,7 +535,7 @@ public class BitNumericTextFieldDoubleTests : BunitTestContext
 
         var input = component.Find("input");
         var decrementButton = component.FindAll("button")[1];
-        decrementButton.MouseDown();
+        decrementButton.PointerDown();
         var inputValue = input.GetAttribute("value");
         var expectedResult = defaultValue - step >= min ? defaultValue - step : defaultValue;
         var normalizeValue = Normalize(expectedResult, precision);
@@ -698,7 +698,7 @@ public class BitNumericTextFieldDoubleTests : BunitTestContext
         var incrementButton = component.FindAll("button")[0];
         for (var i = 0; i < countOfIncrements; i++)
         {
-            incrementButton.MouseDown();
+            incrementButton.PointerDown();
         }
 
         var expectedValue = value + (step * countOfIncrements);
@@ -726,7 +726,7 @@ public class BitNumericTextFieldDoubleTests : BunitTestContext
      DataRow(3, 1, 100, 475),
      DataRow(3, 1, 100, 550)
     ]
-    public void BitNumericTextFieldContinuousIncrementOnMouseDownTest(double defaultValue, double step, double max, int timeout)
+    public void BitNumericTextFieldContinuousIncrementOnPointerDownTest(double defaultValue, double step, double max, int timeout)
     {
         var component = RenderComponent<BitNumericTextField<double>>(parameters =>
         {
@@ -741,7 +741,7 @@ public class BitNumericTextFieldDoubleTests : BunitTestContext
         var initialIncrementCount = timeout / 400;
         var continuousIncrementCount = timeout >= 400 ? (timeout - 400) / 75 : 0;
         var expectedResult = defaultValue + step * (initialIncrementCount + continuousIncrementCount);
-        incrementButton.MouseDown();
+        incrementButton.PointerDown();
 
         component.WaitForAssertion(() => Assert.AreEqual(expectedResult.ToString(), input.GetAttribute("value")),
             TimeSpan.FromMilliseconds(timeout));
@@ -752,7 +752,7 @@ public class BitNumericTextFieldDoubleTests : BunitTestContext
      DataRow(50, 1, 0, 475),
      DataRow(50, 1, 0, 550)
     ]
-    public void BitNumericTextFieldContinuousDecrementOnMouseDownTest(double defaultValue, double step, double min, int timeout)
+    public void BitNumericTextFieldContinuousDecrementOnPointerDownTest(double defaultValue, double step, double min, int timeout)
     {
         var component = RenderComponent<BitNumericTextField<double>>(parameters =>
         {
@@ -767,7 +767,7 @@ public class BitNumericTextFieldDoubleTests : BunitTestContext
         var initialDecrementCount = timeout / 400;
         var continuousDecrementCount = timeout >= 400 ? (timeout - 400) / 75 : 0;
         var expectedResult = defaultValue - step * (initialDecrementCount + continuousDecrementCount);
-        incrementButton.MouseDown();
+        incrementButton.PointerDown();
 
         component.WaitForAssertion(() => Assert.AreEqual(expectedResult.ToString(), input.GetAttribute("value")),
             TimeSpan.FromMilliseconds(timeout));
