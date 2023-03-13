@@ -7,7 +7,7 @@
                EnumParameters="enumParameters">
 
     <BitPivot>
-        <BitPivotItem HeaderText="BitNavItem">
+        <BitPivotItem HeaderText="Item">
             <ComponentExampleBox Title="Basic" HTMLSourceCode="@example1NavItemHTMLCode" CSharpSourceCode="@example1NavItemCSharpCode" ExampleId="example1">
                 <ExamplePreview>
                     <div class="example-box">
@@ -35,7 +35,7 @@
                         </div>
 
                         <br />
-                        <hr style="width:100%"/>
+                        <hr style="width:100%" />
                         <br />
 
                         <div class="margin-top">
@@ -120,7 +120,7 @@
             </ComponentExampleBox>
         </BitPivotItem>
 
-        <BitPivotItem HeaderText="Custom Item">
+        <BitPivotItem HeaderText="Custom">
             <ComponentExampleBox Title="Basic" HTMLSourceCode="@example1CustomItemHTMLCode" CSharpSourceCode="@example1CustomItemCSharpCode" ExampleId="example1">
                 <ExamplePreview>
                     <div class="example-box">
@@ -163,6 +163,10 @@
                                     DefaultSelectedItem="CustomFoodNavMenu[0].Childs[2]"
                                     Mode="BitNavMode.Manual" />
                         </div>
+
+                        <br />
+                        <hr style="width:100%" />
+                        <br />
 
                         <div class="margin-top">
                             <BitLabel>Two-Way Bind</BitLabel>
@@ -271,7 +275,7 @@
             </ComponentExampleBox>
         </BitPivotItem>
 
-        <BitPivotItem HeaderText="BitNavOption">
+        <BitPivotItem HeaderText="Option">
             <ComponentExampleBox Title="Basic" HTMLSourceCode="@example1NavOptionHTMLCode" ExampleId="example1">
                 <ExamplePreview>
                     <div class="example-box">
@@ -353,8 +357,7 @@
                             <BitLabel>Basic</BitLabel>
                             <BitNav TItem="BitNavOption"
                                     Mode="BitNavMode.Manual">
-                                <BitNavOption Text="Fast-Foods"
-                                              IconName="BitIconName.HeartBroken">
+                                <BitNavOption Text="Fast-Foods" IconName="BitIconName.HeartBroken">
                                     <BitNavOption Text="Burgers">
                                         <BitNavOption Text="Beef Burger" Key="Beef Burger" />
                                         <BitNavOption Text="Veggie Burger" Key="Veggie Burger" />
@@ -379,10 +382,13 @@
                             </BitNav>
                         </div>
 
+                        <br />
+                        <hr style="width:100%" />
+                        <br />
+
                         <div class="margin-top">
                             <BitLabel>Two-Way Bind</BitLabel>
-                            <BitNav TItem="BitNavOption"
-                                    Mode="BitNavMode.Manual">
+                            <BitNav TItem="BitNavOption" Mode="BitNavMode.Manual">
                                 <BitNavOption Text="Fast-Foods"
                                               IconName="BitIconName.HeartBroken"
                                               IsExpanded="true">

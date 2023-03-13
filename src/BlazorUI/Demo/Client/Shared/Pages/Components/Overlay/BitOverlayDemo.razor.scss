@@ -34,6 +34,12 @@
     background-color: #eee;
 }
 
+.btn-container {
+    display: flex;
+    flex-flow: row wrap;
+    gap: 1rem;
+}
+
 ::deep {
     .overlay {
         z-index: 9999;

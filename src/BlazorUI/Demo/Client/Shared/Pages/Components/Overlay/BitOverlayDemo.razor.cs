@@ -264,10 +264,18 @@ private bool AutoToggleIsVisible;
         padding: 15px;
         overflow: auto;
     }
+
+    .btn-container {
+        display: flex;
+        flex-flow: row wrap;
+        gap: 1rem;
+    }
 </style>
 
-<BitButton OnClick=""() => EnabledScrollerIsVisible = true"">Show with Enabled scrolling</BitButton>
-<BitButton OnClick=""() => DisabledScrollerIsVisible = true"">Show with Disabled scrolling</BitButton>
+<div class=""btn-container"">
+    <BitButton OnClick=""() => EnabledScrollerIsVisible = true"">Show with Enabled scrolling</BitButton>
+    <BitButton OnClick=""() => DisabledScrollerIsVisible = true"">Show with Disabled scrolling</BitButton>
+</div>
 
 <div class=""scroller"">
     <BitOverlay @bind-IsVisible=""EnabledScrollerIsVisible""
