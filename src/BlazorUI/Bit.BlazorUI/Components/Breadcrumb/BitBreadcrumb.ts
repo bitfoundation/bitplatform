@@ -38,7 +38,9 @@
             const dropDownWrapperX = dropDownWrapper.getBoundingClientRect().x;
             const dropDownX = dropDown.getBoundingClientRect().x;
 
-            dropDownCallout.style.maxWidth = dropDownWrapperWidth + dropDownWrapperX - dropDownX + "px";
+            const maxWidth = dropDownWrapperWidth + dropDownWrapperX - dropDownX;
+            const minWidth = 150;
+            dropDownCallout.style.maxWidth = `${Math.max(maxWidth, minWidth)}px`;
 
             const dropDownCalloutHeight = dropDownCallout.offsetHeight;
             const dropDownCalloutWidth = dropDownCallout.offsetWidth;

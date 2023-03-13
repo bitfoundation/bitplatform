@@ -38,16 +38,16 @@
                         {
                             <a href="@GetItemHref(item)"
                                aria-current="@(GetIsSelected(item) ? "page" : null)"
-                               style="@GetItemStyles(item)"
-                               class="@GetItemClasses(item)">
+                               style="@GetStyles(item)"
+                               class="@GetClasses(item)">
                                 @GetItemText(item)
                             </a>
                         }
                         else
                         {
                             <button aria-current="@(GetIsSelected(item) ? "page" : null)"
-                                    style="@GetItemStyles(item)"
-                                    class="@GetItemClasses(item)" @onclick="() => HandleOnItemClick(item)">
+                                    style="@GetStyles(item)"
+                                    class="@GetClasses(item)" @onclick="() => HandleOnItemClick(item)">
                                 @GetItemText(item)
                             </button>
                         }
@@ -76,16 +76,16 @@
                     {
                         <a href="@GetItemHref(item)"
                            aria-current="@(GetIsSelected(item) ? "page" : null)"
-                           style="@GetItemStyles(item)"
-                           class="@GetItemClasses(item)">
+                           style="@GetStyles(item)"
+                           class="@GetClasses(item)">
                             @GetItemText(item)
                         </a>
                     }
                     else
                     {
                         <button aria-current="@(GetIsSelected(item) ? "page" : null)"
-                                style="@GetItemStyles(item)"
-                                class="@GetItemClasses(item)" @onclick="() => HandleOnItemClick(item)">
+                                style="@GetStyles(item)"
+                                class="@GetClasses(item)" @onclick="() => HandleOnItemClick(item)">
                             @GetItemText(item)
                         </button>
                     }
