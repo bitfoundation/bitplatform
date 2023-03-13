@@ -28,6 +28,7 @@
     font-size: rem(20px);
     color: #1a2027;
     word-break: break-word;
+    white-space: break-spaces;
 }
 
 .header-btn-group {
@@ -45,6 +46,7 @@
     color: $Gray1;
     font-size: rem(16px);
     line-height: rem(24px);
+    overflow: auto;
 
     pre {
         margin: 0;

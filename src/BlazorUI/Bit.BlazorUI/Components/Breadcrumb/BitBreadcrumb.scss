@@ -1,14 +1,7 @@
 ﻿@import "../../Styles/functions.scss";
 
 .bit-brc {
-    &.disabled {
-        .overflow-btn, .item, .selected-item, i {
-            cursor: default;
-            font-weight: 400;
-            pointer-events: none;
-            color: $color-neutrals-gray60;
-        }
-    }
+    white-space: nowrap;
 
     .items-wrapper {
         ul {
@@ -58,13 +51,6 @@
     .selected-item, .overflow-menu-wrapper .item.selected-item {
         font-weight: 600;
         color: $color-neutrals-gray160;
-    }
-
-    .disabled {
-        cursor: default;
-        font-weight: 400;
-        pointer-events: none;
-        color: $color-neutrals-gray60;
     }
 
     .overflow-menu-wrapper {
@@ -127,5 +113,21 @@
         left: 0;
         z-index: $space-overlay-zindex0;
         background-color: transparent;
+    }
+
+    .disabled {
+        cursor: default;
+        font-weight: 400;
+        pointer-events: none;
+        color: $color-neutrals-gray60;
+    }
+
+    &.disabled {
+        .overflow-btn, .item, .selected-item, i {
+            cursor: default;
+            font-weight: 400;
+            pointer-events: none;
+            color: $color-neutrals-gray60;
+        }
     }
 }

@@ -95,8 +95,10 @@
         <ExamplePreview>
             <div class="example-desc">Set specific scroller element to toggle the scrollbar.</div>
 
-            <BitButton OnClick="() => EnabledScrollerIsVisible = true">Show with Enabled scrolling</BitButton>
-            <BitButton OnClick="() => DisabledScrollerIsVisible = true">Show with Disabled scrolling</BitButton>
+            <div class="btn-container">
+                <BitButton OnClick="() => EnabledScrollerIsVisible = true">Show with Enabled scrolling</BitButton>
+                <BitButton OnClick="() => DisabledScrollerIsVisible = true">Show with Disabled scrolling</BitButton>
+            </div>
 
             <div class="scroller">
                 <BitOverlay @bind-IsVisible="EnabledScrollerIsVisible"
