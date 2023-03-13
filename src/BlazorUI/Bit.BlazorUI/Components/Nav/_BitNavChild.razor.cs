@@ -33,8 +33,6 @@ public partial class _BitNavChild<TItem> where TItem : class
         if (Nav is null) return;
         if (Nav.GetIsEnabled(Item) == false) return;
 
-        await Nav.OnItemClick.InvokeAsync(Item);
-
         if (Nav.GetChildItems(Item).Any() && Nav.GetUrl(Item).HasNoValue())
         {
             await ToggleItem();
@@ -43,6 +41,8 @@ public partial class _BitNavChild<TItem> where TItem : class
         {
             await Nav.SetSelectedItem(Item);
         }
+
+        await Nav.OnItemClick.InvokeAsync(Item);
     }
 
     private async Task ToggleItem()
