@@ -28,7 +28,7 @@
 
             @if (BodyTemplate is not null)
             {
-                @BodyTemplate(item.Body)
+                @BodyTemplate(item.Body ?? string.Empty)
             }
             else if (item.Body.HasValue())
             {

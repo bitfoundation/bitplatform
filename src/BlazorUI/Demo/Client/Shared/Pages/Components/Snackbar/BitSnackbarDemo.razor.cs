@@ -135,31 +135,16 @@ public partial class BitSnackbarDemo
     };
 
 
-    private BitSnackbar SnackbarTypeRef = new();
-    private async Task OpenSnackbarType(BitSnackbarType type)
+    private BitSnackbar BasicSnackbarRef = new();
+    private BitSnackbarType BasicSnackbarType = BitSnackbarType.Info;
+    private BitSnackbarPosition BasicSnackbarPosition = BitSnackbarPosition.BottomRight;
+    private string BasicSnackbarTitle = string.Empty;
+    private string? BasicSnackbarBody;
+    private bool BasicSnackbarAutoDismiss = true;
+    private int BasicSnackbarDissmissSeconds = 3;
+    private async Task OpenBasicSnackbar()
     {
-        await SnackbarTypeRef.Show(type, "This is title", "This is body");
-    }
-
-
-    private BitSnackbar SnackbarPositionRef = new();
-    private BitSnackbarPosition SnackbarPosition;
-    private async Task OpenSnackbarPosition(BitSnackbarPosition position)
-    {
-        SnackbarPosition = position;
-        await SnackbarPositionRef.Show("This is title", "This is body");
-    }
-
-
-    private BitSnackbar NonAutoDismiss = new();
-    private BitSnackbar AutoDismissTime = new();
-    private async Task OpenNonAutoDismiss()
-    {
-        await NonAutoDismiss.Show("This is title", "This is body");
-    }
-    private async Task OpenAutoDismissTime()
-    {
-        await AutoDismissTime.Show("This is title", "This is body");
+        await BasicSnackbarRef.Show(BasicSnackbarTitle, BasicSnackbarBody, BasicSnackbarType);
     }
 
 
@@ -171,214 +156,123 @@ public partial class BitSnackbarDemo
     private string? BodyTemplateAnswer;
     private async Task OpenTitleTemplate()
     {
-        await TitleTemplate.Show("This is title", "This is body");
+        await TitleTemplate.Warning("This is title", "This is body");
     }
     private async Task OpenBodyTemplate()
     {
-        await BodyTemplate.Show("This is title", "This is body");
+        await BodyTemplate.Error("This is title", "This is body");
     }
     private async Task OpenDismissIconName()
     {
-        await DismissIconName.Show("This is title", "This is body");
+        await DismissIconName.Success("This is title", "This is body");
     }
 
     private readonly string example1HTMLCode = @"
-<div>
-    <BitButton OnClick=""OpenNormalType"">Info</BitButton>
-    <BitSnackbar @ref=""NormalType"" Type=""BitSnackbarType.Info"" />
-</div>
+<style>
+    .example-box {
+        display: flex;
+        flex-flow: row wrap;
+        gap: 20px;
+    }
+</style>
 
-<div>
-    <BitButton OnClick=""OpenSuccessType"">Success</BitButton>
-    <BitSnackbar @ref=""SuccessType"" Type=""BitSnackbarType.Success"" />
-</div>
+<div class=""example-box"">
+    <BitSnackbar @ref=""BasicSnackbarRef""
+                    Position=""@BasicSnackbarPosition""
+                    AutoDismiss=""@BasicSnackbarAutoDismiss""
+                    AutoDismissTime=""TimeSpan.FromSeconds(BasicSnackbarDissmissSeconds)"" />
 
-<div>
-    <BitButton OnClick=""OpenWarningType"">Warning</BitButton>
-    <BitSnackbar @ref=""WarningType"" Type=""BitSnackbarType.Warning"" />
+    <BitChoiceGroup @bind-Value=""BasicSnackbarType"" Label=""Type"" TItem=""BitChoiceGroupOption<BitSnackbarType>"" TValue=""BitSnackbarType"">
+        <BitChoiceGroupOption Text=""Info"" Value=""BitSnackbarType.Info"" />
+        <BitChoiceGroupOption Text=""Success"" Value=""BitSnackbarType.Success"" />
+        <BitChoiceGroupOption Text=""Warning"" Value=""BitSnackbarType.Warning"" />
+        <BitChoiceGroupOption Text=""Error"" Value=""BitSnackbarType.Error"" />
+    </BitChoiceGroup>
+    <BitChoiceGroup @bind-Value=""BasicSnackbarPosition"" Label=""Position"" TItem=""BitChoiceGroupOption<BitSnackbarPosition>"" TValue=""BitSnackbarPosition"">
+        <BitChoiceGroupOption Text=""TopCenter"" Value=""BitSnackbarPosition.TopCenter"" />
+        <BitChoiceGroupOption Text=""TopRight"" Value=""BitSnackbarPosition.TopRight"" />
+        <BitChoiceGroupOption Text=""TopLeft"" Value=""BitSnackbarPosition.TopLeft"" />
+        <BitChoiceGroupOption Text=""BottomCenter"" Value=""BitSnackbarPosition.BottomCenter"" />
+        <BitChoiceGroupOption Text=""BottomRight"" Value=""BitSnackbarPosition.BottomRight"" />
+        <BitChoiceGroupOption Text=""BottomLeft"" Value=""BitSnackbarPosition.BottomLeft"" />
+    </BitChoiceGroup>
+    <div>
+        <BitTextField @bind-Value=""BasicSnackbarTitle"" Label=""Title"" />
+        <BitTextField @bind-Value=""BasicSnackbarBody"" Label=""Body"" IsMultiline=""true"" Rows=""6"" />
+    </div>
+    <div>
+        <BitToggle @bind-Value=""BasicSnackbarAutoDismiss"" Label=""Auto Dismiss"" />
+        <BitNumericTextField @bind-Value=""BasicSnackbarDissmissSeconds"" Step=""1"" Min=""1"" Label=""Dismiss Time (based on second)"" />
+    </div>
 </div>
-
-<div>
-    <BitButton OnClick=""OpenErrorType"">Error</BitButton>
-    <BitSnackbar @ref=""ErrorType"" Type=""BitSnackbarType.Error"" />
-</div>
+<BitButton Style=""margin-top: 20px;"" OnClick=""OpenBasicSnackbar"">Show</BitButton>
 ";
 
     private readonly string example1CSharpCode = @"
-private BitSnackbar NormalType;
-private BitSnackbar SuccessType;
-private BitSnackbar WarningType;
-private BitSnackbar ErrorType;
-
-private async void OpenNormalType()
+private BitSnackbar BasicSnackbarRef = new();
+private BitSnackbarType BasicSnackbarType = BitSnackbarType.Info;
+private BitSnackbarPosition BasicSnackbarPosition = BitSnackbarPosition.BottomRight;
+private string BasicSnackbarTitle = string.Empty;
+private string? BasicSnackbarBody;
+private bool BasicSnackbarAutoDismiss = true;
+private int BasicSnackbarDissmissSeconds = 3;
+private async Task OpenBasicSnackbar()
 {
-    await NormalType.Show(""This is title"", ""This is body"");
-}
-
-private async void OpenSuccessType()
-{
-    await SuccessType.Show(""This is title"", ""This is body"");
-}
-
-private async void OpenWarningType()
-{
-    await WarningType.Show(""This is title"", ""This is body"");
-}
-
-private async void OpenErrorType()
-{
-    await ErrorType.Show(""This is title"", ""This is body"");
+    await BasicSnackbarRef.Show(BasicSnackbarTitle, BasicSnackbarBody, BasicSnackbarType);
 }
 ";
 
     private readonly string example2HTMLCode = @"
-<div>
-    <BitButton OnClick=""OpenTopLeftPosition"">Top-Left</BitButton>
-    <BitSnackbar @ref=""TopLeftPosition"" Type=""BitSnackbarType.Info"" Position=""BitSnackbarPosition.TopLeft"" />
-</div>
+<style>
+    .example-box {
+        display: flex;
+        flex-flow: row wrap;
+        gap: 20px;
+    }
+</style>
 
-<div>
-    <BitButton OnClick=""OpenTopCenterPosition"">Top-Center</BitButton>
-    <BitSnackbar @ref=""TopCenterPosition"" Type=""BitSnackbarType.Success"" Position=""BitSnackbarPosition.TopCenter"" />
-</div>
+<div class=""example-box"">
+    <div>
+        <BitSnackbar @ref=""DismissIconName"" DismissIconName=""BitIconName.Go"" />
+        <BitButton OnClick=""OpenDismissIconName"">Dismiss Icon Name</BitButton>
+    </div>
 
-<div>
-    <BitButton OnClick=""OpenTopRightPosition"">Top-Right</BitButton>
-    <BitSnackbar @ref=""TopRightPosition"" Type=""BitSnackbarType.Warning"" Position=""BitSnackbarPosition.TopRight"" />
-</div>
+    <div>
+        <BitSnackbar @ref=""TitleTemplate"" AutoDismiss=""false"">
+            <TitleTemplate Context=""title"">
+                <div style=""display: flex; flex-direction: row; gap: 10px;"">
+                    <span>@title</span>
+                    <BitProgressIndicator BarHeight=""20"" Style=""width: 40px;"" />
+                </div>
+            </TitleTemplate>
+        </BitSnackbar>
+        <BitButton OnClick=""OpenTitleTemplate"">Title Template</BitButton>
+    </div>
 
-<div>
-    <BitButton OnClick=""OpenBottomLeftPosition"">Bottom-Left</BitButton>
-    <BitSnackbar @ref=""BottomLeftPosition"" Type=""BitSnackbarType.Info"" Position=""BitSnackbarPosition.BottomLeft"" />
-</div>
-
-<div>
-    <BitButton OnClick=""OpenBottomCenterPosition"">Bottom-Center</BitButton>
-    <BitSnackbar @ref=""BottomCenterPosition"" Type=""BitSnackbarType.Success"" Position=""BitSnackbarPosition.BottomCenter"" />
-</div>
-
-<div>
-    <BitButton OnClick=""OpenBottomRightPosition"">Bottom-Right</BitButton>
-    <BitSnackbar @ref=""BottomRightPosition"" Type=""BitSnackbarType.Warning"" Position=""BitSnackbarPosition.BottomRight"" />
+    <div>
+        <BitSnackbar @ref=""BodyTemplate"" AutoDismiss=""false"">
+            <BodyTemplate Context=""body"">
+                <div style=""display: flex; flex-flow: column nowrap; gap: 5px;"">
+                    <span style=""font-size: 12px; margin-bottom: 5px;"">@body</span>
+                    <div style=""display: flex; gap: 10px;"">
+                        <BitButton OnClick=""() => BodyTemplateAnswer = BodyTemplateYesAnswer"">Yes</BitButton>
+                        <BitButton OnClick=""() => BodyTemplateAnswer = BodyTemplateNoAnswer"">No</BitButton>
+                    </div>
+                    <span>Answer: @BodyTemplateAnswer</span>
+                </div>
+            </BodyTemplate>
+        </BitSnackbar>
+        <BitButton OnClick=""OpenBodyTemplate"">Body Template</BitButton>
+    </div>
 </div>
 ";
 
     private readonly string example2CSharpCode = @"
-private BitSnackbar TopLeftPosition;
-private BitSnackbar TopCenterPosition;
-private BitSnackbar TopRightPosition;
-private BitSnackbar BottomLeftPosition;
-private BitSnackbar BottomCenterPosition;
-private BitSnackbar BottomRightPosition;
-
-private async void OpenTopLeftPosition()
-{
-    await TopLeftPosition.Show(""This is title"", ""This is body"");
-}
-
-private async void OpenTopCenterPosition()
-{
-    await TopCenterPosition.Show(""This is title"", ""This is body"");
-}
-
-private async void OpenTopRightPosition()
-{
-    await TopRightPosition.Show(""This is title"", ""This is body"");
-}
-
-private async void OpenBottomLeftPosition()
-{
-    await BottomLeftPosition.Show(""This is title"", ""This is body"");
-}
-
-private async void OpenBottomCenterPosition()
-{
-    await BottomCenterPosition.Show(""This is title"", ""This is body"");
-}
-
-private async void OpenBottomRightPosition()
-{
-    await BottomRightPosition.Show(""This is title"", ""This is body"");
-}
-";
-
-    private readonly string example3HTMLCode = @"
-<div>
-    <BitButton OnClick=""OpenNonAutoDismiss"">Non-AutoDismiss</BitButton>
-    <BitSnackbar @ref=""NonAutoDismiss"" AutoDismiss=""false"" />
-</div>
-
-<div>
-    <BitButton OnClick=""OpenAutoDismissTime"">AutoDismissTime (10 Seconds)</BitButton>
-    <BitSnackbar @ref=""AutoDismissTime"" AutoDismissTime=""TimeSpan.FromSeconds(10)"" />
-</div>
-";
-
-    private readonly string example3CSharpCode = @"
-private BitSnackbar NonAutoDismiss;
-private BitSnackbar AutoDismissTime;
-
-private async void OpenNonAutoDismiss()
-{
-    await NonAutoDismiss.Show(""This is title"", ""This is body"");
-}
-
-private async void OpenAutoDismissTime()
-{
-    await AutoDismissTime.Show(""This is title"", ""This is body"");
-}
-";
-
-    private readonly string example4HTMLCode = @"
-<div>
-    <BitButton OnClick=""OpenDismissIconName"">DismissIconName</BitButton>
-    <BitSnackbar @ref=""DismissIconName"" DismissIconName=""BitIconName.Go"" />
-</div>
-
-<div>
-    <BitButton OnClick=""OpenTitleTemplate"">TitleTemplate</BitButton>
-    <BitSnackbar @ref=""TitleTemplate"" AutoDismiss=""false"">
-        <TitleTemplate Context=""title"">
-            <div style=""display: flex; flex-direction: row; gap: 10px;"">
-                <span>@title</span>
-                <BitProgressIndicator BarHeight=""20"" Style=""width: 40px;"" />
-            </div>
-        </TitleTemplate>
-    </BitSnackbar>
-</div>
-
-<div>
-    <BitButton OnClick=""OpenBodyTemplate"">BodyTemplate</BitButton>
-    <BitSnackbar @ref=""BodyTemplate"" AutoDismiss=""false"">
-        <BodyTemplate Context=""body"">
-            <span style=""font-size: 12px; margin-bottom: 5px;"">@body</span>
-            <div style=""display: flex; gap: 10px;"">
-                <BitButton>Yes</BitButton>
-                <BitButton>No</BitButton>
-            </div>
-        </BodyTemplate>
-    </BitSnackbar>
-</div>
-";
-
-    private readonly string example4CSharpCode = @"
-private BitSnackbar DismissIconName;
-private BitSnackbar TitleTemplate;
-private BitSnackbar BodyTemplate;
-
-private async void OpenTitleTemplate()
-{
-    await TitleTemplate.Show(""This is title"", ""This is body"");
-}
-
-private async void OpenBodyTemplate()
-{
-    await BodyTemplate.Show(""This is title"", ""This is body"");
-}
-
-private async void OpenDismissIconName()
-{
-    await DismissIconName.Show(""This is title"", ""This is body"");
-}
+private BitSnackbar DismissIconName = new();
+private BitSnackbar TitleTemplate = new();
+private BitSnackbar BodyTemplate = new();
+private string BodyTemplateYesAnswer = ""Yes"";
+private string BodyTemplateNoAnswer = ""No"";
+private string? BodyTemplateAnswer;
 ";
 }
