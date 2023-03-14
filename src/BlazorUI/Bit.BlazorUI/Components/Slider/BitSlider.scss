@@ -28,6 +28,7 @@ $BgTrackHover: $color-primary-dark;
         background: $color-neutrals-white;
         -webkit-appearance: none;
         pointer-events: auto;
+        touch-action: none;
     }
 
     input::-webkit-slider-runnable-track {
@@ -49,7 +50,8 @@ $BgTrackHover: $color-primary-dark;
         border-radius: spacing(1.25);
         box-sizing: border-box;
         background: $color-neutrals-white;
-        pointer-events: unset;
+        pointer-events: auto;
+        touch-action: none;
     }
 
     input::-moz-range-track {
@@ -80,7 +82,8 @@ $BgTrackHover: $color-primary-dark;
         border: spacing(0.25) $shape-border-style $BgTrack;
         border-radius: spacing(1.25);
         box-sizing: border-box;
-        pointer-events: unset;
+        pointer-events: auto;
+        touch-action: none;
     }
 
     input::-ms-track {
@@ -189,7 +192,7 @@ $BgTrackHover: $color-primary-dark;
     .zero-tick {
         position: absolute;
         background-color: $color-neutrals-gray60;
-        z-index: 9999;
+        z-index: 2;
     }
 
     &.disabled {
