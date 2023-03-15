@@ -94,7 +94,7 @@ public partial class BitDateRangePickerDemo
         },
         new()
         {
-            Name = "IconFragment",
+            Name = "IconTemplate",
             Type = "RenderFragment?",
             DefaultValue = "",
             Description = "Custom DateRangePicker icon template."
@@ -141,7 +141,7 @@ public partial class BitDateRangePickerDemo
             Name = "IsUnderlined",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether or not the Textfield of the DateRangePicker is underlined.",
+            Description = "Whether or not the Text field of the DateRangePicker is underlined.",
         },
         new()
         {
@@ -152,7 +152,7 @@ public partial class BitDateRangePickerDemo
         },
         new()
         {
-            Name = "LabelFragment",
+            Name = "LabelTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "Used to customize the label for the DateRangePicker."
@@ -441,9 +441,9 @@ public partial class BitDateRangePickerDemo
                     Style=""max-width: 300px""
                     AriaLabel=""Select dates""
                     Placeholder=""Select dates..."">
-    <LabelFragment>
+    <LabelTemplate>
         Custom label <BitIconButton IconName=""BitIconName.Calendar"" OnClick=""OpenCallout""></BitIconButton>
-    </LabelFragment>
+    </LabelTemplate>
 </BitDateRangePicker>";
     private readonly string example7CSharpCode = @"
 private BitDateRangePicker dateRangePicker;
@@ -481,9 +481,9 @@ private BitDateRangePickerValue selectedDateRange = new()
 
     private readonly string example11HTMLCode = @"
 <style>
-.weekend-cell {
-    color: red;
-}
+    .weekend-cell {
+        color: red;
+    }
 </style>
 
 <BitDateRangePicker Style=""max-width: 300px""
@@ -498,47 +498,39 @@ private BitDateRangePickerValue selectedDateRange = new()
 
     private readonly string example12HTMLCode = @"
 <style>
-.custom-day-cell {
-    position: relative;
-    width: 44px !important;
-    height: 44px !important;
-}
-
-.discount-badge {
-    position: absolute;
-    top: 0;
-    right: 0;
-    display: inline-flex;
-    align-items: center;
-    width: fit-content !important;
-    height: 16px !important;
-    border-radius: 2px;
-    padding: 0 4px;
-    background-color: red;
-    color: white;
-    font-size: 8px;
-}
-
-.year-suffix {
-    position: absolute;
-    bottom: 10px;
-    right: -12px;
-    height: 12px;
-    color: gray;
-    font-size: 8px;
-}
-
-.date-range-picker-wrapper {
-    ::deep .bit-dtp {
-        &.bit-dtp-fluent {
-            .day-picker-wrapper {
-                .week-day-label {
-                    width: 44px;
-                }
-            }
-        }
+    .custom-day-cell {
+        position: relative;
+        width: 44px !important;
+        height: 44px !important;
     }
-}
+
+    .discount-badge {
+        position: absolute;
+        top: 0;
+        right: 0;
+        display: inline-flex;
+        align-items: center;
+        width: fit-content !important;
+        height: 16px !important;
+        border-radius: 2px;
+        padding: 0 4px;
+        background-color: red;
+        color: white;
+        font-size: 8px;
+    }
+
+    .year-suffix {
+        position: absolute;
+        bottom: 10px;
+        right: -12px;
+        height: 12px;
+        color: gray;
+        font-size: 8px;
+    }
+
+    .date-range-picker-wrapper .bit-dtrp .day-picker-wrapper .week-day-label {
+      width: 44px;
+    }
 </style>
 
 <div class=""date-range-picker-wrapper"">
@@ -588,9 +580,9 @@ private CultureInfo Culture = CultureInfo.CurrentUICulture;";
                     AriaLabel=""Select dates""
                     IconLocation=""BitIconLocation.Left""
                     Placeholder=""Select dates..."">
-    <IconFragment>
+    <IconTemplate>
         <img src=""https://img.icons8.com/fluency/2x/calendar-13.png"" width=""24"" height=""24""/>
-    </IconFragment>
+    </IconTemplate>
 </BitDateRangePicker>";
 
     private readonly string example15HTMLCode = @"
