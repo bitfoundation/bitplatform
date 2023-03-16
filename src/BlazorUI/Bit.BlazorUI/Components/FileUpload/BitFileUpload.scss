@@ -1,19 +1,19 @@
 ﻿@import "../../Styles/Fluent/colors.fluent.scss", "../../Styles/functions.scss";
 
 @mixin getLiBaseStyle($class) {
-    $color: $Grey120;
+    $color: $color-neutrals-gray120;
     border: rem(1px) solid $color;
 
     @if $class=="uploaded" {
-        $color: $Green120;
+        $color: $color-state-success-dark;
     }
 
     @if $class=="paused" {
-        $color: $Primary;
+        $color: $color-primary-main;
     }
 
     @if $class=="failed" {
-        $color: $Red20;
+        $color: $color-state-invalid;
     }
 
     &:hover {
@@ -30,48 +30,46 @@
 }
 
 .bit-upl {
-    &.bit-upl-fluent {
-        display: flex;
-        flex-flow: column nowrap;
-        max-width: rem(350px);
-        font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
-        -webkit-font-smoothing: antialiased;
-    }
+    display: flex;
+    flex-flow: column nowrap;
+    max-width: spacing(43.75);
+    font-family: $typography-font-family;
+    -webkit-font-smoothing: antialiased;
 
     .file-input {
         display: none;
     }
 
-    .bit-upl-lbl {
+    .label {
         display: flex;
         justify-content: center;
         align-items: center;
-        height: rem(35px);
-        padding: rem(16px);
-        border: rem(1px) solid $Grey60;
-        border-radius: rem(4px);
+        height: spacing(4.375);
+        padding: spacing(2);
+        border: $shape-border-width $shape-border-style $color-neutrals-gray60;
+        border-radius: spacing(0.5);
         outline: 0;
-        font-size: rem(16px);
+        font-size: spacing(2);
         font-weight: 300;
-        color: $Grey160;
-        background-color: $White;
+        color: $color-neutrals-gray160;
+        background-color: $color-neutrals-white;
         cursor: pointer;
         user-select: none;
 
         &:hover {
-            border-color: $Grey180;
+            border-color: $color-neutrals-gray180;
         }
 
         &:active {
-            background-color: $Grey20;
+            background-color: $color-neutrals-gray20;
         }
 
         i {
-            padding-right: rem(5px);
+            padding-right: spacing(0.625);
         }
     }
 
-    .bit-file-list {
+    .file-list {
         padding: 0;
         margin: 0;
     }
@@ -92,14 +90,14 @@
         @include getLiBaseStyle($class: "paused");
     }
 
-    .bit-file-item {
+    .file-item {
         display: flex;
         flex-flow: row nowrap;
         justify-content: space-between;
         align-items: center;
-        border-radius: rem(5px);
-        margin-top: rem(3px);
-        font-size: rem(14px);
+        border-radius: spacing(0.625);
+        margin-top: spacing(0.375);
+        font-size: spacing(1.75);
         font-weight: 100;
         overflow: hidden;
     }
@@ -109,9 +107,9 @@
         flex-flow: column nowrap;
         justify-content: center;
         align-items: flex-start;
-        width: calc(100% - #{rem(40px)});
+        width: calc(100% - #{40px});
         height: 100%;
-        padding: rem(8px) rem(16px);
+        padding: spacing(1) spacing(2);
         box-sizing: border-box;
         cursor: default;
 
@@ -120,15 +118,15 @@
             width: 100%;
 
             i {
-                padding-top: rem(8px);
+                padding-top: spacing(1);
             }
         }
     }
 
     .file-name {
-        width: calc(100% - #{rem(32px)});
+        width: calc(100% - #{32px});
         height: 100%;
-        padding-top: rem(8px);
+        padding-top: spacing(1);
         overflow: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;
@@ -139,26 +137,26 @@
         width: 100%;
     }
 
-    .file-siz {
-        padding-top: rem(8px);
-        margin-right: rem(8px);
+    .file-size {
+        padding-top: spacing(1);
+        margin-right: spacing(1);
     }
 
     .upload-percent {
-        padding-top: rem(8px);
+        padding-top: spacing(1);
     }
 
     .progress-bar-container {
         width: 100%;
-        height: rem(2px);
-        padding-top: rem(8px);
-        padding-bottom: rem(8px);
-        padding-left: rem(2px);
+        height: spacing(0.25);
+        padding-top: spacing(1);
+        padding-bottom: spacing(1);
+        padding-left: spacing(0.25);
         overflow: hidden;
 
         .progress-bar {
-            height: rem(2px);
-            background-color: $Primary;
+            height: spacing(0.25);
+            background-color: $color-primary-main;
             transition: width 0.15s linear 0s;
         }
     }
@@ -167,34 +165,32 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        width: rem(32px);
+        width: spacing(4);
         height: 100%;
         cursor: pointer;
 
         &:hover {
             i {
-                color: $Primary;
+                color: $color-primary-main;
             }
         }
     }
 
-    .bit-file-format {
-        margin-right: rem(5px);
+    .file-format {
+        margin-right: spacing(0.625);
     }
 
-    &.bit-upl-disabled-fluent {
-        .bit-upl-lbl {
-            border-color: $Grey60;
-            color: $Grey120;
-            background-color: $Grey20;
+    &.disabled {
+        border-color: $color-neutrals-gray60;
+        color: $color-neutrals-gray120;
+        background-color: $color-neutrals-gray20;
 
-            &:hover {
-                border-color: $Grey60;
-            }
+        &:hover {
+            border-color: $color-neutrals-gray60;
+        }
 
-            &:active {
-                background-color: $Grey20;
-            }
+        &:active {
+            background-color: $color-neutrals-gray20;
         }
     }
 }

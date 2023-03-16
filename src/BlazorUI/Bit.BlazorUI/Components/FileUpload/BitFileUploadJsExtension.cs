@@ -1,8 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Threading.Tasks;
+﻿using System.Diagnostics.CodeAnalysis;
 using Bit.BlazorUI;
-using Microsoft.AspNetCore.Components;
 
 namespace Microsoft.JSInterop;
 

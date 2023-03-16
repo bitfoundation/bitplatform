@@ -8,17 +8,21 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitFileUpload : IAsyncDisposable
 {
+    protected override bool UseVisual => false;
+
     private const int MIN_CHUNK_SIZE = 512 * 1024; // 512 kb
     private const int MAX_CHUNK_SIZE = 10 * 1024 * 1024; // 10 mb
-    private DotNetObjectReference<BitFileUpload>? dotnetObjectReference;
+    private DotNetObjectReference<BitFileUpload>? _dotnetObj;
     private ElementReference inputFileElement;
     private IJSObjectReference? dropZoneInstance;
-    private long internalChunkSize = MIN_CHUNK_SIZE;
+    private long _internalChunkSize = MIN_CHUNK_SIZE;
     private long? chunkSize;
+    private string? _inputId;
 
-    [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
 
-    [Inject] public HttpClient HttpClient { get; set; } = default!;
+    [Inject] private IJSRuntime _js { get; set; } = default!;
+
+    [Inject] private HttpClient _httpClient { get; set; } = default!;
 
 
     /// <summary>
@@ -49,11 +53,11 @@ public partial class BitFileUpload : IAsyncDisposable
 
             if (chunkSize.HasValue is false || AutoChunkSizeEnabled)
             {
-                internalChunkSize = MIN_CHUNK_SIZE;
+                _internalChunkSize = MIN_CHUNK_SIZE;
             }
             else
             {
-                internalChunkSize = chunkSize.Value;
+                _internalChunkSize = chunkSize.Value;
             }
         }
     }
@@ -69,9 +73,9 @@ public partial class BitFileUpload : IAsyncDisposable
     [Parameter] public string Label { get; set; } = "Browse";
 
     /// <summary>
-    /// A custom razor fragment for select button.
+    /// A custom razor template for select button.
     /// </summary>
-    [Parameter] public RenderFragment? LabelFragment { get; set; }
+    [Parameter] public RenderFragment? LabelTemplate { get; set; }
 
     /// <summary>
     /// Specifies the maximum size (byte) of the file (0 for unlimited).
@@ -148,7 +152,7 @@ public partial class BitFileUpload : IAsyncDisposable
     /// <summary>
     /// The message shown for successful file uploads.
     /// </summary>
-    [Parameter] public string SuccessfullUploadMessage { get; set; } = "File upload succesfull";
+    [Parameter] public string SuccessfulUploadMessage { get; set; } = "File upload successful";
 
     /// <summary>
     /// The message shown for failed file uploads.
@@ -187,16 +191,11 @@ public partial class BitFileUpload : IAsyncDisposable
     /// </summary>
     public IReadOnlyList<BitFileInfo>? Files { get; private set; }
 
-    /// <summary>
-    /// The id of the input element
-    /// </summary>
-    public string InputId { get; set; } = string.Empty;
-
     protected override string RootElementClass => "bit-upl";
 
     protected override Task OnInitializedAsync()
     {
-        InputId = $"{UniqueId}FileInput";
+        _inputId = $"{UniqueId}FileInput";
 
         return base.OnInitializedAsync();
     }
@@ -206,7 +205,7 @@ public partial class BitFileUpload : IAsyncDisposable
     {
         if (firstRender)
         {
-            dropZoneInstance = await JSRuntime.SetupFileUploadDropzone(RootElement, inputFileElement);
+            dropZoneInstance = await _js.SetupFileUploadDropzone(RootElement, inputFileElement);
         }
     }
 
@@ -219,16 +218,13 @@ public partial class BitFileUpload : IAsyncDisposable
     {
         if (UploadUrl is null) return;
 
-        if (dotnetObjectReference != null)
-        {
-            dotnetObjectReference.Dispose();
-        }
+        _dotnetObj?.Dispose();
 
-        dotnetObjectReference = DotNetObjectReference.Create(this);
+        _dotnetObj = DotNetObjectReference.Create(this);
 
         var url = AddQueryString(UploadUrl, UploadRequestQueryStrings);
 
-        Files = await JSRuntime.InitFileUpload(inputFileElement, dotnetObjectReference, url, UploadRequestHttpHeaders);
+        Files = await _js.InitFileUpload(inputFileElement, _dotnetObj, url, UploadRequestHttpHeaders);
 
         if (Files is null) return;
 
@@ -268,8 +264,7 @@ public partial class BitFileUpload : IAsyncDisposable
 
     private async Task UploadOneFile(int index)
     {
-        if (Files is null ||
-            Files[index].Status == BitFileUploadStatus.NotAllowed) return;
+        if (Files is null || Files[index].Status == BitFileUploadStatus.NotAllowed) return;
 
         var uploadedSize = Files[index].TotalSizeOfUploaded;
         if (Files[index].Size != 0 && uploadedSize >= Files[index].Size) return;
@@ -303,9 +298,9 @@ public partial class BitFileUpload : IAsyncDisposable
         if (EnableChunkedUpload)
         {
             from = Files[index].TotalSizeOfUploaded;
-            if (Files[index].Size > internalChunkSize)
+            if (Files[index].Size > _internalChunkSize)
             {
-                to = from + internalChunkSize;
+                to = from + _internalChunkSize;
             }
             else
             {
@@ -320,7 +315,7 @@ public partial class BitFileUpload : IAsyncDisposable
             to = Files[index].Size;
         }
 
-        await JSRuntime.UploadFile(from, to, index);
+        await _js.UploadFile(from, to, index);
     }
 
     /// <summary>
@@ -348,7 +343,7 @@ public partial class BitFileUpload : IAsyncDisposable
     {
         if (Files is null) return;
 
-        await JSRuntime.PauseFile(index);
+        await _js.PauseFile(index);
         await UpdateStatus(BitFileUploadStatus.Paused, index);
         Files[index].RequestToPause = false;
     }
@@ -388,7 +383,7 @@ public partial class BitFileUpload : IAsyncDisposable
     }
 
     /// <summary>
-    /// Receive upload finished notification from underlying javascript.
+    /// Receive upload finished notification from underlying JavaScript.
     /// </summary>
     [JSInvokable("HandleFileUpload")]
     public async Task HandleFileUpload(int fileIndex, int responseStatus, string responseText)
@@ -398,7 +393,7 @@ public partial class BitFileUpload : IAsyncDisposable
         var file = Files[fileIndex];
         if (file.Status != BitFileUploadStatus.InProgress) return;
 
-        file.TotalSizeOfUploaded += EnableChunkedUpload ? internalChunkSize : file.Size;
+        file.TotalSizeOfUploaded += EnableChunkedUpload ? _internalChunkSize : file.Size;
         file.SizeOfLastChunkUploaded = 0;
 
         UpdateChunkSize(fileIndex);
@@ -439,16 +434,16 @@ public partial class BitFileUpload : IAsyncDisposable
 
         if (duration is >= 1000 and <= 1500) return;
 
-        internalChunkSize = Convert.ToInt64(internalChunkSize / (duration / 1000));
+        _internalChunkSize = Convert.ToInt64(_internalChunkSize / (duration / 1000));
 
-        if (internalChunkSize > MAX_CHUNK_SIZE)
+        if (_internalChunkSize > MAX_CHUNK_SIZE)
         {
-            internalChunkSize = MAX_CHUNK_SIZE;
+            _internalChunkSize = MAX_CHUNK_SIZE;
         }
 
-        if (internalChunkSize < MIN_CHUNK_SIZE)
+        if (_internalChunkSize < MIN_CHUNK_SIZE)
         {
-            internalChunkSize = MIN_CHUNK_SIZE;
+            _internalChunkSize = MIN_CHUNK_SIZE;
         }
     }
 
@@ -476,29 +471,27 @@ public partial class BitFileUpload : IAsyncDisposable
                 await OnChange.InvokeAsync(new[] { Files[index] });
             }
 
-            if (uploadStatus == BitFileUploadStatus.InProgress)
+            switch (uploadStatus)
             {
-                await OnProgress.InvokeAsync(Files[index]);
-            }
+                case BitFileUploadStatus.InProgress:
+                    await OnProgress.InvokeAsync(Files[index]);
+                    break;
 
-            if (uploadStatus == BitFileUploadStatus.Completed)
-            {
-                await OnUploadComplete.InvokeAsync(Files[index]);
-            }
+                case BitFileUploadStatus.Completed:
+                    await OnUploadComplete.InvokeAsync(Files[index]);
+                    break;
 
-            if (uploadStatus == BitFileUploadStatus.Removed)
-            {
-                await OnRemoveComplete.InvokeAsync(Files[index]);
-            }
+                case BitFileUploadStatus.Failed:
+                    await OnUploadFailed.InvokeAsync(Files[index]);
+                    break;
 
-            if (uploadStatus == BitFileUploadStatus.Failed)
-            {
-                await OnUploadFailed.InvokeAsync(Files[index]);
-            }
+                case BitFileUploadStatus.Removed:
+                    await OnRemoveComplete.InvokeAsync(Files[index]);
+                    break;
 
-            if (uploadStatus == BitFileUploadStatus.RemoveFailed)
-            {
-                await OnRemoveFailed.InvokeAsync(Files[index]);
+                case BitFileUploadStatus.RemoveFailed:
+                    await OnRemoveFailed.InvokeAsync(Files[index]);
+                    break;
             }
         }
     }
@@ -541,7 +534,7 @@ public partial class BitFileUpload : IAsyncDisposable
     {
         if (Files is null) return;
 
-        await JSRuntime.PauseFile(index);
+        await _js.PauseFile(index);
         await UpdateStatus(BitFileUploadStatus.Canceled, index);
         Files[index].RequestToCancel = false;
     }
@@ -589,43 +582,29 @@ public partial class BitFileUpload : IAsyncDisposable
             request.Headers.Add(header.Key, header.Value);
         }
 
-        await HttpClient.SendAsync(request);
+        await _httpClient.SendAsync(request);
     }
 
     private static string GetFileElClass(BitFileUploadStatus status)
-    {
-        switch (status)
+        => status switch
         {
-            case BitFileUploadStatus.Completed:
-                return "uploaded";
-            case BitFileUploadStatus.Failed:
-            case BitFileUploadStatus.NotAllowed:
-                return "failed";
-            case BitFileUploadStatus.Paused:
-                return "paused";
-            default:
-                return "in-progress";
-        }
-    }
-
+            BitFileUploadStatus.Completed => "uploaded",
+            BitFileUploadStatus.Failed or BitFileUploadStatus.NotAllowed => "failed",
+            BitFileUploadStatus.Paused => "paused",
+            _ => "in-progress",
+        };
     private string GetUploadMessageStr(BitFileInfo file)
-    {
-        switch (file.Status)
+        => file.Status switch
         {
-            case BitFileUploadStatus.Completed:
-                return SuccessfullUploadMessage;
-            case BitFileUploadStatus.Failed:
-                return FailedUploadMessage;
-            case BitFileUploadStatus.NotAllowed:
-                return IsFileTypeNotAllowed(file) ? NotAllowedExtensionErrorMessage : MaxSizeErrorMessage;
-            default:
-                return string.Empty;
-        }
-    }
+            BitFileUploadStatus.Completed => SuccessfulUploadMessage,
+            BitFileUploadStatus.Failed => FailedUploadMessage,
+            BitFileUploadStatus.NotAllowed => IsFileTypeNotAllowed(file) ? NotAllowedExtensionErrorMessage : MaxSizeErrorMessage,
+            _ => string.Empty,
+        };
 
     private bool IsFileTypeNotAllowed(BitFileInfo file)
     {
-        var fileSections = file.Name.Split('.').ToList();
+        var fileSections = file.Name.Split('.');
         var extension = $".{fileSections?.Last()}";
         return AllowedExtensions.Count > 0 && AllowedExtensions.All(ext => ext != "*") && AllowedExtensions.All(ext => ext != extension);
     }
@@ -670,11 +649,11 @@ public partial class BitFileUpload : IAsyncDisposable
         // this method is copied from:
         // https://github.com/aspnet/HttpAbstractions/blob/master/src/Microsoft.AspNetCore.WebUtilities/QueryHelpers.cs
 
-        var anchorIndex = uri.IndexOf('#', StringComparison.InvariantCultureIgnoreCase);
-        var uriToBeAppended = uri;
-        var anchorText = "";
+        int anchorIndex = uri.IndexOf('#', StringComparison.InvariantCultureIgnoreCase);
+        string uriToBeAppended = uri;
+        string? anchorText = null;
 
-        // If there is an anchor, then the query string must be inserted before its first occurence.
+        // If there is an anchor, then the query string must be inserted before its first occurrence.
         if (anchorIndex != -1)
         {
             anchorText = uri[anchorIndex..];
@@ -684,8 +663,7 @@ public partial class BitFileUpload : IAsyncDisposable
         var queryIndex = uriToBeAppended.IndexOf('?', StringComparison.InvariantCultureIgnoreCase);
         var hasQuery = queryIndex != -1;
 
-        var sb = new StringBuilder();
-        sb.Append(uriToBeAppended);
+        var sb = new StringBuilder(uriToBeAppended);
 
         foreach (var parameter in queryStrings)
         {
@@ -702,20 +680,20 @@ public partial class BitFileUpload : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        await Dispose(true);
+        await DisposeAsync(true);
         GC.SuppressFinalize(this);
     }
 
-    protected async virtual Task Dispose(bool disposing)
+    protected virtual async Task DisposeAsync(bool disposing)
     {
-        if (!disposing || dotnetObjectReference is null) return;
+        if (disposing is false || _dotnetObj is null) return;
 
         if (dropZoneInstance != null)
         {
             await dropZoneInstance.InvokeVoidAsync("dispose");
             await dropZoneInstance.DisposeAsync();
         }
-        dotnetObjectReference.Dispose();
-        dotnetObjectReference = null;
+        _dotnetObj.Dispose();
+        _dotnetObj = null;
     }
 }

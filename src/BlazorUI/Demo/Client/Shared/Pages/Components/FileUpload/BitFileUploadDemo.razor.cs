@@ -59,7 +59,7 @@ public partial class BitFileUploadDemo
         },
         new ComponentParameter
         {
-            Name = "LabelFragment",
+            Name = "LabelTemplate",
             Type = "RenderFragment",
             DefaultValue = "null",
             Description = "A custom razor fragment for select button."
@@ -164,9 +164,9 @@ public partial class BitFileUploadDemo
         },
         new ComponentParameter
         {
-            Name = "SuccessfullUploadMessage",
+            Name = "SuccessfulUploadMessage",
             Type = "string",
-            DefaultValue = "File upload succesfull",
+            DefaultValue = "File upload successful",
             Description = "The message shown for successful file uploads."
         },
         new ComponentParameter
