@@ -5,7 +5,7 @@
      @attributes="@HtmlAttributes"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
-    <div class="bit-upl-wrapper">
+    <div class="wrapper">
         @if (LabelTemplate is not null)
         {
             <label class="label" for="@_inputId">
@@ -45,7 +45,7 @@
                             <div title="@file.Name" class="file-name-container">
                                 @if (GetFileIcon(file.Name.ToLower()).HasValue())
                                 {
-                                    <i class="bit-file-format bit-icon bit-icon--@GetFileIcon(file.Name.ToLower())"></i>
+                                    <i class="bit-icon bit-icon--@GetFileIcon(file.Name.ToLower())"></i>
                                 }
                                 <div class="file-name">@file.Name</div>
                             </div>

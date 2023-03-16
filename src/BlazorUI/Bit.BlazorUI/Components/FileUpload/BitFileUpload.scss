@@ -1,8 +1,8 @@
-﻿@import "../../Styles/Fluent/colors.fluent.scss", "../../Styles/functions.scss";
+﻿@import "../../Styles/functions.scss";
 
 @mixin getLiBaseStyle($class) {
     $color: $color-neutrals-gray120;
-    border: rem(1px) solid $color;
+    border: $shape-border-width $shape-border-style $color;
 
     @if $class=="uploaded" {
         $color: $color-state-success-dark;
