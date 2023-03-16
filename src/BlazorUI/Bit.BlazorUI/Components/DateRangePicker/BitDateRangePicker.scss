@@ -169,7 +169,7 @@
         margin: 0;
         padding: 0;
         box-sizing: border-box;
-        animation-name: fadeIn, slideDown;
+        animation-name: bit-dtrp-fadeIn, bit-dtrp-slideDown;
         animation-duration: 167ms;
         animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
         animation-fill-mode: both;
@@ -218,7 +218,7 @@
             text-align: center;
             color: $color-neutrals-gray160;
             cursor: pointer;
-            animation-name: fadeIn;
+            animation-name: bit-dtrp-fadeIn;
             animation-duration: 0.267s;
             animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
             animation-fill-mode: both;
@@ -344,7 +344,7 @@
             height: spacing(3.5);
             margin: 0;
             padding: spacing(0.375) 0 0 0;
-            border-right: $shape-border-width $shape-border-style $Grey30;
+            border-right: $shape-border-width $shape-border-style $color-neutrals-gray30;
             box-sizing: border-box;
             font-weight: 400;
             font-size: spacing(1.5);
@@ -380,7 +380,7 @@
             background-color: transparent;
             overflow: hidden;
             cursor: text;
-            animation-name: opacity;
+            animation-name: bit-dtrp-opacity;
             animation-duration: 0.267s;
             animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
             animation-fill-mode: both;
@@ -681,7 +681,7 @@
     }
 }
 
-@keyframes opacity {
+@keyframes bit-dtrp-opacity {
     0% {
         opacity: 0;
     }
@@ -691,7 +691,7 @@
     }
 }
 
-@keyframes fadeIn {
+@keyframes bit-dtrp-fadeIn {
     0% {
         opacity: 0;
         -webkit-animation-timing-function: cubic-bezier(0.1,0.25,0.75,0.9);
@@ -703,7 +703,7 @@
     }
 }
 
-@keyframes slideDown {
+@keyframes bit-dtrp-slideDown {
     0% {
         transform: translate3d(0,-10px,0);
     }
