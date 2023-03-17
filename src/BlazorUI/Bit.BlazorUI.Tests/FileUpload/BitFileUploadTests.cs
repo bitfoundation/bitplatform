@@ -8,28 +8,26 @@ namespace Bit.BlazorUI.Tests.FileUpload;
 public class BitFileUploadTests : BunitTestContext
 {
     [DataTestMethod,
-       DataRow(Visual.Fluent),
-       DataRow(Visual.Cupertino),
-       DataRow(Visual.Material),
+       DataRow(true),
+       DataRow(false)
     ]
-    public void BitUploadFile_HasBasicClasses(Visual visual)
+    public void BitUploadFileHasBasicClass(bool isEnabled)
     {
         var com = RenderComponent<BitFileUpload>(parameters =>
         {
-            parameters.AddCascadingValue(visual);
+            parameters.Add(p => p.IsEnabled, isEnabled);
         });
 
-        var bitFileUpload = com.Find(".bit-upl");
-        var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
+        var bitFileUpload = com.Find(".file-input");
 
-        Assert.IsTrue(bitFileUpload.ClassList.Contains($"bit-upl-{visualClass}") && bitFileUpload.ClassList.Contains($"bit-upl"));
+        Assert.IsNotNull(bitFileUpload);
     }
 
     [DataTestMethod,
        DataRow(true),
        DataRow(false)
     ]
-    public void BitFileUpload_MultipleAttribute_Test(bool isMultiSelect)
+    public void BitFileUploadMultipleAttributeTest(bool isMultiSelect)
     {
         var com = RenderComponent<BitFileUpload>(parameters =>
         {
@@ -37,13 +35,11 @@ public class BitFileUploadTests : BunitTestContext
         });
 
         var bitFileUpload = com.Find(".file-input");
-        var attribute = bitFileUpload.GetAttribute("multiple");
-        var isMultiFileStr = isMultiSelect == true ? "" : null;
-        Assert.AreEqual(isMultiFileStr, attribute);
+        Assert.AreEqual(isMultiSelect, bitFileUpload.HasAttribute("multiple"));
     }
 
     [TestMethod]
-    public void BitFileUpload_AcceptAttribute_Test()
+    public void BitFileUploadAcceptAttributeTest()
     {
         var allowedExtensions = new List<string> { ".mp4", ".mp3" };
         var com = RenderComponent<BitFileUpload>(parameters =>
@@ -60,16 +56,25 @@ public class BitFileUploadTests : BunitTestContext
        DataRow(true),
        DataRow(false)
     ]
-    public void BitFileUpload_IsEnabled_Test(bool isEnabled)
+    public void BitFileUploadIsEnabledTest(bool isEnabled)
     {
         var com = RenderComponent<BitFileUpload>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, isEnabled);
         });
 
-        var bitFileUpload = com.Find(".file-input");
-        var hasDisabledAttribute = bitFileUpload.HasAttribute("disabled");
-        
-        Assert.AreEqual(isEnabled, !hasDisabledAttribute);
+        var bitFileUpload = com.Find(".bit-upl");
+        var bitFileUploadInput = com.Find(".file-input");
+
+        if (isEnabled)
+        {
+            Assert.IsFalse(bitFileUpload.ClassList.Contains("disabled"));
+            Assert.IsFalse(bitFileUploadInput.HasAttribute("disabled"));
+        }
+        else
+        {
+            Assert.IsTrue(bitFileUpload.ClassList.Contains("disabled"));
+            Assert.IsTrue(bitFileUploadInput.HasAttribute("disabled"));
+        }
     }
 }
