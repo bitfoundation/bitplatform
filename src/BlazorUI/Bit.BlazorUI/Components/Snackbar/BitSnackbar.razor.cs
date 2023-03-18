@@ -1,14 +1,17 @@
-﻿
-using System.Reflection;
-using System.Timers;
+﻿using System.Timers;
 
 namespace Bit.BlazorUI;
 
-public partial class BitSnackbar
+public partial class BitSnackBar
 {
-    private BitSnackbarPosition position = BitSnackbarPosition.BottomRight;
+    protected override bool UseVisual => false;
 
-    private List<BitSnackbarItem> _items = new();
+
+
+    private BitSnackBarPosition position = BitSnackBarPosition.BottomRight;
+
+    private List<BitSnackBarItem> _items = new();
+
 
     /// <summary>
     /// Whether or not to dismiss itself automatically.
@@ -16,7 +19,7 @@ public partial class BitSnackbar
     [Parameter] public bool AutoDismiss { get; set; } = true;
 
     /// <summary>
-    /// How long the Snackbar will automatically dismiss (default is 3 seconds).
+    /// How long the SnackBar will automatically dismiss (default is 3 seconds).
     /// </summary>
     [Parameter] public TimeSpan AutoDismissTime { get; set; } = TimeSpan.FromSeconds(3);
 
@@ -26,7 +29,7 @@ public partial class BitSnackbar
     [Parameter] public RenderFragment<string>? BodyTemplate { get; set; }
 
     /// <summary>
-    /// Dismiss Icon in Snackbar.
+    /// Dismiss Icon in SnackBar.
     /// </summary>
     [Parameter] public BitIconName? DismissIconName { get; set; }
 
@@ -36,10 +39,10 @@ public partial class BitSnackbar
     [Parameter] public EventCallback OnDismiss { get; set; }
 
     /// <summary>
-    /// The position of Snackbar to show.
+    /// The position of SnackBar to show.
     /// </summary>
-    [Parameter] 
-    public BitSnackbarPosition Position 
+    [Parameter]
+    public BitSnackBarPosition Position
     {
         get => position;
         set
@@ -54,11 +57,11 @@ public partial class BitSnackbar
     /// </summary>
     [Parameter] public RenderFragment<string>? TitleTemplate { get; set; }
 
-    protected override string RootElementClass => "bit-snb";
 
-    public async Task Show(string title, string? body = "", BitSnackbarType? type = BitSnackbarType.Info)
+
+    public async Task Show(string title, string? body = "", BitSnackBarType? type = BitSnackBarType.Info)
     {
-        var item = new BitSnackbarItem
+        var item = new BitSnackBarItem
         {
             Title = title,
             Body = body,
@@ -67,10 +70,13 @@ public partial class BitSnackbar
 
         if (AutoDismiss)
         {
-            item.Timerr = new System.Timers.Timer();
-            item.Timerr.Interval = 1000;
-            item.Timerr.Elapsed += (sender, e) => TimerElapsed(sender, e, item);
-            item.Timerr.Start();
+            var timer = new System.Timers.Timer(AutoDismissTime.TotalMilliseconds);
+            timer.Elapsed += (_, _) =>
+            {
+                timer.Close();
+                Dismiss(item);
+            };
+            timer.Start();
         }
 
         _items.Add(item);
@@ -78,70 +84,52 @@ public partial class BitSnackbar
         await InvokeAsync(StateHasChanged);
     }
 
-    public Task Info(string title, string? body = "")
-    {
-        return Show(title, body, BitSnackbarType.Info);
-    }
+    public Task Info(string title, string? body = "") => Show(title, body, BitSnackBarType.Info);
 
-    public Task Success(string title, string? body = "")
-    {
-        return Show(title, body, BitSnackbarType.Success);
-    }
+    public Task Success(string title, string? body = "") => Show(title, body, BitSnackBarType.Success);
 
-    public Task Warning(string title, string? body = "")
-    {
-        return Show(title, body, BitSnackbarType.Warning);
-    }
+    public Task Warning(string title, string? body = "") => Show(title, body, BitSnackBarType.Warning);
 
-    public Task Error(string title, string? body = "")
-    {
-        return Show(title, body, BitSnackbarType.Error);
-    }
+    public Task Error(string title, string? body = "") => Show(title, body, BitSnackBarType.Error);
+
+
+
+    protected override string RootElementClass => "bit-snb";
 
     protected override void RegisterComponentClasses()
     {
-        ClassBuilder.Register(() =>
-            Position is BitSnackbarPosition.TopCenter ? "top-center"
-            : Position is BitSnackbarPosition.TopRight ? "top-right"
-            : Position is BitSnackbarPosition.TopLeft ? "top-left"
-            : Position is BitSnackbarPosition.BottomCenter ? "bottom-center"
-            : Position is BitSnackbarPosition.BottomRight ? "bottom-right"
-            : Position is BitSnackbarPosition.BottomLeft ? "bottom-left"
-            : string.Empty);
+        ClassBuilder.Register(() => Position switch
+        {
+            BitSnackBarPosition.TopLeft => "top-left",
+            BitSnackBarPosition.TopCenter => "top-center",
+            BitSnackBarPosition.TopRight => "top-right",
+            BitSnackBarPosition.BottomLeft => "bottom-left",
+            BitSnackBarPosition.BottomCenter => "bottom-center",
+            BitSnackBarPosition.BottomRight => "bottom-right",
+            _ => string.Empty
+        });
 
         base.RegisterComponentClasses();
     }
 
-    private async Task Dismiss(BitSnackbarItem item)
+
+
+    private void Dismiss(BitSnackBarItem item)
     {
         _items.Remove(item);
 
-        await OnDismiss.InvokeAsync();
+        OnDismiss.InvokeAsync();
 
-        await InvokeAsync(StateHasChanged);
+        InvokeAsync(StateHasChanged);
     }
 
-    private async void TimerElapsed(object? sender, ElapsedEventArgs e, BitSnackbarItem item)
+    private static string GetItemClasses(BitSnackBarItem item) => item.Type switch
     {
-        item.Counter++;
-
-        if (item.Counter == AutoDismissTime.TotalSeconds)
-        {
-            item.Timerr!.Elapsed -= (sender, e) => TimerElapsed(sender, e, item);
-            item.Timerr!.Stop();
-            item.Timerr!.Close();
-            await Dismiss(item);
-        }
-    }
-
-    private static string GetItemClasses(BitSnackbarItem item)
-    {
-        var type = item.Type is BitSnackbarType.Info ? "info"
-            : item.Type is BitSnackbarType.Success ? "success"
-            : item.Type is BitSnackbarType.Warning ? "warning"
-            : item.Type is BitSnackbarType.Error ? "error"
-            : string.Empty;
-
-        return $"{type}";
-    }
+        BitSnackBarType.Info => "info",
+        BitSnackBarType.Warning => "warning",
+        BitSnackBarType.Success => "success",
+        BitSnackBarType.Error => "error",
+        BitSnackBarType.SevereWarning => "severe-warning",
+        _ => string.Empty
+    };
 }

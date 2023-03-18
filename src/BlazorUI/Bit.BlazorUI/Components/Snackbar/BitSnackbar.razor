@@ -7,8 +7,7 @@
 
     @foreach (var item in _items)
     {
-        <div class="item @BitSnackbar.GetItemClasses(item)">
-
+        <div class="item @BitSnackBar.GetItemClasses(item)">
             <div class="header">
                 <button class="close-btn" @onclick="() => Dismiss(item)">
                     <i class="bit-icon close-icon bit-icon--@(DismissIconName is not null ? DismissIconName.GetName() : "ChromeClose")"></i>

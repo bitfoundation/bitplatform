@@ -116,8 +116,8 @@
         "inputFile": "Pages/Components/Slider/BitSliderDemo.razor.scss"
     },
     {
-        "outputFile": "Pages/Components/Snackbar/BitSnackbarDemo.razor.css",
-        "inputFile": "Pages/Components/Snackbar/BitSnackbarDemo.razor.scss"
+        "outputFile": "Pages/Components/SnackBar/BitSnackBarDemo.razor.css",
+        "inputFile": "Pages/Components/SnackBar/BitSnackBarDemo.razor.scss"
     },
     {
         "outputFile": "Pages/Components/Spinner/BitSpinnerDemo.razor.css",
