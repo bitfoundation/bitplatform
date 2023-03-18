@@ -169,7 +169,7 @@
         margin: 0;
         padding: 0;
         box-sizing: border-box;
-        animation-name: bit-dtrp-fadeIn, bit-dtrp-slideDown;
+        animation-name: bit-fade-in, bit-slide-down;
         animation-duration: 167ms;
         animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
         animation-fill-mode: both;
@@ -218,7 +218,7 @@
             text-align: center;
             color: $color-neutrals-gray160;
             cursor: pointer;
-            animation-name: bit-dtrp-fadeIn;
+            animation-name: bit-fade-in;
             animation-duration: 0.267s;
             animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
             animation-fill-mode: both;
@@ -380,7 +380,7 @@
             background-color: transparent;
             overflow: hidden;
             cursor: text;
-            animation-name: bit-dtrp-opacity;
+            animation-name: bit-fade-show;
             animation-duration: 0.267s;
             animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
             animation-fill-mode: both;
@@ -678,37 +678,5 @@
         .field-grp {
             border-color: $color-state-invalid;
         }
-    }
-}
-
-@keyframes bit-dtrp-opacity {
-    0% {
-        opacity: 0;
-    }
-
-    100% {
-        opacity: 1;
-    }
-}
-
-@keyframes bit-dtrp-fadeIn {
-    0% {
-        opacity: 0;
-        -webkit-animation-timing-function: cubic-bezier(0.1,0.25,0.75,0.9);
-        animation-timing-function: cubic-bezier(0.1,0.25,0.75,0.9);
-    }
-
-    100% {
-        opacity: 1;
-    }
-}
-
-@keyframes bit-dtrp-slideDown {
-    0% {
-        transform: translate3d(0,-10px,0);
-    }
-
-    100% {
-        transform: translate3d(0,0,0);
     }
 }
