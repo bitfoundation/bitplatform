@@ -13,10 +13,6 @@
     width: rem(240px);
     height: calc(100vh - #{rem(48px)});
     background-color: $Gray3;
-
-    @include lg {
-        width: rem(206px);
-    }
 }
 
 .main-container--closed {
@@ -36,15 +32,6 @@
     padding: rem(24px) 0 rem(12px);
     margin-bottom: rem(20px);
     border-bottom: rem(1px) solid $Gray4;
-
-    @include lg {
-        padding: rem(24px) 0 rem(8px);
-    }
-
-    @include lt-lg {
-        padding: rem(24px) 0 rem(16px);
-        margin-bottom: rem(24px);
-    }
 }
 
 .user-img-container {
