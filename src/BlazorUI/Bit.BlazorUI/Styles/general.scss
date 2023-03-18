@@ -1,4 +1,6 @@
-﻿button {
+﻿@import "../Styles/functions.scss";
+
+button {
     border: none;
     outline: none;
 }
@@ -20,4 +22,40 @@
     overflow: hidden;
     position: absolute;
     left: 0;
+}
+
+@keyframes bit-fade-show {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes bit-slide-down {
+    0% {
+        transform: translate3d(0, spacing(-1.25), 0);
+        pointer-events: none;
+    }
+
+    100% {
+        transform: translate3d(0,0,0);
+        pointer-events: auto;
+    }
+}
+
+
+
+@keyframes bit-fade-in {
+    0% {
+        opacity: 0;
+        -webkit-animation-timing-function: cubic-bezier(0.1,0.25,0.75,0.9);
+        animation-timing-function: cubic-bezier(0.1,0.25,0.75,0.9);
+    }
+
+    100% {
+        opacity: 1;
+    }
 }
