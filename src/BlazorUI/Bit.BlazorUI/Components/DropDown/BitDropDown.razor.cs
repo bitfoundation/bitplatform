@@ -212,7 +212,7 @@ public partial class BitDropDown
     [Parameter] public RenderFragment<BitDropDownItem>? ItemTemplate { get; set; }
 
     /// <summary>
-    /// Clear Button is shown when something is selected
+    /// Clear Button is shown when something is selected.
     /// </summary>
     [Parameter] public bool ShowClearButton { get; set; }
 

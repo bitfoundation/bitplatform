@@ -155,6 +155,13 @@ public partial class BitDropDownDemo
         },
         new()
         {
+            Name = "ShowClearButton",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Clear Button is shown when something is selected.",
+        },
+        new()
+        {
             Name = "ShowSearchBox",
             Type = "bool",
             DefaultValue = "false",

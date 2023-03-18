@@ -96,8 +96,7 @@
                         aria-label="Close"
                         aria-describedby="Close"
                         aria-hidden="Close"
-                        title="Close"
-                    @onclick="CloseCallout">
+                        title="Close" @onclick="CloseCallout">
                     <span>
                         <i class="bit-icon bit-icon--ChromeClose"></i>
                     </span>
@@ -111,15 +110,15 @@
                     <i class="bit-icon bit-icon--Search" aria-hidden="true"></i>
                 </div>
                 <input @ref="_searchInputElement"
+                       @onfocusin="HandleSearchBoxFocusIn"
+                       @onfocusout="HandleSearchBoxFocusOut"
+                       @oninput="@HandleFilterChange"
                        class="search-input"
                        type="text"
                        aria-label="Search text"
                        placeholder="@SearchBoxPlaceholder"
                        role="searchbox"
-                       value="@_searchText"
-                   @onfocusin="HandleSearchBoxFocusIn"
-                   @onfocusout="HandleSearchBoxFocusOut"
-                   @oninput="@HandleFilterChange" />
+                       value="@_searchText" />
                 @if (_searchText.HasValue())
                 {
                     <div class="clear-btn-container">
@@ -128,7 +127,7 @@
                                 aria-label="Clear text"
                                 aria-hidden="true"
                                 disabled="@(_searchText.HasNoValue())"
-                        @onclick="HandleSearchBoxOnClear">
+                                @onclick="HandleSearchBoxOnClear">
                             <span>
                                 <i class="bit-icon bit-icon--Clear" aria-hidden="true"></i>
                             </span>
@@ -217,20 +216,20 @@
             else
             {
                 <button class="item @(dropDownItem.item.IsSelected ? "selected" : string.Empty)"
-                    style="@(dropDownItem.item.IsHidden ? "display: none" : string.Empty)"
-                    type="button"
-                    role="option"
-                    data-is-focusable="@(dropDownItem.item.IsEnabled ? "true" : "false")"
-                    disabled=@(!dropDownItem.item.IsEnabled)
-                    data-index="@dropDownItem.index"
-                    aria-disabled="@(!dropDownItem.item.IsEnabled)"
-                    aria-selected="@(dropDownItem.item.IsSelected ? "true" : "false")"
-                    aria-setsize="@GetTotalItems()"
-                    aria-posinset="@GetItemPosInSet(dropDownItem.item)"
-                    tabindex="@(dropDownItem.item.IsEnabled ? 0 : -1)"
-                    title="@dropDownItem.item.Title"
-                    aria-label="@dropDownItem.item.AriaLabel"
-                    @onclick="()=> HandleOnItemClick(dropDownItem.item)">
+                        style="@(dropDownItem.item.IsHidden ? "display: none" : string.Empty)"
+                        type="button"
+                        role="option"
+                        data-is-focusable="@(dropDownItem.item.IsEnabled ? "true" : "false")"
+                        disabled=@(!dropDownItem.item.IsEnabled)
+                        data-index="@dropDownItem.index"
+                        aria-disabled="@(!dropDownItem.item.IsEnabled)"
+                        aria-selected="@(dropDownItem.item.IsSelected ? "true" : "false")"
+                        aria-setsize="@GetTotalItems()"
+                        aria-posinset="@GetItemPosInSet(dropDownItem.item)"
+                        tabindex="@(dropDownItem.item.IsEnabled ? 0 : -1)"
+                        title="@dropDownItem.item.Title"
+                        aria-label="@dropDownItem.item.AriaLabel"
+                        @onclick="()=> HandleOnItemClick(dropDownItem.item)">
                     @if (ItemTemplate is not null)
                     {
                         @ItemTemplate(dropDownItem.item)
