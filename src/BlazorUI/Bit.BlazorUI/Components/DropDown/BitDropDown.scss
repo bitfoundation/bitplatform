@@ -313,6 +313,18 @@
                 pointer-events: none;
             }
         }
+
+        .clear-btn {
+            right: spacing(3.5);
+            width: spacing(3.75);
+            height: spacing(3.75);
+            display: flex;
+            justify-content: center;
+
+            &:hover {
+                background-color: $color-neutrals-gray20;
+            }
+        }
     }
 
     .items-wrapper {

@@ -2,8 +2,8 @@
 @inject HttpClient HttpClient
 @inject NavigationManager NavManager
 
-<ComponentDemo ComponentName="DropDown" ComponentDescription="A dropdown is a list in which the selected item is always visible while other items are visible on demand by clicking a dropdown button. Dropdowns are typically used for forms."
-               ComponentParameters="componentParameters" EnumParameters="enumParameters">
+<ComponentDemo ComponentName="DropDown" ComponentParameters="componentParameters"
+               ComponentDescription="A dropdown is a list in which the selected item is always visible while other items are visible on demand by clicking a dropdown button. Dropdowns are typically used for forms.">
     <ComponentExampleBox Title="BitDropDown" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
             <div class="example-desc">To create a dropdown you can use a BitDropDown component.</div>
@@ -323,6 +323,34 @@
                          DropDirection="BitDropDirection.TopAndBottom"
                          Style="width: 100%; max-width: 290px; margin: 20px 0 20px 0">
             </BitDropDown>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Clear button" HTMLSourceCode="@example13HTMLCode" CSharpSourceCode="@example13CSharpCode" ExampleId="example13">
+        <ExamplePreview>
+            <div class="example-desc">Select an item for the Clear button to show.</div>
+            <div>
+                <BitDropDown ShowClearButton="true"
+                             Label="Basic Uncontrolled"
+                             Items="GetDropdownItems()"
+                             Placeholder="Select an option"
+                             Style="width: 100%; max-width: 290px; margin: 20px 0 20px 0"
+                             @bind-Value="SelectedValue">
+                </BitDropDown>
+                <div>Value: @SelectedValue</div>
+                <br>
+                <hr />
+                <br>
+                <BitDropDown ShowClearButton="true"
+                             Label="Multi-select uncontrolled"
+                             Items="GetDropdownItems()"
+                             Placeholder="Select options"
+                             IsMultiSelect="true"
+                             Style="width: 100%; max-width: 290px; margin-bottom: 20px;"
+                             @bind-Values="SelectedValues">
+                </BitDropDown>
+                <div>Values: @string.Join(',', SelectedValues)</div>
+            </div>
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>

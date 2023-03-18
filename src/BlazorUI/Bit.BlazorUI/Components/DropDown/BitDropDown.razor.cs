@@ -34,6 +34,7 @@ public partial class BitDropDown
     private Virtualize<(int index, BitDropDownItem item)>? _virtualizeElement;
     private ElementReference _searchInputElement;
     private ElementReference _scrollWrapperElement;
+    private DotNetObjectReference<BitDropDown> _dotnetObj = default!;
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
@@ -211,6 +212,11 @@ public partial class BitDropDown
     [Parameter] public RenderFragment<BitDropDownItem>? ItemTemplate { get; set; }
 
     /// <summary>
+    /// Clear Button is shown when something is selected.
+    /// </summary>
+    [Parameter] public bool ShowClearButton { get; set; }
+
+    /// <summary>
     /// Search box is enabled for the end user
     /// </summary>
     [Parameter] public bool ShowSearchBox { get; set; }
@@ -270,7 +276,6 @@ public partial class BitDropDown
             _ = SelectedItemsChanged.InvokeAsync(value);
         }
     }
-
     [Parameter] public EventCallback<List<BitDropDownItem>> SelectedItemsChanged { get; set; }
 
     /// <summary>
@@ -284,16 +289,15 @@ public partial class BitDropDown
         {
             if (SelectedItems?.FirstOrDefault() == value) return;
 
-            SelectedItems.Clear();
+            SelectedItems?.Clear();
             if (value is not null)
             {
-                SelectedItems.Add(value);
+                SelectedItems?.Add(value);
             }
             ClassBuilder.Reset();
             _ = SelectedItemChanged.InvokeAsync(value);
         }
     }
-
     [Parameter] public EventCallback<BitDropDownItem?> SelectedItemChanged { get; set; }
 
     /// <summary>
@@ -327,6 +331,8 @@ public partial class BitDropDown
         IsOpen = false;
     }
 
+
+
     protected override string RootElementClass => "bit-drp";
 
     protected override void RegisterComponentClasses()
@@ -355,10 +361,9 @@ public partial class BitDropDown
             Items = new();
         }
 
-        if (SelectedItems is null)
-        {
-            SelectedItems = new();
-        }
+        SelectedItems ??= new();
+
+        _dotnetObj = DotNetObjectReference.Create(this);
 
         base.OnInitialized();
     }
@@ -417,45 +422,40 @@ public partial class BitDropDown
         if (IsEnabled is false) return;
         if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
-        var obj = DotNetObjectReference.Create(this);
-        await _js.InvokeVoidAsync("BitDropDown.toggleDropDownCallout",
-            obj, UniqueId, _dropDownId, _dropDownCalloutId, _dropDownOverlayId, _scrollWrapperElement, DropDirection, IsOpen, IsResponsiveModeEnabled, IsRtl);
+        if (IsOpen is false) return;
+
+        await ToggleCallout();
 
         IsOpen = false;
         StateHasChanged();
     }
 
-    private async Task HandleClick(MouseEventArgs e)
+    private async Task HandleOnClick(MouseEventArgs e)
     {
         if (IsEnabled is false) return;
         if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
-        var obj = DotNetObjectReference.Create(this);
-        await _js.InvokeVoidAsync("BitDropDown.toggleDropDownCallout", obj, UniqueId, _dropDownId, _dropDownCalloutId, _dropDownOverlayId, _scrollWrapperElement, DropDirection, IsOpen, IsResponsiveModeEnabled, IsRtl);
+        await ToggleCallout();
+
         IsOpen = !IsOpen;
         await OnClick.InvokeAsync(e);
         await FocusOnSearchBox();
     }
 
-    private async Task HandleItemClick(BitDropDownItem selectedItem)
+    private async Task HandleOnItemClick(BitDropDownItem selectedItem)
     {
         if (selectedItem.ItemType != BitDropDownItemType.Normal) return;
-
         if (IsEnabled is false || selectedItem.IsEnabled is false) return;
-
         if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
-
-        if (IsMultiSelect &&
-                ValuesHasBeenSet &&
-                ValuesChanged.HasDelegate is false) return;
-
-        if (IsMultiSelect is false &&
-            ValueHasBeenSet &&
-            ValueChanged.HasDelegate is false) return;
 
         if (IsMultiSelect)
         {
-            if (_isValuesChanged is false) _isValuesChanged = true;
+            if (ValuesHasBeenSet && ValuesChanged.HasDelegate is false) return;
+
+            if (_isValuesChanged is false)
+            {
+                _isValuesChanged = true;
+            }
 
             selectedItem.IsSelected = !selectedItem.IsSelected;
             if (selectedItem.IsSelected)
@@ -476,6 +476,7 @@ public partial class BitDropDown
         }
         else
         {
+            if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
             var oldSelectedItem = SelectedItems.SingleOrDefault();
             var isSameItemSelected = oldSelectedItem == selectedItem;
@@ -492,8 +493,9 @@ public partial class BitDropDown
 
             _text = selectedItem.Text;
             CurrentValueAsString = selectedItem.Value;
-            var obj = DotNetObjectReference.Create(this);
-            await _js.InvokeVoidAsync("BitDropDown.toggleDropDownCallout", obj, UniqueId, _dropDownId, _dropDownCalloutId, _dropDownOverlayId, _scrollWrapperElement, DropDirection, IsOpen, IsResponsiveModeEnabled, IsRtl);
+
+            await ToggleCallout();
+
             IsOpen = false;
             await ClearSearchBox();
 
@@ -654,6 +656,52 @@ public partial class BitDropDown
 
         await _virtualizeElement.RefreshDataAsync();
     }
+
+    private async Task Clear(MouseEventArgs e)
+    {
+        if (IsEnabled is false) return;
+
+        if (IsMultiSelect)
+        {
+            if (ValuesHasBeenSet && ValuesChanged.HasDelegate is false) return;
+
+            SelectedItems.ForEach(i => i.IsSelected = false);
+            SelectedItems.Clear();
+            ClassBuilder.Reset();
+
+            Values = new();
+            await SelectedItemsChanged.InvokeAsync(SelectedItems);
+        }
+        else
+        {
+            if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+
+            if (SelectedItems.Count > 0)
+            {
+                var currentSelectedItem = SelectedItems.SingleOrDefault();
+                currentSelectedItem!.IsSelected = false;
+
+                SelectedItems.Clear();
+                ClassBuilder.Reset();
+            }
+
+            Value = string.Empty;
+            await SelectedItemChanged.InvokeAsync(SelectedItem);
+        }
+
+        _text = string.Empty;
+        CurrentValueAsString = null;
+
+        StateHasChanged();
+    }
+
+    private async Task ToggleCallout()
+    {
+        await _js.InvokeVoidAsync("BitDropDown.toggleDropDownCallout",
+            _dotnetObj, UniqueId, _dropDownId, _dropDownCalloutId, _dropDownOverlayId, _scrollWrapperElement,
+            DropDirection, IsOpen, IsResponsiveModeEnabled, IsRtl);
+    }
+
 
     // Gets called both by RefreshDataCoreAsync and directly by the Virtualize child component during scrolling
     private async ValueTask<ItemsProviderResult<(int index, BitDropDownItem item)>> ProvideVirtualizedItems(ItemsProviderRequest request)
