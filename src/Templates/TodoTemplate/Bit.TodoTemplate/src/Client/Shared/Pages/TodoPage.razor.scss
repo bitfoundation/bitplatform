@@ -13,7 +13,7 @@
     box-sizing: border-box;
 
     @include lg {
-        padding: rem(48px) rem(16px);
+        padding: rem(48px) rem(16px) rem(48px) rem(48px);
     }
 
     @include md {
@@ -156,8 +156,8 @@
 .sort-drp-container {
     @media all and (max-width: #{em(550px)}) {
         position: absolute;
+        right: rem(14px);
         top: rem(18px);
-        right: rem(5px);
     }
 
     @media all and (max-width: #{em(390px)}) {
