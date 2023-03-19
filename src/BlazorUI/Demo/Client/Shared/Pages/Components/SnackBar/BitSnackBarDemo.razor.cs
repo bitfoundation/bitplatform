@@ -46,7 +46,7 @@ public partial class BitSnackBarDemo
             DefaultValue = "BitSnackBarPosition.BottomRight",
             Description = "The position of SnackBar to show.",
             LinkType = LinkType.Link,
-            Href = "SnackBar-position-enum"
+            Href = "snackbar-position-enum"
         },
         new()
         {
@@ -59,7 +59,7 @@ public partial class BitSnackBarDemo
     {
         new EnumParameter()
         {
-            Id = "SnackBar-position-enum",
+            Id = "snackbar-position-enum",
             Title = "BitSnackBarPosition Enum",
             EnumList = new List<EnumItem>()
             {

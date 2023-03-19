@@ -2,7 +2,7 @@
 
 internal class BitSnackBarItem
 {
-    public string Title { get; set; } = string.Empty;
+    public string Title { get; set; } = default!;
     
     public string? Body { get; set; }
     
