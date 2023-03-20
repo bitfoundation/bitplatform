@@ -43,6 +43,7 @@
         <ProjectReference Include="..\..\..\Bit.BlazorUI.Charts\Bit.BlazorUI.Charts.csproj" />
         <ProjectReference Include="..\..\..\Bit.BlazorUI.SourceGenerators\Bit.BlazorUI.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
         <ProjectReference Include="..\..\..\Bit.BlazorUI\Bit.BlazorUI.csproj" />
+        <ProjectReference Include="..\Shared\Bit.BlazorUI.Demo.Client.Shared.csproj" />
     </ItemGroup>
 
     <ItemGroup Condition=" '$(UseElectron)' == 'true' ">
