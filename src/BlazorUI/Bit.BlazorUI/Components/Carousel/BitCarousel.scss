@@ -14,6 +14,7 @@
         overflow: hidden;
         user-select: none;
         cursor: grab;
+        touch-action: none;
     }
 
     .go-left-btn,
