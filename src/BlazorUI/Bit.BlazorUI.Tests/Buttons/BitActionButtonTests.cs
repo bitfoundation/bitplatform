@@ -1,4 +1,5 @@
-﻿using Bunit;
+﻿using System;
+using Bunit;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -8,21 +9,14 @@ namespace Bit.BlazorUI.Tests.Buttons;
 public class BitActionButtonTests : BunitTestContext
 {
     [DataTestMethod,
-        DataRow(Visual.Fluent, true, BitIconName.AddFriend, "title"),
-        DataRow(Visual.Fluent, false, BitIconName.AddFriend, "title"),
-
-        DataRow(Visual.Cupertino, true, BitIconName.AddFriend, "title"),
-        DataRow(Visual.Cupertino, false, BitIconName.AddFriend, "title"),
-
-        DataRow(Visual.Material, true, BitIconName.AddFriend, "title"),
-        DataRow(Visual.Material, false, BitIconName.AddFriend, "title"),
+        DataRow(true, BitIconName.AddFriend, "title"),
+        DataRow(false, BitIconName.AddFriend, "title")
     ]
-    public void BitActionButtonTest(Visual visual, bool isEnabled, BitIconName iconName, string title)
+    public void BitActionButtonTest(bool isEnabled, BitIconName iconName, string title)
     {
         var clicked = false;
         var com = RenderComponent<BitActionButton>(parameters =>
         {
-            parameters.AddCascadingValue(visual);
             parameters.Add(p => p.IsEnabled, isEnabled);
             parameters.Add(p => p.IconName, iconName);
             parameters.Add(p => p.Title, title);
@@ -66,11 +60,11 @@ public class BitActionButtonTests : BunitTestContext
 
         var bitButton = com.Find(".bit-acb");
 
-        var hasTabindexAttr = bitButton.HasAttribute("tabindex");
+        var hasTabIndexAttr = bitButton.HasAttribute("tabindex");
 
-        Assert.AreEqual(hasTabindexAttr, expectedResult);
+        Assert.AreEqual(hasTabIndexAttr, expectedResult);
 
-        if (hasTabindexAttr)
+        if (hasTabIndexAttr)
         {
             Assert.IsTrue(bitButton.GetAttribute("tabindex").Equals("-1"));
         }
@@ -150,7 +144,14 @@ public class BitActionButtonTests : BunitTestContext
 
         var bitActionButton = component.Find(".bit-acb");
 
-        var buttonTypeName = buttonType == BitButtonType.Button ? "button" : buttonType == BitButtonType.Submit ? "submit" : "reset";
+        var buttonTypeName = buttonType switch
+        {
+            BitButtonType.Button => "button",
+            BitButtonType.Submit => "submit",
+            BitButtonType.Reset => "reset",
+            _ => throw new NotSupportedException(),
+        };
+
         Assert.AreEqual(buttonTypeName, bitActionButton.GetAttribute("type"));
     }
     
@@ -168,7 +169,7 @@ public class BitActionButtonTests : BunitTestContext
     }
     
     [TestMethod]
-    public void BitActionButtonButtonStateNotOverridenInEditContextTest()
+    public void BitActionButtonButtonStateNotOverriddenInEditContextTest()
     {
         var com = RenderComponent<BitActionButton>(parameters =>
         {
