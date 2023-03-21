@@ -154,7 +154,7 @@ public class BitActionButtonTests : BunitTestContext
 
         Assert.AreEqual(buttonTypeName, bitActionButton.GetAttribute("type"));
     }
-    
+
     [TestMethod]
     public void BitActionButtonSubmitStateInEditContextTest()
     {
@@ -162,12 +162,12 @@ public class BitActionButtonTests : BunitTestContext
         {
             parameters.Add(p => p.EditContext, new EditContext(this));
         });
-        
+
         var bitButton = com.Find(".bit-acb");
 
         Assert.AreEqual("submit", bitButton.GetAttribute("type"));
     }
-    
+
     [TestMethod]
     public void BitActionButtonButtonStateNotOverriddenInEditContextTest()
     {
@@ -176,7 +176,7 @@ public class BitActionButtonTests : BunitTestContext
             parameters.Add(p => p.EditContext, new EditContext(this));
             parameters.Add(p => p.ButtonType, BitButtonType.Button);
         });
-        
+
         var bitButton = com.Find(".bit-acb");
 
         Assert.AreEqual("button", bitButton.GetAttribute("type"));
