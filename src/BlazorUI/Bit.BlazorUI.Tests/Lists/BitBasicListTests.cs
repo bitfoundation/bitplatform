@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using static Bit.BlazorUI.Tests.Lists.BitBasicListTest;
 
 namespace Bit.BlazorUI.Tests.Lists;
 
@@ -30,7 +29,7 @@ public class BitBasicListTests : BunitTestContext
         var component = RenderComponent<BitBasicListTest>(parameters =>
         {
             parameters.Add(p => p.Virtualize, virtualize);
-            parameters.Add(p => p.Items, BitBasicListTests.GetTestData(500));
+            parameters.Add(p => p.Items, GetTestData(500));
             //ItemSize default value is 50.
             parameters.Add(p => p.ItemSize, itemSize ?? 50);
             //OverscanCount default value is 3.
@@ -41,7 +40,7 @@ public class BitBasicListTests : BunitTestContext
 
         if (virtualize)
         {
-            //When virtualize is true, number of rendered items is greater than number of items showm in the list + 2 * overScanCount.
+            //When virtualize is true, number of rendered items is greater than number of items show in the list + 2 * overScanCount.
             var expectedRenderedItemCount = Math.Ceiling((decimal)(viewportHeight / component.Instance.ItemSize)) + (2 * component.Instance.OverscanCount);
             var actualRenderedItemCount = bitList.GetElementsByClassName("list-item").Length;
 
@@ -89,7 +88,6 @@ public class BitBasicListTests : BunitTestContext
     {
         var component = RenderComponent<BitBasicListTest>(parameters =>
         {
-            parameters.Add(p => p.Visual, Visual.Fluent);
             parameters.Add(p => p.Items, GetTestData(itemCount));
         });
 
