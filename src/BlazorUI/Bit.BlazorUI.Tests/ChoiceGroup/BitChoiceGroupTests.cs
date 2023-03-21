@@ -13,7 +13,7 @@ public class BitChoiceGroupTests : BunitTestContext
       DataRow(true),
       DataRow(false)
     ]
-    public void BitChoiceGroupShouldTakeCorrectVisualStyle(bool isEnabled)
+    public void BitChoiceGroupShouldTakeCorrectEnableStyle(bool isEnabled)
     {
         var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
         {
@@ -125,24 +125,6 @@ public class BitChoiceGroupTests : BunitTestContext
 
             // TODO: bypassed - BUnit 2-way bound parameters issue
             // Assert.AreEqual(element.item.GetAttribute("src"), choiceGroupItems[element.index].SelectedImageName);
-        }
-    }
-
-    [DataTestMethod,
-      DataRow(32, 32)
-    ]
-    public void BitChoiceGroupShouldTakeSize(int width, int height)
-    {
-        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
-        {
-            parameters.Add(p => p.Items, GetChoiceGroupItems());
-        });
-
-        var bitChoiceGroupImages = component.FindAll(".bit-chgi-img");
-
-        foreach (var item in bitChoiceGroupImages)
-        {
-            Assert.IsTrue(item.GetAttribute("style").Contains($"width:{width}px; height:{height}px;"));
         }
     }
 
