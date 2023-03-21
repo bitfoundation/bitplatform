@@ -1,4 +1,5 @@
-﻿using Bunit;
+﻿using System;
+using Bunit;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -8,27 +9,16 @@ namespace Bit.BlazorUI.Tests.Buttons;
 public class BitButtonTests : BunitTestContext
 {
     [DataTestMethod,
-        DataRow(Visual.Fluent, true, BitButtonStyle.Primary, "title"),
-        DataRow(Visual.Fluent, true, BitButtonStyle.Standard, "title"),
-        DataRow(Visual.Fluent, false, BitButtonStyle.Primary, "title"),
-        DataRow(Visual.Fluent, false, BitButtonStyle.Standard, "title"),
-
-        DataRow(Visual.Cupertino, true, BitButtonStyle.Primary, "title"),
-        DataRow(Visual.Cupertino, true, BitButtonStyle.Standard, "title"),
-        DataRow(Visual.Cupertino, false, BitButtonStyle.Primary, "title"),
-        DataRow(Visual.Cupertino, false, BitButtonStyle.Standard, "title"),
-
-        DataRow(Visual.Material, true, BitButtonStyle.Primary, "title"),
-        DataRow(Visual.Material, true, BitButtonStyle.Standard, "title"),
-        DataRow(Visual.Material, false, BitButtonStyle.Primary, "title"),
-        DataRow(Visual.Material, false, BitButtonStyle.Standard, "title"),
+        DataRow(true, BitButtonStyle.Primary, "title"),
+        DataRow(true, BitButtonStyle.Standard, "title"),
+        DataRow(false, BitButtonStyle.Primary, "title"),
+        DataRow(false, BitButtonStyle.Standard, "title")
     ]
-    public void BitButtonTest(Visual visual, bool isEnabled, BitButtonStyle style, string title)
+    public void BitButtonTest(bool isEnabled, BitButtonStyle style, string title)
     {
         var clicked = false;
         var com = RenderComponent<BitButton>(parameters =>
         {
-            parameters.AddCascadingValue(visual);
             parameters.Add(p => p.IsEnabled, isEnabled);
             parameters.Add(p => p.ButtonStyle, style);
             parameters.Add(p => p.Title, title);
@@ -54,28 +44,25 @@ public class BitButtonTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow(Visual.Fluent, BitButtonSize.Small),
-        DataRow(Visual.Fluent, BitButtonSize.Medium),
-        DataRow(Visual.Fluent, BitButtonSize.Large),
-
-        DataRow(Visual.Cupertino, BitButtonSize.Small),
-        DataRow(Visual.Cupertino, BitButtonSize.Medium),
-        DataRow(Visual.Cupertino, BitButtonSize.Large),
-
-        DataRow(Visual.Material, BitButtonSize.Small),
-        DataRow(Visual.Material, BitButtonSize.Medium),
-        DataRow(Visual.Material, BitButtonSize.Large)
+        DataRow(BitButtonSize.Small),
+        DataRow(BitButtonSize.Medium),
+        DataRow(BitButtonSize.Large)
     ]
-    public void BitButtonSizeTest(Visual visual, BitButtonSize size)
+    public void BitButtonSizeTest(BitButtonSize size)
     {
         var com = RenderComponent<BitButton>(parameters =>
         {
-            parameters.AddCascadingValue(visual);
             parameters.Add(p => p.ButtonSize, size);
         });
 
-        var bitButton = com.Find(".bit-btn"); 
-        var sizeClass = size == BitButtonSize.Small ? "small" : size == BitButtonSize.Medium ? "medium" : "large";
+        var bitButton = com.Find(".bit-btn");
+        var sizeClass = size switch
+        {
+            BitButtonSize.Small => "small",
+            BitButtonSize.Medium => "medium",
+            BitButtonSize.Large => "large",
+            _ => throw new NotSupportedException()
+        };
 
         Assert.IsTrue(bitButton.ClassList.Contains(sizeClass));
     }
@@ -97,37 +84,26 @@ public class BitButtonTests : BunitTestContext
 
         var bitButton = com.Find(".bit-btn");
 
-        var hasTabindexAttr = bitButton.HasAttribute("tabindex");
+        var hasTabIndexAttr = bitButton.HasAttribute("tabindex");
 
-        Assert.AreEqual(hasTabindexAttr, expectedResult);
+        Assert.AreEqual(hasTabIndexAttr, expectedResult);
 
-        if (hasTabindexAttr)
+        if (hasTabIndexAttr)
         {
             Assert.IsTrue(bitButton.GetAttribute("tabindex").Equals("-1"));
         }
     }
 
     [DataTestMethod,
-         DataRow(Visual.Fluent, true, BitButtonStyle.Primary, "https://github.com/bitfoundation", "bit", "_blank"),
-         DataRow(Visual.Fluent, true, BitButtonStyle.Standard, "https://github.com/bitfoundation", "bit", "_blank"),
-         DataRow(Visual.Fluent, false, BitButtonStyle.Primary, "https://github.com/bitfoundation", "bit", "_blank"),
-         DataRow(Visual.Fluent, false, BitButtonStyle.Standard, "https://github.com/bitfoundation", "bit", "_blank"),
-
-         DataRow(Visual.Cupertino, true, BitButtonStyle.Primary, "https://github.com/bitfoundation", "bit", "_blank"),
-         DataRow(Visual.Cupertino, true, BitButtonStyle.Standard, "https://github.com/bitfoundation", "bit", "_blank"),
-         DataRow(Visual.Cupertino, false, BitButtonStyle.Primary, "https://github.com/bitfoundation", "bit", "_blank"),
-         DataRow(Visual.Cupertino, false, BitButtonStyle.Standard, "https://github.com/bitfoundation", "bit", "_blank"),
-
-         DataRow(Visual.Material, true, BitButtonStyle.Primary, "https://github.com/bitfoundation", "bit", "_blank"),
-         DataRow(Visual.Material, true, BitButtonStyle.Standard, "https://github.com/bitfoundation", "bit", "_blank"),
-         DataRow(Visual.Material, false, BitButtonStyle.Primary, "https://github.com/bitfoundation", "bit", "_blank"),
-         DataRow(Visual.Material, false, BitButtonStyle.Standard, "https://github.com/bitfoundation", "bit", "_blank"),
+         DataRow(true, BitButtonStyle.Primary, "https://github.com/bitfoundation", "bit", "_blank"),
+         DataRow(true, BitButtonStyle.Standard, "https://github.com/bitfoundation", "bit", "_blank"),
+         DataRow(false, BitButtonStyle.Primary, "https://github.com/bitfoundation", "bit", "_blank"),
+         DataRow(false, BitButtonStyle.Standard, "https://github.com/bitfoundation", "bit", "_blank")
     ]
-    public void BitAnchorButtonTest(Visual visual, bool isEnabled, BitButtonStyle style, string href, string title, string target)
+    public void BitAnchorButtonTest(bool isEnabled, BitButtonStyle style, string href, string title, string target)
     {
         var com = RenderComponent<BitButton>(parameters =>
         {
-            parameters.AddCascadingValue(visual);
             parameters.Add(p => p.IsEnabled, isEnabled);
             parameters.Add(p => p.ButtonStyle, style);
             parameters.Add(p => p.Href, href);
@@ -204,7 +180,14 @@ public class BitButtonTests : BunitTestContext
 
         var bitButton = com.Find(".bit-btn");
 
-        var buttonTypeName = buttonType == BitButtonType.Button ? "button" : buttonType == BitButtonType.Submit ? "submit" : "reset";
+        var buttonTypeName = buttonType switch
+        {
+            BitButtonType.Button => "button",
+            BitButtonType.Submit => "submit",
+            BitButtonType.Reset => "reset",
+            _ => throw new NotSupportedException(),
+        };
+
         Assert.AreEqual(buttonTypeName, bitButton.GetAttribute("type"));
     }
 
@@ -215,21 +198,21 @@ public class BitButtonTests : BunitTestContext
         {
             parameters.Add(p => p.EditContext, new EditContext(this));
         });
-        
+
         var bitButton = com.Find(".bit-btn");
 
         Assert.AreEqual("submit", bitButton.GetAttribute("type"));
     }
-    
+
     [TestMethod]
-    public void BitButtonButtonStateNotOverridenInEditContextTest()
+    public void BitButtonButtonStateNotOverriddenInEditContextTest()
     {
         var com = RenderComponent<BitButton>(parameters =>
         {
             parameters.Add(p => p.EditContext, new EditContext(this));
             parameters.Add(p => p.ButtonType, BitButtonType.Button);
         });
-        
+
         var bitButton = com.Find(".bit-btn");
 
         Assert.AreEqual("button", bitButton.GetAttribute("type"));
