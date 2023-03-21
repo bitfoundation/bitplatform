@@ -378,17 +378,17 @@ public partial class BitChoiceGroupDemo
 
     private readonly List<BitChoiceGroupItem<string>> ChoiceGroupBasicItems = new()
     {
-        new() { Text = "Option A", Value = "A" },
-        new() { Text = "Option B", Value = "B" },
-        new() { Text = "Option C", Value = "C" },
-        new() { Text = "Option D", Value = "D" }
+        new() { Text = "Item A", Value = "A" },
+        new() { Text = "Item B", Value = "B" },
+        new() { Text = "Item C", Value = "C" },
+        new() { Text = "Item D", Value = "D" }
     };
     private readonly List<BitChoiceGroupItem<string>> ChoiceGroupDisabledItems = new()
     {
-        new() { Text = "Option A", Value = "A" },
-        new() { Text = "Option B", Value = "B" },
-        new() { Text = "Option C", Value = "C", IsEnabled = false },
-        new() { Text = "Option D", Value = "D" }
+        new() { Text = "Item A", Value = "A" },
+        new() { Text = "Item B", Value = "B" },
+        new() { Text = "Item C", Value = "C", IsEnabled = false },
+        new() { Text = "Item D", Value = "D" }
     };
     private readonly List<BitChoiceGroupItem<string>> ChoiceGroupImageItems = new()
     {
@@ -426,17 +426,17 @@ public partial class BitChoiceGroupDemo
 
     private readonly List<ChoiceModel> CustomChoiceGroupBasicItems = new()
     {
-        new() { Name = "Option A", ItemValue = "A" },
-        new() { Name = "Option B", ItemValue = "B" },
-        new() { Name = "Option C", ItemValue = "C" },
-        new() { Name = "Option D", ItemValue = "D" }
+        new() { Name = "Custom A", ItemValue = "A" },
+        new() { Name = "Custom B", ItemValue = "B" },
+        new() { Name = "Custom C", ItemValue = "C" },
+        new() { Name = "Custom D", ItemValue = "D" }
     };
     private readonly List<ChoiceModel> CustomChoiceGroupDisabledItems = new()
     {
-        new() { Name = "Option A", ItemValue = "A" },
-        new() { Name = "Option B", ItemValue = "B" },
-        new() { Name = "Option C", ItemValue = "C", IsEnabled = false },
-        new() { Name = "Option D", ItemValue = "D" }
+        new() { Name = "Custom A", ItemValue = "A" },
+        new() { Name = "Custom B", ItemValue = "B" },
+        new() { Name = "Custom C", ItemValue = "C", IsEnabled = false },
+        new() { Name = "Custom D", ItemValue = "D" }
     };
     private readonly List<ChoiceModel> CustomChoiceGroupImageItems = new()
     {
@@ -472,12 +472,9 @@ public partial class BitChoiceGroupDemo
         new() { Name = "Month", ItemValue = "Month", IconName = BitIconName.Calendar }
     };
 
-    private async Task HandleValidSubmit()
+    private void HandleValidSubmit()
     {
         SuccessMessage = "Form Submitted Successfully!";
-        await Task.Delay(3000);
-        SuccessMessage = string.Empty;
-        StateHasChanged();
     }
 
     private void HandleInvalidSubmit()
@@ -491,10 +488,10 @@ public partial class BitChoiceGroupDemo
     private readonly string example1BitChoiceGroupItemCSharpCode = @"
 private readonly List<BitChoiceGroupItem> ChoiceGroupBasicItems<string> = new()
 {
-    new() { Text = ""Option A"", Value = ""A"" },
-    new() { Text = ""Option B"", Value = ""B"" },
-    new() { Text = ""Option C"", Value = ""C"" },
-    new() { Text = ""Option D"", Value = ""D"" }
+    new() { Text = ""Item A"", Value = ""A"" },
+    new() { Text = ""Item B"", Value = ""B"" },
+    new() { Text = ""Item C"", Value = ""C"" },
+    new() { Text = ""Item D"", Value = ""D"" }
 };
 ";
 
@@ -511,17 +508,17 @@ private readonly List<BitChoiceGroupItem> ChoiceGroupBasicItems<string> = new()
     private readonly string example2BitChoiceGroupItemCSharpCode = @"
 private readonly List<BitChoiceGroupItem> ChoiceGroupBasicItems<string> = new()
 {
-    new() { Text = ""Option A"", Value = ""A"" },
-    new() { Text = ""Option B"", Value = ""B"" },
-    new() { Text = ""Option C"", Value = ""C"" },
-    new() { Text = ""Option D"", Value = ""D"" }
+    new() { Text = ""Item A"", Value = ""A"" },
+    new() { Text = ""Item B"", Value = ""B"" },
+    new() { Text = ""Item C"", Value = ""C"" },
+    new() { Text = ""Item D"", Value = ""D"" }
 };
 private readonly List<BitChoiceGroupItem> ChoiceGroupDisabledItems<string> = new()
 {
-    new() { Text = ""Option A"", Value = ""A"" },
-    new() { Text = ""Option B"", Value = ""B"" },
-    new() { Text = ""Option C"", Value = ""C"", IsEnabled = false },
-    new() { Text = ""Option D"", Value = ""D"" }
+    new() { Text = ""Item A"", Value = ""A"" },
+    new() { Text = ""Item B"", Value = ""B"" },
+    new() { Text = ""Item C"", Value = ""C"", IsEnabled = false },
+    new() { Text = ""Item D"", Value = ""D"" }
 };
 ";
 
@@ -583,10 +580,10 @@ private readonly List<BitChoiceGroupItem> ChoiceGroupIconItems<string> = new()
     private readonly string example5BitChoiceGroupItemCSharpCode = @"
 private readonly List<BitChoiceGroupItem> ChoiceGroupBasicItems<string> = new()
 {
-    new() { Text = ""Option A"", Value = ""A"" },
-    new() { Text = ""Option B"", Value = ""B"" },
-    new() { Text = ""Option C"", Value = ""C"" },
-    new() { Text = ""Option D"", Value = ""D"" }
+    new() { Text = ""Item A"", Value = ""A"" },
+    new() { Text = ""Item B"", Value = ""B"" },
+    new() { Text = ""Item C"", Value = ""C"" },
+    new() { Text = ""Item D"", Value = ""D"" }
 };
 ";
 
@@ -682,10 +679,10 @@ private string ChoiceGroupWithOptionLabelTemplateValue = ""Day"";
     private readonly string example7BitChoiceGroupItemCSharpCode = @"
 private readonly List<BitChoiceGroupItem> ChoiceGroupBasicItems<string> = new()
 {
-    new() { Text = ""Option A"", Value = ""A"" },
-    new() { Text = ""Option B"", Value = ""B"" },
-    new() { Text = ""Option C"", Value = ""C"" },
-    new() { Text = ""Option D"", Value = ""D"" }
+    new() { Text = ""Item A"", Value = ""A"" },
+    new() { Text = ""Item B"", Value = ""B"" },
+    new() { Text = ""Item C"", Value = ""C"" },
+    new() { Text = ""Item D"", Value = ""D"" }
 };
 
 private string ChoiceGroupOneWayValue = ""A"";
@@ -719,10 +716,10 @@ private string ChoiceGroupTwoWayValue = ""A"";
     private readonly string example8BitChoiceGroupItemCSharpCode = @"
 private readonly List<BitChoiceGroupItem> ChoiceGroupBasicItems<string> = new()
 {
-    new() { Text = ""Option A"", Value = ""A"" },
-    new() { Text = ""Option B"", Value = ""B"" },
-    new() { Text = ""Option C"", Value = ""C"" },
-    new() { Text = ""Option D"", Value = ""D"" }
+    new() { Text = ""Item A"", Value = ""A"" },
+    new() { Text = ""Item B"", Value = ""B"" },
+    new() { Text = ""Item C"", Value = ""C"" },
+    new() { Text = ""Item D"", Value = ""D"" }
 };
 
 private readonly List<BitChoiceGroupItem> ChoiceGroupImageItems<string> = new()
@@ -792,10 +789,10 @@ private string ChoiceGroupLayoutFlowWithOptionTemplateValue = ""Day"";
     private readonly string example9BitChoiceGroupItemCSharpCode = @"
 private readonly List<BitChoiceGroupItem> ChoiceGroupBasicItems<string> = new()
 {
-    new() { Text = ""Option A"", Value = ""A"" },
-    new() { Text = ""Option B"", Value = ""B"" },
-    new() { Text = ""Option C"", Value = ""C"" },
-    new() { Text = ""Option D"", Value = ""D"" }
+    new() { Text = ""Item A"", Value = ""A"" },
+    new() { Text = ""Item B"", Value = ""B"" },
+    new() { Text = ""Item C"", Value = ""C"" },
+    new() { Text = ""Item D"", Value = ""D"" }
 };
 
 private readonly List<BitChoiceGroupItem> ChoiceGroupImageItems<string> = new()
@@ -864,10 +861,10 @@ else
     private readonly string example10BitChoiceGroupItemCSharpCode = @"
 private readonly List<BitChoiceGroupItem> ChoiceGroupBasicItems<string> = new()
 {
-    new() { Text = ""Option A"", Value = ""A"" },
-    new() { Text = ""Option B"", Value = ""B"" },
-    new() { Text = ""Option C"", Value = ""C"" },
-    new() { Text = ""Option D"", Value = ""D"" }
+    new() { Text = ""Item A"", Value = ""A"" },
+    new() { Text = ""Item B"", Value = ""B"" },
+    new() { Text = ""Item C"", Value = ""C"" },
+    new() { Text = ""Item D"", Value = ""D"" }
 };
 
 public class ChoiceGroupValidationModel
@@ -879,12 +876,9 @@ public class ChoiceGroupValidationModel
 public ChoiceGroupValidationModel ValidationModel = new();
 public string SuccessMessage;
 
-private async Task HandleValidSubmit()
+private void HandleValidSubmit()
 {
     SuccessMessage = ""Form Submitted Successfully!"";
-    await Task.Delay(3000);
-    SuccessMessage = string.Empty;
-    StateHasChanged();
 }
 
 private void HandleInvalidSubmit()
@@ -916,10 +910,10 @@ public class ChoiceModel
 
 private readonly List<ChoiceModel> CustomChoiceGroupBasicItems = new()
 {
-    new() { Name = ""Option A"", ItemValue = ""A"" },
-    new() { Name = ""Option B"", ItemValue = ""B"" },
-    new() { Name = ""Option C"", ItemValue = ""C"" },
-    new() { Name = ""Option D"", ItemValue = ""D"" }
+    new() { Name = ""Custom A"", ItemValue = ""A"" },
+    new() { Name = ""Custom B"", ItemValue = ""B"" },
+    new() { Name = ""Custom C"", ItemValue = ""C"" },
+    new() { Name = ""Custom D"", ItemValue = ""D"" }
 };
 ";
 
@@ -952,17 +946,17 @@ public class ChoiceModel
 
 private readonly List<ChoiceModel> CustomChoiceGroupBasicItems = new()
 {
-    new() { Name = ""Option A"", ItemValue = ""A"" },
-    new() { Name = ""Option B"", ItemValue = ""B"" },
-    new() { Name = ""Option C"", ItemValue = ""C"" },
-    new() { Name = ""Option D"", ItemValue = ""D"" }
+    new() { Name = ""Custom A"", ItemValue = ""A"" },
+    new() { Name = ""Custom B"", ItemValue = ""B"" },
+    new() { Name = ""Custom C"", ItemValue = ""C"" },
+    new() { Name = ""Custom D"", ItemValue = ""D"" }
 };
 private readonly List<ChoiceModel> CustomChoiceGroupDisabledItems = new()
 {
-    new() { Name = ""Option A"", ItemValue = ""A"" },
-    new() { Name = ""Option B"", ItemValue = ""B"" },
-    new() { Name = ""Option C"", ItemValue = ""C"", IsEnabled = false },
-    new() { Name = ""Option D"", ItemValue = ""D"" }
+    new() { Name = ""Custom A"", ItemValue = ""A"" },
+    new() { Name = ""Custom B"", ItemValue = ""B"" },
+    new() { Name = ""Custom C"", ItemValue = ""C"", IsEnabled = false },
+    new() { Name = ""Custom D"", ItemValue = ""D"" }
 };
 ";
 
@@ -1076,10 +1070,10 @@ public class ChoiceModel
 
 private readonly List<ChoiceModel> CustomChoiceGroupBasicItems = new()
 {
-    new() { Name = ""Option A"", ItemValue = ""A"" },
-    new() { Name = ""Option B"", ItemValue = ""B"" },
-    new() { Name = ""Option C"", ItemValue = ""C"" },
-    new() { Name = ""Option D"", ItemValue = ""D"" }
+    new() { Name = ""Custom A"", ItemValue = ""A"" },
+    new() { Name = ""Custom B"", ItemValue = ""B"" },
+    new() { Name = ""Custom C"", ItemValue = ""C"" },
+    new() { Name = ""Custom D"", ItemValue = ""D"" }
 };
 ";
 
@@ -1209,10 +1203,10 @@ public class ChoiceModel
 
 private readonly List<ChoiceModel> CustomChoiceGroupBasicItems = new()
 {
-    new() { Name = ""Option A"", ItemValue = ""A"" },
-    new() { Name = ""Option B"", ItemValue = ""B"" },
-    new() { Name = ""Option C"", ItemValue = ""C"" },
-    new() { Name = ""Option D"", ItemValue = ""D"" }
+    new() { Name = ""Custom A"", ItemValue = ""A"" },
+    new() { Name = ""Custom B"", ItemValue = ""B"" },
+    new() { Name = ""Custom C"", ItemValue = ""C"" },
+    new() { Name = ""Custom D"", ItemValue = ""D"" }
 };
 
 private string ChoiceGroupOneWayValue = ""A"";
@@ -1296,10 +1290,10 @@ public class ChoiceModel
 
 private readonly List<ChoiceModel> CustomChoiceGroupBasicItems = new()
 {
-    new() { Name = ""Option A"", ItemValue = ""A"" },
-    new() { Name = ""Option B"", ItemValue = ""B"" },
-    new() { Name = ""Option C"", ItemValue = ""C"" },
-    new() { Name = ""Option D"", ItemValue = ""D"" }
+    new() { Name = ""Custom A"", ItemValue = ""A"" },
+    new() { Name = ""Custom B"", ItemValue = ""B"" },
+    new() { Name = ""Custom C"", ItemValue = ""C"" },
+    new() { Name = ""Custom D"", ItemValue = ""D"" }
 };
 
 private readonly List<ChoiceModel> CustomChoiceGroupImageItems = new()
@@ -1422,10 +1416,10 @@ public class ChoiceModel
 
 private readonly List<ChoiceModel> CustomChoiceGroupBasicItems = new()
 {
-    new() { Name = ""Option A"", ItemValue = ""A"" },
-    new() { Name = ""Option B"", ItemValue = ""B"" },
-    new() { Name = ""Option C"", ItemValue = ""C"" },
-    new() { Name = ""Option D"", ItemValue = ""D"" }
+    new() { Name = ""Custom A"", ItemValue = ""A"" },
+    new() { Name = ""Custom B"", ItemValue = ""B"" },
+    new() { Name = ""Custom C"", ItemValue = ""C"" },
+    new() { Name = ""Custom D"", ItemValue = ""D"" }
 };
 
 private readonly List<ChoiceModel> CustomChoiceGroupImageItems = new()
@@ -1509,10 +1503,10 @@ public class ChoiceModel
 
 private readonly List<ChoiceModel> CustomChoiceGroupBasicItems = new()
 {
-    new() { Name = ""Option A"", ItemValue = ""A"" },
-    new() { Name = ""Option B"", ItemValue = ""B"" },
-    new() { Name = ""Option C"", ItemValue = ""C"" },
-    new() { Name = ""Option D"", ItemValue = ""D"" }
+    new() { Name = ""Custom A"", ItemValue = ""A"" },
+    new() { Name = ""Custom B"", ItemValue = ""B"" },
+    new() { Name = ""Custom C"", ItemValue = ""C"" },
+    new() { Name = ""Custom D"", ItemValue = ""D"" }
 };
 
 public class ChoiceGroupValidationModel
@@ -1524,12 +1518,9 @@ public class ChoiceGroupValidationModel
 public ChoiceGroupValidationModel ValidationModel = new();
 public string SuccessMessage;
 
-private async Task HandleValidSubmit()
+private void HandleValidSubmit()
 {
     SuccessMessage = ""Form Submitted Successfully!"";
-    await Task.Delay(3000);
-    SuccessMessage = string.Empty;
-    StateHasChanged();
 }
 
 private void HandleInvalidSubmit()
@@ -1921,12 +1912,9 @@ public class ChoiceGroupValidationModel
 public ChoiceGroupValidationModel ValidationModel = new();
 public string SuccessMessage;
 
-private async Task HandleValidSubmit()
+private void HandleValidSubmit()
 {
     SuccessMessage = ""Form Submitted Successfully!"";
-    await Task.Delay(3000);
-    SuccessMessage = string.Empty;
-    StateHasChanged();
 }
 
 private void HandleInvalidSubmit()

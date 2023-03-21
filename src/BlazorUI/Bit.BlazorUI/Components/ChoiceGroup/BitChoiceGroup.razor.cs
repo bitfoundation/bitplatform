@@ -1,12 +1,14 @@
 ﻿using System.Text;
-using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Linq.Expressions;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
 public partial class BitChoiceGroup<TItem, TValue> where TItem : class
 {
+    protected override bool UseVisual => false;
+
     private const string ARIA_LABEL_FIELD = nameof(BitChoiceGroupItem<TValue>.AriaLabel);
     private const string ID_FIELD = nameof(BitChoiceGroupItem<TValue>.Id);
     private const string IS_ENABLED_FIELD = nameof(BitChoiceGroupItem<TValue>.IsEnabled);
@@ -84,6 +86,8 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
         get => isRequired;
         set
         {
+            if (isRequired == value) return;
+
             isRequired = value;
             ClassBuilder.Reset();
         }
@@ -214,8 +218,6 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
     /// </summary>
     [Parameter] public Expression<Func<TItem, TValue>>? ValueFieldSelector { get; set; }
 
-    protected override string RootElementClass => "bit-chg";
-
     internal void RegisterOption(BitChoiceGroupOption<TValue> option)
     {
         _items.Add((option as TItem)!);
@@ -232,6 +234,17 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
     {
         _items.Remove((option as TItem)!);
         StateHasChanged();
+    }
+
+
+
+    protected override string RootElementClass => "bit-chg";
+
+    protected override void RegisterComponentClasses()
+    {
+        ClassBuilder.Register(() => IsEnabled && IsRequired ? $"{RootElementClass}-required" : string.Empty);
+
+        ClassBuilder.Register(() => IsRtl ? $"{RootElementClass}-rtl" : string.Empty);
     }
 
     protected override async Task OnInitializedAsync()
@@ -272,20 +285,7 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
         }
     }
 
-    protected override void RegisterComponentClasses()
-    {
-        ClassBuilder.Register(() => IsEnabled && IsRequired
-                                   ? $"{RootElementClass}-required-{VisualClassRegistrar()}"
-                                   : string.Empty);
 
-        ClassBuilder.Register(() => ValueInvalid is true
-                                   ? $"{RootElementClass}-invalid-{VisualClassRegistrar()}"
-                                   : string.Empty);
-
-        ClassBuilder.Register(() => IsRtl
-                                   ? $"{RootElementClass}-rtl-{VisualClassRegistrar()}"
-                                   : string.Empty);
-    }
 
     private string? GetAriaLabel(TItem item)
     {
@@ -374,7 +374,7 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
             return choiceGroupOption.ImageSize ?? new Size(0, 0);
         }
 
-        return item.GetValueFromProperty(_internalImageSizeField, new Size(0,0));
+        return item.GetValueFromProperty(_internalImageSizeField, new Size(0, 0));
     }
 
     private BitIconName? GetIconName(TItem item)
@@ -490,7 +490,9 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
     }
 
     private string GetLabelClassNameItem(TItem item) =>
-        (GetImageSrc(item).HasValue() || GetIconName(item).HasValue) && ItemLabelTemplate is null ? "bit-chgi-lbl-with-img" : "bit-chgi-lbl";
+        (GetImageSrc(item).HasValue() || GetIconName(item).HasValue) && ItemLabelTemplate is null 
+        ? "bit-chgi-lbl-with-img" 
+        : "bit-chgi-lbl";
 
     private async Task HandleClick(MouseEventArgs e)
     {

@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using AngleSharp.Dom;
-using Bunit;
+﻿using System.Linq;
+using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Bunit;
+using AngleSharp.Dom;
 
 namespace Bit.BlazorUI.Tests.ChoiceGroup;
 
@@ -10,33 +10,26 @@ namespace Bit.BlazorUI.Tests.ChoiceGroup;
 public class BitChoiceGroupTests : BunitTestContext
 {
     [DataTestMethod,
-      DataRow(Visual.Fluent, true),
-      DataRow(Visual.Cupertino, true),
-      DataRow(Visual.Material, true),
-
-      DataRow(Visual.Fluent, false),
-      DataRow(Visual.Cupertino, false),
-      DataRow(Visual.Material, false),
+      DataRow(true),
+      DataRow(false)
     ]
-    public void BitChoiceGroupShouldTakeCorrectVisualStyle(Visual visual, bool isEnabled)
+    public void BitChoiceGroupShouldTakeCorrectVisualStyle(bool isEnabled)
     {
         var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
         {
             parameters.Add(p => p.Items, GetChoiceGroupItems());
             parameters.Add(p => p.IsEnabled, isEnabled);
-            parameters.Add(p => p.Visual, visual);
         });
 
         var bitChoiceGroup = component.Find(".bit-chg");
-        var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
 
         if (isEnabled)
         {
-            Assert.IsTrue(bitChoiceGroup.ClassList.Contains($"bit-chg-{visualClass}"));
+            Assert.IsFalse(bitChoiceGroup.ClassList.Contains("disabled"));
         }
         else
         {
-            Assert.IsTrue(bitChoiceGroup.ClassList.Contains($"bit-chg-disabled-{visualClass}"));
+            Assert.IsTrue(bitChoiceGroup.ClassList.Contains("disabled"));
         }
     }
 
@@ -74,14 +67,10 @@ public class BitChoiceGroupTests : BunitTestContext
     }
 
     [DataTestMethod,
-      DataRow(Visual.Fluent, false),
-      DataRow(Visual.Cupertino, false),
-      DataRow(Visual.Material, false),
-      DataRow(Visual.Fluent, true),
-      DataRow(Visual.Cupertino, true),
-      DataRow(Visual.Material, true),
+      DataRow(true),
+      DataRow(false)
     ]
-    public void BitChoiceGroupShouldRespectInputClick(Visual visual, bool isEnabled)
+    public void BitChoiceGroupShouldRespectInputClick(bool isEnabled)
     {
         var choiceGroupItems = GetChoiceGroupItems();
 
@@ -89,12 +78,9 @@ public class BitChoiceGroupTests : BunitTestContext
         {
             parameters.Add(p => p.Items, choiceGroupItems);
             parameters.Add(p => p.IsEnabled, isEnabled);
-            parameters.Add(p => p.Visual, visual);
         });
 
         var bitChoiceGroupImages = component.FindAll(".bit-chgi", true);
-
-        var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
 
         foreach (var element in bitChoiceGroupImages)
         {
@@ -110,7 +96,7 @@ public class BitChoiceGroupTests : BunitTestContext
             }
             else
             {
-                Assert.IsTrue(element.ClassList.Contains($"bit-chgi-disabled"));
+                Assert.IsTrue(element.ClassList.Contains("bit-chgi-disabled"));
             }
         }
     }
@@ -193,7 +179,7 @@ public class BitChoiceGroupTests : BunitTestContext
     [DataTestMethod,
       DataRow("This is a AriaLabelledBy")
     ]
-    public void BitChoiceGroupShouldTakeCorrectArials(string ariaLabelledBy)
+    public void BitChoiceGroupShouldTakeCorrectAria(string ariaLabelledBy)
     {
         var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
         {
