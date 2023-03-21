@@ -6,219 +6,219 @@ public partial class BitChoiceGroupDemo
 {
     private readonly List<ComponentParameter> componentParameters = new()
     {
-        new ComponentParameter
+        new()
         {
             Name = "AriaLabelledBy",
             Type = "string?",
             Description = "ID of an element to use as the aria label for this ChoiceGroup."
         },
-        new ComponentParameter
+        new()
         {
             Name = "AriaLabelField",
             Type = "string",
             DefaultValue = "AriaLabel",
             Description = "The name of the field from the model that will be enable item."
         },
-        new ComponentParameter
+        new()
         {
             Name = "AriaLabelFieldSelector",
             Type = "Expression<Func<TItem, string>>?",
             Description = "The name of the field from the model that will be enable item."
         },
-        new ComponentParameter
+        new()
         {
             Name = "ChildContent",
             Type = "RenderFragment?",
             Description = "The content of ChoiceGroup, common values are RadioButtonGroup component."
         },
-        new ComponentParameter
+        new()
         {
             Name = "DefaultValue",
             Type = "string?",
             Description = "Default selected Value for ChoiceGroup."
         },
-        new ComponentParameter
+        new()
         {
             Name = "Items",
             Type = "IEnumerable<TItem>",
             DefaultValue = "new List<TItem>()",
             Description = "Sets the data source that populates the items of the list."
         },
-        new ComponentParameter
+        new()
         {
             Name = "ItemTemplate",
             Type = "RenderFragment<TItem>?",
             Description = "Used to customize the label for the Item content."
         },
-        new ComponentParameter
+        new()
         {
             Name = "ItemLabelTemplate",
             Type = "RenderFragment<TItem>?",
             Description = "Used to customize the label for the Item Label content."
         },
-        new ComponentParameter
+        new()
         {
             Name = "IsRequired",
             Type = "bool",
             DefaultValue = "false",
             Description = "If true, an option must be selected in the ChoiceGroup."
         },
-        new ComponentParameter
+        new()
         {
             Name = "IsEnabledField",
             Type = "string",
             DefaultValue = "IsEnabled",
             Description = "The name of the field from the model that will be enable item."
         },
-        new ComponentParameter
+        new()
         {
             Name = "IsEnabledFieldSelector",
             Type = "Expression<Func<TItem, bool>>?",
             Description = "The field from the model that will be enable item."
         },
-        new ComponentParameter
+        new()
         {
             Name = "IdField",
             Type = "string",
             DefaultValue = "Id",
             Description = "The name of the field from the model that will be the id."
         },
-        new ComponentParameter
+        new()
         {
             Name = "IdFieldSelector",
             Type = "Expression<Func<TItem, string>>?",
             Description = "The name of the field from the model that will be the id."
         },
-        new ComponentParameter
+        new()
         {
             Name = "IconNameField",
             Type = "string",
             DefaultValue = "IconName",
             Description = "The field from the model that will be the BitIconName."
         },
-        new ComponentParameter
+        new()
         {
             Name = "IconNameFieldSelector",
             Type = "Expression<Func<TItem, BitIconName>>?",
             Description = "The field from the model that will be the BitIconName."
         },
-        new ComponentParameter
+        new()
         {
             Name = "ImageSrcField",
             Type = "string",
             DefaultValue = "ImageSrc",
             Description = "The field from the model that will be the image src."
         },
-        new ComponentParameter
+        new()
         {
             Name = "ImageSrcFieldSelector",
             Type = "Expression<Func<TItem, string>>?",
             Description = "The field from the model that will be the image src."
         },
-        new ComponentParameter
+        new()
         {
             Name = "ImageAltField",
             Type = "string",
             DefaultValue = "ImageSrc",
             Description = "The field from the model that will be the image alternate text."
         },
-        new ComponentParameter
+        new()
         {
             Name = "ImageAltFieldSelector",
             Type = "Expression<Func<TItem, string>>?",
             Description = "The field from the model that will be the image alternate text."
         },
-        new ComponentParameter
+        new()
         {
             Name = "ImageSizeField",
             Type = "string",
             DefaultValue = "ImageSize",
             Description = "The name of the field from the model that will be the image alternate text."
         },
-        new ComponentParameter
+        new()
         {
             Name = "ImageSizeFieldSelector",
             Type = "Expression<Func<TItem, Size>>?",
             Description = "The name of the field from the model that will be the image alternate text."
         },
-        new ComponentParameter
+        new()
         {
             Name = "IsRtl",
             Type = "bool",
             DefaultValue = "false",
             Description = "Change direction to RTL."
         },
-        new ComponentParameter
+        new()
         {
             Name = "Label",
             Type = "string?",
             Description = "Descriptive label for the ChoiceGroup."
         },
-        new ComponentParameter
+        new()
         {
             Name = "LabelTemplate",
             Type = "RenderFragment?",
             Description = "Used to customize the label for the ChoiceGroup."
         },
-        new ComponentParameter
+        new()
         {
             Name = "LayoutFlow",
             Type = "BitLayoutFlow?",
             Description = "You can define the ChoiceGroup in Horizontal or Vertical mode."
         },
-        new ComponentParameter
+        new()
         {
             Name = "Name",
             Type = "string",
             DefaultValue = "a Guid",
             Description = "Name of ChoiceGroup, this name is used to group each option into the same logical ChoiceGroup."
         },
-        new ComponentParameter
+        new()
         {
             Name = "OnClick",
             Type = "EventCallback<MouseEventArgs>",
             Description = "Callback for when the option clicked.",
         },
-        new ComponentParameter
+        new()
         {
             Name = "OnChange",
             Type = "EventCallback<MouseEventArgs>",
             Description = "Callback for when the option has been changed.",
         },
-        new ComponentParameter
+        new()
         {
             Name = "SelectedImageSrcField",
             Type = "string",
             DefaultValue = "SelectedImageSrc",
             Description = "The field from the model that will be the selected image src."
         },
-        new ComponentParameter
+        new()
         {
             Name = "SelectedImageSrcFieldSelector",
             Type = "Expression<Func<TItem, string>>?",
             Description = "The field from the model that will be the selected image src."
         },
-        new ComponentParameter
+        new()
         {
             Name = "TextField",
             Type = "string",
             DefaultValue = "Text",
             Description = "The name of the field from the model that will be shown to the user."
         },
-        new ComponentParameter
+        new()
         {
             Name = "TextFieldSelector",
             Type = "Expression<Func<TItem, string>>?",
             Description = "The name of the field from the model that will be shown to the user."
         },
-        new ComponentParameter
+        new()
         {
             Name = "ValueField",
             Type = "string",
             DefaultValue = "Text",
             Description = "The field from the model that will be the underlying value."
         },
-        new ComponentParameter
+        new()
         {
             Name = "ValueFieldSelector",
             Type = "Expression<Func<TItem, TValue>>?",
@@ -227,68 +227,68 @@ public partial class BitChoiceGroupDemo
     };
     private readonly List<ComponentSubParameter> componentSubParameters = new()
     {
-        new ComponentSubParameter()
+        new()
         {
             Id = "choice-group-item",
             Title = "BitChoiceGroupItem",
             Parameters = new List<ComponentParameter>()
             {
-               new ComponentParameter()
+               new()
                {
                    Name = "AriaLabel",
                    Type = "string?",
                    Description = "AriaLabel attribute for the GroupOption Option input.",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "IsEnabled",
                    Type = "bool",
                    DefaultValue = "true",
                    Description = "Whether or not the GroupOption Option is enabled.",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "IconName",
                    Type = "BitIconName?",
                    Description = "The icon to show as Option content.",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "ImageSrc",
                    Type = "string?",
                    Description = "The image address to show as Option content.",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "ImageAlt",
                    Type = "string?",
                    Description = "Provides alternative information for the Option image.",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "ImageSize",
                    Type = "Size?",
                    Description = "Provides Height and Width for the Option image.",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "Id",
                    Type = "string?",
                    Description = "Set attribute of Id for the GroupOption Option input.",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "SelectedImageSrc",
                    Type = "string?",
                    Description = "Provides a new image for the selected Option in the Image-GroupOption.",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "Text",
                    Type = "string?",
                    Description = "Text to show as content of GroupOption Option.",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "Value",
                    Type = "string?",
@@ -296,68 +296,68 @@ public partial class BitChoiceGroupDemo
                }
             }
         },
-        new ComponentSubParameter()
+        new()
         {
             Id = "choice-group-option",
             Title = "BitChoiceGroupOption",
             Parameters = new List<ComponentParameter>()
             {
-               new ComponentParameter()
+               new()
                {
                    Name = "AriaLabel",
                    Type = "string?",
                    Description = "AriaLabel attribute for the GroupOption Option input.",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "IsEnabled",
                    Type = "bool",
                    DefaultValue = "true",
                    Description = "Whether or not the GroupOption Option is enabled.",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "IconName",
                    Type = "BitIconName?",
                    Description = "The icon to show as Option content.",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "ImageSrc",
                    Type = "string?",
                    Description = "The image address to show as Option content.",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "ImageAlt",
                    Type = "string?",
                    Description = "Provides alternative information for the Option image.",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "ImageSize",
                    Type = "Size?",
                    Description = "Provides Height and Width for the Option image.",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "Id",
                    Type = "string?",
                    Description = "Set attribute of Id for the GroupOption Option input.",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "SelectedImageSrc",
                    Type = "string?",
                    Description = "Provides a new image for the selected Option in the Image-GroupOption.",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "Text",
                    Type = "string?",
                    Description = "Text to show as content of GroupOption Option.",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "Value",
                    Type = "string?",
@@ -378,17 +378,17 @@ public partial class BitChoiceGroupDemo
 
     private readonly List<BitChoiceGroupItem<string>> ChoiceGroupBasicItems = new()
     {
-        new() { Text = "Option A", Value = "A" },
-        new() { Text = "Option B", Value = "B" },
-        new() { Text = "Option C", Value = "C" },
-        new() { Text = "Option D", Value = "D" }
+        new() { Text = "Item A", Value = "A" },
+        new() { Text = "Item B", Value = "B" },
+        new() { Text = "Item C", Value = "C" },
+        new() { Text = "Item D", Value = "D" }
     };
     private readonly List<BitChoiceGroupItem<string>> ChoiceGroupDisabledItems = new()
     {
-        new() { Text = "Option A", Value = "A" },
-        new() { Text = "Option B", Value = "B" },
-        new() { Text = "Option C", Value = "C", IsEnabled = false },
-        new() { Text = "Option D", Value = "D" }
+        new() { Text = "Item A", Value = "A" },
+        new() { Text = "Item B", Value = "B" },
+        new() { Text = "Item C", Value = "C", IsEnabled = false },
+        new() { Text = "Item D", Value = "D" }
     };
     private readonly List<BitChoiceGroupItem<string>> ChoiceGroupImageItems = new()
     {
@@ -426,17 +426,17 @@ public partial class BitChoiceGroupDemo
 
     private readonly List<ChoiceModel> CustomChoiceGroupBasicItems = new()
     {
-        new() { Name = "Option A", ItemValue = "A" },
-        new() { Name = "Option B", ItemValue = "B" },
-        new() { Name = "Option C", ItemValue = "C" },
-        new() { Name = "Option D", ItemValue = "D" }
+        new() { Name = "Custom A", ItemValue = "A" },
+        new() { Name = "Custom B", ItemValue = "B" },
+        new() { Name = "Custom C", ItemValue = "C" },
+        new() { Name = "Custom D", ItemValue = "D" }
     };
     private readonly List<ChoiceModel> CustomChoiceGroupDisabledItems = new()
     {
-        new() { Name = "Option A", ItemValue = "A" },
-        new() { Name = "Option B", ItemValue = "B" },
-        new() { Name = "Option C", ItemValue = "C", IsEnabled = false },
-        new() { Name = "Option D", ItemValue = "D" }
+        new() { Name = "Custom A", ItemValue = "A" },
+        new() { Name = "Custom B", ItemValue = "B" },
+        new() { Name = "Custom C", ItemValue = "C", IsEnabled = false },
+        new() { Name = "Custom D", ItemValue = "D" }
     };
     private readonly List<ChoiceModel> CustomChoiceGroupImageItems = new()
     {
@@ -472,12 +472,9 @@ public partial class BitChoiceGroupDemo
         new() { Name = "Month", ItemValue = "Month", IconName = BitIconName.Calendar }
     };
 
-    private async Task HandleValidSubmit()
+    private void HandleValidSubmit()
     {
         SuccessMessage = "Form Submitted Successfully!";
-        await Task.Delay(3000);
-        SuccessMessage = string.Empty;
-        StateHasChanged();
     }
 
     private void HandleInvalidSubmit()
@@ -491,10 +488,10 @@ public partial class BitChoiceGroupDemo
     private readonly string example1BitChoiceGroupItemCSharpCode = @"
 private readonly List<BitChoiceGroupItem> ChoiceGroupBasicItems<string> = new()
 {
-    new() { Text = ""Option A"", Value = ""A"" },
-    new() { Text = ""Option B"", Value = ""B"" },
-    new() { Text = ""Option C"", Value = ""C"" },
-    new() { Text = ""Option D"", Value = ""D"" }
+    new() { Text = ""Item A"", Value = ""A"" },
+    new() { Text = ""Item B"", Value = ""B"" },
+    new() { Text = ""Item C"", Value = ""C"" },
+    new() { Text = ""Item D"", Value = ""D"" }
 };
 ";
 
@@ -511,17 +508,17 @@ private readonly List<BitChoiceGroupItem> ChoiceGroupBasicItems<string> = new()
     private readonly string example2BitChoiceGroupItemCSharpCode = @"
 private readonly List<BitChoiceGroupItem> ChoiceGroupBasicItems<string> = new()
 {
-    new() { Text = ""Option A"", Value = ""A"" },
-    new() { Text = ""Option B"", Value = ""B"" },
-    new() { Text = ""Option C"", Value = ""C"" },
-    new() { Text = ""Option D"", Value = ""D"" }
+    new() { Text = ""Item A"", Value = ""A"" },
+    new() { Text = ""Item B"", Value = ""B"" },
+    new() { Text = ""Item C"", Value = ""C"" },
+    new() { Text = ""Item D"", Value = ""D"" }
 };
 private readonly List<BitChoiceGroupItem> ChoiceGroupDisabledItems<string> = new()
 {
-    new() { Text = ""Option A"", Value = ""A"" },
-    new() { Text = ""Option B"", Value = ""B"" },
-    new() { Text = ""Option C"", Value = ""C"", IsEnabled = false },
-    new() { Text = ""Option D"", Value = ""D"" }
+    new() { Text = ""Item A"", Value = ""A"" },
+    new() { Text = ""Item B"", Value = ""B"" },
+    new() { Text = ""Item C"", Value = ""C"", IsEnabled = false },
+    new() { Text = ""Item D"", Value = ""D"" }
 };
 ";
 
@@ -583,10 +580,10 @@ private readonly List<BitChoiceGroupItem> ChoiceGroupIconItems<string> = new()
     private readonly string example5BitChoiceGroupItemCSharpCode = @"
 private readonly List<BitChoiceGroupItem> ChoiceGroupBasicItems<string> = new()
 {
-    new() { Text = ""Option A"", Value = ""A"" },
-    new() { Text = ""Option B"", Value = ""B"" },
-    new() { Text = ""Option C"", Value = ""C"" },
-    new() { Text = ""Option D"", Value = ""D"" }
+    new() { Text = ""Item A"", Value = ""A"" },
+    new() { Text = ""Item B"", Value = ""B"" },
+    new() { Text = ""Item C"", Value = ""C"" },
+    new() { Text = ""Item D"", Value = ""D"" }
 };
 ";
 
@@ -682,10 +679,10 @@ private string ChoiceGroupWithOptionLabelTemplateValue = ""Day"";
     private readonly string example7BitChoiceGroupItemCSharpCode = @"
 private readonly List<BitChoiceGroupItem> ChoiceGroupBasicItems<string> = new()
 {
-    new() { Text = ""Option A"", Value = ""A"" },
-    new() { Text = ""Option B"", Value = ""B"" },
-    new() { Text = ""Option C"", Value = ""C"" },
-    new() { Text = ""Option D"", Value = ""D"" }
+    new() { Text = ""Item A"", Value = ""A"" },
+    new() { Text = ""Item B"", Value = ""B"" },
+    new() { Text = ""Item C"", Value = ""C"" },
+    new() { Text = ""Item D"", Value = ""D"" }
 };
 
 private string ChoiceGroupOneWayValue = ""A"";
@@ -719,10 +716,10 @@ private string ChoiceGroupTwoWayValue = ""A"";
     private readonly string example8BitChoiceGroupItemCSharpCode = @"
 private readonly List<BitChoiceGroupItem> ChoiceGroupBasicItems<string> = new()
 {
-    new() { Text = ""Option A"", Value = ""A"" },
-    new() { Text = ""Option B"", Value = ""B"" },
-    new() { Text = ""Option C"", Value = ""C"" },
-    new() { Text = ""Option D"", Value = ""D"" }
+    new() { Text = ""Item A"", Value = ""A"" },
+    new() { Text = ""Item B"", Value = ""B"" },
+    new() { Text = ""Item C"", Value = ""C"" },
+    new() { Text = ""Item D"", Value = ""D"" }
 };
 
 private readonly List<BitChoiceGroupItem> ChoiceGroupImageItems<string> = new()
@@ -792,10 +789,10 @@ private string ChoiceGroupLayoutFlowWithOptionTemplateValue = ""Day"";
     private readonly string example9BitChoiceGroupItemCSharpCode = @"
 private readonly List<BitChoiceGroupItem> ChoiceGroupBasicItems<string> = new()
 {
-    new() { Text = ""Option A"", Value = ""A"" },
-    new() { Text = ""Option B"", Value = ""B"" },
-    new() { Text = ""Option C"", Value = ""C"" },
-    new() { Text = ""Option D"", Value = ""D"" }
+    new() { Text = ""Item A"", Value = ""A"" },
+    new() { Text = ""Item B"", Value = ""B"" },
+    new() { Text = ""Item C"", Value = ""C"" },
+    new() { Text = ""Item D"", Value = ""D"" }
 };
 
 private readonly List<BitChoiceGroupItem> ChoiceGroupImageItems<string> = new()
@@ -864,10 +861,10 @@ else
     private readonly string example10BitChoiceGroupItemCSharpCode = @"
 private readonly List<BitChoiceGroupItem> ChoiceGroupBasicItems<string> = new()
 {
-    new() { Text = ""Option A"", Value = ""A"" },
-    new() { Text = ""Option B"", Value = ""B"" },
-    new() { Text = ""Option C"", Value = ""C"" },
-    new() { Text = ""Option D"", Value = ""D"" }
+    new() { Text = ""Item A"", Value = ""A"" },
+    new() { Text = ""Item B"", Value = ""B"" },
+    new() { Text = ""Item C"", Value = ""C"" },
+    new() { Text = ""Item D"", Value = ""D"" }
 };
 
 public class ChoiceGroupValidationModel
@@ -879,12 +876,9 @@ public class ChoiceGroupValidationModel
 public ChoiceGroupValidationModel ValidationModel = new();
 public string SuccessMessage;
 
-private async Task HandleValidSubmit()
+private void HandleValidSubmit()
 {
     SuccessMessage = ""Form Submitted Successfully!"";
-    await Task.Delay(3000);
-    SuccessMessage = string.Empty;
-    StateHasChanged();
 }
 
 private void HandleInvalidSubmit()
@@ -916,10 +910,10 @@ public class ChoiceModel
 
 private readonly List<ChoiceModel> CustomChoiceGroupBasicItems = new()
 {
-    new() { Name = ""Option A"", ItemValue = ""A"" },
-    new() { Name = ""Option B"", ItemValue = ""B"" },
-    new() { Name = ""Option C"", ItemValue = ""C"" },
-    new() { Name = ""Option D"", ItemValue = ""D"" }
+    new() { Name = ""Custom A"", ItemValue = ""A"" },
+    new() { Name = ""Custom B"", ItemValue = ""B"" },
+    new() { Name = ""Custom C"", ItemValue = ""C"" },
+    new() { Name = ""Custom D"", ItemValue = ""D"" }
 };
 ";
 
@@ -952,17 +946,17 @@ public class ChoiceModel
 
 private readonly List<ChoiceModel> CustomChoiceGroupBasicItems = new()
 {
-    new() { Name = ""Option A"", ItemValue = ""A"" },
-    new() { Name = ""Option B"", ItemValue = ""B"" },
-    new() { Name = ""Option C"", ItemValue = ""C"" },
-    new() { Name = ""Option D"", ItemValue = ""D"" }
+    new() { Name = ""Custom A"", ItemValue = ""A"" },
+    new() { Name = ""Custom B"", ItemValue = ""B"" },
+    new() { Name = ""Custom C"", ItemValue = ""C"" },
+    new() { Name = ""Custom D"", ItemValue = ""D"" }
 };
 private readonly List<ChoiceModel> CustomChoiceGroupDisabledItems = new()
 {
-    new() { Name = ""Option A"", ItemValue = ""A"" },
-    new() { Name = ""Option B"", ItemValue = ""B"" },
-    new() { Name = ""Option C"", ItemValue = ""C"", IsEnabled = false },
-    new() { Name = ""Option D"", ItemValue = ""D"" }
+    new() { Name = ""Custom A"", ItemValue = ""A"" },
+    new() { Name = ""Custom B"", ItemValue = ""B"" },
+    new() { Name = ""Custom C"", ItemValue = ""C"", IsEnabled = false },
+    new() { Name = ""Custom D"", ItemValue = ""D"" }
 };
 ";
 
@@ -1076,10 +1070,10 @@ public class ChoiceModel
 
 private readonly List<ChoiceModel> CustomChoiceGroupBasicItems = new()
 {
-    new() { Name = ""Option A"", ItemValue = ""A"" },
-    new() { Name = ""Option B"", ItemValue = ""B"" },
-    new() { Name = ""Option C"", ItemValue = ""C"" },
-    new() { Name = ""Option D"", ItemValue = ""D"" }
+    new() { Name = ""Custom A"", ItemValue = ""A"" },
+    new() { Name = ""Custom B"", ItemValue = ""B"" },
+    new() { Name = ""Custom C"", ItemValue = ""C"" },
+    new() { Name = ""Custom D"", ItemValue = ""D"" }
 };
 ";
 
@@ -1209,10 +1203,10 @@ public class ChoiceModel
 
 private readonly List<ChoiceModel> CustomChoiceGroupBasicItems = new()
 {
-    new() { Name = ""Option A"", ItemValue = ""A"" },
-    new() { Name = ""Option B"", ItemValue = ""B"" },
-    new() { Name = ""Option C"", ItemValue = ""C"" },
-    new() { Name = ""Option D"", ItemValue = ""D"" }
+    new() { Name = ""Custom A"", ItemValue = ""A"" },
+    new() { Name = ""Custom B"", ItemValue = ""B"" },
+    new() { Name = ""Custom C"", ItemValue = ""C"" },
+    new() { Name = ""Custom D"", ItemValue = ""D"" }
 };
 
 private string ChoiceGroupOneWayValue = ""A"";
@@ -1296,10 +1290,10 @@ public class ChoiceModel
 
 private readonly List<ChoiceModel> CustomChoiceGroupBasicItems = new()
 {
-    new() { Name = ""Option A"", ItemValue = ""A"" },
-    new() { Name = ""Option B"", ItemValue = ""B"" },
-    new() { Name = ""Option C"", ItemValue = ""C"" },
-    new() { Name = ""Option D"", ItemValue = ""D"" }
+    new() { Name = ""Custom A"", ItemValue = ""A"" },
+    new() { Name = ""Custom B"", ItemValue = ""B"" },
+    new() { Name = ""Custom C"", ItemValue = ""C"" },
+    new() { Name = ""Custom D"", ItemValue = ""D"" }
 };
 
 private readonly List<ChoiceModel> CustomChoiceGroupImageItems = new()
@@ -1422,10 +1416,10 @@ public class ChoiceModel
 
 private readonly List<ChoiceModel> CustomChoiceGroupBasicItems = new()
 {
-    new() { Name = ""Option A"", ItemValue = ""A"" },
-    new() { Name = ""Option B"", ItemValue = ""B"" },
-    new() { Name = ""Option C"", ItemValue = ""C"" },
-    new() { Name = ""Option D"", ItemValue = ""D"" }
+    new() { Name = ""Custom A"", ItemValue = ""A"" },
+    new() { Name = ""Custom B"", ItemValue = ""B"" },
+    new() { Name = ""Custom C"", ItemValue = ""C"" },
+    new() { Name = ""Custom D"", ItemValue = ""D"" }
 };
 
 private readonly List<ChoiceModel> CustomChoiceGroupImageItems = new()
@@ -1509,10 +1503,10 @@ public class ChoiceModel
 
 private readonly List<ChoiceModel> CustomChoiceGroupBasicItems = new()
 {
-    new() { Name = ""Option A"", ItemValue = ""A"" },
-    new() { Name = ""Option B"", ItemValue = ""B"" },
-    new() { Name = ""Option C"", ItemValue = ""C"" },
-    new() { Name = ""Option D"", ItemValue = ""D"" }
+    new() { Name = ""Custom A"", ItemValue = ""A"" },
+    new() { Name = ""Custom B"", ItemValue = ""B"" },
+    new() { Name = ""Custom C"", ItemValue = ""C"" },
+    new() { Name = ""Custom D"", ItemValue = ""D"" }
 };
 
 public class ChoiceGroupValidationModel
@@ -1524,12 +1518,9 @@ public class ChoiceGroupValidationModel
 public ChoiceGroupValidationModel ValidationModel = new();
 public string SuccessMessage;
 
-private async Task HandleValidSubmit()
+private void HandleValidSubmit()
 {
     SuccessMessage = ""Form Submitted Successfully!"";
-    await Task.Delay(3000);
-    SuccessMessage = string.Empty;
-    StateHasChanged();
 }
 
 private void HandleInvalidSubmit()
@@ -1921,12 +1912,9 @@ public class ChoiceGroupValidationModel
 public ChoiceGroupValidationModel ValidationModel = new();
 public string SuccessMessage;
 
-private async Task HandleValidSubmit()
+private void HandleValidSubmit()
 {
     SuccessMessage = ""Form Submitted Successfully!"";
-    await Task.Delay(3000);
-    SuccessMessage = string.Empty;
-    StateHasChanged();
 }
 
 private void HandleInvalidSubmit()

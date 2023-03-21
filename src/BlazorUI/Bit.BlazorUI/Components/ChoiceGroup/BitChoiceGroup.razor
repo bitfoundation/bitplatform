@@ -18,7 +18,7 @@
 
     <div role="radiogroup" aria-labelledby="@GetAriaLabelledBy()">
         
-        <label class="bit-rbl-label" id="@_labelId" disabled="@(IsEnabled is false)">
+        <label class="bit-chg-label" id="@_labelId" disabled="@(IsEnabled is false)">
             @if (LabelTemplate is not null)
             {
                 @LabelTemplate
@@ -29,7 +29,7 @@
             }
         </label>
 
-        <div class="choice-field-group @LayoutFlow?.GetDisplayName()">
+        <div class="bit-chg-field-group @LayoutFlow?.GetDisplayName()">
             @foreach (var item in _items)
             {
                 <div class="@GetDivClassNameItem(item)">
@@ -37,7 +37,7 @@
                            @onclick="HandleClick"
                            @onchange="() => HandleChange(new ChangeEventArgs { Value = GetValue(item) })"
                            id="@GetInputId(item)"
-                           class="input"
+                           class="bit-chgi-input"
                            aria-label="@GetAriaLabel(item)"
                            type="radio"
                            checked=@GetIsCheckedItem(item)
@@ -55,7 +55,6 @@
                         else
                         {
                             <div class="@GetLabelClassNameItem(item)">
-
                                 @if (ItemLabelTemplate is not null)
                                 {
                                     @ItemLabelTemplate(item)
@@ -64,9 +63,9 @@
                                 {
                                     @if (GetImageSrc(item).HasValue())
                                     {
-                                        <div class="img-inner-field">
-                                            <div class="img-wrapper">
-                                                <div class="img" style="@($"width:{GetImageSize(item).Width}px; height:{GetImageSize(item).Height}px;")">
+                                        <div class="bit-chgi-img-field">
+                                            <div class="bit-chgi-img-wrapper">
+                                                <div class="bit-chgi-img" style="@($"width:{GetImageSize(item).Width}px; height:{GetImageSize(item).Height}px;")">
                                                     <img src="@(GetIsCheckedItem(item) ? GetSelectedImageSrc(item) : GetImageSrc(item))" alt="@GetImageAlt(item)">
                                                 </div>
                                             </div>
@@ -74,23 +73,23 @@
                                     }
                                     @if (GetIconName(item).HasValue)
                                     {
-                                        <div class="icon-inner-field">
-                                            <div class="icon-wrapper">
+                                        <div class="bit-chgi-icon-field">
+                                            <div class="bit-chgi-icon-wrapper">
                                                 <i aria-hidden="true" class="bit-icon bit-icon--@GetIconName(item).GetName()"></i>
                                             </div>
                                         </div>
                                     }
                                     @if (GetImageSrc(item).HasValue() || GetIconName(item).HasValue)
                                     {
-                                        <div class="txt-wrapper">
-                                            <span class="txt">
+                                        <div class="bit-chgi-txt-wrapper">
+                                            <span class="bit-chgi-txt">
                                                 @GetText(item)
                                             </span>
                                         </div>
                                     }
                                     else
                                     {
-                                        <span class="txt">
+                                        <span class="bit-chgi-txt">
                                             @GetText(item)
                                         </span>
                                     }
