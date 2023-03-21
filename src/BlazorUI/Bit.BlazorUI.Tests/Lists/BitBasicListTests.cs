@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using static Bit.BlazorUI.Tests.Lists.BitBasicListTest;
 
 namespace Bit.BlazorUI.Tests.Lists;
 
