@@ -1,45 +1,42 @@
 ﻿<EditForm Model="@TestModel" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit">
     <DataAnnotationsValidator />
 
-    <CascadingValue Value="Visual">
-        <BitTextField MaxLength="MaxLength"
-                      IsMultiline="IsMultiline"
-                      Type="Type"
-                      Placeholder="@Placeholder"
-                      IsReadonly="IsReadOnly"
-                      IsRequired="IsRequired"
-                      IsEnabled="IsEnabled"
-                      IconName="@IconName"
-                      @bind-Value="@TestModel.Value"
-                      CanRevealPassword="CanRevealPassword"
-                      RevealPasswordAriaLabel="@RevealPasswordAriaLabel"
-                      OnClick="HandleClick"
-                      OnChange="HandleChange"
-                      OnFocus="HandleFocus"
-                      OnFocusIn="HandleFocusIn"
-                      OnFocusOut="HandleFocusOut"
-                      OnKeyDown="HandleKeyDown"
-                      OnKeyUp="HandleKeyUp"
-                      AriaLabel="@AriaLabel"
-                      Label="@Label"
-                      IsUnderlined="IsUnderlined"
-                      HasBorder="HasBorder"
-                      DefaultValue="@DefaultValue"
-                      Description="@Description"
-                      Prefix="@Prefix"
-                      Suffix="@Suffix"
-                      Rows="Rows"
-                      IsResizable="IsResizable"
-                      AutoComplete="@AutoComplete">
-        </BitTextField>
-    </CascadingValue>
+    <BitTextField MaxLength="MaxLength"
+                  IsMultiline="IsMultiline"
+                  Type="Type"
+                  Placeholder="@Placeholder"
+                  IsReadonly="IsReadOnly"
+                  IsRequired="IsRequired"
+                  IsEnabled="IsEnabled"
+                  IconName="@IconName"
+                  @bind-Value="@TestModel.Value"
+                  CanRevealPassword="CanRevealPassword"
+                  RevealPasswordAriaLabel="@RevealPasswordAriaLabel"
+                  OnClick="HandleClick"
+                  OnChange="HandleChange"
+                  OnFocus="HandleFocus"
+                  OnFocusIn="HandleFocusIn"
+                  OnFocusOut="HandleFocusOut"
+                  OnKeyDown="HandleKeyDown"
+                  OnKeyUp="HandleKeyUp"
+                  AriaLabel="@AriaLabel"
+                  Label="@Label"
+                  IsUnderlined="IsUnderlined"
+                  HasBorder="HasBorder"
+                  DefaultValue="@DefaultValue"
+                  Description="@Description"
+                  Prefix="@Prefix"
+                  Suffix="@Suffix"
+                  Rows="Rows"
+                  IsResizable="IsResizable"
+                  AutoComplete="@AutoComplete">
+    </BitTextField>
 
 </EditForm>
 
 @code {
     [Parameter] public int MaxLength { get; set; } = -1;
     [Parameter] public BitIconName? IconName { get; set; }
-    [Parameter] public Visual Visual { get; set; }
     [Parameter] public bool IsMultiline { get; set; }
     [Parameter] public bool IsEnabled { get; set; } = true;
     [Parameter] public bool IsReadOnly { get; set; }
