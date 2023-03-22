@@ -10,10 +10,10 @@ public class BitColorTests
     {
         var bitColor = new BitColor(color);
 
-        Assert.AreEqual(bitColor.Red, 93);
-        Assert.AreEqual(bitColor.Green, 9);
-        Assert.AreEqual(bitColor.Blue, 20);
-        Assert.AreEqual(bitColor.Alpha, 1);
+        Assert.AreEqual(93, bitColor.Red);
+        Assert.AreEqual(9, bitColor.Green);
+        Assert.AreEqual(20, bitColor.Blue);
+        Assert.AreEqual(1, bitColor.Alpha);
     }
 
     [DataTestMethod, DataRow("#5d0914", 0.6)]
@@ -21,9 +21,9 @@ public class BitColorTests
     {
         var bitColor = new BitColor(color, alpha);
 
-        Assert.AreEqual(bitColor.Red, 93);
-        Assert.AreEqual(bitColor.Green, 9);
-        Assert.AreEqual(bitColor.Blue, 20);
+        Assert.AreEqual(93, bitColor.Red);
+        Assert.AreEqual(9, bitColor.Green);
+        Assert.AreEqual(20, bitColor.Blue);
         Assert.AreEqual(bitColor.Alpha, alpha);
     }
 
@@ -32,8 +32,8 @@ public class BitColorTests
     {
         var bitColor = new BitColor(color);
 
-        Assert.AreEqual(bitColor.Hex, "#5d0914");
-        Assert.AreEqual(bitColor.Alpha, 1);
+        Assert.AreEqual("#5d0914", bitColor.Hex);
+        Assert.AreEqual(1, bitColor.Alpha);
     }
 
     [DataTestMethod, DataRow("rgb(93,9,20)", 0.6)]
@@ -41,8 +41,8 @@ public class BitColorTests
     {
         var bitColor = new BitColor(color, alpha);
 
-        Assert.AreEqual(bitColor.Hex, "#5d0914");
-        Assert.AreEqual(bitColor.Alpha, alpha);
+        Assert.AreEqual("#5d0914", bitColor.Hex);
+        Assert.AreEqual(alpha, bitColor.Alpha);
     }
 
     [DataTestMethod, DataRow(93, 9, 20, 0.6)]
@@ -51,8 +51,8 @@ public class BitColorTests
         var bitColor = new BitColor();
         bitColor.SetColorByRgba(red, green, blue, alpha);
 
-        Assert.AreEqual(bitColor.Hex, "#5d0914");
-        Assert.AreEqual(bitColor.Alpha, alpha);
+        Assert.AreEqual("#5d0914", bitColor.Hex);
+        Assert.AreEqual(alpha, bitColor.Alpha);
     }
 
     // In computer graphics,  HSV and RGB parameters may be represented by integers from 0 to 255 instead of  real numbers.
@@ -63,10 +63,10 @@ public class BitColorTests
     {
         var bitColor = new BitColor(color);
 
-        Assert.AreEqual(bitColor.Hsv.Hue, 352);
-        Assert.AreEqual(bitColor.Hsv.Saturation, 90);
-        Assert.AreEqual(bitColor.Hsv.Value, 36);
-        Assert.AreEqual(bitColor.Alpha, 1);
+        Assert.AreEqual(352, bitColor.Hsv.Hue);
+        Assert.AreEqual(90, bitColor.Hsv.Saturation);
+        Assert.AreEqual(36, bitColor.Hsv.Value);
+        Assert.AreEqual(1, bitColor.Alpha);
     }
 
     [DataTestMethod, DataRow(352, 90, 36, 0.9)]
@@ -74,6 +74,6 @@ public class BitColorTests
     {
         var bitColor = new BitColor(hue, saturation, value, alpha);
 
-        Assert.AreEqual(bitColor.Hex, "#5b0914");
+        Assert.AreEqual("#5b0914", bitColor.Hex);
     }
 }

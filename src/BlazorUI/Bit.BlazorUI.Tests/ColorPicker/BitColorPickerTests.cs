@@ -17,19 +17,27 @@ public class BitColorPickerTests : BunitTestContext
         DataRow(true),
         DataRow(false)
     ]
-    public void BitColorPickerMustRespecUiChange(bool visibility)
+    public void BitColorPickerMustRespectUiChange(bool visibility)
     {
-        var cut = RenderComponent<BitColorPickerTest>(parameters =>
+        var com = RenderComponent<BitColorPicker>(parameters =>
         {
             parameters.Add(p => p.ShowAlphaSlider, visibility);
             parameters.Add(p => p.ShowPreview, visibility);
             parameters.Add(p => p.Color, "rgb(255,255,255)");
         });
 
-        if (visibility is false)
+        if (visibility)
         {
-            Assert.ThrowsException<ElementNotFoundException>(() => cut.Find(".alpha-slider"));
-            Assert.ThrowsException<ElementNotFoundException>(() => cut.Find(".preview-box"));
+            var slider = com.Find(".alpha-slider");
+            Assert.IsNotNull(slider);
+
+            var previewBox = com.Find(".preview-box");
+            Assert.IsNotNull(previewBox);
+        }
+        else
+        {
+            Assert.ThrowsException<ElementNotFoundException>(() => com.Find(".alpha-slider"));
+            Assert.ThrowsException<ElementNotFoundException>(() => com.Find(".preview-box"));
         }
     }
 
@@ -38,17 +46,19 @@ public class BitColorPickerTests : BunitTestContext
         DataRow("rgba(3,98,252,0.3)", "#0362fc", "rgb(3,98,252)", 0.3),
         DataRow("rgb(252,3,240)", "#fc03f0", "rgb(252,3,240)", 1)
     ]
-    public void BitColorPickerMustRespecValueChange(string color, string hex, string rgb, double alpha)
+    public void BitColorPickerMustRespectValueChange(string color, string hex, string rgb, double alpha)
     {
-        var cut = RenderComponent<BitColorPickerTest>(parameters =>
+        var com = RenderComponent<BitColorPicker>(parameters =>
         {
             parameters.Add(p => p.Color, color);
             parameters.Add(p => p.Alpha, alpha);
         });
 
-        Assert.AreEqual(color, cut.Instance.Color);
-        Assert.AreEqual(hex, cut.Instance.ElementReference.Hex);
-        Assert.AreEqual(rgb, cut.Instance.ElementReference.Rgb);
-        Assert.AreEqual(alpha, cut.Instance.Alpha);
+        var expectedColor = color.StartsWith("#") ? hex : rgb;
+
+        Assert.AreEqual(expectedColor, com.Instance.Color);
+        Assert.AreEqual(hex, com.Instance.Hex);
+        Assert.AreEqual(rgb, com.Instance.Rgb);
+        Assert.AreEqual(alpha, com.Instance.Alpha);
     }
 }
