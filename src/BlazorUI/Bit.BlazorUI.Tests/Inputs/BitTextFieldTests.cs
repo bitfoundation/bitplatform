@@ -107,7 +107,7 @@ public class BitTextFieldTests : BunitTestContext
     [DataTestMethod, DataRow(BitIconName.Emoji2)]
     public void BitTextFieldShouldAcceptIcon(BitIconName iconName)
     {
-        var component = RenderComponent<BitTextFieldTest>(parameters =>
+        var component = RenderComponent<BitTextField>(parameters =>
         {
             parameters.Add(p => p.IconName, iconName);
         });
