@@ -20,8 +20,8 @@ public class BitNumericTextFieldUIntTests : BunitTestContext
     }
 
     [DataTestMethod,
-     DataRow(null),
-     DataRow("The Label")
+         DataRow(null),
+         DataRow("The Label")
     ]
     public void BitNumericTextFieldShouldHaveCorrectLabel(string label)
     {
@@ -42,8 +42,8 @@ public class BitNumericTextFieldUIntTests : BunitTestContext
     }
 
     [DataTestMethod,
-     DataRow(true),
-     DataRow(false)
+         DataRow(true),
+         DataRow(false)
     ]
     public void BitNumericTextFieldShouldRenderCorrectlyWithArrows(bool arrows)
     {
@@ -68,13 +68,13 @@ public class BitNumericTextFieldUIntTests : BunitTestContext
     }
 
     [DataTestMethod,
-     DataRow(null, null),
-     DataRow(BitIconName.IncreaseIndentLegacy, null),
-     DataRow(BitIconName.IncreaseIndentLegacy, "BitNumericTextFieldButtonIcon")
+         DataRow(null, null),
+         DataRow(BitIconName.IncreaseIndentLegacy, null),
+         DataRow(BitIconName.IncreaseIndentLegacy, "BitNumericTextFieldButtonIcon")
     ]
     public void BitNumericTextFieldShouldRenderCorrectIconWithEnableArrows(BitIconName? iconName, string iconAriaLabel)
     {
-        var component = RenderComponent<BitNumericTextFieldUIntTest>(parameters =>
+        var component = RenderComponent<BitNumericTextField<uint>>(parameters =>
         {
             parameters.Add(p => p.IconName, iconName);
             parameters.Add(p => p.IconAriaLabel, iconAriaLabel);
@@ -98,13 +98,13 @@ public class BitNumericTextFieldUIntTests : BunitTestContext
     }
 
     [DataTestMethod,
-     DataRow(null, null),
-     DataRow(BitIconName.IncreaseIndentLegacy, null),
-     DataRow(BitIconName.IncreaseIndentLegacy, "BitNumericTextFieldButtonIcon")
+         DataRow(null, null),
+         DataRow(BitIconName.IncreaseIndentLegacy, null),
+         DataRow(BitIconName.IncreaseIndentLegacy, "BitNumericTextFieldButtonIcon")
     ]
     public void BitNumericTextFieldShouldRenderCorrectIcon(BitIconName? iconName, string iconAriaLabel)
     {
-        var component = RenderComponent<BitNumericTextFieldUIntTest>(parameters =>
+        var component = RenderComponent<BitNumericTextField<uint>>(parameters =>
         {
             parameters.Add(p => p.IconName, iconName);
             parameters.Add(p => p.IconAriaLabel, iconAriaLabel);
@@ -127,14 +127,14 @@ public class BitNumericTextFieldUIntTests : BunitTestContext
     }
 
     [DataTestMethod,
-     DataRow(BitIconName.IncreaseIndentLegacy, null, true),
-     DataRow(BitIconName.IncreaseIndentLegacy, null, false),
-     DataRow(BitIconName.IncreaseIndentLegacy, "BitNumericTextFieldButtonIcon", true),
-     DataRow(BitIconName.IncreaseIndentLegacy, "BitNumericTextFieldButtonIcon", false)
+         DataRow(BitIconName.IncreaseIndentLegacy, null, true),
+         DataRow(BitIconName.IncreaseIndentLegacy, null, false),
+         DataRow(BitIconName.IncreaseIndentLegacy, "BitNumericTextFieldButtonIcon", true),
+         DataRow(BitIconName.IncreaseIndentLegacy, "BitNumericTextFieldButtonIcon", false)
     ]
     public void BitNumericTextFieldShouldRenderCorrectIncrementButton(BitIconName iconName, string iconAriaLabel, bool isEnabled)
     {
-        var component = RenderComponent<BitNumericTextFieldUIntTest>(parameters =>
+        var component = RenderComponent<BitNumericTextField<uint>>(parameters =>
         {
             parameters.Add(p => p.IncrementIconName, iconName);
             parameters.Add(p => p.IncrementAriaLabel, iconAriaLabel);
@@ -156,14 +156,14 @@ public class BitNumericTextFieldUIntTests : BunitTestContext
     }
 
     [DataTestMethod,
-     DataRow(BitIconName.IncreaseIndentLegacy, null, true),
-     DataRow(BitIconName.IncreaseIndentLegacy, null, false),
-     DataRow(BitIconName.IncreaseIndentLegacy, "BitNumericTextFieldButtonIcon", true),
-     DataRow(BitIconName.IncreaseIndentLegacy, "BitNumericTextFieldButtonIcon", false)
+         DataRow(BitIconName.IncreaseIndentLegacy, null, true),
+         DataRow(BitIconName.IncreaseIndentLegacy, null, false),
+         DataRow(BitIconName.IncreaseIndentLegacy, "BitNumericTextFieldButtonIcon", true),
+         DataRow(BitIconName.IncreaseIndentLegacy, "BitNumericTextFieldButtonIcon", false)
     ]
     public void BitNumericTextFieldShouldRenderCorrectDecrementButton(BitIconName iconName, string iconAriaLabel, bool isEnabled)
     {
-        var component = RenderComponent<BitNumericTextFieldUIntTest>(parameters =>
+        var component = RenderComponent<BitNumericTextField<uint>>(parameters =>
         {
             parameters.Add(p => p.DecrementIconName, iconName);
             parameters.Add(p => p.DecrementAriaLabel, iconAriaLabel);
@@ -185,16 +185,13 @@ public class BitNumericTextFieldUIntTests : BunitTestContext
     }
 
     [DataTestMethod,
-     DataRow(" cm"),
-     DataRow(" Inch"),
-     DataRow(" foot")
+         DataRow(" cm"),
+         DataRow(" Inch"),
+         DataRow(" foot")
     ]
     public void BitNumericTextFieldShouldHaveSuffixWhenItsPropertySet(string suffix)
     {
-        var component = RenderComponent<BitNumericTextFieldUIntTest>(parameters =>
-        {
-            parameters.Add(p => p.Suffix, suffix);
-        });
+        var component = RenderComponent<BitNumericTextField<uint>>(parameters => parameters.Add(p => p.Suffix, suffix));
 
         var input = component.Find("input");
         var inputValue = input.GetAttribute("value");
@@ -203,12 +200,12 @@ public class BitNumericTextFieldUIntTests : BunitTestContext
     }
 
     [DataTestMethod,
-     DataRow(BitNumericTextFieldLabelPosition.Left),
-     DataRow(BitNumericTextFieldLabelPosition.Top)
+         DataRow(BitNumericTextFieldLabelPosition.Left),
+         DataRow(BitNumericTextFieldLabelPosition.Top)
     ]
     public void BitNumericTextFieldShouldHaveLabelPositionClassName(BitNumericTextFieldLabelPosition labelPosition)
     {
-        var component = RenderComponent<BitNumericTextFieldUIntTest>(parameters =>
+        var component = RenderComponent<BitNumericTextField<uint>>(parameters =>
         {
             parameters.Add(p => p.LabelPosition, labelPosition);
         });
@@ -216,17 +213,18 @@ public class BitNumericTextFieldUIntTests : BunitTestContext
         var labelPositionClass = labelPosition == BitNumericTextFieldLabelPosition.Left ? "left" : "top";
 
         var numericTextFieldButton = component.Find(".bit-ntf");
+
         Assert.IsTrue(numericTextFieldButton.ClassList.Contains($"label-{labelPositionClass}"));
     }
 
     [DataTestMethod,
-     DataRow("dir", "ltr"),
-     DataRow("type", "number")
+         DataRow("dir", "ltr"),
+         DataRow("type", "number")
     ]
     public void BitNumericTextFieldInputShouldHaveHtmlAttributes(string attrKey, string attrValue)
     {
         var inputHtmlAttributes = new Dictionary<string, object> { { attrKey, attrValue } };
-        var component = RenderComponent<BitNumericTextFieldUIntTest>(parameters =>
+        var component = RenderComponent<BitNumericTextField<uint>>(parameters =>
         {
             parameters.Add(p => p.InputHtmlAttributes, inputHtmlAttributes);
         });
@@ -236,14 +234,14 @@ public class BitNumericTextFieldUIntTests : BunitTestContext
     }
 
     [DataTestMethod,
-     DataRow("NtfWrapper", null, null, null),
-     DataRow(null, "NftAriaLabel", null, null),
-     DataRow("NtfWrapper", "NftAriaLabel", 5, 3),
-     DataRow(null, null, 5, 3)
+         DataRow("NtfWrapper", null, null, null),
+         DataRow(null, "NftAriaLabel", null, null),
+         DataRow("NtfWrapper", "NftAriaLabel", 5, 3),
+         DataRow(null, null, 5, 3)
     ]
     public void BitNumericTextFieldWrapperShouldHaveCorrectAttributes(string title, string ariaLabel, int? ariaSetSize, int? ariaPositionInSet)
     {
-        var component = RenderComponent<BitNumericTextFieldUIntTest>(parameters =>
+        var component = RenderComponent<BitNumericTextField<uint>>(parameters =>
         {
             parameters.Add(p => p.Title, title);
             parameters.Add(p => p.AriaLabel, ariaLabel);
@@ -271,15 +269,15 @@ public class BitNumericTextFieldUIntTests : BunitTestContext
     }
 
     [DataTestMethod,
-     DataRow(null, null),
-     DataRow(5, null),
-     DataRow(null, 100),
-     DataRow(0, 100),
-     DataRow(50, 1)
+         DataRow(null, null),
+         DataRow(5, null),
+         DataRow(null, 100),
+         DataRow(0, 100),
+         DataRow(50, 1)
     ]
     public void BitNumericTextFieldShouldHaveCorrectMaxMin(int? min, int? max)
     {
-        var component = RenderComponent<BitNumericTextFieldUIntTest>(parameters =>
+        var component = RenderComponent<BitNumericTextField<uint?>>(parameters =>
         {
             parameters.Add(p => p.Min, (uint?)min);
             parameters.Add(p => p.Max, (uint?)max);
@@ -289,14 +287,14 @@ public class BitNumericTextFieldUIntTests : BunitTestContext
         uint? expectedMinValue = null;
         uint? expectedMaxValue = null;
 
-        if (max is not null)
+        if (max.HasValue)
         {
-            expectedMaxValue = (uint)max.Value;
+            expectedMaxValue = (uint?)max.Value;
         }
 
-        if (min is not null)
+        if (min.HasValue)
         {
-            expectedMinValue = (uint)min.Value;
+            expectedMinValue = (uint?)min.Value;
         }
 
         Assert.AreEqual(expectedMinValue.HasValue ? expectedMinValue.ToString() : null, input.GetAttribute("aria-valuemin"));
@@ -304,53 +302,62 @@ public class BitNumericTextFieldUIntTests : BunitTestContext
     }
 
     [DataTestMethod,
-     DataRow(4),
-     DataRow(12)
+         DataRow(4),
+         DataRow(12)
     ]
     public void BitNumericTextFieldOnIncrementTest(int countOfClicks)
     {
-        var component = RenderComponent<BitNumericTextFieldUIntTest>(parameters =>
+        int onIncrementEventCounter = 0;
+        var component = RenderComponent<BitNumericTextField<uint>>(parameters =>
         {
             parameters.Add(p => p.ShowArrows, true);
+            parameters.Add(p => p.OnIncrement, () => onIncrementEventCounter++);
         });
 
-        var increaseButton = component.FindAll("button")[0];
+        var increaseButton = component.Find("button.arrow-up");
         for (int i = 0; i < countOfClicks; i++)
         {
             increaseButton.PointerDown();
+            increaseButton.PointerUp();
         }
 
-        Assert.AreEqual(countOfClicks, component.Instance.OnIncrementEventCounter);
+        Assert.AreEqual(countOfClicks, onIncrementEventCounter);
     }
 
     [DataTestMethod,
-     DataRow(4),
-     DataRow(12)
+         DataRow(4),
+         DataRow(12)
     ]
     public void BitNumericTextFieldOnDecrementTest(int countOfClicks)
     {
-        var component = RenderComponent<BitNumericTextFieldUIntTest>(parameters =>
+        int onDecrementEventCounter = 20;
+        var component = RenderComponent<BitNumericTextField<uint>>(parameters =>
         {
             parameters.Add(p => p.ShowArrows, true);
+            parameters.Add(p => p.OnDecrement, () => onDecrementEventCounter--);
         });
 
-        var decreaseButton = component.FindAll("button")[1];
-        var onDecrementEventCounterInitValue = component.Instance.OnDecrementEventCounter;
+        var decreaseButton = component.Find("button.arrow-down");
         for (int i = 0; i < countOfClicks; i++)
         {
             decreaseButton.PointerDown();
+            decreaseButton.PointerUp();
         }
 
-        Assert.AreEqual(onDecrementEventCounterInitValue - countOfClicks, component.Instance.OnDecrementEventCounter);
+        Assert.AreEqual(20 - countOfClicks, onDecrementEventCounter);
     }
 
     [DataTestMethod,
-     DataRow(4),
-     DataRow(12)
+         DataRow(4),
+         DataRow(12)
     ]
     public void BitNumericTextFieldInputOnBlurEventCallbackTest(int countOfBlur)
     {
-        var component = RenderComponent<BitNumericTextFieldUIntTest>();
+        int onBlurEventCounter = 0;
+        var component = RenderComponent<BitNumericTextField<uint>>(parameters =>
+        {
+            parameters.Add(p => p.OnBlur, () => onBlurEventCounter++);
+        });
 
         var input = component.Find("input");
         for (int i = 0; i < countOfBlur; i++)
@@ -358,16 +365,20 @@ public class BitNumericTextFieldUIntTests : BunitTestContext
             input.Blur();
         }
 
-        Assert.AreEqual(countOfBlur, component.Instance.OnBlurEventCounter);
+        Assert.AreEqual(onBlurEventCounter, countOfBlur);
     }
 
     [DataTestMethod,
-     DataRow(4),
-     DataRow(12)
+         DataRow(4),
+         DataRow(12)
     ]
     public void BitNumericTextFieldInputOnFocusTest(int countOfFocus)
     {
-        var component = RenderComponent<BitNumericTextFieldUIntTest>();
+        int onFocusEventCounter = 0;
+        var component = RenderComponent<BitNumericTextField<uint>>(parameters =>
+        {
+            parameters.Add(p => p.OnFocus, () => onFocusEventCounter++);
+        });
 
         var input = component.Find("input");
         for (int i = 0; i < countOfFocus; i++)
@@ -375,33 +386,35 @@ public class BitNumericTextFieldUIntTests : BunitTestContext
             input.Focus();
         }
 
-        Assert.AreEqual(countOfFocus, component.Instance.OnFocusEventCounter);
+        Assert.AreEqual(onFocusEventCounter, countOfFocus);
     }
 
     [DataTestMethod,
-     DataRow(4),
-     DataRow(12)
+         DataRow(4),
+         DataRow(12)
     ]
     public void BitNumericTextFieldOnChangeTest(int inputValue)
     {
-        var component = RenderComponent<BitNumericTextFieldUIntTest>();
+        uint onChangeEventValue = 0;
+        var component = RenderComponent<BitNumericTextField<uint>>(parameters =>
+        {
+            parameters.Add(p => p.OnChange, (uint value) => onChangeEventValue = value);
+        });
 
         var input = component.Find("input");
-        var changeArgs = new ChangeEventArgs();
-        changeArgs.Value = (uint)inputValue;
         input.Change((uint)inputValue);
         input.Blur();
 
-        Assert.AreEqual((uint)inputValue, component.Instance.OnChangeEventValue);
+        Assert.AreEqual(onChangeEventValue, (uint)inputValue);
     }
 
     [DataTestMethod,
-     DataRow(null),
-     DataRow("AriaDescription")
+         DataRow(null),
+         DataRow("AriaDescription")
     ]
     public void BitNumericTextFieldShouldHaveCorrectAriaDescription(string ariaDescription)
     {
-        var component = RenderComponent<BitNumericTextFieldUIntTest>(parameters =>
+        var component = RenderComponent<BitNumericTextField<uint>>(parameters =>
         {
             parameters.Add(p => p.AriaDescription, ariaDescription);
         });
@@ -412,24 +425,23 @@ public class BitNumericTextFieldUIntTests : BunitTestContext
     }
 
     [DataTestMethod,
-     DataRow(3, null),
-     DataRow(3, " cm"),
-     DataRow(null, null)
+         DataRow(3, null),
+         DataRow(3, " cm"),
+         DataRow(null, null)
     ]
     public void BitNumericTextFieldInputShouldHaveCorrectAriaValueNow(int? ariaValueNow, string suffix)
     {
-        var component = RenderComponent<BitNumericTextFieldUIntTest>(parameters =>
+        var component = RenderComponent<BitNumericTextField<uint?>>(parameters =>
         {
             parameters.Add(p => p.AriaValueNow, (uint?)ariaValueNow);
             parameters.Add(p => p.Suffix, suffix);
         });
 
         var input = component.Find("input");
-        var expectedResult = ariaValueNow is not null ? (uint?)ariaValueNow :
-            suffix.HasNoValue() ? component.Instance.Value : null;
+        var expectedResult = ariaValueNow.HasValue ? (uint?)ariaValueNow : suffix.HasNoValue() ? component.Instance.Value : null;
         var attributeValue = input.GetAttribute("aria-valuenow");
 
-        if (expectedResult is null)
+        if (expectedResult.HasValue is false)
         {
             Assert.IsNull(attributeValue);
         }
@@ -440,13 +452,13 @@ public class BitNumericTextFieldUIntTests : BunitTestContext
     }
 
     [DataTestMethod,
-     DataRow("3", null, 0),
-     DataRow(null, " cm", 0),
-     DataRow(null, null, 0)
+         DataRow("3", null, 0),
+         DataRow(null, " cm", 0),
+         DataRow(null, null, 0)
     ]
     public void BitNumericTextFieldInputShouldHaveCorrectAriaValueText(string ariaValueText, string suffix, int precision)
     {
-        var component = RenderComponent<BitNumericTextFieldUIntTest>(parameters =>
+        var component = RenderComponent<BitNumericTextField<uint>>(parameters =>
         {
             parameters.Add(p => p.AriaValueText, ariaValueText);
             parameters.Add(p => p.Suffix, suffix);
@@ -454,17 +466,16 @@ public class BitNumericTextFieldUIntTests : BunitTestContext
         });
 
         var input = component.Find("input");
-        var expectedResult = string.IsNullOrEmpty(ariaValueText) is false ? ariaValueText :
-            string.IsNullOrEmpty(suffix) is false ? $"{Normalize(component.Instance.Value, precision)}{suffix}" : null;
+        var expectedResult = ariaValueText.HasValue() ? ariaValueText : suffix.HasValue() ? $"{Normalize(component.Instance.Value, precision)}{suffix}" : null;
         Assert.AreEqual(expectedResult, input.GetAttribute("aria-valuetext"));
     }
 
     [DataTestMethod,
-     DataRow(3, 1, 12),
-     DataRow(8, 2, 10),
-     DataRow(8, 1, 8),
-     DataRow(8, 2, 9),
-     DataRow(8, 5, 9)
+         DataRow(3, 1, 12),
+         DataRow(8, 2, 10),
+         DataRow(8, 1, 8),
+         DataRow(8, 2, 9),
+         DataRow(8, 5, 9)
     ]
     public void BitNumericTextFieldIncrementButtonClickTest(int defaultValue, int step, int max)
     {
@@ -477,22 +488,22 @@ public class BitNumericTextFieldUIntTests : BunitTestContext
         });
 
         var input = component.Find("input");
-        var incrementButton = component.FindAll("button")[0];
+        var incrementButton = component.Find("button.arrow-up");
         incrementButton.PointerDown();
         var inputValue = input.GetAttribute("value");
         var expectedResult = (uint)defaultValue + (uint)step <= (uint)max
             ? (uint)defaultValue + (uint)step
             : (uint)defaultValue;
 
-        Assert.AreEqual(expectedResult.ToString(), inputValue);
+        Assert.AreEqual(inputValue, expectedResult.ToString());
     }
 
     [DataTestMethod,
-     DataRow(3, 1, 12),
-     DataRow(8, 2, 10),
-     DataRow(8, 1, 8),
-     DataRow(8, 2, 9),
-     DataRow(8, 5, 9)
+         DataRow(3, 1, 12),
+         DataRow(8, 2, 10),
+         DataRow(8, 1, 8),
+         DataRow(8, 2, 9),
+         DataRow(8, 5, 9)
     ]
     public void BitNumericTextFieldArrowUpKeyDownTest(int defaultValue, int step, int max)
     {
@@ -504,8 +515,10 @@ public class BitNumericTextFieldUIntTests : BunitTestContext
         });
 
         var input = component.Find("input");
-        var args = new KeyboardEventArgs();
-        args.Key = "ArrowUp";
+        var args = new KeyboardEventArgs
+        {
+            Key = "ArrowUp"
+        };
         input.KeyDown(args);
         var inputValue = input.GetAttribute("value");
         var expectedResult = (uint)defaultValue + (uint)step <= (uint)max
@@ -516,10 +529,10 @@ public class BitNumericTextFieldUIntTests : BunitTestContext
     }
 
     [DataTestMethod,
-     DataRow(3, 1, 0),
-     DataRow(2, 2, 0),
-     DataRow(3, 4, 0),
-     DataRow(0, 1, 0)
+         DataRow(3, 1, 0),
+         DataRow(2, 2, 0),
+         DataRow(3, 4, 0),
+         DataRow(0, 1, 0)
     ]
     public void BitNumericTextFieldDecrementButtonClickTest(int defaultValue, int step, int min)
     {
@@ -532,19 +545,19 @@ public class BitNumericTextFieldUIntTests : BunitTestContext
         });
 
         var input = component.Find("input");
-        var decrementButton = component.FindAll("button")[1];
+        var decrementButton = component.Find("button.arrow-down");
         decrementButton.PointerDown();
         var inputValue = input.GetAttribute("value");
-        var expectedResult = defaultValue - step >= min ? defaultValue - step : defaultValue;
+        var expectedResult = defaultValue - step >= min ? defaultValue - step : defaultValue; ;
 
-        Assert.AreEqual(expectedResult.ToString(), inputValue);
+        Assert.AreEqual(inputValue, expectedResult.ToString());
     }
 
     [DataTestMethod,
-     DataRow(3, 1, 0),
-     DataRow(2, 2, 0),
-     DataRow(3, 4, 0),
-     DataRow(0, 1, 0)
+         DataRow(3, 1, 0),
+         DataRow(2, 2, 0),
+         DataRow(3, 4, 0),
+         DataRow(0, 1, 0)
     ]
     public void BitNumericTextFieldArrowDownKeyDownTest(int defaultValue, int step, int min)
     {
@@ -556,8 +569,10 @@ public class BitNumericTextFieldUIntTests : BunitTestContext
         });
 
         var input = component.Find("input");
-        var args = new KeyboardEventArgs();
-        args.Key = "ArrowDown";
+        var args = new KeyboardEventArgs
+        {
+            Key = "ArrowDown"
+        };
         input.KeyDown(args);
         var inputValue = input.GetAttribute("value");
         var expectedResult = defaultValue - step >= min ? defaultValue - step : defaultValue;
@@ -566,10 +581,10 @@ public class BitNumericTextFieldUIntTests : BunitTestContext
     }
 
     [DataTestMethod,
-     DataRow(5, 0, 100, "25"),
-     DataRow(5, 0, 100, "112"),
-     DataRow(5, 0, 100, "3"),
-     DataRow(5, 0, 100, "text123")
+         DataRow(5, 0, 100, "25"),
+         DataRow(5, 0, 100, "112"),
+         DataRow(5, 0, 100, "3"),
+         DataRow(5, 0, 100, "text123")
     ]
     public void BitNumericTextFieldEnterKeyDownTest(int defaultValue, int min, int max, string userInput)
     {
@@ -581,11 +596,15 @@ public class BitNumericTextFieldUIntTests : BunitTestContext
         });
 
         var input = component.Find("input");
-        var changeArgs = new ChangeEventArgs();
-        changeArgs.Value = userInput;
+        var changeArgs = new ChangeEventArgs
+        {
+            Value = userInput
+        };
         input.Change(changeArgs);
-        var keyboardArgs = new KeyboardEventArgs();
-        keyboardArgs.Key = "Enter";
+        var keyboardArgs = new KeyboardEventArgs
+        {
+            Key = "Enter"
+        };
         input.KeyDown(keyboardArgs);
         var inputValue = component.Instance.Value;
         uint? expectedResult = 0;
@@ -605,10 +624,10 @@ public class BitNumericTextFieldUIntTests : BunitTestContext
     }
 
     [DataTestMethod,
-     DataRow(5, 0, 100, "25"),
-     DataRow(5, 0, 100, "112"),
-     DataRow(5, 0, 100, "5"),
-     DataRow(5, 0, 100, "text123")
+         DataRow(5, 0, 100, "25"),
+         DataRow(5, 0, 100, "112"),
+         DataRow(5, 0, 100, "5"),
+         DataRow(5, 0, 100, "text123")
     ]
     public void BitNumericTextFieldOnBlurTest(int defaultValue, int min, int max, string userInput)
     {
@@ -620,8 +639,10 @@ public class BitNumericTextFieldUIntTests : BunitTestContext
         });
 
         var input = component.Find("input");
-        var changeArgs = new ChangeEventArgs();
-        changeArgs.Value = userInput;
+        var changeArgs = new ChangeEventArgs
+        {
+            Value = userInput
+        };
         input.Change(changeArgs);
         input.Blur();
         var inputValue = component.Instance.Value;
@@ -642,11 +663,11 @@ public class BitNumericTextFieldUIntTests : BunitTestContext
     }
 
     [DataTestMethod,
-     DataRow(0, 100, 1, "25"),
-     DataRow(0, 100, 3, "96"),
-     DataRow(0, 100, 5, "13"),
-     DataRow(0, 10, 1, "12"),
-     DataRow(13, 100, 3, "18")
+         DataRow(0, 100, 1, "25"),
+         DataRow(0, 100, 3, "96"),
+         DataRow(0, 100, 5, "13"),
+         DataRow(0, 10, 1, "12"),
+         DataRow(13, 100, 3, "18")
     ]
     public void BitNumericTextFieldPrecisionTest(int min, int max, int step, string userInput)
     {
@@ -658,8 +679,10 @@ public class BitNumericTextFieldUIntTests : BunitTestContext
         });
 
         var input = component.Find("input");
-        var changeArgs = new ChangeEventArgs();
-        changeArgs.Value = userInput;
+        var changeArgs = new ChangeEventArgs
+        {
+            Value = userInput
+        };
         input.Change(changeArgs);
         input.Blur();
         var inputValue = component.Instance.Value;
@@ -672,8 +695,8 @@ public class BitNumericTextFieldUIntTests : BunitTestContext
     }
 
     [DataTestMethod,
-     DataRow(5, 2, 4),
-     DataRow(1, 15, 1)
+         DataRow(5, 2, 4),
+         DataRow(1, 15, 1)
     ]
     public void BitNumericTextFieldTwoWayBoundWithCustomHandlerShouldWorkCorrect(int value, int countOfIncrements, int step)
     {
@@ -687,7 +710,7 @@ public class BitNumericTextFieldUIntTests : BunitTestContext
             parameters.Add(p => p.ShowArrows, true);
         });
 
-        var incrementButton = component.FindAll("button")[0];
+        var incrementButton = component.Find("button.arrow-up");
         for (var i = 0; i < countOfIncrements; i++)
         {
             incrementButton.PointerDown();
@@ -698,9 +721,7 @@ public class BitNumericTextFieldUIntTests : BunitTestContext
         Assert.AreEqual((uint)expectedValue, BitNumericTextFieldTwoWayBoundValue);
     }
 
-    [DataTestMethod,
-     DataRow("<div>This is labelFragment</div>")
-    ]
+    [DataTestMethod, DataRow("<div>This is labelFragment</div>")]
     public void BitNumericTextFieldLabelFragmentTest(string labelFragment)
     {
         var component = RenderComponent<BitNumericTextField<uint>>(parameters =>
@@ -714,8 +735,8 @@ public class BitNumericTextFieldUIntTests : BunitTestContext
 
     [Ignore]
     [DataTestMethod,
-     DataRow(3, 1, 100, 475),
-     DataRow(3, 1, 100, 550)
+         DataRow(3, 1, 100, 475),
+         DataRow(3, 1, 100, 550)
     ]
     public void BitNumericTextFieldContinuousIncrementOnPointerDownTest(int defaultValue, int step, int max, int timeout)
     {
@@ -728,7 +749,7 @@ public class BitNumericTextFieldUIntTests : BunitTestContext
         });
 
         var input = component.Find("input");
-        var incrementButton = component.FindAll("button")[0];
+        var incrementButton = component.Find("button.arrow-up");
         var initialIncrementCount = timeout / 400;
         var continuousIncrementCount = timeout >= 400 ? (timeout - 400) / 75 : 0;
         var expectedResult = (uint)defaultValue + (uint)step * (uint)(initialIncrementCount + continuousIncrementCount);
@@ -740,8 +761,8 @@ public class BitNumericTextFieldUIntTests : BunitTestContext
 
     [Ignore]
     [DataTestMethod,
-     DataRow(50, 1, 0, 475),
-     DataRow(50, 1, 0, 550)
+         DataRow(50, 1, 0, 475),
+         DataRow(50, 1, 0, 550)
     ]
     public void BitNumericTextFieldContinuousDecrementOnPointerDownTest(int defaultValue, int step, int min, int timeout)
     {
@@ -754,7 +775,7 @@ public class BitNumericTextFieldUIntTests : BunitTestContext
         });
 
         var input = component.Find("input");
-        var incrementButton = component.FindAll("button")[1];
+        var incrementButton = component.Find("button.arrow-up");
         var initialDecrementCount = timeout / 400;
         var continuousDecrementCount = timeout >= 400 ? (timeout - 400) / 75 : 0;
         var expectedResult = (uint)defaultValue - (uint)step * (uint)(initialDecrementCount + continuousDecrementCount);
@@ -765,12 +786,12 @@ public class BitNumericTextFieldUIntTests : BunitTestContext
     }
 
     [DataTestMethod,
-     DataRow(4),
-     DataRow(10),
-     DataRow(0),
-     DataRow(13),
-     DataRow(6),
-     DataRow(18),
+         DataRow(4),
+         DataRow(10),
+         DataRow(0),
+         DataRow(13),
+         DataRow(6),
+         DataRow(18),
     ]
     public void BitNumericTextFieldValidationFormTest(int value)
     {
@@ -801,18 +822,18 @@ public class BitNumericTextFieldUIntTests : BunitTestContext
         input.Blur();
         form.Submit();
 
-        Assert.AreEqual(component.Instance.ValidCount, 1);
-        Assert.AreEqual(component.Instance.InvalidCount, 1);
+        Assert.AreEqual(1, component.Instance.ValidCount);
+        Assert.AreEqual(1, component.Instance.InvalidCount);
         Assert.AreEqual(component.Instance.ValidCount, component.Instance.InvalidCount);
     }
 
     [DataTestMethod,
-     DataRow(4),
-     DataRow(10),
-     DataRow(0),
-     DataRow(12),
-     DataRow(6),
-     DataRow(18),
+         DataRow(4),
+         DataRow(10),
+         DataRow(0),
+         DataRow(12),
+         DataRow(6),
+         DataRow(18),
     ]
     public void BitNumericTextFieldValidationInvalidHtmlAttributeTest(int value)
     {
@@ -830,10 +851,10 @@ public class BitNumericTextFieldUIntTests : BunitTestContext
         var form = component.Find("form");
         form.Submit();
 
-        Assert.AreEqual(input.HasAttribute("aria-invalid"), isInvalid);
+        Assert.AreEqual(isInvalid, input.HasAttribute("aria-invalid"));
         if (input.HasAttribute("aria-invalid"))
         {
-            Assert.AreEqual(input.GetAttribute("aria-invalid"), "true");
+            Assert.AreEqual("true", input.GetAttribute("aria-invalid"));
         }
 
         if (isInvalid)
@@ -851,8 +872,8 @@ public class BitNumericTextFieldUIntTests : BunitTestContext
     }
 
     [DataTestMethod,
-     DataRow(2),
-     DataRow(8)
+         DataRow(2),
+         DataRow(8)
     ]
     public void BitNumericTextFieldValidationInvalidCssClassTest(int value)
     {
@@ -871,9 +892,10 @@ public class BitNumericTextFieldUIntTests : BunitTestContext
         var form = component.Find("form");
         form.Submit();
 
-        Assert.AreEqual(NumericTextField.ClassList.Contains("invalid"), isInvalid);
+        Assert.AreEqual(isInvalid, NumericTextField.ClassList.Contains("invalid"));
 
         var input = component.Find("input");
+
         if (isInvalid)
         {
             input.Change((uint)10);
@@ -885,11 +907,11 @@ public class BitNumericTextFieldUIntTests : BunitTestContext
 
         input.Blur();
 
-        Assert.AreEqual(NumericTextField.ClassList.Contains("invalid"), !isInvalid);
+        Assert.AreEqual(!isInvalid, NumericTextField.ClassList.Contains("invalid"));
     }
 
     private uint? Normalize(uint? value, int precision) =>
-        value is null ? null : (uint?)Math.Round((double)value.Value, precision);
+        value.HasValue ? (uint?)Math.Round((double)value.Value, precision) : null;
 
     private int CalculatePrecision(uint value)
     {
@@ -914,7 +936,5 @@ public class BitNumericTextFieldUIntTests : BunitTestContext
     }
 
     private void HandleValueChanged(uint value)
-    {
-        BitNumericTextFieldTwoWayBoundValue = value;
-    }
+        => BitNumericTextFieldTwoWayBoundValue = value;
 }
