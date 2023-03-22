@@ -262,7 +262,7 @@ public partial class BitNumericTextField<TValue>
         _precision = Precision is not null ? Precision.Value : CalculatePrecision(Step);
         if (ValueHasBeenSet is false)
         {
-            SetValue(GetDoubleValueOrDefault(DefaultValue) ?? Math.Min(0, _internalMin.Value));
+            SetValue(GetDoubleValueOrDefault(DefaultValue) ?? 0);
         }
         else
         {
