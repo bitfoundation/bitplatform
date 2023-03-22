@@ -1,46 +1,42 @@
 ﻿<EditForm Model="@TestModel" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit">
     <DataAnnotationsValidator />
 
-    <CascadingValue Value="Visual">
-        <BitNumericTextField 
-                       Min="@Min"
-                       Max="@Max"
-                       Step="@Step"
-                       @bind-Value="@TestModel.Value"
-                       IsEnabled="@IsEnabled"
-                       AriaDescription="@AriaDescription"
-                       AriaPositionInSet="@AriaPositionInSet"
-                       AriaSetSize="@AriaSetSize"
-                       AriaValueNow="@AriaValueNow"
-                       AriaValueText="@AriaValueText"
-                       AriaLabel="@AriaLabel"
-                       Suffix="@Suffix"
-                       LabelPosition="@LabelPosition"
-                       IconName="@IconName"
-                       IconAriaLabel="@IconAriaLabel"
-                       DecrementIconName="@DecrementIconName"
-                       IncrementIconName="@IncrementIconName"
-                       DecrementAriaLabel="@DecrementAriaLabel"
-                       IncrementAriaLabel="@IncrementAriaLabel"
-                       Label="@Label"
-                       Placeholder="@Placeholder"
-                       InputHtmlAttributes="@InputHtmlAttributes"
-                       Title="@Title"
-                       Precision="@Precision"
-                       DefaultValue="@DefaultValue"
-                       OnChange="(double? value) => OnChangeEventValue = value"
-                       OnBlur="@HandleBlur"
-                       OnFocus="@HandleFocus">
-            <LabelTemplate>
-                @LabelTemplate
-            </LabelTemplate>
-        </BitNumericTextField>
-    </CascadingValue>
+    <BitNumericTextField Min="@Min"
+                         Max="@Max"
+                         Step="@Step"
+                         @bind-Value="@TestModel.Value"
+                         IsEnabled="@IsEnabled"
+                         AriaDescription="@AriaDescription"
+                         AriaPositionInSet="@AriaPositionInSet"
+                         AriaSetSize="@AriaSetSize"
+                         AriaValueNow="@AriaValueNow"
+                         AriaValueText="@AriaValueText"
+                         AriaLabel="@AriaLabel"
+                         Suffix="@Suffix"
+                         LabelPosition="@LabelPosition"
+                         IconName="@IconName"
+                         IconAriaLabel="@IconAriaLabel"
+                         DecrementIconName="@DecrementIconName"
+                         IncrementIconName="@IncrementIconName"
+                         DecrementAriaLabel="@DecrementAriaLabel"
+                         IncrementAriaLabel="@IncrementAriaLabel"
+                         Label="@Label"
+                         Placeholder="@Placeholder"
+                         InputHtmlAttributes="@InputHtmlAttributes"
+                         Title="@Title"
+                         Precision="@Precision"
+                         DefaultValue="@DefaultValue"
+                         OnChange="(double? value) => OnChangeEventValue = value"
+                         OnBlur="@HandleBlur"
+                         OnFocus="@HandleFocus">
+        <LabelTemplate>
+            @LabelTemplate
+        </LabelTemplate>
+    </BitNumericTextField>
 
 </EditForm>
 
 @code {
-    [Parameter] public Visual Visual { get; set; }
     [Parameter] public BitNumericTextFieldLabelPosition LabelPosition { get; set; } = BitNumericTextFieldLabelPosition.Left;
     [Parameter] public string AriaDescription { get; set; }
     [Parameter] public int? AriaPositionInSet { get; set; }
@@ -48,7 +44,7 @@
     [Parameter] public int? AriaValueNow { get; set; }
     [Parameter] public string AriaValueText { get; set; }
     [Parameter] public string AriaLabel { get; set; }
-    [Parameter]public double? Step { get; set; } = 1;
+    [Parameter] public double? Step { get; set; } = 1;
     [Parameter] public double? Min { get; set; }
     [Parameter] public double? Max { get; set; }
     [Parameter] public BitNumericTextFieldDoubleTestModel TestModel { get; set; }
