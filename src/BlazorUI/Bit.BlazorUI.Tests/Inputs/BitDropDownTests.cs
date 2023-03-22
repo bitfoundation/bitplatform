@@ -284,7 +284,7 @@ public class BitDropDownTests : BunitTestContext
       DataRow("f-ban", "f-app,f-ban"),
       DataRow("f-app,f-ban", "f-ban")
     ]
-    public void BitDropDownTextWithDefaultValuesShouldInitCorrect(string defaultValues, string values)
+    public void BitDropDownTextWithValuesAndDefaultValuesShouldInitCorrect(string defaultValues, string values)
     {
         var items = GetDropdownItems();
         var defaultSelectedMultipleValueList = defaultValues.Split(",").ToList();
@@ -763,10 +763,10 @@ public class BitDropDownTests : BunitTestContext
         var form = component.Find("form");
         form.Submit();
 
-        Assert.AreEqual(selectTag.HasAttribute("aria-invalid"), isInvalid);
+        Assert.AreEqual(isInvalid, selectTag.HasAttribute("aria-invalid"));
         if (selectTag.HasAttribute("aria-invalid"))
         {
-            Assert.AreEqual(selectTag.GetAttribute("aria-invalid"), "true");
+            Assert.AreEqual("true", selectTag.GetAttribute("aria-invalid"));
         }
 
         if (isInvalid)
@@ -777,7 +777,7 @@ public class BitDropDownTests : BunitTestContext
 
             // select item
             var drpItems = component.FindAll(".item");
-            drpItems.First().Click();
+            drpItems[0].Click();
 
             Assert.IsFalse(selectTag.HasAttribute("aria-invalid"));
         }
@@ -871,7 +871,7 @@ public class BitDropDownTests : BunitTestContext
 
             // select item
             var drpItems = component.FindAll(".item");
-            drpItems.First().Click();
+            drpItems[0].Click();
         }
 
         Assert.IsFalse(bitDropDown.ClassList.Contains("invalid"));
@@ -1006,7 +1006,7 @@ public class BitDropDownTests : BunitTestContext
 
         if (virtualize)
         {
-            //When virtualize is true, number of rendered items is greater than number of items showm in the list + 2 * overScanCount.
+            //When virtualize is true, number of rendered items is greater than number of items show in the list + 2 * overScanCount.
             var expectedRenderedItemCount = Math.Ceiling((decimal)(viewportHeight / component.Instance.ItemSize)) + (2 * component.Instance.OverscanCount);
 
             //When actualRenderedItemCount is smaller than expectedRenderedItemCount, so show all items in viewport then actualRenderedItemCount equals total items count
@@ -1112,39 +1112,39 @@ public class BitDropDownTests : BunitTestContext
     {
         return new()
         {
-            new BitDropDownItem()
+            new()
             {
                 ItemType = BitDropDownItemType.Header,
                 Text = "Fruits"
             },
-            new BitDropDownItem()
+            new()
             {
                 ItemType = BitDropDownItemType.Normal,
                 Text = "Apple",
                 Value = "f-app"
             },
-            new BitDropDownItem()
+            new()
             {
                 ItemType = BitDropDownItemType.Normal,
                 Text = "Orange",
                 Value = "f-ora",
             },
-            new BitDropDownItem()
+            new()
             {
                 ItemType = BitDropDownItemType.Normal,
                 Text = "Banana",
                 Value = "f-ban",
             },
-            new BitDropDownItem()
+            new()
             {
                 ItemType = BitDropDownItemType.Divider,
             },
-            new BitDropDownItem()
+            new()
             {
                 ItemType = BitDropDownItemType.Header,
                 Text = "Vegetables"
             },
-            new BitDropDownItem()
+            new()
             {
                 ItemType = BitDropDownItemType.Normal,
                 Text = "Broccoli",
@@ -1157,25 +1157,25 @@ public class BitDropDownTests : BunitTestContext
     {
         return new()
         {
-            new BitDropDownItem()
+            new()
             {
                 ItemType = BitDropDownItemType.Normal,
                 Text = "Apple",
                 Value = "f-app"
             },
-            new BitDropDownItem()
+            new()
             {
                 ItemType = BitDropDownItemType.Normal,
                 Text = "Orange",
                 Value = "f-ora"
             },
-            new BitDropDownItem()
+            new()
             {
                 ItemType = BitDropDownItemType.Normal,
                 Text = "Banana",
                 Value = "f-ban"
             },
-            new BitDropDownItem()
+            new()
             {
                 ItemType = BitDropDownItemType.Normal,
                 Text = "Broccoli",
