@@ -1,8 +1,7 @@
 ﻿<EditForm Model="@TestModel" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit">
     <DataAnnotationsValidator />
 
-    <CascadingValue Value="Visual">
-        <BitDropDown IsEnabled="IsEnabled"
+    <BitDropDown IsEnabled="IsEnabled"
                      OnClick="HandleClick"
                      IsMultiSelect="IsMultiSelect"
                      IsOpen="IsOpen"
@@ -17,16 +16,14 @@
                      OnSelectItem="HandleSelectItem"
                      @bind-Values="TestModel.Values"
                      IsRequired="IsRequired">
-            <LabelFragment>
-                @LabelFragment
-            </LabelFragment>
+            <LabelTemplate>
+                @LabelTemplate
+            </LabelTemplate>
         </BitDropDown>
-    </CascadingValue>
 
 </EditForm>
 
 @code {
-    [Parameter] public Visual Visual { get; set; }
     [Parameter] public bool IsMultiSelect { get; set; }
     [Parameter] public bool IsEnabled { get; set; }
     [Parameter] public bool IsRequired { get; set; }
@@ -42,7 +39,7 @@
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
     [Parameter] public EventCallback<BitDropDownItem> OnSelectItem { get; set; }
     [Parameter] public bool NotifyOnReselect { get; set; } = false;
-    [Parameter] public RenderFragment LabelFragment { get; set; }
+    [Parameter] public RenderFragment LabelTemplate { get; set; }
 
     public int Counter { get; set; }
     public int SelectItemCounter { get; set; }
