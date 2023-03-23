@@ -24,12 +24,21 @@ jobs:
       with:
         dotnet-version: 7.0.x
         include-prerelease: true
+
+    - name: Install wasm-tools
+      run: dotnet workload install wasm-tools
+
+    - name: Install maui
+      run: dotnet workload install maui
         
     - name: Setup .NET 8.0.x
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 8.0.x
         include-prerelease: true
+
+    - name: Install wasm-tools
+      run: dotnet workload install wasm-tools
 
     - name: dotnet restore BlazorUI
       run: dotnet restore src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj

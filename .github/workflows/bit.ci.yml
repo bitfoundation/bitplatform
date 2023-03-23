@@ -30,10 +30,7 @@ jobs:
         dotnet-version: 8.0.x
         include-prerelease: true
 
-    - name: Install wasm-tools
-      run: dotnet workload install wasm-tools
-
-    - name: Install maui
+    - name: Restore workloads
       run: dotnet workload restore src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj
       
     - name: Restore prerelease
@@ -58,17 +55,26 @@ jobs:
       with:
         dotnet-version: 6.0.x
 
+    - name: Setup .NET 7.0.x
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 7.0.x
+        include-prerelease: true
+
+    - name: Install wasm-tools
+      run: dotnet workload install wasm-tools
+
+    - name: Install maui
+      run: dotnet workload install maui
+        
     - name: Setup .NET 8.0.x
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 8.0.x
         include-prerelease: true
-    
+
     - name: Install wasm-tools
       run: dotnet workload install wasm-tools
-
-    - name: Install maui
-      run: dotnet workload restore src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj
 
     - name: Restore
       run: dotnet restore src/Bit-CI.sln

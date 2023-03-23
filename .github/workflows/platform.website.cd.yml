@@ -28,9 +28,6 @@ jobs:
       with:
         global-json-file: src/Websites/Platform/global.json
 
-    - name: Install wasm-tools
-      run: dotnet workload install wasm-tools
-
     - name: Switch to blazor web assembly
       shell: pwsh
       run: (Get-Content src/Websites/Platform/Bit.Websites.Platform/Web/Bit.Websites.Platform.Web.csproj) -replace 'Microsoft.NET.Sdk.Web', 'Microsoft.NET.Sdk.BlazorWebAssembly' | Set-Content src/Websites/Platform/Bit.Websites.Platform/Web/Bit.Websites.Platform.Web.csproj

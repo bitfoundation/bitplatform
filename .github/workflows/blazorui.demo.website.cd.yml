@@ -31,9 +31,6 @@ jobs:
       with:
         global-json-file: src/BlazorUI/Demo/global.json
 
-    - name: Install wasm-tools
-      run: dotnet workload install wasm-tools
-
     - name: Switch to blazor web assembly
       run:  sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' src/BlazorUI/Demo/Client/Web/Bit.BlazorUI.Demo.Client.Web.csproj
 
@@ -107,9 +104,6 @@ jobs:
         files: 'src/BlazorUI/Demo/Client/Shared/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
-  
-    - name: Install Maui
-      run: dotnet workload install maui
 
     - name: Restore workloads
       run: dotnet workload restore src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-windows10.0.19041.0
@@ -153,9 +147,6 @@ jobs:
         files: 'src/BlazorUI/Demo/Client/Shared/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
-  
-    - name: Install Maui
-      run: dotnet workload install maui
 
     - name: Restore workloads
       run: dotnet workload restore src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-android

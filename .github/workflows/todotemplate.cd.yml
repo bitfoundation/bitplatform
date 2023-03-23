@@ -30,9 +30,6 @@ jobs:
       with:
         global-json-file: src/Templates/TodoTemplate/Bit.TodoTemplate/global.json
 
-    - name: Install wasm-tools
-      run: dotnet workload install wasm-tools
-
     - name: Switch to blazor web assembly
       run:  sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/Web/TodoTemplate.Client.Web.csproj
 
@@ -106,9 +103,6 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         global-json-file: src/Templates/TodoTemplate/Bit.TodoTemplate/global.json
-
-    - name: Install wasm-tools
-      run: dotnet workload install wasm-tools
 
     - name: Switch to blazor web assembly
       run:  sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/Web/TodoTemplate.Client.Web.csproj
@@ -190,9 +184,6 @@ jobs:
         files: 'src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/Shared/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
-  
-    - name: Install Maui
-      run: dotnet workload install maui
 
     - name: Restore workloads
       run: dotnet workload restore src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-windows10.0.19041.0
@@ -236,9 +227,6 @@ jobs:
         files: 'src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/Shared/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
-  
-    - name: Install Maui
-      run: dotnet workload install maui
 
     - name: Restore workloads
       run: dotnet workload restore src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-android
