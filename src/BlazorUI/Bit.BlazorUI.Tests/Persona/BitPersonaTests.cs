@@ -74,7 +74,16 @@ public class BitPersonaTests : BunitTestContext
             parameters.Add(p => p.IsOutOfOffice, isOutOfOffice);
         });
 
-        var presenceStatusClassName = DetermineIcon(presenceStatus, isOutOfOffice);
+        var presenceStatusClassName = presenceStatus switch
+        {
+            BitPersonaPresenceStatus.Online => "presence_available",
+            BitPersonaPresenceStatus.Busy => "presence_busy",
+            BitPersonaPresenceStatus.Away => isOutOfOffice ? "presence_oof" : "presence_away",
+            BitPersonaPresenceStatus.DND => "presence_dnd",
+            BitPersonaPresenceStatus.Offline => isOutOfOffice ? "presence_oof" : "presence_offline",
+            _ => "presence_unknown",
+        };
+
         var personaStatus = component.Find(".presence > i");
 
         Assert.AreEqual($"bit-icon bit-icon--{presenceStatusClassName}", personaStatus.GetAttribute("class"));
@@ -142,14 +151,4 @@ public class BitPersonaTests : BunitTestContext
 
         Assert.AreEqual(presenceTitle, title);
     }
-    private string DetermineIcon(BitPersonaPresenceStatus presence, bool isOutofOffice)
-     => presence switch
-     {
-         BitPersonaPresenceStatus.Online => "presence_available",
-         BitPersonaPresenceStatus.Busy => "presence_busy",
-         BitPersonaPresenceStatus.Away => isOutofOffice ? "presence_oof" : "presence_away",
-         BitPersonaPresenceStatus.DND => "presence_dnd",
-         BitPersonaPresenceStatus.Offline => isOutofOffice ? "presence_oof" : "presence_offline",
-         _ => "presence_unknown",
-     };
 }
