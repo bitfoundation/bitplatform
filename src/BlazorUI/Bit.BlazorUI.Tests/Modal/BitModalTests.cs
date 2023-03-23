@@ -15,7 +15,7 @@ public class BitModalTests : BunitTestContext
     ]
     public void BitModalIsAlertTest(bool? isAlert)
     {
-        var com = RenderComponent<BitModalTest>(parameters =>
+        var com = RenderComponent<BitModal>(parameters =>
         {
             parameters.Add(p => p.IsAlert, isAlert);
             parameters.Add(p => p.IsOpen, true);
@@ -39,13 +39,13 @@ public class BitModalTests : BunitTestContext
         });
 
         var bitModal = com.FindAll(".bit-mdl");
-        Assert.AreEqual(bitModal.Count, 1);
+        Assert.AreEqual(1, bitModal.Count);
 
         var overlayElement = com.Find(".overlay");
         overlayElement.Click();
 
         bitModal = com.FindAll(".bit-mdl");
-        Assert.AreEqual(bitModal.Count, isBlocking ? 1 : 0);
+        Assert.AreEqual(isBlocking ? 1 : 0, bitModal.Count);
     }
 
     [DataTestMethod,
@@ -54,7 +54,7 @@ public class BitModalTests : BunitTestContext
     ]
     public void BitModalIsModelessTest(bool isModeless)
     {
-        var com = RenderComponent<BitModalTest>(parameters =>
+        var com = RenderComponent<BitModal>(parameters =>
         {
             parameters.Add(p => p.IsModeless, isModeless);
             parameters.Add(p => p.IsOpen, true);
@@ -64,7 +64,7 @@ public class BitModalTests : BunitTestContext
         Assert.AreEqual(element.Attributes["aria-modal"].Value, (isModeless is false).ToString());
 
         var elementOverlay = com.FindAll(".overlay");
-        Assert.AreEqual(elementOverlay.Count, isModeless ? 0 : 1);
+        Assert.AreEqual(isModeless ? 0 : 1, elementOverlay.Count);
     }
 
     [DataTestMethod,
@@ -73,13 +73,13 @@ public class BitModalTests : BunitTestContext
     ]
     public void BitModalIsOpenTest(bool isOpen)
     {
-        var com = RenderComponent<BitModalTest>(parameters =>
+        var com = RenderComponent<BitModal>(parameters =>
         {
             parameters.Add(p => p.IsOpen, isOpen);
         });
 
         var bitModel = com.FindAll(".bit-mdl");
-        Assert.AreEqual(bitModel.Count, isOpen ? 1 : 0);
+        Assert.AreEqual(isOpen ? 1 : 0, bitModel.Count);
     }
 
     [DataTestMethod,
@@ -89,7 +89,7 @@ public class BitModalTests : BunitTestContext
     ]
     public void BitModalSubtitleAriaIdTest(string subtitleAriaId)
     {
-        var com = RenderComponent<BitModalTest>(parameters =>
+        var com = RenderComponent<BitModal>(parameters =>
         {
             parameters.Add(p => p.SubtitleAriaId, subtitleAriaId);
             parameters.Add(p => p.IsOpen, true);
@@ -118,7 +118,7 @@ public class BitModalTests : BunitTestContext
     ]
     public void BitModalTitleAriaIdTest(string titleAriaId)
     {
-        var com = RenderComponent<BitModalTest>(parameters =>
+        var com = RenderComponent<BitModal>(parameters =>
         {
             parameters.Add(p => p.TitleAriaId, titleAriaId);
             parameters.Add(p => p.IsOpen, true);
@@ -143,9 +143,10 @@ public class BitModalTests : BunitTestContext
     [TestMethod]
     public void BitModalContentTest()
     {
-        var com = RenderComponent<BitModalTest>(parameters =>
+        var com = RenderComponent<BitModal>(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
+            parameters.AddChildContent("<div>Test Content</div>");
         });
 
         var elementContent = com.Find(".scroll-content");
@@ -163,28 +164,32 @@ public class BitModalTests : BunitTestContext
         });
 
         var bitModal = com.FindAll(".bit-mdl");
-        Assert.AreEqual(bitModal.Count, 1);
+        Assert.AreEqual(1, bitModal.Count);
 
         var overlayElement = com.Find(".overlay");
         overlayElement.Click();
 
         bitModal = com.FindAll(".bit-mdl");
-        Assert.AreEqual(bitModal.Count, 0);
+        Assert.AreEqual(0, bitModal.Count);
     }
 
     [TestMethod]
     public void BitModalOnDismissShouldWorkCorrect()
     {
-        var com = RenderComponent<BitModalTest>(parameters =>
+        bool isOpen = true;
+        int currentCount = 0;
+        var com = RenderComponent<BitModal>(parameters =>
         {
-            parameters.Add(p => p.IsOpen, true);
+            parameters.Bind(p => p.IsOpen, isOpen, newValue => isOpen = newValue);
+            parameters.Add(p => p.OnDismiss, () => currentCount++);
         });
 
         var overlayElement = com.Find(".overlay");
 
         overlayElement.Click();
 
-        Assert.AreEqual(1, com.Instance.CurrentCount);
+        Assert.IsFalse(isOpen);
+        Assert.AreEqual(1, currentCount);
     }
 
     [DataTestMethod,
@@ -200,7 +205,7 @@ public class BitModalTests : BunitTestContext
     ]
     public void BitModalPositionTest(BitModalPosition position)
     {
-        var com = RenderComponent<BitModalTest>(parameters =>
+        var com = RenderComponent<BitModal>(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.Position, position);
@@ -210,27 +215,24 @@ public class BitModalTests : BunitTestContext
 
         var positionClass = position switch
         {
-            BitModalPosition.Center => $"center",
+            BitModalPosition.Center => "center",
 
-            BitModalPosition.TopLeft => $"top-left",
-            BitModalPosition.TopCenter => $"top-center",
-            BitModalPosition.TopRight => $"top-right",
+            BitModalPosition.TopLeft => "top-left",
+            BitModalPosition.TopCenter => "top-center",
+            BitModalPosition.TopRight => "top-right",
 
-            BitModalPosition.CenterLeft => $"center-left",
-            BitModalPosition.CenterRight => $"center-right",
+            BitModalPosition.CenterLeft => "center-left",
+            BitModalPosition.CenterRight => "center-right",
 
-            BitModalPosition.BottomLeft => $"bottom-left",
-            BitModalPosition.BottomCenter => $"bottom-center",
-            BitModalPosition.BottomRight => $"bottom-right",
+            BitModalPosition.BottomLeft => "bottom-left",
+            BitModalPosition.BottomCenter => "bottom-center",
+            BitModalPosition.BottomRight => "bottom-right",
 
-            _ => $"center",
+            _ => "center",
         };
 
         Assert.IsTrue(modalElement.ClassList.Contains(positionClass));
     }
 
-    private void HandleIsOpenChanged(bool isOpen)
-    {
-        isModalOpen = isOpen;
-    }
+    private void HandleIsOpenChanged(bool isOpen) => isModalOpen = isOpen;
 }
