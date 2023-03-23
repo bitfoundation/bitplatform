@@ -200,11 +200,11 @@ jobs:
        env:
          ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
 
-    - name: Install Maui
-      run: dotnet workload install maui
+     - name: Install Maui
+       run: dotnet workload install maui
 
      - name: Restore workloads
-       run: dotnet workload restore src/Templates/AdminPanel/Bit.AdminPanel/src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid  -f net7.0-maccatalyst
+       run: dotnet workload restore src/Templates/AdminPanel/Bit.AdminPanel/src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-maccatalyst
    
      - name: Build (To generate CSS/JS files)
        run: dotnet build src/Templates/AdminPanel/Bit.AdminPanel/src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:CreatePackage=true -p:MultilingualEnabled=true -f net7.0-maccatalyst
