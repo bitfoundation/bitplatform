@@ -34,7 +34,7 @@
         {
             "modifiers": [
                 {
-                    "copyOnly": [ "src/global.json", "**/*.ico", "**/*.png" ],
+                    "copyOnly": [ "global.json", "**/*.ico", "**/*.png" ],
                     "exclude": [
                         ".vs/**",
                         "**/[Bb]in/**",

@@ -29,7 +29,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-        global-json-file: src/global.json
+        global-json-file: global.json
 
     - name: Install wasm-tools
       run: dotnet workload install wasm-tools
@@ -136,7 +136,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-        global-json-file: src/global.json
+        global-json-file: global.json
   
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
@@ -172,7 +172,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-        global-json-file: src/global.json
+        global-json-file: global.json
   
     - name: Extract Android signing key from env
       uses: timheuer/base64-to-file@v1
@@ -218,7 +218,7 @@ jobs:
      - name: Setup .NET
        uses: actions/setup-dotnet@v3
        with:
-         global-json-file: src/global.json
+         global-json-file: global.json
    
      - name: Update appsettings.json api server address
        uses: microsoft/variable-substitution@v1 
@@ -254,7 +254,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-        global-json-file: src/global.json
+        global-json-file: global.json
   
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 

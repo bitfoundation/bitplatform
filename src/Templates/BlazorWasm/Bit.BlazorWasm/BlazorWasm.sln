@@ -8,7 +8,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{90C15A75-AFB4-428F-9EFE-17248F03C9D3}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
-		.\src\global.json = .\src\global.json
+		.\global.json = .\global.json
 		.\src\Clean.bat = .\src\Clean.bat
 	EndProjectSection
 EndProject
