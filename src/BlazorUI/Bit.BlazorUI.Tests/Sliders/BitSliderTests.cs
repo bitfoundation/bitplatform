@@ -1,6 +1,6 @@
 ﻿using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Sliders;
 
@@ -19,7 +19,7 @@ public class BitSliderTests : BunitTestContext
     ]
     public void BitSliderVerticalTest(bool isVertical)
     {
-        var com = RenderComponent<BitSliderTest>(parameters =>
+        var com = RenderComponent<BitSlider>(parameters =>
         {
             parameters.Add(p => p.IsVertical, isVertical);
         });
@@ -34,10 +34,10 @@ public class BitSliderTests : BunitTestContext
     ]
     public void BitSliderRangedVerticalTest(bool vertical)
     {
-        var com = RenderComponent<BitSliderTest>(parameters =>
+        var com = RenderComponent<BitSlider>(parameters =>
         {
             parameters.Add(p => p.IsVertical, vertical);
-            parameters.Add(p => p.Ranged, true);
+            parameters.Add(p => p.IsRanged, true);
         });
 
         var bitSlider = com.Find(".bit-sld");
@@ -50,7 +50,7 @@ public class BitSliderTests : BunitTestContext
     ]
     public void BitSliderEnabledTest(bool isEnabled)
     {
-        var com = RenderComponent<BitSliderTest>(parameters =>
+        var com = RenderComponent<BitSlider>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, isEnabled);
         });
@@ -74,15 +74,15 @@ public class BitSliderTests : BunitTestContext
     ]
     public void BitSliderRangedTest(bool ranged)
     {
-        var com = RenderComponent<BitSliderTest>(parameters =>
+        var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.Ranged, ranged);
+            parameters.Add(p => p.IsRanged, ranged);
         });
 
         var bitSlider = com.Find(".bit-sld");
 
-        Assert.IsTrue(ranged is false || bitSlider.ClassList.Contains($"ranged-horizontal"));
-        Assert.AreEqual(bitSlider.GetElementsByTagName("input").Length, ranged ? 2 : 1);
+        Assert.IsTrue(ranged is false || bitSlider.ClassList.Contains("ranged-horizontal"));
+        Assert.AreEqual(ranged ? 2 : 1, bitSlider.GetElementsByTagName("input").Length);
     }
 
     [DataTestMethod,
@@ -104,8 +104,8 @@ public class BitSliderTests : BunitTestContext
         // Find first label with valueLabel css class
         var label = com.Find(".value-label");
 
-        var actualValue = lowerValue.HasValue ? lowerValue : defaultLowerValue;
-        Assert.AreEqual(label.TextContent, actualValue.GetValueOrDefault().ToString());
+        var expectedValue = lowerValue.HasValue ? lowerValue : defaultLowerValue;
+        Assert.AreEqual(expectedValue.GetValueOrDefault().ToString(), label.TextContent);
     }
 
     [DataTestMethod,
@@ -127,10 +127,10 @@ public class BitSliderTests : BunitTestContext
         // Find labels with valueLabel css class
         var labels = com.FindAll(".value-label");
 
-        var actualValue = upperValue.HasValue ? upperValue : defaultUpperValue;
+        var expectedValue = upperValue.HasValue ? upperValue : defaultUpperValue;
 
         Assert.AreEqual(2, labels.Count);
-        Assert.AreEqual(labels.Last().TextContent, actualValue.GetValueOrDefault().ToString());
+        Assert.AreEqual(expectedValue.GetValueOrDefault().ToString(), labels.Last().TextContent);
     }
 
     [DataTestMethod,
@@ -139,17 +139,17 @@ public class BitSliderTests : BunitTestContext
     ]
     public void BitSliderLowerValueTest(int? lowerValue)
     {
-        var com = RenderComponent<BitSliderTest>(parameters =>
+        var com = RenderComponent<BitSlider>(parameters =>
         {
             parameters.Add(p => p.LowerValue, lowerValue);
             parameters.Add(p => p.UpperValue, 6);
             parameters.Add(p => p.ShowValue, true);
-            parameters.Add(p => p.Ranged, true);
+            parameters.Add(p => p.IsRanged, true);
         });
 
         var label = com.Find(".value-label");
 
-        Assert.AreEqual(label.TextContent, lowerValue.GetValueOrDefault().ToString());
+        Assert.AreEqual(lowerValue.GetValueOrDefault().ToString(), label.TextContent);
     }
 
     [DataTestMethod,
@@ -168,8 +168,8 @@ public class BitSliderTests : BunitTestContext
         // Find labels with valueLabel css class
         var labels = com.FindAll(".value-label");
 
-        Assert.AreEqual(labels.Count, 2);
-        Assert.AreEqual(labels[^1].TextContent, defaultUpperValue.GetValueOrDefault().ToString());
+        Assert.AreEqual(2, labels.Count);
+        Assert.AreEqual(defaultUpperValue.GetValueOrDefault().ToString(), labels[^1].TextContent);
     }
 
     [DataTestMethod,
@@ -180,19 +180,19 @@ public class BitSliderTests : BunitTestContext
     ]
     public void BitSliderLowerAndUpperValueTest(int? lowerValue, int? upperValue)
     {
-        var com = RenderComponent<BitSliderTest>(parameters =>
+        var com = RenderComponent<BitSlider>(parameters =>
         {
             parameters.Add(p => p.RangeValue, new BitSliderRangeValue { Lower = lowerValue, Upper = upperValue });
             parameters.Add(p => p.ShowValue, true);
-            parameters.Add(p => p.Ranged, true);
+            parameters.Add(p => p.IsRanged, true);
         });
 
         // Find labels with valueLabel css class
         var labels = com.FindAll(".value-label");
 
-        Assert.AreEqual(labels.Count, 2);
-        Assert.AreEqual(labels[0].TextContent, lowerValue.GetValueOrDefault().ToString());
-        Assert.AreEqual(labels[^1].TextContent, upperValue.GetValueOrDefault().ToString());
+        Assert.AreEqual(2, labels.Count);
+        Assert.AreEqual(lowerValue.GetValueOrDefault().ToString(), labels[0].TextContent);
+        Assert.AreEqual(upperValue.GetValueOrDefault().ToString(), labels[^1].TextContent);
     }
 
     [DataTestMethod,
@@ -238,7 +238,7 @@ public class BitSliderTests : BunitTestContext
     ]
     public void BitSliderValueTest(int? value)
     {
-        var com = RenderComponent<BitSliderTest>(parameters =>
+        var com = RenderComponent<BitSlider>(parameters =>
         {
             parameters.Add(p => p.Value, value);
             parameters.Add(p => p.ShowValue, true);
@@ -247,7 +247,7 @@ public class BitSliderTests : BunitTestContext
         // Find first label with valueLabel css class
         var label = com.Find(".value-label");
 
-        Assert.AreEqual(label.TextContent, value.GetValueOrDefault().ToString());
+        Assert.AreEqual(value.GetValueOrDefault().ToString(), label.TextContent);
     }
 
     [DataTestMethod,
@@ -256,7 +256,7 @@ public class BitSliderTests : BunitTestContext
     ]
     public void BitSliderVerticalValueTest(int? value)
     {
-        var com = RenderComponent<BitSliderTest>(parameters =>
+        var com = RenderComponent<BitSlider>(parameters =>
         {
             parameters.Add(p => p.Value, value);
             parameters.Add(p => p.IsVertical, true);
@@ -266,7 +266,7 @@ public class BitSliderTests : BunitTestContext
         // Find first label with valueLabel css class
         var label = com.Find(".value-label");
 
-        Assert.AreEqual(label.TextContent, value.GetValueOrDefault().ToString());
+        Assert.AreEqual(value.GetValueOrDefault().ToString(), label.TextContent);
     }
 
     [DataTestMethod,
@@ -277,9 +277,9 @@ public class BitSliderTests : BunitTestContext
     ]
     public void BitSliderStepTest(bool ranged, int? step)
     {
-        var com = RenderComponent<BitSliderTest>(parameters =>
+        var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.Ranged, ranged);
+            parameters.Add(p => p.IsRanged, ranged);
             if (step.HasValue)
             {
                 parameters.Add(p => p.Step, step.Value);
@@ -287,7 +287,7 @@ public class BitSliderTests : BunitTestContext
         });
 
         var inputs = com.FindAll(".bit-sld input");
-        Assert.AreEqual(inputs.Count, ranged ? 2 : 1);
+        Assert.AreEqual(ranged ? 2 : 1, inputs.Count);
 
         foreach (var input in inputs)
         {
@@ -301,20 +301,20 @@ public class BitSliderTests : BunitTestContext
     ]
     public void BitSliderMinMaxTest(bool ranged, int min, int max)
     {
-        var com = RenderComponent<BitSliderTest>(parameters =>
+        var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.Ranged, ranged);
+            parameters.Add(p => p.IsRanged, ranged);
             parameters.Add(p => p.Min, min);
             parameters.Add(p => p.Max, max);
         });
 
         var inputs = com.FindAll(".bit-sld input");
-        Assert.AreEqual(inputs.Count, ranged ? 2 : 1);
+        Assert.AreEqual(ranged ? 2 : 1, inputs.Count);
 
         foreach (var input in inputs)
         {
-            Assert.AreEqual(input.GetAttribute("min"), min.ToString());
-            Assert.AreEqual(input.GetAttribute("max"), max.ToString());
+            Assert.AreEqual(min.ToString(), input.GetAttribute("min"));
+            Assert.AreEqual(max.ToString(), input.GetAttribute("max"));
         }
     }
 
@@ -337,7 +337,7 @@ public class BitSliderTests : BunitTestContext
         if (label.HasValue())
         {
             Assert.IsNotNull(labelElement);
-            Assert.AreEqual(labelElement.TextContent, label);
+            Assert.AreEqual(label, labelElement.TextContent);
         }
         else
         {
@@ -353,9 +353,9 @@ public class BitSliderTests : BunitTestContext
     ]
     public void BitSliderShowValueTest(bool ranged, bool showValue)
     {
-        var com = RenderComponent<BitSliderTest>(parameters =>
+        var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.Ranged, ranged);
+            parameters.Add(p => p.IsRanged, ranged);
             parameters.Add(p => p.ShowValue, showValue);
         });
 
@@ -364,7 +364,7 @@ public class BitSliderTests : BunitTestContext
         if (showValue)
         {
             Assert.IsTrue(labels.Any());
-            Assert.AreEqual(labels.Count, ranged ? 2 : 1);
+            Assert.AreEqual(ranged ? 2 : 1, labels.Count);
         }
         else
         {
@@ -380,15 +380,15 @@ public class BitSliderTests : BunitTestContext
     ]
     public void BitSliderOriginFromZeroTest(bool ranged, bool originFromZero)
     {
-        var com = RenderComponent<BitSliderTest>(parameters =>
+        var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.Ranged, ranged);
-            parameters.Add(p => p.OriginFromZero, originFromZero);
+            parameters.Add(p => p.IsRanged, ranged);
+            parameters.Add(p => p.IsOriginFromZero, originFromZero);
         });
 
         var spans = com.FindAll(".zero-tick");
 
-        Assert.AreEqual(spans.Count, originFromZero ? 1 : 0);
+        Assert.AreEqual(originFromZero ? 1 : 0, spans.Count);
     }
 
     [DataTestMethod,
@@ -399,15 +399,15 @@ public class BitSliderTests : BunitTestContext
     ]
     public void BitSliderValueFormatTest(bool ranged, string valueFormat)
     {
-        var com = RenderComponent<BitSliderTest>(parameters =>
+        var com = RenderComponent<BitSlider>(parameters =>
         {
             parameters.Add(p => p.ShowValue, true);
-            parameters.Add(p => p.Ranged, ranged);
+            parameters.Add(p => p.IsRanged, ranged);
             parameters.Add(p => p.ValueFormat, valueFormat);
         });
 
         var labels = com.FindAll(".value-label");
 
-        Assert.AreEqual(labels.Count(l => l.TextContent.Contains('%') == valueFormat.HasValue()), ranged ? 2 : 1);
+        Assert.AreEqual(ranged ? 2 : 1, labels.Count(l => l.TextContent.Contains('%') == valueFormat.HasValue()));
     }
 }

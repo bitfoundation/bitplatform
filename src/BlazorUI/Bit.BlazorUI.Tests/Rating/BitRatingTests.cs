@@ -13,7 +13,7 @@ public class BitRatingTests : BunitTestContext
     ]
     public void BitRatingShouldTakeCorrectVisualAndEnabledStyle(bool isEnabled)
     {
-        var component = RenderComponent<BitRatingTest>(parameters =>
+        var component = RenderComponent<BitRating>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, isEnabled);
         });
@@ -33,13 +33,13 @@ public class BitRatingTests : BunitTestContext
 
         var button = component.Find(".button");
 
-        Assert.AreEqual(!isEnabled, button.HasAttribute("disabled"));
+        Assert.AreEqual(isEnabled is false, button.HasAttribute("disabled"));
     }
 
     [TestMethod]
     public void BitRatingShouldRespectIsReadonly()
     {
-        var component = RenderComponent<BitRatingTest>(parameters =>
+        var component = RenderComponent<BitRating>(parameters =>
         {
             parameters.Add(p => p.IsReadOnly, true);
             parameters.Add(p => p.AllowZeroStars, true);
@@ -66,7 +66,7 @@ public class BitRatingTests : BunitTestContext
     ]
     public void BitRatingShouldShowCorrectMax(int max)
     {
-        var component = RenderComponent<BitRatingTest>(parameters =>
+        var component = RenderComponent<BitRating>(parameters =>
         {
             parameters.Add(p => p.Max, max);
         });
@@ -80,7 +80,7 @@ public class BitRatingTests : BunitTestContext
         DataRow("Select {0} of {1} stars")]
     public void BitRatingShouldTakeCorrectAriaLabelFormat(string ariaLabelFormat)
     {
-        var component = RenderComponent<BitRatingTest>(parameters =>
+        var component = RenderComponent<BitRating>(parameters =>
         {
             parameters.Add(p => p.AriaLabelFormat, ariaLabelFormat);
         });
@@ -95,7 +95,7 @@ public class BitRatingTests : BunitTestContext
     ]
     public void BitRatingShouldRespectSize(BitRatingSize size)
     {
-        var component = RenderComponent<BitRatingTest>(parameters =>
+        var component = RenderComponent<BitRating>(parameters =>
         {
             parameters.Add(p => p.Size, size);
         });
@@ -106,53 +106,55 @@ public class BitRatingTests : BunitTestContext
         Assert.IsTrue(bitRating.ClassList.Contains(sizeClass));
     }
 
+    [Ignore("bypassed - BUnit 2-way bound parameters issue")]
     [DataTestMethod,
         DataRow(true),
         DataRow(false)
     ]
     public void BitRatingShouldRespectAllowZeroStars(bool allowZeroStars)
     {
-        var component = RenderComponent<BitRatingTest>(parameters =>
+        var component = RenderComponent<BitRating>(parameters =>
         {
             parameters.Add(p => p.AllowZeroStars, allowZeroStars);
         });
-        
+
         var firstButton = component.Find(".button");
 
         //TODO: bypassed - BUnit 2-way bound parameters issue
-        //Assert.AreEqual(!allowZeroStars, bool.Parse(firstButton.GetAttribute("aria-checked")));
+        Assert.AreEqual(allowZeroStars is false, bool.Parse(firstButton.GetAttribute("aria-checked")));
     }
 
     [DataTestMethod,
         DataRow(BitIconName.HeartFill, BitIconName.Heart),
         DataRow(BitIconName.HeartFill, BitIconName.Heart),
-        ]
+    ]
     public void BitRatingShouldTakeCustomIcon(BitIconName icon, BitIconName unselectedIcon)
     {
-        var component = RenderComponent<BitRatingTest>(parameters =>
+        var component = RenderComponent<BitRating>(parameters =>
         {
             parameters.Add(p => p.Icon, icon);
             parameters.Add(p => p.UnselectedIcon, unselectedIcon);
         });
 
-        var bitRating = component.FindAll(".button");
         var ratingIcon = component.Find(".button i");
         var ratingUnselectedIcon = component.Find(".button:nth-child(2) i");
 
         //TODO: bypassed - BUnit 2-way bound parameters issue
-        //Assert.IsTrue( ratingIcon.ClassList.Contains($"bit-icon--{icon}"));
-        //Assert.IsTrue(ratingUnselectedIcon.ClassList.Contains($"bit-icon--{unselectedIcon}"));
+        Assert.IsTrue(ratingIcon.ClassList.Contains($"bit-icon--{icon}"));
+        Assert.IsTrue(ratingUnselectedIcon.ClassList.Contains($"bit-icon--{unselectedIcon}"));
     }
 
+    [Ignore("bypassed - BUnit 2-way bound parameters issue")]
     [DataTestMethod,
         DataRow(10, 3, true, false, 3),
         DataRow(10, 2, false, false, 1),
         DataRow(10, 0, true, true, 1),
         DataRow(10, 4, false, true, 1),
-        DataRow(10, 0, true, false, 1)]
+        DataRow(10, 0, true, false, 1)
+    ]
     public void BitRatingShouldRespectClickIndex(int max, int clickedIndex, bool isEnabled, bool isReadonly, int expectedResult)
     {
-        var component = RenderComponent<BitRatingTest>(parameters =>
+        var component = RenderComponent<BitRating>(parameters =>
         {
             parameters.Add(p => p.Max, max);
             parameters.Add(p => p.IsEnabled, isEnabled);
@@ -170,20 +172,20 @@ public class BitRatingTests : BunitTestContext
 
         var bitRatingIcons = component.FindAll("i");
 
-        var filledBitRatingIconCount = bitRatingIcons.Where(r => r.ClassList.Contains("bit-icon--FavoriteStarFill")).Count();
-        var unselectedBitRatingIconCount = bitRatingIcons.Where(r => r.ClassList.Contains("bit-icon--FavoriteStar")).Count();
+        var filledBitRatingIconCount = bitRatingIcons.Count(r => r.ClassList.Contains("bit-icon--FavoriteStarFill"));
+        var unselectedBitRatingIconCount = bitRatingIcons.Count(r => r.ClassList.Contains("bit-icon--FavoriteStar"));
 
         Assert.AreEqual(bitRatingButtons.Count(), max);
 
         //TODO: bypassed - BUnit 2-way bound parameters issue
-        //Assert.AreEqual((!isEnabled || isReadonly) ? 1 : clickedIndex, filledBitRatingIconCount);
-        //Assert.AreEqual((!isEnabled || isReadonly) ? max - 1 : max - clickedIndex, unselectedBitRatingIconCount);
+        Assert.AreEqual((!isEnabled || isReadonly) ? 1 : clickedIndex, filledBitRatingIconCount);
+        Assert.AreEqual((!isEnabled || isReadonly) ? max - 1 : max - clickedIndex, unselectedBitRatingIconCount);
     }
 
     [DataTestMethod, DataRow("Detailed label")]
     public void BitRatingAriaLabelTest(string ariaLabel)
     {
-        var com = RenderComponent<BitRatingTest>(parameters =>
+        var com = RenderComponent<BitRating>(parameters =>
         {
             parameters.Add(p => p.AriaLabel, ariaLabel);
         });
@@ -195,6 +197,7 @@ public class BitRatingTests : BunitTestContext
     }
 
 
+    [Ignore("bypassed - BUnit 2-way bound parameters issue")]
     [DataTestMethod,
           DataRow(5, 2, BitIconName.HeartFill, BitIconName.Heart),
           DataRow(5, 3, BitIconName.HeartFill, BitIconName.Heart),
@@ -203,7 +206,7 @@ public class BitRatingTests : BunitTestContext
     ]
     public void BitRatingShouldRespectRatingValue(int max, double value, BitIconName icon, BitIconName unselectedIcon)
     {
-        var component = RenderComponent<BitRatingTest>(parameters =>
+        var component = RenderComponent<BitRating>(parameters =>
         {
             parameters.Add(p => p.Value, value);
             parameters.Add(p => p.Max, max);
@@ -211,14 +214,15 @@ public class BitRatingTests : BunitTestContext
 
         var buttons = component.FindAll(".bit-rating button i:nth-child(2)");
 
-        var filledBitRatingIconCount = buttons.Where(s => s.ClassList.Contains($"bit-icon--{icon.GetName()}")).Count();
-        var unselectedBitRatingIconCount = buttons.Where(s => s.ClassList.Contains($"bit-icon--{unselectedIcon.GetName()}")).Count();
+        var filledBitRatingIconCount = buttons.Count(s => s.ClassList.Contains($"bit-icon--{icon.GetName()}"));
+        var unselectedBitRatingIconCount = buttons.Count(s => s.ClassList.Contains($"bit-icon--{unselectedIcon.GetName()}"));
 
         //TODO: bypassed - BUnit 2-way bound parameters issue
-        //Assert.AreEqual(filledBitRatingIconCount, value);
-        //Assert.AreEqual(unselectedBitRatingIconCount, max - value);
+        Assert.AreEqual(filledBitRatingIconCount, value);
+        Assert.AreEqual(unselectedBitRatingIconCount, max - value);
     }
 
+    [Ignore("bypassed - BUnit 2-way bound parameters issue")]
     [DataTestMethod,
          DataRow(5, 0, 2, BitIconName.HeartFill, BitIconName.Heart),
          DataRow(5, 0, 3, BitIconName.HeartFill, BitIconName.Heart),
@@ -240,14 +244,14 @@ public class BitRatingTests : BunitTestContext
 
         var buttons = component.FindAll(".button i:nth-child(2)");
 
-        var filledBitRatingIconCount = buttons.Where(s => s.ClassList.Contains($"bit-icon--{icon.GetName()}")).Count();
-        var unselectedBitRatingIconCount = buttons.Where(s => s.ClassList.Contains($"bit-icon--{unselectedIcon.GetName()}")).Count();
+        var filledBitRatingIconCount = buttons.Count(s => s.ClassList.Contains($"bit-icon--{icon.GetName()}"));
+        var unselectedBitRatingIconCount = buttons.Count(s => s.ClassList.Contains($"bit-icon--{unselectedIcon.GetName()}"));
 
         var actualValue = value == default ? defaultValue : value;
 
         //TODO: bypassed - BUnit 2-way bound parameters issue
-        //Assert.AreEqual(filledBitRatingIconCount, actualValue);
-        //Assert.AreEqual(unselectedBitRatingIconCount, max - actualValue);
+        Assert.AreEqual(filledBitRatingIconCount, actualValue);
+        Assert.AreEqual(unselectedBitRatingIconCount, max - actualValue);
 
         var input = component.Find(".bit-input-hidden");
 
