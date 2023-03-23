@@ -43,6 +43,9 @@ jobs:
       with:
         global-json-file: global.json
 
+    - name: Install Maui
+      run: dotnet workload install maui
+
     - name: Restore workloads
       run: dotnet workload restore src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-android
 
@@ -62,6 +65,9 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         global-json-file: global.json
+
+    - name: Install Maui
+      run: dotnet workload install maui
 
     - name: Restore workloads
       run: dotnet workload restore src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-windows10.0.19041.0
@@ -83,6 +89,9 @@ jobs:
       with:
         global-json-file: global.json
 
+    - name: Install Maui
+      run: dotnet workload install maui
+
     - name: Restore workloads
       run: dotnet workload restore src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-ios
 
@@ -102,6 +111,9 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         global-json-file: global.json
+
+    - name: Install Maui
+      run: dotnet workload install maui
 
     - name: Restore workloads
       run: dotnet workload restore src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-maccatalyst
@@ -125,6 +137,9 @@ jobs:
 
     - name: Switch to blazor wasm
       run:  sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' src/Client/Web/TodoTemplate.Client.Web.csproj
+
+    - name: Install Maui
+      run: dotnet workload install maui
 
     - name: Restore workloads
       run: dotnet workload restore src/Client/Web/TodoTemplate.Client.Web.csproj -p:BlazorMode=BlazorWebAssembly

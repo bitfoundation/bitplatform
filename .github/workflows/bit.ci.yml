@@ -29,9 +29,6 @@ jobs:
       with:
         dotnet-version: 8.0.x
         include-prerelease: true
-
-    - name: Restore workloads
-      run: dotnet workload restore src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj
       
     - name: Restore prerelease
       run: dotnet restore src/Bit-CI-release.sln
