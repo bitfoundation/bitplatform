@@ -26,10 +26,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-        global-json-file: src/Websites/Sales/Bit.Websites.Sales/global.json
-
-    - name: Install wasm-tools
-      run: dotnet workload install wasm-tools
+        global-json-file: src/Websites/Sales/global.json
 
     - name: Switch to blazor web assembly
       shell: pwsh

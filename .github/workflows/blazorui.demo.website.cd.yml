@@ -5,7 +5,7 @@ name: Blazor UI Demo CD
 env:
   WEB_APP_DEPLOYMENT_TYPE: 'SSR'
   API_SERVER_ADDRESS: 'https://components.bitplatform.dev/api/'
-  APP_SERVICE_NAME: 'bitcomponents'
+  APP_SERVICE_NAME: 'bit-components'
 
 on:
   workflow_dispatch:
@@ -30,9 +30,6 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         global-json-file: src/BlazorUI/Demo/global.json
-
-    - name: Install wasm-tools
-      run: dotnet workload install wasm-tools
 
     - name: Switch to blazor web assembly
       run:  sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' src/BlazorUI/Demo/Client/Web/Bit.BlazorUI.Demo.Client.Web.csproj
@@ -107,7 +104,7 @@ jobs:
         files: 'src/BlazorUI/Demo/Client/Shared/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
-  
+
     - name: Install Maui
       run: dotnet workload install maui
 
@@ -153,7 +150,7 @@ jobs:
         files: 'src/BlazorUI/Demo/Client/Shared/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
-  
+
     - name: Install Maui
       run: dotnet workload install maui
 

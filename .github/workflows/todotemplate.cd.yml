@@ -28,10 +28,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-        global-json-file: src/Templates/TodoTemplate/Bit.TodoTemplate/src/global.json
-
-    - name: Install wasm-tools
-      run: dotnet workload install wasm-tools
+        global-json-file: src/Templates/TodoTemplate/Bit.TodoTemplate/global.json
 
     - name: Switch to blazor web assembly
       run:  sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/Web/TodoTemplate.Client.Web.csproj
@@ -88,7 +85,7 @@ jobs:
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
         with:
-          app-name: 'app-service-td-test'
+          app-name: 'bit-todo'
           slot-name: 'production'
           publish-profile: ${{ secrets.TODO_SSR_AZURE_APP_SERVICE_PUBLISH_PROFILE }}
           package: .
@@ -105,10 +102,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-        global-json-file: src/Templates/TodoTemplate/Bit.TodoTemplate/src/global.json
-
-    - name: Install wasm-tools
-      run: dotnet workload install wasm-tools
+        global-json-file: src/Templates/TodoTemplate/Bit.TodoTemplate/global.json
 
     - name: Switch to blazor web assembly
       run:  sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/Web/TodoTemplate.Client.Web.csproj
@@ -165,7 +159,7 @@ jobs:
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
         with:
-          app-name: 'app-service-pwa-td-test'
+          app-name: 'bit-todo-app'
           slot-name: 'production'
           publish-profile: ${{ secrets.TODO_PWA_AZURE_APP_SERVICE_PUBLISH_PROFILE }}
           package: .
@@ -182,7 +176,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-        global-json-file: src/Templates/TodoTemplate/Bit.TodoTemplate/src/global.json
+        global-json-file: src/Templates/TodoTemplate/Bit.TodoTemplate/global.json
   
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
@@ -190,7 +184,7 @@ jobs:
         files: 'src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/Shared/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
-  
+
     - name: Install Maui
       run: dotnet workload install maui
 
@@ -221,7 +215,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-        global-json-file: src/Templates/TodoTemplate/Bit.TodoTemplate/src/global.json
+        global-json-file: src/Templates/TodoTemplate/Bit.TodoTemplate/global.json
   
     - name: Extract Android signing key from env
       uses: timheuer/base64-to-file@v1
@@ -236,7 +230,7 @@ jobs:
         files: 'src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/Shared/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
-  
+
     - name: Install Maui
       run: dotnet workload install maui
 
@@ -270,7 +264,7 @@ jobs:
      - name: Setup .NET
        uses: actions/setup-dotnet@v3
        with:
-         global-json-file: src/Templates/TodoTemplate/Bit.TodoTemplate/src/global.json
+         global-json-file: src/Templates/TodoTemplate/Bit.TodoTemplate/global.json
    
      - name: Update appsettings.json api server address
        uses: microsoft/variable-substitution@v1 
@@ -278,7 +272,10 @@ jobs:
          files: 'src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/Shared/appsettings.json'
        env:
          ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
-   
+
+     - name: Install Maui
+       run: dotnet workload install maui
+
      - name: Restore workloads
        run: dotnet workload restore src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-maccatalyst
    

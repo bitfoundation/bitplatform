@@ -6,7 +6,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".SolutionItems", ".Solution
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
 		src\Directory.Build.props = src\Directory.Build.props
-		src\global.json = src\global.json
+		global.json = global.json
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Client", "Client", "{99987B56-D7E8-43AA-9EFC-07EC384B4382}"

@@ -48,6 +48,12 @@ jobs:
       version: 6.x
 
   - task: Bash@3
+    displayName: 'Install maui'
+    inputs:
+      targetType: 'inline'
+      script: dotnet workload install maui
+
+  - task: Bash@3
     displayName: 'Restore workloads'
     inputs:
       targetType: 'inline'
@@ -76,6 +82,12 @@ jobs:
     displayName: 'Use dotnet sdk 6.x for LibSassBuilder'
     inputs:
       version: 6.x
+
+  - task: Bash@3
+    displayName: 'Install maui'
+    inputs:
+      targetType: 'inline'
+      script: dotnet workload install maui
 
   - task: Bash@3
     displayName: 'Restore workloads'
@@ -108,6 +120,12 @@ jobs:
       version: 6.x
 
   - task: Bash@3
+    displayName: 'Install maui'
+    inputs:
+      targetType: 'inline'
+      script: dotnet workload install maui
+
+  - task: Bash@3
     displayName: 'Restore workloads'
     inputs:
       targetType: 'inline'
@@ -136,6 +154,12 @@ jobs:
     displayName: 'Use dotnet sdk 6.x for LibSassBuilder'
     inputs:
       version: 6.x
+
+  - task: Bash@3
+    displayName: 'Install maui'
+    inputs:
+      targetType: 'inline'
+      script: dotnet workload install maui
 
   - task: Bash@3
     displayName: 'Restore workloads'
