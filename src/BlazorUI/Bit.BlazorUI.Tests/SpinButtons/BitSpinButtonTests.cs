@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Bunit;
 using Microsoft.AspNetCore.Components;
@@ -47,7 +48,7 @@ public class BitSpinButtonTests : BunitTestContext
     ]
     public void BitSpinButtonShouldRenderCorrectIcon(BitIconName? iconName, string iconAriaLabel)
     {
-        var component = RenderComponent<BitSpinButtonTest>(parameters =>
+        var component = RenderComponent<BitSpinButton>(parameters =>
         {
             parameters.Add(p => p.IconName, iconName);
             parameters.Add(p => p.IconAriaLabel, iconAriaLabel);
@@ -75,7 +76,7 @@ public class BitSpinButtonTests : BunitTestContext
     ]
     public void BitSpinButtonShouldRenderCorrectIncrementButton(BitIconName iconName, string iconAriaLabel, bool isEnabled)
     {
-        var component = RenderComponent<BitSpinButtonTest>(parameters =>
+        var component = RenderComponent<BitSpinButton>(parameters =>
         {
             parameters.Add(p => p.IncrementButtonIconName, iconName);
             parameters.Add(p => p.IncrementButtonAriaLabel, iconAriaLabel);
@@ -104,7 +105,7 @@ public class BitSpinButtonTests : BunitTestContext
     ]
     public void BitSpinButtonShouldRenderCorrectDecrementButton(BitIconName iconName, string iconAriaLabel, bool isEnabled)
     {
-        var component = RenderComponent<BitSpinButtonTest>(parameters =>
+        var component = RenderComponent<BitSpinButton>(parameters =>
         {
             parameters.Add(p => p.DecrementButtonIconName, iconName);
             parameters.Add(p => p.DecrementButtonAriaLabel, iconAriaLabel);
@@ -131,7 +132,7 @@ public class BitSpinButtonTests : BunitTestContext
     ]
     public void BitSpinButtonShouldHaveSuffixWhenItsPropertySet(string suffix)
     {
-        var component = RenderComponent<BitSpinButtonTest>(parameters => parameters.Add(p => p.Suffix, suffix));
+        var component = RenderComponent<BitSpinButton>(parameters => parameters.Add(p => p.Suffix, suffix));
 
         var input = component.Find("input");
         var inputValue = input.GetAttribute("value");
@@ -145,7 +146,7 @@ public class BitSpinButtonTests : BunitTestContext
     ]
     public void BitSpinButtonShouldHaveLabelPositionClassName(BitSpinButtonLabelPosition labelPosition)
     {
-        var component = RenderComponent<BitSpinButtonTest>(parameters =>
+        var component = RenderComponent<BitSpinButton>(parameters =>
         {
             parameters.Add(p => p.LabelPosition, labelPosition);
         });
@@ -162,9 +163,9 @@ public class BitSpinButtonTests : BunitTestContext
     ]
     public void BitSpinButtonInputShouldHaveHtmlAttributes(string attrKey, string attrValue)
     {
-        var component = RenderComponent<BitSpinButtonTest>(parameters =>
+        var component = RenderComponent<BitSpinButton>(parameters =>
         {
-            parameters.Add(p => p.InputHtmlAttributes, new() { { attrKey, attrValue } });
+            parameters.Add(p => p.InputHtmlAttributes, new Dictionary<string, object>() { { attrKey, attrValue } });
         });
 
         var input = component.Find("input");
@@ -179,7 +180,7 @@ public class BitSpinButtonTests : BunitTestContext
     ]
     public void BitSpinButtonWrapperShouldHaveCorrectAttributes(string title, string ariaLabel, int? ariaSetSize, int? ariaPositionInSet)
     {
-        var component = RenderComponent<BitSpinButtonTest>(parameters =>
+        var component = RenderComponent<BitSpinButton>(parameters =>
         {
             parameters.Add(p => p.Title, title);
             parameters.Add(p => p.AriaLabel, ariaLabel);
@@ -189,17 +190,17 @@ public class BitSpinButtonTests : BunitTestContext
 
         var spbWrapper = component.Find(".wrapper");
 
-        if (title is not null)
+        if (string.IsNullOrEmpty(title) is false)
         {
             Assert.AreEqual(title, spbWrapper.GetAttribute("title"));
         }
 
-        if (ariaLabel is not null)
+        if (string.IsNullOrEmpty(ariaLabel) is false)
         {
             Assert.AreEqual(ariaLabel, spbWrapper.GetAttribute("aria-label"));
         }
 
-        if (ariaSetSize is not null)
+        if (ariaSetSize.HasValue)
         {
             Assert.AreEqual(ariaSetSize.ToString(), spbWrapper.GetAttribute("aria-setsize"));
             Assert.AreEqual(ariaPositionInSet.ToString(), spbWrapper.GetAttribute("aria-posinset"));
@@ -224,31 +225,31 @@ public class BitSpinButtonTests : BunitTestContext
         var input = component.Find("input");
         double expectedMinValue = 0;
         double expectedMaxValue = 0;
-        if (min is null && max is null)
+        if (min.HasValue is false && max.HasValue is false)
         {
             expectedMinValue = double.MinValue;
             expectedMaxValue = double.MaxValue;
         }
 
-        if (min is null && max is not null)
+        if (min.HasValue is false && max.HasValue)
         {
             expectedMinValue = double.MinValue;
             expectedMaxValue = max.Value;
         }
 
-        if (min is not null && max is null)
+        if (min.HasValue && max.HasValue is false)
         {
             expectedMinValue = min.Value;
             expectedMaxValue = double.MaxValue;
         }
 
-        if (min is not null && max is not null)
+        if (min.HasValue && max.HasValue)
         {
             if (min > max)
             {
-                min = min + max;
+                min += max;
                 max = min - max;
-                min = min - max;
+                min -= max;
             }
 
             expectedMinValue = min.Value;
@@ -265,15 +266,20 @@ public class BitSpinButtonTests : BunitTestContext
     ]
     public void BitSpinButtonOnIncrementTest(int countOfClicks)
     {
-        var component = RenderComponent<BitSpinButtonTest>();
+        int onIncrementEventCounter = 0;
+        var component = RenderComponent<BitSpinButton>(parameters =>
+        {
+            parameters.Add(p => p.OnIncrement, () => onIncrementEventCounter++);
+        });
 
         var increaseButton = component.FindAll("button")[0];
         for (int i = 0; i < countOfClicks; i++)
         {
             increaseButton.PointerDown();
+            increaseButton.PointerUp();
         }
 
-        Assert.AreEqual(countOfClicks, component.Instance.OnIncrementEventCounter);
+        Assert.AreEqual(countOfClicks, onIncrementEventCounter);
     }
 
     [DataTestMethod,
@@ -282,16 +288,20 @@ public class BitSpinButtonTests : BunitTestContext
     ]
     public void BitSpinButtonOnDecrementTest(int countOfClicks)
     {
-        var component = RenderComponent<BitSpinButtonTest>();
+        int onDecrementEventCounter = 20;
+        var component = RenderComponent<BitSpinButton>(parameters =>
+        {
+            parameters.Add(p => p.OnDecrement, () => onDecrementEventCounter--);
+        });
 
         var decreaseButton = component.FindAll("button")[1];
-        var onDecrementEventCounterInitValue = component.Instance.OnDecrementEventCounter;
         for (int i = 0; i < countOfClicks; i++)
         {
             decreaseButton.PointerDown();
+            decreaseButton.PointerUp();
         }
 
-        Assert.AreEqual(onDecrementEventCounterInitValue - countOfClicks, component.Instance.OnDecrementEventCounter);
+        Assert.AreEqual(20 - countOfClicks, onDecrementEventCounter);
     }
 
     [DataTestMethod,
@@ -300,7 +310,11 @@ public class BitSpinButtonTests : BunitTestContext
     ]
     public void BitSpinButtonInputOnBlurEventCallbackTest(int countOfBlur)
     {
-        var component = RenderComponent<BitSpinButtonTest>();
+        int onBlurEventCounter = 0;
+        var component = RenderComponent<BitSpinButton>(parameters =>
+        {
+            parameters.Add(p => p.OnBlur, () => onBlurEventCounter++);
+        });
 
         var input = component.Find("input");
         for (int i = 0; i < countOfBlur; i++)
@@ -308,7 +322,7 @@ public class BitSpinButtonTests : BunitTestContext
             input.Blur();
         }
 
-        Assert.AreEqual(countOfBlur, component.Instance.OnBlurEventCounter);
+        Assert.AreEqual(countOfBlur, onBlurEventCounter);
     }
 
     [DataTestMethod,
@@ -317,7 +331,11 @@ public class BitSpinButtonTests : BunitTestContext
     ]
     public void BitSpinButtonInputOnFocusTest(int countOfFocus)
     {
-        var component = RenderComponent<BitSpinButtonTest>();
+        int onFocusEventCounter = 0;
+        var component = RenderComponent<BitSpinButton>(parameters =>
+        {
+            parameters.Add(p => p.OnFocus, () => onFocusEventCounter++);
+        });
 
         var input = component.Find("input");
         for (int i = 0; i < countOfFocus; i++)
@@ -325,7 +343,7 @@ public class BitSpinButtonTests : BunitTestContext
             input.Focus();
         }
 
-        Assert.AreEqual(countOfFocus, component.Instance.OnFocusEventCounter);
+        Assert.AreEqual(countOfFocus, onFocusEventCounter);
     }
 
     [DataTestMethod,
@@ -334,15 +352,21 @@ public class BitSpinButtonTests : BunitTestContext
     ]
     public void BitSpinButtonOnChangeTest(double inputValue)
     {
-        var component = RenderComponent<BitSpinButtonTest>();
+        double onChangeEventValue = 0;
+        var component = RenderComponent<BitSpinButton>(parameters =>
+        {
+            parameters.Add(p => p.OnChange, (double value) => onChangeEventValue = value);
+        });
 
         var input = component.Find("input");
-        var changeArgs = new ChangeEventArgs();
-        changeArgs.Value = inputValue;
+        var changeArgs = new ChangeEventArgs
+        {
+            Value = inputValue
+        };
         input.Change(changeArgs);
         input.Blur();
 
-        Assert.AreEqual(inputValue, component.Instance.OnChangeEventValue);
+        Assert.AreEqual(inputValue, onChangeEventValue);
     }
 
     [DataTestMethod,
@@ -351,7 +375,7 @@ public class BitSpinButtonTests : BunitTestContext
     ]
     public void BitSpinButtonShouldHaveCorrectAriaDescription(string ariaDescription)
     {
-        var component = RenderComponent<BitSpinButtonTest>(parameters =>
+        var component = RenderComponent<BitSpinButton>(parameters =>
         {
             parameters.Add(p => p.AriaDescription, ariaDescription);
         });
@@ -368,14 +392,14 @@ public class BitSpinButtonTests : BunitTestContext
     ]
     public void BitSpinButtonInputShouldHaveCorrectAriaValueNow(double? ariaValueNow, string suffix)
     {
-        var component = RenderComponent<BitSpinButtonTest>(parameters =>
+        var component = RenderComponent<BitSpinButton>(parameters =>
         {
             parameters.Add(p => p.AriaValueNow, ariaValueNow);
             parameters.Add(p => p.Suffix, suffix);
         });
 
         var input = component.Find("input");
-        var expectedResult = ariaValueNow is not null ? ariaValueNow : suffix.HasNoValue() ? component.Instance.Value : null;
+        var expectedResult = ariaValueNow.HasValue ? ariaValueNow : suffix.HasNoValue() ? component.Instance.Value : null;
         Assert.AreEqual(expectedResult.ToString(), input.GetAttribute("aria-valuenow"));
     }
 
@@ -386,7 +410,7 @@ public class BitSpinButtonTests : BunitTestContext
     ]
     public void BitSpinButtonInputShouldHaveCorrectAriaValueText(string ariaValueText, string suffix, int precision)
     {
-        var component = RenderComponent<BitSpinButtonTest>(parameters =>
+        var component = RenderComponent<BitSpinButton>(parameters =>
         {
             parameters.Add(p => p.AriaValueText, ariaValueText);
             parameters.Add(p => p.Suffix, suffix);
@@ -394,7 +418,7 @@ public class BitSpinButtonTests : BunitTestContext
         });
 
         var input = component.Find("input");
-        var expectedResult = ariaValueText.HasValue() ? ariaValueText : suffix.HasValue() ? $"{BitSpinButtonTests.Normalize(component.Instance.Value, precision)}{suffix}" : null;
+        var expectedResult = ariaValueText.HasValue() ? ariaValueText : suffix.HasValue() ? $"{Normalize(component.Instance.Value, precision)}{suffix}" : null;
         Assert.AreEqual(expectedResult, input.GetAttribute("aria-valuetext"));
     }
 
@@ -440,8 +464,10 @@ public class BitSpinButtonTests : BunitTestContext
         });
 
         var input = component.Find("input");
-        var args = new KeyboardEventArgs();
-        args.Key = "ArrowUp";
+        var args = new KeyboardEventArgs
+        {
+            Key = "ArrowUp"
+        };
         input.KeyDown(args);
         var inputValue = input.GetAttribute("value");
         var expectedResult = defaultValue + step <= max ? defaultValue + step : defaultValue;
@@ -524,7 +550,7 @@ public class BitSpinButtonTests : BunitTestContext
         var isNumber = double.TryParse(userInput, out var numericValue);
         if (isNumber)
         {
-            expectedResult = BitSpinButtonTests.Normalize(numericValue, 1);
+            expectedResult = Normalize(numericValue, 1);
             if (expectedResult > max) expectedResult = max;
             if (expectedResult < min) expectedResult = min;
         }
@@ -561,7 +587,7 @@ public class BitSpinButtonTests : BunitTestContext
         var isNumber = double.TryParse(userInput, out var numericValue);
         if (isNumber)
         {
-            expectedResult = BitSpinButtonTests.Normalize(numericValue, 1);
+            expectedResult = Normalize(numericValue, 1);
             if (expectedResult > max) expectedResult = max;
             if (expectedResult < min) expectedResult = min;
         }
@@ -595,8 +621,8 @@ public class BitSpinButtonTests : BunitTestContext
         input.Blur();
 
         var inputValue = component.Instance.Value;
-        var precision = BitSpinButtonTests.CalculatePrecision(step);
-        var expectedResult = BitSpinButtonTests.Normalize(double.Parse(userInput), precision);
+        var precision = CalculatePrecision(step);
+        var expectedResult = Normalize(double.Parse(userInput), precision);
         if (expectedResult > max) expectedResult = max;
         if (expectedResult < min) expectedResult = min;
 
@@ -634,7 +660,7 @@ public class BitSpinButtonTests : BunitTestContext
     ]
     public void BitSpinButtonLabelFragmentTest(string labelTemplate)
     {
-        var component = RenderComponent<BitSpinButtonTest>(parameters =>
+        var component = RenderComponent<BitSpinButton>(parameters =>
         {
             parameters.Add(p => p.LabelTemplate, labelTemplate);
         });
@@ -643,7 +669,6 @@ public class BitSpinButtonTests : BunitTestContext
         spbLabelChild.MarkupMatches(labelTemplate);
     }
 
-    [Ignore]
     [DataTestMethod,
         DataRow(3, 1, 100, 475),
         DataRow(3, 1, 100, 550)
@@ -667,7 +692,6 @@ public class BitSpinButtonTests : BunitTestContext
         component.WaitForAssertion(() => Assert.AreEqual(expectedResult.ToString(), input.GetAttribute("value")), TimeSpan.FromMilliseconds(timeout));
     }
 
-    [Ignore]
     [DataTestMethod,
         DataRow(50, 1, 0, 475),
         DataRow(50, 1, 0, 550)
@@ -728,8 +752,8 @@ public class BitSpinButtonTests : BunitTestContext
         input.Blur();
         form.Submit();
 
-        Assert.AreEqual(component.Instance.ValidCount, 1);
-        Assert.AreEqual(component.Instance.InvalidCount, 1);
+        Assert.AreEqual(1, component.Instance.ValidCount);
+        Assert.AreEqual(1, component.Instance.InvalidCount);
         Assert.AreEqual(component.Instance.ValidCount, component.Instance.InvalidCount);
     }
 
@@ -760,7 +784,7 @@ public class BitSpinButtonTests : BunitTestContext
         Assert.AreEqual(input.HasAttribute("aria-invalid"), isInvalid);
         if (input.HasAttribute("aria-invalid"))
         {
-            Assert.AreEqual(input.GetAttribute("aria-invalid"), "true");
+            Assert.AreEqual("true", input.GetAttribute("aria-invalid"));
         }
 
         if (isInvalid)
@@ -798,7 +822,7 @@ public class BitSpinButtonTests : BunitTestContext
         var form = component.Find("form");
         form.Submit();
 
-        Assert.AreEqual(bitSpinButton.ClassList.Contains("invalid"), isInvalid);
+        Assert.AreEqual(isInvalid, bitSpinButton.ClassList.Contains("invalid"));
 
         var input = component.Find("input");
         if (isInvalid)
@@ -811,7 +835,7 @@ public class BitSpinButtonTests : BunitTestContext
         }
         input.Blur();
 
-        Assert.AreEqual(bitSpinButton.ClassList.Contains("invalid"), isInvalid is false);
+        Assert.AreEqual(isInvalid is false, bitSpinButton.ClassList.Contains("invalid"));
     }
 
     private static double Normalize(double value, int precision) => Math.Round(value, precision);
