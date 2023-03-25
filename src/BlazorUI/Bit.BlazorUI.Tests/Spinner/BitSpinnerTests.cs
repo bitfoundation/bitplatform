@@ -1,4 +1,5 @@
-﻿using Bunit;
+﻿using System;
+using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Spinner;
@@ -14,12 +15,19 @@ public class BitSpinnerTests : BunitTestContext
     ]
     public void BitSpinnerShouldRespectSize(BitSpinnerSize size)
     {
-        var component = RenderComponent<BitSpinnerTest>(parameters =>
+        var component = RenderComponent<BitSpinner>(parameters =>
         {
             parameters.Add(p => p.Size, size);
         });
 
-        var sizeClass = size == BitSpinnerSize.Large ? "large" : size == BitSpinnerSize.Medium ? "medium" : size == BitSpinnerSize.Small ? "small" : "x-small";
+        var sizeClass = size switch
+        {
+            BitSpinnerSize.Large => "large",
+            BitSpinnerSize.Medium => "medium",
+            BitSpinnerSize.Small => "small",
+            BitSpinnerSize.XSmall => "x-small",
+            _ => throw new NotSupportedException()
+        };
 
         var bitSpinner = component.Find(".bit-spn");
 
@@ -34,12 +42,19 @@ public class BitSpinnerTests : BunitTestContext
     ]
     public void BitSpinnerShouldRespectPosition(BitLabelPosition position)
     {
-        var component = RenderComponent<BitSpinnerTest>(parameters =>
+        var component = RenderComponent<BitSpinner>(parameters =>
         {
             parameters.Add(p => p.LabelPosition, position);
         });
 
-        var positionClass = position == BitLabelPosition.Top ? "top" : position == BitLabelPosition.Right ? "right" : position == BitLabelPosition.Left ? "left" : "bottom";
+        var positionClass = position switch
+        {
+            BitLabelPosition.Top => "top",
+            BitLabelPosition.Right => "right",
+            BitLabelPosition.Left => "left",
+            BitLabelPosition.Bottom => "bottom",
+            _ => throw new NotSupportedException()
+        };
 
         var bitSpinner = component.Find(".bit-spn");
 
