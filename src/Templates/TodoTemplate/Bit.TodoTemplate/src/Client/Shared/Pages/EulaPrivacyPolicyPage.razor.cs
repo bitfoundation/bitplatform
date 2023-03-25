@@ -1,5 +1,5 @@
 ﻿namespace TodoTemplate.Client.Shared.Pages;
 
-public partial class PrivacyPage
+public partial class EulaPrivacyPolicyPage
 {
 }

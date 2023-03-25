@@ -36,8 +36,8 @@
         "outputFile": "Pages/HomePage.razor.css"
     },
     {
-        "inputFile": "Pages/PrivacyPage.razor.scss",
-        "outputFile": "Pages/PrivacyPage.razor.css"
+        "inputFile": "Pages/EulaPrivacyPolicyPage.razor.scss",
+        "outputFile": "Pages/EulaPrivacyPolicyPage.razor.css"
     },
     {
         "inputFile": "Pages/SignUpPage.razor.scss",
