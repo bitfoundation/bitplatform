@@ -1,25 +1,22 @@
 ﻿<EditForm Model="@TestModel" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit">
     <DataAnnotationsValidator />
 
-    <CascadingValue Value="Visual">
-        <BitToggle IsEnabled="IsEnabled"
-                   @bind-Value="@TestModel.Value"
-                   IsInlineLabel="IsInlineLabel"
-                   OnText="@OnText"
-                   OffText="@OffText"
-                   AriaLabel="@AriaLabel"
-                   Role="@Role"
-                   Label="@Label">
-            <LabelTemplate>
-                @LabelTemplate
-            </LabelTemplate>
-        </BitToggle>
-    </CascadingValue>
+    <BitToggle IsEnabled="IsEnabled"
+               @bind-Value="@TestModel.Value"
+               IsInlineLabel="IsInlineLabel"
+               OnText="@OnText"
+               OffText="@OffText"
+               AriaLabel="@AriaLabel"
+               Role="@Role"
+               Label="@Label">
+        <LabelTemplate>
+            @LabelTemplate
+        </LabelTemplate>
+    </BitToggle>
 
 </EditForm>
 
 @code {
-    [Parameter] public Visual Visual { get; set; }
     [Parameter] public bool IsEnabled { get; set; }
     [Parameter] public bool IsInlineLabel { get; set; }
     [Parameter] public string OnText { get; set; }

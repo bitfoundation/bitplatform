@@ -14,7 +14,7 @@ public class BitToggleTests : BunitTestContext
    ]
     public void BitToggleTest(bool isEnabled, bool value)
     {
-        var com = RenderComponent<BitToggleTest>(parameters =>
+        var com = RenderComponent<BitToggle>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, isEnabled);
             parameters.Add(p => p.Value, value);
@@ -41,7 +41,7 @@ public class BitToggleTests : BunitTestContext
     ]
     public void BitToggleWithoutOnOffTextShouldHaveClassName(string onText, string offText)
     {
-        var com = RenderComponent<BitToggleTest>(parameters =>
+        var com = RenderComponent<BitToggle>(parameters =>
         {
             parameters.Add(p => p.OnText, onText);
             parameters.Add(p => p.OffText, offText);
@@ -60,7 +60,7 @@ public class BitToggleTests : BunitTestContext
     ]
     public void BitToggleInlineLabelShouldHaveClassName(bool isInlineLabel)
     {
-        var com = RenderComponent<BitToggleTest>(parameters =>
+        var com = RenderComponent<BitToggle>(parameters =>
         {
             parameters.Add(p => p.IsInlineLabel, isInlineLabel);
         });
@@ -75,7 +75,7 @@ public class BitToggleTests : BunitTestContext
     [DataTestMethod, DataRow("Detailed AriaLabel")]
     public void BitToggleAriaLabelTest(string ariaLabel)
     {
-        var com = RenderComponent<BitToggleTest>(parameters =>
+        var com = RenderComponent<BitToggle>(parameters =>
         {
             parameters.Add(p => p.AriaLabel, ariaLabel);
         });
@@ -92,7 +92,7 @@ public class BitToggleTests : BunitTestContext
     ]
     public void BitToggleAriaLabelledbyTest(bool value, string onText, string offText, string defaultText, string label)
     {
-        var com = RenderComponent<BitToggleTest>(parameters =>
+        var com = RenderComponent<BitToggle>(parameters =>
         {
             parameters.Add(p => p.Value, value);
             parameters.Add(p => p.OnText, onText);
@@ -104,9 +104,9 @@ public class BitToggleTests : BunitTestContext
 
         var bitToggleButton = com.Find("button");
 
-      
+
         var labelId = bitToggleButton.Id.Replace("Button", "Label");
-        
+
         var stateTextId = bitToggleButton.Id.Replace("Button", "StateText");
 
         var ariaLabelledById = string.Empty;
@@ -122,8 +122,6 @@ public class BitToggleTests : BunitTestContext
             ariaLabelledById = ariaLabelledById.HasValue() ? $"{labelId} {stateTextId}" : stateTextId;
         }
 
-        var aa = bitToggleButton.GetAttribute("aria-labelledby");
-
         Assert.AreEqual(bitToggleButton.GetAttribute("aria-labelledby"), ariaLabelledById);
     }
 
@@ -133,7 +131,7 @@ public class BitToggleTests : BunitTestContext
     ]
     public void BitToggleAriaCheckedTest(bool value)
     {
-        var com = RenderComponent<BitToggleTest>(parameters =>
+        var com = RenderComponent<BitToggle>(parameters =>
         {
             parameters.Add(p => p.Value, value);
         });
@@ -146,7 +144,7 @@ public class BitToggleTests : BunitTestContext
     [DataTestMethod, DataRow("Switch")]
     public void BitToggleRoleTest(string role)
     {
-        var com = RenderComponent<BitToggleTest>(parameters =>
+        var com = RenderComponent<BitToggle>(parameters =>
         {
             parameters.Add(p => p.Role, role);
         });
@@ -170,7 +168,7 @@ public class BitToggleTests : BunitTestContext
     [DataTestMethod, DataRow("<div>This is labelTemplate</div>")]
     public void BitToggleMarkupLabelTest(string labelTemplate)
     {
-        var com = RenderComponent<BitToggleTest>(parameters =>
+        var com = RenderComponent<BitToggle>(parameters =>
         {
             parameters.Add(p => p.LabelTemplate, labelTemplate);
         });
@@ -194,15 +192,15 @@ public class BitToggleTests : BunitTestContext
         var form = com.Find("form");
         form.Submit();
 
-        Assert.AreEqual(com.Instance.ValidCount, value ? 0 : 1);
-        Assert.AreEqual(com.Instance.InvalidCount, value ? 1 : 0);
+        Assert.AreEqual(value ? 0 : 1, com.Instance.ValidCount);
+        Assert.AreEqual(value ? 1 : 0, com.Instance.InvalidCount);
 
         var button = com.Find("button");
         button.Click();
         form.Submit();
 
-        Assert.AreEqual(com.Instance.ValidCount, 1);
-        Assert.AreEqual(com.Instance.InvalidCount, 1);
+        Assert.AreEqual(1, com.Instance.ValidCount);
+        Assert.AreEqual(1, com.Instance.InvalidCount);
         Assert.AreEqual(com.Instance.ValidCount, com.Instance.InvalidCount);
     }
 
@@ -224,16 +222,16 @@ public class BitToggleTests : BunitTestContext
         var form = com.Find("form");
         form.Submit();
 
-        Assert.AreEqual(checkBox.HasAttribute("aria-invalid"), value);
+        Assert.AreEqual(value, checkBox.HasAttribute("aria-invalid"));
         if (checkBox.HasAttribute("aria-invalid"))
         {
-            Assert.AreEqual(checkBox.GetAttribute("aria-invalid"), "true");
+            Assert.AreEqual("true", checkBox.GetAttribute("aria-invalid"));
         }
 
         var button = com.Find("button");
         button.Click();
 
-        Assert.AreEqual(checkBox.HasAttribute("aria-invalid"), !value);
+        Assert.AreEqual(value is false, checkBox.HasAttribute("aria-invalid"));
     }
 
     [DataTestMethod,
@@ -255,11 +253,11 @@ public class BitToggleTests : BunitTestContext
         var form = com.Find("form");
         form.Submit();
 
-        Assert.AreEqual(bitToggle.ClassList.Contains("invalid"), value);
+        Assert.AreEqual(value, bitToggle.ClassList.Contains("invalid"));
 
         var button = com.Find("button");
         button.Click();
 
-        Assert.AreEqual(bitToggle.ClassList.Contains("invalid"), !value);
+        Assert.AreEqual(value is false, bitToggle.ClassList.Contains("invalid"));
     }
 }
