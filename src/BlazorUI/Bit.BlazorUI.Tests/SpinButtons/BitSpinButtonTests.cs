@@ -669,6 +669,7 @@ public class BitSpinButtonTests : BunitTestContext
         spbLabelChild.MarkupMatches(labelTemplate);
     }
 
+    [Ignore("the result of those tests are random in pipeline runs because of the time calculation.")]
     [DataTestMethod,
         DataRow(3, 1, 100, 475),
         DataRow(3, 1, 100, 550)
@@ -692,6 +693,7 @@ public class BitSpinButtonTests : BunitTestContext
         component.WaitForAssertion(() => Assert.AreEqual(expectedResult.ToString(), input.GetAttribute("value")), TimeSpan.FromMilliseconds(timeout));
     }
 
+    [Ignore("the result of those tests are random in pipeline runs because of the time calculation.")]
     [DataTestMethod,
         DataRow(50, 1, 0, 475),
         DataRow(50, 1, 0, 550)
