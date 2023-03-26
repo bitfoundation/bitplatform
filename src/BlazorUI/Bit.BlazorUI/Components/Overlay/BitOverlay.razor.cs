@@ -4,8 +4,6 @@ namespace Bit.BlazorUI;
 
 public partial class BitOverlay
 {
-    protected override bool UseVisual => false;
-
     private bool IsVisibleHasBeenSet;
 
     private bool isVisible;

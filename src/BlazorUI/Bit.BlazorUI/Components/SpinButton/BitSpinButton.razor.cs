@@ -7,9 +7,6 @@ namespace Bit.BlazorUI;
 
 public partial class BitSpinButton
 {
-    protected override bool UseVisual => false;
-
-
     private const int INITIAL_STEP_DELAY = 400;
     private const int STEP_DELAY = 75;
 

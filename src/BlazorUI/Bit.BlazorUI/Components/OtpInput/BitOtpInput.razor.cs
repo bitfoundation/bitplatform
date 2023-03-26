@@ -4,8 +4,6 @@ namespace Bit.BlazorUI;
 
 public partial class BitOtpInput
 {
-    protected override bool UseVisual => false;
-
     private ElementReference[] _inputRefs = default!;
     private string?[] _inputValue = default!;
     private string _inputType = default!;

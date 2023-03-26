@@ -4,8 +4,6 @@ using System.Globalization;
 namespace Bit.BlazorUI;
 public partial class BitTimePicker
 {
-    protected override bool UseVisual => false;
-
     private const string FORMAT_24_HOURS = "HH:mm";
     private const string FORMAT_12_HOURS = "hh:mm tt";
 

@@ -4,9 +4,6 @@ namespace Bit.BlazorUI;
 
 public partial class BitTextField
 {
-    protected override bool UseVisual => false;
-
-
     private bool hasBorder = true;
     private bool isMultiline;
     private bool isReadonly;
@@ -34,7 +31,6 @@ public partial class BitTextField
             ClassBuilder.Reset();
         }
     }
-
 
     /// <summary>
     /// AutoComplete is a string that maps to the autocomplete attribute of the HTML input element.

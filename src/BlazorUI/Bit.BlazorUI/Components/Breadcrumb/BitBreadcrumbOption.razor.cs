@@ -2,8 +2,6 @@
 
 public partial class BitBreadcrumbOption : IDisposable
 {
-    protected override bool UseVisual => false;
-
     private bool _disposed;
 
     [CascadingParameter] protected BitBreadcrumb<BitBreadcrumbOption> Parent { get; set; } = default!;

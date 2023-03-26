@@ -4,19 +4,14 @@ namespace Bit.BlazorUI;
 
 public partial class BitSearchBox
 {
-    protected override bool UseVisual => false;
-
-
     private bool disableAnimation;
     private bool isUnderlined;
     private bool inputHasFocus;
     private bool fixedIcon;
 
-
     private bool _disposed;
     private string _inputId = string.Empty;
     private ElementReference _inputRef = default!;
-
 
     private bool InputHasFocus
     {

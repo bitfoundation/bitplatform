@@ -2,22 +2,15 @@
 
 public partial class BitCarouselItem
 {
-    protected override bool UseVisual => false;
-
-
-
     private string internalStyle = string.Empty;
 
     private string internalTransformStyle = string.Empty;
 
     private string internalTransitionStyle = string.Empty;
 
-
-
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     [CascadingParameter] protected BitCarousel? Carousel { get; set; }
-
 
 
     internal int Index;
@@ -57,7 +50,6 @@ public partial class BitCarouselItem
             StyleBuilder.Reset();
         }
     }
-
 
 
     protected override Task OnInitializedAsync()

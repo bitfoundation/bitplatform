@@ -2,8 +2,6 @@
 
 public partial class BitCarousel : IDisposable
 {
-    protected override bool UseVisual => false;
-
     private ElementReference _carousel = default!;
     private int[] _currentIndices = Array.Empty<int>();
     private int[] _othersIndices = Array.Empty<int>();

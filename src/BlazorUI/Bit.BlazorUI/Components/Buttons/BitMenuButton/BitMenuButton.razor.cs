@@ -11,7 +11,6 @@ public partial class BitMenuButton<TItem> where TItem : class
     private const string TEXT_FIELD = nameof(BitMenuButtonItem.Text);
     private const string KEY_FIELD = nameof(BitMenuButtonItem.Key);
 
-    protected override bool UseVisual => false;
     private BitButtonSize buttonSize = BitButtonSize.Medium;
     private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
     private bool isCalloutOpen;

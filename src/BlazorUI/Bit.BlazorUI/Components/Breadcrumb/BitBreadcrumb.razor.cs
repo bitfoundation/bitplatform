@@ -6,8 +6,6 @@ namespace Bit.BlazorUI;
 
 public partial class BitBreadcrumb<TItem> : IDisposable where TItem : class
 {
-    protected override bool UseVisual => false;
-
     private const string CLASS_FIELD = nameof(BitBreadcrumbItem.Class);
     private const string HREF_FIELD = nameof(BitBreadcrumbItem.Href);
     private const string IS_SELECTED_FIELD = nameof(BitBreadcrumbItem.IsSelected);

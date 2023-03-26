@@ -2,9 +2,6 @@
 
 public partial class BitPivot
 {
-    protected override bool UseVisual => false;
-
-
     private bool SelectedKeyHasBeenSet;
     private BitPivotLinkFormat linkFormat = BitPivotLinkFormat.Links;
     private BitPivotLinkSize linkSize = BitPivotLinkSize.Normal;

@@ -4,7 +4,6 @@ namespace Bit.BlazorUI;
 
 public partial class BitActionButton
 {
-    protected override bool UseVisual => false;
     private BitButtonSize buttonSize = BitButtonSize.Medium;
     private int? _tabIndex;
 

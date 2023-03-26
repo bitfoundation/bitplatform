@@ -7,8 +7,6 @@ namespace Bit.BlazorUI;
 
 public partial class BitChoiceGroup<TItem, TValue> where TItem : class
 {
-    protected override bool UseVisual => false;
-
     private const string ARIA_LABEL_FIELD = nameof(BitChoiceGroupItem<TValue>.AriaLabel);
     private const string ID_FIELD = nameof(BitChoiceGroupItem<TValue>.Id);
     private const string IS_ENABLED_FIELD = nameof(BitChoiceGroupItem<TValue>.IsEnabled);
