@@ -4,14 +4,9 @@ namespace Bit.BlazorUI;
 
 public partial class BitSnackBar
 {
-    protected override bool UseVisual => false;
-
-
-
     private BitSnackBarPosition position = BitSnackBarPosition.BottomRight;
 
     private List<BitSnackBarItem> _items = new();
-
 
     /// <summary>
     /// Whether or not to dismiss itself automatically.
@@ -56,7 +51,6 @@ public partial class BitSnackBar
     /// Used to customize how content inside the Title is rendered. 
     /// </summary>
     [Parameter] public RenderFragment<string>? TitleTemplate { get; set; }
-
 
 
     public async Task Show(string title, string? body = "", BitSnackBarType? type = BitSnackBarType.Info)

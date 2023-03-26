@@ -5,8 +5,6 @@ namespace Bit.BlazorUI;
 
 public partial class BitCheckbox
 {
-    protected override bool UseVisual => false;
-
     private bool IsIndeterminateHasBeenSet;
     private bool isIndeterminate;
     private BitCheckBoxSide boxSide;

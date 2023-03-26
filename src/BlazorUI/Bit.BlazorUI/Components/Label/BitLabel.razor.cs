@@ -2,8 +2,6 @@
 
 public partial class BitLabel
 {
-    protected override bool UseVisual => false;
-
     private bool isRequired;
 
     /// <summary>

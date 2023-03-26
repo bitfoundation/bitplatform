@@ -2,8 +2,6 @@
 
 public partial class BitPivotItem : IDisposable
 {
-    protected override bool UseVisual => false;
-
     private bool IsSelectedHasBeenSet;
     private bool isSelected;
 

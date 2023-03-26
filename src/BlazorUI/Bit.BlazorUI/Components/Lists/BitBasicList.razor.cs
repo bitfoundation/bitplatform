@@ -2,9 +2,6 @@
 
 public partial class BitBasicList<TItem>
 {
-    protected override bool UseVisual => false;
-
-
     /// <summary>
     /// Enables virtualization in rendering the list.
     /// </summary>

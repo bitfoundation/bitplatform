@@ -4,8 +4,6 @@ namespace Bit.BlazorUI;
 
 public partial class BitColorPicker : IAsyncDisposable
 {
-    protected override bool UseVisual => false;
-
     private bool ColorHasBeenSet;
     private bool AlphaHasBeenSet;
 

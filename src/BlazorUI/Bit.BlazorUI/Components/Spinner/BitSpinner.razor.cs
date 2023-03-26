@@ -2,9 +2,6 @@
 
 public partial class BitSpinner
 {
-    protected override bool UseVisual => false;
-
-
     /// <summary>
     /// Politeness setting for label update announcement.
     /// </summary>
@@ -24,7 +21,6 @@ public partial class BitSpinner
     /// The label to show next to the spinner. Label updates will be announced to the screen readers
     /// </summary>
     [Parameter] public string? Label { get; set; }
-
 
     protected override string RootElementClass => "bit-spn";
 

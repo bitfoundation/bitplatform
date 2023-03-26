@@ -5,9 +5,6 @@ namespace Bit.BlazorUI;
 
 public partial class BitNav<TItem> : IDisposable where TItem : class
 {
-    protected override bool UseVisual => false;
-
-
     private const string KEY_FIELD = nameof(BitNavItem.Key);
     private const string FORCE_ANCHOR_FIELD = nameof(BitNavItem.ForceAnchor);
     private const string TEXT_FIELD = nameof(BitNavItem.Text);

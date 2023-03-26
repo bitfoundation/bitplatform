@@ -2,11 +2,7 @@
 
 public partial class BitProgressIndicator
 {
-    protected override bool UseVisual => false;
-
-
     private double? percentComplete;
-
 
     /// <summary>
     /// Label to display above the component

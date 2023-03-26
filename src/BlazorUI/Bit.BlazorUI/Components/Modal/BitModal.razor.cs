@@ -2,18 +2,14 @@
 
 public partial class BitModal : IDisposable
 {
-    protected override bool UseVisual => false;
-
     private bool IsOpenHasBeenSet;
     private bool isOpen;
-
 
     private bool _disposed;
     private int _offsetTop;
     private bool _isAlertRole;
     private bool _internalIsOpen;
     private string _containerId = default!;
-
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
 

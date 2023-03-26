@@ -2,18 +2,13 @@
 
 public partial class BitSwiperItem
 {
-    protected override bool UseVisual => false;
-
-
     private string internalStyle = string.Empty;
     private string internalTransformStyle = string.Empty;
     private string internalTransitionStyle = string.Empty;
 
-
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     [CascadingParameter] protected BitSwiper? Swiper { get; set; }
-
 
     internal int Index;
 

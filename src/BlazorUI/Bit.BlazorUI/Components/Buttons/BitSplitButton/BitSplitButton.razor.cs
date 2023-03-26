@@ -10,7 +10,6 @@ public partial class BitSplitButton<TItem> where TItem : class
     private const string TEXT_FIELD = nameof(BitSplitButtonItem.Text);
     private const string KEY_FIELD = nameof(BitSplitButtonItem.Key);
 
-    protected override bool UseVisual => false;
     private BitButtonSize buttonSize = BitButtonSize.Medium;
     private bool isCalloutOpen;
 

@@ -6,11 +6,8 @@ namespace Bit.BlazorUI;
 
 public partial class BitNumericTextField<TValue>
 {
-    protected override bool UseVisual => false;
-
-    const int INITIAL_STEP_DELAY = 400;
-    const int STEP_DELAY = 75;
-
+    private const int INITIAL_STEP_DELAY = 400;
+    private const int STEP_DELAY = 75;
 
     private TValue? step;
     private TValue? min;

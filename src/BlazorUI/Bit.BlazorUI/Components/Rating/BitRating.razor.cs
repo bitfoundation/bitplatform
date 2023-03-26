@@ -4,13 +4,9 @@ namespace Bit.BlazorUI;
 
 public partial class BitRating
 {
-    protected override bool UseVisual => false;
-
-
     private bool isReadOnly;
 
     private bool _disposed;
-
 
     /// <summary>
     /// Allow the initial rating value be 0. Note that a value of 0 still won't be selectable by mouse or keyboard.
