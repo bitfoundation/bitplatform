@@ -1,33 +1,30 @@
 ﻿<EditForm Model="@TestModel" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit">
     <DataAnnotationsValidator />
 
-    <CascadingValue Value="@Visual">
-        <BitCheckbox IsEnabled="@IsEnabled"
-                     AriaLabel="@AriaLabel"
-                     CheckmarkIconName="@CheckmarkIconName"
-                     AriaDescription="@AriaDescription"
-                     AriaLabelledby="@AriaLabelledby"
-                     AriaPositionInSet="@AriaPositionInSet"
-                     AriaSetSize="@AriaSetSize"
-                     Name="@Name"
-                     Title="@Title"
-                     DefaultValue="@DefaultValue"
-                     @bind-Value="@TestModel.Value"
-                     CheckmarkIconAriaLabel="@CheckmarkIconAriaLabel"
-                     BoxSide="@BoxSide"
-                     DefaultIsIndeterminate="@DefaultIsIndeterminate"
-                     OnClick="HandleOnClick"
-                     OnChange="HandleOnChange">
-            <ChildContent>
-                @ChildContent
-            </ChildContent>
-        </BitCheckbox>
-    </CascadingValue>
+    <BitCheckbox IsEnabled="@IsEnabled"
+                 AriaLabel="@AriaLabel"
+                 CheckmarkIconName="@CheckmarkIconName"
+                 AriaDescription="@AriaDescription"
+                 AriaLabelledby="@AriaLabelledby"
+                 AriaPositionInSet="@AriaPositionInSet"
+                 AriaSetSize="@AriaSetSize"
+                 Name="@Name"
+                 Title="@Title"
+                 DefaultValue="@DefaultValue"
+                 @bind-Value="@TestModel.Value"
+                 CheckmarkIconAriaLabel="@CheckmarkIconAriaLabel"
+                 BoxSide="@BoxSide"
+                 DefaultIsIndeterminate="@DefaultIsIndeterminate"
+                 OnClick="HandleOnClick"
+                 OnChange="HandleOnChange">
+        <ChildContent>
+            @ChildContent
+        </ChildContent>
+    </BitCheckbox>
 
 </EditForm>
 
 @code {
-    [Parameter] public Visual Visual { get; set; }
     [Parameter] public bool IsEnabled { get; set; }
     [Parameter] public bool IsIndeterminate { get; set; }
     [Parameter] public string AriaLabel { get; set; }

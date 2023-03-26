@@ -105,7 +105,7 @@ public class BitCheckboxTests : BunitTestContext
 
         var chbInput = component.Find("input");
 
-        if (ariaLabel is not null)
+        if (string.IsNullOrEmpty(ariaLabel) is false)
         {
             Assert.IsTrue(chbInput.GetAttribute("aria-label").Equals(ariaLabel));
         }
@@ -128,7 +128,7 @@ public class BitCheckboxTests : BunitTestContext
 
         var chbInput = component.Find("input");
 
-        if (ariaDescription is not null)
+        if (string.IsNullOrEmpty(ariaDescription) is false)
         {
             Assert.IsTrue(chbInput.GetAttribute("aria-describedby").Equals(ariaDescription));
         }
@@ -151,7 +151,7 @@ public class BitCheckboxTests : BunitTestContext
 
         var chbInput = component.Find("input");
 
-        if (ariaLabelledby is not null)
+        if (string.IsNullOrEmpty(ariaLabelledby) is false)
         {
             Assert.IsTrue(chbInput.GetAttribute("aria-labelledby").Equals(ariaLabelledby));
         }
@@ -174,7 +174,7 @@ public class BitCheckboxTests : BunitTestContext
 
         var chbInput = component.Find("label");
 
-        if (title is not null)
+        if (string.IsNullOrEmpty(title) is false)
         {
             Assert.IsTrue(chbInput.GetAttribute("title").Equals(title));
         }
@@ -211,7 +211,7 @@ public class BitCheckboxTests : BunitTestContext
         DataRow(3),
         DataRow(null)
     ]
-    public void BitCheckboxAriaPostionInSetTest(int? ariaPosInSet)
+    public void BitCheckboxAriaPosInSetTest(int? ariaPosInSet)
     {
         var component = RenderComponent<BitCheckbox>(parameters =>
         {
@@ -284,7 +284,7 @@ public class BitCheckboxTests : BunitTestContext
 
         if (ariaLabel is not null)
         {
-            Assert.IsTrue(icon.GetAttribute("aria-label").Equals(ariaLabel));
+            Assert.AreEqual(ariaLabel, icon.GetAttribute("aria-label"));
         }
         else
         {
@@ -359,15 +359,15 @@ public class BitCheckboxTests : BunitTestContext
         var form = component.Find("form");
         form.Submit();
 
-        Assert.AreEqual(component.Instance.ValidCount, value ? 0 : 1);
-        Assert.AreEqual(component.Instance.InvalidCount, value ? 1 : 0);
+        Assert.AreEqual(value ? 0 : 1, component.Instance.ValidCount);
+        Assert.AreEqual(value ? 1 : 0, component.Instance.InvalidCount);
 
         var checkbox = component.Find("input");
         checkbox.Click();
         form.Submit();
 
-        Assert.AreEqual(component.Instance.ValidCount, 1);
-        Assert.AreEqual(component.Instance.InvalidCount, 1);
+        Assert.AreEqual(1, component.Instance.ValidCount);
+        Assert.AreEqual(1, component.Instance.InvalidCount);
         Assert.AreEqual(component.Instance.ValidCount, component.Instance.InvalidCount);
     }
 
@@ -392,13 +392,13 @@ public class BitCheckboxTests : BunitTestContext
         Assert.AreEqual(checkBoxInput.HasAttribute("aria-invalid"), value);
         if (checkBoxInput.HasAttribute("aria-invalid"))
         {
-            Assert.AreEqual(checkBoxInput.GetAttribute("aria-invalid"), "true");
+            Assert.AreEqual("true", checkBoxInput.GetAttribute("aria-invalid"));
         }
 
         var checkBox = component.Find("input");
         checkBox.Click();
 
-        Assert.AreEqual(checkBoxInput.HasAttribute("aria-invalid"), !value);
+        Assert.AreEqual(value is false, checkBoxInput.HasAttribute("aria-invalid"));
     }
 
     [DataTestMethod,
@@ -420,21 +420,15 @@ public class BitCheckboxTests : BunitTestContext
         var form = component.Find("form");
         form.Submit();
 
-        Assert.AreEqual(bitCheckBox.ClassList.Contains("invalid"), value);
+        Assert.AreEqual(value, bitCheckBox.ClassList.Contains("invalid"));
 
         var checkBox = component.Find("input");
         checkBox.Click();
 
-        Assert.AreEqual(bitCheckBox.ClassList.Contains("invalid"), !value);
+        Assert.AreEqual(value is false, bitCheckBox.ClassList.Contains("invalid"));
     }
 
-    private void HandleValueChanged(bool isChecked)
-    {
-        BitCheckBoxIsChecked = isChecked;
-    }
+    private void HandleValueChanged(bool isChecked) => BitCheckBoxIsChecked = isChecked;
 
-    private void HandleIsIndeterminateChanged(bool isIndeterminate)
-    {
-        BitCheckBoxIsIndeterminate = isIndeterminate;
-    }
+    private void HandleIsIndeterminateChanged(bool isIndeterminate) => BitCheckBoxIsIndeterminate = isIndeterminate;
 }
