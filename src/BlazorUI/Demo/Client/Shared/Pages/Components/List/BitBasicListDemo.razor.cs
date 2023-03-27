@@ -50,36 +50,6 @@ public partial class BitBasicListDemo
         }
     };
 
-
-    private List<Person> People1 = new();
-    private List<Person> People2 = new();
-
-    protected override void OnInitialized()
-    {
-        People1 = GetPeople(8000);
-        People2 = GetPeople(100);
-
-        base.OnInitialized();
-    }
-
-    private static List<Person> GetPeople(int itemCount)
-    {
-        List<Person> people = new();
-
-        for (int i = 0; i < itemCount; i++)
-        {
-            people.Add(new Person
-            {
-                Id = i + 1,
-                FirstName = $"Person {i + 1}",
-                LastName = $"Person Family {i + 1}",
-                Job = $"Programmer {i + 1}"
-            });
-        }
-
-        return people;
-    }
-
     private string example1HTMLCode = @"
 <BitBasicList Items=""People1"" EnableVirtualization=""true"" Style=""border: 1px #a19f9d solid; border-radius: 3px; "">
     <RowTemplate Context=""person"">
@@ -271,4 +241,54 @@ public class Person
     public string LastName { get; set; }
     public string Job { get; set; }
 }";
+
+    private readonly string example5HTMLCode = @"
+<BitBasicList EnableVirtualization=""true"" TItem=""FoodRecall"" ItemsProvider=""@foodRecallProvider"" @ref=""basicList"" ItemSize=""85"" Style=""border: 1px #a19f9d solid; border-radius: 3px; "">
+    <RowTemplate Context=""context"">
+        <div style=""border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;"">
+            <div>Id: <strong>@context.item.EventId</strong></div>
+            <div>State: <strong>@context.item.State</strong></div>
+            <div>City: <strong>@context.item.City</strong></div>
+        </div>
+    </RowTemplate>
+    <VirtualizePlaceholder>
+        <div style=""border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;"">
+            <div>Id: <strong>...</strong></div>
+            <div>State: <strong>...</strong></div>
+            <div>City: <strong>...</strong></div>
+        </div>
+    </VirtualizePlaceholder>
+</BitBasicList>";
+    private readonly string example5CSharpCode = @"
+private BitBasicList<FoodRecall> basicList;
+private BitBasicListItemsProvider<FoodRecall> foodRecallProvider;
+
+protected override void OnInitialized()
+{
+    foodRecallProvider = async req =>
+    {
+        try
+        {
+            var query = new Dictionary<string, object?>
+                    {
+                        { ""skip"", req.StartIndex },
+                        { ""limit"", req.Count }
+                    };
+
+            var url = NavManager.GetUriWithQueryParameters(""https://api.fda.gov/food/enforcement.json"", query);
+
+            var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.FoodRecallQueryResult, req.CancellationToken);
+
+            return BitBasicListItemsProviderResult.From(data!.Results, data!.Meta.Results.Total);
+        }
+        catch
+        {
+            return BitBasicListItemsProviderResult.From<FoodRecall>(new List<FoodRecall> { }, 0);
+        }
+    };
+
+    base.OnInitialized();
+}
+";
+
 }

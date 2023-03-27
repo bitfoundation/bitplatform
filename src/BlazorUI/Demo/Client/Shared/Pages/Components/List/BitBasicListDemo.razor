@@ -1,4 +1,8 @@
 ﻿@page "/components/basic-list"
+@inject HttpClient HttpClient
+@inject NavigationManager NavManager
+
+@using Bit.BlazorUI.Demo.Shared.Dtos.DataGridDemo;
 
 <ComponentDemo ComponentName="BasicList"
                ComponentDescription="BitBasicList provides a base component for rendering large sets of items. It’s agnostic of layout, the tile component used, and selection management."
@@ -7,12 +11,12 @@
         <ExamplePreview>
             <BitBasicList Items="People1" EnableVirtualization="true" Style="border: 1px #a19f9d solid; border-radius: 3px; ">
                 <RowTemplate Context="person">
-                    <div @key="person.Id" style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
-                        <img src="https://picsum.photos/100/100?random=@(person.Id)">
+                    <div @key="person.item.Id" style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
+                        <img src="https://picsum.photos/100/100?random=@(person.item.Id)">
                         <div style="margin-left:3%; display: inline-block;">
-                            <p>Id: <strong>@person.Id</strong></p>
-                            <p>Full Name: <strong>@person.FirstName @person.LastName</strong></p>
-                            <p>Job: <strong>@person.Job</strong></p>
+                            <p>Id: <strong>@person.item.Id</strong></p>
+                            <p>Full Name: <strong>@person.item.FirstName @person.item.LastName</strong></p>
+                            <p>Job: <strong>@person.item.Job</strong></p>
                         </div>
                     </div>
                 </RowTemplate>
@@ -25,10 +29,10 @@
             <BitBasicList Items="People2" EnableVirtualization="false" Style="border: 1px #a19f9d solid; border-radius: 3px; ">
                 <RowTemplate Context="person">
                     <div style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
-                        <img src="https://picsum.photos/100/100?random=@(person.Id)">
-                        <p>Id: <strong>@person.Id</strong></p>
-                        <p>Full Name: <strong>@person.FirstName @person.LastName</strong></p>
-                        <p>Job: <strong>@person.Job</strong></p>
+                        <img src="https://picsum.photos/100/100?random=@(person.item.Id)">
+                        <p>Id: <strong>@person.item.Id</strong></p>
+                        <p>Full Name: <strong>@person.item.FirstName @person.item.LastName</strong></p>
+                        <p>Job: <strong>@person.item.Job</strong></p>
                     </div>
                 </RowTemplate>
             </BitBasicList>
@@ -40,9 +44,9 @@
             <BitBasicList Items="People1" EnableVirtualization="true" Role="list" Style="border: 1px #a19f9d solid; border-radius: 3px;">
                 <RowTemplate Context="person">
                     <div class="list-item">
-                        <span>Id: <strong>@person.Id</strong></span>
-                        <span>Full Name: <strong>@person.FirstName</strong></span>
-                        <span>Job: <strong>@person.Job</strong></span>
+                        <span>Id: <strong>@person.item.Id</strong></span>
+                        <span>Full Name: <strong>@person.item.FirstName</strong></span>
+                        <span>Job: <strong>@person.item.Job</strong></span>
                     </div>
                 </RowTemplate>
             </BitBasicList>
@@ -54,12 +58,89 @@
             <BitBasicList Items="People1" EnableVirtualization="true" OverscanCount="5" ItemSize="300" Style="border: 1px #a19f9d solid; border-radius: 3px; ">
                 <RowTemplate Context="person">
                     <div style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
-                        <p>Id: <strong>@person.Id</strong></p>
-                        <p>Full Name: <strong>@person.FirstName @person.LastName</strong></p>
-                        <p>Job: <strong>@person.Job</strong></p>
+                        <p>Id: <strong>@person.item.Id</strong></p>
+                        <p>Full Name: <strong>@person.item.FirstName @person.item.LastName</strong></p>
+                        <p>Job: <strong>@person.item.Job</strong></p>
                     </div>
                 </RowTemplate>
             </BitBasicList>
         </ExamplePreview>
     </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Basic List with items provider" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
+        <ExamplePreview>
+            <BitBasicList EnableVirtualization=true TItem="FoodRecall" ItemsProvider="@foodRecallProvider" @ref="basicList" ItemSize="85" Style="border: 1px #a19f9d solid; border-radius: 3px; ">
+                <RowTemplate Context="context">
+                    <div style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
+                        <div>Id: <strong>@context.item.EventId</strong></div>
+                        <div>State: <strong>@context.item.State</strong></div>
+                        <div>City: <strong>@context.item.City</strong></div>
+                    </div>
+                </RowTemplate>
+                <VirtualizePlaceholder>
+                    <div style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
+                        <div>Id: <strong>...</strong></div>
+                        <div>State: <strong>...</strong></div>
+                        <div>City: <strong>...</strong></div>
+                    </div>
+                </VirtualizePlaceholder>
+            </BitBasicList>
+        </ExamplePreview>
+    </ComponentExampleBox>
 </ComponentDemo>
+
+@code {
+
+    private List<Person> People1 = new();
+    private List<Person> People2 = new();
+    private BitBasicList<FoodRecall> basicList;
+    private BitBasicListItemsProvider<FoodRecall> foodRecallProvider;
+
+    protected override void OnInitialized()
+    {
+        People1 = GetPeople(8000);
+        People2 = GetPeople(100);
+
+        foodRecallProvider = async req =>
+        {
+            try
+            {
+                var query = new Dictionary<string, object?>
+                                {
+                    { "skip", req.StartIndex },
+                    { "limit", req.Count }
+                                };
+
+                var url = NavManager.GetUriWithQueryParameters("https://api.fda.gov/food/enforcement.json", query);
+
+                var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.FoodRecallQueryResult, req.CancellationToken);
+
+                return BitBasicListItemsProviderResult.From(data!.Results, data!.Meta.Results.Total);
+            }
+            catch
+            {
+                return BitBasicListItemsProviderResult.From<FoodRecall>(new List<FoodRecall> { }, 0);
+            }
+        };
+
+        base.OnInitialized();
+    }
+
+    private static List<Person> GetPeople(int itemCount)
+    {
+        List<Person> people = new();
+
+        for (int i = 0; i < itemCount; i++)
+        {
+            people.Add(new Person
+                {
+                    Id = i + 1,
+                    FirstName = $"Person {i + 1}",
+                    LastName = $"Person Family {i + 1}",
+                    Job = $"Programmer {i + 1}"
+                });
+        }
+
+        return people;
+    }
+}
