@@ -258,47 +258,46 @@ public class Person
 }";
 
     private readonly string example5HTMLCode = @"
-<BitBasicList EnableVirtualization=""true"" TItem=""FoodRecall"" ItemsProvider=""@foodRecallProvider"" @ref=""basicList"" ItemSize=""85"" Style=""border: 1px #a19f9d solid; border-radius: 3px; "">
+<BitBasicList EnableVirtualization=""true"" TItem=""ProductDto"" ItemsProvider=""@productProvider"" ItemSize=""83"" Style=""border: 1px #a19f9d solid; border-radius: 3px; "">
     <RowTemplate Context=""context"">
-        <div style=""border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;"">
-            <div>Id: <strong>@context.item.EventId</strong></div>
-            <div>State: <strong>@context.item.State</strong></div>
-            <div>City: <strong>@context.item.City</strong></div>
+        <div style=""border-bottom: 1px #8a8886 solid; padding: 5px 20px;"">
+            <div>Id: <strong>@context.item.Id</strong></div>
+            <div>Name: <strong>@context.item.Name</strong></div>
+            <div>Price: <strong>@context.item.Price</strong></div>
         </div>
     </RowTemplate>
     <VirtualizePlaceholder>
-        <div style=""border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;"">
+        <div style=""border-bottom: 1px #8a8886 solid; padding: 5px 20px;"">
             <div>Id: <strong>...</strong></div>
-            <div>State: <strong>...</strong></div>
-            <div>City: <strong>...</strong></div>
+            <div>Name: <strong>...</strong></div>
+            <div>Price: <strong>...</strong></div>
         </div>
     </VirtualizePlaceholder>
 </BitBasicList>";
     private readonly string example5CSharpCode = @"
-private BitBasicList<FoodRecall> basicList;
-private BitBasicListItemsProvider<FoodRecall> foodRecallProvider;
+private BitBasicListItemsProvider<ProductDto> productProvider;
 
 protected override void OnInitialized()
 {
-    foodRecallProvider = async req =>
+    productProvider = async req =>
     {
         try
         {
-            var query = new Dictionary<string, object?>
+            var query = new Dictionary<string, object>()
                     {
-                        { ""skip"", req.StartIndex },
-                        { ""limit"", req.Count }
+                 { ""$top"", req.Count},
+                 { ""$skip"", req.StartIndex }
                     };
 
-            var url = NavManager.GetUriWithQueryParameters(""https://api.fda.gov/food/enforcement.json"", query);
+            var url = NavManager.GetUriWithQueryParameters(""Products/GetProducts"", query);
 
-            var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.FoodRecallQueryResult, req.CancellationToken);
+            var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto);
 
-            return BitBasicListItemsProviderResult.From(data!.Results, data!.Meta.Results.Total);
+            return BitBasicListItemsProviderResult.From(data!.Items, (int)data!.TotalCount);
         }
         catch
         {
-            return BitBasicListItemsProviderResult.From<FoodRecall>(new List<FoodRecall> { }, 0);
+            return BitBasicListItemsProviderResult.From<ProductDto>(new List<ProductDto> { }, 0);
         }
     };
 
