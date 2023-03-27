@@ -44,10 +44,25 @@ public partial class BitBasicListDemo
         new()
         {
             Name = "RowTemplate",
-            Type = "RenderFragment<TItem>",
+            Type = "RenderFragment<(int? index, TItem item)>",
             DefaultValue = "",
             Description = "Gets or sets the Template to render each row.",
-        }
+        },
+        new()
+        {
+            Name = "ItemsProvider",
+            Type = "BitBasicListItemsProvider<TItem>?",
+            DefaultValue = "",
+            Description = @"A callback that supplies data for the rid.
+                            You should supply either Items or ItemsProvider, but not both.",
+        },
+        new()
+        {
+            Name = "VirtualizePlaceholder",
+            Type = "RenderFragment<BitDropDown>",
+            DefaultValue = "",
+            Description = "Optional custom template for placeholder Text.",
+        },
     };
 
     private string example1HTMLCode = @"
