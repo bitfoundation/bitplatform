@@ -87,6 +87,28 @@
             </BitBasicList>
         </ExamplePreview>
     </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Basic List with Grouped items provider" HTMLSourceCode="@example6HTMLCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example6">
+        <ExamplePreview>
+            <BitBasicList EnableVirtualization=true TItem="CategoryOrProductDto" ItemsProvider="@CategoriesAndProductsProvider" ItemSize="83" Style="border: 1px #a19f9d solid; border-radius: 3px; ">
+                <RowTemplate Context="context">
+                    @if (context.item.IsProduct is false)
+                    {
+                        <div style="border-bottom: 1px #8a8886 solid; padding: 5px 20px;background-color:lightgray">
+                            <div>@context.item.Name</div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; display:flex; flex-flow:row;">
+                            <div style="width:250px;">Name: <strong>@context.item.Name</strong></div>
+                            <div>Price: <strong>@context.item.Price</strong></div>
+                        </div>
+                    }
+                </RowTemplate>
+                <VirtualizePlaceholder>
+                    <div style="border-bottom: 1px #8a8886 solid; padding: 5px 20px;">
+                        loading
                     </div>
                 </VirtualizePlaceholder>
             </BitBasicList>
@@ -100,6 +122,8 @@
     private List<Person> People2 = new();
 
     private BitBasicListItemsProvider<ProductDto> productProvider;
+
+    private BitBasicListItemsProvider<CategoryOrProductDto> CategoriesAndProductsProvider;
 
     protected override void OnInitialized()
     {
@@ -128,24 +152,25 @@
            }
        };
 
+        CategoriesAndProductsProvider = async req =>
         {
             try
             {
-                var query = new Dictionary<string, object?>
-                                {
-                    { "skip", req.StartIndex },
-                    { "limit", req.Count }
-                                };
+                var query = new Dictionary<string, object>()
+                            {
+                    { "$top", req.Count},
+                    { "$skip", req.StartIndex }
+                            };
 
-                var url = NavManager.GetUriWithQueryParameters("https://api.fda.gov/food/enforcement.json", query);
+                var url = NavManager.GetUriWithQueryParameters("Products/GetCategoriesAndProducts", query);
 
-                var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.FoodRecallQueryResult, req.CancellationToken);
+                var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultCategoryOrProductDto);
 
-                return BitBasicListItemsProviderResult.From(data!.Results, data!.Meta.Results.Total);
+                return BitBasicListItemsProviderResult.From(data!.Items, (int)data!.TotalCount);
             }
             catch
             {
-                return BitBasicListItemsProviderResult.From<FoodRecall>(new List<FoodRecall> { }, 0);
+                return BitBasicListItemsProviderResult.From<CategoryOrProductDto>(new List<CategoryOrProductDto> { }, 0);
             }
         };
 

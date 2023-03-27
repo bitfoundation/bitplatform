@@ -284,15 +284,15 @@ protected override void OnInitialized()
         try
         {
             var query = new Dictionary<string, object>()
-                    {
+                     {
                  { ""$top"", req.Count},
                  { ""$skip"", req.StartIndex }
-                    };
-
+                     };
+    
             var url = NavManager.GetUriWithQueryParameters(""Products/GetProducts"", query);
-
+    
             var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto);
-
+    
             return BitBasicListItemsProviderResult.From(data!.Items, (int)data!.TotalCount);
         }
         catch
@@ -305,4 +305,48 @@ protected override void OnInitialized()
 }
 ";
 
+    private readonly string example6HTMLCode = @"
+<BitBasicList EnableVirtualization=""true"" TItem=""CategoryOrProductDto"" ItemsProvider=""@CategoriesAndProductsProvider"" ItemSize=""83"" Style=""border: 1px #a19f9d solid; border-radius: 3px; "">
+    <RowTemplate Context=""context"">
+        @if (context.item.IsProduct is false)
+        {
+            <div style=""border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;"">
+                <div>@context.item.Name</div>
+            </div>
+        }
+        else
+        {
+            <div style=""border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;"">
+                <div>@context.item.Name</div>
+            </div>
+        }
+    </RowTemplate>
+    <VirtualizePlaceholder>
+        <div style=""border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;"">
+            loading
+        </div>
+    </VirtualizePlaceholder>
+</BitBasicList>";
+    private readonly string example6CSharpCode = @"
+CategoriesAndProductsProvider = async req =>
+{
+    try
+    {
+        var query = new Dictionary<string, object>()
+            {
+            { ""$top"", req.Count},
+            { ""$skip"", req.StartIndex }
+            };
+
+        var url = NavManager.GetUriWithQueryParameters(""Products/GetCategoriesAndProducts"", query);
+
+        var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultCategoryOrProductDto);
+
+        return BitBasicListItemsProviderResult.From(data!.Items, (int)data!.TotalCount);
+    }
+    catch
+    {
+        return BitBasicListItemsProviderResult.From<CategoryOrProductDto>(new List<CategoryOrProductDto> { }, 0);
+    }
+};";
 }
