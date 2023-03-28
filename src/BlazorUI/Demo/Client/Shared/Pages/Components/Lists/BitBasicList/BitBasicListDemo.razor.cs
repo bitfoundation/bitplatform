@@ -1,5 +1,4 @@
 ﻿using Bit.BlazorUI.Demo.Client.Shared.Pages.Components.ComponentDemoBase;
-using Bit.BlazorUI.Demo.Shared.Dtos.DataGridDemo;
 
 namespace Bit.BlazorUI.Demo.Client.Shared.Pages.Components.Lists.BitBasicList;
 
