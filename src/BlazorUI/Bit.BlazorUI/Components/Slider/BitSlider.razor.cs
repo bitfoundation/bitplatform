@@ -4,9 +4,6 @@ namespace Bit.BlazorUI;
 
 public partial class BitSlider
 {
-    protected override bool UseVisual => false;
-
-
     private bool ValueHasBeenSet;
     private bool UpperValueHasBeenSet;
     private bool LowerValueHasBeenSet;
@@ -28,14 +25,11 @@ public partial class BitSlider
     private string _minInputId = default!;
     private string _maxInputId = default!;
 
-
     private ElementReference _labelRef;
     private ElementReference _containerRef;
     private ElementReference _valueLabelRef;
 
-
     [Inject] private IJSRuntime _js { get; set; } = default!;
-
 
     /// <summary>
     ///  A text description of the Slider number value for the benefit of screen readers

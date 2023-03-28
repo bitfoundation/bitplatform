@@ -8,8 +8,6 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitFileUpload : IAsyncDisposable
 {
-    protected override bool UseVisual => false;
-
     private const int MIN_CHUNK_SIZE = 512 * 1024; // 512 kb
     private const int MAX_CHUNK_SIZE = 10 * 1024 * 1024; // 10 mb
     private DotNetObjectReference<BitFileUpload>? _dotnetObj;

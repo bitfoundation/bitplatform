@@ -5,9 +5,6 @@ namespace Bit.BlazorUI;
 
 public partial class BitPersona
 {
-    protected override bool UseVisual => false;
-
-
     private readonly Regex MULTIPLE_WHITESPACES_REGEX = new(@"\s+");
     //private readonly Regex PHONE_NUMBER_REGEX = new(@"^\d+[\d\s]*(:?ext|x|)\s*\d+$");
     private readonly Regex UNWANTED_CHARS_REGEX = new(@"\([^)]*\)|[\0-\u001F\!-/:-@\[-`\{-\u00BF\u0250-\u036F\uD800-\uFFFF]");

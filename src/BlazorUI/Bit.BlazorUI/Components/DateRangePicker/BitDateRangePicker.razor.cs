@@ -6,8 +6,6 @@ namespace Bit.BlazorUI;
 
 public partial class BitDateRangePicker
 {
-    protected override bool UseVisual => false;
-
     private const int DEFAULT_DAY_COUNT_PER_WEEK = 7;
     private const int DEFAULT_WEEK_COUNT = 6;
 

@@ -3,8 +3,6 @@ namespace Bit.BlazorUI;
 
 public partial class BitAccordion
 {
-    protected override bool UseVisual => false;
-
     private bool IsExpandedHasBeenSet;
     private bool isExpanded;
 

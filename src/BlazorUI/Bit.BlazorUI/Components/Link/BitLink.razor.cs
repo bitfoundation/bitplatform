@@ -2,8 +2,6 @@
 
 public partial class BitLink
 {
-    protected override bool UseVisual => false;
-
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
 

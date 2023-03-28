@@ -2,7 +2,6 @@
 
 public abstract partial class BitComponentBase : ComponentBase
 {
-    private Visual visual;
     private string? style;
     private string? @class;
     private bool isEnabled = true;
@@ -15,21 +14,6 @@ public abstract partial class BitComponentBase : ComponentBase
     public Guid UniqueId => _uniqueId;
 
     public ElementReference RootElement { get; internal set; }
-
-    [CascadingParameter] public Theme Theme { get; set; }
-
-    [CascadingParameter]
-    public Visual Visual
-    {
-        get => visual;
-        set
-        {
-            if (visual == value) return;
-
-            visual = value;
-            ClassBuilder.Reset();
-        }
-    }
 
     /// <summary>
     /// Custom style for the root element of the component
@@ -117,16 +101,6 @@ public abstract partial class BitComponentBase : ComponentBase
         {
             switch (parameter.Key)
             {
-                case nameof(Theme):
-                    Theme = (Theme)parameter.Value;
-                    parametersDictionary.Remove(parameter.Key);
-                    break;
-
-                case nameof(Visual):
-                    Visual = (Visual)parameter.Value;
-                    parametersDictionary.Remove(parameter.Key);
-                    break;
-
                 case nameof(Style):
                     Style = (string?)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
@@ -160,8 +134,6 @@ public abstract partial class BitComponentBase : ComponentBase
         return base.SetParametersAsync(ParameterView.Empty);
     }
 
-    protected virtual bool UseVisual => true;
-
     protected override void OnInitialized()
     {
         RegisterComponentStyles();
@@ -174,31 +146,14 @@ public abstract partial class BitComponentBase : ComponentBase
                 _ => string.Empty
             });
 
-        if (UseVisual)
-        {
-            ClassBuilder
-                .Register(() => RootElementClass)
-                .Register(() => $"{RootElementClass}-{VisualClassRegistrar()}")
-                .Register(() => $"{RootElementClass}-{(IsEnabled ? "enabled" : "disabled")}-{VisualClassRegistrar()}");
-        }
-        else
-        {
-            ClassBuilder
+        ClassBuilder
               .Register(() => RootElementClass)
               .Register(() => (IsEnabled ? string.Empty : "disabled"));
-        }
-
-
 
         RegisterComponentClasses();
         ClassBuilder.Register(() => @class);
 
         base.OnInitialized();
-    }
-
-    protected virtual string VisualClassRegistrar()
-    {
-        return Visual == Visual.Cupertino ? "cupertino" : Visual == Visual.Material ? "material" : "fluent";
     }
 
     protected override void OnAfterRender(bool firstRender)

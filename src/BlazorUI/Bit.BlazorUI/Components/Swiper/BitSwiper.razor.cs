@@ -4,9 +4,6 @@ namespace Bit.BlazorUI;
 
 public partial class BitSwiper : IDisposable
 {
-    protected override bool UseVisual => false;
-
-
     private double _lastX;
     private bool _disposed;
     private int _pagesCount;

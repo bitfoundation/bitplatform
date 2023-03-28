@@ -6,8 +6,6 @@ namespace Bit.BlazorUI;
 
 public partial class BitDropDown
 {
-    protected override bool UseVisual => false;
-
     private bool IsOpenHasBeenSet;
     private bool ValuesHasBeenSet;
     private bool SelectedItemHasBeenSet;

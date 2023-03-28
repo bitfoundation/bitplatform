@@ -5,9 +5,6 @@ namespace Bit.BlazorUI;
 
 public partial class BitToggle
 {
-    protected override bool UseVisual => false;
-
-
     private bool _disposed;
     private string? _labelledById;
     private string? _stateText;
@@ -15,8 +12,6 @@ public partial class BitToggle
     private string? _labelId;
     private string? _stateTextId;
     private string? _ariaChecked => CurrentValueAsString;
-
-
 
     /// <summary>
     /// Default text of the toggle when it is neither ON or OFF.
