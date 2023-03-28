@@ -9,21 +9,21 @@
 
     @if (LabelTemplate is not null)
     {
-        <label class="label" id="@LabelId" for="@TextFieldId">
+        <label class="label" id="@_labelId" for="@_textFieldId">
             @LabelTemplate
         </label>
     }
     else if (Label.HasValue())
     {
-        <label class="label" id="@LabelId" for="@TextFieldId">
+        <label class="label" id="@_labelId" for="@_textFieldId">
             @Label
         </label>
     }
 
-    <div class="wrapper" id="@WrapperId" aria-owns="@(IsOpen ? CalloutId : null)" @onclick="HandleOnClick">
+    <div class="wrapper" id="@_wrapperId" aria-owns="@(IsOpen ? _calloutId : null)" @onclick="HandleOnClick">
         <div class="field-grp @(AllowTextInput ? "editable-input" : null)">
             <input @attributes="InputHtmlAttributes"
-                   id="@TextFieldId"
+                   id="@_textFieldId"
                    disabled=@(IsEnabled is false)
                    role="combobox"
                    readonly=@(AllowTextInput is false)
@@ -32,18 +32,18 @@
                    placeholder="@Placeholder"
                    tabindex="@TabIndex"
                    aria-label="@AriaLabel"
-                   aria-labelledby="@(Label.HasValue() ? LabelId : null)"
+                   aria-labelledby="@(Label.HasValue() ? _labelId : null)"
                    aria-expanded="@(IsOpen ? "true" : "false")"
                    aria-haspopup="dialog"
-                   aria-controls="@(IsOpen ? CalloutId : null)"
+                   aria-controls="@(IsOpen ? _calloutId : null)"
                    @onfocusin="@HandleOnFocusIn"
                    @onfocusout="@HandleOnFocusOut"
                    @onfocus="@HandleOnFocus"
                    @oninput="@HandleOnChange" />
 
-            @if (IconFragment is not null)
+            @if (IconTemplate is not null)
             {
-                @IconFragment
+                @IconTemplate
             }
             else
             {
@@ -52,9 +52,9 @@
         </div>
     </div>
 
-    <div class="overlay" id="@OverlayId" @onclick="CloseCallout"></div>
+    <div class="overlay" id="@_overlayId" @onclick="CloseCallout"></div>
 
-    <div class="callout @(IsResponsive ? "responsive" : string.Empty)" id="@CalloutId">
+    <div class="callout @(IsResponsive ? "responsive" : string.Empty)" id="@_calloutId">
         <div class="callout-main" role="dialog" @attributes=@CalloutHtmlAttributes aria-label="@PickerAriaLabel">
             <div aria-hidden="true" tabindex="0" data-is-visible="true" style="pointer-events: none; position: fixed;"></div>
             <div class="group"
@@ -107,7 +107,7 @@
                                 for (int i = 1; i <= 12; ++i)
                                 {
                                     var _i = i;
-                                    <div class="stick hour" style="@($"transform: rotateZ({_i * 30}deg);")" @onclick="(() => HandleOnHourClick(_i))" @onpointerover="(() => HandleOnHourPointerOver(_i))" @onclick:stopPropagation="true"></div>
+                                    <div class="stick hour" style="@($"transform: rotateZ({_i * 30}deg);")" @onclick="(() => HandleOnHourClockHandClick(_i))" @onpointerover="(() => HandleOnHourPointerOver(_i))" @onclick:stopPropagation="true"></div>
                                 }
                             }
                             else
@@ -126,8 +126,8 @@
                                 {
                                     var _i = i;
                                     <div class="stick" style="@($"transform: rotateZ({_i * 30}deg);")">
-                                        <div class="inner" @onclick="(() => HandleOnHourClick(_i))" @onpointerover="(() => HandleOnHourPointerOver(_i))" @onclick:stopPropagation="true"></div>
-                                        <div class="outer" @onclick="(() => HandleOnHourClick((_i + 12) % 24))" @onpointerover="(() => HandleOnHourPointerOver((_i + 12) % 24))" @onclick:stopPropagation="true"></div>
+                                        <div class="inner" @onclick="(() => HandleOnHourClockHandClick(_i))" @onpointerover="(() => HandleOnHourPointerOver(_i))" @onclick:stopPropagation="true"></div>
+                                        <div class="outer" @onclick="(() => HandleOnHourClockHandClick((_i + 12) % 24))" @onpointerover="(() => HandleOnHourPointerOver((_i + 12) % 24))" @onclick:stopPropagation="true"></div>
                                     </div>
                                 }
                             }
@@ -144,7 +144,7 @@
                             @for (int i = 0; i < 60; ++i)
                             {
                                 var _i = i;
-                                <div class="stick minute" style="@($"transform: rotateZ({_i * 6}deg);")" @onclick="(() => HandleOnMinuteClick(_i))" @onpointerover="(() => HandleOnMinutePointerOver(_i))" @onclick:stopPropagation="true"></div>
+                                <div class="stick minute" style="@($"transform: rotateZ({_i * 6}deg);")" @onclick="(() => HandleOnMinuteClockHandClick(_i))" @onpointerover="(() => HandleOnMinutePointerOver(_i))" @onclick:stopPropagation="true"></div>
                             }
                         </div>
                     }
