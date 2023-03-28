@@ -1,0 +1,126 @@
+﻿@import "../../Styles/functions.scss";
+
+.bit-tpg {
+    font-family: $typography-font-family;
+
+    .bit-tpg-nowrap {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .bit-tpg-body1 {
+        margin: 0;
+        font-weight: 400;
+        font-size: spacing(2);
+        line-height: 1.5;
+        letter-spacing: spacing(0.01876);
+    }
+
+    .bit-tpg-body2 {
+        margin: 0;
+        font-weight: 400;
+        font-size: spacing(1.5);
+        line-height: 1.43;
+        letter-spacing: spacing(0.02142);
+    }
+
+    .bit-tpg-button {
+        margin: 0;
+        font-weight: 500;
+        font-size: spacing(1.5);
+        line-height: 1.75;
+        letter-spacing: spacing(0.05714);
+        text-transform: uppercase;
+    }
+
+    .bit-tpg-caption {
+        margin: 0;
+        font-weight: 400;
+        font-size: spacing(1.5);
+        line-height: 1.66;
+        letter-spacing: spacing(0.06666);
+    }
+
+    .bit-tpg-h1 {
+        margin: 0;
+        font-weight: 300;
+        font-size: sapcing(12);
+        line-height: 1.167;
+        letter-spacing: spacing(-0.03124);
+    }
+
+    .bit-tpg-h2 {
+        margin: 0;
+        font-weight: 300;
+        font-size: spacing(7.5);
+        line-height: 1.2;
+        letter-spacing: spacing(-0.01666);
+    }
+
+    .bit-tpg-h3 {
+        margin: 0;
+        font-weight: 400;
+        font-size: spacing(6);
+        line-height: 1.167;
+        letter-spacing: 0;
+    }
+
+    .bit-tpg-h4 {
+        margin: 0;
+        font-weight: 400;
+        font-size: spacing(4.25);
+        line-height: 1.235;
+        letter-spacing: spacing(0.0147);
+    }
+
+    .bit-tpg-h5 {
+        margin: 0;
+        font-weight: 400;
+        font-size: spacing(3);
+        line-height: 1.334;
+        letter-spacing: 0;
+    }
+
+    .bit-tpg-h6 {
+        margin: 0;
+        font-weight: 500;
+        font-size: spacing(2.5);
+        line-height: 1.6;
+        letter-spacing: spacing(0.015);
+    }
+
+    .bit-tpg-inherit {
+        margin: 0;
+        font-family: inherit;
+        font-weight: inherit;
+        font-size: inherit;
+        line-height: inherit;
+        letter-spacing: inherit;
+    }
+
+    .bit-tpg-overline {
+        margin: 0;
+        font-weight: 400;
+        font-size: spacing(1.5);
+        line-height: 2.66;
+        letter-spacing: spacing(0.16666);
+        text-transform: uppercase;
+    }
+
+    .bit-tpg-subtitle1 {
+        margin: 0;
+        font-weight: 400;
+        font-size: spacing(2);
+        line-height: 1.75;
+        letter-spacing: spacing(0.01876);
+    }
+
+    .bit-tpg-subtitle2 {
+        margin: 0;
+        font-weight: 500;
+        font-size: spacing(1.75);
+        line-height: 1.57;
+        letter-spacing: spacing(0.01428);
+    }
+}
