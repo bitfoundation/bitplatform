@@ -100,8 +100,7 @@
         .wrapper {
             display: flex;
             width: 100%;
-            border-bottom: spacing(0.125) $shape-border-style;
-            border-bottom-color: $color-neutrals-gray130;
+            border-bottom: $shape-border-width $shape-border-style $color-neutrals-gray130;
         }
 
         .field-grp {
@@ -283,7 +282,7 @@
 
                 &.min {
                     background: transparent;
-                    border: spacing(0.25) solid;
+                    border: spacing(0.25) $shape-border-style;
                     width: spacing(1.25);
                     height: spacing(1.25);
                     top: spacing(-1.125);
@@ -402,6 +401,12 @@
             .clock {
                 margin: spacing(2) auto;
             }
+        }
+    }
+
+    &.invalid {
+        .field-grp {
+            border-color: $color-state-invalid;
         }
     }
 }

@@ -61,7 +61,7 @@ public partial class BitTimePickerDemo
         },
         new()
         {
-            Name = "IconFragment",
+            Name = "IconTemplate",
             Type = "RenderFragment?",
             DefaultValue = "",
             Description = "Custom TimePicker icon template."
@@ -396,9 +396,9 @@ private void HandleInvalidSubmit()
                Style=""max-width: 300px""
                AriaLabel=""Select a time""
                Placeholder=""Select a time..."">
-    <LabelFragment>
+    <LabelTemplate>
         Custom label <BitIconButton IconName=""BitIconName.AlarmClock"" OnClick=""OpenCallout""></BitIconButton>
-    </LabelFragment>
+    </LabelTemplate>
 </BitTimePicker>";
 
     private readonly string example8CSharpCode = @"
@@ -424,9 +424,9 @@ private TimeSpan? selectedTime = new TimeSpan(5, 12, 15);";
                AriaLabel=""Select a time""
                IconLocation=""BitIconLocation.Left""
                Placeholder=""Select a time..."">
-    <IconFragment>
+    <IconTemplate>
         <img src=""https://img.icons8.com/fluency/2x/clock.png"" width=""24"" height=""24"" />
-    </IconFragment>
+    </IconTemplate>
 </BitTimePicker>";
 
     private readonly string example11HTMLCode = @"
