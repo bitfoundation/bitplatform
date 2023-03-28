@@ -1,5 +1,4 @@
 ﻿using Bit.BlazorUI.Demo.Server.Api.Controllers;
-using Bit.BlazorUI.Demo.Shared.Dtos.DataGridDemo;
 
 namespace Bit.BlazorUI.Demo.Api.Controllers;
 
@@ -58,6 +57,7 @@ public partial class ProductsController : AppControllerBase
     [HttpGet]
     public async Task<PagedResult<CategoryOrProductDto>> GetCategoriesAndProducts(ODataQueryOptions<CategoryOrProductDto> odataQuery, CancellationToken cancellationToken)
     {
+        //note:if want to fetch data from DB:
         // var query = _dbContext.Categories.Select(cat => new CategoryOrProductDto { CategoryId = cat.Id, Name = cat.Name })
         // .Union(_dbContext.Products.Select(prd => new CategoryOrProductDto { ProductId = prd.Id, Name = prd.Name, Price = prd.Price, CategoryId = prd.CategoryId })
         // .OrderBy(catOrPrd => catOrPrd.CategoryId);

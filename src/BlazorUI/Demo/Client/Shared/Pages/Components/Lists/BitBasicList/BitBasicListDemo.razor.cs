@@ -1,9 +1,87 @@
 ﻿using Bit.BlazorUI.Demo.Client.Shared.Pages.Components.ComponentDemoBase;
+using Bit.BlazorUI.Demo.Shared.Dtos.DataGridDemo;
 
-namespace Bit.BlazorUI.Demo.Client.Shared.Pages.Components.List;
+namespace Bit.BlazorUI.Demo.Client.Shared.Pages.Components.Lists.BitBasicList;
 
 public partial class BitBasicListDemo
 {
+    private List<Person> People1 = new();
+    private List<Person> People2 = new();
+
+    private BitBasicListItemsProvider<ProductDto> productProvider;
+
+    private BitBasicListItemsProvider<CategoryOrProductDto> CategoriesAndProductsProvider;
+
+    protected override void OnInitialized()
+    {
+        People1 = GetPeople(8000);
+        People2 = GetPeople(100);
+
+        productProvider = async req =>
+        {
+            try
+            {
+                var query = new Dictionary<string, object>()
+                                {
+                    { "$top", req.Count},
+                    { "$skip", req.StartIndex }
+                                };
+
+                var url = NavManager.GetUriWithQueryParameters("Products/GetProducts", query);
+
+                var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto);
+
+                return BitBasicListItemsProviderResult.From(data!.Items, (int)data!.TotalCount);
+            }
+            catch
+            {
+                return BitBasicListItemsProviderResult.From<ProductDto>(new List<ProductDto> { }, 0);
+            }
+        };
+
+        CategoriesAndProductsProvider = async req =>
+        {
+            try
+            {
+                var query = new Dictionary<string, object>()
+                            {
+                    { "$top", req.Count},
+                    { "$skip", req.StartIndex }
+                            };
+
+                var url = NavManager.GetUriWithQueryParameters("Products/GetCategoriesAndProducts", query);
+
+                var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultCategoryOrProductDto);
+
+                return BitBasicListItemsProviderResult.From(data!.Items, (int)data!.TotalCount);
+            }
+            catch
+            {
+                return BitBasicListItemsProviderResult.From<CategoryOrProductDto>(new List<CategoryOrProductDto> { }, 0);
+            }
+        };
+
+        base.OnInitialized();
+    }
+
+    private static List<Person> GetPeople(int itemCount)
+    {
+        List<Person> people = new();
+
+        for (int i = 0; i < itemCount; i++)
+        {
+            people.Add(new Person
+            {
+                Id = i + 1,
+                FirstName = $"Person {i + 1}",
+                LastName = $"Person Family {i + 1}",
+                Job = $"Programmer {i + 1}"
+            });
+        }
+
+        return people;
+    }
+
     private readonly List<ComponentParameter> componentParameters = new()
     {
         new()
@@ -68,12 +146,12 @@ public partial class BitBasicListDemo
     private string example1HTMLCode = @"
 <BitBasicList Items=""People1"" EnableVirtualization=""true"" Style=""border: 1px #a19f9d solid; border-radius: 3px; "">
     <RowTemplate Context=""person"">
-        <div @key=""person.Id"" style=""border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;"">
-            <img src=""https://picsum.photos/100/100?random=@(person.Id)"">
+        <div @key=""person.item.Id"" style=""border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;"">
+            <img src=""https://picsum.photos/100/100?random=@(person.item.Id)"">
             <div style=""margin-left:3%; display: inline-block;"">
-                <p>Id: <strong>@person.Id</strong></p>
-                <p>Full Name: <strong>@person.FirstName @person.LastName</strong></p>
-                <p>Job: <strong>@person.Job</strong></p>
+                <p>Id: <strong>@person.item.Id</strong></p>
+                <p>Full Name: <strong>@person.item.FirstName @person.item.LastName</strong></p>
+                <p>Job: <strong>@person.item.Job</strong></p>
             </div>
         </div>
     </RowTemplate>
@@ -116,10 +194,10 @@ public class Person
 <BitBasicList Items=""People2"" EnableVirtualization=""false"" Style=""border: 1px #a19f9d solid; border-radius: 3px; "">
     <RowTemplate Context=""person"">
         <div style=""border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;"">
-            <img src=""https://picsum.photos/100/100?random=@(person.Id)"">
-            <p>Id: <strong>@person.Id</strong></p>
-            <p>Full Name: <strong>@person.FirstName @person.LastName</strong></p>
-            <p>Job: <strong>@person.Job</strong></p>
+            <img src=""https://picsum.photos/100/100?random=@(person.item.Id)"">
+            <p>Id: <strong>@person.item.Id</strong></p>
+            <p>Full Name: <strong>@person.item.FirstName @person.item.LastName</strong></p>
+            <p>Job: <strong>@person.item.Job</strong></p>
         </div>
     </RowTemplate>
 </BitBasicList>";
@@ -173,9 +251,9 @@ public class Person
 <BitBasicList Items=""People1"" EnableVirtualization=""true"" Role=""list"" Style=""border: 1px #a19f9d solid; border-radius: 3px;"">
     <RowTemplate Context=""person"">
         <div class=""list-item"">
-            <span>Id: <strong>@person.Id</strong></span>
-            <span>Full Name: <strong>@person.FirstName</strong></span>
-            <span>Job: <strong>@person.Job</strong></span>
+            <span>Id: <strong>@person.item.Id</strong></span>
+            <span>Full Name: <strong>@person.item.FirstName</strong></span>
+            <span>Job: <strong>@person.item.Job</strong></span>
         </div>
     </RowTemplate>
 </BitBasicList>";
@@ -217,9 +295,9 @@ public class Person
 <BitBasicList Items=""People1"" EnableVirtualization=""true"" OverscanCount=""5"" ItemSize=""300"" Style=""border: 1px #a19f9d solid; border-radius: 3px; "">
     <RowTemplate Context=""person"">
         <div style=""border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;"">
-            <p>Id: <strong>@person.Id</strong></p>
-            <p>Full Name: <strong>@person.FirstName @person.LastName</strong></p>
-            <p>Job: <strong>@person.Job</strong></p>
+            <p>Id: <strong>@person.item.Id</strong></p>
+            <p>Full Name: <strong>@person.item.FirstName @person.item.LastName</strong></p>
+            <p>Job: <strong>@person.item.Job</strong></p>
         </div>
     </RowTemplate>
 </BitBasicList>";
