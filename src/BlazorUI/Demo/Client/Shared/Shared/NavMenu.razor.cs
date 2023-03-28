@@ -99,6 +99,7 @@ public partial class NavMenu
             {
                 new BitNavItem { Text = "Accordion (Expander)", Url = "/components/accordion" },
                 new BitNavItem { Text = "Modal", Url = "/components/modal" },
+                new BitNavItem { Text = "Typography", Url = "/components/typography" },
             },
         },
         new BitNavItem
