@@ -49,8 +49,8 @@ public partial class BitTypography : BitComponentBase
 
     protected override void RegisterComponentClasses()
     {
-        ClassBuilder.Register(() => NoWrap ? "bit-tpg-nowrap" : string.Empty)
-                    .Register(() => $".bit-tpg-{Variant.ToString().ToLower(CultureInfo.InvariantCulture)}");
+        ClassBuilder.Register(() => $"bit-tpg-{Variant.ToString().ToLower(CultureInfo.InvariantCulture)}")
+                    .Register(() => NoWrap ? "bit-tpg-nowrap" : string.Empty);
     }
 
     protected override async Task OnInitializedAsync()
