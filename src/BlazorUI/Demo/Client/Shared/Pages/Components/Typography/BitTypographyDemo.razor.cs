@@ -63,5 +63,23 @@ public partial class BitTypographyDemo
 
 
 
-    private string example1HTMLCode = @"";
+    private string example1HTMLCode = @"
+<BitTypography>This is default (Subtitle1)</BitTypography>
+<br />
+<BitTypography Variant=""BitTypographyVariant.H1"">H1. Heading</BitTypography>
+<BitTypography Variant=""BitTypographyVariant.H2"">H2. Heading</BitTypography>
+<BitTypography Variant=""BitTypographyVariant.H3"">H3. Heading</BitTypography>
+<BitTypography Variant=""BitTypographyVariant.H4"">H4. Heading</BitTypography>
+<BitTypography Variant=""BitTypographyVariant.H5"">H5. Heading</BitTypography>
+<BitTypography Variant=""BitTypographyVariant.H6"">H6. Heading</BitTypography>
+
+<BitTypography Variant=""BitTypographyVariant.Subtitle1"">Subtitle1. Lorem ipsum dolor sit amet</BitTypography>
+<BitTypography Variant=""BitTypographyVariant.Subtitle2"">Subtitle2. Lorem ipsum dolor sit amet</BitTypography>
+
+<BitTypography Variant=""BitTypographyVariant.Body1"">Body1. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quos blanditiis tenetur unde suscipit, quam beatae rerum inventore consectetur, neque doloribus, cupiditate numquam dignissimos laborum fugiat deleniti? Eum quasi quidem quibusdam.</BitTypography>
+<BitTypography Variant=""BitTypographyVariant.Body2"">Body2. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quos blanditiis tenetur unde suscipit, quam beatae rerum inventore consectetur, neque doloribus, cupiditate numquam dignissimos laborum fugiat deleniti? Eum quasi quidem quibusdam.</BitTypography>
+
+<BitTypography Variant=""BitTypographyVariant.Button"">Button. Click Me</BitTypography>
+<BitTypography Variant=""BitTypographyVariant.Caption"">Caption. Hello World!</BitTypography>
+<BitTypography Variant=""BitTypographyVariant.Overline"">Overline. this is overline text.</BitTypography>";
 }
