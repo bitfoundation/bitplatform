@@ -15,7 +15,7 @@
     border-style: $shape-border-style;
     border-width: $shape-border-width;
 
-    &.disabled {
+    &.bit-dis {
         color: $color-text-disabled;
         background-color: $color-action-disabled;
         border-color: $color-border-disabled;

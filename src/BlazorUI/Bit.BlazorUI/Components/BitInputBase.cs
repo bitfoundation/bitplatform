@@ -188,7 +188,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
 
     protected override void OnInitialized()
     {
-        ClassBuilder.Register(() => ValueInvalid is true ? "invalid" : string.Empty);
+        ClassBuilder.Register(() => ValueInvalid is true ? "bit-inv" : string.Empty);
 
         base.OnInitialized();
     }

@@ -55,7 +55,7 @@
         margin: 0 0 0 spacing(0.5);
     }
 
-    &.invalid {
+    &.bit-inv {
         .checkbox {
             border-color: $color-state-invalid;
         }
@@ -87,14 +87,14 @@
             }
         }
 
-        &.invalid {
+        &.bit-inv {
             .checkbox {
                 background-color: $color-state-invalid;
                 border-color: $color-state-invalid;
             }
         }
 
-        &.disabled {
+        &.bit-dis {
             .checkbox {
                 border-color: $color-neutrals-gray60;
                 background-color: $color-neutrals-gray60;
@@ -127,7 +127,7 @@
             }
         }
 
-        &.invalid {
+        &.bit-inv {
             .checkbox {
                 border-color: $color-state-invalid-hover;
 
@@ -137,7 +137,7 @@
             }
         }
 
-        &.disabled {
+        &.bit-dis {
             .checkbox {
                 .bit-icon {
                     background-color: $color-neutrals-gray60;
@@ -146,7 +146,7 @@
         }
     }
 
-    &.disabled {
+    &.bit-dis {
         pointer-events: none;
 
         .label {
@@ -192,14 +192,14 @@
                 }
             }
 
-            &.invalid:hover {
+            &.bit-inv:hover {
                 .checkbox {
                     border-color: $color-state-invalid-hover;
                     background-color: $color-state-invalid-hover;
                 }
             }
 
-            &.disabled:hover {
+            &.bit-dis:hover {
                 .checkbox {
                     border-color: $color-neutrals-gray60;
                     background-color: $color-neutrals-gray60;
@@ -225,7 +225,7 @@
                 }
             }
 
-            &.invalid:hover {
+            &.bit-inv:hover {
                 .checkbox {
                     border-color: $color-state-invalid-hover;
 
@@ -235,7 +235,7 @@
                 }
             }
 
-            &.disabled:hover {
+            &.bit-dis:hover {
                 .checkbox {
                     .bit-icon {
                         background-color: $color-neutrals-gray60;
@@ -245,7 +245,7 @@
             }
         }
 
-        &.disabled:hover {
+        &.bit-dis:hover {
             .checkbox {
                 border-color: $color-neutrals-gray60;
 

@@ -20,7 +20,7 @@
         position: relative;
         color: $color-neutrals-gray160;
 
-        &.disabled {
+        &.bit-dis {
             color: $color-text-disabled;
             cursor: default;
             pointer-events: none;
@@ -129,7 +129,7 @@
         }
     }
 
-    &.disabled {
+    &.bit-dis {
         .content-container {
             color: $color-text-disabled;
             cursor: default;
@@ -226,7 +226,7 @@
         }
     }
 
-    &.disabled {
+    &.bit-dis {
         color: $color-text-disabled;
         cursor: default;
         pointer-events: none;

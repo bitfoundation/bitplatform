@@ -121,7 +121,7 @@
         }
     }
 
-    &.disabled {
+    &.bit-dis {
         .lbl-wrapper {
             color: $color-neutrals-gray90;
 
@@ -153,7 +153,7 @@
         }
     }
 
-    &.invalid {
+    &.bit-inv {
         .wrapper {
             border-color: $color-state-invalid;
         }

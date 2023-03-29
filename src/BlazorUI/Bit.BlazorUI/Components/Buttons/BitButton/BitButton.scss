@@ -13,7 +13,7 @@
     border-style: $shape-border-style;
     border-radius: $shape-border-radius;
 
-    &.disabled {
+    &.bit-dis {
         border-color: $color-border-disabled;
         color: $color-text-disabled;
         background-color: $color-action-disabled;

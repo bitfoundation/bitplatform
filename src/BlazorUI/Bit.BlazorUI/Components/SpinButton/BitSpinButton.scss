@@ -130,7 +130,7 @@
         flex-direction: row;
     }
 
-    &.disabled {
+    &.bit-dis {
         .label-wrapper {
             color: $color-neutrals-gray90;
 
@@ -164,7 +164,7 @@
         }
     }
 
-    &.invalid {
+    &.bit-inv {
         .wrapper {
             border-color: $color-general-red;
         }

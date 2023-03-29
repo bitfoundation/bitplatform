@@ -35,13 +35,13 @@
         }
     }
 
-    &.disabled {
+    &.bit-dis {
         .input {
             background-color: $color-neutrals-gray30;
         }
     }
 
-    &.invalid {
+    &.bit-inv {
         .input {
             outline: none;
             border: spacing(0.25) $shape-border-style $color-state-invalid;
