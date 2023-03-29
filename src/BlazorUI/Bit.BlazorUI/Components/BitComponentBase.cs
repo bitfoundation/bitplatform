@@ -2,6 +2,8 @@
 
 public abstract partial class BitComponentBase : ComponentBase
 {
+    protected virtual bool UseAbbreviationInNaming => false;
+
     private string? style;
     private string? @class;
     private bool isEnabled = true;
@@ -148,7 +150,7 @@ public abstract partial class BitComponentBase : ComponentBase
 
         ClassBuilder
               .Register(() => RootElementClass)
-              .Register(() => (IsEnabled ? string.Empty : "disabled"));
+              .Register(() => (IsEnabled ? string.Empty : UseAbbreviationInNaming ? $"{RootElementClass}-disabled" : "disabled"));
 
         RegisterComponentClasses();
         ClassBuilder.Register(() => @class);
