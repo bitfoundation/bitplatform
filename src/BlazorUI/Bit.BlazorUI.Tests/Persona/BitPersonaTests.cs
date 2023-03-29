@@ -7,9 +7,9 @@ namespace Bit.BlazorUI.Tests.Persona;
 public class BitPersonaTests : BunitTestContext
 {
     [DataTestMethod,
-     DataRow(true),
-     DataRow(false)
-   ]
+         DataRow(true),
+         DataRow(false)
+    ]
     public void BitPersonaTest(bool isEnabled)
     {
         var component = RenderComponent<BitPersona>(parameters =>
@@ -21,17 +21,18 @@ public class BitPersonaTests : BunitTestContext
 
         if (isEnabled)
         {
-            Assert.IsFalse(persona.ClassList.Contains("disabled"));
+            Assert.IsFalse(persona.ClassList.Contains("bit-dis"));
         }
         else
         {
-            Assert.IsTrue(persona.ClassList.Contains("disabled"));
+            Assert.IsTrue(persona.ClassList.Contains("bit-dis"));
         }
     }
 
     [DataTestMethod,
         DataRow("Text", "SecondaryText", "TertiaryText", "OptionalText"),
-        DataRow(null, null, null, null)]
+        DataRow(null, null, null, null)
+    ]
     public void BitPersonaShouldAddCorrectDetailsText(string text, string secondaryText, string tertiaryText, string optionalText)
     {
         var component = RenderComponent<BitPersona>(parameters =>
@@ -65,7 +66,8 @@ public class BitPersonaTests : BunitTestContext
         DataRow(BitPersonaPresenceStatus.Busy, true),
         DataRow(BitPersonaPresenceStatus.Busy, false),
         DataRow(BitPersonaPresenceStatus.DND, true),
-        DataRow(BitPersonaPresenceStatus.DND, false),]
+        DataRow(BitPersonaPresenceStatus.DND, false)
+    ]
     public void BitPersonaPresenceStatusClassNameTest(BitPersonaPresenceStatus presenceStatus, bool isOutOfOffice)
     {
         var component = RenderComponent<BitPersona>(parameters =>
@@ -97,7 +99,8 @@ public class BitPersonaTests : BunitTestContext
         DataRow(BitPersonaSize.Size56),
         DataRow(BitPersonaSize.Size72),
         DataRow(BitPersonaSize.Size100),
-        DataRow(BitPersonaSize.Size120)]
+        DataRow(BitPersonaSize.Size120)
+    ]
     public void BitPersonaSizeClassNameTest(string size)
     {
         var component = RenderComponent<BitPersona>(parameters =>
@@ -113,7 +116,8 @@ public class BitPersonaTests : BunitTestContext
 
     [DataTestMethod,
         DataRow("Image url"),
-        DataRow(null)]
+        DataRow(null)
+    ]
     public void BitPersonaImageTest(string imageUrl)
     {
         var component = RenderComponent<BitPersona>(parameters =>
@@ -136,7 +140,8 @@ public class BitPersonaTests : BunitTestContext
         DataRow("Presence Title", BitPersonaPresenceStatus.Offline),
         DataRow("Presence Title", BitPersonaPresenceStatus.Online),
         DataRow("Presence Title", BitPersonaPresenceStatus.DND),
-        DataRow("Presence Title", BitPersonaPresenceStatus.Busy),]
+        DataRow("Presence Title", BitPersonaPresenceStatus.Busy)
+    ]
     public void BitPersonaPresenceTitleTest(string presenceTitle, BitPersonaPresenceStatus presenceStatus)
     {
         var component = RenderComponent<BitPersona>(

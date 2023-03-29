@@ -32,11 +32,11 @@ public class BitCheckboxTests : BunitTestContext
 
         if (isEnabled)
         {
-            Assert.IsFalse(checkBox.ClassList.Contains("disabled"));
+            Assert.IsFalse(checkBox.ClassList.Contains("bit-dis"));
         }
         else
         {
-            Assert.IsTrue(checkBox.ClassList.Contains("disabled"));
+            Assert.IsTrue(checkBox.ClassList.Contains("bit-dis"));
         }
 
         Assert.AreEqual(defaultValue, checkBox.ClassList.Contains("checked"));
@@ -415,17 +415,17 @@ public class BitCheckboxTests : BunitTestContext
 
         var bitCheckBox = component.Find(".bit-chb");
 
-        Assert.IsFalse(bitCheckBox.ClassList.Contains("invalid"));
+        Assert.IsFalse(bitCheckBox.ClassList.Contains("bit-inv"));
 
         var form = component.Find("form");
         form.Submit();
 
-        Assert.AreEqual(value, bitCheckBox.ClassList.Contains("invalid"));
+        Assert.AreEqual(value, bitCheckBox.ClassList.Contains("bit-inv"));
 
         var checkBox = component.Find("input");
         checkBox.Click();
 
-        Assert.AreEqual(value is false, bitCheckBox.ClassList.Contains("invalid"));
+        Assert.AreEqual(value is false, bitCheckBox.ClassList.Contains("bit-inv"));
     }
 
     private void HandleValueChanged(bool isChecked) => BitCheckBoxIsChecked = isChecked;

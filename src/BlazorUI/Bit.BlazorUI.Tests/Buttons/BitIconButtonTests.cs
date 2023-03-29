@@ -28,11 +28,11 @@ public class BitIconButtonTests : BunitTestContext
 
         if (isEnabled)
         {
-            Assert.IsFalse(bitIconButton.ClassList.Contains("disabled"));
+            Assert.IsFalse(bitIconButton.ClassList.Contains("bit-dis"));
         }
         else
         {
-            Assert.IsTrue(bitIconButton.ClassList.Contains("disabled"));
+            Assert.IsTrue(bitIconButton.ClassList.Contains("bit-dis"));
         }
 
         var bitIconITag = com.Find(".bit-icob > span.icon-container > i.bit-icon");

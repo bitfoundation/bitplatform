@@ -41,11 +41,11 @@ public class BitMenuButtonTests : BunitTestContext
 
         if (isEnabled)
         {
-            Assert.IsFalse(bitMenuButton.ClassList.Contains("disabled"));
+            Assert.IsFalse(bitMenuButton.ClassList.Contains("bit-dis"));
         }
         else
         {
-            Assert.IsTrue(bitMenuButton.ClassList.Contains("disabled"));
+            Assert.IsTrue(bitMenuButton.ClassList.Contains("bit-dis"));
         }
 
         var buttonStyle = bitButtonStyle is BitButtonStyle.Primary ? "primary" : "standard";
@@ -126,7 +126,7 @@ public class BitMenuButtonTests : BunitTestContext
         var lastItem = com.Find("li:last-child .item");
         lastItem.Click();
 
-        Assert.AreEqual(itemIsEnabled, lastItem.ClassList.Contains("disabled") is false);
+        Assert.AreEqual(itemIsEnabled, lastItem.ClassList.Contains("bit-dis") is false);
 
         if (itemIsEnabled)
         {
@@ -134,7 +134,7 @@ public class BitMenuButtonTests : BunitTestContext
         }
         else
         {
-            Assert.AreEqual(clickedItem, null);
+            Assert.IsNull(clickedItem);
         }
     }
 

@@ -29,11 +29,11 @@ public class BitToggleButtonTests : BunitTestContext
 
         if (isEnabled)
         {
-            Assert.IsFalse(bitToggleButton.ClassList.Contains("disabled"));
+            Assert.IsFalse(bitToggleButton.ClassList.Contains("bit-dis"));
         }
         else
         {
-            Assert.IsTrue(bitToggleButton.ClassList.Contains("disabled"));
+            Assert.IsTrue(bitToggleButton.ClassList.Contains("bit-dis"));
         }
 
         Assert.AreEqual(bitLabelTag.TextContent, label);

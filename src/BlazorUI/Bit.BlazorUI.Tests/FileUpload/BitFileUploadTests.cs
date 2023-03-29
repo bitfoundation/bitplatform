@@ -68,12 +68,12 @@ public class BitFileUploadTests : BunitTestContext
 
         if (isEnabled)
         {
-            Assert.IsFalse(bitFileUpload.ClassList.Contains("disabled"));
+            Assert.IsFalse(bitFileUpload.ClassList.Contains("bit-dis"));
             Assert.IsFalse(bitFileUploadInput.HasAttribute("disabled"));
         }
         else
         {
-            Assert.IsTrue(bitFileUpload.ClassList.Contains("disabled"));
+            Assert.IsTrue(bitFileUpload.ClassList.Contains("bit-dis"));
             Assert.IsTrue(bitFileUploadInput.HasAttribute("disabled"));
         }
     }

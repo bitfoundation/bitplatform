@@ -23,11 +23,11 @@ public class BitDateRangePickerTests : BunitTestContext
 
         if (isEnabled)
         {
-            Assert.IsFalse(bitDatePicker.ClassList.Contains("disabled"));
+            Assert.IsFalse(bitDatePicker.ClassList.Contains("bit-dis"));
         }
         else
         {
-            Assert.IsTrue(bitDatePicker.ClassList.Contains("disabled"));
+            Assert.IsTrue(bitDatePicker.ClassList.Contains("bit-dis"));
         }
     }
 

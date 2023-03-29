@@ -7,8 +7,8 @@ namespace Bit.BlazorUI.Tests.OtpInput;
 public class BitOtpInputTests : BunitTestContext
 {
     [DataTestMethod,
-    DataRow(true),
-    DataRow(false)
+        DataRow(true),
+        DataRow(false)
     ]
     public void BitOtpInputTest(bool isEnabled)
     {
@@ -21,17 +21,17 @@ public class BitOtpInputTests : BunitTestContext
 
         if (isEnabled)
         {
-            Assert.IsFalse(bitOtpInput.ClassList.Contains("disabled"));
+            Assert.IsFalse(bitOtpInput.ClassList.Contains("bit-dis"));
         }
         else
         {
-            Assert.IsTrue(bitOtpInput.ClassList.Contains("disabled"));
+            Assert.IsTrue(bitOtpInput.ClassList.Contains("bit-dis"));
         }
     }
 
     [DataTestMethod,
-    DataRow(4),
-    DataRow(6)
+        DataRow(4),
+        DataRow(6)
     ]
     public void BitOtpInputLengthTest(int length)
     {
@@ -46,10 +46,10 @@ public class BitOtpInputTests : BunitTestContext
     }
 
     [DataTestMethod,
-    DataRow(BitOtpInputDirection.LeftToRight),
-    DataRow(BitOtpInputDirection.RightToLeft),
-    DataRow(BitOtpInputDirection.TopToBottom),
-    DataRow(BitOtpInputDirection.BottomToTop)
+        DataRow(BitOtpInputDirection.LeftToRight),
+        DataRow(BitOtpInputDirection.RightToLeft),
+        DataRow(BitOtpInputDirection.TopToBottom),
+        DataRow(BitOtpInputDirection.BottomToTop)
     ]
     public void BitOtpInputDirectionTest(BitOtpInputDirection direction)
     {
@@ -73,9 +73,9 @@ public class BitOtpInputTests : BunitTestContext
     }
 
     [DataTestMethod,
-    DataRow(BitOtpInputType.Text),
-    DataRow(BitOtpInputType.Number),
-    DataRow(BitOtpInputType.Password)
+        DataRow(BitOtpInputType.Text),
+        DataRow(BitOtpInputType.Number),
+        DataRow(BitOtpInputType.Password)
     ]
     public void BitOtpInputTypeTest(BitOtpInputType inputType)
     {
@@ -103,7 +103,7 @@ public class BitOtpInputTests : BunitTestContext
 
         var bitOtpInput = com.Find(".input");
 
-        Assert.IsTrue(bitOtpInput.GetAttribute("type").Equals(inputTypeAttribute));
-        Assert.IsTrue(bitOtpInput.GetAttribute("inputmode").Equals(inputModeAttribute));
+        Assert.AreEqual(inputTypeAttribute, bitOtpInput.GetAttribute("type"));
+        Assert.AreEqual(inputModeAttribute, bitOtpInput.GetAttribute("inputmode"));
     }
 }

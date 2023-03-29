@@ -819,12 +819,12 @@ public class BitSpinButtonTests : BunitTestContext
 
         var bitSpinButton = component.Find(".bit-spb");
 
-        Assert.IsFalse(bitSpinButton.ClassList.Contains("invalid"));
+        Assert.IsFalse(bitSpinButton.ClassList.Contains("bit-inv"));
 
         var form = component.Find("form");
         form.Submit();
 
-        Assert.AreEqual(isInvalid, bitSpinButton.ClassList.Contains("invalid"));
+        Assert.AreEqual(isInvalid, bitSpinButton.ClassList.Contains("bit-inv"));
 
         var input = component.Find("input");
         if (isInvalid)
@@ -837,7 +837,7 @@ public class BitSpinButtonTests : BunitTestContext
         }
         input.Blur();
 
-        Assert.AreEqual(isInvalid is false, bitSpinButton.ClassList.Contains("invalid"));
+        Assert.AreEqual(isInvalid is false, bitSpinButton.ClassList.Contains("bit-inv"));
     }
 
     private static double Normalize(double value, int precision) => Math.Round(value, precision);

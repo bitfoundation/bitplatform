@@ -41,11 +41,11 @@ public class BitSplitButtonTests : BunitTestContext
 
         if (isEnabled)
         {
-            Assert.IsFalse(bitSplitButton.ClassList.Contains("disabled"));
+            Assert.IsFalse(bitSplitButton.ClassList.Contains("bit-dis"));
         }
         else
         {
-            Assert.IsTrue(bitSplitButton.ClassList.Contains("disabled"));
+            Assert.IsTrue(bitSplitButton.ClassList.Contains("bit-dis"));
         }
 
         var buttonStyle = bitButtonStyle is BitButtonStyle.Primary ? "primary" : "standard";

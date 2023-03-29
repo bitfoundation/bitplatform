@@ -27,17 +27,17 @@ public class BitTextFieldTests : BunitTestContext
 
         if (isEnabled)
         {
-            Assert.IsFalse(bitTextField.ClassList.Contains("disabled"));
+            Assert.IsFalse(bitTextField.ClassList.Contains("bit-dis"));
         }
         else
         {
-            Assert.IsTrue(bitTextField.ClassList.Contains("disabled"));
+            Assert.IsTrue(bitTextField.ClassList.Contains("bit-dis"));
         }
 
         Assert.AreEqual(isMultiline ? "TEXTAREA" : "INPUT", textField.TagName);
 
         Assert.AreEqual(isRequired, textField.HasAttribute("required"));
-        Assert.AreEqual(bitTextField.ClassList.Contains($"required"), isRequired);
+        Assert.AreEqual(isRequired, bitTextField.ClassList.Contains("required"));
     }
 
     [DataTestMethod,
@@ -625,12 +625,12 @@ public class BitTextFieldTests : BunitTestContext
 
         var bitTextField = component.Find(".bit-txt");
 
-        Assert.IsFalse(bitTextField.ClassList.Contains("invalid"));
+        Assert.IsFalse(bitTextField.ClassList.Contains("bit-inv"));
 
         var form = component.Find("form");
         form.Submit();
 
-        Assert.AreEqual(bitTextField.ClassList.Contains("invalid"), isInvalid);
+        Assert.AreEqual(isInvalid, bitTextField.ClassList.Contains("bit-inv"));
 
         var input = component.Find("input");
         if (isInvalid)
@@ -642,7 +642,7 @@ public class BitTextFieldTests : BunitTestContext
             input.Change("abc123");
         }
 
-        Assert.AreEqual(bitTextField.ClassList.Contains("invalid"), !isInvalid);
+        Assert.AreEqual(isInvalid is false, bitTextField.ClassList.Contains("bit-inv"));
     }
 
     [DataTestMethod,
