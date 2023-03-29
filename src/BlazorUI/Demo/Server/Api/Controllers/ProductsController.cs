@@ -33,10 +33,10 @@ public partial class ProductsController : AppControllerBase
 
     static ProductsController()
     {
-        foreach (var category in Enumerable.Range(1, 25).Select(i => new CategoryOrProductDto
+        foreach (var category in Enumerable.Range(1, 50_000).Select(i => new CategoryOrProductDto
         {
             CategoryId = i,
-            Name = $"Category {i}"
+            Name = $"Category {i.ToString("N0")}"
         }))
         {
             _categoriesProducts.Add(category);
@@ -44,7 +44,7 @@ public partial class ProductsController : AppControllerBase
             foreach (var product in Enumerable.Range(1, 10).Select(i => new CategoryOrProductDto
             {
                 ProductId = i,
-                Name = $"Product {i} at {category.CategoryId}",
+                Name = $"Product {i} at {category.CategoryId?.ToString("N0")}",
                 Price = new Random().Next(10, 1000),
                 CategoryId = category.CategoryId
             }))

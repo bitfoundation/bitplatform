@@ -2,7 +2,7 @@
 
 public partial class BitBasicList<TItem>
 {
-    private Virtualize<(int index, TItem item)>? _virtualizeElement;
+    private Virtualize<TItem>? _virtualizeElement;
 
     /// <summary>
     /// Enables virtualization in rendering the list.
@@ -32,7 +32,7 @@ public partial class BitBasicList<TItem>
     /// <summary>
     /// Gets or sets the Template to render each row.
     /// </summary>
-    [Parameter] public RenderFragment<(int? index, TItem item)> RowTemplate { get; set; } = default!;
+    [Parameter] public RenderFragment<TItem> RowTemplate { get; set; } = default!;
 
     /// <summary>
     /// The function providing items to the list
@@ -45,13 +45,9 @@ public partial class BitBasicList<TItem>
     [Parameter] public RenderFragment<PlaceholderContext>? VirtualizePlaceholder { get; set; }
 
     protected override string RootElementClass => "bit-bsl";
-    private (int index, TItem item)[] GetItems()
-    {
-        return Items!.Select((item, index) => (index, item)).ToArray();
-    }
 
     // Gets called both by RefreshDataCoreAsync and directly by the Virtualize child component during scrolling
-    private async ValueTask<ItemsProviderResult<(int index, TItem item)>> ProvideVirtualizedItems(ItemsProviderRequest request)
+    private async ValueTask<ItemsProviderResult<TItem>> ProvideVirtualizedItems(ItemsProviderRequest request)
     {
         if (ItemsProvider is null) return default;
 
@@ -66,8 +62,6 @@ public partial class BitBasicList<TItem>
 
         if (request.CancellationToken.IsCancellationRequested) return default;
 
-        return new ItemsProviderResult<(int, TItem)>(
-                 items: providerResult.Items.Select((x, i) => ValueTuple.Create(i + request.StartIndex + 2, x)),
-                 totalItemCount: providerResult.TotalItemCount);
+        return new ItemsProviderResult<TItem>(providerResult.Items, providerResult.TotalItemCount);
     }
 }
