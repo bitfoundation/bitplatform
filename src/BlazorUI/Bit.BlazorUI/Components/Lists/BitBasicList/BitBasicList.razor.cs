@@ -1,0 +1,73 @@
+﻿namespace Bit.BlazorUI;
+
+public partial class BitBasicList<TItem>
+{
+    private Virtualize<(int index, TItem item)>? _virtualizeElement;
+
+    /// <summary>
+    /// Enables virtualization in rendering the list.
+    /// </summary>
+    [Parameter] public bool EnableVirtualization { get; set; }
+
+    /// <summary>
+    /// Gets or sets the list of items to render.
+    /// </summary>
+    [Parameter] public ICollection<TItem> Items { get; set; } = Array.Empty<TItem>();
+
+    /// <summary>
+    /// Gets the size of each item in pixels. Defaults to 50px.
+    /// </summary>
+    [Parameter] public float ItemSize { get; set; } = 50f;
+
+    /// <summary>
+    /// Gets or sets a value that determines how many additional items will be rendered before and after the visible region.
+    /// </summary>
+    [Parameter] public int OverscanCount { get; set; } = 3;
+
+    /// <summary>
+    /// Gets or set the role attribute of the BasicList html element.
+    /// </summary>
+    [Parameter] public string Role { get; set; } = "list";
+
+    /// <summary>
+    /// Gets or sets the Template to render each row.
+    /// </summary>
+    [Parameter] public RenderFragment<(int? index, TItem item)> RowTemplate { get; set; } = default!;
+
+    /// <summary>
+    /// The function providing items to the list
+    /// </summary>
+    [Parameter] public BitBasicListItemsProvider<TItem>? ItemsProvider { get; set; }
+
+    /// <summary>
+    /// The template for items that have not yet been loaded in memory.
+    /// </summary>
+    [Parameter] public RenderFragment<PlaceholderContext>? VirtualizePlaceholder { get; set; }
+
+    protected override string RootElementClass => "bit-bsl";
+    private (int index, TItem item)[] GetItems()
+    {
+        return Items!.Select((item, index) => (index, item)).ToArray();
+    }
+
+    // Gets called both by RefreshDataCoreAsync and directly by the Virtualize child component during scrolling
+    private async ValueTask<ItemsProviderResult<(int index, TItem item)>> ProvideVirtualizedItems(ItemsProviderRequest request)
+    {
+        if (ItemsProvider is null) return default;
+
+        // Debounce the requests. This eliminates a lot of redundant queries at the cost of slight lag after interactions.
+        // TODO: Consider making this configurable, or smarter (e.g., doesn't delay on first call in a batch, then the amount
+        // of delay increases if you rapidly issue repeated requests, such as when scrolling a long way)
+        await Task.Delay(100);
+        if (request.CancellationToken.IsCancellationRequested) return default;
+
+        var providerRequest = new BitBasicListItemsProviderRequest<TItem>(request.StartIndex, request.Count, request.CancellationToken);
+        var providerResult = await ItemsProvider(providerRequest);
+
+        if (request.CancellationToken.IsCancellationRequested) return default;
+
+        return new ItemsProviderResult<(int, TItem)>(
+                 items: providerResult.Items.Select((x, i) => ValueTuple.Create(i + request.StartIndex + 2, x)),
+                 totalItemCount: providerResult.TotalItemCount);
+    }
+}

@@ -2,9 +2,9 @@
               Role="@Role" Style="@ListStyle" ItemSize="ItemSize" OverscanCount="OverscanCount">
     <RowTemplate Context="person">
         <div class="list-item" style="height:@($"{ItemSize}px")">
-            <p>Id: <strong>@person.Id</strong></p>
-            <p>Full Name: <strong>@person.FirstName @person.LastName</strong></p>
-            <p>Job: <strong>@person.Job</strong></p>
+            <p>Id: <strong>@person.item.Id</strong></p>
+            <p>Full Name: <strong>@person.item.FirstName @person.item.LastName</strong></p>
+            <p>Job: <strong>@person.item.Job</strong></p>
         </div>
     </RowTemplate>
 </BitBasicList>
