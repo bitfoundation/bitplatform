@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Bit.BlazorUI.Tests.Lists;
+namespace Bit.BlazorUI.Tests.Lists.BitBasicList;
 
 [TestClass]
 public class BitBasicListTests : BunitTestContext

@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Tests.Lists;
+﻿namespace Bit.BlazorUI.Tests.Lists.BitBasicList;
 public class Person
 {
     public int Id { get; set; }

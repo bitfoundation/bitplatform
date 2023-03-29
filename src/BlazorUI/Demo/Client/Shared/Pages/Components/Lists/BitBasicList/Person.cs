@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Shared.Pages.Components.List;
+﻿namespace Bit.BlazorUI.Demo.Client.Shared.Pages.Components.Lists.BitBasicList;
 
 public class Person
 {
