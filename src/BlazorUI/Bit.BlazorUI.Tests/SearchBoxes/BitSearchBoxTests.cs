@@ -246,12 +246,12 @@ public class BitSearchBoxTests : BunitTestContext
 
         var bitSearchBox = component.Find(".bit-srb");
 
-        Assert.IsFalse(bitSearchBox.ClassList.Contains("invalid"));
+        Assert.IsFalse(bitSearchBox.ClassList.Contains("bit-inv"));
 
         var form = component.Find("form");
         form.Submit();
 
-        Assert.AreEqual(isInvalid, bitSearchBox.ClassList.Contains("invalid"));
+        Assert.AreEqual(isInvalid, bitSearchBox.ClassList.Contains("bit-inv"));
 
         var input = component.Find("input");
         if (isInvalid)
@@ -263,6 +263,6 @@ public class BitSearchBoxTests : BunitTestContext
             input.Input("abc123");
         }
 
-        Assert.AreEqual(isInvalid is false, bitSearchBox.ClassList.Contains("invalid"));
+        Assert.AreEqual(isInvalid is false, bitSearchBox.ClassList.Contains("bit-inv"));
     }
 }

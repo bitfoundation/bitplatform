@@ -25,7 +25,7 @@
 		<PackageProjectUrl>https://github.com/bitfoundation/bitplatform</PackageProjectUrl>
 		<PackageIconUrl>https://avatars.githubusercontent.com/u/22663390</PackageIconUrl>
 
-		<ReleaseVersion>4.9.8</ReleaseVersion>
+		<ReleaseVersion>4.9.9</ReleaseVersion>
 
 		<PackageReleaseNotes>https://github.com/bitfoundation/bitplatform/releases/tag/v-$(ReleaseVersion)-pre-02</PackageReleaseNotes>
 		<PackageVersion>$(ReleaseVersion)-pre-02</PackageVersion>

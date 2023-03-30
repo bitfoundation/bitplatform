@@ -30,11 +30,11 @@ public class BitDropDownTests : BunitTestContext
 
         if (isEnabled)
         {
-            Assert.IsFalse(bitDropDown.ClassList.Contains("disabled"));
+            Assert.IsFalse(bitDropDown.ClassList.Contains("bit-dis"));
         }
         else
         {
-            Assert.IsTrue(bitDropDown.ClassList.Contains("disabled"));
+            Assert.IsTrue(bitDropDown.ClassList.Contains("bit-dis"));
         }
     }
 
@@ -856,12 +856,12 @@ public class BitDropDownTests : BunitTestContext
 
         var bitDropDown = component.Find(".bit-drp");
 
-        Assert.IsFalse(bitDropDown.ClassList.Contains("invalid"));
+        Assert.IsFalse(bitDropDown.ClassList.Contains("bit-inv"));
 
         var form = component.Find("form");
         form.Submit();
 
-        Assert.AreEqual(bitDropDown.ClassList.Contains("invalid"), isInvalid);
+        Assert.AreEqual(bitDropDown.ClassList.Contains("bit-inv"), isInvalid);
 
         if (isInvalid)
         {
@@ -874,7 +874,7 @@ public class BitDropDownTests : BunitTestContext
             drpItems[0].Click();
         }
 
-        Assert.IsFalse(bitDropDown.ClassList.Contains("invalid"));
+        Assert.IsFalse(bitDropDown.ClassList.Contains("bit-inv"));
     }
 
     [DataTestMethod,

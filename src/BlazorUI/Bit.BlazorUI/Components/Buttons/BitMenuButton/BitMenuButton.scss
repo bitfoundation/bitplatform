@@ -16,7 +16,7 @@
     border-width: $shape-border-width;
     border-style: $shape-border-style;
 
-    &.disabled {
+    &.bit-dis {
         color: $color-text-disabled;
         background-color: $color-action-disabled;
         border-color: $color-border-disabled;
@@ -159,7 +159,7 @@
             white-space: nowrap;
         }
 
-        &.disabled {
+        &.bit-dis {
             cursor: default;
             color: $color-text-disabled;
 

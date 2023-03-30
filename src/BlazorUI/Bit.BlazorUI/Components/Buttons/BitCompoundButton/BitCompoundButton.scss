@@ -60,7 +60,7 @@
         }
     }
 
-    &.disabled {
+    &.bit-dis {
         border-color: $color-border-disabled;
         background-color: $color-action-disabled;
         cursor: default;

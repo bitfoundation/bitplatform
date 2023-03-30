@@ -195,7 +195,7 @@ $BgTrackHover: $color-primary-dark;
         z-index: 2;
     }
 
-    &.disabled {
+    &.bit-dis {
         pointer-events: none;
         cursor: not-allowed;
         opacity: 0.65;

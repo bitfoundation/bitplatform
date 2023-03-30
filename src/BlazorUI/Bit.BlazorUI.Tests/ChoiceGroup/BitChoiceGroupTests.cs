@@ -25,11 +25,11 @@ public class BitChoiceGroupTests : BunitTestContext
 
         if (isEnabled)
         {
-            Assert.IsFalse(bitChoiceGroup.ClassList.Contains("disabled"));
+            Assert.IsFalse(bitChoiceGroup.ClassList.Contains("bit-dis"));
         }
         else
         {
-            Assert.IsTrue(bitChoiceGroup.ClassList.Contains("disabled"));
+            Assert.IsTrue(bitChoiceGroup.ClassList.Contains("bit-dis"));
         }
     }
 

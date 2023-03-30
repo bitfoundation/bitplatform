@@ -115,14 +115,14 @@
         background-color: transparent;
     }
 
-    .disabled {
+    .bit-dis {
         cursor: default;
         font-weight: 400;
         pointer-events: none;
         color: $color-neutrals-gray60;
     }
 
-    &.disabled {
+    &.bit-dis {
         .overflow-btn, .item, .selected-item, i {
             cursor: default;
             font-weight: 400;

@@ -167,7 +167,7 @@
         }
     }
 
-    &.disabled {
+    &.bit-dis {
         color: $color-neutrals-gray160;
         background-color: $color-neutrals-gray20;
         border-color: $color-neutrals-gray20;
@@ -197,7 +197,7 @@
         }
     }
 
-    &.invalid {
+    &.bit-inv {
         border-color: $color-state-invalid;
 
         .icon-container {

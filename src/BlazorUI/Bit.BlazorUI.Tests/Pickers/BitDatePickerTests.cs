@@ -23,11 +23,11 @@ public class BitDatePickerTests : BunitTestContext
 
         if (isEnabled)
         {
-            Assert.IsFalse(bitDatePicker.ClassList.Contains("disabled"));
+            Assert.IsFalse(bitDatePicker.ClassList.Contains("bit-dis"));
         }
         else
         {
-            Assert.IsTrue(bitDatePicker.ClassList.Contains("disabled"));
+            Assert.IsTrue(bitDatePicker.ClassList.Contains("bit-dis"));
         }
     }
 
@@ -214,12 +214,12 @@ public class BitDatePickerTests : BunitTestContext
 
         var bitDatePicker = component.Find(".bit-dtp");
 
-        Assert.IsFalse(bitDatePicker.ClassList.Contains("invalid"));
+        Assert.IsFalse(bitDatePicker.ClassList.Contains("bit-inv"));
 
         var form = component.Find("form");
         form.Submit();
 
-        Assert.IsTrue(bitDatePicker.ClassList.Contains("invalid"));
+        Assert.IsTrue(bitDatePicker.ClassList.Contains("bit-inv"));
 
         //open date picker
         var datePicker = component.Find(".wrapper");
@@ -229,7 +229,7 @@ public class BitDatePickerTests : BunitTestContext
         var today = component.Find(".date-cell--today button.day-btn");
         today.Click();
 
-        Assert.IsFalse(bitDatePicker.ClassList.Contains("invalid"));
+        Assert.IsFalse(bitDatePicker.ClassList.Contains("bit-inv"));
     }
 
     [DataTestMethod, DataRow("DatePicker")]

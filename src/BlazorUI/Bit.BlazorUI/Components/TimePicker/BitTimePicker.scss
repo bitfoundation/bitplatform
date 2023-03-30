@@ -109,7 +109,7 @@
             text-align: left;
         }
 
-        &.bit-tpc-disabled {
+        &.bit-dis {
             .bit-tpc-wrp {
                 border-bottom-color: $color-border-disabled;
             }
@@ -124,7 +124,7 @@
         }
     }
 
-    &.bit-tpc-disabled {
+    &.bit-dis {
         .bit-tpc-lbl {
             color: $color-text-disabled;
         }
@@ -404,7 +404,7 @@
         }
     }
 
-    &.bit-tpc-invalid {
+    &.bit-inv {
         .bit-tpc-fld-grp {
             border-color: $color-state-invalid;
         }
