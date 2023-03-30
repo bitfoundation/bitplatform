@@ -227,13 +227,13 @@ public partial class BitTimePicker
 
     protected override void RegisterComponentClasses()
     {
-        ClassBuilder.Register(() => IconLocation is BitIconLocation.Left ? "left-icon" : string.Empty);
+        ClassBuilder.Register(() => IconLocation is BitIconLocation.Left ? $"{RootElementClass}-left-ico" : string.Empty);
 
-        ClassBuilder.Register(() => IsUnderlined ? "underlined" : string.Empty);
+        ClassBuilder.Register(() => IsUnderlined ? $"{RootElementClass}-und" : string.Empty);
 
-        ClassBuilder.Register(() => HasBorder is false ? "no-border" : string.Empty);
+        ClassBuilder.Register(() => HasBorder is false ? $"{RootElementClass}-no-brd" : string.Empty);
 
-        ClassBuilder.Register(() => _focusClass);
+        ClassBuilder.Register(() => _focusClass.HasValue() ? $"{RootElementClass}-{_focusClass}" : string.Empty);
     }
 
     private async Task HandleOnFocusIn()
@@ -298,7 +298,7 @@ public partial class BitTimePicker
 
     private string GetHoursMinutesClass(int value) =>
         (_currentView == BitTimePickerDialMode.Hours && GetHours() == value) || (_currentView == BitTimePickerDialMode.Minutes && _minute == value)
-            ? "selected"
+            ? "bit-tpc-sel"
             : string.Empty;
 
     private int GetClockHandHeightPercent() => (_currentView == BitTimePickerDialMode.Hours && AmPm is false && _hour > 0 && _hour < 13) ? 26 : 40;

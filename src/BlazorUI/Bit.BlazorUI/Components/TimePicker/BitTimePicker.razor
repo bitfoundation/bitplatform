@@ -9,19 +9,19 @@
 
     @if (LabelTemplate is not null)
     {
-        <label class="label" id="@_labelId" for="@_textFieldId">
+        <label class="bit-tpc-lbl" id="@_labelId" for="@_textFieldId">
             @LabelTemplate
         </label>
     }
     else if (Label.HasValue())
     {
-        <label class="label" id="@_labelId" for="@_textFieldId">
+        <label class="bit-tpc-lbl" id="@_labelId" for="@_textFieldId">
             @Label
         </label>
     }
 
-    <div class="wrapper" id="@_wrapperId" aria-owns="@(IsOpen ? _calloutId : null)" @onclick="HandleOnClick">
-        <div class="field-grp @(AllowTextInput ? "editable-input" : null)">
+    <div class="bit-tpc-wrp" id="@_wrapperId" aria-owns="@(IsOpen ? _calloutId : null)" @onclick="HandleOnClick">
+        <div class="bit-tpc-fld-grp @(AllowTextInput ? "bit-tpc-edt-inp" : null)">
             <input @attributes="InputHtmlAttributes"
                    id="@_textFieldId"
                    disabled=@(IsEnabled is false)
@@ -52,62 +52,59 @@
         </div>
     </div>
 
-    <div class="overlay" id="@_overlayId" @onclick="CloseCallout"></div>
+    <div class="bit-tpc-overlay" id="@_overlayId" @onclick="CloseCallout"></div>
 
-    <div class="callout @(IsResponsive ? "responsive" : string.Empty)" id="@_calloutId">
-        <div class="callout-main" role="dialog" @attributes=@CalloutHtmlAttributes aria-label="@PickerAriaLabel">
+    <div class="bit-tpc-cal @(IsResponsive ? "bit-tpc-rsp" : string.Empty)" id="@_calloutId">
+        <div class="bit-tpc-cal-main" role="dialog" @attributes=@CalloutHtmlAttributes aria-label="@PickerAriaLabel">
             <div aria-hidden="true" tabindex="0" data-is-visible="true" style="pointer-events: none; position: fixed;"></div>
-            <div class="group"
-                 role="group"
-                 aria-label="">
-
-                <div class="toolbar">
-                    <div class="hour-minute">
+            <div role="group" aria-label="">
+                <div class="bit-tpc-tbr">
+                    <div class="bit-tpc-hour-minute">
                         @if (EditMode == BitTimePickerEditMode.Normal)
                         {
-                            <button type="button" class="text @(_currentView == BitTimePickerDialMode.Hours ? string.Empty : "inactive")" @onclick="HandleOnHourClick">
+                            <button type="button" class="bit-tpc-txt @(_currentView == BitTimePickerDialMode.Hours ? string.Empty : "bit-tpc-ina")" @onclick="HandleOnHourClick">
                                 @GetHourString()
                             </button>
-                            <span class="text">:</span>
-                            <button type="button" class="text @(_currentView == BitTimePickerDialMode.Minutes ? string.Empty : " inactive")" @onclick="HandleOnMinuteClick">
+                            <span class="bit-tpc-txt">:</span>
+                            <button type="button" class="bit-tpc-txt @(_currentView == BitTimePickerDialMode.Minutes ? string.Empty : "bit-tpc-ina")" @onclick="HandleOnMinuteClick">
                                 @GetMinuteString()
                             </button>
                         }
                         else
                         {
-                            <span class="text">@GetHourString():@GetMinuteString()</span>
+                            <span class="bit-tpc-txt">@GetHourString():@GetMinuteString()</span>
                         }
                     </div>
                     @if (AmPm)
                     {
-                        <div class="am-pm">
-                            <button type="button" class="text @(IsAm() ? string.Empty : "inactive")" @onclick="HandleOnAmClick">AM</button>
-                            <button type="button" class="text @(IsAm() is false ? string.Empty : "inactive")" @onclick="HandleOnPmClick">PM</button>
+                        <div class="bit-tpc-am-pm">
+                            <button type="button" class="bit-tpc-txt @(IsAm() ? string.Empty : "bit-tpc-ina")" @onclick="HandleOnAmClick">AM</button>
+                            <button type="button" class="bit-tpc-txt @(IsAm() is false ? string.Empty : "bit-tpc-ina")" @onclick="HandleOnPmClick">PM</button>
                         </div>
                     }
                 </div>
-                <div class="clock" @onpointerdown="HandleOnPointerDown" @onpointerup="HandleOnPointerUp">
-                    <div class="pin"></div>
+                <div class="bit-tpc-clk" @onpointerdown="HandleOnPointerDown" @onpointerup="HandleOnPointerUp">
+                    <div class="bit-tpc-pin"></div>
                     @{
                         var deg = GetPointerDegree();
                     }
-                    <div class="pointer@(_isPointerDown ? string.Empty : " animation")" style="height: @(GetClockHandHeightPercent())%; transform: rotateZ(@(deg)deg);">
-                        <div class="thumb@(deg % 30 == 0 ? string.Empty : " min")"></div>
+                    <div class="bit-tpc-ptr@(_isPointerDown ? string.Empty : " bit-tpc-ani")" style="height: @(GetClockHandHeightPercent())%; transform: rotateZ(@(deg)deg);">
+                        <div class="bit-tpc-thumb@(deg % 30 == 0 ? string.Empty : " bit-tpc-min")"></div>
                     </div>
                     @if (_currentView == BitTimePickerDialMode.Hours)
                     {
-                        <div class="dial">
+                        <div class="bit-tpc-dial">
                             @if (AmPm)
                             {
                                 @*Hours from 1 to 12*@
                                 for (int i = 1; i <= 12; ++i)
                                 {
-                                    <p class="number @GetHoursMinutesClass(i)" style="transform: translate(@GetTransformStyle(i, 109, 0, 5));">@i</p>
+                                    <p class="bit-tpc-num @GetHoursMinutesClass(i)" style="transform: translate(@GetTransformStyle(i, 109, 0, 5));">@i</p>
                                 }
                                 for (int i = 1; i <= 12; ++i)
                                 {
                                     var _i = i;
-                                    <div class="stick hour" style="@($"transform: rotateZ({_i * 30}deg);")" @onclick="(() => HandleOnHourClockHandClick(_i))" @onpointerover="(() => HandleOnHourPointerOver(_i))" @onclick:stopPropagation="true"></div>
+                                    <div class="bit-tpc-stick bit-tpc-hour" style="@($"transform: rotateZ({_i * 30}deg);")" @onclick="(() => HandleOnHourClockHandClick(_i))" @onpointerover="(() => HandleOnHourPointerOver(_i))" @onclick:stopPropagation="true"></div>
                                 }
                             }
                             else
@@ -115,19 +112,19 @@
                                 @*Hours from 13 to 24 (00)*@
                                 for (int i = 1; i <= 12; ++i)
                                 {
-                                    <p class="number @GetHoursMinutesClass((i + 12) % 24)" style="transform: translate(@GetTransformStyle(i, 109, 0, 5))">@(((i + 12) % 24).ToString("D2"))</p>
+                                    <p class="bit-tpc-num @GetHoursMinutesClass((i + 12) % 24)" style="transform: translate(@GetTransformStyle(i, 109, 0, 5))">@(((i + 12) % 24).ToString("D2"))</p>
                                 }
                                 @*Hours from 1 to 12*@
                                 for (int i = 1; i <= 12; ++i)
                                 {
-                                    <p class="number @GetHoursMinutesClass(i)" style="transform: translate(@GetTransformStyle(i, 74, 0, 40))">@(i.ToString("D2"))</p>
+                                    <p class="bit-tpc-num @GetHoursMinutesClass(i)" style="transform: translate(@GetTransformStyle(i, 74, 0, 40))">@(i.ToString("D2"))</p>
                                 }
                                 for (int i = 1; i <= 12; ++i)
                                 {
                                     var _i = i;
-                                    <div class="stick" style="@($"transform: rotateZ({_i * 30}deg);")">
-                                        <div class="inner" @onclick="(() => HandleOnHourClockHandClick(_i))" @onpointerover="(() => HandleOnHourPointerOver(_i))" @onclick:stopPropagation="true"></div>
-                                        <div class="outer" @onclick="(() => HandleOnHourClockHandClick((_i + 12) % 24))" @onpointerover="(() => HandleOnHourPointerOver((_i + 12) % 24))" @onclick:stopPropagation="true"></div>
+                                    <div class="bit-tpc-stick" style="@($"transform: rotateZ({_i * 30}deg);")">
+                                        <div class="bit-tpc-inner" @onclick="(() => HandleOnHourClockHandClick(_i))" @onpointerover="(() => HandleOnHourPointerOver(_i))" @onclick:stopPropagation="true"></div>
+                                        <div class="bit-tpc-outer" @onclick="(() => HandleOnHourClockHandClick((_i + 12) % 24))" @onpointerover="(() => HandleOnHourPointerOver((_i + 12) % 24))" @onclick:stopPropagation="true"></div>
                                     </div>
                                 }
                             }
@@ -135,16 +132,16 @@
                     }
                     else if (_currentView == BitTimePickerDialMode.Minutes)
                     {
-                        <div class="dial">
+                        <div class="bit-tpc-dial">
                             @*Minutes from 05 to 60 (00) - step 5*@
                             @for (int i = 0; i < 12; ++i)
                             {
-                                <p class="number @GetHoursMinutesClass(i * 5)" style="transform: translate(@GetTransformStyle(i, 109, 0, 5))">@((i * 5).ToString("D2"))</p>
+                                <p class="bit-tpc-num @GetHoursMinutesClass(i * 5)" style="transform: translate(@GetTransformStyle(i, 109, 0, 5))">@((i * 5).ToString("D2"))</p>
                             }
                             @for (int i = 0; i < 60; ++i)
                             {
                                 var _i = i;
-                                <div class="stick minute" style="@($"transform: rotateZ({_i * 6}deg);")" @onclick="(() => HandleOnMinuteClockHandClick(_i))" @onpointerover="(() => HandleOnMinutePointerOver(_i))" @onclick:stopPropagation="true"></div>
+                                <div class="bit-tpc-stick bit-tpc-minute" style="@($"transform: rotateZ({_i * 6}deg);")" @onclick="(() => HandleOnMinuteClockHandClick(_i))" @onpointerover="(() => HandleOnMinutePointerOver(_i))" @onclick:stopPropagation="true"></div>
                             }
                         </div>
                     }

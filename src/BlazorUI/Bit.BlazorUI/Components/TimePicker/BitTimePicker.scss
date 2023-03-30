@@ -1,7 +1,7 @@
 ﻿@import "../../Styles/functions.scss";
 
 .bit-tpc {
-    .label {
+    .bit-tpc-lbl {
         display: block;
         padding: spacing(0.625) 0;
         margin: 0;
@@ -14,10 +14,10 @@
         -webkit-font-smoothing: antialiased;
     }
 
-    .wrapper {
+    .bit-tpc-wrp {
         position: relative;
 
-        .field-grp {
+        .bit-tpc-fld-grp {
             .bit-icon {
                 cursor: pointer;
                 color: $color-neutrals-gray130;
@@ -31,7 +31,7 @@
         }
     }
 
-    .field-grp {
+    .bit-tpc-fld-grp {
         position: relative;
         display: flex;
         flex-flow: row nowrap;
@@ -67,15 +67,15 @@
             cursor: pointer;
         }
 
-        &.editable-input {
+        &.bit-tpc-edt-inp {
             input {
                 cursor: default;
             }
         }
     }
 
-    &.left-icon {
-        .field-grp {
+    &.bit-tpc-left-ico {
+        .bit-tpc-fld-grp {
             flex-direction: row-reverse;
 
             .bit-icon {
@@ -85,8 +85,8 @@
         }
     }
 
-    &.focused {
-        .field-grp::after {
+    &.bit-tpc-focused {
+        .bit-tpc-fld-grp::after {
             position: absolute;
             inset: spacing(-0.125);
             border: spacing(0.25) $shape-border-style $color-border-primary;
@@ -96,27 +96,27 @@
         }
     }
 
-    &.underlined {
-        .wrapper {
+    &.bit-tpc-und {
+        .bit-tpc-wrp {
             display: flex;
             width: 100%;
             border-bottom: $shape-border-width $shape-border-style $color-neutrals-gray130;
         }
 
-        .field-grp {
+        .bit-tpc-fld-grp {
             border: none;
             flex: 1 1 0px;
             text-align: left;
         }
 
         &.bit-dis {
-            .wrapper {
+            .bit-tpc-wrp {
                 border-bottom-color: $color-border-disabled;
             }
         }
 
-        &.focused {
-            .field-grp::after {
+        &.bit-tpc-focused {
+            .bit-tpc-fld-grp::after {
                 border: none;
                 border-bottom: spacing(0.25) $shape-border-style $color-border-primary;
                 border-radius: 0;
@@ -125,11 +125,11 @@
     }
 
     &.bit-dis {
-        .label {
+        .bit-tpc-lbl {
             color: $color-text-disabled;
         }
 
-        .field-grp {
+        .bit-tpc-fld-grp {
             border: $shape-border-width $shape-border-style $color-border-disabled;
             color: $color-text-disabled;
             cursor: default;
@@ -149,13 +149,13 @@
         }
     }
 
-    &.no-border {
-        .field-grp {
+    &.bit-tpc-no-brd {
+        .bit-tpc-fld-grp {
             border: none;
         }
     }
 
-    .overlay {
+    .bit-tpc-overlay {
         position: fixed;
         top: 0;
         left: 0;
@@ -166,7 +166,7 @@
         background-color: transparent;
     }
 
-    .callout {
+    .bit-tpc-cal {
         position: fixed;
         top: spacing(4.25);
         z-index: $space-overlay-zindex1;
@@ -181,7 +181,7 @@
         -webkit-font-smoothing: antialiased;
     }
 
-    .callout-main {
+    .bit-tpc-cal-main {
         position: relative;
         border-radius: $shape-border-radius;
         outline: none;
@@ -189,7 +189,7 @@
         overflow: hidden auto;
     }
 
-    .toolbar {
+    .bit-tpc-tbr {
         height: spacing(12.5);
         min-width: spacing(32.5);
         display: flex;
@@ -199,7 +199,7 @@
         background-color: $color-primary-main;
         color: $color-text-primary;
 
-        .text {
+        .bit-tpc-txt {
             font-size: spacing(7.5);
             font-weight: 400;
             line-height: 1;
@@ -220,22 +220,22 @@
             color: $color-text-primary;
         }
 
-        .inactive {
+        .bit-tpc-ina {
             color: rgba(255,255,255,.54);
         }
 
-        .hour-minute {
+        .bit-tpc-hour-minute {
             display: flex;
             align-items: baseline;
             justify-content: flex-end;
         }
 
-        .am-pm {
+        .bit-tpc-am-pm {
             display: flex;
             margin-left: spacing(2.5);
             flex-direction: column;
 
-            .text {
+            .bit-tpc-txt {
                 font-size: spacing(2.6);
                 min-width: spacing(2);
                 padding-top: spacing(0.5);
@@ -243,7 +243,7 @@
         }
     }
 
-    .clock {
+    .bit-tpc-clk {
         width: spacing(32.5);
         height: spacing(32.5);
         margin: spacing(2);
@@ -251,7 +251,7 @@
         border-radius: 50%;
         background-color: rgba(0,0,0,.07);
 
-        .pin {
+        .bit-tpc-pin {
             top: 50%;
             left: 50%;
             width: spacing(0.75);
@@ -262,7 +262,7 @@
             background-color: $color-primary-main;
         }
 
-        .pointer {
+        .bit-tpc-ptr {
             left: calc(50% - spacing(0.125));
             width: spacing(0.25);
             bottom: 50%;
@@ -270,7 +270,7 @@
             transform-origin: center bottom 0;
             background-color: $color-primary-main;
 
-            .thumb {
+            .bit-tpc-thumb {
                 position: absolute;
                 border-radius: 100%;
                 top: spacing(-2.375);
@@ -280,7 +280,7 @@
                 border: none;
                 background-color: inherit;
 
-                &.min {
+                &.bit-tpc-min {
                     background: transparent;
                     border: spacing(0.25) $shape-border-style;
                     width: spacing(1.25);
@@ -291,17 +291,17 @@
                 }
             }
 
-            &.animation {
+            &.bit-tpc-ani {
                 transition: transform 150ms cubic-bezier(0.4,0,0.2,1) 0ms,height 150ms cubic-bezier(0.4,0,0.2,1) 0ms;
             }
         }
 
-        .dial {
+        .bit-tpc-dial {
             width: 100%;
             height: 100%;
             position: absolute;
 
-            .number {
+            .bit-tpc-num {
                 left: calc((100% - spacing(4))/2);
                 bottom: calc(100% - spacing(5.75));
                 color: $color-text-secondary;
@@ -317,12 +317,12 @@
                 transition-duration: 120ms;
                 transition-property: color;
 
-                &.selected {
+                &.bit-tpc-sel {
                     color: $color-text-primary;
                 }
             }
 
-            .stick {
+            .bit-tpc-stick {
                 left: calc(50% - spacing(0.125));
                 width: spacing(0.375);
                 height: 50%;
@@ -330,8 +330,8 @@
                 position: absolute;
                 transform-origin: center bottom 0;
 
-                &.hour:after,
-                &.minute:after {
+                &.bit-tpc-hour:after,
+                &.bit-tpc-minute:after {
                     content: "";
                     position: absolute;
                     left: 50%;
@@ -341,17 +341,17 @@
                     background-color: inherit;
                 }
 
-                &.hour:after {
+                &.bit-tpc-hour:after {
                     height: spacing(7.75);
                     width: spacing(7.75);
                 }
 
-                &.minute:after {
+                &.bit-tpc-minute:after {
                     height: spacing(5.5);
                     width: spacing(1.875);
                 }
 
-                .inner {
+                .bit-tpc-inner {
                     left: calc(50% - spacing(0.125));
                     width: spacing(0.375);
                     height: 35%;
@@ -372,7 +372,7 @@
                     }
                 }
 
-                .outer {
+                .bit-tpc-outer {
                     left: calc(50% - spacing(0.125));
                     width: 0;
                     height: 35%;
@@ -396,16 +396,16 @@
         }
     }
 
-    .responsive {
+    .bit-tpc-rsp {
         @media only screen and (max-width: 400px) {
-            .clock {
+            .bit-tpc-clk {
                 margin: spacing(2) auto;
             }
         }
     }
 
     &.bit-inv {
-        .field-grp {
+        .bit-tpc-fld-grp {
             border-color: $color-state-invalid;
         }
     }
