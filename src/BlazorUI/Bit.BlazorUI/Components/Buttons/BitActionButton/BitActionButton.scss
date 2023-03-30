@@ -49,7 +49,7 @@
         }
     }
 
-    &.disabled {
+    &.bit-dis {
         color: $color-text-disabled;
         cursor: default;
         pointer-events: none;

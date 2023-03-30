@@ -21,11 +21,11 @@ public class BitRatingTests : BunitTestContext
 
         if (isEnabled)
         {
-            Assert.IsFalse(bitRating.ClassList.Contains("disabled"));
+            Assert.IsFalse(bitRating.ClassList.Contains("bit-dis"));
         }
         else
         {
-            Assert.IsTrue(bitRating.ClassList.Contains("disabled"));
+            Assert.IsTrue(bitRating.ClassList.Contains("bit-dis"));
         }
 
         Assert.IsTrue(bitRating.HasAttribute("role"));

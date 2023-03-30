@@ -21,11 +21,11 @@ public class BitAccordionTests : BunitTestContext
 
         if (isEnabled)
         {
-            Assert.IsFalse(bitAccordion.ClassList.Contains("disabled"));
+            Assert.IsFalse(bitAccordion.ClassList.Contains("bit-dis"));
         }
         else
         {
-            Assert.IsTrue(bitAccordion.ClassList.Contains("disabled"));
+            Assert.IsTrue(bitAccordion.ClassList.Contains("bit-dis"));
         }
     }
 

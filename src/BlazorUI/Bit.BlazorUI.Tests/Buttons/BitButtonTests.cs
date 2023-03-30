@@ -29,11 +29,11 @@ public class BitButtonTests : BunitTestContext
 
         if (isEnabled)
         {
-            Assert.IsFalse(bitButton.ClassList.Contains("disabled"));
+            Assert.IsFalse(bitButton.ClassList.Contains("bit-dis"));
         }
         else
         {
-            Assert.IsTrue(bitButton.ClassList.Contains("disabled"));
+            Assert.IsTrue(bitButton.ClassList.Contains("bit-dis"));
         }
 
         Assert.AreEqual(bitButton.GetAttribute("title"), title);
@@ -117,11 +117,11 @@ public class BitButtonTests : BunitTestContext
         {
             Assert.AreEqual(bitButton.GetAttribute("target"), target);
             Assert.IsTrue(bitButton.HasAttribute("href"));
-            Assert.IsFalse(bitButton.ClassList.Contains("disabled"));
+            Assert.IsFalse(bitButton.ClassList.Contains("bit-dis"));
         }
         else
         {
-            Assert.IsTrue(bitButton.ClassList.Contains("disabled"));
+            Assert.IsTrue(bitButton.ClassList.Contains("bit-dis"));
         }
 
         Assert.AreEqual(bitButton.GetAttribute("title"), title);

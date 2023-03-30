@@ -215,7 +215,7 @@
         @include getUnderlineStyle();
     }
 
-    &.disabled {
+    &.bit-dis {
         .label {
             color: $color-neutrals-gray90;
         }
@@ -267,7 +267,7 @@
         }
     }
 
-    &.invalid {
+    &.bit-inv {
         .field-grp,
         .wrapper {
             border-color: $color-state-invalid;

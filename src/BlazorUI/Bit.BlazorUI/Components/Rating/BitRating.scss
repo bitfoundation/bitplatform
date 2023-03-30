@@ -64,7 +64,7 @@
         }
     }
 
-    &.disabled {
+    &.bit-dis {
         .button {
             cursor: not-allowed;
             opacity: 0.65;
@@ -95,7 +95,7 @@
         }
     }
 
-    &.invalid {
+    &.bit-inv {
         .icon {
             .icon-back {
                 color: $color-general-red;

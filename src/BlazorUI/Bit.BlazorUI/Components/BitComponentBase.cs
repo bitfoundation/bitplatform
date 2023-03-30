@@ -148,7 +148,7 @@ public abstract partial class BitComponentBase : ComponentBase
 
         ClassBuilder
               .Register(() => RootElementClass)
-              .Register(() => (IsEnabled ? string.Empty : "disabled"));
+              .Register(() => (IsEnabled ? string.Empty : "bit-dis"));
 
         RegisterComponentClasses();
         ClassBuilder.Register(() => @class);

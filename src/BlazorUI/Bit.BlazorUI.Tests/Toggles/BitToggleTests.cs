@@ -248,16 +248,16 @@ public class BitToggleTests : BunitTestContext
 
         var bitToggle = com.Find(".bit-tgl");
 
-        Assert.IsFalse(bitToggle.ClassList.Contains("invalid"));
+        Assert.IsFalse(bitToggle.ClassList.Contains("bit-inv"));
 
         var form = com.Find("form");
         form.Submit();
 
-        Assert.AreEqual(value, bitToggle.ClassList.Contains("invalid"));
+        Assert.AreEqual(value, bitToggle.ClassList.Contains("bit-inv"));
 
         var button = com.Find("button");
         button.Click();
 
-        Assert.AreEqual(value is false, bitToggle.ClassList.Contains("invalid"));
+        Assert.AreEqual(value is false, bitToggle.ClassList.Contains("bit-inv"));
     }
 }

@@ -59,11 +59,11 @@ public class BitSliderTests : BunitTestContext
 
         if (isEnabled)
         {
-            Assert.IsFalse(bitSlider.ClassList.Contains("disabled"));
+            Assert.IsFalse(bitSlider.ClassList.Contains("bit-dis"));
         }
         else
         {
-            Assert.IsTrue(bitSlider.ClassList.Contains("disabled"));
+            Assert.IsTrue(bitSlider.ClassList.Contains("bit-dis"));
         }
 
     }

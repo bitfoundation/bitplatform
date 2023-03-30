@@ -602,7 +602,7 @@
             text-align: left;
         }
 
-        &.disabled {
+        &.bit-dis {
             .wrapper {
                 border-bottom-color: $color-border-disabled;
             }
@@ -617,7 +617,7 @@
         }
     }
 
-    &.disabled {
+    &.bit-dis {
         .label {
             color: $color-text-disabled;
         }
@@ -674,7 +674,7 @@
         }
     }
 
-    &.invalid {
+    &.bit-inv {
         .field-grp {
             border-color: $color-state-invalid;
         }

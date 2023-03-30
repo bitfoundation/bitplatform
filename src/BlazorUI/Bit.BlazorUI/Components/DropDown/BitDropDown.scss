@@ -519,7 +519,7 @@
                 }
             }
 
-            &.disabled {
+            &.bit-dis {
                 pointer-events: none;
 
                 .checkbox-container {
@@ -589,7 +589,7 @@
         }
     }
 
-    &.invalid {
+    &.bit-inv {
         .wrapper {
             &:hover {
                 .text-container {
@@ -613,7 +613,7 @@
         }
     }
 
-    &.disabled {
+    &.bit-dis {
         .wrapper {
             background-color: $color-neutrals-gray20;
             cursor: default;

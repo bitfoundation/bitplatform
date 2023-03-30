@@ -21,11 +21,11 @@ public class BitLoadingButtonTests : BunitTestContext
 
         if (isEnabled)
         {
-            Assert.IsFalse(bitLoadingButton.ClassList.Contains("disabled"));
+            Assert.IsFalse(bitLoadingButton.ClassList.Contains("bit-dis"));
         }
         else
         {
-            Assert.IsTrue(bitLoadingButton.ClassList.Contains("disabled"));
+            Assert.IsTrue(bitLoadingButton.ClassList.Contains("bit-dis"));
         }
     }
 
