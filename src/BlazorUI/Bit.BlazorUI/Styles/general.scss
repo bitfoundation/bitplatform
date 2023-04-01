@@ -1,4 +1,8 @@
-﻿@import "../Styles/functions.scss";
+﻿@import "functions.scss";
+
+@import "fabric.mdl2.icons.scss";
+@import "theme-variables.scss";
+@import "components.scss";
 
 button {
     border: none;
