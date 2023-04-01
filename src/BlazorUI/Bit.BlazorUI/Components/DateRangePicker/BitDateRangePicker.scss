@@ -11,7 +11,7 @@
     -webkit-font-smoothing: antialiased;
     font-family: $typography-font-family;
 
-    .label {
+    .bit-dtrp-lbl {
         display: block;
         padding: spacing(0.625) 0;
         margin: 0;
@@ -24,10 +24,10 @@
         -webkit-font-smoothing: antialiased;
     }
 
-    .wrapper {
+    .bit-dtrp-wrp {
         position: relative;
 
-        .field-grp {
+        .bit-dtrp-fld-grp {
             .bit-icon {
                 cursor: pointer;
                 color: $color-neutrals-gray130;
@@ -41,7 +41,7 @@
         }
     }
 
-    .field-grp {
+    .bit-dtrp-fld-grp {
         position: relative;
         display: flex;
         flex-flow: row nowrap;
@@ -78,15 +78,15 @@
             cursor: pointer;
         }
 
-        &.editable-input {
+        &.bit-dtrp-edt-inp {
             input {
                 cursor: default;
             }
         }
     }
 
-    &.left-icon {
-        .field-grp {
+    &.bit-dtrp-lfic {
+        .bit-dtrp-fld-grp {
             flex-direction: row-reverse;
 
             .bit-icon {
@@ -96,8 +96,8 @@
         }
     }
 
-    &.focused {
-        .field-grp::after {
+    &.bit-dtrp-foc {
+        .bit-dtrp-fld-grp::after {
             position: absolute;
             inset: spacing(-0.125);
             border: spacing(0.25) $shape-border-style $color-border-primary;
@@ -107,7 +107,7 @@
         }
     }
 
-    .callout {
+    .bit-dtrp-cal {
         position: fixed;
         top: spacing(4.25);
         z-index: $space-overlay-zindex1;
@@ -121,9 +121,9 @@
         font-family: $typography-font-family;
         -webkit-font-smoothing: antialiased;
 
-        &.responsive {
+        &.bit-dtrp-rsp {
             @media only screen and (max-width: 600px) {
-                .day-picker-wrapper {
+                .bit-dtrp-day-wrp {
                     flex-grow: 1;
 
                     th, td {
@@ -131,7 +131,7 @@
                         margin: auto;
                         font-size: spacing(2);
 
-                        .day-btn {
+                        .bit-dtrp-day-btn {
                             width: 100%;
                             font-size: spacing(2);
 
@@ -141,7 +141,7 @@
                             }
                         }
 
-                        &.date-cell--today {
+                        &.bit-dtrp-dc--today {
                             border-radius: unset;
 
                             &::after {
@@ -154,7 +154,7 @@
         }
     }
 
-    .callout-main {
+    .bit-dtrp-cal-main {
         position: relative;
         border-radius: $shape-border-radius;
         outline: none;
@@ -162,7 +162,7 @@
         overflow: hidden auto;
     }
 
-    .group {
+    .bit-dtrp-grp {
         display: flex;
         box-shadow: none;
         outline: none;
@@ -174,7 +174,7 @@
         animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
         animation-fill-mode: both;
 
-        .selected-date {
+        .bit-dtrp-sdate {
             position: absolute;
             width: spacing(0.125);
             height: 0;
@@ -185,7 +185,7 @@
         }
     }
 
-    .day-picker-wrapper {
+    .bit-dtrp-day-wrp {
         display: flex;
         flex-flow: column nowrap;
         min-width: spacing(24.5);
@@ -205,7 +205,7 @@
             margin-bottom: spacing(1.25);
         }
 
-        .week-day-label {
+        .bit-dtrp-wday-lbl {
             position: relative;
             width: spacing(3.5);
             height: spacing(3.5);
@@ -230,7 +230,7 @@
             flex-flow: row nowrap;
         }
 
-        .date-cell {
+        .bit-dtrp-dc {
             position: relative;
             border-radius: $shape-border-radius;
             border: none;
@@ -248,7 +248,7 @@
             }
         }
 
-        .day-btn {
+        .bit-dtrp-day-btn {
             position: relative;
             z-index: 1;
             display: flex;
@@ -280,14 +280,14 @@
             }
         }
 
-        .date-cell--outside-month {
-            .day-btn {
+        .bit-dtrp-dc--ots-month {
+            .bit-dtrp-day-btn {
                 color: $color-neutrals-gray110;
                 font-weight: 400;
             }
         }
 
-        .date-cell--today {
+        .bit-dtrp-dc--today {
             border-radius: 50%;
             font-weight: 600;
             background-color: $color-neutrals-gray30;
@@ -301,7 +301,7 @@
             }
         }
 
-        .date-cell--selected-start {
+        .bit-dtrp-dc--sel-st {
             background-color: $color-primary-main;
             color: $color-neutrals-white;
             border-radius: spacing(1) 0 0 spacing(1);
@@ -312,7 +312,7 @@
             }
         }
 
-        .date-cell--selected-end {
+        .bit-dtrp-dc--sel-en {
             background-color: $color-primary-main;
             color: $color-neutrals-white;
             border-radius: 0 spacing(1) spacing(1) 0;
@@ -323,11 +323,11 @@
             }
         }
 
-        .date-cell--selected-same-start-end {
+        .bit-dtrp-dc--sel-st-en {
             border-radius: spacing(1);
         }
 
-        .date-cell--between-selected {
+        .bit-dtrp-dc--btw-sel {
             background-color: $color-general-lightblue;
             border-radius: 0;
 
@@ -336,7 +336,7 @@
             }
         }
 
-        .week-num-cell {
+        .bit-dtrp-wnum-cell {
             display: flex;
             justify-content: center;
             align-items: center;
@@ -353,14 +353,14 @@
         }
     }
 
-    .picker-header {
+    .bit-dtrp-pkr-hdr {
         position: relative;
         display: inline-flex;
         width: 100%;
         height: spacing(3.5);
         line-height: spacing(5.5);
 
-        .header-title {
+        .bit-dtrp-pkr-tit {
             position: relative;
             display: inline-block;
             align-items: center;
@@ -386,7 +386,7 @@
             animation-fill-mode: both;
         }
 
-        button.header-title {
+        button.bit-dtrp-pkr-tit {
             cursor: pointer;
 
             &:hover {
@@ -394,13 +394,13 @@
             }
         }
 
-        .navigation-btn-container {
+        .bit-dtrp-nav-btn-ctn {
             display: flex;
             align-items: center;
             align-self: flex-end;
         }
 
-        .navigation-btn {
+        .bit-dtrp-nav-btn {
             position: relative;
             display: block;
             width: spacing(3.5);
@@ -439,7 +439,7 @@
             }
         }
 
-        .header-icon-btn {
+        .bit-dtrp-hdr-ibtn {
             position: relative;
             display: block;
             width: spacing(3.5);
@@ -470,12 +470,12 @@
         }
     }
 
-    .divider {
+    .bit-dtrp-div {
         top: 0;
         border-right: $shape-border-width $shape-border-style $color-neutrals-gray30;
     }
 
-    .month-picker-wrapper {
+    .bit-dtrp-month-wrp {
         display: flex;
         flex-flow: column nowrap;
         box-shadow: none;
@@ -485,12 +485,12 @@
         width: spacing(26);
         overflow: hidden;
 
-        .grid-container {
+        .bit-dtrp-gctn {
             margin-top: spacing(0.5);
             margin-bottom: spacing(1.5);
         }
 
-        .btn-row {
+        .bit-dtrp-btn-row {
             display: flex;
             justify-content: space-evenly;
             margin-bottom: spacing(2);
@@ -527,7 +527,7 @@
                 margin: 0;
             }
 
-            .current-month {
+            .bit-dtrp-curt-month {
                 color: $color-neutrals-white;
                 background-color: $color-primary-main;
 
@@ -537,7 +537,7 @@
                 }
             }
 
-            .selected-month {
+            .bit-dtrp-sel-month {
                 color: $color-neutrals-gray160;
                 background-color: $color-general-lightblue;
                 font-weight: 600;
@@ -550,7 +550,7 @@
         }
     }
 
-    .go-today-btn {
+    .bit-dtrp-gtd-btn {
         position: relative;
         bottom: spacing(-1.5);
         align-self: flex-end;
@@ -578,7 +578,7 @@
         }
     }
 
-    .overlay {
+    .bit-dtrp-ovl {
         position: fixed;
         top: 0;
         left: 0;
@@ -589,27 +589,27 @@
         background-color: transparent;
     }
 
-    &.underlined {
-        .wrapper {
+    &.bit-dtrp-und {
+        .bit-dtrp-wrp {
             display: flex;
             width: 100%;
             border-bottom: $shape-border-width $shape-border-style $color-neutrals-gray20;
         }
 
-        .field-grp {
+        .bit-dtrp-fld-grp {
             border: none;
             flex: 1 1 0px;
             text-align: left;
         }
 
         &.bit-dis {
-            .wrapper {
+            .bit-dtrp-wrp {
                 border-bottom-color: $color-border-disabled;
             }
         }
 
-        &.focused {
-            .field-grp::after {
+        &.bit-dtrp-foc {
+            .bit-dtrp-fld-grp::after {
                 border: none;
                 border-bottom: spacing(0.25) $shape-border-style $color-border-primary;
                 border-radius: 0;
@@ -618,11 +618,11 @@
     }
 
     &.bit-dis {
-        .label {
+        .bit-dtrp-lbl {
             color: $color-text-disabled;
         }
 
-        .field-grp {
+        .bit-dtrp-fld-grp {
             border: $shape-border-width $shape-border-style $color-border-disabled;
             color: $color-text-disabled;
             cursor: default;
@@ -642,40 +642,40 @@
         }
     }
 
-    &.no-border {
-        .field-grp {
+    &.bit-dtrp-no-brd {
+        .bit-dtrp-fld-grp {
             border: none;
         }
     }
 
-    &.rtl {
-        .group {
+    &.bit-dtrp-rtl {
+        .bit-dtrp-grp {
             direction: rtl;
         }
 
-        .week-num-cell {
+        .bit-dtrp-wnum-cell {
             border-left: $shape-border-width $shape-border-style $color-neutrals-gray30;
             border-right: none;
         }
 
-        .header-title {
+        .bit-dtrp-pkr-tit {
             padding: 0 spacing(1.25) 0 spacing(0.5);
             text-align: right;
         }
 
-        .day-picker-wrapper {
-            .date-cell--selected-start {
+        .bit-dtrp-day-wrp {
+            .bit-dtrp-dc--sel-st {
                 border-radius: 0 spacing(1) spacing(1) 0;
             }
 
-            .date-cell--selected-end {
+            .bit-dtrp-dc--sel-en {
                 border-radius: spacing(1) 0 0 spacing(1);
             }
         }
     }
 
     &.bit-inv {
-        .field-grp {
+        .bit-dtrp-fld-grp {
             border-color: $color-state-invalid;
         }
     }
