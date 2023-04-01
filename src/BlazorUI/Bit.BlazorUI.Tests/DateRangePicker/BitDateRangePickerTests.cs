@@ -39,7 +39,7 @@ public class BitDateRangePickerTests : BunitTestContext
             parameters.Add(p => p.LabelTemplate, labelTemplate);
         });
 
-        var bitDateRangePickerLabelChild = component.Find(".bit-dtrp > label.label").ChildNodes;
+        var bitDateRangePickerLabelChild = component.Find(".bit-dtrp > label.bit-dtrp-lbl").ChildNodes;
         bitDateRangePickerLabelChild.MarkupMatches(labelTemplate);
     }
 
@@ -52,7 +52,7 @@ public class BitDateRangePickerTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
         });
 
-        var goToTodayButton = component.Find(".go-today-btn");
+        var goToTodayButton = component.Find(".bit-dtrp-gtd-btn");
 
         Assert.AreEqual(goToToday, goToTodayButton.TextContent);
     }
@@ -71,7 +71,7 @@ public class BitDateRangePickerTests : BunitTestContext
             parameters.Add(p => p.OnClick, () => clickedValue++);
         });
 
-        var bitDateRangePickerInput = component.Find(".wrapper");
+        var bitDateRangePickerInput = component.Find(".bit-dtrp-wrp");
         bitDateRangePickerInput.Click();
 
         Assert.AreEqual(count, clickedValue);
@@ -92,7 +92,7 @@ public class BitDateRangePickerTests : BunitTestContext
             parameters.Add(p => p.OnSelectDate, () => selectedDateValue++);
         });
 
-        var dateItems = component.FindAll(".day-btn");
+        var dateItems = component.FindAll(".bit-dtrp-day-btn");
 
         Random random = new();
         int randomNumber = random.Next(0, dateItems.Count - 1);
@@ -130,7 +130,7 @@ public class BitDateRangePickerTests : BunitTestContext
             parameters.Add(p => p.Culture, CultureInfoHelper.GetFaIrCultureByFingilishNames());
         });
 
-        var monthButtons = component.FindAll(".month-picker-wrapper .grid-container .btn-row button");
+        var monthButtons = component.FindAll(".bit-dtrp-month-wrp .bit-dtrp-gctn .bit-dtrp-btn-row button");
 
         var index = 0;
         foreach (var button in monthButtons)
@@ -150,7 +150,7 @@ public class BitDateRangePickerTests : BunitTestContext
             parameters.Add(p => p.PickerAriaLabel, pickerAriaLabel);
         });
 
-        var bitDateRangePickerCallout = component.Find(".callout-main");
+        var bitDateRangePickerCallout = component.Find(".bit-dtrp-cal-main");
         var calloutAriaLabel = bitDateRangePickerCallout.GetAttribute("aria-label");
 
         Assert.AreEqual(pickerAriaLabel, calloutAriaLabel);
@@ -168,7 +168,7 @@ public class BitDateRangePickerTests : BunitTestContext
             parameters.Add(p => p.ShowGoToToday, showGoToToday);
         });
 
-        var goToTodayBtnElms = component.FindAll(".go-today-btn");
+        var goToTodayBtnElms = component.FindAll(".bit-dtrp-gtd-btn");
 
         if (showGoToToday)
         {
@@ -192,7 +192,7 @@ public class BitDateRangePickerTests : BunitTestContext
             parameters.Add(p => p.ShowCloseButton, showCloseButton);
         });
 
-        var closeBtnElms = component.FindAll(".header-icon-btn");
+        var closeBtnElms = component.FindAll(".bit-dtrp-hdr-ibtn");
 
         if (showCloseButton)
         {
@@ -216,7 +216,7 @@ public class BitDateRangePickerTests : BunitTestContext
             parameters.Add(p => p.HighlightCurrentMonth, highlightCurrentMonth);
         });
 
-        var currentMonthCells = component.FindAll(".current-month");
+        var currentMonthCells = component.FindAll(".bit-dtrp-curt-month");
 
         if (highlightCurrentMonth)
         {
@@ -241,7 +241,7 @@ public class BitDateRangePickerTests : BunitTestContext
         });
 
 
-        var selectedMonthCells = component.FindAll(".selected-month");
+        var selectedMonthCells = component.FindAll(".bit-dtrp-sel-month");
 
         if (highlightSelectedMonth)
         {
@@ -267,7 +267,7 @@ public class BitDateRangePickerTests : BunitTestContext
             parameters.Add(p => p.CalloutHtmlAttributes, calloutHtmlAttributes);
         });
 
-        var bitDateRangePickerCallout = component.Find(".callout-main");
+        var bitDateRangePickerCallout = component.Find(".bit-dtrp-cal-main");
         var calloutStyle = bitDateRangePickerCallout.GetAttribute("style");
 
         Assert.AreEqual("color: blue", calloutStyle);

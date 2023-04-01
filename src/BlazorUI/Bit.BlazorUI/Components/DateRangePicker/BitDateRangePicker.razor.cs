@@ -295,13 +295,13 @@ public partial class BitDateRangePicker
 
     protected override void RegisterComponentClasses()
     {
-        ClassBuilder.Register(() => Culture.TextInfo.IsRightToLeft ? "rtl" : string.Empty);
+        ClassBuilder.Register(() => Culture.TextInfo.IsRightToLeft ? $"{RootElementClass}-rtl" : string.Empty);
 
-        ClassBuilder.Register(() => IconLocation is BitIconLocation.Left ? "left-icon" : string.Empty);
+        ClassBuilder.Register(() => IconLocation is BitIconLocation.Left ? $"{RootElementClass}-lfic" : string.Empty);
 
-        ClassBuilder.Register(() => IsUnderlined ? "underlined" : string.Empty);
+        ClassBuilder.Register(() => IsUnderlined ? $"{RootElementClass}-und" : string.Empty);
 
-        ClassBuilder.Register(() => HasBorder is false ? "no-border" : string.Empty);
+        ClassBuilder.Register(() => HasBorder is false ? $"{RootElementClass}-no-brd" : string.Empty);
 
         ClassBuilder.Register(() => _focusClass);
     }
@@ -400,7 +400,7 @@ public partial class BitDateRangePicker
     {
         if (IsEnabled is false) return;
 
-        _focusClass = "focused";
+        _focusClass = $"{RootElementClass}-foc";
         await OnFocusIn.InvokeAsync();
     }
 
@@ -416,7 +416,7 @@ public partial class BitDateRangePicker
     {
         if (IsEnabled is false) return;
 
-        _focusClass = "focused";
+        _focusClass = $"{RootElementClass}-foc";
         await OnFocus.InvokeAsync();
     }
 
@@ -740,7 +740,8 @@ public partial class BitDateRangePicker
 
     private string GetDateElClass(int day, int week)
     {
-        StringBuilder className = new StringBuilder("date-cell");
+        StringBuilder className = new StringBuilder(RootElementClass);
+        className.Append("-dc");
         var todayYear = Culture.DateTimeFormat.Calendar.GetYear(DateTime.Now);
         var todayMonth = Culture.DateTimeFormat.Calendar.GetMonth(DateTime.Now);
         var todayDay = Culture.DateTimeFormat.Calendar.GetDayOfMonth(DateTime.Now);
@@ -748,32 +749,32 @@ public partial class BitDateRangePicker
 
         if (IsInCurrentMonth(week, day) is false)
         {
-            className.Append(" date-cell--outside-month");
+            className.Append(' ').Append(RootElementClass).Append("-dc--ots-month");
         }
 
         if (IsInCurrentMonth(week, day) && todayYear == _currentYear && todayMonth == _currentMonth && todayDay == currentDay)
         {
-            className.Append(" date-cell--today");
+            className.Append(' ').Append(RootElementClass).Append("-dc--today");
         }
 
         if (IsInCurrentMonth(week, day) && week == _selectedStartDateWeek && day == _selectedStartDateDayOfWeek)
         {
-            className.Append(" date-cell--selected-start");
+            className.Append(' ').Append(RootElementClass).Append("-dc--sel-st");
         }
 
         if (IsInCurrentMonth(week, day) && week == _selectedEndDateWeek && day == _selectedEndDateDayOfWeek)
         {
-            className.Append(" date-cell--selected-end");
+            className.Append(' ').Append(RootElementClass).Append("-dc--sel-en");
         }
 
         if (IsInCurrentMonth(week, day) && week == _selectedEndDateWeek && day == _selectedEndDateDayOfWeek && week == _selectedStartDateWeek && day == _selectedStartDateDayOfWeek)
         {
-            className.Append(" date-cell--selected-same-start-end");
+            className.Append(' ').Append(RootElementClass).Append("-dc--sel-st-en");
         }
 
         if (IsBetweenTwoSelectedDate(day, week))
         {
-            className.Append(" date-cell--between-selected");
+            className.Append(' ').Append(RootElementClass).Append("-dc--btw-sel");
         }
 
         return className.ToString();
@@ -1005,7 +1006,7 @@ public partial class BitDateRangePicker
             var todayMonth = Culture.DateTimeFormat.Calendar.GetMonth(DateTime.Now);
             if (todayMonth == monthIndex)
             {
-                className.Append("current-month");
+                className.Append(RootElementClass).Append("-curt-month");
             }
         }
 
@@ -1015,7 +1016,7 @@ public partial class BitDateRangePicker
             {
                 className.Append(' ');
             }
-            className.Append("selected-month");
+            className.Append(RootElementClass).Append("-sel-month");
         }
 
         return className.ToString();
