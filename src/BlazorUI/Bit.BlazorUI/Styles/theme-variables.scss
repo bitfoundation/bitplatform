@@ -76,18 +76,123 @@ $color-neutrals-gray200: var(--clr-ntr-gray200);
 $color-neutrals-gray210: var(--clr-ntr-gray210);
 $color-neutrals-gray220: var(--clr-ntr-gray220);
 
-/*---- Typography ----*/
-$typography-font-family: var(--tpg-font-family);
-$typography-font-weight: var(--tpg-font-weight);
-$typography-line-height: var(--tpg-line-height);
-$typography-button-font-family: var(--tpg-btn-font-family);
-$typography-button-font-weight: var(--tpg-btn-font-weight);
-$typography-button-line-height: var(--tpg-btn-line-height);
-$typography-icon-font-family: var(--tpg-ico-font-family);
 //shape
 $shape-border-radius: var(--shp-brd-radius);
 $shape-border-width: var(--shp-brd-width);
 $shape-border-style: var(--shp-brd-style);
+
 //spacing
 $space-overlay-zindex0: var(--spa-ovr-zindex0);
 $space-overlay-zindex1: var(--spa-ovr-zindex1);
+
+
+/*---- Typography ----*/
+$typography-font-family: var(--tpg-font-family);
+$typography-font-weight: var(--tpg-font-weight);
+$typography-line-height: var(--tpg-line-height);
+$typography-font-weight-buttons: var(--tpg-font-weight-btns);
+$typography-line-height-buttons: var(--tpg-line-height-btns);
+$typography-font-family-icons: var(--tpg-font-family-icons);
+
+// body1
+$typography-body1-margin: var(--tpg-body1-margin);
+$typography-body1-font-weight: var(--tpg-body1-font-weight);
+$typography-body1-font-size: var(--tpg-body1-font-size);
+$typography-body1-line-height: var(--tpg-body1-line-height);
+$typography-body1-letter-spacing: var(--tpg-body1-letter-spacing);
+
+// body2
+$typography-body2-margin: var(--tpg-body2-margin);
+$typography-body2-font-weight: var(--tpg-body2-font-weight);
+$typography-body2-font-size: var(--tpg-body2-font-size);
+$typography-body2-line-height: var(--tpg-body2-line-height);
+$typography-body2-letter-spacing: var(--tpg-body2-letter-spacing);
+
+// button
+$typography-button-margin: var(--tpg-button-margin);
+$typography-button-font-weight: var(--tpg-button-font-weight);
+$typography-button-font-size: var(--tpg-button-font-size);
+$typography-button-line-height: var(--tpg-button-line-height);
+$typography-button-letter-spacing: var(--tpg-button-letter-spacing);
+$typography-button-text-transform: var(--tpg-button-text-transform);
+$typography-button-display: var(--tpg-button-display);
+
+// caption
+$typography-caption-margin: var(--tpg-caption-margin);
+$typography-caption-font-weight: var(--tpg-caption-font-weight);
+$typography-caption-font-size: var(--tpg-caption-font-size);
+$typography-caption-line-height: var(--tpg-caption-line-height);
+$typography-caption-letter-spacing: var(--tpg-caption-letter-spacing);
+
+// h1
+$typography-h1-margin: var(--tpg-h1-margin);
+$typography-h1-font-weight: var(--tpg-h1-font-weight);
+$typography-h1-font-size: var(--tpg-h1-font-size);
+$typography-h1-line-height: var(--tpg-h1-line-height);
+$typography-h1-letter-spacing: var(--tpg-h1-letter-spacing);
+
+// h2
+$typography-h2-margin: var(--tpg-h2-margin);
+$typography-h2-font-weight: var(--tpg-h2-font-weight);
+$typography-h2-font-size: var(--tpg-h2-font-size);
+$typography-h2-line-height: var(--tpg-h2-line-height);
+$typography-h2-letter-spacing: var(--tpg-h2-letter-spacing);
+
+// h3
+$typography-h3-margin: var(--tpg-h3-margin);
+$typography-h3-font-weight: var(--tpg-h3-font-weight);
+$typography-h3-font-size: var(--tpg-h3-font-size);
+$typography-h3-line-height: var(--tpg-h3-line-height);
+$typography-h3-letter-spacing: var(--tpg-h3-letter-spacing);
+
+// h4
+$typography-h4-margin: var(--tpg-h4-margin);
+$typography-h4-font-weight: var(--tpg-h4-font-weight);
+$typography-h4-font-size: var(--tpg-h4-font-size);
+$typography-h4-line-height: var(--tpg-h4-line-height);
+$typography-h4-letter-spacing: var(--tpg-h4-letter-spacing);
+
+// h5
+$typography-h5-margin: var(--tpg-h5-margin);
+$typography-h5-font-weight: var(--tpg-h5-font-weight);
+$typography-h5-font-size: var(--tpg-h5-font-size);
+$typography-h5-line-height: var(--tpg-h5-line-height);
+$typography-h5-letter-spacing: var(--tpg-h5-letter-spacing);
+
+// h6
+$typography-h6-margin: var(--tpg-h6-margin);
+$typography-h6-font-weight: var(--tpg-h6-font-weight);
+$typography-h6-font-size: var(--tpg-h6-font-size);
+$typography-h6-line-height: var(--tpg-h6-line-height);
+$typography-h6-letter-spacing: var(--tpg-h6-letter-spacing);
+
+// inherit
+$typography-inherit-margin: var(--tpg-inherit-margin);
+$typography-inherit-font-family: var(--tpg-inherit-font-family);
+$typography-inherit-font-weight: var(--tpg-inherit-font-weight);
+$typography-inherit-font-size: var(--tpg-inherit-font-size);
+$typography-inherit-line-height: var(--tpg-inherit-line-height);
+$typography-inherit-letter-spacing: var(--tpg-inherit-letter-spacing);
+
+// overline
+$typography-overline-margin: var(--tpg-overline-margin);
+$typography-overline-font-weight: var(--tpg-overline-font-weight);
+$typography-overline-font-size: var(--tpg-overline-font-size);
+$typography-overline-line-height: var(--tpg-overline-line-height);
+$typography-overline-letter-spacing: var(--tpg-overline-letter-spacing);
+$typography-overline-text-transform: var(--tpg-overline-text-transform);
+$typography-overline-display: var(--tpg-overline-display);
+
+// subtitle1
+$typography-subtitle1-margin: var(--tpg-subtitle1-margin);
+$typography-subtitle1-font-weight: var(--tpg-subtitle1-font-weight);
+$typography-subtitle1-font-size: var(--tpg-subtitle1-font-size);
+$typography-subtitle1-line-height: var(--tpg-subtitle1-line-height);
+$typography-subtitle1-letter-spacing: var(--tpg-subtitle1-letter-spacing);
+
+// subtitle2
+$typography-subtitle2-margin: var(--tpg-subtitle2-margin);
+$typography-subtitle2-font-weight: var(--tpg-subtitle2-font-weight);
+$typography-subtitle2-font-size: var(--tpg-subtitle2-font-size);
+$typography-subtitle2-line-height: var(--tpg-subtitle2-line-height);
+$typography-subtitle2-letter-spacing: var(--tpg-subtitle2-letter-spacing);

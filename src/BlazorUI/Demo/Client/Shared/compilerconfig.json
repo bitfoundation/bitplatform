@@ -214,5 +214,9 @@
     {
         "outputFile": "Pages/Components/Overlay/BitOverlayDemo.razor.css",
         "inputFile": "Pages/Components/Overlay/BitOverlayDemo.razor.scss"
+    },
+    {
+        "outputFile": "Pages/Components/Typography/BitTypographyDemo.razor.css",
+        "inputFile": "Pages/Components/Typography/BitTypographyDemo.razor.scss"
     }
 ]

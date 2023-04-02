@@ -1,20 +1,98 @@
 ﻿:root {
-    //typography main
+    // main
     --tpg-font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
     --tpg-font-weight: 500;
     --tpg-line-height: 1.75rem;
-    //typography button
-    --tpg-btn-font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
-    --tpg-btn-font-weight: 500;
-    --tpg-btn-line-height: 1.625rem;
-    //
-    --tpg-ico-font-family: "Fabric MDL2 Assets";
-    //shape
-    --shp-brd-radius: 0.125rem;
-    --shp-brd-width: 0.0625rem;
-    --shp-brd-style: solid;
-    //spacing
-    --spa-scaling-factor: 0.5rem;
-    --spa-ovr-zindex0: 1000;
-    --spa-ovr-zindex1: 1001;
+    --tpg-font-weight-btns: 500;
+    --tpg-line-height-btns: 1.625rem;
+    --tpg-font-family-icons: "Fabric MDL2 Assets";
+    // body1
+    --tpg-body1-margin: 0;
+    --tpg-body1-font-weight: 400;
+    --tpg-body1-font-size: 1rem;
+    --tpg-body1-line-height: 1.5;
+    --tpg-body1-letter-spacing: 0.00938rem;
+    // body2
+    --tpg-body2-margin: 0;
+    --tpg-body2-font-weight: 400;
+    --tpg-body2-font-size: 0.875rem;
+    --tpg-body2-line-height: 1.43;
+    --tpg-body2-letter-spacing: 0.01071rem;
+    // button
+    --tpg-button-margin: 0;
+    --tpg-button-font-weight: 500;
+    --tpg-button-font-size: 0.875rem;
+    --tpg-button-line-height: 1.75;
+    --tpg-button-letter-spacing: 0.02857rem;
+    --tpg-button-text-transform: uppercase;
+    --tpg-button-display: block;
+    // caption
+    --tpg-caption-margin: 0;
+    --tpg-caption-font-weight: 400;
+    --tpg-caption-font-size: 0.75rem;
+    --tpg-caption-line-height: 1.66;
+    --tpg-caption-letter-spacing: 0.03333rem;
+    // h1
+    --tpg-h1-margin: 0;
+    --tpg-h1-font-weight: 300;
+    --tpg-h1-font-size: 6rem;
+    --tpg-h1-line-height: 1.167;
+    --tpg-h1-letter-spacing: -0.01562rem;
+    // h2
+    --tpg-h2-margin: 0;
+    --tpg-h2-font-weight: 300;
+    --tpg-h2-font-size: 3.75rem;
+    --tpg-h2-line-height: 1.2;
+    --tpg-h2-letter-spacing: -0.00833rem;
+    // h3
+    --tpg-h3-margin: 0;
+    --tpg-h3-font-weight: 400;
+    --tpg-h3-font-size: 3rem;
+    --tpg-h3-line-height: 1.167;
+    --tpg-h3-letter-spacing: 0;
+    // h4
+    --tpg-h4-margin: 0;
+    --tpg-h4-font-weight: 400;
+    --tpg-h4-font-size: 2.125rem;
+    --tpg-h4-line-height: 1.235;
+    --tpg-h4-letter-spacing: 0.00735rem;
+    // h5
+    --tpg-h5-margin: 0;
+    --tpg-h5-font-weight: 400;
+    --tpg-h5-font-size: 1.5rem;
+    --tpg-h5-line-height: 1.334;
+    --tpg-h5-letter-spacing: 0;
+    // h6
+    --tpg-h6-margin: 0;
+    --tpg-h6-font-weight: 500;
+    --tpg-h6-font-size: 1.125rem;
+    --tpg-h6-line-height: 1.6;
+    --tpg-h6-letter-spacing: 0.0075rem;
+    // inherit
+    --tpg-inherit-margin: 0;
+    --tpg-inherit-font-family: inherit;
+    --tpg-inherit-font-weight: inherit;
+    --tpg-inherit-font-size: inherit;
+    --tpg-inherit-line-height: inherit;
+    --tpg-inherit-letter-spacing: inherit;
+    // overline
+    --tpg-overline-margin: 0;
+    --tpg-overline-font-weight: 400;
+    --tpg-overline-font-size: 0.75rem;
+    --tpg-overline-line-height: 2.66;
+    --tpg-overline-letter-spacing: 0.08333rem;
+    --tpg-overline-text-transform: uppercase;
+    --tpg-overline-display: block;
+    // subtitle1
+    --tpg-subtitle1-margin: 0;
+    --tpg-subtitle1-font-weight: 400;
+    --tpg-subtitle1-font-size: 1rem;
+    --tpg-subtitle1-line-height: 1.75;
+    --tpg-subtitle1-letter-spacing: 0.00938rem;
+    // subtitle2
+    --tpg-subtitle2-margin: 0;
+    --tpg-subtitle2-font-weight: 500;
+    --tpg-subtitle2-font-size: 0.875rem;
+    --tpg-subtitle2-line-height: 1.57;
+    --tpg-subtitle2-letter-spacing: 0.00714rem;
 }
