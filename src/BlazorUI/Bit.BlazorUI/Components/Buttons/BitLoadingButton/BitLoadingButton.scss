@@ -4,8 +4,8 @@
     position: relative;
     min-width: spacing(15);
     box-sizing: border-box;
-    font-family: $typography-button-font-family;
-    font-weight: $typography-button-font-weight;
+    font-family: $typography-font-family;
+    font-weight: $typography-font-weight-buttons;
     text-decoration: none;
     cursor: pointer;
     white-space: nowrap;
@@ -33,7 +33,7 @@
     &.medium {
         padding: spacing(0.5) spacing(2);
         font-size: spacing(1.75);
-        line-height: $typography-button-line-height;
+        line-height: $typography-line-height-buttons;
         min-height: spacing(4.5);
     }
 

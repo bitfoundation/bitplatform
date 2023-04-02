@@ -4,8 +4,8 @@
     position: relative;
     display: inline-flex;
     min-width: spacing(10);
-    font-family: $typography-button-font-family;
-    font-weight: $typography-button-font-weight;
+    font-family: $typography-font-family;
+    font-weight: $typography-font-weight-buttons;
     outline: transparent;
     -webkit-font-smoothing: antialiased;
 
@@ -96,7 +96,7 @@
 
     &.medium {
         font-size: spacing(1.75);
-        line-height: $typography-button-line-height;
+        line-height: $typography-line-height-buttons;
 
         .operator-btn {
             padding: spacing(0.5) spacing(2);
