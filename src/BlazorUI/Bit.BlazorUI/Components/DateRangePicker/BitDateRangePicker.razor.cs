@@ -798,8 +798,8 @@ public partial class BitDateRangePicker
     }
 
     private bool IsInCurrentMonth(int week, int day) =>
-        ((week == 0 || week == 1) && _currentMonthCalendar[week, day] > 20) is false ||
-        ((week == 4 || week == 5) && _currentMonthCalendar[week, day] < 7) is false;
+        (((week == 0 || week == 1) && _currentMonthCalendar[week, day] > 20) ||
+        ((week == 4 || week == 5) && _currentMonthCalendar[week, day] < 7)) is false;
 
     private int GetCorrectTargetMonth(int week, int day)
     {
