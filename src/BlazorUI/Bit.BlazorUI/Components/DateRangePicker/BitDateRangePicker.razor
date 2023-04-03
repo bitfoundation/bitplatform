@@ -188,6 +188,55 @@
                                 @GoToToday
                             </button>
                         }
+
+                        @if (ShowTimePicker)
+                        {
+                            <div class="bit-dtrp-time-grp">
+                                <div class="bit-dtrp-time-wrp">
+                                    <input @ref="_inputStartTimeHourRef" 
+                                           class="bit-dtrp-t-inp" 
+                                           type="number" 
+                                           inputmode="numeric" 
+                                           @bind="@_startTimeHour" 
+                                           autocomplete="@BitAutoCompleteValue.NewPassword" 
+                                           min="0" 
+                                           max="23"
+                                           @bind:event="oninput"/>
+                                    <span class="bit-dtrp-t-div">:</span>
+                                    <input @ref="_inputStartTimeMinuteRef"
+                                           class="bit-dtrp-t-inp" 
+                                           type="number" 
+                                           inputmode="numeric" 
+                                           @bind="@_startTimeMinute" 
+                                           autocomplete="@BitAutoCompleteValue.NewPassword" 
+                                           min="0" 
+                                           max="59"
+                                           @bind:event="oninput"/>
+                                </div>
+
+                                <div class="bit-dtrp-time-wrp">
+                                    <input @ref="_inputEndTimeHourRef" 
+                                           class="bit-dtrp-t-inp" 
+                                           type="number" 
+                                           inputmode="numeric" 
+                                           @bind="@_endTimeHour" 
+                                           autocomplete="@BitAutoCompleteValue.NewPassword" 
+                                           min="0" 
+                                           max="23"
+                                           @bind:event="oninput"/>
+                                    <span class="bit-dtrp-t-div">:</span>
+                                    <input @ref="_inputEndTimeMinuteRef"
+                                           class="bit-dtrp-t-inp" 
+                                           type="number" 
+                                           inputmode="numeric" 
+                                           @bind="@_endTimeMinute" 
+                                           autocomplete="@BitAutoCompleteValue.NewPassword" 
+                                           min="0" 
+                                           max="59"
+                                           @bind:event="oninput"/>
+                                </div>
+                            </div>
+                        }
                     </div>
                 }
 
@@ -334,6 +383,7 @@
                         }
                     </div>
                 }
+
             </div>
             <div aria-hidden="true" tabindex="0" style="pointer-events: none; position: fixed;"></div>
         </div>

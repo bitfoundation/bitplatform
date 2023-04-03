@@ -288,7 +288,14 @@ public partial class BitDateRangePickerDemo
             Type = "RenderFragment<int>?",
             DefaultValue = "",
             Description = "Used to customize how content inside the year cell is rendered."
-        }
+        },
+        new()
+        {
+            Name = "ShowTimePicker",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Show time picker for select times.",
+        },
     };
 
     private readonly List<ComponentSubParameter> componentSubParameters = new()
@@ -600,6 +607,12 @@ private CultureInfo Culture = CultureInfo.CurrentUICulture;";
     private readonly string example17HTMLCode = @"
 <BitDateRangePicker Style=""max-width: 300px""
                     AutoClose=""false""
+                    AriaLabel=""Select a date""
+                    Placeholder=""Select a date..."" />";
+
+    private readonly string example18HTMLCode = @"
+<BitDateRangePicker Style=""max-width: 300px""
+                    ShowTimePicker=""true""
                     AriaLabel=""Select a date""
                     Placeholder=""Select a date..."" />";
 }

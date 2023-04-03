@@ -550,6 +550,55 @@
         }
     }
 
+    .bit-dtrp-time-grp {
+        display: flex;
+        padding-bottom: spacing(0.5);
+        justify-content: center;
+        align-items: center;
+        gap: spacing(2);
+
+        .bit-dtrp-time-wrp {
+            border-radius: $shape-border-radius;
+            border: $shape-border-width $shape-border-style $color-neutrals-gray130;
+            background-color: $color-neutrals-white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            &:focus {
+                outline: none;
+                border: spacing(0.25) $shape-border-style $color-primary-main;
+            }
+        }
+
+        .bit-dtrp-t-div {
+            display: block;
+        }
+
+        .bit-dtrp-t-inp {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: spacing(3.75);
+            height: spacing(3.75);
+            box-sizing: border-box;
+            background-color: $color-neutrals-white;
+            cursor: pointer;
+            text-align: center;
+            -moz-appearance: textfield; // Firefox
+            border: none;
+
+            &::-webkit-inner-spin-button, &::-webkit-outer-spin-button { // Chrome, Safari, Edge, Opera
+                -webkit-appearance: none
+            }
+
+            &:focus {
+                outline: none;
+                border: none;
+            }
+        }
+    }
+
     .bit-dtrp-gtd-btn {
         position: relative;
         bottom: spacing(-1.5);

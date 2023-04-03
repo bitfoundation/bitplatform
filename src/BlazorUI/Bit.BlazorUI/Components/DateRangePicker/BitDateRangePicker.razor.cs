@@ -49,6 +49,112 @@ public partial class BitDateRangePicker
     private string? _textFieldId;
     private string? _monthTitleId;
     private string? _activeDescendantId;
+    private ElementReference _inputStartTimeHourRef = default!;
+    private ElementReference _inputStartTimeMinuteRef = default!;
+    private ElementReference _inputEndTimeHourRef = default!;
+    private ElementReference _inputEndTimeMinuteRef = default!;
+    private int startTimeHour;
+    private int startTimeMinute;
+    private int endTimeHour;
+    private int endTimeMinute;
+
+    private int _startTimeHour
+    {
+        get
+        {
+            return startTimeHour;
+        }
+        set
+        {
+            if (value > 23)
+            {
+                startTimeHour = 23;
+            }
+            else if (value < 0)
+            {
+                startTimeHour = 0;
+            }
+            else
+            {
+                startTimeHour = value;
+            }
+
+            UpdateTime();
+        }
+    }
+
+    private int _startTimeMinute
+    {
+        get
+        {
+            return startTimeMinute;
+        }
+        set
+        {
+            if (value > 59)
+            {
+                startTimeMinute = 59;
+            }
+            else if (value < 0)
+            {
+                startTimeMinute = 0;
+            }
+            else
+            {
+                startTimeMinute = value;
+            }
+
+            UpdateTime();
+        }
+    }
+    private int _endTimeHour
+    {
+        get
+        {
+            return endTimeHour;
+        }
+        set
+        {
+            if (value > 23)
+            {
+                endTimeHour = 23;
+            }
+            else if (value < 0)
+            {
+                endTimeHour = 0;
+            }
+            else
+            {
+                endTimeHour = value;
+            }
+
+            UpdateTime();
+        }
+    }
+    private int _endTimeMinute
+    {
+        get
+        {
+            return endTimeMinute;
+        }
+        set
+        {
+            if (value > 59)
+            {
+                endTimeMinute = 59;
+            }
+            else if (value < 0)
+            {
+                endTimeMinute = 0;
+            }
+            else
+            {
+                endTimeMinute = value;
+            }
+
+            UpdateTime();
+        }
+    }
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
@@ -276,6 +382,11 @@ public partial class BitDateRangePicker
     /// </summary>
     [Parameter] public RenderFragment<int>? YearCellTemplate { get; set; }
 
+    /// <summary>
+    /// Show time picker for select times.
+    /// </summary>
+    [Parameter] public bool ShowTimePicker { get; set; }
+
     protected override string RootElementClass => "bit-dtrp";
 
     protected override Task OnInitializedAsync()
@@ -326,6 +437,12 @@ public partial class BitDateRangePicker
         {
             CurrentValue.EndDate = null;
         }
+
+        startTimeHour = CurrentValue.StartDate.HasValue ? CurrentValue.StartDate.Value.Hour : 0;
+        startTimeMinute = CurrentValue.StartDate.HasValue ? CurrentValue.StartDate.Value.Minute : 0;
+
+        endTimeHour = CurrentValue.EndDate.HasValue ? CurrentValue.EndDate.Value.Hour : 23;
+        endTimeMinute = CurrentValue.EndDate.HasValue ? CurrentValue.EndDate.Value.Minute : 59;
 
         CreateMonthCalendar(startDateTime);
 
@@ -437,7 +554,7 @@ public partial class BitDateRangePicker
         if (CurrentValue is null) return;
         if (IsWeekDayOutOfMinAndMaxDate(dayIndex, weekIndex)) return;
 
-        if (CurrentValue.StartDate is not null && CurrentValue.EndDate is not null)
+        if (CurrentValue.StartDate.HasValue && CurrentValue.EndDate.HasValue)
         {
             CurrentValue.StartDate = null;
             CurrentValue.EndDate = null;
@@ -457,9 +574,11 @@ public partial class BitDateRangePicker
 
         _displayYear = _currentYear;
         _currentMonth = selectedMonth;
+        var hour = CurrentValue.StartDate.HasValue is false ? _startTimeHour : _endTimeHour;
+        var minute = CurrentValue.StartDate.HasValue is false ? _startTimeMinute : _endTimeMinute;
 
-        var selectedDate = new DateTimeOffset(Culture.DateTimeFormat.Calendar.ToDateTime(_currentYear, _currentMonth, currentDay, 0, 0, 0, 0), DateTimeOffset.Now.Offset);
-        if (CurrentValue.StartDate is null)
+        var selectedDate = new DateTimeOffset(Culture.DateTimeFormat.Calendar.ToDateTime(_currentYear, _currentMonth, currentDay, hour, minute, 0, 0), DateTimeOffset.Now.Offset);
+        if (CurrentValue.StartDate.HasValue is false)
         {
             CurrentValue.StartDate = selectedDate;
         }
@@ -473,7 +592,7 @@ public partial class BitDateRangePicker
             }
         }
 
-        if (CurrentValue.EndDate is not null && CurrentValue.StartDate > CurrentValue.EndDate)
+        if (CurrentValue.EndDate.HasValue && CurrentValue.StartDate > CurrentValue.EndDate)
         {
             (CurrentValue.EndDate, CurrentValue.StartDate) = (CurrentValue.StartDate, CurrentValue.EndDate);
         }
@@ -785,12 +904,12 @@ public partial class BitDateRangePicker
         if (CurrentValue is null) return false;
         if (CurrentValue.StartDate.HasValue is false || CurrentValue.EndDate.HasValue is false) return false;
 
-        return (_selectedEndDateWeek is null && IsInCurrentMonth(week, day) && ((week == _selectedStartDateWeek && day > _selectedStartDateDayOfWeek) || week > _selectedStartDateWeek)) ||
-               (_selectedStartDateWeek is null && IsInCurrentMonth(week, day) && ((week == _selectedEndDateWeek && day < _selectedEndDateDayOfWeek) || week < _selectedEndDateWeek)) ||
-               (_selectedEndDateWeek is not null && _selectedStartDateWeek is not null &&
+        return (_selectedEndDateWeek.HasValue is false && IsInCurrentMonth(week, day) && ((week == _selectedStartDateWeek && day > _selectedStartDateDayOfWeek) || week > _selectedStartDateWeek)) ||
+               (_selectedStartDateWeek.HasValue is false && IsInCurrentMonth(week, day) && ((week == _selectedEndDateWeek && day < _selectedEndDateDayOfWeek) || week < _selectedEndDateWeek)) ||
+               (_selectedEndDateWeek.HasValue && _selectedStartDateWeek.HasValue &&
                     ((week == _selectedStartDateWeek && day > _selectedStartDateDayOfWeek) || week > _selectedStartDateWeek) &&
                     ((week == _selectedEndDateWeek && day < _selectedEndDateDayOfWeek) || week < _selectedEndDateWeek)) ||
-               (_selectedEndDateWeek is null && _selectedStartDateWeek is null && IsInCurrentMonth(week, day) &&
+               (_selectedEndDateWeek.HasValue is false && _selectedStartDateWeek.HasValue is false && IsInCurrentMonth(week, day) &&
                     CurrentValue.StartDate.Value.Month < _currentMonth &&
                     CurrentValue.EndDate.Value.Month > _currentMonth &&
                     CurrentValue.EndDate.Value.Year >= _currentYear &&
@@ -1040,7 +1159,38 @@ public partial class BitDateRangePicker
         return new DateTimeOffset(Culture.DateTimeFormat.Calendar.ToDateTime(currentYear, selectedMonth, currentDay, 0, 0, 0, 0), DateTimeOffset.Now.Offset);
     }
 
-    private DateTimeOffset GetMonthCellDate(int monthIndex) => new DateTimeOffset(Culture.DateTimeFormat.Calendar.ToDateTime(_currentYear, monthIndex, 1, 0, 0, 0, 0), DateTimeOffset.Now.Offset);
+    private DateTimeOffset GetMonthCellDate(int monthIndex) => new(Culture.DateTimeFormat.Calendar.ToDateTime(_currentYear, monthIndex, 1, 0, 0, 0, 0), DateTimeOffset.Now.Offset);
+
+    private void UpdateTime()
+    {
+        if (CurrentValue is null) return;
+        if (CurrentValue.StartDate.HasValue is false && CurrentValue.EndDate.HasValue is false) return;
+
+        CurrentValue = new BitDateRangePickerValue
+        {
+            StartDate = GetDateTimeOffset(CurrentValue.StartDate, _startTimeHour, _startTimeMinute),
+            EndDate = GetDateTimeOffset(CurrentValue.EndDate, _endTimeHour, _endTimeMinute)
+        };
+    }
+
+    private DateTimeOffset? GetDateTimeOffset(DateTimeOffset? date, int hour, int minute)
+    {
+        if (date.HasValue is false) return null;
+
+        return new DateTimeOffset(Culture.DateTimeFormat.Calendar.ToDateTime(date.Value.Year, date.Value.Month, date.Value.Day, hour, minute, 0, 0), DateTimeOffset.Now.Offset);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (firstRender is false || IsEnabled is false || ShowTimePicker is false) return;
+
+        await _js.SetupTimeInput(_inputStartTimeHourRef);
+        await _js.SetupTimeInput(_inputStartTimeMinuteRef);
+        await _js.SetupTimeInput(_inputEndTimeHourRef);
+        await _js.SetupTimeInput(_inputEndTimeMinuteRef);
+    }
 
     [JSInvokable("CloseCallout")]
     public void CloseCalloutBeforeAnotherCalloutIsOpened() => IsOpen = false;
