@@ -207,7 +207,8 @@
                                            autocomplete="@BitAutoCompleteValue.NewPassword"
                                            min="0"
                                            max="23"
-                                           @bind:event="oninput" />
+                                           @bind:event="oninput"
+                                           @onfocus="HandleOnTimeHourFocus" />
                                     <span class="bit-dtp-t-div">:</span>
                                     <input @ref="_inputTimeMinuteRef"
                                            class="bit-dtp-t-inp"
@@ -217,7 +218,8 @@
                                            autocomplete="@BitAutoCompleteValue.NewPassword"
                                            min="0"
                                            max="59"
-                                           @bind:event="oninput" />
+                                           @bind:event="oninput"
+                                           @onfocus="HandleOnTimeMinuteFocus" />
                                 </div>
                             </div>
                         }

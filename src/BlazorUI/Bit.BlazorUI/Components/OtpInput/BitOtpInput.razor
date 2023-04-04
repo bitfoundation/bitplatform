@@ -20,6 +20,7 @@
                @ref="_inputRefs[index]" 
                @onfocusin="HandleOnFocusIn"
                @onfocusout="HandleOnFocusOut"
+               @onfocus="(e) => HandleOnFocus(e, index)"
                @onkeydown="(e) => HandleOnKeyDown(e, index)"
                @oninput="(e) => HandleOnInput(e, index)"
                @onpaste="HandleOnPaste" />

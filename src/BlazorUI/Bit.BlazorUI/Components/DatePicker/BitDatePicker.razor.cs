@@ -1000,15 +1000,18 @@ public partial class BitDatePicker
 
         CurrentValue = new DateTimeOffset(Culture.DateTimeFormat.Calendar.ToDateTime(CurrentValue.Value.Year, CurrentValue.Value.Month, CurrentValue.Value.Day, _timeHour, _timeMinute, 0, 0), DateTimeOffset.Now.Offset);
     }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    private async Task HandleOnTimeHourFocus()
     {
-        await base.OnAfterRenderAsync(firstRender);
+        if (IsEnabled is false || ShowTimePicker is false) return;
 
-        if (firstRender is false || IsEnabled is false || ShowTimePicker is false) return;
+        await _js.SelectText(_inputTimeHourRef);
+    }
 
-        await _js.SetupTimeInputDatePicker(_inputTimeHourRef);
-        await _js.SetupTimeInputDatePicker(_inputTimeMinuteRef);
+    private async Task HandleOnTimeMinuteFocus()
+    {
+        if (IsEnabled is false || ShowTimePicker is false) return;
+
+        await _js.SelectText(_inputTimeMinuteRef);
     }
 
     [JSInvokable("CloseCallout")]
