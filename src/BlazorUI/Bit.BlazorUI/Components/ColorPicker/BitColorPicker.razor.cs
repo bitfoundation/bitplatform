@@ -11,7 +11,6 @@ public partial class BitColorPicker : IAsyncDisposable
     private string? _onWindowPointerUpAbortControllerId;
     private string? _onWindowPointerMoveAbortControllerId;
     private string? _saturationPickerBackgroundRgbCss;
-    private string? _saturationPickerBackgroundRgbaCss;
     private bool _saturationPickerPointerDown;
     private BitColorPosition? _saturationPickerThumbPosition;
     private BitColor _color = new();
@@ -19,7 +18,7 @@ public partial class BitColorPicker : IAsyncDisposable
     private double _hue;
     private double _selectedSaturation = 1;
     private double _selectedValue = 1;
-    private string _colorRectangleDescriptionId => $"ColorRectangle-Description-{UniqueId}";
+    private string? _colorRectangleDescriptionId;
 
     public string? Hex => _color.Hex;
     public string? Rgb => _color.Rgb;
@@ -91,6 +90,8 @@ public partial class BitColorPicker : IAsyncDisposable
 
     protected override void OnInitialized()
     {
+        _colorRectangleDescriptionId = $"ColorRectangle-Description-{UniqueId}";
+
         SetSaturationPickerBackground();
 
         base.OnInitialized();
@@ -129,7 +130,6 @@ public partial class BitColorPicker : IAsyncDisposable
     private void SetSaturationPickerBackground()
     {
         var bitColor = new BitColor(_hue, 1, 1, 1);
-        _saturationPickerBackgroundRgbaCss = bitColor.Rgba;
         _saturationPickerBackgroundRgbCss = bitColor.Rgb;
     }
 
