@@ -11,7 +11,6 @@ public partial class BitColorPicker : IAsyncDisposable
     private string? _onWindowPointerUpAbortControllerId;
     private string? _onWindowPointerMoveAbortControllerId;
     private string? _saturationPickerBackgroundRgbCss;
-    private string? _saturationPickerBackgroundRgbaCss;
     private bool _saturationPickerPointerDown;
     private BitColorPosition? _saturationPickerThumbPosition;
     private BitColor _color = new();
@@ -129,7 +128,6 @@ public partial class BitColorPicker : IAsyncDisposable
     private void SetSaturationPickerBackground()
     {
         var bitColor = new BitColor(_hue, 1, 1, 1);
-        _saturationPickerBackgroundRgbaCss = bitColor.Rgba;
         _saturationPickerBackgroundRgbCss = bitColor.Rgb;
     }
 
