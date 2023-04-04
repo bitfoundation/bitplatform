@@ -868,32 +868,32 @@ public partial class BitDateRangePicker
 
         if (IsInCurrentMonth(week, day) is false)
         {
-            className.Append(' ').Append(RootElementClass).Append("-dc--ots-month");
+            className.Append(' ').Append(RootElementClass).Append("-dc-ots-m");
         }
 
         if (IsInCurrentMonth(week, day) && todayYear == _currentYear && todayMonth == _currentMonth && todayDay == currentDay)
         {
-            className.Append(' ').Append(RootElementClass).Append("-dc--today");
+            className.Append(' ').Append(RootElementClass).Append("-dc-tdy");
         }
 
         if (IsInCurrentMonth(week, day) && week == _selectedStartDateWeek && day == _selectedStartDateDayOfWeek)
         {
-            className.Append(' ').Append(RootElementClass).Append("-dc--sel-st");
+            className.Append(' ').Append(RootElementClass).Append("-dc-sel-st");
         }
 
         if (IsInCurrentMonth(week, day) && week == _selectedEndDateWeek && day == _selectedEndDateDayOfWeek)
         {
-            className.Append(' ').Append(RootElementClass).Append("-dc--sel-en");
+            className.Append(' ').Append(RootElementClass).Append("-dc-sel-en");
         }
 
         if (IsInCurrentMonth(week, day) && week == _selectedEndDateWeek && day == _selectedEndDateDayOfWeek && week == _selectedStartDateWeek && day == _selectedStartDateDayOfWeek)
         {
-            className.Append(' ').Append(RootElementClass).Append("-dc--sel-st-en");
+            className.Append(' ').Append(RootElementClass).Append("-dc-sel-st-en");
         }
 
         if (IsBetweenTwoSelectedDate(day, week))
         {
-            className.Append(' ').Append(RootElementClass).Append("-dc--btw-sel");
+            className.Append(' ').Append(RootElementClass).Append("-dc-btw-sel");
         }
 
         return className.ToString();
@@ -1125,7 +1125,7 @@ public partial class BitDateRangePicker
             var todayMonth = Culture.DateTimeFormat.Calendar.GetMonth(DateTime.Now);
             if (todayMonth == monthIndex)
             {
-                className.Append(RootElementClass).Append("-curt-month");
+                className.Append(RootElementClass).Append("-crtm");
             }
         }
 
@@ -1135,7 +1135,7 @@ public partial class BitDateRangePicker
             {
                 className.Append(' ');
             }
-            className.Append(RootElementClass).Append("-sel-month");
+            className.Append(RootElementClass).Append("-selm");
         }
 
         return className.ToString();

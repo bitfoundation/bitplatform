@@ -123,7 +123,7 @@
 
         &.bit-dtrp-rsp {
             @media only screen and (max-width: 600px) {
-                .bit-dtrp-day-wrp {
+                .bit-dtrp-dwp {
                     flex-grow: 1;
 
                     th, td {
@@ -131,7 +131,7 @@
                         margin: auto;
                         font-size: spacing(2);
 
-                        .bit-dtrp-day-btn {
+                        .bit-dtrp-dbtn {
                             width: 100%;
                             font-size: spacing(2);
 
@@ -141,7 +141,7 @@
                             }
                         }
 
-                        &.bit-dtrp-dc--today {
+                        &.bit-dtrp-dc-tdy {
                             border-radius: unset;
 
                             &::after {
@@ -154,7 +154,7 @@
         }
     }
 
-    .bit-dtrp-cal-main {
+    .bit-dtrp-mcal {
         position: relative;
         border-radius: $shape-border-radius;
         outline: none;
@@ -174,7 +174,7 @@
         animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
         animation-fill-mode: both;
 
-        .bit-dtrp-sdate {
+        .bit-dtrp-sd {
             position: absolute;
             width: spacing(0.125);
             height: 0;
@@ -185,7 +185,7 @@
         }
     }
 
-    .bit-dtrp-day-wrp {
+    .bit-dtrp-dwp {
         display: flex;
         flex-flow: column nowrap;
         min-width: spacing(24.5);
@@ -205,7 +205,7 @@
             margin-bottom: spacing(1.25);
         }
 
-        .bit-dtrp-wday-lbl {
+        .bit-dtrp-wd-lbl {
             position: relative;
             width: spacing(3.5);
             height: spacing(3.5);
@@ -248,7 +248,7 @@
             }
         }
 
-        .bit-dtrp-day-btn {
+        .bit-dtrp-dbtn {
             position: relative;
             z-index: 1;
             display: flex;
@@ -280,14 +280,14 @@
             }
         }
 
-        .bit-dtrp-dc--ots-month {
-            .bit-dtrp-day-btn {
+        .bit-dtrp-dc-ots-m {
+            .bit-dtrp-dbtn {
                 color: $color-neutrals-gray110;
                 font-weight: 400;
             }
         }
 
-        .bit-dtrp-dc--today {
+        .bit-dtrp-dc-tdy {
             border-radius: 50%;
             font-weight: 600;
             background-color: $color-neutrals-gray30;
@@ -301,7 +301,7 @@
             }
         }
 
-        .bit-dtrp-dc--sel-st {
+        .bit-dtrp-dc-sel-st {
             background-color: $color-primary-main;
             color: $color-neutrals-white;
             border-radius: spacing(1) 0 0 spacing(1);
@@ -312,7 +312,7 @@
             }
         }
 
-        .bit-dtrp-dc--sel-en {
+        .bit-dtrp-dc-sel-en {
             background-color: $color-primary-main;
             color: $color-neutrals-white;
             border-radius: 0 spacing(1) spacing(1) 0;
@@ -323,11 +323,11 @@
             }
         }
 
-        .bit-dtrp-dc--sel-st-en {
+        .bit-dtrp-dc-sel-st-en {
             border-radius: spacing(1);
         }
 
-        .bit-dtrp-dc--btw-sel {
+        .bit-dtrp-dc-btw-sel {
             background-color: $color-general-lightblue;
             border-radius: 0;
 
@@ -336,7 +336,7 @@
             }
         }
 
-        .bit-dtrp-wnum-cell {
+        .bit-dtrp-wnumc {
             display: flex;
             justify-content: center;
             align-items: center;
@@ -475,7 +475,7 @@
         border-right: $shape-border-width $shape-border-style $color-neutrals-gray30;
     }
 
-    .bit-dtrp-month-wrp {
+    .bit-dtrp-mwp {
         display: flex;
         flex-flow: column nowrap;
         box-shadow: none;
@@ -527,7 +527,7 @@
                 margin: 0;
             }
 
-            .bit-dtrp-curt-month {
+            .bit-dtrp-crtm {
                 color: $color-neutrals-white;
                 background-color: $color-primary-main;
 
@@ -537,7 +537,7 @@
                 }
             }
 
-            .bit-dtrp-sel-month {
+            .bit-dtrp-selm {
                 color: $color-neutrals-gray160;
                 background-color: $color-general-lightblue;
                 font-weight: 600;
@@ -550,14 +550,14 @@
         }
     }
 
-    .bit-dtrp-time-grp {
+    .bit-dtrp-tgrp {
         display: flex;
         padding-bottom: spacing(0.5);
         justify-content: center;
         align-items: center;
         gap: spacing(2);
 
-        .bit-dtrp-time-wrp {
+        .bit-dtrp-twp {
             border-radius: $shape-border-radius;
             border: $shape-border-width $shape-border-style $color-neutrals-gray130;
             background-color: $color-neutrals-white;
@@ -571,11 +571,11 @@
             }
         }
 
-        .bit-dtrp-t-div {
+        .bit-dtrp-tdiv {
             display: block;
         }
 
-        .bit-dtrp-t-inp {
+        .bit-dtrp-tinp {
             display: flex;
             justify-content: center;
             align-items: center;
@@ -702,7 +702,7 @@
             direction: rtl;
         }
 
-        .bit-dtrp-wnum-cell {
+        .bit-dtrp-wnumc {
             border-left: $shape-border-width $shape-border-style $color-neutrals-gray30;
             border-right: none;
         }
@@ -713,11 +713,11 @@
         }
 
         .bit-dtrp-day-wrp {
-            .bit-dtrp-dc--sel-st {
+            .bit-dtrp-dc-sel-st {
                 border-radius: 0 spacing(1) spacing(1) 0;
             }
 
-            .bit-dtrp-dc--sel-en {
+            .bit-dtrp-dc-sel-en {
                 border-radius: spacing(1) 0 0 spacing(1);
             }
         }
