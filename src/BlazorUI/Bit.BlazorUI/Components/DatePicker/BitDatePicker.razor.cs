@@ -41,6 +41,67 @@ public partial class BitDatePicker
     private string _monthTitle = string.Empty;
     private DotNetObjectReference<BitDatePicker> _dotnetObj = default!;
     private bool _disposed;
+    private string? _labelId;
+    private string? _calloutId;
+    private string? _overlayId;
+    private string? _wrapperId;
+    private string? _textFieldId;
+    private string? _monthTitleId;
+    private string? _activeDescendantId;
+    private ElementReference _inputTimeHourRef = default!;
+    private ElementReference _inputTimeMinuteRef = default!;
+    private int timeHour;
+    private int timeMinute;
+
+    private int _timeHour
+    {
+        get
+        {
+            return timeHour;
+        }
+        set
+        {
+            if (value > 23)
+            {
+                timeHour = 23;
+            }
+            else if (value < 0)
+            {
+                timeHour = 0;
+            }
+            else
+            {
+                timeHour = value;
+            }
+
+            UpdateTime();
+        }
+    }
+
+    private int _timeMinute
+    {
+        get
+        {
+            return timeMinute;
+        }
+        set
+        {
+            if (value > 59)
+            {
+                timeMinute = 59;
+            }
+            else if (value < 0)
+            {
+                timeMinute = 0;
+            }
+            else
+            {
+                timeMinute = value;
+            }
+
+            UpdateTime();
+        }
+    }
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
@@ -262,13 +323,10 @@ public partial class BitDatePicker
     /// </summary>
     [Parameter] public RenderFragment<int>? YearCellTemplate { get; set; }
 
-    public string? LabelId { get; private set; }
-    public string? CalloutId { get; private set; }
-    public string? OverlayId { get; private set; }
-    public string? WrapperId { get; private set; }
-    public string? TextFieldId { get; private set; }
-    public string? MonthTitleId { get; private set; }
-    public string? ActiveDescendantId { get; private set; }
+    /// <summary>
+    /// Show time picker for select times.
+    /// </summary>
+    [Parameter] public bool ShowTimePicker { get; set; }
 
 
     protected override string RootElementClass { get; } = "bit-dtp";
@@ -277,13 +335,13 @@ public partial class BitDatePicker
     {
         _dotnetObj = DotNetObjectReference.Create(this);
 
-        LabelId = $"DateRangePicker-Label-{UniqueId}";
-        CalloutId = $"DateRangePicker-Callout-{UniqueId}";
-        OverlayId = $"DateRangePicker-Overlay-{UniqueId}";
-        WrapperId = $"DateRangePicker-Wrapper-{UniqueId}";
-        TextFieldId = $"DateRangePicker-TextField-{UniqueId}";
-        MonthTitleId = $"DateRangePicker-MonthTitle-{UniqueId}";
-        ActiveDescendantId = $"DateRangePicker-ActiveDescendant-{UniqueId}";
+        _labelId = $"DateRangePicker-Label-{UniqueId}";
+        _calloutId = $"DateRangePicker-Callout-{UniqueId}";
+        _overlayId = $"DateRangePicker-Overlay-{UniqueId}";
+        _wrapperId = $"DateRangePicker-Wrapper-{UniqueId}";
+        _textFieldId = $"DateRangePicker-TextField-{UniqueId}";
+        _monthTitleId = $"DateRangePicker-MonthTitle-{UniqueId}";
+        _activeDescendantId = $"DateRangePicker-ActiveDescendant-{UniqueId}";
 
         return base.OnInitializedAsync();
     }
@@ -314,6 +372,9 @@ public partial class BitDatePicker
         {
             dateTime = MaxDate.GetValueOrDefault(DateTimeOffset.Now).DateTime;
         }
+
+        timeHour = CurrentValue.HasValue ? CurrentValue.Value.Hour : 0;
+        timeMinute = CurrentValue.HasValue ? CurrentValue.Value.Minute : 0;
 
         CreateMonthCalendar(dateTime);
 
@@ -353,11 +414,11 @@ public partial class BitDatePicker
 
         _showMonthPickerAsOverlayInternal = ShowMonthPickerAsOverlay;
 
-        await _js.InvokeVoidAsync("BitDatePicker.toggleDatePickerCallout", _dotnetObj, UniqueId, CalloutId, OverlayId, IsOpen);
+        await _js.InvokeVoidAsync("BitDatePicker.toggleDatePickerCallout", _dotnetObj, UniqueId, _calloutId, _overlayId, IsOpen);
 
         if (_showMonthPickerAsOverlayInternal is false)
         {
-            _showMonthPickerAsOverlayInternal = await _js.InvokeAsync<bool>("BitDatePicker.checkMonthPickerWidth", CalloutId, IsResponsive);
+            _showMonthPickerAsOverlayInternal = await _js.InvokeAsync<bool>("BitDatePicker.checkMonthPickerWidth", _calloutId, IsResponsive);
         }
 
         if (_showMonthPickerAsOverlayInternal)
@@ -440,11 +501,11 @@ public partial class BitDatePicker
             _currentYear--;
         }
 
-        await _js.InvokeVoidAsync("BitDatePicker.toggleDatePickerCallout", _dotnetObj, UniqueId, CalloutId, OverlayId, IsOpen);
+        await _js.InvokeVoidAsync("BitDatePicker.toggleDatePickerCallout", _dotnetObj, UniqueId, _calloutId, _overlayId, IsOpen);
         IsOpen = false;
         _displayYear = _currentYear;
         _currentMonth = selectedMonth;
-        CurrentValue = new DateTimeOffset(Culture.DateTimeFormat.Calendar.ToDateTime(_currentYear, _currentMonth, _currentDay, 0, 0, 0, 0), DateTimeOffset.Now.Offset);
+        CurrentValue = new DateTimeOffset(Culture.DateTimeFormat.Calendar.ToDateTime(_currentYear, _currentMonth, _currentDay, _timeHour, _timeMinute, 0, 0), DateTimeOffset.Now.Offset);
         CreateMonthCalendar(_currentYear, _currentMonth);
         await OnSelectDate.InvokeAsync(CurrentValue);
     }
@@ -667,7 +728,7 @@ public partial class BitDatePicker
 
     private async Task CloseCallout()
     {
-        await _js.InvokeVoidAsync("BitDatePicker.toggleDatePickerCallout", _dotnetObj, UniqueId, CalloutId, OverlayId, IsOpen);
+        await _js.InvokeVoidAsync("BitDatePicker.toggleDatePickerCallout", _dotnetObj, UniqueId, _calloutId, _overlayId, IsOpen);
         IsOpen = false;
         StateHasChanged();
     }
@@ -927,12 +988,28 @@ public partial class BitDatePicker
             currentYear--;
         }
 
-        var currentDate = new DateTimeOffset(Culture.DateTimeFormat.Calendar.ToDateTime(currentYear, selectedMonth, currentDay, 0, 0, 0, 0), DateTimeOffset.Now.Offset);
-        return currentDate;
+        return new DateTimeOffset(Culture.DateTimeFormat.Calendar.ToDateTime(currentYear, selectedMonth, currentDay, 0, 0, 0, 0), DateTimeOffset.Now.Offset);
     }
 
     private DateTimeOffset GetMonthCellDate(int monthIndex)
-        => new DateTimeOffset(Culture.DateTimeFormat.Calendar.ToDateTime(_currentYear, monthIndex, 1, 0, 0, 0, 0), DateTimeOffset.Now.Offset);
+        => new(Culture.DateTimeFormat.Calendar.ToDateTime(_currentYear, monthIndex, 1, 0, 0, 0, 0), DateTimeOffset.Now.Offset);
+
+    private void UpdateTime()
+    {
+        if (CurrentValue.HasValue is false) return;
+
+        CurrentValue = new DateTimeOffset(Culture.DateTimeFormat.Calendar.ToDateTime(CurrentValue.Value.Year, CurrentValue.Value.Month, CurrentValue.Value.Day, _timeHour, _timeMinute, 0, 0), DateTimeOffset.Now.Offset);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (firstRender is false || IsEnabled is false || ShowTimePicker is false) return;
+
+        await _js.SetupTimeInputDatePicker(_inputTimeHourRef);
+        await _js.SetupTimeInputDatePicker(_inputTimeMinuteRef);
+    }
 
     [JSInvokable("CloseCallout")]
     public void CloseCalloutBeforeAnotherCalloutIsOpened() => IsOpen = false;

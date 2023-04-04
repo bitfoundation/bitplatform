@@ -87,4 +87,11 @@
 
         return false;
     }
+
+    static setupTimeInput(timeInput: HTMLInputElement) {
+
+        timeInput.addEventListener('focusin', async e => {
+            setTimeout(() => timeInput.select());
+        });
+    }
 }
