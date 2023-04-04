@@ -9,24 +9,24 @@
 
     @if (LabelTemplate is not null)
     {
-        <label class="label" id="@LabelId" for="@TextFieldId">
+        <label class="label" id="@_labelId" for="@_textFieldId">
             @LabelTemplate
         </label>
     }
     else if (Label.HasValue())
     {
-        <label class="label" id="@LabelId" for="@TextFieldId">
+        <label class="label" id="@_labelId" for="@_textFieldId">
             @Label
         </label>
     }
     <div class="wrapper"
-         id="@WrapperId"
-         aria-owns="@(IsOpen ? CalloutId : null)"
+         id="@_wrapperId"
+         aria-owns="@(IsOpen ? _calloutId : null)"
          @onclick="HandleOnClick">
 
         <div class="field-grp @(AllowTextInput ? "editable-input" : null)">
             <input @attributes="InputHtmlAttributes"
-                   id="@TextFieldId"
+                   id="@_textFieldId"
                    disabled=@(IsEnabled is false)
                    role="combobox"
                    readonly=@(AllowTextInput is false)
@@ -35,10 +35,10 @@
                    placeholder="@Placeholder"
                    tabindex="@TabIndex"
                    aria-label="@AriaLabel"
-                   aria-labelledby="@(Label.HasValue() ? LabelId : null)"
+                   aria-labelledby="@(Label.HasValue() ? _labelId : null)"
                    aria-expanded="@(IsOpen ? "true" : "false")"
                    aria-haspopup="dialog"
-                   aria-controls="@(IsOpen ? CalloutId : null)"
+                   aria-controls="@(IsOpen ? _calloutId : null)"
                    @onfocusin="@HandleOnFocusIn"
                    @onfocusout="@HandleOnFocusOut"
                    @onfocus="@HandleOnFocus"
@@ -55,9 +55,9 @@
         </div>
     </div>
 
-    <div class="overlay" id="@OverlayId" @onclick="CloseCallout"></div>
+    <div class="overlay" id="@_overlayId" @onclick="CloseCallout"></div>
 
-    <div class="callout@(IsResponsive ? " responsive" : string.Empty)" id="@CalloutId">
+    <div class="callout@(IsResponsive ? " responsive" : string.Empty)" id="@_calloutId">
         <div class="callout-main" role="dialog" @attributes=@CalloutHtmlAttributes aria-label="@PickerAriaLabel">
             <div aria-hidden="true" tabindex="0" data-is-visible="true" style="pointer-events: none; position: fixed;"></div>
             <div class="group"
@@ -77,7 +77,7 @@
                                         tabindex="0" 
                                         type="button" 
                                         @onclick="@ToggleMonthPickerAsOverlay">
-                                    <span id="@MonthTitleId">@_monthTitle</span>
+                                    <span id="@_monthTitleId">@_monthTitle</span>
                                 </button>
                             }
                             else
@@ -86,7 +86,7 @@
                                      aria-live="polite" 
                                      aria-atomic="true" 
                                      tabindex="-1">
-                                    <span id="@MonthTitleId">@_monthTitle</span>
+                                    <span id="@_monthTitleId">@_monthTitle</span>
                                 </div>
                             }
                             <div class="navigation-btn-container">
@@ -119,8 +119,8 @@
                         <table role="grid"
                                aria-readonly="true"
                                aria-multiselectable="false"
-                                   aria-labelledby="@MonthTitleId"
-                               aria-activedescendant="@ActiveDescendantId">
+                                   aria-labelledby="@_monthTitleId"
+                               aria-activedescendant="@_activeDescendantId">
                             <tbody>
                                 <tr>
                                     @if (ShowWeekNumbers)
@@ -193,6 +193,33 @@
                                     @onclick="HandleGoToToday">
                                 @GoToToday
                             </button>
+                        }
+
+                        @if (ShowTimePicker)
+                        {
+                            <div class="bit-dtp-time-grp">
+                                <div class="bit-dtp-time-wrp">
+                                    <input @ref="_inputTimeHourRef"
+                                           class="bit-dtp-t-inp"
+                                           type="number"
+                                           inputmode="numeric"
+                                           @bind="@_timeHour"
+                                           autocomplete="@BitAutoCompleteValue.NewPassword"
+                                           min="0"
+                                           max="23"
+                                           @bind:event="oninput" />
+                                    <span class="bit-dtp-t-div">:</span>
+                                    <input @ref="_inputTimeMinuteRef"
+                                           class="bit-dtp-t-inp"
+                                           type="number"
+                                           inputmode="numeric"
+                                           @bind="@_timeMinute"
+                                           autocomplete="@BitAutoCompleteValue.NewPassword"
+                                           min="0"
+                                           max="59"
+                                           @bind:event="oninput" />
+                                </div>
+                            </div>
                         }
                     </div>
                 }

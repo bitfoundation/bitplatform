@@ -276,6 +276,13 @@ public partial class BitDatePickerDemo
             Type = "RenderFragment<int>?",
             DefaultValue = "",
             Description = "Used to customize how content inside the year cell is rendered."
+        },
+        new()
+        {
+            Name = "ShowTimePicker",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Show time picker for select times.",
         }
     };
 
@@ -649,6 +656,12 @@ private FormValidationDatePickerModel formValidationDatePickerModel = new();";
     private readonly string example18HTMLCode = @"
 <BitDatePicker Style=""max-width: 350px""
                IsResponsive=""true""
+               AriaLabel=""Select a date""
+               Placeholder=""Select a date..."" />";
+
+    private readonly string example19HTMLCode = @"
+<BitDatePicker Style=""max-width: 350px""
+               ShowTimePicker=""true""
                AriaLabel=""Select a date""
                Placeholder=""Select a date..."" />";
 }

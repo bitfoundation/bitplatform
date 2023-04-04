@@ -153,7 +153,7 @@
     <ComponentExampleBox Title="BitDatePicker with value two-way binding" HTMLSourceCode="@example10HTMLCode" CSharpSourceCode="@example10CSharpCode" ExampleId="example10">
         <ExamplePreview>
             <BitDatePicker Style="max-width: 350px"
-            @bind-Value="@selectedDate"
+                           @bind-Value="@selectedDate"
                            AriaLabel="Select a date"
                            Placeholder="Select a date..." />
             <BitLabel>Selected date: @selectedDate.ToString()</BitLabel>
@@ -279,6 +279,15 @@
         <ExamplePreview>
             <BitDatePicker Style="max-width: 350px"
                            IsResponsive="true"
+                           AriaLabel="Select a date"
+                           Placeholder="Select a date..." />
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="ShowTimePicker BitDatePicker" HTMLSourceCode="@example19HTMLCode" ExampleId="example19">
+        <ExamplePreview>
+            <BitDatePicker Style="max-width: 350px"
+                           ShowTimePicker="true"
                            AriaLabel="Select a date"
                            Placeholder="Select a date..." />
         </ExamplePreview>
