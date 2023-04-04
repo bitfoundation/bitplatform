@@ -54,13 +54,13 @@
     <div class="bit-dtrp-ovl" id="@_overlayId" @onclick="CloseCallout"></div>
 
     <div class="bit-dtrp-cal @(IsResponsive ? "bit-dtrp-rsp" : null)" id="@_calloutId">
-        <div class="bit-dtrp-cal-main" role="dialog" @attributes=@CalloutHtmlAttributes aria-label="@PickerAriaLabel">
+        <div class="bit-dtrp-mcal" role="dialog" @attributes=@CalloutHtmlAttributes aria-label="@PickerAriaLabel">
             <div aria-hidden="true" tabindex="0" data-is-visible="true" style="pointer-events: none; position: fixed;"></div>
             <div class="bit-dtrp-grp" role="group" aria-label="">
-                <div class="bit-dtrp-sdate" aria-live="polite" aria-atomic="true">Selected date @CurrentValueAsString</div>
+                <div class="bit-dtrp-sd" aria-live="polite" aria-atomic="true">Selected date @CurrentValueAsString</div>
                 @if ((_showMonthPickerAsOverlayInternal && _isMonthPickerOverlayOnTop is false) || _showMonthPickerAsOverlayInternal is false)
                 {
-                    <div class="bit-dtrp-day-wrp">
+                    <div class="bit-dtrp-dwp">
                         <div class="bit-dtrp-pkr-hdr">
                             @if (_showMonthPickerAsOverlayInternal)
                             {
@@ -119,12 +119,12 @@
                                 <tr>
                                     @if (ShowWeekNumbers)
                                     {
-                                        <th class="bit-dtrp-wday-lbl"></th>
+                                        <th class="bit-dtrp-wd-lbl"></th>
                                     }
 
                                     @for (var index = 0; index < 7; index++)
                                     {
-                                        <th class="bit-dtrp-wday-lbl" scope="col" title="@Culture.DateTimeFormat.GetShortestDayName(GetDayOfWeek(index))">
+                                        <th class="bit-dtrp-wd-lbl" scope="col" title="@Culture.DateTimeFormat.GetShortestDayName(GetDayOfWeek(index))">
                                             @Culture.DateTimeFormat.GetShortestDayName(GetDayOfWeek(index))[0]
                                         </th>
                                     }
@@ -140,7 +140,7 @@
                                     <tr>
                                         @if (ShowWeekNumbers)
                                         {
-                                            <th class="bit-dtrp-wnum-cell"
+                                            <th class="bit-dtrp-wnumc"
                                                 title="@($"Week number {GetWeekNumber(week)}")"
                                                 aria-label="@($"Week number {GetWeekNumber(week)}")"
                                                 scope="row">
@@ -153,7 +153,7 @@
                                             var localWeek = week;
                                             var localDay = day;
                                             <td class="@GetDateElClass(localDay, localWeek)" role="presentation">
-                                                <button class="bit-dtrp-day-btn"
+                                                <button class="bit-dtrp-dbtn"
                                                         role="gridcell"
                                                         type="button"
                                                         tabindex="@((week == _selectedStartDateWeek && day == _selectedStartDateDayOfWeek) || (week == _selectedEndDateWeek && day == _selectedEndDateDayOfWeek) ? 0 : -1)"
@@ -191,10 +191,10 @@
 
                         @if (ShowTimePicker)
                         {
-                            <div class="bit-dtrp-time-grp">
-                                <div class="bit-dtrp-time-wrp">
+                            <div class="bit-dtrp-tgrp">
+                                <div class="bit-dtrp-twp">
                                     <input @ref="_inputStartTimeHourRef" 
-                                           class="bit-dtrp-t-inp" 
+                                           class="bit-dtrp-tinp" 
                                            type="number" 
                                            inputmode="numeric"
                                            autocomplete="@BitAutoCompleteValue.NewPassword"
@@ -203,9 +203,9 @@
                                            @bind="@_startTimeHour" 
                                            @bind:event="oninput"
                                            @onfocus="HandleOnStartTimeHourFocus" />
-                                    <span class="bit-dtrp-t-div">:</span>
+                                    <span class="bit-dtrp-tdiv">:</span>
                                     <input @ref="_inputStartTimeMinuteRef"
-                                           class="bit-dtrp-t-inp" 
+                                           class="bit-dtrp-tinp" 
                                            type="number"
                                            inputmode="numeric"
                                            autocomplete="@BitAutoCompleteValue.NewPassword"
@@ -216,9 +216,9 @@
                                            @onfocus="HandleOnStartTimeMinuteFocus" />
                                 </div>
 
-                                <div class="bit-dtrp-time-wrp">
+                                <div class="bit-dtrp-twp">
                                     <input @ref="_inputEndTimeHourRef" 
-                                           class="bit-dtrp-t-inp" 
+                                           class="bit-dtrp-tinp" 
                                            type="number" 
                                            inputmode="numeric"
                                            autocomplete="@BitAutoCompleteValue.NewPassword"
@@ -227,9 +227,9 @@
                                            @bind="@_endTimeHour" 
                                            @bind:event="oninput"
                                            @onfocus="HandleOnEndTimeHourFocus" />
-                                    <span class="bit-dtrp-t-div">:</span>
+                                    <span class="bit-dtrp-tdiv">:</span>
                                     <input @ref="_inputEndTimeMinuteRef"
-                                           class="bit-dtrp-t-inp" 
+                                           class="bit-dtrp-tinp" 
                                            type="number"
                                            inputmode="numeric"
                                            autocomplete="@BitAutoCompleteValue.NewPassword"
@@ -251,7 +251,7 @@
 
                 @if ((_showMonthPickerAsOverlayInternal && _isMonthPickerOverlayOnTop) || _showMonthPickerAsOverlayInternal is false)
                 {
-                    <div class="bit-dtrp-month-wrp">
+                    <div class="bit-dtrp-mwp">
                         @if (_showMonthPicker)
                         {
                             <div class="bit-dtrp-pkr-hdr">
