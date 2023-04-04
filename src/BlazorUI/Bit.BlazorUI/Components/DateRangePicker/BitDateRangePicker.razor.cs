@@ -1180,16 +1180,32 @@ public partial class BitDateRangePicker
         return new DateTimeOffset(Culture.DateTimeFormat.Calendar.ToDateTime(date.Value.Year, date.Value.Month, date.Value.Day, hour, minute, 0, 0), DateTimeOffset.Now.Offset);
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    private async Task HandleOnStartTimeHourFocus()
     {
-        await base.OnAfterRenderAsync(firstRender);
+        if (IsEnabled is false || ShowTimePicker is false) return;
 
-        if (firstRender is false || IsEnabled is false || ShowTimePicker is false) return;
+        await _js.SelectText(_inputStartTimeHourRef);
+    }
 
-        await _js.SetupTimeInput(_inputStartTimeHourRef);
-        await _js.SetupTimeInput(_inputStartTimeMinuteRef);
-        await _js.SetupTimeInput(_inputEndTimeHourRef);
-        await _js.SetupTimeInput(_inputEndTimeMinuteRef);
+    private async Task HandleOnStartTimeMinuteFocus()
+    {
+        if (IsEnabled is false || ShowTimePicker is false) return;
+
+        await _js.SelectText(_inputStartTimeMinuteRef);
+    }
+
+    private async Task HandleOnEndTimeHourFocus()
+    {
+        if (IsEnabled is false || ShowTimePicker is false) return;
+
+        await _js.SelectText(_inputEndTimeHourRef);
+    }
+
+    private async Task HandleOnEndTimeMinuteFocus()
+    {
+        if (IsEnabled is false || ShowTimePicker is false) return;
+
+        await _js.SelectText(_inputEndTimeMinuteRef);
     }
 
     [JSInvokable("CloseCallout")]

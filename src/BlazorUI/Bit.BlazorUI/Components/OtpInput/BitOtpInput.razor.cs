@@ -269,6 +269,13 @@ public partial class BitOtpInput
         await OnPaste.InvokeAsync(e);
     }
 
+    private async Task HandleOnFocus(FocusEventArgs e, int index)
+    {
+        if (IsEnabled is false) return;
+
+        await _js.SelectText(_inputRefs[index]);
+    }
+
     [JSInvokable]
     public async Task SetPastedData(string pastedValue)
     {
