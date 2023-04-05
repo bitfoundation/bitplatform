@@ -74,7 +74,7 @@
         }
     }
 
-    &.bit-tpc-left-ico {
+    &.bit-tpc-lfic {
         .bit-tpc-fld-grp {
             flex-direction: row-reverse;
 
@@ -85,7 +85,7 @@
         }
     }
 
-    &.bit-tpc-focused {
+    &.bit-tpc-foc {
         .bit-tpc-fld-grp::after {
             position: absolute;
             inset: spacing(-0.125);
@@ -115,7 +115,7 @@
             }
         }
 
-        &.bit-tpc-focused {
+        &.bit-tpc-foc {
             .bit-tpc-fld-grp::after {
                 border: none;
                 border-bottom: spacing(0.25) $shape-border-style $color-border-primary;
@@ -155,7 +155,7 @@
         }
     }
 
-    .bit-tpc-overlay {
+    .bit-tpc-ovl {
         position: fixed;
         top: 0;
         left: 0;
@@ -181,7 +181,7 @@
         -webkit-font-smoothing: antialiased;
     }
 
-    .bit-tpc-cal-main {
+    .bit-tpc-mcal {
         position: relative;
         border-radius: $shape-border-radius;
         outline: none;
@@ -224,7 +224,7 @@
             color: rgba(255,255,255,.54);
         }
 
-        .bit-tpc-hour-minute {
+        .bit-tpc-hm {
             display: flex;
             align-items: baseline;
             justify-content: flex-end;
@@ -270,7 +270,7 @@
             transform-origin: center bottom 0;
             background-color: $color-primary-main;
 
-            .bit-tpc-thumb {
+            .bit-tpc-thm {
                 position: absolute;
                 border-radius: 100%;
                 top: spacing(-2.375);
@@ -280,7 +280,7 @@
                 border: none;
                 background-color: inherit;
 
-                &.bit-tpc-min {
+                &.bit-tpc-thm-min {
                     background: transparent;
                     border: spacing(0.25) $shape-border-style;
                     width: spacing(1.25);
@@ -296,7 +296,7 @@
             }
         }
 
-        .bit-tpc-dial {
+        .bit-tpc-dil {
             width: 100%;
             height: 100%;
             position: absolute;
@@ -322,7 +322,7 @@
                 }
             }
 
-            .bit-tpc-stick {
+            .bit-tpc-stk {
                 left: calc(50% - spacing(0.125));
                 width: spacing(0.375);
                 height: 50%;
@@ -330,8 +330,8 @@
                 position: absolute;
                 transform-origin: center bottom 0;
 
-                &.bit-tpc-hour:after,
-                &.bit-tpc-minute:after {
+                &.bit-tpc-hr:after,
+                &.bit-tpc-min:after {
                     content: "";
                     position: absolute;
                     left: 50%;
@@ -341,17 +341,17 @@
                     background-color: inherit;
                 }
 
-                &.bit-tpc-hour:after {
+                &.bit-tpc-hr:after {
                     height: spacing(7.75);
                     width: spacing(7.75);
                 }
 
-                &.bit-tpc-minute:after {
+                &.bit-tpc-min:after {
                     height: spacing(5.5);
                     width: spacing(1.875);
                 }
 
-                .bit-tpc-inner {
+                .bit-tpc-inr {
                     left: calc(50% - spacing(0.125));
                     width: spacing(0.375);
                     height: 35%;
@@ -372,7 +372,7 @@
                     }
                 }
 
-                .bit-tpc-outer {
+                .bit-tpc-otr {
                     left: calc(50% - spacing(0.125));
                     width: 0;
                     height: 35%;

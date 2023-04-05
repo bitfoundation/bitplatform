@@ -227,20 +227,20 @@ public partial class BitTimePicker
 
     protected override void RegisterComponentClasses()
     {
-        ClassBuilder.Register(() => IconLocation is BitIconLocation.Left ? $"{RootElementClass}-left-ico" : string.Empty);
+        ClassBuilder.Register(() => IconLocation is BitIconLocation.Left ? $"{RootElementClass}-lfic" : string.Empty);
 
         ClassBuilder.Register(() => IsUnderlined ? $"{RootElementClass}-und" : string.Empty);
 
         ClassBuilder.Register(() => HasBorder is false ? $"{RootElementClass}-no-brd" : string.Empty);
 
-        ClassBuilder.Register(() => _focusClass.HasValue() ? $"{RootElementClass}-{_focusClass}" : string.Empty);
+        ClassBuilder.Register(() => _focusClass);
     }
 
     private async Task HandleOnFocusIn()
     {
         if (IsEnabled is false) return;
 
-        _focusClass = "focused";
+        _focusClass = $"{RootElementClass}-foc";
         await OnFocusIn.InvokeAsync();
     }
 
@@ -256,7 +256,7 @@ public partial class BitTimePicker
     {
         if (IsEnabled is false) return;
 
-        _focusClass = "focused";
+        _focusClass = $"{RootElementClass}-foc";
         await OnFocus.InvokeAsync();
     }
 
