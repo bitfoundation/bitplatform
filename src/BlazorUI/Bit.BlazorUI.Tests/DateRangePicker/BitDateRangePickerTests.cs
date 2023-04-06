@@ -104,20 +104,31 @@ public class BitDateRangePickerTests : BunitTestContext
     public void BitDateRangePickerCalendarSelectTodayDate()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
-        var component = RenderComponent<BitDatePicker>(parameters =>
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.IsEnabled, true);
         });
 
-        Assert.IsNull(component.Instance.Value);
+        Assert.IsNull(component.Instance.Value.StartDate);
+        Assert.IsNull(component.Instance.Value.EndDate);
 
-        var today = component.Find(".date-cell--today button.day-btn");
+        var today = component.Find(".bit-dtrp-dc-tdy button.bit-dtrp-dbtn");
         today.Click();
 
-        Assert.IsNotNull(component.Instance.Value);
-        Assert.AreEqual(component.Instance.Value.Value.Date, DateTimeOffset.Now.Date);
-        Assert.AreEqual(component.Instance.Value.Value.Offset, DateTimeOffset.Now.Offset);
+        Assert.IsNotNull(component.Instance.Value.StartDate);
+        Assert.IsNull(component.Instance.Value.EndDate);
+        Assert.AreEqual(component.Instance.Value.StartDate.Value.Date, DateTimeOffset.Now.Date);
+        Assert.AreEqual(component.Instance.Value.StartDate.Value.Offset, DateTimeOffset.Now.Offset);
+        today.Click();
+
+        Assert.IsNotNull(component.Instance.Value.StartDate);
+        Assert.AreEqual(component.Instance.Value.StartDate.Value.Date, DateTimeOffset.Now.Date);
+        Assert.AreEqual(component.Instance.Value.StartDate.Value.Offset, DateTimeOffset.Now.Offset);
+
+        Assert.IsNotNull(component.Instance.Value.EndDate);
+        Assert.AreEqual(component.Instance.Value.EndDate.Value.Date, DateTimeOffset.Now.Date);
+        Assert.AreEqual(component.Instance.Value.EndDate.Value.Offset, DateTimeOffset.Now.Offset);
     }
 
     [DataTestMethod]
