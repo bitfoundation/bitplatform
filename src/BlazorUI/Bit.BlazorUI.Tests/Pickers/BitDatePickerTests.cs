@@ -52,7 +52,7 @@ public class BitDatePickerTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
         });
 
-        var goToTodayButton = component.Find(".go-today-btn");
+        var goToTodayButton = component.Find(".bit-dtp-gtd-btn");
 
         Assert.AreEqual(goToTodayButton.TextContent, goToToday);
     }
@@ -71,7 +71,7 @@ public class BitDatePickerTests : BunitTestContext
             parameters.Add(p => p.OnClick, () => clickedValue++);
         });
 
-        var bitDatePickerInput = component.Find(".wrapper");
+        var bitDatePickerInput = component.Find(".bit-dtp-wrp");
         bitDatePickerInput.Click();
 
         Assert.AreEqual(count, clickedValue);
@@ -92,7 +92,7 @@ public class BitDatePickerTests : BunitTestContext
             parameters.Add(p => p.OnSelectDate, () => selectedDateValue++);
         });
 
-        var dateItems = component.FindAll(".day-btn");
+        var dateItems = component.FindAll(".bit-dtp-dbtn");
 
         Random random = new();
         int randomNumber = random.Next(0, dateItems.Count - 1);
@@ -112,7 +112,7 @@ public class BitDatePickerTests : BunitTestContext
 
         Assert.IsNull(component.Instance.Value);
 
-        var today = component.Find(".date-cell--today button.day-btn");
+        var today = component.Find(".bit-dtp-dc-tdy button.bit-dtp-dbtn");
         today.Click();
 
         Assert.IsNotNull(component.Instance.Value);
@@ -130,7 +130,8 @@ public class BitDatePickerTests : BunitTestContext
             parameters.Add(p => p.Culture, CultureInfoHelper.GetFaIrCultureByFingilishNames());
         });
 
-        var monthButtons = component.FindAll(".month-picker-wrapper .grid-container .btn-row button");
+        var monthButtons = component.FindAll(".bit-dtp-mwp .bit-dtp-gctn .bit-dtp-btn-row button");
+        Assert.IsTrue(monthButtons.Count > 0);
 
         var index = 0;
         foreach (var button in monthButtons)
@@ -156,11 +157,11 @@ public class BitDatePickerTests : BunitTestContext
         Assert.AreEqual(1, component.Instance.InvalidCount);
 
         //open date picker
-        var datePicker = component.Find(".wrapper");
+        var datePicker = component.Find(".bit-dtp-wrp");
         datePicker.Click();
 
         //select today
-        var today = component.Find(".date-cell--today button.day-btn");
+        var today = component.Find(".bit-dtp-dc-tdy button.bit-dtp-dbtn");
         today.Click();
 
         form.Submit();
@@ -190,11 +191,11 @@ public class BitDatePickerTests : BunitTestContext
         Assert.AreEqual("true", inputDate.GetAttribute("aria-invalid"));
 
         //open date picker
-        var datePicker = component.Find(".wrapper");
+        var datePicker = component.Find(".bit-dtp-wrp");
         datePicker.Click();
 
         //select today
-        var today = component.Find(".date-cell--today button.day-btn");
+        var today = component.Find(".bit-dtp-dc-tdy button.bit-dtp-dbtn");
         today.Click();
 
         form.Submit();
@@ -222,11 +223,11 @@ public class BitDatePickerTests : BunitTestContext
         Assert.IsTrue(bitDatePicker.ClassList.Contains("bit-inv"));
 
         //open date picker
-        var datePicker = component.Find(".wrapper");
+        var datePicker = component.Find(".bit-dtp-wrp");
         datePicker.Click();
 
         //select today
-        var today = component.Find(".date-cell--today button.day-btn");
+        var today = component.Find(".bit-dtp-dc-tdy button.bit-dtp-dbtn");
         today.Click();
 
         Assert.IsFalse(bitDatePicker.ClassList.Contains("bit-inv"));
@@ -241,7 +242,7 @@ public class BitDatePickerTests : BunitTestContext
             parameters.Add(p => p.PickerAriaLabel, pickerAriaLabel);
         });
 
-        var bitDatePickerCallout = component.Find(".callout-main");
+        var bitDatePickerCallout = component.Find(".bit-dtp-mcal");
         var calloutAriaLabel = bitDatePickerCallout.GetAttribute("aria-label");
 
         Assert.AreEqual(pickerAriaLabel, calloutAriaLabel);
@@ -259,7 +260,7 @@ public class BitDatePickerTests : BunitTestContext
             parameters.Add(p => p.ShowGoToToday, showGoToToday);
         });
 
-        var goToTodayBtnElms = component.FindAll(".go-today-btn");
+        var goToTodayBtnElms = component.FindAll(".bit-dtp-gtd-btn");
 
         if (showGoToToday)
         {
@@ -283,7 +284,7 @@ public class BitDatePickerTests : BunitTestContext
             parameters.Add(p => p.ShowCloseButton, showCloseButton);
         });
 
-        var closeBtnElms = component.FindAll(".header-icon-btn");
+        var closeBtnElms = component.FindAll(".bit-dtp-hdr-ibtn");
 
         if (showCloseButton)
         {
@@ -307,7 +308,7 @@ public class BitDatePickerTests : BunitTestContext
             parameters.Add(p => p.HighlightCurrentMonth, highlightCurrentMonth);
         });
 
-        var currentMonthCells = component.FindAll(".current-month");
+        var currentMonthCells = component.FindAll(".bit-dtp-crtm");
 
         if (highlightCurrentMonth)
         {
@@ -332,7 +333,7 @@ public class BitDatePickerTests : BunitTestContext
         });
 
 
-        var selectedMonthCells = component.FindAll(".selected-month");
+        var selectedMonthCells = component.FindAll(".bit-dtp-selm");
 
         if (highlightSelectedMonth)
         {
@@ -358,7 +359,7 @@ public class BitDatePickerTests : BunitTestContext
             parameters.Add(p => p.CalloutHtmlAttributes, calloutHtmlAttributes);
         });
 
-        var bitDatePickerCallout = component.Find(".callout-main");
+        var bitDatePickerCallout = component.Find(".bit-dtp-mcal");
         var calloutStyle = bitDatePickerCallout.GetAttribute("style");
 
         Assert.AreEqual("color: blue", calloutStyle);
