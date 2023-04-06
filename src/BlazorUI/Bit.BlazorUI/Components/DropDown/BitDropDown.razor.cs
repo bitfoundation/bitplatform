@@ -335,7 +335,7 @@ public partial class BitDropDown
 
     protected override void RegisterComponentClasses()
     {
-        ClassBuilder.Register(() => SelectedItems.Any() ? $"{RootElementClass}-hval" : string.Empty);
+        ClassBuilder.Register(() => SelectedItems?.Count > 0 ? $"{RootElementClass}-hval" : string.Empty);
 
         ClassBuilder.Register(() => IsResponsiveModeEnabled ? $"{RootElementClass}-rsp" : string.Empty);
 
