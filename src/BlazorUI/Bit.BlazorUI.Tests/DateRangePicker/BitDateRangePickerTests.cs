@@ -141,7 +141,9 @@ public class BitDateRangePickerTests : BunitTestContext
             parameters.Add(p => p.Culture, CultureInfoHelper.GetFaIrCultureByFingilishNames());
         });
 
-        var monthButtons = component.FindAll(".bit-dtrp-month-wrp .bit-dtrp-gctn .bit-dtrp-btn-row button");
+        var monthButtons = component.FindAll(".bit-dtrp-mwp .bit-dtrp-gctn .bit-dtrp-btn-row button");
+        Assert.IsTrue(monthButtons.Count > 0);
+        Assert.AreEqual(12, monthButtons.Count);
 
         var index = 0;
         foreach (var button in monthButtons)
