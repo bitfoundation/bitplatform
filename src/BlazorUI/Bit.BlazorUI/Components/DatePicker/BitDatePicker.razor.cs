@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Text;
 
 namespace Bit.BlazorUI;
 
@@ -348,13 +349,13 @@ public partial class BitDatePicker
 
     protected override void RegisterComponentClasses()
     {
-        ClassBuilder.Register(() => Culture.TextInfo.IsRightToLeft ? "rtl" : string.Empty);
+        ClassBuilder.Register(() => Culture.TextInfo.IsRightToLeft ? $"{RootElementClass}-rtl" : string.Empty);
 
-        ClassBuilder.Register(() => IconLocation is BitIconLocation.Left ? "left-icon" : string.Empty);
+        ClassBuilder.Register(() => IconLocation is BitIconLocation.Left ? $"{RootElementClass}-lfic" : string.Empty);
 
-        ClassBuilder.Register(() => IsUnderlined ? "underlined" : string.Empty);
+        ClassBuilder.Register(() => IsUnderlined ? $"{RootElementClass}-und" : string.Empty);
 
-        ClassBuilder.Register(() => HasBorder is false ? "no-border" : string.Empty);
+        ClassBuilder.Register(() => HasBorder is false ? $"{RootElementClass}-no-brd" : string.Empty);
 
         ClassBuilder.Register(() => _focusClass);
     }
@@ -441,7 +442,7 @@ public partial class BitDatePicker
     {
         if (IsEnabled is false) return;
 
-        _focusClass = "focused";
+        _focusClass = $"{RootElementClass}-foc";
         await OnFocusIn.InvokeAsync();
     }
 
@@ -457,7 +458,7 @@ public partial class BitDatePicker
     {
         if (IsEnabled is false) return;
 
-        _focusClass = "focused";
+        _focusClass = $"{RootElementClass}-foc";
         await OnFocus.InvokeAsync();
     }
 
@@ -735,7 +736,7 @@ public partial class BitDatePicker
 
     private string GetDateElClass(int day, int week)
     {
-        var className = string.Empty;
+        StringBuilder className = new StringBuilder();
         var todayYear = Culture.DateTimeFormat.Calendar.GetYear(DateTime.Now);
         var todayMonth = Culture.DateTimeFormat.Calendar.GetMonth(DateTime.Now);
         var todayDay = Culture.DateTimeFormat.Calendar.GetDayOfMonth(DateTime.Now);
@@ -743,19 +744,19 @@ public partial class BitDatePicker
 
         if (IsInCurrentMonth(week, day) is false)
         {
-            className = "date-cell--outside-month";
+            className.Append(' ').Append(RootElementClass).Append("-dc-ots-m");
         }
         else if (todayYear == _currentYear && todayMonth == _currentMonth && todayDay == currentDay)
         {
-            className = "date-cell--today";
+            className.Append(' ').Append(RootElementClass).Append("-dc-tdy");
         }
 
         if (week == _selectedDateWeek && day == _selectedDateDayOfWeek)
         {
-            className += className.HasNoValue(false) ? "date-cell--selected" : " date-cell--selected";
+            className.Append(' ').Append(RootElementClass).Append("-dc-sel");
         }
 
-        return className;
+        return className.ToString();
     }
 
     private bool IsInCurrentMonth(int week, int day) =>
@@ -958,19 +959,26 @@ public partial class BitDatePicker
 
     private string GetMonthCellClassName(int monthIndex)
     {
-        var className = string.Empty;
+        var className = new StringBuilder();
         if (HighlightCurrentMonth)
         {
             var todayMonth = Culture.DateTimeFormat.Calendar.GetMonth(DateTime.Now);
-            className = todayMonth == monthIndex ? "current-month" : string.Empty;
+            if (todayMonth == monthIndex)
+            {
+                className.Append(RootElementClass).Append("-crtm");
+            }
         }
 
         if (HighlightSelectedMonth && _currentMonth == monthIndex)
         {
-            className += className.HasNoValue(false) ? "selected-month" : " selected-month";
+            if (className.Length > 0)
+            {
+                className.Append(' ');
+            }
+            className.Append(RootElementClass).Append("-selm");
         }
 
-        return className;
+        return className.ToString();
     }
 
     private DateTimeOffset GetDayCellDate(int dayIndex, int weekIndex)

@@ -11,7 +11,7 @@
     -webkit-font-smoothing: antialiased;
     font-family: $typography-font-family;
 
-    .label {
+    .bit-dtp-lbl {
         display: block;
         padding: spacing(0.5) 0;
         margin: 0;
@@ -24,10 +24,10 @@
         -webkit-font-smoothing: antialiased;
     }
 
-    .wrapper {
+    .bit-dtp-wrp {
         position: relative;
 
-        .field-grp {
+        .bit-dtp-fld-grp {
             .bit-icon {
                 cursor: pointer;
                 color: $color-neutrals-gray130;
@@ -41,7 +41,7 @@
         }
     }
 
-    .field-grp {
+    .bit-dtp-fld-grp {
         position: relative;
         display: flex;
         flex-flow: row nowrap;
@@ -77,15 +77,15 @@
             cursor: pointer;
         }
 
-        &.editable-input {
+        &.bit-dtp-edt-inp {
             input {
                 cursor: default;
             }
         }
     }
 
-    &.left-icon {
-        .field-grp {
+    &.bit-dtp-lfic {
+        .bit-dtp-fld-grp {
             flex-direction: row-reverse;
 
             .bit-icon {
@@ -95,8 +95,8 @@
         }
     }
 
-    &.focused {
-        .field-grp::after {
+    &.bit-dtp-foc {
+        .bit-dtp-fld-grp::after {
             position: absolute;
             inset: spacing(-0.125);
             border: spacing(0.25) $shape-border-style $color-border-primary;
@@ -106,7 +106,7 @@
         }
     }
 
-    .callout {
+    .bit-dtp-cal {
         position: fixed;
         top: spacing(4.25);
         z-index: $space-overlay-zindex1;
@@ -120,9 +120,9 @@
         font-family: $typography-font-family;
         -webkit-font-smoothing: antialiased;
 
-        &.responsive {
+        &.bit-dtp-rsp {
             @media only screen and (max-width: 600px) {
-                .day-picker-wrapper {
+                .bit-dtp-dwp {
                     flex-grow: 1;
 
                     th, td {
@@ -130,7 +130,7 @@
                         margin: auto;
                         font-size: spacing(2);
 
-                        .day-btn {
+                        .bit-dtp-dbtn {
                             width: 100%;
                             font-size: spacing(2);
 
@@ -140,8 +140,8 @@
                             }
                         }
 
-                        &.date-cell--today {
-                            .day-btn {
+                        &.bit-dtp-dc-tdy {
+                            .bit-dtp-dbtn {
                                 border-radius: unset;
                             }
                         }
@@ -151,7 +151,7 @@
         }
     }
 
-    .callout-main {
+    .bit-dtp-mcal {
         position: relative;
         border-radius: $shape-border-radius;
         outline: none;
@@ -159,7 +159,7 @@
         overflow: hidden auto;
     }
 
-    .group {
+    .bit-dtp-grp {
         display: flex;
         box-shadow: none;
         outline: none;
@@ -171,7 +171,7 @@
         animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
         animation-fill-mode: both;
 
-        .selected-date {
+        .bit-dtp-sd {
             position: absolute;
             width: spacing(0.125);
             height: 0;
@@ -182,7 +182,7 @@
         }
     }
 
-    .day-picker-wrapper {
+    .bit-dtp-dwp {
         display: flex;
         flex-flow: column nowrap;
         min-width: spacing(24.5);
@@ -202,7 +202,7 @@
             margin-bottom: spacing(1.25);
         }
 
-        .week-day-label {
+        .bit-dtp-wd-lbl {
             position: relative;
             width: spacing(3.5);
             height: spacing(3.5);
@@ -227,7 +227,7 @@
             flex-flow: row nowrap;
         }
 
-        .date-cell {
+        .bit-dtp-dc {
             position: relative;
             border-radius: $shape-border-radius;
             border: none;
@@ -245,7 +245,7 @@
             }
         }
 
-        .day-btn {
+        .bit-dtp-dbtn {
             position: relative;
             display: flex;
             padding: 0;
@@ -276,15 +276,15 @@
             }
         }
 
-        .date-cell--outside-month {
-            .day-btn {
+        .bit-dtp-dc-ots-m {
+            .bit-dtp-dbtn {
                 color: $color-neutrals-gray110;
                 font-weight: 400;
             }
         }
 
-        .date-cell--today {
-            .day-btn {
+        .bit-dtp-dc-tdy {
+            .bit-dtp-dbtn {
                 border-radius: 50%;
                 font-weight: 600;
                 color: $color-neutrals-white;
@@ -292,7 +292,7 @@
             }
         }
 
-        .date-cell--selected {
+        .bit-dtp-dc-sel {
             background-color: $color-neutrals-gray30;
 
             &::after {
@@ -303,7 +303,7 @@
             }
         }
 
-        .week-num-cell {
+        .bit-dtp-wnumc {
             display: flex;
             justify-content: center;
             align-items: center;
@@ -320,14 +320,14 @@
         }
     }
 
-    .picker-header {
+    .bit-dtp-pkr-hdr {
         position: relative;
         display: inline-flex;
         width: 100%;
         height: spacing(3.5);
         line-height: spacing(5.5);
 
-        .header-title {
+        .bit-dtp-pkr-tit {
             position: relative;
             display: inline-block;
             align-items: center;
@@ -353,7 +353,7 @@
             animation-fill-mode: both;
         }
 
-        button.header-title {
+        button.bit-dtp-pkr-tit {
             cursor: pointer;
 
             &:hover {
@@ -361,13 +361,13 @@
             }
         }
 
-        .navigation-btn-container {
+        .bit-dtp-nav-btn-ctn {
             display: flex;
             align-items: center;
             align-self: flex-end;
         }
 
-        .navigation-btn {
+        .bit-dtp-nav-btn {
             position: relative;
             display: block;
             width: spacing(3.5);
@@ -406,7 +406,7 @@
             }
         }
 
-        .header-icon-btn {
+        .bit-dtp-hdr-ibtn {
             position: relative;
             display: block;
             width: spacing(3.5);
@@ -437,12 +437,12 @@
         }
     }
 
-    .divider {
+    .bit-dtp-div {
         top: 0;
         border-right: $shape-border-width $shape-border-style $color-neutrals-gray30;
     }
 
-    .month-picker-wrapper {
+    .bit-dtp-mwp {
         display: flex;
         flex-flow: column nowrap;
         box-shadow: none;
@@ -452,12 +452,12 @@
         width: spacing(26);
         overflow: hidden;
 
-        .grid-container {
+        .bit-dtp-gctn {
             margin-top: spacing(0.5);
             margin-bottom: spacing(1.5);
         }
 
-        .btn-row {
+        .bit-dtp-btn-row {
             display: flex;
             justify-content: space-evenly;
             margin-bottom: spacing(2);
@@ -494,7 +494,7 @@
                 margin: 0;
             }
 
-            .current-month {
+            .bit-dtp-crtm {
                 color: $color-neutrals-white;
                 background-color: $color-primary-main;
 
@@ -504,7 +504,7 @@
                 }
             }
 
-            .selected-month {
+            .bit-dtp-selm {
                 color: $color-neutrals-gray160;
                 background-color: $color-general-lightblue;
                 font-weight: 600;
@@ -537,11 +537,11 @@
             }
         }
 
-        .bit-dtp-t-div {
+        .bit-dtp-tdiv {
             display: block;
         }
 
-        .bit-dtp-t-inp {
+        .bit-dtp-tinp {
             display: flex;
             justify-content: center;
             align-items: center;
@@ -565,7 +565,7 @@
         }
     }
 
-    .go-today-btn {
+    .bit-dtp-gtd-btn {
         position: relative;
         bottom: spacing(-1.5);
         align-self: flex-end;
@@ -593,7 +593,7 @@
         }
     }
 
-    .overlay {
+    .bit-dtp-ovl {
         position: fixed;
         top: 0;
         left: 0;
@@ -604,27 +604,27 @@
         background-color: transparent;
     }
 
-    &.underlined {
+    &.bit-dtp-und {
         .wrapper {
             display: flex;
             width: 100%;
             border-bottom: $shape-border-width $shape-border-style $color-neutrals-gray20;
         }
 
-        .field-grp {
+        .bit-dtp-fld-grp {
             border: none;
             flex: 1 1 0px;
             text-align: left;
         }
 
         &.bit-dis {
-            .wrapper {
+            .bit-dtp-wrp {
                 border-bottom-color: $color-border-disabled;
             }
         }
 
-        &.focused {
-            .field-grp::after {
+        &.bit-dtp-foc {
+            .bit-dtp-fld-grp::after {
                 border: none;
                 border-bottom: spacing(0.25) $shape-border-style $color-border-primary;
                 border-radius: 0;
@@ -633,11 +633,11 @@
     }
 
     &.bit-dis {
-        .label {
+        .bit-dtp-lbl {
             color: $color-text-disabled;
         }
 
-        .field-grp {
+        .bit-dtp-fld-grp {
             border: $shape-border-width $shape-border-style $color-border-disabled;
             color: $color-text-disabled;
             cursor: default;
@@ -657,30 +657,30 @@
         }
     }
 
-    &.no-border {
-        .field-grp {
+    &.bit-dtp-no-brd {
+        .bit-dtp-fld-grp {
             border: none;
         }
     }
 
-    &.rtl {
-        .group {
+    &.bit-dtp-rtl {
+        .bit-dtp-grp {
             direction: rtl;
         }
 
-        .week-num-cell {
+        .bit-dtp-wnumc {
             border-left: $shape-border-width $shape-border-style $color-neutrals-gray30;
             border-right: none;
         }
 
-        .header-title {
+        .bit-dtp-pkr-tit {
             padding: 0 spacing(1.25) 0 spacing(0.5);
             text-align: right;
         }
     }
 
     &.bit-inv {
-        .field-grp {
+        .bit-dtp-fld-grp {
             border-color: $color-state-invalid;
         }
     }
