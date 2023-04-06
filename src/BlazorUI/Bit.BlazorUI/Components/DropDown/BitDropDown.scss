@@ -5,7 +5,7 @@
     width: 100%;
     font-family: $typography-font-family;
 
-    .label {
+    .bit-drp-lbl {
         font-size: spacing(1.75);
         font-weight: 600;
         color: $color-neutrals-gray160;
@@ -15,7 +15,7 @@
         display: block;
     }
 
-    .search-box {
+    .bit-drp-sb {
         display: flex;
         flex-flow: row nowrap;
         align-items: stretch;
@@ -40,14 +40,14 @@
             border-right-width: 0;
             border-color: $color-neutrals-gray160;
 
-            .icon-container {
+            .bit-drp-ictn {
                 i {
                     color: $color-primary-darker;
                 }
             }
         }
 
-        .icon-container {
+        .bit-drp-ictn {
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -71,7 +71,7 @@
             }
         }
 
-        .search-input {
+        .bit-drp-srch-inp {
             flex: 1 1 0px;
             min-width: 0px;
             box-shadow: none;
@@ -89,7 +89,7 @@
             overflow: hidden;
         }
 
-        .clear-btn-container {
+        .bit-drp-clr-btn-ctn {
             display: flex;
             flex-direction: row;
             align-items: stretch;
@@ -100,7 +100,7 @@
             cursor: pointer;
 
             &:hover {
-                .clear-btn {
+                .bit-drp-clr-btn {
                     background-color: $color-neutrals-gray20;
 
                     i {
@@ -110,7 +110,7 @@
             }
         }
 
-        .clear-btn {
+        .bit-drp-clr-btn {
             position: relative;
             display: inline-block;
             width: spacing(4);
@@ -151,9 +151,9 @@
             }
         }
 
-        &.has-value {
+        &.bit-drp-hval {
             &:hover {
-                .icon-container {
+                .bit-drp-ictn {
                     width: spacing(0.5);
                     color: $color-primary-darker;
 
@@ -165,10 +165,10 @@
             }
         }
 
-        &.focused {
+        &.bit-drp-foc {
             border-bottom: spacing(0.25) $shape-border-style $color-general-blue;
 
-            .icon-container {
+            .bit-drp-ictn {
                 width: spacing(0.5);
                 color: $color-primary-darker;
 
@@ -185,7 +185,7 @@
         }
     }
 
-    .close-btn {
+    .bit-drp-cls-btn {
         width: spacing(4);
         height: spacing(4);
         text-align: center;
@@ -224,7 +224,7 @@
         }
     }
 
-    .overlay {
+    .bit-drp-ovl {
         display: none;
         width: 100%;
         height: 100%;
@@ -235,7 +235,7 @@
         background-color: transparent;
     }
 
-    .wrapper {
+    .bit-drp-wrp {
         position: relative;
         outline: none;
         box-sizing: border-box;
@@ -244,21 +244,21 @@
         -webkit-font-smoothing: antialiased;
 
         &:hover {
-            .text-container {
+            .bit-drp-txt-ctn {
                 color: $color-neutrals-gray160;
                 border: $shape-border-width $shape-border-style $color-neutrals-gray160;
             }
         }
 
         &:active {
-            .text-container {
+            .bit-drp-txt-ctn {
                 border-color: $color-border-primary;
                 color: $color-neutrals-gray190;
             }
         }
 
         &:focus {
-            .text-container {
+            .bit-drp-txt-ctn {
                 color: $color-neutrals-gray160;
             }
         }
@@ -276,7 +276,7 @@
             border-radius: $shape-border-radius;
         }
 
-        .text-container {
+        .bit-drp-txt-ctn {
             height: spacing(4);
             font-size: spacing(1.75);
             font-weight: 400;
@@ -295,7 +295,7 @@
             border-radius: spacing(0.25);
         }
 
-        .icon-container {
+        .bit-drp-ictn {
             position: absolute;
             top: spacing(0.125);
             right: spacing(1);
@@ -314,7 +314,7 @@
             }
         }
 
-        .clear-btn {
+        .bit-drp-clr-btn {
             right: spacing(3.5);
             width: spacing(3.75);
             height: spacing(3.75);
@@ -327,7 +327,7 @@
         }
     }
 
-    .items-wrapper {
+    .bit-drp-iwp {
         display: none;
         position: fixed;
         font-size: spacing(1.75);
@@ -344,13 +344,13 @@
         overflow: hidden;
         -webkit-font-smoothing: antialiased;
 
-        .scroll-wrapper {
+        .bit-drp-scr-wrp {
             height: 100%;
             max-height: spacing(88.875);
             overflow: hidden auto;
         }
 
-        .item-header {
+        .bit-drp-ihdr {
             width: 100%;
             height: spacing(4.5);
             padding: 0 spacing(1);
@@ -365,7 +365,7 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        .item {
+        .bit-drp-itm {
             width: 100%;
             height: spacing(4.5);
             display: flex;
@@ -394,7 +394,7 @@
             }
         }
 
-        .item[disabled] {
+        .bit-drp-itm[disabled] {
             cursor: default;
             color: $color-neutrals-gray90;
 
@@ -403,7 +403,7 @@
             }
         }
 
-        .selected {
+        .bit-drp-sel {
             background-color: $color-neutrals-gray30;
 
             &:hover {
@@ -411,13 +411,13 @@
             }
         }
 
-        .item-divider {
+        .bit-drp-idiv {
             width: 100%;
             height: spacing(0.125);
             background-color: $color-neutrals-gray30;
         }
 
-        .checkbox-wrapper {
+        .bit-drp-chb-wrp {
             width: 100%;
             height: spacing(4.5);
             display: flex;
@@ -433,7 +433,7 @@
             cursor: pointer;
             position: relative;
 
-            &.selected {
+            &.bit-drp-sel {
                 background-color: $color-neutrals-gray30;
 
                 &:hover {
@@ -441,7 +441,7 @@
                 }
             }
 
-            .checkbox-container {
+            .bit-drp-chb-ctn {
                 display: flex;
                 gap: spacing(1);
                 align-items: center;
@@ -454,7 +454,7 @@
                 height: 100%;
             }
 
-            .checkbox {
+            .bit-drp-chb {
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -469,7 +469,7 @@
                 overflow: hidden;
                 position: relative;
 
-                .checkmark {
+                .bit-drp-chm {
                     width: 100%;
                     height: 100%;
                     display: flex;
@@ -484,35 +484,54 @@
                 }
             }
 
-            .text {
+            .bit-drp-txt {
                 color: $color-neutrals-gray190;
                 line-height: spacing(2.5);
             }
 
-            &:hover {
-                .checkmark {
-                    opacity: 1;
-                    color: $color-neutrals-gray120;
+            &.bit-drp-idis {
+                cursor: default;
+
+                .bit-drp-chb {
+                    border-color: $color-neutrals-gray90;
+                }
+
+                .bit-drp-txt {
+                    color: $color-neutrals-gray90;
                 }
             }
 
-            &.checked {
-                .checkbox {
+            &:hover {
+                .bit-drp-chm {
+                    opacity: 1;
+                    color: $color-neutrals-gray120;
+                }
+
+                &.bit-drp-idis {
+                    .bit-drp-chm {
+                        opacity: 0;
+                        color: $color-neutrals-gray90;
+                    }
+                }
+            }
+
+            &.bit-drp-chd {
+                .bit-drp-chb {
                     border-color: $color-primary-main;
                     background-color: $color-primary-main;
 
-                    .checkmark {
+                    .bit-drp-chm {
                         color: $color-neutrals-white;
                         opacity: 1;
                     }
                 }
 
                 &:hover {
-                    .checkbox {
+                    .bit-drp-chb {
                         border-color: $color-primary-darker;
                         background-color: $color-primary-darker;
 
-                        .checkmark {
+                        .bit-drp-chm {
                             color: $color-neutrals-white;
                         }
                     }
@@ -522,41 +541,41 @@
             &.bit-dis {
                 pointer-events: none;
 
-                .checkbox-container {
+                .bit-drp-chb-ctn {
                     cursor: default;
                 }
 
-                .checkbox {
+                .bit-drp-chb {
                     border-color: $color-neutrals-gray60;
                     background-color: $color-neutrals-white;
 
-                    .checkmark {
+                    .bit-drp-chm {
                         opacity: 1;
                         color: $color-neutrals-white;
                         background-color: $color-neutrals-white;
                     }
                 }
 
-                .text {
+                .bit-drp-txt {
                     color: $color-neutrals-gray60;
                 }
 
                 &:hover {
-                    .checkbox {
+                    .bit-drp-chb {
                         border-color: $color-neutrals-gray60;
 
-                        .checkmark {
+                        .bit-drp-chm {
                             opacity: 0;
                         }
                     }
                 }
 
-                &.checked {
-                    .checkbox {
+                &.bit-drp-chd {
+                    .bit-drp-chb {
                         border-color: $color-neutrals-gray60;
                         background-color: $color-neutrals-gray60;
 
-                        .checkmark {
+                        .bit-drp-chm {
                             color: $color-neutrals-white;
                             background-color: $color-neutrals-gray60;
                             opacity: 1;
@@ -564,11 +583,11 @@
                     }
 
                     &:hover {
-                        .checkbox {
+                        .bit-drp-chb {
                             border-color: $color-neutrals-gray60;
                             background-color: $color-neutrals-gray60;
 
-                            .checkmark {
+                            .bit-drp-chm {
                                 color: $color-neutrals-white;
                                 background-color: $color-neutrals-gray60;
                                 opacity: 1;
@@ -580,7 +599,7 @@
         }
     }
 
-    .responsive-label-container {
+    .bit-drp-rsp-lbl-ctn {
         width: 100%;
         display: none;
 
@@ -590,15 +609,15 @@
     }
 
     &.bit-inv {
-        .wrapper {
+        .bit-drp-wrp {
             &:hover {
-                .text-container {
+                .bit-drp-txt-ctn {
                     border-color: $color-state-invalid-hover;
                 }
             }
 
             &:active {
-                .text-container {
+                .bit-drp-txt-ctn {
                     border-color: $color-state-invalid-hover;
                 }
             }
@@ -607,31 +626,31 @@
                 border-color: $color-state-invalid-hover;
             }
 
-            .text-container {
+            .bit-drp-txt-ctn {
                 border-color: $color-state-invalid;
             }
         }
     }
 
     &.bit-dis {
-        .wrapper {
+        .bit-drp-wrp {
             background-color: $color-neutrals-gray20;
             cursor: default;
 
-            .text-container {
+            .bit-drp-txt-ctn {
                 color: $color-neutrals-gray90;
                 border-color: $color-neutrals-gray20;
             }
 
             &:hover {
-                .text-container {
+                .bit-drp-txt-ctn {
                     color: $color-neutrals-gray90;
                     border-color: $color-neutrals-gray20;
                 }
             }
 
             &:active {
-                .text-container {
+                .bit-drp-txt-ctn {
                     color: $color-neutrals-gray90;
                     border-color: $color-neutrals-gray20;
                 }
@@ -643,37 +662,37 @@
                 border: none;
             }
 
-            .icon-container {
+            .bit-drp-ictn {
                 i:first-child {
                     color: $color-neutrals-gray90;
                 }
             }
         }
 
-        .label {
+        .bit-drp-lbl {
             color: $color-neutrals-gray90;
         }
 
-        &.has-value {
-            .wrapper {
-                .text-container {
+        &.bit-drp-hval {
+            .bit-drp-wrp {
+                .bit-drp-txt-ctn {
                     color: $color-neutrals-gray90;
                 }
             }
         }
     }
 
-    &.has-value {
-        .wrapper {
-            .text-container {
+    &.bit-drp-hval {
+        .bit-drp-wrp {
+            .bit-drp-txt-ctn {
                 color: $color-neutrals-gray190;
             }
         }
     }
 
-    &.responsive {
+    &.bit-drp-rsp {
         @media only screen and (max-width: #{639px}) {
-            .items-wrapper {
+            .bit-drp-iwp {
                 height: 100%;
                 max-height: unset;
                 width: spacing(34);
@@ -682,12 +701,12 @@
                 animation-name: opacity, trans-x;
             }
 
-            .responsive-label-container {
+            .bit-drp-rsp-lbl-ctn {
                 display: flex;
                 justify-content: space-between;
             }
 
-            .overlay {
+            .bit-drp-ovl {
                 background: rgba(255, 255, 255, 0.4);
                 position: fixed;
                 pointer-events: auto;
@@ -696,32 +715,32 @@
         }
     }
 
-    &.rtl {
+    &.bit-drp-rtl {
         direction: rtl;
 
-        .search-box {
+        .bit-drp-sb {
             padding: spacing(0.125) spacing(1) spacing(0.125) 0;
         }
 
-        .wrapper {
-            .text-container {
+        .bit-drp-wrp {
+            .bit-drp-txt-ctn {
                 padding: 0 spacing(1) 0 spacing(3.5);
             }
 
-            .icon-container {
+            .bit-drp-ictn {
                 right: unset;
                 left: spacing(1);
             }
         }
 
-        .close-btn {
+        .bit-drp-cls-btn {
             margin-left: unset;
             margin-right: auto;
         }
 
-        &.responsive {
+        &.bit-drp-rsp {
             @media only screen and (max-width: #{639px}) {
-                .items-wrapper {
+                .bit-drp-iwp {
                     animation-name: fade-show, trans-x-reverse;
                 }
             }
