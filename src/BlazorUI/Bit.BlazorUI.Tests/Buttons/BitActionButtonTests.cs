@@ -181,4 +181,33 @@ public class BitActionButtonTests : BunitTestContext
 
         Assert.AreEqual("button", bitButton.GetAttribute("type"));
     }
+
+    [DataTestMethod,
+        DataRow(BitButtonSize.Small),
+        DataRow(BitButtonSize.Medium),
+        DataRow(BitButtonSize.Large),
+        DataRow(null),
+    ]
+    public void BitActionButtonSizeTest(BitButtonSize? bitButtonSize)
+    {
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            if (bitButtonSize.HasValue)
+            {
+                parameters.Add(p => p.ButtonSize, bitButtonSize.Value);
+            }
+        });
+
+        var bitActionButton = component.Find(".bit-acb");
+
+        var bitButtonSizeName = bitButtonSize switch
+        {
+            BitButtonSize.Small => "bit-acb-sm",
+            BitButtonSize.Medium => "bit-acb-md",
+            BitButtonSize.Large => "bit-acb-lg",
+            _ => "bit-acb-md",
+        };
+
+        Assert.IsTrue(bitActionButton.ClassList.Contains(bitButtonSizeName));
+    }
 }
