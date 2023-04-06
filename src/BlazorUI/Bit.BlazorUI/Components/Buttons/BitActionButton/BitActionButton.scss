@@ -14,7 +14,7 @@
     color: $color-text-secondary;
     text-align: center;
 
-    .icon-container {
+    .bit-acb-ictn {
         display: flex;
         align-items: center;
 
@@ -28,7 +28,7 @@
             color: $color-primary-dark;
         }
 
-        .content {
+        .bit-acb-con {
             margin: 0 spacing(0.5);
         }
     }
@@ -59,19 +59,19 @@
         }
     }
 
-    &.small {
+    &.bit-acb-sm {
         padding: spacing(0.25) spacing(1.25);
         font-size: spacing(1.5);
         line-height: spacing(2.75);
     }
 
-    &.medium {
+    &.bit-acb-md {
         padding: spacing(0.5) spacing(2);
         font-size: spacing(1.75);
         line-height: $typography-line-height-buttons;
     }
 
-    &.large {
+    &.bit-acb-lg {
         padding: spacing(0.75) spacing(2.75);
         font-size: spacing(2);
         line-height: spacing(3.75);
