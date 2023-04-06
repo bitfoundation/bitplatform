@@ -132,6 +132,7 @@ public class BitDatePickerTests : BunitTestContext
 
         var monthButtons = component.FindAll(".bit-dtp-mwp .bit-dtp-gctn .bit-dtp-btn-row button");
         Assert.IsTrue(monthButtons.Count > 0);
+        Assert.AreEqual(12, monthButtons.Count);
 
         var index = 0;
         foreach (var button in monthButtons)
