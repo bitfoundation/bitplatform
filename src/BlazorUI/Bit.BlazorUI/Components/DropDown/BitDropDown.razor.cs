@@ -335,15 +335,11 @@ public partial class BitDropDown
 
     protected override void RegisterComponentClasses()
     {
-        ClassBuilder.Register(() => SelectedItems.Any() ? "has-value" : string.Empty);
+        ClassBuilder.Register(() => SelectedItems?.Count > 0 ? $"{RootElementClass}-hval" : string.Empty);
 
-        ClassBuilder.Register(() => IsOpen ? "opened" : string.Empty);
+        ClassBuilder.Register(() => IsResponsiveModeEnabled ? $"{RootElementClass}-rsp" : string.Empty);
 
-        ClassBuilder.Register(() => IsResponsiveModeEnabled ? "responsive" : string.Empty);
-
-        ClassBuilder.Register(() => IsMultiSelect ? "multi" : string.Empty);
-
-        ClassBuilder.Register(() => IsRtl ? "rtl" : string.Empty);
+        ClassBuilder.Register(() => IsRtl ? $"{RootElementClass}-rtl" : string.Empty);
     }
 
     protected override void OnInitialized()
@@ -613,7 +609,29 @@ public partial class BitDropDown
         }
     }
 
-    private string GetSearchBoxClasses() => $"search-box{(_searchText.HasValue() ? " has-value" : null)}{(_inputSearchHasFocus ? " focused" : null)}";
+    private string GetSearchBoxClasses()
+    {
+        StringBuilder className = new StringBuilder(RootElementClass);
+        className.Append("-sb");
+
+        if (_searchText.HasValue())
+        {
+            className
+                .Append(' ')
+                .Append(RootElementClass)
+                .Append("-hval");
+        }
+
+        if (_inputSearchHasFocus)
+        {
+            className
+                .Append(' ')
+                .Append(RootElementClass)
+                .Append("-foc");
+        }
+
+        return className.ToString();
+    }
 
     private string GetDropdownAriaLabelledby => Label.HasValue() ? $"{_dropDownId}-label {_dropDownId}-option" : $"{_dropDownId}-option";
 
@@ -633,16 +651,21 @@ public partial class BitDropDown
 
     private string GetCssClassForItem(BitDropDownItem item)
     {
-        StringBuilder stringBuilder = new StringBuilder("checkbox-wrapper");
+        StringBuilder stringBuilder = new StringBuilder(RootElementClass);
+        stringBuilder.Append("-chb-wrp");
 
         if (item.IsSelected)
         {
             stringBuilder
-                .Append(' ').Append("selected")
-                .Append(' ').Append("checked");
+                .Append(' ').Append(RootElementClass).Append("-sel")
+                .Append(' ').Append(RootElementClass).Append("-chd");
         }
 
-        stringBuilder.Append(' ').Append(item.IsEnabled ? "enabled" : "disabled");
+        if (item.IsEnabled is false)
+        {
+            stringBuilder
+                .Append(' ').Append(RootElementClass).Append("-idis");
+        }
 
         return stringBuilder.ToString();
     }
