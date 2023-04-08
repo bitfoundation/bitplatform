@@ -265,6 +265,11 @@ jobs:
        uses: actions/setup-dotnet@v3
        with:
          global-json-file: src/Templates/TodoTemplate/Bit.TodoTemplate/global.json
+         
+     - name: Setup .NET 5
+       uses: actions/setup-dotnet@v3
+       with:
+         dotnet-version: 5.x
    
      - name: Update appsettings.json api server address
        uses: microsoft/variable-substitution@v1 
