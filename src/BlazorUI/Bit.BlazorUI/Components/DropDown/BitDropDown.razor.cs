@@ -29,10 +29,11 @@ public partial class BitDropDown
     private bool _inputSearchHasFocus;
     private string? _searchText;
     private int? _totalItems;
+    private bool _disposed;
+    private DotNetObjectReference<BitDropDown> _dotnetObj = default!;
     private Virtualize<(int index, BitDropDownItem item)>? _virtualizeElement;
     private ElementReference _searchInputElement;
     private ElementReference _scrollWrapperElement;
-    private DotNetObjectReference<BitDropDown> _dotnetObj = default!;
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
@@ -769,5 +770,16 @@ public partial class BitDropDown
         {
             base.RegisterFieldIdentifier();
         }
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        base.Dispose(disposing);
+
+        if (_disposed || disposing is false) return;
+
+        _dotnetObj.Dispose();
+
+        _disposed = true;
     }
 }
