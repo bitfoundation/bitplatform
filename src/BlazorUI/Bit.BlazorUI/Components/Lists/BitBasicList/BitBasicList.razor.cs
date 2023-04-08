@@ -46,6 +46,15 @@ public partial class BitBasicList<TItem>
 
     protected override string RootElementClass => "bit-bsl";
 
+    public async Task RefreshDataAsync()
+    {
+        if (ItemsProvider is null) return;
+        if (_virtualizeElement is null) return;
+
+        await _virtualizeElement.RefreshDataAsync();
+        StateHasChanged();
+    }
+
     // Gets called both by RefreshDataCoreAsync and directly by the Virtualize child component during scrolling
     private async ValueTask<ItemsProviderResult<TItem>> ProvideVirtualizedItems(ItemsProviderRequest request)
     {
