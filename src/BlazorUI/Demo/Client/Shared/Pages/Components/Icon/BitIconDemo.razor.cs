@@ -9,28 +9,28 @@ public partial class BitIconDemo
 
     private readonly List<ComponentParameter> componentParameters = new()
     {
-        new ComponentParameter()
+        new()
         {
             Name = "AriaLabel",
             Type = "string",
             DefaultValue = "",
             Description = "Aria label for the root element of the component"
         },
-        new ComponentParameter()
+        new()
         {
             Name = "Class",
             Type = "string",
             DefaultValue = "",
             Description = "Custom CSS class for the root element of the component."
         },
-        new ComponentParameter()
+        new()
         {
             Name = "Style",
             Type = "string",
             DefaultValue = "",
             Description = "Custom style for the root element of the component",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "IconName",
             Type = "BitIconName",
@@ -38,46 +38,6 @@ public partial class BitIconDemo
             Href = "/icons",
             DefaultValue = "",
             Description = "The icon name for the icon shown in the button"
-        },
-        new ComponentParameter()
-        {
-            Name = "Visibility",
-            Type = "BitComponentVisibility",
-            LinkType = LinkType.Link,
-            Href = "#component-visibility-enum",
-            DefaultValue = "BitComponentVisibility.Visible",
-            Description = "Whether the component is Visible,Hidden,Collapsed.",
-        },
-    };
-
-    private readonly List<EnumParameter> enumParameters = new()
-    {
-        new EnumParameter()
-        {
-            Id = "component-visibility-enum",
-            Title = "BitComponentVisibility Enum",
-            Description = "",
-            EnumList = new List<EnumItem>()
-            {
-                new EnumItem()
-                {
-                    Name= "Visible",
-                    Description="Show content of the component.",
-                    Value="0",
-                },
-                new EnumItem()
-                {
-                    Name= "Hidden",
-                    Description="Hide content of the component,though the space it takes on the page remains.",
-                    Value="1",
-                },
-                new EnumItem()
-                {
-                    Name= "Collapsed",
-                    Description="Hide content of the component,though the space it takes on the page gone.",
-                    Value="2",
-                }
-            }
         }
     };
 

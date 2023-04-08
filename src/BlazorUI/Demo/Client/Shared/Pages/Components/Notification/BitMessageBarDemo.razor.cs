@@ -78,26 +78,17 @@ public partial class BitMessageBarDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Determines if the message bar text is truncated. If true, a button will render to toggle between a single line view and multiline view. This parameter is for single line message bars with no buttons only in a limited space scenario.",
-        },
-        new()
-        {
-            Name = "Visibility",
-            Type = "BitComponentVisibility",
-            LinkType = LinkType.Link,
-            Href = "#component-visibility-enum",
-            DefaultValue = "BitComponentVisibility.Visible",
-            Description = "Whether the component is Visible,Hidden,Collapsed.",
-        },
+        }
     };
 
-    private readonly List<EnumParameter> enumParameters = new()
+    private readonly List<ComponentSubEnum> enumParameters = new()
     {
         new()
         {
             Id = "messageBarType-enum",
-            Title = "BitMessageBarType Enum",
+            Name = "BitMessageBarType",
             Description = "",
-            EnumList = new List<EnumItem>()
+            Items = new List<ComponentEnumItem>()
             {
                 new()
                 {

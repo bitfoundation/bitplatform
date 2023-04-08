@@ -55,13 +55,13 @@ public partial class BitSnackBarDemo
             Description = "Used to customize how content inside the Title is rendered. ",
         },
     };
-    private readonly List<EnumParameter> enumParameters = new()
+    private readonly List<ComponentSubEnum> enumParameters = new()
     {
-        new EnumParameter()
+        new()
         {
             Id = "snackbar-position-enum",
-            Title = "BitSnackBarPosition Enum",
-            EnumList = new List<EnumItem>()
+            Name = "BitSnackBarPosition",
+            Items = new List<ComponentEnumItem>()
             {
                 new()
                 {
@@ -95,11 +95,11 @@ public partial class BitSnackBarDemo
                 },
             }
         },
-        new EnumParameter()
+        new()
         {
             Id = "SnackBar-type-enum",
-            Title = "BitSnackBarType Enum",
-            EnumList = new List<EnumItem>()
+            Name = "BitSnackBarType",
+            Items = new List<ComponentEnumItem>()
             {
                 new()
                 {

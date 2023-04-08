@@ -37,8 +37,8 @@
 
     &.standard {
         .operator-btn, .chevron-btn {
+            color: $color-text-primary;
             border-color: $color-border-secondary;
-            color: $color-text-secondary;
             background-color: $color-secondary-main;
 
             &:hover {
@@ -62,8 +62,8 @@
 
     &.primary {
         .operator-btn, .chevron-btn {
+            color: $color-text-secondary;
             border-color: $color-border-primary;
-            color: $color-text-primary;
             background-color: $color-primary-main;
 
             &:hover {
@@ -189,13 +189,13 @@
 
     .item {
         display: flex;
+        color: $color-text-primary;
         background-color: transparent;
         width: 100%;
         align-items: center;
         text-align: left;
         cursor: pointer;
         border: none;
-        color: $color-text-secondary;
         gap: spacing(1);
         line-height: inherit;
         font-size: inherit;

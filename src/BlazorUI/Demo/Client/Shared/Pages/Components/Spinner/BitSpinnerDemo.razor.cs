@@ -7,7 +7,7 @@ public partial class BitSpinnerDemo
 {
     private readonly List<ComponentParameter> componentParameters = new()
     {
-        new ComponentParameter()
+        new()
         {
             Name = "AriaLive",
             Type = "BitSpinnerAriaLive",
@@ -16,14 +16,14 @@ public partial class BitSpinnerDemo
             DefaultValue = "BitSpinnerAriaLive.Polite",
             Description = "Politeness setting for label update announcement.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "Label",
             Type = "string",
             DefaultValue = "",
             Description = "The label to show next to the spinner. Label updates will be announced to the screen readers.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "LabelPosition",
             Type = "BitLabelPosition",
@@ -32,7 +32,7 @@ public partial class BitSpinnerDemo
             DefaultValue = "BitLabelPosition.Top",
             Description = "The position of the label in regards to the spinner animation.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "Size",
             Type = "BitSpinnerSize",
@@ -40,40 +40,31 @@ public partial class BitSpinnerDemo
             Href = "#spinnerSize-enum",
             DefaultValue = "BitSpinnerSize.Medium",
             Description = "The size of spinner to render.",
-        },
-        new ComponentParameter()
-        {
-            Name = "Visibility",
-            Type = "BitComponentVisibility",
-            LinkType = LinkType.Link,
-            Href = "#component-visibility-enum",
-            DefaultValue = "BitComponentVisibility.Visible",
-            Description = "Whether the component is Visible,Hidden,Collapsed.",
-        },
+        }
     };
 
-    private readonly List<EnumParameter> enumParameters = new()
+    private readonly List<ComponentSubEnum> enumParameters = new()
     {
-        new EnumParameter()
+        new()
         {
             Id = "spinnerAriaLive-enum",
-            Title = "BitSpinnerAriaLive Enum",
+            Name = "BitSpinnerAriaLive",
             Description = "",
-            EnumList = new List<EnumItem>()
+            Items = new List<ComponentEnumItem>()
             {
-                new EnumItem()
+                new()
                 {
                     Name= "Assertive",
                     Description="",
                     Value="0",
                 },
-                new EnumItem()
+                new()
                 {
                     Name= "Polite",
                     Description="",
                     Value="1",
                 },
-                new EnumItem()
+                new()
                 {
                     Name= "Off",
                     Description="",
@@ -81,32 +72,32 @@ public partial class BitSpinnerDemo
                 },
             },
         },
-        new EnumParameter()
+        new()
         {
             Id = "spinnerLabelPosition-enum",
-            Title = "BitLabelPosition Enum",
+            Name = "BitLabelPosition",
             Description = "",
-            EnumList = new List<EnumItem>()
+            Items = new List<ComponentEnumItem>()
             {
-                new EnumItem()
+                new()
                 {
                     Name= "Top",
                     Description="The label shows on the top of the spinner.",
                     Value="0",
                 },
-                new EnumItem()
+                new()
                 {
                     Name= "Right",
                     Description="The label shows on the right side of the spinner.",
                     Value="1",
                 },
-                new EnumItem()
+                new()
                 {
                     Name= "Bottom",
                     Description="The label shows on the bottom of the spinner.",
                     Value="2",
                 },
-                new EnumItem()
+                new()
                 {
                     Name= "Left",
                     Description="The label shows on the left side of the spinner.",
@@ -114,65 +105,38 @@ public partial class BitSpinnerDemo
                 },
             }
         },
-        new EnumParameter()
+        new()
         {
             Id = "spinnerSize-enum",
-            Title = "BitSpinnerSize Enum",
+            Name = "BitSpinnerSize",
             Description = "",
-            EnumList = new List<EnumItem>()
+            Items = new List<ComponentEnumItem>()
             {
-                new EnumItem()
+                new()
                 {
                     Name= "Medium",
                     Description="20px Spinner diameter.",
                     Value="0",
                 },
-                new EnumItem()
+                new()
                 {
                     Name= "Large",
                     Description="28px Spinner diameter.",
                     Value="1",
                 },
-                new EnumItem()
+                new()
                 {
                     Name= "Small",
                     Description="16px Spinner diameter.",
                     Value="2",
                 },
-                new EnumItem()
+                new()
                 {
                     Name= "XSmall",
                     Description="12px Spinner diameter.",
                     Value="3",
                 },
             },
-        },
-        new EnumParameter()
-        {
-            Id = "component-visibility-enum",
-            Title = "BitComponentVisibility Enum",
-            Description = "",
-            EnumList = new List<EnumItem>()
-            {
-                new EnumItem()
-                {
-                    Name= "Visible",
-                    Description="Show content of the component.",
-                    Value="0",
-                },
-                new EnumItem()
-                {
-                    Name= "Hidden",
-                    Description="Hide content of the component,though the space it takes on the page remains.",
-                    Value="1",
-                },
-                new EnumItem()
-                {
-                    Name= "Collapsed",
-                    Description="Hide content of the component,though the space it takes on the page gone.",
-                    Value="2",
-                }
-            }
         }
     };
 

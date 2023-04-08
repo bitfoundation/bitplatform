@@ -149,9 +149,9 @@ public partial class BitBreadcrumbDemo
         },
     };
 
-    private readonly List<ComponentSubParameter> componentSubParameters = new()
+    private readonly List<ComponentSubClass> componentSubParameters = new()
     {
-        new ComponentSubParameter()
+        new ComponentSubClass()
         {
             Id = "bit-breadcrumb-item",
             Title = "BitBreadcrumbItem",
@@ -196,7 +196,7 @@ public partial class BitBreadcrumbDemo
                },
             }
         },
-        new ComponentSubParameter()
+        new ComponentSubClass()
         {
             Id = "bit-breadcrumb-option",
             Title = "BitBreadcrumbOption",

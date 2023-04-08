@@ -88,14 +88,14 @@ public partial class BitRatingDemo
         }
     };
 
-    private readonly List<EnumParameter> enumParameters = new()
+    private readonly List<ComponentSubEnum> enumParameters = new()
     {
         new()
         {
             Id = "rating-size-enum",
-            Title = "BitRatingSize Enum",
+            Name = "BitRatingSize",
             Description = "",
-            EnumList = new List<EnumItem>()
+            Items = new List<ComponentEnumItem>()
             {
                 new()
                 {

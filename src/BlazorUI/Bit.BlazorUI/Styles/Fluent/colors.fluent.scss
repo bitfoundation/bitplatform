@@ -1,17 +1,20 @@
 ﻿:root {
-    /* ======== primary color ========= */
-    // main color
     --clr-primary-main: #0078D4;
     --clr-primary-dark: #106EBE;
     --clr-primary-darker: #005A9E;
     --clr-primary-light: #2b88d8;
-    --clr-secondary-main: #FFFFFF;    
+    --clr-secondary-main: #FFFFFF;
     --clr-secondary-light: #DEECF9;
     --clr-secondary-dark: #F3F2F1;
     --clr-secondary-darker: #EDEBE9;
-    //background color
-    --clr-background: #FFFFFF;
-    //general
+    //texts
+    --clr-txt-primary: #000;
+    --clr-txt-secondary: #FFF;
+    --clr-txt-disabled: #A19F9D;
+    //backgrounds
+    --clr-bg-primary: #FFF;
+    --clr-bg-secondary: #000;
+    //generals
     --clr-gnr-red: #A4262C;
     --clr-gnr-darkred: #750B1C;
     --clr-gnr-red2: #C50F1F;
@@ -21,7 +24,7 @@
     --clr-gnr-magenta: #B4009E;
     --clr-gnr-blue: #0078D4;
     --clr-gnr-lightblue: #C7E0F4;
-    //state
+    //states
     --clr-sta-invalid: #A4262C;
     --clr-sta-invalid-hover: #750B1C;
     --clr-sta-error: #A4262C;
@@ -33,7 +36,7 @@
     --clr-sta-success-dark: #107C10;
     --clr-sta-warning-bg: #FFF4CE;
     --clr-sta-warning-dark: #8A6B00;
-    //action
+    //actions
     --clr-act-hover-pri: #106EBE;
     --clr-act-active-pri: #005A9E;
     --clr-act-hover-sec: #F3F2F1;
@@ -42,15 +45,11 @@
     --clr-act-border-hover-sec: #323130;
     --clr-act-border-active-sec: #323130;
     --clr-act2-active: #004578;
-    //text
-    --clr-txt-primary: #FFFFFF;
-    --clr-txt-secondary: #323130;
-    --clr-txt-disabled: #A19F9D;
-    //border
+    //borders
     --clr-brd-primary: #0078D4;
     --clr-brd-secondary: #8A8886;
     --clr-brd-disabled: #F3F2F1;
-    // neutrals color
+    // neutrals
     --clr-ntr-white: #FFFFFF;
     --clr-ntr-black: #000000;
     --clr-ntr-gray10: #FAF9F8;

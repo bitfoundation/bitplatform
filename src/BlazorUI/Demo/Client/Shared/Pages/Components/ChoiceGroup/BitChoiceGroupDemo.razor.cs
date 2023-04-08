@@ -225,7 +225,7 @@ public partial class BitChoiceGroupDemo
             Description = "The field from the model that will be the underlying value."
         },
     };
-    private readonly List<ComponentSubParameter> componentSubParameters = new()
+    private readonly List<ComponentSubClass> componentSubParameters = new()
     {
         new()
         {

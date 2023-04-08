@@ -86,22 +86,22 @@ public partial class BitCarouselDemo
         }
     };
 
-    private readonly List<EnumParameter> enumParameters = new()
+    private readonly List<ComponentSubEnum> enumParameters = new()
     {
-        new EnumParameter()
+        new()
         {
             Id = "direction-enum",
-            Title = "BitDirection Enum",
+            Name = "BitDirection",
             Description = "Describes the render direction",
-            EnumList = new List<EnumItem>()
+            Items = new List<ComponentEnumItem>()
             {
-                new EnumItem()
+                new()
                 {
                     Name= "LeftToRight",
                     Description="Renders content from left to right.",
                     Value="0",
                 },
-                new EnumItem()
+                new()
                 {
                     Name= "RightToLeft",
                     Description="Renders content from right to left.",
@@ -322,7 +322,6 @@ public partial class BitCarouselDemo
         <BitNumericTextField @bind-Value=""index""></BitNumericTextField>
     </div>
 </div>";
-
     private readonly string example4CsCode = @"
 private int index;
 private BitCarousel carousel;

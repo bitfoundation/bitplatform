@@ -289,7 +289,7 @@ public partial class BitNavDemo
             Description = "URL to navigate for the item link."
         }
     };
-    private readonly List<ComponentSubParameter> componentSubParameters = new()
+    private readonly List<ComponentSubClass> componentSubParameters = new()
     {
         new()
         {
@@ -559,13 +559,13 @@ public partial class BitNavDemo
             }
         }
     };
-    private readonly List<EnumParameter> enumParameters = new()
+    private readonly List<ComponentSubEnum> enumParameters = new()
     {
         new()
         {
             Id = "nav-mode-enum",
-            Title = "BitNavMode Enum",
-            EnumList = new()
+            Name = "BitNavMode",
+            Items = new()
             {
                 new()
                 {
@@ -584,8 +584,8 @@ public partial class BitNavDemo
         new()
         {
             Id = "nav-render-type-enum",
-            Title = "BitNavRenderType Enum",
-            EnumList = new()
+            Name = "BitNavRenderType",
+            Items = new()
             {
                 new()
                 {
@@ -602,8 +602,8 @@ public partial class BitNavDemo
         new()
         {
             Id = "nav-item-aria-current-enum",
-            Title = "BitNavItemAriaCurrent Enum",
-            EnumList = new()
+            Name = "BitNavItemAriaCurrent",
+            Items = new()
             {
                 new()
                 {
