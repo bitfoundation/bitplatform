@@ -11,14 +11,14 @@
              aria-labelledby="@TitleAriaId"
              aria-describedby="@SubtitleAriaId"
              style="outline:none;">
-            <div class="modal @GetPositionClass()" role="document">
+            <div class="bit-mdl-doc @GetPositionClass()" role="document">
                 @if (IsModeless is false)
                 {
-                    <div class="overlay" aria-hidden="true" @onclick="CloseModal" />
+                    <div class="bit-mdl-ovl" aria-hidden="true" @onclick="CloseModal" />
                 }
 
-                <div id="@_containerId" class="container">
-                    <div class="scroll-content">
+                <div id="@_containerId" class="bit-mdl-ctn">
+                    <div class="bit-mdl-scrl-cnt">
                         @ChildContent
                     </div>
                 </div>
