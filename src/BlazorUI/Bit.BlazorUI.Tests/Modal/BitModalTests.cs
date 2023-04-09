@@ -149,9 +149,9 @@ public class BitModalTests : BunitTestContext
             parameters.AddChildContent("<div>Test Content</div>");
         });
 
-        var elementContent = com.Find(".bit-mdl-scrl-cnt");
+        var elementContent = com.Find(".bit-mdl-scr-cnt");
 
-        elementContent.MarkupMatches("<div class=\"bit-mdl-scrl-cnt\"><div>Test Content</div></div>");
+        elementContent.MarkupMatches("<div class=\"bit-mdl-scr-cnt\"><div>Test Content</div></div>");
     }
 
     [TestMethod]
