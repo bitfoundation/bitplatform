@@ -1,13 +1,8 @@
 ﻿@import "../../Styles/functions.scss";
 
 .bit-tpg {
+    color: $color-text-primary;
     font-family: $typography-font-family;
-
-    &.bit-tpg-nowrap {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
 
     &.bit-tpg-body1 {
         margin: $typography-body1-margin;
@@ -124,5 +119,16 @@
         font-size: $typography-subtitle2-font-size;
         line-height: $typography-subtitle2-line-height;
         letter-spacing: $typography-subtitle2-letter-spacing;
+    }
+
+
+    &.bit-tpg-nowrap {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    &.bit-tpg-gutter {
+        margin-bottom: $typography-gutter-size;
     }
 }

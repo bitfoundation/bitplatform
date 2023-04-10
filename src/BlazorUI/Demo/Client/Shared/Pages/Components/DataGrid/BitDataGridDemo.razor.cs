@@ -7,7 +7,7 @@ public partial class BitDataGridDemo
 {
     private readonly List<ComponentParameter> componentParameters = new()
     {
-         new ComponentParameter()
+         new()
          {
             Name = "Items",
             Type = "IQueryable<TGridItem>",
@@ -18,7 +18,7 @@ public partial class BitDataGridDemo
                             or an EntityFramework DataSet or an IQueryable derived from it.
                             You should supply either Items or ItemsProvider, but not both.",
          },
-         new ComponentParameter()
+         new()
          {
             Name = "ItemsProvider",
             Type = "BitDataGridItemsProvider<TGridItem>",
@@ -26,28 +26,28 @@ public partial class BitDataGridDemo
             Description = @"A callback that supplies data for the rid.
                             You should supply either Items or ItemsProvider, but not both.",
          },
-         new ComponentParameter()
+         new()
          {
             Name = "Class",
             Type = "string",
             DefaultValue = "",
             Description = "An optional CSS class name. If given, this will be included in the class attribute of the rendered table.",
          },
-         new ComponentParameter()
+         new()
          {
             Name = "Theme",
             Type = "IQueryable<TGridItem>",
             DefaultValue = "default",
             Description = @"A theme name, with default value ""default"". This affects which styling rules match the table.",
          },
-         new ComponentParameter()
+         new()
          {
             Name = "ChildContent",
             Type = "RenderFragment",
             DefaultValue = "",
             Description = "Defines the child components of this instance. For example, you may define columns by adding components derived from the BitDataGridColumnBase<TGridItem>",
          },
-         new ComponentParameter()
+         new()
          {
             Name = "Virtualize",
             Type = "bool",
@@ -56,7 +56,7 @@ public partial class BitDataGridDemo
                             scrolling and causes the grid to fetch and render only the data around the current scroll viewport.
                             This can greatly improve the performance when scrolling through large data sets.",
          },
-         new ComponentParameter()
+         new()
          {
             Name = "ItemSize",
             Type = "float",
@@ -65,7 +65,7 @@ public partial class BitDataGridDemo
                             each row, allowing the virtualization mechanism to fetch the correct number of items to match the display
                             size and to ensure accurate scrolling.",
          },
-         new ComponentParameter()
+         new()
          {
             Name = "ResizableColumns",
             Type = "bool",
@@ -73,7 +73,7 @@ public partial class BitDataGridDemo
             Description = @"If true, renders draggable handles around the column headers, allowing the user to resize the columns
                             manually. Size changes are not persisted.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "ItemKey",
             Type = "Func<TGridItem, object>",
@@ -84,7 +84,7 @@ public partial class BitDataGridDemo
                             unique identifiers, even when the TGridItem instances are replaced by new copies (for example, after a new query against the underlying data store).
                             If not set, the @key will be the TGridItem instance itself.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "Pagination",
             Type = "BitDataGridPaginationState",
@@ -96,36 +96,36 @@ public partial class BitDataGridDemo
         }
     };
 
-    private readonly List<ComponentSubParameter> componentSubParameter = new()
+    private readonly List<ComponentSubClass> componentSubParameter = new()
     {
-         new ComponentSubParameter()
+        new()
          {
             Id = "BitDataGridColumnBase",
             Title = "BitDataGridColumnBase",
             Parameters=new List<ComponentParameter>()
             {
-                new ComponentParameter()
+                new()
                 {
                     Name = "Title",
                     Type = "string",
                     DefaultValue = "",
                     Description = "Title text for the column. This is rendered automatically if HeaderTemplate is not used.",
                 },
-                new ComponentParameter()
+                new()
                 {
                     Name = "Class",
                     Type = "string",
                     DefaultValue = "",
                     Description = "An optional CSS class name. If specified, this is included in the class attribute of table header and body cells for this column.",
                 },
-                new ComponentParameter()
+                new()
                 {
                     Name = "Align",
                     Type = "BitDataGridAlign",
                     DefaultValue = "",
                     Description = "If specified, controls the justification of table header and body cells for this column.",
                  },
-                 new ComponentParameter()
+                 new()
                     {
                         Name = "HeaderTemplate",
                         Type = "RenderFragment<BitDataGridColumnBase<TGridItem>>",
@@ -133,7 +133,7 @@ public partial class BitDataGridDemo
                         Description = @"An optional template for this column's header cell. If not specified, the default header template
                                         includes the Title along with any applicable sort indicators and options buttons.",
                     },
-                    new ComponentParameter()
+                    new()
                     {
                         Name = "ColumnOptions",
                         Type = "RenderFragment<BitDataGridColumnBase<TGridItem>>",
@@ -143,7 +143,7 @@ public partial class BitDataGridDemo
                                         If HeaderTemplate is used, it is left up to that template to render any relevant
                                         ""show options"" UI and invoke the grid's BitDataGrid<TGridItem>.ShowColumnOptions(BitDataGridColumnBase<TGridItem>)).",
                     },
-                    new ComponentParameter()
+                    new()
                     {
                         Name = "Sortable",
                         Type = "bool",
@@ -152,14 +152,14 @@ public partial class BitDataGridDemo
                                         The default value may vary according to the column type (for example, a BitDataGridTemplateColumn<TGridItem>
                                         is sortable by default if any BitDataGridTemplateColumn<TGridItem>.SortBy parameter is specified).",
                     },
-                    new ComponentParameter()
+                    new()
                     {
                         Name = "IsDefaultSort",
                         Type = "BitDataGridSortDirection",
                         DefaultValue = "",
                         Description = "If specified and not null, indicates that this column represents the initial sort order for the grid. The supplied value controls the default sort direction.",
                     },
-                    new ComponentParameter()
+                    new()
                     {
                         Name = "PlaceholderTemplate",
                         Type = "RenderFragment<PlaceholderContext>",
@@ -171,20 +171,20 @@ public partial class BitDataGridDemo
                             The BitDataGridColumnBase type, which all column must derive from, offers some common parameters",
 
         },
-        new ComponentSubParameter()
+        new()
         {
             Id="BitDataGridPropertyColumn",
             Title = "BitDataGridPropertyColumn",
             Parameters=new List<ComponentParameter>()
             {
-                new ComponentParameter()
+                new()
                 {
                     Name = "Property",
                     Type = "Expression<Func<TGridItem, TProp>>",
                     DefaultValue = "",
                     Description = "Defines the value to be displayed in this column's cells.",
                 },
-                new ComponentParameter()
+                new()
                 {
                     Name = "Format",
                     Type = "string",
@@ -194,20 +194,20 @@ public partial class BitDataGridDemo
             },
             Description = "It is for displaying a single value specified by the parameter Property. This column infers sorting rules automatically, and uses the property's name as its title if not otherwise set.",
         },
-        new ComponentSubParameter()
+        new()
         {
             Id = "BitDataGridTemplateColumn",
             Title = "BitDataGridTemplateColumn",
             Parameters = new List<ComponentParameter>()
             {
-                 new ComponentParameter()
+                 new()
                  {
                     Name = "ChildContent",
                     Type = "RenderFragment<TGridItem>",
                     DefaultValue= "",
                     Description = @"Specifies the content to be rendered for each row in the table.",
                  },
-                 new ComponentParameter()
+                 new()
                  {
                     Name = "SortBy",
                     Type = "BitDataGridSort<TGridItem>",
@@ -224,28 +224,28 @@ public partial class BitDataGridDemo
 
     };
 
-    private readonly List<EnumParameter> enumParameters = new()
+    private readonly List<ComponentSubEnum> enumParameters = new()
     {
-        new EnumParameter()
+        new()
         {
              Id = "BitDataGridAlign",
-             Title = "BitDataGridAlign Enum",
+             Name = "BitDataGridAlign",
              Description = "Describes alignment for a BitDataGrid<TGridItem> column.",
-             EnumList = new List<EnumItem>()
+             Items = new List<ComponentEnumItem>()
              {
-                 new EnumItem()
+                 new ComponentEnumItem()
                  {
                       Name = "Left",
                       Value = "0",
                       Description = "Justifies the content against the start of the container."
                  },
-                 new EnumItem()
+                 new ComponentEnumItem()
                  {
                       Name = "Center",
                       Value = "1",
                       Description = "Justifies the content at the center of the container."
                  },
-                 new EnumItem()
+                 new ComponentEnumItem()
                  {
                       Name = "Right",
                       Value = "2",

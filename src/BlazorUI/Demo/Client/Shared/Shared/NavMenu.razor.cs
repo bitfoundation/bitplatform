@@ -146,7 +146,7 @@ public partial class NavMenu
         {
             isNavOpen = !isNavOpen;
 
-            await JsRuntime.SetToggleBodyOverflow(isNavOpen);
+            await JsRuntime.ToggleBodyOverflow(isNavOpen);
         }
         catch (Exception ex)
         {

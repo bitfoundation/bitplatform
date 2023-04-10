@@ -109,14 +109,14 @@ public partial class BitModalDemo
         }
     };
 
-    private readonly List<EnumParameter> enumParameters = new()
+    private readonly List<ComponentSubEnum> enumParameters = new()
     {
         new()
         {
             Id = "component-position-enum",
-            Title = "BitModalPosition Enum",
+            Name = "BitModalPosition",
             Description = "",
-            EnumList = new List<EnumItem>()
+            Items = new List<ComponentEnumItem>()
             {
                 new() { Name = "Center", Value = "0" },
                 new() { Name = "TopLeft", Value = "1" },

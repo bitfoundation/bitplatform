@@ -15,189 +15,189 @@ public partial class BitFileUploadDemo
 
     private readonly List<ComponentParameter> componentParameters = new()
     {
-        new ComponentParameter
+        new()
         {
             Name = "AllowedExtensions",
             Type = "IReadOnlyCollection<string>",
             DefaultValue = "new List<string> { \"*\" }",
             Description = "Filters files by extension.",
         },
-        new ComponentParameter
+        new()
         {
             Name = "AutoChunkSizeEnabled",
             Type = "bool",
             DefaultValue = "false",
             Description = "Calculate the chunk size dynamically based on the user's Internet speed between 512 KB and 10 MB."
         },
-        new ComponentParameter
+        new()
         {
             Name = "AutoUploadEnabled",
             Type = "bool",
             DefaultValue = "false",
             Description = "Automatically starts the upload file(s) process immediately after selecting the file(s)."
         },
-        new ComponentParameter
+        new()
         {
             Name = "ChunkSize",
             Type = "long",
             DefaultValue = "10485760 (10 MB)",
             Description = "The size of each chunk of file upload in bytes."
         },
-        new ComponentParameter
+        new()
         {
             Name = "IsMultiSelect",
             Type = "bool",
             DefaultValue = "false",
             Description = "Enables multi-file select & upload."
         },
-        new ComponentParameter
+        new()
         {
             Name = "Label",
             Type = "string",
             DefaultValue = "Browse",
             Description = "The text of select file button."
         },
-        new ComponentParameter
+        new()
         {
             Name = "LabelTemplate",
             Type = "RenderFragment",
             DefaultValue = "null",
             Description = "A custom razor fragment for select button."
         },
-        new ComponentParameter
+        new()
         {
             Name = "MaxSize (byte)",
             Type = "long",
             DefaultValue = "0",
             Description = "Specifies the maximum size of the file (0 for unlimited)."
         },
-        new ComponentParameter
+        new()
         {
             Name = "MaxSizeErrorMessage",
             Type = "string",
             DefaultValue = "The file size is larger than the max size",
             Description = "Specifies the message for the failed uploading progress due to exceeding the maximum size."
         },
-        new ComponentParameter
+        new()
         {
             Name = "NotAllowedExtensionErrorMessage",
             Type = "string",
             DefaultValue = "The file type is not allowed",
             Description = "Specifies the message for the failed uploading progress due to the allowed extensions."
         },
-        new ComponentParameter
+        new()
         {
             Name = "OnAllUploadsComplete",
             Type = "EventCallback<BitFileInfo[]>",
             DefaultValue = "null",
             Description = "Callback for when all files are uploaded."
         },
-        new ComponentParameter
+        new()
         {
             Name = "OnChange",
             Type = "EventCallback<BitFileInfo[]>",
             DefaultValue = "null",
             Description = "Callback for when file or files status change."
         },
-        new ComponentParameter
+        new()
         {
             Name = "OnProgress",
             Type = "EventCallback<BitFileInfo>",
             DefaultValue = "null",
             Description = "Callback for when the file upload is progressed."
         },
-        new ComponentParameter
+        new()
         {
             Name = "OnRemoveComplete",
             Type = "EventCallback<BitFileInfo>",
             DefaultValue = "null",
             Description = "Callback for when a remove file is done."
         },
-        new ComponentParameter
+        new()
         {
             Name = "OnRemoveFailed",
             Type = "EventCallback<BitFileInfo>",
             DefaultValue = "null",
             Description = "Callback for when a remove file is failed."
         },
-        new ComponentParameter
+        new()
         {
             Name = "OnUploadComplete",
             Type = "EventCallback<BitFileInfo>",
             DefaultValue = "null",
             Description = "Callback for when a file upload is done."
         },
-        new ComponentParameter
+        new()
         {
             Name = "OnUploadFailed",
             Type = "EventCallback<BitFileInfo>",
             DefaultValue = "null",
             Description = "Callback for when an upload file is failed."
         },
-        new ComponentParameter
+        new()
         {
             Name = "RemoveRequestHttpHeaders",
             Type = "IReadOnlyDictionary<string, string>",
             DefaultValue = "new Dictionary<string, string>()",
             Description = "Custom http headers for remove request."
         },
-        new ComponentParameter
+        new()
         {
             Name = "RemoveRequestQueryStrings",
             Type = "IReadOnlyDictionary<string, string>",
             DefaultValue = "new Dictionary<string, string>()",
             Description = "Custom query strings for remove request."
         },
-        new ComponentParameter
+        new()
         {
             Name = "RemoveUrl",
             Type = "string",
             DefaultValue = "null",
             Description = "URL of the server endpoint removing the files."
         },
-        new ComponentParameter
+        new()
         {
             Name = "ShowRemoveButton",
             Type = "bool",
             DefaultValue = "false",
             Description = "URL of the server endpoint removing the files."
         },
-        new ComponentParameter
+        new()
         {
             Name = "SuccessfulUploadMessage",
             Type = "string",
             DefaultValue = "File upload successful",
             Description = "The message shown for successful file uploads."
         },
-        new ComponentParameter
+        new()
         {
             Name = "FailedUploadMessage",
             Type = "string",
             DefaultValue = "File upload failed",
             Description = "The message shown for failed file uploads."
         },
-        new ComponentParameter
+        new()
         {
             Name = "UploadRequestHttpHeaders",
             Type = "IReadOnlyDictionary<string, string>",
             DefaultValue = "new Dictionary<string, string>()",
             Description = "Custom http headers for upload request."
         },
-        new ComponentParameter
+        new()
         {
             Name = "UploadRequestQueryStrings",
             Type = "IReadOnlyDictionary<string, string>",
             DefaultValue = "new Dictionary<string, string>()",
             Description = "Custom query strings for upload request."
         },
-        new ComponentParameter
+        new()
         {
             Name = "UploadUrl",
             Type = "string",
             DefaultValue = "",
             Description = "URL of the server endpoint receiving the files."
         },
-        new ComponentParameter
+        new()
         {
             Name = "EnableChunkedUpload",
             Type = "bool",
@@ -206,14 +206,14 @@ public partial class BitFileUploadDemo
         }
     };
 
-    private readonly List<EnumParameter> enumParameters = new()
+    private readonly List<ComponentSubEnum> enumParameters = new()
     {
-        new EnumParameter()
+        new()
         {
             Id = "uploadstatus-enum",
-            Title = "BitFileUploadStatus Enum",
+            Name = "BitFileUploadStatus",
             Description = "",
-            EnumList = new List<EnumItem>()
+            Items = new List<ComponentEnumItem>()
             {
                 new()
                 {

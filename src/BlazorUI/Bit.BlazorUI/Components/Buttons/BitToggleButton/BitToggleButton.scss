@@ -32,8 +32,8 @@
     }
 
     &.standard {
+        color: $color-text-primary;
         border-color: $color-border-secondary;
-        color: $color-text-secondary;
         background-color: $color-secondary-main;
 
         &:hover {
@@ -58,8 +58,8 @@
     }
 
     &.primary {
+        color: $color-text-secondary;
         border-color: $color-border-primary;
-        color: $color-text-primary;
         background-color: $color-primary-main;
 
         &:hover {

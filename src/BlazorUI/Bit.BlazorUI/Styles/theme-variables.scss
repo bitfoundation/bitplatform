@@ -1,5 +1,4 @@
-﻿$spacing-scaling-factor: var(--spa-scaling-factor);
-/*---- Color ----*/
+﻿/*-------- Colors --------*/
 $color-primary-main: var(--clr-primary-main);
 $color-primary-dark: var(--clr-primary-dark);
 $color-primary-darker: var(--clr-primary-darker);
@@ -9,7 +8,17 @@ $color-secondary-main: var(--clr-secondary-main);
 $color-secondary-light: var(--clr-secondary-light);
 $color-secondary-dark: var(--clr-secondary-dark);
 $color-secondary-darker: var(--clr-secondary-darker);
-//general
+
+//texts
+$color-text-primary: var(--clr-txt-primary);
+$color-text-secondary: var(--clr-txt-secondary);
+$color-text-disabled: var(--clr-txt-disabled);
+
+//backgrounds
+$color-background-primary: var(--clr-bg-primary);
+$color-background-secondary: var(--clr-bg-secondary);
+
+//generals
 $color-general-red: var(--clr-gnr-red);
 $color-general-darkred: var(--clr-gnr-darkred);
 $color-general-red2: var(--clr-gnr-red2);
@@ -19,7 +28,8 @@ $color-general-orange: var(--clr-gnr-orange);
 $color-general-magenta: var(--clr-gnr-magenta);
 $color-general-blue: var(--clr-gnr-blue);
 $color-general-lightblue: var(--clr-gnr-lightblue);
-//state
+
+//states
 $color-state-invalid: var(--clr-sta-invalid);
 $color-state-invalid-hover: var(--clr-sta-invalid-hover);
 $color-state-error: var(--clr-sta-error);
@@ -31,9 +41,8 @@ $color-state-success-bg: var(--clr-sta-success-bg);
 $color-state-success-dark: var(--clr-sta-success-dark);
 $color-state-warning-bg: var(--clr-sta-warning-bg);
 $color-state-warning-dark: var(--clr-sta-warning-dark);
-//background color
-$color-background: var(--clr-background);
-//action
+
+//actions
 $color-action-hover-primary: var(--clr-act-hover-pri);
 $color-action-active-primary: var(--clr-act-active-pri);
 $color-action-hover-secondary: var(--clr-act-hover-sec);
@@ -42,14 +51,12 @@ $color-action-disabled: var(--clr-act-disabled);
 $color-action-border-hover-secondary: var(--clr-act-border-hover-sec);
 $color-action-border-active-secondary: var(--clr-act-border-active-sec);
 $color-action2-active-primary: var(--clr-act2-active);
-//text
-$color-text-primary: var(--clr-txt-primary);
-$color-text-secondary: var(--clr-txt-secondary);
-$color-text-disabled: var(--clr-txt-disabled);
-//border
+
+//borders
 $color-border-primary: var(--clr-brd-primary);
 $color-border-secondary: var(--clr-brd-secondary);
 $color-border-disabled: var(--clr-brd-disabled);
+
 //neutrals
 $color-neutrals-white: var(--clr-ntr-white);
 $color-neutrals-black: var(--clr-ntr-black);
@@ -76,15 +83,15 @@ $color-neutrals-gray200: var(--clr-ntr-gray200);
 $color-neutrals-gray210: var(--clr-ntr-gray210);
 $color-neutrals-gray220: var(--clr-ntr-gray220);
 
+//spacing
+$spacing-scaling-factor: var(--spa-scaling-factor);
+$space-overlay-zindex0: var(--spa-ovr-zindex0);
+$space-overlay-zindex1: var(--spa-ovr-zindex1);
+
 //shape
 $shape-border-radius: var(--shp-brd-radius);
 $shape-border-width: var(--shp-brd-width);
 $shape-border-style: var(--shp-brd-style);
-
-//spacing
-$space-overlay-zindex0: var(--spa-ovr-zindex0);
-$space-overlay-zindex1: var(--spa-ovr-zindex1);
-
 
 /*---- Typography ----*/
 $typography-font-family: var(--tpg-font-family);
@@ -93,6 +100,7 @@ $typography-line-height: var(--tpg-line-height);
 $typography-font-weight-buttons: var(--tpg-font-weight-btns);
 $typography-line-height-buttons: var(--tpg-line-height-btns);
 $typography-font-family-icons: var(--tpg-font-family-icons);
+$typography-gutter-size: var(--tpg-gutter-size);
 
 // body1
 $typography-body1-margin: var(--tpg-body1-margin);

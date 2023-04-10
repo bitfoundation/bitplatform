@@ -272,14 +272,14 @@ public partial class BitTextFieldDemo
         },
     };
 
-    private readonly List<EnumParameter> enumParameters = new()
+    private readonly List<ComponentSubEnum> enumParameters = new()
     {
         new()
         {
             Id = "text-field-type-enum",
-            Title = "BitTextFieldType Enum",
+            Name = "BitTextFieldType",
             Description = "",
-            EnumList = new List<EnumItem>()
+            Items = new List<ComponentEnumItem>()
             {
                 new()
                 {

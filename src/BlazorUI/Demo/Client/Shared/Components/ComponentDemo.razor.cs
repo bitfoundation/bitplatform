@@ -24,10 +24,10 @@ public partial class ComponentDemo
         }
     };
 
-    [Parameter] public string ComponentName { get; set; }
-    [Parameter] public string ComponentDescription { get; set; }
-    [Parameter] public RenderFragment ChildContent { get; set; }
-    [Parameter] public List<EnumParameter> EnumParameters { get; set; } = new();
+    [Parameter] public string? ComponentName { get; set; }
+    [Parameter] public string? ComponentDescription { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
     [Parameter] public List<ComponentParameter> ComponentParameters { get; set; } = new();
-    [Parameter] public List<ComponentSubParameter> ComponentSubParameters { get; set; } = new();
+    [Parameter] public List<ComponentSubClass> ComponentSubClasses { get; set; } = new();
+    [Parameter] public List<ComponentSubEnum> ComponentSubEnums { get; set; } = new();
 }

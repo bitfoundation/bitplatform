@@ -223,22 +223,22 @@ public partial class BitSpinButtonDemo
         },
     };
 
-    private readonly List<EnumParameter> enumParameters = new()
+    private readonly List<ComponentSubEnum> enumParameters = new()
     {
-        new EnumParameter()
+        new()
         {
             Id = "labelPosition-enum",
-            Title = "BitSpinButtonLabelPosition Enum",
+            Name = "BitSpinButtonLabelPosition",
             Description = "",
-            EnumList = new List<EnumItem>()
+            Items = new List<ComponentEnumItem>()
             {
-                new EnumItem()
+                new()
                 {
                     Name= "Top",
                     Description="The label shows on the top of the spin button.",
                     Value="0",
                 },
-                new EnumItem()
+                new()
                 {
                     Name= "Left",
                     Description="The label shows on the left side of the spin button.",
@@ -248,8 +248,6 @@ public partial class BitSpinButtonDemo
         }
     };
 
-    #region Sample Code 1
-
     private readonly string example1HTMLCode = @"
 <div class=""example-box"">
     <BitSpinButton Label=""Basic"" />
@@ -258,10 +256,6 @@ public partial class BitSpinButtonDemo
     <BitSpinButton Label=""Left Label"" IconName=""BitIconName.Lightbulb"" LabelPosition=""BitSpinButtonLabelPosition.Left"" />
 </div>
 ";
-
-    #endregion
-
-    #region Sample Code 2
 
     private readonly string example2HTMLCode = @"
 <div class=""example-box"">
@@ -274,10 +268,6 @@ public partial class BitSpinButtonDemo
 </div>
 ";
 
-    #endregion
-
-    #region Sample Code 3
-
     private readonly string example3HTMLCode = @"
 <div class=""example-box"">
     <BitSpinButton Label=""Like and Dislike""
@@ -285,10 +275,6 @@ public partial class BitSpinButtonDemo
                     DecrementButtonIconName=""BitIconName.DislikeSolid"" />
 </div>
 ";
-
-    #endregion
-
-    #region Sample Code 4
 
     private readonly string example4HTMLCode = @"
 <div class=""example-box"">
@@ -308,10 +294,6 @@ public partial class BitSpinButtonDemo
 </div>
 ";
 
-    #endregion
-
-    #region Sample Code 5
-
     private readonly string example5HTMLCode = @"
 <div class=""example-box"">
     <BitSpinButton Label=""Height""
@@ -327,10 +309,6 @@ public partial class BitSpinButtonDemo
 </div>
 ";
 
-    #endregion
-
-    #region Sample Code 6
-
     private readonly string example6HTMLCode = @"
 <div class=""example-box"">
     <div>
@@ -344,15 +322,10 @@ public partial class BitSpinButtonDemo
     </div>
 </div>
 ";
-
     private readonly string example6CSharpCode = @"
 private double OneWayValue = 3;
 private double TwoWayValue = 5;
 ";
-
-    #endregion
-
-    #region Sample Code 7
 
     private readonly string example7HTMLCode = @"
 <div class=""column"">
@@ -374,7 +347,6 @@ private double TwoWayValue = 5;
     <span>OnChange Returned Value: @OnChangeEventReturnedValue</span>
 </div>
 ";
-
     private readonly string example7CSharpCode = @"
 private double IncrementEventValue;
 private int OnIncrementCounter;
@@ -390,10 +362,6 @@ private void HandleOnChangeEvent(double value)
     OnChangeClickedCounter++;
 }
 ";
-
-    #endregion
-
-    #region Sample Code 8
 
     private readonly string example8HTMLCode = @"
 <div class=""example-box"">
@@ -423,7 +391,6 @@ private void HandleOnChangeEvent(double value)
     }
 </div>
 ";
-
     private readonly string example8CSharpCode = @"
 public class BitSpinButtonValidationModel
 {
@@ -448,6 +415,4 @@ private void HandleInvalidSubmit()
     SuccessMessage = string.Empty;
 }
 ";
-
-    #endregion
 }

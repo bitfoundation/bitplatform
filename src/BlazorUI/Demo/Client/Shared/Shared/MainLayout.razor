@@ -3,7 +3,7 @@
 
 <Header />
 
-<div class="main @(CurrentUrl == "/" || CurrentUrl == "/icons" ? "main--full-page" : null)">
+<main class="bit-bg-primary @(CurrentUrl == "/" || CurrentUrl == "/icons" ? "full-page" : "")">
     @if (CurrentUrl != "/")
     {
         <NavMenu />
@@ -13,7 +13,7 @@
             @Body
         </AppErrorBoundary>
     </div>
-</div>
+</main>
 
 <MessageBox />
 <Footer />
