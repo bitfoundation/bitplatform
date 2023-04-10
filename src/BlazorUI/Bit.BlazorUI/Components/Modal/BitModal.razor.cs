@@ -99,21 +99,21 @@ public partial class BitModal : IDisposable
     /// <summary>
     /// ARIA id for the subtitle of the Modal, if any.
     /// </summary>
-    [Parameter] public string SubtitleAriaId { get; set; } = string.Empty;
+    [Parameter] public string? SubtitleAriaId { get; set; }
 
     /// <summary>
     /// ARIA id for the title of the Modal, if any.
     /// </summary>
-    [Parameter] public string TitleAriaId { get; set; } = string.Empty;
+    [Parameter] public string? TitleAriaId { get; set; }
 
 
     protected override string RootElementClass => "bit-mdl";
 
     protected override void RegisterComponentClasses()
     {
-        ClassBuilder.Register(() => AbsolutePosition ? "absolute" : "");
+        ClassBuilder.Register(() => AbsolutePosition ? $"{RootElementClass}-abs" : string.Empty);
 
-        StyleBuilder.Register(() => _offsetTop > 0 ? $"top:{_offsetTop}px" : "");
+        StyleBuilder.Register(() => _offsetTop > 0 ? $"top:{_offsetTop}px" : string.Empty);
     }
 
     protected override Task OnInitializedAsync()
@@ -172,20 +172,20 @@ public partial class BitModal : IDisposable
 
     private string GetPositionClass() => Position switch
     {
-        BitModalPosition.Center => $"center",
+        BitModalPosition.Center => $"{RootElementClass}-ctr",
 
-        BitModalPosition.TopLeft => $"top-left",
-        BitModalPosition.TopCenter => $"top-center",
-        BitModalPosition.TopRight => $"top-right",
+        BitModalPosition.TopLeft => $"{RootElementClass}-tl",
+        BitModalPosition.TopCenter => $"{RootElementClass}-tc",
+        BitModalPosition.TopRight => $"{RootElementClass}-tr",
 
-        BitModalPosition.CenterLeft => $"center-left",
-        BitModalPosition.CenterRight => $"center-right",
+        BitModalPosition.CenterLeft => $"{RootElementClass}-cl",
+        BitModalPosition.CenterRight => $"{RootElementClass}-cr",
 
-        BitModalPosition.BottomLeft => $"bottom-left",
-        BitModalPosition.BottomCenter => $"bottom-center",
-        BitModalPosition.BottomRight => $"bottom-right",
+        BitModalPosition.BottomLeft => $"{RootElementClass}-bl",
+        BitModalPosition.BottomCenter => $"{RootElementClass}-bc",
+        BitModalPosition.BottomRight => $"{RootElementClass}-br",
 
-        _ => $"center",
+        _ => $"{RootElementClass}-ctr",
     };
 
     private string GetDragElementSelector() => DragElementSelector ?? $"#{_containerId}";

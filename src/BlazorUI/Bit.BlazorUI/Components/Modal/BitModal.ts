@@ -25,7 +25,7 @@
         listeners['pointerdown'] = handlePointerDown;
         dragElement.addEventListener('pointerdown', handlePointerDown);
         dragElement.style.cursor = 'move';
-        dragElement.classList.add('no-touch-action');
+        dragElement.classList.add('bit-mdl-nta');
 
         function handlePointerDown(e: PointerEvent) {
             //e.preventDefault();
@@ -69,7 +69,7 @@
 
         dragElement.removeEventListener('pointerdown', listeners['pointerdown']);
         dragElement.style.cursor = '';
-        dragElement.classList.remove('no-touch-action');
+        dragElement.classList.remove('bit-mdl-nta');
 
         document.removeEventListener('pointermove', listeners['pointermove']);
 
