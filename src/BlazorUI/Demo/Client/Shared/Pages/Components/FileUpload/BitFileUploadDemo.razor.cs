@@ -5,14 +5,6 @@ namespace Bit.BlazorUI.Demo.Client.Shared.Pages.Components.FileUpload;
 
 public partial class BitFileUploadDemo
 {
-    private string onAllUploadsCompleteText = "No File";
-
-    string ChunkedUploadUrl => $"{Configuration.GetApiServerAddress()}FileUpload/UploadChunkedFile";
-    string NonChunkedUploadUrl => $"{Configuration.GetApiServerAddress()}FileUpload/UploadNonChunkedFile";
-    string RemoveUrl => $"FileUpload/RemoveFile";
-
-    [Inject] public IConfiguration Configuration { get; set; }
-
     private readonly List<ComponentParameter> componentParameters = new()
     {
         new()
@@ -206,7 +198,7 @@ public partial class BitFileUploadDemo
         }
     };
 
-    private readonly List<ComponentSubEnum> enumParameters = new()
+    private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
         new()
         {
@@ -273,19 +265,23 @@ public partial class BitFileUploadDemo
         }
     };
 
-    private readonly string example1CSharpCode = @"
-private string UploadUrl = $""/Upload"";
-";
 
-    private readonly string example2CSharpCode = @"
-private string UploadUrl = $""/Upload"";
-private string RemoveUrl = $""/Remove"";
-";
+
+    private string onAllUploadsCompleteText = "No File";
+    private string ChunkedUploadUrl => $"{Configuration.GetApiServerAddress()}FileUpload/UploadChunkedFile";
+    private string NonChunkedUploadUrl => $"{Configuration.GetApiServerAddress()}FileUpload/UploadNonChunkedFile";
+    private string RemoveUrl => $"FileUpload/RemoveFile";
+
+    [Inject] public IConfiguration Configuration { get; set; }
+
 
     private readonly string example1HtmlCode = @"
 <BitFileUpload Label=""Select or drag and drop files""
                UploadUrl=""@UploadUrl"">
 </BitFileUpload>
+";
+    private readonly string example1CSharpCode = @"
+private string UploadUrl = $""/Upload"";
 ";
 
     private readonly string example2HtmlCode = @"
@@ -294,6 +290,10 @@ private string RemoveUrl = $""/Remove"";
                Label=""Select or drag and drop files""
                UploadUrl=""@UploadUrl"">
 </BitFileUpload>
+";
+    private readonly string example2CSharpCode = @"
+private string UploadUrl = $""/Upload"";
+private string RemoveUrl = $""/Remove"";
 ";
 
     private readonly string example3HtmlCode = @"

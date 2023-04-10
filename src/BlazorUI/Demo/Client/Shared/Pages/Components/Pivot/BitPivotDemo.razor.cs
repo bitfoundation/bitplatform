@@ -62,7 +62,7 @@ public partial class BitPivotDemo
         },
     };
 
-    private readonly List<ComponentSubClass> componentSubParameters = new()
+    private readonly List<ComponentSubClass> componentSubClasses = new()
     {
         new()
         {
@@ -117,7 +117,7 @@ public partial class BitPivotDemo
         }
     };
 
-    private readonly List<ComponentSubEnum> enumParameters = new()
+    private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
         new()
         {
@@ -189,6 +189,7 @@ public partial class BitPivotDemo
             }
         },
     };
+
 
 
     private string SelectedKey = "Foo";

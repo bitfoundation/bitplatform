@@ -76,7 +76,7 @@ public partial class BitOtpInputDemo
         },
     };
 
-    private readonly List<ComponentSubEnum> enumParameters = new()
+    private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
         new()
         {
@@ -138,6 +138,7 @@ public partial class BitOtpInputDemo
         }
     };
 
+    
 
     private string basicOtpInput;
     private string autoFocusOtpInput;

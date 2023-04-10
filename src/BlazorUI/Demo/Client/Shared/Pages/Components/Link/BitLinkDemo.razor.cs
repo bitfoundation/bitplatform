@@ -4,46 +4,44 @@ namespace Bit.BlazorUI.Demo.Client.Shared.Pages.Components.Link;
 
 public partial class BitLinkDemo
 {
-    [Inject] private NavigationManager Navigation { get; set; } = default!;
-
     private readonly List<ComponentParameter> componentParameters = new()
     {
-        new ComponentParameter()
+        new()
         {
             Name = "ChildContent",
             Type = "RenderFragment",
             DefaultValue = "",
             Description = "The content of link, can be any custom tag or a text.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "HasUnderline",
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether the link is styled with an underline or not.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "Href",
             Type = "string",
             DefaultValue = "",
             Description = "URL the link points to.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "OnClick",
             Type = "EventCallback<MouseEventArgs>",
             DefaultValue = "",
             Description = "Callback for when the action button clicked.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "Target",
             Type = "string",
             DefaultValue = "",
             Description = "If Href provided, specifies how to open the link.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "Title",
             Type = "string",
@@ -52,12 +50,18 @@ public partial class BitLinkDemo
         },
     };
 
+
+
+    [Inject] private NavigationManager Navigation { get; set; } = default!;
+
+
     private void LinkOnClick()
     {
         // Here you can do something else...
 
         Navigation.NavigateTo("https://github.com/bitfoundation/bitplatform");
     }
+
 
     private readonly string example1HTMLCode = @"
 <BitLink Href=""https://github.com/bitfoundation/bitplatform"">Basic Link</BitLink>
@@ -66,7 +70,6 @@ public partial class BitLinkDemo
 <BitLink Href=""https://github.com/bitfoundation/bitplatform"" HasUnderline=""true"">Underlined link</BitLink>
 <BitLink OnClick=""LinkOnClick"">Link with OnClick</BitLink>
 ";
-
     private readonly string example1CSharpCode = @"
 @inject NavigationManager Navigation
 

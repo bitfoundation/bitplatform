@@ -5,7 +5,6 @@ namespace Bit.BlazorUI.Demo.Client.Shared.Pages.Components.Persona;
 
 public partial class BitPersonaDemo
 {
-    public bool IsDetailsShown { get; set; } = true;
     private readonly List<ComponentParameter> componentParameters = new()
     {
         new()
@@ -169,8 +168,8 @@ public partial class BitPersonaDemo
             Description = "Optional Custom template for the image overlay.",
         }
     };
-
-    private readonly List<ComponentSubEnum> enumParameters = new()
+    
+    private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
         new()
         {
@@ -414,13 +413,17 @@ public partial class BitPersonaDemo
         },
     };
 
+
+
+    public bool IsDetailsShown { get; set; } = true;
+
     private int _actionClickCount = 0;
 
     private int _imageClickCount = 0;
 
+
     private static readonly string example1CSharpCode = @"
 public bool IsHideDetails { get; set; } = true;";
-
     private static readonly string example1HtmlCode = @"<BitCheckbox @bind-Value=""IsHideDetails"" 
              OnClick=""()=>IsHideDetails=!IsHideDetails"">Include BitPersona details</BitCheckbox>
 
@@ -495,7 +498,6 @@ public bool IsHideDetails { get; set; } = true;";
 
     private static readonly string example2CSharpCode = @"
 private int _actionClickCount = 0;";
-
     private static readonly string example2HtmlCode = @"
 <BitPersona ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png""
             Presence=@BitPersonaPresenceStatus.None
@@ -511,7 +513,6 @@ private int _actionClickCount = 0;";
 
     private static readonly string example3CSharpCode = @"
 private int _imageClickCount = 0;";
-
     private static readonly string example3HtmlCode = @"
 <BitPersona ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png""
             Presence=@BitPersonaPresenceStatus.Online

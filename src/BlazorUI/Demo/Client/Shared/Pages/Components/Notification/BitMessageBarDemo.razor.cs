@@ -81,7 +81,7 @@ public partial class BitMessageBarDemo
         }
     };
 
-    private readonly List<ComponentSubEnum> enumParameters = new()
+    private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
         new()
         {
@@ -129,6 +129,7 @@ public partial class BitMessageBarDemo
             }
         }
     };
+
 
 
     private bool IsMessageBarHidden1 = false;

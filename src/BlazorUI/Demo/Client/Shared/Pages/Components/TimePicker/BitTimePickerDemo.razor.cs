@@ -7,7 +7,6 @@ public partial class BitTimePickerDemo
 {
     private readonly List<ComponentParameter> componentParameters = new()
     {
-
         new()
         {
             Name = "Label",
@@ -203,7 +202,7 @@ public partial class BitTimePickerDemo
         }
     };
 
-    private readonly List<ComponentSubEnum> enumParameters = new()
+    private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
         new()
         {
@@ -282,6 +281,8 @@ public partial class BitTimePickerDemo
         }
     };
 
+
+
     private TimeSpan? selectedTime = new TimeSpan(5, 12, 15);
     private FormValidationTimePickerModel formValidationTimePickerModel = new();
     private string successMessage = string.Empty;
@@ -303,6 +304,7 @@ public partial class BitTimePickerDemo
     {
         successMessage = string.Empty;
     }
+
 
     private readonly string example1HTMLCode = @"
 <BitTimePicker Style=""max-width: 300px""

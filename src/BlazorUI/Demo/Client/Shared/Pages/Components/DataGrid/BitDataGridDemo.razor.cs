@@ -96,7 +96,7 @@ public partial class BitDataGridDemo
         }
     };
 
-    private readonly List<ComponentSubClass> componentSubParameter = new()
+    private readonly List<ComponentSubClass> componentSubClasses = new()
     {
         new()
          {
@@ -224,7 +224,7 @@ public partial class BitDataGridDemo
 
     };
 
-    private readonly List<ComponentSubEnum> enumParameters = new()
+    private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
         new()
         {
@@ -255,6 +255,8 @@ public partial class BitDataGridDemo
              }
         },
     };
+
+
 
     private readonly static CountryModel[] _countries = new[]
     {
@@ -342,7 +344,6 @@ public partial class BitDataGridDemo
         new CountryModel { Code = "VE", Name = "Venezuela", Medals = new MedalsModel { Gold = 1, Silver = 3, Bronze = 0 } },
     };
 
-    #region Example Code 1
     private readonly string example1HTMLCode = @"
 <style scoped>
     .grid {
@@ -568,9 +569,6 @@ public class MedalsModel
     public int Total => Gold + Silver + Bronze;
 }
 ";
-    #endregion Example Code 1
-
-    #region Example Code 2
 
     private readonly string example2HTMLCode = @"
 @using System.Text.Json;
@@ -809,9 +807,6 @@ public class Openfda
 }
 ";
 
-    #endregion Example Code 2
-
-    #region Example Code 3
     private readonly string example3HTMLCode = @"
 @using System.Text.Json;
 @inject HttpClient HttpClient
@@ -979,6 +974,4 @@ public class PagedResult<T>
     }
 }
 ";
-
-    #endregion Example Code 3
 }

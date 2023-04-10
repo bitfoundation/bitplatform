@@ -5,8 +5,6 @@ namespace Bit.BlazorUI.Demo.Client.Shared.Pages.Components.Buttons;
 
 public partial class BitToggleButtonDemo
 {
-
-
     private readonly List<ComponentParameter> componentParameters = new()
     {
         new()
@@ -113,7 +111,7 @@ public partial class BitToggleButtonDemo
         }
     };
 
-    private readonly List<ComponentSubEnum> enumParameters = new()
+    private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
         new()
         {
@@ -164,6 +162,7 @@ public partial class BitToggleButtonDemo
             }
         }
     };
+
 
 
     private bool TogglePrimaryButtonChecked;

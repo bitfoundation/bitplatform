@@ -1,11 +1,9 @@
-﻿using Bit.BlazorUI.Demo.Client.Shared.Models;
-using Bit.BlazorUI.Demo.Client.Shared.Pages.Components.ComponentDemoBase;
+﻿using Bit.BlazorUI.Demo.Client.Shared.Pages.Components.ComponentDemoBase;
 
 namespace Bit.BlazorUI.Demo.Client.Shared.Pages.Components.ProgressIndicator;
 
 public partial class BitProgressIndicatorDemo
 {
-
     private readonly List<ComponentParameter> componentParameters = new()
     {
         new()
@@ -73,6 +71,8 @@ public partial class BitProgressIndicatorDemo
         }
     };
 
+
+
     private int CompletedPercent;
     private string Description = "Push button to start!";
 
@@ -97,6 +97,7 @@ public partial class BitProgressIndicatorDemo
             await Task.Delay(100);
         }
     }
+
 
     private readonly string example1HTMLCode = @"
 <BitProgressIndicator Label=""Example title""

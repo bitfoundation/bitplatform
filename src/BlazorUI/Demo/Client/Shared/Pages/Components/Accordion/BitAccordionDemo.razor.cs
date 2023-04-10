@@ -4,62 +4,64 @@ namespace Bit.BlazorUI.Demo.Client.Shared.Pages.Components.Accordion;
 
 public partial class BitAccordionDemo
 {
-    private byte controlledAccordionExpandedItem = 1;
-    private bool AccordionToggleIsEnabled;
-    private bool AccordionToggleIsExpanded;
-
     private readonly List<ComponentParameter> componentParameters = new()
     {
-        new ComponentParameter
+        new()
         {
             Name = "DefaultIsExpanded",
             Type = "bool?",
             Description = "Default value of the IsExpanded."
         },
-        new ComponentParameter
+        new()
         {
             Name = "ChildContent",
             Type = "RenderFragment?",
             Description = "The content of the Accordion."
         },
-        new ComponentParameter
+        new()
         {
             Name = "Description",
             Type = "string?",
             Description = "A short description in the header of Accordion."
         },
-        new ComponentParameter
+        new()
         {
             Name = "HeaderTemplate",
             Type = "RenderFragment<bool>?",
             Description = "Used to customize how the header inside the Accordion is rendered."
         },
-        new ComponentParameter
+        new()
         {
             Name = "IsExpanded",
             Type = "bool",
             DefaultValue = "false",
             Description = "Determines whether the accordion is expanding or collapses."
         },
-        new ComponentParameter
+        new()
         {
             Name = "OnClick",
             Type = "EventCallback<MouseEventArgs>",
             Description = "Callback that is called when the header is clicked."
         },
-        new ComponentParameter
+        new()
         {
             Name = "OnChange",
             Type = "EventCallback<bool>",
             Description = "Callback that is called when the IsExpanded value has changed."
         },
-        new ComponentParameter
+        new()
         {
             Name = "Title",
             Type = "string?",
             Description = "Title in the header of Accordion."
         }
     };
+
+
+
+    private byte controlledAccordionExpandedItem = 1;
+    private bool AccordionToggleIsEnabled;
+    private bool AccordionToggleIsExpanded;
 
     private readonly string example1HTMLCode = @"
 <BitAccordion Title=""Accordion 1"">
@@ -79,6 +81,7 @@ public partial class BitAccordionDemo
     </BitAccordion>
 </div>
 ";
+
     private readonly string example2HTMLCode = @"
 <div class=""accordion-example-box"">
     <BitAccordion Title=""General settings"" Description=""I am an accordion"">
@@ -95,6 +98,7 @@ public partial class BitAccordionDemo
     </BitAccordion>
 </div>
 ";
+
     private readonly string example3HTMLCode = @"
 <div class=""accordion-example-box"">
     <BitAccordion Title=""General settings""
@@ -117,6 +121,10 @@ public partial class BitAccordionDemo
     </BitAccordion>
 </div>
 ";
+    private readonly string example3CSharpCode = @"
+private byte controlledAccordionExpandedItem = 1;
+";
+
     private readonly string example4HTMLCode = @"
 <div class=""example-operator-box"">
     <BitToggle @bind-Value=""AccordionToggleIsEnabled"" OnText=""Enabled"" OffText=""Disabled"" Style=""margin-right: 10px;"" />
@@ -131,6 +139,11 @@ public partial class BitAccordionDemo
     </BitAccordion>
 </div>
 ";
+    private readonly string example4CSharpCode = @"
+private bool AccordionToggleIsEnabled;
+private bool AccordionToggleIsExpanded;
+";
+
     private readonly string example5HTMLCode = @"
 <style>
     ::deep .custom-acd {
@@ -201,12 +214,5 @@ public partial class BitAccordionDemo
         </BitCarousel>
     </BitAccordion>
 </div>
-";
-    private readonly string example3CSharpCode = @"
-private byte controlledAccordionExpandedItem = 1;
-";
-    private readonly string example4CSharpCode = @"
-private bool AccordionToggleIsEnabled;
-private bool AccordionToggleIsExpanded;
 ";
 }

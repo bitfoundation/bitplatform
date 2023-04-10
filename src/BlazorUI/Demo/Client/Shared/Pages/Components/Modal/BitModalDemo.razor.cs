@@ -109,7 +109,7 @@ public partial class BitModalDemo
         }
     };
 
-    private readonly List<ComponentSubEnum> enumParameters = new()
+    private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
         new()
         {
@@ -132,6 +132,7 @@ public partial class BitModalDemo
     };
 
 
+
     private bool IsOpen = false;
     private bool IsOpen1 = false;
     private bool IsOpen2 = false;
@@ -148,6 +149,7 @@ public partial class BitModalDemo
         IsOpenInPosition = true;
         position = positionValue;
     }
+
 
     private readonly string example1HTMLCode = @"
 <style>

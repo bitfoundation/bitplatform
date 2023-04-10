@@ -55,7 +55,8 @@ public partial class BitSnackBarDemo
             Description = "Used to customize how content inside the Title is rendered. ",
         },
     };
-    private readonly List<ComponentSubEnum> enumParameters = new()
+
+    private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
         new()
         {
@@ -134,6 +135,7 @@ public partial class BitSnackBarDemo
             }
         },
     };
+
 
 
     private BitSnackBar BasicSnackBarRef = new();

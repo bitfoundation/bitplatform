@@ -1,12 +1,9 @@
-﻿using Bit.BlazorUI.Demo.Client.Shared.Models;
-using Bit.BlazorUI.Demo.Client.Shared.Pages.Components.ComponentDemoBase;
+﻿using Bit.BlazorUI.Demo.Client.Shared.Pages.Components.ComponentDemoBase;
 
 namespace Bit.BlazorUI.Demo.Client.Shared.Pages.Components.Icon;
 
 public partial class BitIconDemo
 {
-    private BitIconName _iconName = BitIconName.Accept;
-
     private readonly List<ComponentParameter> componentParameters = new()
     {
         new()
@@ -41,6 +38,11 @@ public partial class BitIconDemo
         }
     };
 
+
+
+    private BitIconName _iconName = BitIconName.Accept;
+
+
     private readonly string example1HTMLCode = @"
 <BitIcon IconName=""BitIconName.Accept"" AriaLabel=""accept"" />
 <BitIcon IconName=""BitIconName.Bus"" AriaLabel=""bus"" />
@@ -61,7 +63,6 @@ public partial class BitIconDemo
 <BitIcon IconName=""BitIconName.Accept"" AriaLabel=""accept"" Style=""font-size: 2rem; margin: 1rem 2rem; color: red;"" />
 <BitIcon IconName=""BitIconName.Bus"" AriaLabel=""bus"" Style=""font-size: 2rem; margin: 1rem 2rem; color: green;"" />
 <BitIcon IconName=""BitIconName.Pinned"" AriaLabel=""pinned"" Style=""font-size: 2rem; margin: 1rem 2rem; color: mediumpurple;"" />";
-
 
     private readonly string example4HTMLCode = @"
 <BitIcon IconName=""_iconName"" AriaLabel=""accept"" Class=""icon-class"" />

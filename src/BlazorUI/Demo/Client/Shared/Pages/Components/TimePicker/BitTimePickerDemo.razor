@@ -2,9 +2,10 @@
 
 @using Bit.BlazorUI.Demo.Client.Shared.Components
 
-<ComponentDemo ComponentName="TimePicker" ComponentDescription="Picking a time can be tough without context. A BitTimePicker offers a drop-down control that’s optimized for picking a single time from a clock view where contextual information like the day of the week or fullness of the calendar is important.
-                                                        You can modify the calendar to provide additional context or to limit available times."
-               ComponentParameters="componentParameters" ComponentSubEnums="enumParameters">
+<ComponentDemo ComponentName="TimePicker"
+               ComponentDescription="Picking a time can be tough without context. A BitTimePicker offers a drop-down control that’s optimized for picking a single time from a clock view where contextual information like the day of the week or fullness of the calendar is important. You can modify the calendar to provide additional context or to limit available times."
+               ComponentParameters="componentParameters"
+               ComponentSubEnums="componentSubEnums">
     <ComponentExampleBox Title="Default BitTimePicker" HTMLSourceCode="@example1HTMLCode" ExampleId="example1">
         <ExamplePreview>
             <BitTimePicker Style="max-width: 300px"
@@ -31,7 +32,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-   <ComponentExampleBox Title="Disabled BitTimePicker with label" HTMLSourceCode="@example4HTMLCode" ExampleId="example4">
+    <ComponentExampleBox Title="Disabled BitTimePicker with label" HTMLSourceCode="@example4HTMLCode" ExampleId="example4">
         <ExamplePreview>
             <BitTimePicker IsEnabled=false
                            Style="max-width: 300px"
@@ -40,7 +41,7 @@
                            Placeholder="Select a time..." />
         </ExamplePreview>
     </ComponentExampleBox>
-   
+
     <ComponentExampleBox Title="Required BitTimePicker" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
         <ExamplePreview>
             <div class="example-desc">Validation will happen when the <code>Submit</code> button is clicked.</div>
@@ -66,14 +67,15 @@
                 </BitButton>
             </EditForm>
 
-            @if (string.IsNullOrEmpty(successMessage) is false) {
+            @if (string.IsNullOrEmpty(successMessage) is false)
+            {
                 <BitMessageBar MessageBarType="BitMessageBarType.Success" IsMultiline="false">
                     @successMessage
                 </BitMessageBar>
             }
         </ExamplePreview>
     </ComponentExampleBox>
-    
+
     <ComponentExampleBox Title="BitTimePicker allowing text input" HTMLSourceCode="@example6HTMLCode" ExampleId="example6">
         <ExamplePreview>
             <div class="example-desc">
@@ -99,7 +101,7 @@
                            TimeFormat="hh:MM:ss" />
         </ExamplePreview>
     </ComponentExampleBox>
-    
+
     <ComponentExampleBox Title="BitTimePicker with a custom label" HTMLSourceCode="@example8HTMLCode" CSharpSourceCode="@example8CSharpCode" ExampleId="example8">
         <ExamplePreview>
             <div class="example-desc">
@@ -119,8 +121,8 @@
 
     <ComponentExampleBox Title="BitTimePicker with value two-way binding" HTMLSourceCode="@example9HTMLCode" CSharpSourceCode="@example9CSharpCode" ExampleId="example9">
         <ExamplePreview>
-            <BitTimePicker Style="max-width: 300px"
-                           @bind-Value="@selectedTime"
+            <BitTimePicker @bind-Value="@selectedTime"
+                           Style="max-width: 300px"
                            AriaLabel="Select a time"
                            Placeholder="Select a time..." />
             <BitLabel>Selected time: @selectedTime.ToString()</BitLabel>

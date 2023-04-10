@@ -137,7 +137,7 @@ public partial class BitBasicListDemo
 
 
 
-    private string example1HTMLCode = @"
+    private readonly string example1HTMLCode = @"
 <BitBasicList Items=""LotsOfPeople""
               EnableVirtualization=""true""
               Style=""border: 1px #a19f9d solid; border-radius: 3px;"">
@@ -152,7 +152,7 @@ public partial class BitBasicListDemo
         </div>
     </RowTemplate>
 </BitBasicList>";
-    private string example1CSharpCode = @"
+    private readonly string example1CSharpCode = @"
 private List<Person> LotsOfPeople = Enumerable.Range(0, 8000).Select(i => new Person
 {
     Id = i + 1,

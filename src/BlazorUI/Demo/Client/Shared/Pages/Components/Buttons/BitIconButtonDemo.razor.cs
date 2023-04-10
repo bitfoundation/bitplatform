@@ -83,7 +83,7 @@ public partial class BitIconButtonDemo
         }
     };
 
-    private readonly List<ComponentSubEnum> enumParameters = new()
+    private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
         new()
         {
@@ -140,6 +140,8 @@ public partial class BitIconButtonDemo
             }
         }
     };
+
+
 
     private readonly string example1HTMLCode = @"
 <BitIconButton IconName=""BitIconName.Emoji"" />
@@ -217,6 +219,7 @@ public partial class BitIconButtonDemo
         <BitIconButton ButtonSize=""BitButtonSize.Large"" IconName=""BitIconName.Emoji"" />
     </div>
 </div>";
+
     private readonly string example8HTMLCode = @"
 <style>
     .buttons-container-grid {
