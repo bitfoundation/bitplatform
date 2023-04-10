@@ -4,8 +4,6 @@ namespace Bit.BlazorUI.Demo.Client.Shared.Pages.Components.Loading;
 
 public partial class BitLoadingDemo
 {
-    public string OnClickValue { get; set; } = string.Empty;
-
     private readonly List<ComponentParameter> componentParameters = new()
     {
         new()
@@ -23,6 +21,11 @@ public partial class BitLoadingDemo
             Description = "The Color of the loading component compatible with colors in CSS."
         }
     };
+    
+
+    
+    public string OnClickValue { get; set; } = string.Empty;
+
 
     private readonly string example1HTMLCode = @"
 <BitBarsLoading Color=""royalblue"" Size=""64"" />

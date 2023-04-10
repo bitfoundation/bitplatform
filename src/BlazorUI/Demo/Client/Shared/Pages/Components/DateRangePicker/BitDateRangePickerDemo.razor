@@ -1,8 +1,10 @@
 ﻿@page "/components/date-range-picker"
 
-<ComponentDemo ComponentName="DateRangePicker" ComponentDescription="Picking a date range can be tough without context. A BitDateRangePicker offers a drop-down control that’s optimized for picking two dates from a calendar view where contextual information like the day of the week or fullness of the calendar is important.
-                                                        You can modify the calendar to provide additional context or to limit available dates."
-               ComponentParameters="componentParameters" ComponentSubClasses="componentSubParameters" ComponentSubEnums="enumParameters">
+<ComponentDemo ComponentName="DateRangePicker"
+               ComponentDescription="Picking a date range can be tough without context. A BitDateRangePicker offers a drop-down control that’s optimized for picking two dates from a calendar view where contextual information like the day of the week or fullness of the calendar is important. You can modify the calendar to provide additional context or to limit available dates."
+               ComponentParameters="componentParameters"
+               ComponentSubClasses="componentSubClasses"
+               ComponentSubEnums="componentSubEnums">
     <ComponentExampleBox Title="Default BitDateRangePicker" HTMLSourceCode="@example1HTMLCode" ExampleId="example1">
         <ExamplePreview>
             <BitDateRangePicker Style="max-width: 300px"
@@ -101,7 +103,7 @@
     <ComponentExampleBox Title="BitDateRangePicker with value two-way binding" HTMLSourceCode="@example8HTMLCode" CSharpSourceCode="@example8CSharpCode" ExampleId="example8">
         <ExamplePreview>
             <BitDateRangePicker Style="max-width: 300px"
-                                @bind-Value="@selectedDateRange"
+            @bind-Value="@selectedDateRange"
                                 AriaLabel="Select dates"
                                 Placeholder="Select dates..." />
             <BitLabel>selected date: @selectedDateRange.StartDate.ToString() - @selectedDateRange.EndDate.ToString()</BitLabel>

@@ -99,7 +99,7 @@ public partial class BitCompoundButtonDemo
         }
     };
 
-    private readonly List<ComponentSubEnum> enumParameters = new()
+    private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
         new()
         {
@@ -177,6 +177,8 @@ public partial class BitCompoundButtonDemo
             }
         }
     };
+
+
 
     private readonly string example1HTMLCode = @"
 <style>
@@ -302,6 +304,7 @@ public partial class BitCompoundButtonDemo
     </div>
 </div>
 ";
+
     private readonly string example7HTMLCode = @"
 <style>
     .buttons-container-grid {

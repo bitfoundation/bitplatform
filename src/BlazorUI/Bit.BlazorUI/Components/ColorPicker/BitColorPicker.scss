@@ -100,7 +100,7 @@
             border-radius: 50%;
             border: spacing(0.125) solid $color-neutrals-gray110;
             box-shadow: rgba(0, 0, 0, 0.13) 0 spacing(0.375) spacing(0.875) 0, rgba(0, 0, 0, 0.11) 0 spacing(0.125) spacing(0.25) 0;
-            background-color: $color-neutrals-white;
+            background-color: $color-background-primary;
             cursor: pointer;
             -webkit-appearance: none;
             appearance: none;
@@ -112,7 +112,7 @@
             border-radius: 50%;
             border: spacing(0.125) solid $color-neutrals-gray110;
             box-shadow: rgba(0, 0, 0, 0.13) 0 spacing(0.375) spacing(0.875) 0, rgba(0, 0, 0, 0.11) 0 spacing(0.125) spacing(0.25) 0;
-            background-color: $color-neutrals-white;
+            background-color: $color-background-primary;
             cursor: pointer;
         }
     }

@@ -149,45 +149,45 @@ public partial class BitBreadcrumbDemo
         },
     };
 
-    private readonly List<ComponentSubClass> componentSubParameters = new()
+    private readonly List<ComponentSubClass> componentSubClasses = new()
     {
-        new ComponentSubClass()
+        new()
         {
             Id = "bit-breadcrumb-item",
             Title = "BitBreadcrumbItem",
             Parameters = new List<ComponentParameter>()
             {
-               new ComponentParameter()
+               new()
                {
                    Name = "Text",
                    Type = "string?",
                    Description = "Text to display in the breadcrumb item.",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "Href",
                    Type = "string?",
                    Description = "URL to navigate to when this breadcrumb item is clicked. If provided, the breadcrumb will be rendered as a link.",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "Class",
                    Type = "string?",
                    Description = "CSS class attribute for breadcrumb item.",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "Style",
                    Type = "string?",
                    Description = "Style attribute for breadcrumb item.",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "IsSelected",
                    Type = "bool",
                    Description = "Display the item as the selected item.",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "IsEnabled",
                    Type = "bool",
@@ -196,43 +196,43 @@ public partial class BitBreadcrumbDemo
                },
             }
         },
-        new ComponentSubClass()
+        new()
         {
             Id = "bit-breadcrumb-option",
             Title = "BitBreadcrumbOption",
             Parameters = new List<ComponentParameter>()
             {
-               new ComponentParameter()
+               new()
                {
                    Name = "Text",
                    Type = "string?",
                    Description = "Text to display in the breadcrumb item.",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "Href",
                    Type = "string?",
                    Description = "URL to navigate to when this breadcrumb item is clicked. If provided, the breadcrumb will be rendered as a link.",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "Class",
                    Type = "string?",
                    Description = "CSS class attribute for breadcrumb item.",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "Style",
                    Type = "string?",
                    Description = "Style attribute for breadcrumb item.",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "IsSelected",
                    Type = "bool",
                    Description = "Display the item as the selected item.",
                },
-               new ComponentParameter()
+               new()
                {
                    Name = "IsEnabled",
                    Type = "bool",
@@ -242,6 +242,7 @@ public partial class BitBreadcrumbDemo
             }
         },
     };
+
 
 
     private uint OverflowIndex = 2;

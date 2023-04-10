@@ -5,7 +5,6 @@ namespace Bit.BlazorUI.Demo.Client.Shared.Pages.Components.Buttons;
 
 public partial class BitButtonDemo
 {
-
     private readonly List<ComponentParameter> componentParameters = new()
     {
         new()
@@ -93,7 +92,7 @@ public partial class BitButtonDemo
         }
     };
 
-    private readonly List<ComponentSubEnum> enumParameters = new()
+    private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
         new()
         {
@@ -176,7 +175,6 @@ public partial class BitButtonDemo
 
     public int PrimaryCounter;
     public int StandardCounter;
-
 
     private readonly string example1HTMLCode = @"
 <style>

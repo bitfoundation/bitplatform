@@ -2,7 +2,8 @@
 @inject HttpClient HttpClient
 @inject NavigationManager NavManager
 
-<ComponentDemo ComponentName="DropDown" ComponentParameters="componentParameters"
+<ComponentDemo ComponentName="DropDown"
+               ComponentParameters="componentParameters"
                ComponentDescription="A dropdown is a list in which the selected item is always visible while other items are visible on demand by clicking a dropdown button. Dropdowns are typically used for forms.">
     <ComponentExampleBox Title="BitDropDown" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
@@ -35,7 +36,7 @@
             <BitDropDown Label="Single-select Controlled"
                          Items="GetDropdownItems()"
                          Placeholder="Select an option"
-                         @bind-Value="ControlledValue"
+            @bind-Value="ControlledValue"
                          Style="width: 100%; max-width: 290px; margin: 20px 0 20px 0">
             </BitDropDown>
         </ExamplePreview>
@@ -46,7 +47,7 @@
             <BitDropDown Label="Multi-select controlled"
                          Items="GetDropdownItems()"
                          Placeholder="Select options"
-                         @bind-Values="ControlledValues"
+            @bind-Values="ControlledValues"
                          IsMultiSelect="true"
                          Style="width: 100%; max-width: 290px; margin:20px 0 20px 0">
             </BitDropDown>
@@ -117,14 +118,14 @@
                     <BitDropDown Label="Category"
                                  Items="Categories"
                                  Placeholder="Select options"
-                                 @bind-Value="@CurrentCategory"
+                    @bind-Value="@CurrentCategory"
                                  Style="width: 100%; max-width: 290px; margin:20px 0 20px 0">
                     </BitDropDown>
 
                     <BitDropDown Label="Product"
                                  Items="@(Products.Where(p => p.Value.StartsWith($"{CurrentCategory}-")).ToList())"
                                  Placeholder="Select options"
-                                 @bind-Value="@CurrentProduct"
+                    @bind-Value="@CurrentProduct"
                                  IsEnabled="string.IsNullOrEmpty(CurrentCategory) is false"
                                  Style="width: 100%; max-width: 290px; margin:20px 0 20px 0">
                     </BitDropDown>
@@ -151,22 +152,22 @@
 
                     <div>
                         <BitDropDown Label="Select category"
-                                 Items="GetCategoryDropdownItems()"
-                                 IsMultiSelect="false"
-                                 @bind-Value="formValidationDropDownModel.Category"
-                                 Placeholder="Select an option"
-                                 Style="width: 100%; max-width: 290px; margin: 20px 0 20px 0" />
+                                     Items="GetCategoryDropdownItems()"
+                                     IsMultiSelect="false"
+                        @bind-Value="formValidationDropDownModel.Category"
+                                     Placeholder="Select an option"
+                                     Style="width: 100%; max-width: 290px; margin: 20px 0 20px 0" />
 
                         <ValidationMessage For="@(() => formValidationDropDownModel.Category)" />
                     </div>
 
                     <div>
                         <BitDropDown Label="Select two ptoducts"
-                                 Items="GetProductDropdownItems()"
-                                 IsMultiSelect="true"
-                                 @bind-Values="formValidationDropDownModel.Products"
-                                 Placeholder="Select an option"
-                                 Style="width: 100%; max-width: 290px; margin: 20px 0 20px 0" />
+                                     Items="GetProductDropdownItems()"
+                                     IsMultiSelect="true"
+                        @bind-Values="formValidationDropDownModel.Products"
+                                     Placeholder="Select an option"
+                                     Style="width: 100%; max-width: 290px; margin: 20px 0 20px 0" />
 
                         <ValidationMessage For="@(() => formValidationDropDownModel.Products)" />
                     </div>
@@ -335,7 +336,7 @@
                              Items="GetDropdownItems()"
                              Placeholder="Select an option"
                              Style="width: 100%; max-width: 290px; margin: 20px 0 20px 0"
-                             @bind-Value="SelectedValue">
+                @bind-Value="SelectedValue">
                 </BitDropDown>
                 <div>Value: @SelectedValue</div>
                 <br>
@@ -347,7 +348,7 @@
                              Placeholder="Select options"
                              IsMultiSelect="true"
                              Style="width: 100%; max-width: 290px; margin-bottom: 20px;"
-                             @bind-Values="SelectedValues">
+                @bind-Values="SelectedValues">
                 </BitDropDown>
                 <div>Values: @string.Join(',', SelectedValues)</div>
             </div>

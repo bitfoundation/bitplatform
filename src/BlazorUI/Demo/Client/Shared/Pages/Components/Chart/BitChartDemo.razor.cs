@@ -6,7 +6,7 @@ public partial class BitChartDemo
 {
     private readonly List<ComponentParameter> componentParameters = new()
     {
-         new ComponentParameter
+         new()
         {
             Name = "SetupCompletedCallback",
             Type = "EventCallback",
@@ -14,7 +14,7 @@ public partial class BitChartDemo
             Description = @"This event is fired when the chart has been setup through interop and the JavaScript chart object is available. Use this callback if you need to setup custom JavaScript options or register plugins.",
         },
 
-         new ComponentParameter
+         new()
         {
             Name = "Config",
             Type = "BitChartConfigBase",
@@ -22,7 +22,7 @@ public partial class BitChartDemo
             Description = "Gets or sets the configuration of the chart.",
         },
 
-         new ComponentParameter
+         new()
         {
             Name = "Width",
             Type = "int?",
@@ -30,7 +30,7 @@ public partial class BitChartDemo
             Description = "Gets or sets the width of the canvas HTML element.",
         },
 
-         new ComponentParameter
+         new()
         {
             Name = "Height",
             Type = "int?",
@@ -39,7 +39,8 @@ public partial class BitChartDemo
         }
     };
 
-    #region Bar Chart
+
+
     private readonly string example1HTMLCode = @"
 <div>
     <BitChart Config=""_barChartConfigExample"" @ref=""_barChartExample"" />
@@ -163,9 +164,7 @@ private void RemoveBarData()
     _barChartExample.Update();
 }
 ";
-    #endregion
-
-    #region Horizontal Bar Chart
+    
     private readonly string example2HTMLCode = @"
 <div>
     <BitChart Config=""_horizontalBarChartConfigExample"" @ref=""_horizontalBarChartExample"" />
@@ -220,9 +219,7 @@ private void InitHorizontalBarChartExample()
     _horizontalBarChartConfigExample.Data.Datasets.Add(dataset2);
 }
 ";
-    #endregion
 
-    #region Stacked Bar Chart
     private readonly string example3HTMLCode = @"
 <div>
     <BitChart Config=""_stackedBarChartConfigExample"" @ref=""_stackedBarChartExample"" />
@@ -299,9 +296,6 @@ private void InitStackedBarChartExample()
     _stackedBarChartConfigExample.Data.Labels.AddRange(BitChartDemoUtils.Months.Take(InitalCount));
 }
 ";
-    #endregion
-
-    #region line Chart
 
     private readonly string example4HTMLCode = @"
 <div>
@@ -386,10 +380,18 @@ private void InitlineChartExample()
     _lineChartConfigExample.Data.Datasets.Add(dataset2);
 }
 ";
-    #endregion
 
-    #region Pie Chart
     private readonly string example5HTMLCode = @"
+<div>
+    <BitChart Config=""_pieChartConfigExample"" @ref=""_pieChartExample"" />
+</div>
+<div>
+    <BitButton Style=""margin:5px"" ButtonStyle=""BitButtonStyle.Primary"" OnClick=""RandomizePieData"">Randomize Data</BitButton>
+    <BitButton Style=""margin:5px"" ButtonStyle=""BitButtonStyle.Standard"" OnClick=""AddPieDataset"">Add Dataset</BitButton>
+    <BitButton Style=""margin:5px"" ButtonStyle=""BitButtonStyle.Standard"" OnClick=""RemovePieDataset"">Remove Dataset</BitButton>
+    <BitButton Style=""margin:5px"" ButtonStyle=""BitButtonStyle.Standard"" OnClick=""AddPieData"">Add Data</BitButton>
+    <BitButton Style=""margin:5px"" ButtonStyle=""BitButtonStyle.Standard"" OnClick=""RemovePieData"">Remove Data</BitButton>
+</div>
 ";
     private readonly string example5CSharpCode = @"
 private BitChartPieConfig _pieChartConfigExample;
@@ -501,9 +503,7 @@ private void RemovePieData()
     _pieChartExample.Update();
 }
 ";
-    #endregion
 
-    #region Doughnut Chart
     private readonly string example6HTMLCode = @"
 <div>
     <BitChart Config=""_doughnutChartConfigExample"" @ref=""_doughnutChartExample"" />
@@ -541,5 +541,4 @@ private void InitDoughnutChartExample()
     _doughnutChartConfigExample.Data.Datasets.Add(dataset);
 }
 ";
-    #endregion
 }

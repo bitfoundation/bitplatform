@@ -5,18 +5,6 @@ namespace Bit.BlazorUI.Demo.Client.Shared.Pages.Components.Checkbox;
 
 public partial class BitCheckboxDemo
 {
-    private bool IsIndeterminated = true;
-    private bool IsChecked_OneWay;
-    private bool IsChecked_TwoWay;
-    private bool IsIndeterminated_OneWay = true;
-    private bool IsIndeterminated_TwoWay = true;
-    private bool IsCheckedLabelTemplate;
-    private bool IsCheckedCustomCheckBox;
-    private bool IsCheckedCustomIndeterminateCheckBox;
-    private bool IsIndeterminatedCustomCheckBox = true;
-    private BitCheckboxValidationModel ValidationForm = new();
-    private string SuccessMessage = string.Empty;
-
     private readonly List<ComponentParameter> componentParameters = new()
     {
         new()
@@ -139,7 +127,7 @@ public partial class BitCheckboxDemo
         }
     };
 
-    private readonly List<ComponentSubEnum> enumParameters = new()
+    private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
         new()
         {
@@ -148,13 +136,13 @@ public partial class BitCheckboxDemo
             Description = "",
             Items = new List<ComponentEnumItem>()
             {
-                new ComponentEnumItem()
+                new()
                 {
                     Name= "Start",
                     Description="The checkbox shows before the label.",
                     Value="0",
                 },
-                new ComponentEnumItem()
+                new()
                 {
                     Name= "End",
                     Description="The checkbox shows after the label.",
@@ -163,6 +151,34 @@ public partial class BitCheckboxDemo
             }
         }
     };
+
+
+
+    private bool IsIndeterminated = true;
+    private bool IsChecked_OneWay;
+    private bool IsChecked_TwoWay;
+    private bool IsIndeterminated_OneWay = true;
+    private bool IsIndeterminated_TwoWay = true;
+    private bool IsCheckedLabelTemplate;
+    private bool IsCheckedCustomCheckBox;
+    private bool IsCheckedCustomIndeterminateCheckBox;
+    private bool IsIndeterminatedCustomCheckBox = true;
+    private BitCheckboxValidationModel ValidationForm = new();
+    private string SuccessMessage = string.Empty;
+
+    private async Task HandleValidSubmit()
+    {
+        SuccessMessage = "Form Submitted Successfully!";
+        await Task.Delay(3000);
+        SuccessMessage = string.Empty;
+        StateHasChanged();
+    }
+
+    private void HandleInvalidSubmit()
+    {
+        SuccessMessage = string.Empty;
+    }
+
 
     private readonly string example1HTMLCode = @"
 <style>
@@ -283,7 +299,6 @@ private bool IsIndeterminated_TwoWay = true;
     </LabelTemplate>
 </BitCheckbox>
 ";
-
     private readonly string example5CSharpCode = @"
 private bool IsCheckedLabelTemplate;
 ";
@@ -338,7 +353,6 @@ private bool IsCheckedLabelTemplate;
         </div>
     </BitCheckbox>
 </div>";
-
     private readonly string example6CSharpCode = @"
 private bool IsCheckedCustomCheckBox;
 private bool IsCheckedCustomIndeterminateCheckBox;
@@ -390,7 +404,6 @@ else
     </BitMessageBar>
 }
 ";
-
     private readonly string example7CSharpCode = @"
 private BitCheckboxValidationModel ValidationForm = new();
 private string SuccessMessage = string.Empty;
@@ -414,17 +427,4 @@ private void HandleInvalidSubmit()
     SuccessMessage = string.Empty;
 }
 ";
-
-    private async Task HandleValidSubmit()
-    {
-        SuccessMessage = "Form Submitted Successfully!";
-        await Task.Delay(3000);
-        SuccessMessage = string.Empty;
-        StateHasChanged();
-    }
-
-    private void HandleInvalidSubmit()
-    {
-        SuccessMessage = string.Empty;
-    }
 }

@@ -65,22 +65,22 @@ public partial class BitSwiperDemo
         }
     };
 
-    private readonly List<ComponentSubEnum> enumParameters = new()
+    private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
-        new ComponentSubEnum()
+        new()
         {
             Id = "direction-enum",
             Name = "BitDirection",
             Description = "Describes the render direction",
             Items = new List<ComponentEnumItem>()
             {
-                new ComponentEnumItem()
+                new()
                 {
                     Name= "LeftToRight",
                     Description="Renders content from left to right.",
                     Value="0",
                 },
-                new ComponentEnumItem()
+                new()
                 {
                     Name= "RightToLeft",
                     Description="Renders content from right to left.",
@@ -89,6 +89,8 @@ public partial class BitSwiperDemo
             }
         }
     };
+
+
 
     private readonly string example1HTMLCode = @"
 <style>

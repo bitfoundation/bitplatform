@@ -289,7 +289,8 @@ public partial class BitNavDemo
             Description = "URL to navigate for the item link."
         }
     };
-    private readonly List<ComponentSubClass> componentSubParameters = new()
+
+    private readonly List<ComponentSubClass> componentSubClasses = new()
     {
         new()
         {
@@ -559,7 +560,8 @@ public partial class BitNavDemo
             }
         }
     };
-    private readonly List<ComponentSubEnum> enumParameters = new()
+
+    private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
         new()
         {
@@ -804,7 +806,6 @@ public partial class BitNavDemo
     private BitNavItem ToggledItem;
 
 
-
     // Basic
     private static readonly List<BitPlatformMenu> CustomBitPlatformNavMenu = new()
     {
@@ -967,7 +968,6 @@ public partial class BitNavDemo
     private FoodMenu CustomToggledItem;
 
 
-
     private string SelectedOptionKey;
 
     private BitNavOption ClickedOption;
@@ -1048,6 +1048,7 @@ public partial class BitNavDemo
             Value = "Cookie",
         },
     };
+
 
     private static string example1NavItemHTMLCode = @"
 <BitNav Items=""BitPlatformNavMenu"" />

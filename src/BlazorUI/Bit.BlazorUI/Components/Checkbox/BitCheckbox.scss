@@ -111,7 +111,7 @@
     &.indeterminate {
         .checkbox {
             border-color: $color-primary-main;
-            background-color: $color-neutrals-white;
+            background-color: $color-background-primary;
 
             .bit-icon {
                 display: inline-block;
@@ -155,12 +155,12 @@
 
         .checkbox {
             border-color: $color-neutrals-gray60;
-            background-color: $color-neutrals-white;
+            background-color: $color-background-primary;
 
             .bit-icon {
                 opacity: 1;
                 color: $color-neutrals-white;
-                background-color: $color-neutrals-white;
+                background-color: $color-background-primary;
             }
         }
 
@@ -217,7 +217,7 @@
             &:hover {
                 .checkbox {
                     border-color: $color-primary-darker;
-                    background-color: $color-neutrals-white;
+                    background-color: $color-background-primary;
 
                     .bit-icon {
                         background-color: $color-primary-darker;

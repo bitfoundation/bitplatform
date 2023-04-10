@@ -7,7 +7,7 @@ public partial class BitCarouselDemo
 {
     private readonly List<ComponentParameter> componentParameters = new()
     {
-        new ComponentParameter()
+        new()
         {
             Name = "AriaLabel",
             Type = "string",
@@ -86,7 +86,7 @@ public partial class BitCarouselDemo
         }
     };
 
-    private readonly List<ComponentSubEnum> enumParameters = new()
+    private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
         new()
         {
@@ -110,6 +110,8 @@ public partial class BitCarouselDemo
             }
         }
     };
+
+
 
     private readonly string example1HTMLCode = @"
 <style>

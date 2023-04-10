@@ -48,12 +48,14 @@ public partial class BitOverlayDemo
     };
 
 
+
     private bool BasicIsVisible;
     private bool AutoCloseIsVisible;
     private bool AbsoluteIsVisible;
     private bool AutoToggleIsVisible;
     private bool EnabledScrollerIsVisible;
     private bool DisabledScrollerIsVisible;
+
 
     private readonly string example1HTMLCode = @"
 <style>

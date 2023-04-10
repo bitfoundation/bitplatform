@@ -1,6 +1,7 @@
 ﻿@page "/components/slider"
 
-<ComponentDemo ComponentName="Slider" ComponentDescription="A slider provides a visual indication of adjustable content, as well as the current setting in the total range of content. Use a slider when you want people to set defined values (such as volume or brightness), or when people would benefit from instant feedback on the effect of setting changes."
+<ComponentDemo ComponentName="Slider"
+               ComponentDescription="A slider provides a visual indication of adjustable content, as well as the current setting in the total range of content. Use a slider when you want people to set defined values (such as volume or brightness), or when people would benefit from instant feedback on the effect of setting changes."
                ComponentParameters="componentParameters">
     <ComponentExampleBox Title="BitSlider" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
@@ -21,7 +22,7 @@
             <br />
             <BitSlider Label="Controlled"
                        Max="10"
-                       @bind-Value="sliderHorizontalValue" />
+            @bind-Value="sliderHorizontalValue" />
             <BitButton Class="bit-btn-slider" OnClick="() => sliderHorizontalValue = 2">Reset Value</BitButton>
             <br />
             <br />
@@ -94,8 +95,8 @@
             <br />
             <BitSlider Label="Controlled example"
                        Max="10"
-                       @bind-LowerValue="sliderRangedLowerValue"
-                       @bind-UpperValue="sliderRangedUpperValue"
+            @bind-LowerValue="sliderRangedLowerValue"
+            @bind-UpperValue="sliderRangedUpperValue"
                        IsRanged="true" />
             <BitButton Class="bit-btn-slider" OnClick="ResetBitSliderRangedValues">Reset Value</BitButton>
             <br />

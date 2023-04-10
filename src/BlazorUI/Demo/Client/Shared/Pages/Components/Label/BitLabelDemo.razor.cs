@@ -6,21 +6,21 @@ public partial class BitLabelDemo
 {
     private readonly List<ComponentParameter> componentParameters = new()
     {
-        new ComponentParameter()
+        new()
         {
             Name = "ChildContent",
             Type = "RenderFragment",
             DefaultValue = "",
             Description = "The content of label, It can be Any custom tag or a text.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "For",
             Type = "string",
             DefaultValue = "",
             Description = "This attribute specifies which form element a label is bound to.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "IsRequired",
             Type = "bool",
@@ -28,6 +28,8 @@ public partial class BitLabelDemo
             Description = "Whether the associated field is required or not, it shows a star above of it.",
         }
     };
+
+
 
     private readonly string example1HTMLCode = @"
 <BitLabel>I'm a Label</BitLabel>

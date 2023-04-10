@@ -202,7 +202,7 @@ public partial class BitNumericTextFieldDemo
         },
     };
 
-    private readonly List<ComponentSubClass> componentSubParameters = new()
+    private readonly List<ComponentSubClass> componentSubClasses = new()
     {
         new()
         {
@@ -229,7 +229,7 @@ public partial class BitNumericTextFieldDemo
         }
     };
 
-    private readonly List<ComponentSubEnum> enumParameters = new()
+    private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
         new()
         {

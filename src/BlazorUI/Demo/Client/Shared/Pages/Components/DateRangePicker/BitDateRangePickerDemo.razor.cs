@@ -298,7 +298,7 @@ public partial class BitDateRangePickerDemo
         },
     };
 
-    private readonly List<ComponentSubClass> componentSubParameters = new()
+    private readonly List<ComponentSubClass> componentSubClasses = new()
     {
         new()
         {
@@ -324,7 +324,7 @@ public partial class BitDateRangePickerDemo
         }
     };
 
-  private readonly List<ComponentSubEnum> enumParameters = new()
+    private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
         new()
         {
@@ -348,7 +348,7 @@ public partial class BitDateRangePickerDemo
             }
         }
     };
-
+    
 
 
     private BitDateRangePickerValue selectedDateRange = new()
@@ -365,6 +365,7 @@ public partial class BitDateRangePickerDemo
     {
         await dateRangePicker.OpenCallout();
     }
+
 
     private readonly string example1HTMLCode = @"
 <BitDateRangePicker Style=""max-width: 300px""

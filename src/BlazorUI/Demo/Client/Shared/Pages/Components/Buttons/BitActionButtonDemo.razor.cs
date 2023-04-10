@@ -90,7 +90,7 @@ public partial class BitActionButtonDemo
         }
     };
 
-    private readonly List<ComponentSubEnum> enumParameters = new()
+    private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
         new()
         {
@@ -147,6 +147,8 @@ public partial class BitActionButtonDemo
             }
         }
     };
+
+
 
     private readonly string example1HTMLCode = @"
 <BitActionButton IconName=""BitIconName.AddFriend"">Create account</BitActionButton>

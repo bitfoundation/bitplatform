@@ -6,7 +6,6 @@ namespace Bit.BlazorUI.Demo.Client.Shared.Pages.Components.DatePicker;
 
 public partial class BitDatePickerDemo
 {
-
     private readonly List<ComponentParameter> componentParameters = new()
     {
         new()
@@ -286,7 +285,7 @@ public partial class BitDatePickerDemo
         }
     };
 
-    private readonly List<ComponentSubEnum> enumParameters = new()
+    private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
         new()
         {
@@ -339,6 +338,7 @@ public partial class BitDatePickerDemo
     };
 
 
+
     private DateTimeOffset? selectedDate = new DateTimeOffset(new DateTime(2020, 1, 17), DateTimeOffset.Now.Offset);
     private FormValidationDatePickerModel formValidationDatePickerModel = new();
     private string SuccessMessage = string.Empty;
@@ -362,6 +362,7 @@ public partial class BitDatePickerDemo
     {
         SuccessMessage = string.Empty;
     }
+
 
     private readonly string example1HTMLCode = @"
 <BitDatePicker Style=""max-width: 350px""
@@ -416,7 +417,6 @@ public partial class BitDatePickerDemo
         @SuccessMessage
     </BitMessageBar>
 }";
-
     private readonly string example5CSharpCode = @"
 public class FormValidationDatePickerModel
 {
@@ -481,7 +481,6 @@ private void HandleInvalidSubmit()
         Custom label <BitIconButton IconName=""BitIconName.Calendar"" OnClick=""OpenCallout""></BitIconButton>
     </LabelTemplate>
 </BitDatePicker>";
-
     private readonly string example9CSharpCode = @"
 private BitDatePicker datePicker;
 private async Task OpenCallout()
@@ -495,7 +494,6 @@ private async Task OpenCallout()
                AriaLabel=""Select a date""
                Placeholder=""Select a date..."" />
 <BitLabel>Selected date: @selectedDate.ToString()</BitLabel>";
-
     private readonly string example10CSharpCode = @"
 private DateTimeOffset? selectedDate = new DateTimeOffset(new DateTime(2020, 1, 17), DateTimeOffset.Now.Offset);";
 
@@ -607,7 +605,6 @@ private DateTimeOffset? selectedDate = new DateTimeOffset(new DateTime(2020, 1, 
         </YearCellTemplate>
     </BitDatePicker>
 </div>";
-
     private readonly string example14CSharpCode = @"
 private CultureInfo Culture = CultureInfo.CurrentUICulture;";
 
@@ -643,7 +640,6 @@ private CultureInfo Culture = CultureInfo.CurrentUICulture;";
         <ValidationSummary />
     </div>
 </EditForm>";
-
     private readonly string example17CSharpCode = @"
 public class FormValidationDatePickerModel
 {
