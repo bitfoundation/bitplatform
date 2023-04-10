@@ -5,6 +5,155 @@ namespace Bit.BlazorUI.Demo.Client.Shared.Pages.Components.Checkbox;
 
 public partial class BitCheckboxDemo
 {
+    private readonly List<ComponentParameter> componentParameters = new()
+    {
+        new()
+        {
+            Name = "AriaDescription",
+            Type = "string",
+            Description = "Detailed description of the checkbox for the benefit of screen readers.",
+        },
+        new()
+        {
+            Name = "AriaLabelledby",
+            Type = "string",
+            Description = "ID for element that contains label information for the checkbox.",
+        },
+        new()
+        {
+            Name = "AriaPositionInSet",
+            Type = "string",
+            Description = "The position in the parent set (if in a set) for aria-posinset.",
+        },
+        new()
+        {
+            Name = "AriaSetSize",
+            Type = "string",
+            Description = "The total size of the parent set (if in a set) for aria-setsize.",
+        },
+        new()
+        {
+            Name = "BoxSide",
+            Type = "BitBoxSide",
+            LinkType = LinkType.Link,
+            Href = "#box-side-enum",
+            DefaultValue = "BitBoxSide.Start",
+            Description = "Determines whether the checkbox should be shown before the label (start) or after (end).",
+        },
+        new()
+        {
+            Name = "CheckmarkIconName",
+            Type = "BitIcon",
+            Description = "Custom icon for the check mark rendered by the checkbox instade of default check mark icon.",
+        },
+        new()
+        {
+            Name = "CheckmarkIconAriaLabel",
+            Type = "string",
+            Description = "The aria label of the icon for the benefit of screen readers.",
+        },
+        new()
+        {
+            Name = "ChildContent",
+            Type = "RenderFragment?",
+            Description = "Used to customize the content of checkbox(Label and Box).",
+        },
+        new()
+        {
+            Name = "DefaultIsIndeterminate",
+            Type = "bool",
+            Description = "Default indeterminate visual state for checkbox.",
+        },
+        new()
+        {
+            Name = "DefaultValue",
+            Type = "bool",
+            Description = "Use this if you want an uncontrolled component, meaning the Checkbox instance maintains its own state.",
+        },
+        new()
+        {
+            Name = "IsIndeterminate",
+            Type = "bool",
+            Description = "Callback that is called when the IsIndeterminate parameter changed.",
+        },
+        new()
+        {
+            Name = "Label",
+            Type = "string?",
+            Description = "Descriptive label for the checkbox.",
+        },
+        new()
+        {
+            Name = "LabelTemplate",
+            Type = "RenderFragment?",
+            Description = "Used to customize the label for the checkbox.",
+        },
+        new()
+        {
+            Name = "Name",
+            Type = "string",
+            Description = "Name for the checkbox input. This is intended for use with forms and NOT displayed in the UI.",
+        },
+        new()
+        {
+            Name = "OnChange",
+            Type = "EventCallback<bool>",
+            Description = "Callback that is called when the checked value has changed.",
+        },
+        new()
+        {
+            Name = "OnClick",
+            Type = "EventCallback<MouseEventArgs>",
+            Description = "Callback for when the checkbox clicked.",
+        },
+        new()
+        {
+            Name = "Title",
+            Type = "string",
+            Description = "Title text applied to the root element and the hidden checkbox input.",
+        },
+
+        new()
+        {
+            Name = "Value",
+            Type = "bool",
+            Description = "Checkbox state, control the checked state at a higher level.",
+        },
+        new()
+        {
+            Name = "ValueChanged",
+            Type = "EventCallback<bool>",
+            Description = "Callback that is called when the Value parameter changed.",
+        }
+    };
+
+    private readonly List<ComponentSubEnum> componentSubEnums = new()
+    {
+        new()
+        {
+            Id = "box-side-enum",
+            Name = "BitBoxSide",
+            Description = "",
+            Items = new List<ComponentEnumItem>()
+            {
+                new()
+                {
+                    Name= "Start",
+                    Description="The checkbox shows before the label.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "End",
+                    Description="The checkbox shows after the label.",
+                    Value="1",
+                }
+            }
+        }
+    };
+
+
+
     private bool IsIndeterminated = true;
     private bool IsChecked_OneWay;
     private bool IsChecked_TwoWay;
@@ -17,187 +166,19 @@ public partial class BitCheckboxDemo
     private BitCheckboxValidationModel ValidationForm = new();
     private string SuccessMessage = string.Empty;
 
-    private readonly List<ComponentParameter> componentParameters = new()
+    private async Task HandleValidSubmit()
     {
-        new ComponentParameter()
-        {
-            Name = "AriaDescription",
-            Type = "string",
-            Description = "Detailed description of the checkbox for the benefit of screen readers.",
-        },
-        new ComponentParameter()
-        {
-            Name = "AriaLabelledby",
-            Type = "string",
-            Description = "ID for element that contains label information for the checkbox.",
-        },
-        new ComponentParameter()
-        {
-            Name = "AriaPositionInSet",
-            Type = "string",
-            Description = "The position in the parent set (if in a set) for aria-posinset.",
-        },
-        new ComponentParameter()
-        {
-            Name = "AriaSetSize",
-            Type = "string",
-            Description = "The total size of the parent set (if in a set) for aria-setsize.",
-        },
-        new ComponentParameter()
-        {
-            Name = "BoxSide",
-            Type = "BitBoxSide",
-            LinkType = LinkType.Link,
-            Href = "#box-side-enum",
-            DefaultValue = "BitBoxSide.Start",
-            Description = "Determines whether the checkbox should be shown before the label (start) or after (end).",
-        },
-        new ComponentParameter()
-        {
-            Name = "CheckmarkIconName",
-            Type = "BitIcon",
-            Description = "Custom icon for the check mark rendered by the checkbox instade of default check mark icon.",
-        },
-        new ComponentParameter()
-        {
-            Name = "CheckmarkIconAriaLabel",
-            Type = "string",
-            Description = "The aria label of the icon for the benefit of screen readers.",
-        },
-        new ComponentParameter()
-        {
-            Name = "ChildContent",
-            Type = "RenderFragment?",
-            Description = "Used to customize the content of checkbox(Label and Box).",
-        },
-        new ComponentParameter()
-        {
-            Name = "DefaultIsIndeterminate",
-            Type = "bool",
-            Description = "Default indeterminate visual state for checkbox.",
-        },
-        new ComponentParameter()
-        {
-            Name = "DefaultValue",
-            Type = "bool",
-            Description = "Use this if you want an uncontrolled component, meaning the Checkbox instance maintains its own state.",
-        },
-        new ComponentParameter()
-        {
-            Name = "IsIndeterminate",
-            Type = "bool",
-            Description = "Callback that is called when the IsIndeterminate parameter changed.",
-        },
-        new ComponentParameter()
-        {
-            Name = "Label",
-            Type = "string?",
-            Description = "Descriptive label for the checkbox.",
-        },
-        new ComponentParameter()
-        {
-            Name = "LabelTemplate",
-            Type = "RenderFragment?",
-            Description = "Used to customize the label for the checkbox.",
-        },
-        new ComponentParameter()
-        {
-            Name = "Name",
-            Type = "string",
-            Description = "Name for the checkbox input. This is intended for use with forms and NOT displayed in the UI.",
-        },
-        new ComponentParameter()
-        {
-            Name = "OnChange",
-            Type = "EventCallback<bool>",
-            Description = "Callback that is called when the checked value has changed.",
-        },
-        new ComponentParameter()
-        {
-            Name = "OnClick",
-            Type = "EventCallback<MouseEventArgs>",
-            Description = "Callback for when the checkbox clicked.",
-        },
-        new ComponentParameter()
-        {
-            Name = "Title",
-            Type = "string",
-            Description = "Title text applied to the root element and the hidden checkbox input.",
-        },
+        SuccessMessage = "Form Submitted Successfully!";
+        await Task.Delay(3000);
+        SuccessMessage = string.Empty;
+        StateHasChanged();
+    }
 
-        new ComponentParameter()
-        {
-            Name = "Value",
-            Type = "bool",
-            Description = "Checkbox state, control the checked state at a higher level.",
-        },
-        new ComponentParameter()
-        {
-            Name = "ValueChanged",
-            Type = "EventCallback<bool>",
-            Description = "Callback that is called when the Value parameter changed.",
-        },
-        new ComponentParameter()
-        {
-            Name = "Visibility",
-            Type = "BitComponentVisibility",
-            LinkType = LinkType.Link,
-            Href = "#component-visibility-enum",
-            DefaultValue = "BitComponentVisibility.Visible",
-            Description = "Whether the component is Visible,Hidden,Collapsed.",
-        },
-    };
-    private readonly List<EnumParameter> enumParameters = new()
+    private void HandleInvalidSubmit()
     {
-        new EnumParameter()
-        {
-            Id = "box-side-enum",
-            Title = "BitBoxSide Enum",
-            Description = "",
-            EnumList = new List<EnumItem>()
-            {
-                new EnumItem()
-                {
-                    Name= "Start",
-                    Description="The checkbox shows before the label.",
-                    Value="0",
-                },
-                new EnumItem()
-                {
-                    Name= "End",
-                    Description="The checkbox shows after the label.",
-                    Value="1",
-                }
-            }
-        },
-        new EnumParameter()
-        {
-            Id = "component-visibility-enum",
-            Title = "BitComponentVisibility Enum",
-            Description = "",
-            EnumList = new List<EnumItem>()
-            {
-                new EnumItem()
-                {
-                    Name= "Visible",
-                    Description="Show content of the component.",
-                    Value="0",
-                },
-                new EnumItem()
-                {
-                    Name= "Hidden",
-                    Description="Hide content of the component,though the space it takes on the page remains.",
-                    Value="1",
-                },
-                new EnumItem()
-                {
-                    Name= "Collapsed",
-                    Description="Hide content of the component,though the space it takes on the page gone.",
-                    Value="2",
-                }
-            }
-        }
-    };
+        SuccessMessage = string.Empty;
+    }
+
 
     private readonly string example1HTMLCode = @"
 <style>
@@ -318,7 +299,6 @@ private bool IsIndeterminated_TwoWay = true;
     </LabelTemplate>
 </BitCheckbox>
 ";
-
     private readonly string example5CSharpCode = @"
 private bool IsCheckedLabelTemplate;
 ";
@@ -373,7 +353,6 @@ private bool IsCheckedLabelTemplate;
         </div>
     </BitCheckbox>
 </div>";
-
     private readonly string example6CSharpCode = @"
 private bool IsCheckedCustomCheckBox;
 private bool IsCheckedCustomIndeterminateCheckBox;
@@ -425,7 +404,6 @@ else
     </BitMessageBar>
 }
 ";
-
     private readonly string example7CSharpCode = @"
 private BitCheckboxValidationModel ValidationForm = new();
 private string SuccessMessage = string.Empty;
@@ -449,17 +427,4 @@ private void HandleInvalidSubmit()
     SuccessMessage = string.Empty;
 }
 ";
-
-    private async Task HandleValidSubmit()
-    {
-        SuccessMessage = "Form Submitted Successfully!";
-        await Task.Delay(3000);
-        SuccessMessage = string.Empty;
-        StateHasChanged();
-    }
-
-    private void HandleInvalidSubmit()
-    {
-        SuccessMessage = string.Empty;
-    }
 }

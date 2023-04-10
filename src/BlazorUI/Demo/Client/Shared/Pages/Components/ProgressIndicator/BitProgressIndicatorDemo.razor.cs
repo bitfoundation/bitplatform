@@ -1,11 +1,9 @@
-﻿using Bit.BlazorUI.Demo.Client.Shared.Models;
-using Bit.BlazorUI.Demo.Client.Shared.Pages.Components.ComponentDemoBase;
+﻿using Bit.BlazorUI.Demo.Client.Shared.Pages.Components.ComponentDemoBase;
 
 namespace Bit.BlazorUI.Demo.Client.Shared.Pages.Components.ProgressIndicator;
 
 public partial class BitProgressIndicatorDemo
 {
-
     private readonly List<ComponentParameter> componentParameters = new()
     {
         new()
@@ -70,48 +68,10 @@ public partial class BitProgressIndicatorDemo
             Type = "RenderFragment<BitProgressIndicator>",
             DefaultValue = "",
             Description = "A custom template for progress track.",
-        },
-        new()
-        {
-            Name = "Visibility",
-            Type = "BitComponentVisibility",
-            LinkType = LinkType.Link,
-            Href = "#component-visibility-enum",
-            DefaultValue = "BitComponentVisibility.Visible",
-            Description = "Whether the component is Visible,Hidden,Collapsed.",
-        },
-    };
-
-    private readonly List<EnumParameter> enumParameters = new()
-    {
-        new EnumParameter()
-        {
-            Id = "component-visibility-enum",
-            Title = "BitComponentVisibility Enum",
-            Description = "",
-            EnumList = new List<EnumItem>()
-            {
-                new EnumItem()
-                {
-                    Name= "Visible",
-                    Description="Show content of the component.",
-                    Value="0",
-                },
-                new EnumItem()
-                {
-                    Name= "Hidden",
-                    Description="Hide content of the component,though the space it takes on the page remains.",
-                    Value="1",
-                },
-                new EnumItem()
-                {
-                    Name= "Collapsed",
-                    Description="Hide content of the component,though the space it takes on the page gone.",
-                    Value="2",
-                }
-            }
         }
     };
+
+
 
     private int CompletedPercent;
     private string Description = "Push button to start!";
@@ -137,6 +97,7 @@ public partial class BitProgressIndicatorDemo
             await Task.Delay(100);
         }
     }
+
 
     private readonly string example1HTMLCode = @"
 <BitProgressIndicator Label=""Example title""

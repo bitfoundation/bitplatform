@@ -45,8 +45,8 @@
     }
 
     &.standard {
+        color: $color-text-primary;
         border-color: $color-border-secondary;
-        color: $color-text-secondary;
         background-color: $color-secondary-main;
 
         &:hover {
@@ -61,8 +61,8 @@
     }
 
     &.primary {
+        color: $color-text-secondary;
         border-color: $color-border-primary;
-        color: $color-text-primary;
         background-color: $color-primary-main;
 
         &:hover {
@@ -154,8 +154,8 @@
 
         &.primary {
             .spinner {
-                border: spacing(2) solid $color-neutrals-gray60;
-                border-top: spacing(2) solid $color-neutrals-white;
+                border: spacing(2) $shape-border-style $color-neutrals-gray60;
+                border-top: spacing(2) $shape-border-style $color-neutrals-white;
                 border-radius: 50%;
                 border-width: spacing(0.2125);
             }
@@ -167,8 +167,8 @@
 
         &.standard {
             .spinner {
-                border: spacing(2) solid $color-neutrals-gray60;
-                border-top: spacing(2) solid $color-primary-main;
+                border: spacing(2) $shape-border-style $color-neutrals-gray60;
+                border-top: spacing(2) $shape-border-style $color-primary-main;
                 border-radius: 50%;
                 border-width: spacing(0.1875);
             }

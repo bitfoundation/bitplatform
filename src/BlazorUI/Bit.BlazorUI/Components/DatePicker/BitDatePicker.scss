@@ -53,7 +53,7 @@
         border-radius: $shape-border-radius;
         border: $shape-border-width $shape-border-style $color-neutrals-gray130;
         box-sizing: border-box;
-        background-color: $color-neutrals-white;
+        background-color: $color-background-primary;
         cursor: pointer;
 
         input {
@@ -155,7 +155,7 @@
         position: relative;
         border-radius: $shape-border-radius;
         outline: none;
-        background-color: $color-neutrals-white;
+        background-color: $color-background-primary;
         overflow: hidden auto;
     }
 
@@ -526,7 +526,7 @@
         .bit-dtp-time-wrp {
             border-radius: $shape-border-radius;
             border: $shape-border-width $shape-border-style $color-neutrals-gray130;
-            background-color: $color-neutrals-white;
+            background-color: $color-background-primary;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -548,7 +548,7 @@
             width: spacing(3.75);
             height: spacing(3.75);
             box-sizing: border-box;
-            background-color: $color-neutrals-white;
+            background-color: $color-background-primary;
             cursor: pointer;
             text-align: center;
             -moz-appearance: textfield; // Firefox

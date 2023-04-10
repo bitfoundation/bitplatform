@@ -29,7 +29,7 @@
     }
 
     &.primary {
-        color: $color-text-primary;
+        color: $color-text-secondary;
         background: $color-primary-main;
         border-color: $color-border-primary;
 
@@ -45,8 +45,8 @@
     }
 
     &.standard {
+        color: $color-text-primary;
         border-color: $color-border-secondary;
-        color: $color-text-secondary;
         background-color: $color-secondary-main;
 
         &:hover {

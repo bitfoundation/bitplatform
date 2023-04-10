@@ -46,7 +46,7 @@ $BgTrackHover: $color-primary-dark;
         width: spacing(2);
         height: spacing(2);
         margin-top: calc(max((1rem - 1px - 0px)*.5,0px) - 2rem*.5);
-        border: spacing(0.25) solid $BgTrack;
+        border: spacing(0.25) $shape-border-style $BgTrack;
         border-radius: spacing(1.25);
         box-sizing: border-box;
         background: $color-neutrals-white;

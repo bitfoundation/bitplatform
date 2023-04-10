@@ -298,7 +298,7 @@ public partial class BitDateRangePickerDemo
         },
     };
 
-    private readonly List<ComponentSubParameter> componentSubParameters = new()
+    private readonly List<ComponentSubClass> componentSubClasses = new()
     {
         new()
         {
@@ -324,49 +324,22 @@ public partial class BitDateRangePickerDemo
         }
     };
 
-    private readonly List<EnumParameter> enumParameters = new()
+    private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
-        new EnumParameter()
-        {
-            Id = "component-visibility-enum",
-            Title = "BitComponentVisibility Enum",
-            Description = "",
-            EnumList = new List<EnumItem>()
-            {
-                new EnumItem()
-                {
-                    Name= "Visible",
-                    Description="Show content of the component.",
-                    Value="0",
-                },
-                new EnumItem()
-                {
-                    Name= "Hidden",
-                    Description="Hide content of the component,though the space it takes on the page remains.",
-                    Value="1",
-                },
-                new EnumItem()
-                {
-                    Name= "Collapsed",
-                    Description="Hide content of the component,though the space it takes on the page gone.",
-                    Value="2",
-                }
-            }
-        },
-        new EnumParameter()
+        new()
         {
             Id = "icon-location-enum",
-            Title = "BitIconLocation Enum",
+            Name = "BitIconLocation",
             Description = "",
-            EnumList = new List<EnumItem>()
+            Items = new List<ComponentEnumItem>()
             {
-                new EnumItem()
+                new ComponentEnumItem()
                 {
                     Name= "Left",
                     Description="Show the icon at the left side.",
                     Value="0",
                 },
-                new EnumItem()
+                new ComponentEnumItem()
                 {
                     Name= "Right",
                     Description="Show the icon at the right side.",
@@ -375,7 +348,7 @@ public partial class BitDateRangePickerDemo
             }
         }
     };
-
+    
 
 
     private BitDateRangePickerValue selectedDateRange = new()
@@ -392,6 +365,7 @@ public partial class BitDateRangePickerDemo
     {
         await dateRangePicker.OpenCallout();
     }
+
 
     private readonly string example1HTMLCode = @"
 <BitDateRangePicker Style=""max-width: 300px""

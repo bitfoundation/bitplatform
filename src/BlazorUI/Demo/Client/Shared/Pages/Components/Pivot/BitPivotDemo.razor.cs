@@ -62,7 +62,7 @@ public partial class BitPivotDemo
         },
     };
 
-    private readonly List<ComponentSubParameter> componentSubParameters = new()
+    private readonly List<ComponentSubClass> componentSubClasses = new()
     {
         new()
         {
@@ -117,14 +117,14 @@ public partial class BitPivotDemo
         }
     };
 
-    private readonly List<EnumParameter> enumParameters = new()
+    private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
         new()
         {
             Id = "linkFormat-enum",
-            Title = "BitLinkFormat Enum",
+            Name = "BitLinkFormat",
             Description = "",
-            EnumList = new()
+            Items = new()
             {
                 new()
                 {
@@ -143,9 +143,9 @@ public partial class BitPivotDemo
         new()
         {
             Id = "linkSize-enum",
-            Title = "BitLinkSize Enum",
+            Name = "BitLinkSize",
             Description = "",
-            EnumList = new()
+            Items = new()
             {
                 new()
                 {
@@ -164,9 +164,9 @@ public partial class BitPivotDemo
         new()
         {
             Id = "overflowBehavior-enum",
-            Title = "BitOverflowBehavior Enum",
+            Name = "BitOverflowBehavior",
             Description = "",
-            EnumList = new()
+            Items = new()
             {
                 new()
                 {
@@ -189,6 +189,7 @@ public partial class BitPivotDemo
             }
         },
     };
+
 
 
     private string SelectedKey = "Foo";

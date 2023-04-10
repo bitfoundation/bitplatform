@@ -27,8 +27,9 @@ public partial class Header
         StateHasChanged();
     }
 
-    private async Task ToggleMenu()
+    private async Task ToggleNavMenu()
     {
+        IsHeaderMenuOpen = false;
         await NavManuService.ToggleMenu();
     }
 
@@ -51,7 +52,7 @@ public partial class Header
         {
             IsHeaderMenuOpen = !IsHeaderMenuOpen;
 
-            await JsRuntime.SetToggleBodyOverflow(IsHeaderMenuOpen);
+            await JsRuntime.ToggleBodyOverflow(IsHeaderMenuOpen);
         }
         catch (Exception ex)
         {

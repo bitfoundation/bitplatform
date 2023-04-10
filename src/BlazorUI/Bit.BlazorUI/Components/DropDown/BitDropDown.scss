@@ -31,7 +31,7 @@
         font-weight: 400;
         color: $color-neutrals-gray160;
         font-family: $typography-font-family;
-        background-color: $color-neutrals-white;
+        background-color: $color-background-primary;
         -webkit-font-smoothing: antialiased;
 
         &:hover {
@@ -339,7 +339,7 @@
         animation-duration: 0.367s;
         animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
         animation-fill-mode: both;
-        background-color: $color-neutrals-white;
+        background-color: $color-background-primary;
         z-index: $space-overlay-zindex1;
         overflow: hidden;
         -webkit-font-smoothing: antialiased;
@@ -547,12 +547,12 @@
 
                 .bit-drp-chb {
                     border-color: $color-neutrals-gray60;
-                    background-color: $color-neutrals-white;
+                    background-color: $color-background-primary;
 
                     .bit-drp-chm {
                         opacity: 1;
                         color: $color-neutrals-white;
-                        background-color: $color-neutrals-white;
+                        background-color: $color-background-primary;
                     }
                 }
 

@@ -149,6 +149,7 @@ public partial class BitSliderDemo
     };
 
 
+
     private double? sliderHorizontalValue = 2;
     private double? sliderRangedLowerValue = 3;
     private double? sliderRangedUpperValue = 7;

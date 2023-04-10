@@ -225,7 +225,8 @@ public partial class BitChoiceGroupDemo
             Description = "The field from the model that will be the underlying value."
         },
     };
-    private readonly List<ComponentSubParameter> componentSubParameters = new()
+
+    private readonly List<ComponentSubClass> componentSubClasses = new()
     {
         new()
         {
@@ -367,6 +368,8 @@ public partial class BitChoiceGroupDemo
         }
     };
 
+
+
     private string ChoiceGroupOneWayValue = "A";
     private string ChoiceGroupTwoWayValue = "A";
     private string ChoiceGroupWithOptionTemplateValue = "Day";
@@ -481,6 +484,7 @@ public partial class BitChoiceGroupDemo
     {
         SuccessMessage = string.Empty;
     }
+
 
     private readonly string example1BitChoiceGroupItemHtmlCode = @"
 <BitChoiceGroup Label=""Pick one"" Items=""ChoiceGroupBasicItems"" DefaultValue=""@(""A"")"" />

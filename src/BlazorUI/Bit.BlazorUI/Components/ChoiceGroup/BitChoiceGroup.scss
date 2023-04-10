@@ -80,7 +80,7 @@
             height: spacing(2.5);
             border-radius: 50%;
             border: $shape-border-width $shape-border-style $color-neutrals-gray160;
-            background-color: $color-neutrals-white;
+            background-color: $color-background-primary;
             box-sizing: border-box;
             transition: border-color 0.2s cubic-bezier(0.4, 0, 0.23, 1);
         }
@@ -151,7 +151,7 @@
             border-radius: 50%;
             border: $shape-border-width $shape-border-style $color-neutrals-gray160;
             box-sizing: border-box;
-            background-color: $color-neutrals-white;
+            background-color: $color-background-primary;
             transition: border-color 0.2s cubic-bezier(0.4, 0, 0.23, 1);
             opacity: 0;
         }

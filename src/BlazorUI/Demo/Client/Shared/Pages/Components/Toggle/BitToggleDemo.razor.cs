@@ -4,6 +4,61 @@ namespace Bit.BlazorUI.Demo.Client.Shared.Pages.Components.Toggle;
 
 public partial class BitToggleDemo
 {
+    private readonly List<ComponentParameter> componentParameters = new()
+    {
+        new()
+        {
+            Name = "DefaultText",
+            Type = "string",
+            Description = "Default text of the toggle when it is neither ON or OFF.",
+        },
+        new()
+        {
+            Name = "IsInlineLabel",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the label (not the onText/offText) should be positioned inline with the toggle control. Left (right in RTL) side when on/off text provided VS right (left in RTL) side when there is no on/off text.",
+        },
+        new()
+        {
+            Name = "Label",
+            Type = "string",
+            Description = "Label of the toggle.",
+        },
+        new()
+        {
+            Name = "LabelTemplate",
+            Type = "RenderFragment",
+            Description = "Custom label of the toggle.",
+        },
+        new()
+        {
+            Name = "OnChange",
+            Type = "EventCallback<bool>",
+            Description = "Callback that is called when the checked value has changed.",
+        },
+        new()
+        {
+            Name = "OffText",
+            Type = "string",
+            Description = "Text to display when toggle is OFF.",
+        },
+        new()
+        {
+            Name = "OnText",
+            Type = "string",
+            Description = "Text to display when toggle is ON.",
+        },
+        new()
+        {
+            Name = "Role",
+            Type = "string",
+            Description = "Denotes role of the toggle, default is switch.",
+        },
+    };
+
+
+
     private bool BasicValue;
     private bool DisabledValue;
     private bool OnTextValue;
@@ -31,60 +86,6 @@ public partial class BitToggleDemo
         SuccessMessage = string.Empty;
     }
 
-    private readonly List<ComponentParameter> componentParameters = new()
-    {
-        new ComponentParameter()
-        {
-            Name = "DefaultText",
-            Type = "string",
-            Description = "Default text of the toggle when it is neither ON or OFF.",
-        },
-        new ComponentParameter()
-        {
-            Name = "IsInlineLabel",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Whether the label (not the onText/offText) should be positioned inline with the toggle control. Left (right in RTL) side when on/off text provided VS right (left in RTL) side when there is no on/off text.",
-        },
-        new ComponentParameter()
-        {
-            Name = "Label",
-            Type = "string",
-            Description = "Label of the toggle.",
-        },
-        new ComponentParameter()
-        {
-            Name = "LabelTemplate",
-            Type = "RenderFragment",
-            Description = "Custom label of the toggle.",
-        },
-        new ComponentParameter()
-        {
-            Name = "OnChange",
-            Type = "EventCallback<bool>",
-            Description = "Callback that is called when the checked value has changed.",
-        },
-        new ComponentParameter()
-        {
-            Name = "OffText",
-            Type = "string",
-            Description = "Text to display when toggle is OFF.",
-        },
-        new ComponentParameter()
-        {
-            Name = "OnText",
-            Type = "string",
-            Description = "Text to display when toggle is ON.",
-        },
-        new ComponentParameter()
-        {
-            Name = "Role",
-            Type = "string",
-            Description = "Denotes role of the toggle, default is switch.",
-        },
-    };
-
-    #region Sample Code 1
 
     private readonly string example1HTMLCode = @"
 <div class=""example-box"">
@@ -95,7 +96,6 @@ public partial class BitToggleDemo
     <BitToggle @bind-Value=""DefaultTextValue"" DefaultText=""Default Text"" />
 </div>
 ";
-
     private readonly string example1CSharpCode = @"
 private bool BasicValue;
 private bool DisabledValue;
@@ -103,10 +103,6 @@ private bool OnTextValue;
 private bool InLineLabelValue;
 private bool DefaultTextValue;
 ";
-
-    #endregion
-
-    #region Sample Code 2
 
     private readonly string example2HTMLCode = @"
 <div class=""example-box"">
@@ -118,14 +114,9 @@ private bool DefaultTextValue;
     </BitToggle>
 </div>
 ";
-
     private readonly string example2CSharpCode = @"
 private bool LabelTemplateValue;
 ";
-
-    #endregion
-
-    #region Sample Code 3
 
     private readonly string example3HTMLCode = @"
 <div class=""example-box"">
@@ -139,15 +130,10 @@ private bool LabelTemplateValue;
     </div>
 </div>
 ";
-
     private readonly string example3CSharpCode = @"
 private bool OneWayValue;
 private bool TwoWayValue;
 ";
-
-    #endregion
-
-    #region Sample Code 4
 
     private readonly string example4HTMLCode = @"
 <style>
@@ -194,7 +180,6 @@ else
     </BitMessageBar>
 }
 ";
-
     private readonly string example4CSharpCode = @"
 public class BitToggleValidationModel
 {
@@ -218,6 +203,4 @@ private void HandleInvalidSubmit()
     SuccessMessage = string.Empty;
 }
 ";
-
-    #endregion
 }

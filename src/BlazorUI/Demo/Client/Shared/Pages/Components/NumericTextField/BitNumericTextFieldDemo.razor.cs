@@ -202,7 +202,7 @@ public partial class BitNumericTextFieldDemo
         },
     };
 
-    private readonly List<ComponentSubParameter> componentSubParameters = new()
+    private readonly List<ComponentSubClass> componentSubClasses = new()
     {
         new()
         {
@@ -229,14 +229,14 @@ public partial class BitNumericTextFieldDemo
         }
     };
 
-    private readonly List<EnumParameter> enumParameters = new()
+    private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
         new()
         {
             Id = "labelPosition-enum",
-            Title = "BitNumericTextFieldLabelPosition Enum",
+            Name = "BitNumericTextFieldLabelPosition",
             Description = "",
-            EnumList = new List<EnumItem>()
+            Items = new List<ComponentEnumItem>()
             {
                 new()
                 {

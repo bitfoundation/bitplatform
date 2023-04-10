@@ -33,6 +33,11 @@ public partial class BitTypography : BitComponentBase
     [Parameter] public string? Component { get; set; }
 
     /// <summary>
+    /// If true, the text will have a bottom margin.
+    /// </summary>
+    [Parameter] public bool Gutter { get; set; }
+
+    /// <summary>
     /// If true, the text will not wrap, but instead will truncate with a text overflow ellipsis.
     /// Note that text overflow can only happen with block or inline-block level elements(the element needs to have a width in order to overflow).
     /// </summary>
@@ -50,7 +55,8 @@ public partial class BitTypography : BitComponentBase
     protected override void RegisterComponentClasses()
     {
         ClassBuilder.Register(() => $"bit-tpg-{Variant.ToString().ToLower(CultureInfo.InvariantCulture)}")
-                    .Register(() => NoWrap ? "bit-tpg-nowrap" : string.Empty);
+                    .Register(() => NoWrap ? "bit-tpg-nowrap" : string.Empty)
+                    .Register(() => Gutter ? "bit-tpg-gutter" : string.Empty);
     }
 
     protected override async Task OnInitializedAsync()

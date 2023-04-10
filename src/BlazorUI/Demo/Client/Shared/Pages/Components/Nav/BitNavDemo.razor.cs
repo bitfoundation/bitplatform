@@ -289,7 +289,8 @@ public partial class BitNavDemo
             Description = "URL to navigate for the item link."
         }
     };
-    private readonly List<ComponentSubParameter> componentSubParameters = new()
+
+    private readonly List<ComponentSubClass> componentSubClasses = new()
     {
         new()
         {
@@ -559,13 +560,14 @@ public partial class BitNavDemo
             }
         }
     };
-    private readonly List<EnumParameter> enumParameters = new()
+
+    private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
         new()
         {
             Id = "nav-mode-enum",
-            Title = "BitNavMode Enum",
-            EnumList = new()
+            Name = "BitNavMode",
+            Items = new()
             {
                 new()
                 {
@@ -584,8 +586,8 @@ public partial class BitNavDemo
         new()
         {
             Id = "nav-render-type-enum",
-            Title = "BitNavRenderType Enum",
-            EnumList = new()
+            Name = "BitNavRenderType",
+            Items = new()
             {
                 new()
                 {
@@ -602,8 +604,8 @@ public partial class BitNavDemo
         new()
         {
             Id = "nav-item-aria-current-enum",
-            Title = "BitNavItemAriaCurrent Enum",
-            EnumList = new()
+            Name = "BitNavItemAriaCurrent",
+            Items = new()
             {
                 new()
                 {
@@ -804,7 +806,6 @@ public partial class BitNavDemo
     private BitNavItem ToggledItem;
 
 
-
     // Basic
     private static readonly List<BitPlatformMenu> CustomBitPlatformNavMenu = new()
     {
@@ -967,7 +968,6 @@ public partial class BitNavDemo
     private FoodMenu CustomToggledItem;
 
 
-
     private string SelectedOptionKey;
 
     private BitNavOption ClickedOption;
@@ -1048,6 +1048,7 @@ public partial class BitNavDemo
             Value = "Cookie",
         },
     };
+
 
     private static string example1NavItemHTMLCode = @"
 <BitNav Items=""BitPlatformNavMenu"" />

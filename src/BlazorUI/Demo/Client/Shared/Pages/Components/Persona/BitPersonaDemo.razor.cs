@@ -5,59 +5,58 @@ namespace Bit.BlazorUI.Demo.Client.Shared.Pages.Components.Persona;
 
 public partial class BitPersonaDemo
 {
-    public bool IsDetailsShown { get; set; } = true;
     private readonly List<ComponentParameter> componentParameters = new()
     {
-        new ComponentParameter()
+        new()
         {
             Name = "AllowPhoneInitials",
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether initials are calculated for phone numbers and number sequences.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "CoinSize",
             Type = "int",
             DefaultValue = "-1",
             Description = "Optional custom persona coin size in pixel.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "HidePersonaDetails",
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether to not render persona details, and just render the persona image/initials.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "IsOutOfOffice",
             Type = "bool",
             DefaultValue = "false",
             Description = "This flag can be used to signal the persona is out of office. This will change the way the presence icon looks for statuses that support dual-presence.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "ImageUrl",
             Type = "string?",
             DefaultValue = "",
             Description = "Url to the image to use, should be a square aspect ratio and big enough to fit in the image area.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "ImageAlt",
             Type = "string?",
             DefaultValue = "",
             Description = "Alt text for the image to use. default is empty string.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "ImageInitials",
             Type = "string?",
             DefaultValue = "",
             Description = "The user's initials to display in the image area when there is no image.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "InitialsColor",
             Type = "BitPersonaInitialsColor?",
@@ -66,14 +65,14 @@ public partial class BitPersonaDemo
             DefaultValue = "0",
             Description = "The background color when the user's initials are displayed.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "OptionalText",
             Type = "string?",
             DefaultValue = "",
             Description = "Optional text to display, usually a custom message set. The optional text will only be shown when using size100.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "Presence",
             Type = "BitPersonaPresenceStatus",
@@ -82,35 +81,35 @@ public partial class BitPersonaDemo
             DefaultValue = "BitPersonaPresenceStatus.None",
             Description = "Presence of the person to display - will not display presence if undefined.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "PresenceTitle",
             Type = "string?",
             DefaultValue = "",
             Description = "Presence title to be shown as a tooltip on hover over the presence icon.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "SecondaryText",
             Type = "string?",
             DefaultValue = "",
             Description = "Secondary text to display, usually the role of the user.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "ShowInitialsUntilImageLoads",
             Type = "bool",
             DefaultValue = "false",
             Description = "If true renders the initials while the image is loading. This only applies when an imageUrl is provided.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "ShowUnknownPersonaCoin",
             Type = "bool",
             DefaultValue = "false",
             Description = "If true, show the special coin for unknown persona. It has '?' in place of initials, with static font and background colors.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "Size",
             Type = "string?",
@@ -119,49 +118,49 @@ public partial class BitPersonaDemo
             Href = "#bitpersona-size",
             Description = "Decides the size of the control.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "Text",
             Type = "string?",
             DefaultValue = "",
             Description = "Primary text to display, usually the name of the person.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "TertiaryText",
             Type = "string?",
             DefaultValue = "",
             Description = "Tertiary text to display, usually the status of the user. The tertiary text will only be shown when using size72 or size100.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "ActionIconName",
             Type = "BitIconName",
             DefaultValue = "BitIconName.Edit",
             Description = "Icon name for the icon button of the custom action.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "OnActionClick",
             Type = "EventCallback<MouseEventArgs>",
             DefaultValue = "",
             Description = "Callback for the persona custom action.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "ActionFragment",
             Type = "RenderFragment?",
             DefaultValue = "",
             Description = "Optional Custom template for the custom action element.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "OnImageClick",
             Type = "EventCallback<MouseEventArgs>",
             DefaultValue = "",
             Description = "Callback for when the image clicked.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "ImageOverlayFragment",
             Type = "RenderFragment?",
@@ -169,14 +168,14 @@ public partial class BitPersonaDemo
             Description = "Optional Custom template for the image overlay.",
         }
     };
-
-    private readonly List<EnumParameter> enumParameters = new()
+    
+    private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
-        new EnumParameter()
+        new()
         {
             Id = "precence-status",
-            Title = "BitPersonaPresenceStatus enum",
-            EnumList = new List<EnumItem>()
+            Name = "BitPersonaPresenceStatus",
+            Items = new List<ComponentEnumItem>()
             {
                 new()
                 {
@@ -215,11 +214,11 @@ public partial class BitPersonaDemo
                 },
             }
         },
-        new EnumParameter()
+        new()
         {
             Id = "bitpersona-initial-color",
-            Title = "BitPersonaInitialsColor enum",
-            EnumList = new List<EnumItem>()
+            Name = "BitPersonaInitialsColor",
+            Items = new List<ComponentEnumItem>()
             {
                 new()
                 {
@@ -350,11 +349,11 @@ public partial class BitPersonaDemo
                 },
             },
         },
-        new EnumParameter()
+        new()
         {
             Id = "bitpersona-size",
-            Title = "BitPersonaSize class",
-            EnumList = new List<EnumItem>()
+            Name = "BitPersonaSize",
+            Items = new List<ComponentEnumItem>()
             {
                 new()
                 {
@@ -414,13 +413,17 @@ public partial class BitPersonaDemo
         },
     };
 
+
+
+    public bool IsDetailsShown { get; set; } = true;
+
     private int _actionClickCount = 0;
 
     private int _imageClickCount = 0;
 
+
     private static readonly string example1CSharpCode = @"
 public bool IsHideDetails { get; set; } = true;";
-
     private static readonly string example1HtmlCode = @"<BitCheckbox @bind-Value=""IsHideDetails"" 
              OnClick=""()=>IsHideDetails=!IsHideDetails"">Include BitPersona details</BitCheckbox>
 
@@ -495,7 +498,6 @@ public bool IsHideDetails { get; set; } = true;";
 
     private static readonly string example2CSharpCode = @"
 private int _actionClickCount = 0;";
-
     private static readonly string example2HtmlCode = @"
 <BitPersona ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png""
             Presence=@BitPersonaPresenceStatus.None
@@ -511,7 +513,6 @@ private int _actionClickCount = 0;";
 
     private static readonly string example3CSharpCode = @"
 private int _imageClickCount = 0;";
-
     private static readonly string example3HtmlCode = @"
 <BitPersona ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png""
             Presence=@BitPersonaPresenceStatus.Online

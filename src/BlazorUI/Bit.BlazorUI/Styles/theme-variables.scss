@@ -1,198 +1,206 @@
-﻿$spacing-scaling-factor: var(--spa-scaling-factor);
-/*---- Color ----*/
-$color-primary-main: var(--clr-primary-main);
-$color-primary-dark: var(--clr-primary-dark);
-$color-primary-darker: var(--clr-primary-darker);
-$color-primary-light: var(--clr-primary-light);
-$color-primary-lighter: var(--clr-primary-light);
-$color-secondary-main: var(--clr-secondary-main);
-$color-secondary-light: var(--clr-secondary-light);
-$color-secondary-dark: var(--clr-secondary-dark);
-$color-secondary-darker: var(--clr-secondary-darker);
-//general
-$color-general-red: var(--clr-gnr-red);
-$color-general-darkred: var(--clr-gnr-darkred);
-$color-general-red2: var(--clr-gnr-red2);
-$color-general-red3: var(--clr-gnr-red3);
-$color-general-green: var(--clr-gnr-green);
-$color-general-orange: var(--clr-gnr-orange);
-$color-general-magenta: var(--clr-gnr-magenta);
-$color-general-blue: var(--clr-gnr-blue);
-$color-general-lightblue: var(--clr-gnr-lightblue);
-//state
-$color-state-invalid: var(--clr-sta-invalid);
-$color-state-invalid-hover: var(--clr-sta-invalid-hover);
-$color-state-error: var(--clr-sta-error);
-$color-state-error-bg: var(--clr-sta-error-bg);
-$color-state-error-dark: var(--clr-sta-error-dark);
-$color-state-severe-warning-bg: var(--clr-sta-severe-warning-bg);
-$color-state-severe-warning-dark: var(--clr-sta-severe-warning-dark);
-$color-state-success-bg: var(--clr-sta-success-bg);
-$color-state-success-dark: var(--clr-sta-success-dark);
-$color-state-warning-bg: var(--clr-sta-warning-bg);
-$color-state-warning-dark: var(--clr-sta-warning-dark);
-//background color
-$color-background: var(--clr-background);
-//action
-$color-action-hover-primary: var(--clr-act-hover-pri);
-$color-action-active-primary: var(--clr-act-active-pri);
-$color-action-hover-secondary: var(--clr-act-hover-sec);
-$color-action-active-secondary: var(--clr-act-active-sec);
-$color-action-disabled: var(--clr-act-disabled);
-$color-action-border-hover-secondary: var(--clr-act-border-hover-sec);
-$color-action-border-active-secondary: var(--clr-act-border-active-sec);
-$color-action2-active-primary: var(--clr-act2-active);
-//text
-$color-text-primary: var(--clr-txt-primary);
-$color-text-secondary: var(--clr-txt-secondary);
-$color-text-disabled: var(--clr-txt-disabled);
-//border
-$color-border-primary: var(--clr-brd-primary);
-$color-border-secondary: var(--clr-brd-secondary);
-$color-border-disabled: var(--clr-brd-disabled);
-//neutrals
-$color-neutrals-white: var(--clr-ntr-white);
-$color-neutrals-black: var(--clr-ntr-black);
-$color-neutrals-gray10: var(--clr-ntr-gray10);
-$color-neutrals-gray20: var(--clr-ntr-gray20);
-$color-neutrals-gray30: var(--clr-ntr-gray30);
-$color-neutrals-gray40: var(--clr-ntr-gray40);
-$color-neutrals-gray50: var(--clr-ntr-gray50);
-$color-neutrals-gray60: var(--clr-ntr-gray60);
-$color-neutrals-gray70: var(--clr-ntr-gray70);
-$color-neutrals-gray80: var(--clr-ntr-gray80);
-$color-neutrals-gray90: var(--clr-ntr-gray90);
-$color-neutrals-gray100: var(--clr-ntr-gray100);
-$color-neutrals-gray110: var(--clr-ntr-gray110);
-$color-neutrals-gray120: var(--clr-ntr-gray120);
-$color-neutrals-gray130: var(--clr-ntr-gray130);
-$color-neutrals-gray140: var(--clr-ntr-gray140);
-$color-neutrals-gray150: var(--clr-ntr-gray150);
-$color-neutrals-gray160: var(--clr-ntr-gray160);
-$color-neutrals-gray170: var(--clr-ntr-gray170);
-$color-neutrals-gray180: var(--clr-ntr-gray180);
-$color-neutrals-gray190: var(--clr-ntr-gray190);
-$color-neutrals-gray200: var(--clr-ntr-gray200);
-$color-neutrals-gray210: var(--clr-ntr-gray210);
-$color-neutrals-gray220: var(--clr-ntr-gray220);
+﻿/*-------- Colors --------*/
+$color-primary-main: var(--bit-clr-primary-main);
+$color-primary-dark: var(--bit-clr-primary-dark);
+$color-primary-darker: var(--bit-clr-primary-darker);
+$color-primary-light: var(--bit-clr-primary-light);
+$color-primary-lighter: var(--bit-clr-primary-light);
+$color-secondary-main: var(--bit-clr-secondary-main);
+$color-secondary-light: var(--bit-clr-secondary-light);
+$color-secondary-dark: var(--bit-clr-secondary-dark);
+$color-secondary-darker: var(--bit-clr-secondary-darker);
 
-//shape
-$shape-border-radius: var(--shp-brd-radius);
-$shape-border-width: var(--shp-brd-width);
-$shape-border-style: var(--shp-brd-style);
+//texts
+$color-text-primary: var(--bit-clr-txt-primary);
+$color-text-secondary: var(--bit-clr-txt-secondary);
+$color-text-disabled: var(--bit-clr-txt-disabled);
+
+//backgrounds
+$color-background-primary: var(--bit-clr-bg-primary);
+$color-background-secondary: var(--bit-clr-bg-secondary);
+
+//generals
+$color-general-red: var(--bit-clr-gnr-red);
+$color-general-darkred: var(--bit-clr-gnr-darkred);
+$color-general-red2: var(--bit-clr-gnr-red2);
+$color-general-red3: var(--bit-clr-gnr-red3);
+$color-general-green: var(--bit-clr-gnr-green);
+$color-general-orange: var(--bit-clr-gnr-orange);
+$color-general-magenta: var(--bit-clr-gnr-magenta);
+$color-general-blue: var(--bit-clr-gnr-blue);
+$color-general-lightblue: var(--bit-clr-gnr-lightblue);
+
+//states
+$color-state-invalid: var(--bit-clr-sta-invalid);
+$color-state-invalid-hover: var(--bit-clr-sta-invalid-hover);
+$color-state-error: var(--bit-clr-sta-error);
+$color-state-error-bg: var(--bit-clr-sta-error-bg);
+$color-state-error-dark: var(--bit-clr-sta-error-dark);
+$color-state-severe-warning-bg: var(--bit-clr-sta-severe-warning-bg);
+$color-state-severe-warning-dark: var(--bit-clr-sta-severe-warning-dark);
+$color-state-success-bg: var(--bit-clr-sta-success-bg);
+$color-state-success-dark: var(--bit-clr-sta-success-dark);
+$color-state-warning-bg: var(--bit-clr-sta-warning-bg);
+$color-state-warning-dark: var(--bit-clr-sta-warning-dark);
+
+//actions
+$color-action-hover-primary: var(--bit-clr-act-hover-pri);
+$color-action-active-primary: var(--bit-clr-act-active-pri);
+$color-action-hover-secondary: var(--bit-clr-act-hover-sec);
+$color-action-active-secondary: var(--bit-clr-act-active-sec);
+$color-action-disabled: var(--bit-clr-act-disabled);
+$color-action-border-hover-secondary: var(--bit-clr-act-border-hover-sec);
+$color-action-border-active-secondary: var(--bit-clr-act-border-active-sec);
+$color-action2-active-primary: var(--bit-clr-act2-active);
+
+//borders
+$color-border-primary: var(--bit-clr-brd-primary);
+$color-border-secondary: var(--bit-clr-brd-secondary);
+$color-border-disabled: var(--bit-clr-brd-disabled);
+
+//neutrals
+$color-neutrals-white: var(--bit-clr-ntr-white);
+$color-neutrals-black: var(--bit-clr-ntr-black);
+$color-neutrals-gray10: var(--bit-clr-ntr-gray10);
+$color-neutrals-gray20: var(--bit-clr-ntr-gray20);
+$color-neutrals-gray30: var(--bit-clr-ntr-gray30);
+$color-neutrals-gray40: var(--bit-clr-ntr-gray40);
+$color-neutrals-gray50: var(--bit-clr-ntr-gray50);
+$color-neutrals-gray60: var(--bit-clr-ntr-gray60);
+$color-neutrals-gray70: var(--bit-clr-ntr-gray70);
+$color-neutrals-gray80: var(--bit-clr-ntr-gray80);
+$color-neutrals-gray90: var(--bit-clr-ntr-gray90);
+$color-neutrals-gray100: var(--bit-clr-ntr-gray100);
+$color-neutrals-gray110: var(--bit-clr-ntr-gray110);
+$color-neutrals-gray120: var(--bit-clr-ntr-gray120);
+$color-neutrals-gray130: var(--bit-clr-ntr-gray130);
+$color-neutrals-gray140: var(--bit-clr-ntr-gray140);
+$color-neutrals-gray150: var(--bit-clr-ntr-gray150);
+$color-neutrals-gray160: var(--bit-clr-ntr-gray160);
+$color-neutrals-gray170: var(--bit-clr-ntr-gray170);
+$color-neutrals-gray180: var(--bit-clr-ntr-gray180);
+$color-neutrals-gray190: var(--bit-clr-ntr-gray190);
+$color-neutrals-gray200: var(--bit-clr-ntr-gray200);
+$color-neutrals-gray210: var(--bit-clr-ntr-gray210);
+$color-neutrals-gray220: var(--bit-clr-ntr-gray220);
 
 //spacing
-$space-overlay-zindex0: var(--spa-ovr-zindex0);
-$space-overlay-zindex1: var(--spa-ovr-zindex1);
+$spacing-scaling-factor: var(--bit-spa-scaling-factor);
+$space-overlay-zindex0: var(--bit-spa-ovr-zindex0);
+$space-overlay-zindex1: var(--bit-spa-ovr-zindex1);
 
+//shape
+$shape-border-radius: var(--bit-shp-brd-radius);
+$shape-border-width: var(--bit-shp-brd-width);
+$shape-border-style: var(--bit-shp-brd-style);
 
 /*---- Typography ----*/
-$typography-font-family: var(--tpg-font-family);
-$typography-font-weight: var(--tpg-font-weight);
-$typography-line-height: var(--tpg-line-height);
-$typography-font-weight-buttons: var(--tpg-font-weight-btns);
-$typography-line-height-buttons: var(--tpg-line-height-btns);
-$typography-font-family-icons: var(--tpg-font-family-icons);
+$typography-font-family: var(--bit-tpg-font-family);
+$typography-font-weight: var(--bit-tpg-font-weight);
+$typography-line-height: var(--bit-tpg-line-height);
+$typography-font-weight-buttons: var(--bit-tpg-font-weight-btns);
+$typography-line-height-buttons: var(--bit-tpg-line-height-btns);
+$typography-font-family-icons: var(--bit-tpg-font-family-icons);
+$typography-gutter-size: var(--bit-tpg-gutter-size);
 
 // body1
-$typography-body1-margin: var(--tpg-body1-margin);
-$typography-body1-font-weight: var(--tpg-body1-font-weight);
-$typography-body1-font-size: var(--tpg-body1-font-size);
-$typography-body1-line-height: var(--tpg-body1-line-height);
-$typography-body1-letter-spacing: var(--tpg-body1-letter-spacing);
+$typography-body1-margin: var(--bit-tpg-body1-margin);
+$typography-body1-font-weight: var(--bit-tpg-body1-font-weight);
+$typography-body1-font-size: var(--bit-tpg-body1-font-size);
+$typography-body1-line-height: var(--bit-tpg-body1-line-height);
+$typography-body1-letter-spacing: var(--bit-tpg-body1-letter-spacing);
 
 // body2
-$typography-body2-margin: var(--tpg-body2-margin);
-$typography-body2-font-weight: var(--tpg-body2-font-weight);
-$typography-body2-font-size: var(--tpg-body2-font-size);
-$typography-body2-line-height: var(--tpg-body2-line-height);
-$typography-body2-letter-spacing: var(--tpg-body2-letter-spacing);
+$typography-body2-margin: var(--bit-tpg-body2-margin);
+$typography-body2-font-weight: var(--bit-tpg-body2-font-weight);
+$typography-body2-font-size: var(--bit-tpg-body2-font-size);
+$typography-body2-line-height: var(--bit-tpg-body2-line-height);
+$typography-body2-letter-spacing: var(--bit-tpg-body2-letter-spacing);
 
 // button
-$typography-button-margin: var(--tpg-button-margin);
-$typography-button-font-weight: var(--tpg-button-font-weight);
-$typography-button-font-size: var(--tpg-button-font-size);
-$typography-button-line-height: var(--tpg-button-line-height);
-$typography-button-letter-spacing: var(--tpg-button-letter-spacing);
-$typography-button-text-transform: var(--tpg-button-text-transform);
-$typography-button-display: var(--tpg-button-display);
+$typography-button-margin: var(--bit-tpg-button-margin);
+$typography-button-font-weight: var(--bit-tpg-button-font-weight);
+$typography-button-font-size: var(--bit-tpg-button-font-size);
+$typography-button-line-height: var(--bit-tpg-button-line-height);
+$typography-button-letter-spacing: var(--bit-tpg-button-letter-spacing);
+$typography-button-text-transform: var(--bit-tpg-button-text-transform);
+$typography-button-display: var(--bit-tpg-button-display);
 
 // caption
-$typography-caption-margin: var(--tpg-caption-margin);
-$typography-caption-font-weight: var(--tpg-caption-font-weight);
-$typography-caption-font-size: var(--tpg-caption-font-size);
-$typography-caption-line-height: var(--tpg-caption-line-height);
-$typography-caption-letter-spacing: var(--tpg-caption-letter-spacing);
+$typography-caption-margin: var(--bit-tpg-caption-margin);
+$typography-caption-font-weight: var(--bit-tpg-caption-font-weight);
+$typography-caption-font-size: var(--bit-tpg-caption-font-size);
+$typography-caption-line-height: var(--bit-tpg-caption-line-height);
+$typography-caption-letter-spacing: var(--bit-tpg-caption-letter-spacing);
 
 // h1
-$typography-h1-margin: var(--tpg-h1-margin);
-$typography-h1-font-weight: var(--tpg-h1-font-weight);
-$typography-h1-font-size: var(--tpg-h1-font-size);
-$typography-h1-line-height: var(--tpg-h1-line-height);
-$typography-h1-letter-spacing: var(--tpg-h1-letter-spacing);
+$typography-h1-margin: var(--bit-tpg-h1-margin);
+$typography-h1-font-weight: var(--bit-tpg-h1-font-weight);
+$typography-h1-font-size: var(--bit-tpg-h1-font-size);
+$typography-h1-line-height: var(--bit-tpg-h1-line-height);
+$typography-h1-letter-spacing: var(--bit-tpg-h1-letter-spacing);
 
 // h2
-$typography-h2-margin: var(--tpg-h2-margin);
-$typography-h2-font-weight: var(--tpg-h2-font-weight);
-$typography-h2-font-size: var(--tpg-h2-font-size);
-$typography-h2-line-height: var(--tpg-h2-line-height);
-$typography-h2-letter-spacing: var(--tpg-h2-letter-spacing);
+$typography-h2-margin: var(--bit-tpg-h2-margin);
+$typography-h2-font-weight: var(--bit-tpg-h2-font-weight);
+$typography-h2-font-size: var(--bit-tpg-h2-font-size);
+$typography-h2-line-height: var(--bit-tpg-h2-line-height);
+$typography-h2-letter-spacing: var(--bit-tpg-h2-letter-spacing);
 
 // h3
-$typography-h3-margin: var(--tpg-h3-margin);
-$typography-h3-font-weight: var(--tpg-h3-font-weight);
-$typography-h3-font-size: var(--tpg-h3-font-size);
-$typography-h3-line-height: var(--tpg-h3-line-height);
-$typography-h3-letter-spacing: var(--tpg-h3-letter-spacing);
+$typography-h3-margin: var(--bit-tpg-h3-margin);
+$typography-h3-font-weight: var(--bit-tpg-h3-font-weight);
+$typography-h3-font-size: var(--bit-tpg-h3-font-size);
+$typography-h3-line-height: var(--bit-tpg-h3-line-height);
+$typography-h3-letter-spacing: var(--bit-tpg-h3-letter-spacing);
 
 // h4
-$typography-h4-margin: var(--tpg-h4-margin);
-$typography-h4-font-weight: var(--tpg-h4-font-weight);
-$typography-h4-font-size: var(--tpg-h4-font-size);
-$typography-h4-line-height: var(--tpg-h4-line-height);
-$typography-h4-letter-spacing: var(--tpg-h4-letter-spacing);
+$typography-h4-margin: var(--bit-tpg-h4-margin);
+$typography-h4-font-weight: var(--bit-tpg-h4-font-weight);
+$typography-h4-font-size: var(--bit-tpg-h4-font-size);
+$typography-h4-line-height: var(--bit-tpg-h4-line-height);
+$typography-h4-letter-spacing: var(--bit-tpg-h4-letter-spacing);
 
 // h5
-$typography-h5-margin: var(--tpg-h5-margin);
-$typography-h5-font-weight: var(--tpg-h5-font-weight);
-$typography-h5-font-size: var(--tpg-h5-font-size);
-$typography-h5-line-height: var(--tpg-h5-line-height);
-$typography-h5-letter-spacing: var(--tpg-h5-letter-spacing);
+$typography-h5-margin: var(--bit-tpg-h5-margin);
+$typography-h5-font-weight: var(--bit-tpg-h5-font-weight);
+$typography-h5-font-size: var(--bit-tpg-h5-font-size);
+$typography-h5-line-height: var(--bit-tpg-h5-line-height);
+$typography-h5-letter-spacing: var(--bit-tpg-h5-letter-spacing);
 
 // h6
-$typography-h6-margin: var(--tpg-h6-margin);
-$typography-h6-font-weight: var(--tpg-h6-font-weight);
-$typography-h6-font-size: var(--tpg-h6-font-size);
-$typography-h6-line-height: var(--tpg-h6-line-height);
-$typography-h6-letter-spacing: var(--tpg-h6-letter-spacing);
+$typography-h6-margin: var(--bit-tpg-h6-margin);
+$typography-h6-font-weight: var(--bit-tpg-h6-font-weight);
+$typography-h6-font-size: var(--bit-tpg-h6-font-size);
+$typography-h6-line-height: var(--bit-tpg-h6-line-height);
+$typography-h6-letter-spacing: var(--bit-tpg-h6-letter-spacing);
 
 // inherit
-$typography-inherit-margin: var(--tpg-inherit-margin);
-$typography-inherit-font-family: var(--tpg-inherit-font-family);
-$typography-inherit-font-weight: var(--tpg-inherit-font-weight);
-$typography-inherit-font-size: var(--tpg-inherit-font-size);
-$typography-inherit-line-height: var(--tpg-inherit-line-height);
-$typography-inherit-letter-spacing: var(--tpg-inherit-letter-spacing);
+$typography-inherit-margin: var(--bit-tpg-inherit-margin);
+$typography-inherit-font-family: var(--bit-tpg-inherit-font-family);
+$typography-inherit-font-weight: var(--bit-tpg-inherit-font-weight);
+$typography-inherit-font-size: var(--bit-tpg-inherit-font-size);
+$typography-inherit-line-height: var(--bit-tpg-inherit-line-height);
+$typography-inherit-letter-spacing: var(--bit-tpg-inherit-letter-spacing);
 
 // overline
-$typography-overline-margin: var(--tpg-overline-margin);
-$typography-overline-font-weight: var(--tpg-overline-font-weight);
-$typography-overline-font-size: var(--tpg-overline-font-size);
-$typography-overline-line-height: var(--tpg-overline-line-height);
-$typography-overline-letter-spacing: var(--tpg-overline-letter-spacing);
-$typography-overline-text-transform: var(--tpg-overline-text-transform);
-$typography-overline-display: var(--tpg-overline-display);
+$typography-overline-margin: var(--bit-tpg-overline-margin);
+$typography-overline-font-weight: var(--bit-tpg-overline-font-weight);
+$typography-overline-font-size: var(--bit-tpg-overline-font-size);
+$typography-overline-line-height: var(--bit-tpg-overline-line-height);
+$typography-overline-letter-spacing: var(--bit-tpg-overline-letter-spacing);
+$typography-overline-text-transform: var(--bit-tpg-overline-text-transform);
+$typography-overline-display: var(--bit-tpg-overline-display);
 
 // subtitle1
-$typography-subtitle1-margin: var(--tpg-subtitle1-margin);
-$typography-subtitle1-font-weight: var(--tpg-subtitle1-font-weight);
-$typography-subtitle1-font-size: var(--tpg-subtitle1-font-size);
-$typography-subtitle1-line-height: var(--tpg-subtitle1-line-height);
-$typography-subtitle1-letter-spacing: var(--tpg-subtitle1-letter-spacing);
+$typography-subtitle1-margin: var(--bit-tpg-subtitle1-margin);
+$typography-subtitle1-font-weight: var(--bit-tpg-subtitle1-font-weight);
+$typography-subtitle1-font-size: var(--bit-tpg-subtitle1-font-size);
+$typography-subtitle1-line-height: var(--bit-tpg-subtitle1-line-height);
+$typography-subtitle1-letter-spacing: var(--bit-tpg-subtitle1-letter-spacing);
 
 // subtitle2
-$typography-subtitle2-margin: var(--tpg-subtitle2-margin);
-$typography-subtitle2-font-weight: var(--tpg-subtitle2-font-weight);
-$typography-subtitle2-font-size: var(--tpg-subtitle2-font-size);
-$typography-subtitle2-line-height: var(--tpg-subtitle2-line-height);
-$typography-subtitle2-letter-spacing: var(--tpg-subtitle2-letter-spacing);
+$typography-subtitle2-margin: var(--bit-tpg-subtitle2-margin);
+$typography-subtitle2-font-weight: var(--bit-tpg-subtitle2-font-weight);
+$typography-subtitle2-font-size: var(--bit-tpg-subtitle2-font-size);
+$typography-subtitle2-line-height: var(--bit-tpg-subtitle2-line-height);
+$typography-subtitle2-letter-spacing: var(--bit-tpg-subtitle2-letter-spacing);

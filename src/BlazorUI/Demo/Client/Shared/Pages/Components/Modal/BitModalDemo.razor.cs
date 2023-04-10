@@ -109,14 +109,14 @@ public partial class BitModalDemo
         }
     };
 
-    private readonly List<EnumParameter> enumParameters = new()
+    private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
         new()
         {
             Id = "component-position-enum",
-            Title = "BitModalPosition Enum",
+            Name = "BitModalPosition",
             Description = "",
-            EnumList = new List<EnumItem>()
+            Items = new List<ComponentEnumItem>()
             {
                 new() { Name = "Center", Value = "0" },
                 new() { Name = "TopLeft", Value = "1" },
@@ -130,6 +130,7 @@ public partial class BitModalDemo
             }
         }
     };
+
 
 
     private bool IsOpen = false;
@@ -148,6 +149,7 @@ public partial class BitModalDemo
         IsOpenInPosition = true;
         position = positionValue;
     }
+
 
     private readonly string example1HTMLCode = @"
 <style>

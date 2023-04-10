@@ -4,6 +4,13 @@
 @import "theme-variables.scss";
 @import "components.scss";
 
+.bit-bg-primary {
+    background-color: $color-background-primary;
+}
+.bit-bg-secondary {
+    background-color: $color-background-secondary;
+}
+
 button {
     border: none;
     outline: none;

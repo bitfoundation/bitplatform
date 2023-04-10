@@ -272,14 +272,14 @@ public partial class BitTextFieldDemo
         },
     };
 
-    private readonly List<EnumParameter> enumParameters = new()
+    private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
         new()
         {
             Id = "text-field-type-enum",
-            Title = "BitTextFieldType Enum",
+            Name = "BitTextFieldType",
             Description = "",
-            EnumList = new List<EnumItem>()
+            Items = new List<ComponentEnumItem>()
             {
                 new()
                 {
@@ -322,6 +322,7 @@ public partial class BitTextFieldDemo
     };
 
 
+
     private string OneWayValue;
     private string TwoWayValue;
     private string OnChangeValue;
@@ -348,6 +349,7 @@ public partial class BitTextFieldDemo
     {
         formIsValidSubmit = false;
     }
+
 
     private readonly string example1HTMLCode = @"
 <BitTextField Placeholder=""Enter a text..."" Label=""Basic"" />

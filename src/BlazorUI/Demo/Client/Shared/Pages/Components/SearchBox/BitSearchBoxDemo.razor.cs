@@ -85,6 +85,7 @@ public partial class BitSearchBoxDemo
     };
 
 
+
     private string TwoWaySearchValue;
     private string OnChangeSearchValue;
     private string OnSearchValue;

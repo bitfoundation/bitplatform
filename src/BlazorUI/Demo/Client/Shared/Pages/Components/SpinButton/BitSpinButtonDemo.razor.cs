@@ -5,6 +5,218 @@ namespace Bit.BlazorUI.Demo.Client.Shared.Pages.Components.SpinButton;
 
 public partial class BitSpinButtonDemo
 {
+    private readonly List<ComponentParameter> componentParameters = new()
+    {
+        new()
+        {
+            Name = "AriaDescription",
+            Type = "string",
+            Description = "Detailed description of the input for the benefit of screen readers.",
+        },
+        new()
+        {
+            Name = "AriaPositionInSet",
+            Type = "int",
+            DefaultValue = "0",
+            Description = "The position in the parent set (if in a set).",
+        },
+        new()
+        {
+            Name = "AriaSetSize",
+            Type = "int",
+            DefaultValue = "0",
+            Description = "The total size of the parent set (if in a set).",
+        },
+        new()
+        {
+            Name = "AriaValueNow",
+            Type = "double",
+            DefaultValue = "0",
+            Description = "Sets the control's aria-valuenow. Providing this only makes sense when using as a controlled component.",
+        },
+        new()
+        {
+            Name = "AriaValueText",
+            Type = "string",
+            Description = "Sets the control's aria-valuetext.",
+        },
+        new()
+        {
+            Name = "ChangeHandler",
+            Type = "EventCallback<BitSpinButtonAction>",
+            Description = "",
+        },
+        new()
+        {
+            Name = "DefaultValue",
+            Type = "double",
+            DefaultValue = "0",
+            Description = "Initial value of the spin button.",
+        },
+        new()
+        {
+            Name = "DecrementButtonAriaLabel",
+            Type = "string",
+            Description = "Accessible label text for the decrement button (for screen reader users).",
+        },
+        new()
+        {
+            Name = "DecrementButtonIconName",
+            Type = "BitIconName",
+            DefaultValue = "BitIconName.ChevronDownSmall",
+            Description = "Custom icon name for the decrement button.",
+        },
+        new()
+        {
+            Name = "IconName",
+            Type = "BitIconName",
+            Description = "Icon name for an icon to display alongside the spin button's label.",
+        },
+        new()
+        {
+            Name = "IconAriaLabel",
+            Type = "string",
+            Description = "The aria label of the icon for the benefit of screen readers.",
+        },
+        new()
+        {
+            Name = "IncrementButtonAriaLabel",
+            Type = "string",
+            Description = "Accessible label text for the increment button (for screen reader users).",
+        },
+        new()
+        {
+            Name = "IncrementButtonIconName",
+            Type = "BitIconName",
+            DefaultValue = "BitIconName.ChevronUpSmall",
+            Description = "Custom icon name for the increment button.",
+        },
+        new()
+        {
+            Name = "Label",
+            Type = "string",
+            Description = "Descriptive label for the spin button, Label displayed above the spin button and read by screen readers.",
+        },
+        new()
+        {
+            Name = "LabelTemplate",
+            Type = "RenderFragment?",
+            Description = "Shows the custom Label for spin button. If you don't call default label, ensure that you give your custom label an id and that you set the input's aria-labelledby prop to that id..",
+        },
+        new()
+        {
+            Name = "LabelPosition",
+            Type = "BitSpinButtonLabelPosition",
+            LinkType = LinkType.Link,
+            Href = "#labelPosition-enum",
+            DefaultValue = "BitSpinButtonLabelPosition.Top",
+            Description = "The position of the label in regards to the spin button.",
+        },
+        new()
+        {
+            Name = "Min",
+            Type = "double",
+            DefaultValue = "0",
+            Description = "Min value of the spin button. If not provided, the spin button has minimum value of double type.",
+        },
+        new()
+        {
+            Name = "Max",
+            Type = "double",
+            DefaultValue = "0",
+            Description = "Max value of the spin button. If not provided, the spin button has max value of double type.",
+        },
+        new()
+        {
+            Name = "OnFocus",
+            Type = "EventCallback<FocusEventArgs>",
+            DefaultValue = "",
+            Description = "Callback for when focus moves into the input.",
+        },
+        new()
+        {
+            Name = "OnBlur",
+            Type = "EventCallback<FocusEventArgs>",
+            DefaultValue = "",
+            Description = "Callback for when the control loses focus.",
+        },
+        new()
+        {
+            Name = "OnChange",
+            Type = "EventCallback<double>",
+            DefaultValue = "",
+            Description = "Callback for when the spin button value change.",
+        },
+        new()
+        {
+            Name = "OnDecrement",
+            Type = "EventCallback<BitSpinButtonChangeEventArgs>",
+            DefaultValue = "",
+            Description = "Callback for when the decrement button or down arrow key is pressed.",
+        },
+        new()
+        {
+            Name = "OnIncrement",
+            Type = "EventCallback<BitSpinButtonChangeEventArgs>",
+            DefaultValue = "",
+            Description = "Callback for when the increment button or up arrow key is pressed.",
+        },
+        new()
+        {
+            Name = "Precision",
+            Type = "int",
+            Description = "How many decimal places the value should be rounded to.",
+        },
+        new()
+        {
+            Name = "Step",
+            Type = "double",
+            DefaultValue = "1",
+            Description = "Difference between two adjacent values of the spin button.",
+        },
+        new()
+        {
+            Name = "Suffix",
+            Type = "string",
+            DefaultValue = "string.Empty",
+            Description = "A text is shown after the spin button value.",
+        },
+        new()
+        {
+            Name = "Title",
+            Type = "string",
+            DefaultValue = "ChevronUpSmall",
+            Description = "A more descriptive title for the control, visible on its tooltip.",
+        },
+    };
+
+    private readonly List<ComponentSubEnum> componentSubEnums = new()
+    {
+        new()
+        {
+            Id = "labelPosition-enum",
+            Name = "BitSpinButtonLabelPosition",
+            Description = "",
+            Items = new List<ComponentEnumItem>()
+            {
+                new()
+                {
+                    Name= "Top",
+                    Description="The label shows on the top of the spin button.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Left",
+                    Description="The label shows on the left side of the spin button.",
+                    Value="1",
+                }
+            }
+        }
+    };
+
+
+
     private double OneWayValue = 3;
     private double TwoWayValue = 5;
 
@@ -38,217 +250,6 @@ public partial class BitSpinButtonDemo
         SuccessMessage = string.Empty;
     }
 
-    private readonly List<ComponentParameter> componentParameters = new()
-    {
-        new ComponentParameter()
-        {
-            Name = "AriaDescription",
-            Type = "string",
-            Description = "Detailed description of the input for the benefit of screen readers.",
-        },
-        new ComponentParameter()
-        {
-            Name = "AriaPositionInSet",
-            Type = "int",
-            DefaultValue = "0",
-            Description = "The position in the parent set (if in a set).",
-        },
-        new ComponentParameter()
-        {
-            Name = "AriaSetSize",
-            Type = "int",
-            DefaultValue = "0",
-            Description = "The total size of the parent set (if in a set).",
-        },
-        new ComponentParameter()
-        {
-            Name = "AriaValueNow",
-            Type = "double",
-            DefaultValue = "0",
-            Description = "Sets the control's aria-valuenow. Providing this only makes sense when using as a controlled component.",
-        },
-        new ComponentParameter()
-        {
-            Name = "AriaValueText",
-            Type = "string",
-            Description = "Sets the control's aria-valuetext.",
-        },
-        new ComponentParameter()
-        {
-            Name = "ChangeHandler",
-            Type = "EventCallback<BitSpinButtonAction>",
-            Description = "",
-        },
-        new ComponentParameter()
-        {
-            Name = "DefaultValue",
-            Type = "double",
-            DefaultValue = "0",
-            Description = "Initial value of the spin button.",
-        },
-        new ComponentParameter()
-        {
-            Name = "DecrementButtonAriaLabel",
-            Type = "string",
-            Description = "Accessible label text for the decrement button (for screen reader users).",
-        },
-        new ComponentParameter()
-        {
-            Name = "DecrementButtonIconName",
-            Type = "BitIconName",
-            DefaultValue = "BitIconName.ChevronDownSmall",
-            Description = "Custom icon name for the decrement button.",
-        },
-        new ComponentParameter()
-        {
-            Name = "IconName",
-            Type = "BitIconName",
-            Description = "Icon name for an icon to display alongside the spin button's label.",
-        },
-        new ComponentParameter()
-        {
-            Name = "IconAriaLabel",
-            Type = "string",
-            Description = "The aria label of the icon for the benefit of screen readers.",
-        },
-        new ComponentParameter()
-        {
-            Name = "IncrementButtonAriaLabel",
-            Type = "string",
-            Description = "Accessible label text for the increment button (for screen reader users).",
-        },
-        new ComponentParameter()
-        {
-            Name = "IncrementButtonIconName",
-            Type = "BitIconName",
-            DefaultValue = "BitIconName.ChevronUpSmall",
-            Description = "Custom icon name for the increment button.",
-        },
-        new ComponentParameter()
-        {
-            Name = "Label",
-            Type = "string",
-            Description = "Descriptive label for the spin button, Label displayed above the spin button and read by screen readers.",
-        },
-        new ComponentParameter()
-        {
-            Name = "LabelTemplate",
-            Type = "RenderFragment?",
-            Description = "Shows the custom Label for spin button. If you don't call default label, ensure that you give your custom label an id and that you set the input's aria-labelledby prop to that id..",
-        },
-        new ComponentParameter()
-        {
-            Name = "LabelPosition",
-            Type = "BitSpinButtonLabelPosition",
-            LinkType = LinkType.Link,
-            Href = "#labelPosition-enum",
-            DefaultValue = "BitSpinButtonLabelPosition.Top",
-            Description = "The position of the label in regards to the spin button.",
-        },
-        new ComponentParameter()
-        {
-            Name = "Min",
-            Type = "double",
-            DefaultValue = "0",
-            Description = "Min value of the spin button. If not provided, the spin button has minimum value of double type.",
-        },
-        new ComponentParameter()
-        {
-            Name = "Max",
-            Type = "double",
-            DefaultValue = "0",
-            Description = "Max value of the spin button. If not provided, the spin button has max value of double type.",
-        },
-        new ComponentParameter()
-        {
-            Name = "OnFocus",
-            Type = "EventCallback<FocusEventArgs>",
-            DefaultValue = "",
-            Description = "Callback for when focus moves into the input.",
-        },
-        new ComponentParameter()
-        {
-            Name = "OnBlur",
-            Type = "EventCallback<FocusEventArgs>",
-            DefaultValue = "",
-            Description = "Callback for when the control loses focus.",
-        },
-        new ComponentParameter()
-        {
-            Name = "OnChange",
-            Type = "EventCallback<double>",
-            DefaultValue = "",
-            Description = "Callback for when the spin button value change.",
-        },
-        new ComponentParameter()
-        {
-            Name = "OnDecrement",
-            Type = "EventCallback<BitSpinButtonChangeEventArgs>",
-            DefaultValue = "",
-            Description = "Callback for when the decrement button or down arrow key is pressed.",
-        },
-        new ComponentParameter()
-        {
-            Name = "OnIncrement",
-            Type = "EventCallback<BitSpinButtonChangeEventArgs>",
-            DefaultValue = "",
-            Description = "Callback for when the increment button or up arrow key is pressed.",
-        },
-        new ComponentParameter()
-        {
-            Name = "Precision",
-            Type = "int",
-            Description = "How many decimal places the value should be rounded to.",
-        },
-        new ComponentParameter()
-        {
-            Name = "Step",
-            Type = "double",
-            DefaultValue = "1",
-            Description = "Difference between two adjacent values of the spin button.",
-        },
-        new ComponentParameter()
-        {
-            Name = "Suffix",
-            Type = "string",
-            DefaultValue = "string.Empty",
-            Description = "A text is shown after the spin button value.",
-        },
-        new ComponentParameter()
-        {
-            Name = "Title",
-            Type = "string",
-            DefaultValue = "ChevronUpSmall",
-            Description = "A more descriptive title for the control, visible on its tooltip.",
-        },
-    };
-
-    private readonly List<EnumParameter> enumParameters = new()
-    {
-        new EnumParameter()
-        {
-            Id = "labelPosition-enum",
-            Title = "BitSpinButtonLabelPosition Enum",
-            Description = "",
-            EnumList = new List<EnumItem>()
-            {
-                new EnumItem()
-                {
-                    Name= "Top",
-                    Description="The label shows on the top of the spin button.",
-                    Value="0",
-                },
-                new EnumItem()
-                {
-                    Name= "Left",
-                    Description="The label shows on the left side of the spin button.",
-                    Value="1",
-                }
-            }
-        }
-    };
-
-    #region Sample Code 1
 
     private readonly string example1HTMLCode = @"
 <div class=""example-box"">
@@ -258,10 +259,6 @@ public partial class BitSpinButtonDemo
     <BitSpinButton Label=""Left Label"" IconName=""BitIconName.Lightbulb"" LabelPosition=""BitSpinButtonLabelPosition.Left"" />
 </div>
 ";
-
-    #endregion
-
-    #region Sample Code 2
 
     private readonly string example2HTMLCode = @"
 <div class=""example-box"">
@@ -274,10 +271,6 @@ public partial class BitSpinButtonDemo
 </div>
 ";
 
-    #endregion
-
-    #region Sample Code 3
-
     private readonly string example3HTMLCode = @"
 <div class=""example-box"">
     <BitSpinButton Label=""Like and Dislike""
@@ -285,10 +278,6 @@ public partial class BitSpinButtonDemo
                     DecrementButtonIconName=""BitIconName.DislikeSolid"" />
 </div>
 ";
-
-    #endregion
-
-    #region Sample Code 4
 
     private readonly string example4HTMLCode = @"
 <div class=""example-box"">
@@ -308,10 +297,6 @@ public partial class BitSpinButtonDemo
 </div>
 ";
 
-    #endregion
-
-    #region Sample Code 5
-
     private readonly string example5HTMLCode = @"
 <div class=""example-box"">
     <BitSpinButton Label=""Height""
@@ -327,10 +312,6 @@ public partial class BitSpinButtonDemo
 </div>
 ";
 
-    #endregion
-
-    #region Sample Code 6
-
     private readonly string example6HTMLCode = @"
 <div class=""example-box"">
     <div>
@@ -344,15 +325,10 @@ public partial class BitSpinButtonDemo
     </div>
 </div>
 ";
-
     private readonly string example6CSharpCode = @"
 private double OneWayValue = 3;
 private double TwoWayValue = 5;
 ";
-
-    #endregion
-
-    #region Sample Code 7
 
     private readonly string example7HTMLCode = @"
 <div class=""column"">
@@ -374,7 +350,6 @@ private double TwoWayValue = 5;
     <span>OnChange Returned Value: @OnChangeEventReturnedValue</span>
 </div>
 ";
-
     private readonly string example7CSharpCode = @"
 private double IncrementEventValue;
 private int OnIncrementCounter;
@@ -390,10 +365,6 @@ private void HandleOnChangeEvent(double value)
     OnChangeClickedCounter++;
 }
 ";
-
-    #endregion
-
-    #region Sample Code 8
 
     private readonly string example8HTMLCode = @"
 <div class=""example-box"">
@@ -423,7 +394,6 @@ private void HandleOnChangeEvent(double value)
     }
 </div>
 ";
-
     private readonly string example8CSharpCode = @"
 public class BitSpinButtonValidationModel
 {
@@ -448,6 +418,4 @@ private void HandleInvalidSubmit()
     SuccessMessage = string.Empty;
 }
 ";
-
-    #endregion
 }

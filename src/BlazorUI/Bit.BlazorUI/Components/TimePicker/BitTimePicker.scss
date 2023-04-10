@@ -43,7 +43,7 @@
         border-radius: $shape-border-radius;
         border: $shape-border-width $shape-border-style $color-neutrals-gray130;
         box-sizing: border-box;
-        background-color: $color-neutrals-white;
+        background-color: $color-background-primary;
         cursor: pointer;
 
         input {
@@ -185,7 +185,7 @@
         position: relative;
         border-radius: $shape-border-radius;
         outline: none;
-        background-color: $color-neutrals-white;
+        background-color: $color-background-primary;
         overflow: hidden auto;
     }
 
@@ -196,8 +196,8 @@
         align-items: center;
         flex-direction: row;
         justify-content: center;
+        color: $color-text-secondary;
         background-color: $color-primary-main;
-        color: $color-text-primary;
 
         .bit-tpc-txt {
             font-size: spacing(7.5);
@@ -214,10 +214,10 @@
             vertical-align: middle;
             justify-content: center;
             text-decoration: none;
+            color: $color-text-primary;
             background-color: transparent;
             -webkit-appearance: none;
             -webkit-tap-highlight-color: transparent;
-            color: $color-text-primary;
         }
 
         .bit-tpc-ina {
@@ -304,7 +304,7 @@
             .bit-tpc-num {
                 left: calc((100% - spacing(4))/2);
                 bottom: calc(100% - spacing(5.75));
-                color: $color-text-secondary;
+                color: $color-text-primary;
                 background-color: transparent !important;
                 width: spacing(4);
                 height: spacing(4);

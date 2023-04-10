@@ -5,6 +5,255 @@ namespace Bit.BlazorUI.Demo.Client.Shared.Pages.Components.Buttons;
 
 public partial class BitLoadingButtonDemo
 {
+    private readonly List<ComponentParameter> componentParameters = new()
+    {
+        new()
+        {
+            Name = "AllowDisabledFocus",
+            Type = "bool",
+            Description = "Whether the icon button can have focus in disabled mode."
+        },
+        new()
+        {
+            Name = "AriaDescription",
+            Type = "string?",
+            Description = "Detailed description of the icon button for the benefit of screen readers."
+        },
+        new()
+        {
+            Name = "AriaHidden",
+            Type = "bool",
+            Description = "If true, add an aria-hidden attribute instructing screen readers to ignore the element."
+        },
+        new()
+        {
+            Name = "ButtonType",
+            Type = "BitButtonType?",
+            Description = "The type of the button.",
+            LinkType = LinkType.Link,
+            Href = "#button-type-enum"
+        },
+        new()
+        {
+            Name = "ButtonStyle",
+            Type = "BitButtonStyle",
+            DefaultValue = "BitButtonStyle.Primary",
+            Description = "The style of button, Possible values: Primary | Standard.",
+            LinkType = LinkType.Link,
+            Href = "#button-style-enum"
+        },
+        new()
+        {
+            Name = "ButtonSize",
+            Type = "BitButtonSize",
+            DefaultValue = "BitButtonSize.Medium",
+            Description = "The size of button, Possible values: Small | Medium | Large.",
+            LinkType = LinkType.Link,
+            Href = "#button-size-enum"
+        },
+        new()
+        {
+            Name = "ChildContent",
+            Type = "RenderFragment?",
+            Description = "The content of button, It can be Any custom tag or a text."
+        },
+        new()
+        {
+            Name = "IsLoading",
+            Type = "bool",
+            Description = "Determine whether the button is in loading mode or not."
+        },
+        new()
+        {
+            Name = "LoadingLabel",
+            Type = "string?",
+            Description = "The loading label to show next to the spinner."
+        },
+        new()
+        {
+            Name = "LoadingSpinnerSize",
+            Type = "BitSpinnerSize",
+            DefaultValue = "BitSpinnerSize.Small",
+            Description = "The size of loading spinner to render.",
+            LinkType = LinkType.Link,
+            Href = "#spinner-size-enum"
+        },
+        new()
+        {
+            Name = "LoadingLabelPosition",
+            Type = "BitLabelPosition",
+            DefaultValue = "BitLabelPosition.Right",
+            Description = "The position of the loading Label in regards to the spinner animation.",
+            LinkType = LinkType.Link,
+            Href = "#spinner-position-enum"
+        },
+        new()
+        {
+            Name = "LoadingTemplate",
+            Type = "RenderFragment?",
+            Description = "Used to customize the content inside the Button in the Loading state.",
+        },
+        new()
+        {
+            Name = "OnClick",
+            Type = "EventCallback<MouseEventArgs>",
+            Description = "Callback for when the button clicked."
+        },
+        new()
+        {
+            Name = "Title",
+            Type = "string?",
+            Description = "The tooltip to show when the mouse is placed on the icon button."
+        },
+    };
+
+    private readonly List<ComponentSubEnum> componentSubEnums = new()
+    {
+        new()
+        {
+            Id = "button-type-enum",
+            Name = "BitButtonType",
+            Description = "",
+            Items = new List<ComponentEnumItem>()
+            {
+                new()
+                {
+                    Name= "Button",
+                    Description="The button is a clickable button.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Submit",
+                    Description="The button is a submit button (submits form-data).",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Reset",
+                    Description="The button is a reset button (resets the form-data to its initial values).",
+                    Value="2",
+                }
+            }
+        },
+        new()
+        {
+            Id = "button-style-enum",
+            Name = "BitButtonStyle",
+            Description = "",
+            Items = new List<ComponentEnumItem>()
+            {
+                new()
+                {
+                    Name= "Primary",
+                    Description="The button with white text on a blue background.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Standard",
+                    Description="The button with black text on a white background.",
+                    Value="1",
+                }
+            }
+        },
+        new()
+        {
+            Id = "button-size-enum",
+            Name = "BitButtonSize",
+            Description = "",
+            Items = new List<ComponentEnumItem>()
+            {
+               new()
+                {
+                    Name= "Small",
+                    Description="The button size is small.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Medium",
+                    Description="The button size is medium.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Large",
+                    Description="The button size is large.",
+                    Value="2",
+                }
+            }
+        },
+        new()
+        {
+            Id = "spinner-size-enum",
+            Name = "BitLabelPosition",
+            Description = "",
+            Items = new List<ComponentEnumItem>()
+            {
+                new()
+                {
+                    Name= "Top",
+                    Description="The label shows on the top of the spinner.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Right",
+                    Description="The label shows on the right side of the spinner.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Bottom",
+                    Description="The label shows on the bottom of the spinner.",
+                    Value="2",
+                },
+                new()
+                {
+                    Name= "Left",
+                    Description="The label shows on the left side of the spinner.",
+                    Value="3",
+                },
+            }
+        },
+        new()
+        {
+            Id = "spinner-position-enum",
+            Name = "BitSpinnerSize",
+            Description = "",
+            Items = new List<ComponentEnumItem>()
+            {
+                new()
+                {
+                    Name= "Medium",
+                    Description="20px Spinner diameter.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Large",
+                    Description="28px Spinner diameter.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Small",
+                    Description="16px Spinner diameter.",
+                    Value="2",
+                },
+                new()
+                {
+                    Name= "XSmall",
+                    Description="12px Spinner diameter.",
+                    Value="3",
+                },
+            }
+        },
+    };
+
+
+
     private bool Example1Toggle;
     private bool Example2Toggle;
     private bool Example3Toggle;
@@ -310,252 +559,7 @@ public partial class BitLoadingButtonDemo
 
     #endregion
 
-    private readonly List<ComponentParameter> componentParameters = new()
-    {
-        new ComponentParameter
-        {
-            Name = "AllowDisabledFocus",
-            Type = "bool",
-            Description = "Whether the icon button can have focus in disabled mode."
-        },
-        new ComponentParameter
-        {
-            Name = "AriaDescription",
-            Type = "string?",
-            Description = "Detailed description of the icon button for the benefit of screen readers."
-        },
-        new ComponentParameter
-        {
-            Name = "AriaHidden",
-            Type = "bool",
-            Description = "If true, add an aria-hidden attribute instructing screen readers to ignore the element."
-        },
-        new ComponentParameter
-        {
-            Name = "ButtonType",
-            Type = "BitButtonType?",
-            Description = "The type of the button.",
-            LinkType = LinkType.Link,
-            Href = "#button-type-enum"
-        },
-        new ComponentParameter
-        {
-            Name = "ButtonStyle",
-            Type = "BitButtonStyle",
-            DefaultValue = "BitButtonStyle.Primary",
-            Description = "The style of button, Possible values: Primary | Standard.",
-            LinkType = LinkType.Link,
-            Href = "#button-style-enum"
-        },
-        new ComponentParameter
-        {
-            Name = "ButtonSize",
-            Type = "BitButtonSize",
-            DefaultValue = "BitButtonSize.Medium",
-            Description = "The size of button, Possible values: Small | Medium | Large.",
-            LinkType = LinkType.Link,
-            Href = "#button-size-enum"
-        },
-        new ComponentParameter
-        {
-            Name = "ChildContent",
-            Type = "RenderFragment?",
-            Description = "The content of button, It can be Any custom tag or a text."
-        },
-        new ComponentParameter
-        {
-            Name = "IsLoading",
-            Type = "bool",
-            Description = "Determine whether the button is in loading mode or not."
-        },
-        new ComponentParameter
-        {
-            Name = "LoadingLabel",
-            Type = "string?",
-            Description = "The loading label to show next to the spinner."
-        },
-        new ComponentParameter
-        {
-            Name = "LoadingSpinnerSize",
-            Type = "BitSpinnerSize",
-            DefaultValue = "BitSpinnerSize.Small",
-            Description = "The size of loading spinner to render.",
-            LinkType = LinkType.Link,
-            Href = "#spinner-size-enum"
-        },
-        new ComponentParameter
-        {
-            Name = "LoadingLabelPosition",
-            Type = "BitLabelPosition",
-            DefaultValue = "BitLabelPosition.Right",
-            Description = "The position of the loading Label in regards to the spinner animation.",
-            LinkType = LinkType.Link,
-            Href = "#spinner-position-enum"
-        },
-        new ComponentParameter
-        {
-            Name = "LoadingTemplate",
-            Type = "RenderFragment?",
-            Description = "Used to customize the content inside the Button in the Loading state.",
-        },
-        new ComponentParameter
-        {
-            Name = "OnClick",
-            Type = "EventCallback<MouseEventArgs>",
-            Description = "Callback for when the button clicked."
-        },
-        new ComponentParameter
-        {
-            Name = "Title",
-            Type = "string?",
-            Description = "The tooltip to show when the mouse is placed on the icon button."
-        },
-    };
-
-    private readonly List<EnumParameter> enumParameters = new()
-    {
-        new EnumParameter()
-        {
-            Id = "button-type-enum",
-            Title = "BitButtonType Enum",
-            Description = "",
-            EnumList = new List<EnumItem>()
-            {
-                new EnumItem()
-                {
-                    Name= "Button",
-                    Description="The button is a clickable button.",
-                    Value="0",
-                },
-                new EnumItem()
-                {
-                    Name= "Submit",
-                    Description="The button is a submit button (submits form-data).",
-                    Value="1",
-                },
-                new EnumItem()
-                {
-                    Name= "Reset",
-                    Description="The button is a reset button (resets the form-data to its initial values).",
-                    Value="2",
-                }
-            }
-        },
-        new EnumParameter()
-        {
-            Id = "button-style-enum",
-            Title = "BitButtonStyle Enum",
-            Description = "",
-            EnumList = new List<EnumItem>()
-            {
-                new EnumItem()
-                {
-                    Name= "Primary",
-                    Description="The button with white text on a blue background.",
-                    Value="0",
-                },
-                new EnumItem()
-                {
-                    Name= "Standard",
-                    Description="The button with black text on a white background.",
-                    Value="1",
-                }
-            }
-        },
-        new EnumParameter()
-        {
-            Id = "button-size-enum",
-            Title = "BitButtonSize Enum",
-            Description = "",
-            EnumList = new List<EnumItem>()
-            {
-               new EnumItem()
-                {
-                    Name= "Small",
-                    Description="The button size is small.",
-                    Value="0",
-                },
-                new EnumItem()
-                {
-                    Name= "Medium",
-                    Description="The button size is medium.",
-                    Value="1",
-                },
-                new EnumItem()
-                {
-                    Name= "Large",
-                    Description="The button size is large.",
-                    Value="2",
-                }
-            }
-        },
-        new EnumParameter()
-        {
-            Id = "spinner-size-enum",
-            Title = "BitLabelPosition Enum",
-            Description = "",
-            EnumList = new List<EnumItem>()
-            {
-                new EnumItem()
-                {
-                    Name= "Top",
-                    Description="The label shows on the top of the spinner.",
-                    Value="0",
-                },
-                new EnumItem()
-                {
-                    Name= "Right",
-                    Description="The label shows on the right side of the spinner.",
-                    Value="1",
-                },
-                new EnumItem()
-                {
-                    Name= "Bottom",
-                    Description="The label shows on the bottom of the spinner.",
-                    Value="2",
-                },
-                new EnumItem()
-                {
-                    Name= "Left",
-                    Description="The label shows on the left side of the spinner.",
-                    Value="3",
-                },
-            }
-        },
-        new EnumParameter()
-        {
-            Id = "spinner-position-enum",
-            Title = "BitSpinnerSize Enum",
-            Description = "",
-            EnumList = new List<EnumItem>()
-            {
-                new EnumItem()
-                {
-                    Name= "Medium",
-                    Description="20px Spinner diameter.",
-                    Value="0",
-                },
-                new EnumItem()
-                {
-                    Name= "Large",
-                    Description="28px Spinner diameter.",
-                    Value="1",
-                },
-                new EnumItem()
-                {
-                    Name= "Small",
-                    Description="16px Spinner diameter.",
-                    Value="2",
-                },
-                new EnumItem()
-                {
-                    Name= "XSmall",
-                    Description="12px Spinner diameter.",
-                    Value="3",
-                },
-            }
-        },
-    };
+    
 
     private readonly string example1HTMLCode = @"
 <style>
@@ -587,7 +591,6 @@ public partial class BitLoadingButtonDemo
 
     <BitToggle @bind-Value=""Example1Toggle"" OnChange=""Example1ToggleOnChange"" OnText=""Turn Loading Off"" OffText=""Turn Loading On"" />
 </div>";
-
     private readonly string example1CSharpCode = @"
 private bool BasicPrimaryIsLoading;
 private int BasicPrimaryCounter;
@@ -645,7 +648,6 @@ private void Example1ToggleOnChange()
 
     <BitToggle @bind-Value=""Example2Toggle"" OnChange=""Example2ToggleOnChange"" OnText=""Turn Loading Off"" OffText=""Turn Loading On"" />
 </div>";
-
     private readonly string example2CSharpCode = @"
 private bool LoadingLabelPrimaryIsLoading;
 private int LoadingLabelPrimaryCounter;
@@ -719,7 +721,6 @@ private void Example2ToggleOnChange()
 
     <BitToggle @bind-Value=""Example3Toggle"" OnChange=""Example3ToggleOnChange"" OnText=""Turn Loading Off"" OffText=""Turn Loading On"" />
 </div>";
-
     private readonly string example3CSharpCode = @"
 private bool TopPositionIsLoading;
 private int TopPositionCounter;
@@ -811,7 +812,6 @@ private void Example3ToggleOnChange()
 
     <BitToggle @bind-Value=""Example4Toggle"" OnChange=""Example4ToggleOnChange"" OnText=""Turn Loading Off"" OffText=""Turn Loading On"" />
 </div>";
-
     private readonly string example4CSharpCode = @"
 private bool XSmallIsLoading;
 private int XSmallCounter;
@@ -942,7 +942,6 @@ private void Example4ToggleOnChange()
 
     <BitToggle @bind-Value=""Example5Toggle"" OnChange=""Example5ToggleOnChange"" OnText=""Turn Loading Off"" OffText=""Turn Loading On"" />
 </div>";
-
     private readonly string example5CSharpCode = @"
 private bool EllipsisIsLoading;
 private bool GridIsLoading;
@@ -1019,7 +1018,6 @@ private void Example5ToggleOnChange()
 
     <BitToggle @bind-Value=""Example6Toggle"" OnChange=""Example6ToggleOnChange"" OnText=""Turn Loading Off"" OffText=""Turn Loading On"" />
 </div>";
-
     private readonly string example6CSharpCode = @"
 private bool SmallButtonIsLoading;
 private int SmallButtonCounter;
@@ -1127,7 +1125,6 @@ private void Example6ToggleOnChange()
 
     <BitToggle @bind-Value=""Example7Toggle"" OnChange=""Example7ToggleOnChange"" OnText=""Turn Loading Off"" OffText=""Turn Loading On"" />
 </div>";
-
     private readonly string example7CSharpCode = @"
 private bool CustomizedSmallButtonIsLoading;
 private int CustomizedSmallButtonCounter;

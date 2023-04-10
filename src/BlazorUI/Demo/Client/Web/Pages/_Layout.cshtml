@@ -46,7 +46,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Bit's Blazor UI components are native, easy-to-customize, and work seamlessly in all Blazor modes (WASM, Server, Hybrid, pre-rendering), saving you time and making development enjoyable." />
     <link rel="icon" href="~/favicon.ico" type="image/x-icon" asp-append-version="@shoudAddAspAppendVersion">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/themes/prism.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/themes/prism-okaidia.min.css" />
     <component type="typeof(HeadOutlet)" render-mode="@renderMode" />
     <link rel="apple-touch-icon" sizes="512x512" href="images/icons/bit-icon-512.png" />
     @if (isElectron)
@@ -57,6 +57,7 @@
                 -webkit-user-select: none;
                 overscroll-behavior: none;
                 -webkit-tap-highlight-color: transparent;
+                -webkit-font-smoothing: antialiased;
             }
         </style>
     }
@@ -67,19 +68,10 @@
         }
 
         html, body {
-            -webkit-font-smoothing: antialiased;
-            -webkit-tap-highlight-color: transparent;
-            height: 100%;
-            width: 100%;
             margin: 0;
             padding: 0;
-            color: #323130;
-            font-size: 1rem;
-            line-height: 1.5;
-            letter-spacing: 0;
-            font-weight: 400;
-            scroll-margin-top: calc(56px + 32px);
-            background-color: #fff;
+            width: 100%;
+            height: 100%;
         }
     </style>
     <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.min.css" asp-append-version="@shoudAddAspAppendVersion" />
@@ -121,13 +113,13 @@
             {
                 <link rel="stylesheet" href="_content/Bit.Bup/bit-bup.progress.min.css" asp-append-version="@shoudAddAspAppendVersion">
                 <component type="typeof(Bit.Bup.BupProgress)" render-mode="@RenderMode.Static"
-                   param-AutoHide="true"
-                   param-HideApp="true"
-                   param-AppContainer="@("#app-container")" />
+                           param-AutoHide="true"
+                           param-HideApp="true"
+                           param-AppContainer="@("#app-container")" />
             }
         }
 
-        
+
     }
 
     @if (isSsr)

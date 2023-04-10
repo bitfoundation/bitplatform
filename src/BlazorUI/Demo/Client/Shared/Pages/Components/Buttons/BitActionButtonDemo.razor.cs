@@ -7,28 +7,28 @@ public partial class BitActionButtonDemo
 {
     private readonly List<ComponentParameter> componentParameters = new()
     {
-        new ComponentParameter()
+        new()
         {
             Name = "AllowDisabledFocus",
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether the action button can have focus in disabled mode.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "AriaDescription",
             Type = "string",
             DefaultValue = "",
             Description = "Detailed description of the button for the benefit of screen readers.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "AriaHidden",
             Type = "bool",
             DefaultValue = "false",
             Description = "If true, add an aria-hidden attribute instructing screen readers to ignore the element.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "ButtonSize",
             Type = "BitButtonSize",
@@ -37,28 +37,28 @@ public partial class BitActionButtonDemo
             DefaultValue = "BitButtonSize.Medium",
             Description = "The size of button, Possible values: Small | Medium | Large.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "ChildContent",
             Type = "RenderFragment",
             DefaultValue = "",
             Description = "The content of action button, It can be Any custom tag or a text.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "Href",
             Type = "string",
             DefaultValue = "",
             Description = "URL the link points to, if provided, action button renders as an anchor.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "IconName",
             Type = "BitIcon",
             DefaultValue = "",
             Description = "The icon name for the icon shown in the action button.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "ButtonType",
             Type = "BitButtonType",
@@ -67,60 +67,51 @@ public partial class BitActionButtonDemo
             DefaultValue = "BitButtonType.Button",
             Description = "The type of the button.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "OnClick",
             Type = "EventCallback<MouseEventArgs>",
             DefaultValue = "",
             Description = "Callback for when the action button clicked.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "Target",
             Type = "string",
             DefaultValue = "",
             Description = "If Href provided, specifies how to open the link.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "Title",
             Type = "string",
             DefaultValue = "",
             Description = "The title to show when the mouse is placed on the action button.",
-        },
-        new ComponentParameter()
-        {
-            Name = "Visibility",
-            Type = "BitComponentVisibility",
-            LinkType = LinkType.Link,
-            Href = "#component-visibility-enum",
-            DefaultValue = "BitComponentVisibility.Visible",
-            Description = "Whether the component is Visible,Hidden,Collapsed.",
-        },
+        }
     };
 
-    private readonly List<EnumParameter> enumParameters = new()
+    private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
-        new EnumParameter()
+        new()
         {
             Id = "button-size-enum",
-            Title = "BitButtonSize Enum",
+            Name = "BitButtonSize",
             Description = "",
-            EnumList = new List<EnumItem>()
+            Items = new List<ComponentEnumItem>()
             {
-                new EnumItem()
+                new()
                 {
                     Name= "Small",
                     Description="The button size is small.",
                     Value="0",
                 },
-                new EnumItem()
+                new()
                 {
                     Name= "Medium",
                     Description="The button size is medium.",
                     Value="1",
                 },
-                new EnumItem()
+                new()
                 {
                     Name= "Large",
                     Description="The button size is large.",
@@ -128,61 +119,36 @@ public partial class BitActionButtonDemo
                 }
             }
         },
-        new EnumParameter()
+        new()
         {
             Id = "button-type-enum",
-            Title = "BitButtonType Enum",
+            Name = "BitButtonType",
             Description = "",
-            EnumList = new List<EnumItem>()
+            Items = new List<ComponentEnumItem>()
             {
-                new EnumItem()
+                new()
                 {
                     Name= "Button",
                     Description="The button is a clickable button.",
                     Value="0",
                 },
-                new EnumItem()
+                new()
                 {
                     Name= "Submit",
                     Description="The button is a submit button (submits form-data).",
                     Value="1",
                 },
-                new EnumItem()
+                new()
                 {
                     Name= "Reset",
                     Description="The button is a reset button (resets the form-data to its initial values).",
                     Value="2",
                 }
             }
-        },
-        new EnumParameter()
-        {
-            Id = "component-visibility-enum",
-            Title = "BitComponentVisibility Enum",
-            Description = "",
-            EnumList = new List<EnumItem>()
-            {
-                new EnumItem()
-                {
-                    Name= "Visible",
-                    Description="Show content of the component.",
-                    Value="0",
-                },
-                new EnumItem()
-                {
-                    Name= "Hidden",
-                    Description="Hide content of the component,though the space it takes on the page remains.",
-                    Value="1",
-                },
-                new EnumItem()
-                {
-                    Name= "Collapsed",
-                    Description="Hide content of the component,though the space it takes on the page gone.",
-                    Value="2",
-                }
-            }
         }
     };
+
+
 
     private readonly string example1HTMLCode = @"
 <BitActionButton IconName=""BitIconName.AddFriend"">Create account</BitActionButton>

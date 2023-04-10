@@ -76,13 +76,13 @@ public partial class BitOtpInputDemo
         },
     };
 
-    private readonly List<EnumParameter> enumParameters = new()
+    private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
         new()
         {
             Id = "direction-enum",
-            Title = "BitOtpInputDirection Enum",
-            EnumList = new()
+            Name = "BitOtpInputDirection",
+            Items = new()
             {
                 new()
                 {
@@ -107,8 +107,8 @@ public partial class BitOtpInputDemo
         new()
         {
             Id = "inputType-enum",
-            Title = "BitOtpInputType Enum",
-            EnumList = new()
+            Name = "BitOtpInputType",
+            Items = new()
             {
                 new()
                 {
@@ -138,6 +138,7 @@ public partial class BitOtpInputDemo
         }
     };
 
+    
 
     private string basicOtpInput;
     private string autoFocusOtpInput;

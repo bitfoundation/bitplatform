@@ -7,7 +7,6 @@ public partial class BitTimePickerDemo
 {
     private readonly List<ComponentParameter> componentParameters = new()
     {
-
         new()
         {
             Name = "Label",
@@ -203,14 +202,14 @@ public partial class BitTimePickerDemo
         }
     };
 
-    private readonly List<EnumParameter> enumParameters = new()
+    private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
         new()
         {
             Id = "component-visibility-enum",
-            Title = "BitComponentVisibility Enum",
+            Name = "BitComponentVisibility",
             Description = "",
-            EnumList = new List<EnumItem>()
+            Items = new List<ComponentEnumItem>()
             {
                 new()
                 {
@@ -235,9 +234,9 @@ public partial class BitTimePickerDemo
         new()
         {
             Id = "icon-location-enum",
-            Title = "BitIconLocation Enum",
+            Name = "BitIconLocation",
             Description = "",
-            EnumList = new List<EnumItem>()
+            Items = new List<ComponentEnumItem>()
             {
                 new()
                 {
@@ -256,9 +255,9 @@ public partial class BitTimePickerDemo
         new()
         {
             Id = "edit-mode-enum",
-            Title = "BitTimePickerEditMode Enum",
+            Name = "BitTimePickerEditMode",
             Description = "",
-            EnumList = new List<EnumItem>()
+            Items = new List<ComponentEnumItem>()
             {
                 new()
                 {
@@ -282,6 +281,8 @@ public partial class BitTimePickerDemo
         }
     };
 
+
+
     private TimeSpan? selectedTime = new TimeSpan(5, 12, 15);
     private FormValidationTimePickerModel formValidationTimePickerModel = new();
     private string successMessage = string.Empty;
@@ -303,6 +304,7 @@ public partial class BitTimePickerDemo
     {
         successMessage = string.Empty;
     }
+
 
     private readonly string example1HTMLCode = @"
 <BitTimePicker Style=""max-width: 300px""

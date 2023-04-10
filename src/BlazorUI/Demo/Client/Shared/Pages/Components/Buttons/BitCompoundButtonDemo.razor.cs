@@ -7,28 +7,28 @@ public partial class BitCompoundButtonDemo
 {
     private readonly List<ComponentParameter> componentParameters = new()
     {
-        new ComponentParameter()
+        new()
         {
             Name = "AllowDisabledFocus",
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether the compound button can have focus in disabled mode.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "AriaDescription",
             Type = "string",
             DefaultValue = "",
             Description = "Detailed description of the compound button for the benefit of screen readers.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "AriaHidden",
             Type = "bool",
             DefaultValue = "false",
             Description = "If true, add an aria-hidden attribute instructing screen readers to ignore the element.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "ButtonSize",
             Type = "BitButtonSize",
@@ -37,7 +37,7 @@ public partial class BitCompoundButtonDemo
             DefaultValue = "BitButtonSize.Medium",
             Description = "The size of button, Possible values: Small | Medium | Large.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "ButtonStyle",
             Type = "BitButtonStyle",
@@ -46,7 +46,7 @@ public partial class BitCompoundButtonDemo
             DefaultValue = "BitButtonStyle.Primary",
             Description = "The style of compound button, Possible values: Primary | Standard",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "ButtonType",
             Type = "BitButtonType",
@@ -55,81 +55,72 @@ public partial class BitCompoundButtonDemo
             DefaultValue = "BitButtonType.Button",
             Description = "The type of the button.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "Href",
             Type = "string",
             DefaultValue = "",
             Description = "URL the link points to, if provided, compound button renders as an anchor.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "OnClick",
             Type = "EventCallback<MouseEventArgs>",
             DefaultValue = "",
             Description = "Callback for when the compound button clicked.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "SecondaryText",
             Type = "string",
             DefaultValue = "",
             Description = "Description of the action compound button takes.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "Target",
             Type = "string",
             DefaultValue = "",
             Description = "If Href provided, specifies how to open the link.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "Text",
             Type = "string",
             DefaultValue = "",
             Description = "The text of compound button.",
         },
-        new ComponentParameter()
+        new()
         {
             Name = "Title",
             Type = "string",
             DefaultValue = "",
             Description = "The title to show when the mouse is placed on the compound button.",
-        },
-        new ComponentParameter()
-        {
-            Name = "Visibility",
-            Type = "BitComponentVisibility",
-            LinkType = LinkType.Link,
-            Href = "#component-visibility-enum",
-            DefaultValue = "BitComponentVisibility.Visible",
-            Description = "Whether the component is Visible,Hidden,Collapsed.",
-        },
+        }
     };
 
-    private readonly List<EnumParameter> enumParameters = new()
+    private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
-        new EnumParameter()
+        new()
         {
             Id = "button-size-enum",
-            Title = "BitButtonSize Enum",
+            Name = "BitButtonSize",
             Description = "",
-            EnumList = new List<EnumItem>()
+            Items = new List<ComponentEnumItem>()
             {
-                new EnumItem()
+                new()
                 {
                     Name= "Small",
                     Description="The button size is small.",
                     Value="0",
                 },
-                new EnumItem()
+                new()
                 {
                     Name= "Medium",
                     Description="The button size is medium.",
                     Value="1",
                 },
-                new EnumItem()
+                new()
                 {
                     Name= "Large",
                     Description="The button size is large.",
@@ -137,20 +128,20 @@ public partial class BitCompoundButtonDemo
                 }
             }
         },
-        new EnumParameter()
+        new()
         {
             Id = "button-style-enum",
-            Title = "BitButtonStyle Enum",
+            Name = "BitButtonStyle",
             Description = "",
-            EnumList = new List<EnumItem>()
+            Items = new List<ComponentEnumItem>()
             {
-                new EnumItem()
+                new()
                 {
                     Name= "Primary",
                     Description="The button with white text on a blue background.",
                     Value="0",
                 },
-                new EnumItem()
+                new()
                 {
                     Name= "Standard",
                     Description="The button with black text on a white background.",
@@ -158,61 +149,36 @@ public partial class BitCompoundButtonDemo
                 }
             }
         },
-        new EnumParameter()
+        new()
         {
             Id = "button-type-enum",
-            Title = "BitButtonType Enum",
+            Name = "BitButtonType",
             Description = "",
-            EnumList = new List<EnumItem>()
+            Items = new List<ComponentEnumItem>()
             {
-                new EnumItem()
+                new()
                 {
                     Name= "Button",
                     Description="The button is a clickable button.",
                     Value="0",
                 },
-                new EnumItem()
+                new()
                 {
                     Name= "Submit",
                     Description="The button is a submit button (submits form-data).",
                     Value="1",
                 },
-                new EnumItem()
+                new()
                 {
                     Name= "Reset",
                     Description="The button is a reset button (resets the form-data to its initial values).",
                     Value="2",
                 }
             }
-        },
-        new EnumParameter()
-        {
-            Id = "component-visibility-enum",
-            Title = "BitComponentVisibility Enum",
-            Description = "",
-            EnumList = new List<EnumItem>()
-            {
-                new EnumItem()
-                {
-                    Name= "Visible",
-                    Description="Show content of the component.",
-                    Value="0",
-                },
-                new EnumItem()
-                {
-                    Name= "Hidden",
-                    Description="Hide content of the component,though the space it takes on the page remains.",
-                    Value="1",
-                },
-                new EnumItem()
-                {
-                    Name= "Collapsed",
-                    Description="Hide content of the component,though the space it takes on the page gone.",
-                    Value="2",
-                }
-            }
         }
     };
+
+
 
     private readonly string example1HTMLCode = @"
 <style>
@@ -338,6 +304,7 @@ public partial class BitCompoundButtonDemo
     </div>
 </div>
 ";
+
     private readonly string example7HTMLCode = @"
 <style>
     .buttons-container-grid {

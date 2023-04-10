@@ -35,13 +35,13 @@ public partial class BitTypographyDemo
         }
     };
 
-    private readonly List<EnumParameter> enumParameters = new()
+    private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
-        new EnumParameter()
+        new()
         {
             Id = "typography-variant-enum",
-            Title = "BitTypographyVariant Enum",
-            EnumList = new List<EnumItem>()
+            Name = "BitTypographyVariant",
+            Items = new List<ComponentEnumItem>()
             {
                 new() { Name = "Body1" },
                 new() { Name = "Body2" },

@@ -1,8 +1,9 @@
 ﻿@page "/components/date-picker"
 
-<ComponentDemo ComponentName="DatePicker" ComponentDescription="Picking a date can be tough without context. A BitDatePicker offers a drop-down control that’s optimized for picking a single date from a calendar view where contextual information like the day of the week or fullness of the calendar is important.
-                                                        You can modify the calendar to provide additional context or to limit available dates."
-               ComponentParameters="componentParameters" EnumParameters="enumParameters">
+<ComponentDemo ComponentName="DatePicker"
+               ComponentDescription="Picking a date can be tough without context. A BitDatePicker offers a drop-down control that’s optimized for picking a single date from a calendar view where contextual information like the day of the week or fullness of the calendar is important. You can modify the calendar to provide additional context or to limit available dates."
+               ComponentParameters="componentParameters"
+               ComponentSubEnums="componentSubEnums">
     <ComponentExampleBox Title="Default BitDatePicker" HTMLSourceCode="@example1HTMLCode" ExampleId="example1">
         <ExamplePreview>
             <BitDatePicker Style="max-width: 350px"
@@ -152,8 +153,8 @@
 
     <ComponentExampleBox Title="BitDatePicker with value two-way binding" HTMLSourceCode="@example10HTMLCode" CSharpSourceCode="@example10CSharpCode" ExampleId="example10">
         <ExamplePreview>
-            <BitDatePicker Style="max-width: 350px"
-                           @bind-Value="@selectedDate"
+            <BitDatePicker @bind-Value="@selectedDate"
+                           Style="max-width: 350px"
                            AriaLabel="Select a date"
                            Placeholder="Select a date..." />
             <BitLabel>Selected date: @selectedDate.ToString()</BitLabel>
