@@ -170,7 +170,7 @@ public class BitCompoundButtonTests : BunitTestContext
             }
         });
 
-        var bitButton = com.Find(".bit-cmpb");
+        var bitCompoundButton = com.Find(".bit-cmpb");
         var sizeClass = size switch
         {
             BitButtonSize.Small => "bit-cmpb-sm",
@@ -179,7 +179,7 @@ public class BitCompoundButtonTests : BunitTestContext
             _ => throw new NotSupportedException()
         };
 
-        Assert.IsTrue(bitButton.ClassList.Contains(sizeClass));
+        Assert.IsTrue(bitCompoundButton.ClassList.Contains(sizeClass));
     }
 
     [DataTestMethod,
