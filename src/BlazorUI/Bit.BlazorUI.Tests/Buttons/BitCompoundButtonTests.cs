@@ -155,6 +155,34 @@ public class BitCompoundButtonTests : BunitTestContext
     }
 
     [DataTestMethod,
+        DataRow(BitButtonSize.Small),
+        DataRow(BitButtonSize.Medium),
+        DataRow(BitButtonSize.Large),
+        DataRow(null)
+    ]
+    public void BitCompoundButtonSizeTest(BitButtonSize? size)
+    {
+        var com = RenderComponent<BitCompoundButton>(parameters =>
+        {
+            if (size.HasValue)
+            {
+                parameters.Add(p => p.ButtonSize, size.Value);
+            }
+        });
+
+        var bitButton = com.Find(".bit-cmpb");
+        var sizeClass = size switch
+        {
+            BitButtonSize.Small => "bit-cmpb-sm",
+            BitButtonSize.Medium or null => "bit-cmpb-md",
+            BitButtonSize.Large => "bit-cmpb-lg",
+            _ => throw new NotSupportedException()
+        };
+
+        Assert.IsTrue(bitButton.ClassList.Contains(sizeClass));
+    }
+
+    [DataTestMethod,
         DataRow(BitButtonType.Button),
         DataRow(BitButtonType.Submit),
         DataRow(BitButtonType.Reset)
